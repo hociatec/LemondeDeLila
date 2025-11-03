@@ -1,0 +1,38 @@
+controllers_user:
+    resource:
+        path: ../src/Module/User/Controller/
+        namespace: App\Module\User\Controller
+    type: attribute
+
+controllers_game:
+    resource:
+        path: ../src/Module/Game
+        namespace: App\Module\Game
+    type: attribute
+
+controllers_admin:
+    resource:
+        path: ../src/Module/Admin/Controller/
+        namespace: App\Module\Admin\Controller
+    type: attribute
+
+controllers_core:
+    resource:
+        path: ../src/Module/Core/Controller/
+        namespace: App\Module\Core\Controller
+    type: attribute
+
+# Security firewall intercepts POST /api/login (json_login)
+controllers_rules:
+    resource:
+        path: ../src/Module/Rules/Controller/
+        namespace: App\Module\Rules\Controller
+    type: attribute
+
+api_docs_redirect:
+    path: /api
+    controller: Symfony\Bundle\FrameworkBundle\Controller\RedirectController::class
+    defaults:
+        route: api_platform.swagger_ui
+        permanent: false
+    methods: [GET]

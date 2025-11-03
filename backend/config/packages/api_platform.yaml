@@ -1,0 +1,18 @@
+api_platform:
+    title: 'Le Monde de Lila API'
+    version: '1.0.0'
+    defaults:
+        stateless: true
+        pagination_items_per_page: 30
+    swagger:
+        versions: [3]
+        api_keys:
+            bearerAuth:
+                name: Authorization
+                type: header
+    mapping:
+        paths:
+            - '%kernel.project_dir%/src/Module'
+    openapi:
+        contact:
+            name: 'Le Monde de Lila'
