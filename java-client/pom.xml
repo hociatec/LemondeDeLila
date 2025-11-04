@@ -17,7 +17,11 @@
     </properties>
 
     <dependencies>
-        <!-- No external dependencies required for the user module yet -->
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20231013</version>
+        </dependency>
     </dependencies>
 
     <build>

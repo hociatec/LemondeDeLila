@@ -48,7 +48,7 @@ public final class ClientConfig {
     }
 
     public URI catalogCategoriesUri() {
-        return apiBaseUri.resolve("catalog/categories");
+        return apiBaseUri.resolve("game_categories");
     }
 
     public URI roomsUri() {

@@ -1,6 +1,8 @@
 package com.lemondelila.client.menu.service;
 
 import com.lemondelila.client.menu.model.CategorySummary;
+import org.json.JSONArray;
+import org.json.JSONException;
 
 import java.io.IOException;
 import java.net.URI;
@@ -20,9 +22,6 @@ import java.util.regex.Pattern;
  * Client HTTP pour recuperer les categories de jeux.
  */
 public final class CatalogClient {
-
-    private static final Pattern CATEGORY_PATTERN =
-            Pattern.compile("\\{[^}]*\\\"id\\\"\\s*:\\s*(?<id>\\d+)[^}]*\\\"name\\\"\\s*:\\s*\\\"(?<name>[^\\\"]+)\\\"[^}]*\\}");
 
     private final HttpClient httpClient;
     private final URI categoriesUri;
@@ -55,9 +54,14 @@ public final class CatalogClient {
         if (json == null || json.isBlank()) {
             return categories;
         }
-        Matcher matcher = CATEGORY_PATTERN.matcher(json);
-        while (matcher.find()) {
-            categories.add(new CategorySummary(matcher.group("id"), matcher.group("name")));
+        try {
+            JSONArray jsonArray = new JSONArray(json);
+            for (int i = 0; i < jsonArray.length(); i++) {
+                categories.add(new CategorySummary(jsonArray.getString(i)));
+            }
+        } catch (JSONException e) {
+            // Log the error or handle it as needed
+            System.err.println("Error parsing categories JSON: " + e.getMessage());
         }
         return categories;
     }
