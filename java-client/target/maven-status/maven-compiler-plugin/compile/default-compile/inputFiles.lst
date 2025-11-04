@@ -1,5 +1,7 @@
 /app/java-client/src/main/java/com/lemondelila/client/AppLauncher.java
 /app/java-client/src/main/java/com/lemondelila/client/config/ClientConfig.java
+/app/java-client/src/main/java/com/lemondelila/client/game/view/RulesDialog.java
+/app/java-client/src/main/java/com/lemondelila/client/game/view/SwingMissionNemesisView.java
 /app/java-client/src/main/java/com/lemondelila/client/history/HistoryModule.java
 /app/java-client/src/main/java/com/lemondelila/client/history/controller/HistoryController.java
 /app/java-client/src/main/java/com/lemondelila/client/history/model/HistoryModel.java
@@ -9,6 +11,7 @@
 /app/java-client/src/main/java/com/lemondelila/client/menu/MenuModule.java
 /app/java-client/src/main/java/com/lemondelila/client/menu/controller/MenuController.java
 /app/java-client/src/main/java/com/lemondelila/client/menu/model/CategorySummary.java
+/app/java-client/src/main/java/com/lemondelila/client/menu/model/GameSummary.java
 /app/java-client/src/main/java/com/lemondelila/client/menu/model/RoomSummary.java
 /app/java-client/src/main/java/com/lemondelila/client/menu/service/CatalogClient.java
 /app/java-client/src/main/java/com/lemondelila/client/menu/service/RoomClient.java
