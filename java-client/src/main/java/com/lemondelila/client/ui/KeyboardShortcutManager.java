@@ -13,8 +13,10 @@ import java.util.Objects;
 public final class KeyboardShortcutManager {
 
     private static final String ESCAPE_ACTION_KEY = "shortcut-escape-back";
+    private static final String F1_ACTION_KEY = "shortcut-f1-rules";
 
     private final Deque<Runnable> backStack = new ArrayDeque<>();
+    private Runnable f1Action;
 
     public void install(JRootPane rootPane) {
         Objects.requireNonNull(rootPane, "rootPane");
@@ -27,6 +29,19 @@ public final class KeyboardShortcutManager {
                 triggerBackAction();
             }
         });
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0), F1_ACTION_KEY);
+        actionMap.put(F1_ACTION_KEY, new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (f1Action != null) {
+                    f1Action.run();
+                }
+            }
+        });
+    }
+
+    public void setF1Action(Runnable action) {
+        this.f1Action = action;
     }
 
     public void pushBackAction(Runnable action) {

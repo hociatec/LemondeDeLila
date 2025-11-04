@@ -1,5 +1,6 @@
 package com.lemondelila.client.menu;
 
+import com.lemondelila.client.config.ClientConfig;
 import com.lemondelila.client.history.service.HistoryService;
 import com.lemondelila.client.menu.controller.MenuController;
 import com.lemondelila.client.menu.view.SwingMainMenuView;
@@ -20,16 +21,13 @@ public final class MenuModule {
     private final MenuController controller;
     private boolean attached;
 
-    public MenuModule(SessionService sessionService,
-                      HistoryService historyService,
-                      URI categoriesUri,
-                      URI roomsUri) {
+    public MenuModule(ClientConfig config,
+                      SessionService sessionService,
+                      HistoryService historyService) {
         this.sessionService = Objects.requireNonNull(sessionService, "sessionService");
         Objects.requireNonNull(historyService, "historyService");
-        Objects.requireNonNull(categoriesUri, "categoriesUri");
-        Objects.requireNonNull(roomsUri, "roomsUri");
         this.view = new SwingMainMenuView();
-        this.controller = new MenuController(view, sessionService, historyService, categoriesUri, roomsUri);
+        this.controller = new MenuController(view, sessionService, historyService, config);
     }
 
     public SwingMainMenuView view() {
@@ -63,4 +61,3 @@ public final class MenuModule {
         attached = true;
     }
 }
-

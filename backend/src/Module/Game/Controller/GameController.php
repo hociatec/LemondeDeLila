@@ -3,23 +3,30 @@
 namespace App\Module\Game\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Finder\Finder;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Attribute\Route;
 
 class GameController extends AbstractController
 {
-    #[Route('/api/game_categories', name: 'game_categories')]
-    public function getGameCategories(): JsonResponse
+    #[Route('/api/games/{gameId}/rules', name: 'game_rules', methods: ['GET'])]
+    public function rules(string $gameId): Response
     {
-        $finder = new Finder();
-        $finder->directories()->in($this->getParameter('kernel.project_dir') . '/src/Module/Game/GameCatalogue')->depth(0);
+        $gamePath = __DIR__ . '/../GameCatalogue';
+        $filePath = '';
 
-        $categories = [];
-        foreach ($finder as $dir) {
-            $categories[] = $dir->getBasename();
+        $it = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($gamePath));
+        foreach ($it as $file) {
+            if (strtolower($file->getFilename()) === strtolower($gameId)) {
+                $filePath = $file->getPathname() . '/rules.md';
+                break;
+            }
         }
 
-        return new JsonResponse($categories);
+        if (file_exists($filePath)) {
+            $rules = file_get_contents($filePath);
+            return new Response($rules, 200, ['Content-Type' => 'text/plain']);
+        }
+
+        return new Response('Rules not found.', 404);
     }
 }

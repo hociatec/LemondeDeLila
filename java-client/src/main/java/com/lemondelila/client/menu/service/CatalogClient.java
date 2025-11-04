@@ -1,8 +1,10 @@
 package com.lemondelila.client.menu.service;
 
 import com.lemondelila.client.menu.model.CategorySummary;
+import com.lemondelila.client.menu.model.GameSummary;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.URI;
@@ -15,12 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-/**
- * Client HTTP pour recuperer les categories de jeux.
- */
 public final class CatalogClient {
 
     private final HttpClient httpClient;
@@ -57,10 +54,29 @@ public final class CatalogClient {
         try {
             JSONArray jsonArray = new JSONArray(json);
             for (int i = 0; i < jsonArray.length(); i++) {
-                categories.add(new CategorySummary(jsonArray.getString(i)));
+                JSONObject categoryJson = jsonArray.getJSONObject(i);
+                String name = categoryJson.getString("name");
+                JSONArray subCategoriesJson = categoryJson.optJSONArray("subCategories");
+                List<CategorySummary> subCategories = new ArrayList<>();
+                if (subCategoriesJson != null) {
+                    for (int j = 0; j < subCategoriesJson.length(); j++) {
+                        JSONObject subCategoryJson = subCategoriesJson.getJSONObject(j);
+                        String subCategoryName = subCategoryJson.getString("name");
+                        JSONArray gamesJson = subCategoryJson.optJSONArray("games");
+                        List<GameSummary> games = new ArrayList<>();
+                        if (gamesJson != null) {
+                            for (int k = 0; k < gamesJson.length(); k++) {
+                                JSONObject gameJson = gamesJson.getJSONObject(k);
+                                String gameName = gameJson.getString("name");
+                                games.add(new GameSummary(gameName));
+                            }
+                        }
+                        subCategories.add(new CategorySummary(subCategoryName, new ArrayList<>(), games));
+                    }
+                }
+                categories.add(new CategorySummary(name, subCategories, new ArrayList<>()));
             }
         } catch (JSONException e) {
-            // Log the error or handle it as needed
             System.err.println("Error parsing categories JSON: " + e.getMessage());
         }
         return categories;

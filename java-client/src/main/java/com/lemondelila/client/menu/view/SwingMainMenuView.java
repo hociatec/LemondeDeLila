@@ -1,6 +1,7 @@
 package com.lemondelila.client.menu.view;
 
 import com.lemondelila.client.menu.model.CategorySummary;
+import com.lemondelila.client.menu.model.GameSummary;
 import com.lemondelila.client.menu.model.RoomSummary;
 import com.lemondelila.client.ui.dialog.ConfirmationDialog;
 
@@ -12,9 +13,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-/**
- * Implementation Swing du menu principal pour l'utilisateur connecte.
- */
 public final class SwingMainMenuView extends JPanel implements MenuView {
 
     private static final Color COLOR_DEFAULT = new Color(70, 70, 70);
@@ -34,10 +32,13 @@ public final class SwingMainMenuView extends JPanel implements MenuView {
     private Runnable focusBackwardAction = this::focusPreviousComponent;
     private JComponent lastFocusedComponent;
     private MenuState state = MenuState.ROOT;
+    private List<CategorySummary> currentCategories;
+    private List<GameSummary> currentGames;
 
     private enum MenuState {
         ROOT,
         CATEGORIES,
+        GAMES,
         ROOMS,
         OPTIONS
     }
@@ -92,7 +93,7 @@ public final class SwingMainMenuView extends JPanel implements MenuView {
         optionsButton.addActionListener(e -> {
             if (listener != null) listener.onShowOptionsRequested();
         });
- logoutButton.addActionListener(e -> {
+        logoutButton.addActionListener(e -> {
     if (listener == null) {
         return;
     }
@@ -149,6 +150,8 @@ public final class SwingMainMenuView extends JPanel implements MenuView {
     public void showCategories(List<CategorySummary> categories) {
         SwingUtilities.invokeLater(() -> {
             listModel.clear();
+            currentCategories = categories;
+            currentGames = null;
             if (categories == null || categories.isEmpty()) {
                 listModel.addElement("Aucune categorie disponible.");
             } else {
@@ -163,9 +166,30 @@ public final class SwingMainMenuView extends JPanel implements MenuView {
     }
 
     @Override
+    public void showGames(List<GameSummary> games) {
+        SwingUtilities.invokeLater(() -> {
+            listModel.clear();
+            currentCategories = null;
+            currentGames = games;
+            if (games == null || games.isEmpty()) {
+                listModel.addElement("Aucun jeu disponible.");
+            } else {
+                for (GameSummary game : games) {
+                    listModel.addElement(game.name());
+                }
+            }
+            statusLabel.setForeground(COLOR_DEFAULT);
+            statusLabel.setText("Jeux disponibles");
+            state = MenuState.GAMES;
+        });
+    }
+
+    @Override
     public void showRooms(List<RoomSummary> rooms) {
         SwingUtilities.invokeLater(() -> {
             listModel.clear();
+            currentCategories = null;
+            currentGames = null;
             if (rooms == null || rooms.isEmpty()) {
                 listModel.addElement("Aucune partie en cours.");
             } else {
@@ -189,6 +213,8 @@ public final class SwingMainMenuView extends JPanel implements MenuView {
     public void showOptions() {
         SwingUtilities.invokeLater(() -> {
             listModel.clear();
+            currentCategories = null;
+            currentGames = null;
             listModel.addElement("Parametres disponibles :");
             listModel.addElement(" - Modifier l'adresse du serveur");
             listModel.addElement(" - Choisir la langue de l'interface (a venir)");
@@ -219,6 +245,8 @@ public final class SwingMainMenuView extends JPanel implements MenuView {
     public void reset() {
         SwingUtilities.invokeLater(() -> {
             listModel.clear();
+            currentCategories = null;
+            currentGames = null;
             listModel.addElement("Etageres - consulter les categories de jeux.");
             listModel.addElement("Rejoindre une partie - voir les rooms actives.");
             listModel.addElement("Options - ajuster les param\u00E8tres.");
@@ -331,6 +359,8 @@ public final class SwingMainMenuView extends JPanel implements MenuView {
         inputMap.put(KeyStroke.getKeyStroke("pressed SPACE"), "none");
         inputMap.put(KeyStroke.getKeyStroke("released SPACE"), "none");
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "menuEscape");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "selectItem");
+
 
         actionMap.put("skipForward", new AbstractAction() {
             @Override
@@ -354,6 +384,32 @@ public final class SwingMainMenuView extends JPanel implements MenuView {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 // ignore space key
+            }
+        });
+        actionMap.put("selectItem", new AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                if (listener != null && resultList.getSelectedIndex() != -1) {
+                    if (currentCategories != null) {
+                        listener.onCategorySelected(currentCategories.get(resultList.getSelectedIndex()));
+                    } else if (currentGames != null) {
+                        listener.onGameSelected(currentGames.get(resultList.getSelectedIndex()));
+                    }
+                }
+            }
+        });
+
+        resultList.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                if (evt.getClickCount() == 2) {
+                    if (listener != null && resultList.getSelectedIndex() != -1) {
+                        if (currentCategories != null) {
+                            listener.onCategorySelected(currentCategories.get(resultList.getSelectedIndex()));
+                        } else if (currentGames != null) {
+                            listener.onGameSelected(currentGames.get(resultList.getSelectedIndex()));
+                        }
+                    }
+                }
             }
         });
     }
@@ -428,4 +484,3 @@ public final class SwingMainMenuView extends JPanel implements MenuView {
         }
     }
 }
-
