@@ -11,7 +11,7 @@ class GameController extends AbstractController
     #[Route('/api/games/{gameId}/rules', name: 'game_rules', methods: ['GET'])]
     public function rules(string $gameId): Response
     {
-        $gamePath = __DIR__ . '/../GameCatalogue';
+        $gamePath = $this->getParameter('kernel.project_dir') . '/src/Module/Game/GameCatalogue';
         $filePath = '';
 
         $it = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($gamePath));

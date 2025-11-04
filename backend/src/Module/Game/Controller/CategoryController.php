@@ -12,33 +12,29 @@ class CategoryController extends AbstractController
     public function getCategories(): JsonResponse
     {
         $gameCataloguePath = $this->getParameter('kernel.project_dir') . '/src/Module/Game/GameCatalogue';
-        $categories = [];
+        $categories = $this->scanDirectory($gameCataloguePath);
+        return new JsonResponse($categories);
+    }
 
-        $categoryDirs = new \DirectoryIterator($gameCataloguePath);
-        foreach ($categoryDirs as $categoryDir) {
-            if ($categoryDir->isDir() && !$categoryDir->isDot()) {
-                $categoryName = $categoryDir->getFilename();
-                $subCategories = [];
-
-                $subCategoryDirs = new \DirectoryIterator($categoryDir->getPathname());
-                foreach ($subCategoryDirs as $subCategoryDir) {
-                    if ($subCategoryDir->isDir() && !$subCategoryDir->isDot()) {
-                        $subCategoryName = $subCategoryDir->getFilename();
-                        $games = [];
-
-                        $gameDirs = new \DirectoryIterator($subCategoryDir->getPathname());
-                        foreach ($gameDirs as $gameDir) {
-                            if ($gameDir->isDir() && !$gameDir->isDot()) {
-                                $games[] = ['name' => $gameDir->getFilename()];
-                            }
-                        }
-                        $subCategories[] = ['name' => $subCategoryName, 'games' => $games];
-                    }
+    private function scanDirectory(string $path): array
+    {
+        $entries = [];
+        $iterator = new \DirectoryIterator($path);
+        foreach ($iterator as $item) {
+            if ($item->isDir() && !$item->isDot()) {
+                $dirName = $item->getFilename();
+                // Ignore technical directories
+                if (in_array($dirName, ['Controller', 'Service'])) {
+                    continue;
                 }
-                $categories[] = ['name' => $categoryName, 'subCategories' => $subCategories];
+                $subEntries = $this->scanDirectory($item->getPathname());
+                if (!empty($subEntries)) {
+                    $entries[] = ['name' => $dirName, 'children' => $subEntries];
+                } else {
+                    $entries[] = ['name' => $dirName];
+                }
             }
         }
-
-        return new JsonResponse($categories);
+        return $entries;
     }
 }

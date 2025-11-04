@@ -8,7 +8,6 @@ import com.lemondelila.client.session.listener.SessionListener;
 import com.lemondelila.client.session.service.SessionService;
 import com.lemondelila.client.ui.SwingAuthView;
 
-import java.net.URI;
 import java.util.Objects;
 
 /**

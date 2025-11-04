@@ -25,7 +25,7 @@ Les éléments peuvent être placés horizontalement ou verticalement uniquement
 
 ## Déroulement du jeu
 Le jeu se joue à tour de rôle. Le joueur 1 commence, suivi du joueur 2, et ainsi de suite.
-À chaque tour, le joueur actif lance un rayon laser vers une coordonnée précise (ex. : F6) de la carte stellaire ennemie.
+À chaque tour, le joueur actif lance un rayon laser vers une coordonnée precise (ex. : F6) de la carte stellaire ennemie.
 Le joueur ciblé consulte sa grille et annonce l'effet du tir :
 • "Zone vide" ou "Raté" : aucune structure présente sur cette case
 • "Impact confirmé" : un élément a été touché, mais pas détruit

@@ -1,7 +1,7 @@
 package com.lemondelila.client.menu.controller;
 
 import com.lemondelila.client.config.ClientConfig;
-import com.lemondelila.client.game.view.SwingMissionNemesisView;
+import com.lemondelila.client.game.GameLauncher;
 import com.lemondelila.client.history.service.HistoryService;
 import com.lemondelila.client.menu.model.CategorySummary;
 import com.lemondelila.client.menu.model.GameSummary;
@@ -30,6 +30,8 @@ public final class MenuController implements MenuView.MenuListener, SessionListe
     private final RoomClient roomClient;
     private List<CategorySummary> categories;
     private final ClientConfig config;
+    private String currentCategory;
+    private String currentSubCategory;
 
     public MenuController(MenuView view,
                           SessionService sessionService,
@@ -72,6 +74,11 @@ public final class MenuController implements MenuView.MenuListener, SessionListe
 
     @Override
     public void onCategorySelected(CategorySummary category) {
+        if (currentCategory == null) {
+            currentCategory = category.name();
+        } else {
+            currentSubCategory = category.name();
+        }
         if (!category.subCategories().isEmpty()) {
             view.showCategories(category.subCategories());
         } else if (!category.games().isEmpty()) {
@@ -81,35 +88,7 @@ public final class MenuController implements MenuView.MenuListener, SessionListe
 
     @Override
     public void onGameSelected(GameSummary game) {
-        if (game.name().equals("MissionNemesis")) {
-            launchMissionNemesis(sessionService, config);
-        }
-    }
-
-    private void launchMissionNemesis(SessionService sessionService, ClientConfig config) {
-        view.setBusy(true);
-        new SwingWorker<Void, Void>() {
-            @Override
-            protected Void doInBackground() throws Exception {
-                Thread.sleep(1000);
-                return null;
-            }
-
-            @Override
-            protected void done() {
-                view.setBusy(false);
-                SwingUtilities.invokeLater(() -> {
-                    // TODO: This should be connected to a dynamic room selection UI.
-                    String roomId = "1";
-                    // TODO: The player index should be determined dynamically.
-                    int playerIndex = 0;
-                    JFrame frame = (JFrame) SwingUtilities.getWindowAncestor((Component) view);
-                    frame.setContentPane(new SwingMissionNemesisView((SwingAuthView) frame, roomId, playerIndex, sessionService, config.apiBaseUri()));
-                    frame.revalidate();
-                    frame.repaint();
-                });
-            }
-        }.execute();
+        GameLauncher.launch((SwingAuthView) SwingUtilities.getWindowAncestor((Component) view), currentCategory, currentSubCategory, game, sessionService, config);
     }
 
     @Override
@@ -151,6 +130,8 @@ public final class MenuController implements MenuView.MenuListener, SessionListe
 
     @Override
     public void onReturnToMainMenuRequested() {
+        currentCategory = null;
+        currentSubCategory = null;
         view.reset();
         view.requestMenuFocus();
         historyService.append("Menu", "Retour au menu principal");

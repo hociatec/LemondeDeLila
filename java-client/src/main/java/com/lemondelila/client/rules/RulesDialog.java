@@ -1,4 +1,4 @@
-package com.lemondelila.client.game.view;
+package com.lemondelila.client.rules;
 
 import javax.swing.*;
 import java.awt.event.KeyEvent;
