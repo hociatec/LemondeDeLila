@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
 public final class CatalogClient {
 
     private static final Pattern CATEGORY_PATTERN =
-            Pattern.compile("\\{[^}]*\\\"id\\\"\\s*:\\s*\\\"(?<id>[^\\\"]+)\\\"[^}]*\\\"name\\\"\\s*:\\s*\\\"(?<name>[^\\\"]+)\\\"[^}]*\\}");
+            Pattern.compile("\\{[^}]*\\\"id\\\"\\s*:\\s*(?<id>\\d+)[^}]*\\\"name\\\"\\s*:\\s*\\\"(?<name>[^\\\"]+)\\\"[^}]*\\}");
 
     private final HttpClient httpClient;
     private final URI categoriesUri;

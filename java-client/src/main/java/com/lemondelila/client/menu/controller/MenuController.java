@@ -108,15 +108,6 @@ public final class MenuController implements MenuView.MenuListener, SessionListe
         historyService.append("Menu", "Retour au menu principal");
     }
 
-    private boolean ensureSession() {
-        if (sessionService.isActive()) {
-            return true;
-        }
-        view.showError("Session expiree, veuillez vous reconnecter.");
-        historyService.append("Menu", "Action refusee: session expiree");
-        return false;
-    }
-
     @Override
     public void onSessionOpened(String username, String token) {
         view.setUsername(username);
@@ -132,6 +123,15 @@ public final class MenuController implements MenuView.MenuListener, SessionListe
         view.setUsername("?");
         view.showMessage("Session fermee");
         historyService.append("Menu", "Session fermee");
+    }
+
+    private boolean ensureSession() {
+        if (sessionService.isActive()) {
+            return true;
+        }
+        view.showError("Session expiree, veuillez vous reconnecter.");
+        historyService.append("Menu", "Action refusee: session expiree");
+        return false;
     }
 }
 

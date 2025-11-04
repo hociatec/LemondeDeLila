@@ -25,6 +25,7 @@ public final class SwingMainMenuView extends JPanel implements MenuView {
     private final JButton roomsButton = new JButton("Rejoindre une partie");
     private final JButton optionsButton = new JButton("Options");
     private final JButton logoutButton = new JButton("D\u00E9connexion");
+    private final JButton backButton = new JButton("Retour");
     private final DefaultListModel<String> listModel = new DefaultListModel<>();
     private final JList<String> resultList = new JList<>(listModel);
     private final JLabel statusLabel = new JLabel(" ", SwingConstants.LEFT);
@@ -70,6 +71,7 @@ public final class SwingMainMenuView extends JPanel implements MenuView {
         buttonPanel.add(roomsButton);
         buttonPanel.add(optionsButton);
         buttonPanel.add(logoutButton);
+        buttonPanel.add(backButton);
         buttonPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
         headerPanel.add(buttonPanel);
 
@@ -92,7 +94,10 @@ public final class SwingMainMenuView extends JPanel implements MenuView {
         optionsButton.addActionListener(e -> {
             if (listener != null) listener.onShowOptionsRequested();
         });
- logoutButton.addActionListener(e -> {
+        backButton.addActionListener(e -> {
+            if (listener != null) listener.onReturnToMainMenuRequested();
+        });
+        logoutButton.addActionListener(e -> {
     if (listener == null) {
         return;
     }
@@ -159,6 +164,10 @@ public final class SwingMainMenuView extends JPanel implements MenuView {
             statusLabel.setForeground(COLOR_DEFAULT);
             statusLabel.setText("Categories de jeux");
             state = MenuState.CATEGORIES;
+            backButton.setVisible(true);
+            categoriesButton.setVisible(false);
+            roomsButton.setVisible(false);
+            optionsButton.setVisible(false);
         });
     }
 
@@ -182,6 +191,10 @@ public final class SwingMainMenuView extends JPanel implements MenuView {
             statusLabel.setForeground(COLOR_DEFAULT);
             statusLabel.setText("Parties disponibles");
             state = MenuState.ROOMS;
+            backButton.setVisible(true);
+            categoriesButton.setVisible(false);
+            roomsButton.setVisible(false);
+            optionsButton.setVisible(false);
         });
     }
 
@@ -196,6 +209,10 @@ public final class SwingMainMenuView extends JPanel implements MenuView {
             statusLabel.setForeground(COLOR_DEFAULT);
             statusLabel.setText("Options de l'application");
             state = MenuState.OPTIONS;
+            backButton.setVisible(true);
+            categoriesButton.setVisible(false);
+            roomsButton.setVisible(false);
+            optionsButton.setVisible(false);
         });
     }
 
@@ -226,6 +243,10 @@ public final class SwingMainMenuView extends JPanel implements MenuView {
             statusLabel.setText("Menu principal");
             state = MenuState.ROOT;
             lastFocusedComponent = categoriesButton;
+            backButton.setVisible(false);
+            categoriesButton.setVisible(true);
+            roomsButton.setVisible(true);
+            optionsButton.setVisible(true);
         });
     }
 
