@@ -27,9 +27,9 @@
 /app/java-client/src/main/java/com/lemondelila/client/session/listener/SessionListener.java
 /app/java-client/src/main/java/com/lemondelila/client/session/model/SessionModel.java
 /app/java-client/src/main/java/com/lemondelila/client/session/service/SessionService.java
-/app/java-client/src/main/java/com/lemondelila/client/ui/KeyboardShortcutManager.java
-/app/java-client/src/main/java/com/lemondelila/client/ui/SwingAuthView.java
+/app/java-client/src/main/java/com/lemondelila/client/ui/common/KeyboardShortcutManager.java
 /app/java-client/src/main/java/com/lemondelila/client/ui/dialog/ConfirmationDialog.java
+/app/java-client/src/main/java/com/lemondelila/client/ui/view/SwingAuthView.java
 /app/java-client/src/main/java/com/lemondelila/client/user/UserModule.java
 /app/java-client/src/main/java/com/lemondelila/client/user/controller/LoginController.java
 /app/java-client/src/main/java/com/lemondelila/client/user/controller/RegistrationController.java

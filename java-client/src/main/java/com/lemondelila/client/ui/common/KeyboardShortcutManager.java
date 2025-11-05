@@ -1,4 +1,4 @@
-package com.lemondelila.client.ui;
+package com.lemondelila.client.ui.common;
 
 import javax.swing.*;
 import java.awt.*;
