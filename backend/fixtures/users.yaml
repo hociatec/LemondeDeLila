@@ -1,0 +1,4 @@
+App\Module\User\Entity\User:
+    user_{1..10}:
+        username: <username()>
+        password: <password()>

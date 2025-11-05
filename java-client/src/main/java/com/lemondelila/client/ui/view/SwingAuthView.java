@@ -1,7 +1,8 @@
-package com.lemondelila.client.ui;
+package com.lemondelila.client.ui.view;
 
 import com.lemondelila.client.history.view.SwingHistoryView;
 import com.lemondelila.client.menu.controller.MenuController;
+import com.lemondelila.client.ui.common.KeyboardShortcutManager;
 import com.lemondelila.client.menu.view.SwingMainMenuView;
 import com.lemondelila.client.rules.service.RulesService;
 import com.lemondelila.client.user.view.SwingLoginPanel;

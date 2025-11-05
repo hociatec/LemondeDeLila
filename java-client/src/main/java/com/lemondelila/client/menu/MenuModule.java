@@ -5,7 +5,7 @@ import com.lemondelila.client.menu.controller.MenuController;
 import com.lemondelila.client.menu.view.SwingMainMenuView;
 import com.lemondelila.client.session.listener.SessionListener;
 import com.lemondelila.client.session.service.SessionService;
-import com.lemondelila.client.ui.SwingAuthView;
+import com.lemondelila.client.ui.view.SwingAuthView;
 
 import java.net.URI;
 import java.util.Objects;

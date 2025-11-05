@@ -8,7 +8,7 @@ import com.lemondelila.client.menu.MenuModule;
 import com.lemondelila.client.menu.controller.MenuController;
 import com.lemondelila.client.session.SessionModule;
 import com.lemondelila.client.rules.service.RulesService;
-import com.lemondelila.client.ui.SwingAuthView;
+import com.lemondelila.client.ui.view.SwingAuthView;
 import com.lemondelila.client.session.service.SessionService;
 import com.lemondelila.client.user.controller.LoginController;
 import com.lemondelila.client.user.controller.RegistrationController;
