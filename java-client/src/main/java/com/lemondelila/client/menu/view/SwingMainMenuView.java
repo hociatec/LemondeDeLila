@@ -1,10 +1,13 @@
 package com.lemondelila.client.menu.view;
 
 import com.lemondelila.client.menu.model.CategorySummary;
+import com.lemondelila.client.menu.model.Game;
 import com.lemondelila.client.menu.model.RoomSummary;
 import com.lemondelila.client.ui.dialog.ConfirmationDialog;
 
 import javax.swing.*;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.KeyboardFocusManager;
@@ -25,8 +28,9 @@ public final class SwingMainMenuView extends JPanel implements MenuView {
     private final JButton roomsButton = new JButton("Rejoindre une partie");
     private final JButton optionsButton = new JButton("Options");
     private final JButton logoutButton = new JButton("D\u00E9connexion");
-    private final DefaultListModel<String> listModel = new DefaultListModel<>();
-    private final JList<String> resultList = new JList<>(listModel);
+    private final DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode("Root");
+    private final DefaultTreeModel treeModel = new DefaultTreeModel(rootNode);
+    private final JTree contentTree = new JTree(treeModel);
     private final JLabel statusLabel = new JLabel(" ", SwingConstants.LEFT);
 
     private MenuListener listener;
@@ -34,6 +38,13 @@ public final class SwingMainMenuView extends JPanel implements MenuView {
     private Runnable focusBackwardAction = this::focusPreviousComponent;
     private JComponent lastFocusedComponent;
     private MenuState state = MenuState.ROOT;
+
+    private record TreeNodeInfo(String id, String name, boolean isGame) {
+        @Override
+        public String toString() {
+            return name;
+        }
+    }
 
     private enum MenuState {
         ROOT,
@@ -75,17 +86,18 @@ public final class SwingMainMenuView extends JPanel implements MenuView {
 
         add(headerPanel, BorderLayout.WEST);
 
-        resultList.setVisibleRowCount(10);
-        resultList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        resultList.addListSelectionListener(e -> {
-            if (!e.getValueIsAdjusting() && listener != null) {
-                String selectedValue = resultList.getSelectedValue();
-                if (selectedValue != null) {
-                    listener.onGameSelected(selectedValue);
-                }
+        contentTree.setRootVisible(false);
+        contentTree.getSelectionModel().addTreeSelectionListener(e -> {
+            DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) contentTree.getLastSelectedPathComponent();
+            if (selectedNode == null || !selectedNode.isLeaf() || listener == null) {
+                return;
+            }
+            Object userObject = selectedNode.getUserObject();
+            if (userObject instanceof TreeNodeInfo info && info.isGame()) {
+                listener.onGameSelected(info.id());
             }
         });
-        add(new JScrollPane(resultList), BorderLayout.CENTER);
+        add(new JScrollPane(contentTree), BorderLayout.CENTER);
         configureListNavigation();
 
         statusLabel.setForeground(COLOR_DEFAULT);
@@ -100,21 +112,21 @@ public final class SwingMainMenuView extends JPanel implements MenuView {
         optionsButton.addActionListener(e -> {
             if (listener != null) listener.onShowOptionsRequested();
         });
- logoutButton.addActionListener(e -> {
-    if (listener == null) {
-        return;
-    }
-    boolean confirmed = ConfirmationDialog.show(
-            SwingMainMenuView.this,
-            "Déconnexion",
-            "Voulez-vous vraiment vous déconnecter ?",
-            "Se déconnecter",
-            "Annuler"
-    );
-    if (confirmed) {
-        listener.onLogoutRequested();
-    }
-});
+        logoutButton.addActionListener(e -> {
+            if (listener == null) {
+                return;
+            }
+            boolean confirmed = ConfirmationDialog.show(
+                    SwingMainMenuView.this,
+                    "Déconnexion",
+                    "Voulez-vous vraiment vous déconnecter ?",
+                    "Se déconnecter",
+                    "Annuler"
+            );
+            if (confirmed) {
+                listener.onLogoutRequested();
+            }
+        });
 
 
         configureButtonNavigation(categoriesButton);
@@ -125,7 +137,7 @@ public final class SwingMainMenuView extends JPanel implements MenuView {
         registerFocusTracker(roomsButton);
         registerFocusTracker(optionsButton);
         registerFocusTracker(logoutButton);
-        registerFocusTracker(resultList);
+        registerFocusTracker(contentTree);
         registerGlobalEscape();
 
         lastFocusedComponent = categoriesButton;
@@ -153,16 +165,34 @@ public final class SwingMainMenuView extends JPanel implements MenuView {
         });
     }
 
+    private void addCategoriesToNode(DefaultMutableTreeNode parentNode, List<CategorySummary> categories) {
+        for (CategorySummary category : categories) {
+            DefaultMutableTreeNode categoryNode = new DefaultMutableTreeNode(new TreeNodeInfo(category.id(), category.name(), false));
+            parentNode.add(categoryNode);
+            if (category.children() != null && !category.children().isEmpty()) {
+                addCategoriesToNode(categoryNode, category.children());
+            }
+            if (category.games() != null && !category.games().isEmpty()) {
+                for (Game game : category.games()) {
+                    DefaultMutableTreeNode gameNode = new DefaultMutableTreeNode(new TreeNodeInfo(game.id(), game.name(), true));
+                    categoryNode.add(gameNode);
+                }
+            }
+        }
+    }
+
     @Override
     public void showCategories(List<CategorySummary> categories) {
         SwingUtilities.invokeLater(() -> {
-            listModel.clear();
+            rootNode.removeAllChildren();
             if (categories == null || categories.isEmpty()) {
-                listModel.addElement("Aucune categorie disponible.");
+                rootNode.add(new DefaultMutableTreeNode("Aucune categorie disponible."));
             } else {
-                for (CategorySummary category : categories) {
-                    listModel.addElement(category.name());
-                }
+                addCategoriesToNode(rootNode, categories);
+            }
+            treeModel.reload();
+            for (int i = 0; i < contentTree.getRowCount(); i++) {
+                contentTree.expandRow(i);
             }
             statusLabel.setForeground(COLOR_DEFAULT);
             statusLabel.setText("Categories de jeux");
@@ -173,20 +203,22 @@ public final class SwingMainMenuView extends JPanel implements MenuView {
     @Override
     public void showRooms(List<RoomSummary> rooms) {
         SwingUtilities.invokeLater(() -> {
-            listModel.clear();
+            rootNode.removeAllChildren();
             if (rooms == null || rooms.isEmpty()) {
-                listModel.addElement("Aucune partie en cours.");
+                rootNode.add(new DefaultMutableTreeNode("Aucune partie en cours."));
             } else {
                 for (RoomSummary room : rooms) {
-                    listModel.addElement(String.format("#%d %s - %d/%d joueurs (%s)%s",
+                    String roomInfo = String.format("#%d %s - %d/%d joueurs (%s)%s",
                             room.id(),
                             room.name(),
                             room.players(),
                             room.maxPlayers(),
                             room.status(),
-                            room.isPrivate() ? " [privee]" : ""));
+                            room.isPrivate() ? " [privee]" : "");
+                    rootNode.add(new DefaultMutableTreeNode(roomInfo));
                 }
             }
+            treeModel.reload();
             statusLabel.setForeground(COLOR_DEFAULT);
             statusLabel.setText("Parties disponibles");
             state = MenuState.ROOMS;
@@ -196,11 +228,12 @@ public final class SwingMainMenuView extends JPanel implements MenuView {
     @Override
     public void showOptions() {
         SwingUtilities.invokeLater(() -> {
-            listModel.clear();
-            listModel.addElement("Parametres disponibles :");
-            listModel.addElement(" - Modifier l'adresse du serveur");
-            listModel.addElement(" - Choisir la langue de l'interface (a venir)");
-            listModel.addElement(" - Gerer les notifications (a venir)");
+            rootNode.removeAllChildren();
+            rootNode.add(new DefaultMutableTreeNode("Parametres disponibles :"));
+            rootNode.add(new DefaultMutableTreeNode(" - Modifier l'adresse du serveur"));
+            rootNode.add(new DefaultMutableTreeNode(" - Choisir la langue de l'interface (a venir)"));
+            rootNode.add(new DefaultMutableTreeNode(" - Gerer les notifications (a venir)"));
+            treeModel.reload();
             statusLabel.setForeground(COLOR_DEFAULT);
             statusLabel.setText("Options de l'application");
             state = MenuState.OPTIONS;
@@ -226,10 +259,11 @@ public final class SwingMainMenuView extends JPanel implements MenuView {
     @Override
     public void reset() {
         SwingUtilities.invokeLater(() -> {
-            listModel.clear();
-            listModel.addElement("Etageres - consulter les categories de jeux.");
-            listModel.addElement("Rejoindre une partie - voir les rooms actives.");
-            listModel.addElement("Options - ajuster les param\u00E8tres.");
+            rootNode.removeAllChildren();
+            rootNode.add(new DefaultMutableTreeNode("Etageres - consulter les categories de jeux."));
+            rootNode.add(new DefaultMutableTreeNode("Rejoindre une partie - voir les rooms actives."));
+            rootNode.add(new DefaultMutableTreeNode("Options - ajuster les param\u00E8tres."));
+            treeModel.reload();
             statusLabel.setForeground(COLOR_DEFAULT);
             statusLabel.setText("Menu principal");
             state = MenuState.ROOT;
@@ -253,9 +287,9 @@ public final class SwingMainMenuView extends JPanel implements MenuView {
                     return;
                 }
             }
-            if (resultList.isShowing() && resultList.isFocusable()) {
-                resultList.requestFocusInWindow();
-                lastFocusedComponent = resultList;
+            if (contentTree.isShowing() && contentTree.isFocusable()) {
+                contentTree.requestFocusInWindow();
+                lastFocusedComponent = contentTree;
             }
         });
     }
@@ -328,11 +362,11 @@ public final class SwingMainMenuView extends JPanel implements MenuView {
     }
 
     private void configureListNavigation() {
-        resultList.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, Collections.emptySet());
-        resultList.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, Collections.emptySet());
+        contentTree.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, Collections.emptySet());
+        contentTree.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, Collections.emptySet());
 
-        InputMap inputMap = resultList.getInputMap(JComponent.WHEN_FOCUSED);
-        ActionMap actionMap = resultList.getActionMap();
+        InputMap inputMap = contentTree.getInputMap(JComponent.WHEN_FOCUSED);
+        ActionMap actionMap = contentTree.getActionMap();
 
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0), "skipForward");
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, KeyEvent.SHIFT_DOWN_MASK), "skipBackward");

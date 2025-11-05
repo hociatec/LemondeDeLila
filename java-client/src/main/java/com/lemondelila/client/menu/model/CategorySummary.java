@@ -1,4 +1,6 @@
 package com.lemondelila.client.menu.model;
 
-public record CategorySummary(String name) {
+import java.util.List;
+
+public record CategorySummary(String id, String name, List<CategorySummary> children, List<Game> games) {
 }
