@@ -1,26 +1,22 @@
 package com.lemondelila.client.menu.controller;
 
-import com.lemondelila.client.config.ClientConfig;
-import com.lemondelila.client.game.GameLauncher;
 import com.lemondelila.client.history.service.HistoryService;
 import com.lemondelila.client.menu.model.CategorySummary;
-import com.lemondelila.client.menu.model.GameSummary;
 import com.lemondelila.client.menu.model.RoomSummary;
 import com.lemondelila.client.menu.service.CatalogClient;
 import com.lemondelila.client.menu.service.RoomClient;
 import com.lemondelila.client.menu.view.MenuView;
 import com.lemondelila.client.session.listener.SessionListener;
 import com.lemondelila.client.session.service.SessionService;
-import com.lemondelila.client.ui.SwingAuthView;
 
-import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
-import java.awt.Component;
 import java.net.URI;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * Controleur principal pour la zone menu utilisateur connecte.
+ */
 public final class MenuController implements MenuView.MenuListener, SessionListener {
 
     private final MenuView view;
@@ -28,21 +24,17 @@ public final class MenuController implements MenuView.MenuListener, SessionListe
     private final HistoryService historyService;
     private final CatalogClient catalogClient;
     private final RoomClient roomClient;
-    private List<CategorySummary> categories;
-    private final ClientConfig config;
-    private String currentCategory;
-    private String currentSubCategory;
 
     public MenuController(MenuView view,
                           SessionService sessionService,
                           HistoryService historyService,
-                          ClientConfig config) {
+                          URI categoriesUri,
+                          URI roomsUri) {
         this.view = Objects.requireNonNull(view, "view");
         this.sessionService = Objects.requireNonNull(sessionService, "sessionService");
         this.historyService = Objects.requireNonNull(historyService, "historyService");
-        this.config = Objects.requireNonNull(config, "config");
-        this.catalogClient = new CatalogClient(config.catalogCategoriesUri());
-        this.roomClient = new RoomClient(config.roomsUri());
+        this.catalogClient = new CatalogClient(Objects.requireNonNull(categoriesUri, "categoriesUri"));
+        this.roomClient = new RoomClient(Objects.requireNonNull(roomsUri, "roomsUri"));
         this.view.setMenuListener(this);
         this.sessionService.addListener(this);
     }
@@ -61,7 +53,7 @@ public final class MenuController implements MenuView.MenuListener, SessionListe
             protected void done() {
                 view.setBusy(false);
                 try {
-                    categories = get();
+                    List<CategorySummary> categories = get();
                     view.showCategories(categories);
                     historyService.append("Menu", "Categories de jeux chargees");
                 } catch (Exception e) {
@@ -70,25 +62,6 @@ public final class MenuController implements MenuView.MenuListener, SessionListe
                 }
             }
         }.execute();
-    }
-
-    @Override
-    public void onCategorySelected(CategorySummary category) {
-        if (currentCategory == null) {
-            currentCategory = category.name();
-        } else {
-            currentSubCategory = category.name();
-        }
-        if (!category.subCategories().isEmpty()) {
-            view.showCategories(category.subCategories());
-        } else if (!category.games().isEmpty()) {
-            view.showGames(category.games());
-        }
-    }
-
-    @Override
-    public void onGameSelected(GameSummary game) {
-        GameLauncher.launch((SwingAuthView) SwingUtilities.getWindowAncestor((Component) view), currentCategory, currentSubCategory, game, sessionService, config);
     }
 
     @Override
@@ -125,13 +98,11 @@ public final class MenuController implements MenuView.MenuListener, SessionListe
     @Override
     public void onLogoutRequested() {
         sessionService.closeSession();
-        historyService.append("Menu", "Deconnexion demandee");
+        historyService.append("Menu", "D\u00E9connexion demand\u00E9e");
     }
 
     @Override
     public void onReturnToMainMenuRequested() {
-        currentCategory = null;
-        currentSubCategory = null;
         view.reset();
         view.requestMenuFocus();
         historyService.append("Menu", "Retour au menu principal");

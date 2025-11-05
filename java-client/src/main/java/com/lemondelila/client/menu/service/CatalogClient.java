@@ -1,10 +1,8 @@
 package com.lemondelila.client.menu.service;
 
 import com.lemondelila.client.menu.model.CategorySummary;
-import com.lemondelila.client.menu.model.GameSummary;
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.URI;
@@ -17,7 +15,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+/**
+ * Client HTTP pour recuperer les categories de jeux.
+ */
 public final class CatalogClient {
 
     private final HttpClient httpClient;
@@ -41,49 +44,25 @@ public final class CatalogClient {
         HttpRequest request = builder.GET().build();
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
         if (response.statusCode() >= 200 && response.statusCode() < 300) {
-            return parseCategories(new JSONArray(response.body()));
+            return parseCategories(response.body());
         }
         throw new IOException(String.format(Locale.ROOT, "Erreur HTTP %d lors de la recuperation des categories", response.statusCode()));
     }
 
-    private static List<CategorySummary> parseCategories(JSONArray jsonArray) {
+    private static List<CategorySummary> parseCategories(String json) {
         List<CategorySummary> categories = new ArrayList<>();
-        for (int i = 0; i < jsonArray.length(); i++) {
-            JSONObject categoryJson = jsonArray.getJSONObject(i);
-            String name = categoryJson.getString("name");
-            List<CategorySummary> subCategories = new ArrayList<>();
-            List<GameSummary> games = new ArrayList<>();
-            if (categoryJson.has("children")) {
-                JSONArray children = categoryJson.getJSONArray("children");
-                for (int j = 0; j < children.length(); j++) {
-                    JSONObject child = children.getJSONObject(j);
-                    if (child.has("children")) {
-                        subCategories.add(parseCategory(child));
-                    } else {
-                        games.add(new GameSummary(child.getString("name")));
-                    }
-                }
+        if (json == null || json.isBlank()) {
+            return categories;
+        }
+        try {
+            JSONArray jsonArray = new JSONArray(json);
+            for (int i = 0; i < jsonArray.length(); i++) {
+                categories.add(new CategorySummary(jsonArray.getString(i)));
             }
-            categories.add(new CategorySummary(name, subCategories, games));
+        } catch (JSONException e) {
+            // Log the error or handle it as needed
+            System.err.println("Error parsing categories JSON: " + e.getMessage());
         }
         return categories;
-    }
-
-    private static CategorySummary parseCategory(JSONObject jsonObject) {
-        String name = jsonObject.getString("name");
-        List<CategorySummary> subCategories = new ArrayList<>();
-        List<GameSummary> games = new ArrayList<>();
-        if (jsonObject.has("children")) {
-            JSONArray children = jsonObject.getJSONArray("children");
-            for (int i = 0; i < children.length(); i++) {
-                JSONObject child = children.getJSONObject(i);
-                if (child.has("children")) {
-                    subCategories.add(parseCategory(child));
-                } else {
-                    games.add(new GameSummary(child.getString("name")));
-                }
-            }
-        }
-        return new CategorySummary(name, subCategories, games);
     }
 }

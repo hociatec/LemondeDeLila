@@ -52,9 +52,10 @@ public final class UserModule {
                 new LoginController(loginModel, authClient, loginPanel, historyService, sessionService);
 
         this.menuModule = new MenuModule(
-                config,
                 sessionService,
-                historyService
+                historyService,
+                config.catalogCategoriesUri(),
+                config.roomsUri()
         );
         this.menuModule.attachTo(authView);
 

@@ -1,7 +1,9 @@
 /app/java-client/src/main/java/com/lemondelila/client/AppLauncher.java
 /app/java-client/src/main/java/com/lemondelila/client/config/ClientConfig.java
-/app/java-client/src/main/java/com/lemondelila/client/game/GameLauncher.java
-/app/java-client/src/main/java/com/lemondelila/client/game/actions/ventsinfinis/missionnemesis/SwingMissionNemesisView.java
+/app/java-client/src/main/java/com/lemondelila/client/game/actions/ventsinfinis/missionnemesis/controller/MissionNemesisController.java
+/app/java-client/src/main/java/com/lemondelila/client/game/actions/ventsinfinis/missionnemesis/model/MissionNemesisState.java
+/app/java-client/src/main/java/com/lemondelila/client/game/actions/ventsinfinis/missionnemesis/service/MissionNemesisClient.java
+/app/java-client/src/main/java/com/lemondelila/client/game/actions/ventsinfinis/missionnemesis/view/SwingMissionNemesisView.java
 /app/java-client/src/main/java/com/lemondelila/client/history/HistoryModule.java
 /app/java-client/src/main/java/com/lemondelila/client/history/controller/HistoryController.java
 /app/java-client/src/main/java/com/lemondelila/client/history/model/HistoryModel.java
@@ -11,7 +13,6 @@
 /app/java-client/src/main/java/com/lemondelila/client/menu/MenuModule.java
 /app/java-client/src/main/java/com/lemondelila/client/menu/controller/MenuController.java
 /app/java-client/src/main/java/com/lemondelila/client/menu/model/CategorySummary.java
-/app/java-client/src/main/java/com/lemondelila/client/menu/model/GameSummary.java
 /app/java-client/src/main/java/com/lemondelila/client/menu/model/RoomSummary.java
 /app/java-client/src/main/java/com/lemondelila/client/menu/service/CatalogClient.java
 /app/java-client/src/main/java/com/lemondelila/client/menu/service/RoomClient.java
@@ -40,4 +41,3 @@
 /app/java-client/src/main/java/com/lemondelila/client/user/view/RegistrationView.java
 /app/java-client/src/main/java/com/lemondelila/client/user/view/SwingLoginPanel.java
 /app/java-client/src/main/java/com/lemondelila/client/user/view/SwingRegistrationPanel.java
-/app/java-client/src/main/java/module-info.java

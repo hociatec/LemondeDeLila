@@ -43,7 +43,7 @@ class MissionNemesisController extends AbstractController
         $state = $this->svc->apply($game->getState(), json_decode($req->getContent(), true) ?? [], $room, $me);
         $game->setState($state)->setCurrentRound((int)($state['round'] ?? $game->getCurrentRound() ?: 1)); $em->flush();
         $this->stats->onStateUpdated($game, $state);
-        $this->realtime->notify($room, 'state-updated');
+        $this->realtime->notify($room, 'state-updated', ['game' => $game->getId()]);
         return $this->json($state);
     }
 }
