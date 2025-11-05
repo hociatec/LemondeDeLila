@@ -145,23 +145,26 @@ public class SwingMissionNemesisView extends JPanel {
     }
 
     private void fetchGameState() {
-        new SwingWorker<String, Void>() {
+        new SwingWorker<HttpResponse<String>, Void>() {
             @Override
-            protected String doInBackground() throws Exception {
+            protected HttpResponse<String> doInBackground() throws Exception {
                 HttpRequest.Builder builder = HttpRequest.newBuilder()
                         .uri(apiBaseUri.resolve("games/mission-nemesis/rooms/" + roomId + "/state"))
                         .header("Content-Type", "application/json");
                 sessionService.token().ifPresent(token -> builder.header("Authorization", "Bearer " + token));
                 HttpRequest request = builder.GET().build();
-                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-                return response.body();
+                return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             }
 
             @Override
             protected void done() {
                 try {
-                    String responseBody = get();
-                    updateUIFromState(new JSONObject(responseBody));
+                    HttpResponse<String> response = get();
+                    if (response.statusCode() == 200) {
+                        updateUIFromState(new JSONObject(response.body()));
+                    } else {
+                        statusLabel.setText("Error: " + response.statusCode() + " " + response.body());
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                     statusLabel.setText("Error: " + e.getMessage());
@@ -222,9 +225,9 @@ public class SwingMissionNemesisView extends JPanel {
     }
 
     private void deployShips() {
-        new SwingWorker<String, Void>() {
+        new SwingWorker<HttpResponse<String>, Void>() {
             @Override
-            protected String doInBackground() throws Exception {
+            protected HttpResponse<String> doInBackground() throws Exception {
                 JSONObject payload = new JSONObject();
                 payload.put("action", "place_ships");
                 JSONArray shipsJson = new JSONArray();
@@ -248,15 +251,18 @@ public class SwingMissionNemesisView extends JPanel {
                         .header("Content-Type", "application/json");
                 sessionService.token().ifPresent(token -> builder.header("Authorization", "Bearer " + token));
                 HttpRequest request = builder.POST(HttpRequest.BodyPublishers.ofString(payload.toString(), StandardCharsets.UTF_8)).build();
-                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-                return response.body();
+                return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             }
 
             @Override
             protected void done() {
                 try {
-                    String responseBody = get();
-                    updateUIFromState(new JSONObject(responseBody));
+                    HttpResponse<String> response = get();
+                    if (response.statusCode() == 200) {
+                        updateUIFromState(new JSONObject(response.body()));
+                    } else {
+                        statusLabel.setText("Error: " + response.statusCode() + " " + response.body());
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                     statusLabel.setText("Error: " + e.getMessage());
@@ -267,9 +273,9 @@ public class SwingMissionNemesisView extends JPanel {
 
 
     private void fireShot(int x, int y) {
-        new SwingWorker<String, Void>() {
+        new SwingWorker<HttpResponse<String>, Void>() {
             @Override
-            protected String doInBackground() throws Exception {
+            protected HttpResponse<String> doInBackground() throws Exception {
                 JSONObject payload = new JSONObject();
                 payload.put("action", "fire");
                 JSONObject coordinates = new JSONObject();
@@ -282,15 +288,18 @@ public class SwingMissionNemesisView extends JPanel {
                         .header("Content-Type", "application/json");
                 sessionService.token().ifPresent(token -> builder.header("Authorization", "Bearer " + token));
                 HttpRequest request = builder.POST(HttpRequest.BodyPublishers.ofString(payload.toString(), StandardCharsets.UTF_8)).build();
-                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-                return response.body();
+                return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             }
 
             @Override
             protected void done() {
                 try {
-                    String responseBody = get();
-                    updateUIFromState(new JSONObject(responseBody));
+                    HttpResponse<String> response = get();
+                    if (response.statusCode() == 200) {
+                        updateUIFromState(new JSONObject(response.body()));
+                    } else {
+                        statusLabel.setText("Error: " + response.statusCode() + " " + response.body());
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                     statusLabel.setText("Error: " + e.getMessage());
@@ -300,6 +309,10 @@ public class SwingMissionNemesisView extends JPanel {
     }
 
     private void updateUIFromState(JSONObject state) {
+        if (!state.has("status")) {
+            statusLabel.setText("Error: Invalid game state received.");
+            return;
+        }
         String status = state.getString("status");
         if (status.equals("ended")) {
             int winnerId = state.getInt("winner");
