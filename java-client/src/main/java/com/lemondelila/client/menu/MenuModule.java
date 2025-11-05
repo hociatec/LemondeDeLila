@@ -1,6 +1,5 @@
 package com.lemondelila.client.menu;
 
-import com.lemondelila.client.config.ClientConfig;
 import com.lemondelila.client.history.service.HistoryService;
 import com.lemondelila.client.menu.controller.MenuController;
 import com.lemondelila.client.menu.view.SwingMainMenuView;
@@ -8,6 +7,7 @@ import com.lemondelila.client.session.listener.SessionListener;
 import com.lemondelila.client.session.service.SessionService;
 import com.lemondelila.client.ui.SwingAuthView;
 
+import java.net.URI;
 import java.util.Objects;
 
 /**
@@ -20,13 +20,16 @@ public final class MenuModule {
     private final MenuController controller;
     private boolean attached;
 
-    public MenuModule(ClientConfig config,
-                      SessionService sessionService,
-                      HistoryService historyService) {
+    public MenuModule(SessionService sessionService,
+                      HistoryService historyService,
+                      URI categoriesUri,
+                      URI roomsUri) {
         this.sessionService = Objects.requireNonNull(sessionService, "sessionService");
         Objects.requireNonNull(historyService, "historyService");
+        Objects.requireNonNull(categoriesUri, "categoriesUri");
+        Objects.requireNonNull(roomsUri, "roomsUri");
         this.view = new SwingMainMenuView();
-        this.controller = new MenuController(view, sessionService, historyService, config);
+        this.controller = new MenuController(view, sessionService, historyService, categoriesUri, roomsUri);
     }
 
     public SwingMainMenuView view() {
