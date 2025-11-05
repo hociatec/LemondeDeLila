@@ -3,6 +3,7 @@
 namespace App\Module\Game\Controller;
 
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -10,62 +11,66 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/api/catalog')]
 class CatalogController extends AbstractController
 {
-    public function __construct(private EntityManagerInterface $em) {}
+    private array $gameIds = [];
 
-    private function scanDirectory(string $path, string $prefix = ''): array
+    public function __construct(
+        private readonly EntityManagerInterface $em,
+        private readonly LoggerInterface $logger
+    ) {}
+
+    private function scanFileSystem(string $path, string $prefix = ''): array
     {
         $entries = [];
-        $iterator = new \DirectoryIterator($path);
-        foreach ($iterator as $item) {
-            if ($item->isDir() && !$item->isDot()) {
-                $dirName = $item->getFilename();
-                $dirPath = $item->getPathname();
+        try {
+            $iterator = new \DirectoryIterator($path);
+            foreach ($iterator as $item) {
+                if ($item->isDir() && !$item->isDot()) {
+                    $dirName = $item->getFilename();
+                    $dirPath = $item->getPathname();
+                    $itemId = $prefix ? $prefix . '/' . $dirName : $dirName;
 
-                if (file_exists($dirPath . '/rules.md')) {
-                    continue;
-                }
-
-                $categoryId = $prefix ? $prefix . '/' . $dirName : $dirName;
-
-                $subCategories = $this->scanDirectory($dirPath, $categoryId);
-                $games = $this->findGamesInDir($dirPath);
-
-                if (!empty($subCategories) || !empty($games)) {
-                    $category = [
-                        'id' => $categoryId,
-                        'name' => $dirName,
-                    ];
-                    if (!empty($subCategories)) {
-                        $category['children'] = $subCategories;
+                    if (file_exists($dirPath . '/rules.md')) {
+                        if (in_array($itemId, $this->gameIds)) {
+                            $this->logger->warning('Jeu dupliqué trouvé et ignoré', ['id' => $itemId]);
+                            continue;
+                        }
+                        $this->gameIds[] = $itemId;
+                        $entries[] = [
+                            'type' => 'game',
+                            'id' => $itemId,
+                            'name' => $dirName,
+                            'minPlayers' => 1,
+                            'maxPlayers' => 99,
+                        ];
+                    } else {
+                        $children = $this->scanFileSystem($dirPath, $itemId);
+                        if (!empty($children)) {
+                            $category = [
+                                'type' => 'category',
+                                'id' => $itemId,
+                                'name' => $dirName,
+                                'games' => [],
+                                'children' => [],
+                            ];
+                            foreach ($children as $child) {
+                                if ($child['type'] === 'game') {
+                                    $category['games'][] = $child;
+                                } else {
+                                    $category['children'][] = $child;
+                                }
+                            }
+                            if (!empty($category['games']) || !empty($category['children'])) {
+                                $entries[] = $category;
+                            }
+                        }
                     }
-                    if (!empty($games)) {
-                        $category['games'] = $games;
-                    }
-                    $entries[] = $category;
                 }
             }
+        } catch (\Throwable $e) {
+            $this->logger->error('Erreur lors du scan du catalogue de jeux', ['path' => $path, 'exception' => $e]);
+            return [];
         }
         return $entries;
-    }
-
-    private function findGamesInDir(string $path): array
-    {
-        $games = [];
-        $iterator = new \DirectoryIterator($path);
-        foreach ($iterator as $item) {
-            if ($item->isDir() && !$item->isDot()) {
-                if (file_exists($item->getPathname() . '/rules.md')) {
-                    $gameId = $item->getFilename();
-                    $games[] = [
-                        'id' => $gameId,
-                        'name' => $gameId,
-                        'minPlayers' => 1,
-                        'maxPlayers' => 99,
-                    ];
-                }
-            }
-        }
-        return $games;
     }
 
     private function data(): array
@@ -93,8 +98,18 @@ class CatalogController extends AbstractController
             return $out;
         }
 
+        $this->gameIds = [];
         $gameCataloguePath = $this->getParameter('kernel.project_dir') . '/src/Module/Game/GameCatalogue';
-        return $this->scanDirectory($gameCataloguePath);
+        $scanResult = $this->scanFileSystem($gameCataloguePath);
+
+        $categories = [];
+        foreach ($scanResult as $item) {
+            if ($item['type'] === 'category') {
+                unset($item['type']);
+                $categories[] = $item;
+            }
+        }
+        return $categories;
     }
 
     #[Route('', name: 'catalog_all', methods: ['GET'])]
