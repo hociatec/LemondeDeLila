@@ -1,5 +1,6 @@
-package com.lemondelila.client.game.view;
+package com.lemondelila.client.game.actions.ventsinfinis.missionnemesis;
 
+import com.lemondelila.client.rules.RulesDialog;
 import com.lemondelila.client.session.service.SessionService;
 import com.lemondelila.client.ui.SwingAuthView;
 import org.json.JSONArray;
@@ -86,7 +87,7 @@ public class SwingMissionNemesisView extends JPanel {
         addAncestorListener(new javax.swing.event.AncestorListener() {
             public void ancestorAdded(javax.swing.event.AncestorEvent event) {
                 authView.shortcuts().setF1Action(() -> {
-                    RulesDialog dialog = new RulesDialog(authView, "mission-nemesis", apiBaseUri);
+                    RulesDialog dialog = new RulesDialog(authView, "missionnemesis", apiBaseUri);
                     dialog.setVisible(true);
                 });
                 startPolling();

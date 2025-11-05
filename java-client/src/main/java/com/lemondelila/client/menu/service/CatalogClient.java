@@ -41,44 +41,49 @@ public final class CatalogClient {
         HttpRequest request = builder.GET().build();
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
         if (response.statusCode() >= 200 && response.statusCode() < 300) {
-            return parseCategories(response.body());
+            return parseCategories(new JSONArray(response.body()));
         }
         throw new IOException(String.format(Locale.ROOT, "Erreur HTTP %d lors de la recuperation des categories", response.statusCode()));
     }
 
-    private static List<CategorySummary> parseCategories(String json) {
+    private static List<CategorySummary> parseCategories(JSONArray jsonArray) {
         List<CategorySummary> categories = new ArrayList<>();
-        if (json == null || json.isBlank()) {
-            return categories;
-        }
-        try {
-            JSONArray jsonArray = new JSONArray(json);
-            for (int i = 0; i < jsonArray.length(); i++) {
-                JSONObject categoryJson = jsonArray.getJSONObject(i);
-                String name = categoryJson.getString("name");
-                JSONArray subCategoriesJson = categoryJson.optJSONArray("subCategories");
-                List<CategorySummary> subCategories = new ArrayList<>();
-                if (subCategoriesJson != null) {
-                    for (int j = 0; j < subCategoriesJson.length(); j++) {
-                        JSONObject subCategoryJson = subCategoriesJson.getJSONObject(j);
-                        String subCategoryName = subCategoryJson.getString("name");
-                        JSONArray gamesJson = subCategoryJson.optJSONArray("games");
-                        List<GameSummary> games = new ArrayList<>();
-                        if (gamesJson != null) {
-                            for (int k = 0; k < gamesJson.length(); k++) {
-                                JSONObject gameJson = gamesJson.getJSONObject(k);
-                                String gameName = gameJson.getString("name");
-                                games.add(new GameSummary(gameName));
-                            }
-                        }
-                        subCategories.add(new CategorySummary(subCategoryName, new ArrayList<>(), games));
+        for (int i = 0; i < jsonArray.length(); i++) {
+            JSONObject categoryJson = jsonArray.getJSONObject(i);
+            String name = categoryJson.getString("name");
+            List<CategorySummary> subCategories = new ArrayList<>();
+            List<GameSummary> games = new ArrayList<>();
+            if (categoryJson.has("children")) {
+                JSONArray children = categoryJson.getJSONArray("children");
+                for (int j = 0; j < children.length(); j++) {
+                    JSONObject child = children.getJSONObject(j);
+                    if (child.has("children")) {
+                        subCategories.add(parseCategory(child));
+                    } else {
+                        games.add(new GameSummary(child.getString("name")));
                     }
                 }
-                categories.add(new CategorySummary(name, subCategories, new ArrayList<>()));
             }
-        } catch (JSONException e) {
-            System.err.println("Error parsing categories JSON: " + e.getMessage());
+            categories.add(new CategorySummary(name, subCategories, games));
         }
         return categories;
+    }
+
+    private static CategorySummary parseCategory(JSONObject jsonObject) {
+        String name = jsonObject.getString("name");
+        List<CategorySummary> subCategories = new ArrayList<>();
+        List<GameSummary> games = new ArrayList<>();
+        if (jsonObject.has("children")) {
+            JSONArray children = jsonObject.getJSONArray("children");
+            for (int i = 0; i < children.length(); i++) {
+                JSONObject child = children.getJSONObject(i);
+                if (child.has("children")) {
+                    subCategories.add(parseCategory(child));
+                } else {
+                    games.add(new GameSummary(child.getString("name")));
+                }
+            }
+        }
+        return new CategorySummary(name, subCategories, games);
     }
 }

@@ -7,9 +7,6 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Objects;
 
-/**
- * Gestion centralisee des raccourcis clavier de l'application.
- */
 public final class KeyboardShortcutManager {
 
     private static final String ESCAPE_ACTION_KEY = "shortcut-escape-back";
