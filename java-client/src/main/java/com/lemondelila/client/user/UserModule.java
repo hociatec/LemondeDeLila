@@ -5,9 +5,11 @@ import com.lemondelila.client.history.HistoryModule;
 import com.lemondelila.client.history.service.HistoryService;
 import com.lemondelila.client.history.view.SwingHistoryView;
 import com.lemondelila.client.menu.MenuModule;
+import com.lemondelila.client.menu.controller.MenuController;
 import com.lemondelila.client.session.SessionModule;
-import com.lemondelila.client.session.service.SessionService;
+import com.lemondelila.client.rules.service.RulesService;
 import com.lemondelila.client.ui.SwingAuthView;
+import com.lemondelila.client.session.service.SessionService;
 import com.lemondelila.client.user.controller.LoginController;
 import com.lemondelila.client.user.controller.RegistrationController;
 import com.lemondelila.client.user.model.LoginModel;
@@ -43,13 +45,7 @@ public final class UserModule {
         AuthClient authClient = new AuthClient(config.loginUri(), config.registerUri());
         SwingLoginPanel loginPanel = new SwingLoginPanel();
         SwingRegistrationPanel registrationPanel = new SwingRegistrationPanel();
-
-        SwingAuthView authView = new SwingAuthView(loginPanel, registrationPanel, historyView);
-
-        RegistrationController registrationController =
-                new RegistrationController(registrationModel, authClient, registrationPanel, historyService);
-        LoginController loginController =
-                new LoginController(loginModel, authClient, loginPanel, historyService, sessionService);
+        RulesService rulesService = new RulesService();
 
         this.menuModule = new MenuModule(
                 sessionService,
@@ -57,6 +53,22 @@ public final class UserModule {
                 config.catalogCategoriesUri(),
                 config.roomsUri()
         );
+
+        MenuController menuController = new MenuController(
+                menuModule.view(),
+                sessionService,
+                historyService,
+                config.catalogCategoriesUri(),
+                config.roomsUri()
+        );
+
+        SwingAuthView authView = new SwingAuthView(loginPanel, registrationPanel, historyView, rulesService, menuController);
+
+        RegistrationController registrationController =
+                new RegistrationController(registrationModel, authClient, registrationPanel, historyService);
+        LoginController loginController =
+                new LoginController(loginModel, authClient, loginPanel.getAuthView(), historyService, sessionService);
+
         this.menuModule.attachTo(authView);
 
         registrationController.init();

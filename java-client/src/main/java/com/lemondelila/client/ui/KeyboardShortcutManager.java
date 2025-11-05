@@ -1,6 +1,7 @@
 package com.lemondelila.client.ui;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.util.ArrayDeque;
@@ -15,9 +16,10 @@ public final class KeyboardShortcutManager {
     private static final String ESCAPE_ACTION_KEY = "shortcut-escape-back";
 
     private final Deque<Runnable> backStack = new ArrayDeque<>();
+    private JRootPane rootPane;
 
     public void install(JRootPane rootPane) {
-        Objects.requireNonNull(rootPane, "rootPane");
+        this.rootPane = Objects.requireNonNull(rootPane, "rootPane");
         InputMap inputMap = rootPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
         ActionMap actionMap = rootPane.getActionMap();
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), ESCAPE_ACTION_KEY);
@@ -27,6 +29,20 @@ public final class KeyboardShortcutManager {
                 triggerBackAction();
             }
         });
+    }
+
+    public void register(KeyStroke keyStroke, String key, Runnable action) {
+        if (rootPane != null) {
+            InputMap inputMap = rootPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+            ActionMap actionMap = rootPane.getActionMap();
+            inputMap.put(keyStroke, key);
+            actionMap.put(key, new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    action.run();
+                }
+            });
+        }
     }
 
     public void pushBackAction(Runnable action) {

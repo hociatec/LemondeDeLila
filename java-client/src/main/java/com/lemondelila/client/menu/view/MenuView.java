@@ -38,5 +38,6 @@ public interface MenuView {
         void onShowOptionsRequested();
         void onLogoutRequested();
         void onReturnToMainMenuRequested();
+        void onGameSelected(String game);
     }
 }

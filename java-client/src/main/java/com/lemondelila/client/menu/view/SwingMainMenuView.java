@@ -77,6 +77,14 @@ public final class SwingMainMenuView extends JPanel implements MenuView {
 
         resultList.setVisibleRowCount(10);
         resultList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        resultList.addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting() && listener != null) {
+                String selectedValue = resultList.getSelectedValue();
+                if (selectedValue != null) {
+                    listener.onGameSelected(selectedValue);
+                }
+            }
+        });
         add(new JScrollPane(resultList), BorderLayout.CENTER);
         configureListNavigation();
 

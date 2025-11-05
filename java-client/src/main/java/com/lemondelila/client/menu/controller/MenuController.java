@@ -24,6 +24,7 @@ public final class MenuController implements MenuView.MenuListener, SessionListe
     private final HistoryService historyService;
     private final CatalogClient catalogClient;
     private final RoomClient roomClient;
+    private String currentGame;
 
     public MenuController(MenuView view,
                           SessionService sessionService,
@@ -106,6 +107,15 @@ public final class MenuController implements MenuView.MenuListener, SessionListe
         view.reset();
         view.requestMenuFocus();
         historyService.append("Menu", "Retour au menu principal");
+    }
+
+    @Override
+    public void onGameSelected(String game) {
+        this.currentGame = game;
+    }
+
+    public String getCurrentGame() {
+        return currentGame;
     }
 
     @Override

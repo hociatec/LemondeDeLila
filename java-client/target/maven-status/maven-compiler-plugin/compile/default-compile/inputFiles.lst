@@ -18,7 +18,10 @@
 /app/java-client/src/main/java/com/lemondelila/client/menu/service/RoomClient.java
 /app/java-client/src/main/java/com/lemondelila/client/menu/view/MenuView.java
 /app/java-client/src/main/java/com/lemondelila/client/menu/view/SwingMainMenuView.java
+/app/java-client/src/main/java/com/lemondelila/client/network/JavaWebSocketClient.java
+/app/java-client/src/main/java/com/lemondelila/client/network/WebSocketClient.java
 /app/java-client/src/main/java/com/lemondelila/client/rules/RulesDialog.java
+/app/java-client/src/main/java/com/lemondelila/client/rules/service/RulesService.java
 /app/java-client/src/main/java/com/lemondelila/client/session/SessionModule.java
 /app/java-client/src/main/java/com/lemondelila/client/session/controller/SessionController.java
 /app/java-client/src/main/java/com/lemondelila/client/session/listener/SessionListener.java
@@ -37,7 +40,8 @@
 /app/java-client/src/main/java/com/lemondelila/client/user/service/AuthClient.java
 /app/java-client/src/main/java/com/lemondelila/client/user/service/AuthResult.java
 /app/java-client/src/main/java/com/lemondelila/client/user/service/RegistrationResult.java
-/app/java-client/src/main/java/com/lemondelila/client/user/view/LoginView.java
+/app/java-client/src/main/java/com/lemondelila/client/user/view/AuthPanel.java
+/app/java-client/src/main/java/com/lemondelila/client/user/view/AuthView.java
 /app/java-client/src/main/java/com/lemondelila/client/user/view/RegistrationView.java
 /app/java-client/src/main/java/com/lemondelila/client/user/view/SwingLoginPanel.java
 /app/java-client/src/main/java/com/lemondelila/client/user/view/SwingRegistrationPanel.java
