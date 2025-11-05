@@ -1,7 +1,9 @@
 package com.lemondelila.client.ui;
 
 import com.lemondelila.client.history.view.SwingHistoryView;
+import com.lemondelila.client.menu.controller.MenuController;
 import com.lemondelila.client.menu.view.SwingMainMenuView;
+import com.lemondelila.client.rules.service.RulesService;
 import com.lemondelila.client.user.view.SwingLoginPanel;
 import com.lemondelila.client.user.view.SwingRegistrationPanel;
 
@@ -25,6 +27,8 @@ public final class SwingAuthView extends JFrame {
     private final SwingHistoryView historyView;
     private final KeyboardShortcutManager shortcutManager;
     private final HomePanel homePanel;
+    private final RulesService rulesService;
+    private final MenuController menuController;
     private JComponent connectedView;
 
     private final CardLayout cardLayout = new CardLayout();
@@ -37,12 +41,17 @@ public final class SwingAuthView extends JFrame {
 
     public SwingAuthView(SwingLoginPanel loginPanel,
                          SwingRegistrationPanel registrationPanel,
-                         SwingHistoryView historyView) {
+                         SwingHistoryView historyView,
+                         RulesService rulesService,
+                         MenuController menuController) {
         super(TITLE_HOME);
         this.loginPanel = loginPanel;
         this.registrationPanel = registrationPanel;
         this.historyView = historyView;
+        this.rulesService = rulesService;
+        this.menuController = menuController;
         this.shortcutManager = new KeyboardShortcutManager();
+        this.shortcutManager.register(KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0), "help", this::showHelp);
 
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setMinimumSize(new Dimension(520, 520));
@@ -51,7 +60,6 @@ public final class SwingAuthView extends JFrame {
         homePanel.setLoginAction(this::showLoginPanel);
         homePanel.setRegisterAction(this::showRegistrationPanel);
 
-        loginPanel.setShowFrameAction(this::showLoginPanel);
         loginPanel.setBackAction(this::showHome);
         registrationPanel.setSwitchToLoginAction(this::showLoginPanel);
         registrationPanel.setBackAction(this::showHome);
@@ -180,6 +188,19 @@ public final class SwingAuthView extends JFrame {
 
     private void updateTitle(String title) {
         setTitle(title);
+    }
+
+    private void showHelp() {
+        String game = menuController.getCurrentGame();
+        if (game == null) {
+            game = "mission-nemesis"; // Default game
+        }
+        String rules = rulesService.getRules(game);
+        JEditorPane editorPane = new JEditorPane("text/html", rules);
+        editorPane.setEditable(false);
+        JScrollPane scrollPane = new JScrollPane(editorPane);
+        scrollPane.setPreferredSize(new Dimension(600, 400));
+        JOptionPane.showMessageDialog(this, scrollPane, "Regles du jeu", JOptionPane.INFORMATION_MESSAGE);
     }
 
     private static final class HomePanel extends JPanel {

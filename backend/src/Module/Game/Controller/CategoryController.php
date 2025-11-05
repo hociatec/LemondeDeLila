@@ -24,7 +24,7 @@ class CategoryController extends AbstractController
             if ($item->isDir() && !$item->isDot()) {
                 $dirName = $item->getFilename();
                 // Ignore technical directories
-                if (in_array($dirName, ['Controller', 'Service'])) {
+                if (in_array($dirName, ['Controller', 'Service', 'Actions'])) {
                     continue;
                 }
                 $subEntries = $this->scanDirectory($item->getPathname());

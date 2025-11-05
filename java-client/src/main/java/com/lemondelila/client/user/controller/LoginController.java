@@ -7,7 +7,7 @@ import com.lemondelila.client.user.model.LoginModel;
 import com.lemondelila.client.user.model.UserCredentials;
 import com.lemondelila.client.user.service.AuthClient;
 import com.lemondelila.client.user.service.AuthResult;
-import com.lemondelila.client.user.view.LoginView;
+import com.lemondelila.client.user.view.AuthView;
 
 import javax.swing.SwingWorker;
 import java.util.Objects;
@@ -20,13 +20,13 @@ public final class LoginController {
 
     private final LoginModel model;
     private final AuthClient authClient;
-    private final LoginView view;
+    private final AuthView view;
     private final HistoryService historyService;
     private final SessionService sessionService;
 
     public LoginController(LoginModel model,
                            AuthClient authClient,
-                           LoginView view,
+                           AuthView view,
                            HistoryService historyService,
                            SessionService sessionService) {
         this.model = Objects.requireNonNull(model, "model");
