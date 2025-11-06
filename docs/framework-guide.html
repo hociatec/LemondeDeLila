@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Guide de développement – Le Monde de Lila</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; margin: 2rem auto; max-width: 960px; color: #2b2b2b; }
+        h1, h2, h3 { color: #532a7f; }
+        code { background: #f4f4f4; padding: 0 4px; border-radius: 3px; }
+        pre { background: #f9f9f9; border-left: 3px solid #c4b5fd; padding: 1rem; overflow-x: auto; }
+        nav ul { list-style: none; padding: 0; }
+        nav li { margin-bottom: .4rem; }
+        a { color: #3b82f6; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .tip { background: #ecfeff; border-left: 3px solid #14b8a6; padding: .75rem 1rem; margin: 1rem 0; }
+        .warning { background: #fff7ed; border-left: 3px solid #fb923c; padding: .75rem 1rem; margin: 1rem 0; }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Guide de développement</h1>
+    <p>Ce document explique comment démarrer l’environnement <em>Le Monde de Lila</em>, créer de nouveaux modules,
+        étendre les menus Swing et tirer parti de l’infrastructure existante.</p>
+</header>
+
+<nav>
+    <h2>Sommaire</h2>
+    <ul>
+        <li><a href="#lancer-outil">1. Lancer l’outillage</a></li>
+        <li><a href="#structure">2. Comprendre l’architecture</a></li>
+        <li><a href="#nouveau-module">3. Créer un module applicatif</a></li>
+        <li><a href="#nouveau-menu">4. Ajouter un menu ou une vue Swing</a></li>
+        <li><a href="#shortcuts">5. Déclarer des raccourcis clavier</a></li>
+        <li><a href="#backend-api">6. Consommer les API backend</a></li>
+        <li><a href="#checklist">7. Checklist de validation</a></li>
+        <li><a href="#options-locales">8. Options locales et préférences</a></li>
+    </ul>
+</nav>
+
+<section id="lancer-outil">
+    <h2>1. Lancer l’outillage</h2>
+    <ol>
+        <li>Depuis la racine du projet, exécuter <code>powershell -ExecutionPolicy Bypass -File .\start-lila.ps1</code>.
+            Le script <strong>installe Maven</strong> (si nécessaire), démarre les serveurs Symfony (HTTP + WebSocket) et
+            construit le client Java.</li>
+        <li>Les logs des processus backend se trouvent dans <code>logs\backend-*.log</code>.</li>
+        <li>Si vous ne souhaitez compiler que le client, exécutez :
+            <pre><code>cd .\java-client
+..\tools\apache-maven-3.9.6\bin\mvn.cmd -pl client-app -am package -DskipTests</code></pre>
+        </li>
+    </ol>
+</section>
+
+<section id="structure">
+    <h2>2. Comprendre l’architecture</h2>
+    <ul>
+        <li><strong>Modules</strong> : toutes les briques partagent l’interface <code>LilaModule</code>. La classe
+            <code>com.lemondelila.framework.core.module.FrameworkBootstrap</code> charge automatiquement les implémentations via
+            <code>ServiceLoader</code>, puis appelle <code>configure()</code> et <code>start()</code>.</li>
+        <li><strong>Injection de dépendances</strong> : le conteneur <code>ApplicationContext</code> (framework-core)
+            fournit les services. Chaque module enregistre ses bind via le builder.</li>
+        <li><strong>Client Swing</strong> : le point d’entrée <code>com.lemondelila.client.AppLauncher</code> crée la fenêtre
+            <code>LilaFrame</code> et affiche l’écran <code>HomeScreen</code>, qui pilote des panneaux spécialisés
+            (<code>LandingPanel</code>, <code>LoginFormPanel</code>, <code>RegisterFormPanel</code>).</li>
+        <li><strong>Backend Symfony</strong> : exposé sous <code>http://127.0.0.1:8000/api</code> (par défaut). Le contrôleur
+            <code>App\Module\User\Controller\AuthController</code> gère les routes
+            <code>/api/login</code> et <code>/api/register</code>.</li>
+    </ul>
+</section>
+
+<section id="nouveau-module">
+    <h2>3. Créer un module applicatif</h2>
+    <ol>
+        <li>Ajoutez un nouveau package (ex. <code>com.lemondelila.client.module.catalog</code>) dans <code>java-client</code>.</li>
+        <li>Implémentez <code>LilaModule</code> :
+<pre><code>public final class CatalogModule implements LilaModule {
+    @Override
+    public void configure(ApplicationContext.Builder builder) {
+        builder.bind(CatalogService.class, CatalogService::new);
+    }
+
+    @Override
+    public void start(ApplicationContext ctx) {
+        ctx.get(CatalogService.class).warmup();
+    }
+
+    @Override
+    public int order() {
+        return 10; // plus grand => démarré après les frameworks
+    }
+}</code></pre>
+        </li>
+        <li>Déclarez le module dans <code>java-client/client-app/src/main/resources/META-INF/services/com.lemondelila.framework.core.module.LilaModule</code>
+            pour que <code>ServiceLoader</code> l’instancie.</li>
+        <li>Si le module doit afficher un écran, utilisez <code>ScreenManager</code> :
+<pre><code>ScreenManager manager = context.get(ScreenManager.class);
+manager.register(context.get(MyScreen.class));
+manager.show("my-screen-id");</code></pre>
+        </li>
+    </ol>
+    <div class="tip">
+        <strong>Astuce :</strong> Décomposez la vue en sous-composants (comme <code>HomeScreen</code> et ses panels)
+        pour faciliter la maintenance et le test unitaire.
+    </div>
+</section>
+
+<section id="nouveau-menu">
+    <h2>4. Ajouter un menu ou une vue Swing</h2>
+    <ol>
+        <li>Les menus se créent via <code>com.lemondelila.framework.ui.menu.MenuFactory</code>. Exemple :
+<pre><code>MenuFactory menuFactory = context.get(MenuFactory.class);
+menuFactory.create("Jeu", builder -&gt; builder
+    .item("Nouveau niveau", () -&gt; eventBus.publish(new NewLevelRequested()))
+    .item("Quitter", () -&gt; System.exit(0))
+);</code></pre>
+        </li>
+        <li>Pour un nouvel écran, créez une classe implémentant <code>Screen</code> (voir <code>HomeScreen</code>) et
+            enregistrez-la auprès du <code>ScreenManager</code>.</li>
+        <li>Ajoutez vos actions au <code>ActionManager</code> pour bénéficier des raccourcis, puis attachez la vue via
+            <code>actionManager.attachTo(component);</code>.</li>
+    </ol>
+</section>
+
+<section id="shortcuts">
+    <h2>5. Déclarer des raccourcis clavier</h2>
+    <p>Les raccourcis sont centralisés dans <code>ActionManager</code> (framework-ui). Exemple simplifié :</p>
+<pre><code>AbstractAction toggleCatalog = new AbstractAction("catalog:toggle") {
+    @Override public void actionPerformed(ActionEvent e) {
+        screenManager.show("catalog");
+    }
+};
+actionManager.register("catalog.toggle", () -&gt; toggleCatalog, KeyStroke.getKeyStroke("alt G"));
+shortcutRegistry.register(KeyStroke.getKeyStroke("alt G"), "Ouvrir le catalogue");
+</code></pre>
+    <div class="warning">
+        N’associez pas <code>ENTER</code> à des actions globales depuis l’accueil : laissez les panneaux gérer la touche
+        via <code>JComponent.WHEN_FOCUSED</code> comme pour <code>LoginFormPanel</code> et <code>RegisterFormPanel</code>.
+    </div>
+</section>
+
+<section id="backend-api">
+    <h2>6. Consommer les API backend</h2>
+    <ol>
+        <li>Utilisez <code>RestClient</code> (framework-network) fourni par <code>NetworkModule</code>.</li>
+        <li>Le module réseau lit les propriétés <code>network.http.base</code> et <code>network.ws.url</code> depuis
+            <code>config/client.properties</code> (copie incluse dans <code>client-app/src/main/resources</code>).</li>
+        <li>Un contrôleur type (voir <code>AuthController</code>) :
+<pre><code>JsonNode response = restClient.post("login", Map.of(
+    "username", request.username(),
+    "password", String.valueOf(request.password())
+));</code></pre>
+        </li>
+        <li>Complétez l’API Symfony si nécessaire (ex. <code>App\Module\User\Controller\AuthController</code> pour
+            l’inscription).</li>
+    </ol>
+</section>
+
+<section id="checklist">
+    <h2>7. Checklist de validation</h2>
+    <ul>
+        <li>Tests locaux : <code>mvn -pl client-app -am package -DskipTests</code>.</li>
+        <li>Lint/format : la base est compatible avec <code>spotless</code>/IDEA – pas encore automatisé.</li>
+        <li>Accessibilité : fournissez une description courte aux boutons (cf. <code>LandingPanel</code>) et enregistrez
+            tout raccourci dans <code>AccessibleShortcutRegistry</code>.</li>
+        <li>Journalisation : utilisez <code>org.slf4j.Logger</code> (implémentation <code>slf4j-simple</code> incluse).</li>
+        <li>Shutdown propre : si votre module ouvre des ressources (threads, WebSocket), implémentez <code>stop()</code>
+            et fermez-les comme dans <code>AccessibilityModule</code>.</li>
+    </ul>
+</section>
+
+<section id="options-locales">
+    <h2>8. Options locales et préférences</h2>
+    <p>Le client stocke les préférences utilisateur dans <code>config/settings.json</code> via
+        <code>AppSettingsService</code>. Les options disponibles couvrent :</p>
+    <ul>
+        <li>Volume des effets du jeu.</li>
+        <li>Volume de la musique.</li>
+        <li>Affichage ou non d’une confirmation lorsque l’on ferme l’application.</li>
+    </ul>
+    <p>Ces paramètres sont éditables depuis le menu principal (Entrée → <em>Options</em>). La touche
+        <strong>Alt+R</strong> permet de revenir au menu d’accueil, tandis que <strong>Alt+C</strong> et
+        <strong>Alt+I</strong> contrôlent respectivement la connexion et l’inscription.</p>
+</section>
+
+<footer>
+    <p>Dernière mise à jour : <script>document.write(new Date().toLocaleDateString('fr-FR'));</script></p>
+</footer>
+</body>
+</html>
