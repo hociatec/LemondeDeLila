@@ -163,3 +163,4 @@ final class RegisterFormPanel extends JPanel {
         });
     }
 }
+

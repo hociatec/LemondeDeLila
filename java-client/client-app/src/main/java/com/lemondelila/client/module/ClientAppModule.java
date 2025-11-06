@@ -80,3 +80,4 @@ public final class ClientAppModule implements LilaModule {
         return 100;
     }
 }
+

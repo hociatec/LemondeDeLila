@@ -127,3 +127,4 @@ public final class AuthController implements AutoCloseable {
         session.clear();
     }
 }
+

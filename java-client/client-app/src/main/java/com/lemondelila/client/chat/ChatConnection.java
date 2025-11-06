@@ -3,6 +3,8 @@ package com.lemondelila.client.chat;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.lemondelila.client.presence.PresencePlayer;
+import com.lemondelila.client.presence.PresenceChat;
 
 import java.io.IOException;
 import java.net.URI;
@@ -25,9 +27,11 @@ public final class ChatConnection implements AutoCloseable {
     private final URI endpoint;
     private final CopyOnWriteArrayList<Consumer<List<ChatMessage>>> historyHandlers = new CopyOnWriteArrayList<>();
     private final CopyOnWriteArrayList<Consumer<ChatMessage>> messageHandlers = new CopyOnWriteArrayList<>();
+    private final CopyOnWriteArrayList<Consumer<List<PresencePlayer>>> presenceHandlers = new CopyOnWriteArrayList<>();
     private final CopyOnWriteArrayList<Consumer<ChatState>> stateHandlers = new CopyOnWriteArrayList<>();
     private final CopyOnWriteArrayList<Consumer<String>> errorHandlers = new CopyOnWriteArrayList<>();
     private final AtomicReference<WebSocket> socketRef = new AtomicReference<>();
+    private volatile List<PresencePlayer> lastPresence = List.of();
 
     public ChatConnection(HttpClient httpClient, ObjectMapper mapper, URI endpoint) {
         this.httpClient = httpClient;
@@ -85,6 +89,17 @@ public final class ChatConnection implements AutoCloseable {
         messageHandlers.add(handler);
     }
 
+    public void onPresence(Consumer<List<PresencePlayer>> handler) {
+        presenceHandlers.add(handler);
+        if (!lastPresence.isEmpty()) {
+            handler.accept(List.copyOf(lastPresence));
+        }
+    }
+
+    public List<PresencePlayer> latestPresence() {
+        return List.copyOf(lastPresence);
+    }
+
     public void onState(Consumer<ChatState> handler) {
         stateHandlers.add(handler);
     }
@@ -115,6 +130,17 @@ public final class ChatConnection implements AutoCloseable {
 
     private void dispatchMessage(JsonNode node) {
         parseMessage(node).ifPresent(message -> messageHandlers.forEach(handler -> handler.accept(message)));
+    }
+
+    private void dispatchPresence(JsonNode node) {
+        JsonNode playersNode = node.path("players");
+        if (!playersNode.isArray()) {
+            return;
+        }
+        List<PresencePlayer> players = new ArrayList<>();
+        playersNode.forEach(item -> parsePresence(item).ifPresent(players::add));
+        lastPresence = players;
+        presenceHandlers.forEach(handler -> handler.accept(players));
     }
 
     private java.util.Optional<ChatMessage> parseMessage(JsonNode node) {
@@ -161,6 +187,8 @@ public final class ChatConnection implements AutoCloseable {
                     dispatchHistory(node);
                 } else if ("chat-message".equals(type)) {
                     dispatchMessage(node);
+                } else if ("presence-update".equals(type)) {
+                    dispatchPresence(node);
                 }
             } catch (Exception e) {
                 emitError("Message tchat invalide : " + e.getMessage());
@@ -180,4 +208,25 @@ public final class ChatConnection implements AutoCloseable {
             emitError("WebSocket tchat : " + error.getMessage());
         }
     }
+
+    private java.util.Optional<PresencePlayer> parsePresence(JsonNode node) {
+        if (node == null || !node.isObject()) {
+            return java.util.Optional.empty();
+        }
+        int id = node.path("id").asInt(-1);
+        String username = node.path("username").asText("inconnu");
+        List<PresenceChat> rooms = new ArrayList<>();
+        JsonNode roomsNode = node.path("rooms");
+        if (roomsNode.isArray()) {
+            roomsNode.forEach(room -> {
+                int roomId = room.path("id").asInt(-1);
+                String name = room.path("name").asText("");
+                if (roomId >= 0 && !name.isEmpty()) {
+                    rooms.add(new PresenceChat(roomId, name));
+                }
+            });
+        }
+        return java.util.Optional.of(new PresencePlayer(id, username, rooms));
+    }
 }
+

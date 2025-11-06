@@ -10,3 +10,4 @@ public record AppSettings(int gameVolume,
         return new AppSettings(70, 60, true, true, false);
     }
 }
+

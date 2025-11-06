@@ -2,6 +2,7 @@ com\lemondelila\client\chat\ChatMessage.class
 com\lemondelila\client\ui\screens\HomeScreen$Card.class
 com\lemondelila\client\session\ClientSession.class
 com\lemondelila\client\ui\screens\LoginFormPanel$1.class
+com\lemondelila\client\presence\PresenceChat.class
 com\lemondelila\client\events\LoginFailed.class
 com\lemondelila\client\ui\screens\MainMenuScreen$MenuEntry.class
 com\lemondelila\client\chat\ChatConnection$ListenerImpl.class
@@ -17,13 +18,16 @@ com\lemondelila\client\ui\screens\MainMenuScreen$1.class
 com\lemondelila\client\controller\AuthController.class
 com\lemondelila\client\events\LoginRequested.class
 com\lemondelila\client\ui\screens\HomeScreen$2.class
+com\lemondelila\client\ui\presence\PresenceListDialog$1.class
 com\lemondelila\client\ui\dialog\ConfirmExitDialog.class
+com\lemondelila\client\presence\PresencePlayer.class
 com\lemondelila\client\ui\screens\LandingPanel$1.class
 com\lemondelila\client\ui\screens\RegisterFormPanel.class
 com\lemondelila\client\chat\ChatConnection.class
 com\lemondelila\client\events\RegistrationSucceeded.class
 com\lemondelila\client\session\ClientSession$AuthState.class
 com\lemondelila\client\settings\AppSettings.class
+com\lemondelila\client\ui\screens\MainMenuScreen$2.class
 com\lemondelila\client\events\RegistrationFailed.class
 com\lemondelila\client\AppLauncher.class
 com\lemondelila\client\ui\screens\LoginFormPanel.class
@@ -38,3 +42,4 @@ com\lemondelila\client\module\ClientAppModule.class
 com\lemondelila\client\events\RegistrationRequested.class
 com\lemondelila\client\ui\screens\HomeScreen$3.class
 com\lemondelila\client\ui\screens\MainMenuScreen.class
+com\lemondelila\client\ui\presence\PresenceListDialog.class

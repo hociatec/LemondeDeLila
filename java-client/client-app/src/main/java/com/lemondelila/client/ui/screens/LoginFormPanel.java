@@ -129,3 +129,4 @@ final class LoginFormPanel extends JPanel {
         });
     }
 }
+

@@ -5,11 +5,14 @@ import com.lemondelila.client.session.ClientSession;
 import com.lemondelila.client.settings.AppSettingsService;
 import com.lemondelila.client.ui.chat.ChatWindow;
 import com.lemondelila.client.ui.options.OptionsDialog;
+import com.lemondelila.client.ui.presence.PresenceListDialog;
 import com.lemondelila.framework.ui.dialog.DialogService;
 import com.lemondelila.framework.ui.screen.Screen;
 import com.lemondelila.framework.ui.screen.ScreenContext;
 
+import javax.swing.AbstractAction;
 import javax.swing.DefaultListModel;
+import javax.swing.KeyStroke;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -20,6 +23,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Window;
+import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
@@ -52,10 +56,10 @@ public final class MainMenuScreen extends JPanel implements Screen {
         title.setFont(title.getFont().deriveFont(28f));
         add(title, BorderLayout.NORTH);
 
-        model.addElement(new MenuEntry("Étagères",
-                () -> dialogService.info("Étagères", "Cette section sera disponible prochainement.")));
+        model.addElement(new MenuEntry("Etageres",
+                () -> dialogService.info("Etageres", "Cette section sera disponible prochainement.")));
         model.addElement(new MenuEntry("Rejoindre une table",
-                () -> dialogService.info("Rejoindre une table", "Fonctionnalité bientôt disponible.")));
+                () -> dialogService.info("Rejoindre une table", "Fonctionnalite bientot disponible.")));
         model.addElement(new MenuEntry("Tchat", this::openChat));
         model.addElement(new MenuEntry("Options", this::openOptions));
 
@@ -73,6 +77,7 @@ public final class MainMenuScreen extends JPanel implements Screen {
 
         add(new JScrollPane(menuList), BorderLayout.CENTER);
         setPreferredSize(new Dimension(480, 360));
+        registerShortcuts();
     }
 
     private void triggerSelection() {
@@ -92,11 +97,11 @@ public final class MainMenuScreen extends JPanel implements Screen {
     private void openChat() {
         var settings = settingsService.current();
         if (!settings.chatEnabled()) {
-            dialogService.info("Tchat", "Vous avez désactivé le tchat dans les options.");
+            dialogService.info("Tchat", "Vous avez desactive le tchat dans les options.");
             return;
         }
         if (session.authenticated().isEmpty()) {
-            dialogService.error("Tchat", "Vous devez être connecté pour accéder au tchat.");
+            dialogService.error("Tchat", "Vous devez etre connecte pour acceder au tchat.");
             return;
         }
         Window owner = SwingUtilities.getWindowAncestor(this) instanceof Window
@@ -108,6 +113,33 @@ public final class MainMenuScreen extends JPanel implements Screen {
         } catch (IllegalStateException ex) {
             dialogService.error("Tchat", ex.getMessage());
         }
+    }
+
+    private void openPresenceDialog() {
+        var settings = settingsService.current();
+        if (!settings.chatEnabled()) {
+            dialogService.info("Presence", "Activez le tchat pour consulter la liste des connectes.");
+            return;
+        }
+        if (session.authenticated().isEmpty()) {
+            dialogService.error("Presence", "Vous devez etre connecte pour consulter la liste.");
+            return;
+        }
+        Window owner = SwingUtilities.getWindowAncestor(this) instanceof Window
+                ? (Window) SwingUtilities.getWindowAncestor(this)
+                : null;
+        new PresenceListDialog(owner, chatConnectionFactory, dialogService).setVisible(true);
+    }
+
+    private void registerShortcuts() {
+        getInputMap(WHEN_IN_FOCUSED_WINDOW)
+                .put(KeyStroke.getKeyStroke(KeyEvent.VK_U, KeyEvent.CTRL_DOWN_MASK), "showPresence");
+        getActionMap().put("showPresence", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                openPresenceDialog();
+            }
+        });
     }
 
     @Override

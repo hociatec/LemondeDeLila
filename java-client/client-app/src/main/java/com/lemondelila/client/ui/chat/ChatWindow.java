@@ -4,17 +4,24 @@ import com.lemondelila.client.chat.ChatConnection;
 import com.lemondelila.client.chat.ChatConnectionFactory;
 import com.lemondelila.client.chat.ChatMessage;
 import com.lemondelila.client.chat.ChatState;
+import com.lemondelila.client.presence.PresenceChat;
+import com.lemondelila.client.presence.PresencePlayer;
 import com.lemondelila.client.settings.AppSettingsService;
 import com.lemondelila.framework.ui.dialog.DialogService;
 
+import javax.swing.DefaultListModel;
 import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
+import javax.swing.text.DefaultEditorKit;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -24,6 +31,7 @@ import java.awt.event.WindowEvent;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public final class ChatWindow extends JDialog {
 
@@ -32,6 +40,9 @@ public final class ChatWindow extends JDialog {
 
     private final JTextArea historyArea = new JTextArea();
     private final JTextField inputField = new JTextField();
+    private final DefaultListModel<String> presenceModel = new DefaultListModel<>();
+    private final JList<String> presenceList = new JList<>(presenceModel);
+
     private final ChatConnection connection;
     private final AppSettingsService settingsService;
     private final DialogService dialogService;
@@ -45,15 +56,24 @@ public final class ChatWindow extends JDialog {
         this.dialogService = dialogService;
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout(8, 8));
-        setPreferredSize(new Dimension(480, 420));
+        setPreferredSize(new Dimension(520, 440));
 
         historyArea.setEditable(false);
         historyArea.setLineWrap(true);
         historyArea.setWrapStyleWord(true);
         historyArea.setFont(historyArea.getFont().deriveFont(Font.PLAIN, 13f));
         historyArea.setBorder(new EmptyBorder(8, 8, 8, 8));
+        JScrollPane historyScroll = new JScrollPane(historyArea);
 
-        add(new JScrollPane(historyArea), BorderLayout.CENTER);
+        presenceList.setVisibleRowCount(12);
+        JPanel presencePanel = new JPanel(new BorderLayout());
+        presencePanel.setBorder(new EmptyBorder(8, 8, 8, 8));
+        presencePanel.add(new JLabel("Connectes"), BorderLayout.NORTH);
+        presencePanel.add(new JScrollPane(presenceList), BorderLayout.CENTER);
+
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, historyScroll, presencePanel);
+        splitPane.setResizeWeight(0.75);
+        add(splitPane, BorderLayout.CENTER);
 
         JPanel composer = new JPanel(new BorderLayout(6, 6));
         composer.setBorder(new EmptyBorder(0, 8, 8, 8));
@@ -63,10 +83,11 @@ public final class ChatWindow extends JDialog {
         this.connection = connectionFactory.open();
         registerHandlers();
         connection.connect();
+        updatePresenceList(connection.latestPresence());
 
         inputField.addActionListener(e -> sendCurrentMessage());
         inputField.getInputMap().put(javax.swing.KeyStroke.getKeyStroke("shift ENTER"), "insert-break");
-        inputField.getActionMap().put("insert-break", new javax.swing.text.DefaultEditorKit.InsertBreakAction());
+        inputField.getActionMap().put("insert-break", new DefaultEditorKit.InsertBreakAction());
 
         addWindowListener(new WindowAdapter() {
             @Override
@@ -96,6 +117,7 @@ public final class ChatWindow extends JDialog {
         connection.onHistory(messages -> SwingUtilities.invokeLater(() -> renderHistory(messages)));
         connection.onMessage(message -> SwingUtilities.invokeLater(() -> appendMessage(message)));
         connection.onState(state -> SwingUtilities.invokeLater(() -> appendStatus(state)));
+        connection.onPresence(players -> SwingUtilities.invokeLater(() -> updatePresenceList(players)));
         connection.onError(error -> SwingUtilities.invokeLater(() -> dialogService.error("Tchat", error)));
     }
 
@@ -116,8 +138,8 @@ public final class ChatWindow extends JDialog {
         removeTrailingBlankLine();
         historyArea.append(String.format("-- %s --%n", switch (state) {
             case CONNECTING -> "Connexion au serveur de tchat...";
-            case CONNECTED -> "Connecté.";
-            case CLOSED -> "Connexion fermée.";
+            case CONNECTED -> "Connecte.";
+            case CLOSED -> "Connexion fermee.";
             case FAILED -> "Erreur de connexion.";
         }));
         appendBlankLine();
@@ -145,5 +167,19 @@ public final class ChatWindow extends JDialog {
         if (text.endsWith(doubleLn)) {
             historyArea.replaceRange("", text.length() - ln.length(), text.length());
         }
+    }
+
+    private void updatePresenceList(List<PresencePlayer> players) {
+        presenceModel.clear();
+        if (players.isEmpty()) {
+            presenceModel.addElement("Aucun joueur en ligne");
+            return;
+        }
+        players.forEach(player -> {
+            String rooms = player.rooms().isEmpty()
+                    ? ""
+                    : " [" + player.rooms().stream().map(PresenceChat::name).collect(Collectors.joining(", ")) + "]";
+            presenceModel.addElement(player.username() + rooms);
+        });
     }
 }

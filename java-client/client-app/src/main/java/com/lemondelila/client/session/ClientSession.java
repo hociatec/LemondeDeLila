@@ -22,3 +22,4 @@ public final class ClientSession {
     public record AuthState(String username, String token) {
     }
 }
+

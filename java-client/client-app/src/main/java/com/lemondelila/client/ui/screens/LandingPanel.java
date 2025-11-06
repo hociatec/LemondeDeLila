@@ -71,3 +71,4 @@ final class LandingPanel extends JPanel {
         });
     }
 }
+
