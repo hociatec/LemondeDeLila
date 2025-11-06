@@ -233,6 +233,7 @@ public final class MainMenuScreen extends JPanel implements Screen {
     public void onShow(ScreenContext context) {
         this.screenManager = context.screenManager();
         setStatus("Pret.");
+        SwingUtilities.invokeLater(() -> shelvesButton.requestFocusInWindow());
     }
 
     @Override

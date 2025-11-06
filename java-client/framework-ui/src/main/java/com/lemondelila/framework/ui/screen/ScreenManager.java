@@ -49,6 +49,13 @@ public final class ScreenManager {
             }
             CardLayout layout = (CardLayout) container.getLayout();
             layout.show(container, id);
+            container.revalidate();
+            container.repaint();
+            java.awt.Window window = javax.swing.SwingUtilities.getWindowAncestor(container);
+            if (window != null) {
+                window.revalidate();
+                window.repaint();
+            }
             current = next;
             next.onShow(ctx);
         };
@@ -67,4 +74,3 @@ public final class ScreenManager {
         return Optional.ofNullable(current);
     }
 }
-
