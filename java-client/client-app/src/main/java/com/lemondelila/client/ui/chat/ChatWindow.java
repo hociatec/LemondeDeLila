@@ -13,7 +13,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import java.awt.BorderLayout;
@@ -66,8 +65,7 @@ public final class ChatWindow extends JDialog {
         connection.connect();
 
         inputField.addActionListener(e -> sendCurrentMessage());
-        // Allow Shift+Enter to insérer une nouvelle ligne.
-        inputField.getInputMap().put(KeyStroke.getKeyStroke("shift ENTER"), "insert-break");
+        inputField.getInputMap().put(javax.swing.KeyStroke.getKeyStroke("shift ENTER"), "insert-break");
         inputField.getActionMap().put("insert-break", new javax.swing.text.DefaultEditorKit.InsertBreakAction());
 
         addWindowListener(new WindowAdapter() {
@@ -104,21 +102,25 @@ public final class ChatWindow extends JDialog {
     private void renderHistory(List<ChatMessage> messages) {
         historyArea.setText("");
         messages.forEach(this::appendMessage);
+        appendBlankLine();
     }
 
     private void appendMessage(ChatMessage message) {
+        removeTrailingBlankLine();
         String timestamp = TIME_FORMATTER.format(message.createdAt());
         historyArea.append(String.format("[%s] %s : %s%n", timestamp, message.username(), message.text()));
-        historyArea.setCaretPosition(historyArea.getDocument().getLength());
+        appendBlankLine();
     }
 
     private void appendStatus(ChatState state) {
+        removeTrailingBlankLine();
         historyArea.append(String.format("-- %s --%n", switch (state) {
             case CONNECTING -> "Connexion au serveur de tchat...";
             case CONNECTED -> "Connecté.";
             case CLOSED -> "Connexion fermée.";
             case FAILED -> "Erreur de connexion.";
         }));
+        appendBlankLine();
     }
 
     private void sendCurrentMessage() {
@@ -128,5 +130,20 @@ public final class ChatWindow extends JDialog {
         }
         connection.sendMessage(text);
         inputField.setText("");
+    }
+
+    private void appendBlankLine() {
+        String ln = System.lineSeparator();
+        historyArea.append(ln);
+        historyArea.setCaretPosition(historyArea.getDocument().getLength());
+    }
+
+    private void removeTrailingBlankLine() {
+        String ln = System.lineSeparator();
+        String doubleLn = ln + ln;
+        String text = historyArea.getText();
+        if (text.endsWith(doubleLn)) {
+            historyArea.replaceRange("", text.length() - ln.length(), text.length());
+        }
     }
 }

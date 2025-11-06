@@ -1,7 +1,7 @@
 {
   "gameVolume" : 100,
-  "musicVolume" : 99,
+  "musicVolume" : 100,
   "confirmOnExit" : true,
-  "chatEnabled" : false,
+  "chatEnabled" : true,
   "confirmChatExit" : true
 }
