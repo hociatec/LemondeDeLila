@@ -34,6 +34,7 @@
         <li><a href="#backend-api">6. Consommer les API backend</a></li>
         <li><a href="#checklist">7. Checklist de validation</a></li>
         <li><a href="#options-locales">8. Options locales et préférences</a></li>
+        <li><a href="#tchat">9. Tchat en temps réel</a></li>
     </ul>
 </nav>
 
@@ -176,10 +177,27 @@ shortcutRegistry.register(KeyStroke.getKeyStroke("alt G"), "Ouvrir le catalogue"
         <li>Volume des effets du jeu.</li>
         <li>Volume de la musique.</li>
         <li>Affichage ou non d’une confirmation lorsque l’on ferme l’application.</li>
+        <li>Activation/désactivation du tchat global et demande de confirmation avant de fermer la fenêtre de tchat.</li>
     </ul>
     <p>Ces paramètres sont éditables depuis le menu principal (Entrée → <em>Options</em>). La touche
         <strong>Alt+R</strong> permet de revenir au menu d’accueil, tandis que <strong>Alt+C</strong> et
         <strong>Alt+I</strong> contrôlent respectivement la connexion et l’inscription.</p>
+</section>
+
+<section id="tchat">
+    <h2>9. Tchat en temps réel</h2>
+    <p>Une fois connecté, le menu principal propose l’option <strong>Tchat</strong>. Cette vue ouvre une fenêtre
+        Swing non modale qui se connecte au WebSocket <code>network.ws.url</code> avec le token JWT renvoyé par le
+        login.</p>
+    <ul>
+        <li>Connexion via <code>ChatConnectionFactory</code>, qui ajoute automatiquement <code>?token=&lt;jwt&gt;</code>
+            à l’URL.</li>
+        <li>Les messages entrants sont normalisés (auteur, texte, horodatage) et affichés en lecture seule.</li>
+        <li>L’envoi publie <code>{"type":"chat-send","text":"..."}</code> : côté Symfony,
+            <code>PresenceRealtimeBroker</code> diffuse ensuite <code>chat-message</code> à tous les clients.</li>
+        <li>En cas d’erreur réseau, le <code>DialogService</code> affiche un message tout en conservant la fenêtre
+            ouverte.</li>
+    </ul>
 </section>
 
 <footer>

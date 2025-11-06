@@ -20,7 +20,9 @@ public final class OptionsDialog extends JDialog {
 
     private final JSlider gameVolumeSlider = slider();
     private final JSlider musicVolumeSlider = slider();
-    private final JCheckBox confirmExit = new JCheckBox("Demander une confirmation avant de quitter");
+    private final JCheckBox confirmExit = new JCheckBox("Demander confirmation à la fermeture");
+    private final JCheckBox chatEnabled = new JCheckBox("Activer le tchat global");
+    private final JCheckBox confirmChatExit = new JCheckBox("Demander confirmation avant de fermer le tchat");
     private final JButton saveButton = new JButton("Enregistrer");
     private final JButton cancelButton = new JButton("Annuler");
     private final AppSettingsService settingsService;
@@ -36,6 +38,8 @@ public final class OptionsDialog extends JDialog {
         content.add(labelled("Volume du jeu", gameVolumeSlider));
         content.add(labelled("Volume de la musique", musicVolumeSlider));
         content.add(confirmExit);
+        content.add(chatEnabled);
+        content.add(confirmChatExit);
 
         add(content, BorderLayout.CENTER);
         add(buildButtons(), BorderLayout.SOUTH);
@@ -70,7 +74,9 @@ public final class OptionsDialog extends JDialog {
             settingsService.update(new AppSettings(
                     gameVolumeSlider.getValue(),
                     musicVolumeSlider.getValue(),
-                    confirmExit.isSelected()
+                    confirmExit.isSelected(),
+                    chatEnabled.isSelected(),
+                    confirmChatExit.isSelected()
             ));
             dispose();
         });
@@ -85,5 +91,7 @@ public final class OptionsDialog extends JDialog {
         gameVolumeSlider.setValue(current.gameVolume());
         musicVolumeSlider.setValue(current.musicVolume());
         confirmExit.setSelected(current.confirmOnExit());
+        chatEnabled.setSelected(current.chatEnabled());
+        confirmChatExit.setSelected(current.confirmChatExit());
     }
 }

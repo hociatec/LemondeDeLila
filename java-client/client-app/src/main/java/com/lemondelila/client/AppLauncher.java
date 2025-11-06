@@ -1,12 +1,11 @@
 package com.lemondelila.client;
 
-import com.lemondelila.client.settings.AppSettings;
 import com.lemondelila.client.settings.AppSettingsService;
+import com.lemondelila.client.ui.dialog.ConfirmExitDialog;
 import com.lemondelila.framework.core.context.ApplicationContext;
 import com.lemondelila.framework.core.module.FrameworkBootstrap;
 import com.lemondelila.framework.ui.LilaFrame;
 
-import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import java.awt.event.WindowAdapter;
@@ -30,8 +29,7 @@ public final class AppLauncher {
             frame.addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosing(WindowEvent e) {
-                    AppSettings settings = settingsService.current();
-                    if (!settings.confirmOnExit() || confirmExit(frame)) {
+                    if (!settingsService.current().confirmOnExit() || ConfirmExitDialog.show(frame)) {
                         frame.setVisible(false);
                         frame.dispose();
                         System.exit(0);
@@ -41,16 +39,5 @@ public final class AppLauncher {
             frame.setVisible(true);
             frame.screenManager().show("home");
         });
-    }
-
-    private static boolean confirmExit(LilaFrame frame) {
-        int choice = JOptionPane.showConfirmDialog(
-                frame,
-                "Voulez-vous vraiment quitter Le Monde de Lila ?",
-                "Quitter l'application",
-                JOptionPane.YES_NO_OPTION,
-                JOptionPane.QUESTION_MESSAGE
-        );
-        return choice == JOptionPane.YES_OPTION;
     }
 }

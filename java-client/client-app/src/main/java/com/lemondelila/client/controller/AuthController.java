@@ -7,6 +7,7 @@ import com.lemondelila.client.events.LoginSucceeded;
 import com.lemondelila.client.events.RegistrationFailed;
 import com.lemondelila.client.events.RegistrationRequested;
 import com.lemondelila.client.events.RegistrationSucceeded;
+import com.lemondelila.client.session.ClientSession;
 import com.lemondelila.framework.core.event.DomainEventBus;
 import com.lemondelila.framework.core.task.TaskScheduler;
 import com.lemondelila.framework.network.rest.RestClient;
@@ -21,16 +22,19 @@ public final class AuthController implements AutoCloseable {
     private final DomainEventBus eventBus;
     private final RestClient restClient;
     private final TaskScheduler scheduler;
+    private final ClientSession session;
     private final AtomicBoolean busy = new AtomicBoolean(false);
     private final AutoCloseable loginSubscription;
     private final AutoCloseable registrationSubscription;
 
     public AuthController(DomainEventBus eventBus,
                           RestClient restClient,
-                          TaskScheduler scheduler) {
+                          TaskScheduler scheduler,
+                          ClientSession session) {
         this.eventBus = eventBus;
         this.restClient = restClient;
         this.scheduler = scheduler;
+        this.session = session;
         this.loginSubscription = eventBus.subscribe(LoginRequested.class, this::handleLogin);
         this.registrationSubscription = eventBus.subscribe(RegistrationRequested.class, this::handleRegistration);
     }
@@ -47,15 +51,22 @@ public final class AuthController implements AutoCloseable {
                         "username", request.username(),
                         "password", String.valueOf(request.password())
                 ));
-                String username = response.path("username").asText(request.username());
-                eventBus.publish(new LoginSucceeded(username));
+                String token = response.path("token").asText();
+                if (token == null || token.isBlank()) {
+                    throw new IOException("Token JWT absent dans la réponse");
+                }
+                session.setAuthenticated(request.username(), token);
+                eventBus.publish(new LoginSucceeded(request.username(), token));
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 eventBus.publish(new LoginFailed("Connexion interrompue"));
+                session.clear();
             } catch (IOException e) {
                 eventBus.publish(new LoginFailed("Connexion impossible : " + cleanMessage(e.getMessage())));
+                session.clear();
             } catch (Exception e) {
                 eventBus.publish(new LoginFailed("Echec de connexion : " + cleanMessage(e.getMessage())));
+                session.clear();
             } finally {
                 wipe(request.password());
                 busy.set(false);
@@ -113,5 +124,6 @@ public final class AuthController implements AutoCloseable {
         if (registrationSubscription != null) {
             registrationSubscription.close();
         }
+        session.clear();
     }
 }

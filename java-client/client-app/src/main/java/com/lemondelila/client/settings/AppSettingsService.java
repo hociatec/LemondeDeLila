@@ -1,5 +1,6 @@
 package com.lemondelila.client.settings;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
@@ -47,7 +48,17 @@ public final class AppSettingsService {
         }
         lock.writeLock().lock();
         try {
-            settings = mapper.readValue(SETTINGS_PATH.toFile(), AppSettings.class);
+            JsonNode node = mapper.readTree(SETTINGS_PATH.toFile());
+            AppSettings loaded = mapper.treeToValue(node, AppSettings.class);
+            boolean chatEnabled = node.path("chatEnabled").isMissingNode() ? true : loaded.chatEnabled();
+            boolean confirmChatExit = node.path("confirmChatExit").isMissingNode() ? false : loaded.confirmChatExit();
+            settings = new AppSettings(
+                    loaded.gameVolume(),
+                    loaded.musicVolume(),
+                    loaded.confirmOnExit(),
+                    chatEnabled,
+                    confirmChatExit
+            );
         } catch (IOException ignored) {
             settings = AppSettings.defaults();
         } finally {

@@ -1,277 +1,89 @@
-Windows PowerShell
-Copyright (C) Microsoft Corporation. Tous droits réservés.
-                                                                                                                        Installez la dernière version de PowerShell pour de nouvelles fonctionnalités et améliorations ! https://aka.ms/PSWindows                                                                                                                                                                                                                                               Avertissement : PowerShell a détecté que vous utilisiez peut-être un lecteur d’écran et a désactivé PSReadLine à des fins de compatibilité. Si vous souhaitez le réactiver, exécutez « import-module PSReadLine ».
-
-PS C:\Users\Administrateur> cd /
-PS C:\> cd .\wamp64
-PS C:\wamp64> cd .\www
-PS C:\wamp64\www> cd .\le-monde-de-lila
-PS C:\wamp64\www\le-monde-de-lila> .\start-lila.ps1
-Maven installé localement : C:\wamp64\www\le-monde-de-lila\tools\apache-maven-3.9.6\bin\mvn.cmd
-Lancement du serveur HTTP (http://127.0.0.1:8000)...
-Attente de disponibilité de http://127.0.0.1:8000/ ...
-Endpoint disponible.
-Serveur HTTP backend démarré.
-Lancement du serveur WebSocket...
-Compilation du client Java...
-[INFO] Scanning for projects...
-[INFO] ------------------------------------------------------------------------
-[INFO] Reactor Build Order:
-[INFO]
-[INFO] Le Monde de Lila Client                                            [pom]
-[INFO] Framework Core                                                     [jar]
-[INFO] Framework UI                                                       [jar]
-[INFO] Framework Accessibility                                            [jar]
-[INFO] Framework Network                                                  [jar]
-[INFO] Framework Media                                                    [jar]
-[INFO] Lila Client Application                                            [jar]
-[INFO]
-[INFO] --------------------< com.lemondelila:java-client >---------------------
-[INFO] Building Le Monde de Lila Client 1.0.0-SNAPSHOT                    [1/7]
-[INFO]   from pom.xml
-[INFO] --------------------------------[ pom ]---------------------------------
-[INFO]
-[INFO] --- clean:3.2.0:clean (default-clean) @ java-client ---
-[INFO]
-[INFO] -------------------< com.lemondelila:framework-core >-------------------
-[INFO] Building Framework Core 1.0.0-SNAPSHOT                             [2/7]
-[INFO]   from framework-core\pom.xml
-[INFO] --------------------------------[ jar ]---------------------------------
-[INFO]
-[INFO] --- clean:3.2.0:clean (default-clean) @ framework-core ---
-[INFO] Deleting C:\wamp64\www\le-monde-de-lila\java-client\framework-core\target
-[INFO]
-[INFO] --- resources:3.3.1:resources (default-resources) @ framework-core ---
-[INFO] Copying 1 resource from src\main\resources to target\classes
-[INFO]
-[INFO] --- compiler:3.11.0:compile (default-compile) @ framework-core ---
-[INFO] Changes detected - recompiling the module! :source
-[INFO] Compiling 7 source files with javac [debug target 21] to target\classes
-[INFO]
-[INFO] --- resources:3.3.1:testResources (default-testResources) @ framework-core ---
-[INFO] skip non existing resourceDirectory C:\wamp64\www\le-monde-de-lila\java-client\framework-core\src\test\resources
-[INFO]
-[INFO] --- compiler:3.11.0:testCompile (default-testCompile) @ framework-core ---
-[INFO] No sources to compile
-[INFO]
-[INFO] --- surefire:3.2.2:test (default-test) @ framework-core ---
-[INFO] Tests are skipped.
-[INFO]
-[INFO] --- jar:3.3.0:jar (default-jar) @ framework-core ---
-[INFO] Building jar: C:\wamp64\www\le-monde-de-lila\java-client\framework-core\target\framework-core-1.0.0-SNAPSHOT.jar
-[INFO]
-[INFO] --------------------< com.lemondelila:framework-ui >--------------------
-[INFO] Building Framework UI 1.0.0-SNAPSHOT                               [3/7]
-[INFO]   from framework-ui\pom.xml
-[INFO] --------------------------------[ jar ]---------------------------------
-[INFO]
-[INFO] --- clean:3.2.0:clean (default-clean) @ framework-ui ---
-[INFO] Deleting C:\wamp64\www\le-monde-de-lila\java-client\framework-ui\target
-[INFO]
-[INFO] --- resources:3.3.1:resources (default-resources) @ framework-ui ---
-[INFO] Copying 1 resource from src\main\resources to target\classes
-[INFO]
-[INFO] --- compiler:3.11.0:compile (default-compile) @ framework-ui ---
-[INFO] Changes detected - recompiling the module! :dependency
-[INFO] Compiling 8 source files with javac [debug target 21] to target\classes
-[INFO]
-[INFO] --- resources:3.3.1:testResources (default-testResources) @ framework-ui ---
-[INFO] skip non existing resourceDirectory C:\wamp64\www\le-monde-de-lila\java-client\framework-ui\src\test\resources
-[INFO]
-[INFO] --- compiler:3.11.0:testCompile (default-testCompile) @ framework-ui ---
-[INFO] No sources to compile
-[INFO]
-[INFO] --- surefire:3.2.2:test (default-test) @ framework-ui ---
-[INFO] Tests are skipped.
-[INFO]
-[INFO] --- jar:3.3.0:jar (default-jar) @ framework-ui ---
-[INFO] Building jar: C:\wamp64\www\le-monde-de-lila\java-client\framework-ui\target\framework-ui-1.0.0-SNAPSHOT.jar
-[INFO]
-[INFO] ------------------< com.lemondelila:framework-access >------------------
-[INFO] Building Framework Accessibility 1.0.0-SNAPSHOT                    [4/7]
-[INFO]   from framework-access\pom.xml
-[INFO] --------------------------------[ jar ]---------------------------------
-[INFO]
-[INFO] --- clean:3.2.0:clean (default-clean) @ framework-access ---
-[INFO] Deleting C:\wamp64\www\le-monde-de-lila\java-client\framework-access\target
-[INFO]
-[INFO] --- resources:3.3.1:resources (default-resources) @ framework-access ---
-[INFO] Copying 1 resource from src\main\resources to target\classes
-[INFO]
-[INFO] --- compiler:3.11.0:compile (default-compile) @ framework-access ---
-[INFO] Changes detected - recompiling the module! :dependency
-[INFO] Compiling 7 source files with javac [debug target 21] to target\classes
-[INFO]
-[INFO] --- resources:3.3.1:testResources (default-testResources) @ framework-access ---
-[INFO] skip non existing resourceDirectory C:\wamp64\www\le-monde-de-lila\java-client\framework-access\src\test\resources
-[INFO]
-[INFO] --- compiler:3.11.0:testCompile (default-testCompile) @ framework-access ---
-[INFO] No sources to compile
-[INFO]
-[INFO] --- surefire:3.2.2:test (default-test) @ framework-access ---
-[INFO] Tests are skipped.
-[INFO]
-[INFO] --- jar:3.3.0:jar (default-jar) @ framework-access ---
-[INFO] Building jar: C:\wamp64\www\le-monde-de-lila\java-client\framework-access\target\framework-access-1.0.0-SNAPSHOT.jar
-[INFO]
-[INFO] -----------------< com.lemondelila:framework-network >------------------
-[INFO] Building Framework Network 1.0.0-SNAPSHOT                          [5/7]
-[INFO]   from framework-network\pom.xml
-[INFO] --------------------------------[ jar ]---------------------------------
-[INFO]
-[INFO] --- clean:3.2.0:clean (default-clean) @ framework-network ---
-[INFO] Deleting C:\wamp64\www\le-monde-de-lila\java-client\framework-network\target
-[INFO]
-[INFO] --- resources:3.3.1:resources (default-resources) @ framework-network ---
-[INFO] Copying 1 resource from src\main\resources to target\classes
-[INFO]
-[INFO] --- compiler:3.11.0:compile (default-compile) @ framework-network ---
-[INFO] Changes detected - recompiling the module! :dependency
-[INFO] Compiling 4 source files with javac [debug target 21] to target\classes
-[INFO]
-[INFO] --- resources:3.3.1:testResources (default-testResources) @ framework-network ---
-[INFO] skip non existing resourceDirectory C:\wamp64\www\le-monde-de-lila\java-client\framework-network\src\test\resources
-[INFO]
-[INFO] --- compiler:3.11.0:testCompile (default-testCompile) @ framework-network ---
-[INFO] No sources to compile
-[INFO]
-[INFO] --- surefire:3.2.2:test (default-test) @ framework-network ---
-[INFO] Tests are skipped.
-[INFO]
-[INFO] --- jar:3.3.0:jar (default-jar) @ framework-network ---
-[INFO] Building jar: C:\wamp64\www\le-monde-de-lila\java-client\framework-network\target\framework-network-1.0.0-SNAPSHOT.jar
-[INFO]
-[INFO] ------------------< com.lemondelila:framework-media >-------------------
-[INFO] Building Framework Media 1.0.0-SNAPSHOT                            [6/7]
-[INFO]   from framework-media\pom.xml
-[INFO] --------------------------------[ jar ]---------------------------------
-[INFO]
-[INFO] --- clean:3.2.0:clean (default-clean) @ framework-media ---
-[INFO] Deleting C:\wamp64\www\le-monde-de-lila\java-client\framework-media\target
-[INFO]
-[INFO] --- resources:3.3.1:resources (default-resources) @ framework-media ---
-[INFO] Copying 1 resource from src\main\resources to target\classes
-[INFO]
-[INFO] --- compiler:3.11.0:compile (default-compile) @ framework-media ---
-[INFO] Changes detected - recompiling the module! :dependency
-[INFO] Compiling 3 source files with javac [debug target 21] to target\classes
-[INFO]
-[INFO] --- resources:3.3.1:testResources (default-testResources) @ framework-media ---
-[INFO] skip non existing resourceDirectory C:\wamp64\www\le-monde-de-lila\java-client\framework-media\src\test\resources
-[INFO]
-[INFO] --- compiler:3.11.0:testCompile (default-testCompile) @ framework-media ---
-[INFO] No sources to compile
-[INFO]
-[INFO] --- surefire:3.2.2:test (default-test) @ framework-media ---
-[INFO] Tests are skipped.
-[INFO]
-[INFO] --- jar:3.3.0:jar (default-jar) @ framework-media ---
-[INFO] Building jar: C:\wamp64\www\le-monde-de-lila\java-client\framework-media\target\framework-media-1.0.0-SNAPSHOT.jar
-[INFO]
-[INFO] ---------------------< com.lemondelila:client-app >---------------------
-[INFO] Building Lila Client Application 1.0.0-SNAPSHOT                    [7/7]
-[INFO]   from client-app\pom.xml
-[INFO] --------------------------------[ jar ]---------------------------------
-[INFO]
-[INFO] --- clean:3.2.0:clean (default-clean) @ client-app ---
-[INFO] Deleting C:\wamp64\www\le-monde-de-lila\java-client\client-app\target
-[INFO]
-[INFO] --- resources:3.3.1:resources (default-resources) @ client-app ---
-[INFO] Copying 2 resources from src\main\resources to target\classes
-[INFO]
-[INFO] --- compiler:3.11.0:compile (default-compile) @ client-app ---
-[INFO] Changes detected - recompiling the module! :dependency
-[INFO] Compiling 17 source files with javac [debug target 21] to target\classes
-[INFO]
-[INFO] --- resources:3.3.1:testResources (default-testResources) @ client-app ---
-[INFO] skip non existing resourceDirectory C:\wamp64\www\le-monde-de-lila\java-client\client-app\src\test\resources
-[INFO]
-[INFO] --- compiler:3.11.0:testCompile (default-testCompile) @ client-app ---
-[INFO] No sources to compile
-[INFO]
-[INFO] --- surefire:3.2.2:test (default-test) @ client-app ---
-[INFO] Tests are skipped.
-[INFO]
-[INFO] --- jar:3.4.1:jar (default-jar) @ client-app ---
-[INFO] Building jar: C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\client-app-1.0.0-SNAPSHOT.jar
-[INFO]
-[INFO] --- dependency:3.6.1:copy-dependencies (copy-dependencies) @ client-app ---
-[INFO] Copying framework-core-1.0.0-SNAPSHOT.jar to C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-core-1.0.0-SNAPSHOT.jar
-[INFO] Copying slf4j-api-2.0.13.jar to C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-api-2.0.13.jar
-[INFO] Copying framework-ui-1.0.0-SNAPSHOT.jar to C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-ui-1.0.0-SNAPSHOT.jar
-[INFO] Copying framework-access-1.0.0-SNAPSHOT.jar to C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-access-1.0.0-SNAPSHOT.jar
-[INFO] Copying framework-network-1.0.0-SNAPSHOT.jar to C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-network-1.0.0-SNAPSHOT.jar
-[INFO] Copying jackson-databind-2.17.1.jar to C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-databind-2.17.1.jar
-[INFO] Copying jackson-annotations-2.17.1.jar to C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-annotations-2.17.1.jar
-[INFO] Copying jackson-core-2.17.1.jar to C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-core-2.17.1.jar
-[INFO] Copying framework-media-1.0.0-SNAPSHOT.jar to C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-media-1.0.0-SNAPSHOT.jar
-[INFO] Copying slf4j-simple-2.0.13.jar to C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-simple-2.0.13.jar
-[INFO] ------------------------------------------------------------------------
-[INFO] Reactor Summary for Le Monde de Lila Client 1.0.0-SNAPSHOT:
-[INFO]
-[INFO] Le Monde de Lila Client ............................ SUCCESS [  0.206 s]
-[INFO] Framework Core ..................................... SUCCESS [  2.212 s]
-[INFO] Framework UI ....................................... SUCCESS [  0.495 s]
-[INFO] Framework Accessibility ............................ SUCCESS [  0.417 s]
-[INFO] Framework Network .................................. SUCCESS [  0.464 s]
-[INFO] Framework Media .................................... SUCCESS [  0.201 s]
-[INFO] Lila Client Application ............................ SUCCESS [  2.162 s]
-[INFO] ------------------------------------------------------------------------
-[INFO] BUILD SUCCESS
-[INFO] ------------------------------------------------------------------------
-[INFO] Total time:  6.325 s
-[INFO] Finished at: 2025-11-06T08:51:22+01:00
-[INFO] ------------------------------------------------------------------------
-[INFO] Scanning for projects...
-[INFO]
-[INFO] ---------------------< com.lemondelila:client-app >---------------------
-[INFO] Building Lila Client Application 1.0.0-SNAPSHOT
-[INFO]   from pom.xml
-[INFO] --------------------------------[ jar ]---------------------------------
-[INFO]
-[INFO] --- dependency:3.6.1:copy-dependencies (default-cli) @ client-app ---
-[INFO] com.lemondelila:framework-core:jar:1.0.0-SNAPSHOT already exists in destination.
-[INFO] org.slf4j:slf4j-api:jar:2.0.13 already exists in destination.
-[INFO] com.lemondelila:framework-ui:jar:1.0.0-SNAPSHOT already exists in destination.
-[INFO] com.lemondelila:framework-access:jar:1.0.0-SNAPSHOT already exists in destination.
-[INFO] com.lemondelila:framework-network:jar:1.0.0-SNAPSHOT already exists in destination.
-[INFO] com.fasterxml.jackson.core:jackson-databind:jar:2.17.1 already exists in destination.
-[INFO] com.fasterxml.jackson.core:jackson-annotations:jar:2.17.1 already exists in destination.
-[INFO] com.fasterxml.jackson.core:jackson-core:jar:2.17.1 already exists in destination.
-[INFO] com.lemondelila:framework-media:jar:1.0.0-SNAPSHOT already exists in destination.
-[INFO] org.slf4j:slf4j-simple:jar:2.0.13 already exists in destination.
-[INFO] ------------------------------------------------------------------------
-[INFO] BUILD SUCCESS
-[INFO] ------------------------------------------------------------------------
-[INFO] Total time:  1.802 s
-[INFO] Finished at: 2025-11-06T08:51:26+01:00
-[INFO] ------------------------------------------------------------------------
-Démarrage du client Swing...
-[main] INFO com.lemondelila.framework.core.module.FrameworkBootstrap - Configuration du module FrameworkCoreModule
-[main] INFO com.lemondelila.framework.core.module.FrameworkBootstrap - Configuration du module UiFrameworkModule
-[main] INFO com.lemondelila.framework.core.module.FrameworkBootstrap - Configuration du module AccessibilityModule
-[main] INFO com.lemondelila.framework.core.module.FrameworkBootstrap - Configuration du module NetworkModule
-[main] INFO com.lemondelila.framework.core.module.FrameworkBootstrap - Configuration du module MediaModule
-[main] INFO com.lemondelila.framework.core.module.FrameworkBootstrap - Configuration du module ClientAppModule
-[main] INFO com.lemondelila.framework.core.module.FrameworkBootstrap - Démarrage du module FrameworkCoreModule
-[main] INFO com.lemondelila.framework.core.module.FrameworkBootstrap - Démarrage du module UiFrameworkModule
-[main] INFO com.lemondelila.framework.core.module.FrameworkBootstrap - Démarrage du module AccessibilityModule
-[main] INFO com.lemondelila.framework.core.module.FrameworkBootstrap - Démarrage du module NetworkModule
-[main] INFO com.lemondelila.framework.core.module.FrameworkBootstrap - Démarrage du module MediaModule
 [main] INFO com.lemondelila.framework.core.module.FrameworkBootstrap - Démarrage du module ClientAppModule
-Exception in thread "main" java.lang.IllegalStateException: Erreur lors du démarrage du module com.lemondelila.client.module.ClientAppModule
-        at com.lemondelila.framework.core.module.FrameworkBootstrap.lambda$launch$1(FrameworkBootstrap.java:45)
-        at java.base/java.lang.Iterable.forEach(Iterable.java:75)
-        at com.lemondelila.framework.core.module.FrameworkBootstrap.launch(FrameworkBootstrap.java:40)
-        at com.lemondelila.client.AppLauncher.main(AppLauncher.java:22)
-Caused by: java.lang.IllegalStateException: Recursive update
-        at java.base/java.util.concurrent.ConcurrentHashMap.compute(ConcurrentHashMap.java:1958)
-        at com.lemondelila.framework.core.context.ApplicationContext.resolve(ApplicationContext.java:80)
-        at com.lemondelila.framework.core.context.ApplicationContext.get(ApplicationContext.java:44)
-        at com.lemondelila.framework.core.context.ApplicationContext.get(ApplicationContext.java:33)
-        at com.lemondelila.client.module.ClientAppModule.start(ClientAppModule.java:52)
-        at com.lemondelila.framework.core.module.FrameworkBootstrap.lambda$launch$1(FrameworkBootstrap.java:43)
-        ... 3 more
-Arrêt du serveur WebSocket...
-Arrêt du serveur HTTP...
-PS C:\wamp64\www\le-monde-de-lila>
+Exception in thread "AWT-EventQueue-0" java.time.temporal.UnsupportedTemporalTypeException: Unsupported field: HourOfDay
+        at java.base/java.time.Instant.getLong(Instant.java:603)
+        at java.base/java.time.format.DateTimePrintContext.getValue(DateTimePrintContext.java:308)
+        at java.base/java.time.format.DateTimeFormatterBuilder$NumberPrinterParser.format(DateTimeFormatterBuilder.java:2914)
+        at java.base/java.time.format.DateTimeFormatterBuilder$CompositePrinterParser.format(DateTimeFormatterBuilder.java:2529)
+        at java.base/java.time.format.DateTimeFormatter.formatTo(DateTimeFormatter.java:1905)
+        at java.base/java.time.format.DateTimeFormatter.format(DateTimeFormatter.java:1879)
+        at com.lemondelila.client.ui.chat.ChatWindow.appendMessage(ChatWindow.java:99)
+        at com.lemondelila.client.ui.chat.ChatWindow.lambda$registerHandlers$4(ChatWindow.java:88)
+        at java.desktop/java.awt.event.InvocationEvent.dispatch(InvocationEvent.java:318)
+        at java.desktop/java.awt.EventQueue.dispatchEventImpl(EventQueue.java:773)
+        at java.desktop/java.awt.EventQueue$4.run(EventQueue.java:720)
+        at java.desktop/java.awt.EventQueue$4.run(EventQueue.java:714)
+        at java.base/java.security.AccessController.doPrivileged(AccessController.java:400)
+        at java.base/java.security.ProtectionDomain$JavaSecurityAccessImpl.doIntersectionPrivilege(ProtectionDomain.java:87)
+        at java.desktop/java.awt.EventQueue.dispatchEvent(EventQueue.java:742)
+        at java.desktop/java.awt.EventDispatchThread.pumpOneEventForFilters(EventDispatchThread.java:203)
+        at java.desktop/java.awt.EventDispatchThread.pumpEventsForFilter(EventDispatchThread.java:124)
+        at java.desktop/java.awt.EventDispatchThread.pumpEventsForHierarchy(EventDispatchThread.java:113)
+        at java.desktop/java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:109)
+        at java.desktop/java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:101)
+        at java.desktop/java.awt.EventDispatchThread.run(EventDispatchThread.java:90)
+Exception in thread "AWT-EventQueue-0" java.time.temporal.UnsupportedTemporalTypeException: Unsupported field: HourOfDay
+        at java.base/java.time.Instant.getLong(Instant.java:603)
+        at java.base/java.time.format.DateTimePrintContext.getValue(DateTimePrintContext.java:308)
+        at java.base/java.time.format.DateTimeFormatterBuilder$NumberPrinterParser.format(DateTimeFormatterBuilder.java:2914)
+        at java.base/java.time.format.DateTimeFormatterBuilder$CompositePrinterParser.format(DateTimeFormatterBuilder.java:2529)
+        at java.base/java.time.format.DateTimeFormatter.formatTo(DateTimeFormatter.java:1905)
+        at java.base/java.time.format.DateTimeFormatter.format(DateTimeFormatter.java:1879)
+        at com.lemondelila.client.ui.chat.ChatWindow.appendMessage(ChatWindow.java:99)
+        at com.lemondelila.client.ui.chat.ChatWindow.lambda$registerHandlers$4(ChatWindow.java:88)
+        at java.desktop/java.awt.event.InvocationEvent.dispatch(InvocationEvent.java:318)
+        at java.desktop/java.awt.EventQueue.dispatchEventImpl(EventQueue.java:773)
+        at java.desktop/java.awt.EventQueue$4.run(EventQueue.java:720)
+        at java.desktop/java.awt.EventQueue$4.run(EventQueue.java:714)
+        at java.base/java.security.AccessController.doPrivileged(AccessController.java:400)
+        at java.base/java.security.ProtectionDomain$JavaSecurityAccessImpl.doIntersectionPrivilege(ProtectionDomain.java:87)
+        at java.desktop/java.awt.EventQueue.dispatchEvent(EventQueue.java:742)
+        at java.desktop/java.awt.EventDispatchThread.pumpOneEventForFilters(EventDispatchThread.java:203)
+        at java.desktop/java.awt.EventDispatchThread.pumpEventsForFilter(EventDispatchThread.java:124)
+        at java.desktop/java.awt.EventDispatchThread.pumpEventsForHierarchy(EventDispatchThread.java:113)
+        at java.desktop/java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:109)
+        at java.desktop/java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:101)
+        at java.desktop/java.awt.EventDispatchThread.run(EventDispatchThread.java:90)
+Exception in thread "AWT-EventQueue-0" java.time.temporal.UnsupportedTemporalTypeException: Unsupported field: HourOfDay
+        at java.base/java.time.Instant.getLong(Instant.java:603)
+        at java.base/java.time.format.DateTimePrintContext.getValue(DateTimePrintContext.java:308)
+        at java.base/java.time.format.DateTimeFormatterBuilder$NumberPrinterParser.format(DateTimeFormatterBuilder.java:2914)
+        at java.base/java.time.format.DateTimeFormatterBuilder$CompositePrinterParser.format(DateTimeFormatterBuilder.java:2529)
+        at java.base/java.time.format.DateTimeFormatter.formatTo(DateTimeFormatter.java:1905)
+        at java.base/java.time.format.DateTimeFormatter.format(DateTimeFormatter.java:1879)
+        at com.lemondelila.client.ui.chat.ChatWindow.appendMessage(ChatWindow.java:99)
+        at com.lemondelila.client.ui.chat.ChatWindow.lambda$registerHandlers$4(ChatWindow.java:88)
+        at java.desktop/java.awt.event.InvocationEvent.dispatch(InvocationEvent.java:318)
+        at java.desktop/java.awt.EventQueue.dispatchEventImpl(EventQueue.java:773)
+        at java.desktop/java.awt.EventQueue$4.run(EventQueue.java:720)
+        at java.desktop/java.awt.EventQueue$4.run(EventQueue.java:714)
+        at java.base/java.security.AccessController.doPrivileged(AccessController.java:400)
+        at java.base/java.security.ProtectionDomain$JavaSecurityAccessImpl.doIntersectionPrivilege(ProtectionDomain.java:87)
+        at java.desktop/java.awt.EventQueue.dispatchEvent(EventQueue.java:742)
+        at java.desktop/java.awt.EventDispatchThread.pumpOneEventForFilters(EventDispatchThread.java:203)
+        at java.desktop/java.awt.EventDispatchThread.pumpEventsForFilter(EventDispatchThread.java:124)
+        at java.desktop/java.awt.EventDispatchThread.pumpEventsForHierarchy(EventDispatchThread.java:113)
+        at java.desktop/java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:109)
+        at java.desktop/java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:101)
+        at java.desktop/java.awt.EventDispatchThread.run(EventDispatchThread.java:90)
+Exception in thread "AWT-EventQueue-0" java.time.temporal.UnsupportedTemporalTypeException: Unsupported field: HourOfDay
+        at java.base/java.time.Instant.getLong(Instant.java:603)
+        at java.base/java.time.format.DateTimePrintContext.getValue(DateTimePrintContext.java:308)
+        at java.base/java.time.format.DateTimeFormatterBuilder$NumberPrinterParser.format(DateTimeFormatterBuilder.java:2914)
+        at java.base/java.time.format.DateTimeFormatterBuilder$CompositePrinterParser.format(DateTimeFormatterBuilder.java:2529)
+        at java.base/java.time.format.DateTimeFormatter.formatTo(DateTimeFormatter.java:1905)
+        at java.base/java.time.format.DateTimeFormatter.format(DateTimeFormatter.java:1879)
+        at com.lemondelila.client.ui.chat.ChatWindow.appendMessage(ChatWindow.java:99)
+        at com.lemondelila.client.ui.chat.ChatWindow.lambda$registerHandlers$4(ChatWindow.java:88)
+        at java.desktop/java.awt.event.InvocationEvent.dispatch(InvocationEvent.java:318)
+        at java.desktop/java.awt.EventQueue.dispatchEventImpl(EventQueue.java:773)
+        at java.desktop/java.awt.EventQueue$4.run(EventQueue.java:720)
+        at java.desktop/java.awt.EventQueue$4.run(EventQueue.java:714)
+        at java.base/java.security.AccessController.doPrivileged(AccessController.java:400)
+        at java.base/java.security.ProtectionDomain$JavaSecurityAccessImpl.doIntersectionPrivilege(ProtectionDomain.java:87)
+        at java.desktop/java.awt.EventQueue.dispatchEvent(EventQueue.java:742)
+        at java.desktop/java.awt.EventDispatchThread.pumpOneEventForFilters(EventDispatchThread.java:203)
+        at java.desktop/java.awt.EventDispatchThread.pumpEventsForFilter(EventDispatchThread.java:124)
+        at java.desktop/java.awt.EventDispatchThread.pumpEventsForHierarchy(EventDispatchThread.java:113)
+        at java.desktop/java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:109)
+        at java.desktop/java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:101)
+        at java.desktop/java.awt.EventDispatchThread.run(EventDispatchThread.java:90)

@@ -1,6 +1,8 @@
 package com.lemondelila.client.module;
 
+import com.lemondelila.client.chat.ChatConnectionFactory;
 import com.lemondelila.client.controller.AuthController;
+import com.lemondelila.client.session.ClientSession;
 import com.lemondelila.client.settings.AppSettingsService;
 import com.lemondelila.client.ui.screens.HomeScreen;
 import com.lemondelila.client.ui.screens.MainMenuScreen;
@@ -22,6 +24,13 @@ public final class ClientAppModule implements LilaModule {
     public void configure(ApplicationContext.Builder builder) {
 
         builder.bind(AppSettingsService.class, AppSettingsService::new);
+        builder.bind(ClientSession.class, ClientSession::new);
+        builder.bindFactory(ChatConnectionFactory.class, ctx -> new ChatConnectionFactory(
+                ctx.get(java.net.http.HttpClient.class),
+                ctx.get(com.fasterxml.jackson.databind.ObjectMapper.class),
+                ctx.get(com.lemondelila.framework.core.config.ConfigurationService.class),
+                ctx.get(ClientSession.class)
+        ));
 
         builder.bindFactory(HomeScreen.class, ctx -> new HomeScreen(
                 ctx.get(DomainEventBus.class),
@@ -34,14 +43,17 @@ public final class ClientAppModule implements LilaModule {
 
         builder.bindFactory(MainMenuScreen.class, ctx -> new MainMenuScreen(
                 ctx.get(DialogService.class),
-                ctx.get(AppSettingsService.class)
+                ctx.get(AppSettingsService.class),
+                ctx.get(ChatConnectionFactory.class),
+                ctx.get(ClientSession.class)
         ));
 
         builder.bindFactory(AuthController.class, ctx ->
                 new AuthController(
                         ctx.get(DomainEventBus.class),
                         ctx.get(RestClient.class),
-                        ctx.get(TaskScheduler.class)
+                        ctx.get(TaskScheduler.class),
+                        ctx.get(ClientSession.class)
                 )
         );
     }

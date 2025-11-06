@@ -282,7 +282,6 @@ public final class HomeScreen extends JPanel implements Screen {
 
     private void handleLoginSuccess(LoginSucceeded event) {
         setStatus("Connexion reussie pour " + event.username());
-        dialogService.info("Connexion reussie", "Bienvenue " + event.username() + " !");
         loginForm.clearPassword();
         setBusy(false);
         if (screenManager != null) {

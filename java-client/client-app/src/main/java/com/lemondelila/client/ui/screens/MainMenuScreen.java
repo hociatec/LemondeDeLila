@@ -1,6 +1,9 @@
 package com.lemondelila.client.ui.screens;
 
+import com.lemondelila.client.chat.ChatConnectionFactory;
+import com.lemondelila.client.session.ClientSession;
 import com.lemondelila.client.settings.AppSettingsService;
+import com.lemondelila.client.ui.chat.ChatWindow;
 import com.lemondelila.client.ui.options.OptionsDialog;
 import com.lemondelila.framework.ui.dialog.DialogService;
 import com.lemondelila.framework.ui.screen.Screen;
@@ -16,20 +19,27 @@ import javax.swing.SwingUtilities;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Window;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.Window;
 
 public final class MainMenuScreen extends JPanel implements Screen {
 
     private final DialogService dialogService;
     private final AppSettingsService settingsService;
+    private final ChatConnectionFactory chatConnectionFactory;
+    private final ClientSession session;
     private final DefaultListModel<MenuEntry> model = new DefaultListModel<>();
     private final JList<MenuEntry> menuList = new JList<>(model);
 
-    public MainMenuScreen(DialogService dialogService, AppSettingsService settingsService) {
+    public MainMenuScreen(DialogService dialogService,
+                          AppSettingsService settingsService,
+                          ChatConnectionFactory chatConnectionFactory,
+                          ClientSession session) {
         this.dialogService = dialogService;
         this.settingsService = settingsService;
+        this.chatConnectionFactory = chatConnectionFactory;
+        this.session = session;
         buildUi();
     }
 
@@ -42,10 +52,11 @@ public final class MainMenuScreen extends JPanel implements Screen {
         title.setFont(title.getFont().deriveFont(28f));
         add(title, BorderLayout.NORTH);
 
-        model.addElement(new MenuEntry("Étagères", () ->
-                dialogService.info("Étagères", "Cette section sera disponible prochainement.")));
-        model.addElement(new MenuEntry("Rejoindre une table", () ->
-                dialogService.info("Rejoindre une table", "Fonctionnalité bientôt disponible.")));
+        model.addElement(new MenuEntry("Étagères",
+                () -> dialogService.info("Étagères", "Cette section sera disponible prochainement.")));
+        model.addElement(new MenuEntry("Rejoindre une table",
+                () -> dialogService.info("Rejoindre une table", "Fonctionnalité bientôt disponible.")));
+        model.addElement(new MenuEntry("Tchat", this::openChat));
         model.addElement(new MenuEntry("Options", this::openOptions));
 
         menuList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -72,10 +83,31 @@ public final class MainMenuScreen extends JPanel implements Screen {
     }
 
     private void openOptions() {
-        Component parentComponent = SwingUtilities.getWindowAncestor(this);
-        Window owner = parentComponent instanceof Window ? (Window) parentComponent : null;
-        OptionsDialog dialog = new OptionsDialog(owner, settingsService);
-        dialog.setVisible(true);
+        Window owner = SwingUtilities.getWindowAncestor(this) instanceof Window
+                ? (Window) SwingUtilities.getWindowAncestor(this)
+                : null;
+        new OptionsDialog(owner, settingsService).setVisible(true);
+    }
+
+    private void openChat() {
+        var settings = settingsService.current();
+        if (!settings.chatEnabled()) {
+            dialogService.info("Tchat", "Vous avez désactivé le tchat dans les options.");
+            return;
+        }
+        if (session.authenticated().isEmpty()) {
+            dialogService.error("Tchat", "Vous devez être connecté pour accéder au tchat.");
+            return;
+        }
+        Window owner = SwingUtilities.getWindowAncestor(this) instanceof Window
+                ? (Window) SwingUtilities.getWindowAncestor(this)
+                : null;
+        try {
+            ChatWindow window = new ChatWindow(owner, chatConnectionFactory, settingsService, dialogService);
+            window.setVisible(true);
+        } catch (IllegalStateException ex) {
+            dialogService.error("Tchat", ex.getMessage());
+        }
     }
 
     @Override
