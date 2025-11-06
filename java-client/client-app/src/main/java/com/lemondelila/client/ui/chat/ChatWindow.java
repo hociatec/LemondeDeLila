@@ -35,8 +35,9 @@ import java.util.stream.Collectors;
 
 public final class ChatWindow extends JDialog {
 
+    private static final ZoneId LOCAL_ZONE = ZoneId.systemDefault();
     private static final DateTimeFormatter TIME_FORMATTER =
-            DateTimeFormatter.ofPattern("HH:mm").withZone(ZoneId.systemDefault());
+            DateTimeFormatter.ofPattern("HH:mm");
 
     private final JTextArea historyArea = new JTextArea();
     private final JTextField inputField = new JTextField();
@@ -63,20 +64,30 @@ public final class ChatWindow extends JDialog {
         historyArea.setWrapStyleWord(true);
         historyArea.setFont(historyArea.getFont().deriveFont(Font.PLAIN, 13f));
         historyArea.setBorder(new EmptyBorder(8, 8, 8, 8));
-        JScrollPane historyScroll = new JScrollPane(historyArea);
+        JLabel historyLabel = new JLabel("Historique des messages");
+        historyLabel.setLabelFor(historyArea);
+        JPanel historyPanel = new JPanel(new BorderLayout());
+        historyPanel.setBorder(new EmptyBorder(8, 8, 8, 8));
+        historyPanel.add(historyLabel, BorderLayout.NORTH);
+        historyPanel.add(new JScrollPane(historyArea), BorderLayout.CENTER);
 
         presenceList.setVisibleRowCount(12);
         JPanel presencePanel = new JPanel(new BorderLayout());
         presencePanel.setBorder(new EmptyBorder(8, 8, 8, 8));
-        presencePanel.add(new JLabel("Connectes"), BorderLayout.NORTH);
+        JLabel presenceLabel = new JLabel("Liste des joueurs connect\u00e9s");
+        presenceLabel.setLabelFor(presenceList);
+        presencePanel.add(presenceLabel, BorderLayout.NORTH);
         presencePanel.add(new JScrollPane(presenceList), BorderLayout.CENTER);
 
-        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, historyScroll, presencePanel);
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, historyPanel, presencePanel);
         splitPane.setResizeWeight(0.75);
         add(splitPane, BorderLayout.CENTER);
 
         JPanel composer = new JPanel(new BorderLayout(6, 6));
         composer.setBorder(new EmptyBorder(0, 8, 8, 8));
+        JLabel inputLabel = new JLabel("Votre message");
+        inputLabel.setLabelFor(inputField);
+        composer.add(inputLabel, BorderLayout.NORTH);
         composer.add(inputField, BorderLayout.CENTER);
         add(composer, BorderLayout.SOUTH);
 
@@ -129,7 +140,7 @@ public final class ChatWindow extends JDialog {
 
     private void appendMessage(ChatMessage message) {
         removeTrailingBlankLine();
-        String timestamp = TIME_FORMATTER.format(message.createdAt());
+        String timestamp = TIME_FORMATTER.format(message.createdAt().atZone(LOCAL_ZONE));
         historyArea.append(String.format("[%s] %s : %s%n", timestamp, message.username(), message.text()));
         appendBlankLine();
     }
@@ -138,8 +149,8 @@ public final class ChatWindow extends JDialog {
         removeTrailingBlankLine();
         historyArea.append(String.format("-- %s --%n", switch (state) {
             case CONNECTING -> "Connexion au serveur de tchat...";
-            case CONNECTED -> "Connecte.";
-            case CLOSED -> "Connexion fermee.";
+            case CONNECTED -> "Connecté.";
+            case CLOSED -> "Connexion fermée.";
             case FAILED -> "Erreur de connexion.";
         }));
         appendBlankLine();
@@ -173,6 +184,7 @@ public final class ChatWindow extends JDialog {
         presenceModel.clear();
         if (players.isEmpty()) {
             presenceModel.addElement("Aucun joueur en ligne");
+            presenceList.clearSelection();
             return;
         }
         players.forEach(player -> {
@@ -181,5 +193,6 @@ public final class ChatWindow extends JDialog {
                     : " [" + player.rooms().stream().map(PresenceChat::name).collect(Collectors.joining(", ")) + "]";
             presenceModel.addElement(player.username() + rooms);
         });
+        presenceList.setSelectedIndex(0);
     }
 }

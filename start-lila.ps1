@@ -194,8 +194,19 @@ try {
     if (-not $SkipBuild) {
         Write-Host "Compilation du client Java..."
         & $mavenPath clean package -DskipTests
-        # Copier les dépendances runtime du module client-app uniquement (sinon l'agrégateur n'en produit aucune)
+        if ($LASTEXITCODE -ne 0) {
+            throw "La compilation Maven a echoue (code $LASTEXITCODE). Consultez les logs ci-dessus."
+        }
+        # Copier les dependances runtime du module client-app uniquement (sinon l'agregateur n'en produit aucune)
         & $mavenPath -pl client-app dependency:copy-dependencies -DincludeScope=runtime -DoutputDirectory=client-app\target\dependency
+        if ($LASTEXITCODE -ne 0) {
+            throw "La copie des dependances a echoue (code $LASTEXITCODE)."
+        }
+    }
+
+    $appLauncherClass = Join-Path $javaDirectory 'client-app\target\classes\com\lemondelila\client\AppLauncher.class'
+    if (!(Test-Path $appLauncherClass)) {
+        throw "Compilation incomplete : $appLauncherClass introuvable. Relancez le script sans -SkipBuild."
     }
 
     # ✅ Ajout de tous les modules au classpath

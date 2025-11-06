@@ -9,4 +9,6 @@ com\lemondelila\framework\ui\menu\MenuFactory.class
 com\lemondelila\framework\ui\module\UiFrameworkModule.class
 com\lemondelila\framework\ui\dialog\DialogService.class
 com\lemondelila\framework\ui\LilaFrame.class
+com\lemondelila\framework\ui\util\ButtonUtils$1.class
+com\lemondelila\framework\ui\util\ButtonUtils.class
 com\lemondelila\framework\ui\screen\ScreenContext.class

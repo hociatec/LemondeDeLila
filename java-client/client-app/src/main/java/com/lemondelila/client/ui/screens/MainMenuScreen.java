@@ -9,32 +9,47 @@ import com.lemondelila.client.ui.presence.PresenceListDialog;
 import com.lemondelila.framework.ui.dialog.DialogService;
 import com.lemondelila.framework.ui.screen.Screen;
 import com.lemondelila.framework.ui.screen.ScreenContext;
+import com.lemondelila.framework.ui.screen.ScreenManager;
+import com.lemondelila.framework.ui.util.ButtonUtils;
 
 import javax.swing.AbstractAction;
-import javax.swing.DefaultListModel;
-import javax.swing.KeyStroke;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.ListSelectionModel;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
-import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
+import java.util.ArrayList;
+import java.util.List;
 
 public final class MainMenuScreen extends JPanel implements Screen {
+
+    private static final String ACTION_SHOW_PRESENCE = "main-menu.show-presence";
+    private static final String ACTION_NAV_UP = "main-menu.nav-up.";
+    private static final String ACTION_NAV_DOWN = "main-menu.nav-down.";
 
     private final DialogService dialogService;
     private final AppSettingsService settingsService;
     private final ChatConnectionFactory chatConnectionFactory;
     private final ClientSession session;
-    private final DefaultListModel<MenuEntry> model = new DefaultListModel<>();
-    private final JList<MenuEntry> menuList = new JList<>(model);
+
+    private final JLabel statusLabel = new JLabel(" ");
+    private final JButton shelvesButton = new JButton("Etageres");
+    private final JButton joinGameButton = new JButton("Rejoindre une partie");
+    private final JButton chatButton = new JButton("Tchat");
+    private final JButton optionsButton = new JButton("Options");
+    private final JButton logoutButton = new JButton("Se deconnecter");
+
+    private final List<JButton> menuButtons = new ArrayList<>();
+
+    private ScreenManager screenManager;
+    private ChatWindow chatWindow;
 
     public MainMenuScreen(DialogService dialogService,
                           AppSettingsService settingsService,
@@ -45,101 +60,163 @@ public final class MainMenuScreen extends JPanel implements Screen {
         this.chatConnectionFactory = chatConnectionFactory;
         this.session = session;
         buildUi();
+        registerHandlers();
+        registerShortcuts();
+        registerNavigation();
     }
 
     private void buildUi() {
-        setLayout(new BorderLayout(16, 16));
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setBorder(javax.swing.BorderFactory.createEmptyBorder(48, 64, 48, 64));
 
         JLabel title = new JLabel("Menu principal");
         title.setAlignmentX(Component.CENTER_ALIGNMENT);
-        title.setFont(title.getFont().deriveFont(28f));
-        add(title, BorderLayout.NORTH);
+        title.setFont(title.getFont().deriveFont(26f));
+        add(title);
+        add(Box.createRigidArea(new Dimension(0, 32)));
 
-        model.addElement(new MenuEntry("Etageres",
-                () -> dialogService.info("Etageres", "Cette section sera disponible prochainement.")));
-        model.addElement(new MenuEntry("Rejoindre une table",
-                () -> dialogService.info("Rejoindre une table", "Fonctionnalite bientot disponible.")));
-        model.addElement(new MenuEntry("Tchat", this::openChat));
-        model.addElement(new MenuEntry("Options", this::openOptions));
+        addMenuButton(shelvesButton);
+        addSpacer();
+        addMenuButton(joinGameButton);
+        addSpacer();
+        addMenuButton(chatButton);
+        addSpacer();
+        addMenuButton(optionsButton);
+        add(Box.createRigidArea(new Dimension(0, 24)));
+        addMenuButton(logoutButton);
 
-        menuList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        menuList.setSelectedIndex(0);
-        menuList.setVisibleRowCount(model.size());
-        menuList.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyPressed(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                    triggerSelection();
-                }
-            }
-        });
-
-        add(new JScrollPane(menuList), BorderLayout.CENTER);
-        setPreferredSize(new Dimension(480, 360));
-        registerShortcuts();
+        add(Box.createRigidArea(new Dimension(0, 24)));
+        statusLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        add(statusLabel);
     }
 
-    private void triggerSelection() {
-        MenuEntry entry = menuList.getSelectedValue();
-        if (entry != null) {
-            entry.action().run();
-        }
+    private void addMenuButton(JButton button) {
+        button.setAlignmentX(Component.CENTER_ALIGNMENT);
+        button.setMaximumSize(new Dimension(320, 48));
+        button.setFocusTraversalKeysEnabled(false);
+        ButtonUtils.enterActivates(button);
+        menuButtons.add(button);
+        add(button);
     }
 
-    private void openOptions() {
-        Window owner = SwingUtilities.getWindowAncestor(this) instanceof Window
-                ? (Window) SwingUtilities.getWindowAncestor(this)
-                : null;
-        new OptionsDialog(owner, settingsService).setVisible(true);
+    private void addSpacer() {
+        add(Box.createRigidArea(new Dimension(0, 12)));
     }
 
-    private void openChat() {
-        var settings = settingsService.current();
-        if (!settings.chatEnabled()) {
-            dialogService.info("Tchat", "Vous avez desactive le tchat dans les options.");
-            return;
-        }
-        if (session.authenticated().isEmpty()) {
-            dialogService.error("Tchat", "Vous devez etre connecte pour acceder au tchat.");
-            return;
-        }
-        Window owner = SwingUtilities.getWindowAncestor(this) instanceof Window
-                ? (Window) SwingUtilities.getWindowAncestor(this)
-                : null;
-        try {
-            ChatWindow window = new ChatWindow(owner, chatConnectionFactory, settingsService, dialogService);
-            window.setVisible(true);
-        } catch (IllegalStateException ex) {
-            dialogService.error("Tchat", ex.getMessage());
-        }
-    }
-
-    private void openPresenceDialog() {
-        var settings = settingsService.current();
-        if (!settings.chatEnabled()) {
-            dialogService.info("Presence", "Activez le tchat pour consulter la liste des connectes.");
-            return;
-        }
-        if (session.authenticated().isEmpty()) {
-            dialogService.error("Presence", "Vous devez etre connecte pour consulter la liste.");
-            return;
-        }
-        Window owner = SwingUtilities.getWindowAncestor(this) instanceof Window
-                ? (Window) SwingUtilities.getWindowAncestor(this)
-                : null;
-        new PresenceListDialog(owner, chatConnectionFactory, dialogService).setVisible(true);
+    private void registerHandlers() {
+        shelvesButton.addActionListener(e -> featureSoon("Etageres"));
+        joinGameButton.addActionListener(e -> featureSoon("Rejoindre une partie"));
+        chatButton.addActionListener(e -> openChat());
+        optionsButton.addActionListener(e -> openOptions());
+        logoutButton.addActionListener(e -> logout());
     }
 
     private void registerShortcuts() {
-        getInputMap(WHEN_IN_FOCUSED_WINDOW)
-                .put(KeyStroke.getKeyStroke(KeyEvent.VK_U, KeyEvent.CTRL_DOWN_MASK), "showPresence");
-        getActionMap().put("showPresence", new AbstractAction() {
+        getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("control U"), ACTION_SHOW_PRESENCE);
+        getActionMap().put(ACTION_SHOW_PRESENCE, new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 openPresenceDialog();
             }
         });
+    }
+
+    private void registerNavigation() {
+        for (int i = 0; i < menuButtons.size(); i++) {
+            JButton button = menuButtons.get(i);
+            int currentIndex = i;
+            int previousIndex = i - 1;
+            int nextIndex = i + 1;
+
+            String upAction = ACTION_NAV_UP + currentIndex;
+            String downAction = ACTION_NAV_DOWN + currentIndex;
+
+            button.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke("UP"), upAction);
+            button.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke("DOWN"), downAction);
+
+            button.getActionMap().put(upAction, new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    if (previousIndex >= 0) {
+                        menuButtons.get(previousIndex).requestFocusInWindow();
+                    }
+                }
+            });
+            button.getActionMap().put(downAction, new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    if (nextIndex < menuButtons.size()) {
+                        menuButtons.get(nextIndex).requestFocusInWindow();
+                    }
+                }
+            });
+        }
+    }
+
+    private void featureSoon(String feature) {
+        dialogService.info("Bientot disponible", feature + " sera disponible prochainement.");
+        setStatus("Fonctionnalite \"" + feature + "\" en cours de developpement.");
+    }
+
+    private void openPresenceDialog() {
+        if (!ensureAuthenticated()) {
+            return;
+        }
+        Window window = SwingUtilities.getWindowAncestor(this);
+        PresenceListDialog dialog = new PresenceListDialog(window, chatConnectionFactory, dialogService);
+        dialog.setVisible(true);
+        setStatus("Liste des connectes ouverte.");
+    }
+
+    private void openChat() {
+        if (!ensureAuthenticated() || !ensureChatEnabled()) {
+            return;
+        }
+        if (chatWindow == null || !chatWindow.isDisplayable()) {
+            Window window = SwingUtilities.getWindowAncestor(this);
+            chatWindow = new ChatWindow(window, chatConnectionFactory, settingsService, dialogService);
+        }
+        chatWindow.setVisible(true);
+        chatWindow.toFront();
+        setStatus("Tchat ouvert.");
+    }
+
+    private void openOptions() {
+        Window window = SwingUtilities.getWindowAncestor(this);
+        OptionsDialog dialog = new OptionsDialog(window, settingsService);
+        dialog.setVisible(true);
+        setStatus("Options mises a jour.");
+    }
+
+    private void logout() {
+        session.clear();
+        setStatus("Deconnecte.");
+        if (screenManager != null) {
+            SwingUtilities.invokeLater(() -> screenManager.show("home"));
+        }
+    }
+
+    private boolean ensureAuthenticated() {
+        if (session.authenticated().isPresent()) {
+            return true;
+        }
+        dialogService.error("Authentification requise", "Veuillez vous reconnecter pour acceder a ce module.");
+        if (screenManager != null) {
+            SwingUtilities.invokeLater(() -> screenManager.show("home"));
+        }
+        return false;
+    }
+
+    private boolean ensureChatEnabled() {
+        if (settingsService.current().chatEnabled()) {
+            return true;
+        }
+        dialogService.info("Tchat desactive", "Activez le tchat dans les options pour l'utiliser.");
+        return false;
+    }
+
+    private void setStatus(String text) {
+        SwingUtilities.invokeLater(() -> statusLabel.setText(text));
     }
 
     @Override
@@ -148,19 +225,18 @@ public final class MainMenuScreen extends JPanel implements Screen {
     }
 
     @Override
-    public MainMenuScreen getComponent() {
+    public JPanel getComponent() {
         return this;
     }
 
     @Override
     public void onShow(ScreenContext context) {
-        SwingUtilities.invokeLater(() -> menuList.requestFocusInWindow());
+        this.screenManager = context.screenManager();
+        setStatus("Pret.");
     }
 
-    private record MenuEntry(String label, Runnable action) {
-        @Override
-        public String toString() {
-            return label;
-        }
+    @Override
+    public void onHide(ScreenContext context) {
+        this.screenManager = null;
     }
 }

@@ -2,18 +2,15 @@ package com.lemondelila.client.ui.screens;
 
 import com.lemondelila.framework.access.AccessibleDecorator;
 import com.lemondelila.framework.access.AccessibleSpec;
+import com.lemondelila.framework.ui.util.ButtonUtils;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.AbstractAction;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JPanel;
-import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
 
 final class LandingPanel extends JPanel {
 
@@ -29,7 +26,7 @@ final class LandingPanel extends JPanel {
                 .name("Bouton connexion")
                 .shortcut("Alt+C")
                 .build());
-        enableEnter(loginButton);
+        ButtonUtils.enterActivates(loginButton);
         add(loginButton);
 
         add(Box.createRigidArea(new Dimension(0, 16)));
@@ -39,7 +36,7 @@ final class LandingPanel extends JPanel {
                 .name("Bouton inscription")
                 .shortcut("Alt+I")
                 .build());
-        enableEnter(registerButton);
+        ButtonUtils.enterActivates(registerButton);
         add(registerButton);
     }
 
@@ -60,15 +57,5 @@ final class LandingPanel extends JPanel {
         SwingUtilities.invokeLater(() -> loginButton.requestFocusInWindow());
     }
 
-    private void enableEnter(JButton button) {
-        button.getInputMap(JComponent.WHEN_FOCUSED)
-                .put(KeyStroke.getKeyStroke("ENTER"), "press-enter");
-        button.getActionMap().put("press-enter", new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                button.doClick();
-            }
-        });
-    }
 }
 

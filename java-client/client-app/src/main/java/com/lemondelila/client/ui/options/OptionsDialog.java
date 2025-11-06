@@ -2,6 +2,7 @@ package com.lemondelila.client.ui.options;
 
 import com.lemondelila.client.settings.AppSettings;
 import com.lemondelila.client.settings.AppSettingsService;
+import com.lemondelila.framework.ui.util.ButtonUtils;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -20,7 +21,7 @@ public final class OptionsDialog extends JDialog {
 
     private final JSlider gameVolumeSlider = slider();
     private final JSlider musicVolumeSlider = slider();
-    private final JCheckBox confirmExit = new JCheckBox("Demander confirmation Ã  la fermeture");
+    private final JCheckBox confirmExit = new JCheckBox("Demander confirmation à la fermeture");
     private final JCheckBox chatEnabled = new JCheckBox("Activer le tchat global");
     private final JCheckBox confirmChatExit = new JCheckBox("Demander confirmation avant de fermer le tchat");
     private final JButton saveButton = new JButton("Enregistrer");
@@ -81,6 +82,8 @@ public final class OptionsDialog extends JDialog {
             dispose();
         });
         cancelButton.addActionListener(e -> dispose());
+        ButtonUtils.enterActivates(saveButton);
+        ButtonUtils.enterActivates(cancelButton);
         panel.add(saveButton);
         panel.add(cancelButton);
         return panel;
@@ -95,4 +98,3 @@ public final class OptionsDialog extends JDialog {
         confirmChatExit.setSelected(current.confirmChatExit());
     }
 }
-

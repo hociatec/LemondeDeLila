@@ -6,6 +6,7 @@ import com.lemondelila.client.chat.ChatState;
 import com.lemondelila.client.presence.PresenceChat;
 import com.lemondelila.client.presence.PresencePlayer;
 import com.lemondelila.framework.ui.dialog.DialogService;
+import com.lemondelila.framework.ui.util.ButtonUtils;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -32,19 +33,21 @@ public final class PresenceListDialog extends JDialog {
     public PresenceListDialog(Window owner,
                               ChatConnectionFactory connectionFactory,
                               DialogService dialogService) {
-        super(owner, "Joueurs connectes", ModalityType.APPLICATION_MODAL);
+        super(owner, "Joueurs connect\u00e9s", ModalityType.APPLICATION_MODAL);
         this.dialogService = dialogService;
         setLayout(new BorderLayout(8, 8));
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
         JPanel content = new JPanel(new BorderLayout(8, 8));
         content.setBorder(new EmptyBorder(12, 12, 12, 12));
+        content.add(new JLabel("Liste des joueurs connect\u00e9s"), BorderLayout.NORTH);
         content.add(new JScrollPane(list), BorderLayout.CENTER);
         content.add(statusLabel, BorderLayout.SOUTH);
         add(content, BorderLayout.CENTER);
 
         JButton closeButton = new JButton("Fermer");
         closeButton.addActionListener(e -> dispose());
+        ButtonUtils.enterActivates(closeButton);
         JPanel footer = new JPanel();
         footer.add(closeButton);
         add(footer, BorderLayout.SOUTH);
@@ -69,10 +72,10 @@ public final class PresenceListDialog extends JDialog {
         connection.onPresence(players -> SwingUtilities.invokeLater(() -> updateList(players)));
         connection.onState(state -> {
             if (state == ChatState.FAILED) {
-                SwingUtilities.invokeLater(() -> statusLabel.setText("Erreur de connexion au serveur de presence."));
+                SwingUtilities.invokeLater(() -> statusLabel.setText("Erreur de connexion au serveur de pr\u00e9sence."));
             }
         });
-        connection.onError(error -> SwingUtilities.invokeLater(() -> dialogService.error("Presence", error)));
+        connection.onError(error -> SwingUtilities.invokeLater(() -> dialogService.error("Pr\u00e9sence", error)));
     }
 
     private void updateList(List<PresencePlayer> players) {
@@ -80,6 +83,7 @@ public final class PresenceListDialog extends JDialog {
         if (players.isEmpty()) {
             model.addElement("Aucun joueur en ligne");
             statusLabel.setText("0 joueur en ligne");
+            list.clearSelection();
             return;
         }
         players.forEach(player -> {
@@ -89,5 +93,6 @@ public final class PresenceListDialog extends JDialog {
             model.addElement(player.username() + rooms);
         });
         statusLabel.setText(players.size() + " joueur(s) en ligne");
+        list.setSelectedIndex(0);
     }
 }
