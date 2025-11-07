@@ -98,6 +98,89 @@ function Ensure-PHPDependencies {
     & $composer.Source install --no-interaction --working-dir $BackendDir
 }
 
+function Remove-BomFromFile {
+    param(
+        [string]$FilePath
+    )
+
+    $bytes = [System.IO.File]::ReadAllBytes($FilePath)
+    if ($bytes.Length -ge 3 -and $bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF) {
+        $sliceLength = [Math]::Max($bytes.Length - 3, 0)
+        $cleanBytes = [byte[]]::new($sliceLength)
+        if ($sliceLength -gt 0) {
+            [Array]::Copy($bytes, 3, $cleanBytes, 0, $sliceLength)
+        }
+        [System.IO.File]::WriteAllBytes($FilePath, $cleanBytes)
+        return 'UTF-8'
+    }
+    elseif ($bytes.Length -ge 4 -and $bytes[0] -eq 0xFF -and $bytes[1] -eq 0xFE -and $bytes[2] -eq 0x00 -and $bytes[3] -eq 0x00) {
+        $sliceLength = [Math]::Max($bytes.Length - 4, 0)
+        $cleanBytes = [byte[]]::new($sliceLength)
+        if ($sliceLength -gt 0) {
+            [Array]::Copy($bytes, 4, $cleanBytes, 0, $sliceLength)
+        }
+        [System.IO.File]::WriteAllBytes($FilePath, $cleanBytes)
+        return 'UTF-32LE'
+    }
+    elseif ($bytes.Length -ge 4 -and $bytes[0] -eq 0x00 -and $bytes[1] -eq 0x00 -and $bytes[2] -eq 0xFE -and $bytes[3] -eq 0xFF) {
+        $sliceLength = [Math]::Max($bytes.Length - 4, 0)
+        $cleanBytes = [byte[]]::new($sliceLength)
+        if ($sliceLength -gt 0) {
+            [Array]::Copy($bytes, 4, $cleanBytes, 0, $sliceLength)
+        }
+        [System.IO.File]::WriteAllBytes($FilePath, $cleanBytes)
+        return 'UTF-32BE'
+    }
+    elseif ($bytes.Length -ge 2 -and $bytes[0] -eq 0xFF -and $bytes[1] -eq 0xFE) {
+        $sliceLength = [Math]::Max($bytes.Length - 2, 0)
+        $cleanBytes = [byte[]]::new($sliceLength)
+        if ($sliceLength -gt 0) {
+            [Array]::Copy($bytes, 2, $cleanBytes, 0, $sliceLength)
+        }
+        [System.IO.File]::WriteAllBytes($FilePath, $cleanBytes)
+        return 'UTF-16LE'
+    }
+    elseif ($bytes.Length -ge 2 -and $bytes[0] -eq 0xFE -and $bytes[1] -eq 0xFF) {
+        $sliceLength = [Math]::Max($bytes.Length - 2, 0)
+        $cleanBytes = [byte[]]::new($sliceLength)
+        if ($sliceLength -gt 0) {
+            [Array]::Copy($bytes, 2, $cleanBytes, 0, $sliceLength)
+        }
+        [System.IO.File]::WriteAllBytes($FilePath, $cleanBytes)
+        return 'UTF-16BE'
+    }
+
+    return $null
+}
+
+function Remove-BomFromSource {
+    param(
+        [string]$RootPath,
+        [string[]]$Extensions = @('.java', '.xml', '.properties', '.yml', '.yaml')
+    )
+
+    $normalizedExtensions = $Extensions | ForEach-Object {
+        if ($_ -like '.*') { $_.ToLowerInvariant() }
+        else { ".{0}" -f $_.ToLowerInvariant() }
+    }
+
+    $cleanedCount = 0
+    Get-ChildItem -Path $RootPath -Recurse -File | ForEach-Object {
+        $extension = $_.Extension.ToLowerInvariant()
+        if ($normalizedExtensions -contains $extension) {
+            $bomType = Remove-BomFromFile -FilePath $_.FullName
+            if ($bomType) {
+                $cleanedCount++
+                Write-Host "Suppression du BOM $bomType : $($_.FullName)"
+            }
+        }
+    }
+
+    if ($cleanedCount -gt 0) {
+        Write-Host "$cleanedCount fichier(s) nettoye(s) des BOM."
+    }
+}
+
 function Start-BackendHttp {
     param(
         [string]$BackendDir,
@@ -158,7 +241,65 @@ function Wait-ForEndpoint {
     throw "Impossible de joindre $Url après $TimeoutSeconds secondes."
 }
 
+function Wait-ForTcpPort {
+    param(
+        [string]$TcpHost,
+        [int]$TcpPort,
+        [int]$TimeoutSeconds = 45
+    )
+
+    Write-Host "Attente de disponibilit� du port $TcpHost`:$TcpPort ..."
+    $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+    while ($stopwatch.Elapsed.TotalSeconds -lt $TimeoutSeconds) {
+        try {
+            $client = New-Object System.Net.Sockets.TcpClient
+            $asyncResult = $client.BeginConnect($TcpHost, $TcpPort, $null, $null)
+            if ($asyncResult.AsyncWaitHandle.WaitOne(1000)) {
+                $client.EndConnect($asyncResult)
+                $client.Close()
+                Write-Host "Port $TcpHost`:$TcpPort disponible."
+                return
+            }
+            $client.Close()
+        }
+        catch {
+            # retry later
+        }
+        Start-Sleep -Seconds 1
+    }
+    throw "Impossible de joindre $Host`:$Port apr�s $TimeoutSeconds secondes."
+}
+
 Set-Location $rootDirectory
+
+$wsHost = $env:APP_WS_HOST
+$wsPort = $env:APP_WS_PORT
+$envFiles = @('.env.local', '.env.dev.local', '.env', '.env.dev')
+foreach ($fileName in $envFiles) {
+    if ($wsHost -and $wsPort) { break }
+    $envPath = Join-Path $backendDirectory $fileName
+    if (-not (Test-Path $envPath)) { continue }
+    foreach ($line in Get-Content $envPath) {
+        if (-not $wsHost -and $line -match '^\s*APP_WS_HOST\s*=\s*(.+)$') {
+            $value = $matches[1].Trim()
+            $wsHost = $value.Trim("'`"")
+        }
+        elseif (-not $wsPort -and $line -match '^\s*APP_WS_PORT\s*=\s*(.+)$') {
+            $value = $matches[1].Trim().Trim("'`"")
+            [int]$parsed = 0
+            if ([int]::TryParse($value, [ref]$parsed)) {
+                $wsPort = $parsed
+            }
+        }
+    }
+}
+if (-not $wsHost) { $wsHost = '127.0.0.1' }
+if (-not $wsPort) { $wsPort = 8081 }
+[int]$wsPortValue = 0
+if (-not [int]::TryParse([string]$wsPort, [ref]$wsPortValue)) {
+    $wsPortValue = 8081
+}
+$wsPort = $wsPortValue
 
 $mavenPath = Ensure-Maven -Root $rootDirectory
 Ensure-PHPDependencies -BackendDir $backendDirectory
@@ -185,13 +326,22 @@ try {
 
     if ((-not $SkipRealtime) -and $phpCmd) {
         $realtimeProcess = Start-RealtimeServer -BackendDir $backendDirectory -PhpPath $phpCmd.Source -LogDir $logDirectory
-        Start-Sleep -Seconds 2
+        try {
+            Wait-ForTcpPort -TcpHost $wsHost -TcpPort $wsPort
+        }
+        catch {
+            if ($realtimeProcess -and -not $realtimeProcess.HasExited) {
+                try { $realtimeProcess.Kill() } catch {}
+            }
+            throw
+        }
     }
 
     Push-Location $javaDirectory
     $javaLocationPushed = $true
 
     if (-not $SkipBuild) {
+        Remove-BomFromSource -RootPath $javaDirectory -Extensions @('.java', '.xml', '.properties', '.yml', '.yaml')
         Write-Host "Compilation du client Java..."
         & $mavenPath clean package -DskipTests
         if ($LASTEXITCODE -ne 0) {

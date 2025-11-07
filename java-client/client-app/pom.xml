@@ -16,6 +16,10 @@
     <name>Lila Client Application</name>
     <packaging>jar</packaging>
 
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
     <dependencies>
         <!-- Framework interne -->
         <dependency>
@@ -77,6 +81,7 @@
                 <configuration>
                     <source>${maven.compiler.source}</source>
                     <target>${maven.compiler.target}</target>
+                    <encoding>${project.build.sourceEncoding}</encoding>
                     <skip>false</skip>
                 </configuration>
             </plugin>

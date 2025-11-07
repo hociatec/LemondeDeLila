@@ -16,13 +16,14 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public final class StandardRealtimeGateway implements RealtimeGateway {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StandardRealtimeGateway.class);
 
     private final HttpClient httpClient;
-    private final URI endpoint;
+    private final Supplier<URI> endpointSupplier;
     private final ObjectMapper objectMapper;
     private final DomainEventBus eventBus;
     private final CopyOnWriteArrayList<Consumer<JsonNode>> messageHandlers = new CopyOnWriteArrayList<>();
@@ -33,8 +34,15 @@ public final class StandardRealtimeGateway implements RealtimeGateway {
                                    URI endpoint,
                                    ObjectMapper objectMapper,
                                    DomainEventBus eventBus) {
+        this(httpClient, () -> Objects.requireNonNull(endpoint, "endpoint"), objectMapper, eventBus);
+    }
+
+    public StandardRealtimeGateway(HttpClient httpClient,
+                                   Supplier<URI> endpointSupplier,
+                                   ObjectMapper objectMapper,
+                                   DomainEventBus eventBus) {
         this.httpClient = Objects.requireNonNull(httpClient, "httpClient");
-        this.endpoint = Objects.requireNonNull(endpoint, "endpoint");
+        this.endpointSupplier = Objects.requireNonNull(endpointSupplier, "endpointSupplier");
         this.objectMapper = Objects.requireNonNull(objectMapper, "objectMapper");
         this.eventBus = Objects.requireNonNull(eventBus, "eventBus");
     }
@@ -42,6 +50,7 @@ public final class StandardRealtimeGateway implements RealtimeGateway {
     @Override
     public void connect() {
         emitState(ConnectionState.CONNECTING);
+        URI endpoint = endpointSupplier.get();
         httpClient.newWebSocketBuilder()
                 .connectTimeout(Duration.ofSeconds(10))
                 .buildAsync(endpoint, new ListenerImpl())
@@ -142,4 +151,3 @@ public final class StandardRealtimeGateway implements RealtimeGateway {
     public record SocketClosed(int statusCode, String reason) {
     }
 }
-

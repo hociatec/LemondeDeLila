@@ -5,6 +5,7 @@ import com.lemondelila.client.controller.chat.ChatController;
 import com.lemondelila.client.controller.presence.PresenceController;
 import com.lemondelila.client.controller.settings.OptionsController;
 import com.lemondelila.client.model.user.ClientSession;
+import com.lemondelila.framework.network.ws.RealtimeGateway;
 import com.lemondelila.framework.ui.dialog.DialogService;
 import com.lemondelila.framework.ui.screen.Screen;
 import com.lemondelila.framework.ui.screen.ScreenContext;
@@ -38,6 +39,7 @@ public final class MainMenuScreen extends JPanel implements Screen {
     private final OptionsController optionsController;
     private final CatalogController catalogController;
     private final ClientSession session;
+    private final RealtimeGateway realtimeGateway;
 
     private final JLabel statusLabel = new JLabel(" ");
     private final JButton shelvesButton = new JButton("Etageres");
@@ -54,13 +56,15 @@ public final class MainMenuScreen extends JPanel implements Screen {
                           PresenceController presenceController,
                           OptionsController optionsController,
                           CatalogController catalogController,
-                          ClientSession session) {
+                          ClientSession session,
+                          RealtimeGateway realtimeGateway) {
         this.dialogService = dialogService;
         this.chatController = chatController;
         this.presenceController = presenceController;
         this.optionsController = optionsController;
         this.catalogController = catalogController;
         this.session = session;
+        this.realtimeGateway = realtimeGateway;
         buildUi();
         registerHandlers();
         registerShortcuts();
@@ -192,6 +196,10 @@ public final class MainMenuScreen extends JPanel implements Screen {
     private void logout() {
         session.clear();
         chatController.close();
+        try {
+            realtimeGateway.close();
+        } catch (Exception ignored) {
+        }
         setStatus("Deconnecte.");
         if (screenManager != null) {
             SwingUtilities.invokeLater(() -> screenManager.show("home"));

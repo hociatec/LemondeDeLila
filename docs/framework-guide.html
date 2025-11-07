@@ -35,6 +35,8 @@
         <li><a href="#checklist">7. Checklist de validation</a></li>
         <li><a href="#options-locales">8. Options locales et préférences</a></li>
         <li><a href="#tchat">9. Tchat en temps réel</a></li>
+        <li><a href="#game-nemesis">10. Module Nemesis</a></li>
+        <li><a href="#network-config">11. Configuration reseau</a></li>
     </ul>
 </nav>
 
@@ -198,6 +200,37 @@ shortcutRegistry.register(KeyStroke.getKeyStroke("alt G"), "Ouvrir le catalogue"
         <li>En cas d’erreur réseau, le <code>DialogService</code> affiche un message tout en conservant la fenêtre
             ouverte.</li>
     </ul>
+</section>
+
+<section id="game-nemesis">
+    <h2>10. Module Nemesis</h2>
+    <p>Le mini-jeu <em>Mission Nemesis</em> a ete rationalise : les classes Java utilisent des noms concis
+        <code>Nemesis*</code> et sont regroupees sous <code>com.lemondelila.client.gamelogic.missionnemesis</code>.</p>
+    <ul>
+        <li><strong>Controle</strong> : <code>NemesisController</code> pilote les flux asynchrones et notifie les vues.</li>
+        <li><strong>Acces reseau</strong> : <code>NemesisRemoteClient</code> centralise les appels REST (creation de partie, rafraichissement, tirs).</li>
+        <li><strong>Modele</strong> : <code>NemesisSession</code>, <code>NemesisState</code> et <code>NemesisStateMapper</code> exposent l'etat du jeu cote client.</li>
+        <li><strong>Interface</strong> : <code>NemesisScreen</code> assemble plusieurs panneaux dediques (<code>NemesisControlsPanel</code>, <code>NemesisGridPanel</code>, <code>NemesisLogPanel</code>, <code>NemesisFooterPanel</code>).</li>
+    </ul>
+    <div class="tip">
+        <p>Les anciennes classes prefixees <code>MissionNemesis*</code> ont ete supprimees. Pensez a mettre a jour vos imports lors d'un rebase.</p>
+    </div>
+</section>
+
+<section id="network-config">
+    <h2>11. Configuration reseau</h2>
+    <p>Le client Swing charge les URLs WebSocket depuis <code>client-app/src/main/resources/config/client.properties</code>.</p>
+    <ul>
+        <li><code>network.ws.url=ws://127.0.0.1:8081/ws</code> pour la table de jeu Nemesis.</li>
+        <li><code>network.ws.presence=ws://127.0.0.1:8081/presence</code> pour le tchat et la presence.</li>
+    </ul>
+    <p>Le script <code>start-lila.ps1</code> demarre <code>php bin/console app:realtime:serve --env=dev</code> qui ecoute sur
+        <strong>127.0.0.1:8081</strong>. Si vous modifiez <code>APP_WS_HOST</code>/<code>APP_WS_PORT</code> cote backend,
+        synchronisez ce fichier pour eviter les erreurs de connexion.</p>
+    <p>Depuis la derniere mise � jour, le script attend que le port WebSocket soit ouvert avant de lancer le client,
+        afin d'eviter les erreurs <em>Connexion WebSocket echouee</em> au demarrage.</p>
+    <p>Le client Swing n'etablit la connexion que lorsque l'utilisateur est authentifie : le token JWT est ajoute a l'URL
+        par <code>TokenAwareRealtimeGateway</code>, ce qui evite les erreurs HTTP 400 lors du handshake.</p>
 </section>
 
 <footer>

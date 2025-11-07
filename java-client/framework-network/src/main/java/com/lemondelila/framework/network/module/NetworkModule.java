@@ -28,10 +28,9 @@ public final class NetworkModule implements LilaModule {
         });
         builder.bindFactory(RealtimeGateway.class, ctx -> {
             ConfigurationService config = ctx.get(ConfigurationService.class);
-            URI wsUri = URI.create(config.get("network.ws.url", "ws://127.0.0.1:8080/ws"));
             return new StandardRealtimeGateway(
                     ctx.get(HttpClient.class),
-                    wsUri,
+                    () -> URI.create(config.get("network.ws.url", "ws://127.0.0.1:8080/ws")),
                     ctx.get(ObjectMapper.class),
                     ctx.get(DomainEventBus.class)
             );

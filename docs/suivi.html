@@ -92,10 +92,23 @@
         <li><span class="tag tag-doc">doc</span> <code>docs/framework-guide.html</code> (lancement, architecture, modules, raccourcis, API, options, tchat).</li>
         <li><span class="tag tag-doc">doc</span> <code>docs/suivi.html</code> (ce fichier) : récapitulatif chronologique des travaux pour garder une base de référence.</li>
     </ul>
-</section>
+  </section>
 
-<section>
-    <h2>6. Prochaines pistes</h2>
+  <section>
+      <h2>6. Module Nemesis</h2>
+      <div class="date">Mise a jour recente</div>
+      <ul>
+          <li><span class="tag tag-feature">feature</span> Renommage complet des classes <code>MissionNemesis*</code> en <code>Nemesis*</code> (controleur, services, modeles, vues Swing).</li>
+          <li><span class="tag tag-fix">fix</span> <code>NemesisSessionStore</code> delegue maintenant a <code>InMemoryGameSessionStore</code>, evitant l'heritage d'une classe <code>final</code>.</li>
+          <li><span class="tag tag-doc">doc</span> Mise a jour de <code>framework-guide.html</code> et de ce suivi pour decrire la nouvelle structure.</li>
+          <li><span class="tag tag-fix">fix</span> <code>client.properties</code> aligne sur <strong>ws://127.0.0.1:8081/ws</strong>, coherent avec <code>app:realtime:serve</code>.</li>
+          <li><span class="tag tag-fix">fix</span> <code>start-lila.ps1</code> attend l'ouverture du port WebSocket avant de lancer le client Swing.</li>
+          <li><span class="tag tag-feature">feature</span> Ajout d'un <code>TokenAwareRealtimeGateway</code> qui ajoute automatiquement le JWT aux connexions WS et ne se connecte qu'apres authentification.</li>
+      </ul>
+  </section>
+
+  <section>
+      <h2>7. Prochaines pistes</h2>
     <ul>
         <li>Brancher le menu “Étagères” / “Rejoindre une table” sur les API Symfony correspondantes.</li>
         <li>Intégrer une vraie UI de présence (liste des joueurs connectés) basée sur les messages <code>presence-update</code>.</li>

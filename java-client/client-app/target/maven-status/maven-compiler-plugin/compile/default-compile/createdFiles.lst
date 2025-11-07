@@ -36,6 +36,7 @@ com\lemondelila\client\gamelogic\missionnemesis\model\NemesisEngine$Action.class
 com\lemondelila\client\events\user\RegistrationSucceeded.class
 com\lemondelila\client\service\game\RemoteGameServiceSupport$ThrowingSupplier.class
 com\lemondelila\client\view\menu\MainMenuScreen.class
+com\lemondelila\client\service\game\TokenAwareRealtimeGateway.class
 com\lemondelila\client\AppLauncher$1.class
 com\lemondelila\client\model\game\InMemoryGameSessionStore.class
 com\lemondelila\client\events\user\LoginSucceeded.class

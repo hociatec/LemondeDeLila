@@ -37,6 +37,7 @@ C:\wamp64\www\le-monde-de-lila\java-client\client-app\src\main\java\com\lemondel
 C:\wamp64\www\le-monde-de-lila\java-client\client-app\src\main\java\com\lemondelila\client\gamelogic\missionnemesis\model\NemesisEngine.java
 C:\wamp64\www\le-monde-de-lila\java-client\client-app\src\main\java\com\lemondelila\client\gamelogic\missionnemesis\view\NemesisFooterPanel.java
 C:\wamp64\www\le-monde-de-lila\java-client\client-app\src\main\java\com\lemondelila\client\view\menu\MainMenuScreen.java
+C:\wamp64\www\le-monde-de-lila\java-client\client-app\src\main\java\com\lemondelila\client\service\game\TokenAwareRealtimeGateway.java
 C:\wamp64\www\le-monde-de-lila\java-client\client-app\src\main\java\com\lemondelila\client\gamelogic\missionnemesis\view\NemesisScreen.java
 C:\wamp64\www\le-monde-de-lila\java-client\client-app\src\main\java\com\lemondelila\client\view\user\LoginFormPanel.java
 C:\wamp64\www\le-monde-de-lila\java-client\client-app\src\main\java\com\lemondelila\client\gamelogic\missionnemesis\model\NemesisStateMapper.java

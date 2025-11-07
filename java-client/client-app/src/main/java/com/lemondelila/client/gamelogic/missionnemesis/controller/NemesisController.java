@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.swing.SwingUtilities;
 import java.io.IOException;
+import java.net.http.WebSocket;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -43,6 +44,9 @@ public final class NemesisController {
         this.realtimeGateway = Objects.requireNonNull(realtimeGateway, "realtimeGateway");
         this.current = sessionStore.current().orElse(null);
         this.realtimeGateway.onMessage(this::handleRealtimeMessage);
+        if (this.current != null) {
+            this.realtimeGateway.connect();
+        }
     }
 
     public CompletableFuture<NemesisSession> startNewGame() {
@@ -120,11 +124,13 @@ public final class NemesisController {
     public void reset() {
         current = null;
         sessionStore.clearAll();
+        realtimeGateway.disconnect(WebSocket.NORMAL_CLOSURE, "reset");
     }
 
     private void updateSession(NemesisSession session) {
         current = session;
         sessionStore.save(session);
+        realtimeGateway.connect();
         listeners.forEach(listener ->
                 SwingUtilities.invokeLater(() -> listener.accept(session))
         );
@@ -196,3 +202,5 @@ public final class NemesisController {
         return future;
     }
 }
+
+

@@ -8,16 +8,19 @@ import com.lemondelila.client.controller.settings.OptionsController;
 import com.lemondelila.client.controller.user.LoginController;
 import com.lemondelila.client.controller.user.RegistrationController;
 import com.lemondelila.client.controller.user.UserOperationGuard;
+import com.lemondelila.client.events.user.LoginSucceeded;
 import com.lemondelila.client.model.game.GameEngineRegistry;
 import com.lemondelila.client.gamelogic.missionnemesis.controller.NemesisController;
 import com.lemondelila.client.gamelogic.missionnemesis.model.NemesisEngine;
 import com.lemondelila.client.gamelogic.missionnemesis.model.NemesisSessionStore;
+import com.lemondelila.client.gamelogic.missionnemesis.model.NemesisSession;
 import com.lemondelila.client.gamelogic.missionnemesis.service.NemesisRemoteClient;
 import com.lemondelila.client.gamelogic.missionnemesis.view.NemesisScreen;
 import com.lemondelila.client.model.user.ClientSession;
 import com.lemondelila.client.service.catalogue.GameCatalogService;
 import com.lemondelila.client.service.catalogue.GameRulesService;
 import com.lemondelila.client.service.chat.ChatConnectionFactory;
+import com.lemondelila.client.service.game.TokenAwareRealtimeGateway;
 import com.lemondelila.client.service.settings.AppSettingsService;
 import com.lemondelila.client.view.catalogue.CatalogScreen;
 import com.lemondelila.client.view.home.HomeScreen;
@@ -27,6 +30,7 @@ import com.lemondelila.client.view.shortcuts.ApplicationShortcuts;
 import com.lemondelila.framework.access.FocusHighlighter;
 import com.lemondelila.framework.access.NarrationQueue;
 import com.lemondelila.framework.access.shortcut.AccessibleShortcutRegistry;
+import com.lemondelila.framework.core.config.ConfigurationService;
 import com.lemondelila.framework.core.context.ApplicationContext;
 import com.lemondelila.framework.core.event.DomainEventBus;
 import com.lemondelila.framework.core.module.LilaModule;
@@ -37,6 +41,7 @@ import com.lemondelila.framework.ui.LilaFrame;
 import com.lemondelila.framework.ui.action.ActionManager;
 import com.lemondelila.framework.ui.dialog.DialogService;
 import com.lemondelila.framework.ui.screen.ScreenManager;
+import java.net.URI;
 
 public final class ClientAppModule implements LilaModule {
 
@@ -55,6 +60,19 @@ public final class ClientAppModule implements LilaModule {
                 ctx.get(ClientSession.class)
         ));
 
+        builder.bindFactory(RealtimeGateway.class, ctx -> {
+            ConfigurationService config = ctx.get(ConfigurationService.class);
+            URI baseUri = URI.create(config.get("network.ws.url", "ws://127.0.0.1:8081/ws"));
+            NemesisSessionStore store = ctx.get(NemesisSessionStore.class);
+            return new TokenAwareRealtimeGateway(
+                    ctx.get(java.net.http.HttpClient.class),
+                    ctx.get(com.fasterxml.jackson.databind.ObjectMapper.class),
+                    ctx.get(DomainEventBus.class),
+                    baseUri,
+                    ctx.get(ClientSession.class),
+                    () -> store.current().map(NemesisSession::roomId)
+            );
+        });
         builder.bindFactory(HomeScreen.class, ctx -> new HomeScreen(
                 ctx.get(DomainEventBus.class),
                 ctx.get(ActionManager.class),
@@ -70,7 +88,8 @@ public final class ClientAppModule implements LilaModule {
                 ctx.get(PresenceController.class),
                 ctx.get(OptionsController.class),
                 ctx.get(CatalogController.class),
-                ctx.get(ClientSession.class)
+                ctx.get(ClientSession.class),
+                ctx.get(RealtimeGateway.class)
         ));
 
         builder.bindFactory(GameCatalogService.class, ctx -> new GameCatalogService(
@@ -203,7 +222,12 @@ public final class ClientAppModule implements LilaModule {
         context.get(OptionsController.class);
         context.get(CatalogController.class);
         context.get(NemesisController.class);
-        context.get(RealtimeGateway.class).connect();
+
+        DomainEventBus eventBus = context.get(DomainEventBus.class);
+        ClientSession session = context.get(ClientSession.class);
+        RealtimeGateway realtimeGateway = context.get(RealtimeGateway.class);
+        eventBus.subscribe(LoginSucceeded.class, event -> realtimeGateway.connect());
+        session.authenticated().ifPresent(ignored -> realtimeGateway.connect());
 
         ApplicationShortcuts shortcuts = context.get(ApplicationShortcuts.class);
         LilaFrame frame = context.get(LilaFrame.class);
@@ -227,6 +251,11 @@ public final class ClientAppModule implements LilaModule {
                 controller.close();
             } catch (Exception ignored) {}
         });
+        context.find(RealtimeGateway.class).ifPresent(gateway -> {
+            try {
+                gateway.close();
+            } catch (Exception ignored) {}
+        });
     }
 
     @Override
@@ -234,6 +263,7 @@ public final class ClientAppModule implements LilaModule {
         return 100;
     }
 }
+
 
 
 
