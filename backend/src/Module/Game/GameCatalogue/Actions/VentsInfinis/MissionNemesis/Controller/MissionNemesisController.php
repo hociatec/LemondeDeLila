@@ -26,9 +26,22 @@ class MissionNemesisController extends AbstractController
     public function state(int $id, EntityManagerInterface $em)
     {
         $room = $em->getRepository(Room::class)->find($id);
-        if (!$room) return $this->json(['error' => 'Not found'], 404);
+        if (!$room) {
+            return $this->json(['error' => 'Not found'], 404);
+        }
+
         $game = $em->getRepository(Game::class)->findOneBy(['room' => $room]);
-        if (!$game) { $state = $this->svc->defaultState($room); $game = (new Game())->setRoom($room)->setState($state)->setCurrentRound((int)($state['round'] ?? 1))->setStartedAt(new \DateTimeImmutable()); $em->persist($game); $em->flush(); }
+        if (!$game) {
+            $state = $this->svc->defaultState($room);
+            $game = (new Game())
+                ->setRoom($room)
+                ->setState($state)
+                ->setCurrentRound($this->svc->currentRound($state))
+                ->setStartedAt(new \DateTimeImmutable());
+            $em->persist($game);
+            $em->flush();
+        }
+
         return $this->json($game->getState());
     }
 
@@ -36,14 +49,38 @@ class MissionNemesisController extends AbstractController
     public function move(int $id, Request $req, EntityManagerInterface $em)
     {
         $room = $em->getRepository(Room::class)->find($id);
-        if (!$room) return $this->json(['error' => 'Not found'], 404);
+        if (!$room) {
+            return $this->json(['error' => 'Not found'], 404);
+        }
+
         $game = $em->getRepository(Game::class)->findOneBy(['room' => $room]);
-        if (!$game) { $state = $this->svc->defaultState($room); $game = (new Game())->setRoom($room)->setState($state)->setCurrentRound((int)($state['round'] ?? 1))->setStartedAt(new \DateTimeImmutable()); $em->persist($game); }
-        /** @var \App\Module\User\Entity\User $me */ $me = $this->getUser();
-        $state = $this->svc->apply($game->getState(), json_decode($req->getContent(), true) ?? [], $room, $me);
-        $game->setState($state)->setCurrentRound((int)($state['round'] ?? $game->getCurrentRound() ?: 1)); $em->flush();
+        if (!$game) {
+            $state = $this->svc->defaultState($room);
+            $game = (new Game())
+                ->setRoom($room)
+                ->setState($state)
+                ->setCurrentRound($this->svc->currentRound($state))
+                ->setStartedAt(new \DateTimeImmutable());
+            $em->persist($game);
+        }
+
+        /** @var \App\Module\User\Entity\User $me */
+        $me = $this->getUser();
+        $payload = json_decode($req->getContent() ?: '', true) ?? [];
+        $state = $this->svc->apply($game->getState(), $payload, $room, $me);
+
+        $game
+            ->setState($state)
+            ->setCurrentRound($this->svc->currentRound($state));
+
+        if (($state['status'] ?? null) === 'ended' && !$game->getEndedAt()) {
+            $game->setEndedAt(new \DateTimeImmutable());
+        }
+
+        $em->flush();
         $this->stats->onStateUpdated($game, $state);
         $this->realtime->notify($room, 'state-updated', ['game' => $game->getId()]);
+
         return $this->json($state);
     }
 }

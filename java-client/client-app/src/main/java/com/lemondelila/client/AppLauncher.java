@@ -1,7 +1,7 @@
 package com.lemondelila.client;
 
-import com.lemondelila.client.settings.AppSettingsService;
-import com.lemondelila.client.ui.dialog.ConfirmExitDialog;
+import com.lemondelila.client.service.settings.AppSettingsService;
+import com.lemondelila.client.view.dialog.ConfirmExitDialog;
 import com.lemondelila.framework.core.context.ApplicationContext;
 import com.lemondelila.framework.core.module.FrameworkBootstrap;
 import com.lemondelila.framework.ui.LilaFrame;
@@ -41,4 +41,6 @@ public final class AppLauncher {
         });
     }
 }
+
+
 

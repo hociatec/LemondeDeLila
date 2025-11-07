@@ -11,6 +11,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 
@@ -29,10 +30,15 @@ public final class RestClient {
     }
 
     public JsonNode get(String path) throws IOException, InterruptedException {
-        HttpRequest request = HttpRequest.newBuilder(baseUri.resolve(path))
+        return get(path, Collections.emptyMap());
+    }
+
+    public JsonNode get(String path, Map<String, String> headers) throws IOException, InterruptedException {
+        HttpRequest.Builder builder = HttpRequest.newBuilder(baseUri.resolve(path))
                 .GET()
-                .timeout(Duration.ofSeconds(10))
-                .build();
+                .timeout(Duration.ofSeconds(10));
+        headers.forEach(builder::header);
+        HttpRequest request = builder.build();
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         return parse(response);
     }

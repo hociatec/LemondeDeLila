@@ -1,0 +1,8 @@
+{
+  "code": "mission-nemesis",
+  "name": "Mission Nemesis",
+  "minPlayers": 2,
+  "maxPlayers": 4,
+  "engine": "mission-nemesis",
+  "summary": "Affrontement spatial strategique, placez votre flotte puis traquez l'adversaire."
+}
