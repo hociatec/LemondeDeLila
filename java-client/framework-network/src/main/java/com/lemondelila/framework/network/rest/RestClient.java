@@ -44,13 +44,19 @@ public final class RestClient {
     }
 
     public JsonNode post(String path, Map<String, Object> payload) throws IOException, InterruptedException {
+        return post(path, Collections.emptyMap(), payload);
+    }
+
+    public JsonNode post(String path,
+                         Map<String, String> headers,
+                         Map<String, Object> payload) throws IOException, InterruptedException {
         String body = objectMapper.writeValueAsString(payload);
-        HttpRequest request = HttpRequest.newBuilder(baseUri.resolve(path))
+        HttpRequest.Builder builder = HttpRequest.newBuilder(baseUri.resolve(path))
                 .timeout(Duration.ofSeconds(10))
                 .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(body))
-                .build();
-        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+                .POST(HttpRequest.BodyPublishers.ofString(body));
+        headers.forEach(builder::header);
+        HttpResponse<String> response = httpClient.send(builder.build(), HttpResponse.BodyHandlers.ofString());
         return parse(response);
     }
 

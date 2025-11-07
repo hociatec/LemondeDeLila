@@ -2,10 +2,11 @@ package com.lemondelila.client.view.catalogue;
 
 import com.lemondelila.client.controller.game.GameCatalogController;
 import com.lemondelila.client.controller.game.GameInteractionController;
+import com.lemondelila.client.gamelogic.missionnemesis.controller.NemesisController;
 import com.lemondelila.client.model.catalogue.CatalogCategory;
 import com.lemondelila.client.model.catalogue.CatalogData;
-import com.lemondelila.client.service.catalogue.GameRulesService;
 import com.lemondelila.client.model.catalogue.GameSummary;
+import com.lemondelila.client.service.catalogue.GameRulesService;
 import com.lemondelila.framework.ui.dialog.DialogService;
 import com.lemondelila.framework.ui.screen.Screen;
 import com.lemondelila.framework.ui.screen.ScreenContext;
@@ -17,6 +18,7 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -38,6 +40,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 public final class CatalogScreen extends JPanel implements Screen {
 
@@ -46,6 +49,7 @@ public final class CatalogScreen extends JPanel implements Screen {
 
     private final GameCatalogController catalogController;
     private final DialogService dialogService;
+    private final NemesisController missionController;
 
     private final CardLayout viewLayout = new CardLayout();
     private final JPanel viewPanel = new JPanel(viewLayout);
@@ -74,11 +78,14 @@ public final class CatalogScreen extends JPanel implements Screen {
 
     public CatalogScreen(GameCatalogController catalogController,
                          GameRulesService rulesService,
-                         DialogService dialogService) {
+                         DialogService dialogService,
+                         NemesisController missionController) {
         this.catalogController = Objects.requireNonNull(catalogController, "catalogController");
         this.dialogService = Objects.requireNonNull(dialogService, "dialogService");
+        this.missionController = missionController;
         buildUi();
         installActions();
+        gameDetailPanel.onPlay(this::handlePlayRequest);
         this.gameInteractionController = new GameInteractionController(
                 gameDetailPanel,
                 dialogService,
@@ -245,7 +252,8 @@ public final class CatalogScreen extends JPanel implements Screen {
             setStatus("Jeu introuvable.");
             return;
         }
-        gameDetailPanel.show(game);
+        boolean playable = supportsLaunch(game);
+        gameDetailPanel.show(game, playable);
         viewLayout.show(viewPanel, GameDetailPanel.CARD);
         SwingUtilities.invokeLater(gameDetailPanel::requestFocusInWindow);
         activeGame = game;
@@ -253,6 +261,44 @@ public final class CatalogScreen extends JPanel implements Screen {
 
         breadcrumbLabel.setText("Jeu : " + game.name());
         setStatus("Jeu pret. Ctrl+F1 pour voir les regles, Q pour quitter.");
+    }
+
+    private boolean supportsLaunch(GameSummary game) {
+        if (missionController == null || game == null) {
+            return false;
+        }
+        String identifier = game.engine();
+        if (identifier == null || identifier.isBlank()) {
+            identifier = game.code();
+        }
+        return identifier != null && identifier.equalsIgnoreCase("mission-nemesis");
+    }
+
+    private void handlePlayRequest(GameSummary game) {
+        if (game == null) {
+            return;
+        }
+        if (!supportsLaunch(game)) {
+            dialogService.info("Fonctionnalite indisponible",
+                    "Ce jeu ne peut pas encore etre lance depuis cette interface.");
+            return;
+        }
+        gameDetailPanel.setPlayEnabled(false);
+        setStatus("Initialisation de " + game.name() + "...");
+        missionController.startNewGame().whenComplete((session, error) -> SwingUtilities.invokeLater(() -> {
+            if (error != null) {
+                dialogService.error("Lancement impossible",
+                        "La partie " + game.name() + " n'a pas pu etre initialisee.");
+                setStatus("Echec du lancement de " + game.name() + ".");
+                gameDetailPanel.setPlayEnabled(true);
+            } else {
+                setStatus("Partie " + game.name() + " lancee.");
+                gameDetailPanel.setPlayEnabled(true);
+                if (screenManager != null) {
+                    screenManager.show("mission-nemesis");
+                }
+            }
+        }));
     }
 
     private void performBackNavigation() {
@@ -596,6 +642,10 @@ public final class CatalogScreen extends JPanel implements Screen {
 
         private final JLabel nameLabel = new JLabel("Selectionnez un jeu");
         private final javax.swing.JTextArea summaryArea = new javax.swing.JTextArea();
+        private final JButton playButton = new JButton("Jouer");
+
+        private Consumer<GameSummary> playListener;
+        private GameSummary currentGame;
 
         GameDetailPanel() {
             setLayout(new BorderLayout());
@@ -615,6 +665,14 @@ public final class CatalogScreen extends JPanel implements Screen {
             summaryScroll.getViewport().setOpaque(false);
             summaryScroll.setPreferredSize(new Dimension(0, 200));
 
+            playButton.setAlignmentX(CENTER_ALIGNMENT);
+            playButton.setVisible(false);
+            playButton.addActionListener(e -> {
+                if (playListener != null && currentGame != null) {
+                    playListener.accept(currentGame);
+                }
+            });
+
             JPanel content = new JPanel();
             content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
             content.setOpaque(false);
@@ -622,11 +680,18 @@ public final class CatalogScreen extends JPanel implements Screen {
             content.add(nameLabel);
             content.add(Box.createRigidArea(new Dimension(0, 12)));
             content.add(summaryScroll);
+            content.add(Box.createRigidArea(new Dimension(0, 12)));
+            content.add(playButton);
 
             add(content, BorderLayout.CENTER);
         }
 
-        void show(GameSummary game) {
+        void onPlay(Consumer<GameSummary> listener) {
+            this.playListener = listener;
+        }
+
+        void show(GameSummary game, boolean playable) {
+            currentGame = game;
             nameLabel.setText(game.name());
             String summary = game.summary();
             if (summary == null || summary.isBlank()) {
@@ -635,12 +700,23 @@ public final class CatalogScreen extends JPanel implements Screen {
                 summaryArea.setText(summary);
             }
             summaryArea.setCaretPosition(0);
+            playButton.setVisible(playable);
+            playButton.setEnabled(playable);
+        }
+
+        void setPlayEnabled(boolean enabled) {
+            if (playButton.isVisible()) {
+                playButton.setEnabled(enabled);
+            }
         }
 
         @Override
         public void setEnabled(boolean enabled) {
             super.setEnabled(enabled);
             summaryArea.setEnabled(enabled);
+            if (playButton.isVisible()) {
+                playButton.setEnabled(enabled);
+            }
         }
     }
 }

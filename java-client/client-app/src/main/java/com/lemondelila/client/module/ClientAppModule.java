@@ -9,7 +9,11 @@ import com.lemondelila.client.controller.user.LoginController;
 import com.lemondelila.client.controller.user.RegistrationController;
 import com.lemondelila.client.controller.user.UserOperationGuard;
 import com.lemondelila.client.model.game.GameEngineRegistry;
-import com.lemondelila.client.gamelogic.missionnemesis.model.MissionNemesisEngine;
+import com.lemondelila.client.gamelogic.missionnemesis.controller.NemesisController;
+import com.lemondelila.client.gamelogic.missionnemesis.model.NemesisEngine;
+import com.lemondelila.client.gamelogic.missionnemesis.model.NemesisSessionStore;
+import com.lemondelila.client.gamelogic.missionnemesis.service.NemesisRemoteClient;
+import com.lemondelila.client.gamelogic.missionnemesis.view.NemesisScreen;
 import com.lemondelila.client.model.user.ClientSession;
 import com.lemondelila.client.service.catalogue.GameCatalogService;
 import com.lemondelila.client.service.catalogue.GameRulesService;
@@ -28,6 +32,7 @@ import com.lemondelila.framework.core.event.DomainEventBus;
 import com.lemondelila.framework.core.module.LilaModule;
 import com.lemondelila.framework.core.task.TaskScheduler;
 import com.lemondelila.framework.network.rest.RestClient;
+import com.lemondelila.framework.network.ws.RealtimeGateway;
 import com.lemondelila.framework.ui.LilaFrame;
 import com.lemondelila.framework.ui.action.ActionManager;
 import com.lemondelila.framework.ui.dialog.DialogService;
@@ -41,6 +46,8 @@ public final class ClientAppModule implements LilaModule {
         builder.bind(AppSettingsService.class, AppSettingsService::new);
         builder.bind(ClientSession.class, ClientSession::new);
         builder.bind(UserOperationGuard.class, UserOperationGuard::new);
+        builder.bind(NemesisEngine.class, NemesisEngine::new);
+        builder.bind(NemesisSessionStore.class, NemesisSessionStore::new);
         builder.bindFactory(ChatConnectionFactory.class, ctx -> new ChatConnectionFactory(
                 ctx.get(java.net.http.HttpClient.class),
                 ctx.get(com.fasterxml.jackson.databind.ObjectMapper.class),
@@ -91,11 +98,33 @@ public final class ClientAppModule implements LilaModule {
                 ctx.get(PresenceDialogLauncher.class)
         ));
 
-        builder.bind(GameEngineRegistry.class, () -> {
+        builder.bindFactory(GameEngineRegistry.class, ctx -> {
             GameEngineRegistry registry = new GameEngineRegistry();
-            registry.register(new MissionNemesisEngine());
+            registry.register(ctx.get(NemesisEngine.class));
             return registry;
         });
+
+        builder.bindFactory(NemesisRemoteClient.class, ctx -> new NemesisRemoteClient(
+                ctx.get(RestClient.class),
+                ctx.get(TaskScheduler.class),
+                ctx.get(ClientSession.class),
+                ctx.get(NemesisEngine.class),
+                ctx.get(NemesisSessionStore.class)
+        ));
+
+        builder.bindFactory(NemesisController.class, ctx ->
+                new NemesisController(
+                        ctx.get(NemesisRemoteClient.class),
+                        ctx.get(DialogService.class),
+                        ctx.get(NemesisSessionStore.class),
+                        ctx.get(RealtimeGateway.class)
+                )
+        );
+
+        builder.bindFactory(NemesisScreen.class, ctx -> new NemesisScreen(
+                ctx.get(NemesisController.class),
+                ctx.get(NemesisSessionStore.class)
+        ));
 
         builder.bindFactory(GameCatalogController.class, ctx ->
                 new GameCatalogController(
@@ -106,7 +135,8 @@ public final class ClientAppModule implements LilaModule {
         builder.bindFactory(CatalogScreen.class, ctx -> new CatalogScreen(
                 ctx.get(GameCatalogController.class),
                 ctx.get(GameRulesService.class),
-                ctx.get(DialogService.class)
+                ctx.get(DialogService.class),
+                ctx.get(NemesisController.class)
         ));
 
         builder.bindFactory(LoginController.class, ctx ->
@@ -165,12 +195,15 @@ public final class ClientAppModule implements LilaModule {
         manager.register(context.get(HomeScreen.class));
         manager.register(context.get(MainMenuScreen.class));
         manager.register(context.get(CatalogScreen.class));
+        manager.register(context.get(NemesisScreen.class));
         context.get(LoginController.class);
         context.get(RegistrationController.class);
         context.get(ChatController.class);
         context.get(PresenceController.class);
         context.get(OptionsController.class);
         context.get(CatalogController.class);
+        context.get(NemesisController.class);
+        context.get(RealtimeGateway.class).connect();
 
         ApplicationShortcuts shortcuts = context.get(ApplicationShortcuts.class);
         LilaFrame frame = context.get(LilaFrame.class);
