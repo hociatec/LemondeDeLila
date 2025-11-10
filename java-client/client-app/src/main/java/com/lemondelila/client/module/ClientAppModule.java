@@ -189,7 +189,8 @@ public final class ClientAppModule implements LilaModule {
         ));
 
         builder.bindFactory(DameNatureScreen.class, ctx -> new DameNatureScreen(
-                ctx.get(DameNatureController.class)
+                ctx.get(DameNatureController.class),
+                () -> ctx.get(NarrationQueue.class)
         ));
 
         builder.bindFactory(GameCatalogController.class, ctx ->

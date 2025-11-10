@@ -1,7 +1,0 @@
-com\lemondelila\framework\network\module\NetworkModule.class
-com\lemondelila\framework\network\ws\StandardRealtimeGateway$SocketClosed.class
-com\lemondelila\framework\network\ws\RealtimeGateway.class
-com\lemondelila\framework\network\ws\RealtimeGateway$ConnectionState.class
-com\lemondelila\framework\network\ws\StandardRealtimeGateway$ListenerImpl.class
-com\lemondelila\framework\network\ws\StandardRealtimeGateway.class
-com\lemondelila\framework\network\rest\RestClient.class

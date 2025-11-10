@@ -4,6 +4,7 @@ import com.lemondelila.client.gamelogic.damenature.controller.DameNatureControll
 import com.lemondelila.client.gamelogic.damenature.model.DameNatureConfig;
 import com.lemondelila.client.gamelogic.damenature.model.DameNatureSession;
 import com.lemondelila.client.gamelogic.damenature.model.DameNatureState;
+import com.lemondelila.framework.access.NarrationQueue;
 import com.lemondelila.framework.ui.screen.Screen;
 import com.lemondelila.framework.ui.screen.ScreenContext;
 import com.lemondelila.framework.ui.screen.ScreenManager;
@@ -36,6 +37,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public final class DameNatureScreen extends JPanel implements Screen {
 
@@ -45,6 +47,7 @@ public final class DameNatureScreen extends JPanel implements Screen {
     }
 
     private final DameNatureController controller;
+    private final Supplier<NarrationQueue> narrationQueueProvider;
     private ScreenManager screenManager;
 
     private Mode mode = Mode.CONFIGURATION;
@@ -85,8 +88,12 @@ public final class DameNatureScreen extends JPanel implements Screen {
 
     private final Consumer<DameNatureSession> sessionListener = this::displaySession;
 
-    public DameNatureScreen(DameNatureController controller) {
+    public DameNatureScreen(
+            DameNatureController controller,
+            Supplier<NarrationQueue> narrationQueueProvider
+    ) {
         this.controller = Objects.requireNonNull(controller, "controller");
+        this.narrationQueueProvider = Objects.requireNonNull(narrationQueueProvider, "narrationQueueProvider");
         buildUi();
         installGlobalKeyBindings();
     }
@@ -139,8 +146,8 @@ public final class DameNatureScreen extends JPanel implements Screen {
         configPanel.add(Box.createRigidArea(new Dimension(0, 16)));
 
         configStatusLabel.setAlignmentX(LEFT_ALIGNMENT);
-        configStatusLabel.getAccessibleContext().setAccessibleName("Statut configuration");
-        updateAccessible(configStatusLabel, "");
+        setAccessibleName(configStatusLabel, "Statut configuration");
+        setAccessibleDescription(configStatusLabel, "");
         configPanel.add(configStatusLabel);
 
         viewContainer.add(configPanel, Mode.CONFIGURATION.name());
@@ -158,11 +165,13 @@ public final class DameNatureScreen extends JPanel implements Screen {
         valueLabel.setHorizontalAlignment(JLabel.RIGHT);
         row.setFocusable(true);
         row.setFocusTraversalKeysEnabled(false);
+        setAccessibleName(row, label + " : " + valueLabel.getText());
         row.addFocusListener(new FocusAdapter() {
             @Override
             public void focusGained(FocusEvent e) {
                 row.setBorder(BorderFactory.createLineBorder(new java.awt.Color(70, 130, 180), 2));
                 configFocusIndex = configFocusOrder.indexOf(row);
+                announce(row.getAccessibleContext().getAccessibleName());
             }
 
             @Override
@@ -257,6 +266,17 @@ public final class DameNatureScreen extends JPanel implements Screen {
         botsValueLabel.setText(pendingConfig.botCount() + " bot(s)");
         dangerValueLabel.setText(pendingConfig.includeDangerCards() ? "Activées" : "Désactivées");
         quizValueLabel.setText(pendingConfig.includeQuizCards() ? "Activés" : "Désactivés");
+        if (!configFocusOrder.isEmpty()) {
+            JComponent botsRow = configFocusOrder.get(0);
+            setAccessibleName(botsRow, "Nombre d'adversaires : " + botsValueLabel.getText());
+            JComponent dangerRow = configFocusOrder.get(1);
+            setAccessibleName(dangerRow, "Cartes danger : " + dangerValueLabel.getText());
+            JComponent quizRow = configFocusOrder.get(2);
+            setAccessibleName(quizRow, "Quiz nature : " + quizValueLabel.getText());
+            if (botsRow.hasFocus() || dangerRow.hasFocus() || quizRow.hasFocus()) {
+                announce(configFocusOrder.get(configFocusIndex).getAccessibleContext().getAccessibleName());
+            }
+        }
     }
 
     private void buildGamePanel() {
@@ -266,10 +286,10 @@ public final class DameNatureScreen extends JPanel implements Screen {
         header.setLayout(new BoxLayout(header, BoxLayout.Y_AXIS));
         turnLabel.setFont(turnLabel.getFont().deriveFont(20f));
         turnLabel.setAlignmentX(LEFT_ALIGNMENT);
-        selectionLabel.getAccessibleContext().setAccessibleName("Sélection courante");
+        setAccessibleName(selectionLabel, "Sélection courante");
         selectionLabel.setAlignmentX(LEFT_ALIGNMENT);
-        selectionLabel.getAccessibleContext().setAccessibleName("Sélection courante");
-        updateAccessible(selectionLabel, "Sélection : aucune");
+        setAccessibleName(selectionLabel, "Sélection courante");
+        setAccessibleDescription(selectionLabel, "Sélection : aucune");
         header.add(turnLabel);
         header.add(Box.createRigidArea(new Dimension(0, 6)));
         header.add(selectionLabel);
@@ -304,9 +324,9 @@ public final class DameNatureScreen extends JPanel implements Screen {
         gamePanel.add(center, BorderLayout.CENTER);
 
         statusLabel.setBorder(new EmptyBorder(8, 0, 0, 0));
-        statusLabel.getAccessibleContext().setAccessibleName("Statut de la partie");
+        setAccessibleName(statusLabel, "Statut de la partie");
         statusLabel.setText("Prêt.");
-        updateAccessible(statusLabel, "Prêt.");
+        setAccessibleDescription(statusLabel, "Prêt.");
         JPanel statusPanel = new JPanel(new BorderLayout());
         statusPanel.setOpaque(false);
         statusPanel.add(statusLabel, BorderLayout.CENTER);
@@ -322,8 +342,8 @@ public final class DameNatureScreen extends JPanel implements Screen {
         instructionsArea.setLineWrap(true);
         instructionsArea.setWrapStyleWord(true);
         instructionsArea.setBorder(new EmptyBorder(4, 6, 4, 6));
-        instructionsArea.getAccessibleContext().setAccessibleName("Commandes disponibles");
-        updateAccessible(instructionsArea, "Liste des raccourcis clavier du jeu Dame Nature");
+        setAccessibleName(instructionsArea, "Commandes disponibles");
+        setAccessibleDescription(instructionsArea, "Liste des raccourcis clavier du jeu Dame Nature");
         instructionsArea.setText("""
                 Espace : piocher.
                 Flèches haut / bas : changer d'adversaire.
@@ -337,7 +357,7 @@ public final class DameNatureScreen extends JPanel implements Screen {
                 Échap : revenir à la configuration depuis le jeu.
                 """);
         instructionsArea.setCaretPosition(0);
-        updateAccessible(instructionsArea, instructionsArea.getText());
+        setAccessibleDescription(instructionsArea, instructionsArea.getText());
     }
 
     private void configureLogNavigation(JScrollPane logScroll) {
@@ -466,7 +486,7 @@ public final class DameNatureScreen extends JPanel implements Screen {
         pendingConfig = activeConfig;
         updateConfigLabels();
         configStatusLabel.setText("Ajustez les options puis appuyez sur Entrée pour relancer.");
-        updateAccessible(configStatusLabel, configStatusLabel.getText());
+        setAccessibleDescription(configStatusLabel, configStatusLabel.getText());
         currentSession = null;
         playerOptions = List.of();
         cardOptions = List.of();
@@ -490,14 +510,14 @@ public final class DameNatureScreen extends JPanel implements Screen {
         handleActionFeedback(future, "Initialisation de la partie...", () -> {
             activeConfig = pendingConfig;
             configStatusLabel.setText("Partie lancée.");
-            updateAccessible(configStatusLabel, configStatusLabel.getText());
+            setAccessibleDescription(configStatusLabel, configStatusLabel.getText());
             launchInProgress = false;
             showGameplay();
         }, throwable -> {
             launchInProgress = false;
             configStatusLabel.setText("Impossible de lancer la partie : " +
                     (throwable.getMessage() == null ? "erreur inconnue" : throwable.getMessage()));
-            updateAccessible(configStatusLabel, configStatusLabel.getText());
+            setAccessibleDescription(configStatusLabel, configStatusLabel.getText());
         });
     }
 
@@ -535,7 +555,7 @@ public final class DameNatureScreen extends JPanel implements Screen {
             StringBuilder handBuilder = new StringBuilder();
             self.hand().forEach(card -> handBuilder.append("• ").append(card.toString()).append('\n'));
             handArea.setText(handBuilder.isEmpty() ? "Aucune carte en main." : handBuilder.toString());
-            updateAccessible(handArea, handArea.getText());
+            setAccessibleDescription(handArea, handArea.getText());
 
             if (!self.books().isEmpty()) {
                 StringBuilder booksBuilder = new StringBuilder();
@@ -547,12 +567,12 @@ public final class DameNatureScreen extends JPanel implements Screen {
             } else {
                 booksArea.setText("Aucune famille complétée.");
             }
-            updateAccessible(booksArea, booksArea.getText());
+            setAccessibleDescription(booksArea, booksArea.getText());
         } else {
             handArea.setText("Rejoignez la partie pour consulter votre main.");
             booksArea.setText("Aucune information disponible.");
-            updateAccessible(handArea, handArea.getText());
-            updateAccessible(booksArea, booksArea.getText());
+            setAccessibleDescription(handArea, handArea.getText());
+            setAccessibleDescription(booksArea, booksArea.getText());
         }
 
         StringBuilder opponentsBuilder = new StringBuilder();
@@ -567,7 +587,7 @@ public final class DameNatureScreen extends JPanel implements Screen {
             opponentsBuilder.append('\n');
         });
         opponentsArea.setText(opponentsBuilder.isEmpty() ? "Aucun adversaire." : opponentsBuilder.toString());
-        updateAccessible(opponentsArea, opponentsArea.getText());
+        setAccessibleDescription(opponentsArea, opponentsArea.getText());
     }
 
     private void updateCardSelections(DameNatureState state, DameNatureState.Player self) {
@@ -633,7 +653,8 @@ public final class DameNatureScreen extends JPanel implements Screen {
                 : "aucune carte";
         String text = "Sélection : adversaire " + adversaire + " | carte " + carte;
         selectionLabel.setText(text);
-        updateAccessible(selectionLabel, text);
+        setAccessibleDescription(selectionLabel, text);
+        narrationQueueProvider.get().enqueue(selectionLabel, text);
     }
 
     private void updateQuiz(DameNatureState state) {
@@ -651,7 +672,7 @@ public final class DameNatureScreen extends JPanel implements Screen {
             quizArea.setText("Aucun quiz en cours.");
         }
         quizArea.setCaretPosition(0);
-        updateAccessible(quizArea, quizArea.getText());
+        setAccessibleDescription(quizArea, quizArea.getText());
     }
 
     private void updateLog(DameNatureState state) {
@@ -661,7 +682,7 @@ public final class DameNatureScreen extends JPanel implements Screen {
                 .forEach(entry -> builder.append("• ").append(entry.message()).append('\n'));
         logArea.setText(builder.toString());
         logArea.setCaretPosition(logArea.getDocument().getLength());
-        updateAccessible(logArea, logArea.getText());
+        setAccessibleDescription(logArea, logArea.getText());
     }
 
     private void cycleTarget(int delta) {
@@ -784,10 +805,26 @@ public final class DameNatureScreen extends JPanel implements Screen {
 
     private void announce(String message) {
         statusLabel.setText(message);
-        updateAccessible(statusLabel, message);
+        setAccessibleDescription(statusLabel, message);
+        narrationQueueProvider.get().enqueue(statusLabel, message);
     }
 
-    private void updateAccessible(JComponent component, String description) {
+    private void setAccessibleName(JComponent component, String name) {
+        if (component == null) {
+            return;
+        }
+        AccessibleContext context = component.getAccessibleContext();
+        if (context != null) {
+            String safe = name == null ? "" : name;
+            String old = context.getAccessibleName();
+            if (!safe.equals(old)) {
+                context.setAccessibleName(safe);
+                context.firePropertyChange(AccessibleContext.ACCESSIBLE_NAME_PROPERTY, old, safe);
+            }
+        }
+    }
+
+    private void setAccessibleDescription(JComponent component, String description) {
         if (component == null) {
             return;
         }
@@ -827,7 +864,7 @@ public final class DameNatureScreen extends JPanel implements Screen {
             pendingConfig = activeConfig;
             showGameplay();
             logArea.setText("Lancement de la partie...");
-            updateAccessible(logArea, logArea.getText());
+            setAccessibleDescription(logArea, logArea.getText());
             launchInProgress = true;
             handleActionFeedback(
                     controller.startNewGame(activeConfig),
