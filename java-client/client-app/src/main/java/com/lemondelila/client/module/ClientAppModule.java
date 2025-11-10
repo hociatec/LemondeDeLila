@@ -9,6 +9,14 @@ import com.lemondelila.client.controller.user.LoginController;
 import com.lemondelila.client.controller.user.RegistrationController;
 import com.lemondelila.client.controller.user.UserOperationGuard;
 import com.lemondelila.client.events.user.LoginSucceeded;
+import com.lemondelila.client.gamelogic.damenature.controller.DameNatureController;
+import com.lemondelila.client.gamelogic.damenature.model.DameNatureEngine;
+import com.lemondelila.client.gamelogic.damenature.model.DameNatureSessionStore;
+import com.lemondelila.client.gamelogic.damenature.service.DameNatureRemoteClient;
+import com.lemondelila.client.gamelogic.damenature.service.LocalDameNatureService;
+import com.lemondelila.client.gamelogic.damenature.view.DameNatureScreen;
+import com.lemondelila.client.media.SoundEffect;
+import com.lemondelila.client.media.SoundEffectManager;
 import com.lemondelila.client.model.game.GameEngineRegistry;
 import com.lemondelila.client.gamelogic.missionnemesis.controller.NemesisController;
 import com.lemondelila.client.gamelogic.missionnemesis.model.NemesisEngine;
@@ -35,6 +43,7 @@ import com.lemondelila.framework.core.context.ApplicationContext;
 import com.lemondelila.framework.core.event.DomainEventBus;
 import com.lemondelila.framework.core.module.LilaModule;
 import com.lemondelila.framework.core.task.TaskScheduler;
+import com.lemondelila.framework.media.audio.AudioService;
 import com.lemondelila.framework.network.rest.RestClient;
 import com.lemondelila.framework.network.ws.RealtimeGateway;
 import com.lemondelila.framework.ui.LilaFrame;
@@ -53,12 +62,21 @@ public final class ClientAppModule implements LilaModule {
         builder.bind(UserOperationGuard.class, UserOperationGuard::new);
         builder.bind(NemesisEngine.class, NemesisEngine::new);
         builder.bind(NemesisSessionStore.class, NemesisSessionStore::new);
+        builder.bind(DameNatureEngine.class, DameNatureEngine::new);
+        builder.bind(DameNatureSessionStore.class, DameNatureSessionStore::new);
         builder.bindFactory(ChatConnectionFactory.class, ctx -> new ChatConnectionFactory(
                 ctx.get(java.net.http.HttpClient.class),
                 ctx.get(com.fasterxml.jackson.databind.ObjectMapper.class),
                 ctx.get(com.lemondelila.framework.core.config.ConfigurationService.class),
                 ctx.get(ClientSession.class)
         ));
+
+        builder.bindFactory(SoundEffectManager.class, ctx ->
+                new SoundEffectManager(
+                        ctx.get(AudioService.class),
+                        ctx.get(AppSettingsService.class)
+                )
+        );
 
         builder.bindFactory(RealtimeGateway.class, ctx -> {
             ConfigurationService config = ctx.get(ConfigurationService.class);
@@ -89,7 +107,8 @@ public final class ClientAppModule implements LilaModule {
                 ctx.get(OptionsController.class),
                 ctx.get(CatalogController.class),
                 ctx.get(ClientSession.class),
-                ctx.get(RealtimeGateway.class)
+                ctx.get(RealtimeGateway.class),
+                ctx.get(SoundEffectManager.class)
         ));
 
         builder.bindFactory(GameCatalogService.class, ctx -> new GameCatalogService(
@@ -120,6 +139,7 @@ public final class ClientAppModule implements LilaModule {
         builder.bindFactory(GameEngineRegistry.class, ctx -> {
             GameEngineRegistry registry = new GameEngineRegistry();
             registry.register(ctx.get(NemesisEngine.class));
+            registry.register(ctx.get(DameNatureEngine.class));
             return registry;
         });
 
@@ -131,6 +151,21 @@ public final class ClientAppModule implements LilaModule {
                 ctx.get(NemesisSessionStore.class)
         ));
 
+        builder.bindFactory(LocalDameNatureService.class, ctx -> new LocalDameNatureService(
+                ctx.get(TaskScheduler.class),
+                ctx.get(DameNatureEngine.class),
+                ctx.get(DameNatureSessionStore.class)
+        ));
+
+        builder.bindFactory(DameNatureRemoteClient.class, ctx -> new DameNatureRemoteClient(
+                ctx.get(RestClient.class),
+                ctx.get(TaskScheduler.class),
+                ctx.get(ClientSession.class),
+                ctx.get(DameNatureEngine.class),
+                ctx.get(DameNatureSessionStore.class),
+                ctx.get(LocalDameNatureService.class)
+        ));
+
         builder.bindFactory(NemesisController.class, ctx ->
                 new NemesisController(
                         ctx.get(NemesisRemoteClient.class),
@@ -140,9 +175,21 @@ public final class ClientAppModule implements LilaModule {
                 )
         );
 
+        builder.bindFactory(DameNatureController.class, ctx ->
+                new DameNatureController(
+                        ctx.get(DameNatureRemoteClient.class),
+                        ctx.get(DialogService.class),
+                        ctx.get(DameNatureSessionStore.class)
+                )
+        );
+
         builder.bindFactory(NemesisScreen.class, ctx -> new NemesisScreen(
                 ctx.get(NemesisController.class),
                 ctx.get(NemesisSessionStore.class)
+        ));
+
+        builder.bindFactory(DameNatureScreen.class, ctx -> new DameNatureScreen(
+                ctx.get(DameNatureController.class)
         ));
 
         builder.bindFactory(GameCatalogController.class, ctx ->
@@ -155,7 +202,8 @@ public final class ClientAppModule implements LilaModule {
                 ctx.get(GameCatalogController.class),
                 ctx.get(GameRulesService.class),
                 ctx.get(DialogService.class),
-                ctx.get(NemesisController.class)
+                ctx.get(NemesisController.class),
+                ctx.get(DameNatureController.class)
         ));
 
         builder.bindFactory(LoginController.class, ctx ->
@@ -215,6 +263,7 @@ public final class ClientAppModule implements LilaModule {
         manager.register(context.get(MainMenuScreen.class));
         manager.register(context.get(CatalogScreen.class));
         manager.register(context.get(NemesisScreen.class));
+        manager.register(context.get(DameNatureScreen.class));
         context.get(LoginController.class);
         context.get(RegistrationController.class);
         context.get(ChatController.class);
@@ -232,6 +281,10 @@ public final class ClientAppModule implements LilaModule {
         ApplicationShortcuts shortcuts = context.get(ApplicationShortcuts.class);
         LilaFrame frame = context.get(LilaFrame.class);
         shortcuts.install(frame);
+
+        SoundEffectManager soundEffects = context.get(SoundEffectManager.class);
+        soundEffects.preloadDefaults();
+        soundEffects.play(SoundEffect.APP_LAUNCH);
     }
 
     @Override

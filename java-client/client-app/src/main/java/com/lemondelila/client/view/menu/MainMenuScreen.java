@@ -4,6 +4,8 @@ import com.lemondelila.client.controller.catalogue.CatalogController;
 import com.lemondelila.client.controller.chat.ChatController;
 import com.lemondelila.client.controller.presence.PresenceController;
 import com.lemondelila.client.controller.settings.OptionsController;
+import com.lemondelila.client.media.SoundEffect;
+import com.lemondelila.client.media.SoundEffectManager;
 import com.lemondelila.client.model.user.ClientSession;
 import com.lemondelila.framework.network.ws.RealtimeGateway;
 import com.lemondelila.framework.ui.dialog.DialogService;
@@ -24,6 +26,8 @@ import javax.swing.SwingUtilities;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,6 +36,7 @@ public final class MainMenuScreen extends JPanel implements Screen {
     private static final String ACTION_SHOW_CATALOG = "main-menu.show-catalog";
     private static final String ACTION_NAV_UP = "main-menu.nav-up.";
     private static final String ACTION_NAV_DOWN = "main-menu.nav-down.";
+    private static final String ACTION_EXIT_MENU = "main-menu.exit";
 
     private final DialogService dialogService;
     private final ChatController chatController;
@@ -40,6 +45,7 @@ public final class MainMenuScreen extends JPanel implements Screen {
     private final CatalogController catalogController;
     private final ClientSession session;
     private final RealtimeGateway realtimeGateway;
+    private final SoundEffectManager soundEffects;
 
     private final JLabel statusLabel = new JLabel(" ");
     private final JButton shelvesButton = new JButton("Etageres");
@@ -57,7 +63,8 @@ public final class MainMenuScreen extends JPanel implements Screen {
                           OptionsController optionsController,
                           CatalogController catalogController,
                           ClientSession session,
-                          RealtimeGateway realtimeGateway) {
+                          RealtimeGateway realtimeGateway,
+                          SoundEffectManager soundEffects) {
         this.dialogService = dialogService;
         this.chatController = chatController;
         this.presenceController = presenceController;
@@ -65,6 +72,7 @@ public final class MainMenuScreen extends JPanel implements Screen {
         this.catalogController = catalogController;
         this.session = session;
         this.realtimeGateway = realtimeGateway;
+        this.soundEffects = soundEffects;
         buildUi();
         registerHandlers();
         registerShortcuts();
@@ -101,6 +109,12 @@ public final class MainMenuScreen extends JPanel implements Screen {
         button.setMaximumSize(new Dimension(320, 48));
         button.setFocusTraversalKeysEnabled(false);
         ButtonUtils.enterActivates(button);
+        button.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                soundEffects.play(SoundEffect.MENU_NAVIGATE);
+            }
+        });
         menuButtons.add(button);
         add(button);
     }
@@ -110,11 +124,11 @@ public final class MainMenuScreen extends JPanel implements Screen {
     }
 
     private void registerHandlers() {
-        shelvesButton.addActionListener(e -> openCatalog());
-        joinGameButton.addActionListener(e -> featureSoon("Rejoindre une partie"));
-        chatButton.addActionListener(e -> openChat());
-        optionsButton.addActionListener(e -> openOptions());
-        logoutButton.addActionListener(e -> logout());
+        shelvesButton.addActionListener(e -> onMenuSelected(this::openCatalog));
+        joinGameButton.addActionListener(e -> onMenuSelected(() -> featureSoon("Rejoindre une partie")));
+        chatButton.addActionListener(e -> onMenuSelected(this::openChat));
+        optionsButton.addActionListener(e -> onMenuSelected(this::openOptions));
+        logoutButton.addActionListener(e -> onMenuSelected(this::logout));
     }
 
     private void registerShortcuts() {
@@ -122,7 +136,14 @@ public final class MainMenuScreen extends JPanel implements Screen {
         getActionMap().put(ACTION_SHOW_CATALOG, new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                openCatalog();
+                onMenuSelected(MainMenuScreen.this::openCatalog);
+            }
+        });
+        getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("ESCAPE"), ACTION_EXIT_MENU);
+        getActionMap().put(ACTION_EXIT_MENU, new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                handleEscape();
             }
         });
     }
@@ -157,6 +178,18 @@ public final class MainMenuScreen extends JPanel implements Screen {
                 }
             });
         }
+    }
+
+    private void handleEscape() {
+        soundEffects.play(SoundEffect.MENU_BACK);
+        if (screenManager != null) {
+            SwingUtilities.invokeLater(() -> screenManager.show("home"));
+        }
+    }
+
+    private void onMenuSelected(Runnable action) {
+        soundEffects.play(SoundEffect.MENU_SELECT);
+        action.run();
     }
 
     private void featureSoon(String feature) {

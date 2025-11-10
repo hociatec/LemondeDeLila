@@ -5,6 +5,8 @@ import com.lemondelila.client.service.settings.AppSettingsService;
 import com.lemondelila.framework.ui.util.ButtonUtils;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
@@ -12,9 +14,10 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.SwingConstants;
+import javax.swing.JTabbedPane;
 import javax.swing.border.EmptyBorder;
 import java.awt.BorderLayout;
-import java.awt.GridLayout;
+import java.awt.Component;
 import java.awt.Window;
 
 public final class OptionsDialog extends JDialog {
@@ -33,16 +36,13 @@ public final class OptionsDialog extends JDialog {
         this.settingsService = service;
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout(12, 12));
-        JPanel content = new JPanel(new GridLayout(0, 1, 8, 8));
-        content.setBorder(new EmptyBorder(16, 16, 16, 16));
+        JTabbedPane tabs = new JTabbedPane();
+        tabs.setBorder(new EmptyBorder(8, 16, 8, 16));
+        tabs.addTab("Volume", buildVolumePanel());
+        tabs.addTab("Chat", buildChatPanel());
+        tabs.addTab("Général", buildGeneralPanel());
 
-        content.add(labelled("Volume du jeu", gameVolumeSlider));
-        content.add(labelled("Volume de la musique", musicVolumeSlider));
-        content.add(confirmExit);
-        content.add(chatEnabled);
-        content.add(confirmChatExit);
-
-        add(content, BorderLayout.CENTER);
+        add(tabs, BorderLayout.CENTER);
         add(buildButtons(), BorderLayout.SOUTH);
 
         loadValues();
@@ -67,6 +67,37 @@ public final class OptionsDialog extends JDialog {
         slider.setPaintTicks(true);
         slider.setPaintLabels(true);
         return slider;
+    }
+
+    private JPanel buildVolumePanel() {
+        JPanel panel = verticalPanel();
+        panel.add(labelled("Effets sonores", gameVolumeSlider));
+        panel.add(Box.createRigidArea(new java.awt.Dimension(0, 12)));
+        panel.add(labelled("Musique", musicVolumeSlider));
+        return panel;
+    }
+
+    private JPanel buildChatPanel() {
+        JPanel panel = verticalPanel();
+        panel.add(chatEnabled);
+        panel.add(Box.createRigidArea(new java.awt.Dimension(0, 8)));
+        panel.add(confirmChatExit);
+        return panel;
+    }
+
+    private JPanel buildGeneralPanel() {
+        JPanel panel = verticalPanel();
+        panel.add(confirmExit);
+        return panel;
+    }
+
+    private JPanel verticalPanel() {
+        JPanel panel = new JPanel();
+        panel.setOpaque(false);
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBorder(new EmptyBorder(12, 12, 12, 12));
+        panel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        return panel;
     }
 
     private JPanel buildButtons() {

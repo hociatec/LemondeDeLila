@@ -26,4 +26,8 @@ public final class GameCatalogController {
     public CompletableFuture<List<GameSummary>> loadGames() {
         return catalogService.fetchGames();
     }
+
+    public CompletableFuture<List<GameSummary>> loadGamesForCategory(String categoryId) {
+        return catalogService.fetchGamesForCategory(categoryId);
+    }
 }

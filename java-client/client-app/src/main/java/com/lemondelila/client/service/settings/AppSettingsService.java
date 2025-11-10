@@ -1,15 +1,15 @@
 package com.lemondelila.client.service.settings;
 
-import com.lemondelila.client.model.settings.AppSettings;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.lemondelila.client.model.settings.AppSettings;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Objects;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public final class AppSettingsService {
@@ -17,6 +17,7 @@ public final class AppSettingsService {
     private static final Path SETTINGS_PATH = Path.of("config", "settings.json");
     private final ObjectMapper mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+    private final CopyOnWriteArrayList<java.util.function.Consumer<AppSettings>> listeners = new CopyOnWriteArrayList<>();
     private AppSettings settings;
 
     public AppSettingsService() {
@@ -42,6 +43,13 @@ public final class AppSettingsService {
         } finally {
             lock.writeLock().unlock();
         }
+        notifyListeners(newSettings);
+    }
+
+    public AutoCloseable listen(java.util.function.Consumer<AppSettings> listener) {
+        Objects.requireNonNull(listener, "listener");
+        listeners.add(listener);
+        return () -> listeners.remove(listener);
     }
 
     private void load() {
@@ -66,6 +74,7 @@ public final class AppSettingsService {
         } finally {
             lock.writeLock().unlock();
         }
+        notifyListeners(settings);
     }
 
     private void save() {
@@ -74,6 +83,15 @@ public final class AppSettingsService {
             mapper.writeValue(SETTINGS_PATH.toFile(), settings);
         } catch (IOException ignored) {
         }
+    }
+
+    private void notifyListeners(AppSettings currentSettings) {
+        listeners.forEach(listener -> {
+            try {
+                listener.accept(currentSettings);
+            } catch (Exception ignored) {
+            }
+        });
     }
 }
 

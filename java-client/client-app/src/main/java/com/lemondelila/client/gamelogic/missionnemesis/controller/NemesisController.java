@@ -139,8 +139,14 @@ public final class NemesisController {
     private void handleError(String context, Throwable error) {
         Throwable root = unwrap(error);
         String message = root.getMessage() != null ? root.getMessage() : root.toString();
+        if (message.contains("java.lang.Integer")) {
+            message = "Reponse invalide du serveur.";
+        } else if (message.contains("HTTP")) {
+            message = message.replace("HTTP", "Reponse HTTP");
+        }
+        final String dialogMessage = message;
         SwingUtilities.invokeLater(() ->
-                dialogService.error("Mission Nemesis", context + " : " + message)
+                dialogService.error("Mission Nemesis", context + " : " + dialogMessage)
         );
     }
 

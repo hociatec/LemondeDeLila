@@ -32,6 +32,7 @@ public final class AudioService implements AutoCloseable {
         if (clip.isRunning()) {
             clip.stop();
         }
+        clip.flush();
         clip.setFramePosition(0);
         clip.start();
     }
@@ -72,4 +73,3 @@ public final class AudioService implements AutoCloseable {
         clips.clear();
     }
 }
-

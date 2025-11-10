@@ -9,6 +9,8 @@ import com.lemondelila.framework.core.task.TaskScheduler;
 import com.lemondelila.framework.network.rest.RestClient;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -33,11 +35,7 @@ public final class GameCatalogService {
         CompletableFuture<CatalogData> future = new CompletableFuture<>();
         scheduler.runAsync(() -> {
             try {
-                Map<String, String> headers = new HashMap<>();
-                session.authenticated().ifPresent(auth ->
-                        headers.put("Authorization", "Bearer " + auth.token()));
-
-                JsonNode response = restClient.get("catalog", headers);
+                JsonNode response = restClient.get("catalog", buildAuthHeaders());
                 CatalogData catalog = parseCatalog(response);
                 future.complete(catalog);
             } catch (InterruptedException e) {
@@ -52,6 +50,24 @@ public final class GameCatalogService {
 
     public CompletableFuture<List<GameSummary>> fetchGames() {
         return fetchCatalog().thenApply(CatalogData::games);
+    }
+
+    public CompletableFuture<List<GameSummary>> fetchGamesForCategory(String categoryId) {
+        CompletableFuture<List<GameSummary>> future = new CompletableFuture<>();
+        scheduler.runAsync(() -> {
+            try {
+                String encoded = encodeCategoryId(categoryId);
+                JsonNode response = restClient.get("catalog/categories/" + encoded + "/games", buildAuthHeaders());
+                List<GameSummary> games = parseGames(response);
+                future.complete(games);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                future.completeExceptionally(new IOException("Chargement interrompu", e));
+            } catch (Exception e) {
+                future.completeExceptionally(e);
+            }
+        });
+        return future;
     }
 
     private CatalogData parseCatalog(JsonNode response) throws IOException {
@@ -138,6 +154,21 @@ public final class GameCatalogService {
 
         List<CatalogCategory> children = parseCategories(node.path("children"));
         return new CatalogCategory(id, name, children);
+    }
+
+    private Map<String, String> buildAuthHeaders() {
+        Map<String, String> headers = new HashMap<>();
+        session.authenticated().ifPresent(auth ->
+                headers.put("Authorization", "Bearer " + auth.token()));
+        return headers;
+    }
+
+    private String encodeCategoryId(String categoryId) {
+        if (categoryId == null) {
+            return "";
+        }
+        String encoded = URLEncoder.encode(categoryId, StandardCharsets.UTF_8);
+        return encoded.replace("+", "%20");
     }
 }
 

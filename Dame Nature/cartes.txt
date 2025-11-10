@@ -1,0 +1,58 @@
+Cartes du jeu
+
+
+1. Famille des Arbres Majestueux
+Le grand-père Olivier
+La grand-mère Cerisier 
+Le père Chêne 
+La mère Séquoia
+L’enfant Bouleau
+Le bébé Pommier
+
+2. Famille des Animaux de la Forêt
+Le grand-père Hibou 
+La grand-mère Renarde
+Le père Cerf
+La mère louve
+L’enfant Écureuil 
+Le bébé Hérisson 
+
+3. Famille des Animaux Marins
+Le grand-père Crabe
+La grand-mère Pieuvre
+Le père Dauphin
+La mère otarie
+L’enfant Tortue 
+Le bébé Poisson-Clown
+
+4. Famille des Montagnes
+Le grand-père Rocher 
+La grand-mère Grotte
+Le père Mont Blanc 
+La mère volcan
+L’enfant Colline
+Le bébé Caillou
+
+5. Famille des Fleurs et Plantes
+Le grand-père Cactus
+La grand-mère Lavande
+Le père Tournesol
+La mère Rose
+L’enfant Marguerite
+Le bébé Pâquerette
+
+6. Famille des Phénomènes Météo
+Le grand-père Brouillard
+La grand-mère tempête
+Le père Orage
+La mère Pluie
+L’enfant flocon
+Le bébé éclaire
+
+7. Famille des Insectes et Petites Bêtes
+Le grand-père Ver de Terre
+La grand-mère Abeille
+Le père Scarabée
+La mère Coccinelle
+L’enfant Papillon
+Le bébé Fourmi

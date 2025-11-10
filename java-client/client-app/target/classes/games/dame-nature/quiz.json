@@ -1,0 +1,702 @@
+[
+    {
+        "id": "quiz-1",
+        "question": "Quelle plante produit de l'oxygene grace au soleil ?",
+        "choices": [
+            "Le cactus",
+            "L'algue",
+            "Le champignon"
+        ],
+        "answerIndex": 1
+    },
+    {
+        "id": "quiz-2",
+        "question": "Quel animal est en danger a cause du plastique dans les oceans ?",
+        "choices": [
+            "Le lion",
+            "Le dauphin",
+            "Le pigeon"
+        ],
+        "answerIndex": 1
+    },
+    {
+        "id": "quiz-3",
+        "question": "Quelle action aide la planete ?",
+        "choices": [
+            "Laisser couler l'eau",
+            "Planter un arbre",
+            "Prendre l'avion tous les jours"
+        ],
+        "answerIndex": 1
+    },
+    {
+        "id": "quiz-4",
+        "question": "Quelle saison vient apres l'ete ?",
+        "choices": [
+            "L'hiver",
+            "Le printemps",
+            "L'automne"
+        ],
+        "answerIndex": 2
+    },
+    {
+        "id": "quiz-5",
+        "question": "Quel objet met le plus longtemps a disparaitre dans la nature ?",
+        "choices": [
+            "Une peau de banane",
+            "Une bouteille en plastique",
+            "Une feuille d'arbre"
+        ],
+        "answerIndex": 1
+    },
+    {
+        "id": "quiz-6",
+        "question": "Ou vit l'ours polaire ?",
+        "choices": [
+            "En Antarctique",
+            "En Afrique",
+            "En Arctique"
+        ],
+        "answerIndex": 2
+    },
+    {
+        "id": "quiz-7",
+        "question": "Quelle partie de l'arbre transporte la seve ?",
+        "choices": [
+            "Les feuilles",
+            "Le tronc",
+            "Les racines"
+        ],
+        "answerIndex": 1
+    },
+    {
+        "id": "quiz-8",
+        "question": "Quel insecte joue un role essentiel dans la pollinisation ?",
+        "choices": [
+            "Le moustique",
+            "L'abeille",
+            "Le scarabee"
+        ],
+        "answerIndex": 1
+    },
+    {
+        "id": "quiz-9",
+        "question": "Quelle source d'energie est renouvelable ?",
+        "choices": [
+            "Le charbon",
+            "Le vent",
+            "Le petrole"
+        ],
+        "answerIndex": 1
+    },
+    {
+        "id": "quiz-10",
+        "question": "Quel animal construit des barrages en bois ?",
+        "choices": [
+            "Le castor",
+            "Le rat",
+            "Le renard"
+        ],
+        "answerIndex": 0
+    },
+    {
+        "id": "quiz-11",
+        "question": "Quelle fleur suit la lumiere du soleil ?",
+        "choices": [
+            "Le tournesol",
+            "La rose",
+            "Le lys"
+        ],
+        "answerIndex": 0
+    },
+    {
+        "id": "quiz-12",
+        "question": "Ou trouve-t-on la majorite de l'eau douce sur Terre ?",
+        "choices": [
+            "Dans les rivieres",
+            "Dans les glaciers",
+            "Dans les nuages"
+        ],
+        "answerIndex": 1
+    },
+    {
+        "id": "quiz-13",
+        "question": "Quel est le plus grand mammifere du monde ?",
+        "choices": [
+            "L'elephant",
+            "La baleine bleue",
+            "Le rhinoceros"
+        ],
+        "answerIndex": 1
+    },
+    {
+        "id": "quiz-14",
+        "question": "Quelle foret est la plus grande du monde ?",
+        "choices": [
+            "L'Amazonie",
+            "La foret de Broceliande",
+            "La Ta\"iga"
+        ],
+        "answerIndex": 0
+    },
+    {
+        "id": "quiz-15",
+        "question": "Quel geste aide a reduire les d'echets ?",
+        "choices": [
+            "Recycler",
+            "Jeter tout a la poubelle",
+            "Acheter plus d'emballages"
+        ],
+        "answerIndex": 0
+    },
+    {
+        "id": "quiz-16",
+        "question": "Que liberent les volcans lors d'une eruption ?",
+        "choices": [
+            "De la neige",
+            "De la lave",
+            "Du sable"
+        ],
+        "answerIndex": 1
+    },
+    {
+        "id": "quiz-17",
+        "question": "Quelle partie de la plante pousse sous la terre ?",
+        "choices": [
+            "Les racines",
+            "Les feuilles",
+            "Les fleurs"
+        ],
+        "answerIndex": 0
+    },
+    {
+        "id": "quiz-18",
+        "question": "Quel animal vit a la fois dans l'eau et sur la terre ?",
+        "choices": [
+            "La grenouille",
+            "Le renard",
+            "Le hibou"
+        ],
+        "answerIndex": 0
+    },
+    {
+        "id": "quiz-19",
+        "question": "Quelle est la principale source d'energie de la Terre ?",
+        "choices": [
+            "Le soleil",
+            "La lune",
+            "Le vent"
+        ],
+        "answerIndex": 0
+    },
+    {
+        "id": "quiz-20",
+        "question": "Quel animal dort pendant tout l'hiver ?",
+        "choices": [
+            "L'ours",
+            "Le lapin",
+            "Le cerf"
+        ],
+        "answerIndex": 0
+    },
+    {
+        "id": "quiz-21",
+        "question": "Quel fruit pousse sur un palmier ?",
+        "choices": [
+            "La noix de coco",
+            "La pomme",
+            "La fraise"
+        ],
+        "answerIndex": 0
+    },
+    {
+        "id": "quiz-22",
+        "question": "Que fait une chenille avant de devenir papillon ?",
+        "choices": [
+            "Elle forme une chrysalide",
+            "Elle change de couleur",
+            "Elle apprend a voler"
+        ],
+        "answerIndex": 0
+    },
+    {
+        "id": "quiz-23",
+        "question": "Quelle action pollue le plus l'air ?",
+        "choices": [
+            "Marcher a pied",
+            "Faire du velo",
+            "Utiliser la voiture tous les jours"
+        ],
+        "answerIndex": 2
+    },
+    {
+        "id": "quiz-24",
+        "question": "Comment appelle-t-on les arbres qui perdent leurs feuilles en hiver ?",
+        "choices": [
+            "Les feuillus",
+            "Les coniferes",
+            "Les tropicaux"
+        ],
+        "answerIndex": 0
+    },
+    {
+        "id": "quiz-25",
+        "question": "Quel animal fabrique du miel ?",
+        "choices": [
+            "L'abeille",
+            "Le papillon",
+            "La coccinelle"
+        ],
+        "answerIndex": 0
+    },
+    {
+        "id": "quiz-26",
+        "question": "Quelle mer borde la cote sud de la France ?",
+        "choices": [
+            "La mer du Nord",
+            "L'ocean Atlantique",
+            "La mer Mediterranee"
+        ],
+        "answerIndex": 2
+    },
+    {
+        "id": "quiz-27",
+        "question": "Quelle partie de la fleur contient le pollen ?",
+        "choices": [
+            "Les etamines",
+            "Les petales",
+            "Les racines"
+        ],
+        "answerIndex": 0
+    },
+    {
+        "id": "quiz-28",
+        "question": "Quel animal peut changer de couleur pour se camoufler ?",
+        "choices": [
+            "Le cameleon",
+            "Le serpent",
+            "Le l'ezard"
+        ],
+        "answerIndex": 0
+    },
+    {
+        "id": "quiz-29",
+        "question": "Quelle est la plus grande source de pollution des oceans ?",
+        "choices": [
+            "Le sable",
+            "Le plastique",
+            "Le sel"
+        ],
+        "answerIndex": 1
+    },
+    {
+        "id": "quiz-30",
+        "question": "Quel arbre donne des glands ?",
+        "choices": [
+            "Le chene",
+            "Le sapin",
+            "Le bouleau"
+        ],
+        "answerIndex": 0
+    },
+    {
+        "id": "quiz-31",
+        "question": "Quel animal vit dans une ruche ?",
+        "choices": [
+            "L'abeille",
+            "La fourmi",
+            "Le moustique"
+        ],
+        "answerIndex": 0
+    },
+    {
+        "id": "quiz-32",
+        "question": "Quel phenomene naturel provoque le tonnerre ?",
+        "choices": [
+            "L'orage",
+            "Le vent",
+            "La neige"
+        ],
+        "answerIndex": 0
+    },
+    {
+        "id": "quiz-33",
+        "question": "Quelle est la principale nourriture du panda geant ?",
+        "choices": [
+            "Les fruits",
+            "Le bambou",
+            "Le poisson"
+        ],
+        "answerIndex": 1
+    },
+    {
+        "id": "quiz-34",
+        "question": "Quelle montagne est la plus haute du monde ?",
+        "choices": [
+            "Le Kilimandjaro",
+            "Le Mont-Blanc",
+            "L'Everest"
+        ],
+        "answerIndex": 2
+    },
+    {
+        "id": "quiz-35",
+        "question": "Quelle action permet d'economiser l'eau ?",
+        "choices": [
+            "Laisser le robinet ouvert",
+            "Prendre un bain",
+            "Fermer le robinet pendant quon se brosse les dents"
+        ],
+        "answerIndex": 2
+    },
+    {
+        "id": "quiz-36",
+        "question": "Quel animal a une coquille pour se proteger ?",
+        "choices": [
+            "L'escargot",
+            "Le ver de terre",
+            "Le herisson"
+        ],
+        "answerIndex": 0
+    },
+    {
+        "id": "quiz-37",
+        "question": "Quel gaz les plantes absorbent-elles pour vivre ?",
+        "choices": [
+            "L'oxygene",
+            "Le dioxyde de carbone",
+            "L'helium"
+        ],
+        "answerIndex": 1
+    },
+    {
+        "id": "quiz-38",
+        "question": "Quel animal construit un terrier sous la terre ?",
+        "choices": [
+            "Le lapin",
+            "Le hibou",
+            "Le cerf"
+        ],
+        "answerIndex": 0
+    },
+    {
+        "id": "quiz-39",
+        "question": "Que deviennent les feuilles mortes en foret ?",
+        "choices": [
+            "Elles disparaissent sans laisser de trace",
+            "Elles se transforment en humus",
+            "Elles se changent en pierres"
+        ],
+        "answerIndex": 1
+    },
+    {
+        "id": "quiz-40",
+        "question": "Quel est le principal habitat du manchot empereur ?",
+        "choices": [
+            "L'Antarctique",
+            "L'Arctique",
+            "Le Canada"
+        ],
+        "answerIndex": 0
+    },
+    {
+        "id": "quiz-41",
+        "question": "Quelle est la seule plante carnivore courante en Europe ?",
+        "choices": [
+            "La drosera",
+            "La fougere",
+            "Le nenuphar"
+        ],
+        "answerIndex": 0
+    },
+    {
+        "id": "quiz-42",
+        "question": "Quelle matiere est recyclable ?",
+        "choices": [
+            "Le verre",
+            "Le plastique",
+            "Les deux"
+        ],
+        "answerIndex": 2
+    },
+    {
+        "id": "quiz-43",
+        "question": "Quel animal celebre pour sa lenteur porte sa maison sur son dos ?",
+        "choices": [
+            "La tortue",
+            "Le crabe",
+            "Le l'ezard"
+        ],
+        "answerIndex": 0
+    },
+    {
+        "id": "quiz-44",
+        "question": "Que produit un arbre fruitier ?",
+        "choices": [
+            "Des fruits",
+            "Des champignons",
+            "Des pommes de pin"
+        ],
+        "answerIndex": 0
+    },
+    {
+        "id": "quiz-45",
+        "question": "Quel animal vit dans les rivieres et peut remonter les cascades ?",
+        "choices": [
+            "Le saumon",
+            "Le requin",
+            "Le crocodile"
+        ],
+        "answerIndex": 0
+    },
+    {
+        "id": "quiz-46",
+        "question": "Que produit la pluie quand elle tombe apres une journee ensoleillee ?",
+        "choices": [
+            "Du brouillard",
+            "Des eclairs",
+            "Un arc-en-ciel"
+        ],
+        "answerIndex": 2
+    },
+    {
+        "id": "quiz-47",
+        "question": "Quel animal transporte sa progeniture dans une poche ?",
+        "choices": [
+            "Le kangourou",
+            "Le panda",
+            "Le singe"
+        ],
+        "answerIndex": 0
+    },
+    {
+        "id": "quiz-48",
+        "question": "Quelle partie de la plante capte la lumiere du soleil ?",
+        "choices": [
+            "Les feuilles",
+            "Les racines",
+            "Le tronc"
+        ],
+        "answerIndex": 0
+    },
+    {
+        "id": "quiz-49",
+        "question": "Quelle ressource naturelle utilise-t-on pour fabriquer du papier ?",
+        "choices": [
+            "Le sable",
+            "Le bois",
+            "Le metal"
+        ],
+        "answerIndex": 1
+    },
+    {
+        "id": "quiz-50",
+        "question": "Quel animal vit dans une coquille et marche de travers ?",
+        "choices": [
+            "Le crabe",
+            "Le dauphin",
+            "Le serpent"
+        ],
+        "answerIndex": 0
+    },
+    {
+        "id": "quiz-51",
+        "question": "Quelle saison correspond au reveil de la nature ?",
+        "choices": [
+            "L'hiver",
+            "Le printemps",
+            "L'automne"
+        ],
+        "answerIndex": 1
+    },
+    {
+        "id": "quiz-52",
+        "question": "Que fait la Terre autour du Soleil ?",
+        "choices": [
+            "Elle tourne",
+            "Elle dort",
+            "Elle flotte sans bouger"
+        ],
+        "answerIndex": 0
+    },
+    {
+        "id": "quiz-53",
+        "question": "Quelle ressource naturelle est indispensable a la vie ?",
+        "choices": [
+            "L'or",
+            "Le petrole",
+            "L'eau"
+        ],
+        "answerIndex": 2
+    },
+    {
+        "id": "quiz-54",
+        "question": "Quel animal est connu pour son cri \"meuh\" ?",
+        "choices": [
+            "La vache",
+            "Le mouton",
+            "Le cochon"
+        ],
+        "answerIndex": 0
+    },
+    {
+        "id": "quiz-55",
+        "question": "Quel est le principal danger pour les abeilles ?",
+        "choices": [
+            "Le vent",
+            "Les fleurs",
+            "Les pesticides"
+        ],
+        "answerIndex": 2
+    },
+    {
+        "id": "quiz-56",
+        "question": "Quelle energie utilise un panneau solaire ?",
+        "choices": [
+            "La lumiere du soleil",
+            "Le vent",
+            "L'eau"
+        ],
+        "answerIndex": 0
+    },
+    {
+        "id": "quiz-57",
+        "question": "Quel oiseau est le symbole de la paix ?",
+        "choices": [
+            "La colombe",
+            "Le corbeau",
+            "Le moineau"
+        ],
+        "answerIndex": 0
+    },
+    {
+        "id": "quiz-58",
+        "question": "Quelle plante pousse souvent dans le d'esert ?",
+        "choices": [
+            "Le cactus",
+            "Le nenuphar",
+            "La mousse"
+        ],
+        "answerIndex": 0
+    },
+    {
+        "id": "quiz-59",
+        "question": "Quel fruit vient du chene ?",
+        "choices": [
+            "Le gland",
+            "La noisette",
+            "La chataigne"
+        ],
+        "answerIndex": 0
+    },
+    {
+        "id": "quiz-60",
+        "question": "Quelle ressource naturelle sert a fabriquer le verre ?",
+        "choices": [
+            "Le sable",
+            "Le sel",
+            "Le charbon"
+        ],
+        "answerIndex": 0
+    },
+    {
+        "id": "quiz-61",
+        "question": "Quel animal vit dans les montagnes et grimpe tres bien ?",
+        "choices": [
+            "Le chamois",
+            "Le phoque",
+            "Le flamant rose"
+        ],
+        "answerIndex": 0
+    },
+    {
+        "id": "quiz-62",
+        "question": "Quelle est la plus grande foret de France ?",
+        "choices": [
+            "La foret d'Orleans",
+            "La foret de Fontainebleau",
+            "La foret de Broceliande"
+        ],
+        "answerIndex": 0
+    },
+    {
+        "id": "quiz-63",
+        "question": "Quel phenomene naturel provoque des vagues geantes sur l'ocean ?",
+        "choices": [
+            "Le vent l'eger",
+            "La pluie",
+            "Le tsunami"
+        ],
+        "answerIndex": 2
+    },
+    {
+        "id": "quiz-64",
+        "question": "Quelle mer separe l'Europe et l'Afrique ?",
+        "choices": [
+            "La mer du Nord",
+            "La mer Mediterranee",
+            "La mer Noire"
+        ],
+        "answerIndex": 1
+    },
+    {
+        "id": "quiz-65",
+        "question": "Quel animal vit dans la savane africaine ?",
+        "choices": [
+            "Le manchot",
+            "L'ours polaire",
+            "Le lion"
+        ],
+        "answerIndex": 2
+    },
+    {
+        "id": "quiz-66",
+        "question": "Quelle couleur represente souvent la nature et l'ecologie ?",
+        "choices": [
+            "Le vert",
+            "Le bleu",
+            "Le rouge"
+        ],
+        "answerIndex": 0
+    },
+    {
+        "id": "quiz-67",
+        "question": "Quel animal a une trompe pour se nourrir et respirer ?",
+        "choices": [
+            "L'elephant",
+            "Le singe",
+            "Le tigre"
+        ],
+        "answerIndex": 0
+    },
+    {
+        "id": "quiz-68",
+        "question": "Quelle plante aromatique sent tres fort et attire les abeilles ?",
+        "choices": [
+            "La lavande",
+            "La fougere",
+            "Le lichen"
+        ],
+        "answerIndex": 0
+    },
+    {
+        "id": "quiz-69",
+        "question": "Quelle est la principale cause du rechauffement climatique ?",
+        "choices": [
+            "Les marees",
+            "La pollution et les gaz a effet de serre",
+            "Les eclairs"
+        ],
+        "answerIndex": 1
+    },
+    {
+        "id": "quiz-70",
+        "question": "Quelle est la planete bleue de notre systeme solaire ?",
+        "choices": [
+            "La Terre",
+            "Mars",
+            "Venus"
+        ],
+        "answerIndex": 0
+    }
+]

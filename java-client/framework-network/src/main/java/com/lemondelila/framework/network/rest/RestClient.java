@@ -61,10 +61,16 @@ public final class RestClient {
     }
 
     private JsonNode parse(HttpResponse<String> response) throws IOException {
+        String body = response.body();
         if (response.statusCode() >= 400) {
-            LOGGER.warn("Reponse HTTP {}: {}", response.statusCode(), response.body());
-            throw new IOException("HTTP " + response.statusCode() + ": " + response.body());
+            LOGGER.warn("Reponse HTTP {}: {}", response.statusCode(), body);
+            throw new IOException("HTTP " + response.statusCode() + ": " + body);
         }
-        return objectMapper.readTree(response.body());
+        try {
+            return objectMapper.readTree(body);
+        } catch (IOException ex) {
+            LOGGER.error("Impossible d'analyser la reponse HTTP {}: {}", response.statusCode(), body, ex);
+            throw ex;
+        }
     }
 }

@@ -29,6 +29,13 @@ final class Catalog
                     ['id' => 'bataille', 'name' => 'Bataille', 'minPlayers' => 2, 'maxPlayers' => 2],
                 ],
             ],
+            [
+                'id' => 'jeuxdecartes',
+                'name' => 'Jeux de cartes',
+                'games' => [
+                    ['id' => 'dame-nature', 'name' => 'Dame Nature', 'minPlayers' => 2, 'maxPlayers' => 6],
+                ],
+            ],
         ];
     }
 }

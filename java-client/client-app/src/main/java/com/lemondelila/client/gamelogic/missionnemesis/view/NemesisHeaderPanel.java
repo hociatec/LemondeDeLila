@@ -14,9 +14,8 @@ final class NemesisHeaderPanel extends JPanel {
         title.setFont(title.getFont().deriveFont(Font.BOLD, 26f));
         add(title);
 
-        JLabel subtitle = new JLabel("Placez votre flotte puis engagez le combat.");
+        JLabel subtitle = new JLabel("Configurez la partie au clavier, placez votre flotte puis engagez le combat.");
         subtitle.setFont(subtitle.getFont().deriveFont(Font.ITALIC, 14f));
         add(subtitle);
     }
 }
-

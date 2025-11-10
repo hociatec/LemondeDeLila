@@ -69,7 +69,7 @@ public abstract class RemoteGameServiceSupport {
         payload.put("gameType", gameType);
         payload.put("name", defaultName);
         payload.put("maxPlayers", maxPlayers);
-        JsonNode response = restClient.post("rooms", headers, payload);
+        JsonNode response = restClient.post("rooms/", headers, payload);
         int roomId = response.path("id").asInt(-1);
         if (roomId <= 0) {
             throw new IOException("Identifiant de salle invalide pour " + gameType);

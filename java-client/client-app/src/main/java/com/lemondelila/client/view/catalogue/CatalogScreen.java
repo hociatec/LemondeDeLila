@@ -2,6 +2,7 @@ package com.lemondelila.client.view.catalogue;
 
 import com.lemondelila.client.controller.game.GameCatalogController;
 import com.lemondelila.client.controller.game.GameInteractionController;
+import com.lemondelila.client.gamelogic.damenature.controller.DameNatureController;
 import com.lemondelila.client.gamelogic.missionnemesis.controller.NemesisController;
 import com.lemondelila.client.model.catalogue.CatalogCategory;
 import com.lemondelila.client.model.catalogue.CatalogData;
@@ -35,11 +36,14 @@ import java.awt.event.ActionEvent;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 public final class CatalogScreen extends JPanel implements Screen {
@@ -50,6 +54,7 @@ public final class CatalogScreen extends JPanel implements Screen {
     private final GameCatalogController catalogController;
     private final DialogService dialogService;
     private final NemesisController missionController;
+    private final DameNatureController dameNatureController;
 
     private final CardLayout viewLayout = new CardLayout();
     private final JPanel viewPanel = new JPanel(viewLayout);
@@ -72,6 +77,7 @@ public final class CatalogScreen extends JPanel implements Screen {
     private Map<String, List<GameSummary>> gamesByCategory = Map.of();
     private Map<String, GameSummary> gameIndex = Map.of();
     private Map<String, String> categoryBreadcrumbs = Map.of();
+    private final Set<String> pendingCategoryLoads = new HashSet<>();
 
     private GameSummary activeGame;
     private final GameInteractionController gameInteractionController;
@@ -79,10 +85,12 @@ public final class CatalogScreen extends JPanel implements Screen {
     public CatalogScreen(GameCatalogController catalogController,
                          GameRulesService rulesService,
                          DialogService dialogService,
-                         NemesisController missionController) {
+                         NemesisController missionController,
+                         DameNatureController dameNatureController) {
         this.catalogController = Objects.requireNonNull(catalogController, "catalogController");
         this.dialogService = Objects.requireNonNull(dialogService, "dialogService");
         this.missionController = missionController;
+        this.dameNatureController = dameNatureController;
         buildUi();
         installActions();
         gameDetailPanel.onPlay(this::handlePlayRequest);
@@ -240,9 +248,12 @@ public final class CatalogScreen extends JPanel implements Screen {
 
         String label = categoryBreadcrumbs.getOrDefault(state.categoryId, "Categorie");
         breadcrumbLabel.setText("Jeux : " + label);
-        setStatus(games.isEmpty()
-                ? "Aucun jeu dans " + label + "."
-                : games.size() + " jeu(x) dans " + label + ".");
+        if (games.isEmpty()) {
+            setStatus("Aucun jeu repertorie dans " + label + ". Verification en cours...");
+            requestGamesForCategory(state.categoryId, label, state);
+        } else {
+            setStatus(games.size() + " jeu(x) dans " + label + ".");
+        }
     }
 
     private void showGame(ViewState state) {
@@ -264,14 +275,23 @@ public final class CatalogScreen extends JPanel implements Screen {
     }
 
     private boolean supportsLaunch(GameSummary game) {
-        if (missionController == null || game == null) {
+        if (game == null) {
             return false;
         }
         String identifier = game.engine();
         if (identifier == null || identifier.isBlank()) {
             identifier = game.code();
         }
-        return identifier != null && identifier.equalsIgnoreCase("mission-nemesis");
+        if (identifier == null) {
+            return false;
+        }
+        if (identifier.equalsIgnoreCase("mission-nemesis")) {
+            return missionController != null;
+        }
+        if (identifier.equalsIgnoreCase("dame-nature")) {
+            return dameNatureController != null;
+        }
+        return false;
     }
 
     private void handlePlayRequest(GameSummary game) {
@@ -283,9 +303,25 @@ public final class CatalogScreen extends JPanel implements Screen {
                     "Ce jeu ne peut pas encore etre lance depuis cette interface.");
             return;
         }
+        String identifier = game.engine();
+        if (identifier == null || identifier.isBlank()) {
+            identifier = game.code();
+        }
+        final String screenId = identifier != null ? identifier.toLowerCase() : null;
+        CompletableFuture<?> launchFuture;
+        if ("mission-nemesis".equalsIgnoreCase(identifier) && missionController != null) {
+            launchFuture = missionController.startNewGame();
+        } else if ("dame-nature".equalsIgnoreCase(identifier) && dameNatureController != null) {
+            launchFuture = dameNatureController.startNewGame();
+        } else {
+            dialogService.info("Fonctionnalite indisponible",
+                    "Ce jeu ne peut pas encore etre lance depuis cette interface.");
+            return;
+        }
+
         gameDetailPanel.setPlayEnabled(false);
         setStatus("Initialisation de " + game.name() + "...");
-        missionController.startNewGame().whenComplete((session, error) -> SwingUtilities.invokeLater(() -> {
+        launchFuture.whenComplete((session, error) -> SwingUtilities.invokeLater(() -> {
             if (error != null) {
                 dialogService.error("Lancement impossible",
                         "La partie " + game.name() + " n'a pas pu etre initialisee.");
@@ -294,8 +330,8 @@ public final class CatalogScreen extends JPanel implements Screen {
             } else {
                 setStatus("Partie " + game.name() + " lancee.");
                 gameDetailPanel.setPlayEnabled(true);
-                if (screenManager != null) {
-                    screenManager.show("mission-nemesis");
+                if (screenManager != null && screenId != null) {
+                    screenManager.show(screenId);
                 }
             }
         }));
@@ -463,6 +499,56 @@ public final class CatalogScreen extends JPanel implements Screen {
             this.gameCode = gameCode;
             this.selectedIndex = 0;
         }
+    }
+
+    private void requestGamesForCategory(String categoryId, String label, ViewState state) {
+        if (categoryId == null || pendingCategoryLoads.contains(categoryId)) {
+            return;
+        }
+        pendingCategoryLoads.add(categoryId);
+        catalogController.loadGamesForCategory(categoryId).whenComplete((result, error) -> SwingUtilities.invokeLater(() -> {
+            pendingCategoryLoads.remove(categoryId);
+            if (error != null || result == null || result.isEmpty()) {
+                setStatus("Aucun jeu disponible dans " + label + " pour le moment.");
+                return;
+            }
+            registerRemoteGames(result);
+            ViewState current = navigationStack.peek();
+            if (current != null
+                    && current.mode == ViewMode.GAMES
+                    && Objects.equals(current.categoryId, categoryId)) {
+                int maxIndex = Math.max(result.size() - 1, 0);
+                current.selectedIndex = Math.max(0, Math.min(current.selectedIndex, maxIndex));
+                showGames(current);
+            }
+        }));
+    }
+
+    private void registerRemoteGames(List<GameSummary> games) {
+        if (games == null || games.isEmpty()) {
+            return;
+        }
+
+        Map<String, List<GameSummary>> updatedGamesByCategory = new LinkedHashMap<>(gamesByCategory);
+        Map<String, GameSummary> updatedGameIndex = new LinkedHashMap<>(gameIndex);
+
+        for (GameSummary game : games) {
+            updatedGameIndex.put(game.code(), game);
+            for (String categoryId : game.categories()) {
+                List<GameSummary> existing = updatedGamesByCategory.get(categoryId);
+                List<GameSummary> modifiable = existing == null ? new ArrayList<>() : new ArrayList<>(existing);
+                boolean alreadyPresent = modifiable.stream()
+                        .anyMatch(existingGame -> existingGame.code().equals(game.code()));
+                if (!alreadyPresent) {
+                    modifiable.add(game);
+                    modifiable.sort((a, b) -> String.CASE_INSENSITIVE_ORDER.compare(a.name(), b.name()));
+                }
+                updatedGamesByCategory.put(categoryId, List.copyOf(modifiable));
+            }
+        }
+
+        gamesByCategory = Map.copyOf(updatedGamesByCategory);
+        gameIndex = Map.copyOf(updatedGameIndex);
     }
 
     private static final class CategoryListPanel extends JPanel {

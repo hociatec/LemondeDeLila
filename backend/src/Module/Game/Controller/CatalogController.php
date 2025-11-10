@@ -31,9 +31,10 @@ class CatalogController extends AbstractController
         return $this->json($this->catalog->getCategories());
     }
 
-    #[Route('/categories/{id}/games', name: 'catalog_category_games', methods: ['GET'])]
+    #[Route('/categories/{id}/games', name: 'catalog_category_games', methods: ['GET'], requirements: ['id' => '.+'])]
     public function categoryGames(string $id): Response
     {
+        $id = rawurldecode($id);
         $games = $this->catalog->getGamesForCategory($id);
         if (empty($games)) {
             return $this->json(['error' => 'Not found'], 404);
@@ -83,4 +84,3 @@ class CatalogController extends AbstractController
         return $clean($tree);
     }
 }
-
