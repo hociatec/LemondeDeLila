@@ -1,0 +1,10 @@
+com\lemondelila\framework\access\NarrationQueue$NarrationTask.class
+com\lemondelila\framework\access\NarrationQueue.class
+com\lemondelila\framework\access\AccessibleDecorator.class
+com\lemondelila\framework\access\ScreenReaderAnnouncer.class
+com\lemondelila\framework\access\module\AccessibilityModule.class
+com\lemondelila\framework\access\AccessibleSpec$Builder.class
+com\lemondelila\framework\access\FocusHighlighter.class
+com\lemondelila\framework\access\FocusHighlighter$1.class
+com\lemondelila\framework\access\shortcut\AccessibleShortcutRegistry.class
+com\lemondelila\framework\access\AccessibleSpec.class

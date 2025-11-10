@@ -32,14 +32,20 @@ import java.awt.event.FocusEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 public final class DameNatureScreen extends JPanel implements Screen {
+
+    private static final String CONFIG_HELP_MESSAGE =
+            "Configuration Dame Nature : flèches haut et bas pour choisir une option, gauche et droite pour modifier la valeur, Entrée pour lancer la partie, Échap pour revenir à l'accueil.";
 
     private enum Mode {
         CONFIGURATION,
@@ -77,13 +83,16 @@ public final class DameNatureScreen extends JPanel implements Screen {
     private final JTextArea opponentsArea = createReadOnlyArea(6, "Adversaires");
     private final JTextArea quizArea = createReadOnlyArea(4, "Quiz en cours");
     private final JTextArea logArea = createReadOnlyArea(10, "Historique");
+    private final Map<KeyStroke, String> shortcutDescriptions = new LinkedHashMap<>();
 
     private DameNatureSession currentSession;
     private List<PlayerOption> playerOptions = List.of();
     private List<CardOption> cardOptions = List.of();
     private List<String> currentQuizChoices = List.of();
+    private String currentQuizQuestion = "";
     private int selectedPlayerIndex = -1;
     private int selectedCardIndex = -1;
+    private int lastAnnouncedTurnIndex = -1;
     private volatile boolean launchInProgress;
 
     private final Consumer<DameNatureSession> sessionListener = this::displaySession;
@@ -130,6 +139,8 @@ public final class DameNatureScreen extends JPanel implements Screen {
 
         JLabel instructions = new JLabel("Utilisez ↑/↓ pour naviguer, ←/→ pour ajuster les options, Entrée pour lancer.");
         instructions.setAlignmentX(LEFT_ALIGNMENT);
+        setAccessibleName(instructions, "Instructions de configuration");
+        setAccessibleDescription(instructions, instructions.getText());
         configPanel.add(instructions);
         configPanel.add(Box.createRigidArea(new Dimension(0, 12)));
 
@@ -286,6 +297,8 @@ public final class DameNatureScreen extends JPanel implements Screen {
         header.setLayout(new BoxLayout(header, BoxLayout.Y_AXIS));
         turnLabel.setFont(turnLabel.getFont().deriveFont(20f));
         turnLabel.setAlignmentX(LEFT_ALIGNMENT);
+        setAccessibleName(turnLabel, "Tour actuel");
+        setAccessibleDescription(turnLabel, turnLabel.getText());
         setAccessibleName(selectionLabel, "Sélection courante");
         selectionLabel.setAlignmentX(LEFT_ALIGNMENT);
         setAccessibleName(selectionLabel, "Sélection courante");
@@ -415,52 +428,60 @@ public final class DameNatureScreen extends JPanel implements Screen {
     }
 
     private void installGlobalKeyBindings() {
-        registerShortcut("SPACE", "damenature-draw", e -> triggerDraw());
-        registerShortcut('T', "damenature-turn", e -> announceCurrentTurn());
-        registerShortcut('t', "damenature-turn", e -> announceCurrentTurn());
-        registerShortcut("UP", "damenature-target-prev", e -> cycleTarget(-1));
-        registerShortcut("DOWN", "damenature-target-next", e -> cycleTarget(1));
-        registerShortcut("LEFT", "damenature-card-prev", e -> cycleCard(-1));
-        registerShortcut("RIGHT", "damenature-card-next", e -> cycleCard(1));
-        registerShortcut('E', "damenature-request", e -> sendAskAction());
-        registerShortcut('e', "damenature-request", e -> sendAskAction());
-        registerShortcut('R', "damenature-refresh", e -> handleActionFeedback(controller.refresh(), "Actualisation en cours...", null, null));
-        registerShortcut('r', "damenature-refresh", e -> handleActionFeedback(controller.refresh(), "Actualisation en cours...", null, null));
-        registerShortcut('C', "damenature-open-config", e -> {
-            if (mode == Mode.GAMEPLAY) {
-                announce("Configuration ouverte. Modifiez les options puis Entrée pour relancer.");
-                openConfiguration();
-            }
+        registerShortcut("SPACE", "damenature-draw", "Piocher une carte", e -> triggerDraw());
+        registerShortcut('T', "damenature-turn", "Annoncer le tour en cours", e -> announceCurrentTurn());
+        registerShortcut('t', "damenature-turn", null, e -> announceCurrentTurn());
+        registerShortcut("UP", "damenature-target-prev", "Sélectionner l'adversaire précédent", e -> cycleTarget(-1));
+        registerShortcut("DOWN", "damenature-target-next", "Sélectionner l'adversaire suivant", e -> cycleTarget(1));
+        registerShortcut("LEFT", "damenature-card-prev", "Choisir la carte précédente à demander", e -> cycleCard(-1));
+        registerShortcut("RIGHT", "damenature-card-next", "Choisir la carte suivante à demander", e -> cycleCard(1));
+        registerShortcut('E', "damenature-request", "Demander la carte sélectionnée", e -> sendAskAction());
+        registerShortcut('e', "damenature-request", null, e -> sendAskAction());
+        registerShortcut('R', "damenature-refresh", "Actualiser la partie", e -> handleActionFeedback(controller.refresh(), "Actualisation en cours...", null, null));
+        registerShortcut('r', "damenature-refresh", null, e -> handleActionFeedback(controller.refresh(), "Actualisation en cours...", null, null));
+        registerShortcut('C', "damenature-open-config", "Rouvrir la configuration", e -> {
+            announce("Configuration ouverte. Modifiez les options puis Entrée pour relancer.");
+            openConfiguration();
         });
-        registerShortcut('c', "damenature-open-config", e -> {
-            if (mode == Mode.GAMEPLAY) {
-                announce("Configuration ouverte. Modifiez les options puis Entrée pour relancer.");
-                openConfiguration();
-            }
+        registerShortcut('c', "damenature-open-config", null, e -> {
+            announce("Configuration ouverte. Modifiez les options puis Entrée pour relancer.");
+            openConfiguration();
         });
-        registerShortcut("ESCAPE", "damenature-config", e -> {
-            if (mode == Mode.GAMEPLAY) {
-                announce("Retour à la configuration.");
-                openConfiguration();
-            }
+        registerShortcut("ESCAPE", "damenature-config", "Revenir à la configuration", e -> {
+            announce("Retour à la configuration.");
+            openConfiguration();
         });
+        registerShortcut('S', "damenature-speak-selection", "Répéter la sélection en cours", e -> announceSelection());
+        registerShortcut('s', "damenature-speak-selection", null, e -> announceSelection());
+        registerShortcut('H', "damenature-speak-hand", "Lire le contenu de votre main", e -> announceHandSummary());
+        registerShortcut('h', "damenature-speak-hand", null, e -> announceHandSummary());
+        registerShortcut('L', "damenature-speak-log", "Lire le dernier événement du journal", e -> announceLastLogEntry());
+        registerShortcut('l', "damenature-speak-log", null, e -> announceLastLogEntry());
+        registerShortcut('Q', "damenature-speak-quiz", "Lire le quiz en cours", e -> announceQuizState());
+        registerShortcut('q', "damenature-speak-quiz", null, e -> announceQuizState());
+        registerShortcut('P', "damenature-speak-pollution", "Annoncer les jetons pollution sur Dame Nature", e -> announcePollutionStatus());
+        registerShortcut('p', "damenature-speak-pollution", null, e -> announcePollutionStatus());
+        registerShortcut("F1", "damenature-help", "Écouter l'aide et les commandes disponibles", e -> announceInstructionsHelp());
 
         for (int i = 0; i < 9; i++) {
             char digit = (char) ('1' + i);
             final int index = i;
-            registerShortcut(digit, "quiz-answer-" + digit, e -> answerQuiz(index));
+            registerShortcut(digit, "quiz-answer-" + digit, "Répondre " + (index + 1) + " au quiz en cours", e -> answerQuiz(index));
         }
     }
 
-    private void registerShortcut(char key, String actionId, java.util.function.Consumer<ActionEvent> handler) {
-        registerShortcut(KeyStroke.getKeyStroke(key), actionId, handler);
+    private void registerShortcut(char key, String actionId, String description, java.util.function.Consumer<ActionEvent> handler) {
+        registerShortcut(KeyStroke.getKeyStroke(key), actionId, description, handler);
     }
 
-    private void registerShortcut(String keyStroke, String actionId, java.util.function.Consumer<ActionEvent> handler) {
-        registerShortcut(KeyStroke.getKeyStroke(keyStroke), actionId, handler);
+    private void registerShortcut(String keyStroke, String actionId, String description, java.util.function.Consumer<ActionEvent> handler) {
+        registerShortcut(KeyStroke.getKeyStroke(keyStroke), actionId, description, handler);
     }
 
-    private void registerShortcut(KeyStroke stroke, String actionId, java.util.function.Consumer<ActionEvent> handler) {
+    private void registerShortcut(KeyStroke stroke, String actionId, String description, java.util.function.Consumer<ActionEvent> handler) {
+        if (stroke == null) {
+            return;
+        }
         getInputMap(WHEN_IN_FOCUSED_WINDOW).put(stroke, actionId);
         getActionMap().put(actionId, new AbstractAction() {
             @Override
@@ -470,6 +491,15 @@ public final class DameNatureScreen extends JPanel implements Screen {
                 }
             }
         });
+        recordShortcut(stroke, description);
+    }
+
+    private void recordShortcut(KeyStroke stroke, String description) {
+        if (stroke == null || description == null || description.isBlank()) {
+            return;
+        }
+        shortcutDescriptions.put(stroke, description);
+        putClientProperty("accessible.shortcuts", Collections.unmodifiableMap(new LinkedHashMap<>(shortcutDescriptions)));
     }
 
     private void showConfiguration() {
@@ -479,6 +509,12 @@ public final class DameNatureScreen extends JPanel implements Screen {
             configFocusIndex = 0;
             SwingUtilities.invokeLater(() -> configFocusOrder.get(0).requestFocusInWindow());
         }
+        announceConfigurationHelp();
+    }
+
+    private void announceConfigurationHelp() {
+        setAccessibleDescription(configPanel, CONFIG_HELP_MESSAGE);
+        narrationQueueProvider.get().enqueue(configPanel, CONFIG_HELP_MESSAGE);
     }
 
     private void openConfiguration() {
@@ -490,8 +526,11 @@ public final class DameNatureScreen extends JPanel implements Screen {
         currentSession = null;
         playerOptions = List.of();
         cardOptions = List.of();
+        currentQuizChoices = List.of();
+        currentQuizQuestion = "";
         selectedPlayerIndex = -1;
         selectedCardIndex = -1;
+        lastAnnouncedTurnIndex = -1;
         launchInProgress = false;
         showConfiguration();
         announceSelection();
@@ -546,6 +585,13 @@ public final class DameNatureScreen extends JPanel implements Screen {
             turnLabel.setText("Tour : " + players.get(state.turnIndex()).username());
         } else {
             turnLabel.setText("Tour : -");
+        }
+        setAccessibleDescription(turnLabel, turnLabel.getText());
+        if (state.turnIndex() != lastAnnouncedTurnIndex && state.turnIndex() >= 0 && state.turnIndex() < players.size()) {
+            lastAnnouncedTurnIndex = state.turnIndex();
+            announceCurrentTurn();
+        } else if (state.turnIndex() < 0) {
+            lastAnnouncedTurnIndex = state.turnIndex();
         }
         announceSelection();
     }
@@ -645,21 +691,26 @@ public final class DameNatureScreen extends JPanel implements Screen {
     }
 
     private void announceSelection() {
+        String text = buildSelectionSummary();
+        selectionLabel.setText(text);
+        setAccessibleDescription(selectionLabel, text);
+        narrationQueueProvider.get().enqueue(selectionLabel, text);
+    }
+
+    private String buildSelectionSummary() {
         String adversaire = selectedPlayerIndex >= 0 && selectedPlayerIndex < playerOptions.size()
                 ? playerOptions.get(selectedPlayerIndex).label()
                 : "aucun adversaire";
         String carte = selectedCardIndex >= 0 && selectedCardIndex < cardOptions.size()
                 ? cardOptions.get(selectedCardIndex).label()
                 : "aucune carte";
-        String text = "Sélection : adversaire " + adversaire + " | carte " + carte;
-        selectionLabel.setText(text);
-        setAccessibleDescription(selectionLabel, text);
-        narrationQueueProvider.get().enqueue(selectionLabel, text);
+        return "Sélection : adversaire " + adversaire + " | carte " + carte;
     }
 
     private void updateQuiz(DameNatureState state) {
         DameNatureState.PendingQuiz quiz = state.pendingQuiz();
         if (quiz != null && quiz.active()) {
+            currentQuizQuestion = quiz.question();
             currentQuizChoices = List.copyOf(quiz.choices());
             StringBuilder builder = new StringBuilder();
             builder.append(quiz.question()).append('\n');
@@ -669,6 +720,7 @@ public final class DameNatureScreen extends JPanel implements Screen {
             quizArea.setText(builder.toString());
         } else {
             currentQuizChoices = List.of();
+            currentQuizQuestion = "";
             quizArea.setText("Aucun quiz en cours.");
         }
         quizArea.setCaretPosition(0);
@@ -764,6 +816,72 @@ public final class DameNatureScreen extends JPanel implements Screen {
         }
         DameNatureState.Player player = players.get(state.turnIndex());
         announce("C'est au tour de " + player.username() + ".");
+    }
+
+    private void announceHandSummary() {
+        if (currentSession == null || currentSession.self() == null || currentSession.self().hand() == null) {
+            announce("Votre main n'est pas disponible.");
+            return;
+        }
+        List<DameNatureState.HandCard> hand = currentSession.self().hand();
+        if (hand.isEmpty()) {
+            announce("Votre main est vide.");
+            return;
+        }
+        String summary = hand.stream()
+                .map(DameNatureState.HandCard::toString)
+                .collect(Collectors.joining(", "));
+        announce("Votre main : " + summary + ".");
+    }
+
+    private void announceLastLogEntry() {
+        if (currentSession == null || currentSession.state() == null) {
+            announce("Aucun historique disponible.");
+            return;
+        }
+        announce(extractLastLogMessage(currentSession));
+    }
+
+    private void announceQuizState() {
+        if (currentQuizChoices.isEmpty() || currentQuizQuestion == null || currentQuizQuestion.isBlank()) {
+            announce("Aucun quiz en cours.");
+            return;
+        }
+        StringBuilder builder = new StringBuilder("Quiz en cours : ")
+                .append(currentQuizQuestion);
+        for (int i = 0; i < currentQuizChoices.size(); i++) {
+            builder.append(". ").append(i + 1).append(") ").append(currentQuizChoices.get(i));
+        }
+        announce(builder.toString());
+    }
+
+    private void announcePollutionStatus() {
+        if (currentSession == null || currentSession.state() == null) {
+            announce("Niveau de pollution indisponible.");
+            return;
+        }
+        DameNatureState state = currentSession.state();
+        int max = state.maxPollution() > 0 ? state.maxPollution() : 12;
+        int pollution = Math.max(0, state.pollution());
+        int remaining = Math.max(0, max - pollution);
+        StringBuilder builder = new StringBuilder()
+                .append("Pollution : ").append(pollution).append(" sur ").append(max).append(" jetons.");
+        if (remaining <= 2) {
+            builder.append(" Attention, Dame Nature est en danger critique.");
+        }
+        announce(builder.toString());
+    }
+
+    private void announceInstructionsHelp() {
+        String text = instructionsArea.getText();
+        if (text == null || text.isBlank()) {
+            announce("Aucune commande disponible.");
+            return;
+        }
+        setAccessibleDescription(instructionsArea, text);
+        narrationQueueProvider.get().enqueue(instructionsArea, text);
+        statusLabel.setText("Liste des commandes envoyée au lecteur d'écran.");
+        setAccessibleDescription(statusLabel, statusLabel.getText());
     }
 
     private void handleActionFeedback(CompletableFuture<DameNatureSession> future, String pendingMessage,
