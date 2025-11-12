@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lemondelila.client.model.user.ClientSession;
 import com.lemondelila.client.model.chat.ChatConnection;
 import com.lemondelila.framework.core.config.ConfigurationService;
+import com.lemondelila.framework.core.di.Inject;
 
 import java.net.URI;
 import java.net.URLEncoder;
@@ -17,6 +18,7 @@ public final class ChatConnectionFactory {
     private final ConfigurationService configuration;
     private final ClientSession session;
 
+    @Inject
     public ChatConnectionFactory(HttpClient httpClient,
                                  ObjectMapper mapper,
                                  ConfigurationService configuration,

@@ -5,6 +5,7 @@ import com.lemondelila.client.events.user.LoginFailed;
 import com.lemondelila.client.events.user.LoginRequested;
 import com.lemondelila.client.events.user.LoginSucceeded;
 import com.lemondelila.client.model.user.ClientSession;
+import com.lemondelila.framework.core.di.Inject;
 import com.lemondelila.framework.core.event.DomainEventBus;
 import com.lemondelila.framework.core.task.TaskScheduler;
 import com.lemondelila.framework.network.rest.RestClient;
@@ -21,6 +22,7 @@ public final class LoginController implements AutoCloseable {
     private final UserOperationGuard guard;
     private final AutoCloseable subscription;
 
+    @Inject
     public LoginController(DomainEventBus eventBus,
                            RestClient restClient,
                            TaskScheduler scheduler,

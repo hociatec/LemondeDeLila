@@ -4,10 +4,16 @@ import com.lemondelila.client.controller.game.GameCatalogController;
 import com.lemondelila.client.controller.game.GameInteractionController;
 import com.lemondelila.client.gamelogic.damenature.controller.DameNatureController;
 import com.lemondelila.client.gamelogic.missionnemesis.controller.NemesisController;
+import com.lemondelila.client.gamelogic.panierexpress.controller.PanierExpressController;
+import com.lemondelila.client.media.SoundBank;
 import com.lemondelila.client.model.catalogue.CatalogCategory;
 import com.lemondelila.client.model.catalogue.CatalogData;
 import com.lemondelila.client.model.catalogue.GameSummary;
 import com.lemondelila.client.service.catalogue.GameRulesService;
+import com.lemondelila.framework.access.AccessibleDecorator;
+import com.lemondelila.framework.access.AccessibleSpec;
+import com.lemondelila.framework.core.di.Inject;
+import com.lemondelila.framework.media.sound.SoundEffectManager;
 import com.lemondelila.framework.ui.dialog.DialogService;
 import com.lemondelila.framework.ui.screen.Screen;
 import com.lemondelila.framework.ui.screen.ScreenContext;
@@ -55,11 +61,13 @@ public final class CatalogScreen extends JPanel implements Screen {
     private final DialogService dialogService;
     private final NemesisController missionController;
     private final DameNatureController dameNatureController;
+    private final PanierExpressController panierExpressController;
+    private final SoundEffectManager soundManager;
 
     private final CardLayout viewLayout = new CardLayout();
     private final JPanel viewPanel = new JPanel(viewLayout);
-    private final CategoryListPanel categoryListPanel = new CategoryListPanel();
-    private final GameListPanel gameListPanel = new GameListPanel();
+    private final CategoryListPanel categoryListPanel;
+    private final GameListPanel gameListPanel;
     private final GameDetailPanel gameDetailPanel = new GameDetailPanel();
 
     private final JLabel titleLabel = new JLabel("Etageres");
@@ -82,15 +90,22 @@ public final class CatalogScreen extends JPanel implements Screen {
     private GameSummary activeGame;
     private final GameInteractionController gameInteractionController;
 
+    @Inject
     public CatalogScreen(GameCatalogController catalogController,
                          GameRulesService rulesService,
                          DialogService dialogService,
                          NemesisController missionController,
-                         DameNatureController dameNatureController) {
+                         DameNatureController dameNatureController,
+                         PanierExpressController panierExpressController,
+                         SoundEffectManager soundManager) {
         this.catalogController = Objects.requireNonNull(catalogController, "catalogController");
         this.dialogService = Objects.requireNonNull(dialogService, "dialogService");
         this.missionController = missionController;
         this.dameNatureController = dameNatureController;
+        this.panierExpressController = Objects.requireNonNull(panierExpressController, "panierExpressController");
+        this.soundManager = soundManager;
+        this.categoryListPanel = new CategoryListPanel(soundManager);
+        this.gameListPanel = new GameListPanel(soundManager);
         buildUi();
         installActions();
         gameDetailPanel.onPlay(this::handlePlayRequest);
@@ -110,7 +125,15 @@ public final class CatalogScreen extends JPanel implements Screen {
         setBorder(BorderFactory.createEmptyBorder(32, 48, 32, 48));
 
         titleLabel.setFont(titleLabel.getFont().deriveFont(Font.BOLD, 26f));
+        AccessibleDecorator.apply(titleLabel, AccessibleSpec.builder()
+                .name("Catalogue des jeux")
+                .description("Sélection de catégories et jeux disponibles")
+                .build());
         breadcrumbLabel.setFont(breadcrumbLabel.getFont().deriveFont(Font.ITALIC, 14f));
+        AccessibleDecorator.apply(breadcrumbLabel, AccessibleSpec.builder()
+                .name("Fil d'Ariane catalogue")
+                .description("Indique la catégorie ou le jeu en cours de consultation")
+                .build());
 
         JPanel titleContainer = new JPanel();
         titleContainer.setLayout(new BoxLayout(titleContainer, BoxLayout.Y_AXIS));
@@ -131,6 +154,10 @@ public final class CatalogScreen extends JPanel implements Screen {
         add(viewPanel, BorderLayout.CENTER);
 
         statusLabel.setBorder(BorderFactory.createEmptyBorder(8, 4, 0, 4));
+        AccessibleDecorator.apply(statusLabel, AccessibleSpec.builder()
+                .name("Statut catalogue")
+                .description("Affiche l'état des chargements et actions sur le catalogue")
+                .build());
         add(statusLabel, BorderLayout.SOUTH);
     }
 
@@ -155,6 +182,7 @@ public final class CatalogScreen extends JPanel implements Screen {
         if (item == null) {
             return;
         }
+        playSelectSound();
         ViewState current = navigationStack.peek();
         if (current != null) {
             current.selectedIndex = categoryListPanel.selectedIndex();
@@ -175,6 +203,7 @@ public final class CatalogScreen extends JPanel implements Screen {
         if (game == null) {
             return;
         }
+        playSelectSound();
         ViewState current = navigationStack.peek();
         if (current != null) {
             current.selectedIndex = gameListPanel.selectedIndex();
@@ -206,6 +235,7 @@ public final class CatalogScreen extends JPanel implements Screen {
     private void showCategories(ViewState state) {
         gameInteractionController.setEnabled(false);
         activeGame = null;
+        playNavigateSound();
 
         List<CatalogCategory> categories = childrenIndex.getOrDefault(state.categoryId, List.of());
         List<CategoryListPanel.CategoryItem> items = new ArrayList<>();
@@ -240,6 +270,7 @@ public final class CatalogScreen extends JPanel implements Screen {
     private void showGames(ViewState state) {
         gameInteractionController.setEnabled(false);
         activeGame = null;
+        playNavigateSound();
 
         List<GameSummary> games = gamesByCategory.getOrDefault(state.categoryId, List.of());
         gameListPanel.show(games, state.selectedIndex);
@@ -257,6 +288,7 @@ public final class CatalogScreen extends JPanel implements Screen {
     }
 
     private void showGame(ViewState state) {
+        playNavigateSound();
         GameSummary game = gameIndex.get(state.gameCode);
         if (game == null) {
             gameInteractionController.setEnabled(false);
@@ -291,6 +323,9 @@ public final class CatalogScreen extends JPanel implements Screen {
         if (identifier.equalsIgnoreCase("dame-nature")) {
             return dameNatureController != null;
         }
+        if (identifier.equalsIgnoreCase("panier-express")) {
+            return panierExpressController != null;
+        }
         return false;
     }
 
@@ -298,6 +333,7 @@ public final class CatalogScreen extends JPanel implements Screen {
         if (game == null) {
             return;
         }
+        playSelectSound();
         if (!supportsLaunch(game)) {
             dialogService.info("Fonctionnalite indisponible",
                     "Ce jeu ne peut pas encore etre lance depuis cette interface.");
@@ -307,7 +343,16 @@ public final class CatalogScreen extends JPanel implements Screen {
         if (identifier == null || identifier.isBlank()) {
             identifier = game.code();
         }
+        final boolean isPanierExpress = identifier != null && identifier.equalsIgnoreCase("panier-express");
         final String screenId = identifier != null ? identifier.toLowerCase() : null;
+        if ("panier-express".equalsIgnoreCase(identifier)) {
+            setStatus("Ouverture de Panier Express...");
+            if (screenManager != null && screenId != null) {
+                screenManager.show(screenId);
+            }
+            return;
+        }
+
         CompletableFuture<?> launchFuture;
         if ("mission-nemesis".equalsIgnoreCase(identifier) && missionController != null) {
             launchFuture = missionController.startNewGame();
@@ -320,15 +365,23 @@ public final class CatalogScreen extends JPanel implements Screen {
         }
 
         gameDetailPanel.setPlayEnabled(false);
-        setStatus("Initialisation de " + game.name() + "...");
+        setStatus(isPanierExpress
+                ? "Ouverture de Panier Express..."
+                : "Initialisation de " + game.name() + "...");
         launchFuture.whenComplete((session, error) -> SwingUtilities.invokeLater(() -> {
             if (error != null) {
-                dialogService.error("Lancement impossible",
-                        "La partie " + game.name() + " n'a pas pu etre initialisee.");
-                setStatus("Echec du lancement de " + game.name() + ".");
+                String message = isPanierExpress
+                        ? "La partie Panier Express n'a pas pu etre initialisee."
+                        : "La partie " + game.name() + " n'a pas pu etre initialisee.";
+                dialogService.error("Lancement impossible", message);
+                setStatus(isPanierExpress
+                        ? "Impossible d'initialiser Panier Express pour le moment."
+                        : "Echec du lancement de " + game.name() + ".");
                 gameDetailPanel.setPlayEnabled(true);
             } else {
-                setStatus("Partie " + game.name() + " lancee.");
+                setStatus(isPanierExpress
+                        ? "Panier Express est prêt. Bonne partie !"
+                        : "Partie " + game.name() + " lancee.");
                 gameDetailPanel.setPlayEnabled(true);
                 if (screenManager != null && screenId != null) {
                     screenManager.show(screenId);
@@ -338,6 +391,7 @@ public final class CatalogScreen extends JPanel implements Screen {
     }
 
     private void performBackNavigation() {
+        playSelectSound();
         if (navigationStack.size() <= 1) {
             if (screenManager != null) {
                 screenManager.show("main-menu");
@@ -444,6 +498,18 @@ public final class CatalogScreen extends JPanel implements Screen {
 
     private void setStatus(String text) {
         SwingUtilities.invokeLater(() -> statusLabel.setText(text));
+    }
+
+    private void playSelectSound() {
+        if (soundManager != null) {
+            soundManager.play(SoundBank.MENU_SELECT);
+        }
+    }
+
+    private void playNavigateSound() {
+        if (soundManager != null) {
+            soundManager.play(SoundBank.MENU_NAVIGATE);
+        }
     }
 
     @Override
@@ -557,14 +623,25 @@ public final class CatalogScreen extends JPanel implements Screen {
 
         private final DefaultListModel<CategoryItem> model = new DefaultListModel<>();
         private final JList<CategoryItem> list = new JList<>(model);
+        private final SoundEffectManager soundManager;
 
-        CategoryListPanel() {
+        CategoryListPanel(SoundEffectManager soundManager) {
+            this.soundManager = soundManager;
             setLayout(new BorderLayout());
             setOpaque(false);
             list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
             list.setVisibleRowCount(-1);
             list.setFocusTraversalKeysEnabled(false);
             list.setCellRenderer(new CategoryItemRenderer());
+            AccessibleDecorator.apply(list, AccessibleSpec.builder()
+                    .name("Liste des catégories")
+                    .description("Sélectionnez une catégorie et validez avec Entrée pour afficher son contenu")
+                    .build());
+            list.addListSelectionListener(event -> {
+                if (!event.getValueIsAdjusting() && list.isFocusOwner() && this.soundManager != null) {
+                    this.soundManager.play(SoundBank.MENU_NAVIGATE);
+                }
+            });
             JScrollPane scroll = new JScrollPane(list);
             scroll.setBorder(BorderFactory.createTitledBorder("Categories"));
             add(scroll, BorderLayout.CENTER);
@@ -590,6 +667,9 @@ public final class CatalogScreen extends JPanel implements Screen {
             list.getActionMap().put("open", new AbstractAction() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
+                    if (soundManager != null) {
+                        soundManager.play(SoundBank.MENU_SELECT);
+                    }
                     action.run();
                 }
             });
@@ -650,14 +730,25 @@ public final class CatalogScreen extends JPanel implements Screen {
 
         private final DefaultListModel<GameSummary> model = new DefaultListModel<>();
         private final JList<GameSummary> list = new JList<>(model);
+        private final SoundEffectManager soundManager;
 
-        GameListPanel() {
+        GameListPanel(SoundEffectManager soundManager) {
+            this.soundManager = soundManager;
             setLayout(new BorderLayout());
             setOpaque(false);
             list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
             list.setVisibleRowCount(-1);
             list.setFocusTraversalKeysEnabled(false);
             list.setCellRenderer(new GameSummaryRenderer());
+            AccessibleDecorator.apply(list, AccessibleSpec.builder()
+                    .name("Liste des jeux")
+                    .description("Choisissez un jeu et validez avec Entrée pour consulter sa fiche")
+                    .build());
+            list.addListSelectionListener(event -> {
+                if (!event.getValueIsAdjusting() && list.isFocusOwner() && this.soundManager != null) {
+                    this.soundManager.play(SoundBank.MENU_NAVIGATE);
+                }
+            });
             JScrollPane scroll = new JScrollPane(list);
             scroll.setBorder(BorderFactory.createTitledBorder("Jeux disponibles"));
             add(scroll, BorderLayout.CENTER);
@@ -683,6 +774,9 @@ public final class CatalogScreen extends JPanel implements Screen {
             list.getActionMap().put("select", new AbstractAction() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
+                    if (soundManager != null) {
+                        soundManager.play(SoundBank.MENU_SELECT);
+                    }
                     action.run();
                 }
             });
@@ -739,11 +833,19 @@ public final class CatalogScreen extends JPanel implements Screen {
             setFocusable(true);
 
             nameLabel.setFont(nameLabel.getFont().deriveFont(Font.BOLD, 22f));
+            AccessibleDecorator.apply(nameLabel, AccessibleSpec.builder()
+                    .name("Nom du jeu sélectionné")
+                    .description("Indication du jeu actuellement consulté")
+                    .build());
             summaryArea.setEditable(false);
             summaryArea.setLineWrap(true);
             summaryArea.setWrapStyleWord(true);
             summaryArea.setFocusable(false);
             summaryArea.setOpaque(false);
+            AccessibleDecorator.apply(summaryArea, AccessibleSpec.builder()
+                    .name("Description du jeu")
+                    .description("Texte descriptif et résumé du jeu choisi")
+                    .build());
 
             JScrollPane summaryScroll = new JScrollPane(summaryArea);
             summaryScroll.setBorder(BorderFactory.createTitledBorder("Description"));
@@ -753,6 +855,10 @@ public final class CatalogScreen extends JPanel implements Screen {
 
             playButton.setAlignmentX(CENTER_ALIGNMENT);
             playButton.setVisible(false);
+            AccessibleDecorator.apply(playButton, AccessibleSpec.builder()
+                    .name("Lancer le jeu")
+                    .description("Démarre ou ouvre l'expérience du jeu sélectionné")
+                    .build());
             playButton.addActionListener(e -> {
                 if (playListener != null && currentGame != null) {
                     playListener.accept(currentGame);
@@ -786,6 +892,16 @@ public final class CatalogScreen extends JPanel implements Screen {
                 summaryArea.setText(summary);
             }
             summaryArea.setCaretPosition(0);
+            summaryArea.getAccessibleContext().setAccessibleDescription(summaryArea.getText());
+            String playLabel = "Jouer";
+            String engine = game.engine() != null ? game.engine() : game.code();
+            if (engine != null && engine.equalsIgnoreCase("panier-express")) {
+                playLabel = "Configurer la partie";
+            }
+            playButton.setText(playLabel);
+            if (playButton.getAccessibleContext() != null) {
+                playButton.getAccessibleContext().setAccessibleName(playLabel);
+            }
             playButton.setVisible(playable);
             playButton.setEnabled(playable);
         }

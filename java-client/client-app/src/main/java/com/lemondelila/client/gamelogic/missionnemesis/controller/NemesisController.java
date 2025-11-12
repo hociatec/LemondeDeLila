@@ -8,6 +8,7 @@ import com.lemondelila.client.gamelogic.missionnemesis.model.NemesisState;
 import com.lemondelila.client.gamelogic.missionnemesis.model.NemesisStateMapper;
 import com.lemondelila.client.gamelogic.missionnemesis.model.ShipPlacement;
 import com.lemondelila.client.gamelogic.missionnemesis.service.NemesisRemoteClient;
+import com.lemondelila.framework.core.di.Inject;
 import com.lemondelila.framework.network.ws.RealtimeGateway;
 import com.lemondelila.framework.ui.dialog.DialogService;
 import org.slf4j.Logger;
@@ -34,6 +35,7 @@ public final class NemesisController {
     private final CopyOnWriteArrayList<Consumer<NemesisSession>> listeners = new CopyOnWriteArrayList<>();
     private volatile NemesisSession current;
 
+    @Inject
     public NemesisController(NemesisRemoteClient remoteClient,
                                     DialogService dialogService,
                                     NemesisSessionStore sessionStore,

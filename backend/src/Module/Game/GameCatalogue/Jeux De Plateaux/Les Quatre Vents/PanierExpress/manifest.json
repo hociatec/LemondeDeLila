@@ -1,0 +1,8 @@
+{
+  "code": "panier-express",
+  "name": "Panier Express",
+  "minPlayers": 2,
+  "maxPlayers": 6,
+  "engine": "panier-express",
+  "summary": "Course au marché familiale où les joueurs complètent leur liste de courses en parcourant les stands."
+}

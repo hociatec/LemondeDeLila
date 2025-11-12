@@ -1,6 +1,7 @@
 package com.lemondelila.framework.ui.screen;
 
 import com.lemondelila.framework.core.context.ApplicationContext;
+import com.lemondelila.framework.core.di.Inject;
 import com.lemondelila.framework.core.event.DomainEventBus;
 import com.lemondelila.framework.core.task.TaskScheduler;
 
@@ -21,6 +22,7 @@ public final class ScreenManager {
     private final Map<String, Screen> screens = new LinkedHashMap<>();
     private Screen current;
 
+    @Inject
     public ScreenManager(ApplicationContext applicationContext,
                          DomainEventBus eventBus,
                          TaskScheduler scheduler) {

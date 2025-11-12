@@ -36,14 +36,15 @@ public final class AppSettingsService {
 
     public void update(AppSettings newSettings) {
         Objects.requireNonNull(newSettings, "newSettings");
+        AppSettings sanitized = sanitize(newSettings);
         lock.writeLock().lock();
         try {
-            this.settings = newSettings;
+            this.settings = sanitized;
             save();
         } finally {
             lock.writeLock().unlock();
         }
-        notifyListeners(newSettings);
+        notifyListeners(sanitized);
     }
 
     public AutoCloseable listen(java.util.function.Consumer<AppSettings> listener) {
@@ -59,16 +60,24 @@ public final class AppSettingsService {
         lock.writeLock().lock();
         try {
             JsonNode node = mapper.readTree(SETTINGS_PATH.toFile());
-            AppSettings loaded = mapper.treeToValue(node, AppSettings.class);
-            boolean chatEnabled = node.path("chatEnabled").isMissingNode() ? true : loaded.chatEnabled();
-            boolean confirmChatExit = node.path("confirmChatExit").isMissingNode() ? false : loaded.confirmChatExit();
-            settings = new AppSettings(
-                    loaded.gameVolume(),
-                    loaded.musicVolume(),
-                    loaded.confirmOnExit(),
-                    chatEnabled,
-                    confirmChatExit
+            AppSettings defaults = AppSettings.defaults();
+            int fallbackEffectsVolume = readVolume(node, "gameVolume", defaults.soundAppLaunchVolume());
+            AppSettings loaded = new AppSettings(
+                    readVolume(node, "musicVolume", defaults.musicVolume()),
+                    readFlag(node, "soundEnabled", defaults.soundEnabled()),
+                    readFlag(node, "soundAppLaunch", defaults.soundAppLaunch()),
+                    readVolume(node, "soundAppLaunchVolume", fallbackEffectsVolume),
+                    readFlag(node, "soundBackground", defaults.soundBackground()),
+                    readVolume(node, "soundBackgroundVolume", fallbackEffectsVolume),
+                    readFlag(node, "soundNavigate", defaults.soundNavigate()),
+                    readVolume(node, "soundNavigateVolume", fallbackEffectsVolume),
+                    readFlag(node, "soundSelect", defaults.soundSelect()),
+                    readVolume(node, "soundSelectVolume", fallbackEffectsVolume),
+                    readFlag(node, "confirmOnExit", defaults.confirmOnExit()),
+                    readFlag(node, "chatEnabled", defaults.chatEnabled()),
+                    readFlag(node, "confirmChatExit", defaults.confirmChatExit())
             );
+            settings = sanitize(loaded);
         } catch (IOException ignored) {
             settings = AppSettings.defaults();
         } finally {
@@ -92,6 +101,47 @@ public final class AppSettingsService {
             } catch (Exception ignored) {
             }
         });
+    }
+
+    private boolean readFlag(JsonNode node, String field, boolean fallback) {
+        JsonNode value = node.path(field);
+        if (value.isMissingNode() || value.isNull()) {
+            return fallback;
+        }
+        return value.asBoolean(fallback);
+    }
+
+    private int readVolume(JsonNode node, String field, int fallback) {
+        JsonNode value = node.path(field);
+        if (value.isMissingNode() || value.isNull()) {
+            return clampVolume(fallback);
+        }
+        return clampVolume(value.asInt(fallback));
+    }
+
+    private AppSettings sanitize(AppSettings candidate) {
+        if (candidate == null) {
+            return AppSettings.defaults();
+        }
+        return new AppSettings(
+                clampVolume(candidate.musicVolume()),
+                candidate.soundEnabled(),
+                candidate.soundAppLaunch(),
+                clampVolume(candidate.soundAppLaunchVolume()),
+                candidate.soundBackground(),
+                clampVolume(candidate.soundBackgroundVolume()),
+                candidate.soundNavigate(),
+                clampVolume(candidate.soundNavigateVolume()),
+                candidate.soundSelect(),
+                clampVolume(candidate.soundSelectVolume()),
+                candidate.confirmOnExit(),
+                candidate.chatEnabled(),
+                candidate.confirmChatExit()
+        );
+    }
+
+    private int clampVolume(int value) {
+        return Math.max(0, Math.min(100, value));
     }
 }
 

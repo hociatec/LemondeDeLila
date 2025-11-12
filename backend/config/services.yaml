@@ -39,5 +39,10 @@ services:
     App\Module\Game\Realtime\Command\RealtimeServerCommand:
         tags: ['console.command']
 
+    App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Controller\PanierExpressController: ~
+    App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Controller\PanierExpressGameController: ~
+    App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Service\PanierExpressService: ~
+    App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Service\PanierExpressGameService: ~
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

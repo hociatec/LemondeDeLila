@@ -1,5 +1,7 @@
 package com.lemondelila.framework.access;
 
+import com.lemondelila.framework.core.di.Inject;
+
 import javax.swing.JComponent;
 import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
@@ -12,6 +14,7 @@ public final class NarrationQueue implements AutoCloseable {
     private final Thread worker;
     private volatile boolean running = true;
 
+    @Inject
     public NarrationQueue(ScreenReaderAnnouncer announcer) {
         this.announcer = Objects.requireNonNull(announcer, "announcer");
         this.worker = new Thread(this::loop, "lila-narration-queue");
@@ -46,4 +49,3 @@ public final class NarrationQueue implements AutoCloseable {
     private record NarrationTask(JComponent component, String message) {
     }
 }
-

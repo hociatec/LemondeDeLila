@@ -1,0 +1,202 @@
+[
+  {
+    "index": 1,
+    "label": "Départ",
+    "type": "action"
+  },
+  {
+    "index": 2,
+    "label": "Stand Fruitier",
+    "type": "stand"
+  },
+  {
+    "index": 3,
+    "label": "Case \"Pioche carte Événement\"",
+    "type": "action"
+  },
+  {
+    "index": 4,
+    "label": "Stand Maraîcher (légumes frais)",
+    "type": "stand"
+  },
+  {
+    "index": 5,
+    "label": "Case \"Échange avec un joueur\"",
+    "type": "action"
+  },
+  {
+    "index": 6,
+    "label": "Stand Bio",
+    "type": "stand"
+  },
+  {
+    "index": 7,
+    "label": "Case \"Avance d’une case\"",
+    "type": "action"
+  },
+  {
+    "index": 8,
+    "label": "Stand Primeur",
+    "type": "stand"
+  },
+  {
+    "index": 9,
+    "label": "Case \"Perd ton prochain tour\"",
+    "type": "action"
+  },
+  {
+    "index": 10,
+    "label": "Stand des Fruits Exotiques",
+    "type": "stand"
+  },
+  {
+    "index": 11,
+    "label": "Case \"Pioche carte Échange\"",
+    "type": "action"
+  },
+  {
+    "index": 12,
+    "label": "Stand Légumes Racines",
+    "type": "stand"
+  },
+  {
+    "index": 13,
+    "label": "Case \"Recule de 2 cases\"",
+    "type": "action"
+  },
+  {
+    "index": 14,
+    "label": "Stand Légumes Feuilles",
+    "type": "stand"
+  },
+  {
+    "index": 15,
+    "label": "Case \"Mini Quiz (réponds à une question)\"",
+    "type": "action"
+  },
+  {
+    "index": 16,
+    "label": "Stand des Fruits Rouges",
+    "type": "stand"
+  },
+  {
+    "index": 17,
+    "label": "Case \"Pioche carte Événement\"",
+    "type": "action"
+  },
+  {
+    "index": 18,
+    "label": "Stand des Légumes Secs",
+    "type": "stand"
+  },
+  {
+    "index": 19,
+    "label": "Case \"Échange de cartes avec un autre joueur\"",
+    "type": "action"
+  },
+  {
+    "index": 20,
+    "label": "Stand Bio",
+    "type": "stand"
+  },
+  {
+    "index": 21,
+    "label": "Case \"Avance jusqu’à un stand de ton choix\"",
+    "type": "action"
+  },
+  {
+    "index": 22,
+    "label": "Stand Primeur",
+    "type": "stand"
+  },
+  {
+    "index": 23,
+    "label": "Case \"Pioche carte Courses supplémentaire\"",
+    "type": "action"
+  },
+  {
+    "index": 24,
+    "label": "Stand des Agrumes",
+    "type": "stand"
+  },
+  {
+    "index": 25,
+    "label": "Case \"Reste un tour sur place\"",
+    "type": "action"
+  },
+  {
+    "index": 26,
+    "label": "Stand Fruits Secs",
+    "type": "stand"
+  },
+  {
+    "index": 27,
+    "label": "Case \"Troc improvisé (échange une carte avec joueur voisin)\"",
+    "type": "action"
+  },
+  {
+    "index": 28,
+    "label": "Stand Légumes d’Été",
+    "type": "stand"
+  },
+  {
+    "index": 29,
+    "label": "Case \"Retour en arrière de 3 cases\"",
+    "type": "action"
+  },
+  {
+    "index": 30,
+    "label": "Stand Fruits d’Hiver",
+    "type": "stand"
+  },
+  {
+    "index": 31,
+    "label": "Case \"Pioche carte Échange\"",
+    "type": "action"
+  },
+  {
+    "index": 32,
+    "label": "Stand Légumes Exotiques",
+    "type": "stand"
+  },
+  {
+    "index": 33,
+    "label": "Case \"Mini Quiz (réponds à une question)\"",
+    "type": "action"
+  },
+  {
+    "index": 34,
+    "label": "Stand des Champignons",
+    "type": "stand"
+  },
+  {
+    "index": 35,
+    "label": "Case \"Avance de 2 cases\"",
+    "type": "action"
+  },
+  {
+    "index": 36,
+    "label": "Stand Primeur",
+    "type": "stand"
+  },
+  {
+    "index": 37,
+    "label": "Case \"Pioche carte Événement\"",
+    "type": "action"
+  },
+  {
+    "index": 38,
+    "label": "Stand Maraîcher",
+    "type": "stand"
+  },
+  {
+    "index": 39,
+    "label": "Case \"Échange libre de cartes entre joueurs\"",
+    "type": "action"
+  },
+  {
+    "index": 40,
+    "label": "Arrivée (Termine la course !)",
+    "type": "action"
+  }
+]

@@ -8,7 +8,7 @@ public final class MediaModule implements LilaModule {
 
     @Override
     public void configure(ApplicationContext.Builder builder) {
-        builder.bind(AudioService.class, AudioService::new);
+        builder.bindAuto(AudioService.class);
     }
 
     @Override
@@ -21,4 +21,3 @@ public final class MediaModule implements LilaModule {
         });
     }
 }
-

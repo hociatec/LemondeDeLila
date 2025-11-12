@@ -8,6 +8,7 @@ import com.lemondelila.client.gamelogic.damenature.model.DameNatureSession;
 import com.lemondelila.client.gamelogic.damenature.model.DameNatureSessionStore;
 import com.lemondelila.client.gamelogic.damenature.model.DameNatureState;
 import com.lemondelila.client.model.user.ClientSession;
+import com.lemondelila.framework.core.di.Inject;
 import com.lemondelila.framework.core.task.TaskScheduler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,6 +67,7 @@ public final class LocalDameNatureService {
     private final Object lock = new Object();
     private LocalGame currentGame;
 
+    @Inject
     public LocalDameNatureService(TaskScheduler scheduler,
                                   DameNatureEngine engine,
                                   DameNatureSessionStore sessionStore) {

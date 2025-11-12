@@ -15,15 +15,18 @@ import com.lemondelila.client.gamelogic.damenature.model.DameNatureSessionStore;
 import com.lemondelila.client.gamelogic.damenature.service.DameNatureRemoteClient;
 import com.lemondelila.client.gamelogic.damenature.service.LocalDameNatureService;
 import com.lemondelila.client.gamelogic.damenature.view.DameNatureScreen;
-import com.lemondelila.client.media.SoundEffect;
-import com.lemondelila.client.media.SoundEffectManager;
 import com.lemondelila.client.model.game.GameEngineRegistry;
 import com.lemondelila.client.gamelogic.missionnemesis.controller.NemesisController;
 import com.lemondelila.client.gamelogic.missionnemesis.model.NemesisEngine;
 import com.lemondelila.client.gamelogic.missionnemesis.model.NemesisSessionStore;
-import com.lemondelila.client.gamelogic.missionnemesis.model.NemesisSession;
 import com.lemondelila.client.gamelogic.missionnemesis.service.NemesisRemoteClient;
 import com.lemondelila.client.gamelogic.missionnemesis.view.NemesisScreen;
+import com.lemondelila.client.gamelogic.panierexpress.controller.PanierExpressController;
+import com.lemondelila.client.media.SoundBank;
+import com.lemondelila.client.model.settings.AppSettings;
+import com.lemondelila.client.gamelogic.panierexpress.model.PanierExpressSessionStore;
+import com.lemondelila.client.gamelogic.panierexpress.service.PanierExpressRemoteClient;
+import com.lemondelila.client.gamelogic.panierexpress.view.PanierExpressRootView;
 import com.lemondelila.client.model.user.ClientSession;
 import com.lemondelila.client.service.catalogue.GameCatalogService;
 import com.lemondelila.client.service.catalogue.GameRulesService;
@@ -36,105 +39,54 @@ import com.lemondelila.client.view.menu.MainMenuScreen;
 import com.lemondelila.client.view.presence.PresenceDialogLauncher;
 import com.lemondelila.client.view.shortcuts.ApplicationShortcuts;
 import com.lemondelila.framework.access.FocusHighlighter;
-import com.lemondelila.framework.access.NarrationQueue;
 import com.lemondelila.framework.access.shortcut.AccessibleShortcutRegistry;
-import com.lemondelila.framework.core.config.ConfigurationService;
 import com.lemondelila.framework.core.context.ApplicationContext;
 import com.lemondelila.framework.core.event.DomainEventBus;
 import com.lemondelila.framework.core.module.LilaModule;
 import com.lemondelila.framework.core.task.TaskScheduler;
 import com.lemondelila.framework.media.audio.AudioService;
-import com.lemondelila.framework.network.rest.RestClient;
+import com.lemondelila.framework.media.sound.SoundEffectManager;
+import com.lemondelila.framework.media.sound.SoundPreferences;
 import com.lemondelila.framework.network.ws.RealtimeGateway;
 import com.lemondelila.framework.ui.LilaFrame;
 import com.lemondelila.framework.ui.action.ActionManager;
 import com.lemondelila.framework.ui.dialog.DialogService;
 import com.lemondelila.framework.ui.screen.ScreenManager;
-import java.net.URI;
+import java.util.List;
 
 public final class ClientAppModule implements LilaModule {
 
     @Override
     public void configure(ApplicationContext.Builder builder) {
 
-        builder.bind(AppSettingsService.class, AppSettingsService::new);
-        builder.bind(ClientSession.class, ClientSession::new);
-        builder.bind(UserOperationGuard.class, UserOperationGuard::new);
-        builder.bind(NemesisEngine.class, NemesisEngine::new);
-        builder.bind(NemesisSessionStore.class, NemesisSessionStore::new);
-        builder.bind(DameNatureEngine.class, DameNatureEngine::new);
-        builder.bind(DameNatureSessionStore.class, DameNatureSessionStore::new);
-        builder.bindFactory(ChatConnectionFactory.class, ctx -> new ChatConnectionFactory(
-                ctx.get(java.net.http.HttpClient.class),
-                ctx.get(com.fasterxml.jackson.databind.ObjectMapper.class),
-                ctx.get(com.lemondelila.framework.core.config.ConfigurationService.class),
-                ctx.get(ClientSession.class)
-        ));
+        builder.bindAuto(AppSettingsService.class);
+        builder.bindAuto(ClientSession.class);
+        builder.bindAuto(UserOperationGuard.class);
+        builder.bindAuto(NemesisEngine.class);
+        builder.bindAuto(NemesisSessionStore.class);
+        builder.bindAuto(DameNatureEngine.class);
+        builder.bindAuto(DameNatureSessionStore.class);
+        builder.bindAuto(ChatConnectionFactory.class);
 
-        builder.bindFactory(SoundEffectManager.class, ctx ->
-                new SoundEffectManager(
-                        ctx.get(AudioService.class),
-                        ctx.get(AppSettingsService.class)
-                )
-        );
+        builder.bindAuto(AudioService.class);
 
-        builder.bindFactory(RealtimeGateway.class, ctx -> {
-            ConfigurationService config = ctx.get(ConfigurationService.class);
-            URI baseUri = URI.create(config.get("network.ws.url", "ws://127.0.0.1:8081/ws"));
-            NemesisSessionStore store = ctx.get(NemesisSessionStore.class);
-            return new TokenAwareRealtimeGateway(
-                    ctx.get(java.net.http.HttpClient.class),
-                    ctx.get(com.fasterxml.jackson.databind.ObjectMapper.class),
-                    ctx.get(DomainEventBus.class),
-                    baseUri,
-                    ctx.get(ClientSession.class),
-                    () -> store.current().map(NemesisSession::roomId)
-            );
+        builder.bindFactory(SoundEffectManager.class, ctx -> {
+            SoundEffectManager manager = new SoundEffectManager(ctx.get(AudioService.class));
+            manager.registerClips(List.of(SoundBank.values()));
+            AppSettingsService settings = ctx.get(AppSettingsService.class);
+            manager.applyPreferences(new SettingsSoundPreferences(settings.current()));
+            settings.listen(prefs -> manager.applyPreferences(new SettingsSoundPreferences(prefs)));
+            return manager;
         });
-        builder.bindFactory(HomeScreen.class, ctx -> new HomeScreen(
-                ctx.get(DomainEventBus.class),
-                ctx.get(ActionManager.class),
-                ctx.get(AccessibleShortcutRegistry.class),
-                ctx.get(FocusHighlighter.class),
-                ctx.get(DialogService.class),
-                () -> ctx.get(NarrationQueue.class)
-        ));
 
-        builder.bindFactory(MainMenuScreen.class, ctx -> new MainMenuScreen(
-                ctx.get(DialogService.class),
-                ctx.get(ChatController.class),
-                ctx.get(PresenceController.class),
-                ctx.get(OptionsController.class),
-                ctx.get(CatalogController.class),
-                ctx.get(ClientSession.class),
-                ctx.get(RealtimeGateway.class),
-                ctx.get(SoundEffectManager.class)
-        ));
+        builder.bind(RealtimeGateway.class, TokenAwareRealtimeGateway.class);
+        builder.bindAuto(HomeScreen.class);
+        builder.bindAuto(MainMenuScreen.class);
 
-        builder.bindFactory(GameCatalogService.class, ctx -> new GameCatalogService(
-                ctx.get(RestClient.class),
-                ctx.get(TaskScheduler.class),
-                ctx.get(ClientSession.class)
-        ));
-
-        builder.bindFactory(GameRulesService.class, ctx -> new GameRulesService(
-                ctx.get(java.net.http.HttpClient.class),
-                ctx.get(com.fasterxml.jackson.databind.ObjectMapper.class),
-                ctx.get(TaskScheduler.class),
-                ctx.get(com.lemondelila.framework.core.config.ConfigurationService.class),
-                ctx.get(ClientSession.class)
-        ));
-
-        builder.bindFactory(PresenceDialogLauncher.class, ctx -> new PresenceDialogLauncher(
-                ctx.get(ChatConnectionFactory.class),
-                ctx.get(DialogService.class)
-        ));
-
-        builder.bindFactory(ApplicationShortcuts.class, ctx -> new ApplicationShortcuts(
-                ctx.get(ActionManager.class),
-                ctx.get(AccessibleShortcutRegistry.class),
-                ctx.get(PresenceDialogLauncher.class)
-        ));
+        builder.bindAuto(GameCatalogService.class);
+        builder.bindAuto(GameRulesService.class);
+        builder.bindAuto(PresenceDialogLauncher.class);
+        builder.bindAuto(ApplicationShortcuts.class);
 
         builder.bindFactory(GameEngineRegistry.class, ctx -> {
             GameEngineRegistry registry = new GameEngineRegistry();
@@ -143,118 +95,30 @@ public final class ClientAppModule implements LilaModule {
             return registry;
         });
 
-        builder.bindFactory(NemesisRemoteClient.class, ctx -> new NemesisRemoteClient(
-                ctx.get(RestClient.class),
-                ctx.get(TaskScheduler.class),
-                ctx.get(ClientSession.class),
-                ctx.get(NemesisEngine.class),
-                ctx.get(NemesisSessionStore.class)
-        ));
+        builder.bindAuto(NemesisRemoteClient.class);
+        builder.bindAuto(LocalDameNatureService.class);
+        builder.bindAuto(DameNatureRemoteClient.class);
 
-        builder.bindFactory(LocalDameNatureService.class, ctx -> new LocalDameNatureService(
-                ctx.get(TaskScheduler.class),
-                ctx.get(DameNatureEngine.class),
-                ctx.get(DameNatureSessionStore.class)
-        ));
+        builder.bindAuto(PanierExpressSessionStore.class);
 
-        builder.bindFactory(DameNatureRemoteClient.class, ctx -> new DameNatureRemoteClient(
-                ctx.get(RestClient.class),
-                ctx.get(TaskScheduler.class),
-                ctx.get(ClientSession.class),
-                ctx.get(DameNatureEngine.class),
-                ctx.get(DameNatureSessionStore.class),
-                ctx.get(LocalDameNatureService.class)
-        ));
+        builder.bindAuto(PanierExpressRemoteClient.class);
+        builder.bindAuto(NemesisController.class);
+        builder.bindAuto(DameNatureController.class);
 
-        builder.bindFactory(NemesisController.class, ctx ->
-                new NemesisController(
-                        ctx.get(NemesisRemoteClient.class),
-                        ctx.get(DialogService.class),
-                        ctx.get(NemesisSessionStore.class),
-                        ctx.get(RealtimeGateway.class)
-                )
-        );
+        builder.bindAuto(PanierExpressController.class);
 
-        builder.bindFactory(DameNatureController.class, ctx ->
-                new DameNatureController(
-                        ctx.get(DameNatureRemoteClient.class),
-                        ctx.get(DialogService.class),
-                        ctx.get(DameNatureSessionStore.class)
-                )
-        );
+        builder.bindAuto(NemesisScreen.class);
+        builder.bindAuto(DameNatureScreen.class);
+        builder.bindAuto(PanierExpressRootView.class);
 
-        builder.bindFactory(NemesisScreen.class, ctx -> new NemesisScreen(
-                ctx.get(NemesisController.class),
-                ctx.get(NemesisSessionStore.class)
-        ));
-
-        builder.bindFactory(DameNatureScreen.class, ctx -> new DameNatureScreen(
-                ctx.get(DameNatureController.class),
-                () -> ctx.get(NarrationQueue.class)
-        ));
-
-        builder.bindFactory(GameCatalogController.class, ctx ->
-                new GameCatalogController(
-                        ctx.get(GameCatalogService.class)
-                )
-        );
-
-        builder.bindFactory(CatalogScreen.class, ctx -> new CatalogScreen(
-                ctx.get(GameCatalogController.class),
-                ctx.get(GameRulesService.class),
-                ctx.get(DialogService.class),
-                ctx.get(NemesisController.class),
-                ctx.get(DameNatureController.class)
-        ));
-
-        builder.bindFactory(LoginController.class, ctx ->
-                new LoginController(
-                        ctx.get(DomainEventBus.class),
-                        ctx.get(RestClient.class),
-                        ctx.get(TaskScheduler.class),
-                        ctx.get(ClientSession.class),
-                        ctx.get(UserOperationGuard.class)
-                )
-        );
-
-        builder.bindFactory(RegistrationController.class, ctx ->
-                new RegistrationController(
-                        ctx.get(DomainEventBus.class),
-                        ctx.get(RestClient.class),
-                        ctx.get(TaskScheduler.class),
-                        ctx.get(UserOperationGuard.class)
-                )
-        );
-
-        builder.bindFactory(ChatController.class, ctx ->
-                new ChatController(
-                        ctx.get(ChatConnectionFactory.class),
-                        ctx.get(AppSettingsService.class),
-                        ctx.get(DialogService.class),
-                        ctx.get(ClientSession.class)
-                )
-        );
-
-        builder.bindFactory(PresenceController.class, ctx ->
-                new PresenceController(
-                        ctx.get(PresenceDialogLauncher.class),
-                        ctx.get(DialogService.class),
-                        ctx.get(ClientSession.class)
-                )
-        );
-
-        builder.bindFactory(OptionsController.class, ctx ->
-                new OptionsController(
-                        ctx.get(AppSettingsService.class)
-                )
-        );
-
-        builder.bindFactory(CatalogController.class, ctx ->
-                new CatalogController(
-                        ctx.get(ClientSession.class),
-                        ctx.get(DialogService.class)
-                )
-        );
+        builder.bindAuto(GameCatalogController.class);
+        builder.bindAuto(CatalogScreen.class);
+        builder.bindAuto(LoginController.class);
+        builder.bindAuto(RegistrationController.class);
+        builder.bindAuto(ChatController.class);
+        builder.bindAuto(PresenceController.class);
+        builder.bindAuto(OptionsController.class);
+        builder.bindAuto(CatalogController.class);
     }
 
     @Override
@@ -263,6 +127,7 @@ public final class ClientAppModule implements LilaModule {
         manager.register(context.get(HomeScreen.class));
         manager.register(context.get(MainMenuScreen.class));
         manager.register(context.get(CatalogScreen.class));
+        manager.register(context.get(PanierExpressRootView.class));
         manager.register(context.get(NemesisScreen.class));
         manager.register(context.get(DameNatureScreen.class));
         context.get(LoginController.class);
@@ -283,9 +148,6 @@ public final class ClientAppModule implements LilaModule {
         LilaFrame frame = context.get(LilaFrame.class);
         shortcuts.install(frame);
 
-        SoundEffectManager soundEffects = context.get(SoundEffectManager.class);
-        soundEffects.preloadDefaults();
-        soundEffects.play(SoundEffect.APP_LAUNCH);
     }
 
     @Override
@@ -310,6 +172,50 @@ public final class ClientAppModule implements LilaModule {
                 gateway.close();
             } catch (Exception ignored) {}
         });
+        context.find(SoundEffectManager.class).ifPresent(SoundEffectManager::stopAllLooping);
+        context.find(AudioService.class).ifPresent(service -> {
+            try {
+                service.close();
+            } catch (Exception ignored) {
+            }
+        });
+    }
+
+    private record SettingsSoundPreferences(AppSettings settings) implements SoundPreferences {
+        @Override
+        public boolean isEnabled(String clipKey) {
+            if (!settings.soundEnabled()) {
+                return false;
+            }
+            return switch (clipKey) {
+                case "sound.app.launch" -> settings.soundAppLaunch() && settings.soundAppLaunchVolume() > 0;
+                case "sound.background.fon" -> settings.soundBackground() && settings.soundBackgroundVolume() > 0;
+                case "sound.menu.navigate" -> settings.soundNavigate() && settings.soundNavigateVolume() > 0;
+                case "sound.menu.select" -> settings.soundSelect() && settings.soundSelectVolume() > 0;
+                default -> true;
+            };
+        }
+
+        @Override
+        public int volumeFor(String clipKey) {
+            if (!settings.soundEnabled()) {
+                return 0;
+            }
+            return switch (clipKey) {
+                case "sound.app.launch" -> resolve(settings.soundAppLaunch(), settings.soundAppLaunchVolume());
+                case "sound.background.fon" -> resolve(settings.soundBackground(), settings.soundBackgroundVolume());
+                case "sound.menu.navigate" -> resolve(settings.soundNavigate(), settings.soundNavigateVolume());
+                case "sound.menu.select" -> resolve(settings.soundSelect(), settings.soundSelectVolume());
+                default -> 100;
+            };
+        }
+
+        private int resolve(boolean enabled, int volume) {
+            if (!enabled) {
+                return 0;
+            }
+            return Math.max(0, Math.min(100, volume));
+        }
     }
 
     @Override

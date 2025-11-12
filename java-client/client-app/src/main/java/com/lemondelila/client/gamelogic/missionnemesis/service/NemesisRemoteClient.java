@@ -12,6 +12,7 @@ import com.lemondelila.client.gamelogic.missionnemesis.model.ShipPlacement;
 import com.lemondelila.client.model.game.GameSessionManager;
 import com.lemondelila.client.model.user.ClientSession;
 import com.lemondelila.client.service.game.RemoteGameServiceSupport;
+import com.lemondelila.framework.core.di.Inject;
 import com.lemondelila.framework.core.task.TaskScheduler;
 import com.lemondelila.framework.network.rest.RestClient;
 
@@ -31,6 +32,7 @@ public final class NemesisRemoteClient extends RemoteGameServiceSupport
     private final NemesisEngine engine;
     private final NemesisSessionStore sessionStore;
 
+    @Inject
     public NemesisRemoteClient(RestClient restClient,
                                       TaskScheduler scheduler,
                                       ClientSession session,

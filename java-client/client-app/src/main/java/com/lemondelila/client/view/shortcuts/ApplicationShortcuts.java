@@ -2,6 +2,7 @@ package com.lemondelila.client.view.shortcuts;
 
 import com.lemondelila.client.view.presence.PresenceDialogLauncher;
 import com.lemondelila.framework.access.shortcut.AccessibleShortcutRegistry;
+import com.lemondelila.framework.core.di.Inject;
 import com.lemondelila.framework.ui.LilaFrame;
 import com.lemondelila.framework.ui.action.ActionManager;
 
@@ -26,6 +27,7 @@ public final class ApplicationShortcuts {
     private boolean installed;
     private LilaFrame frameReference;
 
+    @Inject
     public ApplicationShortcuts(ActionManager actionManager,
                                 AccessibleShortcutRegistry shortcutRegistry,
                                 PresenceDialogLauncher presenceLauncher) {

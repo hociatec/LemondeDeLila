@@ -1,5 +1,7 @@
 package com.lemondelila.framework.ui;
 
+import com.lemondelila.framework.core.di.Inject;
+import com.lemondelila.framework.ui.dialog.DialogService;
 import com.lemondelila.framework.ui.screen.ScreenManager;
 
 import javax.swing.JFrame;
@@ -10,7 +12,8 @@ public final class LilaFrame extends JFrame {
 
     private final ScreenManager screenManager;
 
-    public LilaFrame(ScreenManager screenManager) {
+    @Inject
+    public LilaFrame(ScreenManager screenManager, DialogService dialogService) {
         super("Le Monde de Lila");
         this.screenManager = screenManager;
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -18,10 +21,10 @@ public final class LilaFrame extends JFrame {
         add(screenManager.getContainer(), BorderLayout.CENTER);
         setSize(1024, 720);
         setLocationRelativeTo(null);
+        dialogService.attach(this);
     }
 
     public ScreenManager screenManager() {
         return screenManager;
     }
 }
-

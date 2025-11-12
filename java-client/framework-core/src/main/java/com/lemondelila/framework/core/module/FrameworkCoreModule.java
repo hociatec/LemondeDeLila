@@ -11,9 +11,9 @@ public final class FrameworkCoreModule implements LilaModule {
 
     @Override
     public void configure(ApplicationContext.Builder builder) {
-        builder.bind(DomainEventBus.class, DomainEventBus::new);
-        builder.bind(TaskScheduler.class, TaskScheduler::new);
-        builder.bind(ConfigurationService.class, ConfigurationService::new);
+        builder.bindAuto(DomainEventBus.class);
+        builder.bindAuto(TaskScheduler.class);
+        builder.bindAuto(ConfigurationService.class);
     }
 
     @Override
@@ -33,4 +33,3 @@ public final class FrameworkCoreModule implements LilaModule {
         return -100;
     }
 }
-

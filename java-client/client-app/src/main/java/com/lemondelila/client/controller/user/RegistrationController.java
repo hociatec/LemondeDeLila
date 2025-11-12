@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.lemondelila.client.events.user.RegistrationFailed;
 import com.lemondelila.client.events.user.RegistrationRequested;
 import com.lemondelila.client.events.user.RegistrationSucceeded;
+import com.lemondelila.framework.core.di.Inject;
 import com.lemondelila.framework.core.event.DomainEventBus;
 import com.lemondelila.framework.core.task.TaskScheduler;
 import com.lemondelila.framework.network.rest.RestClient;
@@ -19,6 +20,7 @@ public final class RegistrationController implements AutoCloseable {
     private final UserOperationGuard guard;
     private final AutoCloseable subscription;
 
+    @Inject
     public RegistrationController(DomainEventBus eventBus,
                                   RestClient restClient,
                                   TaskScheduler scheduler,

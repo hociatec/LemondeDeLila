@@ -14,10 +14,10 @@ public final class AccessibilityModule implements LilaModule {
 
     @Override
     public void configure(ApplicationContext.Builder builder) {
-        builder.bind(ScreenReaderAnnouncer.class, ScreenReaderAnnouncer::new);
-        builder.bindFactory(NarrationQueue.class, ctx -> new NarrationQueue(ctx.get(ScreenReaderAnnouncer.class)));
-        builder.bind(AccessibleShortcutRegistry.class, AccessibleShortcutRegistry::new);
-        builder.bind(FocusHighlighter.class, FocusHighlighter::new);
+        builder.bindAuto(ScreenReaderAnnouncer.class);
+        builder.bindAuto(NarrationQueue.class);
+        builder.bindAuto(AccessibleShortcutRegistry.class);
+        builder.bindAuto(FocusHighlighter.class);
     }
 
     @Override

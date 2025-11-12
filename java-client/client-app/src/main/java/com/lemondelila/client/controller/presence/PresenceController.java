@@ -2,6 +2,7 @@ package com.lemondelila.client.controller.presence;
 
 import com.lemondelila.client.model.user.ClientSession;
 import com.lemondelila.client.view.presence.PresenceDialogLauncher;
+import com.lemondelila.framework.core.di.Inject;
 import com.lemondelila.framework.ui.dialog.DialogService;
 
 import java.awt.Component;
@@ -16,6 +17,7 @@ public final class PresenceController {
     private final DialogService dialogService;
     private final ClientSession session;
 
+    @Inject
     public PresenceController(PresenceDialogLauncher dialogLauncher,
                               DialogService dialogService,
                               ClientSession session) {

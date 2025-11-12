@@ -10,6 +10,7 @@ import com.lemondelila.client.gamelogic.damenature.model.DameNatureStateMapper;
 import com.lemondelila.client.model.game.GameSessionManager;
 import com.lemondelila.client.model.user.ClientSession;
 import com.lemondelila.client.service.game.RemoteGameServiceSupport;
+import com.lemondelila.framework.core.di.Inject;
 import com.lemondelila.framework.core.task.TaskScheduler;
 import com.lemondelila.framework.network.rest.RestClient;
 import org.slf4j.Logger;
@@ -33,6 +34,7 @@ public final class DameNatureRemoteClient extends RemoteGameServiceSupport
     private final DameNatureSessionStore sessionStore;
     private final LocalDameNatureService localFallback;
 
+    @Inject
     public DameNatureRemoteClient(RestClient restClient,
                                   TaskScheduler scheduler,
                                   ClientSession session,

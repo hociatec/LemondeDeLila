@@ -4,6 +4,7 @@ import com.lemondelila.client.model.user.ClientSession;
 import com.lemondelila.client.service.chat.ChatConnectionFactory;
 import com.lemondelila.client.service.settings.AppSettingsService;
 import com.lemondelila.client.view.chat.ChatWindow;
+import com.lemondelila.framework.core.di.Inject;
 import com.lemondelila.framework.ui.dialog.DialogService;
 
 import javax.swing.SwingUtilities;
@@ -22,6 +23,7 @@ public final class ChatController implements AutoCloseable {
 
     private ChatWindow chatWindow;
 
+    @Inject
     public ChatController(ChatConnectionFactory connectionFactory,
                           AppSettingsService settingsService,
                           DialogService dialogService,

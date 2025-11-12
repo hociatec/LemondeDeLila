@@ -1,5 +1,7 @@
 package com.lemondelila.framework.core.context;
 
+import com.lemondelila.framework.core.di.InjectionSupport;
+
 import java.util.ArrayDeque;
 import java.util.Collections;
 import java.util.Deque;
@@ -17,6 +19,8 @@ import java.util.function.Supplier;
  */
 public final class ApplicationContext {
 
+    public static final String DEFAULT_QUALIFIER = "default";
+
     private final Map<ServiceKey, Function<ApplicationContext, ?>> factories;
     private final Map<ServiceKey, Object> instances = new ConcurrentHashMap<>();
     private final ThreadLocal<Deque<ServiceKey>> resolutionStack = ThreadLocal.withInitial(ArrayDeque::new);
@@ -30,7 +34,7 @@ public final class ApplicationContext {
     }
 
     public <T> T get(Class<T> type) {
-        return get(type, ServiceKey.DEFAULT_QUALIFIER);
+        return get(type, DEFAULT_QUALIFIER);
     }
 
     public <T> T get(Class<T> type, String qualifier) {
@@ -45,7 +49,7 @@ public final class ApplicationContext {
     }
 
     public <T> Optional<T> find(Class<T> type) {
-        return find(type, ServiceKey.DEFAULT_QUALIFIER);
+        return find(type, DEFAULT_QUALIFIER);
     }
 
     public <T> Optional<T> find(Class<T> type, String qualifier) {
@@ -107,7 +111,7 @@ public final class ApplicationContext {
         private final Map<ServiceKey, Function<ApplicationContext, ?>> providers = new LinkedHashMap<>();
 
         public <T> Builder bindInstance(Class<T> type, T instance) {
-            return bind(type, ServiceKey.DEFAULT_QUALIFIER, () -> instance);
+            return bind(type, DEFAULT_QUALIFIER, () -> instance);
         }
 
         public <T> Builder bindInstance(Class<T> type, String qualifier, T instance) {
@@ -115,7 +119,7 @@ public final class ApplicationContext {
         }
 
         public <T> Builder bind(Class<T> type, Supplier<? extends T> supplier) {
-            return bind(type, ServiceKey.DEFAULT_QUALIFIER, supplier);
+            return bind(type, DEFAULT_QUALIFIER, supplier);
         }
 
         public <T> Builder bind(Class<T> type, String qualifier, Supplier<? extends T> supplier) {
@@ -128,7 +132,7 @@ public final class ApplicationContext {
         }
 
         public <T> Builder bindFactory(Class<T> type, Function<ApplicationContext, ? extends T> factory) {
-            return bindFactory(type, ServiceKey.DEFAULT_QUALIFIER, factory);
+            return bindFactory(type, DEFAULT_QUALIFIER, factory);
         }
 
         public <T> Builder bindFactory(Class<T> type, String qualifier, Function<ApplicationContext, ? extends T> factory) {
@@ -140,13 +144,31 @@ public final class ApplicationContext {
             return this;
         }
 
+        public <T> Builder bind(Class<T> type, Class<? extends T> implementation) {
+            return bind(type, DEFAULT_QUALIFIER, implementation);
+        }
+
+        public <T> Builder bind(Class<T> type, String qualifier, Class<? extends T> implementation) {
+            Objects.requireNonNull(type, "type");
+            Objects.requireNonNull(qualifier, "qualifier");
+            Objects.requireNonNull(implementation, "implementation");
+            ServiceKey key = new ServiceKey(type, qualifier);
+            providers.put(key, ctx -> InjectionSupport.instantiate(implementation, ctx));
+            return this;
+        }
+
+        public <T> Builder bindAuto(Class<T> implementation) {
+            Objects.requireNonNull(implementation, "implementation");
+            return bind(implementation, implementation);
+        }
+
         public ApplicationContext build() {
             return new ApplicationContext(providers);
         }
     }
 
     private record ServiceKey(Class<?> type, String qualifier) {
-        static final String DEFAULT_QUALIFIER = "default";
+        static final String DEFAULT_QUALIFIER = ApplicationContext.DEFAULT_QUALIFIER;
 
         ServiceKey {
             Objects.requireNonNull(type, "type");

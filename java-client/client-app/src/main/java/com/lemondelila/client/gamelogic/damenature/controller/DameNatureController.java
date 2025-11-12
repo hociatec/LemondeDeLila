@@ -4,6 +4,7 @@ import com.lemondelila.client.gamelogic.damenature.model.DameNatureConfig;
 import com.lemondelila.client.gamelogic.damenature.model.DameNatureSession;
 import com.lemondelila.client.gamelogic.damenature.model.DameNatureSessionStore;
 import com.lemondelila.client.gamelogic.damenature.service.DameNatureRemoteClient;
+import com.lemondelila.framework.core.di.Inject;
 import com.lemondelila.framework.ui.dialog.DialogService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +28,7 @@ public final class DameNatureController {
     private volatile DameNatureSession current;
     private volatile DameNatureConfig lastConfig = DameNatureConfig.defaultConfig();
 
+    @Inject
     public DameNatureController(DameNatureRemoteClient remoteClient,
                                 DialogService dialogService,
                                 DameNatureSessionStore sessionStore) {

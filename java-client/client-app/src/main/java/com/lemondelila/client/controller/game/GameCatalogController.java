@@ -3,6 +3,7 @@ package com.lemondelila.client.controller.game;
 import com.lemondelila.client.model.catalogue.CatalogData;
 import com.lemondelila.client.model.catalogue.GameSummary;
 import com.lemondelila.client.service.catalogue.GameCatalogService;
+import com.lemondelila.framework.core.di.Inject;
 
 import java.util.List;
 import java.util.Objects;
@@ -15,6 +16,7 @@ public final class GameCatalogController {
 
     private final GameCatalogService catalogService;
 
+    @Inject
     public GameCatalogController(GameCatalogService catalogService) {
         this.catalogService = Objects.requireNonNull(catalogService, "catalogService");
     }

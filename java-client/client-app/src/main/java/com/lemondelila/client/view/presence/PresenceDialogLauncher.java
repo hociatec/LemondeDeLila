@@ -1,6 +1,7 @@
 package com.lemondelila.client.view.presence;
 
 import com.lemondelila.client.service.chat.ChatConnectionFactory;
+import com.lemondelila.framework.core.di.Inject;
 import com.lemondelila.framework.ui.dialog.DialogService;
 
 import javax.swing.SwingUtilities;
@@ -22,6 +23,7 @@ public final class PresenceDialogLauncher {
 
     private PresenceListDialog currentDialog;
 
+    @Inject
     public PresenceDialogLauncher(ChatConnectionFactory connectionFactory,
                                   DialogService dialogService) {
         this.connectionFactory = Objects.requireNonNull(connectionFactory, "connectionFactory");

@@ -2,6 +2,8 @@ package com.lemondelila.framework.network.ws;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lemondelila.framework.core.config.ConfigurationService;
+import com.lemondelila.framework.core.di.Inject;
 import com.lemondelila.framework.core.event.DomainEventBus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,6 +47,17 @@ public final class StandardRealtimeGateway implements RealtimeGateway {
         this.endpointSupplier = Objects.requireNonNull(endpointSupplier, "endpointSupplier");
         this.objectMapper = Objects.requireNonNull(objectMapper, "objectMapper");
         this.eventBus = Objects.requireNonNull(eventBus, "eventBus");
+    }
+
+    @Inject
+    public StandardRealtimeGateway(HttpClient httpClient,
+                                   ObjectMapper objectMapper,
+                                   DomainEventBus eventBus,
+                                   ConfigurationService configurationService) {
+        this(httpClient,
+                () -> URI.create(configurationService.get("network.ws.url", "ws://127.0.0.1:8080/ws")),
+                objectMapper,
+                eventBus);
     }
 
     @Override

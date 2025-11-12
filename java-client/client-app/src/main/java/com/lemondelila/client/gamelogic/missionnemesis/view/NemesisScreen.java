@@ -7,6 +7,7 @@ import com.lemondelila.client.gamelogic.missionnemesis.model.NemesisSessionStore
 import com.lemondelila.client.gamelogic.missionnemesis.model.NemesisSpecs;
 import com.lemondelila.client.gamelogic.missionnemesis.model.NemesisState;
 import com.lemondelila.client.gamelogic.missionnemesis.model.ShipPlacement;
+import com.lemondelila.framework.core.di.Inject;
 import com.lemondelila.framework.ui.screen.Screen;
 import com.lemondelila.framework.ui.screen.ScreenContext;
 import com.lemondelila.framework.ui.screen.ScreenManager;
@@ -55,6 +56,7 @@ public final class NemesisScreen extends JPanel implements Screen {
 
     private final Consumer<NemesisSession> sessionListener = this::displaySession;
 
+    @Inject
     public NemesisScreen(NemesisController controller,
                          NemesisSessionStore sessionStore) {
         this.controller = Objects.requireNonNull(controller, "controller");

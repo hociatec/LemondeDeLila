@@ -2,7 +2,11 @@ package com.lemondelila.client.service.game;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lemondelila.client.gamelogic.missionnemesis.model.NemesisSession;
+import com.lemondelila.client.gamelogic.missionnemesis.model.NemesisSessionStore;
 import com.lemondelila.client.model.user.ClientSession;
+import com.lemondelila.framework.core.config.ConfigurationService;
+import com.lemondelila.framework.core.di.Inject;
 import com.lemondelila.framework.core.event.DomainEventBus;
 import com.lemondelila.framework.network.ws.RealtimeGateway;
 import com.lemondelila.framework.network.ws.StandardRealtimeGateway;
@@ -44,6 +48,21 @@ public final class TokenAwareRealtimeGateway implements RealtimeGateway {
                 objectMapper,
                 eventBus
         );
+    }
+
+    @Inject
+    public TokenAwareRealtimeGateway(HttpClient httpClient,
+                                     ObjectMapper objectMapper,
+                                     DomainEventBus eventBus,
+                                     ConfigurationService configurationService,
+                                     ClientSession session,
+                                     NemesisSessionStore store) {
+        this(httpClient,
+                objectMapper,
+                eventBus,
+                URI.create(configurationService.get("network.ws.url", "ws://127.0.0.1:8081/ws")),
+                session,
+                () -> store.current().map(NemesisSession::roomId));
     }
 
     private URI buildEndpoint() {

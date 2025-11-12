@@ -2,6 +2,8 @@ package com.lemondelila.framework.network.rest;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lemondelila.framework.core.config.ConfigurationService;
+import com.lemondelila.framework.core.di.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,6 +29,11 @@ public final class RestClient {
         this.httpClient = Objects.requireNonNull(httpClient, "httpClient");
         this.objectMapper = Objects.requireNonNull(objectMapper, "objectMapper");
         this.baseUri = Objects.requireNonNull(baseUri, "baseUri");
+    }
+
+    @Inject
+    public RestClient(HttpClient httpClient, ObjectMapper objectMapper, ConfigurationService configurationService) {
+        this(httpClient, objectMapper, URI.create(configurationService.get("network.http.base", "http://127.0.0.1:8000/api/")));
     }
 
     public JsonNode get(String path) throws IOException, InterruptedException {

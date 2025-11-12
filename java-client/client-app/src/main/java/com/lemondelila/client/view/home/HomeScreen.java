@@ -13,6 +13,8 @@ import com.lemondelila.framework.access.AccessibleSpec;
 import com.lemondelila.framework.access.FocusHighlighter;
 import com.lemondelila.framework.access.NarrationQueue;
 import com.lemondelila.framework.access.shortcut.AccessibleShortcutRegistry;
+import com.lemondelila.framework.core.context.ApplicationContext;
+import com.lemondelila.framework.core.di.Inject;
 import com.lemondelila.framework.core.event.DomainEventBus;
 import com.lemondelila.framework.ui.action.ActionManager;
 import com.lemondelila.framework.ui.dialog.DialogService;
@@ -82,6 +84,17 @@ public final class HomeScreen extends JPanel implements Screen {
         buildUi();
         registerListeners();
         registerShortcuts();
+    }
+
+    @Inject
+    public HomeScreen(DomainEventBus eventBus,
+                      ActionManager actionManager,
+                      AccessibleShortcutRegistry shortcutRegistry,
+                      FocusHighlighter focusHighlighter,
+                      DialogService dialogService,
+                      ApplicationContext context) {
+        this(eventBus, actionManager, shortcutRegistry, focusHighlighter, dialogService,
+                () -> context.get(NarrationQueue.class));
     }
 
     private void buildUi() {

@@ -5,6 +5,8 @@ import com.lemondelila.client.gamelogic.damenature.model.DameNatureConfig;
 import com.lemondelila.client.gamelogic.damenature.model.DameNatureSession;
 import com.lemondelila.client.gamelogic.damenature.model.DameNatureState;
 import com.lemondelila.framework.access.NarrationQueue;
+import com.lemondelila.framework.core.context.ApplicationContext;
+import com.lemondelila.framework.core.di.Inject;
 import com.lemondelila.framework.ui.screen.Screen;
 import com.lemondelila.framework.ui.screen.ScreenContext;
 import com.lemondelila.framework.ui.screen.ScreenManager;
@@ -96,6 +98,12 @@ public final class DameNatureScreen extends JPanel implements Screen {
         this.narrationQueueProvider = Objects.requireNonNull(narrationQueueProvider, "narrationQueueProvider");
         buildUi();
         installGlobalKeyBindings();
+    }
+
+    @Inject
+    public DameNatureScreen(DameNatureController controller,
+                            ApplicationContext context) {
+        this(controller, () -> context.get(NarrationQueue.class));
     }
 
     private void buildUi() {

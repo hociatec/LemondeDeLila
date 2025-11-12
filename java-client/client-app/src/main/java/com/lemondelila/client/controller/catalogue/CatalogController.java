@@ -1,6 +1,7 @@
 package com.lemondelila.client.controller.catalogue;
 
 import com.lemondelila.client.model.user.ClientSession;
+import com.lemondelila.framework.core.di.Inject;
 import com.lemondelila.framework.ui.dialog.DialogService;
 import com.lemondelila.framework.ui.screen.ScreenManager;
 
@@ -16,6 +17,7 @@ public final class CatalogController {
     private final DialogService dialogService;
     private ScreenManager screenManager;
 
+    @Inject
     public CatalogController(ClientSession session, DialogService dialogService) {
         this.session = Objects.requireNonNull(session, "session");
         this.dialogService = Objects.requireNonNull(dialogService, "dialogService");

@@ -5,6 +5,7 @@ import com.lemondelila.client.model.catalogue.CatalogCategory;
 import com.lemondelila.client.model.catalogue.CatalogData;
 import com.lemondelila.client.model.catalogue.GameSummary;
 import com.lemondelila.client.model.user.ClientSession;
+import com.lemondelila.framework.core.di.Inject;
 import com.lemondelila.framework.core.task.TaskScheduler;
 import com.lemondelila.framework.network.rest.RestClient;
 
@@ -23,6 +24,7 @@ public final class GameCatalogService {
     private final TaskScheduler scheduler;
     private final ClientSession session;
 
+    @Inject
     public GameCatalogService(RestClient restClient,
                               TaskScheduler scheduler,
                               ClientSession session) {

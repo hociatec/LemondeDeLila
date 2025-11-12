@@ -4,9 +4,10 @@ import com.lemondelila.client.controller.catalogue.CatalogController;
 import com.lemondelila.client.controller.chat.ChatController;
 import com.lemondelila.client.controller.presence.PresenceController;
 import com.lemondelila.client.controller.settings.OptionsController;
-import com.lemondelila.client.media.SoundEffect;
-import com.lemondelila.client.media.SoundEffectManager;
+import com.lemondelila.client.media.SoundBank;
 import com.lemondelila.client.model.user.ClientSession;
+import com.lemondelila.framework.core.di.Inject;
+import com.lemondelila.framework.media.sound.SoundEffectManager;
 import com.lemondelila.framework.network.ws.RealtimeGateway;
 import com.lemondelila.framework.ui.dialog.DialogService;
 import com.lemondelila.framework.ui.screen.Screen;
@@ -45,7 +46,7 @@ public final class MainMenuScreen extends JPanel implements Screen {
     private final CatalogController catalogController;
     private final ClientSession session;
     private final RealtimeGateway realtimeGateway;
-    private final SoundEffectManager soundEffects;
+    private final SoundEffectManager sounds;
 
     private final JLabel statusLabel = new JLabel(" ");
     private final JButton shelvesButton = new JButton("Etageres");
@@ -57,6 +58,7 @@ public final class MainMenuScreen extends JPanel implements Screen {
     private final List<JButton> menuButtons = new ArrayList<>();
 
     private ScreenManager screenManager;
+    @Inject
     public MainMenuScreen(DialogService dialogService,
                           ChatController chatController,
                           PresenceController presenceController,
@@ -64,7 +66,7 @@ public final class MainMenuScreen extends JPanel implements Screen {
                           CatalogController catalogController,
                           ClientSession session,
                           RealtimeGateway realtimeGateway,
-                          SoundEffectManager soundEffects) {
+                          SoundEffectManager sounds) {
         this.dialogService = dialogService;
         this.chatController = chatController;
         this.presenceController = presenceController;
@@ -72,7 +74,7 @@ public final class MainMenuScreen extends JPanel implements Screen {
         this.catalogController = catalogController;
         this.session = session;
         this.realtimeGateway = realtimeGateway;
-        this.soundEffects = soundEffects;
+        this.sounds = sounds;
         buildUi();
         registerHandlers();
         registerShortcuts();
@@ -112,7 +114,8 @@ public final class MainMenuScreen extends JPanel implements Screen {
         button.addFocusListener(new FocusAdapter() {
             @Override
             public void focusGained(FocusEvent e) {
-                soundEffects.play(SoundEffect.MENU_NAVIGATE);
+                statusLabel.setText("Sélection : " + button.getText());
+                playNavigate();
             }
         });
         menuButtons.add(button);
@@ -181,14 +184,14 @@ public final class MainMenuScreen extends JPanel implements Screen {
     }
 
     private void handleEscape() {
-        soundEffects.play(SoundEffect.MENU_BACK);
+        playSelect();
         if (screenManager != null) {
             SwingUtilities.invokeLater(() -> screenManager.show("home"));
         }
     }
 
     private void onMenuSelected(Runnable action) {
-        soundEffects.play(SoundEffect.MENU_SELECT);
+        playSelect();
         action.run();
     }
 
@@ -201,6 +204,7 @@ public final class MainMenuScreen extends JPanel implements Screen {
         if (!ensureAuthenticated()) {
             return;
         }
+        playSelect();
         String status = presenceController.open(this);
         setStatus(status);
     }
@@ -209,6 +213,7 @@ public final class MainMenuScreen extends JPanel implements Screen {
         if (!ensureAuthenticated()) {
             return;
         }
+        playSelect();
         String status = chatController.open(SwingUtilities.getWindowAncestor(this));
         setStatus(status);
     }
@@ -222,6 +227,7 @@ public final class MainMenuScreen extends JPanel implements Screen {
         if (!ensureAuthenticated()) {
             return;
         }
+        playSelect();
         String status = catalogController.openCatalog();
         setStatus(status);
     }
@@ -233,6 +239,7 @@ public final class MainMenuScreen extends JPanel implements Screen {
             realtimeGateway.close();
         } catch (Exception ignored) {
         }
+        playSelect();
         setStatus("Deconnecte.");
         if (screenManager != null) {
             SwingUtilities.invokeLater(() -> screenManager.show("home"));
@@ -269,6 +276,8 @@ public final class MainMenuScreen extends JPanel implements Screen {
         this.screenManager = context.screenManager();
         catalogController.attach(screenManager);
         setStatus("Pret.");
+        playAppLaunch();
+        startBackground();
         SwingUtilities.invokeLater(() -> shelvesButton.requestFocusInWindow());
     }
 
@@ -276,6 +285,37 @@ public final class MainMenuScreen extends JPanel implements Screen {
     public void onHide(ScreenContext context) {
         this.screenManager = null;
         catalogController.detach();
+        stopBackground();
+    }
+
+    private void playAppLaunch() {
+        if (sounds != null) {
+            sounds.play(SoundBank.APP_LAUNCH);
+        }
+    }
+
+    private void startBackground() {
+        if (sounds != null) {
+            sounds.play(SoundBank.BACKGROUND_FON);
+        }
+    }
+
+    private void stopBackground() {
+        if (sounds != null) {
+            sounds.stop(SoundBank.BACKGROUND_FON);
+        }
+    }
+
+    private void playNavigate() {
+        if (sounds != null) {
+            sounds.play(SoundBank.MENU_NAVIGATE);
+        }
+    }
+
+    private void playSelect() {
+        if (sounds != null) {
+            sounds.play(SoundBank.MENU_SELECT);
+        }
     }
 }
 

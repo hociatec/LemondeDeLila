@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lemondelila.client.model.catalogue.GameSummary;
 import com.lemondelila.client.model.user.ClientSession;
 import com.lemondelila.framework.core.config.ConfigurationService;
+import com.lemondelila.framework.core.di.Inject;
 import com.lemondelila.framework.core.task.TaskScheduler;
 
 import java.io.IOException;
@@ -33,6 +34,7 @@ public final class GameRulesService {
     private final ClientSession session;
     private final URI baseUri;
 
+    @Inject
     public GameRulesService(HttpClient httpClient,
                             ObjectMapper objectMapper,
                             TaskScheduler scheduler,
