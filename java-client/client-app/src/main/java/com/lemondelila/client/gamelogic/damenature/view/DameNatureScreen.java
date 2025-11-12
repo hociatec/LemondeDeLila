@@ -4,7 +4,9 @@ import com.lemondelila.client.gamelogic.damenature.controller.DameNatureControll
 import com.lemondelila.client.gamelogic.damenature.model.DameNatureConfig;
 import com.lemondelila.client.gamelogic.damenature.model.DameNatureSession;
 import com.lemondelila.client.gamelogic.damenature.model.DameNatureState;
-import com.lemondelila.framework.access.NarrationQueue;
+import com.lemondelila.framework.access.game.AccessibilityService;
+import com.lemondelila.framework.access.shortcut.AccessibleShortcutRegistry;
+import com.lemondelila.framework.access.game.GameHistoryTracker;
 import com.lemondelila.framework.core.context.ApplicationContext;
 import com.lemondelila.framework.core.di.Inject;
 import com.lemondelila.framework.ui.screen.Screen;
@@ -39,7 +41,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 public final class DameNatureScreen extends JPanel implements Screen {
 
@@ -49,7 +50,8 @@ public final class DameNatureScreen extends JPanel implements Screen {
     }
 
     private final DameNatureController controller;
-    private final Supplier<NarrationQueue> narrationQueueProvider;
+    private final AccessibilityService accessibilityService;
+    private final AccessibleShortcutRegistry shortcutRegistry;
     private ScreenManager screenManager;
 
     private Mode mode = Mode.CONFIGURATION;
@@ -69,6 +71,7 @@ public final class DameNatureScreen extends JPanel implements Screen {
     private int configFocusIndex;
 
     // Gameplay
+    private final GameHistoryTracker historyTracker = new GameHistoryTracker();
     private final JPanel gamePanel = new JPanel(new BorderLayout(16, 16));
     private final JLabel turnLabel = new JLabel("Tour : -");
     private final JLabel selectionLabel = new JLabel("Sélection : aucune");
@@ -92,18 +95,21 @@ public final class DameNatureScreen extends JPanel implements Screen {
 
     public DameNatureScreen(
             DameNatureController controller,
-            Supplier<NarrationQueue> narrationQueueProvider
+            AccessibilityService accessibilityService,
+            AccessibleShortcutRegistry shortcutRegistry
     ) {
         this.controller = Objects.requireNonNull(controller, "controller");
-        this.narrationQueueProvider = Objects.requireNonNull(narrationQueueProvider, "narrationQueueProvider");
+        this.accessibilityService = Objects.requireNonNull(accessibilityService, "accessibilityService");
+        this.shortcutRegistry = Objects.requireNonNull(shortcutRegistry, "shortcutRegistry");
         buildUi();
         installGlobalKeyBindings();
+        historyTracker.setMaxEntries(400);
     }
 
     @Inject
     public DameNatureScreen(DameNatureController controller,
                             ApplicationContext context) {
-        this(controller, () -> context.get(NarrationQueue.class));
+        this(controller, context.get(AccessibilityService.class), context.get(AccessibleShortcutRegistry.class));
     }
 
     private void buildUi() {
@@ -141,7 +147,7 @@ public final class DameNatureScreen extends JPanel implements Screen {
         configPanel.add(instructions);
         configPanel.add(Box.createRigidArea(new Dimension(0, 12)));
 
-        configPanel.add(optionRow("Nombre d'adversaires", botsValueLabel));
+        configPanel.add(optionRow("Nombre d’adversaires", botsValueLabel));
         configPanel.add(Box.createRigidArea(new Dimension(0, 6)));
         configPanel.add(optionRow("Cartes danger", dangerValueLabel));
         configPanel.add(Box.createRigidArea(new Dimension(0, 6)));
@@ -276,7 +282,7 @@ public final class DameNatureScreen extends JPanel implements Screen {
         quizValueLabel.setText(pendingConfig.includeQuizCards() ? "Activés" : "Désactivés");
         if (!configFocusOrder.isEmpty()) {
             JComponent botsRow = configFocusOrder.get(0);
-            setAccessibleName(botsRow, "Nombre d'adversaires : " + botsValueLabel.getText());
+        setAccessibleName(botsRow, "Nombre d’adversaires : " + botsValueLabel.getText());
             JComponent dangerRow = configFocusOrder.get(1);
             setAccessibleName(dangerRow, "Cartes danger : " + dangerValueLabel.getText());
             JComponent quizRow = configFocusOrder.get(2);
@@ -423,30 +429,33 @@ public final class DameNatureScreen extends JPanel implements Screen {
     }
 
     private void installGlobalKeyBindings() {
-        registerShortcut("SPACE", "damenature-draw", e -> triggerDraw());
-        registerShortcut('T', "damenature-turn", e -> announceCurrentTurn());
-        registerShortcut('t', "damenature-turn", e -> announceCurrentTurn());
-        registerShortcut("UP", "damenature-target-prev", e -> cycleTarget(-1));
-        registerShortcut("DOWN", "damenature-target-next", e -> cycleTarget(1));
-        registerShortcut("LEFT", "damenature-card-prev", e -> cycleCard(-1));
-        registerShortcut("RIGHT", "damenature-card-next", e -> cycleCard(1));
-        registerShortcut('E', "damenature-request", e -> sendAskAction());
-        registerShortcut('e', "damenature-request", e -> sendAskAction());
-        registerShortcut('R', "damenature-refresh", e -> handleActionFeedback(controller.refresh(), "Actualisation en cours...", null, null));
-        registerShortcut('r', "damenature-refresh", e -> handleActionFeedback(controller.refresh(), "Actualisation en cours...", null, null));
-        registerShortcut('C', "damenature-open-config", e -> {
+        shortcutRegistry.clear();
+        registerShortcut("SPACE", "damenature-draw", "Espace : piocher une carte.", e -> triggerDraw());
+        registerShortcut('T', "damenature-turn", "Lettre T : annoncer le tour en cours.", e -> announceCurrentTurn());
+        registerShortcut('t', "damenature-turn", "Lettre T : annoncer le tour en cours.", e -> announceCurrentTurn());
+        registerShortcut("UP", "damenature-target-prev", "Flèche haut : sélectionner l’adversaire précédent.", e -> cycleTarget(-1));
+        registerShortcut("DOWN", "damenature-target-next", "Flèche bas : sélectionner l’adversaire suivant.", e -> cycleTarget(1));
+        registerShortcut("LEFT", "damenature-card-prev", "Flèche gauche : choisir la carte précédente à demander.", e -> cycleCard(-1));
+        registerShortcut("RIGHT", "damenature-card-next", "Flèche droite : choisir la carte suivante à demander.", e -> cycleCard(1));
+        registerShortcut('E', "damenature-request", "Lettre E : demander une carte à l’adversaire sélectionné.", e -> sendAskAction());
+        registerShortcut('e', "damenature-request", "Lettre E : demander une carte à l’adversaire sélectionné.", e -> sendAskAction());
+        registerShortcut('R', "damenature-refresh", "Lettre R : actualiser l’état de la partie.", e -> handleActionFeedback(controller.refresh(), 
+                "Actualisation en cours...", null, null));
+        registerShortcut('r', "damenature-refresh", "Lettre R : actualiser l’état de la partie.", e -> handleActionFeedback(controller.refresh(), 
+                "Actualisation en cours...", null, null));
+        registerShortcut('C', "damenature-open-config", "Lettre C : ouvrir la configuration.", e -> {
             if (mode == Mode.GAMEPLAY) {
                 announce("Configuration ouverte. Modifiez les options puis Entrée pour relancer.");
                 openConfiguration();
             }
         });
-        registerShortcut('c', "damenature-open-config", e -> {
+        registerShortcut('c', "damenature-open-config", "Lettre C : ouvrir la configuration.", e -> {
             if (mode == Mode.GAMEPLAY) {
                 announce("Configuration ouverte. Modifiez les options puis Entrée pour relancer.");
                 openConfiguration();
             }
         });
-        registerShortcut("ESCAPE", "damenature-config", e -> {
+        registerShortcut("ESCAPE", "damenature-config", "Échap : revenir à la configuration.", e -> {
             if (mode == Mode.GAMEPLAY) {
                 announce("Retour à la configuration.");
                 openConfiguration();
@@ -456,19 +465,28 @@ public final class DameNatureScreen extends JPanel implements Screen {
         for (int i = 0; i < 9; i++) {
             char digit = (char) ('1' + i);
             final int index = i;
-            registerShortcut(digit, "quiz-answer-" + digit, e -> answerQuiz(index));
+            registerShortcut(digit, "quiz-answer-" + digit, "Chiffre " + (index + 1) + " : répondre au quiz.", e -> answerQuiz(index));
         }
+        shortcutRegistry.applyTo(this);
+    }
+
+    private void registerShortcut(char key, String actionId, String description, java.util.function.Consumer<ActionEvent> handler) {
+        registerShortcut(KeyStroke.getKeyStroke(key), actionId, description, handler);
     }
 
     private void registerShortcut(char key, String actionId, java.util.function.Consumer<ActionEvent> handler) {
-        registerShortcut(KeyStroke.getKeyStroke(key), actionId, handler);
+        registerShortcut(key, actionId, null, handler);
+    }
+
+    private void registerShortcut(String keyStroke, String actionId, String description, java.util.function.Consumer<ActionEvent> handler) {
+        registerShortcut(KeyStroke.getKeyStroke(keyStroke), actionId, description, handler);
     }
 
     private void registerShortcut(String keyStroke, String actionId, java.util.function.Consumer<ActionEvent> handler) {
-        registerShortcut(KeyStroke.getKeyStroke(keyStroke), actionId, handler);
+        registerShortcut(keyStroke, actionId, null, handler);
     }
 
-    private void registerShortcut(KeyStroke stroke, String actionId, java.util.function.Consumer<ActionEvent> handler) {
+    private void registerShortcut(KeyStroke stroke, String actionId, String description, java.util.function.Consumer<ActionEvent> handler) {
         getInputMap(WHEN_IN_FOCUSED_WINDOW).put(stroke, actionId);
         getActionMap().put(actionId, new AbstractAction() {
             @Override
@@ -478,6 +496,9 @@ public final class DameNatureScreen extends JPanel implements Screen {
                 }
             }
         });
+        if (description != null && !description.isBlank()) {
+            shortcutRegistry.register(stroke, description);
+        }
     }
 
     private void showConfiguration() {
@@ -498,6 +519,9 @@ public final class DameNatureScreen extends JPanel implements Screen {
         currentSession = null;
         playerOptions = List.of();
         cardOptions = List.of();
+        historyTracker.clear();
+        logArea.setText("");
+        setAccessibleDescription(logArea, "");
         selectedPlayerIndex = -1;
         selectedCardIndex = -1;
         launchInProgress = false;
@@ -662,7 +686,7 @@ public final class DameNatureScreen extends JPanel implements Screen {
         String text = "Sélection : adversaire " + adversaire + " | carte " + carte;
         selectionLabel.setText(text);
         setAccessibleDescription(selectionLabel, text);
-        narrationQueueProvider.get().enqueue(selectionLabel, text);
+        accessibilityService.announceCustom(selectionLabel, text);
     }
 
     private void updateQuiz(DameNatureState state) {
@@ -684,11 +708,23 @@ public final class DameNatureScreen extends JPanel implements Screen {
     }
 
     private void updateLog(DameNatureState state) {
-        StringBuilder builder = new StringBuilder();
-        state.log().stream()
-                .skip(Math.max(0, state.log().size() - 20))
-                .forEach(entry -> builder.append("• ").append(entry.message()).append('\n'));
-        logArea.setText(builder.toString());
+        if (state == null || state.log() == null) {
+            historyTracker.clear();
+            logArea.setText("Aucun évènement pour le moment.");
+            setAccessibleDescription(logArea, logArea.getText());
+            return;
+        }
+        historyTracker.setEntries(state.log().stream()
+                .map(DameNatureState.LogEntry::message)
+                .filter(Objects::nonNull)
+                .map(String::trim)
+                .filter(msg -> !msg.isEmpty())
+                .toList());
+        String content = historyTracker.formatAll();
+        if (content.isBlank()) {
+            content = "Aucun évènement pour le moment.";
+        }
+        logArea.setText(content);
         logArea.setCaretPosition(logArea.getDocument().getLength());
         setAccessibleDescription(logArea, logArea.getText());
     }
@@ -771,7 +807,14 @@ public final class DameNatureScreen extends JPanel implements Screen {
             return;
         }
         DameNatureState.Player player = players.get(state.turnIndex());
-        announce("C'est au tour de " + player.username() + ".");
+        DameNatureState.Player self = currentSession.self();
+        boolean yourTurn = self != null && self.id() == player.id();
+        AccessibilityService.TurnContext context = new AccessibilityService.TurnContext(
+                yourTurn,
+                player.username(),
+                null
+        );
+        accessibilityService.announceTurn(turnLabel, context);
     }
 
     private void handleActionFeedback(CompletableFuture<DameNatureSession> future, String pendingMessage,
@@ -814,7 +857,7 @@ public final class DameNatureScreen extends JPanel implements Screen {
     private void announce(String message) {
         statusLabel.setText(message);
         setAccessibleDescription(statusLabel, message);
-        narrationQueueProvider.get().enqueue(statusLabel, message);
+        accessibilityService.announceCustom(statusLabel, message);
     }
 
     private void setAccessibleName(JComponent component, String name) {

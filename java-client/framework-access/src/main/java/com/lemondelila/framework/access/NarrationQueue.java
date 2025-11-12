@@ -44,6 +44,10 @@ public final class NarrationQueue implements AutoCloseable {
     public void close() {
         running = false;
         worker.interrupt();
+        try {
+            announcer.close();
+        } catch (Exception ignored) {
+        }
     }
 
     private record NarrationTask(JComponent component, String message) {

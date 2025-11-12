@@ -17,6 +17,10 @@ public final class AccessibleShortcutRegistry {
         descriptions.put(stroke, description);
     }
 
+    public void clear() {
+        descriptions.clear();
+    }
+
     public void applyTo(JComponent component) {
         component.putClientProperty("accessible.shortcuts", Collections.unmodifiableMap(descriptions));
     }
@@ -25,4 +29,3 @@ public final class AccessibleShortcutRegistry {
         return Collections.unmodifiableMap(descriptions);
     }
 }
-

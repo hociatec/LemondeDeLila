@@ -1,0 +1,1193 @@
+[2025-11-12 18:51:43] Attempting to load NVDA library from C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\nvdaControllerClient.dll
+[2025-11-12 18:51:43] NVDA controller client API not available, trying controller API: Error looking up function 'nvdaControllerClient_testIfRunning': La procédure spécifiée est introuvable.
+
+[2025-11-12 18:51:43] Detected NVDA controller API.
+[2025-11-12 18:51:43] NVDA controller bridge initialised successfully (CONTROLLER).
+[2025-11-12 18:51:43] JAWS DLL load failed at C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\saapi32.dll: Unable to load library 'C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\saapi32.dll':
+%1 n’est pas une application Win32 valide.
+
+%1 n’est pas une application Win32 valide.
+
+Native library (win32-x86-64/C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\saapi32.dll) not found in resource path (C:\wamp64\www\le-monde-de-lila\java-client\framework-core\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-ui\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-access\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-network\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-media\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-access-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-core-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-media-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-network-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-ui-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-annotations-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-core-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-databind-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jna-5.13.0.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-api-2.0.13.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-simple-2.0.13.jar)
+[2025-11-12 18:51:43] JAWS DLL load failed at C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\SAAPI32.dll: Unable to load library 'C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\SAAPI32.dll':
+%1 n’est pas une application Win32 valide.
+
+%1 n’est pas une application Win32 valide.
+
+Native library (win32-x86-64/C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\SAAPI32.dll) not found in resource path (C:\wamp64\www\le-monde-de-lila\java-client\framework-core\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-ui\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-access\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-network\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-media\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-access-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-core-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-media-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-network-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-ui-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-annotations-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-core-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-databind-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jna-5.13.0.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-api-2.0.13.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-simple-2.0.13.jar)
+[2025-11-12 18:51:43] JAWS DLL load failed at fsapi32: Unable to load library 'fsapi32':
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Native library (win32-x86-64/fsapi32.dll) not found in resource path (C:\wamp64\www\le-monde-de-lila\java-client\framework-core\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-ui\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-access\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-network\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-media\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-access-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-core-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-media-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-network-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-ui-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-annotations-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-core-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-databind-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jna-5.13.0.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-api-2.0.13.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-simple-2.0.13.jar)
+[2025-11-12 18:51:43] JAWS DLL load failed at SAAPI32: Unable to load library 'SAAPI32':
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Native library (win32-x86-64/SAAPI32.dll) not found in resource path (C:\wamp64\www\le-monde-de-lila\java-client\framework-core\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-ui\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-access\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-network\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-media\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-access-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-core-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-media-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-network-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-ui-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-annotations-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-core-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-databind-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jna-5.13.0.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-api-2.0.13.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-simple-2.0.13.jar)
+[2025-11-12 18:51:43] FSAPI DLL not available on this system.
+[2025-11-12 18:51:44] NVDA spoke text successfully.
+[2025-11-12 18:52:45] NVDA spoke text successfully.
+[2025-11-12 18:52:45] NVDA spoke text successfully.
+[2025-11-12 18:52:46] NVDA spoke text successfully.
+[2025-11-12 18:52:46] NVDA spoke text successfully.
+[2025-11-12 18:52:47] NVDA spoke text successfully.
+[2025-11-12 18:52:47] NVDA spoke text successfully.
+[2025-11-12 18:52:48] NVDA spoke text successfully.
+[2025-11-12 18:52:48] NVDA spoke text successfully.
+[2025-11-12 18:52:49] NVDA spoke text successfully.
+[2025-11-12 18:52:49] NVDA spoke text successfully.
+[2025-11-12 18:52:51] NVDA spoke text successfully.
+[2025-11-12 18:52:52] NVDA spoke text successfully.
+[2025-11-12 18:52:52] NVDA spoke text successfully.
+[2025-11-12 18:52:53] NVDA spoke text successfully.
+[2025-11-12 18:52:57] NVDA spoke text successfully.
+[2025-11-12 18:52:57] NVDA spoke text successfully.
+[2025-11-12 18:53:01] NVDA spoke text successfully.
+[2025-11-12 18:53:01] NVDA spoke text successfully.
+[2025-11-12 18:53:02] NVDA spoke text successfully.
+[2025-11-12 18:53:02] NVDA spoke text successfully.
+[2025-11-12 18:53:05] NVDA spoke text successfully.
+[2025-11-12 18:53:05] NVDA spoke text successfully.
+[2025-11-12 18:53:07] NVDA spoke text successfully.
+[2025-11-12 18:53:07] NVDA spoke text successfully.
+[2025-11-12 18:53:07] NVDA spoke text successfully.
+[2025-11-12 18:53:07] NVDA spoke text successfully.
+[2025-11-12 18:53:08] NVDA spoke text successfully.
+[2025-11-12 18:53:08] NVDA spoke text successfully.
+[2025-11-12 18:53:10] NVDA spoke text successfully.
+[2025-11-12 18:53:11] NVDA spoke text successfully.
+[2025-11-12 18:53:11] NVDA spoke text successfully.
+[2025-11-12 18:53:12] NVDA spoke text successfully.
+[2025-11-12 18:53:12] NVDA spoke text successfully.
+[2025-11-12 18:53:12] NVDA spoke text successfully.
+[2025-11-12 18:53:12] NVDA spoke text successfully.
+[2025-11-12 18:53:12] NVDA spoke text successfully.
+[2025-11-12 18:53:13] NVDA spoke text successfully.
+[2025-11-12 18:53:13] NVDA spoke text successfully.
+[2025-11-12 18:53:13] NVDA spoke text successfully.
+[2025-11-12 18:53:13] NVDA spoke text successfully.
+[2025-11-12 18:53:14] NVDA spoke text successfully.
+[2025-11-12 18:53:14] NVDA spoke text successfully.
+[2025-11-12 18:53:14] NVDA spoke text successfully.
+[2025-11-12 18:53:14] NVDA spoke text successfully.
+[2025-11-12 18:53:14] NVDA spoke text successfully.
+[2025-11-12 18:53:15] NVDA spoke text successfully.
+[2025-11-12 18:53:15] NVDA spoke text successfully.
+[2025-11-12 18:53:15] NVDA spoke text successfully.
+[2025-11-12 18:53:15] NVDA spoke text successfully.
+[2025-11-12 18:53:15] NVDA spoke text successfully.
+[2025-11-12 18:53:16] NVDA spoke text successfully.
+[2025-11-12 18:53:16] NVDA spoke text successfully.
+[2025-11-12 18:53:16] NVDA spoke text successfully.
+[2025-11-12 18:53:16] NVDA spoke text successfully.
+[2025-11-12 18:53:16] NVDA spoke text successfully.
+[2025-11-12 18:53:17] NVDA spoke text successfully.
+[2025-11-12 18:56:11] Attempting to load NVDA library from C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\nvdaControllerClient.dll
+[2025-11-12 18:56:11] NVDA controller client API not available, trying controller API: Error looking up function 'nvdaControllerClient_testIfRunning': La procédure spécifiée est introuvable.
+
+[2025-11-12 18:56:11] Detected NVDA controller API.
+[2025-11-12 18:56:11] NVDA controller bridge initialised successfully (CONTROLLER).
+[2025-11-12 18:56:11] JAWS DLL load failed at C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\saapi32.dll: Unable to load library 'C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\saapi32.dll':
+%1 n’est pas une application Win32 valide.
+
+%1 n’est pas une application Win32 valide.
+
+Native library (win32-x86-64/C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\saapi32.dll) not found in resource path (C:\wamp64\www\le-monde-de-lila\java-client\framework-core\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-ui\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-access\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-network\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-media\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-access-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-core-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-media-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-network-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-ui-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-annotations-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-core-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-databind-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jna-5.13.0.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-api-2.0.13.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-simple-2.0.13.jar)
+[2025-11-12 18:56:11] JAWS DLL load failed at C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\SAAPI32.dll: Unable to load library 'C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\SAAPI32.dll':
+%1 n’est pas une application Win32 valide.
+
+%1 n’est pas une application Win32 valide.
+
+Native library (win32-x86-64/C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\SAAPI32.dll) not found in resource path (C:\wamp64\www\le-monde-de-lila\java-client\framework-core\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-ui\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-access\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-network\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-media\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-access-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-core-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-media-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-network-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-ui-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-annotations-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-core-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-databind-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jna-5.13.0.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-api-2.0.13.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-simple-2.0.13.jar)
+[2025-11-12 18:56:11] JAWS DLL load failed at fsapi32: Unable to load library 'fsapi32':
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Native library (win32-x86-64/fsapi32.dll) not found in resource path (C:\wamp64\www\le-monde-de-lila\java-client\framework-core\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-ui\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-access\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-network\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-media\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-access-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-core-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-media-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-network-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-ui-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-annotations-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-core-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-databind-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jna-5.13.0.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-api-2.0.13.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-simple-2.0.13.jar)
+[2025-11-12 18:56:11] JAWS DLL load failed at SAAPI32: Unable to load library 'SAAPI32':
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Native library (win32-x86-64/SAAPI32.dll) not found in resource path (C:\wamp64\www\le-monde-de-lila\java-client\framework-core\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-ui\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-access\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-network\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-media\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-access-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-core-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-media-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-network-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-ui-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-annotations-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-core-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-databind-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jna-5.13.0.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-api-2.0.13.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-simple-2.0.13.jar)
+[2025-11-12 18:56:11] FSAPI DLL not available on this system.
+[2025-11-12 18:56:12] NVDA spoke text successfully.
+[2025-11-12 18:56:25] NVDA spoke text successfully.
+[2025-11-12 18:56:26] NVDA spoke text successfully.
+[2025-11-12 18:56:27] NVDA spoke text successfully.
+[2025-11-12 18:56:28] NVDA spoke text successfully.
+[2025-11-12 18:56:29] NVDA spoke text successfully.
+[2025-11-12 18:56:29] NVDA spoke text successfully.
+[2025-11-12 18:56:31] NVDA spoke text successfully.
+[2025-11-12 18:56:31] NVDA spoke text successfully.
+[2025-11-12 18:56:37] NVDA spoke text successfully.
+[2025-11-12 18:56:37] NVDA spoke text successfully.
+[2025-11-12 18:56:38] NVDA spoke text successfully.
+[2025-11-12 18:56:38] NVDA spoke text successfully.
+[2025-11-12 18:56:39] NVDA spoke text successfully.
+[2025-11-12 18:56:39] NVDA spoke text successfully.
+[2025-11-12 18:56:57] NVDA spoke text successfully.
+[2025-11-12 18:56:57] NVDA spoke text successfully.
+[2025-11-12 18:57:12] NVDA spoke text successfully.
+[2025-11-12 18:57:12] NVDA spoke text successfully.
+[2025-11-12 18:57:17] NVDA spoke text successfully.
+[2025-11-12 18:57:17] NVDA spoke text successfully.
+[2025-11-12 18:57:22] NVDA spoke text successfully.
+[2025-11-12 18:57:22] NVDA spoke text successfully.
+[2025-11-12 18:57:28] NVDA spoke text successfully.
+[2025-11-12 18:57:29] NVDA spoke text successfully.
+[2025-11-12 18:57:30] NVDA spoke text successfully.
+[2025-11-12 18:57:30] NVDA spoke text successfully.
+[2025-11-12 18:57:30] NVDA spoke text successfully.
+[2025-11-12 18:57:31] NVDA spoke text successfully.
+[2025-11-12 18:57:31] NVDA spoke text successfully.
+[2025-11-12 18:57:31] NVDA spoke text successfully.
+[2025-11-12 18:57:31] NVDA spoke text successfully.
+[2025-11-12 18:57:42] NVDA spoke text successfully.
+[2025-11-12 18:57:44] NVDA spoke text successfully.
+[2025-11-12 18:57:45] NVDA spoke text successfully.
+[2025-11-12 18:57:46] NVDA spoke text successfully.
+[2025-11-12 18:57:46] NVDA spoke text successfully.
+[2025-11-12 18:57:46] NVDA spoke text successfully.
+[2025-11-12 18:57:46] NVDA spoke text successfully.
+[2025-11-12 18:57:46] NVDA spoke text successfully.
+[2025-11-12 18:57:47] NVDA spoke text successfully.
+[2025-11-12 18:57:47] NVDA spoke text successfully.
+[2025-11-12 18:57:47] NVDA spoke text successfully.
+[2025-11-12 18:57:48] NVDA spoke text successfully.
+[2025-11-12 18:57:49] NVDA spoke text successfully.
+[2025-11-12 18:57:54] NVDA spoke text successfully.
+[2025-11-12 18:57:55] NVDA spoke text successfully.
+[2025-11-12 18:57:57] NVDA spoke text successfully.
+[2025-11-12 18:57:57] NVDA spoke text successfully.
+[2025-11-12 18:58:07] NVDA spoke text successfully.
+[2025-11-12 18:58:07] NVDA spoke text successfully.
+[2025-11-12 18:58:13] NVDA spoke text successfully.
+[2025-11-12 18:58:13] NVDA spoke text successfully.
+[2025-11-12 18:58:16] NVDA spoke text successfully.
+[2025-11-12 18:58:16] NVDA spoke text successfully.
+[2025-11-12 18:58:19] NVDA spoke text successfully.
+[2025-11-12 18:58:21] NVDA spoke text successfully.
+[2025-11-12 18:58:22] NVDA spoke text successfully.
+[2025-11-12 18:58:25] NVDA spoke text successfully.
+[2025-11-12 18:58:25] NVDA spoke text successfully.
+[2025-11-12 18:58:25] NVDA spoke text successfully.
+[2025-11-12 18:58:26] NVDA spoke text successfully.
+[2025-11-12 18:58:26] NVDA spoke text successfully.
+[2025-11-12 18:58:26] NVDA spoke text successfully.
+[2025-11-12 18:58:26] NVDA spoke text successfully.
+[2025-11-12 18:58:26] NVDA spoke text successfully.
+[2025-11-12 18:58:27] NVDA spoke text successfully.
+[2025-11-12 18:58:28] NVDA spoke text successfully.
+[2025-11-12 18:58:28] NVDA spoke text successfully.
+[2025-11-12 18:58:28] NVDA spoke text successfully.
+[2025-11-12 18:58:29] NVDA spoke text successfully.
+[2025-11-12 18:58:29] NVDA spoke text successfully.
+[2025-11-12 18:58:29] NVDA spoke text successfully.
+[2025-11-12 18:58:29] NVDA spoke text successfully.
+[2025-11-12 18:58:29] NVDA spoke text successfully.
+[2025-11-12 18:58:30] NVDA spoke text successfully.
+[2025-11-12 18:58:30] NVDA spoke text successfully.
+[2025-11-12 18:58:30] NVDA spoke text successfully.
+[2025-11-12 18:58:31] NVDA spoke text successfully.
+[2025-11-12 18:58:31] NVDA spoke text successfully.
+[2025-11-12 18:58:31] NVDA spoke text successfully.
+[2025-11-12 18:58:32] NVDA spoke text successfully.
+[2025-11-12 18:58:32] NVDA spoke text successfully.
+[2025-11-12 18:58:32] NVDA spoke text successfully.
+[2025-11-12 18:58:32] NVDA spoke text successfully.
+[2025-11-12 18:58:34] NVDA spoke text successfully.
+[2025-11-12 18:58:34] NVDA spoke text successfully.
+[2025-11-12 18:58:35] NVDA spoke text successfully.
+[2025-11-12 18:58:35] NVDA spoke text successfully.
+[2025-11-12 18:58:39] NVDA spoke text successfully.
+[2025-11-12 18:58:39] NVDA spoke text successfully.
+[2025-11-12 18:58:40] NVDA spoke text successfully.
+[2025-11-12 18:58:40] NVDA spoke text successfully.
+[2025-11-12 18:58:40] NVDA spoke text successfully.
+[2025-11-12 18:58:40] NVDA spoke text successfully.
+[2025-11-12 18:58:40] NVDA spoke text successfully.
+[2025-11-12 18:58:41] NVDA spoke text successfully.
+[2025-11-12 18:58:41] NVDA spoke text successfully.
+[2025-11-12 18:58:41] NVDA spoke text successfully.
+[2025-11-12 18:58:41] NVDA spoke text successfully.
+[2025-11-12 18:58:42] NVDA spoke text successfully.
+[2025-11-12 18:58:42] NVDA spoke text successfully.
+[2025-11-12 18:58:42] NVDA spoke text successfully.
+[2025-11-12 18:58:42] NVDA spoke text successfully.
+[2025-11-12 18:58:42] NVDA spoke text successfully.
+[2025-11-12 18:58:43] NVDA spoke text successfully.
+[2025-11-12 18:58:43] NVDA spoke text successfully.
+[2025-11-12 18:58:43] NVDA spoke text successfully.
+[2025-11-12 18:58:43] NVDA spoke text successfully.
+[2025-11-12 18:58:43] NVDA spoke text successfully.
+[2025-11-12 18:58:44] NVDA spoke text successfully.
+[2025-11-12 18:58:44] NVDA spoke text successfully.
+[2025-11-12 18:58:44] NVDA spoke text successfully.
+[2025-11-12 18:58:44] NVDA spoke text successfully.
+[2025-11-12 18:58:44] NVDA spoke text successfully.
+[2025-11-12 18:58:45] NVDA spoke text successfully.
+[2025-11-12 18:58:45] NVDA spoke text successfully.
+[2025-11-12 18:58:45] NVDA spoke text successfully.
+[2025-11-12 18:58:45] NVDA spoke text successfully.
+[2025-11-12 18:58:45] NVDA spoke text successfully.
+[2025-11-12 18:58:46] NVDA spoke text successfully.
+[2025-11-12 18:58:46] NVDA spoke text successfully.
+[2025-11-12 18:58:46] NVDA spoke text successfully.
+[2025-11-12 18:58:46] NVDA spoke text successfully.
+[2025-11-12 18:58:46] NVDA spoke text successfully.
+[2025-11-12 18:58:47] NVDA spoke text successfully.
+[2025-11-12 18:58:47] NVDA spoke text successfully.
+[2025-11-12 18:58:47] NVDA spoke text successfully.
+[2025-11-12 18:58:49] NVDA spoke text successfully.
+[2025-11-12 18:58:50] NVDA spoke text successfully.
+[2025-11-12 18:58:50] NVDA spoke text successfully.
+[2025-11-12 18:58:51] NVDA spoke text successfully.
+[2025-11-12 18:58:52] NVDA spoke text successfully.
+[2025-11-12 18:58:52] NVDA spoke text successfully.
+[2025-11-12 18:58:52] NVDA spoke text successfully.
+[2025-11-12 18:58:52] NVDA spoke text successfully.
+[2025-11-12 18:58:52] NVDA spoke text successfully.
+[2025-11-12 18:58:53] NVDA spoke text successfully.
+[2025-11-12 18:58:53] NVDA spoke text successfully.
+[2025-11-12 18:58:53] NVDA spoke text successfully.
+[2025-11-12 18:58:53] NVDA spoke text successfully.
+[2025-11-12 18:58:53] NVDA spoke text successfully.
+[2025-11-12 18:58:54] NVDA spoke text successfully.
+[2025-11-12 18:58:54] NVDA spoke text successfully.
+[2025-11-12 18:58:54] NVDA spoke text successfully.
+[2025-11-12 18:58:54] NVDA spoke text successfully.
+[2025-11-12 18:58:54] NVDA spoke text successfully.
+[2025-11-12 18:58:55] NVDA spoke text successfully.
+[2025-11-12 18:58:55] NVDA spoke text successfully.
+[2025-11-12 18:58:55] NVDA spoke text successfully.
+[2025-11-12 18:58:55] NVDA spoke text successfully.
+[2025-11-12 18:58:56] NVDA spoke text successfully.
+[2025-11-12 18:58:57] NVDA spoke text successfully.
+[2025-11-12 18:58:57] NVDA spoke text successfully.
+[2025-11-12 18:59:09] NVDA spoke text successfully.
+[2025-11-12 18:59:09] NVDA spoke text successfully.
+[2025-11-12 18:59:11] NVDA spoke text successfully.
+[2025-11-12 18:59:11] NVDA spoke text successfully.
+[2025-11-12 18:59:11] NVDA spoke text successfully.
+[2025-11-12 18:59:11] NVDA spoke text successfully.
+[2025-11-12 18:59:15] NVDA spoke text successfully.
+[2025-11-12 18:59:15] NVDA spoke text successfully.
+[2025-11-12 18:59:16] NVDA spoke text successfully.
+[2025-11-12 18:59:16] NVDA spoke text successfully.
+[2025-11-12 18:59:16] NVDA spoke text successfully.
+[2025-11-12 18:59:16] NVDA spoke text successfully.
+[2025-11-12 18:59:16] NVDA spoke text successfully.
+[2025-11-12 18:59:17] NVDA spoke text successfully.
+[2025-11-12 18:59:17] NVDA spoke text successfully.
+[2025-11-12 18:59:17] NVDA spoke text successfully.
+[2025-11-12 18:59:17] NVDA spoke text successfully.
+[2025-11-12 18:59:17] NVDA spoke text successfully.
+[2025-11-12 18:59:18] NVDA spoke text successfully.
+[2025-11-12 18:59:18] NVDA spoke text successfully.
+[2025-11-12 18:59:20] NVDA spoke text successfully.
+[2025-11-12 18:59:20] NVDA spoke text successfully.
+[2025-11-12 18:59:25] NVDA spoke text successfully.
+[2025-11-12 18:59:25] NVDA spoke text successfully.
+[2025-11-12 18:59:27] NVDA spoke text successfully.
+[2025-11-12 18:59:28] NVDA spoke text successfully.
+[2025-11-12 18:59:30] NVDA spoke text successfully.
+[2025-11-12 18:59:30] NVDA spoke text successfully.
+[2025-11-12 18:59:30] NVDA spoke text successfully.
+[2025-11-12 18:59:30] NVDA spoke text successfully.
+[2025-11-12 18:59:31] NVDA spoke text successfully.
+[2025-11-12 18:59:31] NVDA spoke text successfully.
+[2025-11-12 18:59:31] NVDA spoke text successfully.
+[2025-11-12 18:59:31] NVDA spoke text successfully.
+[2025-11-12 18:59:31] NVDA spoke text successfully.
+[2025-11-12 18:59:32] NVDA spoke text successfully.
+[2025-11-12 18:59:32] NVDA spoke text successfully.
+[2025-11-12 18:59:32] NVDA spoke text successfully.
+[2025-11-12 18:59:34] NVDA spoke text successfully.
+[2025-11-12 18:59:35] NVDA spoke text successfully.
+[2025-11-12 18:59:36] NVDA spoke text successfully.
+[2025-11-12 18:59:37] NVDA spoke text successfully.
+[2025-11-12 18:59:38] NVDA spoke text successfully.
+[2025-11-12 18:59:38] NVDA spoke text successfully.
+[2025-11-12 19:01:20] Attempting to load NVDA library from C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\nvdaControllerClient.dll
+[2025-11-12 19:01:20] NVDA controller client API not available, trying controller API: Error looking up function 'nvdaControllerClient_testIfRunning': La procédure spécifiée est introuvable.
+
+[2025-11-12 19:01:20] Detected NVDA controller API.
+[2025-11-12 19:01:20] NVDA controller bridge initialised successfully (CONTROLLER).
+[2025-11-12 19:01:20] JAWS DLL load failed at C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\saapi32.dll: Unable to load library 'C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\saapi32.dll':
+%1 n’est pas une application Win32 valide.
+
+%1 n’est pas une application Win32 valide.
+
+Native library (win32-x86-64/C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\saapi32.dll) not found in resource path (C:\wamp64\www\le-monde-de-lila\java-client\framework-core\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-ui\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-access\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-network\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-media\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-access-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-core-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-media-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-network-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-ui-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-annotations-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-core-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-databind-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jna-5.13.0.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-api-2.0.13.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-simple-2.0.13.jar)
+[2025-11-12 19:01:20] JAWS DLL load failed at C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\SAAPI32.dll: Unable to load library 'C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\SAAPI32.dll':
+%1 n’est pas une application Win32 valide.
+
+%1 n’est pas une application Win32 valide.
+
+Native library (win32-x86-64/C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\SAAPI32.dll) not found in resource path (C:\wamp64\www\le-monde-de-lila\java-client\framework-core\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-ui\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-access\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-network\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-media\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-access-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-core-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-media-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-network-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-ui-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-annotations-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-core-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-databind-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jna-5.13.0.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-api-2.0.13.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-simple-2.0.13.jar)
+[2025-11-12 19:01:21] JAWS DLL load failed at fsapi32: Unable to load library 'fsapi32':
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Native library (win32-x86-64/fsapi32.dll) not found in resource path (C:\wamp64\www\le-monde-de-lila\java-client\framework-core\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-ui\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-access\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-network\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-media\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-access-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-core-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-media-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-network-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-ui-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-annotations-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-core-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-databind-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jna-5.13.0.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-api-2.0.13.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-simple-2.0.13.jar)
+[2025-11-12 19:01:21] JAWS DLL load failed at SAAPI32: Unable to load library 'SAAPI32':
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Native library (win32-x86-64/SAAPI32.dll) not found in resource path (C:\wamp64\www\le-monde-de-lila\java-client\framework-core\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-ui\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-access\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-network\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-media\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-access-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-core-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-media-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-network-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-ui-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-annotations-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-core-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-databind-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jna-5.13.0.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-api-2.0.13.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-simple-2.0.13.jar)
+[2025-11-12 19:01:21] FSAPI DLL not available on this system.
+[2025-11-12 19:01:22] NVDA spoke text successfully.
+[2025-11-12 19:01:50] NVDA spoke text successfully.
+[2025-11-12 19:01:53] NVDA spoke text successfully.
+[2025-11-12 19:01:53] NVDA spoke text successfully.
+[2025-11-12 19:01:54] NVDA spoke text successfully.
+[2025-11-12 19:01:54] NVDA spoke text successfully.
+[2025-11-12 19:01:54] NVDA spoke text successfully.
+[2025-11-12 19:01:54] NVDA spoke text successfully.
+[2025-11-12 19:01:56] NVDA spoke text successfully.
+[2025-11-12 19:01:57] NVDA spoke text successfully.
+[2025-11-12 19:01:58] NVDA spoke text successfully.
+[2025-11-12 19:02:02] NVDA spoke text successfully.
+[2025-11-12 19:02:03] NVDA spoke text successfully.
+[2025-11-12 19:02:03] NVDA spoke text successfully.
+[2025-11-12 19:02:04] NVDA spoke text successfully.
+[2025-11-12 19:02:04] NVDA spoke text successfully.
+[2025-11-12 19:02:09] NVDA spoke text successfully.
+[2025-11-12 19:02:11] NVDA spoke text successfully.
+[2025-11-12 19:02:12] NVDA spoke text successfully.
+[2025-11-12 19:02:12] NVDA spoke text successfully.
+[2025-11-12 19:02:13] NVDA spoke text successfully.
+[2025-11-12 19:02:13] NVDA spoke text successfully.
+[2025-11-12 19:02:15] NVDA spoke text successfully.
+[2025-11-12 19:02:16] NVDA spoke text successfully.
+[2025-11-12 19:48:46] Attempting to load NVDA library from C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\nvdaControllerClient.dll
+[2025-11-12 19:48:46] NVDA controller client API not available, trying controller API: Error looking up function 'nvdaControllerClient_testIfRunning': La procédure spécifiée est introuvable.
+
+[2025-11-12 19:48:46] Detected NVDA controller API.
+[2025-11-12 19:48:46] NVDA controller bridge initialised successfully (CONTROLLER).
+[2025-11-12 19:48:46] JAWS DLL load failed at C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\saapi32.dll: Unable to load library 'C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\saapi32.dll':
+%1 n’est pas une application Win32 valide.
+
+%1 n’est pas une application Win32 valide.
+
+Native library (win32-x86-64/C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\saapi32.dll) not found in resource path (C:\wamp64\www\le-monde-de-lila\java-client\framework-core\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-ui\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-access\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-network\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-media\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-access-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-core-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-media-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-network-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-ui-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-annotations-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-core-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-databind-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jna-5.13.0.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-api-2.0.13.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-simple-2.0.13.jar)
+[2025-11-12 19:48:46] JAWS DLL load failed at C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\SAAPI32.dll: Unable to load library 'C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\SAAPI32.dll':
+%1 n’est pas une application Win32 valide.
+
+%1 n’est pas une application Win32 valide.
+
+Native library (win32-x86-64/C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\SAAPI32.dll) not found in resource path (C:\wamp64\www\le-monde-de-lila\java-client\framework-core\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-ui\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-access\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-network\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-media\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-access-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-core-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-media-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-network-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-ui-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-annotations-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-core-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-databind-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jna-5.13.0.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-api-2.0.13.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-simple-2.0.13.jar)
+[2025-11-12 19:48:46] JAWS DLL load failed at fsapi32: Unable to load library 'fsapi32':
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Native library (win32-x86-64/fsapi32.dll) not found in resource path (C:\wamp64\www\le-monde-de-lila\java-client\framework-core\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-ui\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-access\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-network\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-media\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-access-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-core-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-media-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-network-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-ui-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-annotations-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-core-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-databind-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jna-5.13.0.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-api-2.0.13.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-simple-2.0.13.jar)
+[2025-11-12 19:48:46] JAWS DLL load failed at SAAPI32: Unable to load library 'SAAPI32':
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Native library (win32-x86-64/SAAPI32.dll) not found in resource path (C:\wamp64\www\le-monde-de-lila\java-client\framework-core\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-ui\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-access\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-network\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-media\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-access-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-core-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-media-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-network-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-ui-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-annotations-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-core-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-databind-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jna-5.13.0.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-api-2.0.13.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-simple-2.0.13.jar)
+[2025-11-12 19:48:46] FSAPI DLL not available on this system.
+[2025-11-12 19:48:48] NVDA spoke text successfully.
+[2025-11-12 19:49:20] NVDA spoke text successfully.
+[2025-11-12 19:49:23] NVDA spoke text successfully.
+[2025-11-12 19:49:23] NVDA spoke text successfully.
+[2025-11-12 19:49:29] NVDA spoke text successfully.
+[2025-11-12 19:49:29] NVDA spoke text successfully.
+[2025-11-12 19:49:33] NVDA spoke text successfully.
+[2025-11-12 19:49:34] NVDA spoke text successfully.
+[2025-11-12 19:49:35] NVDA spoke text successfully.
+[2025-11-12 19:49:35] NVDA spoke text successfully.
+[2025-11-12 19:49:35] NVDA spoke text successfully.
+[2025-11-12 19:49:36] NVDA spoke text successfully.
+[2025-11-12 19:49:37] NVDA spoke text successfully.
+[2025-11-12 19:49:37] NVDA spoke text successfully.
+[2025-11-12 19:55:48] Attempting to load NVDA library from C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\nvdaControllerClient.dll
+[2025-11-12 19:55:48] NVDA controller client API not available, trying controller API: Error looking up function 'nvdaControllerClient_testIfRunning': La procédure spécifiée est introuvable.
+
+[2025-11-12 19:55:48] Detected NVDA controller API.
+[2025-11-12 19:55:48] NVDA controller bridge initialised successfully (CONTROLLER).
+[2025-11-12 19:55:48] JAWS DLL load failed at C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\saapi32.dll: Unable to load library 'C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\saapi32.dll':
+%1 n’est pas une application Win32 valide.
+
+%1 n’est pas une application Win32 valide.
+
+Native library (win32-x86-64/C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\saapi32.dll) not found in resource path (C:\wamp64\www\le-monde-de-lila\java-client\framework-core\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-ui\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-access\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-network\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-media\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-access-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-core-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-media-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-network-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-ui-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-annotations-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-core-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-databind-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jna-5.13.0.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-api-2.0.13.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-simple-2.0.13.jar)
+[2025-11-12 19:55:48] JAWS DLL load failed at C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\SAAPI32.dll: Unable to load library 'C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\SAAPI32.dll':
+%1 n’est pas une application Win32 valide.
+
+%1 n’est pas une application Win32 valide.
+
+Native library (win32-x86-64/C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\SAAPI32.dll) not found in resource path (C:\wamp64\www\le-monde-de-lila\java-client\framework-core\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-ui\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-access\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-network\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-media\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-access-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-core-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-media-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-network-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-ui-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-annotations-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-core-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-databind-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jna-5.13.0.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-api-2.0.13.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-simple-2.0.13.jar)
+[2025-11-12 19:55:48] JAWS DLL load failed at fsapi32: Unable to load library 'fsapi32':
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Native library (win32-x86-64/fsapi32.dll) not found in resource path (C:\wamp64\www\le-monde-de-lila\java-client\framework-core\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-ui\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-access\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-network\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-media\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-access-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-core-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-media-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-network-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-ui-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-annotations-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-core-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-databind-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jna-5.13.0.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-api-2.0.13.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-simple-2.0.13.jar)
+[2025-11-12 19:55:48] JAWS DLL load failed at SAAPI32: Unable to load library 'SAAPI32':
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Native library (win32-x86-64/SAAPI32.dll) not found in resource path (C:\wamp64\www\le-monde-de-lila\java-client\framework-core\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-ui\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-access\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-network\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-media\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-access-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-core-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-media-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-network-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-ui-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-annotations-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-core-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-databind-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jna-5.13.0.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-api-2.0.13.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-simple-2.0.13.jar)
+[2025-11-12 19:55:48] FSAPI DLL not available on this system.
+[2025-11-12 19:55:50] NVDA spoke text successfully.
+[2025-11-12 19:56:11] NVDA spoke text successfully.
+[2025-11-12 19:56:11] NVDA spoke text successfully.
+[2025-11-12 19:56:16] NVDA spoke text successfully.
+[2025-11-12 19:56:17] NVDA spoke text successfully.
+[2025-11-12 19:56:17] NVDA spoke text successfully.
+[2025-11-12 19:56:17] NVDA spoke text successfully.
+[2025-11-12 19:56:17] NVDA spoke text successfully.
+[2025-11-12 19:56:17] NVDA spoke text successfully.
+[2025-11-12 19:56:18] NVDA spoke text successfully.
+[2025-11-12 19:56:18] NVDA spoke text successfully.
+[2025-11-12 19:56:19] NVDA spoke text successfully.
+[2025-11-12 19:56:21] NVDA spoke text successfully.
+[2025-11-12 19:56:21] NVDA spoke text successfully.
+[2025-11-12 19:56:22] NVDA spoke text successfully.
+[2025-11-12 19:56:23] NVDA spoke text successfully.
+[2025-11-12 19:56:24] NVDA spoke text successfully.
+[2025-11-12 19:56:24] NVDA spoke text successfully.
+[2025-11-12 19:56:24] NVDA spoke text successfully.
+[2025-11-12 19:56:31] NVDA spoke text successfully.
+[2025-11-12 19:56:32] NVDA spoke text successfully.
+[2025-11-12 19:56:32] NVDA spoke text successfully.
+[2025-11-12 19:56:37] NVDA spoke text successfully.
+[2025-11-12 19:56:37] NVDA spoke text successfully.
+[2025-11-12 19:56:43] NVDA spoke text successfully.
+[2025-11-12 19:56:45] NVDA spoke text successfully.
+[2025-11-12 19:56:46] NVDA spoke text successfully.
+[2025-11-12 19:56:46] NVDA spoke text successfully.
+[2025-11-12 19:56:47] NVDA spoke text successfully.
+[2025-11-12 19:56:47] NVDA spoke text successfully.
+[2025-11-12 19:56:48] NVDA spoke text successfully.
+[2025-11-12 19:56:48] NVDA spoke text successfully.
+[2025-11-12 19:56:48] NVDA spoke text successfully.
+[2025-11-12 19:56:48] NVDA spoke text successfully.
+[2025-11-12 19:56:49] NVDA spoke text successfully.
+[2025-11-12 19:56:49] NVDA spoke text successfully.
+[2025-11-12 19:56:49] NVDA spoke text successfully.
+[2025-11-12 19:56:49] NVDA spoke text successfully.
+[2025-11-12 19:56:50] NVDA spoke text successfully.
+[2025-11-12 19:56:50] NVDA spoke text successfully.
+[2025-11-12 19:56:50] NVDA spoke text successfully.
+[2025-11-12 19:56:50] NVDA spoke text successfully.
+[2025-11-12 19:56:50] NVDA spoke text successfully.
+[2025-11-12 19:56:51] NVDA spoke text successfully.
+[2025-11-12 19:56:51] NVDA spoke text successfully.
+[2025-11-12 19:56:51] NVDA spoke text successfully.
+[2025-11-12 19:56:51] NVDA spoke text successfully.
+[2025-11-12 19:56:51] NVDA spoke text successfully.
+[2025-11-12 19:56:52] NVDA spoke text successfully.
+[2025-11-12 19:56:52] NVDA spoke text successfully.
+[2025-11-12 19:56:52] NVDA spoke text successfully.
+[2025-11-12 19:56:52] NVDA spoke text successfully.
+[2025-11-12 19:56:52] NVDA spoke text successfully.
+[2025-11-12 19:56:53] NVDA spoke text successfully.
+[2025-11-12 19:56:53] NVDA spoke text successfully.
+[2025-11-12 19:56:53] NVDA spoke text successfully.
+[2025-11-12 19:56:53] NVDA spoke text successfully.
+[2025-11-12 19:56:53] NVDA spoke text successfully.
+[2025-11-12 19:56:54] NVDA spoke text successfully.
+[2025-11-12 19:56:54] NVDA spoke text successfully.
+[2025-11-12 19:56:54] NVDA spoke text successfully.
+[2025-11-12 19:56:54] NVDA spoke text successfully.
+[2025-11-12 19:56:57] NVDA spoke text successfully.
+[2025-11-12 19:56:58] NVDA spoke text successfully.
+[2025-11-12 19:56:58] NVDA spoke text successfully.
+[2025-11-12 19:56:59] NVDA spoke text successfully.
+[2025-11-12 19:56:59] NVDA spoke text successfully.
+[2025-11-12 19:56:59] NVDA spoke text successfully.
+[2025-11-12 19:56:59] NVDA spoke text successfully.
+[2025-11-12 19:56:59] NVDA spoke text successfully.
+[2025-11-12 19:57:00] NVDA spoke text successfully.
+[2025-11-12 19:57:00] NVDA spoke text successfully.
+[2025-11-12 19:57:00] NVDA spoke text successfully.
+[2025-11-12 19:57:00] NVDA spoke text successfully.
+[2025-11-12 19:57:01] NVDA spoke text successfully.
+[2025-11-12 19:57:01] NVDA spoke text successfully.
+[2025-11-12 19:57:01] NVDA spoke text successfully.
+[2025-11-12 19:57:01] NVDA spoke text successfully.
+[2025-11-12 19:57:01] NVDA spoke text successfully.
+[2025-11-12 19:57:02] NVDA spoke text successfully.
+[2025-11-12 19:57:02] NVDA spoke text successfully.
+[2025-11-12 19:57:02] NVDA spoke text successfully.
+[2025-11-12 19:57:03] NVDA spoke text successfully.
+[2025-11-12 19:57:03] NVDA spoke text successfully.
+[2025-11-12 19:57:03] NVDA spoke text successfully.
+[2025-11-12 19:57:04] NVDA spoke text successfully.
+[2025-11-12 19:57:04] NVDA spoke text successfully.
+[2025-11-12 19:57:04] NVDA spoke text successfully.
+[2025-11-12 19:57:04] NVDA spoke text successfully.
+[2025-11-12 19:57:04] NVDA spoke text successfully.
+[2025-11-12 19:57:05] NVDA spoke text successfully.
+[2025-11-12 19:57:05] NVDA spoke text successfully.
+[2025-11-12 19:57:05] NVDA spoke text successfully.
+[2025-11-12 19:57:05] NVDA spoke text successfully.
+[2025-11-12 19:57:05] NVDA spoke text successfully.
+[2025-11-12 19:57:06] NVDA spoke text successfully.
+[2025-11-12 19:57:06] NVDA spoke text successfully.
+[2025-11-12 19:57:06] NVDA spoke text successfully.
+[2025-11-12 19:57:06] NVDA spoke text successfully.
+[2025-11-12 19:57:07] NVDA spoke text successfully.
+[2025-11-12 19:57:07] NVDA spoke text successfully.
+[2025-11-12 19:57:07] NVDA spoke text successfully.
+[2025-11-12 19:57:07] NVDA spoke text successfully.
+[2025-11-12 19:57:07] NVDA spoke text successfully.
+[2025-11-12 19:57:08] NVDA spoke text successfully.
+[2025-11-12 19:57:08] NVDA spoke text successfully.
+[2025-11-12 19:57:08] NVDA spoke text successfully.
+[2025-11-12 19:57:08] NVDA spoke text successfully.
+[2025-11-12 19:57:08] NVDA spoke text successfully.
+[2025-11-12 19:57:09] NVDA spoke text successfully.
+[2025-11-12 19:57:09] NVDA spoke text successfully.
+[2025-11-12 19:57:09] NVDA spoke text successfully.
+[2025-11-12 19:57:10] NVDA spoke text successfully.
+[2025-11-12 19:57:11] NVDA spoke text successfully.
+[2025-11-12 19:57:11] NVDA spoke text successfully.
+[2025-11-12 19:57:11] NVDA spoke text successfully.
+[2025-11-12 19:57:12] NVDA spoke text successfully.
+[2025-11-12 19:57:12] NVDA spoke text successfully.
+[2025-11-12 19:57:12] NVDA spoke text successfully.
+[2025-11-12 19:57:13] NVDA spoke text successfully.
+[2025-11-12 19:57:13] NVDA spoke text successfully.
+[2025-11-12 19:57:13] NVDA spoke text successfully.
+[2025-11-12 19:57:13] NVDA spoke text successfully.
+[2025-11-12 19:57:13] NVDA spoke text successfully.
+[2025-11-12 19:57:14] NVDA spoke text successfully.
+[2025-11-12 19:57:14] NVDA spoke text successfully.
+[2025-11-12 19:57:14] NVDA spoke text successfully.
+[2025-11-12 19:57:14] NVDA spoke text successfully.
+[2025-11-12 19:57:15] NVDA spoke text successfully.
+[2025-11-12 19:57:15] NVDA spoke text successfully.
+[2025-11-12 19:57:15] NVDA spoke text successfully.
+[2025-11-12 19:57:15] NVDA spoke text successfully.
+[2025-11-12 19:57:15] NVDA spoke text successfully.
+[2025-11-12 19:57:16] NVDA spoke text successfully.
+[2025-11-12 19:57:16] NVDA spoke text successfully.
+[2025-11-12 19:57:16] NVDA spoke text successfully.
+[2025-11-12 19:57:16] NVDA spoke text successfully.
+[2025-11-12 19:57:18] NVDA spoke text successfully.
+[2025-11-12 19:57:20] NVDA spoke text successfully.
+[2025-11-12 19:57:21] NVDA spoke text successfully.
+[2025-11-12 19:57:21] NVDA spoke text successfully.
+[2025-11-12 19:57:21] NVDA spoke text successfully.
+[2025-11-12 19:57:21] NVDA spoke text successfully.
+[2025-11-12 19:57:21] NVDA spoke text successfully.
+[2025-11-12 19:57:22] NVDA spoke text successfully.
+[2025-11-12 19:57:22] NVDA spoke text successfully.
+[2025-11-12 19:57:22] NVDA spoke text successfully.
+[2025-11-12 19:57:22] NVDA spoke text successfully.
+[2025-11-12 19:57:23] NVDA spoke text successfully.
+[2025-11-12 19:57:23] NVDA spoke text successfully.
+[2025-11-12 19:57:23] NVDA spoke text successfully.
+[2025-11-12 19:57:23] NVDA spoke text successfully.
+[2025-11-12 19:57:23] NVDA spoke text successfully.
+[2025-11-12 19:57:24] NVDA spoke text successfully.
+[2025-11-12 19:57:24] NVDA spoke text successfully.
+[2025-11-12 19:57:24] NVDA spoke text successfully.
+[2025-11-12 19:57:24] NVDA spoke text successfully.
+[2025-11-12 19:57:25] NVDA spoke text successfully.
+[2025-11-12 19:57:26] NVDA spoke text successfully.
+[2025-11-12 19:57:26] NVDA spoke text successfully.
+[2025-11-12 19:57:26] NVDA spoke text successfully.
+[2025-11-12 19:57:27] NVDA spoke text successfully.
+[2025-11-12 19:57:27] NVDA spoke text successfully.
+[2025-11-12 19:57:27] NVDA spoke text successfully.
+[2025-11-12 19:57:28] NVDA spoke text successfully.
+[2025-11-12 19:57:28] NVDA spoke text successfully.
+[2025-11-12 20:45:38] Attempting to load NVDA library from C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\nvdaControllerClient.dll
+[2025-11-12 20:45:38] NVDA controller client API not available, trying controller API: Error looking up function 'nvdaControllerClient_testIfRunning': La procédure spécifiée est introuvable.
+
+[2025-11-12 20:45:38] Detected NVDA controller API.
+[2025-11-12 20:45:38] NVDA controller bridge initialised successfully (CONTROLLER).
+[2025-11-12 20:45:38] JAWS DLL load failed at C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\saapi32.dll: Unable to load library 'C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\saapi32.dll':
+%1 n’est pas une application Win32 valide.
+
+%1 n’est pas une application Win32 valide.
+
+Native library (win32-x86-64/C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\saapi32.dll) not found in resource path (C:\wamp64\www\le-monde-de-lila\java-client\framework-core\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-ui\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-access\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-network\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-media\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-access-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-core-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-media-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-network-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-ui-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-annotations-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-core-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-databind-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jna-5.13.0.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-api-2.0.13.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-simple-2.0.13.jar)
+[2025-11-12 20:45:38] JAWS DLL load failed at C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\SAAPI32.dll: Unable to load library 'C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\SAAPI32.dll':
+%1 n’est pas une application Win32 valide.
+
+%1 n’est pas une application Win32 valide.
+
+Native library (win32-x86-64/C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\SAAPI32.dll) not found in resource path (C:\wamp64\www\le-monde-de-lila\java-client\framework-core\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-ui\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-access\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-network\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-media\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-access-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-core-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-media-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-network-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-ui-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-annotations-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-core-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-databind-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jna-5.13.0.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-api-2.0.13.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-simple-2.0.13.jar)
+[2025-11-12 20:45:38] JAWS DLL load failed at fsapi32: Unable to load library 'fsapi32':
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Native library (win32-x86-64/fsapi32.dll) not found in resource path (C:\wamp64\www\le-monde-de-lila\java-client\framework-core\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-ui\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-access\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-network\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-media\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-access-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-core-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-media-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-network-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-ui-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-annotations-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-core-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-databind-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jna-5.13.0.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-api-2.0.13.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-simple-2.0.13.jar)
+[2025-11-12 20:45:38] JAWS DLL load failed at SAAPI32: Unable to load library 'SAAPI32':
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Native library (win32-x86-64/SAAPI32.dll) not found in resource path (C:\wamp64\www\le-monde-de-lila\java-client\framework-core\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-ui\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-access\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-network\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-media\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-access-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-core-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-media-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-network-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-ui-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-annotations-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-core-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-databind-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jna-5.13.0.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-api-2.0.13.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-simple-2.0.13.jar)
+[2025-11-12 20:45:38] FSAPI DLL not available on this system.
+[2025-11-12 20:45:39] NVDA spoke text successfully.
+[2025-11-12 20:45:39] NVDA spoke text successfully.
+[2025-11-12 20:45:40] NVDA spoke text successfully.
+[2025-11-12 20:46:08] NVDA spoke text successfully.
+[2025-11-12 20:46:08] NVDA spoke text successfully.
+[2025-11-12 20:46:08] NVDA spoke text successfully.
+[2025-11-12 20:46:08] NVDA spoke text successfully.
+[2025-11-12 20:46:08] NVDA spoke text successfully.
+[2025-11-12 20:46:13] NVDA spoke text successfully.
+[2025-11-12 20:46:13] NVDA spoke text successfully.
+[2025-11-12 20:46:13] NVDA spoke text successfully.
+[2025-11-12 20:46:13] NVDA spoke text successfully.
+[2025-11-12 20:46:14] NVDA spoke text successfully.
+[2025-11-12 20:46:14] NVDA spoke text successfully.
+[2025-11-12 20:46:14] NVDA spoke text successfully.
+[2025-11-12 20:46:14] NVDA spoke text successfully.
+[2025-11-12 20:46:14] NVDA spoke text successfully.
+[2025-11-12 20:46:15] NVDA spoke text successfully.
+[2025-11-12 20:46:15] NVDA spoke text successfully.
+[2025-11-12 20:46:15] NVDA spoke text successfully.
+[2025-11-12 20:46:15] NVDA spoke text successfully.
+[2025-11-12 20:46:15] NVDA spoke text successfully.
+[2025-11-12 20:46:16] NVDA spoke text successfully.
+[2025-11-12 20:46:16] NVDA spoke text successfully.
+[2025-11-12 20:46:16] NVDA spoke text successfully.
+[2025-11-12 20:46:16] NVDA spoke text successfully.
+[2025-11-12 20:46:16] NVDA spoke text successfully.
+[2025-11-12 20:46:17] NVDA spoke text successfully.
+[2025-11-12 20:46:17] NVDA spoke text successfully.
+[2025-11-12 20:46:18] NVDA spoke text successfully.
+[2025-11-12 20:46:20] NVDA spoke text successfully.
+[2025-11-12 20:46:20] NVDA spoke text successfully.
+[2025-11-12 20:46:23] NVDA spoke text successfully.
+[2025-11-12 20:46:23] NVDA spoke text successfully.
+[2025-11-12 20:46:24] NVDA spoke text successfully.
+[2025-11-12 20:46:24] NVDA spoke text successfully.
+[2025-11-12 20:46:24] NVDA spoke text successfully.
+[2025-11-12 20:46:24] NVDA spoke text successfully.
+[2025-11-12 20:46:25] NVDA spoke text successfully.
+[2025-11-12 20:46:25] NVDA spoke text successfully.
+[2025-11-12 20:46:27] NVDA spoke text successfully.
+[2025-11-12 20:46:27] NVDA spoke text successfully.
+[2025-11-12 20:46:28] NVDA spoke text successfully.
+[2025-11-12 20:46:28] NVDA spoke text successfully.
+[2025-11-12 20:46:29] NVDA spoke text successfully.
+[2025-11-12 20:46:29] NVDA spoke text successfully.
+[2025-11-12 20:46:31] NVDA spoke text successfully.
+[2025-11-12 20:46:31] NVDA spoke text successfully.
+[2025-11-12 20:46:32] NVDA spoke text successfully.
+[2025-11-12 20:46:32] NVDA spoke text successfully.
+[2025-11-12 20:46:32] NVDA spoke text successfully.
+[2025-11-12 20:46:32] NVDA spoke text successfully.
+[2025-11-12 20:46:32] NVDA spoke text successfully.
+[2025-11-12 20:46:33] NVDA spoke text successfully.
+[2025-11-12 20:46:34] NVDA spoke text successfully.
+[2025-11-12 20:46:34] NVDA spoke text successfully.
+[2025-11-12 20:46:35] NVDA spoke text successfully.
+[2025-11-12 20:46:35] NVDA spoke text successfully.
+[2025-11-12 20:46:35] NVDA spoke text successfully.
+[2025-11-12 20:46:36] NVDA spoke text successfully.
+[2025-11-12 20:46:36] NVDA spoke text successfully.
+[2025-11-12 20:46:36] NVDA spoke text successfully.
+[2025-11-12 20:46:36] NVDA spoke text successfully.
+[2025-11-12 20:46:36] NVDA spoke text successfully.
+[2025-11-12 20:46:37] NVDA spoke text successfully.
+[2025-11-12 20:46:37] NVDA spoke text successfully.
+[2025-11-12 20:46:37] NVDA spoke text successfully.
+[2025-11-12 20:46:37] NVDA spoke text successfully.
+[2025-11-12 20:46:39] NVDA spoke text successfully.
+[2025-11-12 20:46:39] NVDA spoke text successfully.
+[2025-11-12 20:46:39] NVDA spoke text successfully.
+[2025-11-12 20:46:39] NVDA spoke text successfully.
+[2025-11-12 20:46:40] NVDA spoke text successfully.
+[2025-11-12 20:46:40] NVDA spoke text successfully.
+[2025-11-12 20:46:41] NVDA spoke text successfully.
+[2025-11-12 20:46:41] NVDA spoke text successfully.
+[2025-11-12 20:46:41] NVDA spoke text successfully.
+[2025-11-12 20:46:41] NVDA spoke text successfully.
+[2025-11-12 20:46:42] NVDA spoke text successfully.
+[2025-11-12 20:46:42] NVDA spoke text successfully.
+[2025-11-12 20:46:44] NVDA spoke text successfully.
+[2025-11-12 20:46:44] NVDA spoke text successfully.
+[2025-11-12 20:46:45] NVDA spoke text successfully.
+[2025-11-12 20:46:45] NVDA spoke text successfully.
+[2025-11-12 20:46:47] NVDA spoke text successfully.
+[2025-11-12 20:46:47] NVDA spoke text successfully.
+[2025-11-12 20:46:48] NVDA spoke text successfully.
+[2025-11-12 20:46:48] NVDA spoke text successfully.
+[2025-11-12 20:46:49] NVDA spoke text successfully.
+[2025-11-12 20:46:49] NVDA spoke text successfully.
+[2025-11-12 20:46:50] NVDA spoke text successfully.
+[2025-11-12 20:46:50] NVDA spoke text successfully.
+[2025-11-12 20:46:52] NVDA spoke text successfully.
+[2025-11-12 20:46:52] NVDA spoke text successfully.
+[2025-11-12 20:46:52] NVDA spoke text successfully.
+[2025-11-12 20:46:52] NVDA spoke text successfully.
+[2025-11-12 20:46:53] NVDA spoke text successfully.
+[2025-11-12 20:46:53] NVDA spoke text successfully.
+[2025-11-12 20:46:55] NVDA spoke text successfully.
+[2025-11-12 20:46:55] NVDA spoke text successfully.
+[2025-11-12 20:46:56] NVDA spoke text successfully.
+[2025-11-12 20:46:56] NVDA spoke text successfully.
+[2025-11-12 20:46:56] NVDA spoke text successfully.
+[2025-11-12 20:46:57] NVDA spoke text successfully.
+[2025-11-12 20:46:57] NVDA spoke text successfully.
+[2025-11-12 20:46:57] NVDA spoke text successfully.
+[2025-11-12 20:46:58] NVDA spoke text successfully.
+[2025-11-12 20:46:58] NVDA spoke text successfully.
+[2025-11-12 20:46:59] NVDA spoke text successfully.
+[2025-11-12 20:46:59] NVDA spoke text successfully.
+[2025-11-12 20:47:01] NVDA spoke text successfully.
+[2025-11-12 20:47:02] NVDA spoke text successfully.
+[2025-11-12 20:47:02] NVDA spoke text successfully.
+[2025-11-12 20:47:02] NVDA spoke text successfully.
+[2025-11-12 20:47:02] NVDA spoke text successfully.
+[2025-11-12 20:47:02] NVDA spoke text successfully.
+[2025-11-12 20:47:03] NVDA spoke text successfully.
+[2025-11-12 20:47:03] NVDA spoke text successfully.
+[2025-11-12 20:47:03] NVDA spoke text successfully.
+[2025-11-12 20:47:03] NVDA spoke text successfully.
+[2025-11-12 20:47:04] NVDA spoke text successfully.
+[2025-11-12 20:47:04] NVDA spoke text successfully.
+[2025-11-12 20:47:06] NVDA spoke text successfully.
+[2025-11-12 20:47:06] NVDA spoke text successfully.
+[2025-11-12 20:47:07] NVDA spoke text successfully.
+[2025-11-12 20:47:07] NVDA spoke text successfully.
+[2025-11-12 20:47:07] NVDA spoke text successfully.
+[2025-11-12 20:47:07] NVDA spoke text successfully.
+[2025-11-12 20:47:08] NVDA spoke text successfully.
+[2025-11-12 20:47:08] NVDA spoke text successfully.
+[2025-11-12 20:47:08] NVDA spoke text successfully.
+[2025-11-12 20:47:08] NVDA spoke text successfully.
+[2025-11-12 20:47:10] NVDA spoke text successfully.
+[2025-11-12 20:47:10] NVDA spoke text successfully.
+[2025-11-12 20:47:11] NVDA spoke text successfully.
+[2025-11-12 20:47:11] NVDA spoke text successfully.
+[2025-11-12 20:47:12] NVDA spoke text successfully.
+[2025-11-12 20:47:13] NVDA spoke text successfully.
+[2025-11-12 20:47:14] NVDA spoke text successfully.
+[2025-11-12 20:47:14] NVDA spoke text successfully.
+[2025-11-12 20:47:15] NVDA spoke text successfully.
+[2025-11-12 20:47:15] NVDA spoke text successfully.
+[2025-11-12 20:47:15] NVDA spoke text successfully.
+[2025-11-12 20:47:16] NVDA spoke text successfully.
+[2025-11-12 20:47:19] NVDA spoke text successfully.
+[2025-11-12 20:47:19] NVDA spoke text successfully.
+[2025-11-12 20:47:19] NVDA spoke text successfully.
+[2025-11-12 20:47:20] NVDA spoke text successfully.
+[2025-11-12 20:47:20] NVDA spoke text successfully.
+[2025-11-12 20:47:20] NVDA spoke text successfully.
+[2025-11-12 20:47:20] NVDA spoke text successfully.
+[2025-11-12 20:47:20] NVDA spoke text successfully.
+[2025-11-12 20:47:21] NVDA spoke text successfully.
+[2025-11-12 20:47:21] NVDA spoke text successfully.
+[2025-11-12 20:47:21] NVDA spoke text successfully.
+[2025-11-12 20:47:21] NVDA spoke text successfully.
+[2025-11-12 20:47:22] NVDA spoke text successfully.
+[2025-11-12 20:47:22] NVDA spoke text successfully.
+[2025-11-12 20:47:23] NVDA spoke text successfully.
+[2025-11-12 20:47:23] NVDA spoke text successfully.
+[2025-11-12 20:47:23] NVDA spoke text successfully.
+[2025-11-12 20:47:24] NVDA spoke text successfully.
+[2025-11-12 20:47:25] NVDA spoke text successfully.
+[2025-11-12 20:47:25] NVDA spoke text successfully.
+[2025-11-12 20:47:25] NVDA spoke text successfully.
+[2025-11-12 20:47:25] NVDA spoke text successfully.
+[2025-11-12 20:47:26] NVDA spoke text successfully.
+[2025-11-12 20:47:26] NVDA spoke text successfully.
+[2025-11-12 20:47:26] NVDA spoke text successfully.
+[2025-11-12 20:47:26] NVDA spoke text successfully.
+[2025-11-12 20:47:27] NVDA spoke text successfully.
+[2025-11-12 20:47:27] NVDA spoke text successfully.
+[2025-11-12 20:47:27] NVDA spoke text successfully.
+[2025-11-12 20:47:27] NVDA spoke text successfully.
+[2025-11-12 20:47:28] NVDA spoke text successfully.
+[2025-11-12 20:47:28] NVDA spoke text successfully.
+[2025-11-12 20:47:28] NVDA spoke text successfully.
+[2025-11-12 20:47:28] NVDA spoke text successfully.
+[2025-11-12 20:47:29] NVDA spoke text successfully.
+[2025-11-12 20:47:29] NVDA spoke text successfully.
+[2025-11-12 20:47:30] NVDA spoke text successfully.
+[2025-11-12 20:47:30] NVDA spoke text successfully.
+[2025-11-12 20:47:31] NVDA spoke text successfully.
+[2025-11-12 20:47:31] NVDA spoke text successfully.
+[2025-11-12 20:47:32] NVDA spoke text successfully.
+[2025-11-12 20:47:32] NVDA spoke text successfully.
+[2025-11-12 20:47:32] NVDA spoke text successfully.
+[2025-11-12 20:47:32] NVDA spoke text successfully.
+[2025-11-12 20:47:33] NVDA spoke text successfully.
+[2025-11-12 20:47:33] NVDA spoke text successfully.
+[2025-11-12 20:47:33] NVDA spoke text successfully.
+[2025-11-12 20:47:33] NVDA spoke text successfully.
+[2025-11-12 20:47:34] NVDA spoke text successfully.
+[2025-11-12 20:47:35] NVDA spoke text successfully.
+[2025-11-12 20:47:36] NVDA spoke text successfully.
+[2025-11-12 20:47:36] NVDA spoke text successfully.
+[2025-11-12 20:47:37] NVDA spoke text successfully.
+[2025-11-12 20:47:37] NVDA spoke text successfully.
+[2025-11-12 20:47:38] NVDA spoke text successfully.
+[2025-11-12 20:47:38] NVDA spoke text successfully.
+[2025-11-12 20:47:39] NVDA spoke text successfully.
+[2025-11-12 20:47:39] NVDA spoke text successfully.
+[2025-11-12 20:47:39] NVDA spoke text successfully.
+[2025-11-12 20:47:40] NVDA spoke text successfully.
+[2025-11-12 20:47:40] NVDA spoke text successfully.
+[2025-11-12 20:47:41] NVDA spoke text successfully.
+[2025-11-12 20:47:41] NVDA spoke text successfully.
+[2025-11-12 20:47:41] NVDA spoke text successfully.
+[2025-11-12 20:47:42] NVDA spoke text successfully.
+[2025-11-12 20:47:42] NVDA spoke text successfully.
+[2025-11-12 20:47:43] NVDA spoke text successfully.
+[2025-11-12 20:47:43] NVDA spoke text successfully.
+[2025-11-12 20:47:43] NVDA spoke text successfully.
+[2025-11-12 20:47:44] NVDA spoke text successfully.
+[2025-11-12 20:47:45] NVDA spoke text successfully.
+[2025-11-12 20:47:45] NVDA spoke text successfully.
+[2025-11-12 20:47:46] NVDA spoke text successfully.
+[2025-11-12 20:47:46] NVDA spoke text successfully.
+[2025-11-12 20:47:47] NVDA spoke text successfully.
+[2025-11-12 20:47:47] NVDA spoke text successfully.
+[2025-11-12 20:47:47] NVDA spoke text successfully.
+[2025-11-12 20:47:47] NVDA spoke text successfully.
+[2025-11-12 20:47:48] NVDA spoke text successfully.
+[2025-11-12 20:47:48] NVDA spoke text successfully.
+[2025-11-12 20:47:48] NVDA spoke text successfully.
+[2025-11-12 20:47:48] NVDA spoke text successfully.
+[2025-11-12 20:47:48] NVDA spoke text successfully.
+[2025-11-12 20:47:49] NVDA spoke text successfully.
+[2025-11-12 20:47:49] NVDA spoke text successfully.
+[2025-11-12 20:47:50] NVDA spoke text successfully.
+[2025-11-12 20:47:50] NVDA spoke text successfully.
+[2025-11-12 20:47:50] NVDA spoke text successfully.
+[2025-11-12 20:47:50] NVDA spoke text successfully.
+[2025-11-12 20:47:50] NVDA spoke text successfully.
+[2025-11-12 20:47:51] NVDA spoke text successfully.
+[2025-11-12 20:47:51] NVDA spoke text successfully.
+[2025-11-12 20:47:52] NVDA spoke text successfully.
+[2025-11-12 20:47:53] NVDA spoke text successfully.
+[2025-11-12 20:47:54] NVDA spoke text successfully.
+[2025-11-12 20:47:55] NVDA spoke text successfully.
+[2025-11-12 20:47:55] NVDA spoke text successfully.
+[2025-11-12 20:47:55] NVDA spoke text successfully.
+[2025-11-12 20:47:56] NVDA spoke text successfully.
+[2025-11-12 20:47:56] NVDA spoke text successfully.
+[2025-11-12 20:47:57] NVDA spoke text successfully.
+[2025-11-12 20:47:57] NVDA spoke text successfully.
+[2025-11-12 20:47:58] NVDA spoke text successfully.
+[2025-11-12 20:47:58] NVDA spoke text successfully.
+[2025-11-12 20:47:59] NVDA spoke text successfully.
+[2025-11-12 20:47:59] NVDA spoke text successfully.
+[2025-11-12 20:48:00] NVDA spoke text successfully.
+[2025-11-12 20:48:00] NVDA spoke text successfully.
+[2025-11-12 20:48:01] NVDA spoke text successfully.
+[2025-11-12 20:48:01] NVDA spoke text successfully.
+[2025-11-12 20:48:01] NVDA spoke text successfully.
+[2025-11-12 20:48:02] NVDA spoke text successfully.
+[2025-11-12 20:48:02] NVDA spoke text successfully.
+[2025-11-12 20:48:02] NVDA spoke text successfully.
+[2025-11-12 20:48:06] NVDA spoke text successfully.
+[2025-11-12 20:48:07] NVDA spoke text successfully.
+[2025-11-12 20:48:08] NVDA spoke text successfully.
+[2025-11-12 20:48:08] NVDA spoke text successfully.
+[2025-11-12 20:48:08] NVDA spoke text successfully.
+[2025-11-12 20:48:08] NVDA spoke text successfully.
+[2025-11-12 20:48:08] NVDA spoke text successfully.
+[2025-11-12 20:48:09] NVDA spoke text successfully.
+[2025-11-12 20:48:09] NVDA spoke text successfully.
+[2025-11-12 20:48:09] NVDA spoke text successfully.
+[2025-11-12 20:48:09] NVDA spoke text successfully.
+[2025-11-12 20:48:10] NVDA spoke text successfully.
+[2025-11-12 20:48:12] NVDA spoke text successfully.
+[2025-11-12 20:48:13] NVDA spoke text successfully.
+[2025-11-12 20:48:13] NVDA spoke text successfully.
+[2025-11-12 20:48:13] NVDA spoke text successfully.
+[2025-11-12 20:48:16] NVDA spoke text successfully.
+[2025-11-12 20:48:16] NVDA spoke text successfully.
+[2025-11-12 20:48:16] NVDA spoke text successfully.
+[2025-11-12 20:48:16] NVDA spoke text successfully.
+[2025-11-12 20:48:16] NVDA spoke text successfully.
+[2025-11-12 20:48:17] NVDA spoke text successfully.
+[2025-11-12 20:48:17] NVDA spoke text successfully.
+[2025-11-12 20:48:17] NVDA spoke text successfully.
+[2025-11-12 20:48:17] NVDA spoke text successfully.
+[2025-11-12 20:48:17] NVDA spoke text successfully.
+[2025-11-12 20:48:18] NVDA spoke text successfully.
+[2025-11-12 20:48:18] NVDA spoke text successfully.
+[2025-11-12 20:48:18] NVDA spoke text successfully.
+[2025-11-12 20:48:18] NVDA spoke text successfully.
+[2025-11-12 20:48:19] NVDA spoke text successfully.
+[2025-11-12 20:48:20] NVDA spoke text successfully.
+[2025-11-12 20:48:20] NVDA spoke text successfully.
+[2025-11-12 20:48:20] NVDA spoke text successfully.
+[2025-11-12 20:48:20] NVDA spoke text successfully.
+[2025-11-12 20:48:21] NVDA spoke text successfully.
+[2025-11-12 20:48:21] NVDA spoke text successfully.
+[2025-11-12 20:48:21] NVDA spoke text successfully.
+[2025-11-12 20:48:21] NVDA spoke text successfully.
+[2025-11-12 20:48:21] NVDA spoke text successfully.
+[2025-11-12 20:48:22] NVDA spoke text successfully.
+[2025-11-12 20:48:23] NVDA spoke text successfully.
+[2025-11-12 20:48:23] NVDA spoke text successfully.
+[2025-11-12 20:48:23] NVDA spoke text successfully.
+[2025-11-12 20:48:23] NVDA spoke text successfully.
+[2025-11-12 20:48:23] NVDA spoke text successfully.
+[2025-11-12 20:48:24] NVDA spoke text successfully.
+[2025-11-12 20:48:24] NVDA spoke text successfully.
+[2025-11-12 20:48:26] NVDA spoke text successfully.
+[2025-11-12 20:48:26] NVDA spoke text successfully.
+[2025-11-12 20:48:26] NVDA spoke text successfully.
+[2025-11-12 20:48:27] NVDA spoke text successfully.
+[2025-11-12 20:48:27] NVDA spoke text successfully.
+[2025-11-12 20:48:27] NVDA spoke text successfully.
+[2025-11-12 20:48:28] NVDA spoke text successfully.
+[2025-11-12 20:48:28] NVDA spoke text successfully.
+[2025-11-12 20:48:28] NVDA spoke text successfully.
+[2025-11-12 20:48:29] NVDA spoke text successfully.
+[2025-11-12 20:48:29] NVDA spoke text successfully.
+[2025-11-12 20:48:29] NVDA spoke text successfully.
+[2025-11-12 20:48:30] NVDA spoke text successfully.
+[2025-11-12 20:48:31] NVDA spoke text successfully.
+[2025-11-12 20:48:31] NVDA spoke text successfully.
+[2025-11-12 20:48:31] NVDA spoke text successfully.
+[2025-11-12 20:48:33] NVDA spoke text successfully.
+[2025-11-12 20:48:33] NVDA spoke text successfully.
+[2025-11-12 20:48:34] NVDA spoke text successfully.
+[2025-11-12 20:48:35] NVDA spoke text successfully.
+[2025-11-12 20:48:36] NVDA spoke text successfully.
+[2025-11-12 20:48:37] NVDA spoke text successfully.
+[2025-11-12 20:48:37] NVDA spoke text successfully.
+[2025-11-12 20:48:37] NVDA spoke text successfully.
+[2025-11-12 20:48:37] NVDA spoke text successfully.
+[2025-11-12 20:48:38] NVDA spoke text successfully.
+[2025-11-12 20:48:38] NVDA spoke text successfully.
+[2025-11-12 20:48:38] NVDA spoke text successfully.
+[2025-11-12 20:48:39] NVDA spoke text successfully.
+[2025-11-12 20:48:39] NVDA spoke text successfully.
+[2025-11-12 20:48:40] NVDA spoke text successfully.
+[2025-11-12 20:48:40] NVDA spoke text successfully.
+[2025-11-12 20:48:40] NVDA spoke text successfully.
+[2025-11-12 20:48:40] NVDA spoke text successfully.
+[2025-11-12 20:48:42] NVDA spoke text successfully.
+[2025-11-12 20:48:42] NVDA spoke text successfully.
+[2025-11-12 20:48:43] NVDA spoke text successfully.
+[2025-11-12 20:48:43] NVDA spoke text successfully.
+[2025-11-12 20:48:44] NVDA spoke text successfully.
+[2025-11-12 20:48:44] NVDA spoke text successfully.
+[2025-11-12 20:48:44] NVDA spoke text successfully.
+[2025-11-12 20:48:44] NVDA spoke text successfully.
+[2025-11-12 20:48:45] NVDA spoke text successfully.
+[2025-11-12 20:48:45] NVDA spoke text successfully.
+[2025-11-12 20:48:45] NVDA spoke text successfully.
+[2025-11-12 20:48:45] NVDA spoke text successfully.
+[2025-11-12 20:48:46] NVDA spoke text successfully.
+[2025-11-12 20:48:46] NVDA spoke text successfully.
+[2025-11-12 20:48:46] NVDA spoke text successfully.
+[2025-11-12 20:48:46] NVDA spoke text successfully.
+[2025-11-12 20:48:47] NVDA spoke text successfully.
+[2025-11-12 20:48:47] NVDA spoke text successfully.
+[2025-11-12 20:48:48] NVDA spoke text successfully.
+[2025-11-12 20:48:48] NVDA spoke text successfully.
+[2025-11-12 20:48:48] NVDA spoke text successfully.
+[2025-11-12 20:48:48] NVDA spoke text successfully.
+[2025-11-12 20:48:48] NVDA spoke text successfully.
+[2025-11-12 20:48:54] NVDA spoke text successfully.
+[2025-11-12 20:48:54] NVDA spoke text successfully.
+[2025-11-12 20:48:54] NVDA spoke text successfully.
+[2025-11-12 20:48:54] NVDA spoke text successfully.
+[2025-11-12 20:48:54] NVDA spoke text successfully.
+[2025-11-12 20:48:55] NVDA spoke text successfully.
+[2025-11-12 20:48:55] NVDA spoke text successfully.
+[2025-11-12 20:48:55] NVDA spoke text successfully.
+[2025-11-12 20:48:55] NVDA spoke text successfully.
+[2025-11-12 20:48:55] NVDA spoke text successfully.
+[2025-11-12 20:48:56] NVDA spoke text successfully.
+[2025-11-12 20:48:56] NVDA spoke text successfully.
+[2025-11-12 20:48:56] NVDA spoke text successfully.
+[2025-11-12 20:48:56] NVDA spoke text successfully.
+[2025-11-12 20:48:57] NVDA spoke text successfully.
+[2025-11-12 20:48:57] NVDA spoke text successfully.
+[2025-11-12 20:48:57] NVDA spoke text successfully.
+[2025-11-12 20:48:57] NVDA spoke text successfully.
+[2025-11-12 20:48:57] NVDA spoke text successfully.
+[2025-11-12 20:48:58] NVDA spoke text successfully.
+[2025-11-12 20:49:00] NVDA spoke text successfully.
+[2025-11-12 20:49:00] NVDA spoke text successfully.
+[2025-11-12 20:49:00] NVDA spoke text successfully.
+[2025-11-12 20:49:02] NVDA spoke text successfully.
+[2025-11-12 20:49:02] NVDA spoke text successfully.
+[2025-11-12 20:49:03] NVDA spoke text successfully.
+[2025-11-12 20:49:03] NVDA spoke text successfully.
+[2025-11-12 20:49:03] NVDA spoke text successfully.
+[2025-11-12 20:49:04] NVDA spoke text successfully.
+[2025-11-12 20:49:05] NVDA spoke text successfully.
+[2025-11-12 20:49:05] NVDA spoke text successfully.
+[2025-11-12 20:49:05] NVDA spoke text successfully.
+[2025-11-12 20:49:08] NVDA spoke text successfully.
+[2025-11-12 20:49:08] NVDA spoke text successfully.
+[2025-11-12 20:49:09] NVDA spoke text successfully.
+[2025-11-12 20:49:09] NVDA spoke text successfully.
+[2025-11-12 20:49:09] NVDA spoke text successfully.
+[2025-11-12 20:49:09] NVDA spoke text successfully.
+[2025-11-12 20:49:10] NVDA spoke text successfully.
+[2025-11-12 20:49:10] NVDA spoke text successfully.
+[2025-11-12 20:49:10] NVDA spoke text successfully.
+[2025-11-12 20:49:10] NVDA spoke text successfully.
+[2025-11-12 20:49:10] NVDA spoke text successfully.
+[2025-11-12 20:49:11] NVDA spoke text successfully.
+[2025-11-12 20:49:11] NVDA spoke text successfully.
+[2025-11-12 20:49:11] NVDA spoke text successfully.
+[2025-11-12 20:49:11] NVDA spoke text successfully.
+[2025-11-12 20:49:11] NVDA spoke text successfully.
+[2025-11-12 20:49:12] NVDA spoke text successfully.
+[2025-11-12 20:49:12] NVDA spoke text successfully.
+[2025-11-12 20:49:40] Attempting to load NVDA library from C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\nvdaControllerClient.dll
+[2025-11-12 20:49:40] NVDA controller client API not available, trying controller API: Error looking up function 'nvdaControllerClient_testIfRunning': La procédure spécifiée est introuvable.
+
+[2025-11-12 20:49:40] Detected NVDA controller API.
+[2025-11-12 20:49:40] NVDA controller bridge initialised successfully (CONTROLLER).
+[2025-11-12 20:49:40] JAWS DLL load failed at C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\saapi32.dll: Unable to load library 'C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\saapi32.dll':
+%1 n’est pas une application Win32 valide.
+
+%1 n’est pas une application Win32 valide.
+
+Native library (win32-x86-64/C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\saapi32.dll) not found in resource path (C:\wamp64\www\le-monde-de-lila\java-client\framework-core\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-ui\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-access\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-network\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-media\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-access-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-core-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-media-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-network-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-ui-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-annotations-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-core-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-databind-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jna-5.13.0.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-api-2.0.13.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-simple-2.0.13.jar)
+[2025-11-12 20:49:40] JAWS DLL load failed at C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\SAAPI32.dll: Unable to load library 'C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\SAAPI32.dll':
+%1 n’est pas une application Win32 valide.
+
+%1 n’est pas une application Win32 valide.
+
+Native library (win32-x86-64/C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\SAAPI32.dll) not found in resource path (C:\wamp64\www\le-monde-de-lila\java-client\framework-core\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-ui\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-access\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-network\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-media\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-access-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-core-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-media-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-network-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-ui-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-annotations-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-core-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-databind-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jna-5.13.0.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-api-2.0.13.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-simple-2.0.13.jar)
+[2025-11-12 20:49:40] JAWS DLL load failed at fsapi32: Unable to load library 'fsapi32':
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Native library (win32-x86-64/fsapi32.dll) not found in resource path (C:\wamp64\www\le-monde-de-lila\java-client\framework-core\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-ui\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-access\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-network\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-media\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-access-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-core-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-media-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-network-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-ui-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-annotations-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-core-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-databind-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jna-5.13.0.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-api-2.0.13.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-simple-2.0.13.jar)
+[2025-11-12 20:49:40] JAWS DLL load failed at SAAPI32: Unable to load library 'SAAPI32':
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Native library (win32-x86-64/SAAPI32.dll) not found in resource path (C:\wamp64\www\le-monde-de-lila\java-client\framework-core\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-ui\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-access\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-network\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-media\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-access-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-core-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-media-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-network-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-ui-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-annotations-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-core-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-databind-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jna-5.13.0.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-api-2.0.13.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-simple-2.0.13.jar)
+[2025-11-12 20:49:40] FSAPI DLL not available on this system.
+[2025-11-12 20:49:41] NVDA spoke text successfully.
+[2025-11-12 20:49:41] NVDA spoke text successfully.
+[2025-11-12 20:49:41] NVDA spoke text successfully.
+[2025-11-12 20:51:38] NVDA spoke text successfully.
+[2025-11-12 20:51:39] NVDA spoke text successfully.
+[2025-11-12 20:51:39] NVDA spoke text successfully.
+[2025-11-12 20:51:39] NVDA spoke text successfully.
+[2025-11-12 20:51:39] NVDA spoke text successfully.
+[2025-11-12 20:51:39] NVDA spoke text successfully.
+[2025-11-12 20:51:41] NVDA spoke text successfully.
+[2025-11-12 20:51:41] NVDA spoke text successfully.
+[2025-11-12 20:51:42] NVDA spoke text successfully.
+[2025-11-12 20:51:42] NVDA spoke text successfully.
+[2025-11-12 20:51:43] NVDA spoke text successfully.
+[2025-11-12 20:51:43] NVDA spoke text successfully.
+[2025-11-12 20:51:45] NVDA spoke text successfully.
+[2025-11-12 20:51:46] NVDA spoke text successfully.
+[2025-11-12 20:51:47] NVDA spoke text successfully.
+[2025-11-12 20:51:47] NVDA spoke text successfully.
+[2025-11-12 20:51:48] NVDA spoke text successfully.
+[2025-11-12 20:51:48] NVDA spoke text successfully.
+[2025-11-12 20:51:48] NVDA spoke text successfully.
+[2025-11-12 20:51:48] NVDA spoke text successfully.
+[2025-11-12 20:51:48] NVDA spoke text successfully.
+[2025-11-12 20:51:49] NVDA spoke text successfully.
+[2025-11-12 20:51:49] NVDA spoke text successfully.
+[2025-11-12 20:51:49] NVDA spoke text successfully.
+[2025-11-12 20:51:50] NVDA spoke text successfully.
+[2025-11-12 20:51:52] NVDA spoke text successfully.
+[2025-11-12 20:51:54] NVDA spoke text successfully.
+[2025-11-12 20:51:57] NVDA spoke text successfully.
+[2025-11-12 20:51:57] NVDA spoke text successfully.
+[2025-11-12 20:51:57] NVDA spoke text successfully.
+[2025-11-12 20:52:01] NVDA spoke text successfully.
+[2025-11-12 20:52:06] NVDA spoke text successfully.
+[2025-11-12 20:52:09] NVDA spoke text successfully.
+[2025-11-12 20:52:09] NVDA spoke text successfully.
+[2025-11-12 20:52:10] NVDA spoke text successfully.
+[2025-11-12 20:52:15] NVDA spoke text successfully.
+[2025-11-12 20:52:16] NVDA spoke text successfully.
+[2025-11-12 20:52:17] NVDA spoke text successfully.
+[2025-11-12 20:52:18] NVDA spoke text successfully.
+[2025-11-12 20:52:19] NVDA spoke text successfully.
+[2025-11-12 20:52:20] NVDA spoke text successfully.
+[2025-11-12 20:52:20] NVDA spoke text successfully.
+[2025-11-12 20:52:20] NVDA spoke text successfully.
+[2025-11-12 20:52:21] NVDA spoke text successfully.
+[2025-11-12 20:52:21] NVDA spoke text successfully.
+[2025-11-12 20:52:21] NVDA spoke text successfully.
+[2025-11-12 20:52:23] NVDA spoke text successfully.
+[2025-11-12 20:52:24] NVDA spoke text successfully.
+[2025-11-12 20:52:25] NVDA spoke text successfully.
+[2025-11-12 20:52:25] NVDA spoke text successfully.
+[2025-11-12 20:52:26] NVDA spoke text successfully.
+[2025-11-12 20:52:26] NVDA spoke text successfully.
+[2025-11-12 20:52:26] NVDA spoke text successfully.
+[2025-11-12 20:52:26] NVDA spoke text successfully.
+[2025-11-12 20:52:27] NVDA spoke text successfully.
+[2025-11-12 20:52:28] NVDA spoke text successfully.
+[2025-11-12 20:52:28] NVDA spoke text successfully.
+[2025-11-12 20:52:30] NVDA spoke text successfully.
+[2025-11-12 20:52:30] NVDA spoke text successfully.
+[2025-11-12 20:52:31] NVDA spoke text successfully.
+[2025-11-12 20:52:32] NVDA spoke text successfully.
+[2025-11-12 20:52:32] NVDA spoke text successfully.
+[2025-11-12 20:52:34] NVDA spoke text successfully.
+[2025-11-12 20:52:34] NVDA spoke text successfully.
+[2025-11-12 20:52:35] NVDA spoke text successfully.
+[2025-11-12 20:52:35] NVDA spoke text successfully.
+[2025-11-12 20:52:35] NVDA spoke text successfully.
+[2025-11-12 20:52:35] NVDA spoke text successfully.
+[2025-11-12 20:52:35] NVDA spoke text successfully.
+[2025-11-12 20:52:36] NVDA spoke text successfully.
+[2025-11-12 20:52:36] NVDA spoke text successfully.
+[2025-11-12 20:52:36] NVDA spoke text successfully.
+[2025-11-12 20:52:38] NVDA spoke text successfully.
+[2025-11-12 20:52:38] NVDA spoke text successfully.
+[2025-11-12 20:52:39] NVDA spoke text successfully.
+[2025-11-12 20:52:39] NVDA spoke text successfully.
+[2025-11-12 20:52:39] NVDA spoke text successfully.
+[2025-11-12 20:52:39] NVDA spoke text successfully.
+[2025-11-12 20:52:40] NVDA spoke text successfully.
+[2025-11-12 20:52:40] NVDA spoke text successfully.

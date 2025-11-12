@@ -7,6 +7,9 @@ import com.lemondelila.client.gamelogic.missionnemesis.model.NemesisSessionStore
 import com.lemondelila.client.gamelogic.missionnemesis.model.NemesisSpecs;
 import com.lemondelila.client.gamelogic.missionnemesis.model.NemesisState;
 import com.lemondelila.client.gamelogic.missionnemesis.model.ShipPlacement;
+import com.lemondelila.framework.access.game.AccessibilityService;
+import com.lemondelila.framework.access.game.GameHistoryTracker;
+import com.lemondelila.framework.access.shortcut.AccessibleShortcutRegistry;
 import com.lemondelila.framework.core.di.Inject;
 import com.lemondelila.framework.ui.screen.Screen;
 import com.lemondelila.framework.ui.screen.ScreenContext;
@@ -14,13 +17,13 @@ import com.lemondelila.framework.ui.screen.ScreenManager;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
-import javax.swing.InputMap;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.GridLayout;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +40,8 @@ public final class NemesisScreen extends JPanel implements Screen {
     }
 
     private final NemesisController controller;
+    private final AccessibilityService accessibilityService;
+    private final AccessibleShortcutRegistry shortcutRegistry;
 
     private ScreenManager screenManager;
     private NemesisSession currentSession;
@@ -45,7 +50,7 @@ public final class NemesisScreen extends JPanel implements Screen {
     private final NemesisSetupPanel setupPanel;
     private final NemesisPlacementPanel placementPanel = new NemesisPlacementPanel();
     private final NemesisLogPanel logPanel = new NemesisLogPanel();
-    private final NemesisFooterPanel footerPanel = new NemesisFooterPanel();
+    private final NemesisFooterPanel footerPanel;
     private final NemesisGridPanel ownGrid;
     private final NemesisGridPanel enemyGrid;
     private final CardLayout mainLayout = new CardLayout();
@@ -58,12 +63,17 @@ public final class NemesisScreen extends JPanel implements Screen {
 
     @Inject
     public NemesisScreen(NemesisController controller,
-                         NemesisSessionStore sessionStore) {
+                         NemesisSessionStore sessionStore,
+                         AccessibilityService accessibilityService,
+                         AccessibleShortcutRegistry shortcutRegistry) {
         this.controller = Objects.requireNonNull(controller, "controller");
+        this.accessibilityService = Objects.requireNonNull(accessibilityService, "accessibilityService");
+        this.shortcutRegistry = Objects.requireNonNull(shortcutRegistry, "shortcutRegistry");
         Objects.requireNonNull(sessionStore, "sessionStore");
         this.ownGrid = new NemesisGridPanel(true, coordinate -> {});
         this.enemyGrid = new NemesisGridPanel(false, this::fireAt);
         this.setupPanel = new NemesisSetupPanel(new int[]{NemesisSpecs.BOARD_SIZE}, this::handleStartRequested);
+        this.footerPanel = new NemesisFooterPanel(accessibilityService);
 
         enemyGrid.setFireSelectionListener(this::updateSelectionStatus);
         buildUi();
@@ -99,46 +109,58 @@ public final class NemesisScreen extends JPanel implements Screen {
     }
 
     private void configureKeyMap() {
-        InputMap inputMap = getInputMap(WHEN_IN_FOCUSED_WINDOW);
-        inputMap.put(KeyStroke.getKeyStroke("ESCAPE"), "nemesis-reset");
-        inputMap.put(KeyStroke.getKeyStroke("F5"), "nemesis-refresh");
-
-        getActionMap().put("nemesis-reset", new AbstractAction() {
-            @Override
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                controller.reset();
-                showSetup();
-                setStatus("Partie reinitialisee.");
-            }
+        shortcutRegistry.clear();
+        registerShortcut("ESCAPE", "nemesis-reset", "Échap : revenir à la configuration.", e -> {
+            controller.reset();
+            showSetup();
+            setStatus("Partie réinitialisée.");
         });
 
-        getActionMap().put("nemesis-refresh", new AbstractAction() {
-            @Override
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                if (currentSession == null) {
-                    return;
-                }
-                setStatus("Rafraichissement de l'etat en cours...");
-                controller.refresh().whenComplete((session, error) ->
-                        SwingUtilities.invokeLater(() -> {
-                            if (error != null) {
-                                setStatus("Impossible de rafraichir l'etat de la partie.");
-                            } else {
-                                setStatus("Etat mis a jour.");
-                            }
-                        })
-                );
+        registerShortcut("F5", "nemesis-refresh", "F5 : rafraîchir l’état de la partie.", e -> {
+            if (currentSession == null) {
+                return;
             }
+            setStatus("Rafraîchissement de l’état en cours...");
+            controller.refresh().whenComplete((session, error) ->
+                    SwingUtilities.invokeLater(() -> {
+                        if (error != null) {
+                            setStatus("Impossible de rafraîchir l’état de la partie.");
+                        } else {
+                            setStatus("État mis à jour.");
+                        }
+                    })
+            );
         });
+        shortcutRegistry.applyTo(this);
     }
+    private void registerShortcut(String keyStroke, String actionId, String description, java.util.function.Consumer<java.awt.event.ActionEvent> handler) {
+        registerShortcut(KeyStroke.getKeyStroke(keyStroke), actionId, description, handler);
+    }
+
+    private void registerShortcut(KeyStroke stroke, String actionId, String description, java.util.function.Consumer<java.awt.event.ActionEvent> handler) {
+        if (stroke == null || handler == null) {
+            return;
+        }
+        getInputMap(WHEN_IN_FOCUSED_WINDOW).put(stroke, actionId);
+        getActionMap().put(actionId, new AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                handler.accept(e);
+            }
+        });
+        if (description != null && !description.isBlank()) {
+            shortcutRegistry.register(stroke, description);
+        }
+    }
+
 
     private void handleStartRequested(NemesisSetupPanel.Configuration configuration) {
         this.lastConfiguration = configuration;
-        setStatus("Creation de la partie Mission Nemesis...");
+        setStatus("Création de la partie Mission Nemesis...");
         controller.startNewGame().whenComplete((session, error) ->
                 SwingUtilities.invokeLater(() -> {
                     if (error != null) {
-                        setStatus("Impossible de creer la partie Mission Nemesis.");
+                        setStatus("Impossible de créer la partie Mission Nemesis.");
                         return;
                     }
                     currentSession = session;
@@ -170,7 +192,7 @@ public final class NemesisScreen extends JPanel implements Screen {
                         state = ViewState.MANUAL_PLACEMENT;
                         startManualPlacement();
                     } else {
-                        setStatus("Flotte placee automatiquement.");
+                        setStatus("Flotte placée automatiquement.");
                         state = ViewState.ACTIVE_GAME;
                         placementPanel.showCombatHelp();
                     }
@@ -185,10 +207,10 @@ public final class NemesisScreen extends JPanel implements Screen {
                 placements -> controller.placeFleet(placements).whenComplete((session, error) ->
                         SwingUtilities.invokeLater(() -> {
                             if (error != null) {
-                                setStatus("Impossible d'enregistrer le placement.");
+                                setStatus("Impossible d’enregistrer le placement.");
                                 showSetup();
                             } else {
-                                setStatus("Placement transmis. Preparation du combat...");
+                                setStatus("Placement transmis. Préparation du combat...");
                                 state = ViewState.ACTIVE_GAME;
                                 placementPanel.showCombatHelp();
                             }
@@ -198,12 +220,12 @@ public final class NemesisScreen extends JPanel implements Screen {
                 this::setStatus
         );
         placementOrchestrator.start();
-        setStatus("Placement manuel : fleches pour naviguer, Entree pour valider.");
+        setStatus("Placement manuel : flèches pour naviguer, Entrée pour valider.");
     }
 
     private void cancelManualPlacement() {
         controller.reset();
-        setStatus("Placement annule. Retour a la configuration.");
+        setStatus("Placement annulé. Retour à la configuration.");
         showSetup();
     }
 
@@ -218,7 +240,7 @@ public final class NemesisScreen extends JPanel implements Screen {
                     if (error != null) {
                         setStatus("Tir impossible.");
                     } else {
-                        setStatus("Tir envoye.");
+                        setStatus("Tir envoyé.");
                     }
                 })
         );
@@ -247,21 +269,21 @@ public final class NemesisScreen extends JPanel implements Screen {
         footerPanel.showRound(session.state().round());
         String phase = session.isPlacementRequired()
                 ? "Placement"
-                : session.finished() ? "TerminAe" : "Combat";
+                : session.finished() ? "Terminée" : "Combat";
         footerPanel.showPhase(phase);
 
         if (session.finished()) {
             session.score().ifPresentOrElse(score -> {
                 if (score.winnerId() != null) {
-                    setStatus("Partie terminee. Vainqueur : Joueur " + score.winnerId());
+                    setStatus("Partie terminée. Vainqueur : Joueur " + score.winnerId());
                 } else {
-                    setStatus("Partie terminee. Egalite.");
+                    setStatus("Partie terminée. Égalité.");
                 }
-            }, () -> setStatus("Partie terminee."));
+            }, () -> setStatus("Partie terminée."));
         } else if (session.isPlacementRequired() && state != ViewState.MANUAL_PLACEMENT) {
             setStatus("Attente du placement adverse...");
         } else if (session.isAwaitingCombatTurn()) {
-            setStatus("Choisissez une case a l'aide des fleches puis validez avec Entree.");
+            setStatus("Choisissez une case à l’aide des flèches puis validez avec Entrée.");
             placementPanel.showCombatHelp();
         } else {
             setStatus("Attente du tour adverse...");
@@ -301,7 +323,7 @@ public final class NemesisScreen extends JPanel implements Screen {
     }
 
     private void updateSelectionStatus(GridCoordinate coordinate) {
-        setStatus("Cible : " + formatCoordinateHuman(coordinate) + ". Entree pour tirer.");
+        setStatus("Cible : " + formatCoordinateHuman(coordinate) + ". Entrée pour tirer.");
     }
 
     private String formatCoordinateHuman(GridCoordinate coordinate) {
@@ -325,6 +347,7 @@ public final class NemesisScreen extends JPanel implements Screen {
 
     private void setStatus(String text) {
         footerPanel.showStatus(text);
+        accessibilityService.announceCustom(footerPanel, text);
     }
 
     @Override
@@ -350,6 +373,5 @@ public final class NemesisScreen extends JPanel implements Screen {
         this.screenManager = null;
     }
 }
-
 
 

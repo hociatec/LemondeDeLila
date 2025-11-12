@@ -9,7 +9,6 @@ import javax.accessibility.AccessibleContext;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import java.text.Normalizer;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -24,6 +23,7 @@ final class PanierExpressVoiceFeedback {
     private final Supplier<NarrationQueue> narrationQueueSupplier;
     private final SoundEffectManager sounds;
     private final Supplier<JComponent> componentSupplier;
+    private boolean accessibleToggle;
 
     private Integer lastAnnouncedRoll = null;
     private int lastAnnouncedPosition = -1;
@@ -51,6 +51,7 @@ final class PanierExpressVoiceFeedback {
         logInitialised = false;
         lastLogSize = 0;
         turnReminderCounter = 0;
+        accessibleToggle = false;
     }
 
     void announceStatus(String status, boolean speakNow) {
@@ -111,62 +112,20 @@ final class PanierExpressVoiceFeedback {
     String announceTurnReminder(PanierExpressState state, boolean yourTurn) {
         StringBuilder message = new StringBuilder();
         if (yourTurn) {
-            message.append("C'est votre tour.");
+            message.append("C’est votre tour.");
         } else {
             String player = state.currentPlayer().map(PanierExpressState.Player::username).orElse("un joueur");
-            message.append("C'est au tour de ").append(player).append('.');
+            message.append("C’est au tour de ").append(player).append('.');
         }
         if (state.lastRoll() != null) {
             message.append(" Dernier dé : ").append(state.lastRoll()).append('.');
         }
         turnReminderCounter++;
-        narrate(message.toString());
         return message.toString();
     }
 
     int turnReminderCounter() {
         return turnReminderCounter;
-    }
-
-    String announceBasket(PanierExpressState.Player self) {
-        if (self == null) {
-            String message = "Connexion requise pour consulter votre panier.";
-            narrate(message);
-            return message;
-        }
-        int collected = self.basket().size();
-        int total = self.shoppingList().size();
-        List<String> missing = computeMissingItems(self);
-        List<String> inventory = self.inventory();
-
-        StringBuilder builder = new StringBuilder();
-        builder.append("Panier : ")
-                .append(collected)
-                .append(" sur ")
-                .append(total)
-                .append(" article");
-        if (total != 1) {
-            builder.append('s');
-        }
-        builder.append('.');
-
-        if (!missing.isEmpty()) {
-            builder.append(" Il vous reste à trouver : ").append(String.join(", ", missing)).append('.');
-        } else if (total > 0) {
-            builder.append(" Votre liste est complète.");
-        }
-
-        if (inventory != null && !inventory.isEmpty()) {
-            builder.append(" Inventaire pour échanges : ").append(String.join(", ", inventory)).append('.');
-        }
-
-        if (self.readyForCheckout()) {
-            builder.append(" Vous êtes prêt pour la caisse.");
-        }
-
-        String message = builder.toString();
-        narrate(message);
-        return message;
     }
 
     private void announceRoll(Integer currentRoll) {
@@ -212,24 +171,6 @@ final class PanierExpressVoiceFeedback {
         narrate(builder.toString());
         lastAnnouncedPosition = position;
         lastAnnouncedCollected = collected;
-    }
-
-    private List<String> computeMissingItems(PanierExpressState.Player self) {
-        List<String> shopping = self.shoppingList();
-        if (shopping == null || shopping.isEmpty()) {
-            return List.of();
-        }
-        List<String> basket = self.basket() == null ? List.of() : self.basket();
-        List<String> missing = new ArrayList<>();
-        for (String item : shopping) {
-            if (item == null) {
-                continue;
-            }
-            if (!basket.contains(item)) {
-                missing.add(item);
-            }
-        }
-        return missing;
     }
 
     private String extractTileNarration(List<PanierExpressState.LogEntry> logs,
@@ -325,11 +266,22 @@ final class PanierExpressVoiceFeedback {
         if (context == null) {
             return;
         }
-        Runnable fire = () -> context.firePropertyChange(
-                AccessibleContext.ACCESSIBLE_TEXT_PROPERTY,
-                null,
-                message
-        );
+        String payload = accessibleToggle ? message + "\u200B" : message;
+        accessibleToggle = !accessibleToggle;
+        Runnable fire = () -> {
+            context.setAccessibleDescription("");
+            context.firePropertyChange(
+                    AccessibleContext.ACCESSIBLE_TEXT_PROPERTY,
+                    null,
+                    ""
+            );
+            context.setAccessibleDescription(payload);
+            context.firePropertyChange(
+                    AccessibleContext.ACCESSIBLE_TEXT_PROPERTY,
+                    null,
+                    payload
+            );
+        };
         if (SwingUtilities.isEventDispatchThread()) {
             fire.run();
         } else {

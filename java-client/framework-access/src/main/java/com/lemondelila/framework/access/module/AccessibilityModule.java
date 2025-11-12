@@ -4,6 +4,7 @@ import com.lemondelila.framework.access.FocusHighlighter;
 import com.lemondelila.framework.access.NarrationQueue;
 import com.lemondelila.framework.access.ScreenReaderAnnouncer;
 import com.lemondelila.framework.access.shortcut.AccessibleShortcutRegistry;
+import com.lemondelila.framework.access.game.AccessibilityService;
 import com.lemondelila.framework.core.context.ApplicationContext;
 import com.lemondelila.framework.core.module.LilaModule;
 
@@ -18,6 +19,7 @@ public final class AccessibilityModule implements LilaModule {
         builder.bindAuto(NarrationQueue.class);
         builder.bindAuto(AccessibleShortcutRegistry.class);
         builder.bindAuto(FocusHighlighter.class);
+        builder.bindAuto(AccessibilityService.class);
     }
 
     @Override

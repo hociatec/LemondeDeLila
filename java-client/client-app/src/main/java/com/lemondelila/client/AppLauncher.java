@@ -10,6 +10,9 @@ import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public final class AppLauncher {
 
@@ -17,6 +20,8 @@ public final class AppLauncher {
     }
 
     public static void main(String[] args) {
+        configureNativeLibraries();
+
         FrameworkBootstrap bootstrap = FrameworkBootstrap.load();
         ApplicationContext context = bootstrap.launch();
 
@@ -39,6 +44,25 @@ public final class AppLauncher {
             frame.setVisible(true);
             frame.screenManager().show("home");
         });
+    }
+
+    private static void configureNativeLibraries() {
+        String os = System.getProperty("os.name", "").toLowerCase();
+        if (!os.contains("win")) {
+            return;
+        }
+        boolean is64 = System.getProperty("os.arch", "").contains("64");
+        Path base = Paths.get("java-client", "libs", "windows");
+        if (!Files.isDirectory(base)) {
+            base = Paths.get("libs", "windows");
+        }
+        if (!Files.isDirectory(base)) {
+            return;
+        }
+        Path archDir = base.resolve(is64 ? "x64" : "x86");
+        Path dllDir = Files.isDirectory(archDir) ? archDir : base;
+        System.setProperty("lila.native.dir", dllDir.toAbsolutePath().toString());
+        System.setProperty("lila.native.log.dir", dllDir.toAbsolutePath().toString());
     }
 }
 

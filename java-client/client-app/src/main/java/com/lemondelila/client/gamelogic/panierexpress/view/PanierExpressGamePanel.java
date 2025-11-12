@@ -34,10 +34,14 @@ final class PanierExpressGamePanel extends JPanel {
     private final JTextArea yourProgressArea = createReadOnlyArea("Votre progression");
     private final JTextArea playersArea = createReadOnlyArea("Progression des joueurs");
     private final JTextArea scoreArea = createReadOnlyArea("Score en cours");
+    private boolean accessibleToggle;
 
     PanierExpressGamePanel() {
         super(new BorderLayout(16, 16));
         setBorder(BorderFactory.createEmptyBorder(24, 32, 24, 32));
+        setFocusable(true);
+        setRequestFocusEnabled(true);
+        setFocusTraversalKeysEnabled(false);
         buildUi();
     }
 
@@ -47,7 +51,7 @@ final class PanierExpressGamePanel extends JPanel {
         leftColumn.setLayout(new BoxLayout(leftColumn, BoxLayout.Y_AXIS));
 
         statusLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        statusLabel.setFocusable(true);
+        statusLabel.setFocusable(false);
         AccessibleDecorator.apply(statusLabel, AccessibleSpec.builder()
                 .name("Statut de la partie")
                 .description("Informations générales sur l'état du tour en cours.")
@@ -178,7 +182,7 @@ final class PanierExpressGamePanel extends JPanel {
     }
 
     void focusMain() {
-        statusLabel.requestFocusInWindow();
+        requestFocusInWindow();
     }
 
     void focusHistory() {
@@ -198,7 +202,7 @@ final class PanierExpressGamePanel extends JPanel {
     }
 
     void focusStatusLabel() {
-        statusLabel.requestFocusInWindow();
+        requestFocusInWindow();
     }
 
     AccessibleContext statusAccessibleContext() {
@@ -213,12 +217,20 @@ final class PanierExpressGamePanel extends JPanel {
         if (context == null) {
             return;
         }
+        String payload = accessibleToggle ? message + "\u200B" : message;
+        accessibleToggle = !accessibleToggle;
         Runnable fire = () -> {
-            context.setAccessibleDescription(message);
+            context.setAccessibleDescription("");
             context.firePropertyChange(
                     AccessibleContext.ACCESSIBLE_TEXT_PROPERTY,
                     null,
-                    message
+                    ""
+            );
+            context.setAccessibleDescription(payload);
+            context.firePropertyChange(
+                    AccessibleContext.ACCESSIBLE_TEXT_PROPERTY,
+                    null,
+                    payload
             );
         };
         if (SwingUtilities.isEventDispatchThread()) {

@@ -18,6 +18,7 @@ public final class ScreenReaderAnnouncer implements AutoCloseable {
         return t;
     });
     private volatile NvdaControllerBridge nvda = NvdaControllerBridge.create().orElse(null);
+    private volatile JawsControllerBridge jaws = JawsControllerBridge.create().orElse(null);
 
     public void announce(JComponent component, String message) {
         Objects.requireNonNull(component, "component");
@@ -36,22 +37,13 @@ public final class ScreenReaderAnnouncer implements AutoCloseable {
                     javax.swing.SwingUtilities.invokeLater(fireEvent);
                 }
             }
-            boolean spoken = false;
-            NvdaControllerBridge bridge = nvda;
-            if (bridge == null) {
-                bridge = NvdaControllerBridge.create().orElse(null);
-                nvda = bridge;
-            }
-            if (bridge != null) {
-                boolean ok = bridge.speak(message);
-                if (!ok) {
-                    LOGGER.log(Level.FINER, "NVDA controller could not speak message.");
-                } else {
-                    spoken = true;
-                }
+            boolean spoken = speakWithNvda(message);
+            if (!spoken) {
+                spoken = speakWithJaws(message);
             }
             if (!spoken) {
-                LOGGER.log(Level.FINEST, "Aucun moteur de synthèse n'a pu lire le message.");
+                LOGGER.log(Level.FINE, "Aucun moteur de synthèse n'a pu lire le message.");
+                NativeDiagnosticsLogger.get().log("No screen reader accepted message: " + message);
             }
         });
     }
@@ -62,6 +54,47 @@ public final class ScreenReaderAnnouncer implements AutoCloseable {
         if (bridge != null) {
             bridge.cancel();
         }
+        JawsControllerBridge jawsBridge = jaws;
+        if (jawsBridge != null) {
+            jawsBridge.stop();
+            jawsBridge.shutdown();
+        }
         executor.shutdownNow();
+    }
+
+    private boolean speakWithNvda(String message) {
+        NvdaControllerBridge bridge = nvda;
+        if (bridge == null) {
+            bridge = NvdaControllerBridge.create().orElse(null);
+            nvda = bridge;
+        }
+        if (bridge != null) {
+            boolean ok = bridge.speak(message);
+            if (!ok) {
+                LOGGER.log(Level.FINER, "NVDA controller could not speak message.");
+            } else {
+                LOGGER.log(Level.FINEST, "Message transmis à NVDA.");
+            }
+            return ok;
+        }
+        return false;
+    }
+
+    private boolean speakWithJaws(String message) {
+        JawsControllerBridge bridge = jaws;
+        if (bridge == null) {
+            bridge = JawsControllerBridge.create().orElse(null);
+            jaws = bridge;
+        }
+        if (bridge != null) {
+            boolean ok = bridge.speak(message);
+            if (!ok) {
+                LOGGER.log(Level.FINER, "JAWS FSAPI could not speak message.");
+            } else {
+                LOGGER.log(Level.FINEST, "Message transmis à JAWS.");
+            }
+            return ok;
+        }
+        return false;
     }
 }

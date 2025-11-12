@@ -142,7 +142,6 @@ com\lemondelila\client\controller\settings\OptionsController.class
 com\lemondelila\client\gamelogic\panierexpress\view\PanierExpressGamePanel.class
 com\lemondelila\client\gamelogic\missionnemesis\view\NemesisLogPanel.class
 com\lemondelila\client\gamelogic\panierexpress\model\PanierExpressState$LogEntry.class
-com\lemondelila\client\gamelogic\missionnemesis\view\NemesisScreen$2.class
 com\lemondelila\client\view\presence\PresenceDialogLauncher$1.class
 com\lemondelila\client\gamelogic\damenature\model\DameNatureSession.class
 com\lemondelila\client\gamelogic\panierexpress\model\PanierExpressState$PendingQuiz.class
