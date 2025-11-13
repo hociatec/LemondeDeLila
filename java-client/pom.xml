@@ -7,7 +7,7 @@
     <artifactId>java-client</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
-    <name>Le Monde de Lila Client</name>
+    <name>Les mondes de Lilas Client</name>
 
     <modules>
         <module>client-app</module>

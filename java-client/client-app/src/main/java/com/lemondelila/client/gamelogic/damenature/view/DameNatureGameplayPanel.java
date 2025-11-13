@@ -10,6 +10,7 @@ import javax.accessibility.AccessibleContext;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -208,19 +209,20 @@ final class DameNatureGameplayPanel extends JPanel {
         instructionsArea.setWrapStyleWord(true);
         instructionsArea.setBorder(new EmptyBorder(4, 6, 4, 6));
         setAccessibleDescription(instructionsArea, """
-                Espace pour piocher, flèches pour sélectionner les adversaires et cartes, E pour demander, R rafraîchit, T annonce le tour, C ouvre la configuration, chiffres 1-9 répondent au quiz, Tab va à l'historique, Échap retourne à la configuration.
+                Entrée pour piocher, flèches pour sélectionner les adversaires et cartes, E pour demander, R rafraîchit, T annonce le tour, W annonce les joueurs présents, C ouvre la configuration, chiffres 1-9 répondent au quiz, Tab va à l'historique, Q ouvre la confirmation de sortie.
                 """);
         instructionsArea.setText("""
-                Espace : piocher.
+                Entrée : piocher.
                 Flèches haut / bas : changer d'adversaire.
                 Flèches gauche / droite : changer la carte à demander.
                 E : demander la carte sélectionnée.
                 R : actualiser la partie.
                 T : annoncer le tour en cours.
+                W : annoncer les joueurs autour de la table.
                 C : ouvrir la configuration et relancer la partie.
                 1-9 : répondre à un quiz.
                 Tab : aller à l'historique, Maj+Tab pour revenir.
-                Échap : revenir à la configuration depuis le jeu.
+                Q : quitter la partie après confirmation.
                 """);
         instructionsArea.setCaretPosition(0);
     }
@@ -240,7 +242,8 @@ final class DameNatureGameplayPanel extends JPanel {
     private void updateTurnIndicators(DameNatureState state) {
         List<DameNatureState.Player> players = state.players();
         if (!players.isEmpty() && state.turnIndex() >= 0 && state.turnIndex() < players.size()) {
-            turnLabel.setText("Tour : " + players.get(state.turnIndex()).username());
+            DameNatureState.Player current = players.get(state.turnIndex());
+            turnLabel.setText("Tour : " + formatPlayerName(current));
         } else {
             turnLabel.setText("Tour : -");
         }
@@ -274,7 +277,7 @@ final class DameNatureGameplayPanel extends JPanel {
         StringBuilder opponentsBuilder = new StringBuilder();
         state.players().forEach(player -> {
             opponentsBuilder.append("• ")
-                    .append(player.username())
+                    .append(formatPlayerName(player))
                     .append(" - cartes : ").append(player.handCount())
                     .append(" - familles : ").append(player.books().size());
             if (state.turnIndex() == state.players().indexOf(player)) {
@@ -298,7 +301,7 @@ final class DameNatureGameplayPanel extends JPanel {
 
         playerOptions = state.players().stream()
                 .filter(player -> player.id() != self.id())
-                .map(player -> new PlayerOption(player.id(), player.username(), player.handCount()))
+                .map(player -> new PlayerOption(player.id(), player.username(), player.handCount(), player.isBot()))
                 .toList();
         if (playerOptions.isEmpty()) {
             selectedPlayerIndex = -1;
@@ -392,6 +395,20 @@ final class DameNatureGameplayPanel extends JPanel {
         return cardOptions.get(selectedCardIndex).label();
     }
 
+    private String formatPlayerName(DameNatureState.Player player) {
+        if (player == null) {
+            return "";
+        }
+        return decorateBot(player.username(), player.isBot());
+    }
+
+    private static String decorateBot(String base, boolean isBot) {
+        if (base == null || base.isBlank()) {
+            return isBot ? "Bot" : "";
+        }
+        return isBot ? base + " (bot)" : base;
+    }
+
     private void setSelectionDescription(String description) {
         selectionLabel.setText(description);
         setAccessibleDescription(selectionLabel, description);
@@ -427,7 +444,7 @@ final class DameNatureGameplayPanel extends JPanel {
         component.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, Collections.emptySet());
     }
 
-    private void setAccessibleName(JLabel component, String name) {
+    private void setAccessibleName(JComponent component, String name) {
         AccessibleContext context = component.getAccessibleContext();
         if (context != null) {
             String safe = name == null ? "" : name;
@@ -439,7 +456,7 @@ final class DameNatureGameplayPanel extends JPanel {
         }
     }
 
-    private void setAccessibleDescription(JLabel component, String description) {
+    private void setAccessibleDescription(JComponent component, String description) {
         AccessibleContext context = component.getAccessibleContext();
         if (context != null) {
             String safe = description == null ? "" : description;
@@ -451,9 +468,13 @@ final class DameNatureGameplayPanel extends JPanel {
         }
     }
 
-    static record PlayerOption(int id, String name, int handCount) {
+    static record PlayerOption(int id, String name, int handCount, boolean bot) {
         String label() {
-            return name + " (" + handCount + " cartes)";
+            return displayName() + " (" + handCount + " cartes)";
+        }
+
+        String displayName() {
+            return name == null ? "" : (bot ? name + " (bot)" : name);
         }
     }
 

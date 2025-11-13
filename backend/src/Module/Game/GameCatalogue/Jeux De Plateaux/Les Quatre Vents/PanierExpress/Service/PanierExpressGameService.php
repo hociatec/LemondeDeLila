@@ -7,13 +7,13 @@ use App\Module\Game\Engine\GameEngineInterface;
 use App\Module\Game\Entity\Room;
 use App\Module\Game\Service\Participant;
 use App\Module\Game\Service\ParticipantResolver;
-use App\Module\User\Entity\User;
 use App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Service\PanierExpressCommand;
 use App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Service\Support\PanierExpressDeckManager;
 use App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Service\Support\NativePanierExpressRandomizer;
 use App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Service\Support\PanierExpressRandomizerInterface;
 use App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Service\Support\PanierExpressTileAction;
 use App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Service\Support\PanierExpressTileResolver;
+use App\Module\User\Entity\User;
 
 final class PanierExpressGameService implements GameEngineInterface
 {
@@ -218,59 +218,6 @@ final class PanierExpressGameService implements GameEngineInterface
         }
 
         return [];
-    }
-
-    private function runBotTurns(array $state): array
-    {
-        while (($state['status'] ?? null) === 'playing') {
-            $turnIndex = (int) ($state['turnIndex'] ?? 0);
-            $players = $state['players'] ?? [];
-            if (!isset($players[$turnIndex]) || ($players[$turnIndex]['isBot'] ?? false) !== true) {
-                break;
-            }
-
-            $playerId = $players[$turnIndex]['id'] ?? null;
-            $pending = $state['pending']['type'] ?? null;
-            if ($pending === 'quiz' && $this->isPendingForPlayer($state, $playerId)) {
-                $choices = $state['pending']['choices'] ?? [];
-                $choice = $choices && is_array($choices)
-                    ? random_int(0, max(0, count($choices) - 1))
-                    : 0;
-                $state = $this->handleQuizAnswer($state, ['choice' => $choice], $turnIndex);
-                continue;
-            }
-
-            if ($pending !== null) {
-                break;
-            }
-
-            $state = $this->handleRoll($state, [], $turnIndex);
-
-            if (($state['status'] ?? null) !== 'playing') {
-                break;
-            }
-
-            if ((int) ($state['turnIndex'] ?? -1) === $turnIndex) {
-                break;
-            }
-        }
-
-        return $state;
-    }
-
-    private function isPendingForPlayer(array $state, ?int $playerId): bool
-    {
-        if ($playerId === null) {
-            return false;
-        }
-        $pending = $state['pending'] ?? null;
-        if (!is_array($pending)) {
-            return false;
-        }
-        if (($pending['type'] ?? null) !== 'quiz') {
-            return false;
-        }
-        return (int) ($pending['playerId'] ?? 0) === $playerId;
     }
 
     private function locatePlayer(array $state, int $userId): int

@@ -4,10 +4,13 @@ import com.lemondelila.client.framework.core.context.ApplicationContext;
 import com.lemondelila.client.framework.core.module.LilaModule;
 import com.lemondelila.client.catalogue.CatalogueModule;
 import com.lemondelila.client.chat.ChatModule;
+import com.lemondelila.client.application.AppBranding;
 import com.lemondelila.client.media.AudioModule;
 import com.lemondelila.client.game.GameModule;
 import com.lemondelila.client.game.RealtimeModule;
 import com.lemondelila.client.presence.PresenceModule;
+import com.lemondelila.client.social.SocialModule;
+import com.lemondelila.client.messaging.MessagingModule;
 import com.lemondelila.client.settings.SettingsModule;
 import com.lemondelila.client.user.UserModule;
 
@@ -26,6 +29,8 @@ public final class ApplicationModule implements LilaModule {
                 new SettingsModule(),
                 new UserModule(),
                 new ChatModule(),
+                new MessagingModule(),
+                new SocialModule(),
                 new PresenceModule(),
                 new CatalogueModule(),
                 new GameModule(),
@@ -44,6 +49,7 @@ public final class ApplicationModule implements LilaModule {
     @Override
     public void configure(ApplicationContext.Builder builder) {
         startOrder.forEach(module -> module.configure(builder));
+        builder.bindAuto(AppBranding.class);
     }
 
     @Override

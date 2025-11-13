@@ -3,9 +3,9 @@ package com.lemondelila.client.application.view.menu;
 import com.lemondelila.client.catalogue.controller.CatalogController;
 import com.lemondelila.client.chat.controller.ChatController;
 import com.lemondelila.client.presence.controller.PresenceController;
+import com.lemondelila.client.social.controller.SocialController;
 import com.lemondelila.client.settings.controller.OptionsController;
 import com.lemondelila.client.user.events.UserLoggedOut;
-import com.lemondelila.client.media.SoundBank;
 import com.lemondelila.client.user.model.ClientSession;
 import com.lemondelila.client.framework.core.di.Inject;
 import com.lemondelila.client.framework.core.event.DomainEventBus;
@@ -14,23 +14,15 @@ import com.lemondelila.client.framework.ui.dialog.DialogService;
 import com.lemondelila.client.framework.ui.screen.Screen;
 import com.lemondelila.client.framework.ui.screen.ScreenContext;
 import com.lemondelila.client.framework.ui.screen.ScreenManager;
-import com.lemondelila.client.framework.ui.util.ButtonUtils;
 
 import javax.swing.AbstractAction;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
-import java.awt.Component;
-import java.awt.Dimension;
+import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
-import java.util.ArrayList;
 import java.util.List;
 
 public final class MainMenuScreen extends JPanel implements Screen {
@@ -43,26 +35,21 @@ public final class MainMenuScreen extends JPanel implements Screen {
     private final DialogService dialogService;
     private final ChatController chatController;
     private final PresenceController presenceController;
+    private final SocialController socialController;
     private final OptionsController optionsController;
     private final CatalogController catalogController;
     private final ClientSession session;
     private final DomainEventBus eventBus;
-    private final SoundEffectManager sounds;
-
-    private final JLabel statusLabel = new JLabel(" ");
-    private final JButton shelvesButton = new JButton("Etageres");
-    private final JButton joinGameButton = new JButton("Rejoindre une partie");
-    private final JButton chatButton = new JButton("Tchat");
-    private final JButton optionsButton = new JButton("Options");
-    private final JButton logoutButton = new JButton("Se deconnecter");
-
-    private final List<JButton> menuButtons = new ArrayList<>();
+    private final MainMenuAudio audio;
+    private final MainMenuView view;
 
     private ScreenManager screenManager;
+
     @Inject
     public MainMenuScreen(DialogService dialogService,
                           ChatController chatController,
                           PresenceController presenceController,
+                          SocialController socialController,
                           OptionsController optionsController,
                           CatalogController catalogController,
                           ClientSession session,
@@ -71,68 +58,29 @@ public final class MainMenuScreen extends JPanel implements Screen {
         this.dialogService = dialogService;
         this.chatController = chatController;
         this.presenceController = presenceController;
+        this.socialController = socialController;
         this.optionsController = optionsController;
         this.catalogController = catalogController;
         this.session = session;
         this.eventBus = eventBus;
-        this.sounds = sounds;
-        buildUi();
+        this.audio = new MainMenuAudio(sounds);
+        this.view = new MainMenuView();
+
+        setLayout(new BorderLayout());
+        add(view.component(), BorderLayout.CENTER);
+
         registerHandlers();
         registerShortcuts();
         registerNavigation();
     }
 
-    private void buildUi() {
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        setBorder(javax.swing.BorderFactory.createEmptyBorder(48, 64, 48, 64));
-
-        JLabel title = new JLabel("Menu principal");
-        title.setAlignmentX(Component.CENTER_ALIGNMENT);
-        title.setFont(title.getFont().deriveFont(26f));
-        add(title);
-        add(Box.createRigidArea(new Dimension(0, 32)));
-
-        addMenuButton(shelvesButton);
-        addSpacer();
-        addMenuButton(joinGameButton);
-        addSpacer();
-        addMenuButton(chatButton);
-        addSpacer();
-        addMenuButton(optionsButton);
-        add(Box.createRigidArea(new Dimension(0, 24)));
-        addMenuButton(logoutButton);
-
-        add(Box.createRigidArea(new Dimension(0, 24)));
-        statusLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        add(statusLabel);
-    }
-
-    private void addMenuButton(JButton button) {
-        button.setAlignmentX(Component.CENTER_ALIGNMENT);
-        button.setMaximumSize(new Dimension(320, 48));
-        button.setFocusTraversalKeysEnabled(false);
-        ButtonUtils.enterActivates(button);
-        button.addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusGained(FocusEvent e) {
-                statusLabel.setText("Sélection : " + button.getText());
-                playNavigate();
-            }
-        });
-        menuButtons.add(button);
-        add(button);
-    }
-
-    private void addSpacer() {
-        add(Box.createRigidArea(new Dimension(0, 12)));
-    }
-
     private void registerHandlers() {
-        shelvesButton.addActionListener(e -> onMenuSelected(this::openCatalog));
-        joinGameButton.addActionListener(e -> onMenuSelected(() -> featureSoon("Rejoindre une partie")));
-        chatButton.addActionListener(e -> onMenuSelected(this::openChat));
-        optionsButton.addActionListener(e -> onMenuSelected(this::openOptions));
-        logoutButton.addActionListener(e -> onMenuSelected(this::logout));
+        view.shelvesButton().addActionListener(e -> onMenuSelected(this::openCatalog));
+        view.joinGameButton().addActionListener(e -> onMenuSelected(() -> featureSoon("Rejoindre une partie")));
+        view.chatButton().addActionListener(e -> onMenuSelected(this::openChat));
+        view.socialButton().addActionListener(e -> onMenuSelected(this::openSocial));
+        view.optionsButton().addActionListener(e -> onMenuSelected(this::openOptions));
+        view.logoutButton().addActionListener(e -> onMenuSelected(this::logout));
     }
 
     private void registerShortcuts() {
@@ -153,14 +101,14 @@ public final class MainMenuScreen extends JPanel implements Screen {
     }
 
     private void registerNavigation() {
-        for (int i = 0; i < menuButtons.size(); i++) {
-            JButton button = menuButtons.get(i);
-            int currentIndex = i;
+        List<JButton> buttons = view.orderedButtons();
+        for (int i = 0; i < buttons.size(); i++) {
+            JButton button = buttons.get(i);
             int previousIndex = i - 1;
             int nextIndex = i + 1;
 
-            String upAction = ACTION_NAV_UP + currentIndex;
-            String downAction = ACTION_NAV_DOWN + currentIndex;
+            String upAction = ACTION_NAV_UP + i;
+            String downAction = ACTION_NAV_DOWN + i;
 
             button.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke("UP"), upAction);
             button.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke("DOWN"), downAction);
@@ -169,15 +117,17 @@ public final class MainMenuScreen extends JPanel implements Screen {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     if (previousIndex >= 0) {
-                        menuButtons.get(previousIndex).requestFocusInWindow();
+                        audio.playNavigate();
+                        buttons.get(previousIndex).requestFocusInWindow();
                     }
                 }
             });
             button.getActionMap().put(downAction, new AbstractAction() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    if (nextIndex < menuButtons.size()) {
-                        menuButtons.get(nextIndex).requestFocusInWindow();
+                    if (nextIndex < buttons.size()) {
+                        audio.playNavigate();
+                        buttons.get(nextIndex).requestFocusInWindow();
                     }
                 }
             });
@@ -185,14 +135,18 @@ public final class MainMenuScreen extends JPanel implements Screen {
     }
 
     private void handleEscape() {
-        playSelect();
+        if (session.authenticated().isPresent()) {
+            setStatus("Appuyez sur \"Deconnexion\" pour quitter votre session.");
+            return;
+        }
+        audio.playSelect();
         if (screenManager != null) {
             SwingUtilities.invokeLater(() -> screenManager.show("home"));
         }
     }
 
     private void onMenuSelected(Runnable action) {
-        playSelect();
+        audio.playSelect();
         action.run();
     }
 
@@ -205,7 +159,7 @@ public final class MainMenuScreen extends JPanel implements Screen {
         if (!ensureAuthenticated()) {
             return;
         }
-        playSelect();
+        audio.playSelect();
         String status = presenceController.open(this);
         setStatus(status);
     }
@@ -214,8 +168,17 @@ public final class MainMenuScreen extends JPanel implements Screen {
         if (!ensureAuthenticated()) {
             return;
         }
-        playSelect();
+        audio.playSelect();
         String status = chatController.open(SwingUtilities.getWindowAncestor(this));
+        setStatus(status);
+    }
+
+    private void openSocial() {
+        if (!ensureAuthenticated()) {
+            return;
+        }
+        audio.playSelect();
+        String status = socialController.open(SwingUtilities.getWindowAncestor(this));
         setStatus(status);
     }
 
@@ -228,7 +191,7 @@ public final class MainMenuScreen extends JPanel implements Screen {
         if (!ensureAuthenticated()) {
             return;
         }
-        playSelect();
+        audio.playSelect();
         String status = catalogController.openCatalog();
         setStatus(status);
     }
@@ -237,7 +200,7 @@ public final class MainMenuScreen extends JPanel implements Screen {
         String username = session.authenticated().map(ClientSession.AuthState::username).orElse(null);
         session.clear();
         eventBus.publish(new UserLoggedOut(username));
-        playSelect();
+        audio.playSelect();
         setStatus("Deconnecte.");
         if (screenManager != null) {
             SwingUtilities.invokeLater(() -> screenManager.show("home"));
@@ -256,7 +219,7 @@ public final class MainMenuScreen extends JPanel implements Screen {
     }
 
     private void setStatus(String text) {
-        SwingUtilities.invokeLater(() -> statusLabel.setText(text));
+        SwingUtilities.invokeLater(() -> view.setStatus(text));
     }
 
     @Override
@@ -274,51 +237,15 @@ public final class MainMenuScreen extends JPanel implements Screen {
         this.screenManager = context.screenManager();
         catalogController.attach(screenManager);
         setStatus("Pret.");
-        playAppLaunch();
-        startBackground();
-        SwingUtilities.invokeLater(() -> shelvesButton.requestFocusInWindow());
+        audio.playAppLaunch();
+        audio.startBackground();
+        SwingUtilities.invokeLater(view::focusFirstButton);
     }
 
     @Override
     public void onHide(ScreenContext context) {
         this.screenManager = null;
         catalogController.detach();
-        stopBackground();
-    }
-
-    private void playAppLaunch() {
-        if (sounds != null) {
-            sounds.play(SoundBank.APP_LAUNCH);
-        }
-    }
-
-    private void startBackground() {
-        if (sounds != null) {
-            sounds.play(SoundBank.BACKGROUND_FON);
-        }
-    }
-
-    private void stopBackground() {
-        if (sounds != null) {
-            sounds.stop(SoundBank.BACKGROUND_FON);
-        }
-    }
-
-    private void playNavigate() {
-        if (sounds != null) {
-            sounds.play(SoundBank.MENU_NAVIGATE);
-        }
-    }
-
-    private void playSelect() {
-        if (sounds != null) {
-            sounds.play(SoundBank.MENU_SELECT);
-        }
+        audio.stopBackground();
     }
 }
-
-
-
-
-
-

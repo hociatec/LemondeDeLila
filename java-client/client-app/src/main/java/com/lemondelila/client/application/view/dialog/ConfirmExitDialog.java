@@ -15,11 +15,11 @@ public final class ConfirmExitDialog extends JDialog {
 
     private boolean confirmed;
 
-    private ConfirmExitDialog(Window owner) {
-        super(owner, "Quitter l'application", ModalityType.APPLICATION_MODAL);
+    private ConfirmExitDialog(Window owner, String applicationName) {
+        super(owner, "Quitter " + applicationName, ModalityType.APPLICATION_MODAL);
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         setLayout(new BorderLayout(12, 12));
-        JLabel label = new JLabel("Voulez-vous vraiment quitter Le Monde de Lila ?");
+        JLabel label = new JLabel("Voulez-vous vraiment quitter " + applicationName + " ?");
         label.setBorder(new EmptyBorder(16, 16, 0, 16));
         add(label, BorderLayout.CENTER);
 
@@ -51,8 +51,8 @@ public final class ConfirmExitDialog extends JDialog {
         dispose();
     }
 
-    public static boolean show(Window owner) {
-        ConfirmExitDialog dialog = new ConfirmExitDialog(owner);
+    public static boolean show(Window owner, String applicationName) {
+        ConfirmExitDialog dialog = new ConfirmExitDialog(owner, applicationName);
         dialog.setVisible(true);
         return dialog.confirmed;
     }

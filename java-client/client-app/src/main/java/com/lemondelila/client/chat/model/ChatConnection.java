@@ -229,5 +229,3 @@ public final class ChatConnection implements AutoCloseable {
         return java.util.Optional.of(new PresencePlayer(id, username, rooms));
     }
 }
-
-

@@ -1,15 +1,6 @@
 package com.lemondelila.client.application.view.home;
 
-import com.lemondelila.client.user.events.LoginFailed;
-import com.lemondelila.client.user.events.LoginRequested;
-import com.lemondelila.client.user.events.LoginSucceeded;
-import com.lemondelila.client.user.events.RegistrationFailed;
-import com.lemondelila.client.user.events.RegistrationRequested;
-import com.lemondelila.client.user.events.RegistrationSucceeded;
-import com.lemondelila.client.user.view.LoginFormPanel;
-import com.lemondelila.client.user.view.RegisterFormPanel;
-import com.lemondelila.client.framework.access.AccessibleDecorator;
-import com.lemondelila.client.framework.access.AccessibleSpec;
+import com.lemondelila.client.application.AppBranding;
 import com.lemondelila.client.framework.access.FocusHighlighter;
 import com.lemondelila.client.framework.access.NarrationQueue;
 import com.lemondelila.client.framework.access.shortcut.AccessibleShortcutRegistry;
@@ -21,70 +12,33 @@ import com.lemondelila.client.framework.ui.dialog.DialogService;
 import com.lemondelila.client.framework.ui.screen.Screen;
 import com.lemondelila.client.framework.ui.screen.ScreenContext;
 import com.lemondelila.client.framework.ui.screen.ScreenManager;
+import com.lemondelila.client.user.events.LoginFailed;
+import com.lemondelila.client.user.events.LoginRequested;
+import com.lemondelila.client.user.events.LoginSucceeded;
+import com.lemondelila.client.user.events.RegistrationFailed;
+import com.lemondelila.client.user.events.RegistrationRequested;
+import com.lemondelila.client.user.events.RegistrationSucceeded;
 
 import javax.swing.AbstractAction;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
-import java.awt.CardLayout;
-import java.awt.Component;
-import java.awt.Dimension;
+import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
-import java.util.Arrays;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
-public final class HomeScreen extends JPanel implements Screen {
-
-    private enum Card {
-        LANDING,
-        LOGIN,
-        REGISTER
-    }
+public final class HomeScreen extends JPanel implements Screen, HomeEventCoordinator.Listener {
 
     private final DomainEventBus eventBus;
     private final ActionManager actionManager;
     private final AccessibleShortcutRegistry shortcutRegistry;
     private final DialogService dialogService;
-
-    private final JPanel cardPanel = new JPanel(new CardLayout());
-    private final LandingPanel landingPanel = new LandingPanel();
-    private final LoginFormPanel loginForm;
-    private final RegisterFormPanel registerForm;
-
-    private final JLabel statusLabel = new JLabel(" ");
-    private final AtomicReference<AutoCloseable> loginSuccessSub = new AtomicReference<>();
-    private final AtomicReference<AutoCloseable> loginFailedSub = new AtomicReference<>();
-    private final AtomicReference<AutoCloseable> registrationSuccessSub = new AtomicReference<>();
-    private final AtomicReference<AutoCloseable> registrationFailedSub = new AtomicReference<>();
-
-    private Card currentCard = Card.LANDING;
     private final Supplier<NarrationQueue> narrationQueueSupplier;
+    private final HomeView view;
+    private final HomeEventCoordinator eventCoordinator;
+
     private volatile NarrationQueue narrationQueue;
     private ScreenManager screenManager;
-
-    public HomeScreen(DomainEventBus eventBus,
-                      ActionManager actionManager,
-                      AccessibleShortcutRegistry shortcutRegistry,
-                      FocusHighlighter focusHighlighter,
-                      DialogService dialogService,
-                      Supplier<NarrationQueue> narrationQueueSupplier) {
-        this.eventBus = eventBus;
-        this.actionManager = actionManager;
-        this.shortcutRegistry = shortcutRegistry;
-        this.dialogService = dialogService;
-        this.loginForm = new LoginFormPanel(focusHighlighter);
-        this.registerForm = new RegisterFormPanel(focusHighlighter);
-        this.narrationQueueSupplier = narrationQueueSupplier;
-
-        buildUi();
-        registerListeners();
-        registerShortcuts();
-    }
 
     @Inject
     public HomeScreen(DomainEventBus eventBus,
@@ -92,56 +46,51 @@ public final class HomeScreen extends JPanel implements Screen {
                       AccessibleShortcutRegistry shortcutRegistry,
                       FocusHighlighter focusHighlighter,
                       DialogService dialogService,
-                      ApplicationContext context) {
+                      ApplicationContext context,
+                      AppBranding branding) {
         this(eventBus, actionManager, shortcutRegistry, focusHighlighter, dialogService,
-                () -> context.get(NarrationQueue.class));
+                () -> context.get(NarrationQueue.class), branding);
     }
 
-    private void buildUi() {
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        setBorder(javax.swing.BorderFactory.createEmptyBorder(48, 64, 48, 64));
+    HomeScreen(DomainEventBus eventBus,
+               ActionManager actionManager,
+               AccessibleShortcutRegistry shortcutRegistry,
+               FocusHighlighter focusHighlighter,
+               DialogService dialogService,
+               Supplier<NarrationQueue> narrationQueueSupplier,
+               AppBranding branding) {
+        this.eventBus = eventBus;
+        this.actionManager = actionManager;
+        this.shortcutRegistry = shortcutRegistry;
+        this.dialogService = dialogService;
+        this.narrationQueueSupplier = narrationQueueSupplier;
+        this.view = new HomeView(focusHighlighter, branding);
+        this.eventCoordinator = new HomeEventCoordinator(eventBus);
 
-        JLabel title = new JLabel("Bienvenue dans Le Monde de Lila");
-        title.setAlignmentX(Component.CENTER_ALIGNMENT);
-        title.setFont(title.getFont().deriveFont(24f));
-        add(title);
-        add(Box.createRigidArea(new Dimension(0, 32)));
+        setLayout(new BorderLayout());
+        add(view.component(), BorderLayout.CENTER);
 
-        cardPanel.setOpaque(false);
-        cardPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        cardPanel.setMaximumSize(new Dimension(520, 360));
-        cardPanel.add(landingPanel, Card.LANDING.name());
-        cardPanel.add(loginForm, Card.LOGIN.name());
-        cardPanel.add(registerForm, Card.REGISTER.name());
-        add(cardPanel);
-
-        add(Box.createRigidArea(new Dimension(0, 24)));
-
-        statusLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        AccessibleDecorator.apply(statusLabel, AccessibleSpec.builder()
-                .name("Zone de statut")
-                .description("Affiche l'etat des actions de connexion et d'inscription")
-                .build());
-        add(statusLabel);
-
-        showLanding();
+        registerUiHandlers();
+        registerShortcuts();
     }
 
-    private void registerListeners() {
-        loginForm.onLogin(credentials -> {
-            statusLabel.setText("Connexion en cours...");
+    private void registerUiHandlers() {
+        view.loginForm().onLogin(credentials -> {
+            view.setStatus("Connexion en cours...");
             eventBus.publish(new LoginRequested(credentials.username(), credentials.password()));
         });
 
-        registerForm.onRegister(data -> {
-            statusLabel.setText("Inscription en cours...");
+        view.registerForm().onRegister(data -> {
+            view.setStatus("Inscription en cours...");
             eventBus.publish(new RegistrationRequested(data.username(), data.password(), data.email()));
         });
 
-        landingPanel.onLogin(() -> switchTo(Card.LOGIN));
-        landingPanel.onRegister(() -> switchTo(Card.REGISTER));
-        landingPanel.onQuit(() -> {
-            if (dialogService.confirm("Quitter", "Voulez-vous quitter l'application ?").join()) {
+        view.landingPanel().onLogin(view::showLogin);
+        view.landingPanel().onRegister(view::showRegister);
+        view.landingPanel().onQuit(() -> {
+            boolean confirmed = dialogService.confirm("Quitter",
+                    "Voulez-vous quitter l'application ?").join();
+            if (confirmed) {
                 System.exit(0);
             }
         });
@@ -160,49 +109,13 @@ public final class HomeScreen extends JPanel implements Screen {
         shortcutRegistry.applyTo(this);
     }
 
-    private void switchTo(Card target) {
-        if (target == currentCard) {
-            return;
-        }
-        this.currentCard = target;
-        CardLayout layout = (CardLayout) cardPanel.getLayout();
-        layout.show(cardPanel, target.name());
-        statusLabel.setText(" ");
-        if (target == Card.LOGIN) {
-            SwingUtilities.invokeLater(loginForm::focusDefaultField);
-        } else if (target == Card.REGISTER) {
-            SwingUtilities.invokeLater(registerForm::focusDefaultField);
-        }
-    }
-
     private void showLanding() {
-        switchTo(Card.LANDING);
-        landingPanel.requestFocusInWindow();
+        view.showLanding();
+        view.setStatus(" ");
     }
 
-    private void handleLoginSucceeded(LoginSucceeded event) {
-        statusLabel.setText("Bienvenue " + event.username() + "!");
-        if (screenManager != null) {
-            SwingUtilities.invokeLater(() -> screenManager.show("main-menu"));
-        }
-    }
-
-    private void handleLoginFailed(LoginFailed event) {
-        statusLabel.setText(event.reason());
-        dialogService.error("Connexion impossible", event.reason());
-        SwingUtilities.invokeLater(() -> loginForm.focusDefaultField());
-    }
-
-    private void handleRegistrationSucceeded(RegistrationSucceeded event) {
-        statusLabel.setText("Inscription reussie ! Vous pouvez vous connecter.");
-        dialogService.info("Inscription reussie", "Bienvenue " + event.username() + " ! Connectez-vous pour continuer.");
-        switchTo(Card.LOGIN);
-    }
-
-    private void handleRegistrationFailed(RegistrationFailed event) {
-        statusLabel.setText(event.reason());
-        dialogService.error("Inscription impossible", event.reason());
-        SwingUtilities.invokeLater(() -> registerForm.focusDefaultField());
+    private void updateStatus(String text) {
+        view.setStatus(text);
     }
 
     @Override
@@ -218,29 +131,47 @@ public final class HomeScreen extends JPanel implements Screen {
     @Override
     public void onShow(ScreenContext context) {
         this.screenManager = context.screenManager();
-        narrationQueue = narrationQueueSupplier.get();
-        loginSuccessSub.set(eventBus.subscribe(LoginSucceeded.class, this::handleLoginSucceeded));
-        loginFailedSub.set(eventBus.subscribe(LoginFailed.class, this::handleLoginFailed));
-        registrationSuccessSub.set(eventBus.subscribe(RegistrationSucceeded.class, this::handleRegistrationSucceeded));
-        registrationFailedSub.set(eventBus.subscribe(RegistrationFailed.class, this::handleRegistrationFailed));
-        narrationQueue.enqueue(this, "Ecran d'accueil, utilisez les fleches pour naviguer.");
-        showLanding();
+        this.narrationQueue = narrationQueueSupplier.get();
+        eventCoordinator.subscribe(this);
+        view.showLanding();
+        if (narrationQueue != null) {
+            narrationQueue.enqueue(this, "Ecran d'accueil, utilisez les fleches pour naviguer.");
+        }
     }
 
     @Override
     public void onHide(ScreenContext context) {
         this.screenManager = null;
-        Arrays.asList(loginSuccessSub, loginFailedSub, registrationSuccessSub, registrationFailedSub)
-                .forEach(ref -> {
-                    AutoCloseable closeable = ref.getAndSet(null);
-                    if (closeable != null) {
-                        try {
-                            closeable.close();
-                        } catch (Exception ignored) {
-                        }
-                    }
-                });
+        eventCoordinator.unsubscribe();
+    }
+
+    @Override
+    public void onLoginSuccess(LoginSucceeded event) {
+        updateStatus("Bienvenue " + event.username() + "!");
+        if (screenManager != null) {
+            SwingUtilities.invokeLater(() -> screenManager.show("main-menu"));
+        }
+    }
+
+    @Override
+    public void onLoginFailure(LoginFailed event) {
+        updateStatus(event.reason());
+        dialogService.error("Connexion impossible", event.reason());
+        SwingUtilities.invokeLater(() -> view.loginForm().focusDefaultField());
+    }
+
+    @Override
+    public void onRegistrationSuccess(RegistrationSucceeded event) {
+        updateStatus("Inscription reussie ! Vous pouvez vous connecter.");
+        dialogService.info("Inscription reussie",
+                "Bienvenue " + event.username() + " ! Connectez-vous pour continuer.");
+        view.showLogin();
+    }
+
+    @Override
+    public void onRegistrationFailure(RegistrationFailed event) {
+        updateStatus(event.reason());
+        dialogService.error("Inscription impossible", event.reason());
+        SwingUtilities.invokeLater(() -> view.registerForm().focusDefaultField());
     }
 }
-
-

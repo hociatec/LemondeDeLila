@@ -17,10 +17,10 @@ import com.lemondelila.client.gamelogic.damenature.model.DameNatureSession;
 import com.lemondelila.client.gamelogic.damenature.model.DameNatureState;
 
 import javax.swing.AbstractAction;
-import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import javax.swing.JTextArea;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.event.ActionEvent;
@@ -118,24 +118,32 @@ public final class DameNatureScreen extends JPanel implements Screen {
 
     private void installGlobalKeyBindings() {
         shortcutRegistry.clear();
-        registerShortcut("SPACE", "damenature-draw", "Espace : piocher une carte.", e -> triggerDraw());
+        registerShortcut("ENTER", "damenature-draw", "Entrée : piocher une carte.", e -> triggerDraw());
         registerLetterShortcut('t', "damenature-turn", "Lettre T : annoncer le tour en cours.", e -> announceCurrentTurn());
         registerShortcut("UP", "damenature-target-prev", "Flèche haut : sélectionner l’adversaire précédent.", e -> announce(gameplayView.cycleTarget(-1)));
         registerShortcut("DOWN", "damenature-target-next", "Flèche bas : sélectionner l’adversaire suivant.", e -> announce(gameplayView.cycleTarget(1)));
         registerShortcut("LEFT", "damenature-card-prev", "Flèche gauche : choisir la carte précédente à demander.", e -> announce(gameplayView.cycleCard(-1)));
         registerShortcut("RIGHT", "damenature-card-next", "Flèche droite : choisir la carte suivante à demander.", e -> announce(gameplayView.cycleCard(1)));
+        registerLetterShortcut('q', "damenature-quit", "Lettre Q : quitter la partie Dame Nature après confirmation.", e -> {
+            if (screenManager != null) {
+                dialogService.confirmGameExit("Dame Nature", "Voulez-vous quitter la partie en cours ?")
+                        .thenAccept(confirmed -> {
+                            if (Boolean.TRUE.equals(confirmed)) {
+                                controller.reset();
+                                gameplayView.reset();
+                                SwingUtilities.invokeLater(() -> screenManager.show("catalog"));
+                            } else {
+                                announce("Sortie annulée.");
+                            }
+                        });
+            }
+        });
         registerLetterShortcut('e', "damenature-request", "Lettre E : demander une carte à l’adversaire sélectionné.", e -> sendAskAction());
         registerLetterShortcut('r', "damenature-refresh", "Lettre R : actualiser l’état de la partie.", e -> handleActionFeedback(controller.refresh(),
                 "Actualisation en cours...", null, null));
         registerLetterShortcut('c', "damenature-open-config", "Lettre C : ouvrir la configuration.", e -> {
             if (mode == Mode.GAMEPLAY) {
                 announce("Configuration ouverte. Modifiez les options puis Entrée pour relancer.");
-                openConfiguration();
-            }
-        });
-        registerShortcut("ESCAPE", "damenature-config", "Échap : revenir à la configuration.", e -> {
-            if (mode == Mode.GAMEPLAY) {
-                announce("Retour à la configuration.");
                 openConfiguration();
             }
         });
@@ -146,8 +154,9 @@ public final class DameNatureScreen extends JPanel implements Screen {
             registerShortcut(String.valueOf(digit), "damenature-quiz-" + digit,
                     "Chiffre " + digit + " : répondre au quiz avec l’option " + (i + 1) + ".", e -> answerQuiz(index));
         }
+        registerLetterShortcut('w', "damenature-table", "Lettre W : annoncer les joueurs présents.", e -> announceTableParticipants());
 
-        JComponent historyComponent = gameplayView.historyComponent();
+        JTextArea historyComponent = gameplayView.historyComponent();
         getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("TAB"), "focus-history");
         getActionMap().put("focus-history", new AbstractAction() {
             @Override
@@ -260,7 +269,7 @@ public final class DameNatureScreen extends JPanel implements Screen {
         DameNatureGameplayPanel.CardOption cardOption = card.get();
         handleActionFeedback(
                 controller.askCard(player.id(), cardOption.familyId(), cardOption.memberId()),
-                "Demande de " + cardOption.memberName() + " à " + player.name() + "...",
+                "Demande de " + cardOption.memberName() + " à " + player.displayName() + "...",
                 null,
                 null
         );
@@ -304,7 +313,7 @@ public final class DameNatureScreen extends JPanel implements Screen {
         boolean yourTurn = self != null && self.id() == player.id();
         AccessibilityService.TurnContext context = new AccessibilityService.TurnContext(
                 yourTurn,
-                player.username(),
+                decorateBot(player.username(), player.isBot()),
                 null
         );
         accessibilityService.announceTurn(gameplayView.turnLabel(), context);
@@ -348,6 +357,40 @@ public final class DameNatureScreen extends JPanel implements Screen {
 
     private void announce(String message) {
         gameplayView.setStatusMessage(message);
+    }
+
+    private void announceTableParticipants() {
+        if (currentSession == null) {
+            announce("Aucune partie en cours.");
+            return;
+        }
+        DameNatureState state = currentSession.state();
+        List<DameNatureState.Player> players = state != null ? state.players() : null;
+        if (players == null || players.isEmpty()) {
+            announce("Aucun joueur autour de la table.");
+            return;
+        }
+        DameNatureState.Player selfPlayer = currentSession.self();
+        String selfUsername = selfPlayer != null ? selfPlayer.username() : null;
+        StringBuilder builder = new StringBuilder();
+        builder.append("Table de ").append(players.size())
+                .append(players.size() > 1 ? " joueurs : " : " joueur : ");
+        for (int i = 0; i < players.size(); i++) {
+            DameNatureState.Player player = players.get(i);
+            String name = player != null ? player.username() : null;
+            String display = (name == null || name.isBlank()) ? "Joueur " + (i + 1) : name;
+            if (selfUsername != null && name != null && name.equalsIgnoreCase(selfUsername)) {
+                display = display + " (vous)";
+            }
+            if (player != null && player.isBot()) {
+                display = display + " (bot)";
+            }
+            builder.append(display);
+            if (i < players.size() - 1) {
+                builder.append(", ");
+            }
+        }
+        announce(builder.toString());
     }
 
     private void exitToCatalog() {
@@ -399,6 +442,13 @@ public final class DameNatureScreen extends JPanel implements Screen {
         interactionController.setEnabled(false);
     }
 
+    private static String decorateBot(String base, boolean isBot) {
+        if (base == null || base.isBlank()) {
+            return isBot ? "Bot" : "";
+        }
+        return isBot ? base + " (bot)" : base;
+    }
+
     private CompletableFuture<Void> addBotCommand() {
         return controller.addBot().thenApply(session -> null);
     }
@@ -416,9 +466,10 @@ public final class DameNatureScreen extends JPanel implements Screen {
 
         @Override
         public void onCancelRequested() {
-            if (screenManager != null) {
-                screenManager.show("home");
-            }
+            pendingConfig = activeConfig;
+            configView.setConfig(pendingConfig);
+            showGameplay();
+            announce(gameplayView.currentSelectionAnnouncement());
         }
 
         @Override

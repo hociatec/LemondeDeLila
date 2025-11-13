@@ -1,5 +1,5 @@
 ﻿<#
-    Script de démarrage « one-click » pour Le Monde de Lila.
+    Script de démarrage « one-click » pour Les mondes de Lilas.
 
     Ce script :
       1. Vérifie (et installe si besoin) Maven 3.9.6 dans tools\.
@@ -390,3 +390,4 @@ finally {
 
     Set-Location $rootDirectory
 }
+

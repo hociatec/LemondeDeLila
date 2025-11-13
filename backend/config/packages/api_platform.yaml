@@ -1,5 +1,5 @@
 api_platform:
-    title: 'Le Monde de Lila API'
+    title: 'Les mondes de Lilas API'
     version: '1.0.0'
     defaults:
         stateless: true
@@ -15,4 +15,4 @@ api_platform:
             - '%kernel.project_dir%/src/Module'
     openapi:
         contact:
-            name: 'Le Monde de Lila'
+            name: 'Les mondes de Lilas'

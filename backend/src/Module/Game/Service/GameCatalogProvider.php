@@ -176,6 +176,9 @@ class GameCatalogProvider
 
             if ($item->isDir()) {
                 $dirPath = $item->getPathname();
+                if ($this->isUnderGameDirectory($dirPath)) {
+                    continue;
+                }
                 $relativeDir = ltrim(str_replace($this->catalogPath, '', $dirPath), DIRECTORY_SEPARATOR);
                 if ($relativeDir === '') {
                     continue;
@@ -238,6 +241,21 @@ class GameCatalogProvider
             'games' => $games,
             'categories' => $categoryCollection,
         ];
+    }
+
+    private function isUnderGameDirectory(string $dirPath): bool
+    {
+        $current = $dirPath;
+        while (true) {
+            $parent = dirname($current);
+            if ($parent === $current || !str_starts_with($parent, $this->catalogPath)) {
+                return false;
+            }
+            if (is_file($parent . DIRECTORY_SEPARATOR . 'manifest.json')) {
+                return true;
+            }
+            $current = $parent;
+        }
     }
 
     /**

@@ -17,7 +17,7 @@ import java.util.Objects;
 
 /**
  * Configuration accessible au clavier pour Mission Nemesis.
- * Navigation uniquement aux fleches, validation avec Entree/Espace.
+ * Navigation uniquement aux fleches, validation avec Entrée.
  */
 final class NemesisSetupPanel extends JPanel {
 
@@ -120,7 +120,7 @@ final class NemesisSetupPanel extends JPanel {
                         adjustCurrentOption(1);
                         e.consume();
                     }
-                    case KeyEvent.VK_ENTER, KeyEvent.VK_SPACE -> {
+                    case KeyEvent.VK_ENTER -> {
                         triggerCurrent();
                         e.consume();
                     }

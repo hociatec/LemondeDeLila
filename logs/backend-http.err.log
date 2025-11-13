@@ -1,4 +1,31 @@
-[Wed Nov 12 22:36:09 2025] PHP 8.3.14 Development Server (http://127.0.0.1:8000) started
-[Wed Nov 12 22:36:09 2025] 127.0.0.1:60403 Accepted
-[Wed Nov 12 22:36:10 2025] 127.0.0.1:60403 [200]: GET /
-[Wed Nov 12 22:36:10 2025] 127.0.0.1:60403 Closing
+[Thu Nov 13 07:30:50 2025] PHP 8.3.14 Development Server (http://127.0.0.1:8000) started
+[Thu Nov 13 07:30:51 2025] 127.0.0.1:49769 Accepted
+[Thu Nov 13 07:30:51 2025] 127.0.0.1:49769 [200]: GET /
+[Thu Nov 13 07:30:51 2025] 127.0.0.1:49769 Closing
+[Thu Nov 13 07:32:47 2025] 127.0.0.1:49776 Accepted
+[Thu Nov 13 07:32:48 2025] 127.0.0.1:49776 [200]: POST /api/login
+[Thu Nov 13 07:32:48 2025] 127.0.0.1:49776 Closing
+[Thu Nov 13 07:32:51 2025] 127.0.0.1:49778 Accepted
+[Thu Nov 13 07:32:52 2025] 127.0.0.1:49778 [200]: GET /api/catalog
+[Thu Nov 13 07:32:52 2025] 127.0.0.1:49778 Closing
+[Thu Nov 13 07:33:55 2025] 127.0.0.1:49786 Accepted
+[Thu Nov 13 07:33:55 2025] 127.0.0.1:49786 [201]: POST /api/rooms/
+[Thu Nov 13 07:33:55 2025] 127.0.0.1:49786 Closing
+[Thu Nov 13 07:33:55 2025] 127.0.0.1:49789 Accepted
+[Thu Nov 13 07:33:55 2025] 127.0.0.1:49789 [404]: GET /api/games/dame-nature/rooms/154/state
+[Thu Nov 13 07:33:55 2025] 127.0.0.1:49789 Closing
+[Thu Nov 13 07:34:06 2025] 127.0.0.1:49791 Accepted
+[Thu Nov 13 07:34:07 2025] 127.0.0.1:49791 [200]: POST /api/login
+[Thu Nov 13 07:34:07 2025] 127.0.0.1:49791 Closing
+[Thu Nov 13 07:35:25 2025] 127.0.0.1:57280 Accepted
+[Thu Nov 13 07:35:25 2025] 127.0.0.1:57280 [201]: POST /api/rooms/
+[Thu Nov 13 07:35:25 2025] 127.0.0.1:57280 Closing
+[Thu Nov 13 07:35:25 2025] 127.0.0.1:57283 Accepted
+[Thu Nov 13 07:35:25 2025] 127.0.0.1:57283 [404]: GET /api/games/dame-nature/rooms/155/state
+[Thu Nov 13 07:35:25 2025] 127.0.0.1:57283 Closing
+[Thu Nov 13 07:35:40 2025] 127.0.0.1:57284 Accepted
+[Thu Nov 13 07:35:40 2025] 127.0.0.1:57284 [201]: POST /api/rooms/
+[Thu Nov 13 07:35:40 2025] 127.0.0.1:57284 Closing
+[Thu Nov 13 07:35:40 2025] 127.0.0.1:57287 Accepted
+[Thu Nov 13 07:35:40 2025] 127.0.0.1:57287 [404]: GET /api/games/dame-nature/rooms/156/state
+[Thu Nov 13 07:35:40 2025] 127.0.0.1:57287 Closing

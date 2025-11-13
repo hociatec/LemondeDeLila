@@ -1,6 +1,7 @@
 package com.lemondelila.client;
 
 import com.lemondelila.client.settings.service.AppSettingsService;
+import com.lemondelila.client.application.AppBranding;
 import com.lemondelila.client.application.view.dialog.ConfirmExitDialog;
 import com.lemondelila.client.framework.core.context.ApplicationContext;
 import com.lemondelila.client.framework.core.module.FrameworkBootstrap;
@@ -27,6 +28,7 @@ public final class AppLauncher {
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> bootstrap.shutdown(context)));
         AppSettingsService settingsService = context.get(AppSettingsService.class);
+        AppBranding branding = context.get(AppBranding.class);
 
         SwingUtilities.invokeLater(() -> {
             LilaFrame frame = context.get(LilaFrame.class);
@@ -34,7 +36,8 @@ public final class AppLauncher {
             frame.addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosing(WindowEvent e) {
-                    if (!settingsService.current().confirmOnExit() || ConfirmExitDialog.show(frame)) {
+                    if (!settingsService.current().confirmOnExit()
+                            || ConfirmExitDialog.show(frame, branding.applicationName())) {
                         frame.setVisible(false);
                         frame.dispose();
                         System.exit(0);

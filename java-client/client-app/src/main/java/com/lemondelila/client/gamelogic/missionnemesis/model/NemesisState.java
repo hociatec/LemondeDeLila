@@ -67,7 +67,8 @@ public final class NemesisState {
                          List<Ship> ships,
                          List<Shot> shots,
                          String status,
-                         boolean isBot) {
+                         boolean isBot,
+                         boolean isSelf) {
 
         public Player {
             ships = List.copyOf(ships);
@@ -85,7 +86,10 @@ public final class NemesisState {
     public record Coordinate(int x, int y) {
     }
 
-    public record Shot(int x, int y, int targetId, String result) {
+    public record Shot(int x, int y, int targetId, String result, Integer shipIndex, Boolean damage) {
+        public Shot(int x, int y, int targetId, String result) {
+            this(x, y, targetId, result, null, null);
+        }
     }
 
     public record LogEntry(String type,

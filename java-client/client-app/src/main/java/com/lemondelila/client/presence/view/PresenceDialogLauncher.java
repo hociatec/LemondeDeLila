@@ -3,6 +3,8 @@ package com.lemondelila.client.presence.view;
 import com.lemondelila.client.chat.service.ChatConnectionFactory;
 import com.lemondelila.client.framework.core.di.Inject;
 import com.lemondelila.client.framework.ui.dialog.DialogService;
+import com.lemondelila.client.messaging.controller.MessagingController;
+import com.lemondelila.client.messaging.service.UserRelationshipService;
 
 import javax.swing.SwingUtilities;
 import java.awt.Component;
@@ -20,14 +22,20 @@ public final class PresenceDialogLauncher {
 
     private final ChatConnectionFactory connectionFactory;
     private final DialogService dialogService;
+    private final MessagingController messagingController;
+    private final UserRelationshipService relationshipService;
 
     private PresenceListDialog currentDialog;
 
     @Inject
     public PresenceDialogLauncher(ChatConnectionFactory connectionFactory,
-                                  DialogService dialogService) {
+                                  DialogService dialogService,
+                                  MessagingController messagingController,
+                                  UserRelationshipService relationshipService) {
         this.connectionFactory = Objects.requireNonNull(connectionFactory, "connectionFactory");
         this.dialogService = Objects.requireNonNull(dialogService, "dialogService");
+        this.messagingController = Objects.requireNonNull(messagingController, "messagingController");
+        this.relationshipService = Objects.requireNonNull(relationshipService, "relationshipService");
     }
 
     public void show(Component anchor) {
@@ -39,7 +47,12 @@ public final class PresenceDialogLauncher {
             }
 
             Window owner = resolveOwner(anchor);
-            PresenceListDialog dialog = new PresenceListDialog(owner, connectionFactory, dialogService);
+            PresenceListDialog dialog = new PresenceListDialog(
+                    owner,
+                    connectionFactory,
+                    dialogService,
+                    messagingController,
+                    relationshipService);
             dialog.addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosed(WindowEvent e) {

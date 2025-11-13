@@ -93,7 +93,7 @@ final class DameNatureConfigPanel extends JPanel {
         add(optionRow("Quiz nature", quizValueLabel));
         add(Box.createRigidArea(new Dimension(0, 12)));
 
-        JLabel launchHint = new JLabel("Entrée : lancer la partie, Échap : annuler.");
+        JLabel launchHint = new JLabel("Entrée : lancer la partie, Q : quitter.");
         launchHint.setAlignmentX(LEFT_ALIGNMENT);
         add(launchHint);
         add(Box.createRigidArea(new Dimension(0, 16)));

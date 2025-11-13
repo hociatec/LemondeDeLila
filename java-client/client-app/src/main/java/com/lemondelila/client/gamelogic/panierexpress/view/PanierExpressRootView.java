@@ -176,17 +176,31 @@ public final class PanierExpressRootView extends JPanel implements Screen {
 
     private void installShortcuts() {
         shortcutRegistry.clear();
-        registerShortcut("ESCAPE", "panier.back", "Échap : revenir à la sélection de jeu.", e -> handleCancel());
+        registerShortcut("ESCAPE", "panier.esc.disabled", "Échap : aucune action durant la partie.", e -> narrate("Échap est désactivé pendant la partie. Utilisez Q pour quitter."));
         registerShortcut("TAB", "panier.focus.history", "Tab : consulter l’historique de la partie.", e -> focusHistory());
         registerShortcut("shift TAB", "panier.focus.main", "Maj+Tab : revenir à la zone principale.", e -> focusMainArea());
         registerShortcut("ENTER", "panier.execute", "Entrée : action principale (lancer ou confirmer).", e -> executePrimaryAction());
-        registerShortcut("SPACE", "panier.roll", "Espace : lancer le dé.", e -> attemptRoll());
         registerLetterShortcut('l', "panier.roll", "Lettre L : lancer le dé.", e -> attemptRoll());
         registerLetterShortcut('r', "panier.refresh", "Lettre R : actualiser l’état de la partie.", e -> attemptRefresh());
         registerLetterShortcut('t', "panier.turn", "Lettre T : annoncer le tour en cours.", e -> announceCurrentTurn());
         registerLetterShortcut('s', "panier.score", "Lettre S : annoncer le score courant.", e -> announceScore());
         registerLetterShortcut('p', "panier.basket", "Lettre P : annoncer le contenu de votre panier.", e -> announceBasket());
         registerLetterShortcut('x', "panier.restart", "Lettre X : proposer de redémarrer la partie.", e -> promptRestart());
+        registerLetterShortcut('w', "panier.players", "Lettre W : annoncer les joueurs présents.", e -> announcePlayers());
+        registerLetterShortcut('q', "panier.quit", "Lettre Q : quitter Panier Express après confirmation.", e -> {
+            if (screenManager == null) {
+                return;
+            }
+            dialogService.confirmGameExit("Panier Express", "Voulez-vous quitter la partie en cours ?")
+                    .thenAccept(confirmed -> {
+                        if (Boolean.TRUE.equals(confirmed)) {
+                            controller.reset();
+                            SwingUtilities.invokeLater(() -> screenManager.show("catalog"));
+                        } else {
+                            narrate("Sortie annulée.");
+                        }
+                    });
+        });
 
         for (int digit = 0; digit < 4; digit++) {
             final int answerIndex = digit;
@@ -336,13 +350,13 @@ public final class PanierExpressRootView extends JPanel implements Screen {
             if (state.winnerId() != null) {
                 winner = state.players().stream()
                         .filter(player -> player.id() == state.winnerId())
-                        .map(PanierExpressState.Player::username)
                         .findFirst()
+                        .map(this::formatPlayerName)
                         .orElse("Un joueur");
             }
             return "Partie terminée. Vainqueur : " + winner + '.';
         }
-        String turnPlayer = currentOpt.map(PanierExpressState.Player::username).orElse("?");
+        String turnPlayer = currentOpt.map(this::formatPlayerName).orElse("?");
         if (state.lastRoll() != null) {
             return "Tour de " + turnPlayer + " — dernier dé : " + state.lastRoll();
         }
@@ -356,8 +370,8 @@ public final class PanierExpressRootView extends JPanel implements Screen {
         }
         String waitingPlayer = state.players().stream()
                 .filter(player -> player.id() == pending.playerId())
-                .map(PanierExpressState.Player::username)
                 .findFirst()
+                .map(this::formatPlayerName)
                 .orElse("Un joueur");
         if (pendingForYou) {
             return "Un quiz vous attend. Sélectionnez une proposition avec les touches 1 à 4 puis validez avec Entrée.";
@@ -395,7 +409,8 @@ public final class PanierExpressRootView extends JPanel implements Screen {
     private String buildPlayersProgress(PanierExpressState state, String username) {
         StringBuilder builder = new StringBuilder();
         for (PanierExpressState.Player player : state.players()) {
-            builder.append(player.username());
+            String decorated = formatPlayerName(player);
+            builder.append(decorated);
             if (username != null && username.equalsIgnoreCase(player.username())) {
                 builder.append(" (vous)");
             }
@@ -415,7 +430,7 @@ public final class PanierExpressRootView extends JPanel implements Screen {
     private String buildScoreSummary(PanierExpressState state) {
         StringBuilder builder = new StringBuilder();
         for (PanierExpressState.Player player : state.players()) {
-            builder.append(player.username())
+            builder.append(formatPlayerName(player))
                     .append(" : ")
                     .append(player.basket().size())
                     .append('/')
@@ -431,11 +446,22 @@ public final class PanierExpressRootView extends JPanel implements Screen {
             builder.append("\nVainqueur : ");
             builder.append(state.players().stream()
                     .filter(p -> p.id() == state.winnerId())
-                    .map(PanierExpressState.Player::username)
                     .findFirst()
+                    .map(this::formatPlayerName)
                     .orElse("Un joueur"));
         }
         return builder.toString().strip();
+    }
+
+    private String formatPlayerName(PanierExpressState.Player player) {
+        if (player == null) {
+            return "Joueur inconnu";
+        }
+        String name = player.username();
+        if (name == null || name.isBlank()) {
+            name = "Joueur " + player.id();
+        }
+        return player.isBot() ? name + " (bot)" : name;
     }
 
     private void updateHistory(List<PanierExpressState.LogEntry> entries) {
@@ -569,8 +595,9 @@ public final class PanierExpressRootView extends JPanel implements Screen {
             accessibilityService.announceCustom(screenReaderBridge, "Tour inconnu.");
             return;
         }
-        voiceFeedback.announceTurnReminder(state, lastYourTurn);
-        String playerName = currentOpt.map(PanierExpressState.Player::username).orElse(null);
+        String reminder = voiceFeedback.announceTurnReminder(state, lastYourTurn);
+        narrate(reminder);
+        String playerName = currentOpt.map(this::formatPlayerName).orElse(null);
         AccessibilityService.TurnContext turnEvent = new AccessibilityService.TurnContext(
                 lastYourTurn,
                 playerName,
@@ -623,6 +650,39 @@ public final class PanierExpressRootView extends JPanel implements Screen {
         );
         String message = accessibilityService.announceBasket(screenReaderBridge, event);
         gamePanel.announceBasket(message);
+    }
+
+    private void announcePlayers() {
+        if (lastSession == null) {
+            narrate("Aucune partie active.");
+            return;
+        }
+        PanierExpressState state = lastSession.state();
+        List<PanierExpressState.Player> players = state != null ? state.players() : null;
+        if (players == null || players.isEmpty()) {
+            narrate("Aucun joueur autour de la table.");
+            return;
+        }
+        String currentName = currentUsername();
+        StringBuilder builder = new StringBuilder();
+        builder.append("Table de ").append(players.size())
+                .append(players.size() > 1 ? " joueurs : " : " joueur : ");
+        for (int i = 0; i < players.size(); i++) {
+            PanierExpressState.Player player = players.get(i);
+            String name = player != null ? player.username() : null;
+            String display = (name == null || name.isBlank()) ? "Joueur " + (i + 1) : name;
+            if (currentName != null && name != null && name.equalsIgnoreCase(currentName)) {
+                display = display + " (vous)";
+            }
+            if (player != null && player.isBot()) {
+                display = display + " (bot)";
+            }
+            builder.append(display);
+            if (i < players.size() - 1) {
+                builder.append(", ");
+            }
+        }
+        narrate(builder.toString());
     }
 
     private void executePrimaryAction() {

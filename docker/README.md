@@ -1,40 +1,40 @@
-# Environnement de développement conteneurisé
+﻿# Environnement de dÃ©veloppement conteneurisÃ©
 
-Ce dossier fournit une configuration Docker destinée à uniformiser l'environnement de travail
-pour l'application « Le Monde de Lila ». Le conteneur principal regroupe les outils nécessaires
+Ce dossier fournit une configuration Docker destinÃ©e Ã  uniformiser l'environnement de travail
+pour l'application Â« Les mondes de Lilas Â». Le conteneur principal regroupe les outils nÃ©cessaires
 au back-end Symfony, au client Java et aux utilitaires front (Node/Yarn).
 
 ## Contenu des services
 
 | Service    | Description                                                                                  |
 |------------|----------------------------------------------------------------------------------------------|
-| `app`      | Image de développement (PHP 8.2, Composer, Symfony CLI, OpenJDK 21, Maven, Node 18, Yarn).   |
+| `app`      | Image de dÃ©veloppement (PHP 8.2, Composer, Symfony CLI, OpenJDK 21, Maven, Node 18, Yarn).   |
 | `database` | MySQL 8.0 pour les besoins du back-end.                                                      |
 
-Les caches Maven/Composer sont montés dans des volumes Docker pour accélérer les compilations.
+Les caches Maven/Composer sont montÃ©s dans des volumes Docker pour accÃ©lÃ©rer les compilations.
 
-## Prérequis
-- Docker Desktop lancé (ou le daemon Docker actif sous WSL2).
+## PrÃ©requis
+- Docker Desktop lancÃ© (ou le daemon Docker actif sous WSL2).
 - Terminal avec droits suffisants (PowerShell/WSL en mode administrateur si besoin).
 
-## Démarrage
+## DÃ©marrage
 
-Depuis la racine du dépôt :
+Depuis la racine du dÃ©pÃ´t :
 
 ```bash
 docker compose -f docker/docker-compose.dev.yml up -d
 ```
 
-Cela démarre les conteneurs en tâche de fond. Le service `app` reste en attente (`sleep infinity`)
-afin de servir de « dev shell ».
+Cela dÃ©marre les conteneurs en tÃ¢che de fond. Le service `app` reste en attente (`sleep infinity`)
+afin de servir de Â« dev shell Â».
 
-## Accéder au shell de développement
+## AccÃ©der au shell de dÃ©veloppement
 
 ```bash
 docker compose -f docker/docker-compose.dev.yml exec app bash
 ```
 
-Toutes les commandes ci-dessous sont à lancer à l'intérieur du shell.
+Toutes les commandes ci-dessous sont Ã  lancer Ã  l'intÃ©rieur du shell.
 
 ## Configuration Symfony
 
@@ -62,7 +62,7 @@ mvn clean install
 symfony serve --no-tls --port=8000
 ```
 
-Le serveur Symfony est exposé sur le port `8000` de l'hôte.
+Le serveur Symfony est exposÃ© sur le port `8000` de l'hÃ´te.
 
 Pour relancer la base :
 
@@ -70,16 +70,17 @@ Pour relancer la base :
 docker compose -f docker/docker-compose.dev.yml restart database
 ```
 
-## Arrêt et nettoyage
+## ArrÃªt et nettoyage
 
 ```bash
 docker compose -f docker/docker-compose.dev.yml down
 ```
 
-Pour supprimer les volumes (cache Maven, Composer, base de données) ajoutez `-v`.
+Pour supprimer les volumes (cache Maven, Composer, base de donnÃ©es) ajoutez `-v`.
 
 ## Notes
 
-- Le client Java est une application Swing : l'affichage graphique nécessite toujours l'environnement
-  hôte (le conteneur sert au build, pas à l'exécution graphique).
-- Les variables d'environnement de la base peuvent être adaptées dans `docker/docker-compose.dev.yml`.
+- Le client Java est une application Swing : l'affichage graphique nÃ©cessite toujours l'environnement
+  hÃ´te (le conteneur sert au build, pas Ã  l'exÃ©cution graphique).
+- Les variables d'environnement de la base peuvent Ãªtre adaptÃ©es dans `docker/docker-compose.dev.yml`.
+

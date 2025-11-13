@@ -114,7 +114,9 @@ final class PanierExpressVoiceFeedback {
         if (yourTurn) {
             message.append("C’est votre tour.");
         } else {
-            String player = state.currentPlayer().map(PanierExpressState.Player::username).orElse("un joueur");
+            String player = state.currentPlayer()
+                    .map(this::formatPlayerName)
+                    .orElse("un joueur");
             message.append("C’est au tour de ").append(player).append('.');
         }
         if (state.lastRoll() != null) {
@@ -203,6 +205,17 @@ final class PanierExpressVoiceFeedback {
             return ("Vous" + message.substring(username.length())).trim();
         }
         return message.replace(username, "Vous").trim();
+    }
+
+    private String formatPlayerName(PanierExpressState.Player player) {
+        if (player == null) {
+            return "un joueur";
+        }
+        String name = player.username();
+        if (name == null || name.isBlank()) {
+            name = "Joueur " + player.id();
+        }
+        return player.isBot() ? name + " (bot)" : name;
     }
 
     private void handleAudioFeedback(List<PanierExpressState.LogEntry> logs) {
