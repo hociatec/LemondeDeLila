@@ -80,7 +80,7 @@ public final class ClientAppModule implements LilaModule {
 
         builder.bindFactory(RealtimeGateway.class, ctx -> {
             ConfigurationService config = ctx.get(ConfigurationService.class);
-            URI baseUri = URI.create(config.get("network.ws.url", "ws://127.0.0.1:8081/ws"));
+            URI baseUri = URI.create(config.get("network.ws.url", "wss://ws.hociatec.fr/ws"));
             NemesisSessionStore store = ctx.get(NemesisSessionStore.class);
             return new TokenAwareRealtimeGateway(
                     ctx.get(java.net.http.HttpClient.class),
@@ -316,7 +316,6 @@ public final class ClientAppModule implements LilaModule {
         return 100;
     }
 }
-
 
 
 
