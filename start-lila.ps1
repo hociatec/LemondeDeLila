@@ -4,17 +4,15 @@
     Ce script :
       1. Vérifie (et installe si besoin) Maven 3.9.6 dans tools\.
       2. Optionnellement installe les dépendances PHP (si vendor absent et composer disponible).
-      3. Lance le serveur HTTP Symfony (php -S) et le serveur WebSocket app:realtime:serve.
-      4. Construit le client Java Swing (Maven multi-modules) et copie les dépendances runtime.
-      5. Lance l'application Swing automatiquement.
-      6. Ferme proprement les processus backend à la fermeture de l'application Java.
+      3. Par défaut suppose les services backend déjà disponibles (production distante) et se contente de construire/lancer le client Java Swing.
+      4. Dans un contexte local, vous pouvez forcer le lancement des serveurs via -SkipBackend:$false et -SkipRealtime:$false.
 
     Utilisation :
         powershell -ExecutionPolicy Bypass -File .\start-lila.ps1
 
     Paramètres :
-        -SkipBackend   : ne lance pas les serveurs backend (suppose déjà lancés).
-        -SkipRealtime  : ne lance pas le serveur WebSocket.
+        -SkipBackend   : ne lance pas les serveurs backend (suppose déjà lancés). Par défaut activé.
+        -SkipRealtime  : ne lance pas le serveur WebSocket. Par défaut activé.
         -SkipBuild     : saute la compilation Maven (suppose target\ déjà initialisé).
 #>
 [CmdletBinding()]
@@ -23,6 +21,17 @@ param(
     [switch]$SkipRealtime,
     [switch]$SkipBuild
 )
+
+if (-not $PSBoundParameters.ContainsKey('SkipBackend')) {
+    $SkipBackend = $true
+}
+if (-not $PSBoundParameters.ContainsKey('SkipRealtime')) {
+    $SkipRealtime = $true
+}
+
+if ($SkipBackend -and $SkipRealtime) {
+    Write-Host "Mode distant : aucun serveur backend local ne sera lancé."
+}
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
