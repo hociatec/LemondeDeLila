@@ -124,20 +124,6 @@ public final class DameNatureScreen extends JPanel implements Screen {
         registerShortcut("DOWN", "damenature-target-next", "Flèche bas : sélectionner l’adversaire suivant.", e -> announce(gameplayView.cycleTarget(1)));
         registerShortcut("LEFT", "damenature-card-prev", "Flèche gauche : choisir la carte précédente à demander.", e -> announce(gameplayView.cycleCard(-1)));
         registerShortcut("RIGHT", "damenature-card-next", "Flèche droite : choisir la carte suivante à demander.", e -> announce(gameplayView.cycleCard(1)));
-        registerLetterShortcut('q', "damenature-quit", "Lettre Q : quitter la partie Dame Nature après confirmation.", e -> {
-            if (screenManager != null) {
-                dialogService.confirmGameExit("Dame Nature", "Voulez-vous quitter la partie en cours ?")
-                        .thenAccept(confirmed -> {
-                            if (Boolean.TRUE.equals(confirmed)) {
-                                controller.reset();
-                                gameplayView.reset();
-                                SwingUtilities.invokeLater(() -> screenManager.show("catalog"));
-                            } else {
-                                announce("Sortie annulée.");
-                            }
-                        });
-            }
-        });
         registerLetterShortcut('e', "damenature-request", "Lettre E : demander une carte à l’adversaire sélectionné.", e -> sendAskAction());
         registerLetterShortcut('r', "damenature-refresh", "Lettre R : actualiser l’état de la partie.", e -> handleActionFeedback(controller.refresh(),
                 "Actualisation en cours...", null, null));
@@ -394,6 +380,11 @@ public final class DameNatureScreen extends JPanel implements Screen {
     }
 
     private void exitToCatalog() {
+        controller.reset();
+        gameplayView.reset();
+        currentSession = null;
+        launchInProgress = false;
+        mode = Mode.CONFIGURATION;
         if (screenManager != null) {
             SwingUtilities.invokeLater(() -> screenManager.show("catalog"));
         }

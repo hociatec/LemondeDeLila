@@ -12,12 +12,14 @@ import com.lemondelila.client.framework.ui.dialog.DialogService;
 import com.lemondelila.client.framework.ui.screen.Screen;
 import com.lemondelila.client.framework.ui.screen.ScreenContext;
 import com.lemondelila.client.framework.ui.screen.ScreenManager;
+import com.lemondelila.client.settings.service.AppSettingsService;
 import com.lemondelila.client.user.events.LoginFailed;
 import com.lemondelila.client.user.events.LoginRequested;
 import com.lemondelila.client.user.events.LoginSucceeded;
 import com.lemondelila.client.user.events.RegistrationFailed;
 import com.lemondelila.client.user.events.RegistrationRequested;
 import com.lemondelila.client.user.events.RegistrationSucceeded;
+import com.lemondelila.client.user.model.ClientSession;
 
 import javax.swing.AbstractAction;
 import javax.swing.JPanel;
@@ -36,6 +38,8 @@ public final class HomeScreen extends JPanel implements Screen, HomeEventCoordin
     private final Supplier<NarrationQueue> narrationQueueSupplier;
     private final HomeView view;
     private final HomeEventCoordinator eventCoordinator;
+    private final ClientSession session;
+    private final AppSettingsService settingsService;
 
     private volatile NarrationQueue narrationQueue;
     private ScreenManager screenManager;
@@ -49,7 +53,8 @@ public final class HomeScreen extends JPanel implements Screen, HomeEventCoordin
                       ApplicationContext context,
                       AppBranding branding) {
         this(eventBus, actionManager, shortcutRegistry, focusHighlighter, dialogService,
-                () -> context.get(NarrationQueue.class), branding);
+                () -> context.get(NarrationQueue.class), branding, context.get(ClientSession.class),
+                context.get(AppSettingsService.class));
     }
 
     HomeScreen(DomainEventBus eventBus,
@@ -58,7 +63,9 @@ public final class HomeScreen extends JPanel implements Screen, HomeEventCoordin
                FocusHighlighter focusHighlighter,
                DialogService dialogService,
                Supplier<NarrationQueue> narrationQueueSupplier,
-               AppBranding branding) {
+               AppBranding branding,
+               ClientSession session,
+               AppSettingsService settingsService) {
         this.eventBus = eventBus;
         this.actionManager = actionManager;
         this.shortcutRegistry = shortcutRegistry;
@@ -66,6 +73,8 @@ public final class HomeScreen extends JPanel implements Screen, HomeEventCoordin
         this.narrationQueueSupplier = narrationQueueSupplier;
         this.view = new HomeView(focusHighlighter, branding);
         this.eventCoordinator = new HomeEventCoordinator(eventBus);
+        this.session = session;
+        this.settingsService = settingsService;
 
         setLayout(new BorderLayout());
         add(view.component(), BorderLayout.CENTER);
@@ -134,7 +143,10 @@ public final class HomeScreen extends JPanel implements Screen, HomeEventCoordin
         this.narrationQueue = narrationQueueSupplier.get();
         eventCoordinator.subscribe(this);
         view.showLanding();
-        if (narrationQueue != null) {
+        boolean autoLogin = settingsService.current().stayConnected() && session.authenticated().isPresent();
+        if (autoLogin) {
+            session.authenticated().ifPresent(auth -> eventBus.publish(new LoginSucceeded(auth.username(), auth.token())));
+        } else if (narrationQueue != null) {
             narrationQueue.enqueue(this, "Ecran d'accueil, utilisez les fleches pour naviguer.");
         }
     }

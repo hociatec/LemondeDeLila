@@ -75,7 +75,8 @@ public final class AppSettingsService {
                     readVolume(node, "soundSelectVolume", fallbackEffectsVolume),
                     readFlag(node, "confirmOnExit", defaults.confirmOnExit()),
                     readFlag(node, "chatEnabled", defaults.chatEnabled()),
-                    readFlag(node, "confirmChatExit", defaults.confirmChatExit())
+                    readFlag(node, "confirmChatExit", defaults.confirmChatExit()),
+                    readFlag(node, "stayConnected", defaults.stayConnected())
             );
             settings = sanitize(loaded);
         } catch (IOException ignored) {
@@ -136,7 +137,8 @@ public final class AppSettingsService {
                 clampVolume(candidate.soundSelectVolume()),
                 candidate.confirmOnExit(),
                 candidate.chatEnabled(),
-                candidate.confirmChatExit()
+                candidate.confirmChatExit(),
+                candidate.stayConnected()
         );
     }
 

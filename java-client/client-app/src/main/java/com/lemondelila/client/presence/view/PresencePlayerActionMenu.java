@@ -3,7 +3,6 @@ package com.lemondelila.client.presence.view;
 import com.lemondelila.client.messaging.service.UserRelationshipService;
 import com.lemondelila.client.presence.model.PresencePlayer;
 
-import javax.swing.JList;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import java.awt.Component;
@@ -14,7 +13,7 @@ import java.util.function.Consumer;
 /**
  * Menu contextuel des joueurs connectés (messagerie, amis, blocage).
  */
-final class PresencePlayerActionMenu {
+public final class PresencePlayerActionMenu {
 
     private final JPopupMenu menu = new JPopupMenu();
     private final JMenuItem messageItem = new JMenuItem("Envoyer un message privé");
@@ -28,11 +27,10 @@ final class PresencePlayerActionMenu {
 
     private PresencePlayer current;
 
-    PresencePlayerActionMenu(JList<PresencePlayer> list,
-                             Consumer<PresencePlayer> onMessage,
-                             Consumer<PresencePlayer> onFriendToggle,
-                             Consumer<PresencePlayer> onBlockToggle,
-                             UserRelationshipService relationshipService) {
+    public PresencePlayerActionMenu(Consumer<PresencePlayer> onMessage,
+                                    Consumer<PresencePlayer> onFriendToggle,
+                                    Consumer<PresencePlayer> onBlockToggle,
+                                    UserRelationshipService relationshipService) {
         this.onMessage = onMessage;
         this.onFriendToggle = onFriendToggle;
         this.onBlockToggle = onBlockToggle;
@@ -59,7 +57,7 @@ final class PresencePlayerActionMenu {
         menu.add(blockItem);
     }
 
-    List<String> showAt(PresencePlayer player, Component anchor, int x, int y) {
+    public List<String> showAt(PresencePlayer player, Component anchor, int x, int y) {
         List<String> options = prepareFor(player);
         if (player != null) {
             menu.show(anchor, x, y);

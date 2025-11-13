@@ -36,6 +36,12 @@ class PrivateMessage
     #[ORM\Column(name: 'created_at', type: 'datetime_immutable')]
     private \DateTimeImmutable $createdAt;
 
+    #[ORM\Column(name: 'deleted_by_sender_at', type: 'datetime_immutable', nullable: true)]
+    private ?\DateTimeImmutable $deletedBySenderAt = null;
+
+    #[ORM\Column(name: 'deleted_by_recipient_at', type: 'datetime_immutable', nullable: true)]
+    private ?\DateTimeImmutable $deletedByRecipientAt = null;
+
     public function __construct(User $sender, User $recipient, string $message)
     {
         $this->sender = $sender;
@@ -73,6 +79,46 @@ class PrivateMessage
     public function getCreatedAt(): \DateTimeImmutable
     {
         return $this->createdAt;
+    }
+
+    public function getDeletedBySenderAt(): ?\DateTimeImmutable
+    {
+        return $this->deletedBySenderAt;
+    }
+
+    public function markDeletedBySender(): void
+    {
+        $this->deletedBySenderAt = new \DateTimeImmutable();
+    }
+
+    public function restoreForSender(): void
+    {
+        $this->deletedBySenderAt = null;
+    }
+
+    public function getDeletedByRecipientAt(): ?\DateTimeImmutable
+    {
+        return $this->deletedByRecipientAt;
+    }
+
+    public function markDeletedByRecipient(): void
+    {
+        $this->deletedByRecipientAt = new \DateTimeImmutable();
+    }
+
+    public function restoreForRecipient(): void
+    {
+        $this->deletedByRecipientAt = null;
+    }
+
+    public function isDeletedBySender(): bool
+    {
+        return $this->deletedBySenderAt !== null;
+    }
+
+    public function isDeletedByRecipient(): bool
+    {
+        return $this->deletedByRecipientAt !== null;
     }
 
     private function generateMessageId(): string

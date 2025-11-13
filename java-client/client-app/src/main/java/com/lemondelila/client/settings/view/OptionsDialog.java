@@ -36,6 +36,7 @@ public final class OptionsDialog extends JDialog {
     private final JCheckBox confirmExit = new JCheckBox("Demander confirmation a la fermeture");
     private final JCheckBox chatEnabled = new JCheckBox("Activer le tchat global");
     private final JCheckBox confirmChatExit = new JCheckBox("Demander confirmation avant de fermer le tchat");
+    private final JCheckBox stayConnected = new JCheckBox("Rester connecté automatiquement");
     private final JCheckBox soundAppLaunch = new JCheckBox("Son d'entrée dans la taverne");
     private final JCheckBox soundBackground = new JCheckBox("Ambiance de taverne en fond");
     private final JCheckBox soundNavigate = new JCheckBox("Son lors de la navigation");
@@ -75,6 +76,10 @@ public final class OptionsDialog extends JDialog {
         registerNavigationSound(soundBackground);
         registerNavigationSound(soundNavigate);
         registerNavigationSound(soundSelect);
+        registerNavigationSound(confirmExit);
+        registerNavigationSound(chatEnabled);
+        registerNavigationSound(confirmChatExit);
+        registerNavigationSound(stayConnected);
         registerNavigationSound(saveButton);
         registerNavigationSound(cancelButton);
         loadValues();
@@ -134,6 +139,8 @@ public final class OptionsDialog extends JDialog {
     private JPanel buildGeneralPanel() {
         JPanel panel = verticalPanel();
         panel.add(confirmExit);
+        panel.add(Box.createRigidArea(new java.awt.Dimension(0, 8)));
+        panel.add(stayConnected);
         return panel;
     }
 
@@ -163,7 +170,8 @@ public final class OptionsDialog extends JDialog {
                     selectVolumeSlider.getValue(),
                     confirmExit.isSelected(),
                     chatEnabled.isSelected(),
-                    confirmChatExit.isSelected()
+                    confirmChatExit.isSelected(),
+                    stayConnected.isSelected()
             ));
             dispose();
         });
@@ -193,6 +201,7 @@ public final class OptionsDialog extends JDialog {
         confirmExit.setSelected(current.confirmOnExit());
         chatEnabled.setSelected(current.chatEnabled());
         confirmChatExit.setSelected(current.confirmChatExit());
+        stayConnected.setSelected(current.stayConnected());
         updateVolumeControls();
     }
 

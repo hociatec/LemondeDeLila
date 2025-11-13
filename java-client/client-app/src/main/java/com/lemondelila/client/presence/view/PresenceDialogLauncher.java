@@ -1,10 +1,10 @@
 package com.lemondelila.client.presence.view;
 
-import com.lemondelila.client.chat.service.ChatConnectionFactory;
 import com.lemondelila.client.framework.core.di.Inject;
 import com.lemondelila.client.framework.ui.dialog.DialogService;
 import com.lemondelila.client.messaging.controller.MessagingController;
 import com.lemondelila.client.messaging.service.UserRelationshipService;
+import com.lemondelila.client.presence.service.PresenceRealtimeService;
 
 import javax.swing.SwingUtilities;
 import java.awt.Component;
@@ -20,7 +20,7 @@ import java.util.Objects;
  */
 public final class PresenceDialogLauncher {
 
-    private final ChatConnectionFactory connectionFactory;
+    private final PresenceRealtimeService realtimeService;
     private final DialogService dialogService;
     private final MessagingController messagingController;
     private final UserRelationshipService relationshipService;
@@ -28,11 +28,11 @@ public final class PresenceDialogLauncher {
     private PresenceListDialog currentDialog;
 
     @Inject
-    public PresenceDialogLauncher(ChatConnectionFactory connectionFactory,
+    public PresenceDialogLauncher(PresenceRealtimeService realtimeService,
                                   DialogService dialogService,
                                   MessagingController messagingController,
                                   UserRelationshipService relationshipService) {
-        this.connectionFactory = Objects.requireNonNull(connectionFactory, "connectionFactory");
+        this.realtimeService = Objects.requireNonNull(realtimeService, "realtimeService");
         this.dialogService = Objects.requireNonNull(dialogService, "dialogService");
         this.messagingController = Objects.requireNonNull(messagingController, "messagingController");
         this.relationshipService = Objects.requireNonNull(relationshipService, "relationshipService");
@@ -49,10 +49,10 @@ public final class PresenceDialogLauncher {
             Window owner = resolveOwner(anchor);
             PresenceListDialog dialog = new PresenceListDialog(
                     owner,
-                    connectionFactory,
                     dialogService,
                     messagingController,
-                    relationshipService);
+                    relationshipService,
+                    realtimeService);
             dialog.addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosed(WindowEvent e) {

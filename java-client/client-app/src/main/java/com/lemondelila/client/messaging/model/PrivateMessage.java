@@ -9,9 +9,15 @@ public record PrivateMessage(
         int recipientId,
         String recipientUsername,
         String text,
-        Instant createdAt) {
+        Instant createdAt,
+        String direction,
+        Instant deletedAt) {
 
     public boolean isFrom(String username) {
         return username != null && !username.isBlank() && senderUsername.equalsIgnoreCase(username);
+    }
+
+    public boolean isDeleted() {
+        return deletedAt != null;
     }
 }

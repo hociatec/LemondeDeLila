@@ -8,6 +8,8 @@ import com.lemondelila.client.messaging.model.PrivateMessage;
 import com.lemondelila.client.user.model.ClientSession;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -79,6 +81,77 @@ public final class MessagingService {
         return loadBox("outbox", limit);
     }
 
+    public CompletableFuture<List<PrivateMessage>> loadDeleted(int limit) {
+        return loadBox("deleted", limit);
+    }
+
+    public CompletableFuture<PrivateMessage> deleteMessage(String messageId) {
+        CompletableFuture<PrivateMessage> future = new CompletableFuture<>();
+        scheduler.runAsync(() -> {
+            try {
+                JsonNode response = restClient.delete(
+                        "messaging/messages/" + messageId,
+                        authHeaders());
+                JsonNode messageNode = response.path("message");
+                future.complete(parseMessage(messageNode));
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                future.completeExceptionally(new IOException("Suppression interrompue", e));
+            } catch (Exception e) {
+                future.completeExceptionally(e);
+            }
+        });
+        return future;
+    }
+
+    public CompletableFuture<PrivateMessage> restoreMessage(String messageId) {
+        CompletableFuture<PrivateMessage> future = new CompletableFuture<>();
+        scheduler.runAsync(() -> {
+            try {
+                JsonNode response = restClient.post(
+                        "messaging/messages/" + messageId + "/restore",
+                        authHeaders(),
+                        Map.of());
+                JsonNode messageNode = response.path("message");
+                future.complete(parseMessage(messageNode));
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                future.completeExceptionally(new IOException("Restauration interrompue", e));
+            } catch (Exception e) {
+                future.completeExceptionally(e);
+            }
+        });
+        return future;
+    }
+
+    public CompletableFuture<KnownUser> lookupUser(String username) {
+        CompletableFuture<KnownUser> future = new CompletableFuture<>();
+        scheduler.runAsync(() -> {
+            try {
+                String encoded = URLEncoder.encode(username, StandardCharsets.UTF_8);
+                JsonNode response = restClient.get(
+                        "messaging/users/search?username=" + encoded,
+                        authHeaders());
+                JsonNode userNode = response.path("user");
+                if (!userNode.isObject()) {
+                    throw new IOException("Réponse de recherche invalide.");
+                }
+                int id = userNode.path("id").asInt(-1);
+                if (id <= 0) {
+                    throw new IOException("Utilisateur introuvable.");
+                }
+                String resolvedUsername = userNode.path("username").asText("");
+                future.complete(new KnownUser(id, resolvedUsername));
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                future.completeExceptionally(new IOException("Recherche interrompue", e));
+            } catch (Exception e) {
+                future.completeExceptionally(e);
+            }
+        });
+        return future;
+    }
+
     private CompletableFuture<List<PrivateMessage>> loadBox(String box, int limit) {
         CompletableFuture<List<PrivateMessage>> future = new CompletableFuture<>();
         scheduler.runAsync(() -> {
@@ -131,6 +204,19 @@ public final class MessagingService {
         String id = node.path("id").asText("");
         String text = node.path("text").asText("");
         Instant createdAt = parseInstant(node.path("createdAt").asText(""));
+        String direction = node.path("direction").asText("");
+        Instant deletedAt = parseOptionalInstant(node.path("deletedAt").asText(""));
+        if (direction.isBlank()) {
+            String currentUsername = session.authenticated()
+                    .map(ClientSession.AuthState::username)
+                    .orElse("");
+            if (!currentUsername.isBlank()
+                    && currentUsername.equalsIgnoreCase(senderNode.path("username").asText(""))) {
+                direction = "sent";
+            } else {
+                direction = "received";
+            }
+        }
         return new PrivateMessage(
                 id,
                 senderNode.path("id").asInt(-1),
@@ -138,7 +224,9 @@ public final class MessagingService {
                 recipientNode.path("id").asInt(-1),
                 recipientNode.path("username").asText(""),
                 text,
-                createdAt
+                createdAt,
+                direction,
+                deletedAt
         );
     }
 
@@ -153,7 +241,21 @@ public final class MessagingService {
         }
     }
 
+    private Instant parseOptionalInstant(String iso) {
+        if (iso == null || iso.isBlank()) {
+            return null;
+        }
+        try {
+            return Instant.parse(iso);
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
     private int clamp(int limit) {
         return Math.max(1, Math.min(500, limit));
+    }
+
+    public record KnownUser(int id, String username) {
     }
 }

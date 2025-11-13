@@ -32,7 +32,10 @@ final class NemesisFooterPanel extends JPanel {
             participantsLabel.getAccessibleContext().setAccessibleName("Bots détectés");
             participantsLabel.getAccessibleContext().setAccessibleDescription(participantsLabel.getText());
         }
-        announce(statusLabel, "Configuration requise. Utilisez les flèches puis Entrée pour lancer une partie.");
+        statusLabel.setText("");
+        if (statusLabel.getAccessibleContext() != null) {
+            statusLabel.getAccessibleContext().setAccessibleDescription("");
+        }
     }
 
     void showPhase(String phase) {
@@ -61,6 +64,9 @@ final class NemesisFooterPanel extends JPanel {
 
     void showStatus(String status) {
         statusLabel.setText(status);
+        if (statusLabel.getAccessibleContext() != null) {
+            statusLabel.getAccessibleContext().setAccessibleDescription(status);
+        }
         announce(statusLabel, status);
     }
 
@@ -68,8 +74,10 @@ final class NemesisFooterPanel extends JPanel {
         phaseLabel.setText("Phase : -");
         roundLabel.setText("Manche : -");
         showParticipants("Bots détectés : aucun.");
-        statusLabel.setText("Utilisez les flèches puis Entrée pour lancer une partie.");
-        announce(statusLabel, "Configuration requise. Utilisez les flèches puis Entrée pour lancer une partie.");
+        statusLabel.setText("");
+        if (statusLabel.getAccessibleContext() != null) {
+            statusLabel.getAccessibleContext().setAccessibleDescription("");
+        }
     }
 
     private void configureLabelAlignment() {

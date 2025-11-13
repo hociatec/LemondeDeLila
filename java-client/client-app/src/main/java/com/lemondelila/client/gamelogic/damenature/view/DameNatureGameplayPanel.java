@@ -91,7 +91,6 @@ final class DameNatureGameplayPanel extends JPanel {
 
     void setStatusMessage(String message) {
         statusLabel.setText(message);
-        setAccessibleDescription(statusLabel, message);
         accessibilityService.announceCustom(statusLabel, message);
     }
 

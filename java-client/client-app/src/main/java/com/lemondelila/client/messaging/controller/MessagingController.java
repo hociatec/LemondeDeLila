@@ -80,4 +80,12 @@ public final class MessagingController {
     public CompletableFuture<java.util.List<PrivateMessage>> loadConversation(int userId) {
         return messagingService.loadConversation(userId, 200);
     }
+
+    public CompletableFuture<PrivateMessage> deleteMessage(String messageId) {
+        return messagingService.deleteMessage(messageId);
+    }
+
+    public CompletableFuture<PrivateMessage> restoreMessage(String messageId) {
+        return messagingService.restoreMessage(messageId);
+    }
 }

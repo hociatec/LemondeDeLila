@@ -11,5 +11,6 @@
   "soundSelectVolume" : 61,
   "confirmOnExit" : true,
   "chatEnabled" : true,
-  "confirmChatExit" : true
+  "confirmChatExit" : true,
+  "stayConnected" : false
 }

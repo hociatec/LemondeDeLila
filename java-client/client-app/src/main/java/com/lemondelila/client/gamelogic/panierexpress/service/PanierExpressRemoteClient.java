@@ -7,6 +7,7 @@ import com.lemondelila.client.gamelogic.panierexpress.model.PanierExpressState;
 import com.lemondelila.client.gamelogic.panierexpress.model.PanierExpressStateMapper;
 import com.lemondelila.client.gamelogic.panierexpress.service.PanierExpressCommands;
 import com.lemondelila.client.game.model.GameSessionManager;
+import com.lemondelila.client.game.service.RoomBotRemoteClient;
 import com.lemondelila.client.user.model.ClientSession;
 import com.lemondelila.client.game.service.RemoteGameServiceSupport;
 import com.lemondelila.client.framework.core.di.Inject;
@@ -14,6 +15,7 @@ import com.lemondelila.client.framework.core.task.TaskScheduler;
 import com.lemondelila.client.framework.network.rest.RestClient;
 
 import java.io.IOException;
+import java.util.Objects;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
@@ -22,11 +24,15 @@ public final class PanierExpressRemoteClient extends RemoteGameServiceSupport
 
     private static final String GAME_PATH = "games/panier-express";
 
+    private final RoomBotRemoteClient roomBots;
+
     @Inject
     public PanierExpressRemoteClient(RestClient restClient,
                                      TaskScheduler scheduler,
-                                     ClientSession session) {
+                                     ClientSession session,
+                                     RoomBotRemoteClient roomBots) {
         super(restClient, scheduler, session);
+        this.roomBots = Objects.requireNonNull(roomBots, "roomBots");
     }
 
     @Override
@@ -35,14 +41,22 @@ public final class PanierExpressRemoteClient extends RemoteGameServiceSupport
     }
 
     public CompletableFuture<PanierExpressSession> startNewGame(PanierExpressGameOptions options) {
+        int robots = options == null ? PanierExpressGameOptions.DEFAULT_ROBOT_COUNT : options.robotCount();
+        int requestedBots = Math.max(PanierExpressGameOptions.MIN_ROBOT_COUNT,
+                Math.min(PanierExpressGameOptions.MAX_ROBOT_COUNT, robots));
         return supplyAsync(() -> {
             Map<String, String> headers = authHeaders();
-            int robotCount = options == null ? PanierExpressGameOptions.DEFAULT_ROBOT_COUNT : options.robotCount();
-            int seats = Math.max(1, Math.min(robotCount + 1, 6));
+            int seats = Math.max(2, Math.min(requestedBots + 1, 6));
             int roomId = createRoom("panier-express", "Panier Express", seats, headers);
-            PanierExpressState state = fetchStateInternal(roomId, headers);
-            return new PanierExpressSession(roomId, state);
-        });
+            return new RoomSetup(roomId, requestedBots);
+        }).thenCompose(setup ->
+                addBotsForRoom(setup.roomId(), setup.botCount())
+                        .thenCompose(ignored -> supplyAsync(() -> {
+                            Map<String, String> headers = authHeaders();
+                            PanierExpressState state = fetchStateInternal(setup.roomId(), headers);
+                            return new PanierExpressSession(setup.roomId(), state);
+                        }))
+        );
     }
 
     public CompletableFuture<PanierExpressSession> refresh(int roomId) {
@@ -86,6 +100,21 @@ public final class PanierExpressRemoteClient extends RemoteGameServiceSupport
         JsonNode node = restClient.get(GAME_PATH + "/rooms/" + roomId + "/state", headers);
         return PanierExpressStateMapper.fromJson(node);
     }
+
+    private CompletableFuture<Void> addBotsForRoom(int roomId, int botCount) {
+        int target = Math.max(0, Math.min(botCount, PanierExpressGameOptions.MAX_ROBOT_COUNT));
+        if (target == 0) {
+            return CompletableFuture.completedFuture(null);
+        }
+        CompletableFuture<Void> chain = CompletableFuture.completedFuture(null);
+        for (int i = 0; i < target; i++) {
+            chain = chain.thenCompose(ignored ->
+                    roomBots.addBot(roomId).thenApply(added -> null));
+        }
+        return chain;
+    }
+
+    private record RoomSetup(int roomId, int botCount) { }
 
     public sealed interface Command permits Command.Roll, Command.AnswerQuiz, Command.Refresh {
         record Roll() implements Command {}

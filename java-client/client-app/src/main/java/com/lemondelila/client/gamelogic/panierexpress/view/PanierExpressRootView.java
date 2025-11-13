@@ -187,20 +187,6 @@ public final class PanierExpressRootView extends JPanel implements Screen {
         registerLetterShortcut('p', "panier.basket", "Lettre P : annoncer le contenu de votre panier.", e -> announceBasket());
         registerLetterShortcut('x', "panier.restart", "Lettre X : proposer de redémarrer la partie.", e -> promptRestart());
         registerLetterShortcut('w', "panier.players", "Lettre W : annoncer les joueurs présents.", e -> announcePlayers());
-        registerLetterShortcut('q', "panier.quit", "Lettre Q : quitter Panier Express après confirmation.", e -> {
-            if (screenManager == null) {
-                return;
-            }
-            dialogService.confirmGameExit("Panier Express", "Voulez-vous quitter la partie en cours ?")
-                    .thenAccept(confirmed -> {
-                        if (Boolean.TRUE.equals(confirmed)) {
-                            controller.reset();
-                            SwingUtilities.invokeLater(() -> screenManager.show("catalog"));
-                        } else {
-                            narrate("Sortie annulée.");
-                        }
-                    });
-        });
 
         for (int digit = 0; digit < 4; digit++) {
             final int answerIndex = digit;
@@ -728,6 +714,9 @@ public final class PanierExpressRootView extends JPanel implements Screen {
     }
 
     private void handleCancel() {
+        controller.reset();
+        historyTracker.clear();
+        lastSession = null;
         if (screenManager != null) {
             SwingUtilities.invokeLater(() -> screenManager.show("catalog"));
         }

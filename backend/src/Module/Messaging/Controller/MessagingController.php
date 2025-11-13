@@ -9,11 +9,15 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Psr\Log\LoggerInterface;
 
 #[Route('/api/messaging')]
 class MessagingController extends AbstractController
 {
-    public function __construct(private readonly MessagingService $service)
+    public function __construct(
+        private readonly MessagingService $service,
+        private readonly LoggerInterface $logger
+    )
     {
     }
 
@@ -63,16 +67,27 @@ class MessagingController extends AbstractController
             $items = match ($box) {
                 'sent', 'outbox' => $this->service->outbox($currentUser, $limit),
                 'inbox', 'received', '' => $this->service->inbox($currentUser, $limit),
+                'deleted', 'trash' => $this->service->deleted($currentUser, $limit),
                 default => throw new \InvalidArgumentException('Boite de messagerie inconnue.'),
             };
         } catch (\InvalidArgumentException $exception) {
             return $this->json(['message' => $exception->getMessage()], Response::HTTP_BAD_REQUEST);
-        } catch (\Throwable) {
+        } catch (\Throwable $exception) {
+            $this->logger->error('Unable to retrieve private messages.', [
+                'box' => $box,
+                'limit' => $limit,
+                'userId' => $currentUser->getId(),
+                'exception' => $exception,
+            ]);
             return $this->json(['message' => 'Impossible de recuperer les messages.'], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
         return $this->json([
-            'box' => $box === 'sent' ? 'outbox' : ($box === '' ? 'inbox' : $box),
+            'box' => match ($box) {
+                'sent' => 'outbox',
+                '' => 'inbox',
+                default => $box,
+            },
             'items' => $items,
         ]);
     }
@@ -105,6 +120,67 @@ class MessagingController extends AbstractController
         }
 
         return $this->json(['message' => $message], Response::HTTP_CREATED);
+    }
+
+    #[Route('/messages/{messageId}', name: 'messaging_delete', methods: ['DELETE'])]
+    public function delete(string $messageId): JsonResponse
+    {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+        $currentUser = $this->requireUser();
+
+        try {
+            $message = $this->service->delete($currentUser, $messageId);
+        } catch (\RuntimeException $exception) {
+            return $this->json(['message' => $exception->getMessage()], Response::HTTP_BAD_REQUEST);
+        } catch (\Throwable $exception) {
+            $this->logger->error('Unable to delete private message.', [
+                'messageId' => $messageId,
+                'userId' => $currentUser->getId(),
+                'exception' => $exception,
+            ]);
+            return $this->json(['message' => 'Impossible de supprimer le message.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+
+        return $this->json(['message' => $message]);
+    }
+
+    #[Route('/messages/{messageId}/restore', name: 'messaging_restore', methods: ['POST'])]
+    public function restore(string $messageId): JsonResponse
+    {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+        $currentUser = $this->requireUser();
+
+        try {
+            $message = $this->service->restore($currentUser, $messageId);
+        } catch (\RuntimeException $exception) {
+            return $this->json(['message' => $exception->getMessage()], Response::HTTP_BAD_REQUEST);
+        } catch (\Throwable $exception) {
+            $this->logger->error('Unable to restore private message.', [
+                'messageId' => $messageId,
+                'userId' => $currentUser->getId(),
+                'exception' => $exception,
+            ]);
+            return $this->json(['message' => 'Impossible de restaurer le message.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+
+        return $this->json(['message' => $message]);
+    }
+
+    #[Route('/users/search', name: 'messaging_search_user', methods: ['GET'])]
+    public function searchUser(Request $request): JsonResponse
+    {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+        $username = (string) $request->query->get('username', '');
+        if (\trim($username) === '') {
+            return $this->json(['message' => 'Pseudo requis.'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $user = $this->service->findUserByUsername($username);
+        if ($user === null) {
+            return $this->json(['message' => 'Utilisateur introuvable.'], Response::HTTP_NOT_FOUND);
+        }
+
+        return $this->json(['user' => $user]);
     }
 
     private function requireUser(): User

@@ -15,7 +15,7 @@ import java.awt.BorderLayout;
 /**
  * Encapsule l'interface Swing de la fenêtre de présence.
  */
-final class PresenceListView {
+public final class PresenceListView {
 
     private final DefaultListModel<PresencePlayer> model = new DefaultListModel<>();
     private final JList<PresencePlayer> list = new JList<>(model);
@@ -35,23 +35,23 @@ final class PresenceListView {
         footerPanel.add(closeButton);
     }
 
-    JPanel contentPanel() {
+    public JPanel contentPanel() {
         return contentPanel;
     }
 
-    JPanel footerPanel() {
+    public JPanel footerPanel() {
         return footerPanel;
     }
 
-    JList<PresencePlayer> list() {
+    public JList<PresencePlayer> list() {
         return list;
     }
 
-    DefaultListModel<PresencePlayer> model() {
+    public DefaultListModel<PresencePlayer> model() {
         return model;
     }
 
-    void setStatus(String message) {
+    public void setStatus(String message) {
         String safe = (message == null || message.isBlank()) ? " " : message;
         statusLabel.setText(safe);
         if (statusLabel.getAccessibleContext() != null) {
@@ -59,7 +59,7 @@ final class PresenceListView {
         }
     }
 
-    void setListEnabled(boolean enabled) {
+    public void setListEnabled(boolean enabled) {
         list.setEnabled(enabled);
         if (!enabled) {
             list.clearSelection();

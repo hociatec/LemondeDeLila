@@ -41,7 +41,7 @@ class MessagingService
         $this->entityManager->persist($message);
         $this->entityManager->flush();
 
-        return $this->normalize($message);
+        return $this->normalizeForUser($message, $sender);
     }
 
     /**
@@ -59,7 +59,7 @@ class MessagingService
         $limit = $this->clampLimit($limit);
         $items = $this->messages->findConversation($currentUser->getId(), $otherUserId, $limit);
         $items = \array_reverse($items);
-        return \array_map(fn(PrivateMessage $message) => $this->normalize($message), $items);
+        return \array_map(fn(PrivateMessage $message) => $this->normalizeForUser($message, $currentUser), $items);
     }
 
     /**
@@ -69,7 +69,7 @@ class MessagingService
     {
         $limit = $this->clampLimit($limit);
         $items = $this->messages->findInbox($user->getId(), $limit);
-        return \array_map(fn(PrivateMessage $message) => $this->normalize($message), $items);
+        return \array_map(fn(PrivateMessage $message) => $this->normalizeForUser($message, $user), $items);
     }
 
     /**
@@ -79,7 +79,104 @@ class MessagingService
     {
         $limit = $this->clampLimit($limit);
         $items = $this->messages->findOutbox($user->getId(), $limit);
-        return \array_map(fn(PrivateMessage $message) => $this->normalize($message), $items);
+        return \array_map(fn(PrivateMessage $message) => $this->normalizeForUser($message, $user), $items);
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    public function deleted(User $user, int $limit = self::DEFAULT_HISTORY_LIMIT): array
+    {
+        $limit = $this->clampLimit($limit);
+        $items = $this->messages->findDeleted($user->getId(), $limit);
+        return \array_map(fn(PrivateMessage $message) => $this->normalizeForUser($message, $user), $items);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function delete(User $user, string $messageId): array
+    {
+        $message = $this->messages->findOneByMessageId($messageId);
+        if (!$message) {
+            throw new \RuntimeException('Message introuvable.');
+        }
+        $isSender = $message->getSender()->getId() === $user->getId();
+        $isRecipient = $message->getRecipient()->getId() === $user->getId();
+        if (!$isSender && !$isRecipient) {
+            throw new \RuntimeException('Accès refusé pour ce message.');
+        }
+        $changed = false;
+        if ($isSender) {
+            if ($message->isDeletedBySender()) {
+                return $this->normalizeForUser($message, $user);
+            }
+            $message->markDeletedBySender();
+            $changed = true;
+        }
+        if ($isRecipient) {
+            if ($message->isDeletedByRecipient()) {
+                return $this->normalizeForUser($message, $user);
+            }
+            $message->markDeletedByRecipient();
+            $changed = true;
+        }
+        if ($changed) {
+            $this->entityManager->flush();
+        }
+        return $this->normalizeForUser($message, $user);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function restore(User $user, string $messageId): array
+    {
+        $message = $this->messages->findOneByMessageId($messageId);
+        if (!$message) {
+            throw new \RuntimeException('Message introuvable.');
+        }
+        $isSender = $message->getSender()->getId() === $user->getId();
+        $isRecipient = $message->getRecipient()->getId() === $user->getId();
+        if (!$isSender && !$isRecipient) {
+            throw new \RuntimeException('Accès refusé pour ce message.');
+        }
+
+        $changed = false;
+        if ($isSender && $message->isDeletedBySender()) {
+            $message->restoreForSender();
+            $changed = true;
+        }
+        if ($isRecipient && $message->isDeletedByRecipient()) {
+            $message->restoreForRecipient();
+            $changed = true;
+        }
+
+        if (!$changed) {
+            throw new \RuntimeException('Message déjà restauré.');
+        }
+
+        $this->entityManager->flush();
+        return $this->normalizeForUser($message, $user);
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    public function findUserByUsername(string $username): ?array
+    {
+        $normalized = \trim($username);
+        if ($normalized === '') {
+            return null;
+        }
+        $user = $this->users->findOneByUsernameInsensitive($normalized);
+        if (!$user instanceof User) {
+            return null;
+        }
+        return [
+            'id' => $user->getId(),
+            'username' => $user->getUsername(),
+        ];
     }
 
     /**
@@ -100,12 +197,18 @@ class MessagingService
     /**
      * @return array<string, mixed>
      */
-    private function normalize(PrivateMessage $message): array
+    private function normalizeForUser(PrivateMessage $message, User $viewer): array
     {
+        $viewerIsSender = $message->getSender()->getId() === $viewer->getId();
+        $direction = $viewerIsSender ? 'sent' : 'received';
+        $deletedAt = $viewerIsSender ? $message->getDeletedBySenderAt() : $message->getDeletedByRecipientAt();
+
         return [
             'id' => $message->getMessageId(),
             'text' => $message->getMessage(),
             'createdAt' => $message->getCreatedAt()->format(\DATE_ATOM),
+            'direction' => $direction,
+            'deletedAt' => $deletedAt?->format(\DATE_ATOM),
             'sender' => [
                 'id' => $message->getSender()->getId(),
                 'username' => $message->getSender()->getUsername(),

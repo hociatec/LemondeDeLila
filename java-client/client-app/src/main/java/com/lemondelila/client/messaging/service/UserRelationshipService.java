@@ -46,6 +46,45 @@ public final class UserRelationshipService {
         }
     }
 
+    public Relationship findById(int userId) {
+        lock.readLock().lock();
+        try {
+            Relationship relation = friends.get(userId);
+            if (relation != null) {
+                return relation;
+            }
+            return blocked.get(userId);
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
+    public Relationship findByUsername(String username) {
+        if (username == null) {
+            return null;
+        }
+        String target = username.trim();
+        if (target.isEmpty()) {
+            return null;
+        }
+        lock.readLock().lock();
+        try {
+            for (Relationship relation : friends.values()) {
+                if (matchesUsername(relation, target)) {
+                    return relation;
+                }
+            }
+            for (Relationship relation : blocked.values()) {
+                if (matchesUsername(relation, target)) {
+                    return relation;
+                }
+            }
+        } finally {
+            lock.readLock().unlock();
+        }
+        return null;
+    }
+
     public List<Relationship> friends() {
         lock.readLock().lock();
         try {
@@ -195,6 +234,11 @@ public final class UserRelationshipService {
         }
         String trimmed = username.trim();
         return trimmed.isEmpty() ? null : trimmed;
+    }
+
+    private boolean matchesUsername(Relationship relation, String target) {
+        String stored = relation.username();
+        return stored != null && stored.equalsIgnoreCase(target);
     }
 
     public record Relationship(int id, String username) {

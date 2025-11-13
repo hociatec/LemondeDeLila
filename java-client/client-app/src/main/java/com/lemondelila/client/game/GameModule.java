@@ -5,7 +5,6 @@ import com.lemondelila.client.gamelogic.damenature.controller.DameNatureControll
 import com.lemondelila.client.gamelogic.damenature.model.DameNatureEngine;
 import com.lemondelila.client.gamelogic.damenature.model.DameNatureSessionStore;
 import com.lemondelila.client.gamelogic.damenature.service.DameNatureRemoteClient;
-import com.lemondelila.client.gamelogic.damenature.service.LocalDameNatureService;
 import com.lemondelila.client.gamelogic.damenature.view.DameNatureScreen;
 import com.lemondelila.client.gamelogic.missionnemesis.controller.NemesisController;
 import com.lemondelila.client.gamelogic.missionnemesis.model.NemesisEngine;
@@ -35,7 +34,6 @@ public final class GameModule implements LilaModule {
         builder.bindAuto(DameNatureSessionStore.class);
 
         builder.bindAuto(NemesisRemoteClient.class);
-        builder.bindAuto(LocalDameNatureService.class);
         builder.bindAuto(DameNatureRemoteClient.class);
         builder.bindAuto(PanierExpressRemoteClient.class);
         builder.bindAuto(RoomBotRemoteClient.class);

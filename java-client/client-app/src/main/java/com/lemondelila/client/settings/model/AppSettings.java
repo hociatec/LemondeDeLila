@@ -12,9 +12,10 @@ public record AppSettings(int musicVolume,
                           int soundSelectVolume,
                           boolean confirmOnExit,
                           boolean chatEnabled,
-                          boolean confirmChatExit) {
+                          boolean confirmChatExit,
+                          boolean stayConnected) {
 
     public static AppSettings defaults() {
-        return new AppSettings(60, true, true, 70, true, 60, true, 65, true, 70, true, true, false);
+        return new AppSettings(60, true, true, 70, true, 60, true, 65, true, 70, true, true, false, false);
     }
 }

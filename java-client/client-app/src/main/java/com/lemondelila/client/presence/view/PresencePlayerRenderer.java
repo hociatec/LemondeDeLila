@@ -14,12 +14,12 @@ import java.util.stream.Collectors;
 /**
  * Rend chaque joueur connecté avec les informations de relation.
  */
-final class PresencePlayerRenderer implements ListCellRenderer<PresencePlayer> {
+public final class PresencePlayerRenderer implements ListCellRenderer<PresencePlayer> {
 
     private final UserRelationshipService relationshipService;
     private final JLabel label = new JLabel();
 
-    PresencePlayerRenderer(UserRelationshipService relationshipService) {
+    public PresencePlayerRenderer(UserRelationshipService relationshipService) {
         this.relationshipService = relationshipService;
     }
 

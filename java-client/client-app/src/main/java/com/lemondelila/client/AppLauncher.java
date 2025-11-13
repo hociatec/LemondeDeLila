@@ -7,7 +7,10 @@ import com.lemondelila.client.framework.core.context.ApplicationContext;
 import com.lemondelila.client.framework.core.module.FrameworkBootstrap;
 import com.lemondelila.client.framework.ui.LilaFrame;
 
+import javax.swing.InputMap;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -22,6 +25,7 @@ public final class AppLauncher {
 
     public static void main(String[] args) {
         configureNativeLibraries();
+        disableSpaceActivationForButtons();
 
         FrameworkBootstrap bootstrap = FrameworkBootstrap.load();
         ApplicationContext context = bootstrap.launch();
@@ -66,6 +70,32 @@ public final class AppLauncher {
         Path dllDir = Files.isDirectory(archDir) ? archDir : base;
         System.setProperty("lila.native.dir", dllDir.toAbsolutePath().toString());
         System.setProperty("lila.native.log.dir", dllDir.toAbsolutePath().toString());
+    }
+
+    private static void disableSpaceActivationForButtons() {
+        Runnable task = () -> {
+            KeyStroke pressed = KeyStroke.getKeyStroke("pressed SPACE");
+            KeyStroke released = KeyStroke.getKeyStroke("released SPACE");
+            KeyStroke typed = KeyStroke.getKeyStroke("SPACE");
+
+            removeSpaceBinding((InputMap) UIManager.get("Button.focusInputMap"), pressed, released, typed);
+            removeSpaceBinding((InputMap) UIManager.get("Button.ancestorInputMap"), pressed, released, typed);
+            UIManager.put("Button.spacePressesDefaultButton", Boolean.FALSE);
+        };
+        if (SwingUtilities.isEventDispatchThread()) {
+            task.run();
+        } else {
+            SwingUtilities.invokeLater(task);
+        }
+    }
+
+    private static void removeSpaceBinding(InputMap map, KeyStroke pressed, KeyStroke released, KeyStroke typed) {
+        if (map == null) {
+            return;
+        }
+        map.remove(pressed);
+        map.remove(released);
+        map.remove(typed);
     }
 }
 

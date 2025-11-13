@@ -83,7 +83,6 @@ public final class NemesisScreen extends JPanel implements Screen {
     private final JPanel mainPanel = new JPanel(mainLayout);
 
     private NemesisPlacementOrchestrator placementOrchestrator;
-    private NemesisSetupPanel.Configuration lastConfiguration;
 
     private final Consumer<NemesisSession> sessionListener = this::displaySession;
 
@@ -101,7 +100,7 @@ public final class NemesisScreen extends JPanel implements Screen {
         Objects.requireNonNull(sessionStore, "sessionStore");
         this.ownGrid = new NemesisGridPanel(true, coordinate -> {});
         this.enemyGrid = new NemesisGridPanel(false, this::fireAt);
-        this.setupPanel = new NemesisSetupPanel(new int[]{NemesisSpecs.BOARD_SIZE}, this::handleStartRequested);
+        this.setupPanel = new NemesisSetupPanel(this::handleStartRequested);
         this.footerPanel = new NemesisFooterPanel(accessibilityService);
         historyTracker.setMaxEntries(400);
         this.interactionController = new GameInteractionController(
@@ -170,20 +169,6 @@ public final class NemesisScreen extends JPanel implements Screen {
             );
         });
         registerShortcut("W", "nemesis-players", "Lettre W : annoncer les joueurs présents.", e -> announceTableParticipants());
-        registerShortcut("Q", "nemesis-quit", "Lettre Q : quitter Mission Nemesis après confirmation.", e -> {
-            if (screenManager == null) {
-                return;
-            }
-            dialogService.confirmGameExit("Mission Nemesis", "Voulez-vous quitter la partie en cours ?")
-                    .thenAccept(confirmed -> {
-                        if (Boolean.TRUE.equals(confirmed)) {
-                            controller.reset();
-                            SwingUtilities.invokeLater(() -> screenManager.show("catalog"));
-                        } else {
-                            setStatus("Sortie annulée.");
-                        }
-                    });
-        });
         shortcutRegistry.applyTo(this);
     }
 
@@ -216,7 +201,6 @@ public final class NemesisScreen extends JPanel implements Screen {
 
 
     private void handleStartRequested(NemesisSetupPanel.Configuration configuration) {
-        this.lastConfiguration = configuration;
         setStatus("Création de la partie Mission Nemesis...");
         controller.startNewGame().whenComplete((session, error) ->
                 SwingUtilities.invokeLater(() -> {

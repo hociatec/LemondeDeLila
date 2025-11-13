@@ -8,7 +8,7 @@ import java.util.Objects;
 public final class PanierExpressGameOptions {
 
     public static final int DEFAULT_ROBOT_COUNT = 1;
-    public static final int MIN_ROBOT_COUNT = 0;
+    public static final int MIN_ROBOT_COUNT = 1;
     public static final int MAX_ROBOT_COUNT = 5;
 
     private final int robotCount;
