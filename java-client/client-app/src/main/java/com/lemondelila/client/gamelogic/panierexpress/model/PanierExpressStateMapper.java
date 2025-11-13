@@ -44,7 +44,8 @@ public final class PanierExpressStateMapper {
             List<String> inventory = parseStringArray(entry.path("inventory"));
             boolean ready = entry.path("readyForCheckout").asBoolean(false);
             int skip = entry.path("skipTurns").asInt(0);
-            players.add(new PanierExpressState.Player(id, username, position, shopping, basket, inventory, ready, skip));
+            boolean isBot = entry.path("isBot").asBoolean(false);
+            players.add(new PanierExpressState.Player(id, username, position, shopping, basket, inventory, ready, skip, isBot));
         }
         return List.copyOf(players);
     }

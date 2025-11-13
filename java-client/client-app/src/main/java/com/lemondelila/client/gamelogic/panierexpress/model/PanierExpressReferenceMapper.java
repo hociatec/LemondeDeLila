@@ -45,10 +45,32 @@ public final class PanierExpressReferenceMapper {
             int index = item.path("index").asInt(0);
             String label = item.path("label").asText("");
             String type = item.path("type").asText("");
-            tiles.add(new PanierExpressReference.BoardTile(index, label, type));
+            List<PanierExpressReference.TileAction> actions = parseTileActions(item.path("actions"));
+            tiles.add(new PanierExpressReference.BoardTile(index, label, type, actions));
         }
         Collections.sort(tiles, java.util.Comparator.comparingInt(PanierExpressReference.BoardTile::index));
         return List.copyOf(tiles);
+    }
+
+    private static List<PanierExpressReference.TileAction> parseTileActions(JsonNode node) {
+        if (!node.isArray()) {
+            return List.of();
+        }
+        List<PanierExpressReference.TileAction> actions = new ArrayList<>();
+        for (JsonNode actionNode : node) {
+            if (!actionNode.isObject()) {
+                continue;
+            }
+            String type = actionNode.path("type").asText(null);
+            if (type == null || type.isBlank()) {
+                continue;
+            }
+            String message = actionNode.hasNonNull("message") ? actionNode.get("message").asText() : null;
+            Integer delta = actionNode.hasNonNull("delta") ? actionNode.get("delta").asInt() : null;
+            Integer count = actionNode.hasNonNull("count") ? actionNode.get("count").asInt() : null;
+            actions.add(new PanierExpressReference.TileAction(type, message, delta, count));
+        }
+        return List.copyOf(actions);
     }
 
     private static PanierExpressReference.Courses parseCourses(JsonNode node) {

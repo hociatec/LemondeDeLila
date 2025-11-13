@@ -52,15 +52,22 @@
 ..\tools\apache-maven-3.9.6\bin\mvn.cmd -pl client-app -am package -DskipTests</code></pre>
         </li>
     </ol>
+    <div class="tip">
+        <strong>Astuce&nbsp;:</strong> sous WSL ou Linux, exportez <code>JAVA_HOME</code> vers un JDK 21 avant
+        d’appeler Maven, par exemple&nbsp;:
+        <pre><code>export JAVA_HOME="/mnt/c/Program Files/Eclipse Adoptium/jdk-21.0.9.10-hotspot"
+../tools/apache-maven-3.9.6/bin/mvn -pl client-app -am test</code></pre>
+    </div>
 </section>
 
 <section id="structure">
     <h2>2. Comprendre l’architecture</h2>
     <ul>
         <li><strong>Modules</strong> : toutes les briques partagent l’interface <code>LilaModule</code>. La classe
-            <code>com.lemondelila.framework.core.module.FrameworkBootstrap</code> charge automatiquement les implémentations via
+            <code>com.lemondelila.client.framework.core.module.FrameworkBootstrap</code> charge automatiquement les implémentations via
             <code>ServiceLoader</code>, puis appelle <code>configure()</code> et <code>start()</code>.</li>
-        <li><strong>Injection de dépendances</strong> : le conteneur <code>ApplicationContext</code> (framework-core)
+        <li><strong>Injection de dépendances</strong> : le conteneur <code>ApplicationContext</code>
+            (package <code>com.lemondelila.client.framework.core</code>, dans <code>client-app</code>)
             fournit les services. Chaque module enregistre ses bind via le builder.</li>
         <li><strong>Client Swing</strong> : le point d’entrée <code>com.lemondelila.client.AppLauncher</code> crée la fenêtre
             <code>LilaFrame</code> et affiche l’écran <code>HomeScreen</code>, qui pilote des panneaux spécialisés
@@ -69,12 +76,58 @@
             <code>App\Module\User\Controller\AuthController</code> gère les routes
             <code>/api/login</code> et <code>/api/register</code>.</li>
     </ul>
+    <p>Cette façon de faire consiste à organiser le projet par domaine fonctionnel plutôt que de tout mélanger dans des dossiers globaux. Chaque fonctionnalité &mdash; comme chat, user, catalogue ou game &mdash; possède son propre dossier contenant son model, view, controller et services. Cela permet de regrouper tout ce qui appartient à un même domaine au même endroit, ce qui rend le code plus lisible, plus modulaire et plus facile à maintenir. Chaque domaine évolue indépendamment des autres, sans créer de couplage inutile, et l’application devient plus claire et plus scalable.</p>
+    <pre><code>com/lemondelila/client/
+├── application/
+│   ├── controller/
+│   ├── events/
+│   ├── model/
+│   ├── service/
+│   └── view/
+├── chat/
+│   ├── controller/
+│   ├── events/
+│   ├── model/
+│   ├── service/
+│   └── view/
+├── catalogue/
+│   ├── controller/
+│   ├── model/
+│   ├── service/
+│   └── view/
+├── framework/
+│   ├── access/
+│   ├── core/
+│   ├── media/
+│   ├── network/
+│   └── ui/
+├── game/
+│   ├── controller/
+│   ├── events/
+│   ├── model/
+│   └── service/
+├── presence/
+│   ├── controller/
+│   ├── model/
+│   └── view/
+├── settings/
+│   ├── controller/
+│   ├── model/
+│   ├── service/
+│   └── view/
+└── user/
+    ├── controller/
+    ├── events/
+    ├── model/
+    └── view/</code></pre>
+    <p>Le dossier <code>application/</code> regroupe l’interface transversale de l’app (écran d’accueil, menu principal, dialogues communs, raccourcis) avec la place nécessaire pour leurs contrôleurs, services et modèles. Les dossiers métiers (<code>chat/</code>, <code>catalogue/</code>, etc.) restent focalisés sur leur domaine, tandis que le framework conserve les briques techniques.</p>
+    <p>Chaque domaine expose également son module d’initialisation (ex. <code>com.lemondelila.client.chat.ChatModule</code>, <code>com.lemondelila.client.settings.SettingsModule</code>) utilisé par <code>com.lemondelila.client.application.ApplicationModule</code> pour câbler l’ensemble lors du démarrage.</p>
 </section>
 
 <section id="nouveau-module">
     <h2>3. Créer un module applicatif</h2>
     <ol>
-        <li>Ajoutez un nouveau package (ex. <code>com.lemondelila.client.module.catalog</code>) dans <code>java-client</code>.</li>
+        <li>Ajoutez un nouveau package (ex. <code>com.lemondelila.client.catalogue</code>) dans <code>java-client</code>.</li>
         <li>Implémentez <code>LilaModule</code> :
 <pre><code>public final class CatalogModule implements LilaModule {
     @Override
@@ -93,7 +146,7 @@
     }
 }</code></pre>
         </li>
-        <li>Déclarez le module dans <code>java-client/client-app/src/main/resources/META-INF/services/com.lemondelila.framework.core.module.LilaModule</code>
+        <li>Déclarez le module dans <code>java-client/client-app/src/main/resources/META-INF/services/com.lemondelila.client.framework.core.module.LilaModule</code>
             pour que <code>ServiceLoader</code> l’instancie.</li>
         <li>Si le module doit afficher un écran, utilisez <code>ScreenManager</code> :
 <pre><code>ScreenManager manager = context.get(ScreenManager.class);
@@ -110,7 +163,7 @@ manager.show("my-screen-id");</code></pre>
 <section id="nouveau-menu">
     <h2>4. Ajouter un menu ou une vue Swing</h2>
     <ol>
-        <li>Les menus se créent via <code>com.lemondelila.framework.ui.menu.MenuFactory</code>. Exemple :
+        <li>Les menus se créent via <code>com.lemondelila.client.framework.ui.menu.MenuFactory</code>. Exemple :
 <pre><code>MenuFactory menuFactory = context.get(MenuFactory.class);
 menuFactory.create("Jeu", builder -&gt; builder
     .item("Nouveau niveau", () -&gt; eventBus.publish(new NewLevelRequested()))
@@ -126,7 +179,7 @@ menuFactory.create("Jeu", builder -&gt; builder
 
 <section id="shortcuts">
     <h2>5. Déclarer des raccourcis clavier</h2>
-    <p>Les raccourcis sont centralisés dans <code>ActionManager</code> (framework-ui). Exemple simplifié :</p>
+    <p>Les raccourcis sont centralisés dans <code>ActionManager</code> (package <code>com.lemondelila.client.framework.ui.action</code>). Exemple simplifié :</p>
 <pre><code>AbstractAction toggleCatalog = new AbstractAction("catalog:toggle") {
     @Override public void actionPerformed(ActionEvent e) {
         screenManager.show("catalog");
@@ -144,7 +197,7 @@ shortcutRegistry.register(KeyStroke.getKeyStroke("alt G"), "Ouvrir le catalogue"
 <section id="backend-api">
     <h2>6. Consommer les API backend</h2>
     <ol>
-        <li>Utilisez <code>RestClient</code> (framework-network) fourni par <code>NetworkModule</code>.</li>
+        <li>Utilisez <code>RestClient</code> (package <code>com.lemondelila.client.framework.network.rest</code>) fourni par <code>NetworkModule</code>.</li>
         <li>Le module réseau lit les propriétés <code>network.http.base</code> et <code>network.ws.url</code> depuis
             <code>config/client.properties</code> (copie incluse dans <code>client-app/src/main/resources</code>).</li>
         <li>Un contrôleur type (voir <code>AuthController</code>) :

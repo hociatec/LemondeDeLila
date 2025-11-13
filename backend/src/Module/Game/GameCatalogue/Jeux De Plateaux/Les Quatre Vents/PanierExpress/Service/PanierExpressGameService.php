@@ -2,9 +2,18 @@
 
 namespace App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Service;
 
+use App\Module\Game\Bot\BotAllocator;
 use App\Module\Game\Engine\GameEngineInterface;
 use App\Module\Game\Entity\Room;
+use App\Module\Game\Service\Participant;
+use App\Module\Game\Service\ParticipantResolver;
 use App\Module\User\Entity\User;
+use App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Service\PanierExpressCommand;
+use App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Service\Support\PanierExpressDeckManager;
+use App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Service\Support\NativePanierExpressRandomizer;
+use App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Service\Support\PanierExpressRandomizerInterface;
+use App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Service\Support\PanierExpressTileAction;
+use App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Service\Support\PanierExpressTileResolver;
 
 final class PanierExpressGameService implements GameEngineInterface
 {
@@ -12,8 +21,14 @@ final class PanierExpressGameService implements GameEngineInterface
     private const BOARD_SIZE = 40;
     private const MAX_CHAINED_ACTIONS = 5;
 
-    public function __construct(private readonly PanierExpressService $reference)
-    {
+    public function __construct(
+        private readonly PanierExpressService $reference,
+        private readonly PanierExpressDeckManager $deckManager,
+        private readonly PanierExpressTileResolver $tileResolver,
+        private readonly ParticipantResolver $participants,
+        private readonly BotAllocator $botAllocator,
+        private readonly PanierExpressRandomizerInterface $randomizer = new NativePanierExpressRandomizer(),
+    ) {
     }
 
     public function getType(): string
@@ -24,17 +39,21 @@ final class PanierExpressGameService implements GameEngineInterface
     public function defaultState(Room $room): array
     {
         $data = $this->reference->referenceData();
-
-        $players = [];
-        foreach ($room->getPlayers()->toArray() as $participant) {
-            if (!$participant instanceof User) {
-                continue;
-            }
-            $players[] = $this->buildPlayer($participant, $data['shoppingLists'] ?? []);
+        $participants = $this->participants->resolve($room);
+        if ($participants === []) {
+            throw new \RuntimeException('Aucun joueur disponible pour lancer Panier Express.');
         }
 
-        if ($players === []) {
-            throw new \RuntimeException('Aucun joueur disponible pour lancer Panier Express.');
+        $players = [];
+        foreach ($participants as $participant) {
+            if (!$participant instanceof Participant) {
+                continue;
+            }
+            $players[] = $this->buildPlayerFromParticipant($participant, $data['shoppingLists'] ?? []);
+        }
+
+        if (count($players) < 2) {
+            $players[] = $this->createEphemeralBot($players, $data['shoppingLists'] ?? []);
         }
 
         $state = [
@@ -46,12 +65,12 @@ final class PanierExpressGameService implements GameEngineInterface
             'board' => [
                 'tiles' => $data['board'] ?? [],
             ],
-            'decks' => $this->initialiseDecks($data),
+            'decks' => $this->deckManager->initialiseDecks($data, $this->randomizer),
             'discard' => [
-                'courses' => [],
-                'event' => [],
-                'exchange' => [],
-                'quiz' => [],
+                PanierExpressDeckManager::DECK_COURSES => [],
+                PanierExpressDeckManager::DECK_EVENT => [],
+                PanierExpressDeckManager::DECK_EXCHANGE => [],
+                PanierExpressDeckManager::DECK_QUIZ => [],
             ],
             'pending' => null,
             'log' => [[
@@ -62,7 +81,7 @@ final class PanierExpressGameService implements GameEngineInterface
             'lastRoll' => null,
         ];
 
-        return $state;
+        return $this->runBotTurns($state);
     }
 
     public function apply(array $state, array $payload, Room $room, User $user): array
@@ -71,31 +90,33 @@ final class PanierExpressGameService implements GameEngineInterface
             return $state;
         }
 
-        $playerIndex = $this->locatePlayer($state, (int)$user->getId());
+        $playerIndex = $this->locatePlayer($state, (int) $user->getId());
         if ($playerIndex === -1) {
             return $state;
         }
 
-        $action = (string)($payload['action'] ?? '');
+        $action = (string) ($payload['action'] ?? '');
         $pending = $state['pending']['type'] ?? null;
 
         if ($pending === 'quiz') {
-            if ($action === 'answer_quiz') {
-                return $this->handleQuizAnswer($state, $payload, $playerIndex);
+            if ($action === PanierExpressCommand::ANSWER_QUIZ) {
+                $state = $this->handleQuizAnswer($state, $payload, $playerIndex);
+                return $this->runBotTurns($state);
             }
             return $state;
         }
 
-        if ($action === 'roll') {
-            return $this->handleRoll($state, $payload, $playerIndex);
+        if ($action === PanierExpressCommand::ROLL) {
+            $state = $this->handleRoll($state, $payload, $playerIndex);
+            return $this->runBotTurns($state);
         }
 
-        return $state;
+        return $this->runBotTurns($state);
     }
 
     public function currentRound(array $state): int
     {
-        return max(1, (int)($state['round'] ?? 1));
+        return max(1, (int) ($state['round'] ?? 1));
     }
 
     public function computeScore(array $state): ?array
@@ -109,7 +130,8 @@ final class PanierExpressGameService implements GameEngineInterface
                 'collected' => count($player['basket'] ?? []),
                 'shoppingListSize' => count($player['shoppingList'] ?? []),
                 'position' => $player['position'] ?? 1,
-                'readyForCheckout' => (bool)($player['readyForCheckout'] ?? false),
+                'readyForCheckout' => (bool) ($player['readyForCheckout'] ?? false),
+                'isBot' => (bool) ($player['isBot'] ?? false),
             ];
         }
 
@@ -121,63 +143,62 @@ final class PanierExpressGameService implements GameEngineInterface
         if (($state['status'] ?? null) === 'ended') {
             $data['winner'] = $state['winner'] ?? null;
         } else {
-            $turnIndex = (int)($state['turnIndex'] ?? 0);
+            $turnIndex = (int) ($state['turnIndex'] ?? 0);
             $data['activePlayer'] = $players[$turnIndex]['id'] ?? null;
         }
 
         return $data;
     }
 
-    private function initialiseDecks(array $data): array
-    {
-        $courses = [];
-        foreach ($data['courses']['fruits'] ?? [] as $card) {
-            $courses[] = [
-                'id' => $card['id'] ?? $card['name'],
-                'name' => $card['name'] ?? 'Fruit',
-                'category' => 'fruit',
-            ];
-        }
-        foreach ($data['courses']['vegetables'] ?? [] as $card) {
-            $courses[] = [
-                'id' => $card['id'] ?? $card['name'],
-                'name' => $card['name'] ?? 'Légume',
-                'category' => 'vegetable',
-            ];
-        }
-        shuffle($courses);
-
-        $eventCards = $data['eventCards'] ?? [];
-        shuffle($eventCards);
-
-        $exchangeCards = $data['exchangeCards'] ?? [];
-        shuffle($exchangeCards);
-
-        $quizCards = $data['quizCards'] ?? [];
-        shuffle($quizCards);
-
-        return [
-            'courses' => $courses,
-            'event' => $eventCards,
-            'exchange' => $exchangeCards,
-            'quiz' => $quizCards,
-        ];
-    }
-
-    private function buildPlayer(User $user, array $shoppingLists): array
+    private function buildPlayerFromParticipant(Participant $participant, array $shoppingLists): array
     {
         $list = $this->drawShoppingList($shoppingLists);
 
         return [
-            'id' => (int)$user->getId(),
-            'username' => (string)$user->getUsername(),
+            'id' => $participant->id(),
+            'username' => $participant->username(),
             'position' => 1,
             'basket' => [],
             'inventory' => [],
             'shoppingList' => $list,
             'skipTurns' => 0,
             'readyForCheckout' => false,
+            'isBot' => $participant->isBot(),
         ];
+    }
+
+    /**
+     * @param array<int,array<string,mixed>> $players
+     * @param array<int,mixed> $shoppingLists
+     */
+    private function createEphemeralBot(array $players, array $shoppingLists): array
+    {
+        $names = array_map(
+            static fn(array $player): string => (string)($player['username'] ?? ''),
+            $players
+        );
+        $name = $this->botAllocator->pick($names);
+
+        $botParticipant = new Participant($this->generateBotId($players), $name, true);
+
+        return $this->buildPlayerFromParticipant($botParticipant, $shoppingLists);
+    }
+
+    /**
+     * @param array<int,array<string,mixed>> $players
+     */
+    private function generateBotId(array $players): int
+    {
+        $used = array_map(
+            static fn(array $player): int => (int)($player['id'] ?? 0),
+            $players
+        );
+
+        do {
+            $id = -1 * random_int(1000, 1_000_000);
+        } while (in_array($id, $used, true));
+
+        return $id;
     }
 
     private function drawShoppingList(array $shoppingLists): array
@@ -186,7 +207,7 @@ final class PanierExpressGameService implements GameEngineInterface
             return [];
         }
 
-        $index = random_int(0, count($shoppingLists) - 1);
+        $index = $this->randomizer->randomInt(0, count($shoppingLists) - 1);
         $rawList = $shoppingLists[$index];
 
         if (is_array($rawList)) {
@@ -197,6 +218,59 @@ final class PanierExpressGameService implements GameEngineInterface
         }
 
         return [];
+    }
+
+    private function runBotTurns(array $state): array
+    {
+        while (($state['status'] ?? null) === 'playing') {
+            $turnIndex = (int) ($state['turnIndex'] ?? 0);
+            $players = $state['players'] ?? [];
+            if (!isset($players[$turnIndex]) || ($players[$turnIndex]['isBot'] ?? false) !== true) {
+                break;
+            }
+
+            $playerId = $players[$turnIndex]['id'] ?? null;
+            $pending = $state['pending']['type'] ?? null;
+            if ($pending === 'quiz' && $this->isPendingForPlayer($state, $playerId)) {
+                $choices = $state['pending']['choices'] ?? [];
+                $choice = $choices && is_array($choices)
+                    ? random_int(0, max(0, count($choices) - 1))
+                    : 0;
+                $state = $this->handleQuizAnswer($state, ['choice' => $choice], $turnIndex);
+                continue;
+            }
+
+            if ($pending !== null) {
+                break;
+            }
+
+            $state = $this->handleRoll($state, [], $turnIndex);
+
+            if (($state['status'] ?? null) !== 'playing') {
+                break;
+            }
+
+            if ((int) ($state['turnIndex'] ?? -1) === $turnIndex) {
+                break;
+            }
+        }
+
+        return $state;
+    }
+
+    private function isPendingForPlayer(array $state, ?int $playerId): bool
+    {
+        if ($playerId === null) {
+            return false;
+        }
+        $pending = $state['pending'] ?? null;
+        if (!is_array($pending)) {
+            return false;
+        }
+        if (($pending['type'] ?? null) !== 'quiz') {
+            return false;
+        }
+        return (int) ($pending['playerId'] ?? 0) === $playerId;
     }
 
     private function locatePlayer(array $state, int $userId): int
@@ -219,12 +293,9 @@ final class PanierExpressGameService implements GameEngineInterface
             return $state;
         }
 
-        if ($state['players'][$playerIndex]['skipTurns'] ?? 0 > 0) {
+        if (($state['players'][$playerIndex]['skipTurns'] ?? 0) > 0) {
             $state['players'][$playerIndex]['skipTurns']--;
-            $state['log'][] = [
-                'type' => 'info',
-                'message' => sprintf('%s passe son tour.', $state['players'][$playerIndex]['username']),
-            ];
+            $this->log($state, sprintf('%s passe son tour.', $state['players'][$playerIndex]['username']));
             $this->advanceTurn($state, $playerIndex);
             return $state;
         }
@@ -232,14 +303,11 @@ final class PanierExpressGameService implements GameEngineInterface
         $forced = $payload['steps'] ?? null;
         $steps = is_int($forced) && $forced >= 1 && $forced <= 6
             ? $forced
-            : random_int(1, 6);
+            : $this->randomizer->randomInt(1, 6);
 
         $state['lastRoll'] = $steps;
 
-        $state['log'][] = [
-            'type' => 'info',
-            'message' => sprintf('%s lance le dé et obtient %d.', $state['players'][$playerIndex]['username'], $steps),
-        ];
+        $this->log($state, sprintf('%s lance le dé et obtient %d.', $state['players'][$playerIndex]['username'], $steps));
 
         $this->movePlayer($state, $playerIndex, $steps);
         if (($state['status'] ?? null) !== 'ended' && ($state['pending']['type'] ?? null) === null) {
@@ -247,6 +315,58 @@ final class PanierExpressGameService implements GameEngineInterface
         }
 
         return $state;
+    }
+
+    private function runBotTurns(array $state): array
+    {
+        while (($state['status'] ?? null) === 'playing') {
+            $turnIndex = (int) ($state['turnIndex'] ?? 0);
+            $players = $state['players'] ?? [];
+            if (!isset($players[$turnIndex]) || ($players[$turnIndex]['isBot'] ?? false) !== true) {
+                break;
+            }
+
+            $playerId = $players[$turnIndex]['id'] ?? null;
+            if ($this->isPendingQuizFor($state, $playerId)) {
+                $choices = $state['pending']['choices'] ?? [];
+                $choice = $choices && is_array($choices)
+                    ? random_int(0, max(0, count($choices) - 1))
+                    : 0;
+                $state = $this->handleQuizAnswer($state, ['choice' => $choice], $turnIndex);
+                continue;
+            }
+
+            if (($state['phase'] ?? 'turn') !== 'turn' || ($state['pending']['type'] ?? null) !== null) {
+                break;
+            }
+
+            $state = $this->handleRoll($state, [], $turnIndex);
+
+            if (($state['status'] ?? null) !== 'playing') {
+                break;
+            }
+
+            if ((int) ($state['turnIndex'] ?? -1) === $turnIndex) {
+                break;
+            }
+        }
+
+        return $state;
+    }
+
+    private function isPendingQuizFor(array $state, ?int $playerId): bool
+    {
+        if ($playerId === null) {
+            return false;
+        }
+        $pending = $state['pending'] ?? null;
+        if (!is_array($pending)) {
+            return false;
+        }
+        if (($pending['type'] ?? null) !== 'quiz') {
+            return false;
+        }
+        return (int) ($pending['playerId'] ?? 0) === $playerId;
     }
 
     private function handleQuizAnswer(array $state, array $payload, int $playerIndex): array
@@ -260,27 +380,21 @@ final class PanierExpressGameService implements GameEngineInterface
             return $state;
         }
 
-        $choice = isset($payload['choice']) ? (int)$payload['choice'] : null;
+        $choice = isset($payload['choice']) ? (int) $payload['choice'] : null;
         if ($choice === null) {
             return $state;
         }
 
-        $answerIndex = (int)($pending['answerIndex'] ?? -1);
+        $answerIndex = (int) ($pending['answerIndex'] ?? -1);
         $choices = $pending['choices'] ?? [];
         $isCorrect = $choice === $answerIndex;
 
         if ($isCorrect) {
-            $state['log'][] = [
-                'type' => 'success',
-                'message' => sprintf('Bonne réponse pour %s ! Vous gagnez une carte Courses.', $state['players'][$playerIndex]['username']),
-            ];
-            $this->drawCourseCard($state, $playerIndex, 'quiz');
+            $this->log($state, sprintf('Bonne réponse pour %s ! Vous gagnez une carte Courses.', $state['players'][$playerIndex]['username']), 'success');
+            $this->drawCourseCard($state, $playerIndex);
         } else {
             $label = $choices[$answerIndex] ?? 'aucune réponse correcte';
-            $state['log'][] = [
-                'type' => 'warning',
-                'message' => sprintf('Mauvaise réponse pour %s. Réponse attendue : %s.', $state['players'][$playerIndex]['username'], $label),
-            ];
+            $this->log($state, sprintf('Mauvaise réponse pour %s. Réponse attendue : %s.', $state['players'][$playerIndex]['username'], $label), 'warning');
         }
 
         $state['pending'] = null;
@@ -329,101 +443,131 @@ final class PanierExpressGameService implements GameEngineInterface
             return;
         }
 
-        $label = (string)($tile['label'] ?? '');
-        if (($tile['type'] ?? 'action') === 'stand') {
+        $label = (string) ($tile['label'] ?? '');
+        $actions = $this->tileResolver->resolveActions($tile);
+        $tileType = (string) ($tile['type'] ?? 'action');
+
+        if ($tileType === 'stand') {
             $this->log($state, sprintf('%s arrive sur %s.', $state['players'][$playerIndex]['username'], $label));
-            $this->drawCourseCard($state, $playerIndex, $label);
-            $this->checkVictory($state, $playerIndex);
-            return;
-        }
-
-        $normalized = $this->normalizeText($label);
-
-        if (str_contains($normalized, 'pioche carte evenement')) {
-            $this->drawEventCard($state, $playerIndex);
-            $this->checkVictory($state, $playerIndex);
-            return;
-        }
-
-        if (str_contains($normalized, 'pioche carte echange')) {
-            $this->drawExchangeCard($state, $playerIndex);
-            $this->checkVictory($state, $playerIndex);
-            return;
-        }
-
-        if (str_contains($normalized, 'mini quiz')) {
-            $this->startQuiz($state, $playerIndex);
-            return;
-        }
-
-        if (str_contains($normalized, 'pioche carte courses supplementaire')) {
-            $this->log($state, sprintf('%s pioche une carte Courses supplémentaire.', $state['players'][$playerIndex]['username']));
-            $this->drawCourseCard($state, $playerIndex, 'bonus');
-            $this->checkVictory($state, $playerIndex);
-            return;
-        }
-
-        if (str_contains($normalized, 'perd ton prochain tour')) {
-            $state['players'][$playerIndex]['skipTurns'] = ($state['players'][$playerIndex]['skipTurns'] ?? 0) + 1;
-            $this->log($state, sprintf('%s perdra son prochain tour.', $state['players'][$playerIndex]['username']), 'warning');
-            $this->checkVictory($state, $playerIndex);
-            return;
-        }
-
-        if (str_contains($normalized, 'reste un tour sur place')) {
-            $state['players'][$playerIndex]['skipTurns'] = ($state['players'][$playerIndex]['skipTurns'] ?? 0) + 1;
-            $this->log($state, sprintf('%s restera sur place au prochain tour.', $state['players'][$playerIndex]['username']), 'warning');
-            $this->checkVictory($state, $playerIndex);
-            return;
-        }
-
-        if (str_contains($normalized, 'recule de 2')) {
-            $this->log($state, sprintf('%s recule de deux cases.', $state['players'][$playerIndex]['username']), 'info');
-            $this->adjustPosition($state, $playerIndex, -2, $depth);
-            return;
-        }
-
-        if (str_contains($normalized, 'retour en arriere de 3')) {
-            $this->log($state, sprintf('%s retourne trois cases en arrière.', $state['players'][$playerIndex]['username']), 'info');
-            $this->adjustPosition($state, $playerIndex, -3, $depth);
-            return;
-        }
-
-        if (str_contains($normalized, 'avance d une case')) {
-            $this->log($state, sprintf('%s avance d\'une case.', $state['players'][$playerIndex]['username']), 'info');
-            $this->adjustPosition($state, $playerIndex, 1, $depth);
-            return;
-        }
-
-        if (str_contains($normalized, 'avance de 2 cases')) {
-            $this->log($state, sprintf('%s avance de deux cases.', $state['players'][$playerIndex]['username']), 'info');
-            $this->adjustPosition($state, $playerIndex, 2, $depth);
-            return;
-        }
-
-        if (str_contains($normalized, 'avance jusqu a un stand de ton choix')) {
-            $target = $this->findNextStandPosition($state, $state['players'][$playerIndex]['position'] ?? 1);
-            if ($target !== null) {
-                $this->log($state, sprintf('%s avance jusqu\'au prochain stand.', $state['players'][$playerIndex]['username']));
-                $state['players'][$playerIndex]['position'] = $target;
-                $this->processTile($state, $playerIndex, $depth + 1);
-                return;
+            if ($actions === []) {
+                $actions[] = ['type' => PanierExpressTileAction::DRAW_COURSE];
             }
         }
 
-        if (str_contains($normalized, 'arrivee')) {
+        if ($actions === []) {
+            if ($label !== '') {
+                $this->log($state, sprintf('%s arrive sur une case spéciale : %s.', $state['players'][$playerIndex]['username'], $label));
+            } else {
+                $this->log($state, sprintf('%s ne rencontre aucun effet particulier.', $state['players'][$playerIndex]['username']));
+            }
             $this->checkVictory($state, $playerIndex);
             return;
         }
 
-        // Other exchange instructions are logged but left to future implementations.
-        $this->log($state, sprintf('%s arrive sur une case spéciale : %s.', $state['players'][$playerIndex]['username'], $label));
-        $this->checkVictory($state, $playerIndex);
+        foreach ($actions as $action) {
+            $this->executeTileAction($state, $playerIndex, $action, $depth, $tile);
+
+            if (($state['status'] ?? null) === 'ended' || ($state['pending']['type'] ?? null) !== null) {
+                break;
+            }
+        }
+
+        if (($state['status'] ?? null) !== 'ended' && ($state['pending']['type'] ?? null) === null) {
+            $this->checkVictory($state, $playerIndex);
+        }
     }
 
-    private function drawCourseCard(array &$state, int $playerIndex, string $context): void
+    /**
+     * @param array<string, mixed> $action
+     * @param array<string, mixed> $tile
+     */
+    private function executeTileAction(array &$state, int $playerIndex, array $action, int $depth, array $tile): void
     {
-        $card = $this->drawCard($state, 'courses');
+        $type = (string) ($action['type'] ?? '');
+        $label = (string) ($tile['label'] ?? '');
+
+        switch ($type) {
+            case PanierExpressTileAction::DRAW_COURSE:
+                $this->drawCourseCard($state, $playerIndex);
+                break;
+
+            case PanierExpressTileAction::DRAW_EVENT:
+                $this->drawEventCard($state, $playerIndex);
+                break;
+
+            case PanierExpressTileAction::DRAW_EXCHANGE:
+                $this->drawExchangeCard($state, $playerIndex);
+                break;
+
+            case PanierExpressTileAction::START_QUIZ:
+                $this->startQuiz($state, $playerIndex);
+                break;
+
+            case PanierExpressTileAction::BONUS_COURSE:
+                $this->log($state, sprintf('%s pioche une carte Courses supplémentaire.', $state['players'][$playerIndex]['username']));
+                $this->drawCourseCard($state, $playerIndex);
+                break;
+
+            case PanierExpressTileAction::SKIP_TURN:
+                $count = isset($action['count']) && is_numeric($action['count']) ? max(1, (int) $action['count']) : 1;
+                $state['players'][$playerIndex]['skipTurns'] = ($state['players'][$playerIndex]['skipTurns'] ?? 0) + $count;
+                $this->log(
+                    $state,
+                    sprintf(
+                        '%s perdra %d tour(s).',
+                        $state['players'][$playerIndex]['username'],
+                        $count
+                    ),
+                    'warning'
+                );
+                break;
+
+            case PanierExpressTileAction::MOVE:
+                $delta = isset($action['delta']) && is_numeric($action['delta']) ? (int) $action['delta'] : 0;
+                if ($delta > 0) {
+                    $this->log($state, sprintf('%s avance de %d case(s).', $state['players'][$playerIndex]['username'], $delta));
+                } elseif ($delta < 0) {
+                    $this->log($state, sprintf('%s recule de %d case(s).', $state['players'][$playerIndex]['username'], abs($delta)));
+                }
+                if ($delta !== 0) {
+                    $this->adjustPosition($state, $playerIndex, $delta, $depth);
+                }
+                break;
+
+            case PanierExpressTileAction::ADVANCE_TO_NEXT_STAND:
+                $target = $this->findNextStandPosition($state, $state['players'][$playerIndex]['position'] ?? 1);
+                if ($target !== null) {
+                    $this->log($state, sprintf('%s avance jusqu\'au prochain stand.', $state['players'][$playerIndex]['username']));
+                    $state['players'][$playerIndex]['position'] = $target;
+                    $this->processTile($state, $playerIndex, $depth + 1);
+                }
+                break;
+
+            case PanierExpressTileAction::ARRIVAL:
+                // Victory check will run after the loop, nothing else to do.
+                break;
+
+            case PanierExpressTileAction::LOG:
+                $message = (string) ($action['message'] ?? '');
+                if ($message === '') {
+                    $message = $label !== ''
+                        ? sprintf('%s arrive sur %s.', $state['players'][$playerIndex]['username'], $label)
+                        : sprintf('%s ne rencontre aucun effet particulier.', $state['players'][$playerIndex]['username']);
+                }
+                $this->log($state, $message);
+                break;
+
+            default:
+                if ($label !== '') {
+                    $this->log($state, sprintf('%s arrive sur une case spéciale : %s.', $state['players'][$playerIndex]['username'], $label));
+                }
+                break;
+        }
+    }
+
+    private function drawCourseCard(array &$state, int $playerIndex): void
+    {
+        $card = $this->deckManager->drawCard($state, PanierExpressDeckManager::DECK_COURSES, $this->randomizer);
         if ($card === null) {
             $this->log($state, 'La pioche Courses est vide.', 'warning');
             return;
@@ -446,7 +590,7 @@ final class PanierExpressGameService implements GameEngineInterface
 
     private function drawEventCard(array &$state, int $playerIndex): void
     {
-        $card = $this->drawCard($state, 'event');
+        $card = $this->deckManager->drawCard($state, PanierExpressDeckManager::DECK_EVENT, $this->randomizer);
         if ($card === null) {
             $this->log($state, 'La pioche Événement est vide.', 'warning');
             return;
@@ -470,13 +614,13 @@ final class PanierExpressGameService implements GameEngineInterface
             $state['players'][$playerIndex]['skipTurns'] = ($state['players'][$playerIndex]['skipTurns'] ?? 0) + 1;
         }
         if (str_contains($normalized, 'pioche une carte courses')) {
-            $this->drawCourseCard($state, $playerIndex, 'event');
+            $this->drawCourseCard($state, $playerIndex);
         }
     }
 
     private function drawExchangeCard(array &$state, int $playerIndex): void
     {
-        $card = $this->drawCard($state, 'exchange');
+        $card = $this->deckManager->drawCard($state, PanierExpressDeckManager::DECK_EXCHANGE, $this->randomizer);
         if ($card === null) {
             $this->log($state, 'La pioche Échange est vide.', 'warning');
             return;
@@ -490,7 +634,7 @@ final class PanierExpressGameService implements GameEngineInterface
 
     private function startQuiz(array &$state, int $playerIndex): void
     {
-        $card = $this->drawCard($state, 'quiz');
+        $card = $this->deckManager->drawCard($state, PanierExpressDeckManager::DECK_QUIZ, $this->randomizer);
         if ($card === null) {
             $this->log($state, 'La pioche Quiz est vide.', 'warning');
             return;
@@ -498,7 +642,7 @@ final class PanierExpressGameService implements GameEngineInterface
 
         $choices = $card['options'] ?? [];
         $question = $card['question'] ?? 'Question';
-        $answerIndex = (int)($card['answer'] ?? $card['answerIndex'] ?? -1);
+        $answerIndex = (int) ($card['answer'] ?? $card['answerIndex'] ?? -1);
 
         $state['pending'] = [
             'type' => 'quiz',
@@ -510,26 +654,6 @@ final class PanierExpressGameService implements GameEngineInterface
         $state['phase'] = 'quiz';
 
         $this->log($state, sprintf('Quiz pour %s : %s', $state['players'][$playerIndex]['username'], $question));
-    }
-
-    private function drawCard(array &$state, string $deck): ?array
-    {
-        $cards = &$state['decks'][$deck];
-        if (!is_array($cards) || $cards === []) {
-            $discard = &$state['discard'][$deck];
-            if (is_array($discard) && $discard !== []) {
-                $cards = $discard;
-                shuffle($cards);
-                $discard = [];
-            } else {
-                return null;
-            }
-        }
-
-        $card = array_shift($cards);
-        $state['discard'][$deck][] = $card;
-
-        return is_array($card) ? $card : null;
     }
 
     private function adjustPosition(array &$state, int $playerIndex, int $delta, int $depth): void
@@ -661,6 +785,7 @@ final class PanierExpressGameService implements GameEngineInterface
                 if (!is_array($player)) {
                     continue;
                 }
+                $public['players'][$index]['isBot'] = (bool) ($player['isBot'] ?? false);
                 $public['players'][$index]['basket'] = array_values($player['basket'] ?? []);
                 $public['players'][$index]['inventory'] = array_values($player['inventory'] ?? []);
                 $public['players'][$index]['shoppingList'] = array_values($player['shoppingList'] ?? []);

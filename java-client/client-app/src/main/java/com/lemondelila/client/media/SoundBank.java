@@ -1,6 +1,6 @@
 package com.lemondelila.client.media;
 
-import com.lemondelila.framework.media.sound.SoundClip;
+import com.lemondelila.client.framework.media.sound.SoundClip;
 
 public enum SoundBank implements SoundClip {
     APP_LAUNCH("sound.app.launch", "/audio/app-launch.wav", false),

@@ -1,6 +1,6 @@
 package com.lemondelila.client.gamelogic.missionnemesis.model;
 
-import com.lemondelila.client.model.game.GameEngine;
+import com.lemondelila.client.game.model.GameEngine;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -45,7 +45,8 @@ public final class NemesisEngine implements GameEngine<NemesisState, NemesisEngi
                     player.username(),
                     new ArrayList<>(),
                     new ArrayList<>(),
-                    "placing"
+                    "placing",
+                    false
             ));
         }
         return new NemesisState(
@@ -499,11 +500,13 @@ public final class NemesisEngine implements GameEngine<NemesisState, NemesisEngi
         private List<MutableShip> ships;
         private List<NemesisState.Shot> shots;
         private String status;
+        private final boolean bot;
 
         private MutablePlayer(NemesisState.Player player) {
             this.id = player.id();
             this.username = player.username();
             this.status = player.status();
+            this.bot = player.isBot();
             this.ships = new ArrayList<>();
             for (NemesisState.Ship ship : player.ships()) {
                 this.ships.add(new MutableShip(ship));
@@ -526,7 +529,7 @@ public final class NemesisEngine implements GameEngine<NemesisState, NemesisEngi
                 immutableShips.add(ship.toImmutable());
             }
             List<NemesisState.Shot> immutableShots = new ArrayList<>(shots);
-            return new NemesisState.Player(id, username, immutableShips, immutableShots, status);
+            return new NemesisState.Player(id, username, immutableShips, immutableShots, status, bot);
         }
     }
 

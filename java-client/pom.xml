@@ -10,11 +10,6 @@
     <name>Le Monde de Lila Client</name>
 
     <modules>
-        <module>framework-core</module>
-        <module>framework-ui</module>
-        <module>framework-access</module>
-        <module>framework-network</module>
-        <module>framework-media</module>
         <module>client-app</module>
     </modules>
 

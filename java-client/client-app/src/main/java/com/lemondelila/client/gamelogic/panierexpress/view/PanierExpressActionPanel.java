@@ -1,7 +1,7 @@
 package com.lemondelila.client.gamelogic.panierexpress.view;
 
-import com.lemondelila.framework.access.AccessibleDecorator;
-import com.lemondelila.framework.access.AccessibleSpec;
+import com.lemondelila.client.framework.access.AccessibleDecorator;
+import com.lemondelila.client.framework.access.AccessibleSpec;
 
 import javax.swing.AbstractAction;
 import javax.swing.DefaultListCellRenderer;

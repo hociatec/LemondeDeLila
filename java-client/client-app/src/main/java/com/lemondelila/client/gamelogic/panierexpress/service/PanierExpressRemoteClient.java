@@ -5,12 +5,13 @@ import com.lemondelila.client.gamelogic.panierexpress.model.PanierExpressGameOpt
 import com.lemondelila.client.gamelogic.panierexpress.model.PanierExpressSession;
 import com.lemondelila.client.gamelogic.panierexpress.model.PanierExpressState;
 import com.lemondelila.client.gamelogic.panierexpress.model.PanierExpressStateMapper;
-import com.lemondelila.client.model.game.GameSessionManager;
-import com.lemondelila.client.model.user.ClientSession;
-import com.lemondelila.client.service.game.RemoteGameServiceSupport;
-import com.lemondelila.framework.core.di.Inject;
-import com.lemondelila.framework.core.task.TaskScheduler;
-import com.lemondelila.framework.network.rest.RestClient;
+import com.lemondelila.client.gamelogic.panierexpress.service.PanierExpressCommands;
+import com.lemondelila.client.game.model.GameSessionManager;
+import com.lemondelila.client.user.model.ClientSession;
+import com.lemondelila.client.game.service.RemoteGameServiceSupport;
+import com.lemondelila.client.framework.core.di.Inject;
+import com.lemondelila.client.framework.core.task.TaskScheduler;
+import com.lemondelila.client.framework.network.rest.RestClient;
 
 import java.io.IOException;
 import java.util.Map;
@@ -52,12 +53,12 @@ public final class PanierExpressRemoteClient extends RemoteGameServiceSupport
     }
 
     public CompletableFuture<PanierExpressSession> roll(int roomId) {
-        return sendAction(roomId, Map.of("action", "roll"));
+        return sendAction(roomId, Map.of("action", PanierExpressCommands.ROLL));
     }
 
     public CompletableFuture<PanierExpressSession> answerQuiz(int roomId, int choice) {
         return sendAction(roomId, Map.of(
-                "action", "answer_quiz",
+                "action", PanierExpressCommands.ANSWER_QUIZ,
                 "choice", choice
         ));
     }

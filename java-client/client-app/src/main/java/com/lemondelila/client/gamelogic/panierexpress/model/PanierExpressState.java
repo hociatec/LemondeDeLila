@@ -51,7 +51,8 @@ public record PanierExpressState(
                          List<String> basket,
                          List<String> inventory,
                          boolean readyForCheckout,
-                         int skipTurns) {
+                         int skipTurns,
+                         boolean isBot) {
 
         public Player {
             shoppingList = shoppingList == null ? List.of() : List.copyOf(shoppingList);

@@ -4,18 +4,21 @@ import com.lemondelila.client.gamelogic.panierexpress.controller.PanierExpressCo
 import com.lemondelila.client.gamelogic.panierexpress.model.PanierExpressGameOptions;
 import com.lemondelila.client.gamelogic.panierexpress.model.PanierExpressSession;
 import com.lemondelila.client.gamelogic.panierexpress.model.PanierExpressState;
-import com.lemondelila.client.model.user.ClientSession;
-import com.lemondelila.framework.access.NarrationQueue;
-import com.lemondelila.framework.access.game.AccessibilityService;
-import com.lemondelila.framework.access.game.GameHistoryTracker;
-import com.lemondelila.framework.access.shortcut.AccessibleShortcutRegistry;
-import com.lemondelila.framework.core.context.ApplicationContext;
-import com.lemondelila.framework.core.di.Inject;
-import com.lemondelila.framework.media.sound.SoundEffectManager;
-import com.lemondelila.framework.ui.dialog.DialogService;
-import com.lemondelila.framework.ui.screen.Screen;
-import com.lemondelila.framework.ui.screen.ScreenContext;
-import com.lemondelila.framework.ui.screen.ScreenManager;
+import com.lemondelila.client.catalogue.model.GameSummary;
+import com.lemondelila.client.user.model.ClientSession;
+import com.lemondelila.client.catalogue.service.GameRulesService;
+import com.lemondelila.client.framework.access.NarrationQueue;
+import com.lemondelila.client.framework.access.game.AccessibilityService;
+import com.lemondelila.client.framework.access.game.GameHistoryTracker;
+import com.lemondelila.client.framework.access.shortcut.AccessibleShortcutRegistry;
+import com.lemondelila.client.framework.core.context.ApplicationContext;
+import com.lemondelila.client.framework.core.di.Inject;
+import com.lemondelila.client.framework.media.sound.SoundEffectManager;
+import com.lemondelila.client.framework.ui.dialog.DialogService;
+import com.lemondelila.client.framework.ui.screen.Screen;
+import com.lemondelila.client.framework.ui.screen.ScreenContext;
+import com.lemondelila.client.framework.ui.screen.ScreenManager;
+import com.lemondelila.client.game.controller.GameInteractionController;
 
 import javax.accessibility.AccessibleContext;
 import javax.swing.AbstractAction;
@@ -42,12 +45,23 @@ public final class PanierExpressRootView extends JPanel implements Screen {
 
     private static final String CARD_SETUP = "setup";
     private static final String CARD_GAME = "game";
+    private static final GameSummary GAME_SUMMARY = new GameSummary(
+            "panier-express",
+            "Panier Express",
+            1,
+            4,
+            "panierexpress",
+            "Remplissez votre panier plus vite que vos adversaires.",
+            true,
+            List.of("jeux-de-plateau")
+    );
 
     private final PanierExpressController controller;
     private final Supplier<NarrationQueue> narrationQueueSupplier;
     private final ClientSession clientSession;
     private final PanierExpressVoiceFeedback voiceFeedback;
     private final DialogService dialogService;
+    private final GameInteractionController interactionController;
     private final AccessibilityService accessibilityService;
     private final AccessibleShortcutRegistry shortcutRegistry;
     private final GameHistoryTracker historyTracker = new GameHistoryTracker();
@@ -68,7 +82,6 @@ public final class PanierExpressRootView extends JPanel implements Screen {
     private boolean lastYourTurn;
     private boolean lastPendingForYou;
     private PanierExpressGameOptions lastUsedOptions = PanierExpressGameOptions.defaults();
-    private int recordedHistorySize;
 
     private String lastTurnAnnouncement = "";
     private String cachedScoreSummary = "";
@@ -80,6 +93,7 @@ public final class PanierExpressRootView extends JPanel implements Screen {
                                  ClientSession clientSession,
                                  SoundEffectManager soundManager,
                                  DialogService dialogService,
+                                 GameRulesService rulesService,
                                  AccessibilityService accessibilityService,
                                  AccessibleShortcutRegistry shortcutRegistry) {
         this.controller = Objects.requireNonNull(controller, "controller");
@@ -95,6 +109,17 @@ public final class PanierExpressRootView extends JPanel implements Screen {
                 () -> screenReaderBridge
         );
         historyTracker.setMaxEntries(400);
+        this.interactionController = new GameInteractionController(
+                this,
+                dialogService,
+                Objects.requireNonNull(rulesService, "rulesService"),
+                () -> Optional.of(GAME_SUMMARY),
+                this::handleCancel,
+                this::handleInteractionStatus,
+                this::addBotCommand,
+                this::removeBotCommand
+        );
+        interactionController.setEnabled(false);
 
         this.setupPanel = new PanierExpressSetupPanel(new PanierExpressSetupPanel.Listener() {
             @Override
@@ -144,6 +169,7 @@ public final class PanierExpressRootView extends JPanel implements Screen {
                 clientSession,
                 soundManager,
                 dialogService,
+                context.get(GameRulesService.class),
                 context.get(AccessibilityService.class),
                 context.get(AccessibleShortcutRegistry.class));
     }
@@ -155,18 +181,12 @@ public final class PanierExpressRootView extends JPanel implements Screen {
         registerShortcut("shift TAB", "panier.focus.main", "Maj+Tab : revenir à la zone principale.", e -> focusMainArea());
         registerShortcut("ENTER", "panier.execute", "Entrée : action principale (lancer ou confirmer).", e -> executePrimaryAction());
         registerShortcut("SPACE", "panier.roll", "Espace : lancer le dé.", e -> attemptRoll());
-        registerShortcut('L', "panier.roll", "Lettre L : lancer le dé.", e -> attemptRoll());
-        registerShortcut('l', "panier.roll", "Lettre L : lancer le dé.", e -> attemptRoll());
-        registerShortcut('R', "panier.refresh", "Lettre R : actualiser l’état de la partie.", e -> attemptRefresh());
-        registerShortcut('r', "panier.refresh", "Lettre R : actualiser l’état de la partie.", e -> attemptRefresh());
-        registerShortcut('T', "panier.turn", "Lettre T : annoncer le tour en cours.", e -> announceCurrentTurn());
-        registerShortcut('t', "panier.turn", "Lettre T : annoncer le tour en cours.", e -> announceCurrentTurn());
-        registerShortcut('S', "panier.score", "Lettre S : annoncer le score courant.", e -> announceScore());
-        registerShortcut('s', "panier.score", "Lettre S : annoncer le score courant.", e -> announceScore());
-        registerShortcut('P', "panier.basket", "Lettre P : annoncer le contenu de votre panier.", e -> announceBasket());
-        registerShortcut('p', "panier.basket", "Lettre P : annoncer le contenu de votre panier.", e -> announceBasket());
-        registerShortcut('X', "panier.restart", "Lettre X : proposer de redémarrer la partie.", e -> promptRestart());
-        registerShortcut('x', "panier.restart", "Lettre X : proposer de redémarrer la partie.", e -> promptRestart());
+        registerLetterShortcut('l', "panier.roll", "Lettre L : lancer le dé.", e -> attemptRoll());
+        registerLetterShortcut('r', "panier.refresh", "Lettre R : actualiser l’état de la partie.", e -> attemptRefresh());
+        registerLetterShortcut('t', "panier.turn", "Lettre T : annoncer le tour en cours.", e -> announceCurrentTurn());
+        registerLetterShortcut('s', "panier.score", "Lettre S : annoncer le score courant.", e -> announceScore());
+        registerLetterShortcut('p', "panier.basket", "Lettre P : annoncer le contenu de votre panier.", e -> announceBasket());
+        registerLetterShortcut('x', "panier.restart", "Lettre X : proposer de redémarrer la partie.", e -> promptRestart());
 
         for (int digit = 0; digit < 4; digit++) {
             final int answerIndex = digit;
@@ -202,6 +222,15 @@ public final class PanierExpressRootView extends JPanel implements Screen {
         }
     }
 
+    private void registerLetterShortcut(char letter, String actionId, String description, java.util.function.Consumer<ActionEvent> handler) {
+        char lower = Character.toLowerCase(letter);
+        char upper = Character.toUpperCase(letter);
+        registerShortcut(lower, actionId, description, handler);
+        if (upper != lower) {
+            registerShortcut(upper, actionId, description, handler);
+        }
+    }
+
     private void bindShortcut(JComponent component, KeyStroke stroke, String actionId, java.util.function.Consumer<ActionEvent> handler) {
         component.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(stroke, actionId);
         component.getActionMap().put(actionId, new AbstractAction() {
@@ -225,6 +254,7 @@ public final class PanierExpressRootView extends JPanel implements Screen {
     @Override
     public void onShow(ScreenContext context) {
         this.screenManager = context.screenManager();
+        dialogService.attach(this);
         controller.addSessionListener(sessionListener);
         Optional<PanierExpressSession> current = controller.currentSession();
         if (current.isPresent()) {
@@ -235,11 +265,13 @@ public final class PanierExpressRootView extends JPanel implements Screen {
             SwingUtilities.invokeLater(setupPanel::focusFirstComponent);
         }
         requestFocusInWindow();
+        interactionController.setEnabled(true);
     }
 
     @Override
     public void onHide(ScreenContext context) {
         controller.removeSessionListener(sessionListener);
+        interactionController.setEnabled(false);
     }
 
     private void applySession(PanierExpressSession session) {
@@ -272,7 +304,7 @@ public final class PanierExpressRootView extends JPanel implements Screen {
 
         boolean shouldNarrateStatus = !isYourTurn || isFinished || (state.pending() != null && !pendingForYou);
         voiceFeedback.announceStatus(statusText, shouldNarrateStatus);
-        updateTurnAnnouncement(statusText, false, 0, true);
+        updateTurnAnnouncement(statusText, false, 0);
 
         String pendingText = buildPendingText(state, pendingForYou);
         gamePanel.updatePending(pendingText);
@@ -293,11 +325,7 @@ public final class PanierExpressRootView extends JPanel implements Screen {
         gamePanel.updateScore(cachedScoreSummary);
 
         updateHistory(state.log());
-        String historyText = historyTracker.formatAll();
-        if (historyText.isBlank()) {
-            historyText = "Aucun évènement pour le moment.";
-        }
-        gamePanel.setHistory(historyText, historyText);
+        gamePanel.updateHistory(historyTracker, "Aucun évènement pour le moment.");
 
         voiceFeedback.handleStateUpdate(state, selfOpt);
     }
@@ -411,22 +439,16 @@ public final class PanierExpressRootView extends JPanel implements Screen {
     }
 
     private void updateHistory(List<PanierExpressState.LogEntry> entries) {
+        historyTracker.clear();
         if (entries == null || entries.isEmpty()) {
-            historyTracker.clear();
-            recordedHistorySize = 0;
             return;
         }
-        if (entries.size() < recordedHistorySize) {
-            historyTracker.clear();
-            recordedHistorySize = 0;
-        }
-        for (int i = recordedHistorySize; i < entries.size(); i++) {
-            String message = entries.get(i).message();
+        for (PanierExpressState.LogEntry entry : entries) {
+            String message = entry.message();
             if (message != null && !message.isBlank()) {
                 historyTracker.add(message);
             }
         }
-        recordedHistorySize = entries.size();
     }
 
     private void startGameWithOptions(PanierExpressGameOptions options, boolean fromShortcut) {
@@ -555,7 +577,7 @@ public final class PanierExpressRootView extends JPanel implements Screen {
                 state.lastRoll()
         );
         String turnMessage = accessibilityService.announceTurn(screenReaderBridge, turnEvent);
-        updateTurnAnnouncement(turnMessage, true, 0, true);
+        updateTurnAnnouncement(turnMessage, true, 0);
     }
 
     private void announceScore() {
@@ -651,7 +673,15 @@ public final class PanierExpressRootView extends JPanel implements Screen {
         }
     }
 
-    private void updateTurnAnnouncement(String message, boolean force, int reminderIndex, boolean focusStatus) {
+    private CompletableFuture<Void> addBotCommand() {
+        return controller.addBot().thenApply(session -> null);
+    }
+
+    private CompletableFuture<Void> removeBotCommand() {
+        return controller.removeBot().thenApply(session -> null);
+    }
+
+    private void updateTurnAnnouncement(String message, boolean force, int reminderIndex) {
         if (message == null || message.isBlank()) {
             return;
         }
@@ -670,9 +700,6 @@ public final class PanierExpressRootView extends JPanel implements Screen {
                         : message;
                 context.setAccessibleName(accessibleName);
                 context.setAccessibleDescription(accessibleDescription);
-            }
-            if (focusStatus) {
-                SwingUtilities.invokeLater(gamePanel::focusStatusLabel);
             }
         }
     }
@@ -714,6 +741,13 @@ public final class PanierExpressRootView extends JPanel implements Screen {
             }
         } catch (Exception ignored) {
         }
+    }
+
+    private void handleInteractionStatus(String message) {
+        if (message == null || message.isBlank()) {
+            return;
+        }
+        narrate(message);
     }
 
     private void announceForScreenReader(String message) {

@@ -1191,3 +1191,167 @@ Native library (win32-x86-64/SAAPI32.dll) not found in resource path (C:\wamp64\
 [2025-11-12 20:52:39] NVDA spoke text successfully.
 [2025-11-12 20:52:40] NVDA spoke text successfully.
 [2025-11-12 20:52:40] NVDA spoke text successfully.
+[2025-11-12 21:36:02] Attempting to load NVDA library from C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\nvdaControllerClient.dll
+[2025-11-12 21:36:02] NVDA controller client API not available, trying controller API: Error looking up function 'nvdaControllerClient_testIfRunning': La procédure spécifiée est introuvable.
+
+[2025-11-12 21:36:02] Detected NVDA controller API.
+[2025-11-12 21:36:02] NVDA controller bridge initialised successfully (CONTROLLER).
+[2025-11-12 21:36:02] JAWS DLL load failed at C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\saapi32.dll: Unable to load library 'C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\saapi32.dll':
+%1 n’est pas une application Win32 valide.
+
+%1 n’est pas une application Win32 valide.
+
+Native library (win32-x86-64/C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\saapi32.dll) not found in resource path (C:\wamp64\www\le-monde-de-lila\java-client\framework-core\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-ui\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-access\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-network\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-media\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-access-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-core-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-media-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-network-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-ui-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-annotations-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-core-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-databind-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jna-5.13.0.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-api-2.0.13.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-simple-2.0.13.jar)
+[2025-11-12 21:36:02] JAWS DLL load failed at C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\SAAPI32.dll: Unable to load library 'C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\SAAPI32.dll':
+%1 n’est pas une application Win32 valide.
+
+%1 n’est pas une application Win32 valide.
+
+Native library (win32-x86-64/C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\SAAPI32.dll) not found in resource path (C:\wamp64\www\le-monde-de-lila\java-client\framework-core\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-ui\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-access\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-network\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-media\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-access-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-core-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-media-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-network-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-ui-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-annotations-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-core-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-databind-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jna-5.13.0.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-api-2.0.13.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-simple-2.0.13.jar)
+[2025-11-12 21:36:02] JAWS DLL load failed at fsapi32: Unable to load library 'fsapi32':
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Native library (win32-x86-64/fsapi32.dll) not found in resource path (C:\wamp64\www\le-monde-de-lila\java-client\framework-core\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-ui\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-access\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-network\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-media\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-access-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-core-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-media-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-network-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-ui-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-annotations-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-core-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-databind-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jna-5.13.0.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-api-2.0.13.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-simple-2.0.13.jar)
+[2025-11-12 21:36:02] JAWS DLL load failed at SAAPI32: Unable to load library 'SAAPI32':
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Native library (win32-x86-64/SAAPI32.dll) not found in resource path (C:\wamp64\www\le-monde-de-lila\java-client\framework-core\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-ui\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-access\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-network\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\framework-media\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-access-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-core-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-media-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-network-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\framework-ui-1.0.0-SNAPSHOT.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-annotations-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-core-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-databind-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jna-5.13.0.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-api-2.0.13.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-simple-2.0.13.jar)
+[2025-11-12 21:36:02] FSAPI DLL not available on this system.
+[2025-11-12 21:36:03] NVDA spoke text successfully.
+[2025-11-12 21:36:04] NVDA spoke text successfully.
+[2025-11-12 21:36:04] NVDA spoke text successfully.
+[2025-11-12 21:36:53] NVDA spoke text successfully.
+[2025-11-12 21:36:54] NVDA spoke text successfully.
+[2025-11-12 21:37:02] NVDA spoke text successfully.
+[2025-11-12 21:37:11] NVDA spoke text successfully.
+[2025-11-12 21:37:11] NVDA spoke text successfully.
+[2025-11-12 21:37:23] NVDA spoke text successfully.
+[2025-11-12 21:37:23] NVDA spoke text successfully.
+[2025-11-12 21:37:26] NVDA spoke text successfully.
+[2025-11-12 21:37:26] NVDA spoke text successfully.
+[2025-11-12 21:37:29] NVDA spoke text successfully.
+[2025-11-12 21:37:29] NVDA spoke text successfully.
+[2025-11-12 22:25:22] Attempting to load NVDA library from C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\nvdaControllerClient.dll
+[2025-11-12 22:25:22] NVDA controller client API not available, trying controller API: Error looking up function 'nvdaControllerClient_testIfRunning': La procédure spécifiée est introuvable.
+
+[2025-11-12 22:25:22] Detected NVDA controller API.
+[2025-11-12 22:25:22] NVDA controller bridge initialised successfully (CONTROLLER).
+[2025-11-12 22:25:22] JAWS DLL load failed at C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\saapi32.dll: Unable to load library 'C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\saapi32.dll':
+%1 n’est pas une application Win32 valide.
+
+%1 n’est pas une application Win32 valide.
+
+Native library (win32-x86-64/C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\saapi32.dll) not found in resource path (C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\apiguardian-api-1.1.2.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-annotations-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-core-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-databind-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jna-5.13.0.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\junit-jupiter-5.10.2.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\junit-jupiter-api-5.10.2.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\junit-jupiter-engine-5.10.2.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\junit-jupiter-params-5.10.2.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\junit-platform-commons-1.10.2.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\junit-platform-engine-1.10.2.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\opentest4j-1.3.0.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-api-2.0.13.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-simple-2.0.13.jar)
+[2025-11-12 22:25:22] JAWS DLL load failed at C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\SAAPI32.dll: Unable to load library 'C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\SAAPI32.dll':
+%1 n’est pas une application Win32 valide.
+
+%1 n’est pas une application Win32 valide.
+
+Native library (win32-x86-64/C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\SAAPI32.dll) not found in resource path (C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\apiguardian-api-1.1.2.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-annotations-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-core-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-databind-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jna-5.13.0.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\junit-jupiter-5.10.2.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\junit-jupiter-api-5.10.2.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\junit-jupiter-engine-5.10.2.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\junit-jupiter-params-5.10.2.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\junit-platform-commons-1.10.2.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\junit-platform-engine-1.10.2.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\opentest4j-1.3.0.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-api-2.0.13.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-simple-2.0.13.jar)
+[2025-11-12 22:25:22] JAWS DLL load failed at fsapi32: Unable to load library 'fsapi32':
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Native library (win32-x86-64/fsapi32.dll) not found in resource path (C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\apiguardian-api-1.1.2.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-annotations-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-core-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-databind-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jna-5.13.0.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\junit-jupiter-5.10.2.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\junit-jupiter-api-5.10.2.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\junit-jupiter-engine-5.10.2.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\junit-jupiter-params-5.10.2.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\junit-platform-commons-1.10.2.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\junit-platform-engine-1.10.2.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\opentest4j-1.3.0.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-api-2.0.13.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-simple-2.0.13.jar)
+[2025-11-12 22:25:22] JAWS DLL load failed at SAAPI32: Unable to load library 'SAAPI32':
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Native library (win32-x86-64/SAAPI32.dll) not found in resource path (C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\apiguardian-api-1.1.2.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-annotations-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-core-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-databind-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jna-5.13.0.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\junit-jupiter-5.10.2.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\junit-jupiter-api-5.10.2.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\junit-jupiter-engine-5.10.2.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\junit-jupiter-params-5.10.2.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\junit-platform-commons-1.10.2.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\junit-platform-engine-1.10.2.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\opentest4j-1.3.0.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-api-2.0.13.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-simple-2.0.13.jar)
+[2025-11-12 22:25:22] FSAPI DLL not available on this system.
+[2025-11-12 22:25:23] NVDA spoke text successfully.
+[2025-11-12 22:25:23] NVDA spoke text successfully.
+[2025-11-12 22:25:24] NVDA spoke text successfully.
+[2025-11-12 22:26:19] NVDA spoke text successfully.
+[2025-11-12 22:26:21] NVDA spoke text successfully.
+[2025-11-12 22:26:24] NVDA spoke text successfully.
+[2025-11-12 22:26:27] NVDA spoke text successfully.
+[2025-11-12 22:26:28] NVDA spoke text successfully.
+[2025-11-12 22:31:31] Attempting to load NVDA library from C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\nvdaControllerClient.dll
+[2025-11-12 22:31:31] NVDA controller client API not available, trying controller API: Error looking up function 'nvdaControllerClient_testIfRunning': La procédure spécifiée est introuvable.
+
+[2025-11-12 22:31:31] Detected NVDA controller API.
+[2025-11-12 22:31:31] NVDA controller bridge initialised successfully (CONTROLLER).
+[2025-11-12 22:31:31] JAWS DLL load failed at C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\saapi32.dll: Unable to load library 'C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\saapi32.dll':
+%1 n’est pas une application Win32 valide.
+
+%1 n’est pas une application Win32 valide.
+
+Native library (win32-x86-64/C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\saapi32.dll) not found in resource path (C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\apiguardian-api-1.1.2.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-annotations-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-core-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-databind-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jna-5.13.0.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\junit-jupiter-5.10.2.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\junit-jupiter-api-5.10.2.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\junit-jupiter-engine-5.10.2.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\junit-jupiter-params-5.10.2.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\junit-platform-commons-1.10.2.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\junit-platform-engine-1.10.2.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\opentest4j-1.3.0.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-api-2.0.13.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-simple-2.0.13.jar)
+[2025-11-12 22:31:31] JAWS DLL load failed at C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\SAAPI32.dll: Unable to load library 'C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\SAAPI32.dll':
+%1 n’est pas une application Win32 valide.
+
+%1 n’est pas une application Win32 valide.
+
+Native library (win32-x86-64/C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\SAAPI32.dll) not found in resource path (C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\apiguardian-api-1.1.2.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-annotations-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-core-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-databind-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jna-5.13.0.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\junit-jupiter-5.10.2.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\junit-jupiter-api-5.10.2.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\junit-jupiter-engine-5.10.2.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\junit-jupiter-params-5.10.2.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\junit-platform-commons-1.10.2.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\junit-platform-engine-1.10.2.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\opentest4j-1.3.0.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-api-2.0.13.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-simple-2.0.13.jar)
+[2025-11-12 22:31:31] JAWS DLL load failed at fsapi32: Unable to load library 'fsapi32':
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Native library (win32-x86-64/fsapi32.dll) not found in resource path (C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\apiguardian-api-1.1.2.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-annotations-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-core-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-databind-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jna-5.13.0.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\junit-jupiter-5.10.2.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\junit-jupiter-api-5.10.2.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\junit-jupiter-engine-5.10.2.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\junit-jupiter-params-5.10.2.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\junit-platform-commons-1.10.2.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\junit-platform-engine-1.10.2.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\opentest4j-1.3.0.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-api-2.0.13.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-simple-2.0.13.jar)
+[2025-11-12 22:31:31] JAWS DLL load failed at SAAPI32: Unable to load library 'SAAPI32':
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Native library (win32-x86-64/SAAPI32.dll) not found in resource path (C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\classes;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\apiguardian-api-1.1.2.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-annotations-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-core-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jackson-databind-2.17.1.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\jna-5.13.0.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\junit-jupiter-5.10.2.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\junit-jupiter-api-5.10.2.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\junit-jupiter-engine-5.10.2.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\junit-jupiter-params-5.10.2.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\junit-platform-commons-1.10.2.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\junit-platform-engine-1.10.2.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\opentest4j-1.3.0.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-api-2.0.13.jar;C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\dependency\slf4j-simple-2.0.13.jar)
+[2025-11-12 22:31:31] FSAPI DLL not available on this system.
+[2025-11-12 22:31:32] NVDA spoke text successfully.
+[2025-11-12 22:31:32] NVDA spoke text successfully.
+[2025-11-12 22:31:32] NVDA spoke text successfully.
+[2025-11-12 22:36:26] Attempting to load NVDA library from C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\nvdaControllerClient.dll
+[2025-11-12 22:36:26] NVDA controller client API not available, trying controller API: Error looking up function 'nvdaControllerClient_testIfRunning': La procédure spécifiée est introuvable.
+
+[2025-11-12 22:36:26] Detected NVDA controller API.
+[2025-11-12 22:36:26] NVDA controller bridge initialised successfully (CONTROLLER).
+[2025-11-12 22:36:26] JAWS DLL load failed at C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\saapi32.dll: Unable to load library 'C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\saapi32.dll':
+%1 n’est pas une application Win32 valide.
+
+%1 n’est pas une application Win32 valide.
+
+Native library (win32-x86-64/C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\saapi32.dll) not found in resource path (C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\client-app-1.0.0-SNAPSHOT-all.jar)
+[2025-11-12 22:36:26] JAWS DLL load failed at C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\SAAPI32.dll: Unable to load library 'C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\SAAPI32.dll':
+%1 n’est pas une application Win32 valide.
+
+%1 n’est pas une application Win32 valide.
+
+Native library (win32-x86-64/C:\wamp64\www\le-monde-de-lila\java-client\libs\windows\x64\SAAPI32.dll) not found in resource path (C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\client-app-1.0.0-SNAPSHOT-all.jar)
+[2025-11-12 22:36:26] JAWS DLL load failed at fsapi32: Unable to load library 'fsapi32':
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Native library (win32-x86-64/fsapi32.dll) not found in resource path (C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\client-app-1.0.0-SNAPSHOT-all.jar)
+[2025-11-12 22:36:26] JAWS DLL load failed at SAAPI32: Unable to load library 'SAAPI32':
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Native library (win32-x86-64/SAAPI32.dll) not found in resource path (C:\wamp64\www\le-monde-de-lila\java-client\client-app\target\client-app-1.0.0-SNAPSHOT-all.jar)
+[2025-11-12 22:36:26] FSAPI DLL not available on this system.
+[2025-11-12 22:36:27] NVDA spoke text successfully.
+[2025-11-12 22:36:27] NVDA spoke text successfully.
+[2025-11-12 22:36:27] NVDA spoke text successfully.

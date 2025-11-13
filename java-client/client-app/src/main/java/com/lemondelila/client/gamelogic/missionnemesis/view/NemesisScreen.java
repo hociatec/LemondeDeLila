@@ -1,5 +1,6 @@
 package com.lemondelila.client.gamelogic.missionnemesis.view;
 
+import com.lemondelila.client.game.controller.GameInteractionController;
 import com.lemondelila.client.gamelogic.missionnemesis.controller.NemesisController;
 import com.lemondelila.client.gamelogic.missionnemesis.model.GridCoordinate;
 import com.lemondelila.client.gamelogic.missionnemesis.model.NemesisSession;
@@ -7,17 +8,22 @@ import com.lemondelila.client.gamelogic.missionnemesis.model.NemesisSessionStore
 import com.lemondelila.client.gamelogic.missionnemesis.model.NemesisSpecs;
 import com.lemondelila.client.gamelogic.missionnemesis.model.NemesisState;
 import com.lemondelila.client.gamelogic.missionnemesis.model.ShipPlacement;
-import com.lemondelila.framework.access.game.AccessibilityService;
-import com.lemondelila.framework.access.game.GameHistoryTracker;
-import com.lemondelila.framework.access.shortcut.AccessibleShortcutRegistry;
-import com.lemondelila.framework.core.di.Inject;
-import com.lemondelila.framework.ui.screen.Screen;
-import com.lemondelila.framework.ui.screen.ScreenContext;
-import com.lemondelila.framework.ui.screen.ScreenManager;
+import com.lemondelila.client.catalogue.model.GameSummary;
+import com.lemondelila.client.catalogue.service.GameRulesService;
+import com.lemondelila.client.framework.access.game.AccessibilityService;
+import com.lemondelila.client.framework.access.game.GameHistoryTracker;
+import com.lemondelila.client.framework.access.game.GameHistoryView;
+import com.lemondelila.client.framework.access.shortcut.AccessibleShortcutRegistry;
+import com.lemondelila.client.framework.core.di.Inject;
+import com.lemondelila.client.framework.ui.dialog.DialogService;
+import com.lemondelila.client.framework.ui.screen.Screen;
+import com.lemondelila.client.framework.ui.screen.ScreenContext;
+import com.lemondelila.client.framework.ui.screen.ScreenManager;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
+import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import java.awt.BorderLayout;
@@ -28,6 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
@@ -39,9 +46,22 @@ public final class NemesisScreen extends JPanel implements Screen {
         ACTIVE_GAME
     }
 
+    private static final GameSummary GAME_SUMMARY = new GameSummary(
+            "mission-nemesis",
+            "Mission Nemesis",
+            1,
+            2,
+            "missionnemesis",
+            "Affrontez un adversaire dans une bataille spatiale tactique.",
+            true,
+            List.of("jeux-de-plateau")
+    );
+
     private final NemesisController controller;
     private final AccessibilityService accessibilityService;
     private final AccessibleShortcutRegistry shortcutRegistry;
+    private final DialogService dialogService;
+    private final GameInteractionController interactionController;
 
     private ScreenManager screenManager;
     private NemesisSession currentSession;
@@ -49,7 +69,12 @@ public final class NemesisScreen extends JPanel implements Screen {
 
     private final NemesisSetupPanel setupPanel;
     private final NemesisPlacementPanel placementPanel = new NemesisPlacementPanel();
-    private final NemesisLogPanel logPanel = new NemesisLogPanel();
+    private final GameHistoryView historyView = new GameHistoryView(
+            "Journal des actions",
+            "Historique des actions",
+            "Derniers évènements de la partie Mission Nemesis."
+    );
+    private final GameHistoryTracker historyTracker = new GameHistoryTracker();
     private final NemesisFooterPanel footerPanel;
     private final NemesisGridPanel ownGrid;
     private final NemesisGridPanel enemyGrid;
@@ -65,15 +90,30 @@ public final class NemesisScreen extends JPanel implements Screen {
     public NemesisScreen(NemesisController controller,
                          NemesisSessionStore sessionStore,
                          AccessibilityService accessibilityService,
-                         AccessibleShortcutRegistry shortcutRegistry) {
+                         AccessibleShortcutRegistry shortcutRegistry,
+                         DialogService dialogService,
+                         GameRulesService rulesService) {
         this.controller = Objects.requireNonNull(controller, "controller");
         this.accessibilityService = Objects.requireNonNull(accessibilityService, "accessibilityService");
         this.shortcutRegistry = Objects.requireNonNull(shortcutRegistry, "shortcutRegistry");
+        this.dialogService = Objects.requireNonNull(dialogService, "dialogService");
         Objects.requireNonNull(sessionStore, "sessionStore");
         this.ownGrid = new NemesisGridPanel(true, coordinate -> {});
         this.enemyGrid = new NemesisGridPanel(false, this::fireAt);
         this.setupPanel = new NemesisSetupPanel(new int[]{NemesisSpecs.BOARD_SIZE}, this::handleStartRequested);
         this.footerPanel = new NemesisFooterPanel(accessibilityService);
+        historyTracker.setMaxEntries(400);
+        this.interactionController = new GameInteractionController(
+                this,
+                dialogService,
+                Objects.requireNonNull(rulesService, "rulesService"),
+                () -> Optional.of(GAME_SUMMARY),
+                this::exitToCatalog,
+                this::setStatus,
+                this::addBotCommand,
+                this::removeBotCommand
+        );
+        interactionController.setEnabled(false);
 
         enemyGrid.setFireSelectionListener(this::updateSelectionStatus);
         buildUi();
@@ -97,7 +137,8 @@ public final class NemesisScreen extends JPanel implements Screen {
         JPanel battleContainer = new JPanel(new BorderLayout(12, 12));
         battleContainer.add(placementPanel, BorderLayout.NORTH);
         battleContainer.add(gridsContainer, BorderLayout.CENTER);
-        battleContainer.add(logPanel, BorderLayout.SOUTH);
+        historyView.setPreferredSize(new java.awt.Dimension(0, 180));
+        battleContainer.add(historyView, BorderLayout.SOUTH);
 
         mainPanel.add(setupContainer, ViewState.SETUP.name());
         mainPanel.add(battleContainer, ViewState.ACTIVE_GAME.name());
@@ -132,6 +173,14 @@ public final class NemesisScreen extends JPanel implements Screen {
             );
         });
         shortcutRegistry.applyTo(this);
+    }
+
+    private CompletableFuture<Void> addBotCommand() {
+        return controller.addBot().thenApply(session -> null);
+    }
+
+    private CompletableFuture<Void> removeBotCommand() {
+        return controller.removeBot().thenApply(session -> null);
     }
     private void registerShortcut(String keyStroke, String actionId, String description, java.util.function.Consumer<java.awt.event.ActionEvent> handler) {
         registerShortcut(KeyStroke.getKeyStroke(keyStroke), actionId, description, handler);
@@ -169,7 +218,7 @@ public final class NemesisScreen extends JPanel implements Screen {
                             : ViewState.ACTIVE_GAME;
                     mainLayout.show(mainPanel, ViewState.ACTIVE_GAME.name());
                     placementPanel.clear();
-                    logPanel.clear();
+                    historyView.setHistoryText("");
                     displaySession(session);
                     if (state == ViewState.MANUAL_PLACEMENT) {
                         startManualPlacement();
@@ -291,16 +340,19 @@ public final class NemesisScreen extends JPanel implements Screen {
     }
 
     private void updateLog(NemesisSession session) {
-        StringBuilder builder = new StringBuilder();
         Map<Integer, String> playerNames = new HashMap<>();
         session.state().players().forEach(player -> playerNames.put(player.id(), player.username()));
+        List<String> lines = new ArrayList<>();
         session.state().log().forEach(entry -> {
             String line = formatLogEntry(entry, playerNames);
             if (!line.isBlank()) {
-                builder.append(line).append(System.lineSeparator());
+                lines.add(line);
             }
         });
-        logPanel.showLog(builder.toString());
+        historyTracker.setEntries(lines);
+        historyView.render(historyTracker, "Aucun évènement pour le moment.");
+        JTextArea area = historyView.historyComponent();
+        area.setCaretPosition(area.getDocument().getLength());
     }
 
     private String formatLogEntry(NemesisState.LogEntry entry, Map<Integer, String> playerNames) {
@@ -340,7 +392,8 @@ public final class NemesisScreen extends JPanel implements Screen {
         placementPanel.clear();
         ownGrid.clear();
         enemyGrid.clear();
-        logPanel.clear();
+        historyView.setHistoryText("");
+        historyTracker.clear();
         footerPanel.reset();
         SwingUtilities.invokeLater(setupPanel::activate);
     }
@@ -348,6 +401,13 @@ public final class NemesisScreen extends JPanel implements Screen {
     private void setStatus(String text) {
         footerPanel.showStatus(text);
         accessibilityService.announceCustom(footerPanel, text);
+    }
+
+    private void exitToCatalog() {
+        controller.reset();
+        if (screenManager != null) {
+            SwingUtilities.invokeLater(() -> screenManager.show("catalog"));
+        }
     }
 
     @Override
@@ -364,14 +424,15 @@ public final class NemesisScreen extends JPanel implements Screen {
     public void onShow(ScreenContext context) {
         this.screenManager = context.screenManager();
         controller.addListener(sessionListener);
+        dialogService.attach(this);
         showSetup();
+        interactionController.setEnabled(true);
     }
 
     @Override
     public void onHide(ScreenContext context) {
         controller.removeListener(sessionListener);
+        interactionController.setEnabled(false);
         this.screenManager = null;
     }
 }
-
-

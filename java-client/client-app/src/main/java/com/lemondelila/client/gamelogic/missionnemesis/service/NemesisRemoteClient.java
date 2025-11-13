@@ -9,12 +9,12 @@ import com.lemondelila.client.gamelogic.missionnemesis.model.NemesisSpecs;
 import com.lemondelila.client.gamelogic.missionnemesis.model.NemesisState;
 import com.lemondelila.client.gamelogic.missionnemesis.model.NemesisStateMapper;
 import com.lemondelila.client.gamelogic.missionnemesis.model.ShipPlacement;
-import com.lemondelila.client.model.game.GameSessionManager;
-import com.lemondelila.client.model.user.ClientSession;
-import com.lemondelila.client.service.game.RemoteGameServiceSupport;
-import com.lemondelila.framework.core.di.Inject;
-import com.lemondelila.framework.core.task.TaskScheduler;
-import com.lemondelila.framework.network.rest.RestClient;
+import com.lemondelila.client.game.model.GameSessionManager;
+import com.lemondelila.client.user.model.ClientSession;
+import com.lemondelila.client.game.service.RemoteGameServiceSupport;
+import com.lemondelila.client.framework.core.di.Inject;
+import com.lemondelila.client.framework.core.task.TaskScheduler;
+import com.lemondelila.client.framework.network.rest.RestClient;
 
 import java.io.IOException;
 import java.util.ArrayList;

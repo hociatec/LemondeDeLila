@@ -12,7 +12,7 @@ public record PanierExpressReference(
         List<TokenInfo> tokens
 ) {
 
-    public record BoardTile(int index, String label, String type) { }
+    public record BoardTile(int index, String label, String type, List<TileAction> actions) { }
 
     public record Courses(List<CourseItem> fruits, List<CourseItem> vegetables) { }
 
@@ -35,4 +35,6 @@ public record PanierExpressReference(
     public record CardEffect(String id, String title, String effect, String category) { }
 
     public record TokenInfo(String id, String name, String description) { }
+
+    public record TileAction(String type, String message, Integer delta, Integer count) { }
 }

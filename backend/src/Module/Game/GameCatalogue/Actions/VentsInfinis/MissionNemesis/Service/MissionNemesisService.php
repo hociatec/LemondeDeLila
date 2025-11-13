@@ -2,15 +2,19 @@
 
 namespace App\Module\Game\GameCatalogue\Actions\VentsInfinis\MissionNemesis\Service;
 
+use App\Module\Game\Bot\BotAllocator;
 use App\Module\Game\Engine\GameEngineInterface;
 use App\Module\Game\Entity\Room;
+use App\Module\Game\Service\Participant;
+use App\Module\Game\Service\ParticipantResolver;
+use App\Module\Game\GameCatalogue\Actions\VentsInfinis\MissionNemesis\Service\Support\MissionNemesisBotEngine;
+use App\Module\Game\GameCatalogue\Actions\VentsInfinis\MissionNemesis\Service\Support\MissionNemesisFleetFactory;
+use App\Module\Game\GameCatalogue\Actions\VentsInfinis\MissionNemesis\Service\Support\MissionNemesisShotResolver;
 use App\Module\User\Entity\User;
 
 final class MissionNemesisService implements GameEngineInterface
 {
     private const BOARD_SIZE = 10;
-    private const BOT_ID = -1;
-    private const BOT_NAME = 'IA Nemesis';
 
     private const SHIPS = [
         'Station spatiale' => 5,
@@ -20,6 +24,23 @@ final class MissionNemesisService implements GameEngineInterface
         'Sonde de reconnaissance' => 2,
     ];
 
+    private ParticipantResolver $participantResolver;
+    private BotAllocator $botAllocator;
+    private MissionNemesisFleetFactory $fleetFactory;
+    private MissionNemesisShotResolver $shotResolver;
+    private MissionNemesisBotEngine $botEngine;
+
+    public function __construct(
+        ParticipantResolver $participantResolver,
+        BotAllocator $botAllocator
+    ) {
+        $this->participantResolver = $participantResolver;
+        $this->botAllocator = $botAllocator;
+        $this->fleetFactory = new MissionNemesisFleetFactory(self::BOARD_SIZE, self::SHIPS);
+        $this->shotResolver = new MissionNemesisShotResolver();
+        $this->botEngine = new MissionNemesisBotEngine($this->fleetFactory, self::BOARD_SIZE);
+    }
+
     public function getType(): string
     {
         return 'mission-nemesis';
@@ -27,23 +48,14 @@ final class MissionNemesisService implements GameEngineInterface
 
     public function defaultState(Room $room): array
     {
-        $players = [];
-        foreach ($room->getPlayers()->toArray() as $participant) {
-            if (!$participant instanceof User) {
-                continue;
-            }
-            $players[] = [
-                'id' => $participant->getId(),
-                'username' => $participant->getUsername(),
-                'ships' => [],
-                'shots' => [],
-                'status' => 'placing',
-                'isBot' => false,
-            ];
+        $participants = $this->participantResolver->resolve($room);
+        if ($participants === []) {
+            throw new \RuntimeException('Aucun participant disponible pour lancer Mission Nemesis.');
         }
 
+        $players = $this->initialPlayers($participants);
         if (count($players) < 2) {
-            $players[] = $this->createBotPlayer();
+            $players[] = $this->createEphemeralBot($players);
         }
 
         $state = [
@@ -59,6 +71,68 @@ final class MissionNemesisService implements GameEngineInterface
         $this->executeBotTurns($state);
 
         return $state;
+    }
+
+    /**
+     * @param Participant[] $participants
+     * @return array<int,array<string,mixed>>
+     */
+    private function initialPlayers(array $participants): array
+    {
+        $players = [];
+        foreach ($participants as $participant) {
+            if (!$participant instanceof Participant) {
+                continue;
+            }
+            $players[] = [
+                'id' => $participant->id(),
+                'username' => $participant->username(),
+                'ships' => [],
+                'shots' => [],
+                'status' => 'placing',
+                'isBot' => $participant->isBot(),
+            ];
+        }
+
+        return $players;
+    }
+
+    /**
+     * @param array<int,array<string,mixed>> $existing
+     */
+    private function createEphemeralBot(array $existing): array
+    {
+        $excluded = array_map(
+            static fn(array $player): string => (string) ($player['username'] ?? ''),
+            $existing
+        );
+        $name = $this->botAllocator->pick($excluded);
+
+        return [
+            'id' => $this->generateBotId($existing),
+            'username' => $name,
+            'ships' => [],
+            'shots' => [],
+            'status' => 'placing',
+            'isBot' => true,
+        ];
+    }
+
+    /**
+     * @param array<int,array<string,mixed>> $existing
+     */
+    private function generateBotId(array $existing): int
+    {
+        $used = array_map(
+            static fn(array $player): int => (int) ($player['id'] ?? 0),
+            $existing
+        );
+
+        do {
+            $id = -1 * random_int(1000, 1_000_000);
+        } while (in_array($id, $used, true));
+
+        return $id;
     }
 
     public function apply(array $state, array $payload, Room $room, User $user): array
@@ -112,7 +186,7 @@ final class MissionNemesisService implements GameEngineInterface
             return [
                 'id' => $player['id'] ?? null,
                 'status' => $player['status'] ?? 'unknown',
-                'segmentsRemaining' => $this->countRemainingSegments($player),
+                'segmentsRemaining' => $this->shotResolver->countRemainingSegments($player),
             ];
         }, $players);
 
@@ -133,16 +207,51 @@ final class MissionNemesisService implements GameEngineInterface
         ];
     }
 
-    private function createBotPlayer(): array
+    public function presentState(array $state, User $viewer): array
     {
-        return [
-            'id' => self::BOT_ID,
-            'username' => self::BOT_NAME,
-            'ships' => [],
-            'shots' => [],
-            'status' => 'placing',
-            'isBot' => true,
-        ];
+        $public = $state;
+        $viewerId = (int) $viewer->getId();
+
+        $publicPlayers = [];
+        foreach ($state['players'] ?? [] as $player) {
+            if (!is_array($player)) {
+                continue;
+            }
+            $publicPlayers[] = $this->presentPlayer($player, $viewerId);
+        }
+
+        $public['players'] = $publicPlayers;
+        $public['turnIndex'] = (int)($state['turnIndex'] ?? 0);
+        $public['round'] = max(1, (int)($state['round'] ?? 1));
+        $public['status'] = (string)($state['status'] ?? 'placement');
+
+        if (isset($state['winner'])) {
+            $public['winner'] = $state['winner'];
+        }
+
+        $log = [];
+        foreach ($state['log'] ?? [] as $entry) {
+            if (!is_array($entry)) {
+                continue;
+            }
+            $log[] = [
+                'type' => (string)($entry['type'] ?? ''),
+                'message' => $entry['message'] ?? null,
+                'from' => isset($entry['from']) ? (int)$entry['from'] : null,
+                'target' => isset($entry['target']) ? (int)$entry['target'] : null,
+                'x' => isset($entry['x']) ? (int)$entry['x'] : null,
+                'y' => isset($entry['y']) ? (int)$entry['y'] : null,
+                'result' => $entry['result'] ?? null,
+            ];
+        }
+
+        if ($log !== []) {
+            $public['log'] = array_slice($log, -40);
+        } else {
+            $public['log'] = [];
+        }
+
+        return $public;
     }
 
     private function executeBotTurns(array &$state): void
@@ -152,161 +261,65 @@ final class MissionNemesisService implements GameEngineInterface
         }
 
         $players = &$state['players'];
+        $status = $state['status'] ?? 'placement';
 
-        while (true) {
-            $botIndex = $this->findBotIndex($players);
-            if ($botIndex === null) {
-                return;
-            }
-
-            $status = $state['status'] ?? 'placement';
-
-            if ($status === 'placement') {
-                if (($players[$botIndex]['status'] ?? 'placing') !== 'ready') {
-                    $fleet = $this->generateBotFleet();
-                    $this->handlePlacement($state, $players, $botIndex, [
-                        'action' => 'place_ships',
-                        'ships' => $fleet,
-                    ]);
+        $changed = true;
+        while ($status === 'placement' && $changed) {
+            $changed = false;
+            foreach ($players as $index => $player) {
+                if (($player['isBot'] ?? false) !== true) {
                     continue;
                 }
-            }
-
-            if ($status === 'playing' && ($state['turnIndex'] ?? -1) === $botIndex) {
-                $target = $this->chooseBotShot($players, $botIndex);
-                if ($target === null) {
-                    break;
+                if (($players[$index]['status'] ?? 'placing') === 'ready') {
+                    continue;
                 }
-                $this->handleFire($state, $players, $botIndex, [
-                    'action' => 'fire',
-                    'coordinates' => $target,
+                $fleet = $this->botEngine->buildFleet();
+                $state = $this->handlePlacement($state, $players, $index, [
+                    'action' => 'place_ships',
+                    'ships' => $fleet,
                 ]);
-                continue;
-            }
-
-            break;
-        }
-    }
-
-    private function findBotIndex(array $players): ?int
-    {
-        foreach ($players as $index => $player) {
-            if (($player['isBot'] ?? false) === true || ($player['id'] ?? null) === self::BOT_ID) {
-                return $index;
-            }
-        }
-        return null;
-    }
-
-    private function generateBotFleet(): array
-    {
-        $occupied = [];
-        $fleet = [];
-        foreach (self::SHIPS as $name => $size) {
-            $fleet[] = [
-                'name' => $name,
-                'coords' => $this->generateShipCoordinates($size, $occupied),
-            ];
-        }
-        return $fleet;
-    }
-
-    private function generateShipCoordinates(int $size, array &$occupied): array
-    {
-        for ($attempt = 0; $attempt < 100; $attempt++) {
-            $horizontal = random_int(0, 1) === 1;
-            $coords = [];
-            $collision = false;
-
-            if ($horizontal) {
-                $startX = random_int(0, self::BOARD_SIZE - $size);
-                $startY = random_int(0, self::BOARD_SIZE - 1);
-                for ($i = 0; $i < $size; $i++) {
-                    $x = $startX + $i;
-                    $y = $startY;
-                    $key = $x . '-' . $y;
-                    if (isset($occupied[$key])) {
-                        $collision = true;
-                        break;
-                    }
-                    $coords[] = ['x' => $x, 'y' => $y];
-                }
-            } else {
-                $startX = random_int(0, self::BOARD_SIZE - 1);
-                $startY = random_int(0, self::BOARD_SIZE - $size);
-                for ($i = 0; $i < $size; $i++) {
-                    $x = $startX;
-                    $y = $startY + $i;
-                    $key = $x . '-' . $y;
-                    if (isset($occupied[$key])) {
-                        $collision = true;
-                        break;
-                    }
-                    $coords[] = ['x' => $x, 'y' => $y];
-                }
-            }
-
-            if ($collision) {
-                continue;
-            }
-
-            foreach ($coords as $coord) {
-                $occupied[$coord['x'] . '-' . $coord['y']] = true;
-            }
-
-            return $coords;
-        }
-
-        // Fallback: sequential placement to guarantee a result.
-        $coords = [];
-        for ($i = 0; $i < $size; $i++) {
-            $coords[] = ['x' => $i, 'y' => 0];
-            $occupied[$i . '-0'] = true;
-        }
-        return $coords;
-    }
-
-    private function chooseBotShot(array $players, int $botIndex): ?array
-    {
-        $targetIndex = $this->nextAliveOpponentIndex($players, $botIndex);
-        if ($targetIndex === null) {
-            return null;
-        }
-
-        $targetId = $players[$targetIndex]['id'] ?? null;
-        $shots = $players[$botIndex]['shots'] ?? [];
-        $used = [];
-        foreach ($shots as $shot) {
-            if (($shot['targetId'] ?? null) === $targetId) {
-                $used[$shot['x'] . '-' . $shot['y']] = true;
+                $players = &$state['players'];
+                $status = $state['status'] ?? 'placement';
+                $changed = true;
             }
         }
 
-        $available = [];
-        for ($x = 0; $x < self::BOARD_SIZE; $x++) {
-            for ($y = 0; $y < self::BOARD_SIZE; $y++) {
-                $key = $x . '-' . $y;
-                if (!isset($used[$key])) {
-                    $available[] = ['x' => $x, 'y' => $y];
-                }
+        while (($state['status'] ?? null) === 'playing') {
+            $turnIndex = (int) ($state['turnIndex'] ?? -1);
+            if (!isset($players[$turnIndex]) || ($players[$turnIndex]['isBot'] ?? false) !== true) {
+                break;
+            }
+
+            $target = $this->botEngine->selectShot($players, $turnIndex);
+            if ($target === null) {
+                break;
+            }
+
+            $previousTurn = $turnIndex;
+            $state = $this->handleFire($state, $players, $turnIndex, [
+                'action' => 'fire',
+                'coordinates' => $target,
+            ]);
+
+            if (($state['status'] ?? null) !== 'playing') {
+                break;
+            }
+
+            $players = &$state['players'];
+            if ((int) ($state['turnIndex'] ?? -1) === $previousTurn) {
+                break;
             }
         }
-
-        if (empty($available)) {
-            return null;
-        }
-
-        return $available[random_int(0, count($available) - 1)];
     }
 
     private function handlePlacement(array &$state, array &$players, int $playerIndex, array $payload): array
     {
         $shipsPayload = $payload['ships'] ?? null;
-        if (!is_array($shipsPayload) || !$this->validateShips($shipsPayload)) {
+        if (!is_array($shipsPayload) || !$this->fleetFactory->validate($shipsPayload)) {
             return $state;
         }
 
-        $players[$playerIndex]['ships'] = $this->prepareShips($shipsPayload);
+        $players[$playerIndex]['ships'] = $this->fleetFactory->prepare($shipsPayload);
         $players[$playerIndex]['status'] = 'ready';
 
         if ($this->allPlayersReady($players)) {
@@ -349,11 +362,11 @@ final class MissionNemesisService implements GameEngineInterface
 
         $coord = $this->normalizeCoordinate($coordsPayload);
         $targetId = $players[$targetIndex]['id'];
-        if ($this->hasShotAt($players[$playerIndex]['shots'], $coord, $targetId)) {
+        if ($this->shotResolver->hasShotAt($players[$playerIndex]['shots'], $coord, $targetId)) {
             return $state;
         }
 
-        $result = $this->registerShot($players[$targetIndex]['ships'], $coord);
+        $result = $this->shotResolver->registerShot($players[$targetIndex]['ships'], $coord);
 
         $players[$playerIndex]['shots'][] = [
             'x' => $coord['x'],
@@ -371,7 +384,7 @@ final class MissionNemesisService implements GameEngineInterface
             'result' => $result,
         ];
 
-        if ($result !== 'miss' && $this->playerHasNoShipsRemaining($players[$targetIndex])) {
+        if ($result !== 'miss' && $this->shotResolver->playerHasNoShipsRemaining($players[$targetIndex])) {
             $players[$targetIndex]['status'] = 'eliminated';
             $state['log'][] = [
                 'type' => 'elimination',
@@ -394,184 +407,6 @@ final class MissionNemesisService implements GameEngineInterface
         }
 
         return $state;
-    }
-
-    private function validateShips(array $ships): bool
-    {
-        if (count($ships) !== count(self::SHIPS)) {
-            return false;
-        }
-
-        $usedCoords = [];
-        $usedNames = [];
-
-        foreach ($ships as $ship) {
-            if (
-                !isset($ship['name'], $ship['coords'])
-                || !isset(self::SHIPS[$ship['name']])
-                || !is_array($ship['coords'])
-            ) {
-                return false;
-            }
-
-            if (isset($usedNames[$ship['name']])) {
-                return false;
-            }
-            $usedNames[$ship['name']] = true;
-
-            $coords = $this->normalizeCoords($ship['coords']);
-            if (count($coords) !== self::SHIPS[$ship['name']]) {
-                return false;
-            }
-
-            if (!$this->isAligned($coords) || !$this->isConsecutive($coords)) {
-                return false;
-            }
-
-            foreach ($coords as $coord) {
-                if (!$this->isWithinBoard($coord)) {
-                    return false;
-                }
-                $key = $coord['x'] . '-' . $coord['y'];
-                if (isset($usedCoords[$key])) {
-                    return false;
-                }
-                $usedCoords[$key] = true;
-            }
-        }
-
-        return true;
-    }
-
-    private function normalizeCoords(array $coords): array
-    {
-        $normalized = [];
-        foreach ($coords as $coord) {
-            if (!is_array($coord) || !isset($coord['x'], $coord['y'])) {
-                return [];
-            }
-            $normalized[] = [
-                'x' => (int)$coord['x'],
-                'y' => (int)$coord['y'],
-            ];
-        }
-
-        usort(
-            $normalized,
-            static function (array $a, array $b): int {
-                return $a['x'] <=> $b['x'] ?: $a['y'] <=> $b['y'];
-            }
-        );
-
-        return $normalized;
-    }
-
-    private function prepareShips(array $ships): array
-    {
-        $prepared = [];
-        foreach ($ships as $ship) {
-            $coords = $this->normalizeCoords($ship['coords']);
-            $prepared[] = [
-                'name' => $ship['name'],
-                'coords' => $coords,
-                'hits' => array_fill(0, count($coords), false),
-            ];
-        }
-
-        return $prepared;
-    }
-
-    private function isAligned(array $coords): bool
-    {
-        if (count($coords) < 2) {
-            return true;
-        }
-
-        $horizontal = true;
-        $vertical = true;
-        $firstX = $coords[0]['x'];
-        $firstY = $coords[0]['y'];
-
-        foreach ($coords as $coord) {
-            if ($coord['y'] !== $firstY) {
-                $horizontal = false;
-            }
-            if ($coord['x'] !== $firstX) {
-                $vertical = false;
-            }
-        }
-
-        return $horizontal || $vertical;
-    }
-
-    private function isConsecutive(array $coords): bool
-    {
-        if (count($coords) < 2) {
-            return true;
-        }
-
-        $horizontal = $this->isHorizontal($coords);
-        $vertical = $this->isVertical($coords);
-
-        if (!$horizontal && !$vertical) {
-            return false;
-        }
-
-        for ($i = 1, $count = count($coords); $i < $count; $i++) {
-            if ($horizontal) {
-                if (
-                    $coords[$i]['x'] !== $coords[$i - 1]['x'] + 1
-                    || $coords[$i]['y'] !== $coords[$i - 1]['y']
-                ) {
-                    return false;
-                }
-            } else {
-                if (
-                    $coords[$i]['y'] !== $coords[$i - 1]['y'] + 1
-                    || $coords[$i]['x'] !== $coords[$i - 1]['x']
-                ) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-
-    private function isHorizontal(array $coords): bool
-    {
-        if (count($coords) < 2) {
-            return false;
-        }
-        $firstY = $coords[0]['y'];
-        foreach ($coords as $coord) {
-            if ($coord['y'] !== $firstY) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private function isVertical(array $coords): bool
-    {
-        if (count($coords) < 2) {
-            return false;
-        }
-        $firstX = $coords[0]['x'];
-        foreach ($coords as $coord) {
-            if ($coord['x'] !== $firstX) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private function isWithinBoard(array $coord): bool
-    {
-        return $coord['x'] >= 0
-            && $coord['x'] < self::BOARD_SIZE
-            && $coord['y'] >= 0
-            && $coord['y'] < self::BOARD_SIZE;
     }
 
     private function findPlayerIndex(array $players, int $userId): int
@@ -639,70 +474,6 @@ final class MissionNemesisService implements GameEngineInterface
         return $this->isWithinBoard($coord);
     }
 
-    private function hasShotAt(array $shots, array $coord, int $targetId): bool
-    {
-        foreach ($shots as $shot) {
-            if (
-                ($shot['targetId'] ?? null) === $targetId
-                && (int)$shot['x'] === $coord['x']
-                && (int)$shot['y'] === $coord['y']
-            ) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private function registerShot(array &$ships, array $coord): string
-    {
-        foreach ($ships as &$ship) {
-            foreach ($ship['coords'] as $index => $shipCoord) {
-                if ($shipCoord['x'] === $coord['x'] && $shipCoord['y'] === $coord['y']) {
-                    if (!isset($ship['hits'][$index])) {
-                        $ship['hits'][$index] = false;
-                    }
-                    if ($ship['hits'][$index]) {
-                        return 'hit';
-                    }
-                    $ship['hits'][$index] = true;
-                    return $this->shipSunk($ship) ? 'sunk' : 'hit';
-                }
-            }
-        }
-
-        return 'miss';
-    }
-
-    private function shipSunk(array $ship): bool
-    {
-        foreach ($ship['hits'] ?? [] as $hit) {
-            if ($hit === false) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private function playerHasNoShipsRemaining(array $player): bool
-    {
-        return $this->countRemainingSegments($player) === 0;
-    }
-
-    private function countRemainingSegments(array $player): int
-    {
-        $remaining = 0;
-        foreach ($player['ships'] ?? [] as $ship) {
-            foreach ($ship['hits'] ?? [] as $hit) {
-                if ($hit === false) {
-                    $remaining++;
-                }
-            }
-        }
-
-        return $remaining;
-    }
-
     private function countAlivePlayers(array $players): int
     {
         $alive = 0;
@@ -712,5 +483,88 @@ final class MissionNemesisService implements GameEngineInterface
             }
         }
         return $alive;
+    }
+
+    private function presentPlayer(array $player, int $viewerId): array
+    {
+        $id = isset($player['id']) ? (int) $player['id'] : null;
+        $present = [
+            'id' => $id,
+            'username' => (string) ($player['username'] ?? ''),
+            'status' => (string) ($player['status'] ?? 'placing'),
+            'isBot' => (bool) ($player['isBot'] ?? false),
+            'shots' => $this->presentShots($player),
+        ];
+
+        $present['ships'] = $this->presentShips($player, $viewerId);
+
+        return $present;
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function presentShips(array $player, int $viewerId): array
+    {
+        $ships = [];
+        $isViewer = ($player['id'] ?? null) === $viewerId;
+
+        foreach ($player['ships'] ?? [] as $ship) {
+            if (!is_array($ship)) {
+                continue;
+            }
+
+            if ($isViewer) {
+                $coords = [];
+                foreach ($ship['coords'] ?? [] as $coord) {
+                    if (!is_array($coord)) {
+                        continue;
+                    }
+                    $coords[] = [
+                        'x' => (int) ($coord['x'] ?? 0),
+                        'y' => (int) ($coord['y'] ?? 0),
+                    ];
+                }
+                $hits = array_map(
+                    static fn($hit) => (bool) $hit,
+                    array_values($ship['hits'] ?? [])
+                );
+                $ships[] = [
+                    'name' => (string) ($ship['name'] ?? ''),
+                    'coords' => $coords,
+                    'hits' => $hits,
+                ];
+            } else {
+                $ships[] = [
+                    'name' => (string) ($ship['name'] ?? ''),
+                    'coords' => [],
+                    'hits' => [],
+                ];
+            }
+        }
+
+        return array_values($ships);
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function presentShots(array $player): array
+    {
+        $shots = [];
+        foreach ($player['shots'] ?? [] as $shot) {
+            if (!is_array($shot)) {
+                continue;
+            }
+
+            $shots[] = [
+                'x' => (int) ($shot['x'] ?? 0),
+                'y' => (int) ($shot['y'] ?? 0),
+                'targetId' => isset($shot['targetId']) ? (int) $shot['targetId'] : null,
+                'result' => (string) ($shot['result'] ?? 'miss'),
+            ];
+        }
+
+        return array_values($shots);
     }
 }

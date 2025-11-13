@@ -73,7 +73,8 @@ public final class NemesisStateMapper {
             }
         }
 
-        return new NemesisState.Player(id, username, ships, shots, status);
+        boolean isBot = node.path("isBot").asBoolean(false);
+        return new NemesisState.Player(id, username, ships, shots, status, isBot);
     }
 
     private static Ship readShip(JsonNode node) {

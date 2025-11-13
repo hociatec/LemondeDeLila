@@ -1,10 +1,10 @@
 package com.lemondelila.client;
 
-import com.lemondelila.client.service.settings.AppSettingsService;
-import com.lemondelila.client.view.dialog.ConfirmExitDialog;
-import com.lemondelila.framework.core.context.ApplicationContext;
-import com.lemondelila.framework.core.module.FrameworkBootstrap;
-import com.lemondelila.framework.ui.LilaFrame;
+import com.lemondelila.client.settings.service.AppSettingsService;
+import com.lemondelila.client.application.view.dialog.ConfirmExitDialog;
+import com.lemondelila.client.framework.core.context.ApplicationContext;
+import com.lemondelila.client.framework.core.module.FrameworkBootstrap;
+import com.lemondelila.client.framework.ui.LilaFrame;
 
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;

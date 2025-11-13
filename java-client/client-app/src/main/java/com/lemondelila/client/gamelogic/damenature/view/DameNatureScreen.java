@@ -1,41 +1,29 @@
 package com.lemondelila.client.gamelogic.damenature.view;
 
+import com.lemondelila.client.catalogue.model.GameSummary;
+import com.lemondelila.client.catalogue.service.GameRulesService;
+import com.lemondelila.client.framework.access.game.AccessibilityService;
+import com.lemondelila.client.framework.access.shortcut.AccessibleShortcutRegistry;
+import com.lemondelila.client.framework.core.context.ApplicationContext;
+import com.lemondelila.client.framework.core.di.Inject;
+import com.lemondelila.client.framework.ui.dialog.DialogService;
+import com.lemondelila.client.framework.ui.screen.Screen;
+import com.lemondelila.client.framework.ui.screen.ScreenContext;
+import com.lemondelila.client.framework.ui.screen.ScreenManager;
+import com.lemondelila.client.game.controller.GameInteractionController;
 import com.lemondelila.client.gamelogic.damenature.controller.DameNatureController;
 import com.lemondelila.client.gamelogic.damenature.model.DameNatureConfig;
 import com.lemondelila.client.gamelogic.damenature.model.DameNatureSession;
 import com.lemondelila.client.gamelogic.damenature.model.DameNatureState;
-import com.lemondelila.framework.access.game.AccessibilityService;
-import com.lemondelila.framework.access.shortcut.AccessibleShortcutRegistry;
-import com.lemondelila.framework.access.game.GameHistoryTracker;
-import com.lemondelila.framework.core.context.ApplicationContext;
-import com.lemondelila.framework.core.di.Inject;
-import com.lemondelila.framework.ui.screen.Screen;
-import com.lemondelila.framework.ui.screen.ScreenContext;
-import com.lemondelila.framework.ui.screen.ScreenManager;
 
-import javax.accessibility.AccessibleContext;
 import javax.swing.AbstractAction;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
-import javax.swing.border.EmptyBorder;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
-import java.awt.Dimension;
-import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -49,407 +37,97 @@ public final class DameNatureScreen extends JPanel implements Screen {
         GAMEPLAY
     }
 
+    private static final GameSummary GAME_SUMMARY = new GameSummary(
+            "dame-nature",
+            "Dame Nature",
+            1,
+            4,
+            "damenature",
+            "Rassemblez les familles de cartes nature avant vos adversaires.",
+            true,
+            List.of("jeux-de-cartes")
+    );
+
     private final DameNatureController controller;
     private final AccessibilityService accessibilityService;
     private final AccessibleShortcutRegistry shortcutRegistry;
-    private ScreenManager screenManager;
+    private final DialogService dialogService;
+    private final GameInteractionController interactionController;
 
+    private ScreenManager screenManager;
     private Mode mode = Mode.CONFIGURATION;
-    private DameNatureConfig pendingConfig = DameNatureConfig.defaultConfig();
     private DameNatureConfig activeConfig = DameNatureConfig.defaultConfig();
+    private DameNatureConfig pendingConfig = DameNatureConfig.defaultConfig();
 
     private final CardLayout viewLayout = new CardLayout();
     private final JPanel viewContainer = new JPanel(viewLayout);
-
-    // Configuration
-    private final JPanel configPanel = new JPanel();
-    private final JLabel configStatusLabel = new JLabel(" ");
-    private final JLabel botsValueLabel = new JLabel();
-    private final JLabel dangerValueLabel = new JLabel();
-    private final JLabel quizValueLabel = new JLabel();
-    private final List<JComponent> configFocusOrder = new ArrayList<>();
-    private int configFocusIndex;
-
-    // Gameplay
-    private final GameHistoryTracker historyTracker = new GameHistoryTracker();
-    private final JPanel gamePanel = new JPanel(new BorderLayout(16, 16));
-    private final JLabel turnLabel = new JLabel("Tour : -");
-    private final JLabel selectionLabel = new JLabel("Sélection : aucune");
-    private final JLabel statusLabel = new JLabel(" ");
-    private final JTextArea instructionsArea = new JTextArea();
-    private final JTextArea handArea = createReadOnlyArea(8, "Votre main");
-    private final JTextArea booksArea = createReadOnlyArea(4, "Familles complétées");
-    private final JTextArea opponentsArea = createReadOnlyArea(6, "Adversaires");
-    private final JTextArea quizArea = createReadOnlyArea(4, "Quiz en cours");
-    private final JTextArea logArea = createReadOnlyArea(10, "Historique");
+    private final DameNatureConfigPanel configView;
+    private final DameNatureGameplayPanel gameplayView;
 
     private DameNatureSession currentSession;
-    private List<PlayerOption> playerOptions = List.of();
-    private List<CardOption> cardOptions = List.of();
-    private List<String> currentQuizChoices = List.of();
-    private int selectedPlayerIndex = -1;
-    private int selectedCardIndex = -1;
-    private volatile boolean launchInProgress;
+    private boolean launchInProgress;
 
-    private final Consumer<DameNatureSession> sessionListener = this::displaySession;
+    private final Consumer<DameNatureSession> sessionListener = this::handleSessionUpdate;
 
-    public DameNatureScreen(
-            DameNatureController controller,
-            AccessibilityService accessibilityService,
-            AccessibleShortcutRegistry shortcutRegistry
-    ) {
+    public DameNatureScreen(DameNatureController controller,
+                            AccessibilityService accessibilityService,
+                            AccessibleShortcutRegistry shortcutRegistry,
+                            DialogService dialogService,
+                            GameRulesService rulesService) {
         this.controller = Objects.requireNonNull(controller, "controller");
         this.accessibilityService = Objects.requireNonNull(accessibilityService, "accessibilityService");
         this.shortcutRegistry = Objects.requireNonNull(shortcutRegistry, "shortcutRegistry");
+        this.dialogService = Objects.requireNonNull(dialogService, "dialogService");
+        this.configView = new DameNatureConfigPanel(new ConfigListener());
+        this.gameplayView = new DameNatureGameplayPanel(accessibilityService);
         buildUi();
         installGlobalKeyBindings();
-        historyTracker.setMaxEntries(400);
+        this.interactionController = new GameInteractionController(
+                this,
+                dialogService,
+                Objects.requireNonNull(rulesService, "rulesService"),
+                () -> Optional.of(GAME_SUMMARY),
+                this::exitToCatalog,
+                message -> gameplayView.setStatusMessage(message),
+                this::addBotCommand,
+                this::removeBotCommand
+        );
+        interactionController.setEnabled(false);
     }
 
     @Inject
     public DameNatureScreen(DameNatureController controller,
                             ApplicationContext context) {
-        this(controller, context.get(AccessibilityService.class), context.get(AccessibleShortcutRegistry.class));
+        this(controller,
+                context.get(AccessibilityService.class),
+                context.get(AccessibleShortcutRegistry.class),
+                context.get(DialogService.class),
+                context.get(GameRulesService.class));
     }
 
     private void buildUi() {
         setLayout(new BorderLayout());
-        setBorder(BorderFactory.createEmptyBorder(24, 32, 24, 32));
         setFocusable(true);
         setFocusTraversalKeysEnabled(false);
-        addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusGained(FocusEvent e) {
-                // Nothing to do, but keep reference for screen readers.
-            }
-        });
 
+        viewContainer.setOpaque(false);
+        viewContainer.add(configView, Mode.CONFIGURATION.name());
+        viewContainer.add(gameplayView, Mode.GAMEPLAY.name());
         add(viewContainer, BorderLayout.CENTER);
-        buildConfigPanel();
-        buildGamePanel();
-        showConfiguration();
-    }
-
-    private void buildConfigPanel() {
-        configPanel.setOpaque(false);
-        configFocusOrder.clear();
-        configPanel.setLayout(new BoxLayout(configPanel, BoxLayout.Y_AXIS));
-        configPanel.setBorder(new EmptyBorder(16, 16, 16, 16));
-
-        JLabel title = new JLabel("Préparer la partie Dame Nature");
-        title.setFont(title.getFont().deriveFont(24f));
-        title.setAlignmentX(LEFT_ALIGNMENT);
-        configPanel.add(title);
-        configPanel.add(Box.createRigidArea(new Dimension(0, 16)));
-
-        JLabel instructions = new JLabel("Utilisez ↑/↓ pour naviguer, ←/→ pour ajuster les options, Entrée pour lancer.");
-        instructions.setAlignmentX(LEFT_ALIGNMENT);
-        configPanel.add(instructions);
-        configPanel.add(Box.createRigidArea(new Dimension(0, 12)));
-
-        configPanel.add(optionRow("Nombre d’adversaires", botsValueLabel));
-        configPanel.add(Box.createRigidArea(new Dimension(0, 6)));
-        configPanel.add(optionRow("Cartes danger", dangerValueLabel));
-        configPanel.add(Box.createRigidArea(new Dimension(0, 6)));
-        configPanel.add(optionRow("Quiz nature", quizValueLabel));
-        configPanel.add(Box.createRigidArea(new Dimension(0, 12)));
-
-        JLabel launchHint = new JLabel("Appuyez sur Entrée pour lancer la partie, Échap pour annuler.");
-        launchHint.setAlignmentX(LEFT_ALIGNMENT);
-        configPanel.add(launchHint);
-        configPanel.add(Box.createRigidArea(new Dimension(0, 16)));
-
-        configStatusLabel.setAlignmentX(LEFT_ALIGNMENT);
-        setAccessibleName(configStatusLabel, "Statut configuration");
-        setAccessibleDescription(configStatusLabel, "");
-        configPanel.add(configStatusLabel);
-
-        viewContainer.add(configPanel, Mode.CONFIGURATION.name());
-        setupConfigNavigation();
-        updateConfigLabels();
-    }
-
-    private JPanel optionRow(String label, JLabel valueLabel) {
-        JPanel row = new JPanel(new BorderLayout(8, 0));
-        row.setOpaque(false);
-        row.setBorder(new EmptyBorder(6, 8, 6, 8));
-        JLabel jLabel = new JLabel(label);
-        row.add(jLabel, BorderLayout.WEST);
-        row.add(valueLabel, BorderLayout.CENTER);
-        valueLabel.setHorizontalAlignment(JLabel.RIGHT);
-        row.setFocusable(true);
-        row.setFocusTraversalKeysEnabled(false);
-        setAccessibleName(row, label + " : " + valueLabel.getText());
-        row.addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusGained(FocusEvent e) {
-                row.setBorder(BorderFactory.createLineBorder(new java.awt.Color(70, 130, 180), 2));
-                configFocusIndex = configFocusOrder.indexOf(row);
-                announce(row.getAccessibleContext().getAccessibleName());
-            }
-
-            @Override
-            public void focusLost(FocusEvent e) {
-                row.setBorder(new EmptyBorder(6, 8, 6, 8));
-            }
-        });
-        configFocusOrder.add(row);
-        return row;
-    }
-
-    private void setupConfigNavigation() {
-        configPanel.getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke("UP"), "config-up");
-        configPanel.getActionMap().put("config-up", new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                moveConfigFocus(-1);
-            }
-        });
-
-        configPanel.getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke("DOWN"), "config-down");
-        configPanel.getActionMap().put("config-down", new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                moveConfigFocus(1);
-            }
-        });
-
-        configPanel.getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke("LEFT"), "config-left");
-        configPanel.getActionMap().put("config-left", new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                adjustConfigValue(-1);
-            }
-        });
-
-        configPanel.getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke("RIGHT"), "config-right");
-        configPanel.getActionMap().put("config-right", new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                adjustConfigValue(1);
-            }
-        });
-
-        configPanel.getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke("ENTER"), "config-launch");
-        configPanel.getActionMap().put("config-launch", new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                startConfiguredGame();
-            }
-        });
-
-        configPanel.getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke("ESCAPE"), "config-cancel");
-        configPanel.getActionMap().put("config-cancel", new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // Revenir à l'écran précédent
-                if (screenManager != null) {
-                    screenManager.show("home");
-                }
-            }
-        });
-    }
-
-    private void moveConfigFocus(int delta) {
-        if (configFocusOrder.isEmpty()) {
-            return;
-        }
-        configFocusIndex = Math.floorMod(configFocusIndex + delta, configFocusOrder.size());
-        SwingUtilities.invokeLater(() -> configFocusOrder.get(configFocusIndex).requestFocusInWindow());
-    }
-
-    private void adjustConfigValue(int delta) {
-        if (configFocusIndex < 0 || configFocusIndex >= configFocusOrder.size()) {
-            return;
-        }
-        if (configFocusIndex == 0) {
-            updatePendingConfig(pendingConfig.withBotCount(pendingConfig.botCount() + delta));
-        } else if (configFocusIndex == 1) {
-            updatePendingConfig(pendingConfig.withIncludeDanger(delta > 0 || !pendingConfig.includeDangerCards()));
-        } else if (configFocusIndex == 2) {
-            updatePendingConfig(pendingConfig.withIncludeQuiz(delta > 0 || !pendingConfig.includeQuizCards()));
-        }
-    }
-
-    private void updatePendingConfig(DameNatureConfig config) {
-        pendingConfig = config;
-        updateConfigLabels();
-    }
-
-    private void updateConfigLabels() {
-        botsValueLabel.setText(pendingConfig.botCount() + " bot(s)");
-        dangerValueLabel.setText(pendingConfig.includeDangerCards() ? "Activées" : "Désactivées");
-        quizValueLabel.setText(pendingConfig.includeQuizCards() ? "Activés" : "Désactivés");
-        if (!configFocusOrder.isEmpty()) {
-            JComponent botsRow = configFocusOrder.get(0);
-        setAccessibleName(botsRow, "Nombre d’adversaires : " + botsValueLabel.getText());
-            JComponent dangerRow = configFocusOrder.get(1);
-            setAccessibleName(dangerRow, "Cartes danger : " + dangerValueLabel.getText());
-            JComponent quizRow = configFocusOrder.get(2);
-            setAccessibleName(quizRow, "Quiz nature : " + quizValueLabel.getText());
-            if (botsRow.hasFocus() || dangerRow.hasFocus() || quizRow.hasFocus()) {
-                announce(configFocusOrder.get(configFocusIndex).getAccessibleContext().getAccessibleName());
-            }
-        }
-    }
-
-    private void buildGamePanel() {
-        gamePanel.setOpaque(false);
-        JPanel header = new JPanel();
-        header.setOpaque(false);
-        header.setLayout(new BoxLayout(header, BoxLayout.Y_AXIS));
-        turnLabel.setFont(turnLabel.getFont().deriveFont(20f));
-        turnLabel.setAlignmentX(LEFT_ALIGNMENT);
-        setAccessibleName(selectionLabel, "Sélection courante");
-        selectionLabel.setAlignmentX(LEFT_ALIGNMENT);
-        setAccessibleName(selectionLabel, "Sélection courante");
-        setAccessibleDescription(selectionLabel, "Sélection : aucune");
-        header.add(turnLabel);
-        header.add(Box.createRigidArea(new Dimension(0, 6)));
-        header.add(selectionLabel);
-        header.add(Box.createRigidArea(new Dimension(0, 12)));
-        gamePanel.add(header, BorderLayout.NORTH);
-
-        JPanel center = new JPanel();
-        center.setOpaque(false);
-        center.setLayout(new BoxLayout(center, BoxLayout.X_AXIS));
-
-        JPanel infoPanel = new JPanel();
-        infoPanel.setOpaque(false);
-        infoPanel.setLayout(new BoxLayout(infoPanel, BoxLayout.Y_AXIS));
-        infoPanel.add(section("Commandes", wrap(instructionsArea, 320, 140)));
-        infoPanel.add(Box.createRigidArea(new Dimension(0, 12)));
-        infoPanel.add(section("Votre main", wrap(handArea, 320, 160)));
-        infoPanel.add(Box.createRigidArea(new Dimension(0, 12)));
-        infoPanel.add(section("Familles complétées", wrap(booksArea, 320, 120)));
-        infoPanel.add(Box.createRigidArea(new Dimension(0, 12)));
-        infoPanel.add(section("Adversaires", wrap(opponentsArea, 320, 140)));
-        infoPanel.add(Box.createRigidArea(new Dimension(0, 12)));
-        infoPanel.add(section("Quiz en cours", wrap(quizArea, 320, 140)));
-
-        center.add(infoPanel);
-        center.add(Box.createRigidArea(new Dimension(16, 0)));
-
-        JScrollPane logScroll = new JScrollPane(logArea);
-        logScroll.setBorder(BorderFactory.createTitledBorder("Historique"));
-        logScroll.setPreferredSize(new Dimension(420, 380));
-        center.add(logScroll);
-
-        gamePanel.add(center, BorderLayout.CENTER);
-
-        statusLabel.setBorder(new EmptyBorder(8, 0, 0, 0));
-        setAccessibleName(statusLabel, "Statut de la partie");
-        statusLabel.setText("Prêt.");
-        setAccessibleDescription(statusLabel, "Prêt.");
-        JPanel statusPanel = new JPanel(new BorderLayout());
-        statusPanel.setOpaque(false);
-        statusPanel.add(statusLabel, BorderLayout.CENTER);
-        gamePanel.add(statusPanel, BorderLayout.SOUTH);
-
-        initialiseInstructions();
-        configureLogNavigation(logScroll);
-        viewContainer.add(gamePanel, Mode.GAMEPLAY.name());
-    }
-
-    private void initialiseInstructions() {
-        instructionsArea.setEditable(false);
-        instructionsArea.setLineWrap(true);
-        instructionsArea.setWrapStyleWord(true);
-        instructionsArea.setBorder(new EmptyBorder(4, 6, 4, 6));
-        setAccessibleName(instructionsArea, "Commandes disponibles");
-        setAccessibleDescription(instructionsArea, "Liste des raccourcis clavier du jeu Dame Nature");
-        instructionsArea.setText("""
-                Espace : piocher.
-                Flèches haut / bas : changer d'adversaire.
-                Flèches gauche / droite : changer la carte à demander.
-                E : demander la carte sélectionnée.
-                R : actualiser la partie.
-                T : annoncer le tour en cours.
-                C : ouvrir la configuration et relancer la partie.
-                1-9 : répondre à un quiz.
-                Tab : aller à l'historique, Maj+Tab pour revenir.
-                Échap : revenir à la configuration depuis le jeu.
-                """);
-        instructionsArea.setCaretPosition(0);
-        setAccessibleDescription(instructionsArea, instructionsArea.getText());
-    }
-
-    private void configureLogNavigation(JScrollPane logScroll) {
-        disableTabTraversal(logArea);
-        logArea.getInputMap(WHEN_FOCUSED).put(KeyStroke.getKeyStroke("shift TAB"), "log-exit");
-        logArea.getActionMap().put("log-exit", new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (mode != Mode.GAMEPLAY) {
-                    return;
-                }
-                announce("Retour sur la zone de jeu.");
-                SwingUtilities.invokeLater(() -> DameNatureScreen.this.requestFocusInWindow());
-            }
-        });
-
-        getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("TAB"), "focus-log");
-        getActionMap().put("focus-log", new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (mode != Mode.GAMEPLAY) {
-                    return;
-                }
-                SwingUtilities.invokeLater(() -> {
-                    logArea.requestFocusInWindow();
-                    logArea.setCaretPosition(logArea.getDocument().getLength());
-                });
-            }
-        });
-    }
-
-    private static JTextArea createReadOnlyArea(int rows, String accessibleName) {
-        JTextArea area = new JTextArea(rows, 32);
-        area.setEditable(false);
-        area.setLineWrap(true);
-        area.setWrapStyleWord(true);
-        area.setBorder(BorderFactory.createEmptyBorder(4, 6, 4, 6));
-        area.getAccessibleContext().setAccessibleName(accessibleName);
-        return area;
-    }
-
-    private JScrollPane wrap(JTextArea area, int width, int height) {
-        JScrollPane scroll = new JScrollPane(area);
-        scroll.setBorder(BorderFactory.createEmptyBorder());
-        scroll.setPreferredSize(new Dimension(width, height));
-        return scroll;
-    }
-
-    private JPanel section(String title, JScrollPane content) {
-        JPanel section = new JPanel(new BorderLayout());
-        section.setOpaque(false);
-        section.setBorder(BorderFactory.createTitledBorder(title));
-        section.add(content, BorderLayout.CENTER);
-        return section;
     }
 
     private void installGlobalKeyBindings() {
         shortcutRegistry.clear();
         registerShortcut("SPACE", "damenature-draw", "Espace : piocher une carte.", e -> triggerDraw());
-        registerShortcut('T', "damenature-turn", "Lettre T : annoncer le tour en cours.", e -> announceCurrentTurn());
-        registerShortcut('t', "damenature-turn", "Lettre T : annoncer le tour en cours.", e -> announceCurrentTurn());
-        registerShortcut("UP", "damenature-target-prev", "Flèche haut : sélectionner l’adversaire précédent.", e -> cycleTarget(-1));
-        registerShortcut("DOWN", "damenature-target-next", "Flèche bas : sélectionner l’adversaire suivant.", e -> cycleTarget(1));
-        registerShortcut("LEFT", "damenature-card-prev", "Flèche gauche : choisir la carte précédente à demander.", e -> cycleCard(-1));
-        registerShortcut("RIGHT", "damenature-card-next", "Flèche droite : choisir la carte suivante à demander.", e -> cycleCard(1));
-        registerShortcut('E', "damenature-request", "Lettre E : demander une carte à l’adversaire sélectionné.", e -> sendAskAction());
-        registerShortcut('e', "damenature-request", "Lettre E : demander une carte à l’adversaire sélectionné.", e -> sendAskAction());
-        registerShortcut('R', "damenature-refresh", "Lettre R : actualiser l’état de la partie.", e -> handleActionFeedback(controller.refresh(), 
+        registerLetterShortcut('t', "damenature-turn", "Lettre T : annoncer le tour en cours.", e -> announceCurrentTurn());
+        registerShortcut("UP", "damenature-target-prev", "Flèche haut : sélectionner l’adversaire précédent.", e -> announce(gameplayView.cycleTarget(-1)));
+        registerShortcut("DOWN", "damenature-target-next", "Flèche bas : sélectionner l’adversaire suivant.", e -> announce(gameplayView.cycleTarget(1)));
+        registerShortcut("LEFT", "damenature-card-prev", "Flèche gauche : choisir la carte précédente à demander.", e -> announce(gameplayView.cycleCard(-1)));
+        registerShortcut("RIGHT", "damenature-card-next", "Flèche droite : choisir la carte suivante à demander.", e -> announce(gameplayView.cycleCard(1)));
+        registerLetterShortcut('e', "damenature-request", "Lettre E : demander une carte à l’adversaire sélectionné.", e -> sendAskAction());
+        registerLetterShortcut('r', "damenature-refresh", "Lettre R : actualiser l’état de la partie.", e -> handleActionFeedback(controller.refresh(),
                 "Actualisation en cours...", null, null));
-        registerShortcut('r', "damenature-refresh", "Lettre R : actualiser l’état de la partie.", e -> handleActionFeedback(controller.refresh(), 
-                "Actualisation en cours...", null, null));
-        registerShortcut('C', "damenature-open-config", "Lettre C : ouvrir la configuration.", e -> {
-            if (mode == Mode.GAMEPLAY) {
-                announce("Configuration ouverte. Modifiez les options puis Entrée pour relancer.");
-                openConfiguration();
-            }
-        });
-        registerShortcut('c', "damenature-open-config", "Lettre C : ouvrir la configuration.", e -> {
+        registerLetterShortcut('c', "damenature-open-config", "Lettre C : ouvrir la configuration.", e -> {
             if (mode == Mode.GAMEPLAY) {
                 announce("Configuration ouverte. Modifiez les options puis Entrée pour relancer.");
                 openConfiguration();
@@ -465,28 +143,31 @@ public final class DameNatureScreen extends JPanel implements Screen {
         for (int i = 0; i < 9; i++) {
             char digit = (char) ('1' + i);
             final int index = i;
-            registerShortcut(digit, "quiz-answer-" + digit, "Chiffre " + (index + 1) + " : répondre au quiz.", e -> answerQuiz(index));
+            registerShortcut(String.valueOf(digit), "damenature-quiz-" + digit,
+                    "Chiffre " + digit + " : répondre au quiz avec l’option " + (i + 1) + ".", e -> answerQuiz(index));
         }
-        shortcutRegistry.applyTo(this);
+
+        JComponent historyComponent = gameplayView.historyComponent();
+        getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("TAB"), "focus-history");
+        getActionMap().put("focus-history", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (mode != Mode.GAMEPLAY) {
+                    return;
+                }
+                SwingUtilities.invokeLater(() -> {
+                    historyComponent.requestFocusInWindow();
+                    historyComponent.setCaretPosition(historyComponent.getDocument().getLength());
+                });
+            }
+        });
     }
 
-    private void registerShortcut(char key, String actionId, String description, java.util.function.Consumer<ActionEvent> handler) {
-        registerShortcut(KeyStroke.getKeyStroke(key), actionId, description, handler);
+    private void registerShortcut(String stroke, String actionId, String description, Consumer<ActionEvent> handler) {
+        registerShortcut(KeyStroke.getKeyStroke(stroke), actionId, description, handler);
     }
 
-    private void registerShortcut(char key, String actionId, java.util.function.Consumer<ActionEvent> handler) {
-        registerShortcut(key, actionId, null, handler);
-    }
-
-    private void registerShortcut(String keyStroke, String actionId, String description, java.util.function.Consumer<ActionEvent> handler) {
-        registerShortcut(KeyStroke.getKeyStroke(keyStroke), actionId, description, handler);
-    }
-
-    private void registerShortcut(String keyStroke, String actionId, java.util.function.Consumer<ActionEvent> handler) {
-        registerShortcut(keyStroke, actionId, null, handler);
-    }
-
-    private void registerShortcut(KeyStroke stroke, String actionId, String description, java.util.function.Consumer<ActionEvent> handler) {
+    private void registerShortcut(KeyStroke stroke, String actionId, String description, Consumer<ActionEvent> handler) {
         getInputMap(WHEN_IN_FOCUSED_WINDOW).put(stroke, actionId);
         getActionMap().put(actionId, new AbstractAction() {
             @Override
@@ -501,32 +182,31 @@ public final class DameNatureScreen extends JPanel implements Screen {
         }
     }
 
+    private void registerLetterShortcut(char letter, String actionId, String description, Consumer<ActionEvent> handler) {
+        char lower = Character.toLowerCase(letter);
+        char upper = Character.toUpperCase(letter);
+        registerShortcut(KeyStroke.getKeyStroke(lower), actionId, description, handler);
+        if (upper != lower) {
+            registerShortcut(KeyStroke.getKeyStroke(upper), actionId, description, handler);
+        }
+    }
+
     private void showConfiguration() {
         mode = Mode.CONFIGURATION;
         viewLayout.show(viewContainer, Mode.CONFIGURATION.name());
-        if (!configFocusOrder.isEmpty()) {
-            configFocusIndex = 0;
-            SwingUtilities.invokeLater(() -> configFocusOrder.get(0).requestFocusInWindow());
-        }
+        configView.focusFirst();
     }
 
     private void openConfiguration() {
         controller.reset();
         pendingConfig = activeConfig;
-        updateConfigLabels();
-        configStatusLabel.setText("Ajustez les options puis appuyez sur Entrée pour relancer.");
-        setAccessibleDescription(configStatusLabel, configStatusLabel.getText());
+        configView.setConfig(pendingConfig);
+        configView.setStatusMessage("Ajustez les options puis appuyez sur Entrée pour relancer.");
         currentSession = null;
-        playerOptions = List.of();
-        cardOptions = List.of();
-        historyTracker.clear();
-        logArea.setText("");
-        setAccessibleDescription(logArea, "");
-        selectedPlayerIndex = -1;
-        selectedCardIndex = -1;
         launchInProgress = false;
+        gameplayView.reset();
         showConfiguration();
-        announceSelection();
+        announce(gameplayView.currentSelectionAnnouncement());
     }
 
     private void showGameplay() {
@@ -535,25 +215,23 @@ public final class DameNatureScreen extends JPanel implements Screen {
         SwingUtilities.invokeLater(() -> DameNatureScreen.this.requestFocusInWindow());
     }
 
-    private void startConfiguredGame() {
-        configStatusLabel.setText("Initialisation de la partie...");
+    private void startConfiguredGame(DameNatureConfig config) {
         launchInProgress = true;
-        CompletableFuture<DameNatureSession> future = controller.startNewGame(pendingConfig);
+        configView.setStatusMessage("Initialisation de la partie...");
+        CompletableFuture<DameNatureSession> future = controller.startNewGame(config);
         handleActionFeedback(future, "Initialisation de la partie...", () -> {
-            activeConfig = pendingConfig;
-            configStatusLabel.setText("Partie lancée.");
-            setAccessibleDescription(configStatusLabel, configStatusLabel.getText());
+            activeConfig = config;
+            configView.setStatusMessage("Partie lancée.");
             launchInProgress = false;
             showGameplay();
         }, throwable -> {
             launchInProgress = false;
-            configStatusLabel.setText("Impossible de lancer la partie : " +
+            configView.setStatusMessage("Impossible de lancer la partie : " +
                     (throwable.getMessage() == null ? "erreur inconnue" : throwable.getMessage()));
-            setAccessibleDescription(configStatusLabel, configStatusLabel.getText());
         });
     }
 
-    private void displaySession(DameNatureSession session) {
+    private void handleSessionUpdate(DameNatureSession session) {
         if (mode != Mode.GAMEPLAY) {
             if (launchInProgress) {
                 showGameplay();
@@ -562,213 +240,27 @@ public final class DameNatureScreen extends JPanel implements Screen {
             }
         }
         launchInProgress = false;
-        this.currentSession = session;
-        DameNatureState state = session.state();
-        updateTurnIndicators(state);
-        updatePlayers(state, session.self());
-        updateCardSelections(state, session.self());
-        updateQuiz(state);
-        updateLog(state);
+        currentSession = session;
+        gameplayView.applySession(session);
         announce(extractLastLogMessage(session));
     }
 
-    private void updateTurnIndicators(DameNatureState state) {
-        List<DameNatureState.Player> players = state.players();
-        if (!players.isEmpty() && state.turnIndex() >= 0 && state.turnIndex() < players.size()) {
-            turnLabel.setText("Tour : " + players.get(state.turnIndex()).username());
-        } else {
-            turnLabel.setText("Tour : -");
-        }
-        announceSelection();
-    }
-
-    private void updatePlayers(DameNatureState state, DameNatureState.Player self) {
-        if (self != null) {
-            StringBuilder handBuilder = new StringBuilder();
-            self.hand().forEach(card -> handBuilder.append("• ").append(card.toString()).append('\n'));
-            handArea.setText(handBuilder.isEmpty() ? "Aucune carte en main." : handBuilder.toString());
-            setAccessibleDescription(handArea, handArea.getText());
-
-            if (!self.books().isEmpty()) {
-                StringBuilder booksBuilder = new StringBuilder();
-                state.catalog().families().stream()
-                        .filter(family -> self.books().contains(family.id()))
-                        .sorted(Comparator.comparing(DameNatureState.Family::name))
-                        .forEach(family -> booksBuilder.append("• ").append(family.name()).append('\n'));
-                booksArea.setText(booksBuilder.toString());
-            } else {
-                booksArea.setText("Aucune famille complétée.");
-            }
-            setAccessibleDescription(booksArea, booksArea.getText());
-        } else {
-            handArea.setText("Rejoignez la partie pour consulter votre main.");
-            booksArea.setText("Aucune information disponible.");
-            setAccessibleDescription(handArea, handArea.getText());
-            setAccessibleDescription(booksArea, booksArea.getText());
-        }
-
-        StringBuilder opponentsBuilder = new StringBuilder();
-        state.players().forEach(player -> {
-            opponentsBuilder.append("• ")
-                    .append(player.username())
-                    .append(" - cartes : ").append(player.handCount())
-                    .append(" - familles : ").append(player.books().size());
-            if (state.turnIndex() == state.players().indexOf(player)) {
-                opponentsBuilder.append(" (au tour)");
-            }
-            opponentsBuilder.append('\n');
-        });
-        opponentsArea.setText(opponentsBuilder.isEmpty() ? "Aucun adversaire." : opponentsBuilder.toString());
-        setAccessibleDescription(opponentsArea, opponentsArea.getText());
-    }
-
-    private void updateCardSelections(DameNatureState state, DameNatureState.Player self) {
-        if (self == null) {
-            playerOptions = List.of();
-            cardOptions = List.of();
-            selectedPlayerIndex = -1;
-            selectedCardIndex = -1;
-            announceSelection();
-            return;
-        }
-
-        playerOptions = state.players().stream()
-                .filter(player -> player.id() != self.id())
-                .map(player -> new PlayerOption(player.id(), player.username(), player.handCount()))
-                .toList();
-
-        if (playerOptions.isEmpty()) {
-            selectedPlayerIndex = -1;
-        } else if (selectedPlayerIndex < 0) {
-            selectedPlayerIndex = 0;
-        } else {
-            selectedPlayerIndex = Math.min(selectedPlayerIndex, playerOptions.size() - 1);
-        }
-
-        List<String> ownedCodes = self.hand().stream().map(DameNatureState.HandCard::code).toList();
-        List<CardOption> available = new ArrayList<>();
-        for (DameNatureState.Family family : state.catalog().families()) {
-            boolean ownsFamilyCard = self.hand().stream().anyMatch(card ->
-                    family.id().equalsIgnoreCase(card.familyId()));
-            if (!ownsFamilyCard) {
-                continue;
-            }
-            for (DameNatureState.FamilyMember member : family.members()) {
-                boolean alreadyOwned = ownedCodes.stream().anyMatch(code -> {
-                    DameNatureState.CardDefinition def = state.cards().get(code);
-                    return def != null
-                            && family.id().equalsIgnoreCase(def.familyId())
-                            && member.id().equalsIgnoreCase(def.memberId());
-                });
-                if (!alreadyOwned) {
-                    available.add(new CardOption(family.id(), family.name(), member.id(), member.name()));
-                }
-            }
-        }
-        cardOptions = available;
-        if (cardOptions.isEmpty()) {
-            selectedCardIndex = -1;
-        } else if (selectedCardIndex < 0) {
-            selectedCardIndex = 0;
-        } else {
-            selectedCardIndex = Math.min(selectedCardIndex, cardOptions.size() - 1);
-        }
-        announceSelection();
-    }
-
-    private void announceSelection() {
-        String adversaire = selectedPlayerIndex >= 0 && selectedPlayerIndex < playerOptions.size()
-                ? playerOptions.get(selectedPlayerIndex).label()
-                : "aucun adversaire";
-        String carte = selectedCardIndex >= 0 && selectedCardIndex < cardOptions.size()
-                ? cardOptions.get(selectedCardIndex).label()
-                : "aucune carte";
-        String text = "Sélection : adversaire " + adversaire + " | carte " + carte;
-        selectionLabel.setText(text);
-        setAccessibleDescription(selectionLabel, text);
-        accessibilityService.announceCustom(selectionLabel, text);
-    }
-
-    private void updateQuiz(DameNatureState state) {
-        DameNatureState.PendingQuiz quiz = state.pendingQuiz();
-        if (quiz != null && quiz.active()) {
-            currentQuizChoices = List.copyOf(quiz.choices());
-            StringBuilder builder = new StringBuilder();
-            builder.append(quiz.question()).append('\n');
-            for (int i = 0; i < currentQuizChoices.size(); i++) {
-                builder.append(i + 1).append(") ").append(currentQuizChoices.get(i)).append('\n');
-            }
-            quizArea.setText(builder.toString());
-        } else {
-            currentQuizChoices = List.of();
-            quizArea.setText("Aucun quiz en cours.");
-        }
-        quizArea.setCaretPosition(0);
-        setAccessibleDescription(quizArea, quizArea.getText());
-    }
-
-    private void updateLog(DameNatureState state) {
-        if (state == null || state.log() == null) {
-            historyTracker.clear();
-            logArea.setText("Aucun évènement pour le moment.");
-            setAccessibleDescription(logArea, logArea.getText());
-            return;
-        }
-        historyTracker.setEntries(state.log().stream()
-                .map(DameNatureState.LogEntry::message)
-                .filter(Objects::nonNull)
-                .map(String::trim)
-                .filter(msg -> !msg.isEmpty())
-                .toList());
-        String content = historyTracker.formatAll();
-        if (content.isBlank()) {
-            content = "Aucun évènement pour le moment.";
-        }
-        logArea.setText(content);
-        logArea.setCaretPosition(logArea.getDocument().getLength());
-        setAccessibleDescription(logArea, logArea.getText());
-    }
-
-    private void cycleTarget(int delta) {
-        if (playerOptions.isEmpty()) {
-            selectedPlayerIndex = -1;
-            announce("Aucun adversaire disponible.");
-            announceSelection();
-            return;
-        }
-        selectedPlayerIndex = Math.floorMod(selectedPlayerIndex + delta, playerOptions.size());
-        PlayerOption option = playerOptions.get(selectedPlayerIndex);
-        announce("Adversaire sélectionné : " + option.label());
-        announceSelection();
-    }
-
-    private void cycleCard(int delta) {
-        if (cardOptions.isEmpty()) {
-            selectedCardIndex = -1;
-            announce("Aucune carte disponible à demander.");
-            announceSelection();
-            return;
-        }
-        selectedCardIndex = Math.floorMod(selectedCardIndex + delta, cardOptions.size());
-        CardOption option = cardOptions.get(selectedCardIndex);
-        announce("Carte sélectionnée : " + option.label());
-        announceSelection();
-    }
-
     private void sendAskAction() {
-        if (selectedPlayerIndex < 0 || selectedPlayerIndex >= playerOptions.size()) {
+        Optional<DameNatureGameplayPanel.PlayerOption> target = gameplayView.selectedPlayer();
+        if (target.isEmpty()) {
             announce("Choisissez un adversaire avec les flèches haut ou bas.");
             return;
         }
-        if (selectedCardIndex < 0 || selectedCardIndex >= cardOptions.size()) {
+        Optional<DameNatureGameplayPanel.CardOption> card = gameplayView.selectedCard();
+        if (card.isEmpty()) {
             announce("Choisissez une carte avec les flèches gauche ou droite.");
             return;
         }
-        PlayerOption target = playerOptions.get(selectedPlayerIndex);
-        CardOption card = cardOptions.get(selectedCardIndex);
+        DameNatureGameplayPanel.PlayerOption player = target.get();
+        DameNatureGameplayPanel.CardOption cardOption = card.get();
         handleActionFeedback(
-                controller.askCard(target.id(), card.familyId(), card.memberId()),
-                "Demande de " + card.memberName() + " à " + target.name() + "...",
+                controller.askCard(player.id(), cardOption.familyId(), cardOption.memberId()),
+                "Demande de " + cardOption.memberName() + " à " + player.name() + "...",
                 null,
                 null
         );
@@ -779,11 +271,12 @@ public final class DameNatureScreen extends JPanel implements Screen {
     }
 
     private void answerQuiz(int index) {
-        if (currentQuizChoices.isEmpty()) {
+        List<String> choices = gameplayView.currentQuizChoices();
+        if (choices.isEmpty()) {
             announce("Aucun quiz à répondre.");
             return;
         }
-        if (index < 0 || index >= currentQuizChoices.size()) {
+        if (index < 0 || index >= choices.size()) {
             announce("Choix invalide.");
             return;
         }
@@ -814,7 +307,7 @@ public final class DameNatureScreen extends JPanel implements Screen {
                 player.username(),
                 null
         );
-        accessibilityService.announceTurn(turnLabel, context);
+        accessibilityService.announceTurn(gameplayView.turnLabel(), context);
     }
 
     private void handleActionFeedback(CompletableFuture<DameNatureSession> future, String pendingMessage,
@@ -838,7 +331,6 @@ public final class DameNatureScreen extends JPanel implements Screen {
                     onSuccess.run();
                 }
             }
-            // displaySession (listener) provides detailed feedback on success
         }));
     }
 
@@ -855,38 +347,12 @@ public final class DameNatureScreen extends JPanel implements Screen {
     }
 
     private void announce(String message) {
-        statusLabel.setText(message);
-        setAccessibleDescription(statusLabel, message);
-        accessibilityService.announceCustom(statusLabel, message);
+        gameplayView.setStatusMessage(message);
     }
 
-    private void setAccessibleName(JComponent component, String name) {
-        if (component == null) {
-            return;
-        }
-        AccessibleContext context = component.getAccessibleContext();
-        if (context != null) {
-            String safe = name == null ? "" : name;
-            String old = context.getAccessibleName();
-            if (!safe.equals(old)) {
-                context.setAccessibleName(safe);
-                context.firePropertyChange(AccessibleContext.ACCESSIBLE_NAME_PROPERTY, old, safe);
-            }
-        }
-    }
-
-    private void setAccessibleDescription(JComponent component, String description) {
-        if (component == null) {
-            return;
-        }
-        AccessibleContext context = component.getAccessibleContext();
-        if (context != null) {
-            String safe = description == null ? "" : description;
-            String old = context.getAccessibleDescription();
-            if (!safe.equals(old)) {
-                context.setAccessibleDescription(safe);
-                context.firePropertyChange(AccessibleContext.ACCESSIBLE_DESCRIPTION_PROPERTY, old, safe);
-            }
+    private void exitToCatalog() {
+        if (screenManager != null) {
+            SwingUtilities.invokeLater(() -> screenManager.show("catalog"));
         }
     }
 
@@ -903,19 +369,19 @@ public final class DameNatureScreen extends JPanel implements Screen {
     @Override
     public void onShow(ScreenContext context) {
         this.screenManager = context.screenManager();
+        dialogService.attach(this);
         controller.addListener(sessionListener);
         pendingConfig = activeConfig;
-        updateConfigLabels();
+        configView.setConfig(pendingConfig);
         Optional<DameNatureSession> current = controller.currentSession();
         if (current.isPresent()) {
             activeConfig = pendingConfig;
             showGameplay();
-            displaySession(current.get());
+            handleSessionUpdate(current.get());
         } else {
-            pendingConfig = activeConfig;
+            gameplayView.reset();
             showGameplay();
-            logArea.setText("Lancement de la partie...");
-            setAccessibleDescription(logArea, logArea.getText());
+            announce("Lancement de la partie...");
             launchInProgress = true;
             handleActionFeedback(
                     controller.startNewGame(activeConfig),
@@ -924,27 +390,40 @@ public final class DameNatureScreen extends JPanel implements Screen {
                     throwable -> launchInProgress = false
             );
         }
+        interactionController.setEnabled(true);
     }
 
     @Override
     public void onHide(ScreenContext context) {
         controller.removeListener(sessionListener);
+        interactionController.setEnabled(false);
     }
 
-    private static void disableTabTraversal(JComponent component) {
-        component.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, Collections.emptySet());
-        component.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, Collections.emptySet());
+    private CompletableFuture<Void> addBotCommand() {
+        return controller.addBot().thenApply(session -> null);
     }
 
-    private record PlayerOption(int id, String name, int handCount) {
-        String label() {
-            return name + " (" + handCount + " cartes)";
+    private CompletableFuture<Void> removeBotCommand() {
+        return controller.removeBot().thenApply(session -> null);
+    }
+
+    private final class ConfigListener implements DameNatureConfigPanel.Listener {
+        @Override
+        public void onLaunchRequested(DameNatureConfig config) {
+            pendingConfig = config;
+            startConfiguredGame(config);
         }
-    }
 
-    private record CardOption(String familyId, String familyName, String memberId, String memberName) {
-        String label() {
-            return familyName + " - " + memberName;
+        @Override
+        public void onCancelRequested() {
+            if (screenManager != null) {
+                screenManager.show("home");
+            }
+        }
+
+        @Override
+        public void onConfigChanged(DameNatureConfig config) {
+            pendingConfig = config;
         }
     }
 }

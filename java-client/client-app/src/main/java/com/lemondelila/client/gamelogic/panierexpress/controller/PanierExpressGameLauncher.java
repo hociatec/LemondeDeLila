@@ -3,6 +3,8 @@ package com.lemondelila.client.gamelogic.panierexpress.controller;
 import com.lemondelila.client.gamelogic.panierexpress.model.PanierExpressGameOptions;
 import com.lemondelila.client.gamelogic.panierexpress.model.PanierExpressSession;
 import com.lemondelila.client.gamelogic.panierexpress.service.PanierExpressRemoteClient;
+import com.lemondelila.client.game.model.DialogGameErrorHandler;
+import com.lemondelila.client.game.model.GameSessionTracker;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -15,17 +17,17 @@ import java.util.concurrent.atomic.AtomicBoolean;
 final class PanierExpressGameLauncher {
 
     private final PanierExpressRemoteClient remoteClient;
-    private final PanierExpressSessionManager sessionManager;
-    private final PanierExpressErrorHandler errorHandler;
+    private final GameSessionTracker<PanierExpressSession> sessionTracker;
+    private final DialogGameErrorHandler errorHandler;
 
     private final AtomicBoolean loading = new AtomicBoolean(false);
     private volatile PanierExpressGameOptions lastOptions = PanierExpressGameOptions.defaults();
 
     PanierExpressGameLauncher(PanierExpressRemoteClient remoteClient,
-                              PanierExpressSessionManager sessionManager,
-                              PanierExpressErrorHandler errorHandler) {
+                              GameSessionTracker<PanierExpressSession> sessionTracker,
+                              DialogGameErrorHandler errorHandler) {
         this.remoteClient = Objects.requireNonNull(remoteClient, "remoteClient");
-        this.sessionManager = Objects.requireNonNull(sessionManager, "sessionManager");
+        this.sessionTracker = Objects.requireNonNull(sessionTracker, "sessionTracker");
         this.errorHandler = Objects.requireNonNull(errorHandler, "errorHandler");
     }
 
@@ -39,13 +41,13 @@ final class PanierExpressGameLauncher {
                 : PanierExpressGameOptions.of(options.robotCount());
 
         lastOptions = effective;
-        Optional<PanierExpressSession> existing = sessionManager.current();
+        Optional<PanierExpressSession> existing = sessionTracker.current();
         if (!forceNew && existing.isPresent()) {
             return CompletableFuture.completedFuture(existing.get());
         }
 
         if (forceNew) {
-            sessionManager.clear();
+            sessionTracker.clearAll();
         }
 
         loading.set(true);
@@ -53,11 +55,11 @@ final class PanierExpressGameLauncher {
         future.whenComplete((session, error) -> {
             loading.set(false);
             if (error != null) {
-                errorHandler.showError(error);
+                errorHandler.show("Impossible d'initialiser la partie Panier Express", error);
                 return;
             }
             if (session != null) {
-                sessionManager.save(session);
+                sessionTracker.save(session);
             }
         });
         return future;
@@ -65,5 +67,10 @@ final class PanierExpressGameLauncher {
 
     PanierExpressGameOptions lastOptions() {
         return lastOptions;
+    }
+
+    void reset() {
+        loading.set(false);
+        lastOptions = PanierExpressGameOptions.defaults();
     }
 }

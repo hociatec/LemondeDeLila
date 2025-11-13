@@ -1,6 +1,6 @@
 package com.lemondelila.client.gamelogic.missionnemesis.view;
 
-import com.lemondelila.framework.access.game.AccessibilityService;
+import com.lemondelila.client.framework.access.game.AccessibilityService;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;

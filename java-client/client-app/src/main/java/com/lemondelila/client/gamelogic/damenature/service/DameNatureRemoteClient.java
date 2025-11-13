@@ -7,12 +7,12 @@ import com.lemondelila.client.gamelogic.damenature.model.DameNatureSession;
 import com.lemondelila.client.gamelogic.damenature.model.DameNatureSessionStore;
 import com.lemondelila.client.gamelogic.damenature.model.DameNatureState;
 import com.lemondelila.client.gamelogic.damenature.model.DameNatureStateMapper;
-import com.lemondelila.client.model.game.GameSessionManager;
-import com.lemondelila.client.model.user.ClientSession;
-import com.lemondelila.client.service.game.RemoteGameServiceSupport;
-import com.lemondelila.framework.core.di.Inject;
-import com.lemondelila.framework.core.task.TaskScheduler;
-import com.lemondelila.framework.network.rest.RestClient;
+import com.lemondelila.client.game.model.GameSessionManager;
+import com.lemondelila.client.user.model.ClientSession;
+import com.lemondelila.client.game.service.RemoteGameServiceSupport;
+import com.lemondelila.client.framework.core.di.Inject;
+import com.lemondelila.client.framework.core.task.TaskScheduler;
+import com.lemondelila.client.framework.network.rest.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,7 +1,9 @@
 package com.lemondelila.client.gamelogic.panierexpress.view;
 
-import com.lemondelila.framework.access.AccessibleDecorator;
-import com.lemondelila.framework.access.AccessibleSpec;
+import com.lemondelila.client.framework.access.AccessibleDecorator;
+import com.lemondelila.client.framework.access.AccessibleSpec;
+import com.lemondelila.client.framework.access.game.GameHistoryTracker;
+import com.lemondelila.client.framework.access.game.GameHistoryView;
 
 import javax.accessibility.AccessibleContext;
 import javax.swing.BorderFactory;
@@ -25,7 +27,11 @@ final class PanierExpressGamePanel extends JPanel {
 
     private final JLabel statusLabel = new JLabel("Partie en préparation...");
     private final JLabel pendingLabel = new JLabel(" ");
-    private final PanierExpressHistoryPanel historyPanel = new PanierExpressHistoryPanel();
+    private final GameHistoryView historyView = new GameHistoryView(
+            "Historique",
+            "Historique des actions",
+            "Liste des derniers évènements de la partie."
+    );
 
     private final JPanel quizPanel = new JPanel();
     private final JLabel quizQuestionLabel = new JLabel(" ");
@@ -80,8 +86,8 @@ final class PanierExpressGamePanel extends JPanel {
 
         add(leftColumn, BorderLayout.CENTER);
 
-        historyPanel.setPreferredSize(new Dimension(320, 400));
-        add(historyPanel, BorderLayout.EAST);
+        historyView.setPreferredSize(new Dimension(320, 400));
+        add(historyView, BorderLayout.EAST);
     }
 
     private void buildQuizPanel() {
@@ -186,11 +192,11 @@ final class PanierExpressGamePanel extends JPanel {
     }
 
     void focusHistory() {
-        historyPanel.focusHistory();
+        historyView.focusHistory();
     }
 
-    void setHistory(String historyText, String accessibleDescription) {
-        historyPanel.setHistory(historyText, accessibleDescription);
+    void updateHistory(GameHistoryTracker tracker, String emptyMessage) {
+        historyView.render(tracker, emptyMessage);
     }
 
     void announceScore(String message) {
@@ -199,10 +205,6 @@ final class PanierExpressGamePanel extends JPanel {
 
     void announceBasket(String message) {
         fireAccessibleText(yourProgressArea, message);
-    }
-
-    void focusStatusLabel() {
-        requestFocusInWindow();
     }
 
     AccessibleContext statusAccessibleContext() {

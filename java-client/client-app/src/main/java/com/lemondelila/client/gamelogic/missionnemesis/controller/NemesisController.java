@@ -8,41 +8,51 @@ import com.lemondelila.client.gamelogic.missionnemesis.model.NemesisState;
 import com.lemondelila.client.gamelogic.missionnemesis.model.NemesisStateMapper;
 import com.lemondelila.client.gamelogic.missionnemesis.model.ShipPlacement;
 import com.lemondelila.client.gamelogic.missionnemesis.service.NemesisRemoteClient;
-import com.lemondelila.framework.core.di.Inject;
-import com.lemondelila.framework.network.ws.RealtimeGateway;
-import com.lemondelila.framework.ui.dialog.DialogService;
+import com.lemondelila.client.game.model.DialogGameErrorHandler;
+import com.lemondelila.client.game.service.RoomBotRemoteClient;
+import com.lemondelila.client.game.model.GameSessionTracker;
+import com.lemondelila.client.framework.core.di.Inject;
+import com.lemondelila.client.framework.core.event.DomainEventBus;
+import com.lemondelila.client.framework.ui.dialog.DialogService;
+import com.lemondelila.client.framework.network.ws.RealtimeGateway;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.swing.SwingUtilities;
 import java.io.IOException;
 import java.net.http.WebSocket;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 public final class NemesisController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NemesisController.class);
+    private static final String GAME_TYPE = "mission-nemesis";
 
     private final NemesisRemoteClient remoteClient;
-    private final DialogService dialogService;
-    private final NemesisSessionStore sessionStore;
+    private final RoomBotRemoteClient roomBots;
+    private final GameSessionTracker<NemesisSession> sessions;
+    private final DialogGameErrorHandler errorHandler;
     private final RealtimeGateway realtimeGateway;
-    private final CopyOnWriteArrayList<Consumer<NemesisSession>> listeners = new CopyOnWriteArrayList<>();
+    private final Map<Consumer<NemesisSession>, AutoCloseable> listenerHandles = new ConcurrentHashMap<>();
+
     private volatile NemesisSession current;
 
     @Inject
     public NemesisController(NemesisRemoteClient remoteClient,
-                                    DialogService dialogService,
-                                    NemesisSessionStore sessionStore,
-                                    RealtimeGateway realtimeGateway) {
+                             RoomBotRemoteClient roomBots,
+                             NemesisSessionStore sessionStore,
+                             RealtimeGateway realtimeGateway,
+                             DialogService dialogService,
+                             DomainEventBus eventBus) {
         this.remoteClient = Objects.requireNonNull(remoteClient, "remoteClient");
-        this.dialogService = Objects.requireNonNull(dialogService, "dialogService");
-        this.sessionStore = Objects.requireNonNull(sessionStore, "sessionStore");
+        this.roomBots = Objects.requireNonNull(roomBots, "roomBots");
+        this.sessions = new GameSessionTracker<>(sessionStore, eventBus);
+        this.errorHandler = new DialogGameErrorHandler(dialogService, "Mission Nemesis");
         this.realtimeGateway = Objects.requireNonNull(realtimeGateway, "realtimeGateway");
         this.current = sessionStore.current().orElse(null);
         this.realtimeGateway.onMessage(this::handleRealtimeMessage);
@@ -52,71 +62,134 @@ public final class NemesisController {
     }
 
     public CompletableFuture<NemesisSession> startNewGame() {
-        return remoteClient.startNewGame()
-                .whenComplete((session, error) -> {
-                    if (error != null) {
-                        handleError("Impossible de creer la partie Mission Nemesis", error);
-                    } else {
-                        updateSession(session);
-                    }
-                });
+        CompletableFuture<NemesisSession> future = remoteClient.startNewGame();
+        future.whenComplete((session, error) -> {
+            if (error != null) {
+                errorHandler.show("Impossible de creer la partie Mission Nemesis", error);
+                return;
+            }
+            if (session != null) {
+                updateSession(session);
+            }
+        });
+        return future;
     }
 
     public CompletableFuture<NemesisSession> refresh() {
-        NemesisSession session = current;
-        if (session == null) {
+        NemesisSession snapshot = current;
+        if (snapshot == null) {
             return failedFuture(new IllegalStateException("Aucune partie active"));
         }
-        return remoteClient.refresh(session.roomId())
-                .whenComplete((updated, error) -> {
-                    if (error != null) {
-                        handleError("Impossible de recuperer l'etat de la partie", error);
-                    } else {
-                        updateSession(updated);
-                    }
-                });
+        CompletableFuture<NemesisSession> future = remoteClient.refresh(snapshot.roomId());
+        future.whenComplete((session, error) -> {
+            if (error != null) {
+                errorHandler.show("Impossible de recuperer l'etat de la partie", error);
+                return;
+            }
+            if (session != null) {
+                updateSession(session);
+            }
+        });
+        return future;
     }
 
     public CompletableFuture<NemesisSession> placeFleet(List<ShipPlacement> placements) {
-        NemesisSession session = current;
-        if (session == null) {
+        NemesisSession snapshot = current;
+        if (snapshot == null) {
             return failedFuture(new IllegalStateException("Aucune partie active"));
         }
-        return remoteClient.placeFleet(session.roomId(), placements)
-                .whenComplete((updated, error) -> {
-                    if (error != null) {
-                        handleError("Impossible de positionner la flotte", error);
-                    } else {
-                        updateSession(updated);
-                    }
-                });
+        CompletableFuture<NemesisSession> future = remoteClient.placeFleet(snapshot.roomId(), placements);
+        future.whenComplete((session, error) -> {
+            if (error != null) {
+                errorHandler.show("Impossible de positionner la flotte", error);
+                return;
+            }
+            if (session != null) {
+                updateSession(session);
+            }
+        });
+        return future;
     }
 
     public CompletableFuture<NemesisSession> fire(GridCoordinate coordinate) {
-        NemesisSession session = current;
-        if (session == null) {
+        NemesisSession snapshot = current;
+        if (snapshot == null) {
             return failedFuture(new IllegalStateException("Aucune partie active"));
         }
-        return remoteClient.fire(session.roomId(), coordinate)
-                .whenComplete((updated, error) -> {
+        CompletableFuture<NemesisSession> future = remoteClient.fire(snapshot.roomId(), coordinate);
+        future.whenComplete((session, error) -> {
+            if (error != null) {
+                errorHandler.show("Impossible de tirer", error);
+                return;
+            }
+            if (session != null) {
+                updateSession(session);
+            }
+        });
+        return future;
+    }
+
+    public CompletableFuture<NemesisSession> addBot() {
+        NemesisSession snapshot = current;
+        if (snapshot == null) {
+            return failedFuture(new IllegalStateException("Aucune partie active"));
+        }
+        int roomId = snapshot.roomId();
+        return roomBots.addBot(roomId)
+                .handle((info, error) -> {
                     if (error != null) {
-                        handleError("Impossible de tirer", error);
-                    } else {
-                        updateSession(updated);
+                        errorHandler.show("Impossible d'ajouter un bot", error);
+                        throw propagate(error);
                     }
+                    return info;
+                })
+                .thenCompose(ignore -> refresh());
+    }
+
+    public CompletableFuture<NemesisSession> removeBot() {
+        NemesisSession snapshot = current;
+        if (snapshot == null) {
+            return failedFuture(new IllegalStateException("Aucune partie active"));
+        }
+        int roomId = snapshot.roomId();
+        return roomBots.listBots(roomId)
+                .handle((bots, error) -> {
+                    if (error != null) {
+                        errorHandler.show("Impossible de récupérer la liste des bots", error);
+                        throw propagate(error);
+                    }
+                    return bots;
+                })
+                .thenCompose(bots -> {
+                    RoomBotRemoteClient.RoomBotInfo target = selectBotToRemove(snapshot, bots);
+                    if (target == null) {
+                        return failedFuture(new IllegalStateException("Aucun bot présent dans la salle"));
+                    }
+                    return roomBots.removeBot(roomId, target.id())
+                            .handle((ignored, error) -> {
+                                if (error != null) {
+                                    errorHandler.show("Impossible de retirer le bot", error);
+                                    throw propagate(error);
+                                }
+                                return null;
+                            })
+                            .thenCompose(ignored -> refresh());
                 });
     }
 
     public void addListener(Consumer<NemesisSession> listener) {
-        listeners.add(listener);
-        NemesisSession snapshot = current;
-        if (snapshot != null) {
-            SwingUtilities.invokeLater(() -> listener.accept(snapshot));
-        }
+        AutoCloseable handle = sessions.listen(listener);
+        listenerHandles.put(listener, handle);
     }
 
     public void removeListener(Consumer<NemesisSession> listener) {
-        listeners.remove(listener);
+        AutoCloseable handle = listenerHandles.remove(listener);
+        if (handle != null) {
+            try {
+                handle.close();
+            } catch (Exception ignored) {
+            }
+        }
     }
 
     public Optional<NemesisSession> currentSession() {
@@ -125,31 +198,14 @@ public final class NemesisController {
 
     public void reset() {
         current = null;
-        sessionStore.clearAll();
+        sessions.clearAll();
         realtimeGateway.disconnect(WebSocket.NORMAL_CLOSURE, "reset");
     }
 
     private void updateSession(NemesisSession session) {
         current = session;
-        sessionStore.save(session);
+        sessions.save(session);
         realtimeGateway.connect();
-        listeners.forEach(listener ->
-                SwingUtilities.invokeLater(() -> listener.accept(session))
-        );
-    }
-
-    private void handleError(String context, Throwable error) {
-        Throwable root = unwrap(error);
-        String message = root.getMessage() != null ? root.getMessage() : root.toString();
-        if (message.contains("java.lang.Integer")) {
-            message = "Reponse invalide du serveur.";
-        } else if (message.contains("HTTP")) {
-            message = message.replace("HTTP", "Reponse HTTP");
-        }
-        final String dialogMessage = message;
-        SwingUtilities.invokeLater(() ->
-                dialogService.error("Mission Nemesis", context + " : " + dialogMessage)
-        );
     }
 
     private void handleRealtimeMessage(JsonNode message) {
@@ -169,7 +225,7 @@ public final class NemesisController {
         }
         String gameType = payload.path("score").path("type")
                 .asText(payload.path("room").path("gameType").asText(""));
-        if (!"mission-nemesis".equalsIgnoreCase(gameType)) {
+        if (!GAME_TYPE.equalsIgnoreCase(gameType)) {
             return;
         }
         JsonNode gameStateNode = payload.path("gameState");
@@ -190,18 +246,7 @@ public final class NemesisController {
         if (snapshot != null && snapshot.roomId() == roomId) {
             return true;
         }
-        return sessionStore.find(roomId).isPresent();
-    }
-
-    private static Throwable unwrap(Throwable error) {
-        Throwable cause = error;
-        while (cause instanceof java.util.concurrent.CompletionException || cause instanceof java.util.concurrent.ExecutionException) {
-            if (cause.getCause() == null) {
-                break;
-            }
-            cause = cause.getCause();
-        }
-        return cause;
+        return sessions.find(roomId).isPresent();
     }
 
     private static <T> CompletableFuture<T> failedFuture(Throwable error) {
@@ -209,6 +254,28 @@ public final class NemesisController {
         future.completeExceptionally(error);
         return future;
     }
+
+    private RoomBotRemoteClient.RoomBotInfo selectBotToRemove(NemesisSession session,
+                                                              java.util.List<RoomBotRemoteClient.RoomBotInfo> bots) {
+        if (bots == null || bots.isEmpty()) {
+            return null;
+        }
+        java.util.Set<String> botNames = session.state().players().stream()
+                .filter(NemesisState.Player::isBot)
+                .map(player -> player.username().toLowerCase())
+                .collect(java.util.stream.Collectors.toCollection(java.util.LinkedHashSet::new));
+        for (RoomBotRemoteClient.RoomBotInfo bot : bots) {
+            if (botNames.contains(bot.name().toLowerCase())) {
+                return bot;
+            }
+        }
+        return bots.get(bots.size() - 1);
+    }
+
+    private static RuntimeException propagate(Throwable error) {
+        if (error instanceof RuntimeException runtime) {
+            return runtime;
+        }
+        return new RuntimeException(error);
+    }
 }
-
-

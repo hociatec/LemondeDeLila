@@ -1,0 +1,26 @@
+package com.lemondelila.client.presence;
+
+import com.lemondelila.client.presence.controller.PresenceController;
+import com.lemondelila.client.presence.view.PresenceDialogLauncher;
+import com.lemondelila.client.framework.core.context.ApplicationContext;
+import com.lemondelila.client.framework.core.module.LilaModule;
+
+public final class PresenceModule implements LilaModule {
+
+    @Override
+    public void configure(ApplicationContext.Builder builder) {
+        builder.bindAuto(PresenceController.class);
+        builder.bindAuto(PresenceDialogLauncher.class);
+    }
+
+    @Override
+    public void start(ApplicationContext context) {
+        context.get(PresenceController.class);
+        context.get(PresenceDialogLauncher.class);
+    }
+
+    @Override
+    public int order() {
+        return 40;
+    }
+}

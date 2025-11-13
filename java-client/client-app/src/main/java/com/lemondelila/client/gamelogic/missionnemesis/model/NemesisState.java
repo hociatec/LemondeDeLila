@@ -66,7 +66,8 @@ public final class NemesisState {
                          String username,
                          List<Ship> ships,
                          List<Shot> shots,
-                         String status) {
+                         String status,
+                         boolean isBot) {
 
         public Player {
             ships = List.copyOf(ships);

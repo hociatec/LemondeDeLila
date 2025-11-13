@@ -116,5 +116,17 @@
     </ul>
 </section>
 
+<section>
+    <h2>8. Architecture client</h2>
+    <div class="date">Refonte structurelle</div>
+    <ul>
+        <li><span class="tag tag-feature">feature</span> Regroupement des sources Java par domaines (chat, user, catalogue, game, presence, settings) : chaque dossier embarque désormais ses <em>controller</em>, <em>model</em>, <em>service</em>, <em>view</em> et événements spécifiques.</li>
+        <li><span class="tag tag-feature">feature</span> Migration du framework applicatif sous <code>com.lemondelila.client.framework</code> pour conserver une arborescence unique et cohérente côté client.</li>
+        <li><span class="tag tag-feature">feature</span> Création d’un espace <code>com.lemondelila.client.application</code> accueillant les vues transverses (accueil, menu, boîtes de dialogue, raccourcis) et leurs artefacts (<em>controller</em>, <em>service</em>, etc.).</li>
+        <li><span class="tag tag-feature">feature</span> Modules d’initialisation rangés dans leur domaine (<code>ChatModule</code>, <code>CatalogueModule</code>, <code>SettingsModule</code>, etc.) et orchestration centralisée via <code>ApplicationModule</code>.</li>
+        <li><span class="tag tag-doc">doc</span> Mise à jour du guide framework pour présenter l’arborescence domaine et clarifier les points d’entrée.</li>
+    </ul>
+</section>
+
 </body>
 </html>

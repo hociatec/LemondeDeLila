@@ -1,7 +1,7 @@
 package com.lemondelila.client.gamelogic.missionnemesis.model;
 
-import com.lemondelila.client.model.game.GameEngine;
-import com.lemondelila.client.model.game.GameSession;
+import com.lemondelila.client.game.model.GameEngine;
+import com.lemondelila.client.game.model.GameSession;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -7,9 +7,9 @@ import com.lemondelila.client.gamelogic.damenature.model.DameNatureEngine;
 import com.lemondelila.client.gamelogic.damenature.model.DameNatureSession;
 import com.lemondelila.client.gamelogic.damenature.model.DameNatureSessionStore;
 import com.lemondelila.client.gamelogic.damenature.model.DameNatureState;
-import com.lemondelila.client.model.user.ClientSession;
-import com.lemondelila.framework.core.di.Inject;
-import com.lemondelila.framework.core.task.TaskScheduler;
+import com.lemondelila.client.user.model.ClientSession;
+import com.lemondelila.client.framework.core.di.Inject;
+import com.lemondelila.client.framework.core.task.TaskScheduler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -684,7 +684,8 @@ public final class LocalDameNatureService {
                     player.username,
                     player.hand.size(),
                     handDetails,
-                    List.copyOf(player.books)
+                    List.copyOf(player.books),
+                    player.bot
             ));
         }
 

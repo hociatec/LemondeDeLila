@@ -2,8 +2,8 @@ package com.lemondelila.client.gamelogic.panierexpress.view;
 
 import com.lemondelila.client.gamelogic.panierexpress.model.PanierExpressState;
 import com.lemondelila.client.media.SoundBank;
-import com.lemondelila.framework.access.NarrationQueue;
-import com.lemondelila.framework.media.sound.SoundEffectManager;
+import com.lemondelila.client.framework.access.NarrationQueue;
+import com.lemondelila.client.framework.media.sound.SoundEffectManager;
 
 import javax.accessibility.AccessibleContext;
 import javax.swing.JComponent;
