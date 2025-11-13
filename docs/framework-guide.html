@@ -1,8 +1,8 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Guide de dÃ©veloppement â€“ Les mondes de Lilas</title>
+    <title>Guide de développement – Le Monde de Lila</title>
     <style>
         body { font-family: Arial, sans-serif; line-height: 1.6; margin: 2rem auto; max-width: 960px; color: #2b2b2b; }
         h1, h2, h3 { color: #532a7f; }
@@ -18,117 +18,64 @@
 </head>
 <body>
 <header>
-    <h1>Guide de dÃ©veloppement</h1>
-    <p>Ce document explique comment dÃ©marrer lâ€™environnement <em>Les mondes de Lilas</em>, crÃ©er de nouveaux modules,
-        Ã©tendre les menus Swing et tirer parti de lâ€™infrastructure existante.</p>
+    <h1>Guide de développement</h1>
+    <p>Ce document explique comment démarrer l’environnement <em>Le Monde de Lila</em>, créer de nouveaux modules,
+        étendre les menus Swing et tirer parti de l’infrastructure existante.</p>
 </header>
 
 <nav>
     <h2>Sommaire</h2>
     <ul>
-        <li><a href="#lancer-outil">1. Lancer lâ€™outillage</a></li>
-        <li><a href="#structure">2. Comprendre lâ€™architecture</a></li>
-        <li><a href="#nouveau-module">3. CrÃ©er un module applicatif</a></li>
+        <li><a href="#lancer-outil">1. Lancer l’outillage</a></li>
+        <li><a href="#structure">2. Comprendre l’architecture</a></li>
+        <li><a href="#nouveau-module">3. Créer un module applicatif</a></li>
         <li><a href="#nouveau-menu">4. Ajouter un menu ou une vue Swing</a></li>
-        <li><a href="#shortcuts">5. DÃ©clarer des raccourcis clavier</a></li>
+        <li><a href="#shortcuts">5. Déclarer des raccourcis clavier</a></li>
         <li><a href="#backend-api">6. Consommer les API backend</a></li>
         <li><a href="#checklist">7. Checklist de validation</a></li>
-        <li><a href="#options-locales">8. Options locales et prÃ©fÃ©rences</a></li>
-        <li><a href="#tchat">9. Tchat en temps rÃ©el</a></li>
+        <li><a href="#options-locales">8. Options locales et préférences</a></li>
+        <li><a href="#tchat">9. Tchat en temps réel</a></li>
         <li><a href="#game-nemesis">10. Module Nemesis</a></li>
         <li><a href="#network-config">11. Configuration reseau</a></li>
     </ul>
 </nav>
 
 <section id="lancer-outil">
-    <h2>1. Lancer lâ€™outillage</h2>
+    <h2>1. Lancer l’outillage</h2>
     <ol>
-        <li>Depuis la racine du projet, exÃ©cuter <code>powershell -ExecutionPolicy Bypass -File .\start-lila.ps1</code>.
-            Le script <strong>installe Maven</strong> (si nÃ©cessaire), dÃ©marre les serveurs Symfony (HTTP + WebSocket) et
+        <li>Depuis la racine du projet, exécuter <code>powershell -ExecutionPolicy Bypass -File .\start-lila.ps1</code>.
+            Le script <strong>installe Maven</strong> (si nécessaire), démarre les serveurs Symfony (HTTP + WebSocket) et
             construit le client Java.</li>
         <li>Les logs des processus backend se trouvent dans <code>logs\backend-*.log</code>.</li>
-        <li>Si vous ne souhaitez compiler que le client, exÃ©cutez :
+        <li>Si vous ne souhaitez compiler que le client, exécutez :
             <pre><code>cd .\java-client
 ..\tools\apache-maven-3.9.6\bin\mvn.cmd -pl client-app -am package -DskipTests</code></pre>
         </li>
     </ol>
-    <div class="tip">
-        <strong>Astuce&nbsp;:</strong> sous WSL ou Linux, exportez <code>JAVA_HOME</code> vers un JDKÂ 21 avant
-        dâ€™appeler Maven, par exemple&nbsp;:
-        <pre><code>export JAVA_HOME="/mnt/c/Program Files/Eclipse Adoptium/jdk-21.0.9.10-hotspot"
-../tools/apache-maven-3.9.6/bin/mvn -pl client-app -am test</code></pre>
-    </div>
 </section>
 
 <section id="structure">
-    <h2>2. Comprendre lâ€™architecture</h2>
+    <h2>2. Comprendre l’architecture</h2>
     <ul>
-        <li><strong>Modules</strong> : toutes les briques partagent lâ€™interface <code>LilaModule</code>. La classe
-            <code>com.lemondelila.client.framework.core.module.FrameworkBootstrap</code> charge automatiquement les implÃ©mentations via
+        <li><strong>Modules</strong> : toutes les briques partagent l’interface <code>LilaModule</code>. La classe
+            <code>com.lemondelila.framework.core.module.FrameworkBootstrap</code> charge automatiquement les implémentations via
             <code>ServiceLoader</code>, puis appelle <code>configure()</code> et <code>start()</code>.</li>
-        <li><strong>Injection de dÃ©pendances</strong> : le conteneur <code>ApplicationContext</code>
-            (package <code>com.lemondelila.client.framework.core</code>, dans <code>client-app</code>)
+        <li><strong>Injection de dépendances</strong> : le conteneur <code>ApplicationContext</code> (framework-core)
             fournit les services. Chaque module enregistre ses bind via le builder.</li>
-        <li><strong>Client Swing</strong> : le point dâ€™entrÃ©e <code>com.lemondelila.client.AppLauncher</code> crÃ©e la fenÃªtre
-            <code>LilaFrame</code> et affiche lâ€™Ã©cran <code>HomeScreen</code>, qui pilote des panneaux spÃ©cialisÃ©s
+        <li><strong>Client Swing</strong> : le point d’entrée <code>com.lemondelila.client.AppLauncher</code> crée la fenêtre
+            <code>LilaFrame</code> et affiche l’écran <code>HomeScreen</code>, qui pilote des panneaux spécialisés
             (<code>LandingPanel</code>, <code>LoginFormPanel</code>, <code>RegisterFormPanel</code>).</li>
-        <li><strong>Backend Symfony</strong> : exposÃ© sous <code>http://127.0.0.1:8000/api</code> (par dÃ©faut). Le contrÃ´leur
-            <code>App\Module\User\Controller\AuthController</code> gÃ¨re les routes
+        <li><strong>Backend Symfony</strong> : exposé sous <code>http://127.0.0.1:8000/api</code> (par défaut). Le contrôleur
+            <code>App\Module\User\Controller\AuthController</code> gère les routes
             <code>/api/login</code> et <code>/api/register</code>.</li>
     </ul>
-    <p>Cette faÃ§on de faire consiste Ã  organiser le projet par domaine fonctionnel plutÃ´t que de tout mÃ©langer dans des dossiers globaux. Chaque fonctionnalitÃ© &mdash; comme chat, user, catalogue ou game &mdash; possÃ¨de son propre dossier contenant son model, view, controller et services. Cela permet de regrouper tout ce qui appartient Ã  un mÃªme domaine au mÃªme endroit, ce qui rend le code plus lisible, plus modulaire et plus facile Ã  maintenir. Chaque domaine Ã©volue indÃ©pendamment des autres, sans crÃ©er de couplage inutile, et lâ€™application devient plus claire et plus scalable.</p>
-    <pre><code>com/lemondelila/client/
-â”œâ”€â”€ application/
-â”‚   â”œâ”€â”€ controller/
-â”‚   â”œâ”€â”€ events/
-â”‚   â”œâ”€â”€ model/
-â”‚   â”œâ”€â”€ service/
-â”‚   â””â”€â”€ view/
-â”œâ”€â”€ chat/
-â”‚   â”œâ”€â”€ controller/
-â”‚   â”œâ”€â”€ events/
-â”‚   â”œâ”€â”€ model/
-â”‚   â”œâ”€â”€ service/
-â”‚   â””â”€â”€ view/
-â”œâ”€â”€ catalogue/
-â”‚   â”œâ”€â”€ controller/
-â”‚   â”œâ”€â”€ model/
-â”‚   â”œâ”€â”€ service/
-â”‚   â””â”€â”€ view/
-â”œâ”€â”€ framework/
-â”‚   â”œâ”€â”€ access/
-â”‚   â”œâ”€â”€ core/
-â”‚   â”œâ”€â”€ media/
-â”‚   â”œâ”€â”€ network/
-â”‚   â””â”€â”€ ui/
-â”œâ”€â”€ game/
-â”‚   â”œâ”€â”€ controller/
-â”‚   â”œâ”€â”€ events/
-â”‚   â”œâ”€â”€ model/
-â”‚   â””â”€â”€ service/
-â”œâ”€â”€ presence/
-â”‚   â”œâ”€â”€ controller/
-â”‚   â”œâ”€â”€ model/
-â”‚   â””â”€â”€ view/
-â”œâ”€â”€ settings/
-â”‚   â”œâ”€â”€ controller/
-â”‚   â”œâ”€â”€ model/
-â”‚   â”œâ”€â”€ service/
-â”‚   â””â”€â”€ view/
-â””â”€â”€ user/
-    â”œâ”€â”€ controller/
-    â”œâ”€â”€ events/
-    â”œâ”€â”€ model/
-    â””â”€â”€ view/</code></pre>
-    <p>Le dossier <code>application/</code> regroupe lâ€™interface transversale de lâ€™app (Ã©cran dâ€™accueil, menu principal, dialogues communs, raccourcis) avec la place nÃ©cessaire pour leurs contrÃ´leurs, services et modÃ¨les. Les dossiers mÃ©tiers (<code>chat/</code>, <code>catalogue/</code>, etc.) restent focalisÃ©s sur leur domaine, tandis que le framework conserve les briques techniques.</p>
-    <p>Chaque domaine expose Ã©galement son module dâ€™initialisation (ex. <code>com.lemondelila.client.chat.ChatModule</code>, <code>com.lemondelila.client.settings.SettingsModule</code>) utilisÃ© par <code>com.lemondelila.client.application.ApplicationModule</code> pour cÃ¢bler lâ€™ensemble lors du dÃ©marrage.</p>
 </section>
 
 <section id="nouveau-module">
-    <h2>3. CrÃ©er un module applicatif</h2>
+    <h2>3. Créer un module applicatif</h2>
     <ol>
-        <li>Ajoutez un nouveau package (ex. <code>com.lemondelila.client.catalogue</code>) dans <code>java-client</code>.</li>
-        <li>ImplÃ©mentez <code>LilaModule</code> :
+        <li>Ajoutez un nouveau package (ex. <code>com.lemondelila.client.module.catalog</code>) dans <code>java-client</code>.</li>
+        <li>Implémentez <code>LilaModule</code> :
 <pre><code>public final class CatalogModule implements LilaModule {
     @Override
     public void configure(ApplicationContext.Builder builder) {
@@ -142,20 +89,20 @@
 
     @Override
     public int order() {
-        return 10; // plus grand => dÃ©marrÃ© aprÃ¨s les frameworks
+        return 10; // plus grand => démarré après les frameworks
     }
 }</code></pre>
         </li>
-        <li>DÃ©clarez le module dans <code>java-client/client-app/src/main/resources/META-INF/services/com.lemondelila.client.framework.core.module.LilaModule</code>
-            pour que <code>ServiceLoader</code> lâ€™instancie.</li>
-        <li>Si le module doit afficher un Ã©cran, utilisez <code>ScreenManager</code> :
+        <li>Déclarez le module dans <code>java-client/client-app/src/main/resources/META-INF/services/com.lemondelila.framework.core.module.LilaModule</code>
+            pour que <code>ServiceLoader</code> l’instancie.</li>
+        <li>Si le module doit afficher un écran, utilisez <code>ScreenManager</code> :
 <pre><code>ScreenManager manager = context.get(ScreenManager.class);
 manager.register(context.get(MyScreen.class));
 manager.show("my-screen-id");</code></pre>
         </li>
     </ol>
     <div class="tip">
-        <strong>Astuce :</strong> DÃ©composez la vue en sous-composants (comme <code>HomeScreen</code> et ses panels)
+        <strong>Astuce :</strong> Décomposez la vue en sous-composants (comme <code>HomeScreen</code> et ses panels)
         pour faciliter la maintenance et le test unitaire.
     </div>
 </section>
@@ -163,23 +110,23 @@ manager.show("my-screen-id");</code></pre>
 <section id="nouveau-menu">
     <h2>4. Ajouter un menu ou une vue Swing</h2>
     <ol>
-        <li>Les menus se crÃ©ent via <code>com.lemondelila.client.framework.ui.menu.MenuFactory</code>. Exemple :
+        <li>Les menus se créent via <code>com.lemondelila.framework.ui.menu.MenuFactory</code>. Exemple :
 <pre><code>MenuFactory menuFactory = context.get(MenuFactory.class);
 menuFactory.create("Jeu", builder -&gt; builder
     .item("Nouveau niveau", () -&gt; eventBus.publish(new NewLevelRequested()))
     .item("Quitter", () -&gt; System.exit(0))
 );</code></pre>
         </li>
-        <li>Pour un nouvel Ã©cran, crÃ©ez une classe implÃ©mentant <code>Screen</code> (voir <code>HomeScreen</code>) et
-            enregistrez-la auprÃ¨s du <code>ScreenManager</code>.</li>
-        <li>Ajoutez vos actions au <code>ActionManager</code> pour bÃ©nÃ©ficier des raccourcis, puis attachez la vue via
+        <li>Pour un nouvel écran, créez une classe implémentant <code>Screen</code> (voir <code>HomeScreen</code>) et
+            enregistrez-la auprès du <code>ScreenManager</code>.</li>
+        <li>Ajoutez vos actions au <code>ActionManager</code> pour bénéficier des raccourcis, puis attachez la vue via
             <code>actionManager.attachTo(component);</code>.</li>
     </ol>
 </section>
 
 <section id="shortcuts">
-    <h2>5. DÃ©clarer des raccourcis clavier</h2>
-    <p>Les raccourcis sont centralisÃ©s dans <code>ActionManager</code> (package <code>com.lemondelila.client.framework.ui.action</code>). Exemple simplifiÃ© :</p>
+    <h2>5. Déclarer des raccourcis clavier</h2>
+    <p>Les raccourcis sont centralisés dans <code>ActionManager</code> (framework-ui). Exemple simplifié :</p>
 <pre><code>AbstractAction toggleCatalog = new AbstractAction("catalog:toggle") {
     @Override public void actionPerformed(ActionEvent e) {
         screenManager.show("catalog");
@@ -189,7 +136,7 @@ actionManager.register("catalog.toggle", () -&gt; toggleCatalog, KeyStroke.getKe
 shortcutRegistry.register(KeyStroke.getKeyStroke("alt G"), "Ouvrir le catalogue");
 </code></pre>
     <div class="warning">
-        Nâ€™associez pas <code>ENTER</code> Ã  des actions globales depuis lâ€™accueil : laissez les panneaux gÃ©rer la touche
+        N’associez pas <code>ENTER</code> à des actions globales depuis l’accueil : laissez les panneaux gérer la touche
         via <code>JComponent.WHEN_FOCUSED</code> comme pour <code>LoginFormPanel</code> et <code>RegisterFormPanel</code>.
     </div>
 </section>
@@ -197,17 +144,17 @@ shortcutRegistry.register(KeyStroke.getKeyStroke("alt G"), "Ouvrir le catalogue"
 <section id="backend-api">
     <h2>6. Consommer les API backend</h2>
     <ol>
-        <li>Utilisez <code>RestClient</code> (package <code>com.lemondelila.client.framework.network.rest</code>) fourni par <code>NetworkModule</code>.</li>
-        <li>Le module rÃ©seau lit les propriÃ©tÃ©s <code>network.http.base</code> et <code>network.ws.url</code> depuis
+        <li>Utilisez <code>RestClient</code> (framework-network) fourni par <code>NetworkModule</code>.</li>
+        <li>Le module réseau lit les propriétés <code>network.http.base</code> et <code>network.ws.url</code> depuis
             <code>config/client.properties</code> (copie incluse dans <code>client-app/src/main/resources</code>).</li>
-        <li>Un contrÃ´leur type (voir <code>AuthController</code>) :
+        <li>Un contrôleur type (voir <code>AuthController</code>) :
 <pre><code>JsonNode response = restClient.post("login", Map.of(
     "username", request.username(),
     "password", String.valueOf(request.password())
 ));</code></pre>
         </li>
-        <li>ComplÃ©tez lâ€™API Symfony si nÃ©cessaire (ex. <code>App\Module\User\Controller\AuthController</code> pour
-            lâ€™inscription).</li>
+        <li>Complétez l’API Symfony si nécessaire (ex. <code>App\Module\User\Controller\AuthController</code> pour
+            l’inscription).</li>
     </ol>
 </section>
 
@@ -215,42 +162,42 @@ shortcutRegistry.register(KeyStroke.getKeyStroke("alt G"), "Ouvrir le catalogue"
     <h2>7. Checklist de validation</h2>
     <ul>
         <li>Tests locaux : <code>mvn -pl client-app -am package -DskipTests</code>.</li>
-        <li>Lint/format : la base est compatible avec <code>spotless</code>/IDEA â€“ pas encore automatisÃ©.</li>
-        <li>AccessibilitÃ© : fournissez une description courte aux boutons (cf. <code>LandingPanel</code>) et enregistrez
+        <li>Lint/format : la base est compatible avec <code>spotless</code>/IDEA – pas encore automatisé.</li>
+        <li>Accessibilité : fournissez une description courte aux boutons (cf. <code>LandingPanel</code>) et enregistrez
             tout raccourci dans <code>AccessibleShortcutRegistry</code>.</li>
-        <li>Journalisation : utilisez <code>org.slf4j.Logger</code> (implÃ©mentation <code>slf4j-simple</code> incluse).</li>
-        <li>Shutdown propre : si votre module ouvre des ressources (threads, WebSocket), implÃ©mentez <code>stop()</code>
+        <li>Journalisation : utilisez <code>org.slf4j.Logger</code> (implémentation <code>slf4j-simple</code> incluse).</li>
+        <li>Shutdown propre : si votre module ouvre des ressources (threads, WebSocket), implémentez <code>stop()</code>
             et fermez-les comme dans <code>AccessibilityModule</code>.</li>
     </ul>
 </section>
 
 <section id="options-locales">
-    <h2>8. Options locales et prÃ©fÃ©rences</h2>
-    <p>Le client stocke les prÃ©fÃ©rences utilisateur dans <code>config/settings.json</code> via
+    <h2>8. Options locales et préférences</h2>
+    <p>Le client stocke les préférences utilisateur dans <code>config/settings.json</code> via
         <code>AppSettingsService</code>. Les options disponibles couvrent :</p>
     <ul>
         <li>Volume des effets du jeu.</li>
         <li>Volume de la musique.</li>
-        <li>Affichage ou non dâ€™une confirmation lorsque lâ€™on ferme lâ€™application.</li>
-        <li>Activation/dÃ©sactivation du tchat global et demande de confirmation avant de fermer la fenÃªtre de tchat.</li>
+        <li>Affichage ou non d’une confirmation lorsque l’on ferme l’application.</li>
+        <li>Activation/désactivation du tchat global et demande de confirmation avant de fermer la fenêtre de tchat.</li>
     </ul>
-    <p>Ces paramÃ¨tres sont Ã©ditables depuis le menu principal (EntrÃ©e â†’ <em>Options</em>). La touche
-        <strong>Alt+R</strong> permet de revenir au menu dâ€™accueil, tandis que <strong>Alt+C</strong> et
-        <strong>Alt+I</strong> contrÃ´lent respectivement la connexion et lâ€™inscription.</p>
+    <p>Ces paramètres sont éditables depuis le menu principal (Entrée → <em>Options</em>). La touche
+        <strong>Alt+R</strong> permet de revenir au menu d’accueil, tandis que <strong>Alt+C</strong> et
+        <strong>Alt+I</strong> contrôlent respectivement la connexion et l’inscription.</p>
 </section>
 
 <section id="tchat">
-    <h2>9. Tchat en temps rÃ©el</h2>
-    <p>Une fois connectÃ©, le menu principal propose lâ€™option <strong>Tchat</strong>. Cette vue ouvre une fenÃªtre
-        Swing non modale qui se connecte au WebSocket <code>network.ws.url</code> avec le token JWT renvoyÃ© par le
+    <h2>9. Tchat en temps réel</h2>
+    <p>Une fois connecté, le menu principal propose l’option <strong>Tchat</strong>. Cette vue ouvre une fenêtre
+        Swing non modale qui se connecte au WebSocket <code>network.ws.url</code> avec le token JWT renvoyé par le
         login.</p>
     <ul>
         <li>Connexion via <code>ChatConnectionFactory</code>, qui ajoute automatiquement <code>?token=&lt;jwt&gt;</code>
-            Ã  lâ€™URL.</li>
-        <li>Les messages entrants sont normalisÃ©s (auteur, texte, horodatage) et affichÃ©s en lecture seule.</li>
-        <li>Lâ€™envoi publie <code>{"type":"chat-send","text":"..."}</code> : cÃ´tÃ© Symfony,
-            <code>PresenceRealtimeBroker</code> diffuse ensuite <code>chat-message</code> Ã  tous les clients.</li>
-        <li>En cas dâ€™erreur rÃ©seau, le <code>DialogService</code> affiche un message tout en conservant la fenÃªtre
+            à l’URL.</li>
+        <li>Les messages entrants sont normalisés (auteur, texte, horodatage) et affichés en lecture seule.</li>
+        <li>L’envoi publie <code>{"type":"chat-send","text":"..."}</code> : côté Symfony,
+            <code>PresenceRealtimeBroker</code> diffuse ensuite <code>chat-message</code> à tous les clients.</li>
+        <li>En cas d’erreur réseau, le <code>DialogService</code> affiche un message tout en conservant la fenêtre
             ouverte.</li>
     </ul>
 </section>
@@ -280,15 +227,14 @@ shortcutRegistry.register(KeyStroke.getKeyStroke("alt G"), "Ouvrir le catalogue"
     <p>Le script <code>start-lila.ps1</code> demarre <code>php bin/console app:realtime:serve --env=dev</code> qui ecoute sur
         <strong>127.0.0.1:8081</strong>. Si vous modifiez <code>APP_WS_HOST</code>/<code>APP_WS_PORT</code> cote backend,
         synchronisez ce fichier pour eviter les erreurs de connexion.</p>
-    <p>Depuis la derniere mise ï¿½ jour, le script attend que le port WebSocket soit ouvert avant de lancer le client,
+    <p>Depuis la derniere mise � jour, le script attend que le port WebSocket soit ouvert avant de lancer le client,
         afin d'eviter les erreurs <em>Connexion WebSocket echouee</em> au demarrage.</p>
     <p>Le client Swing n'etablit la connexion que lorsque l'utilisateur est authentifie : le token JWT est ajoute a l'URL
         par <code>TokenAwareRealtimeGateway</code>, ce qui evite les erreurs HTTP 400 lors du handshake.</p>
 </section>
 
 <footer>
-    <p>DerniÃ¨re mise Ã  jour : <script>document.write(new Date().toLocaleDateString('fr-FR'));</script></p>
+    <p>Dernière mise à jour : <script>document.write(new Date().toLocaleDateString('fr-FR'));</script></p>
 </footer>
 </body>
 </html>
-

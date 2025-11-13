@@ -17,7 +17,7 @@ import java.util.Objects;
 
 /**
  * Configuration accessible au clavier pour Mission Nemesis.
- * Navigation uniquement aux fleches, validation avec Entrée.
+ * Navigation uniquement aux fleches, validation avec Entree/Espace.
  */
 final class NemesisSetupPanel extends JPanel {
 
@@ -25,7 +25,23 @@ final class NemesisSetupPanel extends JPanel {
         void onStartRequested(Configuration configuration);
     }
 
-    record Configuration(PlacementMode placementMode) { }
+    static final class Configuration {
+        private final int boardSize;
+        private final PlacementMode placementMode;
+
+        Configuration(int boardSize, PlacementMode placementMode) {
+            this.boardSize = boardSize;
+            this.placementMode = placementMode;
+        }
+
+        int boardSize() {
+            return boardSize;
+        }
+
+        PlacementMode placementMode() {
+            return placementMode;
+        }
+    }
 
     enum PlacementMode {
         MANUAL("Manuel"),
@@ -50,14 +66,20 @@ final class NemesisSetupPanel extends JPanel {
             BorderFactory.createEmptyBorder(6, 10, 6, 10)
     );
 
+    private final int[] boardSizes;
     private final Listener listener;
     private final List<Row> rows = new ArrayList<>();
 
+    private int boardSizeIndex;
     private PlacementMode placementMode = PlacementMode.MANUAL;
     private int focusIndex;
 
-    NemesisSetupPanel(Listener listener) {
+    NemesisSetupPanel(int[] boardSizes, Listener listener) {
+        this.boardSizes = Objects.requireNonNull(boardSizes, "boardSizes");
         this.listener = Objects.requireNonNull(listener, "listener");
+        if (boardSizes.length == 0) {
+            throw new IllegalArgumentException("Au moins une taille de grille est requise.");
+        }
 
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setFocusable(true);
@@ -67,9 +89,11 @@ final class NemesisSetupPanel extends JPanel {
         add(buildTitle());
         add(Box.createVerticalStrut(16));
 
+        Row sizeRow = addOptionRow("Taille de la grille", formatBoardSize(boardSizes[boardSizeIndex]));
         Row placementRow = addOptionRow("Placement initial", placementMode.label());
         Row startRow = addActionRow("Lancer la partie");
 
+        rows.add(sizeRow);
         rows.add(placementRow);
         rows.add(startRow);
 
@@ -96,7 +120,7 @@ final class NemesisSetupPanel extends JPanel {
                         adjustCurrentOption(1);
                         e.consume();
                     }
-                    case KeyEvent.VK_ENTER -> {
+                    case KeyEvent.VK_ENTER, KeyEvent.VK_SPACE -> {
                         triggerCurrent();
                         e.consume();
                     }
@@ -115,11 +139,12 @@ final class NemesisSetupPanel extends JPanel {
     }
 
     Configuration currentConfiguration() {
-        return new Configuration(placementMode);
+        return new Configuration(boardSizes[boardSizeIndex], placementMode);
     }
 
     void resetNavigation() {
         focusIndex = 0;
+        boardSizeIndex = Math.max(0, Math.min(boardSizeIndex, boardSizes.length - 1));
         placementMode = placementMode == null ? PlacementMode.MANUAL : placementMode;
         updateFocusHighlight();
     }
@@ -162,19 +187,31 @@ final class NemesisSetupPanel extends JPanel {
 
     private void adjustCurrentOption(int delta) {
         if (focusIndex == 0) {
+            if (boardSizes.length == 1) {
+                toolkitBeep();
+                return;
+            }
+            int newIndex = Math.floorMod(boardSizeIndex + delta, boardSizes.length);
+            if (newIndex != boardSizeIndex) {
+                boardSizeIndex = newIndex;
+                rows.get(0).value.setText(formatBoardSize(boardSizes[boardSizeIndex]));
+                rows.get(0).updateAccessible();
+                announce(rows.get(0).accessibleText());
+            }
+        } else if (focusIndex == 1) {
             placementMode = placementMode == PlacementMode.MANUAL ? PlacementMode.AUTO : PlacementMode.MANUAL;
-            rows.get(0).value.setText(placementMode.label());
-            rows.get(0).updateAccessible();
-            announce(rows.get(0).accessibleText());
+            rows.get(1).value.setText(placementMode.label());
+            rows.get(1).updateAccessible();
+            announce(rows.get(1).accessibleText());
         } else {
             toolkitBeep();
         }
     }
 
     private void triggerCurrent() {
-        if (focusIndex == 0) {
+        if (focusIndex == 0 || focusIndex == 1) {
             adjustCurrentOption(1);
-        } else if (focusIndex == 1) {
+        } else if (focusIndex == 2) {
             announce("Lancement de la partie.");
             listener.onStartRequested(currentConfiguration());
         }
@@ -185,6 +222,10 @@ final class NemesisSetupPanel extends JPanel {
             rows.get(i).setSelected(i == focusIndex);
         }
         announce(rows.get(focusIndex).accessibleText());
+    }
+
+    private String formatBoardSize(int size) {
+        return size + " x " + size;
     }
 
     private void toolkitBeep() {

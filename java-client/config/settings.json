@@ -1,16 +1,7 @@
 {
+  "gameVolume" : 6,
   "musicVolume" : 100,
-  "soundEnabled" : true,
-  "soundAppLaunch" : false,
-  "soundAppLaunchVolume" : 90,
-  "soundBackground" : false,
-  "soundBackgroundVolume" : 77,
-  "soundNavigate" : false,
-  "soundNavigateVolume" : 100,
-  "soundSelect" : false,
-  "soundSelectVolume" : 61,
   "confirmOnExit" : true,
   "chatEnabled" : true,
-  "confirmChatExit" : true,
-  "stayConnected" : false
+  "confirmChatExit" : true
 }

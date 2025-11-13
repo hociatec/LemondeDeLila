@@ -202,5 +202,4 @@ class PresenceRealtimeClientHandler implements ClientHandler
 
         $this->presenceBroker->unregister($client);
     }
-
 }

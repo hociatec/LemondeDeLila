@@ -36,13 +36,6 @@ final class Catalog
                     ['id' => 'dame-nature', 'name' => 'Dame Nature', 'minPlayers' => 2, 'maxPlayers' => 6],
                 ],
             ],
-            [
-                'id' => 'jeuxdeplateaux',
-                'name' => 'Jeux de plateaux',
-                'games' => [
-                    ['id' => 'panier-express', 'name' => 'Panier Express', 'minPlayers' => 2, 'maxPlayers' => 6],
-                ],
-            ],
         ];
     }
 }

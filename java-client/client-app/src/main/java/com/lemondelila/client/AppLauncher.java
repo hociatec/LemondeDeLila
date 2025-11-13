@@ -1,22 +1,15 @@
 package com.lemondelila.client;
 
-import com.lemondelila.client.settings.service.AppSettingsService;
-import com.lemondelila.client.application.AppBranding;
-import com.lemondelila.client.application.view.dialog.ConfirmExitDialog;
-import com.lemondelila.client.framework.core.context.ApplicationContext;
-import com.lemondelila.client.framework.core.module.FrameworkBootstrap;
-import com.lemondelila.client.framework.ui.LilaFrame;
+import com.lemondelila.client.service.settings.AppSettingsService;
+import com.lemondelila.client.view.dialog.ConfirmExitDialog;
+import com.lemondelila.framework.core.context.ApplicationContext;
+import com.lemondelila.framework.core.module.FrameworkBootstrap;
+import com.lemondelila.framework.ui.LilaFrame;
 
-import javax.swing.InputMap;
-import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 public final class AppLauncher {
 
@@ -24,15 +17,11 @@ public final class AppLauncher {
     }
 
     public static void main(String[] args) {
-        configureNativeLibraries();
-        disableSpaceActivationForButtons();
-
         FrameworkBootstrap bootstrap = FrameworkBootstrap.load();
         ApplicationContext context = bootstrap.launch();
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> bootstrap.shutdown(context)));
         AppSettingsService settingsService = context.get(AppSettingsService.class);
-        AppBranding branding = context.get(AppBranding.class);
 
         SwingUtilities.invokeLater(() -> {
             LilaFrame frame = context.get(LilaFrame.class);
@@ -40,8 +29,7 @@ public final class AppLauncher {
             frame.addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosing(WindowEvent e) {
-                    if (!settingsService.current().confirmOnExit()
-                            || ConfirmExitDialog.show(frame, branding.applicationName())) {
+                    if (!settingsService.current().confirmOnExit() || ConfirmExitDialog.show(frame)) {
                         frame.setVisible(false);
                         frame.dispose();
                         System.exit(0);
@@ -51,51 +39,6 @@ public final class AppLauncher {
             frame.setVisible(true);
             frame.screenManager().show("home");
         });
-    }
-
-    private static void configureNativeLibraries() {
-        String os = System.getProperty("os.name", "").toLowerCase();
-        if (!os.contains("win")) {
-            return;
-        }
-        boolean is64 = System.getProperty("os.arch", "").contains("64");
-        Path base = Paths.get("java-client", "libs", "windows");
-        if (!Files.isDirectory(base)) {
-            base = Paths.get("libs", "windows");
-        }
-        if (!Files.isDirectory(base)) {
-            return;
-        }
-        Path archDir = base.resolve(is64 ? "x64" : "x86");
-        Path dllDir = Files.isDirectory(archDir) ? archDir : base;
-        System.setProperty("lila.native.dir", dllDir.toAbsolutePath().toString());
-        System.setProperty("lila.native.log.dir", dllDir.toAbsolutePath().toString());
-    }
-
-    private static void disableSpaceActivationForButtons() {
-        Runnable task = () -> {
-            KeyStroke pressed = KeyStroke.getKeyStroke("pressed SPACE");
-            KeyStroke released = KeyStroke.getKeyStroke("released SPACE");
-            KeyStroke typed = KeyStroke.getKeyStroke("SPACE");
-
-            removeSpaceBinding((InputMap) UIManager.get("Button.focusInputMap"), pressed, released, typed);
-            removeSpaceBinding((InputMap) UIManager.get("Button.ancestorInputMap"), pressed, released, typed);
-            UIManager.put("Button.spacePressesDefaultButton", Boolean.FALSE);
-        };
-        if (SwingUtilities.isEventDispatchThread()) {
-            task.run();
-        } else {
-            SwingUtilities.invokeLater(task);
-        }
-    }
-
-    private static void removeSpaceBinding(InputMap map, KeyStroke pressed, KeyStroke released, KeyStroke typed) {
-        if (map == null) {
-            return;
-        }
-        map.remove(pressed);
-        map.remove(released);
-        map.remove(typed);
     }
 }
 

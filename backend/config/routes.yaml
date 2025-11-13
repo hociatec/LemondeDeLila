@@ -22,12 +22,6 @@ controllers_core:
         namespace: App\Module\Core\Controller
     type: attribute
 
-controllers_messaging:
-    resource:
-        path: ../src/Module/Messaging/Controller/
-        namespace: App\Module\Messaging\Controller
-    type: attribute
-
 # Security firewall intercepts POST /api/login (json_login)
 controllers_rules:
     resource:

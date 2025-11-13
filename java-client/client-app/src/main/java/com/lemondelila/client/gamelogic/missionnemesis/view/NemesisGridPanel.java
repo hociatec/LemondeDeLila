@@ -9,14 +9,11 @@ import com.lemondelila.client.gamelogic.missionnemesis.model.ShipPlacement;
 import javax.accessibility.AccessibleContext;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.SwingConstants;
 import javax.swing.border.TitledBorder;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.KeyAdapter;
@@ -25,9 +22,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 final class NemesisGridPanel extends JPanel {
 
@@ -44,7 +38,6 @@ final class NemesisGridPanel extends JPanel {
     private final boolean ownsFleet;
     private final CellButton[][] cells;
     private final Consumer<GridCoordinate> fireHandler;
-    private final JLabel botBadge = new JLabel(" ");
 
     private InteractionMode interactionMode = InteractionMode.NONE;
     private ManualPlacementCallbacks manualCallbacks;
@@ -66,9 +59,8 @@ final class NemesisGridPanel extends JPanel {
         addKeyListener(keyboardHandler);
     }
 
-    void renderOwn(NemesisSession session, Function<NemesisState.Player, String> nameFormatter) {
+    void renderOwn(NemesisSession session) {
         if (manualModeActive) {
-            updateBotBadge(session, nameFormatter);
             return;
         }
         clear();
@@ -97,10 +89,9 @@ final class NemesisGridPanel extends JPanel {
                 }
             }
         });
-        updateBotBadge(session, nameFormatter);
     }
 
-    void renderEnemy(NemesisSession session, Function<NemesisState.Player, String> nameFormatter) {
+    void renderEnemy(NemesisSession session) {
         clear();
         session.self().ifPresent(self -> {
             for (NemesisState.Shot shot : self.shots()) {
@@ -114,7 +105,6 @@ final class NemesisGridPanel extends JPanel {
                 cell.button().setEnabled(false);
             }
         });
-        updateBotBadge(session, nameFormatter);
     }
 
     void setFireSelectionListener(Consumer<GridCoordinate> listener) {
@@ -217,7 +207,6 @@ final class NemesisGridPanel extends JPanel {
         manualCallbacks = null;
         interactionMode = InteractionMode.NONE;
         clearSelectionHighlight();
-        setBotBadge(null);
         for (int y = 0; y < BOARD_SIZE; y++) {
             for (int x = 0; x < BOARD_SIZE; x++) {
                 JButton button = cells[x][y].button();
@@ -233,17 +222,6 @@ final class NemesisGridPanel extends JPanel {
 
     private void buildUi(String title) {
         setLayout(new BorderLayout());
-        botBadge.setHorizontalAlignment(SwingConstants.CENTER);
-        botBadge.setVisible(false);
-        botBadge.setFont(botBadge.getFont().deriveFont(Font.BOLD, 13f));
-        botBadge.setBorder(BorderFactory.createEmptyBorder(4, 0, 4, 0));
-        AccessibleContext badgeContext = botBadge.getAccessibleContext();
-        if (badgeContext != null) {
-            badgeContext.setAccessibleName(ownsFleet ? "Informations flotte" : "Informations adversaire");
-            badgeContext.setAccessibleDescription("Informations spécifiques concernant l'adversaire.");
-        }
-        add(botBadge, BorderLayout.NORTH);
-
         JPanel grid = new JPanel(new GridLayout(BOARD_SIZE, BOARD_SIZE, 1, 1));
         grid.setBorder(BorderFactory.createCompoundBorder(
                 new TitledBorder(title),
@@ -380,44 +358,6 @@ final class NemesisGridPanel extends JPanel {
         }
     }
 
-    private void setBotBadge(String text) {
-        String emptyDescription = ownsFleet
-                ? "Informations spécifiques concernant votre flotte."
-                : "Informations spécifiques concernant l'adversaire.";
-        if (text == null || text.isBlank()) {
-            botBadge.setVisible(false);
-            botBadge.setText(" ");
-            AccessibleContext context = botBadge.getAccessibleContext();
-            if (context != null) {
-                context.setAccessibleDescription(emptyDescription);
-            }
-        } else {
-            botBadge.setText(text);
-            botBadge.setVisible(true);
-            AccessibleContext context = botBadge.getAccessibleContext();
-            if (context != null) {
-                context.setAccessibleDescription(text);
-            }
-        }
-    }
-
-    private void updateBotBadge(NemesisSession session, Function<NemesisState.Player, String> nameFormatter) {
-        Objects.requireNonNull(nameFormatter, "nameFormatter");
-        Stream<NemesisState.Player> stream = ownsFleet
-                ? session.state().players().stream()
-                : session.opponents().stream();
-        List<String> bots = stream
-                .filter(NemesisState.Player::isBot)
-                .map(nameFormatter)
-                .collect(Collectors.toList());
-        if (bots.isEmpty()) {
-            setBotBadge(null);
-            return;
-        }
-        String prefix = ownsFleet ? "Bots détectés : " : "Bots adverses : ";
-        setBotBadge(prefix + String.join(", ", bots));
-    }
-
     private void handleCancel() {
         if (interactionMode == InteractionMode.MANUAL_PLACEMENT && manualCallbacks != null) {
             manualCallbacks.onCancel();
@@ -540,7 +480,7 @@ final class NemesisGridPanel extends JPanel {
                     moveSelection(1, 0);
                     e.consume();
                 }
-                case KeyEvent.VK_ENTER -> {
+                case KeyEvent.VK_ENTER, KeyEvent.VK_SPACE -> {
                     handleConfirm();
                     e.consume();
                 }

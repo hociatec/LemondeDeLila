@@ -243,3 +243,7 @@ final class NemesisPlacementOrchestrator implements NemesisGridPanel.ManualPlace
     private record ShipTemplate(String name, int size) {
     }
 }
+
+
+
+

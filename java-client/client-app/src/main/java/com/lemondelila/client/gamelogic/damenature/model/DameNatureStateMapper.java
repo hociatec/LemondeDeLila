@@ -51,8 +51,7 @@ public final class DameNatureStateMapper {
             for (JsonNode bookNode : playerNode.withArray("books")) {
                 books.add(bookNode.asText());
             }
-            boolean isBot = playerNode.path("isBot").asBoolean(false);
-            players.add(new DameNatureState.Player(id, username, handCount, hand, books, isBot));
+            players.add(new DameNatureState.Player(id, username, handCount, hand, books));
         }
 
         DameNatureState.PendingQuiz pendingQuiz = null;

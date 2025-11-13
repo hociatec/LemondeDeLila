@@ -138,7 +138,6 @@ class PresenceRealtimeBroker
         return $this->sendPayload($client, $snapshot);
     }
 
-
     /**
      * @return array<string, mixed>
      */

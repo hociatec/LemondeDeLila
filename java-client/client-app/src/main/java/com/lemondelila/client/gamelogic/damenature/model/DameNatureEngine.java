@@ -1,6 +1,6 @@
 package com.lemondelila.client.gamelogic.damenature.model;
 
-import com.lemondelila.client.game.model.GameEngine;
+import com.lemondelila.client.model.game.GameEngine;
 
 import java.util.Collections;
 
