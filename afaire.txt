@@ -25,7 +25,6 @@ Sécurité – pistes d’amélioration significatives
 
 6. Client Java
    - Signer l’application (code signing) et vérifier son intégrité au lancement (checksum).
-   - Ne pas stocker le token JWT en clair : privilégier un keystore sécurisé ou chiffrer localement avec un secret dérivé d’un mot de passe utilisateur.
 
 7. Politique de sécurité continue
    - Scanner les dépendances (OWASP Dependency Check, etc.) et maintenir à jour.
