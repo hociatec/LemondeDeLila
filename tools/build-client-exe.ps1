@@ -1,6 +1,5 @@
 <#
-    Génère les livrables Windows (app-image portable + installateur .exe)
-    pour le client Java Swing “Le Monde de Lila”.
+    Génère l’installateur Windows (.exe) du client Java Swing “Le Monde de Lila”.
 
     Usage :
         powershell -ExecutionPolicy Bypass -File .\tools\build-client-exe.ps1
@@ -58,6 +57,9 @@ foreach ($dir in $wixLocalDirs) {
 if (-not $wixAvailable) {
     $wixAvailable = (Get-Command candle.exe -ErrorAction SilentlyContinue) -and (Get-Command light.exe -ErrorAction SilentlyContinue)
 }
+if (-not $wixAvailable) {
+    throw "WiX Toolset (candle.exe + light.exe) est requis pour générer l'installateur. Téléchargez https://github.com/wixtoolset/wix3 et placez-le dans tools/ ou ajoutez-le au PATH."
+}
 
 if (-not (Get-Command jpackage -ErrorAction SilentlyContinue)) {
     throw "jpackage introuvable. Assurez-vous d'utiliser un JDK 14+ (ici JDK 21 est requis)."
@@ -97,18 +99,19 @@ $appVersion = $rawVersion -replace '-SNAPSHOT',''
 if ([string]::IsNullOrWhiteSpace($appVersion)) { $appVersion = '1.0.0' }
 
 $distDir        = Join-Path $repoRoot 'dist'
-$appImageDest   = Join-Path $distDir 'app-image'
 $installerDest  = Join-Path $distDir 'installer'
 if (!(Test-Path $distDir)) {
     New-Item -ItemType Directory -Path $distDir | Out-Null
 }
-Initialize-Directory $appImageDest
 Initialize-Directory $installerDest
 Initialize-Directory $stagingDir
 
 Copy-Item -Path $mainJar.FullName -Destination $stagingDir -Force
 Get-ChildItem -Path $dependencyDir -Filter '*.jar' | ForEach-Object {
     Copy-Item -Path $_.FullName -Destination $stagingDir -Force
+}
+if (Test-Path $configDir) {
+    Copy-Item -Path $configDir -Destination (Join-Path $stagingDir 'config') -Recurse -Force
 }
 
 $appName    = 'LeMondeDeLila'
@@ -130,60 +133,26 @@ $commonPackagingArgs = @(
     '--input', $stagingDir,
     '--main-jar', $mainJar.Name,
     '--main-class', 'com.lemondelila.client.AppLauncher',
-    '--add-modules', $modules
+    '--add-modules', $modules,
+    '--win-dir-chooser',
+    '--win-menu',
+    '--win-menu-group', 'Le Monde de Lila',
+    '--win-shortcut'
 ) + $commonJavaOpts
 
-Invoke-Step "Génération de l'image applicative portable" {
+Invoke-Step "Création de l'installateur Windows (.exe)" {
     & jpackage @commonPackagingArgs `
-        '--type' 'app-image' `
-        '--dest' $appImageDest
+        '--type' 'exe' `
+        '--dest' $installerDest
     if ($LASTEXITCODE -ne 0) {
-        throw "jpackage (app-image) a échoué (code $LASTEXITCODE)."
+        throw "jpackage (exe) a échoué (code $LASTEXITCODE)."
     }
 }
 
-$appImagePath = Join-Path $appImageDest $appName
-
-if (Test-Path $configDir) {
-    Copy-Item -Path $configDir -Destination (Join-Path $appImagePath 'config') -Recurse -Force
-}
-
-if ($wixAvailable) {
-    Invoke-Step "Création de l'installateur Windows (.exe)" {
-        & jpackage `
-            '--type' 'exe' `
-            '--name' $appName `
-            '--vendor' $vendor `
-            '--app-version' $appVersion `
-            '--description' $description `
-            '--app-image' $appImagePath `
-            '--dest' $installerDest `
-            '--win-dir-chooser' `
-            '--win-menu' `
-            '--win-menu-group' 'Le Monde de Lila' `
-            '--win-shortcut'
-        if ($LASTEXITCODE -ne 0) {
-            throw "jpackage (exe) a échoué (code $LASTEXITCODE)."
-        }
-    }
-}
-else {
-    Write-Warning "WiX Toolset introuvable (candle.exe / light.exe). Seule l'image portable a été produite."
-}
-
-$portableExe = Join-Path $appImagePath ($appName + '.exe')
-$installerExe = $null
-if ($wixAvailable) {
-    $installerExe = Get-ChildItem -Path $installerDest -Filter '*.exe' -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1
-}
+$installerExe = Get-ChildItem -Path $installerDest -Filter '*.exe' | Sort-Object LastWriteTime -Descending | Select-Object -First 1
 
 Write-Host ""
-Write-Host "Livrables générés :" -ForegroundColor Green
-if (Test-Path $portableExe) {
-    Write-Host "  - Application portable : $portableExe"
-}
+Write-Host "Installateur généré :" -ForegroundColor Green
 if ($installerExe) {
-    Write-Host "  - Installateur         : $($installerExe.FullName)"
+    Write-Host "  $($installerExe.FullName)"
 }
-Write-Host ""
-Write-Host "Copiez le dossier 'config' ou laissez l'application créer ses préférences dans $appName\config\settings.json lors du premier lancement."
