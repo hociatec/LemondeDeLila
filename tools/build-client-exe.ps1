@@ -45,6 +45,158 @@ function Ensure-WiXOnPath {
     throw "WiX Toolset (candle.exe + light.exe) est requis. Déposez-le dans tools/ ou ajoutez-le au PATH."
 }
 
+function Get-NvdaSearchRoots {
+    $roots = @()
+    $override = [Environment]::GetEnvironmentVariable('LILA_NVDA_DIR')
+    if (-not [string]::IsNullOrWhiteSpace($override)) {
+        $roots += $override
+    }
+
+    foreach ($envVar in @('ProgramFiles', 'ProgramFiles(x86)', 'LOCALAPPDATA')) {
+        $base = [Environment]::GetEnvironmentVariable($envVar)
+        if ([string]::IsNullOrWhiteSpace($base)) {
+            continue
+        }
+        $root = if ($envVar -eq 'LOCALAPPDATA') {
+            Join-Path $base 'Programs\NVDA'
+        } else {
+            Join-Path $base 'NVDA'
+        }
+        $roots += $root
+    }
+
+    return $roots
+}
+
+function Get-PeMachineType {
+    param(
+        [string]$FilePath
+    )
+
+    if (-not (Test-Path $FilePath)) {
+        return $null
+    }
+
+    $stream = [System.IO.File]::Open($FilePath,
+        [System.IO.FileMode]::Open,
+        [System.IO.FileAccess]::Read,
+        [System.IO.FileShare]::Read)
+    try {
+        $reader = New-Object System.IO.BinaryReader($stream, [System.Text.Encoding]::ASCII, $true)
+        try {
+            $stream.Seek(0x3C, [System.IO.SeekOrigin]::Begin) | Out-Null
+            $peOffset = $reader.ReadInt32()
+            if ($peOffset -le 0) {
+                return $null
+            }
+            $stream.Seek($peOffset + 4, [System.IO.SeekOrigin]::Begin) | Out-Null
+            return $reader.ReadUInt16()
+        }
+        finally {
+            $reader.Dispose()
+        }
+    }
+    finally {
+        $stream.Dispose()
+    }
+}
+
+function Find-NvdaHelperSource {
+    param(
+        [string[]]$CandidateNames,
+        [UInt16[]]$MachineTypes
+    )
+
+    foreach ($root in Get-NvdaSearchRoots) {
+        foreach ($name in $CandidateNames) {
+            $candidates = @()
+            if ([System.IO.Path]::IsPathRooted($name)) {
+                if (Test-Path $name) {
+                    $candidates += $name
+                }
+            } else {
+                $direct = Join-Path $root $name
+                if (Test-Path $direct) {
+                    $candidates += $direct
+                }
+
+                $pattern = Split-Path $name -Leaf
+                $relativeDir = Split-Path $name -Parent
+                $searchBase = if ([string]::IsNullOrWhiteSpace($relativeDir)) { $root } else { Join-Path $root $relativeDir }
+                if (Test-Path $searchBase) {
+                    try {
+                        $matches = Get-ChildItem -Path $searchBase -Recurse -Filter $pattern -File -ErrorAction SilentlyContinue
+                        if ($matches) {
+                            $candidates += $matches.FullName
+                        }
+                    } catch {
+                        # Ignored: insufficient permissions or unreadable directories.
+                    }
+                }
+            }
+
+            foreach ($candidate in ($candidates | Sort-Object LastWriteTime -Descending)) {
+                if ($MachineTypes -and $MachineTypes.Count -gt 0) {
+                    $machine = Get-PeMachineType -FilePath $candidate
+                    if ($machine -eq $null -or (-not ($MachineTypes -contains $machine))) {
+                        continue
+                    }
+                }
+                return $candidate
+            }
+        }
+    }
+
+    return $null
+}
+
+function Ensure-NvdaHelperRemote {
+    param(
+        [string]$WindowsLibsDir
+    )
+
+    if ([string]::IsNullOrWhiteSpace($WindowsLibsDir)) {
+        return
+    }
+
+    $requirements = @(
+        @{ Arch = 'x64'; Machine = 0x8664; FileName = 'nvdaHelperRemote.dll'; Candidates = @('nvdaHelperRemote64.dll', 'nvdaHelperRemote.dll') },
+        @{ Arch = 'x86'; Machine = 0x014c; FileName = 'nvdaHelperRemote.dll'; Candidates = @('nvdaHelperRemote.dll') }
+    )
+
+    foreach ($req in $requirements) {
+        $destination = Join-Path $WindowsLibsDir (Join-Path $req.Arch $req.FileName)
+        if (Test-Path $destination) {
+            continue
+        }
+
+        $source = Find-NvdaHelperSource -CandidateNames $req.Candidates -MachineTypes @($req.Machine)
+        if ($source) {
+            $destDir = Split-Path $destination -Parent
+            if (-not (Test-Path $destDir)) {
+                New-Item -ItemType Directory -Path $destDir -Force | Out-Null
+            }
+            Copy-Item -Path $source -Destination $destination -Force
+            Write-Host ("nvdaHelperRemote ({0}) ajouté depuis {1}" -f $req.Arch, $source)
+        } else {
+            throw ("nvdaHelperRemote introuvable pour l'architecture {0}. Installez NVDA ou définissez LILA_NVDA_DIR avant d'exécuter tools/build-client-exe.ps1." -f $req.Arch)
+        }
+    }
+}
+
+function Ensure-AssistiveLibraries {
+    param(
+        [string]$LibsRoot
+    )
+
+    if ([string]::IsNullOrWhiteSpace($LibsRoot)) {
+        return
+    }
+
+    $windowsDir = Join-Path $LibsRoot 'windows'
+    Ensure-NvdaHelperRemote -WindowsLibsDir $windowsDir
+}
+
 function Invoke-Step {
     param(
         [string]$Message,
@@ -118,7 +270,9 @@ if (Test-Path $configDir) {
     Copy-Item -Path $configDir -Destination (Join-Path $stagingDir 'config') -Recurse -Force
 }
 if (Test-Path $libsDir) {
-    Copy-Item -Path $libsDir -Destination (Join-Path $stagingDir 'libs') -Recurse -Force
+    $stagingLibs = Join-Path $stagingDir 'libs'
+    Copy-Item -Path $libsDir -Destination $stagingLibs -Recurse -Force
+    Ensure-AssistiveLibraries -LibsRoot $stagingLibs
 }
 
 $appName = 'LeMondeDeLila'
