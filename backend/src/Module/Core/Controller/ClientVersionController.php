@@ -10,18 +10,15 @@ use Symfony\Component\Routing\Annotation\Route;
 final class ClientVersionController
 {
     public function __construct(
-        #[Autowire('%app.client.version%')]
-        private readonly string ,
-        #[Autowire('%app.client.download_url%')]
-        private readonly string 
-    ) {
-    }
+        #[Autowire('%app.client.version%')] private readonly string $clientVersion,
+        #[Autowire('%app.client.download_url%')] private readonly string $clientDownloadUrl
+    ) {}
 
     public function __invoke(): JsonResponse
     {
         return new JsonResponse([
-            'version' => ->clientVersion,
-            'downloadUrl' => ->clientDownloadUrl,
+            'version' => $this->clientVersion,
+            'downloadUrl' => $this->clientDownloadUrl,
             'notes' => 'Mettre à jour pour bénéficier des dernières améliorations.',
             'timestamp' => time(),
         ]);
