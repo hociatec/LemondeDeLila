@@ -43,6 +43,8 @@ Le script suppose que l’utilisateur courant peut exécuter `sudo systemctl` sa
   - `network.ws.url=wss://ws.hociatec.fr/ws`
   - `network.ws.presence=wss://ws.hociatec.fr/presence`
 - Les valeurs par défaut côté code (fallbacks) ont été alignées, ce qui permet d’utiliser le client sans modification locale.
+- Les variables `APP_CLIENT_VERSION` / `APP_CLIENT_DOWNLOAD_URL` (définies dans `.env*`) alimentent l’endpoint `/client/version` : le client Swing s’en sert pour le bouton “Vérifier les mises à jour”.
+- `updates.check.url` contrôle l’URL interrogée côté client (`client.properties`). Par défaut : `https://hociatec.fr/client/version`.
 
 Vérifications rapides :
 
