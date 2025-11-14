@@ -2,7 +2,7 @@ package com.lemondelila.client.social.controller;
 
 import com.lemondelila.client.framework.core.di.Inject;
 import com.lemondelila.client.framework.ui.dialog.DialogService;
-import com.lemondelila.client.social.view.SocialDialogLauncher;
+import com.lemondelila.client.framework.ui.screen.ScreenManager;
 import com.lemondelila.client.user.model.ClientSession;
 
 import java.awt.Window;
@@ -12,21 +12,21 @@ public final class SocialController {
 
     private final DialogService dialogService;
     private final ClientSession session;
-    private final SocialDialogLauncher dialogLauncher;
+    private final ScreenManager screenManager;
 
     @Inject
     public SocialController(DialogService dialogService,
                             ClientSession session,
-                            SocialDialogLauncher dialogLauncher) {
+                            ScreenManager screenManager) {
         this.dialogService = Objects.requireNonNull(dialogService, "dialogService");
         this.session = Objects.requireNonNull(session, "session");
-        this.dialogLauncher = Objects.requireNonNull(dialogLauncher, "dialogLauncher");
+        this.screenManager = Objects.requireNonNull(screenManager, "screenManager");
     }
 
     /**
-     * Opens the social center dialog.
+     * Opens the social center screen.
      *
-     * @param owner parent window.
+     * @param owner parent window (unused).
      * @return status message for the menu.
      */
     public String open(Window owner) {
@@ -34,7 +34,7 @@ public final class SocialController {
             dialogService.error("Centre social", "Veuillez vous reconnecter pour acceder a vos amis et messages.");
             return "Connexion requise pour acceder au centre social.";
         }
-        dialogLauncher.show(owner);
+        screenManager.show("social");
         return "Centre social ouvert.";
     }
 }

@@ -1,10 +1,8 @@
 package com.lemondelila.client.social.view;
 
 import com.lemondelila.client.framework.ui.dialog.DialogService;
-import com.lemondelila.client.messaging.controller.MessagingController;
 import com.lemondelila.client.messaging.model.PrivateMessage;
-import com.lemondelila.client.messaging.service.MessagingService;
-import com.lemondelila.client.messaging.service.UserRelationshipService;
+import com.lemondelila.client.social.controller.SocialMessagesCenterController;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
@@ -30,8 +28,8 @@ import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.Window;
 import java.awt.KeyboardFocusManager;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -39,16 +37,15 @@ import java.util.Collections;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 final class SocialMessagesPanel extends JPanel {
 
     private static final DateTimeFormatter MESSAGE_FORMAT =
             DateTimeFormatter.ofPattern("dd/MM HH:mm").withZone(ZoneId.systemDefault());
 
-    private final Window owner;
-    private final MessagingService messagingService;
-    private final UserRelationshipService relationshipService;
-    private final MessagingController messagingController;
+    private final Supplier<Window> ownerSupplier;
+    private final SocialMessagesCenterController controller;
     private final DialogService dialogService;
     private final Consumer<String> statusListener;
 
@@ -88,22 +85,18 @@ final class SocialMessagesPanel extends JPanel {
     private static final int SECTION_OUTBOX = 2;
     private static final int SECTION_DELETED = 3;
     private static final String[] SECTION_TITLES = {
-            "Rédiger",
+            "Rédiger un message",
             "Messages reçus",
             "Messages envoyés",
             "Messages supprimés"
     };
 
-    SocialMessagesPanel(Window owner,
-                        MessagingService messagingService,
-                        MessagingController messagingController,
-                        UserRelationshipService relationshipService,
+    SocialMessagesPanel(Supplier<Window> ownerSupplier,
+                        SocialMessagesCenterController controller,
                         DialogService dialogService,
                         Consumer<String> statusListener) {
-        this.owner = Objects.requireNonNull(owner, "owner");
-        this.messagingService = Objects.requireNonNull(messagingService, "messagingService");
-        this.messagingController = Objects.requireNonNull(messagingController, "messagingController");
-        this.relationshipService = Objects.requireNonNull(relationshipService, "relationshipService");
+        this.ownerSupplier = Objects.requireNonNull(ownerSupplier, "ownerSupplier");
+        this.controller = Objects.requireNonNull(controller, "controller");
         this.dialogService = Objects.requireNonNull(dialogService, "dialogService");
         this.statusListener = Objects.requireNonNull(statusListener, "statusListener");
         buildUi();
@@ -387,7 +380,7 @@ Saisissez le pseudo de la personne à contacter puis validez avec Entrée.""");
     private void loadInbox() {
         inboxLabel.setText("Messages reçus — chargement…");
         inboxModel.clear();
-        messagingService.loadInbox(200)
+        controller.loadInbox()
                 .whenComplete((messages, error) -> SwingUtilities.invokeLater(() -> {
                     if (error != null) {
                         dialogService.error("Messagerie", error.getMessage());
@@ -405,7 +398,7 @@ Saisissez le pseudo de la personne à contacter puis validez avec Entrée.""");
     private void loadOutbox() {
         outboxLabel.setText("Messages envoyés — chargement…");
         outboxModel.clear();
-        messagingService.loadOutbox(200)
+        controller.loadOutbox()
                 .whenComplete((messages, error) -> SwingUtilities.invokeLater(() -> {
                     if (error != null) {
                         dialogService.error("Messagerie", error.getMessage());
@@ -423,7 +416,7 @@ Saisissez le pseudo de la personne à contacter puis validez avec Entrée.""");
     private void loadDeleted() {
         deletedLabel.setText("Messages supprimés — chargement…");
         deletedModel.clear();
-        messagingService.loadDeleted(200)
+        controller.loadDeleted()
                 .whenComplete((messages, error) -> SwingUtilities.invokeLater(() -> {
                     if (error != null) {
                         dialogService.error("Messagerie", error.getMessage());
@@ -490,7 +483,7 @@ Saisissez le pseudo de la personne à contacter puis validez avec Entrée.""");
             statusListener.accept("Sélectionnez un message à supprimer.");
             return;
         }
-        CompletableFuture<PrivateMessage> future = messagingController.deleteMessage(message.id());
+        CompletableFuture<PrivateMessage> future = controller.deleteMessage(message.id());
         future.whenComplete((result, error) -> SwingUtilities.invokeLater(() -> {
             if (error != null) {
                 dialogService.error("Messagerie", error.getMessage());
@@ -513,7 +506,7 @@ Saisissez le pseudo de la personne à contacter puis validez avec Entrée.""");
             return;
         }
         setComposeEnabled(false);
-        messagingService.lookupUser(target)
+        controller.lookupUser(target)
                 .whenComplete((user, error) -> SwingUtilities.invokeLater(() -> {
                     setComposeEnabled(true);
                     if (error != null) {
@@ -521,11 +514,12 @@ Saisissez le pseudo de la personne à contacter puis validez avec Entrée.""");
                         statusListener.accept("Impossible d'ouvrir la conversation.");
                         return;
                     }
-                    if (relationshipService.isBlocked(user.id())) {
+                    if (controller.isBlocked(user.id())) {
                         dialogService.error("Messagerie", "Utilisateur bloqué. Débloquez-le pour discuter.");
                         return;
                     }
-                    messagingController.openConversation(owner, user.id(), user.username());
+                    Window owner = ownerSupplier.get();
+                    controller.openConversation(owner, user.id(), user.username());
                     statusListener.accept("Conversation ouverte avec " +
                             (user.username().isBlank()
                                     ? "l'utilisateur #" + user.id()
@@ -559,7 +553,7 @@ Saisissez le pseudo de la personne à contacter puis validez avec Entrée.""");
             statusListener.accept("Sélectionnez un message à restaurer.");
             return;
         }
-        messagingController.restoreMessage(message.id())
+        controller.restoreMessage(message.id())
                 .whenComplete((restored, error) -> SwingUtilities.invokeLater(() -> {
                     if (error != null) {
                         dialogService.error("Messagerie", error.getMessage());
