@@ -10,6 +10,7 @@ parameters:
     app.ws.push_url: '%env(string:APP_WS_PUSH_URL)%'
     app.client.version: '%env(string:APP_CLIENT_VERSION)%'
     app.client.download_url: '%env(string:APP_CLIENT_DOWNLOAD_URL)%'
+    app.client.checksum: '%env(string:APP_CLIENT_CHECKSUM)%'
 
 services:
     # default configuration for services in *this* file

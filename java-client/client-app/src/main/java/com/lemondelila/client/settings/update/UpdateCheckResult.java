@@ -5,6 +5,13 @@ public record UpdateCheckResult(
         String remoteVersion,
         String downloadUrl,
         String notes,
-        boolean updateAvailable
+        boolean updateAvailable,
+        String checksum
 ) {
+
+    public UpdateCheckResult {
+        if (checksum != null && checksum.isBlank()) {
+            checksum = null;
+        }
+    }
 }

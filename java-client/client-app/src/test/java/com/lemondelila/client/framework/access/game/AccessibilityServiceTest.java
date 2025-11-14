@@ -12,14 +12,14 @@ class AccessibilityServiceTest {
     void formatTurnMessage_yourTurnUsesAccents() {
         AccessibilityService.TurnContext context = new AccessibilityService.TurnContext(true, "Alice", 3);
         String message = AccessibilityService.formatTurnMessage(context);
-        assertEquals("C’est votre tour ! Dernier dé : 3.", message);
+        assertEquals("C'est votre tour ! Dernier d\u00E9 : 3.", message);
     }
 
     @Test
     void formatTurnMessage_otherPlayerIncludesName() {
         AccessibilityService.TurnContext context = new AccessibilityService.TurnContext(false, "Bob", null);
         String message = AccessibilityService.formatTurnMessage(context);
-        assertEquals("C’est au tour de Bob.", message);
+        assertEquals("C'est au tour de Bob.", message);
     }
 
     @Test
@@ -33,8 +33,8 @@ class AccessibilityServiceTest {
                 true
         );
 
-        String expected = "Votre panier contient 2 articles sur 4. À trouver encore : Carottes et Miel. " +
-                "Inventaire pour échange : Pomme. Vous êtes prêt pour la caisse.";
+        String expected = "Votre panier contient 2 articles sur 4. \u00C0 trouver encore : Carottes et Miel. " +
+                "Inventaire pour \u00E9change : Pomme. Vous \u00EAtes pr\u00EAt pour la caisse.";
         assertEquals(expected, AccessibilityService.formatBasketMessage(context));
     }
 
@@ -49,7 +49,7 @@ class AccessibilityServiceTest {
                 false
         );
 
-        assertEquals("Le panier contient 3 articles sur 3. La liste est complète.",
+        assertEquals("Le panier contient 3 articles sur 3. La liste est compl\u00E8te.",
                 AccessibilityService.formatBasketMessage(context));
     }
 }

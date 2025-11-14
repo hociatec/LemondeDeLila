@@ -12,14 +12,20 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
+import java.time.Instant;
+import java.util.HexFormat;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
@@ -76,26 +82,55 @@ public final class UpdateService {
         }
         CompletableFuture<Void> future = new CompletableFuture<>();
         scheduler.runAsync(() -> {
+            Path root = null;
+            Path updatesDir = null;
+            Path archive = null;
+            Path tempDir = null;
+            Path stagedDir = null;
+            Path logFile = null;
             try {
-                Path root = resolveRootDirectory();
-                Path updatesDir = Files.createDirectories(root.resolve("updates"));
-                Path archive = updatesDir.resolve("client-update-" + System.currentTimeMillis() + ".zip");
+                root = resolveRootDirectory();
+                updatesDir = Files.createDirectories(root.resolve("updates"));
+                logFile = updatesDir.resolve("update.log");
+                appendLog(logFile, "Début mise à jour vers " + result.remoteVersion());
+                archive = updatesDir.resolve("client-update-" + System.currentTimeMillis() + ".zip");
                 updateStatus(statusConsumer, "Téléchargement de la mise à jour...");
                 downloadArchive(result.downloadUrl(), archive);
+                String archiveHash = computeSha256(archive);
+                appendLog(logFile, "Archive téléchargée SHA-256=" + archiveHash);
+                if (result.checksum() != null && !archiveHash.equalsIgnoreCase(result.checksum())) {
+                    throw new IOException("Checksum SHA-256 invalide. Attendu: "
+                            + result.checksum() + " Reçu: " + archiveHash);
+                }
                 updateStatus(statusConsumer, "Extraction des fichiers...");
-                Path tempDir = extractArchive(archive, updatesDir);
+                tempDir = extractArchive(archive, updatesDir);
                 Path payloadRoot = detectPayloadRoot(tempDir);
-                updateStatus(statusConsumer, "Copie sur " + root + " ...");
-                copyRecursively(payloadRoot, root);
+                updateStatus(statusConsumer, "Préparation du déploiement...");
+                stagedDir = Files.createTempDirectory(updatesDir, "staged-");
+                copyRecursively(payloadRoot, stagedDir);
+                updateStatus(statusConsumer, "Application des fichiers...");
+                copyRecursively(stagedDir, root);
                 updateStatus(statusConsumer, "Nettoyage...");
                 Files.deleteIfExists(archive);
                 deleteRecursively(tempDir);
+                deleteRecursively(stagedDir);
+                appendLog(logFile, "Mise à jour appliquée avec succès.");
                 future.complete(null);
             } catch (IOException | InterruptedException ex) {
                 if (ex instanceof InterruptedException) {
                     Thread.currentThread().interrupt();
                 }
+                appendLog(logFile, "Échec mise à jour : " + ex.getMessage());
                 future.completeExceptionally(ex);
+            } finally {
+                try {
+                    if (archive != null) {
+                        Files.deleteIfExists(archive);
+                    }
+                    deleteRecursively(tempDir);
+                    deleteRecursively(stagedDir);
+                } catch (IOException ignored) {
+                }
             }
         });
         return future;
@@ -114,8 +149,9 @@ public final class UpdateService {
         String remoteVersion = root.path("version").asText("");
         String downloadUrl = root.path("downloadUrl").asText("");
         String notes = root.path("notes").asText("");
+        String checksum = root.path("checksum").asText(null);
         boolean newer = isRemoteNewer(remoteVersion, currentVersion);
-        return new UpdateCheckResult(currentVersion, remoteVersion, downloadUrl, notes, newer);
+        return new UpdateCheckResult(currentVersion, remoteVersion, downloadUrl, notes, newer, checksum);
     }
 
     private String resolveVersion(ConfigurationService configurationService) {
@@ -268,6 +304,37 @@ public final class UpdateService {
     private void updateStatus(Consumer<String> consumer, String message) {
         if (consumer != null) {
             consumer.accept(message);
+        }
+    }
+
+    private String computeSha256(Path file) throws IOException {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] buffer = new byte[8192];
+            try (InputStream inputStream = Files.newInputStream(file)) {
+                int read;
+                while ((read = inputStream.read(buffer)) != -1) {
+                    if (read > 0) {
+                        digest.update(buffer, 0, read);
+                    }
+                }
+            }
+            return HexFormat.of().formatHex(digest.digest());
+        } catch (NoSuchAlgorithmException ex) {
+            throw new IOException("Algorithme SHA-256 indisponible", ex);
+        }
+    }
+
+    private void appendLog(Path logFile, String message) {
+        if (logFile == null || message == null) {
+            return;
+        }
+        String line = "[" + Instant.now() + "] " + message + System.lineSeparator();
+        try {
+            Files.createDirectories(logFile.getParent());
+            Files.writeString(logFile, line, StandardCharsets.UTF_8,
+                    StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+        } catch (IOException ignored) {
         }
     }
 }

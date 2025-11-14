@@ -1,12 +1,14 @@
 package com.lemondelila.client.user;
 
+import com.lemondelila.client.framework.core.context.ApplicationContext;
+import com.lemondelila.client.framework.core.module.LilaModule;
+import com.lemondelila.client.security.EncryptedSessionVault;
+import com.lemondelila.client.security.SessionVault;
 import com.lemondelila.client.user.controller.LoginController;
 import com.lemondelila.client.user.controller.RegistrationController;
 import com.lemondelila.client.user.controller.UserOperationGuard;
 import com.lemondelila.client.user.model.ClientSession;
 import com.lemondelila.client.user.service.SessionPersistenceService;
-import com.lemondelila.client.framework.core.context.ApplicationContext;
-import com.lemondelila.client.framework.core.module.LilaModule;
 
 public final class UserModule implements LilaModule {
 
@@ -17,6 +19,7 @@ public final class UserModule implements LilaModule {
         builder.bindAuto(LoginController.class);
         builder.bindAuto(RegistrationController.class);
         builder.bindAuto(SessionPersistenceService.class);
+        builder.bind(SessionVault.class, EncryptedSessionVault::defaultVault);
     }
 
     @Override

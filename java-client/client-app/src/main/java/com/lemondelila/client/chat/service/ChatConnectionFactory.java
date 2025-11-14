@@ -1,15 +1,14 @@
 package com.lemondelila.client.chat.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.lemondelila.client.user.model.ClientSession;
 import com.lemondelila.client.chat.model.ChatConnection;
 import com.lemondelila.client.framework.core.config.ConfigurationService;
 import com.lemondelila.client.framework.core.di.Inject;
+import com.lemondelila.client.framework.core.task.TaskScheduler;
+import com.lemondelila.client.user.model.ClientSession;
 
 import java.net.URI;
-import java.net.URLEncoder;
 import java.net.http.HttpClient;
-import java.nio.charset.StandardCharsets;
 
 public final class ChatConnectionFactory {
 
@@ -17,23 +16,27 @@ public final class ChatConnectionFactory {
     private final ObjectMapper mapper;
     private final ConfigurationService configuration;
     private final ClientSession session;
+    private final TaskScheduler scheduler;
 
     @Inject
     public ChatConnectionFactory(HttpClient httpClient,
                                  ObjectMapper mapper,
                                  ConfigurationService configuration,
-                                 ClientSession session) {
+                                 ClientSession session,
+                                 TaskScheduler scheduler) {
         this.httpClient = httpClient;
         this.mapper = mapper;
         this.configuration = configuration;
         this.session = session;
+        this.scheduler = scheduler;
     }
 
     public ChatConnection open() {
         ClientSession.AuthState auth = session.authenticated()
                 .orElseThrow(() -> new IllegalStateException("Vous devez etre connecte pour ouvrir le tchat."));
-        URI endpoint = appendToken(resolvePresenceEndpoint(), auth.token());
-        return new ChatConnection(httpClient, mapper, endpoint);
+        URI endpoint = resolvePresenceEndpoint();
+        String authorization = "Bearer " + auth.token();
+        return new ChatConnection(httpClient, mapper, endpoint, authorization, scheduler);
     }
 
     private URI resolvePresenceEndpoint() {
@@ -54,14 +57,5 @@ public final class ChatConnectionFactory {
         return URI.create(fallback);
     }
 
-    private URI appendToken(URI base, String token) {
-        String encoded = URLEncoder.encode(token, StandardCharsets.UTF_8);
-        String query = base.getQuery();
-        String newQuery = (query == null || query.isBlank()) ? "token=" + encoded : query + "&token=" + encoded;
-        return URI.create(base.getScheme() + "://" + base.getAuthority()
-                + (base.getPath() == null ? "" : base.getPath())
-                + "?" + newQuery);
-    }
 }
-
 
