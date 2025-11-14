@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.lemondelila</groupId>
     <artifactId>java-client</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.4</version>
     <packaging>pom</packaging>
     <name>Le Monde de Lila Client</name>
 

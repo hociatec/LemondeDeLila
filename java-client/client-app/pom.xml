@@ -9,7 +9,7 @@
     <parent>
         <groupId>com.lemondelila</groupId>
         <artifactId>java-client</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>1.0.4</version>
     </parent>
 
     <artifactId>client-app</artifactId>
