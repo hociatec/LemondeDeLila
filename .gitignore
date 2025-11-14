@@ -1,0 +1,4 @@
+dist/
+java-client/client-app/target/jpackage-input/
+tools/wix*/
+tools/wix*.zip

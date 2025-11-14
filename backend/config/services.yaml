@@ -8,6 +8,8 @@ parameters:
     app.ws.port: '%env(int:APP_WS_PORT)%'
     app.ws.push_secret: '%env(string:APP_WS_PUSH_SECRET)%'
     app.ws.push_url: '%env(string:APP_WS_PUSH_URL)%'
+    app.client.version: '%env(string:APP_CLIENT_VERSION)%'
+    app.client.download_url: '%env(string:APP_CLIENT_DOWNLOAD_URL)%'
 
 services:
     # default configuration for services in *this* file
@@ -38,6 +40,9 @@ services:
 
     App\Module\Game\Realtime\Command\RealtimeServerCommand:
         tags: ['console.command']
+
+    App\Module\Core\Controller\ClientVersionController:
+        tags: ['controller.service_arguments']
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

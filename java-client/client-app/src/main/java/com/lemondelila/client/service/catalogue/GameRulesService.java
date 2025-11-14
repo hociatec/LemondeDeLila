@@ -43,7 +43,7 @@ public final class GameRulesService {
         this.scheduler = Objects.requireNonNull(scheduler, "scheduler");
         this.session = Objects.requireNonNull(session, "session");
         Objects.requireNonNull(configuration, "configuration");
-        this.baseUri = URI.create(configuration.get("network.http.base", "http://127.0.0.1:8000/api/"));
+        this.baseUri = URI.create(configuration.get("network.http.base", "https://hociatec.fr/api/"));
     }
 
     public CompletableFuture<String> fetchRules(GameSummary game) {
@@ -157,5 +157,4 @@ public final class GameRulesService {
         return body;
     }
 }
-
 

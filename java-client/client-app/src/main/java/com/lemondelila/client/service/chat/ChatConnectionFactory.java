@@ -39,7 +39,7 @@ public final class ChatConnectionFactory {
         if (!presenceUrl.isEmpty()) {
             return URI.create(presenceUrl);
         }
-        String fallback = configuration.get("network.ws.url", "ws://127.0.0.1:8081/presence").trim();
+        String fallback = configuration.get("network.ws.url", "wss://hociatec.fr/ws").trim();
         if (!fallback.endsWith("/presence")) {
             if (fallback.endsWith("/ws")) {
                 fallback = fallback.substring(0, fallback.length() - 3);
@@ -61,7 +61,5 @@ public final class ChatConnectionFactory {
                 + "?" + newQuery);
     }
 }
-
-
 
 

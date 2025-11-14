@@ -23,14 +23,14 @@ public final class NetworkModule implements LilaModule {
         builder.bind(ObjectMapper.class, ObjectMapper::new);
         builder.bindFactory(RestClient.class, ctx -> {
             ConfigurationService config = ctx.get(ConfigurationService.class);
-            URI baseUri = URI.create(config.get("network.http.base", "http://127.0.0.1:8000/api/"));
+            URI baseUri = URI.create(config.get("network.http.base", "https://hociatec.fr/api/"));
             return new RestClient(ctx.get(HttpClient.class), ctx.get(ObjectMapper.class), baseUri);
         });
         builder.bindFactory(RealtimeGateway.class, ctx -> {
             ConfigurationService config = ctx.get(ConfigurationService.class);
             return new StandardRealtimeGateway(
                     ctx.get(HttpClient.class),
-                    () -> URI.create(config.get("network.ws.url", "ws://127.0.0.1:8080/ws")),
+                    () -> URI.create(config.get("network.ws.url", "wss://hociatec.fr/ws")),
                     ctx.get(ObjectMapper.class),
                     ctx.get(DomainEventBus.class)
             );
