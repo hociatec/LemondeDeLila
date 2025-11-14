@@ -7,13 +7,13 @@ import com.lemondelila.client.gamelogic.damenature.model.DameNatureSession;
 import com.lemondelila.client.gamelogic.damenature.model.DameNatureSessionStore;
 import com.lemondelila.client.gamelogic.damenature.model.DameNatureState;
 import com.lemondelila.client.gamelogic.damenature.model.DameNatureStateMapper;
-import com.lemondelila.client.model.game.GameSessionManager;
-import com.lemondelila.client.model.user.ClientSession;
-import com.lemondelila.client.service.game.RemoteGameServiceSupport;
-import com.lemondelila.framework.core.task.TaskScheduler;
-import com.lemondelila.framework.network.rest.RestClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.lemondelila.client.game.model.GameSessionManager;
+import com.lemondelila.client.game.service.RoomBotRemoteClient;
+import com.lemondelila.client.game.service.RemoteGameServiceSupport;
+import com.lemondelila.client.framework.core.di.Inject;
+import com.lemondelila.client.framework.core.task.TaskScheduler;
+import com.lemondelila.client.framework.network.rest.RestClient;
+import com.lemondelila.client.user.model.ClientSession;
 
 import java.io.IOException;
 import java.util.List;
@@ -27,22 +27,21 @@ public final class DameNatureRemoteClient extends RemoteGameServiceSupport
     private static final String GAME_PATH = "games/dame-nature";
     private static final String DISPLAY_NAME = "Dame Nature";
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DameNatureRemoteClient.class);
-
     private final DameNatureEngine engine;
     private final DameNatureSessionStore sessionStore;
-    private final LocalDameNatureService localFallback;
+    private final RoomBotRemoteClient roomBots;
 
+    @Inject
     public DameNatureRemoteClient(RestClient restClient,
                                   TaskScheduler scheduler,
                                   ClientSession session,
                                   DameNatureEngine engine,
                                   DameNatureSessionStore sessionStore,
-                                  LocalDameNatureService localFallback) {
+                                  RoomBotRemoteClient roomBots) {
         super(restClient, scheduler, session);
         this.engine = Objects.requireNonNull(engine, "engine");
         this.sessionStore = Objects.requireNonNull(sessionStore, "sessionStore");
-        this.localFallback = Objects.requireNonNull(localFallback, "localFallback");
+        this.roomBots = Objects.requireNonNull(roomBots, "roomBots");
     }
 
     @Override
@@ -52,34 +51,40 @@ public final class DameNatureRemoteClient extends RemoteGameServiceSupport
 
     public CompletableFuture<DameNatureSession> startNewGame(DameNatureConfig configuration) {
         Objects.requireNonNull(configuration, "configuration");
-        CompletableFuture<DameNatureSession> remote = supplyAsync(() -> {
+        int requestedBots = Math.max(0, Math.min(configuration.botCount(), 5));
+        return supplyAsync(() -> {
             Map<String, String> headers = authHeaders();
-            int roomId = createRoom(engine.type(), DISPLAY_NAME, 4, headers);
-            DameNatureState state = fetchStateInternal(roomId, headers);
-            DameNatureSession session = mapSession(roomId, state);
-            sessionStore.save(session);
-            return session;
-        });
-        return withFallback(remote, () -> localFallback.startNewGame(this.session, configuration));
+            int seats = Math.max(2, Math.min(1 + requestedBots, 6));
+            int roomId = createRoom(engine.type(), DISPLAY_NAME, seats, headers);
+            return new RoomSetup(roomId, requestedBots);
+        }).thenCompose(setup ->
+                addBotsForRoom(setup.roomId(), setup.botCount())
+                        .thenCompose(ignored -> supplyAsync(() -> {
+                            Map<String, String> headers = authHeaders();
+                            DameNatureState state = fetchStateInternal(setup.roomId(), headers);
+                            DameNatureSession session = mapSession(setup.roomId(), state);
+                            sessionStore.save(session);
+                            return session;
+                        }))
+        );
     }
 
     @Override
     public CompletableFuture<DameNatureSession> refresh(int roomId) {
-        CompletableFuture<DameNatureSession> remote = supplyAsync(() -> {
+        return supplyAsync(() -> {
             Map<String, String> headers = authHeaders();
             DameNatureState state = fetchStateInternal(roomId, headers);
             DameNatureSession session = mapSession(roomId, state);
             sessionStore.save(session);
             return session;
         });
-        return withFallback(remote, () -> localFallback.refresh(roomId, this.session));
     }
 
     public CompletableFuture<DameNatureSession> askCard(int roomId,
                                                         int targetId,
                                                         String familyId,
                                                         String memberId) {
-        CompletableFuture<DameNatureSession> remote = supplyAsync(() -> {
+        return supplyAsync(() -> {
             Map<String, String> headers = authHeaders();
             DameNatureState state = sendMove(roomId, headers, Map.of(
                     "action", "ask_card",
@@ -91,24 +96,20 @@ public final class DameNatureRemoteClient extends RemoteGameServiceSupport
             sessionStore.save(session);
             return session;
         });
-        return withFallback(remote, () -> localFallback.askCard(roomId, this.session, targetId, familyId, memberId));
     }
 
     public CompletableFuture<DameNatureSession> draw(int roomId) {
-        CompletableFuture<DameNatureSession> remote = supplyAsync(() -> {
+        return supplyAsync(() -> {
             Map<String, String> headers = authHeaders();
-            DameNatureState state = sendMove(roomId, headers, Map.of(
-                    "action", "draw"
-            ));
+            DameNatureState state = sendMove(roomId, headers, Map.of("action", "draw"));
             DameNatureSession session = mapSession(roomId, state);
             sessionStore.save(session);
             return session;
         });
-        return withFallback(remote, () -> localFallback.draw(roomId, this.session));
     }
 
     public CompletableFuture<DameNatureSession> answerQuiz(int roomId, int choice) {
-        CompletableFuture<DameNatureSession> remote = supplyAsync(() -> {
+        return supplyAsync(() -> {
             Map<String, String> headers = authHeaders();
             DameNatureState state = sendMove(roomId, headers, Map.of(
                     "action", "answer_quiz",
@@ -118,20 +119,15 @@ public final class DameNatureRemoteClient extends RemoteGameServiceSupport
             sessionStore.save(session);
             return session;
         });
-        return withFallback(remote, () -> localFallback.answerQuiz(roomId, this.session, choice));
     }
 
     @Override
     public CompletableFuture<DameNatureSession> apply(int roomId, Command command) {
         return switch (command) {
-            case Command.AskCard ask ->
-                    askCard(roomId, ask.targetId(), ask.familyId(), ask.memberId());
-            case Command.Draw draw ->
-                    draw(roomId);
-            case Command.AnswerQuiz answer ->
-                    answerQuiz(roomId, answer.choice());
-            case Command.Refresh ignore ->
-                    refresh(roomId);
+            case Command.AskCard ask -> askCard(roomId, ask.targetId(), ask.familyId(), ask.memberId());
+            case Command.Draw draw -> draw(roomId);
+            case Command.AnswerQuiz answer -> answerQuiz(roomId, answer.choice());
+            case Command.Refresh ignore -> refresh(roomId);
         };
     }
 
@@ -147,6 +143,21 @@ public final class DameNatureRemoteClient extends RemoteGameServiceSupport
         JsonNode node = restClient.post(GAME_PATH + "/rooms/" + roomId + "/move", headers, payload);
         return DameNatureStateMapper.fromJson(node);
     }
+
+    private CompletableFuture<Void> addBotsForRoom(int roomId, int botCount) {
+        int target = Math.max(0, Math.min(botCount, 5));
+        if (target == 0) {
+            return CompletableFuture.completedFuture(null);
+        }
+        CompletableFuture<Void> chain = CompletableFuture.completedFuture(null);
+        for (int i = 0; i < target; i++) {
+            chain = chain.thenCompose(ignored ->
+                    roomBots.addBot(roomId).thenApply(added -> null));
+        }
+        return chain;
+    }
+
+    private record RoomSetup(int roomId, int botCount) { }
 
     public DameNatureSession mapSession(int roomId, DameNatureState state) {
         String username = session.authenticated()
@@ -164,36 +175,6 @@ public final class DameNatureRemoteClient extends RemoteGameServiceSupport
             }
         }
         return new DameNatureSession(roomId, state, self, selfIndex, engine.score(state));
-    }
-
-    private CompletableFuture<DameNatureSession> withFallback(CompletableFuture<DameNatureSession> remoteFuture,
-                                                              java.util.function.Supplier<CompletableFuture<DameNatureSession>> fallbackSupplier) {
-        CompletableFuture<DameNatureSession> result = new CompletableFuture<>();
-        remoteFuture.whenComplete((sessionResult, error) -> {
-            if (error == null) {
-                result.complete(sessionResult);
-                return;
-            }
-            Throwable cause = unwrap(error);
-            LOGGER.warn("Service Dame Nature distant indisponible, passage en mode local : {}", cause.getMessage());
-            CompletableFuture<DameNatureSession> fallback = fallbackSupplier.get();
-            fallback.whenComplete((fallbackResult, fallbackError) -> {
-                if (fallbackError == null) {
-                    result.complete(fallbackResult);
-                } else {
-                    result.completeExceptionally(fallbackError);
-                }
-            });
-        });
-        return result;
-    }
-
-    private static Throwable unwrap(Throwable error) {
-        Throwable current = error;
-        while (current.getCause() != null && current.getCause() != current) {
-            current = current.getCause();
-        }
-        return current;
     }
 
     public sealed interface Command permits Command.AskCard, Command.Draw, Command.AnswerQuiz, Command.Refresh {

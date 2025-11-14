@@ -53,27 +53,29 @@ public final class NemesisStateMapper {
     }
 
     private static NemesisState.Player readPlayer(JsonNode node) {
-        int id = node.path("id").asInt(-1);
-        String username = node.path("username").asText("Inconnu");
-        String status = node.path("status").asText("placing");
+        int id = node == null ? -1 : node.path("id").asInt(-1);
+        String username = node == null ? "Inconnu" : node.path("username").asText("Inconnu");
+        String status = node == null ? "placing" : node.path("status").asText("placing");
 
         List<Ship> ships = new ArrayList<>();
-        JsonNode shipsNode = node.path("ships");
-        if (shipsNode.isArray()) {
+        JsonNode shipsNode = node == null ? null : node.path("ships");
+        if (shipsNode != null && shipsNode.isArray()) {
             for (JsonNode shipNode : shipsNode) {
                 ships.add(readShip(shipNode));
             }
         }
 
         List<Shot> shots = new ArrayList<>();
-        JsonNode shotsNode = node.path("shots");
-        if (shotsNode.isArray()) {
+        JsonNode shotsNode = node == null ? null : node.path("shots");
+        if (shotsNode != null && shotsNode.isArray()) {
             for (JsonNode shotNode : shotsNode) {
                 shots.add(readShot(shotNode));
             }
         }
 
-        return new NemesisState.Player(id, username, ships, shots, status);
+        boolean isBot = node != null && node.path("isBot").asBoolean(false);
+        boolean isSelf = node != null && node.path("isSelf").asBoolean(false);
+        return new NemesisState.Player(id, username, ships, shots, status, isBot, isSelf);
     }
 
     private static Ship readShip(JsonNode node) {
@@ -112,7 +114,9 @@ public final class NemesisStateMapper {
         int y = node.path("y").asInt();
         int targetId = node.path("targetId").asInt(-1);
         String result = node.path("result").asText("miss");
-        return new Shot(x, y, targetId, result);
+        Integer shipIndex = node.hasNonNull("shipIndex") ? node.get("shipIndex").asInt() : null;
+        Boolean damage = node.hasNonNull("damage") ? node.get("damage").asBoolean() : null;
+        return new Shot(x, y, targetId, result, shipIndex, damage);
     }
 
     private static NemesisState.LogEntry readLog(JsonNode node) {

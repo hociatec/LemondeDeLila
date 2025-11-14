@@ -1,93 +1,63 @@
 package com.lemondelila.client.gamelogic.missionnemesis.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.lemondelila.client.framework.core.di.Inject;
+import com.lemondelila.client.framework.core.task.TaskScheduler;
+import com.lemondelila.client.framework.network.rest.RestClient;
+import com.lemondelila.client.game.model.GameSessionManager;
 import com.lemondelila.client.gamelogic.missionnemesis.model.GridCoordinate;
 import com.lemondelila.client.gamelogic.missionnemesis.model.NemesisEngine;
 import com.lemondelila.client.gamelogic.missionnemesis.model.NemesisSession;
 import com.lemondelila.client.gamelogic.missionnemesis.model.NemesisSessionStore;
-import com.lemondelila.client.gamelogic.missionnemesis.model.NemesisSpecs;
 import com.lemondelila.client.gamelogic.missionnemesis.model.NemesisState;
-import com.lemondelila.client.gamelogic.missionnemesis.model.NemesisStateMapper;
 import com.lemondelila.client.gamelogic.missionnemesis.model.ShipPlacement;
-import com.lemondelila.client.model.game.GameSessionManager;
-import com.lemondelila.client.model.user.ClientSession;
-import com.lemondelila.client.service.game.RemoteGameServiceSupport;
-import com.lemondelila.framework.core.task.TaskScheduler;
-import com.lemondelila.framework.network.rest.RestClient;
+import com.lemondelila.client.user.model.ClientSession;
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
-public final class NemesisRemoteClient extends RemoteGameServiceSupport
+public final class NemesisRemoteClient
         implements GameSessionManager<NemesisSession, NemesisRemoteClient.Command> {
 
-    private static final String GAME_PATH = "games/mission-nemesis";
-    private static final String DISPLAY_NAME = "Mission Nemesis";
-
-    private final NemesisEngine engine;
     private final NemesisSessionStore sessionStore;
+    private final NemesisApiGateway apiGateway;
+    private final NemesisSessionMapper sessionMapper;
 
+    @Inject
     public NemesisRemoteClient(RestClient restClient,
-                                      TaskScheduler scheduler,
-                                      ClientSession session,
-                                      NemesisEngine engine,
-                                      NemesisSessionStore sessionStore) {
-        super(restClient, scheduler, session);
-        this.engine = Objects.requireNonNull(engine, "engine");
+                               TaskScheduler scheduler,
+                               ClientSession session,
+                               NemesisEngine engine,
+                               NemesisSessionStore sessionStore) {
         this.sessionStore = Objects.requireNonNull(sessionStore, "sessionStore");
+        Objects.requireNonNull(restClient, "restClient");
+        Objects.requireNonNull(scheduler, "scheduler");
+        Objects.requireNonNull(session, "session");
+        Objects.requireNonNull(engine, "engine");
+        this.apiGateway = new NemesisApiGateway(restClient, scheduler, session, engine);
+        this.sessionMapper = new NemesisSessionMapper(engine, session);
     }
 
     @Override
     public CompletableFuture<NemesisSession> startNewGame() {
-        return supplyAsync(() -> {
-            Map<String, String> headers = authHeaders();
-            int roomId = createRoom(engine.type(), DISPLAY_NAME, 2, headers);
-            NemesisState state = fetchStateInternal(roomId, headers);
-            NemesisSession session = mapSession(roomId, state);
-            sessionStore.save(session);
-            return session;
-        });
+        return apiGateway.startNewGame()
+                .thenApply(snapshot -> saveSnapshot(snapshot.roomId(), snapshot.state()));
     }
 
     @Override
     public CompletableFuture<NemesisSession> refresh(int roomId) {
-        return supplyAsync(() -> {
-            Map<String, String> headers = authHeaders();
-            NemesisState state = fetchStateInternal(roomId, headers);
-            NemesisSession session = mapSession(roomId, state);
-            sessionStore.save(session);
-            return session;
-        });
+        return apiGateway.refreshState(roomId)
+                .thenApply(state -> saveSnapshot(roomId, state));
     }
 
     public CompletableFuture<NemesisSession> placeFleet(int roomId, List<ShipPlacement> placements) {
-        return supplyAsync(() -> {
-            Map<String, String> headers = authHeaders();
-            NemesisState state = sendMove(roomId, headers, Map.of(
-                    "action", "place_ships",
-                    "ships", encodePlacements(placements)
-            ));
-            NemesisSession session = mapSession(roomId, state);
-            sessionStore.save(session);
-            return session;
-        });
+        return apiGateway.placeFleet(roomId, placements)
+                .thenApply(state -> saveSnapshot(roomId, state));
     }
 
     public CompletableFuture<NemesisSession> fire(int roomId, GridCoordinate coordinate) {
-        return supplyAsync(() -> {
-            Map<String, String> headers = authHeaders();
-            NemesisState state = sendMove(roomId, headers, Map.of(
-                    "action", "fire",
-                    "coordinates", Map.of("x", coordinate.x(), "y", coordinate.y())
-            ));
-            NemesisSession session = mapSession(roomId, state);
-            sessionStore.save(session);
-            return session;
-        });
+        return apiGateway.fire(roomId, coordinate)
+                .thenApply(state -> saveSnapshot(roomId, state));
     }
 
     @Override
@@ -98,58 +68,18 @@ public final class NemesisRemoteClient extends RemoteGameServiceSupport
         };
     }
 
-    private NemesisState fetchStateInternal(int roomId,
-                                                   Map<String, String> headers) throws IOException, InterruptedException {
-        JsonNode node = restClient.get(GAME_PATH + "/rooms/" + roomId + "/state", headers);
-        return NemesisStateMapper.fromJson(node);
-    }
-
-    private NemesisState sendMove(int roomId,
-                                         Map<String, String> headers,
-                                         Map<String, Object> payload) throws IOException, InterruptedException {
-        JsonNode node = restClient.post(GAME_PATH + "/rooms/" + roomId + "/move", headers, payload);
-        return NemesisStateMapper.fromJson(node);
-    }
-
     public NemesisSession mapSession(int roomId, NemesisState state) {
-        String username = session.authenticated()
-                .map(ClientSession.AuthState::username)
-                .orElse(null);
-        NemesisState.Player self = null;
-        int selfIndex = -1;
-        List<NemesisState.Player> players = state.players();
-        if (username != null) {
-            for (int i = 0; i < players.size(); i++) {
-                NemesisState.Player player = players.get(i);
-                if (username.equalsIgnoreCase(player.username())) {
-                    self = player;
-                    selfIndex = i;
-                    break;
-                }
-            }
-        }
-        return new NemesisSession(roomId, state, self, selfIndex, engine.score(state));
+        return sessionMapper.map(roomId, state);
     }
 
-    private List<Map<String, Object>> encodePlacements(List<ShipPlacement> placements) {
-        List<Map<String, Object>> payload = new ArrayList<>();
-        placements.stream()
-                .filter(placement -> NemesisSpecs.ships().containsKey(placement.name()))
-                .forEach(placement -> {
-                    List<Map<String, Integer>> coords = new ArrayList<>();
-                    placement.coordinates().forEach(coordinate ->
-                            coords.add(Map.of("x", coordinate.x(), "y", coordinate.y()))
-                    );
-                    payload.add(Map.of(
-                            "name", placement.name(),
-                            "coords", coords
-                    ));
-                });
-        return payload;
+    private NemesisSession saveSnapshot(int roomId, NemesisState state) {
+        NemesisSession session = sessionMapper.map(roomId, state);
+        sessionStore.save(session);
+        return session;
     }
 
     public sealed interface Command permits Command.PlaceFleet, Command.Fire {
-        record PlaceFleet(List<ShipPlacement> placements) implements Command {}
-        record Fire(GridCoordinate coordinate) implements Command {}
+        record PlaceFleet(List<ShipPlacement> placements) implements Command { }
+        record Fire(GridCoordinate coordinate) implements Command { }
     }
 }

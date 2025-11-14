@@ -43,6 +43,14 @@ services:
 
     App\Module\Core\Controller\ClientVersionController:
         tags: ['controller.service_arguments']
+    App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Controller\PanierExpressController: ~
+    App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Controller\PanierExpressGameController: ~
+    App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Service\PanierExpressService: ~
+    App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Service\PanierExpressGameService: ~
+    App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Service\Support\PanierExpressDeckManager: ~
+    App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Service\Support\PanierExpressTileResolver: ~
+    App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Service\Support\NativePanierExpressRandomizer: ~
+    App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Service\Support\PanierExpressRandomizerInterface: '@App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Service\Support\NativePanierExpressRandomizer'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

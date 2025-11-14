@@ -42,6 +42,12 @@ doctrine:
                 dir: '%kernel.project_dir%/src/Module/Chat/Entity'
                 prefix: 'App\Module\Chat\Entity'
                 alias: Chat
+            AppMessaging:
+                type: attribute
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/Module/Messaging/Entity'
+                prefix: 'App\Module\Messaging\Entity'
+                alias: Messaging
         controller_resolver:
             auto_mapping: false
 

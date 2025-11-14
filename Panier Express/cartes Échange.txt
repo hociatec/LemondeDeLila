@@ -1,0 +1,64 @@
+Cartes "Échange" (20 cartes)
+
+
+1. 
+Échange à l’amiable
+Propose un échange libre avec le joueur de ton choix.
+2. 
+Troque un fruit contre un légume
+Tu dois donner un fruit et recevoir un légume.
+3. 
+Échange obligatoire avec ton voisin de gauche
+Prenez chacun une carte de l’autre, au hasard.
+4. 
+Échange obligatoire avec ton voisin de droite
+Prenez chacun une carte de l’autre, au hasard.
+5. 
+Échange forcé
+Choisis un joueur et prends-lui une carte Courses au hasard. Il t’en prend une en retour.
+6. 
+Troc rapide
+Échange une carte Courses avec un joueur, sans discuter.
+7. 
+Panier mixé
+Mélange ton panier avec celui d’un autre joueur et reprenez-en 3 cartes chacun, au hasard.
+8. 
+Échange équitable
+Échange une carte que tu ne veux pas contre une carte de ton choix dans la main d’un joueur (il choisit laquelle donner).
+9. 
+Chariot échangé
+Échange toutes tes cartes Courses avec un joueur de ton choix.
+10. 
+Échange masqué
+Tu donnes une carte face cachée à un joueur qui t’en donne une au hasard.
+11. 
+Vol discret
+Prends une carte Courses au hasard dans la main d’un autre joueur, sans lui en rendre.
+12. 
+Panier collectif
+Tous les joueurs posent une carte Courses dans un pot commun, puis piochent une au hasard dans ce pot.
+13. 
+Échange imposé
+L’adversaire de ton choix t’impose la carte qu’il veut t’échanger.
+14. 
+Échange de secours
+Si tu n’as pas avancé ce tour, tu peux échanger une carte librement.
+15. 
+Échange simultané
+Tous les joueurs passent une carte à leur voisin de gauche.
+16. 
+Marché noir
+Échange une carte contre 2 tirées au hasard dans la pioche. (Tu gardes les deux.)
+17. 
+Troc équitable
+Propose un échange. Si refusé, tu pioches une carte "Courses".
+18. 
+Échange de saison
+Échange un fruit d’été (ex : melon, fraise, pastèque…) contre un légume d’hiver (ex : poireau, chou, navet…). Si tu n’en as pas, pioche.
+19. 
+Panier inspecté
+Choisis un joueur, regarde son panier et échange une carte de ton choix.
+20. 
+Échange express
+Laisse tomber une carte de ta main et pioche immédiatement une nouvelle carte "Courses".
+ 

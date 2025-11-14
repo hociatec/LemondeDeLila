@@ -2,7 +2,10 @@
 
 namespace App\Module\Game\GameCatalogue\JeuxDeCartes\VentsDansants\DameNature\Service;
 
+use App\Module\Game\Bot\BotAllocator;
 use App\Module\Game\Engine\GameEngineInterface;
+use App\Module\Game\Service\Participant;
+use App\Module\Game\Service\ParticipantResolver;
 use App\Module\Game\Entity\Room;
 use App\Module\User\Entity\User;
 
@@ -16,6 +19,16 @@ final class DameNatureService implements GameEngineInterface
     private ?array $familyMembersMap = null;
     private ?array $quizCards = null;
     private ?array $dangerCards = null;
+    private ParticipantResolver $participants;
+    private BotAllocator $botAllocator;
+
+    public function __construct(
+        ParticipantResolver $participants,
+        BotAllocator $botAllocator
+    ) {
+        $this->participants = $participants;
+        $this->botAllocator = $botAllocator;
+    }
 
     public function getType(): string
     {
@@ -62,7 +75,7 @@ final class DameNatureService implements GameEngineInterface
 
         $this->checkCompletedFamilies($state, 0);
 
-        return $state;
+        return $this->executeBotTurns($state);
     }
 
     public function apply(array $state, array $payload, Room $room, User $user): array
@@ -79,12 +92,14 @@ final class DameNatureService implements GameEngineInterface
 
         $action = (string)($payload['action'] ?? '');
 
-        return match ($action) {
+        $next = match ($action) {
             'ask_card' => $this->handleAskCard($state, $payload, $playerIndex),
             'answer_quiz' => $this->handleQuizAnswer($state, $payload, $playerIndex),
             'draw' => $this->handleDraw($state, $playerIndex),
             default => $state,
         };
+
+        return $this->executeBotTurns($next);
     }
 
     public function currentRound(array $state): int
@@ -106,6 +121,7 @@ final class DameNatureService implements GameEngineInterface
                 'username' => $player['username'],
                 'families' => count($player['books'] ?? []),
                 'hand' => count($player['hand'] ?? []),
+                'isBot' => (bool)($player['isBot'] ?? false),
             ];
         }
 
@@ -128,6 +144,7 @@ final class DameNatureService implements GameEngineInterface
         foreach ($players as $index => $player) {
             $hand = $player['hand'] ?? [];
             $public['players'][$index]['handCount'] = count($hand);
+            $public['players'][$index]['isBot'] = (bool)($player['isBot'] ?? false);
             if ($player['id'] === $viewerId) {
                 $public['players'][$index]['hand'] = $this->describeHand($state, $hand);
             } else {
@@ -152,24 +169,72 @@ final class DameNatureService implements GameEngineInterface
      */
     private function initialPlayers(Room $room): array
     {
-        $players = [];
-        foreach ($room->getPlayers()->toArray() as $participant) {
-            if (!$participant instanceof User) {
-                continue;
-            }
-            $players[] = [
-                'id' => (int)$participant->getId(),
-                'username' => $participant->getUsername(),
-                'hand' => [],
-                'books' => [],
-            ];
-        }
-
-        if (empty($players)) {
+        $participants = $this->participants->resolve($room);
+        if ($participants === []) {
             throw new \RuntimeException('Aucun joueur n\'est disponible pour la partie Dame Nature.');
         }
 
+        $players = [];
+        foreach ($participants as $participant) {
+            if (!$participant instanceof Participant) {
+                continue;
+            }
+            $players[] = $this->playerFromParticipant($participant);
+        }
+
+        if (count($players) < 2) {
+            $players[] = $this->createEphemeralBot($players);
+        }
+
         return $players;
+    }
+
+    private function playerFromParticipant(Participant $participant): array
+    {
+        return [
+            'id' => $participant->id(),
+            'username' => $participant->username(),
+            'hand' => [],
+            'books' => [],
+            'isBot' => $participant->isBot(),
+        ];
+    }
+
+    /**
+     * @param array<int,array<string,mixed>> $players
+     */
+    private function createEphemeralBot(array $players): array
+    {
+        $names = array_map(
+            static fn(array $player): string => (string)($player['username'] ?? ''),
+            $players
+        );
+        $name = $this->botAllocator->pick($names);
+
+        return [
+            'id' => $this->generateBotId($players),
+            'username' => $name,
+            'hand' => [],
+            'books' => [],
+            'isBot' => true,
+        ];
+    }
+
+    /**
+     * @param array<int,array<string,mixed>> $players
+     */
+    private function generateBotId(array $players): int
+    {
+        $used = array_map(
+            static fn(array $player): int => (int)($player['id'] ?? 0),
+            $players
+        );
+
+        do {
+            $id = -1 * random_int(1000, 1_000_000);
+        } while (in_array($id, $used, true));
+
+        return $id;
     }
 
     /**
@@ -342,6 +407,148 @@ final class DameNatureService implements GameEngineInterface
         $this->checkPollutionThreshold($state);
 
         return $state;
+    }
+
+    private function executeBotTurns(array $state): array
+    {
+        while (($state['status'] ?? null) !== 'ended') {
+            $turnIndex = (int)($state['turnIndex'] ?? 0);
+            $players = $state['players'] ?? [];
+            if (!isset($players[$turnIndex]) || ($players[$turnIndex]['isBot'] ?? false) !== true) {
+                break;
+            }
+
+            $playerId = $players[$turnIndex]['id'] ?? null;
+            if ($playerId !== null && $this->isPendingQuizFor($state, $playerId)) {
+                $choice = $this->pickBotQuizChoice($state['pendingQuiz'] ?? null);
+                $state = $this->handleQuizAnswer($state, ['choice' => $choice], $turnIndex);
+                continue;
+            }
+
+            $askPayload = $this->buildBotAskPayload($state, $turnIndex);
+            if ($askPayload !== null) {
+                $state = $this->handleAskCard($state, $askPayload, $turnIndex);
+            } else {
+                $state = $this->handleDraw($state, $turnIndex);
+            }
+
+            if (($state['status'] ?? null) !== 'playing') {
+                break;
+            }
+
+            $players = $state['players'];
+            if (!isset($players[$state['turnIndex'] ?? $turnIndex])) {
+                break;
+            }
+
+            if (($players[$state['turnIndex'] ?? $turnIndex]['isBot'] ?? false) !== true) {
+                break;
+            }
+
+            if ($state['turnIndex'] === $turnIndex && !$this->isPendingQuizFor($state, $playerId ?? 0)) {
+                break;
+            }
+        }
+
+        return $state;
+    }
+
+    private function isPendingQuizFor(array $state, int $playerId): bool
+    {
+        $pending = $state['pendingQuiz'] ?? null;
+        if (!is_array($pending)) {
+            return false;
+        }
+        return (int)($pending['playerId'] ?? 0) === $playerId;
+    }
+
+    private function pickBotQuizChoice(?array $pending): int
+    {
+        if (!is_array($pending)) {
+            return 0;
+        }
+        $choices = $pending['choices'] ?? [];
+        if (!is_array($choices) || $choices === []) {
+            return 0;
+        }
+        $max = count($choices) - 1;
+        return max(0, random_int(0, $max));
+    }
+
+    private function buildBotAskPayload(array $state, int $playerIndex): ?array
+    {
+        $players = $state['players'] ?? [];
+        $player = $players[$playerIndex] ?? null;
+        if (!$player) {
+            return null;
+        }
+
+        $hand = $player['hand'] ?? [];
+        if ($hand === []) {
+            return null;
+        }
+
+        $familyCandidates = [];
+        foreach ($hand as $code) {
+            $definition = $state['cards'][$code] ?? null;
+            if (!is_array($definition) || ($definition['type'] ?? null) !== 'family') {
+                continue;
+            }
+            $familyId = $definition['familyId'] ?? null;
+            if ($familyId === null) {
+                continue;
+            }
+            $familyCandidates[$familyId] = true;
+        }
+
+        if ($familyCandidates === []) {
+            return null;
+        }
+
+        $familyIds = array_keys($familyCandidates);
+        $familyId = $familyIds[random_int(0, count($familyIds) - 1)];
+        $familyMap = $state['familyMap'][$familyId] ?? [];
+        if (!is_array($familyMap) || $familyMap === []) {
+            return null;
+        }
+
+        $owned = array_flip($hand);
+        $candidates = array_values(array_filter($familyMap, static function ($code) use ($owned): bool {
+            return !isset($owned[$code]);
+        }));
+        if ($candidates === []) {
+            $candidates = $familyMap;
+        }
+
+        $choiceCode = $candidates[random_int(0, count($candidates) - 1)];
+        $parts = explode(':', $choiceCode, 3);
+        if (count($parts) < 3) {
+            return null;
+        }
+        $memberId = $parts[2];
+
+        $targets = [];
+        foreach ($players as $idx => $candidate) {
+            if ($idx === $playerIndex) {
+                continue;
+            }
+            if (($candidate['status'] ?? 'alive') === 'eliminated') {
+                continue;
+            }
+            $targets[] = $candidate;
+        }
+
+        if ($targets === []) {
+            return null;
+        }
+
+        $target = $targets[random_int(0, count($targets) - 1)];
+
+        return [
+            'familyId' => $familyId,
+            'memberId' => $memberId,
+            'target' => (int)($target['id'] ?? 0),
+        ];
     }
 
     private function handleQuizAnswer(array $state, array $payload, int $playerIndex): array

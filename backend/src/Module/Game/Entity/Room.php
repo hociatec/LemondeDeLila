@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
 use App\Module\Game\Repository\RoomRepository;
+use App\Module\Game\Entity\RoomBot;
 use App\Module\User\Entity\User;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -182,6 +183,9 @@ class Room
     #[Groups(['room:read'])]
     private Collection $players;
 
+    #[ORM\OneToMany(mappedBy: 'room', targetEntity: RoomBot::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private Collection $bots;
+
     #[ORM\Column(type: 'string', length: 50)]
     #[Groups(['room:read'])]
     private string $status = 'open';
@@ -197,6 +201,7 @@ class Room
     public function __construct()
     {
         $this->players = new ArrayCollection();
+        $this->bots = new ArrayCollection();
         $this->createdAt = new \DateTimeImmutable();
     }
 
@@ -212,6 +217,29 @@ class Room
     public function getPlayers(): Collection { return $this->players; }
     public function addPlayer(User $user): self { if(!$this->players->contains($user)){ $this->players->add($user);} return $this; }
     public function removePlayer(User $user): self { $this->players->removeElement($user); return $this; }
+
+    /**
+     * @return Collection<int, RoomBot>
+     */
+    public function getBots(): Collection
+    {
+        return $this->bots;
+    }
+
+    public function addBot(RoomBot $bot): self
+    {
+        if (!$this->bots->contains($bot)) {
+            $bot->setRoom($this);
+            $this->bots->add($bot);
+        }
+        return $this;
+    }
+
+    public function removeBot(RoomBot $bot): self
+    {
+        $this->bots->removeElement($bot);
+        return $this;
+    }
     public function getStatus(): string { return $this->status; }
     public function setStatus(string $status): self { $this->status = $status; return $this; }
     public function getGameType(): string { return $this->gameType; }

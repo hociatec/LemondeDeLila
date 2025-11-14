@@ -33,7 +33,8 @@ public record DameNatureState(
             String username,
             int handCount,
             List<HandCard> hand,
-            List<String> books
+            List<String> books,
+            boolean isBot
     ) {
         public boolean isSelf(String selfName) {
             return selfName != null && username != null && username.equalsIgnoreCase(selfName);

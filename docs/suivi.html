@@ -1,8 +1,8 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Suivi des évolutions – Le Monde de Lila</title>
+    <title>Suivi des Ã©volutions â€“ Les mondes de Lilas</title>
     <style>
         body { font-family: "Segoe UI", Arial, sans-serif; margin: 2rem auto; max-width: 960px; line-height: 1.6; color: #1f2937; }
         h1, h2, h3 { color: #4c1d95; }
@@ -19,70 +19,70 @@
 </head>
 <body>
 <header>
-    <h1>Suivi des évolutions</h1>
-    <p>Historique synthétique des ajouts réalisés dans l’application <strong>Le Monde de Lila</strong> durant la session en cours.</p>
+    <h1>Suivi des Ã©volutions</h1>
+    <p>Historique synthÃ©tique des ajouts rÃ©alisÃ©s dans lâ€™application <strong>Les mondes de Lilas</strong> durant la session en cours.</p>
 </header>
 
 <section>
     <h2>1. Script et outillage</h2>
-    <div class="date">État initial</div>
+    <div class="date">Ã‰tat initial</div>
     <ul>
-        <li>Lecture et compréhension de <code>start-lila.ps1</code> pour automatiser Maven, Symfony (HTTP + WebSocket) et le client Swing.</li>
-        <li>Vérification des dépendances locales (PHP, Java, composer) et des répertoires nécessaires (<code>backend</code>, <code>java-client</code>, <code>logs</code>).</li>
+        <li>Lecture et comprÃ©hension de <code>start-lila.ps1</code> pour automatiser Maven, Symfony (HTTP + WebSocket) et le client Swing.</li>
+        <li>VÃ©rification des dÃ©pendances locales (PHP, Java, composer) et des rÃ©pertoires nÃ©cessaires (<code>backend</code>, <code>java-client</code>, <code>logs</code>).</li>
     </ul>
 </section>
 
 <section>
-    <h2>2. Cycle d’authentification</h2>
-    <div class="date">Étapes successives</div>
+    <h2>2. Cycle dâ€™authentification</h2>
+    <div class="date">Ã‰tapes successives</div>
     <ul>
-        <li><span class="tag tag-fix">fix</span> Résolution du <code>StackOverflowError</code> dû au <code>HomeScreen</code> (recours à <code>computeIfAbsent</code>).</li>
-        <li><span class="tag tag-feature">feature</span> Alignement complet avec l’API Symfony :
+        <li><span class="tag tag-fix">fix</span> RÃ©solution du <code>StackOverflowError</code> dÃ» au <code>HomeScreen</code> (recours Ã  <code>computeIfAbsent</code>).</li>
+        <li><span class="tag tag-feature">feature</span> Alignement complet avec lâ€™API Symfony :
             <ul>
-                <li>Login → <code>/api/login</code> renvoie désormais le JWT, stocké côté client dans <code>ClientSession</code>.</li>
-                <li>Inscription → collecte de l’e-mail et envoi à <code>/api/register</code>.</li>
+                <li>Login â†’ <code>/api/login</code> renvoie dÃ©sormais le JWT, stockÃ© cÃ´tÃ© client dans <code>ClientSession</code>.</li>
+                <li>Inscription â†’ collecte de lâ€™e-mail et envoi Ã  <code>/api/register</code>.</li>
             </ul>
         </li>
-        <li><span class="tag tag-feature">feature</span> Refonte du formulaire d’accueil : navigation par cartes (accueil, connexion, inscription), Alt+C / Alt+I pour choisir, Alt+R pour revenir.</li>
-        <li><span class="tag tag-feature">feature</span> Ajout d’un menu principal après connexion (Étagères, Rejoindre une table, Tchat, Options).</li>
+        <li><span class="tag tag-feature">feature</span> Refonte du formulaire dâ€™accueil : navigation par cartes (accueil, connexion, inscription), Alt+C / Alt+I pour choisir, Alt+R pour revenir.</li>
+        <li><span class="tag tag-feature">feature</span> Ajout dâ€™un menu principal aprÃ¨s connexion (Ã‰tagÃ¨res, Rejoindre une table, Tchat, Options).</li>
     </ul>
 </section>
 
 <section>
-    <h2>3. Options et préférences</h2>
+    <h2>3. Options et prÃ©fÃ©rences</h2>
     <ul>
-        <li><span class="tag tag-feature">feature</span> Création d’<code>AppSettings</code> et <code>AppSettingsService</code> pour persister les préférences utilisateur (<code>config/settings.json</code>).</li>
-        <li><span class="tag tag-feature">feature</span> Boîte Options :
+        <li><span class="tag tag-feature">feature</span> CrÃ©ation dâ€™<code>AppSettings</code> et <code>AppSettingsService</code> pour persister les prÃ©fÃ©rences utilisateur (<code>config/settings.json</code>).</li>
+        <li><span class="tag tag-feature">feature</span> BoÃ®te Options :
             <ul>
                 <li>Volumes jeu et musique.</li>
-                <li>Confirmation à la fermeture de l’application.</li>
-                <li>Activation / désactivation du tchat.</li>
-                <li>Confirmation à la fermeture du tchat.</li>
+                <li>Confirmation Ã  la fermeture de lâ€™application.</li>
+                <li>Activation / dÃ©sactivation du tchat.</li>
+                <li>Confirmation Ã  la fermeture du tchat.</li>
             </ul>
         </li>
-        <li><span class="tag tag-fix">fix</span> Fermeture contrôlée de l’app : <code>AppLauncher</code> installe un listener qui consulte les préférences (confirmations, etc.).</li>
-        <li><span class="tag tag-fix">fix</span> Correction du <code>Recursive update</code> lors de l’arrêt en mémorisant les instances <code>NarrationQueue</code>/<code>ScreenReaderAnnouncer</code>.</li>
+        <li><span class="tag tag-fix">fix</span> Fermeture contrÃ´lÃ©e de lâ€™app : <code>AppLauncher</code> installe un listener qui consulte les prÃ©fÃ©rences (confirmations, etc.).</li>
+        <li><span class="tag tag-fix">fix</span> Correction du <code>Recursive update</code> lors de lâ€™arrÃªt en mÃ©morisant les instances <code>NarrationQueue</code>/<code>ScreenReaderAnnouncer</code>.</li>
     </ul>
 </section>
 
 <section>
-    <h2>4. Tchat en temps réel</h2>
+    <h2>4. Tchat en temps rÃ©el</h2>
     <ul>
-        <li><span class="tag tag-feature">feature</span> Implémentation complète du tchat :
+        <li><span class="tag tag-feature">feature</span> ImplÃ©mentation complÃ¨te du tchat :
             <ul>
-                <li>Connexion WebSocket via <code>ChatConnectionFactory</code>, prise en charge du token JWT (déduit de <code>ClientSession</code>), endpoint configurable (<code>network.ws.presence</code>).</li>
-                <li>Gestion de l’historique, des messages temps réel et des états de connexion.</li>
-                <li>Fenêtre Swing (<code>ChatWindow</code>) accessible depuis le menu, envoi avec Entrée, Shift+Entrée pour les retours à la ligne.</li>
-                <li>Historique formaté avec ligne blanche finale pour une lecture claire.</li>
+                <li>Connexion WebSocket via <code>ChatConnectionFactory</code>, prise en charge du token JWT (dÃ©duit de <code>ClientSession</code>), endpoint configurable (<code>network.ws.presence</code>).</li>
+                <li>Gestion de lâ€™historique, des messages temps rÃ©el et des Ã©tats de connexion.</li>
+                <li>FenÃªtre Swing (<code>ChatWindow</code>) accessible depuis le menu, envoi avec EntrÃ©e, Shift+EntrÃ©e pour les retours Ã  la ligne.</li>
+                <li>Historique formatÃ© avec ligne blanche finale pour une lecture claire.</li>
             </ul>
         </li>
-        <li><span class="tag tag-feature">feature</span> Règles métier :
+        <li><span class="tag tag-feature">feature</span> RÃ¨gles mÃ©tier :
             <ul>
-                <li>Tchat accessible seulement si l’utilisateur est authentifié et si l’option est activée.</li>
-                <li>Possibilité de demander confirmation lors de la fermeture de la fenêtre tchat.</li>
+                <li>Tchat accessible seulement si lâ€™utilisateur est authentifiÃ© et si lâ€™option est activÃ©e.</li>
+                <li>PossibilitÃ© de demander confirmation lors de la fermeture de la fenÃªtre tchat.</li>
             </ul>
         </li>
-        <li><span class="tag tag-fix">fix</span> Ajustement des URLs WS : ajout de <code>network.ws.presence</code> dans <code>client.properties</code> (correspond à <code>app.ws</code> côté Symfony).</li>
+        <li><span class="tag tag-fix">fix</span> Ajustement des URLs WS : ajout de <code>network.ws.presence</code> dans <code>client.properties</code> (correspond Ã  <code>app.ws</code> cÃ´tÃ© Symfony).</li>
     </ul>
 </section>
 
@@ -90,7 +90,7 @@
     <h2>5. Documentation</h2>
     <ul>
         <li><span class="tag tag-doc">doc</span> <code>docs/framework-guide.html</code> (lancement, architecture, modules, raccourcis, API, options, tchat).</li>
-        <li><span class="tag tag-doc">doc</span> <code>docs/suivi.html</code> (ce fichier) : récapitulatif chronologique des travaux pour garder une base de référence.</li>
+        <li><span class="tag tag-doc">doc</span> <code>docs/suivi.html</code> (ce fichier) : rÃ©capitulatif chronologique des travaux pour garder une base de rÃ©fÃ©rence.</li>
     </ul>
   </section>
 
@@ -110,11 +110,24 @@
   <section>
       <h2>7. Prochaines pistes</h2>
     <ul>
-        <li>Brancher le menu “Étagères” / “Rejoindre une table” sur les API Symfony correspondantes.</li>
-        <li>Intégrer une vraie UI de présence (liste des joueurs connectés) basée sur les messages <code>presence-update</code>.</li>
+        <li>Brancher le menu â€œÃ‰tagÃ¨resâ€ / â€œRejoindre une tableâ€ sur les API Symfony correspondantes.</li>
+        <li>IntÃ©grer une vraie UI de prÃ©sence (liste des joueurs connectÃ©s) basÃ©e sur les messages <code>presence-update</code>.</li>
         <li>Ajouter des tests Swing ou des scripts e2e pour valider les flux critiques (connexion, tchat, options).</li>
+    </ul>
+</section>
+
+<section>
+    <h2>8. Architecture client</h2>
+    <div class="date">Refonte structurelle</div>
+    <ul>
+        <li><span class="tag tag-feature">feature</span> Regroupement des sources Java par domaines (chat, user, catalogue, game, presence, settings) : chaque dossier embarque dÃ©sormais ses <em>controller</em>, <em>model</em>, <em>service</em>, <em>view</em> et Ã©vÃ©nements spÃ©cifiques.</li>
+        <li><span class="tag tag-feature">feature</span> Migration du framework applicatif sous <code>com.lemondelila.client.framework</code> pour conserver une arborescence unique et cohÃ©rente cÃ´tÃ© client.</li>
+        <li><span class="tag tag-feature">feature</span> CrÃ©ation dâ€™un espace <code>com.lemondelila.client.application</code> accueillant les vues transverses (accueil, menu, boÃ®tes de dialogue, raccourcis) et leurs artefacts (<em>controller</em>, <em>service</em>, etc.).</li>
+        <li><span class="tag tag-feature">feature</span> Modules dâ€™initialisation rangÃ©s dans leur domaine (<code>ChatModule</code>, <code>CatalogueModule</code>, <code>SettingsModule</code>, etc.) et orchestration centralisÃ©e via <code>ApplicationModule</code>.</li>
+        <li><span class="tag tag-doc">doc</span> Mise Ã  jour du guide framework pour prÃ©senter lâ€™arborescence domaine et clarifier les points dâ€™entrÃ©e.</li>
     </ul>
 </section>
 
 </body>
 </html>
+

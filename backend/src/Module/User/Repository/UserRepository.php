@@ -12,4 +12,14 @@ class UserRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, User::class);
     }
+
+    public function findOneByUsernameInsensitive(string $username): ?User
+    {
+        return $this->createQueryBuilder('u')
+                ->andWhere('LOWER(u.username) = :username')
+                ->setParameter('username', mb_strtolower($username))
+                ->setMaxResults(1)
+                ->getQuery()
+                ->getOneOrNullResult();
+    }
 }

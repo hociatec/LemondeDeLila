@@ -2,7 +2,9 @@
 
 namespace App\Module\Game\Controller;
 
+use App\Module\Game\Bot\BotAllocator;
 use App\Module\Game\Entity\Room;
+use App\Module\Game\Entity\RoomBot;
 use App\Module\Game\Entity\RoomParticipant;
 use App\Module\Game\Entity\TableSnapshot;
 use App\Module\Game\Realtime\RoomRealtimeNotifier;
@@ -17,57 +19,28 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/api/rooms')]
 class RoomController extends AbstractController
 {
-    public function __construct(private readonly RoomRealtimeNotifier $realtime)
-    {
+    public function __construct(
+        private readonly RoomRealtimeNotifier $realtime,
+        private readonly BotAllocator $botAllocator,
+    ) {
     }
 
     #[Route('/{id}', name: 'rooms_get', methods: ['GET'])]
     public function getOne(int $id, EntityManagerInterface $em): Response
     {
-        $r = $em->getRepository(Room::class)->find($id);
-        if (!$r) return $this->json(['error' => 'Not found'], 404);
-        $partRepo = $em->getRepository(RoomParticipant::class);
-        $playersCount = method_exists($partRepo, 'countActiveByRoomAndRole') ? $partRepo->countActiveByRoomAndRole($r, 'player') : $r->getPlayers()->count();
-        $spectatorsCount = method_exists($partRepo, 'countActiveByRoomAndRole') ? $partRepo->countActiveByRoomAndRole($r, 'spectator') : 0;
-        $data = [
-            'id' => $r->getId(),
-            'name' => $r->getName(),
-            'isPrivate' => $r->isPrivate(),
-            'maxPlayers' => $r->getMaxPlayers(),
-            'status' => $r->getStatus(),
-            'gameType' => $r->getGameType(),
-            'counts' => [ 'players' => $playersCount, 'spectators' => $spectatorsCount ],
-            'owner' => $r->getOwner() ? [ 'id' => $r->getOwner()->getId(), 'username' => $r->getOwner()->getUsername() ] : null,
-            'players' => array_map(fn(User $u) => [
-                'id' => $u->getId(),
-                'username' => $u->getUsername(),
-            ], $r->getPlayers()->toArray()),
-        ];
-        return $this->json($data);
+        $room = $em->getRepository(Room::class)->find($id);
+        if (!$room) {
+            return $this->json(['error' => 'Not found'], 404);
+        }
+
+        return $this->json($this->serializeRoom($room, $em));
     }
+
     #[Route('/', name: 'rooms_list', methods: ['GET'])]
     public function list(EntityManagerInterface $em): Response
     {
         $rooms = $em->getRepository(Room::class)->findBy([], ['id' => 'DESC']);
-        $partRepo = $em->getRepository(RoomParticipant::class);
-        $data = array_map(function (Room $r) use ($partRepo) {
-            $playersCount = method_exists($partRepo, 'countActiveByRoomAndRole') ? $partRepo->countActiveByRoomAndRole($r, 'player') : $r->getPlayers()->count();
-            $spectatorsCount = method_exists($partRepo, 'countActiveByRoomAndRole') ? $partRepo->countActiveByRoomAndRole($r, 'spectator') : 0;
-            return [
-                'id' => $r->getId(),
-                'name' => $r->getName(),
-                'isPrivate' => $r->isPrivate(),
-                'maxPlayers' => $r->getMaxPlayers(),
-                'status' => $r->getStatus(),
-                'gameType' => $r->getGameType(),
-                'counts' => [ 'players' => $playersCount, 'spectators' => $spectatorsCount ],
-                'owner' => $r->getOwner() ? [ 'id' => $r->getOwner()->getId(), 'username' => $r->getOwner()->getUsername() ] : null,
-                'players' => array_map(fn(User $u) => [
-                    'id' => $u->getId(),
-                    'username' => $u->getUsername(),
-                ], $r->getPlayers()->toArray()),
-            ];
-        }, $rooms);
+        $data = array_map(fn(Room $room) => $this->serializeRoom($room, $em), $rooms);
         return $this->json($data);
     }
 
@@ -108,7 +81,7 @@ class RoomController extends AbstractController
         $me = $this->getUser();
         $room = $em->getRepository(Room::class)->find($id);
         if (!$room) { return $this->json(['error' => 'Not found'], 404); }
-        if ($room->getPlayers()->count() >= $room->getMaxPlayers()) {
+        if ($this->totalPlayers($room, $em) >= $room->getMaxPlayers()) {
             return $this->json(['error' => 'Room full'], 400);
         }
         $room->addPlayer($me);
@@ -223,6 +196,85 @@ class RoomController extends AbstractController
         return $this->json(['message' => 'Restored', 'gameId' => $game->getId()]);
     }
 
+    #[Route('/{id}/bots', name: 'rooms_add_bot', methods: ['POST'])]
+    public function addBot(int $id, Request $request, EntityManagerInterface $em): Response
+    {
+        $room = $em->getRepository(Room::class)->find($id);
+        if (!$room) {
+            return $this->json(['error' => 'Not found'], 404);
+        }
+
+        /** @var User $me */
+        $me = $this->getUser();
+        if ($room->getOwner()?->getId() !== $me->getId()) {
+            return $this->json(['error' => 'Forbidden'], 403);
+        }
+
+        if ($room->getStatus() !== 'open') {
+            return $this->json(['error' => 'Room already started'], 400);
+        }
+
+        if ($this->totalPlayers($room, $em) >= $room->getMaxPlayers()) {
+            return $this->json(['error' => 'Room full'], 400);
+        }
+
+        $payload = json_decode($request->getContent() ?: '{}', true) ?? [];
+        $requestedName = isset($payload['name']) ? trim((string) $payload['name']) : '';
+
+        $usedNames = array_map(
+            fn(RoomBot $bot) => $bot->getName(),
+            $room->getBots()->toArray()
+        );
+        $playerNames = array_map(
+            fn(User $user) => $user->getUsername(),
+            $room->getPlayers()->toArray()
+        );
+        $excluded = array_merge($usedNames, $playerNames);
+
+        if ($requestedName !== '' && in_array($requestedName, $excluded, true)) {
+            return $this->json(['error' => 'Bot name already used'], 400);
+        }
+
+        $name = $requestedName !== '' ? $requestedName : $this->botAllocator->pick($excluded);
+
+        $bot = (new RoomBot())->setName($name);
+        $room->addBot($bot);
+        $em->persist($bot);
+        $em->flush();
+
+        $this->realtime->notify($room, 'bot-added', ['bot' => $this->serializeBot($bot)]);
+
+        return $this->json(['bot' => $this->serializeBot($bot)], 201);
+    }
+
+    #[Route('/{id}/bots/{botId}', name: 'rooms_remove_bot', methods: ['DELETE'])]
+    public function removeBot(int $id, int $botId, EntityManagerInterface $em): Response
+    {
+        $room = $em->getRepository(Room::class)->find($id);
+        if (!$room) {
+            return $this->json(['error' => 'Not found'], 404);
+        }
+
+        /** @var User $me */
+        $me = $this->getUser();
+        if ($room->getOwner()?->getId() !== $me->getId()) {
+            return $this->json(['error' => 'Forbidden'], 403);
+        }
+
+        $bot = $em->getRepository(RoomBot::class)->find($botId);
+        if (!$bot || $bot->getRoom()->getId() !== $room->getId()) {
+            return $this->json(['error' => 'Bot not found'], 404);
+        }
+
+        $room->removeBot($bot);
+        $em->remove($bot);
+        $em->flush();
+
+        $this->realtime->notify($room, 'bot-removed', ['botId' => $botId]);
+
+        return $this->json(['message' => 'Bot removed']);
+    }
+
     #[Route('/{id}', name: 'rooms_delete', methods: ['DELETE'])]
     public function delete(int $id, EntityManagerInterface $em): Response
     {
@@ -237,5 +289,66 @@ class RoomController extends AbstractController
         $em->remove($room);
         $em->flush();
         return $this->json(['message' => 'Deleted']);
+    }
+
+    private function serializeRoom(Room $room, EntityManagerInterface $em): array
+    {
+        $partRepo = $em->getRepository(RoomParticipant::class);
+        $humanPlayers = method_exists($partRepo, 'countActiveByRoomAndRole')
+            ? $partRepo->countActiveByRoomAndRole($room, 'player')
+            : $room->getPlayers()->count();
+        $spectators = method_exists($partRepo, 'countActiveByRoomAndRole')
+            ? $partRepo->countActiveByRoomAndRole($room, 'spectator')
+            : 0;
+
+        $bots = array_map(
+            fn(RoomBot $bot) => $this->serializeBot($bot),
+            $room->getBots()->toArray()
+        );
+
+        return [
+            'id' => $room->getId(),
+            'name' => $room->getName(),
+            'isPrivate' => $room->isPrivate(),
+            'maxPlayers' => $room->getMaxPlayers(),
+            'status' => $room->getStatus(),
+            'gameType' => $room->getGameType(),
+            'counts' => [
+                'players' => $humanPlayers + count($bots),
+                'spectators' => $spectators,
+            ],
+            'owner' => $room->getOwner()
+                ? [
+                    'id' => $room->getOwner()->getId(),
+                    'username' => $room->getOwner()->getUsername(),
+                ]
+                : null,
+            'players' => array_map(
+                fn(User $user) => [
+                    'id' => $user->getId(),
+                    'username' => $user->getUsername(),
+                ],
+                $room->getPlayers()->toArray()
+            ),
+            'bots' => $bots,
+        ];
+    }
+
+    private function serializeBot(RoomBot $bot): array
+    {
+        return [
+            'id' => $bot->getId(),
+            'name' => $bot->getName(),
+        ];
+    }
+
+    private function totalPlayers(Room $room, EntityManagerInterface $em): int
+    {
+        $partRepo = $em->getRepository(RoomParticipant::class);
+        $humanPlayers = method_exists($partRepo, 'countActiveByRoomAndRole')
+            ? $partRepo->countActiveByRoomAndRole($room, 'player')
+            : $room->getPlayers()->count();
+
+        return $humanPlayers + $room->getBots()->count();
     }
 }
