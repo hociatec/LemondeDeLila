@@ -1,9 +1,10 @@
-package com.lemondelila.client.service.update;
+package com.lemondelila.client.settings.update;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.lemondelila.framework.core.config.ConfigurationService;
-import com.lemondelila.framework.core.task.TaskScheduler;
+import com.lemondelila.client.framework.core.config.ConfigurationService;
+import com.lemondelila.client.framework.core.di.Inject;
+import com.lemondelila.client.framework.core.task.TaskScheduler;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,6 +34,7 @@ public final class UpdateService {
     private final URI checkUri;
     private final String currentVersion;
 
+    @Inject
     public UpdateService(HttpClient httpClient,
                          ObjectMapper objectMapper,
                          TaskScheduler scheduler,

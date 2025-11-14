@@ -3,6 +3,8 @@ package com.lemondelila.client.settings.view;
 import com.lemondelila.client.media.SoundBank;
 import com.lemondelila.client.settings.model.AppSettings;
 import com.lemondelila.client.settings.service.AppSettingsService;
+import com.lemondelila.client.settings.update.UpdateCheckResult;
+import com.lemondelila.client.settings.update.UpdateService;
 import com.lemondelila.client.framework.media.sound.SoundEffectManager;
 import com.lemondelila.client.framework.ui.util.ButtonUtils;
 
@@ -14,10 +16,12 @@ import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.SwingConstants;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -44,11 +48,21 @@ public final class OptionsDialog extends JDialog {
     private final JButton saveButton = new JButton("Enregistrer");
     private final JButton cancelButton = new JButton("Annuler");
     private final AppSettingsService settingsService;
+    private final UpdateService updateService;
     private final SoundEffectManager sounds;
+    private final JLabel currentVersionLabel = new JLabel();
+    private final JLabel updateStatusLabel = new JLabel("Aucune vérification en cours.");
+    private final JButton checkUpdateButton = new JButton("Vérifier les mises à jour");
+    private final JButton installUpdateButton = new JButton("Installer la mise à jour");
+    private volatile UpdateCheckResult pendingUpdate;
 
-    public OptionsDialog(Window owner, AppSettingsService service, SoundEffectManager sounds) {
+    public OptionsDialog(Window owner,
+                         AppSettingsService service,
+                         UpdateService updateService,
+                         SoundEffectManager sounds) {
         super(owner, "Options", ModalityType.APPLICATION_MODAL);
         this.settingsService = service;
+        this.updateService = updateService;
         this.sounds = sounds;
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout(12, 12));
@@ -57,6 +71,7 @@ public final class OptionsDialog extends JDialog {
         tabs.addTab("Volume", buildVolumePanel());
         tabs.addTab("Chat", buildChatPanel());
         tabs.addTab("Général", buildGeneralPanel());
+        tabs.addTab("Mises à jour", buildUpdatePanel());
 
         add(tabs, BorderLayout.CENTER);
         add(buildButtons(), BorderLayout.SOUTH);
@@ -82,6 +97,8 @@ public final class OptionsDialog extends JDialog {
         registerNavigationSound(stayConnected);
         registerNavigationSound(saveButton);
         registerNavigationSound(cancelButton);
+        registerNavigationSound(checkUpdateButton);
+        registerNavigationSound(installUpdateButton);
         loadValues();
         getRootPane().setDefaultButton(saveButton);
         pack();
@@ -141,6 +158,29 @@ public final class OptionsDialog extends JDialog {
         panel.add(confirmExit);
         panel.add(Box.createRigidArea(new java.awt.Dimension(0, 8)));
         panel.add(stayConnected);
+        return panel;
+    }
+
+    private JPanel buildUpdatePanel() {
+        JPanel panel = verticalPanel();
+        currentVersionLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        String currentVersion = updateService != null ? updateService.currentVersion() : "inconnue";
+        currentVersionLabel.setText("Version actuelle : " + currentVersion);
+        updateStatusLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        checkUpdateButton.setAlignmentX(Component.LEFT_ALIGNMENT);
+        installUpdateButton.setAlignmentX(Component.LEFT_ALIGNMENT);
+        installUpdateButton.setEnabled(false);
+        checkUpdateButton.addActionListener(e -> performUpdateCheck());
+        installUpdateButton.addActionListener(e -> performUpdateInstall());
+        ButtonUtils.enterActivates(checkUpdateButton);
+        ButtonUtils.enterActivates(installUpdateButton);
+        panel.add(currentVersionLabel);
+        panel.add(Box.createRigidArea(new java.awt.Dimension(0, 8)));
+        panel.add(checkUpdateButton);
+        panel.add(Box.createRigidArea(new java.awt.Dimension(0, 8)));
+        panel.add(installUpdateButton);
+        panel.add(Box.createRigidArea(new java.awt.Dimension(0, 8)));
+        panel.add(updateStatusLabel);
         return panel;
     }
 
@@ -239,7 +279,89 @@ public final class OptionsDialog extends JDialog {
         }
     }
 
+    private void performUpdateCheck() {
+        if (updateService == null) {
+            updateStatusLabel.setText("Service de mise à jour indisponible.");
+            setUpdateButtonsState(true, false);
+            return;
+        }
+        playSelect();
+        pendingUpdate = null;
+        updateStatusLabel.setText("Recherche de mise à jour...");
+        setUpdateButtonsState(false, false);
+        updateService.checkForUpdates().whenComplete((result, error) ->
+                SwingUtilities.invokeLater(() -> {
+                    if (error != null) {
+                        handleUpdateFailure(error);
+                    } else {
+                        handleUpdateCheckSuccess(result);
+                    }
+                })
+        );
+    }
+
+    private void handleUpdateCheckSuccess(UpdateCheckResult result) {
+        pendingUpdate = null;
+        currentVersionLabel.setText("Version actuelle : " + result.currentVersion());
+        if (result.updateAvailable()) {
+            pendingUpdate = result;
+            String message = "Nouvelle version " + result.remoteVersion() + " disponible.";
+            if (result.notes() != null && !result.notes().isBlank()) {
+                message += " " + result.notes();
+            }
+            updateStatusLabel.setText(message);
+            setUpdateButtonsState(true, true);
+        } else {
+            updateStatusLabel.setText("Vous disposez déjà de la dernière version.");
+            setUpdateButtonsState(true, false);
+        }
+    }
+
+    private void handleUpdateFailure(Throwable error) {
+        pendingUpdate = null;
+        String message = error != null && error.getMessage() != null
+                ? error.getMessage()
+                : "erreur inconnue";
+        updateStatusLabel.setText("Erreur : " + message);
+        setUpdateButtonsState(true, false);
+    }
+
+    private void performUpdateInstall() {
+        if (updateService == null) {
+            return;
+        }
+        if (pendingUpdate == null) {
+            updateStatusLabel.setText("Aucune mise à jour disponible.");
+            setUpdateButtonsState(true, false);
+            return;
+        }
+        playSelect();
+        UpdateCheckResult target = pendingUpdate;
+        setUpdateButtonsState(false, false);
+        updateStatusLabel.setText("Téléchargement de la mise à jour...");
+        updateService.downloadAndInstall(target, status ->
+                SwingUtilities.invokeLater(() -> updateStatusLabel.setText(status))
+        ).whenComplete((ignored, error) -> SwingUtilities.invokeLater(() -> {
+            if (error != null) {
+                handleUpdateFailure(error);
+                pendingUpdate = target;
+                return;
+            }
+            pendingUpdate = null;
+            updateStatusLabel.setText("Mise à jour installée. Redémarrez l'application pour l'appliquer.");
+            JOptionPane.showMessageDialog(
+                    this,
+                    "La mise à jour a été installée avec succès.\nVeuillez redémarrer l'application.",
+                    "Mise à jour terminée",
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+            setUpdateButtonsState(true, false);
+        }));
+    }
+
+    private void setUpdateButtonsState(boolean checkEnabled, boolean installEnabled) {
+        checkUpdateButton.setEnabled(checkEnabled);
+        installUpdateButton.setEnabled(installEnabled);
+    }
 }
-
-
 

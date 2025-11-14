@@ -1,4 +1,4 @@
-package com.lemondelila.client.service.update;
+package com.lemondelila.client.settings.update;
 
 public record UpdateCheckResult(
         String currentVersion,
