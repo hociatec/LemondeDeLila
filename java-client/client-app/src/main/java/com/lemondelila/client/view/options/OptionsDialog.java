@@ -22,11 +22,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Desktop;
 import java.awt.Window;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Objects;
 
 public final class OptionsDialog extends JDialog {
@@ -39,10 +35,12 @@ public final class OptionsDialog extends JDialog {
     private final JLabel currentVersionLabel = new JLabel();
     private final JLabel updateStatusLabel = new JLabel("Aucune vérification en cours.");
     private final JButton checkUpdateButton = new JButton("Vérifier les mises à jour");
+    private final JButton installUpdateButton = new JButton("Installer la mise à jour");
     private final JButton saveButton = new JButton("Enregistrer");
     private final JButton cancelButton = new JButton("Annuler");
     private final AppSettingsService settingsService;
     private final UpdateService updateService;
+    private UpdateCheckResult pendingUpdate;
 
     public OptionsDialog(Window owner, AppSettingsService service, UpdateService updateService) {
         super(owner, "Options", ModalityType.APPLICATION_MODAL);
@@ -117,6 +115,12 @@ public final class OptionsDialog extends JDialog {
         checkUpdateButton.addActionListener(e -> performUpdateCheck());
         ButtonUtils.enterActivates(checkUpdateButton);
         panel.add(checkUpdateButton);
+        panel.add(Box.createRigidArea(new java.awt.Dimension(0, 8)));
+        installUpdateButton.setAlignmentX(Component.LEFT_ALIGNMENT);
+        installUpdateButton.setEnabled(false);
+        installUpdateButton.addActionListener(e -> installPendingUpdate());
+        ButtonUtils.enterActivates(installUpdateButton);
+        panel.add(installUpdateButton);
         panel.add(Box.createRigidArea(new java.awt.Dimension(0, 8)));
         panel.add(updateStatusLabel);
         return panel;
@@ -197,16 +201,16 @@ public final class OptionsDialog extends JDialog {
             if (!result.notes().isBlank()) {
                 message.append("\n").append(result.notes()).append("\n\n");
             }
-            message.append("Voulez-vous ouvrir la page de téléchargement ?");
-            int choice = JOptionPane.showConfirmDialog(
+            message.append("Vous pouvez installer la mise à jour maintenant.");
+            JOptionPane.showMessageDialog(
                     this,
                     message.toString(),
                     "Mise à jour disponible",
-                    JOptionPane.YES_NO_OPTION
+                    JOptionPane.INFORMATION_MESSAGE
             );
-            if (choice == JOptionPane.YES_OPTION) {
-                openDownloadLink(result.downloadUrl());
-            }
+            pendingUpdate = result;
+            installUpdateButton.setEnabled(true);
+            installUpdateButton.setText("Installer " + remote);
         } else {
             updateStatusLabel.setText("Client à jour ("
                     + (result.currentVersion().isBlank() ? "version inconnue" : result.currentVersion())
@@ -217,33 +221,43 @@ public final class OptionsDialog extends JDialog {
                     "Mise à jour",
                     JOptionPane.INFORMATION_MESSAGE
             );
+            installUpdateButton.setEnabled(false);
+            installUpdateButton.setText("Installer la mise à jour");
+            pendingUpdate = null;
         }
     }
 
-    private void openDownloadLink(String url) {
-        if (url == null || url.isBlank()) {
-            JOptionPane.showMessageDialog(
-                    this,
-                    "URL de téléchargement indisponible. Consultez le site officiel.",
-                    "Téléchargement indisponible",
-                    JOptionPane.WARNING_MESSAGE
-            );
+    private void installPendingUpdate() {
+        if (pendingUpdate == null) {
             return;
         }
-        try {
-            URI uri = new URI(url);
-            if (Desktop.isDesktopSupported()) {
-                Desktop.getDesktop().browse(uri);
-            } else {
-                throw new UnsupportedOperationException("Desktop non supporté");
-            }
-        } catch (IOException | URISyntaxException | UnsupportedOperationException ex) {
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Impossible d'ouvrir le navigateur : " + ex.getMessage(),
-                    "Téléchargement",
-                    JOptionPane.ERROR_MESSAGE
-            );
-        }
+        installUpdateButton.setEnabled(false);
+        installUpdateButton.setText("Installation en cours...");
+        updateStatusLabel.setText("Téléchargement de la mise à jour...");
+        updateService.downloadAndInstall(pendingUpdate, status ->
+                SwingUtilities.invokeLater(() -> updateStatusLabel.setText(status))
+        ).whenComplete((ignored, error) ->
+                SwingUtilities.invokeLater(() -> {
+                    installUpdateButton.setEnabled(true);
+                    installUpdateButton.setText("Installer la mise à jour");
+                    if (error != null) {
+                        JOptionPane.showMessageDialog(
+                                this,
+                                "Échec de l'installation : " + error.getMessage(),
+                                "Mise à jour",
+                                JOptionPane.ERROR_MESSAGE
+                        );
+                        return;
+                    }
+                    JOptionPane.showMessageDialog(
+                            this,
+                            "Mise à jour installée. L'application va se fermer, merci de la relancer.",
+                            "Mise à jour réussie",
+                            JOptionPane.INFORMATION_MESSAGE
+                    );
+                    dispose();
+                    System.exit(0);
+                })
+        );
     }
 }

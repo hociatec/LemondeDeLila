@@ -6,13 +6,24 @@ import com.lemondelila.framework.core.config.ConfigurationService;
 import com.lemondelila.framework.core.task.TaskScheduler;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Duration;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 public final class UpdateService {
 
@@ -44,6 +55,40 @@ public final class UpdateService {
             try {
                 UpdateCheckResult result = fetchLatest();
                 future.complete(result);
+            } catch (IOException | InterruptedException ex) {
+                if (ex instanceof InterruptedException) {
+                    Thread.currentThread().interrupt();
+                }
+                future.completeExceptionally(ex);
+            }
+        });
+        return future;
+    }
+
+    public CompletableFuture<Void> downloadAndInstall(UpdateCheckResult result, Consumer<String> statusConsumer) {
+        Objects.requireNonNull(result, "result");
+        if (result.downloadUrl() == null || result.downloadUrl().isBlank()) {
+            CompletableFuture<Void> failed = new CompletableFuture<>();
+            failed.completeExceptionally(new IllegalArgumentException("URL de téléchargement indisponible."));
+            return failed;
+        }
+        CompletableFuture<Void> future = new CompletableFuture<>();
+        scheduler.runAsync(() -> {
+            try {
+                Path root = resolveRootDirectory();
+                Path updatesDir = Files.createDirectories(root.resolve("updates"));
+                Path archive = updatesDir.resolve("client-update-" + System.currentTimeMillis() + ".zip");
+                updateStatus(statusConsumer, "Téléchargement de la mise à jour...");
+                downloadArchive(result.downloadUrl(), archive);
+                updateStatus(statusConsumer, "Extraction des fichiers...");
+                Path tempDir = extractArchive(archive, updatesDir);
+                Path payloadRoot = detectPayloadRoot(tempDir);
+                updateStatus(statusConsumer, "Copie sur " + root + " ...");
+                copyRecursively(payloadRoot, root);
+                updateStatus(statusConsumer, "Nettoyage...");
+                Files.deleteIfExists(archive);
+                deleteRecursively(tempDir);
+                future.complete(null);
             } catch (IOException | InterruptedException ex) {
                 if (ex instanceof InterruptedException) {
                     Thread.currentThread().interrupt();
@@ -108,6 +153,119 @@ public final class UpdateService {
             return Integer.parseInt(part.replaceAll("[^0-9]", ""));
         } catch (NumberFormatException ex) {
             return 0;
+        }
+    }
+
+    private Path resolveRootDirectory() throws IOException {
+        Path cwd = Paths.get("").toAbsolutePath();
+        Path candidate = findRootCandidate(cwd);
+        if (candidate != null) {
+            return candidate;
+        }
+        throw new IOException("Impossible de localiser le dossier du projet (start-lila.ps1 introuvable).");
+    }
+
+    private Path findRootCandidate(Path start) {
+        Path current = start;
+        int depth = 0;
+        while (current != null && depth < 4) {
+            if (Files.exists(current.resolve("start-lila.ps1"))) {
+                return current;
+            }
+            current = current.getParent();
+            depth++;
+        }
+        return null;
+    }
+
+    private void downloadArchive(String url, Path destination) throws IOException, InterruptedException {
+        HttpRequest request = HttpRequest.newBuilder(URI.create(url))
+                .GET()
+                .timeout(Duration.ofMinutes(2))
+                .build();
+        HttpResponse<InputStream> response = httpClient.send(request, HttpResponse.BodyHandlers.ofInputStream());
+        if (response.statusCode() >= 400) {
+            throw new IOException("HTTP " + response.statusCode() + " lors du téléchargement de la mise à jour.");
+        }
+        try (InputStream body = response.body()) {
+            Files.copy(body, destination, StandardCopyOption.REPLACE_EXISTING);
+        }
+    }
+
+    private Path extractArchive(Path archive, Path updatesDir) throws IOException {
+        Path tempDir = Files.createTempDirectory(updatesDir, "extract-");
+        try (ZipInputStream zipInputStream = new ZipInputStream(Files.newInputStream(archive))) {
+            ZipEntry entry;
+            while ((entry = zipInputStream.getNextEntry()) != null) {
+                Path target = tempDir.resolve(entry.getName()).normalize();
+                if (!target.startsWith(tempDir)) {
+                    throw new IOException("Archive corrompue : tentative d'écriture hors dossier cible.");
+                }
+                if (entry.isDirectory()) {
+                    Files.createDirectories(target);
+                } else {
+                    Files.createDirectories(target.getParent());
+                    Files.copy(zipInputStream, target, StandardCopyOption.REPLACE_EXISTING);
+                }
+                zipInputStream.closeEntry();
+            }
+        }
+        return tempDir;
+    }
+
+    private Path detectPayloadRoot(Path tempDir) throws IOException {
+        try (var stream = Files.list(tempDir)) {
+            var entries = stream.filter(Files::exists).toList();
+            if (entries.size() == 1 && Files.isDirectory(entries.get(0))) {
+                return entries.get(0);
+            }
+        }
+        return tempDir;
+    }
+
+    private void copyRecursively(Path sourceRoot, Path targetRoot) throws IOException {
+        Files.walkFileTree(sourceRoot, new SimpleFileVisitor<>() {
+            @Override
+            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+                Path relative = sourceRoot.relativize(dir);
+                Path targetDir = targetRoot.resolve(relative);
+                Files.createDirectories(targetDir);
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                Path relative = sourceRoot.relativize(file);
+                Path targetFile = targetRoot.resolve(relative);
+                Files.createDirectories(targetFile.getParent());
+                Files.copy(file, targetFile, StandardCopyOption.REPLACE_EXISTING);
+                return FileVisitResult.CONTINUE;
+            }
+        });
+    }
+
+    private void deleteRecursively(Path directory) throws IOException {
+        if (directory == null || !Files.exists(directory)) {
+            return;
+        }
+        Files.walkFileTree(directory, new SimpleFileVisitor<>() {
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                Files.deleteIfExists(file);
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                Files.deleteIfExists(dir);
+                return FileVisitResult.CONTINUE;
+            }
+        });
+    }
+
+    private void updateStatus(Consumer<String> consumer, String message) {
+        if (consumer != null) {
+            consumer.accept(message);
         }
     }
 }
