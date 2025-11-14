@@ -34,11 +34,15 @@ import java.util.zip.ZipInputStream;
 
 public final class UpdateService {
 
+    private static final String DOWNLOAD_HEADER = "X-Client-Update-Token";
+
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
     private final TaskScheduler scheduler;
     private final URI checkUri;
     private final String currentVersion;
+    private final Path configuredRoot;
+    private final String downloadToken;
 
     @Inject
     public UpdateService(HttpClient httpClient,
@@ -51,6 +55,20 @@ public final class UpdateService {
         Objects.requireNonNull(configurationService, "configurationService");
         this.checkUri = URI.create(configurationService.get("updates.check.url", "https://hociatec.fr/client/version"));
         this.currentVersion = resolveVersion(configurationService);
+        this.configuredRoot = configurationService.get("updates.root.dir")
+                .map(String::trim)
+                .filter(value -> !value.isEmpty())
+                .map(value -> {
+                    Path candidate = Path.of(value);
+                    if (!candidate.isAbsolute()) {
+                        candidate = Paths.get("").resolve(candidate).normalize();
+                    }
+                    return candidate;
+                })
+                .orElse(null);
+        this.downloadToken = configurationService.get("updates.auth.token")
+                .map(String::trim)
+                .orElse("");
     }
 
     public String currentVersion() {
@@ -195,12 +213,18 @@ public final class UpdateService {
     }
 
     private Path resolveRootDirectory() throws IOException {
+        if (configuredRoot != null) {
+            if (Files.exists(configuredRoot)) {
+                return configuredRoot;
+            }
+            throw new IOException("Le dossier configuré pour les mises à jour est introuvable : " + configuredRoot);
+        }
         Path cwd = Paths.get("").toAbsolutePath();
         Path candidate = findRootCandidate(cwd);
         if (candidate != null) {
             return candidate;
         }
-        throw new IOException("Impossible de localiser le dossier du projet (start-lila.ps1 introuvable).");
+        return cwd;
     }
 
     private Path findRootCandidate(Path start) {
@@ -217,10 +241,13 @@ public final class UpdateService {
     }
 
     private void downloadArchive(String url, Path destination) throws IOException, InterruptedException {
-        HttpRequest request = HttpRequest.newBuilder(URI.create(url))
+        HttpRequest.Builder builder = HttpRequest.newBuilder(URI.create(url))
                 .GET()
-                .timeout(Duration.ofMinutes(2))
-                .build();
+                .timeout(Duration.ofMinutes(2));
+        if (!downloadToken.isBlank()) {
+            builder.header(DOWNLOAD_HEADER, downloadToken);
+        }
+        HttpRequest request = builder.build();
         HttpResponse<InputStream> response = httpClient.send(request, HttpResponse.BodyHandlers.ofInputStream());
         if (response.statusCode() >= 400) {
             throw new IOException("HTTP " + response.statusCode() + " lors du téléchargement de la mise à jour.");
