@@ -1,6 +1,0 @@
-com.lemondelila.client.framework.core.module.FrameworkCoreModule
-com.lemondelila.client.framework.ui.module.UiFrameworkModule
-com.lemondelila.client.framework.access.module.AccessibilityModule
-com.lemondelila.client.framework.network.module.NetworkModule
-com.lemondelila.client.framework.media.module.MediaModule
-com.lemondelila.client.application.ApplicationModule
