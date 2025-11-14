@@ -42,6 +42,7 @@ public final class UpdateService {
     private final URI checkUri;
     private final String currentVersion;
     private final Path configuredRoot;
+    private final Path configRootFromFile;
     private final String downloadToken;
 
     @Inject
@@ -65,6 +66,9 @@ public final class UpdateService {
                     }
                     return candidate;
                 })
+                .orElse(null);
+        this.configRootFromFile = configurationService.getExternalConfigPath()
+                .map(UpdateService::deriveRootFromConfig)
                 .orElse(null);
         this.downloadToken = configurationService.get("updates.auth.token")
                 .map(String::trim)
@@ -212,12 +216,32 @@ public final class UpdateService {
         }
     }
 
+    private static Path deriveRootFromConfig(Path configFile) {
+        Path absolute = configFile.toAbsolutePath().normalize();
+        Path parent = absolute.getParent();
+        if (parent == null) {
+            return absolute;
+        }
+        Path parentDirectory = parent;
+        Path fileName = parentDirectory.getFileName();
+        if (fileName != null && "config".equalsIgnoreCase(fileName.toString())) {
+            Path rootCandidate = parentDirectory.getParent();
+            if (rootCandidate != null) {
+                return rootCandidate;
+            }
+        }
+        return parentDirectory;
+    }
+
     private Path resolveRootDirectory() throws IOException {
         if (configuredRoot != null) {
             if (Files.exists(configuredRoot)) {
                 return configuredRoot;
             }
             throw new IOException("Le dossier configuré pour les mises à jour est introuvable : " + configuredRoot);
+        }
+        if (configRootFromFile != null && Files.exists(configRootFromFile)) {
+            return configRootFromFile;
         }
         Path cwd = Paths.get("").toAbsolutePath();
         Path candidate = findRootCandidate(cwd);
