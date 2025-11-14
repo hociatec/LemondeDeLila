@@ -4,6 +4,7 @@ import com.lemondelila.client.model.game.GameEngine;
 import com.lemondelila.client.model.game.GameSession;
 
 import java.util.Optional;
+import java.util.OptionalInt;
 
 public final class DameNatureSession implements GameSession<DameNatureState> {
 
@@ -25,12 +26,12 @@ public final class DameNatureSession implements GameSession<DameNatureState> {
         this.score = score;
     }
 
-    public DameNatureState.Player self() {
-        return self;
+    public Optional<DameNatureState.Player> self() {
+        return Optional.ofNullable(self);
     }
 
-    public int selfIndex() {
-        return selfIndex;
+    public OptionalInt selfIndex() {
+        return selfIndex >= 0 ? OptionalInt.of(selfIndex) : OptionalInt.empty();
     }
 
     public Optional<GameEngine.Score> scoreValue() {

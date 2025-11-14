@@ -513,8 +513,9 @@ public final class DameNatureScreen extends JPanel implements Screen {
         this.currentSession = session;
         DameNatureState state = session.state();
         updateTurnIndicators(state);
-        updatePlayers(state, session.self());
-        updateCardSelections(state, session.self());
+        DameNatureState.Player selfPlayer = session.self().orElse(null);
+        updatePlayers(state, selfPlayer);
+        updateCardSelections(state, selfPlayer);
         updateQuiz(state);
         updateLog(state);
         announce(extractLastLogMessage(session));
