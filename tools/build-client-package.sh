@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-OUTPUT_DIR="$ROOT_DIR/backend/public/downloads"
+OUTPUT_DIR="$ROOT_DIR/backend/var/updates"
 ARCHIVE_NAME="le-monde-de-lila-client.zip"
 STAGING_DIR="$(mktemp -d)"
 PACKAGE_ROOT="$STAGING_DIR/le-monde-de-lila-client"

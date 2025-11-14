@@ -11,6 +11,8 @@ parameters:
     app.client.version: '%env(string:APP_CLIENT_VERSION)%'
     app.client.download_url: '%env(string:APP_CLIENT_DOWNLOAD_URL)%'
     app.client.checksum: '%env(string:APP_CLIENT_CHECKSUM)%'
+    app.client.package_path: '%kernel.project_dir%/%env(string:APP_CLIENT_PACKAGE_PATH)%'
+    app.client.download_secret: '%env(string:APP_CLIENT_DOWNLOAD_SECRET)%'
 
 services:
     # default configuration for services in *this* file
