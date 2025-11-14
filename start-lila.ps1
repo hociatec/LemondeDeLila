@@ -1,5 +1,5 @@
 ﻿<#
-    Script de démarrage « one-click » pour Le Monde de Lila.
+    Script de démarrage « one-click » pour Les mondes de Lilas.
 
     Ce script :
       1. Vérifie (et installe si besoin) Maven 3.9.6 dans tools\.
@@ -384,26 +384,20 @@ try {
         throw "Compilation incomplete : $appLauncherClass introuvable. Relancez le script sans -SkipBuild."
     }
 
-    # ✅ Ajout de tous les modules au classpath
-    $moduleClassDirs = @(
-        Join-Path $javaDirectory 'framework-core\target\classes'
-        Join-Path $javaDirectory 'framework-ui\target\classes'
-        Join-Path $javaDirectory 'framework-access\target\classes'
-        Join-Path $javaDirectory 'framework-network\target\classes'
-        Join-Path $javaDirectory 'framework-media\target\classes'
-        Join-Path $javaDirectory 'client-app\target\classes'
-    ) | Where-Object { Test-Path $_ }
+    # ✅ Recherche du JAR autonome généré par Maven (classifier -all)
+    $shadedJar = Get-ChildItem -Path (Join-Path $javaDirectory 'client-app\target') `
+        -Filter 'client-app-*-all.jar' `
+        -ErrorAction SilentlyContinue `
+        | Sort-Object LastWriteTime -Descending `
+        | Select-Object -First 1
 
-    $dependencyDir = Join-Path $javaDirectory 'client-app\target\dependency'
-    if (!(Test-Path $dependencyDir)) {
-        New-Item -ItemType Directory -Path $dependencyDir -Force | Out-Null
+    if (-not $shadedJar) {
+        throw "JAR exécutable introuvable (client-app-*-all.jar). Relancez sans -SkipBuild."
     }
 
-    $classPathEntries = $moduleClassDirs + (Join-Path $dependencyDir '*')
-    $classPath = ($classPathEntries -join ';')
-
     Write-Host "Démarrage du client Swing..."
-    & $javaCmd.Source -cp $classPath com.lemondelila.client.AppLauncher
+    $javaArguments = @('-jar', $shadedJar.FullName)
+    & $javaCmd.Source @javaArguments
 
 }
 finally {
@@ -421,3 +415,4 @@ finally {
 
     Set-Location $rootDirectory
 }
+
