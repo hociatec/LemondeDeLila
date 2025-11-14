@@ -41,7 +41,23 @@ $targetDir  = Join-Path $clientDir 'target'
 $dependencyDir = Join-Path $targetDir 'dependency'
 $stagingDir    = Join-Path $targetDir 'jpackage-input'
 $configDir  = Join-Path $javaClient 'config'
-$wixAvailable = (Get-Command candle.exe -ErrorAction SilentlyContinue) -and (Get-Command light.exe -ErrorAction SilentlyContinue)
+
+$wixAvailable = $false
+$wixLocalDirs = Get-ChildItem -Path $toolsDir -Directory -Filter 'wix*' -ErrorAction SilentlyContinue
+foreach ($dir in $wixLocalDirs) {
+    $candlePath = Join-Path $dir.FullName 'candle.exe'
+    $lightPath  = Join-Path $dir.FullName 'light.exe'
+    if ((Test-Path $candlePath) -and (Test-Path $lightPath)) {
+        if (-not ($env:PATH -split ';' | Where-Object { $_ -eq $dir.FullName })) {
+            $env:PATH = "$($dir.FullName);$env:PATH"
+        }
+        $wixAvailable = $true
+        break
+    }
+}
+if (-not $wixAvailable) {
+    $wixAvailable = (Get-Command candle.exe -ErrorAction SilentlyContinue) -and (Get-Command light.exe -ErrorAction SilentlyContinue)
+}
 
 if (-not (Get-Command jpackage -ErrorAction SilentlyContinue)) {
     throw "jpackage introuvable. Assurez-vous d'utiliser un JDK 14+ (ici JDK 21 est requis)."
