@@ -4,15 +4,17 @@
     Ce script :
       1. Vérifie (et installe si besoin) Maven 3.9.6 dans tools\.
       2. Optionnellement installe les dépendances PHP (si vendor absent et composer disponible).
-      3. Par défaut suppose les services backend déjà disponibles (production distante) et se contente de construire/lancer le client Java Swing.
-      4. Utilise désormais exclusivement les services distants (démarrage local désactivé).
+      3. Lance le serveur HTTP Symfony (php -S) et le serveur WebSocket app:realtime:serve.
+      4. Construit le client Java Swing (Maven multi-modules) et copie les dépendances runtime.
+      5. Lance l'application Swing automatiquement.
+      6. Ferme proprement les processus backend à la fermeture de l'application Java.
 
     Utilisation :
         powershell -ExecutionPolicy Bypass -File .\start-lila.ps1
 
     Paramètres :
-        -SkipBackend   : (compatibilité) ignoré ; le backend distant est toujours utilisé.
-        -SkipRealtime  : (compatibilité) ignoré ; le serveur WebSocket distant est toujours utilisé.
+        -SkipBackend   : ne lance pas les serveurs backend (suppose déjà lancés).
+        -SkipRealtime  : ne lance pas le serveur WebSocket.
         -SkipBuild     : saute la compilation Maven (suppose target\ déjà initialisé).
 #>
 [CmdletBinding()]
@@ -22,24 +24,6 @@ param(
     [switch]$SkipBuild
 )
 
-if (-not $PSBoundParameters.ContainsKey('SkipBackend')) {
-    $SkipBackend = $true
-}
-if (-not $PSBoundParameters.ContainsKey('SkipRealtime')) {
-    $SkipRealtime = $true
-}
-
-if ($PSBoundParameters.ContainsKey('SkipBackend') -and -not $SkipBackend) {
-    Write-Warning "Le lancement du backend local est désormais désactivé. Utilisation du serveur distant."
-}
-if ($PSBoundParameters.ContainsKey('SkipRealtime') -and -not $SkipRealtime) {
-    Write-Warning "Le serveur WebSocket local est désactivé. Utilisation du service distant."
-}
-$SkipBackend = $true
-$SkipRealtime = $true
-
-Write-Host "Mode distant forcé : aucun serveur backend local ne sera lancé."
-
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
@@ -48,12 +32,7 @@ $backendDirectory = Join-Path $rootDirectory 'backend'
 $javaDirectory    = Join-Path $rootDirectory 'java-client'
 $logDirectory     = Join-Path $rootDirectory 'logs'
 
-if (!(Test-Path $backendDirectory)) {
-    if (-not $SkipBackend -or -not $SkipRealtime) {
-        throw "Répertoire backend introuvable : $backendDirectory"
-    }
-    Write-Warning "Répertoire backend absent, fonctionnement en mode distant uniquement."
-}
+if (!(Test-Path $backendDirectory)) { throw "Répertoire backend introuvable : $backendDirectory" }
 if (!(Test-Path $javaDirectory)) { throw "Répertoire java-client introuvable : $javaDirectory" }
 if (!(Test-Path $logDirectory)) { New-Item -ItemType Directory -Path $logDirectory | Out-Null }
 
@@ -293,30 +272,28 @@ function Wait-ForTcpPort {
 
 Set-Location $rootDirectory
 
-[string]$wsHost = $env:APP_WS_HOST
-[string]$wsPort = $env:APP_WS_PORT
-if (Test-Path $backendDirectory) {
-    $envFiles = @('.env.local', '.env.dev.local', '.env', '.env.dev')
-    foreach ($fileName in $envFiles) {
-        if ($wsHost -and $wsPort) { break }
-        $envPath = Join-Path $backendDirectory $fileName
-        if (-not (Test-Path $envPath)) { continue }
-        foreach ($line in Get-Content $envPath) {
-            if (-not $wsHost -and $line -match '^\s*APP_WS_HOST\s*=\s*(.+)$') {
-                $value = $matches[1].Trim()
-                $wsHost = $value.Trim("'`"")
-            }
-            elseif (-not $wsPort -and $line -match '^\s*APP_WS_PORT\s*=\s*(.+)$') {
-                $value = $matches[1].Trim().Trim("'`"")
-                [int]$parsed = 0
-                if ([int]::TryParse($value, [ref]$parsed)) {
-                    $wsPort = $parsed
-                }
+$wsHost = $env:APP_WS_HOST
+$wsPort = $env:APP_WS_PORT
+$envFiles = @('.env.local', '.env.dev.local', '.env', '.env.dev')
+foreach ($fileName in $envFiles) {
+    if ($wsHost -and $wsPort) { break }
+    $envPath = Join-Path $backendDirectory $fileName
+    if (-not (Test-Path $envPath)) { continue }
+    foreach ($line in Get-Content $envPath) {
+        if (-not $wsHost -and $line -match '^\s*APP_WS_HOST\s*=\s*(.+)$') {
+            $value = $matches[1].Trim()
+            $wsHost = $value.Trim("'`"")
+        }
+        elseif (-not $wsPort -and $line -match '^\s*APP_WS_PORT\s*=\s*(.+)$') {
+            $value = $matches[1].Trim().Trim("'`"")
+            [int]$parsed = 0
+            if ([int]::TryParse($value, [ref]$parsed)) {
+                $wsPort = $parsed
             }
         }
     }
 }
-if (-not $wsHost) { $wsHost = 'ws.hociatec.fr' }
+if (-not $wsHost) { $wsHost = '127.0.0.1' }
 if (-not $wsPort) { $wsPort = 8081 }
 [int]$wsPortValue = 0
 if (-not [int]::TryParse([string]$wsPort, [ref]$wsPortValue)) {
@@ -325,12 +302,10 @@ if (-not [int]::TryParse([string]$wsPort, [ref]$wsPortValue)) {
 $wsPort = $wsPortValue
 
 $mavenPath = Ensure-Maven -Root $rootDirectory
-if (Test-Path $backendDirectory) {
-    Ensure-PHPDependencies -BackendDir $backendDirectory
-}
+Ensure-PHPDependencies -BackendDir $backendDirectory
 
 $phpCmd = Get-Command php -ErrorAction SilentlyContinue
-if (!$phpCmd -and (-not $SkipBackend) -and (Test-Path $backendDirectory)) {
+if (!$phpCmd -and -not $SkipBackend) {
     throw "PHP CLI introuvable. Ajoutez PHP au PATH avant d'exécuter ce script."
 }
 $javaCmd = Get-Command java -ErrorAction SilentlyContinue
@@ -343,13 +318,13 @@ $realtimeProcess = $null
 
 $javaLocationPushed = $false
 try {
-    if ((-not $SkipBackend) -and (Test-Path $backendDirectory)) {
+    if (-not $SkipBackend) {
         $backendProcess = Start-BackendHttp -BackendDir $backendDirectory -PhpPath $phpCmd.Source -LogDir $logDirectory
         Wait-ForEndpoint -Url 'http://127.0.0.1:8000/'
         Write-Host "Serveur HTTP backend démarré."
     }
 
-    if ((-not $SkipRealtime) -and $phpCmd -and (Test-Path $backendDirectory)) {
+    if ((-not $SkipRealtime) -and $phpCmd) {
         $realtimeProcess = Start-RealtimeServer -BackendDir $backendDirectory -PhpPath $phpCmd.Source -LogDir $logDirectory
         try {
             Wait-ForTcpPort -TcpHost $wsHost -TcpPort $wsPort

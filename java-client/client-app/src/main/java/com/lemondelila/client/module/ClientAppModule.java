@@ -30,7 +30,6 @@ import com.lemondelila.client.service.catalogue.GameRulesService;
 import com.lemondelila.client.service.chat.ChatConnectionFactory;
 import com.lemondelila.client.service.game.TokenAwareRealtimeGateway;
 import com.lemondelila.client.service.settings.AppSettingsService;
-import com.lemondelila.client.service.update.UpdateService;
 import com.lemondelila.client.view.catalogue.CatalogScreen;
 import com.lemondelila.client.view.home.HomeScreen;
 import com.lemondelila.client.view.menu.MainMenuScreen;
@@ -81,7 +80,7 @@ public final class ClientAppModule implements LilaModule {
 
         builder.bindFactory(RealtimeGateway.class, ctx -> {
             ConfigurationService config = ctx.get(ConfigurationService.class);
-            URI baseUri = URI.create(config.get("network.ws.url", "wss://ws.hociatec.fr/ws"));
+            URI baseUri = URI.create(config.get("network.ws.url", "ws://127.0.0.1:8081/ws"));
             NemesisSessionStore store = ctx.get(NemesisSessionStore.class);
             return new TokenAwareRealtimeGateway(
                     ctx.get(java.net.http.HttpClient.class),
@@ -124,13 +123,6 @@ public final class ClientAppModule implements LilaModule {
                 ctx.get(TaskScheduler.class),
                 ctx.get(com.lemondelila.framework.core.config.ConfigurationService.class),
                 ctx.get(ClientSession.class)
-        ));
-
-        builder.bindFactory(UpdateService.class, ctx -> new UpdateService(
-                ctx.get(java.net.http.HttpClient.class),
-                ctx.get(com.fasterxml.jackson.databind.ObjectMapper.class),
-                ctx.get(TaskScheduler.class),
-                ctx.get(com.lemondelila.framework.core.config.ConfigurationService.class)
         ));
 
         builder.bindFactory(PresenceDialogLauncher.class, ctx -> new PresenceDialogLauncher(
@@ -252,8 +244,7 @@ public final class ClientAppModule implements LilaModule {
 
         builder.bindFactory(OptionsController.class, ctx ->
                 new OptionsController(
-                        ctx.get(AppSettingsService.class),
-                        ctx.get(UpdateService.class)
+                        ctx.get(AppSettingsService.class)
                 )
         );
 
@@ -325,6 +316,8 @@ public final class ClientAppModule implements LilaModule {
         return 100;
     }
 }
+
+
 
 
 
