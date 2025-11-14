@@ -60,6 +60,7 @@ $clientDir   = Join-Path $javaRoot 'client-app'
 $targetDir   = Join-Path $clientDir 'target'
 $stagingDir  = Join-Path $targetDir 'jpackage-input'
 $configDir   = Join-Path $javaRoot 'config'
+$libsDir     = Join-Path $javaRoot 'libs'
 $distDir     = Join-Path $repoRoot 'dist'
 $installerDir= Join-Path $distDir 'installer'
 
@@ -115,6 +116,9 @@ New-Item -ItemType Directory -Path $stagingDir | Out-Null
 Copy-Item -Path $shadedJar.FullName -Destination $stagingDir -Force
 if (Test-Path $configDir) {
     Copy-Item -Path $configDir -Destination (Join-Path $stagingDir 'config') -Recurse -Force
+}
+if (Test-Path $libsDir) {
+    Copy-Item -Path $libsDir -Destination (Join-Path $stagingDir 'libs') -Recurse -Force
 }
 
 $appName = 'LeMondeDeLila'
