@@ -41,7 +41,12 @@ $backendDirectory = Join-Path $rootDirectory 'backend'
 $javaDirectory    = Join-Path $rootDirectory 'java-client'
 $logDirectory     = Join-Path $rootDirectory 'logs'
 
-if (!(Test-Path $backendDirectory)) { throw "Répertoire backend introuvable : $backendDirectory" }
+if (!(Test-Path $backendDirectory)) {
+    if (-not $SkipBackend -or -not $SkipRealtime) {
+        throw "Répertoire backend introuvable : $backendDirectory"
+    }
+    Write-Warning "Répertoire backend absent, fonctionnement en mode distant uniquement."
+}
 if (!(Test-Path $javaDirectory)) { throw "Répertoire java-client introuvable : $javaDirectory" }
 if (!(Test-Path $logDirectory)) { New-Item -ItemType Directory -Path $logDirectory | Out-Null }
 
@@ -281,28 +286,30 @@ function Wait-ForTcpPort {
 
 Set-Location $rootDirectory
 
-$wsHost = $env:APP_WS_HOST
-$wsPort = $env:APP_WS_PORT
-$envFiles = @('.env.local', '.env.dev.local', '.env', '.env.dev')
-foreach ($fileName in $envFiles) {
-    if ($wsHost -and $wsPort) { break }
-    $envPath = Join-Path $backendDirectory $fileName
-    if (-not (Test-Path $envPath)) { continue }
-    foreach ($line in Get-Content $envPath) {
-        if (-not $wsHost -and $line -match '^\s*APP_WS_HOST\s*=\s*(.+)$') {
-            $value = $matches[1].Trim()
-            $wsHost = $value.Trim("'`"")
-        }
-        elseif (-not $wsPort -and $line -match '^\s*APP_WS_PORT\s*=\s*(.+)$') {
-            $value = $matches[1].Trim().Trim("'`"")
-            [int]$parsed = 0
-            if ([int]::TryParse($value, [ref]$parsed)) {
-                $wsPort = $parsed
+[string]$wsHost = $env:APP_WS_HOST
+[string]$wsPort = $env:APP_WS_PORT
+if (Test-Path $backendDirectory) {
+    $envFiles = @('.env.local', '.env.dev.local', '.env', '.env.dev')
+    foreach ($fileName in $envFiles) {
+        if ($wsHost -and $wsPort) { break }
+        $envPath = Join-Path $backendDirectory $fileName
+        if (-not (Test-Path $envPath)) { continue }
+        foreach ($line in Get-Content $envPath) {
+            if (-not $wsHost -and $line -match '^\s*APP_WS_HOST\s*=\s*(.+)$') {
+                $value = $matches[1].Trim()
+                $wsHost = $value.Trim("'`"")
+            }
+            elseif (-not $wsPort -and $line -match '^\s*APP_WS_PORT\s*=\s*(.+)$') {
+                $value = $matches[1].Trim().Trim("'`"")
+                [int]$parsed = 0
+                if ([int]::TryParse($value, [ref]$parsed)) {
+                    $wsPort = $parsed
+                }
             }
         }
     }
 }
-if (-not $wsHost) { $wsHost = '127.0.0.1' }
+if (-not $wsHost) { $wsHost = 'ws.hociatec.fr' }
 if (-not $wsPort) { $wsPort = 8081 }
 [int]$wsPortValue = 0
 if (-not [int]::TryParse([string]$wsPort, [ref]$wsPortValue)) {
@@ -311,10 +318,12 @@ if (-not [int]::TryParse([string]$wsPort, [ref]$wsPortValue)) {
 $wsPort = $wsPortValue
 
 $mavenPath = Ensure-Maven -Root $rootDirectory
-Ensure-PHPDependencies -BackendDir $backendDirectory
+if (Test-Path $backendDirectory) {
+    Ensure-PHPDependencies -BackendDir $backendDirectory
+}
 
 $phpCmd = Get-Command php -ErrorAction SilentlyContinue
-if (!$phpCmd -and -not $SkipBackend) {
+if (!$phpCmd -and (-not $SkipBackend) -and (Test-Path $backendDirectory)) {
     throw "PHP CLI introuvable. Ajoutez PHP au PATH avant d'exécuter ce script."
 }
 $javaCmd = Get-Command java -ErrorAction SilentlyContinue
@@ -327,13 +336,13 @@ $realtimeProcess = $null
 
 $javaLocationPushed = $false
 try {
-    if (-not $SkipBackend) {
+    if ((-not $SkipBackend) -and (Test-Path $backendDirectory)) {
         $backendProcess = Start-BackendHttp -BackendDir $backendDirectory -PhpPath $phpCmd.Source -LogDir $logDirectory
         Wait-ForEndpoint -Url 'http://127.0.0.1:8000/'
         Write-Host "Serveur HTTP backend démarré."
     }
 
-    if ((-not $SkipRealtime) -and $phpCmd) {
+    if ((-not $SkipRealtime) -and $phpCmd -and (Test-Path $backendDirectory)) {
         $realtimeProcess = Start-RealtimeServer -BackendDir $backendDirectory -PhpPath $phpCmd.Source -LogDir $logDirectory
         try {
             Wait-ForTcpPort -TcpHost $wsHost -TcpPort $wsPort
