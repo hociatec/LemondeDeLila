@@ -13,7 +13,8 @@ use Symfony\Component\Routing\Annotation\Route;
 #[Route('/client/download', name: 'client_download', methods: ['GET'])]
 final class ClientDownloadController
 {
-    private const HEADER_TOKEN = 'X-Client-Update-Token';
+    public const HEADER_TOKEN = 'X-Client-Update-Token';
+    public const QUERY_TOKEN = 'token';
 
     public function __construct(
         #[Autowire('%app.client.package_path%')] private readonly string $packagePath,
@@ -24,8 +25,13 @@ final class ClientDownloadController
     public function __invoke(Request $request): Response
     {
         if ($this->downloadSecret !== '') {
+            // Secret can be provided either with the dedicated header or `token` query parameter.
             $provided = $request->headers->get(self::HEADER_TOKEN, '');
-            if (!hash_equals($this->downloadSecret, $provided)) {
+            if ($provided === '') {
+                $provided = (string) $request->query->get(self::QUERY_TOKEN, '');
+            }
+
+            if ($provided === '' || !hash_equals($this->downloadSecret, $provided)) {
                 return new JsonResponse(['error' => 'Unauthorized'], Response::HTTP_FORBIDDEN);
             }
         }

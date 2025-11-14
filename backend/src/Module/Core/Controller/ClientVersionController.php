@@ -14,6 +14,7 @@ final class ClientVersionController
         #[Autowire('%app.client.version%')] private readonly string $clientVersion,
         #[Autowire('%app.client.download_url%')] private readonly string $clientDownloadUrl,
         #[Autowire('%app.client.checksum%')] private readonly string $clientChecksum,
+        #[Autowire('%app.client.download_secret%')] private readonly string $clientDownloadSecret,
         private readonly UrlGeneratorInterface $urlGenerator,
     ) {
     }
@@ -25,12 +26,17 @@ final class ClientVersionController
             referenceType: UrlGeneratorInterface::ABSOLUTE_URL
         );
 
+        $tokenRequired = $this->clientDownloadSecret !== '';
+
         return new JsonResponse([
             'version' => $this->clientVersion,
             'downloadUrl' => $downloadUrl,
             'checksum' => $this->clientChecksum,
             'notes' => 'Mettre à jour pour bénéficier des dernières améliorations.',
             'timestamp' => time(),
+            'tokenRequired' => $tokenRequired,
+            'tokenHeader' => $tokenRequired ? ClientDownloadController::HEADER_TOKEN : null,
+            'tokenQueryParameter' => $tokenRequired ? ClientDownloadController::QUERY_TOKEN : null,
         ]);
     }
 }
