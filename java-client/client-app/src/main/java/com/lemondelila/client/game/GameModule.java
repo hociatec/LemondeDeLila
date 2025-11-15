@@ -16,6 +16,10 @@ import com.lemondelila.client.gamelogic.panierexpress.model.PanierExpressSession
 import com.lemondelila.client.gamelogic.panierexpress.service.PanierExpressRemoteClient;
 import com.lemondelila.client.game.service.RoomBotRemoteClient;
 import com.lemondelila.client.gamelogic.panierexpress.view.PanierExpressRootView;
+import com.lemondelila.client.game.launcher.DameNatureLauncher;
+import com.lemondelila.client.game.launcher.GameLauncherRegistry;
+import com.lemondelila.client.game.launcher.NemesisLauncher;
+import com.lemondelila.client.game.launcher.PanierExpressLauncher;
 import com.lemondelila.client.game.model.GameEngine;
 import com.lemondelila.client.game.model.GameEngineRegistry;
 import com.lemondelila.client.framework.core.context.ApplicationContext;
@@ -42,10 +46,14 @@ public final class GameModule implements LilaModule {
         builder.bindAuto(NemesisController.class);
         builder.bindAuto(DameNatureController.class);
         builder.bindAuto(PanierExpressController.class);
+        builder.bindAuto(PanierExpressLauncher.class);
+        builder.bindAuto(DameNatureLauncher.class);
+        builder.bindAuto(NemesisLauncher.class);
 
         builder.bindAuto(NemesisScreen.class);
         builder.bindAuto(DameNatureScreen.class);
         builder.bindAuto(PanierExpressRootView.class);
+        builder.bindAuto(GameLauncherRegistry.class);
 
         builder.bindFactory(GameEngineRegistry.class, ctx -> {
             GameEngineRegistry registry = new GameEngineRegistry();
@@ -61,6 +69,11 @@ public final class GameModule implements LilaModule {
         context.get(DameNatureController.class);
         context.get(PanierExpressController.class);
         DomainEventBus eventBus = context.get(DomainEventBus.class);
+        GameLauncherRegistry launcherRegistry = context.get(GameLauncherRegistry.class);
+        launcherRegistry.register("panier-express", context.get(PanierExpressLauncher.class));
+        launcherRegistry.register("panierexpress", context.get(PanierExpressLauncher.class));
+        launcherRegistry.register("dame-nature", context.get(DameNatureLauncher.class));
+        launcherRegistry.register("mission-nemesis", context.get(NemesisLauncher.class));
         logoutSubscription = eventBus.subscribe(UserLoggedOut.class, event -> {
             context.get(NemesisController.class).reset();
             context.get(DameNatureController.class).reset();

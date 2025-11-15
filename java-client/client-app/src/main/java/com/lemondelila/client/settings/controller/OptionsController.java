@@ -1,11 +1,12 @@
 package com.lemondelila.client.settings.controller;
 
+import com.lemondelila.client.framework.core.di.Inject;
+import com.lemondelila.client.framework.media.sound.SoundEffectManager;
+import com.lemondelila.client.framework.ui.ControllerResult;
 import com.lemondelila.client.media.SoundBank;
 import com.lemondelila.client.settings.service.AppSettingsService;
 import com.lemondelila.client.settings.update.UpdateService;
 import com.lemondelila.client.settings.view.OptionsDialog;
-import com.lemondelila.client.framework.core.di.Inject;
-import com.lemondelila.client.framework.media.sound.SoundEffectManager;
 
 import java.awt.Window;
 import java.util.Objects;
@@ -32,14 +33,14 @@ public final class OptionsController {
      * Opens the options dialog.
      *
      * @param owner parent window (nullable).
-     * @return status message for the view.
+     * @return résultat applicatif (message éventuel).
      */
-    public String open(Window owner) {
+    public ControllerResult open(Window owner) {
         if (sounds != null) {
             sounds.play(SoundBank.MENU_SELECT);
         }
         OptionsDialog dialog = new OptionsDialog(owner, settingsService, updateService, sounds);
         dialog.setVisible(true);
-        return "Options mises a jour.";
+        return ControllerResult.status("Options mises a jour.");
     }
 }

@@ -2,7 +2,6 @@ package com.lemondelila.client.social;
 
 import com.lemondelila.client.framework.core.context.ApplicationContext;
 import com.lemondelila.client.framework.core.module.LilaModule;
-import com.lemondelila.client.framework.ui.screen.ScreenManager;
 import com.lemondelila.client.social.controller.SocialController;
 import com.lemondelila.client.social.controller.SocialMessagesCenterController;
 import com.lemondelila.client.social.controller.SocialRelationshipsController;
@@ -20,8 +19,6 @@ public final class SocialModule implements LilaModule {
 
     @Override
     public void start(ApplicationContext context) {
-        ScreenManager manager = context.get(ScreenManager.class);
-        manager.register(context.get(SocialCenterScreen.class));
         context.get(SocialController.class);
     }
 

@@ -82,7 +82,7 @@ public final class SocialRelationshipsPanel extends JPanel {
         setBorder(new EmptyBorder(12, 12, 12, 12));
 
         JPanel listContainer = new JPanel(new BorderLayout());
-        listContainer.setBorder(BorderFactory.createTitledBorder(sectionTitle()));
+        listContainer.setBorder(BorderFactory.createTitledBorder(sectionType.title()));
         JScrollPane scroll = new JScrollPane(list);
         listContainer.add(scroll, BorderLayout.CENTER);
         add(listContainer, BorderLayout.CENTER);
@@ -99,7 +99,7 @@ public final class SocialRelationshipsPanel extends JPanel {
         panel.add(summaryLabel, BorderLayout.CENTER);
 
         JPanel actions = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        actionButton.setText(actionLabel());
+        actionButton.setText(sectionType.actionLabel());
         actionButton.addActionListener(e -> handlePrimaryAction());
         actionButton.setEnabled(false);
         actions.add(actionButton);
@@ -115,7 +115,7 @@ public final class SocialRelationshipsPanel extends JPanel {
                 buildRelationshipCell(lst, value, isSelected));
         list.addListSelectionListener(createSelectionListener());
         if (list.getAccessibleContext() != null) {
-            list.getAccessibleContext().setAccessibleName(sectionTitle());
+            list.getAccessibleContext().setAccessibleName(sectionType.title());
         }
     }
 
@@ -130,65 +130,28 @@ public final class SocialRelationshipsPanel extends JPanel {
     private void handlePrimaryAction() {
         Relationship relation = list.getSelectedValue();
         if (relation == null) {
-            statusListener.accept(sectionType == SocialRelationshipsSectionType.FRIENDS
-                    ? "Sélectionnez un ami à retirer."
-                    : "Sélectionnez un utilisateur à débloquer.");
+            statusListener.accept(sectionType.selectionPrompt());
             return;
         }
-        if (sectionType == SocialRelationshipsSectionType.FRIENDS) {
-            controller.removeFriend(relation.id());
-            statusListener.accept(SocialDisplayUtils.displayName(relation) + " retiré de vos amis.");
-        } else {
-            controller.unblock(relation.id());
-            statusListener.accept(SocialDisplayUtils.displayName(relation) + " est débloqué.");
-        }
+        String feedback = sectionType.performAction(controller, relation);
+        statusListener.accept(feedback);
         reload();
         focusContent();
     }
 
     private void updateSummary(int count) {
-        String summary;
-        if (count == 0) {
-            summary = sectionType == SocialRelationshipsSectionType.FRIENDS
-                    ? "Aucun ami enregistré."
-                    : "Aucun utilisateur bloqué.";
-        } else if (sectionType == SocialRelationshipsSectionType.FRIENDS) {
-            summary = count + " ami(s) enregistré(s).";
-        } else {
-            summary = count + " utilisateur(s) bloqué(s).";
-        }
-        summaryLabel.setText(summary);
+        summaryLabel.setText(sectionType.summaryForCount(count));
     }
 
     private void updateAccessibility(int count) {
         if (list.getAccessibleContext() == null) {
             return;
         }
-        String description;
-        if (count == 0) {
-            description = sectionType == SocialRelationshipsSectionType.FRIENDS
-                    ? "Aucun ami enregistré."
-                    : "Aucun utilisateur bloqué.";
-        } else if (sectionType == SocialRelationshipsSectionType.FRIENDS) {
-            description = count + " ami(s) enregistré(s).";
-        } else {
-            description = count + " utilisateur(s) bloqué(s).";
-        }
-        list.getAccessibleContext().setAccessibleDescription(description);
+        list.getAccessibleContext().setAccessibleDescription(sectionType.summaryForCount(count));
     }
 
     private void updateActionState() {
         actionButton.setEnabled(list.getSelectedValue() != null);
-    }
-
-    private String sectionTitle() {
-        return sectionType == SocialRelationshipsSectionType.FRIENDS
-                ? "Liste d'amis"
-                : "Amis bloqués";
-    }
-
-    private String actionLabel() {
-        return sectionType == SocialRelationshipsSectionType.FRIENDS ? "Retirer" : "Débloquer";
     }
 
     private void installEscapeBinding(JComponent component) {

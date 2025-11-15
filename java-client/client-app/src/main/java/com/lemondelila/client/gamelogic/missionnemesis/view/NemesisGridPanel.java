@@ -45,16 +45,12 @@ final class NemesisGridPanel extends JPanel {
     private final CellButton[][] cells;
     private final Consumer<GridCoordinate> fireHandler;
     private final JLabel botBadge = new JLabel(" ");
+    private final NemesisManualPlacementController manualController = new NemesisManualPlacementController(BOARD_SIZE);
+    private final NemesisFireController fireController = new NemesisFireController(BOARD_SIZE);
 
     private InteractionMode interactionMode = InteractionMode.NONE;
-    private ManualPlacementCallbacks manualCallbacks;
     private Consumer<GridCoordinate> fireSelectionListener;
     private GridCoordinate selection = new GridCoordinate(0, 0);
-    private boolean manualModeActive;
-
-    private final boolean[][] manualCommitted = new boolean[BOARD_SIZE][BOARD_SIZE];
-    private final boolean[][] manualCurrent = new boolean[BOARD_SIZE][BOARD_SIZE];
-    private final boolean[][] fireDisabled = new boolean[BOARD_SIZE][BOARD_SIZE];
 
     NemesisGridPanel(boolean ownsFleet, Consumer<GridCoordinate> fireHandler) {
         this.ownsFleet = ownsFleet;
@@ -67,7 +63,7 @@ final class NemesisGridPanel extends JPanel {
     }
 
     void renderOwn(NemesisSession session, Function<NemesisState.Player, String> nameFormatter) {
-        if (manualModeActive) {
+        if (manualController.isActive()) {
             updateBotBadge(session, nameFormatter);
             return;
         }
@@ -130,11 +126,7 @@ final class NemesisGridPanel extends JPanel {
             clearSelectionHighlight();
         }
 
-        for (int y = 0; y < BOARD_SIZE; y++) {
-            for (int x = 0; x < BOARD_SIZE; x++) {
-                fireDisabled[x][y] = true;
-            }
-        }
+        fireController.disableAll();
 
         boolean[][] alreadyShot = new boolean[BOARD_SIZE][BOARD_SIZE];
         session.self().ifPresent(self -> self.shots().forEach(shot -> alreadyShot[shot.x()][shot.y()] = true));
@@ -144,11 +136,11 @@ final class NemesisGridPanel extends JPanel {
                 JButton button = cells[x][y].button();
                 if (alreadyShot[x][y] || session.finished()) {
                     button.setEnabled(false);
-                    fireDisabled[x][y] = true;
+                    fireController.setDisabled(x, y, true);
                 } else {
                     button.setEnabled(enabled);
                     prepare(cells[x][y]);
-                    fireDisabled[x][y] = !enabled;
+                    fireController.setDisabled(x, y, !enabled);
                 }
             }
         }
@@ -159,62 +151,40 @@ final class NemesisGridPanel extends JPanel {
         }
     }
 
-    void beginManualPlacement(ManualPlacementCallbacks callbacks) {
-        manualModeActive = true;
-        manualCallbacks = callbacks;
+    void beginManualPlacement(NemesisManualPlacementCallbacks callbacks) {
+        manualController.begin(callbacks);
         interactionMode = InteractionMode.MANUAL_PLACEMENT;
-        clearManualArrays();
         clearSelectionHighlight();
         selection = new GridCoordinate(0, 0);
         updateSelectionHighlight();
         refreshManualColors();
-        if (manualCallbacks != null) {
-            manualCallbacks.onSelectionChanged(selection);
-        }
+        manualController.notifySelectionChanged(selection);
         requestFocusInWindow();
     }
 
     void updateManualCurrent(List<GridCoordinate> coordinates) {
-        for (int y = 0; y < BOARD_SIZE; y++) {
-            for (int x = 0; x < BOARD_SIZE; x++) {
-                manualCurrent[x][y] = false;
-            }
-        }
-        for (GridCoordinate coordinate : coordinates) {
-            manualCurrent[coordinate.x()][coordinate.y()] = true;
-        }
+        manualController.updateCurrent(coordinates);
         refreshManualColors();
     }
 
     void updateManualCommitted(Collection<ShipPlacement> placements) {
-        for (int y = 0; y < BOARD_SIZE; y++) {
-            for (int x = 0; x < BOARD_SIZE; x++) {
-                manualCommitted[x][y] = false;
-            }
-        }
-        for (ShipPlacement placement : placements) {
-            for (GridCoordinate coordinate : placement.coordinates()) {
-                manualCommitted[coordinate.x()][coordinate.y()] = true;
-            }
-        }
+        manualController.updateCommitted(placements);
         refreshManualColors();
     }
 
     void endManualPlacement() {
-        manualModeActive = false;
-        manualCallbacks = null;
+        manualController.end();
         interactionMode = InteractionMode.NONE;
         clearSelectionHighlight();
     }
 
     void clearManualState() {
-        clearManualArrays();
+        manualController.clear();
         refreshManualColors();
     }
 
     void clear() {
-        manualModeActive = false;
-        manualCallbacks = null;
+        manualController.end();
         interactionMode = InteractionMode.NONE;
         clearSelectionHighlight();
         setBotBadge(null);
@@ -224,11 +194,9 @@ final class NemesisGridPanel extends JPanel {
                 button.setBackground(WATER);
                 button.setText("");
                 button.setEnabled(false);
-                manualCommitted[x][y] = false;
-                manualCurrent[x][y] = false;
-                fireDisabled[x][y] = true;
             }
         }
+        fireController.disableAll();
     }
 
     private void buildUi(String title) {
@@ -277,9 +245,11 @@ final class NemesisGridPanel extends JPanel {
     }
 
     private void refreshManualColors() {
-        if (!manualModeActive) {
+        if (!manualController.isActive()) {
             return;
         }
+        boolean[][] manualCommitted = manualController.committedGrid();
+        boolean[][] manualCurrent = manualController.currentGrid();
         for (int y = 0; y < BOARD_SIZE; y++) {
             for (int x = 0; x < BOARD_SIZE; x++) {
                 JButton button = cells[x][y].button();
@@ -299,27 +269,15 @@ final class NemesisGridPanel extends JPanel {
         updateSelectionHighlight();
     }
 
-    private void clearManualArrays() {
-        for (int y = 0; y < BOARD_SIZE; y++) {
-            for (int x = 0; x < BOARD_SIZE; x++) {
-                manualCommitted[x][y] = false;
-                manualCurrent[x][y] = false;
-            }
-        }
-    }
-
     private void selectFirstAvailableFireCell() {
-        for (int y = 0; y < BOARD_SIZE; y++) {
-            for (int x = 0; x < BOARD_SIZE; x++) {
-                if (!fireDisabled[x][y]) {
-                    selection = new GridCoordinate(x, y);
-                    updateSelectionHighlight();
-                    notifyFireSelection();
-                    return;
-                }
-            }
+        GridCoordinate coordinate = fireController.firstAvailable();
+        if (coordinate == null) {
+            clearSelectionHighlight();
+            return;
         }
-        clearSelectionHighlight();
+        selection = coordinate;
+        updateSelectionHighlight();
+        notifyFireSelection();
     }
 
     private void moveSelection(int deltaX, int deltaY) {
@@ -329,15 +287,13 @@ final class NemesisGridPanel extends JPanel {
             if (newX != selection.x() || newY != selection.y()) {
                 selection = new GridCoordinate(newX, newY);
                 updateSelectionHighlight();
-                if (manualCallbacks != null) {
-                    manualCallbacks.onSelectionChanged(selection);
-                }
+                manualController.notifySelectionChanged(selection);
             }
             return;
         }
 
         if (interactionMode == InteractionMode.FIRE) {
-            GridCoordinate next = findNextFireCell(deltaX, deltaY);
+            GridCoordinate next = fireController.next(selection, deltaX, deltaY);
             if (next != null) {
                 selection = next;
                 updateSelectionHighlight();
@@ -348,35 +304,17 @@ final class NemesisGridPanel extends JPanel {
         }
     }
 
-    private GridCoordinate findNextFireCell(int deltaX, int deltaY) {
-        if (deltaX == 0 && deltaY == 0) {
-            return selection;
-        }
-        int x = selection.x();
-        int y = selection.y();
-        for (int step = 0; step < BOARD_SIZE; step++) {
-            x = Math.floorMod(x + deltaX, BOARD_SIZE);
-            y = Math.floorMod(y + deltaY, BOARD_SIZE);
-            if (!fireDisabled[x][y]) {
-                return new GridCoordinate(x, y);
-            }
-        }
-        return null;
-    }
-
     private void handleConfirm() {
         if (interactionMode == InteractionMode.MANUAL_PLACEMENT) {
-            if (manualCallbacks != null) {
-                manualCallbacks.onConfirm(selection);
-            }
-        } else if (interactionMode == InteractionMode.FIRE && !fireDisabled[selection.x()][selection.y()]) {
+            manualController.confirm(selection);
+        } else if (interactionMode == InteractionMode.FIRE && !fireController.isDisabled(selection.x(), selection.y())) {
             fireHandler.accept(selection);
         }
     }
 
     private void handleUndo() {
-        if (interactionMode == InteractionMode.MANUAL_PLACEMENT && manualCallbacks != null) {
-            manualCallbacks.onUndo();
+        if (interactionMode == InteractionMode.MANUAL_PLACEMENT) {
+            manualController.undo();
         }
     }
 
@@ -419,8 +357,8 @@ final class NemesisGridPanel extends JPanel {
     }
 
     private void handleCancel() {
-        if (interactionMode == InteractionMode.MANUAL_PLACEMENT && manualCallbacks != null) {
-            manualCallbacks.onCancel();
+        if (interactionMode == InteractionMode.MANUAL_PLACEMENT) {
+            manualController.cancel();
         }
     }
 
@@ -476,8 +414,8 @@ final class NemesisGridPanel extends JPanel {
         String message;
         switch (interactionMode) {
             case MANUAL_PLACEMENT -> {
-                boolean committed = manualCommitted[selection.x()][selection.y()];
-                boolean current = manualCurrent[selection.x()][selection.y()];
+                boolean committed = manualController.committedGrid()[selection.x()][selection.y()];
+                boolean current = manualController.currentGrid()[selection.x()][selection.y()];
                 if (committed) {
                     message = "Case " + coordinate + " deja occupee.";
                 } else if (current) {
@@ -487,7 +425,7 @@ final class NemesisGridPanel extends JPanel {
                 }
             }
             case FIRE -> {
-                if (fireDisabled[selection.x()][selection.y()]) {
+                if (fireController.isDisabled(selection.x(), selection.y())) {
                     message = "Case " + coordinate + " indisponible.";
                 } else {
                     message = "Cible " + coordinate + ". Entree pour tirer.";
@@ -559,16 +497,6 @@ final class NemesisGridPanel extends JPanel {
             }
         }
     };
-
-    interface ManualPlacementCallbacks {
-        void onSelectionChanged(GridCoordinate coordinate);
-
-        void onConfirm(GridCoordinate coordinate);
-
-        void onUndo();
-
-        void onCancel();
-    }
 
     private enum InteractionMode {
         NONE,

@@ -7,18 +7,22 @@ import com.lemondelila.client.gamelogic.panierexpress.model.PanierExpressState;
 import com.lemondelila.client.catalogue.model.GameSummary;
 import com.lemondelila.client.user.model.ClientSession;
 import com.lemondelila.client.catalogue.service.GameRulesService;
+import com.lemondelila.client.catalogue.view.CatalogScreen;
 import com.lemondelila.client.framework.access.NarrationQueue;
 import com.lemondelila.client.framework.access.game.AccessibilityService;
 import com.lemondelila.client.framework.access.game.GameHistoryTracker;
 import com.lemondelila.client.framework.access.shortcut.AccessibleShortcutRegistry;
+import com.lemondelila.client.framework.access.shortcut.ShortcutBinder;
 import com.lemondelila.client.framework.core.context.ApplicationContext;
 import com.lemondelila.client.framework.core.di.Inject;
 import com.lemondelila.client.framework.media.sound.SoundEffectManager;
 import com.lemondelila.client.framework.ui.dialog.DialogService;
-import com.lemondelila.client.framework.ui.screen.Screen;
 import com.lemondelila.client.framework.ui.screen.ScreenContext;
+import com.lemondelila.client.framework.ui.screen.ScreenId;
 import com.lemondelila.client.framework.ui.screen.ScreenManager;
 import com.lemondelila.client.game.controller.GameInteractionController;
+import com.lemondelila.client.game.view.AbstractGameScreen;
+import com.lemondelila.client.gamelogic.panierexpress.util.BotTurnScheduler;
 
 import javax.accessibility.AccessibleContext;
 import javax.swing.AbstractAction;
@@ -41,7 +45,9 @@ import java.util.function.Supplier;
 /**
  * Orchestrateur principal de l'interface Panier Express.
  */
-public final class PanierExpressRootView extends JPanel implements Screen {
+public final class PanierExpressRootView extends AbstractGameScreen {
+
+    public static final ScreenId ID = ScreenId.of("panier-express");
 
     private static final String CARD_SETUP = "setup";
     private static final String CARD_GAME = "game";
@@ -64,6 +70,7 @@ public final class PanierExpressRootView extends JPanel implements Screen {
     private final GameInteractionController interactionController;
     private final AccessibilityService accessibilityService;
     private final AccessibleShortcutRegistry shortcutRegistry;
+    private final ShortcutBinder shortcutBinder;
     private final GameHistoryTracker historyTracker = new GameHistoryTracker();
     private final JLabel screenReaderBridge = new JLabel();
     private String lastScreenReaderMessage = "";
@@ -87,6 +94,7 @@ public final class PanierExpressRootView extends JPanel implements Screen {
     private String cachedScoreSummary = "";
 
     private final java.util.function.Consumer<PanierExpressSession> sessionListener = this::applySession;
+    private final BotTurnScheduler botTurnScheduler;
 
     public PanierExpressRootView(PanierExpressController controller,
                                  Supplier<NarrationQueue> narrationQueueSupplier,
@@ -96,6 +104,7 @@ public final class PanierExpressRootView extends JPanel implements Screen {
                                  GameRulesService rulesService,
                                  AccessibilityService accessibilityService,
                                  AccessibleShortcutRegistry shortcutRegistry) {
+        super(ID, null);
         this.controller = Objects.requireNonNull(controller, "controller");
         this.narrationQueueSupplier = Objects.requireNonNull(narrationQueueSupplier, "narrationQueueSupplier");
         this.clientSession = Objects.requireNonNull(clientSession, "clientSession");
@@ -117,9 +126,13 @@ public final class PanierExpressRootView extends JPanel implements Screen {
                 this::handleCancel,
                 this::handleInteractionStatus,
                 this::addBotCommand,
-                this::removeBotCommand
+                this::removeBotCommand,
+                this::announcePlayers,
+                this::announceCurrentTurn
         );
+        bindInteractionController(this.interactionController);
         interactionController.setEnabled(false);
+        this.botTurnScheduler = new BotTurnScheduler(controller);
 
         this.setupPanel = new PanierExpressSetupPanel(new PanierExpressSetupPanel.Listener() {
             @Override
@@ -133,6 +146,7 @@ public final class PanierExpressRootView extends JPanel implements Screen {
             }
         });
         this.gamePanel = new PanierExpressGamePanel();
+        this.shortcutBinder = new ShortcutBinder(shortcutRegistry, () -> true, this, cardPanel);
 
         cardPanel.setLayout(cardLayout);
         cardPanel.add(setupPanel, CARD_SETUP);
@@ -176,74 +190,30 @@ public final class PanierExpressRootView extends JPanel implements Screen {
 
     private void installShortcuts() {
         shortcutRegistry.clear();
-        registerShortcut("ESCAPE", "panier.esc.disabled", "Échap : aucune action durant la partie.", e -> narrate("Échap est désactivé pendant la partie. Utilisez Q pour quitter."));
-        registerShortcut("TAB", "panier.focus.history", "Tab : consulter l’historique de la partie.", e -> focusHistory());
-        registerShortcut("shift TAB", "panier.focus.main", "Maj+Tab : revenir à la zone principale.", e -> focusMainArea());
-        registerShortcut("ENTER", "panier.execute", "Entrée : action principale (lancer ou confirmer).", e -> executePrimaryAction());
-        registerLetterShortcut('l', "panier.roll", "Lettre L : lancer le dé.", e -> attemptRoll());
-        registerLetterShortcut('r', "panier.refresh", "Lettre R : actualiser l’état de la partie.", e -> attemptRefresh());
-        registerLetterShortcut('t', "panier.turn", "Lettre T : annoncer le tour en cours.", e -> announceCurrentTurn());
-        registerLetterShortcut('s', "panier.score", "Lettre S : annoncer le score courant.", e -> announceScore());
-        registerLetterShortcut('p', "panier.basket", "Lettre P : annoncer le contenu de votre panier.", e -> announceBasket());
-        registerLetterShortcut('x', "panier.restart", "Lettre X : proposer de redémarrer la partie.", e -> promptRestart());
-        registerLetterShortcut('w', "panier.players", "Lettre W : annoncer les joueurs présents.", e -> announcePlayers());
+        shortcutBinder.registerStroke("ESCAPE", "panier.esc.disabled", "Echap : aucune action durant la partie.", e -> narrate("Echap est desactive pendant la partie. Utilisez Q pour quitter."));
+        shortcutBinder.registerStroke("TAB", "panier.focus.history", "Tab : consulter l'historique de la partie.", e -> focusHistory());
+        shortcutBinder.registerStroke("shift TAB", "panier.focus.main", "Maj+Tab : revenir a la zone principale.", e -> focusMainArea());
+        shortcutBinder.registerStroke("ENTER", "panier.execute", "Entree : action principale (lancer ou confirmer).", e -> executePrimaryAction());
+        shortcutBinder.registerLetter('l', "panier.roll", "Lettre L : lancer le de.", e -> attemptRoll());
+        shortcutBinder.registerLetter('r', "panier.refresh", "Lettre R : actualiser l'etat de la partie.", e -> attemptRefresh());
+        shortcutBinder.registerLetter('s', "panier.score", "Lettre S : annoncer le score courant.", e -> announceScore());
+        shortcutBinder.registerLetter('p', "panier.basket", "Lettre P : annoncer le contenu de votre panier.", e -> announceBasket());
+        shortcutBinder.registerLetter('x', "panier.restart", "Lettre X : proposer de redemarrer la partie.", e -> promptRestart());
+        shortcutBinder.registerLetterDescription('t', "Lettre T : annoncer le tour en cours.");
+        shortcutBinder.registerLetterDescription('w', "Lettre W : annoncer les joueurs presents.");
 
         for (int digit = 0; digit < 4; digit++) {
             final int answerIndex = digit;
-            registerShortcut((char) ('1' + digit), "panier.quiz." + digit, "Chiffre " + (digit + 1) + " : répondre au quiz.", e -> submitQuizAnswer(answerIndex));
+            shortcutBinder.registerStroke(KeyStroke.getKeyStroke((char) ('1' + digit)), "panier.quiz." + digit,
+                    "Chiffre " + (digit + 1) + " : repondre au quiz.", e -> submitQuizAnswer(answerIndex));
         }
         shortcutRegistry.applyTo(this);
     }
 
-    private void registerShortcut(char key, String actionId, String description, java.util.function.Consumer<ActionEvent> handler) {
-        registerShortcut(KeyStroke.getKeyStroke(key), actionId, description, handler);
-    }
-
-    private void registerShortcut(char key, String actionId, java.util.function.Consumer<ActionEvent> handler) {
-        registerShortcut(key, actionId, null, handler);
-    }
-
-    private void registerShortcut(String keyStroke, String actionId, String description, java.util.function.Consumer<ActionEvent> handler) {
-        registerShortcut(KeyStroke.getKeyStroke(keyStroke), actionId, description, handler);
-    }
-
-    private void registerShortcut(String keyStroke, String actionId, java.util.function.Consumer<ActionEvent> handler) {
-        registerShortcut(keyStroke, actionId, null, handler);
-    }
-
-    private void registerShortcut(KeyStroke stroke, String actionId, String description, java.util.function.Consumer<ActionEvent> handler) {
-        if (stroke == null || handler == null) {
-            return;
-        }
-        bindShortcut(this, stroke, actionId, handler);
-        bindShortcut(cardPanel, stroke, actionId, handler);
-        if (description != null && !description.isBlank()) {
-            shortcutRegistry.register(stroke, description);
-        }
-    }
-
-    private void registerLetterShortcut(char letter, String actionId, String description, java.util.function.Consumer<ActionEvent> handler) {
-        char lower = Character.toLowerCase(letter);
-        char upper = Character.toUpperCase(letter);
-        registerShortcut(lower, actionId, description, handler);
-        if (upper != lower) {
-            registerShortcut(upper, actionId, description, handler);
-        }
-    }
-
-    private void bindShortcut(JComponent component, KeyStroke stroke, String actionId, java.util.function.Consumer<ActionEvent> handler) {
-        component.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(stroke, actionId);
-        component.getActionMap().put(actionId, new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                handler.accept(e);
-            }
-        });
-    }
 
     @Override
-    public String id() {
-        return "panier-express";
+    public ScreenId id() {
+        return ID;
     }
 
     @Override
@@ -253,6 +223,7 @@ public final class PanierExpressRootView extends JPanel implements Screen {
 
     @Override
     public void onShow(ScreenContext context) {
+        super.onShow(context);
         this.screenManager = context.screenManager();
         dialogService.attach(this);
         controller.addSessionListener(sessionListener);
@@ -265,13 +236,14 @@ public final class PanierExpressRootView extends JPanel implements Screen {
             SwingUtilities.invokeLater(setupPanel::focusFirstComponent);
         }
         requestFocusInWindow();
-        interactionController.setEnabled(true);
     }
 
     @Override
     public void onHide(ScreenContext context) {
+        super.onHide(context);
+        this.screenManager = null;
         controller.removeSessionListener(sessionListener);
-        interactionController.setEnabled(false);
+        botTurnScheduler.cancel();
     }
 
     private void applySession(PanierExpressSession session) {
@@ -283,6 +255,7 @@ public final class PanierExpressRootView extends JPanel implements Screen {
 
         PanierExpressState state = session.state();
         String username = currentUsername();
+        botTurnScheduler.evaluate(session, shouldCoordinateBotTurns(state));
 
         Optional<PanierExpressState.Player> selfOpt = username == null
                 ? Optional.empty()
@@ -714,11 +687,12 @@ public final class PanierExpressRootView extends JPanel implements Screen {
     }
 
     private void handleCancel() {
+        botTurnScheduler.cancel();
         controller.reset();
         historyTracker.clear();
         lastSession = null;
         if (screenManager != null) {
-            SwingUtilities.invokeLater(() -> screenManager.show("catalog"));
+            SwingUtilities.invokeLater(() -> screenManager.show(CatalogScreen.ID));
         }
     }
 
@@ -850,4 +824,26 @@ public final class PanierExpressRootView extends JPanel implements Screen {
     private String currentUsername() {
         return clientSession.authenticated().map(ClientSession.AuthState::username).orElse(null);
     }
+
+    private boolean shouldCoordinateBotTurns(PanierExpressState state) {
+        if (state == null || state.isFinished()) {
+            return false;
+        }
+        String username = currentUsername();
+        if (username == null || username.isBlank()) {
+            return false;
+        }
+        String coordinator = determineCoordinatorName(state);
+        return coordinator != null && coordinator.equalsIgnoreCase(username);
+    }
+
+    private String determineCoordinatorName(PanierExpressState state) {
+        return state.players().stream()
+                .filter(player -> player != null && !player.isBot())
+                .map(PanierExpressState.Player::username)
+                .filter(name -> name != null && !name.isBlank())
+                .min(String::compareToIgnoreCase)
+                .orElse(null);
+    }
 }
+

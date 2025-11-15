@@ -99,6 +99,9 @@ final class SocialMessagesPanel extends JPanel {
         this.controller = Objects.requireNonNull(controller, "controller");
         this.dialogService = Objects.requireNonNull(dialogService, "dialogService");
         this.statusListener = Objects.requireNonNull(statusListener, "statusListener");
+        inboxDeleteButton.addActionListener(e -> deleteSelectedMessage(inboxList));
+        outboxDeleteButton.addActionListener(e -> deleteSelectedMessage(outboxList));
+        restoreButton.addActionListener(e -> restoreSelectedMessage());
         buildUi();
         configureLists();
     }
@@ -155,51 +158,15 @@ Saisissez le pseudo de la personne à contacter puis validez avec Entrée.""");
     }
 
     private JPanel buildInboxPanel() {
-        JPanel panel = new JPanel(new BorderLayout(4, 4));
-        panel.setBorder(new EmptyBorder(4, 4, 4, 4));
-
-        inboxLabel.setBorder(new EmptyBorder(2, 2, 2, 2));
-        inboxLabel.setLabelFor(inboxList);
-        panel.add(inboxLabel, BorderLayout.NORTH);
-        panel.add(wrapList(inboxList), BorderLayout.CENTER);
-
-        inboxDeleteButton.addActionListener(e -> deleteSelectedMessage(inboxList));
-        JPanel footer = new JPanel();
-        footer.add(inboxDeleteButton);
-        panel.add(footer, BorderLayout.SOUTH);
-        return panel;
+        return buildMessageSection(inboxLabel, inboxList, inboxDeleteButton);
     }
 
     private JPanel buildOutboxPanel() {
-        JPanel panel = new JPanel(new BorderLayout(4, 4));
-        panel.setBorder(new EmptyBorder(4, 4, 4, 4));
-
-        outboxLabel.setBorder(new EmptyBorder(2, 2, 2, 2));
-        outboxLabel.setLabelFor(outboxList);
-        panel.add(outboxLabel, BorderLayout.NORTH);
-        panel.add(wrapList(outboxList), BorderLayout.CENTER);
-
-        outboxDeleteButton.addActionListener(e -> deleteSelectedMessage(outboxList));
-        JPanel footer = new JPanel();
-        footer.add(outboxDeleteButton);
-        panel.add(footer, BorderLayout.SOUTH);
-        return panel;
+        return buildMessageSection(outboxLabel, outboxList, outboxDeleteButton);
     }
 
     private JPanel buildDeletedPanel() {
-        JPanel panel = new JPanel(new BorderLayout(4, 4));
-        panel.setBorder(new EmptyBorder(4, 4, 4, 4));
-
-        deletedLabel.setBorder(new EmptyBorder(2, 2, 2, 2));
-        deletedLabel.setLabelFor(deletedList);
-        panel.add(deletedLabel, BorderLayout.NORTH);
-        panel.add(wrapList(deletedList), BorderLayout.CENTER);
-
-        restoreButton.addActionListener(e -> restoreSelectedMessage());
-        JPanel footer = new JPanel();
-        footer.add(restoreButton);
-        panel.add(footer, BorderLayout.SOUTH);
-        return panel;
+        return buildMessageSection(deletedLabel, deletedList, restoreButton);
     }
 
     private JPanel buildDetailsPanel() {
@@ -346,6 +313,21 @@ Saisissez le pseudo de la personne à contacter puis validez avec Entrée.""");
         JScrollPane scroll = new JScrollPane(list);
         scroll.setBorder(BorderFactory.createLineBorder(list.getBackground().darker(), 1, true));
         return scroll;
+    }
+
+    private JPanel buildMessageSection(JLabel label, JList<PrivateMessage> list, JButton actionButton) {
+        JPanel panel = new JPanel(new BorderLayout(4, 4));
+        panel.setBorder(new EmptyBorder(4, 4, 4, 4));
+
+        label.setBorder(new EmptyBorder(2, 2, 2, 2));
+        label.setLabelFor(list);
+        panel.add(label, BorderLayout.NORTH);
+        panel.add(wrapList(list), BorderLayout.CENTER);
+
+        JPanel footer = new JPanel(new FlowLayout(FlowLayout.LEADING));
+        footer.add(actionButton);
+        panel.add(footer, BorderLayout.SOUTH);
+        return panel;
     }
 
     private void configureLists() {

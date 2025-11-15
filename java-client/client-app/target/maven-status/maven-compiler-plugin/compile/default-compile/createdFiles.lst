@@ -190,6 +190,7 @@ com\lemondelila\client\gamelogic\damenature\view\DameNatureScreen$ConfigListener
 com\lemondelila\client\application\view\home\HomeScreen$1.class
 com\lemondelila\client\chat\controller\ChatController.class
 com\lemondelila\client\application\view\home\HomeScreen.class
+com\lemondelila\client\gamelogic\panierexpress\util\BotTurnScheduler.class
 com\lemondelila\client\framework\network\module\NetworkModule.class
 com\lemondelila\client\framework\ui\action\ActionManager$ShortcutAwareAction.class
 com\lemondelila\client\gamelogic\panierexpress\model\PanierExpressReferenceMapper.class

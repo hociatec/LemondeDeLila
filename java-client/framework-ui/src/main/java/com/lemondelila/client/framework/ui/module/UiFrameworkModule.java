@@ -1,0 +1,28 @@
+package com.lemondelila.client.framework.ui.module;
+
+import com.lemondelila.client.framework.core.context.ApplicationContext;
+import com.lemondelila.client.framework.core.module.LilaModule;
+import com.lemondelila.client.framework.ui.LilaFrame;
+import com.lemondelila.client.framework.ui.action.ActionManager;
+import com.lemondelila.client.framework.ui.dialog.DialogService;
+import com.lemondelila.client.framework.ui.lifecycle.ShutdownManager;
+import com.lemondelila.client.framework.ui.menu.MenuFactory;
+import com.lemondelila.client.framework.ui.screen.ScreenManager;
+
+public final class UiFrameworkModule implements LilaModule {
+
+    @Override
+    public void configure(ApplicationContext.Builder builder) {
+        builder.bindAuto(ActionManager.class);
+        builder.bindAuto(DialogService.class);
+        builder.bindAuto(MenuFactory.class);
+        builder.bindAuto(ScreenManager.class);
+        builder.bindAuto(LilaFrame.class);
+        builder.bindAuto(ShutdownManager.class);
+    }
+
+    @Override
+    public int order() {
+        return -50;
+    }
+}

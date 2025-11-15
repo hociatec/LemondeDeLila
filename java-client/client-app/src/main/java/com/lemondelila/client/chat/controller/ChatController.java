@@ -2,13 +2,14 @@ package com.lemondelila.client.chat.controller;
 
 import com.lemondelila.client.chat.events.ChatClosed;
 import com.lemondelila.client.chat.events.ChatOpened;
-import com.lemondelila.client.user.model.ClientSession;
 import com.lemondelila.client.chat.service.ChatConnectionFactory;
-import com.lemondelila.client.settings.service.AppSettingsService;
 import com.lemondelila.client.chat.view.ChatWindow;
 import com.lemondelila.client.framework.core.di.Inject;
 import com.lemondelila.client.framework.core.event.DomainEventBus;
+import com.lemondelila.client.framework.ui.ControllerResult;
 import com.lemondelila.client.framework.ui.dialog.DialogService;
+import com.lemondelila.client.settings.service.AppSettingsService;
+import com.lemondelila.client.user.model.ClientSession;
 
 import javax.swing.SwingUtilities;
 import java.awt.Window;
@@ -45,16 +46,16 @@ public final class ChatController implements AutoCloseable {
      * Opens (or focuses) the chat window.
      *
      * @param owner window used as dialog parent, may be {@code null}.
-     * @return status message for the view to display.
+     * @return résultat pour l'UI.
      */
-    public String open(Window owner) {
+    public ControllerResult open(Window owner) {
         if (session.authenticated().isEmpty()) {
             dialogService.error("Authentification requise", "Veuillez vous reconnecter pour acceder au tchat.");
-            return "Connexion requise pour ouvrir le tchat.";
+            return ControllerResult.status("Connexion requise pour ouvrir le tchat.");
         }
         if (!settingsService.current().chatEnabled()) {
             dialogService.info("Tchat desactive", "Activez le tchat dans les options pour l'utiliser.");
-            return "Tchat desactive.";
+            return ControllerResult.status("Tchat desactive.");
         }
         if (chatWindow == null || !chatWindow.isDisplayable()) {
             chatWindow = new ChatWindow(owner, connectionFactory, settingsService, dialogService);
@@ -70,7 +71,7 @@ public final class ChatController implements AutoCloseable {
             eventBus.publish(new ChatOpened(username));
             opened = true;
         }
-        return "Tchat ouvert.";
+        return ControllerResult.status("Tchat ouvert.");
     }
 
     @Override

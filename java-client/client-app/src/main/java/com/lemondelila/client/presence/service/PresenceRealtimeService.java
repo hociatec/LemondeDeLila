@@ -1,14 +1,13 @@
 package com.lemondelila.client.presence.service;
 
-import com.lemondelila.client.chat.model.ChatConnection;
 import com.lemondelila.client.chat.model.ChatState;
-import com.lemondelila.client.chat.service.ChatConnectionFactory;
 import com.lemondelila.client.presence.event.PresenceErrorEvent;
 import com.lemondelila.client.presence.event.PresenceEvent;
 import com.lemondelila.client.presence.event.PresenceEventListener;
 import com.lemondelila.client.presence.event.PresenceStateChangedEvent;
 import com.lemondelila.client.presence.event.PresenceUpdateEvent;
 import com.lemondelila.client.presence.model.PresencePlayer;
+import com.lemondelila.client.presence.transport.PresenceConnection;
 
 import java.util.List;
 import java.util.Objects;
@@ -19,12 +18,12 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 public final class PresenceRealtimeService {
 
-    private final ChatConnectionFactory connectionFactory;
+    private final PresenceConnectionFactory connectionFactory;
     private final CopyOnWriteArrayList<PresenceEventListener> listeners = new CopyOnWriteArrayList<>();
-    private volatile ChatConnection connection;
+    private volatile PresenceConnection connection;
     private volatile List<PresencePlayer> lastPresence = List.of();
 
-    public PresenceRealtimeService(ChatConnectionFactory connectionFactory) {
+    public PresenceRealtimeService(PresenceConnectionFactory connectionFactory) {
         this.connectionFactory = Objects.requireNonNull(connectionFactory, "connectionFactory");
     }
 
@@ -32,7 +31,7 @@ public final class PresenceRealtimeService {
         if (connection != null) {
             return;
         }
-        ChatConnection conn = connectionFactory.open();
+        PresenceConnection conn = connectionFactory.open();
         connection = conn;
         conn.onPresence(players -> {
             lastPresence = players;

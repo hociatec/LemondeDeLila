@@ -22,14 +22,14 @@ import java.util.function.Consumer;
 
 final class SocialRelationshipsContainer extends JPanel {
 
-    private final SocialRelationshipsPanel friendsPanel;
-    private final SocialRelationshipsPanel blockedPanel;
+    private final SocialRelationshipsSectionType[] sectionTypes = SocialRelationshipsSectionType.values();
+    private final SocialRelationshipsPanel[] panels = new SocialRelationshipsPanel[sectionTypes.length];
     private final CardLayout contentLayout = new CardLayout();
     private final JPanel contentPanel = new JPanel(contentLayout);
-    private final JButton[] menuButtons = new JButton[2];
+    private final JButton[] menuButtons = new JButton[sectionTypes.length];
 
     private Runnable onEscape;
-    private int activeSection = 0;
+    private SocialRelationshipsSectionType activeSection = sectionTypes[0];
     private Font menuBaseFont;
     private Font menuSelectedFont;
 
@@ -39,32 +39,30 @@ final class SocialRelationshipsContainer extends JPanel {
         Objects.requireNonNull(controller, "controller");
         Objects.requireNonNull(statusListener, "statusListener");
 
-        this.friendsPanel = new SocialRelationshipsPanel(controller, SocialRelationshipsSectionType.FRIENDS, statusListener);
-        this.blockedPanel = new SocialRelationshipsPanel(controller, SocialRelationshipsSectionType.BLOCKED, statusListener);
-        this.friendsPanel.setOnEscape(this::focusMenu);
-        this.blockedPanel.setOnEscape(this::focusMenu);
+        for (int i = 0; i < sectionTypes.length; i++) {
+            SocialRelationshipsSectionType type = sectionTypes[i];
+            SocialRelationshipsPanel panel = new SocialRelationshipsPanel(controller, type, statusListener);
+            panel.setOnEscape(this::focusMenu);
+            panels[i] = panel;
+            contentPanel.add(panel, type.name());
+        }
 
         add(buildMenu(), BorderLayout.NORTH);
-        contentPanel.add(friendsPanel, SocialRelationshipsSectionType.FRIENDS.name());
-        contentPanel.add(blockedPanel, SocialRelationshipsSectionType.BLOCKED.name());
         add(contentPanel, BorderLayout.CENTER);
         installEscapeBinding(this);
         installEscapeBinding(contentPanel);
-        showSection(activeSection, false);
+        showSection(0, false);
     }
 
     void reload() {
-        friendsPanel.reload();
-        blockedPanel.reload();
-        showSection(activeSection, false);
+        for (SocialRelationshipsPanel panel : panels) {
+            panel.reload();
+        }
+        showSection(activeSectionIndex(), false);
     }
 
     void focusContent() {
-        if (activeSection == 0) {
-            friendsPanel.focusContent();
-        } else {
-            blockedPanel.focusContent();
-        }
+        panels[activeSectionIndex()].focusContent();
     }
 
     void setOnEscape(Runnable onEscape) {
@@ -83,10 +81,9 @@ final class SocialRelationshipsContainer extends JPanel {
         JPanel buttonsColumn = new JPanel();
         buttonsColumn.setLayout(new BoxLayout(buttonsColumn, BoxLayout.Y_AXIS));
 
-        String[] labels = {"Liste d'amis", "Amis bloqués"};
-        for (int i = 0; i < labels.length; i++) {
+        for (int i = 0; i < sectionTypes.length; i++) {
             final int index = i;
-            JButton button = new JButton(labels[i]);
+            JButton button = new JButton(sectionTypes[i].title());
             if (menuBaseFont == null) {
                 menuBaseFont = button.getFont();
                 menuSelectedFont = menuBaseFont.deriveFont(Font.BOLD);
@@ -95,7 +92,7 @@ final class SocialRelationshipsContainer extends JPanel {
             configureMenuNavigation(button, index);
             menuButtons[i] = button;
             buttonsColumn.add(button);
-            if (i < labels.length - 1) {
+            if (i < sectionTypes.length - 1) {
                 buttonsColumn.add(Box.createVerticalStrut(6));
             }
         }
@@ -145,30 +142,28 @@ final class SocialRelationshipsContainer extends JPanel {
 
     private void showSection(int section, boolean focusContent) {
         int clamped = Math.max(0, Math.min(menuButtons.length - 1, section));
-        activeSection = clamped;
-        if (clamped == 0) {
-            contentLayout.show(contentPanel, SocialRelationshipsSectionType.FRIENDS.name());
-        } else {
-            contentLayout.show(contentPanel, SocialRelationshipsSectionType.BLOCKED.name());
-        }
+        activeSection = sectionTypes[clamped];
+        contentLayout.show(contentPanel, activeSection.name());
         updateMenuButtons();
         if (focusContent) {
-            focusContent();
+            panels[clamped].focusContent();
         }
     }
 
     private void updateMenuButtons() {
+        int activeIndex = activeSectionIndex();
         for (int i = 0; i < menuButtons.length; i++) {
             JButton button = menuButtons[i];
             if (button == null || menuBaseFont == null || menuSelectedFont == null) {
                 continue;
             }
-            button.setFont(i == activeSection ? menuSelectedFont : menuBaseFont);
+            button.setFont(i == activeIndex ? menuSelectedFont : menuBaseFont);
         }
     }
 
     private void focusMenu() {
-        JButton current = menuButtons[Math.max(0, Math.min(menuButtons.length - 1, activeSection))];
+        int index = activeSectionIndex();
+        JButton current = menuButtons[Math.max(0, Math.min(menuButtons.length - 1, index))];
         if (current == null) {
             return;
         }
@@ -191,5 +186,14 @@ final class SocialRelationshipsContainer extends JPanel {
                 focusMenu();
             }
         });
+    }
+
+    private int activeSectionIndex() {
+        for (int i = 0; i < sectionTypes.length; i++) {
+            if (sectionTypes[i] == activeSection) {
+                return i;
+            }
+        }
+        return 0;
     }
 }

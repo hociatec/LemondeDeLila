@@ -144,6 +144,7 @@ C:\wamp64\www\LemondeDeLila\java-client\client-app\src\main\java\com\lemondelila
 C:\wamp64\www\LemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\gamelogic\damenature\model\DameNatureSession.java
 C:\wamp64\www\LemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\gamelogic\missionnemesis\model\NemesisStateMapper.java
 C:\wamp64\www\LemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\framework\core\di\InjectionSupport.java
+C:\wamp64\www\LemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\gamelogic\panierexpress\util\BotTurnScheduler.java
 C:\wamp64\www\LemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\game\service\RemoteGameServiceSupport.java
 C:\wamp64\www\LemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\chat\service\ChatConnectionFactory.java
 C:\wamp64\www\LemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\presence\controller\PresenceController.java

@@ -10,6 +10,12 @@
     <name>Les mondes de Lilas Client</name>
 
     <modules>
+        <module>framework-di</module>
+        <module>framework-core</module>
+        <module>framework-ui</module>
+        <module>framework-network</module>
+        <module>framework-media</module>
+        <module>framework-access</module>
         <module>client-app</module>
     </modules>
 

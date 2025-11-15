@@ -26,6 +26,8 @@ public final class ApplicationShortcuts {
     private final Set<String> registeredIds = new HashSet<>();
     private boolean installed;
     private LilaFrame frameReference;
+    private AutoCloseable frameActionScope;
+    private AutoCloseable frameShortcutScope;
 
     @Inject
     public ApplicationShortcuts(ActionManager actionManager,
@@ -52,10 +54,7 @@ public final class ApplicationShortcuts {
 
         installed = true;
         frameReference = frame;
-        SwingUtilities.invokeLater(() -> {
-            actionManager.attachTo(frame.getRootPane());
-            shortcutRegistry.applyTo(frame.getRootPane());
-        });
+        refreshFrameBindings();
     }
 
     public void registerShortcut(String id,
@@ -81,7 +80,29 @@ public final class ApplicationShortcuts {
         shortcutRegistry.register(keyStroke, description + (mnemonic != null && !mnemonic.isBlank() ? " (" + mnemonic + ")" : ""));
 
         if (installed && frameReference != null) {
-            SwingUtilities.invokeLater(() -> shortcutRegistry.applyTo(frameReference.getRootPane()));
+            refreshFrameBindings();
+        }
+    }
+
+    private void refreshFrameBindings() {
+        if (frameReference == null) {
+            return;
+        }
+        SwingUtilities.invokeLater(() -> {
+            closeQuietly(frameActionScope);
+            closeQuietly(frameShortcutScope);
+            frameActionScope = actionManager.attachTo(frameReference.getRootPane());
+            frameShortcutScope = shortcutRegistry.applyTo(frameReference.getRootPane());
+        });
+    }
+
+    private static void closeQuietly(AutoCloseable closeable) {
+        if (closeable == null) {
+            return;
+        }
+        try {
+            closeable.close();
+        } catch (Exception ignored) {
         }
     }
 }

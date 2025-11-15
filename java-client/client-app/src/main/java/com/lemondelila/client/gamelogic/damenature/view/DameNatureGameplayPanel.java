@@ -1,8 +1,8 @@
 package com.lemondelila.client.gamelogic.damenature.view;
 
 import com.lemondelila.client.framework.access.game.AccessibilityService;
+import com.lemondelila.client.framework.access.game.GameHistorySidebar;
 import com.lemondelila.client.framework.access.game.GameHistoryTracker;
-import com.lemondelila.client.framework.access.game.GameHistoryView;
 import com.lemondelila.client.gamelogic.damenature.model.DameNatureSession;
 import com.lemondelila.client.gamelogic.damenature.model.DameNatureState;
 
@@ -32,7 +32,7 @@ final class DameNatureGameplayPanel extends JPanel {
 
     private final AccessibilityService accessibilityService;
     private final GameHistoryTracker historyTracker = new GameHistoryTracker();
-    private final GameHistoryView historyView;
+    private final GameHistorySidebar historySidebar;
 
     private final JLabel turnLabel = new JLabel("Tour : -");
     private final JLabel selectionLabel = new JLabel("Sélection : aucune");
@@ -50,11 +50,12 @@ final class DameNatureGameplayPanel extends JPanel {
     private int selectedCardIndex = -1;
 
     DameNatureGameplayPanel(AccessibilityService accessibilityService) {
-        this.accessibilityService = Objects.requireNonNull(accessibilityService, "accessibilityService");
-        this.historyView = new GameHistoryView(
-                "Historique",
-                "Historique des actions",
-                "Derniers évènements de la partie Dame Nature."
+        this.accessibilityService = Objects.requireNonNull(accessibilityService, \"accessibilityService\");
+        this.historySidebar = new GameHistorySidebar(
+                \"Historique\",
+                \"Historique des actions\",
+                \"Derniers ?v??nements de la partie Dame Nature.\",
+                new Dimension(420, 380)
         );
         historyTracker.setMaxEntries(400);
         buildUi();
@@ -77,7 +78,7 @@ final class DameNatureGameplayPanel extends JPanel {
         selectedPlayerIndex = -1;
         selectedCardIndex = -1;
         historyTracker.clear();
-        historyView.setHistoryText("");
+        historySidebar.clear();
     }
 
     void applySession(DameNatureSession session) {
@@ -140,12 +141,8 @@ final class DameNatureGameplayPanel extends JPanel {
         return turnLabel;
     }
 
-    GameHistoryView historyView() {
-        return historyView;
-    }
-
     JTextArea historyComponent() {
-        return historyView.historyComponent();
+        return historySidebar.historyComponent();
     }
 
     String currentSelectionAnnouncement() {
@@ -193,8 +190,7 @@ final class DameNatureGameplayPanel extends JPanel {
         center.add(infoPanel);
         center.add(Box.createRigidArea(new Dimension(16, 0)));
 
-        historyView.setPreferredSize(new Dimension(420, 380));
-        center.add(historyView);
+        center.add(historySidebar);
 
         add(center, BorderLayout.CENTER);
 
@@ -370,7 +366,7 @@ final class DameNatureGameplayPanel extends JPanel {
                     .filter(msg -> !msg.isEmpty())
                     .toList());
         }
-        historyView.render(historyTracker, "Aucun évènement pour le moment.");
+        historySidebar.render(historyTracker, "Aucun �v�nement pour le moment.");
         historyComponent().setCaretPosition(historyComponent().getDocument().getLength());
     }
 

@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
  * Gere entierement le placement manuel d'une flotte en interaction
  * avec le panneau de grille dedie.
  */
-final class NemesisPlacementOrchestrator implements NemesisGridPanel.ManualPlacementCallbacks {
+final class NemesisPlacementOrchestrator implements NemesisManualPlacementCallbacks {
 
     private final NemesisGridPanel grid;
     private final NemesisPlacementPanel infoPanel;

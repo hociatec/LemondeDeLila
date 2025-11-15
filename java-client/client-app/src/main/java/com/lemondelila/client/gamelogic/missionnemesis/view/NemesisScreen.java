@@ -9,15 +9,18 @@ import com.lemondelila.client.gamelogic.missionnemesis.model.NemesisSpecs;
 import com.lemondelila.client.gamelogic.missionnemesis.model.NemesisState;
 import com.lemondelila.client.gamelogic.missionnemesis.model.ShipPlacement;
 import com.lemondelila.client.catalogue.model.GameSummary;
+import com.lemondelila.client.catalogue.view.CatalogScreen;
 import com.lemondelila.client.catalogue.service.GameRulesService;
 import com.lemondelila.client.framework.access.game.AccessibilityService;
+import com.lemondelila.client.framework.access.game.GameHistorySidebar;
 import com.lemondelila.client.framework.access.game.GameHistoryTracker;
-import com.lemondelila.client.framework.access.game.GameHistoryView;
 import com.lemondelila.client.framework.access.shortcut.AccessibleShortcutRegistry;
+import com.lemondelila.client.framework.access.shortcut.ShortcutBinder;
 import com.lemondelila.client.framework.core.di.Inject;
 import com.lemondelila.client.framework.ui.dialog.DialogService;
 import com.lemondelila.client.framework.ui.screen.Screen;
 import com.lemondelila.client.framework.ui.screen.ScreenContext;
+import com.lemondelila.client.framework.ui.screen.ScreenId;
 import com.lemondelila.client.framework.ui.screen.ScreenManager;
 
 import javax.swing.AbstractAction;
@@ -41,6 +44,8 @@ import java.util.stream.Collectors;
 
 public final class NemesisScreen extends JPanel implements Screen {
 
+    public static final ScreenId ID = ScreenId.of("mission-nemesis");
+
     private enum ViewState {
         SETUP,
         MANUAL_PLACEMENT,
@@ -63,6 +68,7 @@ public final class NemesisScreen extends JPanel implements Screen {
     private final AccessibleShortcutRegistry shortcutRegistry;
     private final DialogService dialogService;
     private final GameInteractionController interactionController;
+    private final ShortcutBinder shortcutBinder;
 
     private ScreenManager screenManager;
     private NemesisSession currentSession;
@@ -70,7 +76,7 @@ public final class NemesisScreen extends JPanel implements Screen {
 
     private final NemesisSetupPanel setupPanel;
     private final NemesisPlacementPanel placementPanel = new NemesisPlacementPanel();
-    private final GameHistoryView historyView = new GameHistoryView(
+    private final GameHistorySidebar historySidebar = new GameHistorySidebar(
             "Journal des actions",
             "Historique des actions",
             "Derniers évènements de la partie Mission Nemesis."
@@ -111,9 +117,12 @@ public final class NemesisScreen extends JPanel implements Screen {
                 this::exitToCatalog,
                 this::setStatus,
                 this::addBotCommand,
-                this::removeBotCommand
+                this::removeBotCommand,
+                this::announceTableParticipants,
+                this::announceCurrentTurn
         );
         interactionController.setEnabled(false);
+        this.shortcutBinder = new ShortcutBinder(shortcutRegistry, () -> true, this);
 
         enemyGrid.setFireSelectionListener(this::updateSelectionStatus);
         buildUi();
@@ -137,8 +146,8 @@ public final class NemesisScreen extends JPanel implements Screen {
         JPanel battleContainer = new JPanel(new BorderLayout(12, 12));
         battleContainer.add(placementPanel, BorderLayout.NORTH);
         battleContainer.add(gridsContainer, BorderLayout.CENTER);
-        historyView.setPreferredSize(new java.awt.Dimension(0, 180));
-        battleContainer.add(historyView, BorderLayout.SOUTH);
+        historySidebar.setPreferredSize(new java.awt.Dimension(0, 180));
+        battleContainer.add(historySidebar, BorderLayout.SOUTH);
 
         mainPanel.add(setupContainer, ViewState.SETUP.name());
         mainPanel.add(battleContainer, ViewState.ACTIVE_GAME.name());
@@ -151,24 +160,25 @@ public final class NemesisScreen extends JPanel implements Screen {
 
     private void configureKeyMap() {
         shortcutRegistry.clear();
-        registerShortcut("ESCAPE", "nemesis-esc-disabled", "Échap : aucune action durant la partie.", e -> setStatus("Échap est désactivé pendant la partie. Utilisez Q pour quitter."));
+        shortcutBinder.registerStroke("ESCAPE", "nemesis-esc-disabled", "Echap : aucune action durant la partie.", e -> setStatus("Echap est desactive pendant la partie. Utilisez Q pour quitter."));
 
-        registerShortcut("F5", "nemesis-refresh", "F5 : rafraîchir l’état de la partie.", e -> {
+        shortcutBinder.registerStroke("F5", "nemesis-refresh", "F5 : rafraichir l'etat de la partie.", e -> {
             if (currentSession == null) {
                 return;
             }
-            setStatus("Rafraîchissement de l’état en cours...");
+            setStatus("Rafraichissement de l'etat en cours...");
             controller.refresh().whenComplete((session, error) ->
                     SwingUtilities.invokeLater(() -> {
                         if (error != null) {
-                            setStatus("Impossible de rafraîchir l’état de la partie.");
+                            setStatus("Impossible de rafraichir l'etat de la partie.");
                         } else {
-                            setStatus("État mis à jour.");
+                            setStatus("Etat mis a jour.");
                         }
                     })
             );
         });
-        registerShortcut("W", "nemesis-players", "Lettre W : annoncer les joueurs présents.", e -> announceTableParticipants());
+        shortcutBinder.registerLetterDescription('w', "Lettre W : annoncer les joueurs presents.");
+        shortcutBinder.registerLetterDescription('t', "Lettre T : annoncer le tour en cours.");
         shortcutRegistry.applyTo(this);
     }
 
@@ -179,14 +189,7 @@ public final class NemesisScreen extends JPanel implements Screen {
     private CompletableFuture<Void> removeBotCommand() {
         return controller.removeBot().thenApply(session -> null);
     }
-    private void registerShortcut(String keyStroke, String actionId, String description, java.util.function.Consumer<java.awt.event.ActionEvent> handler) {
-        registerShortcut(KeyStroke.getKeyStroke(keyStroke), actionId, description, handler);
-    }
 
-    private void registerShortcut(KeyStroke stroke, String actionId, String description, java.util.function.Consumer<java.awt.event.ActionEvent> handler) {
-        if (stroke == null || handler == null) {
-            return;
-        }
         getInputMap(WHEN_IN_FOCUSED_WINDOW).put(stroke, actionId);
         getActionMap().put(actionId, new AbstractAction() {
             @Override
@@ -194,12 +197,6 @@ public final class NemesisScreen extends JPanel implements Screen {
                 handler.accept(e);
             }
         });
-        if (description != null && !description.isBlank()) {
-            shortcutRegistry.register(stroke, description);
-        }
-    }
-
-
     private void handleStartRequested(NemesisSetupPanel.Configuration configuration) {
         setStatus("Création de la partie Mission Nemesis...");
         controller.startNewGame().whenComplete((session, error) ->
@@ -214,7 +211,7 @@ public final class NemesisScreen extends JPanel implements Screen {
                             : ViewState.ACTIVE_GAME;
                     mainLayout.show(mainPanel, ViewState.ACTIVE_GAME.name());
                     placementPanel.clear();
-                    historyView.setHistoryText("");
+                    historySidebar.clear();
                     displaySession(session);
                     if (state == ViewState.MANUAL_PLACEMENT) {
                         startManualPlacement();
@@ -357,8 +354,8 @@ public final class NemesisScreen extends JPanel implements Screen {
             }
         });
         historyTracker.setEntries(lines);
-        historyView.render(historyTracker, "Aucun évènement pour le moment.");
-        JTextArea area = historyView.historyComponent();
+        historySidebar.render(historyTracker, "Aucun évènement pour le moment.");
+        JTextArea area = historySidebar.historyComponent();
         area.setCaretPosition(area.getDocument().getLength());
     }
 
@@ -496,7 +493,7 @@ public final class NemesisScreen extends JPanel implements Screen {
         placementPanel.clear();
         ownGrid.clear();
         enemyGrid.clear();
-        historyView.setHistoryText("");
+        historySidebar.clear();
         historyTracker.clear();
         footerPanel.reset();
         SwingUtilities.invokeLater(setupPanel::activate);
@@ -505,6 +502,53 @@ public final class NemesisScreen extends JPanel implements Screen {
     private void setStatus(String text) {
         footerPanel.showStatus(text);
         accessibilityService.announceCustom(footerPanel, text);
+    }
+
+    private void announceCurrentTurn() {
+        NemesisSession session = currentSession;
+        if (session == null) {
+            setStatus("Aucune partie active.");
+            return;
+        }
+        NemesisState state = session.state();
+        if (state == null) {
+            setStatus("Aucune information de partie disponible.");
+            return;
+        }
+        if (state.winnerId() != null) {
+            setStatus("La partie est terminée.");
+            return;
+        }
+        List<NemesisState.Player> players = state.players();
+        if (players == null || players.isEmpty()) {
+            setStatus("Aucun joueur autour de la table.");
+            return;
+        }
+        int index = state.turnIndex();
+        if (index < 0 || index >= players.size()) {
+            setStatus("Tour en cours inconnu.");
+            return;
+        }
+        NemesisState.Player current = players.get(index);
+        if (current == null) {
+            setStatus("Tour en cours inconnu.");
+            return;
+        }
+        String name = current.username();
+        if (name == null || name.isBlank()) {
+            name = "Joueur " + (index + 1);
+        }
+        StringBuilder message = new StringBuilder("Tour de ").append(name);
+        if (current.isBot()) {
+            message.append(" (bot)");
+        }
+        if (current.isSelf()) {
+            message.append(" (vous)");
+        }
+        if (state.round() > 0) {
+            message.append(" - Manche ").append(state.round());
+        }
+        setStatus(message.toString());
     }
 
     private void announceTableParticipants() {
@@ -544,13 +588,13 @@ public final class NemesisScreen extends JPanel implements Screen {
     private void exitToCatalog() {
         controller.reset();
         if (screenManager != null) {
-            SwingUtilities.invokeLater(() -> screenManager.show("catalog"));
+            SwingUtilities.invokeLater(() -> screenManager.show(CatalogScreen.ID));
         }
     }
 
     @Override
-    public String id() {
-        return "mission-nemesis";
+    public ScreenId id() {
+        return ID;
     }
 
     @Override
@@ -574,3 +618,8 @@ public final class NemesisScreen extends JPanel implements Screen {
         this.screenManager = null;
     }
 }
+
+
+
+
+

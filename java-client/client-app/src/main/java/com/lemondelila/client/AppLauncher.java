@@ -3,9 +3,11 @@ package com.lemondelila.client;
 import com.lemondelila.client.settings.service.AppSettingsService;
 import com.lemondelila.client.application.AppBranding;
 import com.lemondelila.client.application.view.dialog.ConfirmExitDialog;
+import com.lemondelila.client.application.view.home.HomeScreen;
 import com.lemondelila.client.framework.core.context.ApplicationContext;
 import com.lemondelila.client.framework.core.module.FrameworkBootstrap;
 import com.lemondelila.client.framework.ui.LilaFrame;
+import com.lemondelila.client.framework.ui.lifecycle.ShutdownManager;
 
 import javax.swing.InputMap;
 import javax.swing.KeyStroke;
@@ -33,23 +35,26 @@ public final class AppLauncher {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> bootstrap.shutdown(context)));
         AppSettingsService settingsService = context.get(AppSettingsService.class);
         AppBranding branding = context.get(AppBranding.class);
+        ShutdownManager shutdownManager = context.get(ShutdownManager.class);
 
         SwingUtilities.invokeLater(() -> {
             LilaFrame frame = context.get(LilaFrame.class);
             frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+            shutdownManager.addHook(() -> {
+                frame.setVisible(false);
+                frame.dispose();
+            });
             frame.addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosing(WindowEvent e) {
                     if (!settingsService.current().confirmOnExit()
                             || ConfirmExitDialog.show(frame, branding.applicationName())) {
-                        frame.setVisible(false);
-                        frame.dispose();
-                        System.exit(0);
+                        shutdownManager.requestExit();
                     }
                 }
             });
             frame.setVisible(true);
-            frame.screenManager().show("home");
+            frame.screenManager().show(HomeScreen.ID);
         });
     }
 

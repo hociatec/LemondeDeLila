@@ -29,7 +29,8 @@ public final class GameInteractionController {
                                      Supplier<Optional<GameSummary>> currentGameSupplier,
                                      Runnable onQuitConfirmed,
                                      Consumer<String> statusConsumer) {
-        this(component, dialogService, rulesService, currentGameSupplier, onQuitConfirmed, statusConsumer, null, null);
+        this(component, dialogService, rulesService, currentGameSupplier, onQuitConfirmed, statusConsumer,
+                null, null, null, null);
     }
 
     public GameInteractionController(JComponent component,
@@ -39,7 +40,9 @@ public final class GameInteractionController {
                                      Runnable onQuitConfirmed,
                                      Consumer<String> statusConsumer,
                                      Supplier<CompletableFuture<Void>> addBotAction,
-                                     Supplier<CompletableFuture<Void>> removeBotAction) {
+                                     Supplier<CompletableFuture<Void>> removeBotAction,
+                                     Runnable showTableAction,
+                                     Runnable showTurnAction) {
         this.currentGameSupplier = currentGameSupplier;
         this.onQuitConfirmed = onQuitConfirmed;
         this.statusConsumer = statusConsumer != null ? statusConsumer : text -> { };
@@ -56,6 +59,10 @@ public final class GameInteractionController {
                     addBotAction, removeBotAction);
         } else {
             this.botController = null;
+        }
+        if (showTableAction != null || showTurnAction != null) {
+            new GameTableInfoController(component, this.statusConsumer, enabledSupplier,
+                    showTableAction, showTurnAction);
         }
     }
 

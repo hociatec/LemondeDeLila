@@ -2,8 +2,8 @@ package com.lemondelila.client.gamelogic.panierexpress.view;
 
 import com.lemondelila.client.framework.access.AccessibleDecorator;
 import com.lemondelila.client.framework.access.AccessibleSpec;
+import com.lemondelila.client.framework.access.game.GameHistorySidebar;
 import com.lemondelila.client.framework.access.game.GameHistoryTracker;
-import com.lemondelila.client.framework.access.game.GameHistoryView;
 
 import javax.accessibility.AccessibleContext;
 import javax.swing.BorderFactory;
@@ -25,12 +25,13 @@ import java.util.List;
  */
 final class PanierExpressGamePanel extends JPanel {
 
-    private final JLabel statusLabel = new JLabel("Partie en préparation...");
+    private final JLabel statusLabel = new JLabel("Partie en pr?paration...");
     private final JLabel pendingLabel = new JLabel(" ");
-    private final GameHistoryView historyView = new GameHistoryView(
+    private final GameHistorySidebar historySidebar = new GameHistorySidebar(
             "Historique",
             "Historique des actions",
-            "Liste des derniers évènements de la partie."
+            "Liste des derniers ?v??nements de la partie.",
+            new Dimension(320, 400)
     );
 
     private final JPanel quizPanel = new JPanel();
@@ -86,8 +87,7 @@ final class PanierExpressGamePanel extends JPanel {
 
         add(leftColumn, BorderLayout.CENTER);
 
-        historyView.setPreferredSize(new Dimension(320, 400));
-        add(historyView, BorderLayout.EAST);
+        add(historySidebar, BorderLayout.EAST);
     }
 
     private void buildQuizPanel() {
@@ -192,11 +192,11 @@ final class PanierExpressGamePanel extends JPanel {
     }
 
     void focusHistory() {
-        historyView.focusHistory();
+        historySidebar.focusHistory();
     }
 
     void updateHistory(GameHistoryTracker tracker, String emptyMessage) {
-        historyView.render(tracker, emptyMessage);
+        historySidebar.render(tracker, emptyMessage);
     }
 
     void announceScore(String message) {
@@ -242,3 +242,5 @@ final class PanierExpressGamePanel extends JPanel {
         }
     }
 }
+
+

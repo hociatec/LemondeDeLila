@@ -29,7 +29,7 @@ import java.awt.Window;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 
-public final class OptionsDialog extends JDialog {
+public public final class OptionsDialog extends JDialog {
 
     private final JSlider musicVolumeSlider = slider();
     private final JSlider appLaunchVolumeSlider = slider();

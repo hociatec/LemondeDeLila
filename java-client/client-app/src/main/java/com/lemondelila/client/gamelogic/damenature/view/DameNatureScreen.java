@@ -1,16 +1,18 @@
 package com.lemondelila.client.gamelogic.damenature.view;
 
 import com.lemondelila.client.catalogue.model.GameSummary;
+import com.lemondelila.client.catalogue.view.CatalogScreen;
 import com.lemondelila.client.catalogue.service.GameRulesService;
 import com.lemondelila.client.framework.access.game.AccessibilityService;
 import com.lemondelila.client.framework.access.shortcut.AccessibleShortcutRegistry;
+import com.lemondelila.client.framework.access.shortcut.ShortcutBinder;
 import com.lemondelila.client.framework.core.context.ApplicationContext;
 import com.lemondelila.client.framework.core.di.Inject;
 import com.lemondelila.client.framework.ui.dialog.DialogService;
-import com.lemondelila.client.framework.ui.screen.Screen;
 import com.lemondelila.client.framework.ui.screen.ScreenContext;
-import com.lemondelila.client.framework.ui.screen.ScreenManager;
+import com.lemondelila.client.framework.ui.screen.ScreenId;
 import com.lemondelila.client.game.controller.GameInteractionController;
+import com.lemondelila.client.game.view.AbstractGameScreen;
 import com.lemondelila.client.gamelogic.damenature.controller.DameNatureController;
 import com.lemondelila.client.gamelogic.damenature.model.DameNatureConfig;
 import com.lemondelila.client.gamelogic.damenature.model.DameNatureSession;
@@ -30,7 +32,9 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
-public final class DameNatureScreen extends JPanel implements Screen {
+public final class DameNatureScreen extends AbstractGameScreen {
+
+    public static final ScreenId ID = ScreenId.of("dame-nature");
 
     private enum Mode {
         CONFIGURATION,
@@ -53,8 +57,8 @@ public final class DameNatureScreen extends JPanel implements Screen {
     private final AccessibleShortcutRegistry shortcutRegistry;
     private final DialogService dialogService;
     private final GameInteractionController interactionController;
+    private final ShortcutBinder shortcutBinder;
 
-    private ScreenManager screenManager;
     private Mode mode = Mode.CONFIGURATION;
     private DameNatureConfig activeConfig = DameNatureConfig.defaultConfig();
     private DameNatureConfig pendingConfig = DameNatureConfig.defaultConfig();
@@ -74,6 +78,7 @@ public final class DameNatureScreen extends JPanel implements Screen {
                             AccessibleShortcutRegistry shortcutRegistry,
                             DialogService dialogService,
                             GameRulesService rulesService) {
+        super(ID, null);
         this.controller = Objects.requireNonNull(controller, "controller");
         this.accessibilityService = Objects.requireNonNull(accessibilityService, "accessibilityService");
         this.shortcutRegistry = Objects.requireNonNull(shortcutRegistry, "shortcutRegistry");
@@ -81,6 +86,7 @@ public final class DameNatureScreen extends JPanel implements Screen {
         this.configView = new DameNatureConfigPanel(new ConfigListener());
         this.gameplayView = new DameNatureGameplayPanel(accessibilityService);
         buildUi();
+        this.shortcutBinder = new ShortcutBinder(shortcutRegistry, () -> mode == Mode.GAMEPLAY, this);
         installGlobalKeyBindings();
         this.interactionController = new GameInteractionController(
                 this,
@@ -90,8 +96,11 @@ public final class DameNatureScreen extends JPanel implements Screen {
                 this::exitToCatalog,
                 message -> gameplayView.setStatusMessage(message),
                 this::addBotCommand,
-                this::removeBotCommand
+                this::removeBotCommand,
+                this::announceTableParticipants,
+                this::announceCurrentTurn
         );
+        bindInteractionController(this.interactionController);
         interactionController.setEnabled(false);
     }
 
@@ -118,72 +127,34 @@ public final class DameNatureScreen extends JPanel implements Screen {
 
     private void installGlobalKeyBindings() {
         shortcutRegistry.clear();
-        registerShortcut("ENTER", "damenature-draw", "Entrée : piocher une carte.", e -> triggerDraw());
-        registerLetterShortcut('t', "damenature-turn", "Lettre T : annoncer le tour en cours.", e -> announceCurrentTurn());
-        registerShortcut("UP", "damenature-target-prev", "Flèche haut : sélectionner l’adversaire précédent.", e -> announce(gameplayView.cycleTarget(-1)));
-        registerShortcut("DOWN", "damenature-target-next", "Flèche bas : sélectionner l’adversaire suivant.", e -> announce(gameplayView.cycleTarget(1)));
-        registerShortcut("LEFT", "damenature-card-prev", "Flèche gauche : choisir la carte précédente à demander.", e -> announce(gameplayView.cycleCard(-1)));
-        registerShortcut("RIGHT", "damenature-card-next", "Flèche droite : choisir la carte suivante à demander.", e -> announce(gameplayView.cycleCard(1)));
-        registerLetterShortcut('e', "damenature-request", "Lettre E : demander une carte à l’adversaire sélectionné.", e -> sendAskAction());
-        registerLetterShortcut('r', "damenature-refresh", "Lettre R : actualiser l’état de la partie.", e -> handleActionFeedback(controller.refresh(),
-                "Actualisation en cours...", null, null));
-        registerLetterShortcut('c', "damenature-open-config", "Lettre C : ouvrir la configuration.", e -> {
-            if (mode == Mode.GAMEPLAY) {
-                announce("Configuration ouverte. Modifiez les options puis Entrée pour relancer.");
-                openConfiguration();
-            }
+        shortcutBinder.registerStroke("ENTER", "damenature-draw", "Entree : piocher une carte.", e -> triggerDraw());
+        shortcutBinder.registerStroke("UP", "damenature-target-prev", "Fleche haut : selectionner l'adversaire precedent.", e -> announce(gameplayView.cycleTarget(-1)));
+        shortcutBinder.registerStroke("DOWN", "damenature-target-next", "Fleche bas : selectionner l'adversaire suivant.", e -> announce(gameplayView.cycleTarget(1)));
+        shortcutBinder.registerStroke("LEFT", "damenature-card-prev", "Fleche gauche : choisir la carte precedente a demander.", e -> announce(gameplayView.cycleCard(-1)));
+        shortcutBinder.registerStroke("RIGHT", "damenature-card-next", "Fleche droite : choisir la carte suivante a demander.", e -> announce(gameplayView.cycleCard(1)));
+        shortcutBinder.registerLetter('e', "damenature-request", "Lettre E : demander une carte a l'adversaire selectionne.", e -> sendAskAction());
+        shortcutBinder.registerLetter('r', "damenature-refresh", "Lettre R : actualiser l'etat de la partie.", e -> handleActionFeedback(controller.refresh(), "Actualisation en cours...", null, null));
+        shortcutBinder.registerLetter('c', "damenature-open-config", "Lettre C : ouvrir la configuration.", e -> {
+            announce("Configuration ouverte. Modifiez les options puis Entree pour relancer.");
+            openConfiguration();
         });
 
         for (int i = 0; i < 9; i++) {
             char digit = (char) ('1' + i);
             final int index = i;
-            registerShortcut(String.valueOf(digit), "damenature-quiz-" + digit,
-                    "Chiffre " + digit + " : répondre au quiz avec l’option " + (i + 1) + ".", e -> answerQuiz(index));
+            shortcutBinder.registerStroke(String.valueOf(digit), "damenature-quiz-" + digit,
+                    "Chiffre " + digit + " : repondre au quiz avec l'option " + (i + 1) + ".", e -> answerQuiz(index));
         }
-        registerLetterShortcut('w', "damenature-table", "Lettre W : annoncer les joueurs présents.", e -> announceTableParticipants());
+        shortcutBinder.registerLetterDescription('t', "Lettre T : annoncer le tour en cours.");
+        shortcutBinder.registerLetterDescription('w', "Lettre W : annoncer les joueurs presents.");
 
         JTextArea historyComponent = gameplayView.historyComponent();
-        getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("TAB"), "focus-history");
-        getActionMap().put("focus-history", new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (mode != Mode.GAMEPLAY) {
-                    return;
-                }
+        shortcutBinder.registerStroke("TAB", "damenature-focus-history", "Tab : consulter l'historique de la partie.", e ->
                 SwingUtilities.invokeLater(() -> {
                     historyComponent.requestFocusInWindow();
                     historyComponent.setCaretPosition(historyComponent.getDocument().getLength());
-                });
-            }
-        });
-    }
+                }));
 
-    private void registerShortcut(String stroke, String actionId, String description, Consumer<ActionEvent> handler) {
-        registerShortcut(KeyStroke.getKeyStroke(stroke), actionId, description, handler);
-    }
-
-    private void registerShortcut(KeyStroke stroke, String actionId, String description, Consumer<ActionEvent> handler) {
-        getInputMap(WHEN_IN_FOCUSED_WINDOW).put(stroke, actionId);
-        getActionMap().put(actionId, new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (mode == Mode.GAMEPLAY) {
-                    handler.accept(e);
-                }
-            }
-        });
-        if (description != null && !description.isBlank()) {
-            shortcutRegistry.register(stroke, description);
-        }
-    }
-
-    private void registerLetterShortcut(char letter, String actionId, String description, Consumer<ActionEvent> handler) {
-        char lower = Character.toLowerCase(letter);
-        char upper = Character.toUpperCase(letter);
-        registerShortcut(KeyStroke.getKeyStroke(lower), actionId, description, handler);
-        if (upper != lower) {
-            registerShortcut(KeyStroke.getKeyStroke(upper), actionId, description, handler);
-        }
     }
 
     private void showConfiguration() {
@@ -386,13 +357,13 @@ public final class DameNatureScreen extends JPanel implements Screen {
         launchInProgress = false;
         mode = Mode.CONFIGURATION;
         if (screenManager != null) {
-            SwingUtilities.invokeLater(() -> screenManager.show("catalog"));
+            SwingUtilities.invokeLater(() -> screenManager.show(CatalogScreen.ID));
         }
     }
 
     @Override
-    public String id() {
-        return "dame-nature";
+    public ScreenId id() {
+        return ID;
     }
 
     @Override
@@ -402,7 +373,7 @@ public final class DameNatureScreen extends JPanel implements Screen {
 
     @Override
     public void onShow(ScreenContext context) {
-        this.screenManager = context.screenManager();
+        super.onShow(context);
         dialogService.attach(this);
         controller.addListener(sessionListener);
         pendingConfig = activeConfig;
@@ -429,8 +400,8 @@ public final class DameNatureScreen extends JPanel implements Screen {
 
     @Override
     public void onHide(ScreenContext context) {
+        super.onHide(context);
         controller.removeListener(sessionListener);
-        interactionController.setEnabled(false);
     }
 
     private static String decorateBot(String base, boolean isBot) {
@@ -469,3 +440,5 @@ public final class DameNatureScreen extends JPanel implements Screen {
         }
     }
 }
+
+

@@ -1,5 +1,6 @@
 package com.lemondelila.client.application.view.menu;
 
+import com.lemondelila.client.application.view.home.HomeScreen;
 import com.lemondelila.client.catalogue.controller.CatalogController;
 import com.lemondelila.client.chat.controller.ChatController;
 import com.lemondelila.client.presence.controller.PresenceController;
@@ -10,9 +11,11 @@ import com.lemondelila.client.user.model.ClientSession;
 import com.lemondelila.client.framework.core.di.Inject;
 import com.lemondelila.client.framework.core.event.DomainEventBus;
 import com.lemondelila.client.framework.media.sound.SoundEffectManager;
+import com.lemondelila.client.framework.ui.ControllerResult;
 import com.lemondelila.client.framework.ui.dialog.DialogService;
 import com.lemondelila.client.framework.ui.screen.Screen;
 import com.lemondelila.client.framework.ui.screen.ScreenContext;
+import com.lemondelila.client.framework.ui.screen.ScreenId;
 import com.lemondelila.client.framework.ui.screen.ScreenManager;
 
 import javax.swing.AbstractAction;
@@ -26,6 +29,8 @@ import java.awt.event.ActionEvent;
 import java.util.List;
 
 public final class MainMenuScreen extends JPanel implements Screen {
+
+    public static final ScreenId ID = ScreenId.of("main-menu");
 
     private static final String ACTION_SHOW_CATALOG = "main-menu.show-catalog";
     private static final String ACTION_NAV_UP = "main-menu.nav-up.";
@@ -141,7 +146,7 @@ public final class MainMenuScreen extends JPanel implements Screen {
         }
         audio.playSelect();
         if (screenManager != null) {
-            SwingUtilities.invokeLater(() -> screenManager.show("home"));
+            SwingUtilities.invokeLater(() -> screenManager.show(HomeScreen.ID));
         }
     }
 
@@ -160,8 +165,7 @@ public final class MainMenuScreen extends JPanel implements Screen {
             return;
         }
         audio.playSelect();
-        String status = presenceController.open(this);
-        setStatus(status);
+        applyResult(presenceController.open(this));
     }
 
     private void openChat() {
@@ -169,8 +173,7 @@ public final class MainMenuScreen extends JPanel implements Screen {
             return;
         }
         audio.playSelect();
-        String status = chatController.open(SwingUtilities.getWindowAncestor(this));
-        setStatus(status);
+        applyResult(chatController.open(SwingUtilities.getWindowAncestor(this)));
     }
 
     private void openSocial() {
@@ -178,13 +181,11 @@ public final class MainMenuScreen extends JPanel implements Screen {
             return;
         }
         audio.playSelect();
-        String status = socialController.open(SwingUtilities.getWindowAncestor(this));
-        setStatus(status);
+        applyResult(socialController.open(SwingUtilities.getWindowAncestor(this)));
     }
 
     private void openOptions() {
-        String status = optionsController.open(SwingUtilities.getWindowAncestor(this));
-        setStatus(status);
+        applyResult(optionsController.open(SwingUtilities.getWindowAncestor(this)));
     }
 
     private void openCatalog() {
@@ -192,8 +193,7 @@ public final class MainMenuScreen extends JPanel implements Screen {
             return;
         }
         audio.playSelect();
-        String status = catalogController.openCatalog();
-        setStatus(status);
+        applyResult(catalogController.openCatalog());
     }
 
     private void logout() {
@@ -203,7 +203,7 @@ public final class MainMenuScreen extends JPanel implements Screen {
         audio.playSelect();
         setStatus("Deconnecte.");
         if (screenManager != null) {
-            SwingUtilities.invokeLater(() -> screenManager.show("home"));
+            SwingUtilities.invokeLater(() -> screenManager.show(HomeScreen.ID));
         }
     }
 
@@ -213,7 +213,7 @@ public final class MainMenuScreen extends JPanel implements Screen {
         }
         dialogService.error("Authentification requise", "Veuillez vous reconnecter pour acceder a ce module.");
         if (screenManager != null) {
-            SwingUtilities.invokeLater(() -> screenManager.show("home"));
+            SwingUtilities.invokeLater(() -> screenManager.show(HomeScreen.ID));
         }
         return false;
     }
@@ -222,9 +222,21 @@ public final class MainMenuScreen extends JPanel implements Screen {
         SwingUtilities.invokeLater(() -> view.setStatus(text));
     }
 
+    private void applyResult(ControllerResult result) {
+        if (result == null) {
+            return;
+        }
+        result.statusMessage().ifPresent(this::setStatus);
+        result.navigationTarget().ifPresent(target -> {
+            if (screenManager != null) {
+                SwingUtilities.invokeLater(() -> screenManager.show(target));
+            }
+        });
+    }
+
     @Override
-    public String id() {
-        return "main-menu";
+    public ScreenId id() {
+        return ID;
     }
 
     @Override
@@ -235,7 +247,6 @@ public final class MainMenuScreen extends JPanel implements Screen {
     @Override
     public void onShow(ScreenContext context) {
         this.screenManager = context.screenManager();
-        catalogController.attach(screenManager);
         setStatus("Pret.");
         audio.playAppLaunch();
         audio.startBackground();
@@ -245,7 +256,6 @@ public final class MainMenuScreen extends JPanel implements Screen {
     @Override
     public void onHide(ScreenContext context) {
         this.screenManager = null;
-        catalogController.detach();
         audio.stopBackground();
     }
 }

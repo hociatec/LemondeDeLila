@@ -4,6 +4,7 @@ import com.lemondelila.client.framework.core.di.Inject;
 import com.lemondelila.client.framework.ui.dialog.DialogService;
 import com.lemondelila.client.framework.ui.screen.Screen;
 import com.lemondelila.client.framework.ui.screen.ScreenContext;
+import com.lemondelila.client.framework.ui.screen.ScreenId;
 import com.lemondelila.client.social.controller.SocialMessagesCenterController;
 import com.lemondelila.client.social.controller.SocialRelationshipsController;
 import com.lemondelila.client.user.model.ClientSession;
@@ -29,7 +30,7 @@ import java.util.function.Supplier;
 
 public final class SocialCenterScreen extends JPanel implements Screen {
 
-    private static final String SCREEN_ID = "social";
+    public static final ScreenId ID = ScreenId.of("social");
 
     private final ClientSession session;
     private final JLabel globalStatus = new JLabel(" ");
@@ -72,8 +73,8 @@ public final class SocialCenterScreen extends JPanel implements Screen {
     }
 
     @Override
-    public String id() {
-        return SCREEN_ID;
+    public ScreenId id() {
+        return ID;
     }
 
     @Override
