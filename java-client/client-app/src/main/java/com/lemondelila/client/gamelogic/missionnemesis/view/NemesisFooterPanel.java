@@ -7,7 +7,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-final class NemesisFooterPanel extends JPanel {
+public final class NemesisFooterPanel extends JPanel {
 
     private final AccessibilityService accessibilityService;
 
@@ -38,19 +38,19 @@ final class NemesisFooterPanel extends JPanel {
         }
     }
 
-    void showPhase(String phase) {
+    public void showPhase(String phase) {
         String message = "Phase : " + phase;
         phaseLabel.setText(message);
         announce(phaseLabel, message);
     }
 
-    void showRound(int round) {
+    public void showRound(int round) {
         String message = "Manche : " + round;
         roundLabel.setText(message);
         announce(roundLabel, message);
     }
 
-    void showParticipants(String info) {
+    public void showParticipants(String info) {
         String display = (info == null || info.isBlank()) ? "Bots détectés : aucun." : info;
         boolean changed = !display.equals(participantsLabel.getText());
         participantsLabel.setText(display);
@@ -62,7 +62,7 @@ final class NemesisFooterPanel extends JPanel {
         }
     }
 
-    void showStatus(String status) {
+    public void showStatus(String status) {
         statusLabel.setText(status);
         if (statusLabel.getAccessibleContext() != null) {
             statusLabel.getAccessibleContext().setAccessibleDescription(status);
@@ -70,7 +70,7 @@ final class NemesisFooterPanel extends JPanel {
         announce(statusLabel, status);
     }
 
-    void reset() {
+    public void reset() {
         phaseLabel.setText("Phase : -");
         roundLabel.setText("Manche : -");
         showParticipants("Bots détectés : aucun.");

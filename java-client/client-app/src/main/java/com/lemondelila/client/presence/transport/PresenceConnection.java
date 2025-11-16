@@ -1,10 +1,11 @@
 package com.lemondelila.client.presence.transport;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lemondelila.client.chat.model.ChatState;
 import com.lemondelila.client.presence.model.PresenceChat;
 import com.lemondelila.client.presence.model.PresencePlayer;
+import com.lemondelila.client.presence.dto.PresencePlayerDto;
+import com.lemondelila.client.presence.dto.PresenceRoomDto;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -101,15 +102,11 @@ public final class PresenceConnection implements AutoCloseable {
         public CompletionStage<?> onText(WebSocket webSocket, CharSequence data, boolean last) {
             webSocket.request(1);
             try {
-                JsonNode node = mapper.readTree(data.toString());
-                if ("presence-update".equals(node.path("type").asText())) {
-                    JsonNode playersNode = node.path("players");
-                    if (playersNode.isArray()) {
-                        List<PresencePlayer> players = new ArrayList<>();
-                        playersNode.forEach(item -> parsePresence(item).ifPresent(players::add));
-                        lastPresence = players;
-                        emitPresence(players);
-                    }
+                PresenceUpdateEnvelope envelope = mapper.readValue(data.toString(), PresenceUpdateEnvelope.class);
+                if (envelope != null && "presence-update".equalsIgnoreCase(envelope.type())) {
+                    List<PresencePlayer> players = toPresencePlayers(envelope.players());
+                    lastPresence = players;
+                    emitPresence(players);
                 }
             } catch (Exception e) {
                 emitError("Presence invalide : " + e.getMessage());
@@ -130,23 +127,34 @@ public final class PresenceConnection implements AutoCloseable {
         }
     }
 
-    private java.util.Optional<PresencePlayer> parsePresence(JsonNode node) {
-        if (node == null || !node.isObject()) {
-            return java.util.Optional.empty();
+    private List<PresencePlayer> toPresencePlayers(List<PresencePlayerDto> dtos) {
+        if (dtos == null || dtos.isEmpty()) {
+            return List.of();
         }
-        int id = node.path("id").asInt(-1);
-        String username = node.path("username").asText("inconnu");
-        List<PresenceChat> rooms = new ArrayList<>();
-        JsonNode roomsNode = node.path("rooms");
-        if (roomsNode.isArray()) {
-            roomsNode.forEach(room -> {
-                int roomId = room.path("id").asInt(-1);
-                String name = room.path("name").asText("");
-                if (roomId >= 0 && !name.isEmpty()) {
-                    rooms.add(new PresenceChat(roomId, name));
+        List<PresencePlayer> players = new ArrayList<>(dtos.size());
+        for (PresencePlayerDto dto : dtos) {
+            players.add(toPresencePlayer(dto));
+        }
+        return List.copyOf(players);
+    }
+
+    private PresencePlayer toPresencePlayer(PresencePlayerDto dto) {
+        if (dto == null) {
+            return new PresencePlayer(-1, "inconnu", List.of());
+        }
+        List<PresenceChat> chats = new ArrayList<>();
+        List<PresenceRoomDto> rooms = dto.rooms();
+        if (rooms != null) {
+            for (PresenceRoomDto room : rooms) {
+                if (room != null && room.id() >= 0 && room.name() != null && !room.name().isBlank()) {
+                    chats.add(new PresenceChat(room.id(), room.name()));
                 }
-            });
+            }
         }
-        return java.util.Optional.of(new PresencePlayer(id, username, rooms));
+        String username = dto.username() == null || dto.username().isBlank() ? "inconnu" : dto.username();
+        return new PresencePlayer(dto.id(), username, List.copyOf(chats));
+    }
+
+    private record PresenceUpdateEnvelope(String type, List<PresencePlayerDto> players) {
     }
 }

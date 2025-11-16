@@ -1,6 +1,6 @@
 package com.lemondelila.client.gamelogic.damenature.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.lemondelila.client.gamelogic.damenature.dto.DameNatureStateDto;
 import com.lemondelila.client.gamelogic.damenature.model.DameNatureConfig;
 import com.lemondelila.client.gamelogic.damenature.model.DameNatureEngine;
 import com.lemondelila.client.gamelogic.damenature.model.DameNatureSession;
@@ -133,15 +133,24 @@ public final class DameNatureRemoteClient extends RemoteGameServiceSupport
 
     private DameNatureState fetchStateInternal(int roomId,
                                                Map<String, String> headers) throws IOException, InterruptedException {
-        JsonNode node = restClient.get(GAME_PATH + "/rooms/" + roomId + "/state", headers);
-        return DameNatureStateMapper.fromJson(node);
+        DameNatureStateDto dto = restClient.get(
+                GAME_PATH + "/rooms/" + roomId + "/state",
+                headers,
+                DameNatureStateDto.class
+        );
+        return DameNatureStateMapper.fromDto(dto);
     }
 
     private DameNatureState sendMove(int roomId,
                                      Map<String, String> headers,
                                      Map<String, Object> payload) throws IOException, InterruptedException {
-        JsonNode node = restClient.post(GAME_PATH + "/rooms/" + roomId + "/move", headers, payload);
-        return DameNatureStateMapper.fromJson(node);
+        DameNatureStateDto dto = restClient.post(
+                GAME_PATH + "/rooms/" + roomId + "/move",
+                headers,
+                payload,
+                DameNatureStateDto.class
+        );
+        return DameNatureStateMapper.fromDto(dto);
     }
 
     private CompletableFuture<Void> addBotsForRoom(int roomId, int botCount) {

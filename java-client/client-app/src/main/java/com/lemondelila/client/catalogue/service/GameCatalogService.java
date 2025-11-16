@@ -1,9 +1,11 @@
 package com.lemondelila.client.catalogue.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.lemondelila.client.catalogue.model.CatalogCategory;
 import com.lemondelila.client.catalogue.model.CatalogData;
 import com.lemondelila.client.catalogue.model.GameSummary;
+import com.lemondelila.client.catalogue.service.dto.CatalogApiResponse;
+import com.lemondelila.client.catalogue.service.dto.CatalogCategoryDto;
+import com.lemondelila.client.catalogue.service.dto.GameSummaryDto;
 import com.lemondelila.client.user.model.ClientSession;
 import com.lemondelila.client.framework.core.di.Inject;
 import com.lemondelila.client.framework.core.task.TaskScheduler;
@@ -37,9 +39,8 @@ public final class GameCatalogService {
         CompletableFuture<CatalogData> future = new CompletableFuture<>();
         scheduler.runAsync(() -> {
             try {
-                JsonNode response = restClient.get("catalog", buildAuthHeaders());
-                CatalogData catalog = parseCatalog(response);
-                future.complete(catalog);
+                CatalogApiResponse response = restClient.get("catalog", buildAuthHeaders(), CatalogApiResponse.class);
+                future.complete(toCatalogData(response));
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 future.completeExceptionally(new IOException("Chargement interrompu", e));
@@ -59,9 +60,12 @@ public final class GameCatalogService {
         scheduler.runAsync(() -> {
             try {
                 String encoded = encodeCategoryId(categoryId);
-                JsonNode response = restClient.get("catalog/categories/" + encoded + "/games", buildAuthHeaders());
-                List<GameSummary> games = parseGames(response);
-                future.complete(games);
+                GameSummaryDto[] response = restClient.get(
+                        "catalog/categories/" + encoded + "/games",
+                        buildAuthHeaders(),
+                        GameSummaryDto[].class
+                );
+                future.complete(toGameSummaries(response));
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 future.completeExceptionally(new IOException("Chargement interrompu", e));
@@ -72,90 +76,74 @@ public final class GameCatalogService {
         return future;
     }
 
-    private CatalogData parseCatalog(JsonNode response) throws IOException {
-        if (response == null || !response.isObject()) {
+    private CatalogData toCatalogData(CatalogApiResponse response) throws IOException {
+        if (response == null) {
             throw new IOException("Reponse catalogue invalide");
         }
-        List<CatalogCategory> categories = parseCategories(response.path("categories"));
-        List<GameSummary> games = parseGames(response.path("games"));
+        List<CatalogCategory> categories = toCategories(response.categories());
+        List<GameSummary> games = toGameSummaries(response.games());
         return new CatalogData(categories, games);
     }
 
-    private List<GameSummary> parseGames(JsonNode gamesNode) throws IOException {
-        if (!gamesNode.isArray()) {
-            throw new IOException("Liste des jeux invalide");
+    private List<GameSummary> toGameSummaries(List<GameSummaryDto> dtos) throws IOException {
+        if (dtos == null) {
+            return List.of();
         }
-
         List<GameSummary> games = new ArrayList<>();
-        for (JsonNode node : gamesNode) {
-            String code = node.path("code").asText(null);
-            String name = node.path("name").asText(null);
-            if (code == null || name == null) {
-                continue;
-            }
-            int minPlayers = node.path("minPlayers").asInt(1);
-            int maxPlayers = node.path("maxPlayers").asInt(Math.max(1, minPlayers));
-            String engine = node.path("engine").asText(null);
-            String summary = node.hasNonNull("summary") ? node.get("summary").asText() : null;
-            boolean hasRules = node.path("hasRules").asBoolean(false);
-
-            List<String> categories = new ArrayList<>();
-            JsonNode categoriesNode = node.path("categories");
-            if (categoriesNode.isArray()) {
-                for (JsonNode cat : categoriesNode) {
-                    if (cat.isTextual()) {
-                        categories.add(cat.asText());
-                    }
-                }
-            }
-
-            games.add(new GameSummary(
-                    code,
-                    name,
-                    minPlayers,
-                    maxPlayers,
-                    engine,
-                    summary,
-                    hasRules,
-                    List.copyOf(categories)
-            ));
+        for (GameSummaryDto dto : dtos) {
+            games.add(toGameSummary(dto));
         }
-
         games.sort((a, b) -> a.name().compareToIgnoreCase(b.name()));
         return List.copyOf(games);
     }
 
-    private List<CatalogCategory> parseCategories(JsonNode node) throws IOException {
-        if (node.isMissingNode() || node.isNull()) {
+    private List<GameSummary> toGameSummaries(GameSummaryDto[] dtos) throws IOException {
+        if (dtos == null || dtos.length == 0) {
             return List.of();
         }
-        if (!node.isArray()) {
-            throw new IOException("Liste des categories invalide");
+        List<GameSummary> games = new ArrayList<>(dtos.length);
+        for (GameSummaryDto dto : dtos) {
+            games.add(toGameSummary(dto));
         }
+        games.sort((a, b) -> a.name().compareToIgnoreCase(b.name()));
+        return List.copyOf(games);
+    }
 
-        List<CatalogCategory> categories = new ArrayList<>();
-        for (JsonNode categoryNode : node) {
-            CatalogCategory category = parseCategory(categoryNode);
-            if (category != null) {
-                categories.add(category);
-            }
+    private GameSummary toGameSummary(GameSummaryDto dto) throws IOException {
+        if (dto == null || dto.code() == null || dto.code().isBlank() || dto.name() == null || dto.name().isBlank()) {
+            throw new IOException("Jeu invalide");
+        }
+        List<String> categories = dto.categories() == null ? List.of() : List.copyOf(dto.categories());
+        return new GameSummary(
+                dto.code(),
+                dto.name(),
+                Math.max(1, dto.minPlayers()),
+                Math.max(dto.minPlayers(), dto.maxPlayers()),
+                dto.engine(),
+                dto.summary(),
+                dto.hasRules(),
+                categories
+        );
+    }
+
+    private List<CatalogCategory> toCategories(List<CatalogCategoryDto> dtos) throws IOException {
+        if (dtos == null || dtos.isEmpty()) {
+            return List.of();
+        }
+        List<CatalogCategory> categories = new ArrayList<>(dtos.size());
+        for (CatalogCategoryDto dto : dtos) {
+            categories.add(toCategory(dto));
         }
         categories.sort((a, b) -> a.name().compareToIgnoreCase(b.name()));
         return List.copyOf(categories);
     }
 
-    private CatalogCategory parseCategory(JsonNode node) throws IOException {
-        if (!node.isObject()) {
+    private CatalogCategory toCategory(CatalogCategoryDto dto) throws IOException {
+        if (dto == null || dto.id() == null || dto.id().isBlank() || dto.name() == null || dto.name().isBlank()) {
             throw new IOException("Categorie invalide");
         }
-        String id = node.path("id").asText(null);
-        String name = node.path("name").asText(null);
-        if (id == null || name == null) {
-            throw new IOException("Categorie incomplete");
-        }
-
-        List<CatalogCategory> children = parseCategories(node.path("children"));
-        return new CatalogCategory(id, name, children);
+        List<CatalogCategory> children = toCategories(dto.children());
+        return new CatalogCategory(dto.id(), dto.name(), children);
     }
 
     private Map<String, String> buildAuthHeaders() {

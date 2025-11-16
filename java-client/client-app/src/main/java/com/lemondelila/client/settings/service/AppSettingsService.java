@@ -4,6 +4,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.lemondelila.client.settings.model.AppSettings;
+import com.lemondelila.client.settings.storage.UserStoragePaths;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -14,13 +17,15 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public final class AppSettingsService {
 
-    private static final Path SETTINGS_PATH = Path.of("config", "settings.json");
+    private static final Logger LOGGER = LoggerFactory.getLogger(AppSettingsService.class);
+    private final Path settingsPath;
     private final ObjectMapper mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
     private final CopyOnWriteArrayList<java.util.function.Consumer<AppSettings>> listeners = new CopyOnWriteArrayList<>();
     private AppSettings settings;
 
-    public AppSettingsService() {
+    public AppSettingsService(UserStoragePaths storagePaths) {
+        this.settingsPath = storagePaths.settingsFile();
         this.settings = AppSettings.defaults();
         load();
     }
@@ -54,12 +59,12 @@ public final class AppSettingsService {
     }
 
     private void load() {
-        if (!Files.exists(SETTINGS_PATH)) {
+        if (!Files.exists(settingsPath)) {
             return;
         }
         lock.writeLock().lock();
         try {
-            JsonNode node = mapper.readTree(SETTINGS_PATH.toFile());
+            JsonNode node = mapper.readTree(settingsPath.toFile());
             AppSettings defaults = AppSettings.defaults();
             int fallbackEffectsVolume = readVolume(node, "gameVolume", defaults.soundAppLaunchVolume());
             AppSettings loaded = new AppSettings(
@@ -79,7 +84,8 @@ public final class AppSettingsService {
                     readFlag(node, "stayConnected", defaults.stayConnected())
             );
             settings = sanitize(loaded);
-        } catch (IOException ignored) {
+        } catch (IOException ex) {
+            LOGGER.warn("Impossible de charger les paramètres dans {}", settingsPath, ex);
             settings = AppSettings.defaults();
         } finally {
             lock.writeLock().unlock();
@@ -89,9 +95,10 @@ public final class AppSettingsService {
 
     private void save() {
         try {
-            Files.createDirectories(SETTINGS_PATH.getParent());
-            mapper.writeValue(SETTINGS_PATH.toFile(), settings);
-        } catch (IOException ignored) {
+            Files.createDirectories(settingsPath.getParent());
+            mapper.writeValue(settingsPath.toFile(), settings);
+        } catch (IOException ex) {
+            LOGGER.warn("Impossible d'enregistrer les paramètres dans {}", settingsPath, ex);
         }
     }
 

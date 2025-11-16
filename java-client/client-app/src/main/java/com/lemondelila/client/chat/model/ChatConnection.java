@@ -36,18 +36,20 @@ public final class ChatConnection implements AutoCloseable {
 
     public CompletableFuture<Void> connect() {
         emitState(ChatState.CONNECTING);
-        return httpClient.newWebSocketBuilder()
+        CompletableFuture<WebSocket> connection = httpClient.newWebSocketBuilder()
                 .connectTimeout(Duration.ofSeconds(10))
-                .buildAsync(endpoint, new ListenerImpl())
-                .thenAccept(socket -> {
-                    socketRef.set(socket);
-                    emitState(ChatState.CONNECTED);
-                })
-                .exceptionally(throwable -> {
-                    emitState(ChatState.FAILED);
-                    emitError("Connexion au tchat impossible : " + throwable.getMessage());
-                    return null;
-                });
+                .buildAsync(endpoint, new ListenerImpl());
+        CompletableFuture<Void> result = connection.thenAccept(socket -> {
+            socketRef.set(socket);
+            emitState(ChatState.CONNECTED);
+        });
+        return result.whenComplete((ignored, error) -> {
+            if (error != null) {
+                emitState(ChatState.FAILED);
+                String message = error.getMessage() == null ? error.toString() : error.getMessage();
+                emitError("Connexion au tchat impossible : " + message);
+            }
+        });
     }
 
     public CompletableFuture<Void> sendMessage(String text) {

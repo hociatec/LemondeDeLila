@@ -23,7 +23,7 @@ import java.util.List;
 /**
  * Vue principale de la partie Panier Express.
  */
-final class PanierExpressGamePanel extends JPanel {
+public final class PanierExpressGamePanel extends JPanel {
 
     private final JLabel statusLabel = new JLabel("Partie en pr?paration...");
     private final JLabel pendingLabel = new JLabel(" ");
@@ -139,19 +139,19 @@ final class PanierExpressGamePanel extends JPanel {
         return scroll;
     }
 
-    void updateStatus(String text, String accessibleDescription) {
+    public void updateStatus(String text, String accessibleDescription) {
         statusLabel.setText(text);
         if (accessibleDescription != null) {
             statusLabel.getAccessibleContext().setAccessibleDescription(accessibleDescription);
         }
     }
 
-    void updatePending(String text) {
+    public void updatePending(String text) {
         pendingLabel.setText(text == null ? " " : text);
         pendingLabel.getAccessibleContext().setAccessibleDescription(pendingLabel.getText());
     }
 
-    void showQuiz(String question, List<String> choices) {
+    public void showQuiz(String question, List<String> choices) {
         quizPanel.setVisible(true);
         quizQuestionLabel.setText(question == null ? " " : question);
         StringBuilder builder = new StringBuilder();
@@ -165,49 +165,49 @@ final class PanierExpressGamePanel extends JPanel {
         quizChoicesArea.getAccessibleContext().setAccessibleDescription(text);
     }
 
-    void hideQuiz() {
+    public void hideQuiz() {
         quizPanel.setVisible(false);
         quizQuestionLabel.setText(" ");
         quizChoicesArea.setText("");
         quizChoicesArea.getAccessibleContext().setAccessibleDescription("");
     }
 
-    void updateYourProgress(String text) {
+    public void updateYourProgress(String text) {
         yourProgressArea.setText(text == null ? "" : text);
         yourProgressArea.getAccessibleContext().setAccessibleDescription(yourProgressArea.getText());
     }
 
-    void updatePlayers(String text) {
+    public void updatePlayers(String text) {
         playersArea.setText(text == null ? "" : text);
         playersArea.getAccessibleContext().setAccessibleDescription(playersArea.getText());
     }
 
-    void updateScore(String text) {
+    public void updateScore(String text) {
         scoreArea.setText(text == null ? "" : text);
         scoreArea.getAccessibleContext().setAccessibleDescription(scoreArea.getText());
     }
 
-    void focusMain() {
+    public void focusMain() {
         requestFocusInWindow();
     }
 
-    void focusHistory() {
+    public void focusHistory() {
         historySidebar.focusHistory();
     }
 
-    void updateHistory(GameHistoryTracker tracker, String emptyMessage) {
+    public void updateHistory(GameHistoryTracker tracker, String emptyMessage) {
         historySidebar.render(tracker, emptyMessage);
     }
 
-    void announceScore(String message) {
+    public void announceScore(String message) {
         fireAccessibleText(scoreArea, message);
     }
 
-    void announceBasket(String message) {
+    public void announceBasket(String message) {
         fireAccessibleText(yourProgressArea, message);
     }
 
-    AccessibleContext statusAccessibleContext() {
+    public AccessibleContext statusAccessibleContext() {
         return statusLabel.getAccessibleContext();
     }
 

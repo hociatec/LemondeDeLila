@@ -1,0 +1,9 @@
+com\lemondelila\client\framework\core\di\InjectionException.class
+com\lemondelila\client\framework\core\module\FrameworkBootstrap.class
+com\lemondelila\client\framework\core\context\ApplicationContext.class
+com\lemondelila\client\framework\core\context\ApplicationContext$Builder.class
+com\lemondelila\client\framework\core\di\Named.class
+com\lemondelila\client\framework\core\context\ApplicationContext$ServiceKey.class
+com\lemondelila\client\framework\core\di\Inject.class
+com\lemondelila\client\framework\core\di\InjectionSupport.class
+com\lemondelila\client\framework\core\module\LilaModule.class

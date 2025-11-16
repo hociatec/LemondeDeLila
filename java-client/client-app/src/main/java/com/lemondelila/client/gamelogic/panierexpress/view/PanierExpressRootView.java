@@ -10,7 +10,6 @@ import com.lemondelila.client.catalogue.service.GameRulesService;
 import com.lemondelila.client.catalogue.view.CatalogScreen;
 import com.lemondelila.client.framework.access.NarrationQueue;
 import com.lemondelila.client.framework.access.game.AccessibilityService;
-import com.lemondelila.client.framework.access.game.GameHistoryTracker;
 import com.lemondelila.client.framework.access.shortcut.AccessibleShortcutRegistry;
 import com.lemondelila.client.framework.access.shortcut.ShortcutBinder;
 import com.lemondelila.client.framework.core.context.ApplicationContext;
@@ -19,10 +18,14 @@ import com.lemondelila.client.framework.media.sound.SoundEffectManager;
 import com.lemondelila.client.framework.ui.dialog.DialogService;
 import com.lemondelila.client.framework.ui.screen.ScreenContext;
 import com.lemondelila.client.framework.ui.screen.ScreenId;
-import com.lemondelila.client.framework.ui.screen.ScreenManager;
-import com.lemondelila.client.game.controller.GameInteractionController;
+import com.lemondelila.client.game.controller.GameActionState;
+import com.lemondelila.client.game.controller.GameBotController;
+import com.lemondelila.client.game.controller.GameQuitController;
+import com.lemondelila.client.game.controller.GameRulesController;
+import com.lemondelila.client.game.controller.GameTableInfoController;
 import com.lemondelila.client.game.view.AbstractGameScreen;
 import com.lemondelila.client.gamelogic.panierexpress.util.BotTurnScheduler;
+import com.lemondelila.client.gamelogic.panierexpress.presenter.PanierExpressPresenter;
 
 import javax.accessibility.AccessibleContext;
 import javax.swing.AbstractAction;
@@ -35,11 +38,11 @@ import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
@@ -65,13 +68,14 @@ public final class PanierExpressRootView extends AbstractGameScreen {
     private final PanierExpressController controller;
     private final Supplier<NarrationQueue> narrationQueueSupplier;
     private final ClientSession clientSession;
-    private final PanierExpressVoiceFeedback voiceFeedback;
     private final DialogService dialogService;
-    private final GameInteractionController interactionController;
-    private final AccessibilityService accessibilityService;
+    private final GameActionState gameActionState;
+    private final GameQuitController quitController;
+    private final GameRulesController rulesController;
+    private final GameBotController botController;
+    private final GameTableInfoController tableInfoController;
     private final AccessibleShortcutRegistry shortcutRegistry;
     private final ShortcutBinder shortcutBinder;
-    private final GameHistoryTracker historyTracker = new GameHistoryTracker();
     private final JLabel screenReaderBridge = new JLabel();
     private String lastScreenReaderMessage = "";
     private boolean screenReaderToggle;
@@ -81,20 +85,15 @@ public final class PanierExpressRootView extends AbstractGameScreen {
     private final PanierExpressSetupPanel setupPanel;
     private final PanierExpressGamePanel gamePanel;
 
-    private ScreenManager screenManager;
-
-    private PanierExpressSession lastSession;
-    private boolean busy;
-    private boolean lastFinished;
-    private boolean lastYourTurn;
-    private boolean lastPendingForYou;
+    private final PanierExpressGameInteractor gameInteractor;
     private PanierExpressGameOptions lastUsedOptions = PanierExpressGameOptions.defaults();
 
-    private String lastTurnAnnouncement = "";
-    private String cachedScoreSummary = "";
-
-    private final java.util.function.Consumer<PanierExpressSession> sessionListener = this::applySession;
+    private final java.util.function.Consumer<PanierExpressSession> sessionListener;
     private final BotTurnScheduler botTurnScheduler;
+    private final PanierExpressPresenter presenter;
+    private AutoCloseable dialogBinding;
+    private AutoCloseable shortcutScope;
+    private AutoCloseable shortcutAttachment;
 
     public PanierExpressRootView(PanierExpressController controller,
                                  Supplier<NarrationQueue> narrationQueueSupplier,
@@ -109,30 +108,72 @@ public final class PanierExpressRootView extends AbstractGameScreen {
         this.narrationQueueSupplier = Objects.requireNonNull(narrationQueueSupplier, "narrationQueueSupplier");
         this.clientSession = Objects.requireNonNull(clientSession, "clientSession");
         this.dialogService = Objects.requireNonNull(dialogService, "dialogService");
-        this.accessibilityService = Objects.requireNonNull(accessibilityService, "accessibilityService");
         this.shortcutRegistry = Objects.requireNonNull(shortcutRegistry, "shortcutRegistry");
         SoundEffectManager validatedSoundManager = Objects.requireNonNull(soundManager, "soundManager");
-        this.voiceFeedback = new PanierExpressVoiceFeedback(
+        PanierExpressVoiceFeedback voiceFeedback = new PanierExpressVoiceFeedback(
                 narrationQueueSupplier,
                 validatedSoundManager,
                 () -> screenReaderBridge
         );
-        historyTracker.setMaxEntries(400);
-        this.interactionController = new GameInteractionController(
+        this.gamePanel = new PanierExpressGamePanel();
+        this.presenter = new PanierExpressPresenter(
+                this.gamePanel,
+                voiceFeedback,
+                Objects.requireNonNull(accessibilityService, "accessibilityService"),
+                screenReaderBridge,
+                this::currentUsername,
+                this::narrate
+        );
+        this.gameInteractor = new PanierExpressGameInteractor(controller, presenter, this::narrate);
+        this.botTurnScheduler = new BotTurnScheduler(controller);
+        this.sessionListener = session -> {
+            showGameCard();
+            presenter.applySession(session);
+            botTurnScheduler.evaluate(session, presenter.shouldCoordinateBotTurns());
+        };
+        this.gameActionState = ensureGameActionState();
+        this.shortcutBinder = new ShortcutBinder(shortcutRegistry, gameActionState.guard(), this, cardPanel);
+
+        Supplier<Optional<GameSummary>> gameSupplier = () -> Optional.of(GAME_SUMMARY);
+        Consumer<String> statusConsumer = this::handleInteractionStatus;
+
+        this.quitController = new GameQuitController(
                 this,
                 dialogService,
-                Objects.requireNonNull(rulesService, "rulesService"),
-                () -> Optional.of(GAME_SUMMARY),
+                gameSupplier,
                 this::handleCancel,
-                this::handleInteractionStatus,
+                statusConsumer,
+                shortcutBinder
+        );
+        this.rulesController = new GameRulesController(
+                this,
+                dialogService,
+                rulesService,
+                gameSupplier,
+                statusConsumer,
+                gameActionState.guard(),
+                shortcutBinder
+        );
+        this.botController = new GameBotController(
+                this,
+                statusConsumer,
+                gameActionState.guard(),
                 this::addBotCommand,
                 this::removeBotCommand,
-                this::announcePlayers,
-                this::announceCurrentTurn
+                shortcutBinder
         );
-        bindInteractionController(this.interactionController);
-        interactionController.setEnabled(false);
-        this.botTurnScheduler = new BotTurnScheduler(controller);
+        this.tableInfoController = new GameTableInfoController(
+                this,
+                statusConsumer,
+                gameActionState.guard(),
+                presenter::announcePlayers,
+                presenter::announceCurrentTurn,
+                shortcutBinder
+        );
+        gameActionState.onDisabled(rulesController::clearLoading);
+        if (botController != null) {
+            gameActionState.onDisabled(botController::resetAction);
+        }
 
         this.setupPanel = new PanierExpressSetupPanel(new PanierExpressSetupPanel.Listener() {
             @Override
@@ -145,8 +186,6 @@ public final class PanierExpressRootView extends AbstractGameScreen {
                 handleCancel();
             }
         });
-        this.gamePanel = new PanierExpressGamePanel();
-        this.shortcutBinder = new ShortcutBinder(shortcutRegistry, () -> true, this, cardPanel);
 
         cardPanel.setLayout(cardLayout);
         cardPanel.add(setupPanel, CARD_SETUP);
@@ -168,8 +207,6 @@ public final class PanierExpressRootView extends AbstractGameScreen {
 
         setFocusable(true);
         setRequestFocusEnabled(true);
-
-        installShortcuts();
     }
 
     @Inject
@@ -189,7 +226,8 @@ public final class PanierExpressRootView extends AbstractGameScreen {
     }
 
     private void installShortcuts() {
-        shortcutRegistry.clear();
+        resetShortcutScopes();
+        shortcutScope = shortcutRegistry.openScope();
         shortcutBinder.registerStroke("ESCAPE", "panier.esc.disabled", "Echap : aucune action durant la partie.", e -> narrate("Echap est desactive pendant la partie. Utilisez Q pour quitter."));
         shortcutBinder.registerStroke("TAB", "panier.focus.history", "Tab : consulter l'historique de la partie.", e -> focusHistory());
         shortcutBinder.registerStroke("shift TAB", "panier.focus.main", "Maj+Tab : revenir a la zone principale.", e -> focusMainArea());
@@ -199,15 +237,47 @@ public final class PanierExpressRootView extends AbstractGameScreen {
         shortcutBinder.registerLetter('s', "panier.score", "Lettre S : annoncer le score courant.", e -> announceScore());
         shortcutBinder.registerLetter('p', "panier.basket", "Lettre P : annoncer le contenu de votre panier.", e -> announceBasket());
         shortcutBinder.registerLetter('x', "panier.restart", "Lettre X : proposer de redemarrer la partie.", e -> promptRestart());
-        shortcutBinder.registerLetterDescription('t', "Lettre T : annoncer le tour en cours.");
-        shortcutBinder.registerLetterDescription('w', "Lettre W : annoncer les joueurs presents.");
 
         for (int digit = 0; digit < 4; digit++) {
             final int answerIndex = digit;
             shortcutBinder.registerStroke(KeyStroke.getKeyStroke((char) ('1' + digit)), "panier.quiz." + digit,
                     "Chiffre " + (digit + 1) + " : repondre au quiz.", e -> submitQuizAnswer(answerIndex));
         }
-        shortcutRegistry.applyTo(this);
+        shortcutAttachment = shortcutRegistry.applyTo(this);
+    }
+
+    private void resetShortcutScopes() {
+        closeQuietly(shortcutAttachment);
+        shortcutAttachment = null;
+        closeQuietly(shortcutScope);
+        shortcutScope = null;
+    }
+
+    private void bindDialogService() {
+        releaseDialogBinding();
+        dialogBinding = dialogService.attach(this);
+    }
+
+    private void releaseDialogBinding() {
+        if (dialogBinding == null) {
+            return;
+        }
+        try {
+            dialogBinding.close();
+        } catch (Exception ignored) {
+        } finally {
+            dialogBinding = null;
+        }
+    }
+
+    private static void closeQuietly(AutoCloseable closeable) {
+        if (closeable == null) {
+            return;
+        }
+        try {
+            closeable.close();
+        } catch (Exception ignored) {
+        }
     }
 
 
@@ -224,13 +294,13 @@ public final class PanierExpressRootView extends AbstractGameScreen {
     @Override
     public void onShow(ScreenContext context) {
         super.onShow(context);
-        this.screenManager = context.screenManager();
-        dialogService.attach(this);
+        bindDialogService();
+        installShortcuts();
         controller.addSessionListener(sessionListener);
         Optional<PanierExpressSession> current = controller.currentSession();
         if (current.isPresent()) {
             showGameCard();
-            applySession(current.get());
+            presenter.applySession(current.get());
         } else {
             showSetupCard();
             SwingUtilities.invokeLater(setupPanel::focusFirstComponent);
@@ -241,203 +311,14 @@ public final class PanierExpressRootView extends AbstractGameScreen {
     @Override
     public void onHide(ScreenContext context) {
         super.onHide(context);
-        this.screenManager = null;
         controller.removeSessionListener(sessionListener);
         botTurnScheduler.cancel();
+        presenter.reset();
+        resetShortcutScopes();
+        releaseDialogBinding();
     }
-
-    private void applySession(PanierExpressSession session) {
-        PanierExpressSession previousSession = this.lastSession;
-        this.lastSession = session;
-        if (previousSession == null || previousSession.roomId() != session.roomId()) {
-            voiceFeedback.resetForNewSession();
-        }
-
-        PanierExpressState state = session.state();
-        String username = currentUsername();
-        botTurnScheduler.evaluate(session, shouldCoordinateBotTurns(state));
-
-        Optional<PanierExpressState.Player> selfOpt = username == null
-                ? Optional.empty()
-                : state.findPlayerByUsername(username);
-        Optional<PanierExpressState.Player> currentOpt = state.currentPlayer();
-
-        boolean isFinished = state.isFinished();
-        boolean isYourTurn = currentOpt.map(player -> username != null && username.equalsIgnoreCase(player.username())).orElse(false);
-        boolean pendingForYou = state.pending() != null && selfOpt.map(player -> player.id() == state.pending().playerId()).orElse(false);
-
-        lastFinished = isFinished;
-        lastYourTurn = isYourTurn;
-        lastPendingForYou = pendingForYou;
-
-        showGameCard();
-
-        String statusText = buildStatusText(state, currentOpt);
-        gamePanel.updateStatus(statusText, statusText);
-
-        boolean shouldNarrateStatus = !isYourTurn || isFinished || (state.pending() != null && !pendingForYou);
-        voiceFeedback.announceStatus(statusText, shouldNarrateStatus);
-        updateTurnAnnouncement(statusText, false, 0);
-
-        String pendingText = buildPendingText(state, pendingForYou);
-        gamePanel.updatePending(pendingText);
-
-        if (state.pending() != null) {
-            PanierExpressState.PendingQuiz pending = state.pending();
-            gamePanel.showQuiz(pending.question(), pending.choices());
-            voiceFeedback.handleQuiz(pending, pendingForYou);
-        } else {
-            gamePanel.hideQuiz();
-            voiceFeedback.handleQuiz(null, false);
-        }
-
-        gamePanel.updateYourProgress(buildYourProgress(selfOpt.orElse(null)));
-        gamePanel.updatePlayers(buildPlayersProgress(state, username));
-
-        cachedScoreSummary = buildScoreSummary(state);
-        gamePanel.updateScore(cachedScoreSummary);
-
-        updateHistory(state.log());
-        gamePanel.updateHistory(historyTracker, "Aucun évènement pour le moment.");
-
-        voiceFeedback.handleStateUpdate(state, selfOpt);
-    }
-
-    private String buildStatusText(PanierExpressState state, Optional<PanierExpressState.Player> currentOpt) {
-        if (state.isFinished()) {
-            String winner = "?";
-            if (state.winnerId() != null) {
-                winner = state.players().stream()
-                        .filter(player -> player.id() == state.winnerId())
-                        .findFirst()
-                        .map(this::formatPlayerName)
-                        .orElse("Un joueur");
-            }
-            return "Partie terminée. Vainqueur : " + winner + '.';
-        }
-        String turnPlayer = currentOpt.map(this::formatPlayerName).orElse("?");
-        if (state.lastRoll() != null) {
-            return "Tour de " + turnPlayer + " — dernier dé : " + state.lastRoll();
-        }
-        return "Tour de " + turnPlayer;
-    }
-
-    private String buildPendingText(PanierExpressState state, boolean pendingForYou) {
-        PanierExpressState.PendingQuiz pending = state.pending();
-        if (pending == null) {
-            return busy ? "Traitement d’une action en cours..." : " ";
-        }
-        String waitingPlayer = state.players().stream()
-                .filter(player -> player.id() == pending.playerId())
-                .findFirst()
-                .map(this::formatPlayerName)
-                .orElse("Un joueur");
-        if (pendingForYou) {
-            return "Un quiz vous attend. Sélectionnez une proposition avec les touches 1 à 4 puis validez avec Entrée.";
-        }
-        return waitingPlayer + " répond à un quiz...";
-    }
-
-    private String buildYourProgress(PanierExpressState.Player self) {
-        if (self == null) {
-            return "Connectez-vous pour suivre votre progression personnelle.";
-        }
-        StringBuilder builder = new StringBuilder();
-        builder.append("Position : ").append(self.position()).append(" / 40\n");
-        builder.append("Articles validés : ").append(self.basket().size()).append(" / ").append(self.shoppingList().size()).append('\n');
-        if (self.readyForCheckout()) {
-            builder.append("Vous êtes prêt pour la caisse.\n");
-        }
-        builder.append('\n').append("Liste de courses :\n");
-        for (String item : self.shoppingList()) {
-            boolean hasItem = self.basket().contains(item);
-            builder.append(hasItem ? "✔ " : "- ").append(item).append('\n');
-        }
-        if (!self.inventory().isEmpty()) {
-            builder.append("\nRéserve pour échanges :\n");
-            for (String item : self.inventory()) {
-                builder.append("• ").append(item).append('\n');
-            }
-        }
-        if (self.skipTurns() > 0) {
-            builder.append("\nTours à passer : ").append(self.skipTurns());
-        }
-        return builder.toString().strip();
-    }
-
-    private String buildPlayersProgress(PanierExpressState state, String username) {
-        StringBuilder builder = new StringBuilder();
-        for (PanierExpressState.Player player : state.players()) {
-            String decorated = formatPlayerName(player);
-            builder.append(decorated);
-            if (username != null && username.equalsIgnoreCase(player.username())) {
-                builder.append(" (vous)");
-            }
-            builder.append(" — case ").append(player.position());
-            builder.append(" — panier ").append(player.basket().size()).append('/').append(player.shoppingList().size());
-            if (player.readyForCheckout()) {
-                builder.append(" — prêt pour la caisse");
-            }
-            if (player.skipTurns() > 0) {
-                builder.append(" — saute ").append(player.skipTurns()).append(" tour(s)");
-            }
-            builder.append('\n');
-        }
-        return builder.toString().strip();
-    }
-
-    private String buildScoreSummary(PanierExpressState state) {
-        StringBuilder builder = new StringBuilder();
-        for (PanierExpressState.Player player : state.players()) {
-            builder.append(formatPlayerName(player))
-                    .append(" : ")
-                    .append(player.basket().size())
-                    .append('/')
-                    .append(player.shoppingList().size())
-                    .append(" articles — position ")
-                    .append(player.position());
-            if (player.readyForCheckout()) {
-                builder.append(" — prêt pour la caisse");
-            }
-            builder.append('\n');
-        }
-        if (state.isFinished() && state.winnerId() != null) {
-            builder.append("\nVainqueur : ");
-            builder.append(state.players().stream()
-                    .filter(p -> p.id() == state.winnerId())
-                    .findFirst()
-                    .map(this::formatPlayerName)
-                    .orElse("Un joueur"));
-        }
-        return builder.toString().strip();
-    }
-
-    private String formatPlayerName(PanierExpressState.Player player) {
-        if (player == null) {
-            return "Joueur inconnu";
-        }
-        String name = player.username();
-        if (name == null || name.isBlank()) {
-            name = "Joueur " + player.id();
-        }
-        return player.isBot() ? name + " (bot)" : name;
-    }
-
-    private void updateHistory(List<PanierExpressState.LogEntry> entries) {
-        historyTracker.clear();
-        if (entries == null || entries.isEmpty()) {
-            return;
-        }
-        for (PanierExpressState.LogEntry entry : entries) {
-            String message = entry.message();
-            if (message != null && !message.isBlank()) {
-                historyTracker.add(message);
-            }
-        }
-    }
-
     private void startGameWithOptions(PanierExpressGameOptions options, boolean fromShortcut) {
-        if (busy) {
+        if (gameInteractor.isBusy()) {
             narrate("Action déjà en cours. Patientez.");
             return;
         }
@@ -445,43 +326,15 @@ public final class PanierExpressRootView extends AbstractGameScreen {
         lastUsedOptions = effective;
         showGameCard();
         String message = fromShortcut ? "Nouvelle partie en préparation..." : "Initialisation de la partie Panier Express...";
-        performAsync(controller.startGame(true, effective), message);
+        gameInteractor.startGame(effective, message);
     }
 
     private void attemptRoll() {
-        if (busy) {
-            narrate("Action déjà en cours. Patientez.");
-            return;
-        }
-        if (lastSession == null) {
-            narrate("Aucune partie active.");
-            return;
-        }
-        if (lastFinished) {
-            narrate("La partie est terminée.");
-            return;
-        }
-        if (lastPendingForYou) {
-            narrate("Répondez d’abord au quiz.");
-            return;
-        }
-        if (!lastYourTurn) {
-            narrate("Ce n’est pas votre tour.");
-            return;
-        }
-        performAsync(controller.roll(), "Lancer du dé...");
+        gameInteractor.attemptRoll();
     }
 
     private void attemptRefresh() {
-        if (busy) {
-            narrate("Action déjà en cours. Patientez.");
-            return;
-        }
-        if (lastSession == null) {
-            narrate("Aucune partie active.");
-            return;
-        }
-        performAsync(controller.refreshGame(), "Actualisation de la partie...");
+        gameInteractor.attemptRefresh();
     }
 
     private void attemptNewGame() {
@@ -489,12 +342,12 @@ public final class PanierExpressRootView extends AbstractGameScreen {
     }
 
     private void promptRestart() {
-        if (busy) {
+        if (gameInteractor.isBusy()) {
             String message = "Action déjà en cours. Patientez.";
             narrate(message);
             return;
         }
-        if (lastSession == null) {
+        if (!presenter.hasActiveSession()) {
             String message = "Aucune partie active à relancer.";
             narrate(message);
             return;
@@ -513,159 +366,27 @@ public final class PanierExpressRootView extends AbstractGameScreen {
     }
 
     private void submitQuizAnswer(int index) {
-        if (busy) {
-            narrate("Action déjà en cours. Patientez.");
-            return;
-        }
-        if (lastSession == null) {
-            narrate("Aucune partie active.");
-            return;
-        }
-        PanierExpressState state = lastSession.state();
-        PanierExpressState.PendingQuiz pending = state.pending();
-        if (pending == null) {
-            narrate("Aucun quiz à répondre.");
-            return;
-        }
-        if (!lastPendingForYou) {
-            narrate("Le quiz en cours concerne un autre joueur.");
-            return;
-        }
-        List<String> choices = pending.choices();
-        if (index < 0 || index >= choices.size()) {
-            narrate("Choix invalide.");
-            return;
-        }
-        performAsync(controller.answerQuiz(index), "Réponse " + (index + 1) + " envoyée...");
+        gameInteractor.submitQuizAnswer(index);
     }
 
     private void announceCurrentTurn() {
-        if (lastSession == null) {
-            accessibilityService.announceCustom(screenReaderBridge, "Aucune partie active.");
-            return;
-        }
-        PanierExpressState state = lastSession.state();
-        if (state.isFinished()) {
-            accessibilityService.announceCustom(screenReaderBridge, "La partie est terminée.");
-            return;
-        }
-        Optional<PanierExpressState.Player> currentOpt = state.currentPlayer();
-        if (currentOpt.isEmpty()) {
-            accessibilityService.announceCustom(screenReaderBridge, "Tour inconnu.");
-            return;
-        }
-        String reminder = voiceFeedback.announceTurnReminder(state, lastYourTurn);
-        narrate(reminder);
-        String playerName = currentOpt.map(this::formatPlayerName).orElse(null);
-        AccessibilityService.TurnContext turnEvent = new AccessibilityService.TurnContext(
-                lastYourTurn,
-                playerName,
-                state.lastRoll()
-        );
-        String turnMessage = accessibilityService.announceTurn(screenReaderBridge, turnEvent);
-        updateTurnAnnouncement(turnMessage, true, 0);
+        presenter.announceCurrentTurn();
     }
 
     private void announceScore() {
-        String message = (cachedScoreSummary == null || cachedScoreSummary.isBlank())
-                ? "Le score n’est pas disponible pour le moment."
-                : cachedScoreSummary;
-        gamePanel.announceScore(message);
-        accessibilityService.announceCustom(screenReaderBridge, message);
+        presenter.announceScore();
     }
 
     private void announceBasket() {
-        if (lastSession == null) {
-            String message = "Aucune partie active.";
-            gamePanel.announceBasket(message);
-            accessibilityService.announceCustom(screenReaderBridge, message);
-            return;
-        }
-        String username = currentUsername();
-        if (username == null || username.isBlank()) {
-            String message = "Connectez-vous pour consulter votre panier.";
-            gamePanel.announceBasket(message);
-            accessibilityService.announceCustom(screenReaderBridge, message);
-            return;
-        }
-        Optional<PanierExpressState.Player> selfOpt = lastSession.state().findPlayerByUsername(username);
-        if (selfOpt.isEmpty()) {
-            String message = "Impossible de trouver votre joueur dans la partie.";
-            gamePanel.announceBasket(message);
-            accessibilityService.announceCustom(screenReaderBridge, message);
-            return;
-        }
-        PanierExpressState.Player self = selfOpt.get();
-        List<String> shoppingList = self.shoppingList() == null ? List.of() : self.shoppingList();
-        List<String> basketItems = self.basket() == null ? List.of() : self.basket();
-        List<String> missing = computeMissingItems(shoppingList, basketItems);
-        AccessibilityService.BasketContext event = new AccessibilityService.BasketContext(
-                true,
-                basketItems.size(),
-                shoppingList.size(),
-                missing,
-                self.inventory() == null ? List.of() : self.inventory(),
-                self.readyForCheckout()
-        );
-        String message = accessibilityService.announceBasket(screenReaderBridge, event);
-        gamePanel.announceBasket(message);
+        presenter.announceBasket();
     }
 
     private void announcePlayers() {
-        if (lastSession == null) {
-            narrate("Aucune partie active.");
-            return;
-        }
-        PanierExpressState state = lastSession.state();
-        List<PanierExpressState.Player> players = state != null ? state.players() : null;
-        if (players == null || players.isEmpty()) {
-            narrate("Aucun joueur autour de la table.");
-            return;
-        }
-        String currentName = currentUsername();
-        StringBuilder builder = new StringBuilder();
-        builder.append("Table de ").append(players.size())
-                .append(players.size() > 1 ? " joueurs : " : " joueur : ");
-        for (int i = 0; i < players.size(); i++) {
-            PanierExpressState.Player player = players.get(i);
-            String name = player != null ? player.username() : null;
-            String display = (name == null || name.isBlank()) ? "Joueur " + (i + 1) : name;
-            if (currentName != null && name != null && name.equalsIgnoreCase(currentName)) {
-                display = display + " (vous)";
-            }
-            if (player != null && player.isBot()) {
-                display = display + " (bot)";
-            }
-            builder.append(display);
-            if (i < players.size() - 1) {
-                builder.append(", ");
-            }
-        }
-        narrate(builder.toString());
+        presenter.announcePlayers();
     }
 
     private void executePrimaryAction() {
-        attemptRoll();
-    }
-
-    private void performAsync(CompletableFuture<PanierExpressSession> future, String pendingMessage) {
-        if (future == null) {
-            return;
-        }
-        if (pendingMessage != null && !pendingMessage.isBlank()) {
-            narrate(pendingMessage);
-        }
-        setGameBusy(true);
-        future.whenComplete((session, error) -> SwingUtilities.invokeLater(() -> {
-            setGameBusy(false);
-            if (error != null) {
-                narrate(resolveErrorMessage(error));
-            }
-        }));
-    }
-
-    private void setGameBusy(boolean value) {
-        this.busy = value;
+        gameInteractor.attemptRoll();
     }
 
     private void focusHistory() {
@@ -689,11 +410,8 @@ public final class PanierExpressRootView extends AbstractGameScreen {
     private void handleCancel() {
         botTurnScheduler.cancel();
         controller.reset();
-        historyTracker.clear();
-        lastSession = null;
-        if (screenManager != null) {
-            SwingUtilities.invokeLater(() -> screenManager.show(CatalogScreen.ID));
-        }
+        presenter.reset();
+        navigate(CatalogScreen.ID);
     }
 
     private CompletableFuture<Void> addBotCommand() {
@@ -702,57 +420,6 @@ public final class PanierExpressRootView extends AbstractGameScreen {
 
     private CompletableFuture<Void> removeBotCommand() {
         return controller.removeBot().thenApply(session -> null);
-    }
-
-    private void updateTurnAnnouncement(String message, boolean force, int reminderIndex) {
-        if (message == null || message.isBlank()) {
-            return;
-        }
-        if (force) {
-            lastTurnAnnouncement = "";
-        }
-        if (force || !message.equals(lastTurnAnnouncement)) {
-            lastTurnAnnouncement = message;
-            AccessibleContext context = gamePanel.statusAccessibleContext();
-            if (context != null) {
-                String accessibleName = reminderIndex > 0
-                        ? "Statut de la partie, rappel " + reminderIndex
-                        : "Statut de la partie";
-                String accessibleDescription = reminderIndex > 0
-                        ? message + " (rappel " + reminderIndex + ')'
-                        : message;
-                context.setAccessibleName(accessibleName);
-                context.setAccessibleDescription(accessibleDescription);
-            }
-        }
-    }
-
-    private String resolveErrorMessage(Throwable error) {
-        if (error == null) {
-            return "Action impossible.";
-        }
-        Throwable cause = error;
-        while (cause.getCause() != null && cause.getCause() != cause) {
-            cause = cause.getCause();
-        }
-        String message = cause.getMessage();
-        if (message == null || message.isBlank()) {
-            return "Action impossible.";
-        }
-        return "Erreur : " + message;
-    }
-
-    private List<String> computeMissingItems(List<String> shoppingList, List<String> basket) {
-        List<String> missing = new ArrayList<>();
-        for (String item : shoppingList) {
-            if (item == null || item.isBlank()) {
-                continue;
-            }
-            if (!basket.contains(item)) {
-                missing.add(item);
-            }
-        }
-        return missing;
     }
 
     private void narrate(String message) {
@@ -766,11 +433,17 @@ public final class PanierExpressRootView extends AbstractGameScreen {
         }
     }
 
-    private void handleInteractionStatus(String message) {
+    @Override
+    protected void setStatusMessage(String message) {
         if (message == null || message.isBlank()) {
             return;
         }
+        gamePanel.updateStatus(message, message);
         narrate(message);
+    }
+
+    private void handleInteractionStatus(String message) {
+        setStatusMessage(message);
     }
 
     private void announceForScreenReader(String message) {
@@ -825,25 +498,5 @@ public final class PanierExpressRootView extends AbstractGameScreen {
         return clientSession.authenticated().map(ClientSession.AuthState::username).orElse(null);
     }
 
-    private boolean shouldCoordinateBotTurns(PanierExpressState state) {
-        if (state == null || state.isFinished()) {
-            return false;
-        }
-        String username = currentUsername();
-        if (username == null || username.isBlank()) {
-            return false;
-        }
-        String coordinator = determineCoordinatorName(state);
-        return coordinator != null && coordinator.equalsIgnoreCase(username);
-    }
-
-    private String determineCoordinatorName(PanierExpressState state) {
-        return state.players().stream()
-                .filter(player -> player != null && !player.isBot())
-                .map(PanierExpressState.Player::username)
-                .filter(name -> name != null && !name.isBlank())
-                .min(String::compareToIgnoreCase)
-                .orElse(null);
-    }
 }
 

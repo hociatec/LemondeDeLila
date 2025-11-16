@@ -2,14 +2,16 @@ package com.lemondelila.client.game.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.lemondelila.client.gamelogic.missionnemesis.model.NemesisSession;
-import com.lemondelila.client.gamelogic.missionnemesis.model.NemesisSessionStore;
-import com.lemondelila.client.user.model.ClientSession;
 import com.lemondelila.client.framework.core.config.ConfigurationService;
 import com.lemondelila.client.framework.core.di.Inject;
 import com.lemondelila.client.framework.core.event.DomainEventBus;
 import com.lemondelila.client.framework.network.ws.RealtimeGateway;
 import com.lemondelila.client.framework.network.ws.StandardRealtimeGateway;
+import com.lemondelila.client.framework.network.channel.GameRealtimeChannel;
+import com.lemondelila.client.framework.network.channel.RealtimeChannel;
+import com.lemondelila.client.gamelogic.missionnemesis.model.NemesisSession;
+import com.lemondelila.client.gamelogic.missionnemesis.model.NemesisSessionStore;
+import com.lemondelila.client.user.model.ClientSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,10 +30,11 @@ public final class TokenAwareRealtimeGateway implements RealtimeGateway {
     private static final Logger LOGGER = LoggerFactory.getLogger(TokenAwareRealtimeGateway.class);
 
     private final ClientSession session;
-    private final URI baseUri;
     private final Supplier<Optional<Integer>> roomIdSupplier;
     private final StandardRealtimeGateway delegate;
+    private final RealtimeChannel channel;
     private volatile Integer activeRoomId;
+    private volatile String activeToken;
 
     public TokenAwareRealtimeGateway(HttpClient httpClient,
                                      ObjectMapper objectMapper,
@@ -40,11 +43,11 @@ public final class TokenAwareRealtimeGateway implements RealtimeGateway {
                                      ClientSession session,
                                      Supplier<Optional<Integer>> roomIdSupplier) {
         this.session = Objects.requireNonNull(session, "session");
-        this.baseUri = Objects.requireNonNull(baseUri, "baseUri");
         this.roomIdSupplier = Objects.requireNonNull(roomIdSupplier, "roomIdSupplier");
+        this.channel = new GameRealtimeChannel(() -> baseUri);
         this.delegate = new StandardRealtimeGateway(
                 httpClient,
-                this::buildEndpoint,
+                () -> channel.resolve(activeToken, activeRoomId),
                 objectMapper,
                 eventBus
         );
@@ -57,12 +60,15 @@ public final class TokenAwareRealtimeGateway implements RealtimeGateway {
                                      ConfigurationService configurationService,
                                      ClientSession session,
                                      NemesisSessionStore store) {
-        this(httpClient,
+        this.session = Objects.requireNonNull(session, "session");
+        this.roomIdSupplier = () -> store.current().map(NemesisSession::roomId);
+        this.channel = new GameRealtimeChannel(configurationService);
+        this.delegate = new StandardRealtimeGateway(
+                httpClient,
+                () -> channel.resolve(activeToken, activeRoomId),
                 objectMapper,
-                eventBus,
-                URI.create(configurationService.get("network.ws.url", "ws://127.0.0.1:8081/ws")),
-                session,
-                () -> store.current().map(NemesisSession::roomId));
+                eventBus
+        );
     }
 
     private URI buildEndpoint() {
@@ -126,6 +132,7 @@ public final class TokenAwareRealtimeGateway implements RealtimeGateway {
             delegate.disconnect(WebSocket.NORMAL_CLOSURE, "switch-room");
         }
 
+        activeToken = auth.get().token();
         activeRoomId = targetRoom;
         delegate.connect();
     }
@@ -133,6 +140,7 @@ public final class TokenAwareRealtimeGateway implements RealtimeGateway {
     @Override
     public void disconnect(int statusCode, String reason) {
         activeRoomId = null;
+        activeToken = null;
         delegate.disconnect(statusCode, reason);
     }
 
@@ -154,6 +162,7 @@ public final class TokenAwareRealtimeGateway implements RealtimeGateway {
     @Override
     public void close() {
         activeRoomId = null;
+        activeToken = null;
         delegate.close();
     }
 }

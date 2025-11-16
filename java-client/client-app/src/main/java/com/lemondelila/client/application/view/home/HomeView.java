@@ -4,6 +4,8 @@ import com.lemondelila.client.application.AppBranding;
 import com.lemondelila.client.framework.access.AccessibleDecorator;
 import com.lemondelila.client.framework.access.AccessibleSpec;
 import com.lemondelila.client.framework.access.FocusHighlighter;
+import com.lemondelila.client.framework.access.NarrationQueue;
+import com.lemondelila.client.framework.ui.component.StatusBanner;
 import com.lemondelila.client.user.view.LoginFormPanel;
 import com.lemondelila.client.user.view.RegisterFormPanel;
 
@@ -30,15 +32,21 @@ final class HomeView {
     private final LandingPanel landingPanel = new LandingPanel();
     private final LoginFormPanel loginForm;
     private final RegisterFormPanel registerForm;
-    private final JLabel statusLabel = new JLabel(" ");
+    private final StatusBanner statusBanner;
     private Card currentCard = Card.LANDING;
 
     private final String applicationName;
 
-    HomeView(FocusHighlighter focusHighlighter, AppBranding branding) {
+    HomeView(FocusHighlighter focusHighlighter, AppBranding branding, NarrationQueue narrationQueue) {
         this.loginForm = new LoginFormPanel(focusHighlighter);
         this.registerForm = new RegisterFormPanel(focusHighlighter);
         this.applicationName = branding.applicationName();
+        this.statusBanner = new StatusBanner(
+                "Zone de statut",
+                "Affiche l'état des actions de connexion et d'inscription",
+                root,
+                narrationQueue
+        );
         buildUi();
     }
 
@@ -56,10 +64,6 @@ final class HomeView {
 
     LandingPanel landingPanel() {
         return landingPanel;
-    }
-
-    JLabel statusLabel() {
-        return statusLabel;
     }
 
     void showLanding() {
@@ -97,7 +101,7 @@ final class HomeView {
     }
 
     void setStatus(String text) {
-        statusLabel.setText(text == null || text.isBlank() ? " " : text);
+        statusBanner.setStatus(text);
     }
 
     private void buildUi() {
@@ -119,11 +123,8 @@ final class HomeView {
         root.add(cardPanel);
         root.add(Box.createRigidArea(new Dimension(0, 24)));
 
+        JLabel statusLabel = statusBanner.component();
         statusLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        AccessibleDecorator.apply(statusLabel, AccessibleSpec.builder()
-                .name("Zone de statut")
-                .description("Affiche l'etat des actions de connexion et d'inscription")
-                .build());
         root.add(statusLabel);
 
         showLanding();

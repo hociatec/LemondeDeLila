@@ -9,6 +9,7 @@ import com.lemondelila.client.framework.core.event.DomainEventBus;
 import com.lemondelila.client.framework.ui.ControllerResult;
 import com.lemondelila.client.framework.ui.dialog.DialogService;
 import com.lemondelila.client.settings.service.AppSettingsService;
+import com.lemondelila.client.presence.service.PresenceRealtimeService;
 import com.lemondelila.client.user.model.ClientSession;
 
 import javax.swing.SwingUtilities;
@@ -23,6 +24,7 @@ public final class ChatController implements AutoCloseable {
     private final ChatConnectionFactory connectionFactory;
     private final AppSettingsService settingsService;
     private final DialogService dialogService;
+    private final PresenceRealtimeService presenceService;
     private final ClientSession session;
     private final DomainEventBus eventBus;
 
@@ -33,11 +35,13 @@ public final class ChatController implements AutoCloseable {
     public ChatController(ChatConnectionFactory connectionFactory,
                           AppSettingsService settingsService,
                           DialogService dialogService,
+                          PresenceRealtimeService presenceService,
                           ClientSession session,
                           DomainEventBus eventBus) {
         this.connectionFactory = Objects.requireNonNull(connectionFactory, "connectionFactory");
         this.settingsService = Objects.requireNonNull(settingsService, "settingsService");
         this.dialogService = Objects.requireNonNull(dialogService, "dialogService");
+        this.presenceService = Objects.requireNonNull(presenceService, "presenceService");
         this.session = Objects.requireNonNull(session, "session");
         this.eventBus = Objects.requireNonNull(eventBus, "eventBus");
     }
@@ -58,7 +62,7 @@ public final class ChatController implements AutoCloseable {
             return ControllerResult.status("Tchat desactive.");
         }
         if (chatWindow == null || !chatWindow.isDisplayable()) {
-            chatWindow = new ChatWindow(owner, connectionFactory, settingsService, dialogService);
+            chatWindow = new ChatWindow(owner, connectionFactory, settingsService, dialogService, presenceService);
             opened = false;
         }
         ChatWindow window = chatWindow;

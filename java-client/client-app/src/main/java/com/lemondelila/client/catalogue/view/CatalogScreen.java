@@ -2,36 +2,32 @@ package com.lemondelila.client.catalogue.view;
 
 import com.lemondelila.client.application.view.menu.MainMenuScreen;
 import com.lemondelila.client.catalogue.model.GameSummary;
+import com.lemondelila.client.catalogue.presenter.CatalogPresenter;
 import com.lemondelila.client.catalogue.service.GameRulesService;
+import com.lemondelila.client.framework.access.NarrationQueue;
+import com.lemondelila.client.framework.access.shortcut.AccessibleShortcutRegistry;
+import com.lemondelila.client.framework.access.shortcut.ShortcutBinder;
 import com.lemondelila.client.framework.core.di.Inject;
 import com.lemondelila.client.framework.media.sound.SoundEffectManager;
-import com.lemondelila.client.framework.ui.ControllerResult;
 import com.lemondelila.client.framework.ui.dialog.DialogService;
 import com.lemondelila.client.framework.ui.screen.Screen;
 import com.lemondelila.client.framework.ui.screen.ScreenContext;
 import com.lemondelila.client.framework.ui.screen.ScreenId;
 import com.lemondelila.client.framework.ui.screen.ScreenManager;
+import com.lemondelila.client.game.controller.GameActionState;
 import com.lemondelila.client.game.controller.GameCatalogController;
-import com.lemondelila.client.game.controller.GameInteractionController;
-import com.lemondelila.client.game.launcher.GameLauncher;
+import com.lemondelila.client.game.controller.GameQuitController;
+import com.lemondelila.client.game.controller.GameRulesController;
 import com.lemondelila.client.game.launcher.GameLauncherRegistry;
 
-import javax.swing.AbstractAction;
-import javax.swing.JComponent;
 import javax.swing.JPanel;
-import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
-import java.awt.event.ActionEvent;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-
-public final class CatalogScreen extends JPanel implements Screen {
+public final class CatalogScreen extends JPanel implements Screen, CatalogPresenter.View {
     public static final ScreenId ID = ScreenId.of("catalog");
     private static final String ACTION_BACK = "catalog.back";
 
     private final DialogService dialogService;
-    private final GameLauncherRegistry launcherRegistry;
 
     private final CatalogViewCoordinator view;
     private final CategoryListPanel categoryListPanel;
@@ -39,20 +35,32 @@ public final class CatalogScreen extends JPanel implements Screen {
     private final CatalogDataIndex dataIndex = new CatalogDataIndex();
     private final CatalogDataLoader dataLoader;
     private final CatalogNavigationController navigation;
+    private final GameActionState gameActionState = new GameActionState();
+    private final NarrationQueue narrationQueue;
+    private final GameQuitController quitController;
+    private final GameRulesController rulesController;
+    private final AccessibleShortcutRegistry shortcutRegistry;
+    private final ShortcutBinder shortcutBinder;
+    private AutoCloseable shortcutScope;
+    private AutoCloseable shortcutAttachment;
 
-    private final GameInteractionController gameInteractionController;
     private ScreenManager screenManager;
     private GameSummary activeGame;
+    private AutoCloseable dialogBinding;
+    private final CatalogPresenter presenter;
 
     @Inject
     public CatalogScreen(GameCatalogController catalogController,
                          GameRulesService rulesService,
                          DialogService dialogService,
                          GameLauncherRegistry launcherRegistry,
-                         SoundEffectManager soundManager) {
+                         SoundEffectManager soundManager,
+                         AccessibleShortcutRegistry shortcutRegistry,
+                         NarrationQueue narrationQueue) {
         this.dialogService = Objects.requireNonNull(dialogService, "dialogService");
-        this.launcherRegistry = Objects.requireNonNull(launcherRegistry, "launcherRegistry");
-        this.view = new CatalogViewCoordinator(this, soundManager);
+        this.shortcutRegistry = Objects.requireNonNull(shortcutRegistry, "shortcutRegistry");
+        this.narrationQueue = narrationQueue;
+        this.view = new CatalogViewCoordinator(this, soundManager, narrationQueue);
         this.categoryListPanel = view.categoryListPanel();
         this.gameListPanel = view.gameListPanel();
         this.dataLoader = new CatalogDataLoader(catalogController, dataIndex);
@@ -63,118 +71,53 @@ public final class CatalogScreen extends JPanel implements Screen {
                 view::playNavigateSound,
                 selection -> {
                     if (selection == null) {
-                        updateActiveGame(null);
+                        presenter.handleSelection(null);
                     }
                 }
         );
+        this.presenter = new CatalogPresenter(
+                dialogService,
+                Objects.requireNonNull(launcherRegistry, "launcherRegistry"),
+                dataLoader,
+                navigation,
+                this
+        );
         installActions();
-        this.gameListPanel.onSelectionChange(selection -> {
-            navigation.updateGameSelectionIndex(gameListPanel.selectedIndex());
-            updateActiveGame(selection);
-        });
-        this.gameInteractionController = new GameInteractionController(
+        this.gameListPanel.onSelectionChange(selection ->
+                presenter.onGameSelectionChanged(selection, gameListPanel.selectedIndex()));
+        this.shortcutBinder = new ShortcutBinder(shortcutRegistry, gameActionState::isEnabled, this);
+        this.quitController = new GameQuitController(
+                this,
+                dialogService,
+                this::currentGame,
+                presenter::onNavigateBack,
+                this::setStatus,
+                shortcutBinder
+        );
+        this.rulesController = new GameRulesController(
                 this,
                 dialogService,
                 rulesService,
-                () -> Optional.ofNullable(activeGame),
-                this::performBackNavigation,
+                this::currentGame,
                 this::setStatus,
-                null,
-                null
+                gameActionState::isEnabled,
+                shortcutBinder
         );
-        gameInteractionController.setEnabled(false);
+        gameActionState.onDisabled(rulesController::clearLoading);
     }
 
     private void installActions() {
         categoryListPanel.onEnter(() -> {
             CategoryListPanel.CategoryItem item = categoryListPanel.selectedItem();
-            if (item == null) {
-                return;
-            }
-            playSelectSound();
-            navigation.openCategory(item.id(), categoryListPanel.selectedIndex());
+            presenter.onCategoryActivated(item != null ? item.id() : null, categoryListPanel.selectedIndex());
         });
-        gameListPanel.onEnter(this::openSelectedGame);
-
-        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("ESCAPE"), ACTION_BACK);
-        getActionMap().put(ACTION_BACK, new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                performBackNavigation();
-            }
-        });
-    }
-
-    private void openSelectedGame() {
-        GameSummary game = gameListPanel.selectedItem();
-        if (game == null) {
-            return;
-        }
-        playSelectSound();
-        handlePlayRequest(game);
-    }
-
-    private void handlePlayRequest(GameSummary game) {
-        if (game == null) {
-            return;
-        }
-        playSelectSound();
-        Optional<GameLauncher> launcher = launcherRegistry.find(game);
-        if (launcher.isEmpty()) {
-            dialogService.info("Fonctionnalite indisponible",
-                    "Ce jeu ne peut pas encore etre lance depuis cette interface.");
-            return;
-        }
-        setStatus("Initialisation de " + game.name() + "...");
-        launcher.get().launch(game).whenComplete((result, error) -> SwingUtilities.invokeLater(() -> {
-            if (error != null) {
-                dialogService.error("Lancement impossible", describeError(error));
-                setStatus("Echec du lancement de " + game.name() + ".");
-                return;
-            }
-            applyLaunchResult(result);
-        }));
-    }
-
-    private void applyLaunchResult(ControllerResult result) {
-        if (result == null) {
-            return;
-        }
-        result.statusMessage().ifPresent(this::setStatus);
-        result.navigationTarget().ifPresent(this::showScreen);
+        gameListPanel.onEnter(() -> presenter.onGameActivated(gameListPanel.selectedItem()));
     }
 
     private void showScreen(ScreenId id) {
         if (screenManager != null && id != null) {
             screenManager.show(id);
         }
-    }
-
-    private void performBackNavigation() {
-        playSelectSound();
-        if (!navigation.navigateBack() && screenManager != null) {
-            screenManager.show(MainMenuScreen.ID);
-        }
-    }
-
-    private void ensureCatalogReady(boolean forceReload) {
-        setStatus("Chargement du catalogue...");
-        setLoadingState(true);
-        dataLoader.loadCatalog(forceReload).whenComplete((changed, error) ->
-                SwingUtilities.invokeLater(() -> {
-                    setLoadingState(false);
-                    if (error != null) {
-                        dialogService.error("Catalogue indisponible",
-                                "Impossible de charger le catalogue pour le moment.");
-                        setStatus("Erreur lors du chargement du catalogue.");
-                        return;
-                    }
-                    if (!navigation.hasState() || Boolean.TRUE.equals(changed)) {
-                        navigation.showRoot();
-                    } else {
-                        navigation.refreshCurrent();
-                    }
-                }));
     }
 
     private void setLoadingState(boolean busy) {
@@ -185,25 +128,9 @@ public final class CatalogScreen extends JPanel implements Screen {
         view.setStatus(text);
     }
 
-    private void playSelectSound() {
-        view.playSelectSound();
-    }
-
-    private String describeError(Throwable error) {
-        if (error == null) {
-            return "Erreur inconnue";
-        }
-        Throwable cause = error;
-        while (cause.getCause() != null && cause.getCause() != cause) {
-            cause = cause.getCause();
-        }
-        String message = cause.getMessage();
-        return (message == null || message.isBlank()) ? cause.toString() : message;
-    }
-
     private void updateActiveGame(GameSummary selection) {
         this.activeGame = selection;
-        gameInteractionController.setEnabled(selection != null);
+        gameActionState.setEnabled(selection != null);
     }
 
     @Override
@@ -219,14 +146,110 @@ public final class CatalogScreen extends JPanel implements Screen {
     @Override
     public void onShow(ScreenContext context) {
         this.screenManager = context.screenManager();
-        dialogService.attach(this);
-        ensureCatalogReady(false);
+        bindDialogService();
+        applyShortcutScope();
+        presenter.onShow(screenManager);
     }
 
     @Override
     public void onHide(ScreenContext context) {
         this.screenManager = null;
-        gameInteractionController.setEnabled(false);
+        gameActionState.setEnabled(false);
         activeGame = null;
+        resetShortcutScope();
+        releaseDialogBinding();
+        presenter.onHide();
+    }
+
+    private void bindDialogService() {
+        releaseDialogBinding();
+        dialogBinding = dialogService.attach(this);
+    }
+
+    private void releaseDialogBinding() {
+        if (dialogBinding == null) {
+            return;
+        }
+        try {
+            dialogBinding.close();
+        } catch (Exception ignored) {
+        } finally {
+            dialogBinding = null;
+        }
+    }
+
+    @Override
+    public void setLoadingState(boolean busy) {
+        view.setLoadingState(busy);
+    }
+
+    @Override
+    public void setStatus(String text) {
+        view.setStatus(text);
+    }
+
+    @Override
+    public void navigateTo(ScreenId id) {
+        showScreen(id);
+    }
+
+    @Override
+    public void onGameSelection(GameSummary summary) {
+        updateActiveGame(summary);
+    }
+
+    @Override
+    public void setGameActionsEnabled(boolean enabled) {
+        gameActionState.setEnabled(enabled);
+    }
+
+    @Override
+    public void playSelectSound() {
+        view.playSelectSound();
+    }
+
+    @Override
+    public void showMainMenu() {
+        if (screenManager != null) {
+            screenManager.show(MainMenuScreen.ID);
+        }
+    }
+
+    private Optional<GameSummary> currentGame() {
+        return Optional.ofNullable(activeGame);
+    }
+
+    private void applyShortcutScope() {
+        if (shortcutRegistry == null || shortcutBinder == null) {
+            return;
+        }
+        resetShortcutScope();
+        shortcutScope = shortcutRegistry.openScope();
+        registerGlobalShortcuts();
+        shortcutAttachment = shortcutRegistry.applyTo(this);
+    }
+
+    private void registerGlobalShortcuts() {
+        shortcutBinder.registerStroke("ESCAPE",
+                ACTION_BACK,
+                "Échap : revenir à l'écran précédent.",
+                e -> presenter.onNavigateBack());
+    }
+
+    private void resetShortcutScope() {
+        closeQuietly(shortcutAttachment);
+        shortcutAttachment = null;
+        closeQuietly(shortcutScope);
+        shortcutScope = null;
+    }
+
+    private static void closeQuietly(AutoCloseable closeable) {
+        if (closeable == null) {
+            return;
+        }
+        try {
+            closeable.close();
+        } catch (Exception ignored) {
+        }
     }
 }

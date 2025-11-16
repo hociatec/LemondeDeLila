@@ -1,9 +1,9 @@
 package com.lemondelila.client.game.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.lemondelila.client.user.model.ClientSession;
 import com.lemondelila.client.framework.core.task.TaskScheduler;
 import com.lemondelila.client.framework.network.rest.RestClient;
+import com.lemondelila.client.game.service.dto.RoomResponseDto;
+import com.lemondelila.client.user.model.ClientSession;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
-import java.util.function.Supplier;
 
 /**
  * Utilitaires communs pour les services distants de jeux (création de salle, requêtes REST, auth).
@@ -34,16 +33,6 @@ public abstract class RemoteGameServiceSupport {
         ClientSession.AuthState auth = session.authenticated()
                 .orElseThrow(() -> new IllegalStateException("Utilisateur non authentifie"));
         return Map.of("Authorization", "Bearer " + auth.token());
-    }
-
-    protected CompletableFuture<JsonNode> asyncGet(String path, Map<String, String> headers) {
-        return supplyAsync(() -> restClient.get(path, headers));
-    }
-
-    protected CompletableFuture<JsonNode> asyncPost(String path,
-                                                    Map<String, String> headers,
-                                                    Map<String, Object> payload) {
-        return supplyAsync(() -> restClient.post(path, headers, payload));
     }
 
     protected <T> CompletableFuture<T> supplyAsync(ThrowingSupplier<T> supplier) {
@@ -69,12 +58,11 @@ public abstract class RemoteGameServiceSupport {
         payload.put("gameType", gameType);
         payload.put("name", defaultName);
         payload.put("maxPlayers", maxPlayers);
-        JsonNode response = restClient.post("rooms/", headers, payload);
-        int roomId = response.path("id").asInt(-1);
-        if (roomId <= 0) {
+        RoomResponseDto response = restClient.post("rooms/", headers, payload, RoomResponseDto.class);
+        if (response == null || response.id() <= 0) {
             throw new IOException("Identifiant de salle invalide pour " + gameType);
         }
-        return roomId;
+        return response.id();
     }
 
     @FunctionalInterface

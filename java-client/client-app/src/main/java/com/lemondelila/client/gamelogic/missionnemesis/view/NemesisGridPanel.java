@@ -29,7 +29,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-final class NemesisGridPanel extends JPanel {
+public final class NemesisGridPanel extends JPanel {
 
     private static final int BOARD_SIZE = NemesisSpecs.BOARD_SIZE;
     private static final Color WATER = new Color(36, 56, 78);
@@ -43,7 +43,7 @@ final class NemesisGridPanel extends JPanel {
 
     private final boolean ownsFleet;
     private final CellButton[][] cells;
-    private final Consumer<GridCoordinate> fireHandler;
+    private Consumer<GridCoordinate> fireHandler;
     private final JLabel botBadge = new JLabel(" ");
     private final NemesisManualPlacementController manualController = new NemesisManualPlacementController(BOARD_SIZE);
     private final NemesisFireController fireController = new NemesisFireController(BOARD_SIZE);
@@ -62,7 +62,7 @@ final class NemesisGridPanel extends JPanel {
         addKeyListener(keyboardHandler);
     }
 
-    void renderOwn(NemesisSession session, Function<NemesisState.Player, String> nameFormatter) {
+    public void renderOwn(NemesisSession session, Function<NemesisState.Player, String> nameFormatter) {
         if (manualController.isActive()) {
             updateBotBadge(session, nameFormatter);
             return;
@@ -96,7 +96,7 @@ final class NemesisGridPanel extends JPanel {
         updateBotBadge(session, nameFormatter);
     }
 
-    void renderEnemy(NemesisSession session, Function<NemesisState.Player, String> nameFormatter) {
+    public void renderEnemy(NemesisSession session, Function<NemesisState.Player, String> nameFormatter) {
         clear();
         session.self().ifPresent(self -> {
             for (NemesisState.Shot shot : self.shots()) {
@@ -113,11 +113,15 @@ final class NemesisGridPanel extends JPanel {
         updateBotBadge(session, nameFormatter);
     }
 
-    void setFireSelectionListener(Consumer<GridCoordinate> listener) {
+    public void setFireSelectionListener(Consumer<GridCoordinate> listener) {
         this.fireSelectionListener = listener;
     }
 
-    void setFiringEnabled(boolean enabled, NemesisSession session) {
+    void setFireHandler(Consumer<GridCoordinate> handler) {
+        this.fireHandler = Objects.requireNonNull(handler, "handler");
+    }
+
+    public void setFiringEnabled(boolean enabled, NemesisSession session) {
         if (ownsFleet) {
             return;
         }

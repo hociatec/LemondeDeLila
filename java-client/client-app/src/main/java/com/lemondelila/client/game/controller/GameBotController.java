@@ -1,5 +1,7 @@
 package com.lemondelila.client.game.controller;
 
+import com.lemondelila.client.framework.access.shortcut.ShortcutBinder;
+
 import javax.swing.AbstractAction;
 import javax.swing.JComponent;
 import javax.swing.KeyStroke;
@@ -13,23 +15,26 @@ import java.util.function.Supplier;
 
 import static javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW;
 
-final class GameBotController {
+public final class GameBotController {
 
     private final Consumer<String> statusConsumer;
     private final BooleanSupplier enabledSupplier;
     private final Supplier<CompletableFuture<Void>> addBotAction;
     private final Supplier<CompletableFuture<Void>> removeBotAction;
+    private final ShortcutBinder shortcutBinder;
     private final AtomicBoolean botActionRunning = new AtomicBoolean(false);
 
     GameBotController(JComponent component,
                       Consumer<String> statusConsumer,
                       BooleanSupplier enabledSupplier,
                       Supplier<CompletableFuture<Void>> addBotAction,
-                      Supplier<CompletableFuture<Void>> removeBotAction) {
+                      Supplier<CompletableFuture<Void>> removeBotAction,
+                      ShortcutBinder shortcutBinder) {
         this.statusConsumer = statusConsumer;
         this.enabledSupplier = enabledSupplier;
         this.addBotAction = addBotAction;
         this.removeBotAction = removeBotAction;
+        this.shortcutBinder = shortcutBinder;
         installBindings(component);
     }
 
@@ -39,23 +44,37 @@ final class GameBotController {
 
     private void installBindings(JComponent component) {
         if (addBotAction != null) {
-            component.getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("B"), "game.add-bot");
-            component.getActionMap().put("game.add-bot", new AbstractAction() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    handleAddBot();
-                }
-            });
+            if (shortcutBinder != null) {
+                shortcutBinder.registerLetter('b',
+                        "game.add-bot",
+                        "Lettre B : ajouter un bot.",
+                        e -> handleAddBot());
+            } else {
+                component.getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("B"), "game.add-bot");
+                component.getActionMap().put("game.add-bot", new AbstractAction() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        handleAddBot();
+                    }
+                });
+            }
         }
 
         if (removeBotAction != null) {
-            component.getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("shift B"), "game.remove-bot");
-            component.getActionMap().put("game.remove-bot", new AbstractAction() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    handleRemoveBot();
-                }
-            });
+            if (shortcutBinder != null) {
+                shortcutBinder.registerStroke(KeyStroke.getKeyStroke("shift B"),
+                        "game.remove-bot",
+                        "Maj+B : retirer un bot.",
+                        e -> handleRemoveBot());
+            } else {
+                component.getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("shift B"), "game.remove-bot");
+                component.getActionMap().put("game.remove-bot", new AbstractAction() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        handleRemoveBot();
+                    }
+                });
+            }
         }
     }
 

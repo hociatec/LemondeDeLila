@@ -1,6 +1,5 @@
 package com.lemondelila.client.gamelogic.missionnemesis.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.lemondelila.client.framework.core.task.TaskScheduler;
 import com.lemondelila.client.framework.network.rest.RestClient;
 import com.lemondelila.client.game.service.RemoteGameServiceSupport;
@@ -11,6 +10,8 @@ import com.lemondelila.client.gamelogic.missionnemesis.model.NemesisState;
 import com.lemondelila.client.gamelogic.missionnemesis.model.NemesisStateMapper;
 import com.lemondelila.client.gamelogic.missionnemesis.model.ShipPlacement;
 import com.lemondelila.client.user.model.ClientSession;
+
+import com.lemondelila.client.gamelogic.missionnemesis.dto.NemesisStateDto;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -72,15 +73,24 @@ final class NemesisApiGateway extends RemoteGameServiceSupport {
 
     private NemesisState fetchStateInternal(int roomId,
                                             Map<String, String> headers) throws IOException, InterruptedException {
-        JsonNode node = restClient.get(GAME_PATH + "/rooms/" + roomId + "/state", headers);
-        return NemesisStateMapper.fromJson(node);
+        NemesisStateDto dto = restClient.get(
+                GAME_PATH + "/rooms/" + roomId + "/state",
+                headers,
+                NemesisStateDto.class
+        );
+        return NemesisStateMapper.fromDto(dto);
     }
 
     private NemesisState sendMove(int roomId,
                                   Map<String, String> headers,
                                   Map<String, Object> payload) throws IOException, InterruptedException {
-        JsonNode node = restClient.post(GAME_PATH + "/rooms/" + roomId + "/move", headers, payload);
-        return NemesisStateMapper.fromJson(node);
+        NemesisStateDto dto = restClient.post(
+                GAME_PATH + "/rooms/" + roomId + "/move",
+                headers,
+                payload,
+                NemesisStateDto.class
+        );
+        return NemesisStateMapper.fromDto(dto);
     }
 
     private List<Map<String, Object>> encodePlacements(List<ShipPlacement> placements) {

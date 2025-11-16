@@ -3,7 +3,9 @@ package com.lemondelila.client.catalogue.view;
 import com.lemondelila.client.catalogue.model.GameSummary;
 import com.lemondelila.client.framework.access.AccessibleDecorator;
 import com.lemondelila.client.framework.access.AccessibleSpec;
+import com.lemondelila.client.framework.access.NarrationQueue;
 import com.lemondelila.client.framework.media.sound.SoundEffectManager;
+import com.lemondelila.client.framework.ui.component.StatusBanner;
 import com.lemondelila.client.media.SoundBank;
 
 import javax.swing.BorderFactory;
@@ -25,15 +27,25 @@ final class CatalogViewCoordinator {
     private final CardLayout viewLayout = new CardLayout();
     private final JPanel viewPanel = new JPanel(viewLayout);
     private final JLabel breadcrumbLabel = new JLabel("Categories");
-    private final JLabel statusLabel = new JLabel(" ");
+    private final StatusBanner statusBanner;
     private final CategoryListPanel categoryListPanel;
     private final GameListPanel gameListPanel;
     private final SoundEffectManager soundManager;
+    private final NarrationQueue narrationQueue;
 
-    CatalogViewCoordinator(JPanel host, SoundEffectManager soundManager) {
+    CatalogViewCoordinator(JPanel host,
+                           SoundEffectManager soundManager,
+                           NarrationQueue narrationQueue) {
         this.soundManager = soundManager;
+        this.narrationQueue = narrationQueue;
         this.categoryListPanel = new CategoryListPanel(soundManager);
         this.gameListPanel = new GameListPanel(soundManager);
+        this.statusBanner = new StatusBanner(
+                "Statut catalogue",
+                "Annonce les chargements et actions dans le catalogue",
+                host,
+                narrationQueue
+        );
         buildUi(host);
     }
 
@@ -70,12 +82,9 @@ final class CatalogViewCoordinator {
         viewPanel.add(gameListPanel, GameListPanel.CARD);
         host.add(viewPanel, BorderLayout.CENTER);
 
-        statusLabel.setBorder(BorderFactory.createEmptyBorder(8, 4, 0, 4));
-        AccessibleDecorator.apply(statusLabel, AccessibleSpec.builder()
-                .name("Statut catalogue")
-                .description("Affiche l'état des chargements et actions sur le catalogue")
-                .build());
-        host.add(statusLabel, BorderLayout.SOUTH);
+        JLabel bannerComponent = statusBanner.component();
+        bannerComponent.setBorder(BorderFactory.createEmptyBorder(8, 4, 0, 4));
+        host.add(bannerComponent, BorderLayout.SOUTH);
     }
 
     void showCategories(java.util.List<CategoryListPanel.CategoryItem> items,
@@ -101,7 +110,8 @@ final class CatalogViewCoordinator {
     }
 
     void setStatus(String text) {
-        SwingUtilities.invokeLater(() -> statusLabel.setText(text));
+        String safe = (text == null || text.isBlank()) ? " " : text;
+        SwingUtilities.invokeLater(() -> statusBanner.setStatus(safe));
     }
 
     void setLoadingState(boolean busy) {

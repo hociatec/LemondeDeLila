@@ -1,10 +1,14 @@
 package com.lemondelila.client.messaging.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.lemondelila.client.framework.core.di.Inject;
 import com.lemondelila.client.framework.core.task.TaskScheduler;
 import com.lemondelila.client.framework.network.rest.RestClient;
 import com.lemondelila.client.messaging.model.PrivateMessage;
+import com.lemondelila.client.messaging.dto.MessageDto;
+import com.lemondelila.client.messaging.dto.MessageResponseDto;
+import com.lemondelila.client.messaging.dto.MessagesResponseDto;
+import com.lemondelila.client.messaging.dto.UserLookupResponseDto;
+import com.lemondelila.client.messaging.dto.MessageUserDto;
 import com.lemondelila.client.user.model.ClientSession;
 
 import java.io.IOException;
@@ -37,11 +41,11 @@ public final class MessagingService {
         CompletableFuture<List<PrivateMessage>> future = new CompletableFuture<>();
         scheduler.runAsync(() -> {
             try {
-                JsonNode response = restClient.get(
+                MessagesResponseDto response = restClient.get(
                         "messaging/conversations/" + userId + "?limit=" + clamp(limit),
-                        authHeaders());
-                List<PrivateMessage> messages = parseMessages(response.path("items"));
-                future.complete(messages);
+                        authHeaders(),
+                        MessagesResponseDto.class);
+                future.complete(toMessages(response.items()));
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 future.completeExceptionally(new IOException("Chargement interrompu", e));
@@ -56,13 +60,12 @@ public final class MessagingService {
         CompletableFuture<PrivateMessage> future = new CompletableFuture<>();
         scheduler.runAsync(() -> {
             try {
-                JsonNode response = restClient.post(
+                MessageResponseDto response = restClient.post(
                         "messaging/messages",
                         authHeaders(),
-                        Map.of("recipientId", recipientId, "text", text));
-                JsonNode messageNode = response.path("message");
-                PrivateMessage message = parseMessage(messageNode);
-                future.complete(message);
+                        Map.of("recipientId", recipientId, "text", text),
+                        MessageResponseDto.class);
+                future.complete(toMessage(response.message()));
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 future.completeExceptionally(new IOException("Envoi interrompu", e));
@@ -89,11 +92,11 @@ public final class MessagingService {
         CompletableFuture<PrivateMessage> future = new CompletableFuture<>();
         scheduler.runAsync(() -> {
             try {
-                JsonNode response = restClient.delete(
+                MessageResponseDto response = restClient.delete(
                         "messaging/messages/" + messageId,
-                        authHeaders());
-                JsonNode messageNode = response.path("message");
-                future.complete(parseMessage(messageNode));
+                        authHeaders(),
+                        MessageResponseDto.class);
+                future.complete(toMessage(response.message()));
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 future.completeExceptionally(new IOException("Suppression interrompue", e));
@@ -108,12 +111,12 @@ public final class MessagingService {
         CompletableFuture<PrivateMessage> future = new CompletableFuture<>();
         scheduler.runAsync(() -> {
             try {
-                JsonNode response = restClient.post(
+                MessageResponseDto response = restClient.post(
                         "messaging/messages/" + messageId + "/restore",
                         authHeaders(),
-                        Map.of());
-                JsonNode messageNode = response.path("message");
-                future.complete(parseMessage(messageNode));
+                        Map.of(),
+                        MessageResponseDto.class);
+                future.complete(toMessage(response.message()));
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 future.completeExceptionally(new IOException("Restauration interrompue", e));
@@ -129,19 +132,15 @@ public final class MessagingService {
         scheduler.runAsync(() -> {
             try {
                 String encoded = URLEncoder.encode(username, StandardCharsets.UTF_8);
-                JsonNode response = restClient.get(
+                UserLookupResponseDto response = restClient.get(
                         "messaging/users/search?username=" + encoded,
-                        authHeaders());
-                JsonNode userNode = response.path("user");
-                if (!userNode.isObject()) {
-                    throw new IOException("Réponse de recherche invalide.");
-                }
-                int id = userNode.path("id").asInt(-1);
-                if (id <= 0) {
+                        authHeaders(),
+                        UserLookupResponseDto.class);
+                MessageUserDto user = response.user();
+                if (user == null || user.id() <= 0 || user.username() == null || user.username().isBlank()) {
                     throw new IOException("Utilisateur introuvable.");
                 }
-                String resolvedUsername = userNode.path("username").asText("");
-                future.complete(new KnownUser(id, resolvedUsername));
+                future.complete(new KnownUser(user.id(), user.username()));
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 future.completeExceptionally(new IOException("Recherche interrompue", e));
@@ -156,11 +155,11 @@ public final class MessagingService {
         CompletableFuture<List<PrivateMessage>> future = new CompletableFuture<>();
         scheduler.runAsync(() -> {
             try {
-                JsonNode response = restClient.get(
+                MessagesResponseDto response = restClient.get(
                         "messaging/messages?box=" + box + "&limit=" + clamp(limit),
-                        authHeaders());
-                List<PrivateMessage> messages = parseMessages(response.path("items"));
-                future.complete(messages);
+                        authHeaders(),
+                        MessagesResponseDto.class);
+                future.complete(toMessages(response.items()));
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 future.completeExceptionally(new IOException("Chargement interrompu", e));
@@ -178,55 +177,48 @@ public final class MessagingService {
         return headers;
     }
 
-    private List<PrivateMessage> parseMessages(JsonNode itemsNode) throws IOException {
-        if (!itemsNode.isArray()) {
-            throw new IOException("Reponse messagerie invalide");
+    private List<PrivateMessage> toMessages(List<MessageDto> dtos) throws IOException {
+        if (dtos == null || dtos.isEmpty()) {
+            return List.of();
         }
-        List<PrivateMessage> messages = new ArrayList<>();
-        for (JsonNode node : itemsNode) {
-            PrivateMessage message = parseMessage(node);
-            if (message != null) {
-                messages.add(message);
-            }
+        List<PrivateMessage> messages = new ArrayList<>(dtos.size());
+        for (MessageDto dto : dtos) {
+            messages.add(toMessage(dto));
         }
         return List.copyOf(messages);
     }
 
-    private PrivateMessage parseMessage(JsonNode node) throws IOException {
-        if (!node.isObject()) {
+    private PrivateMessage toMessage(MessageDto dto) throws IOException {
+        if (dto == null) {
             throw new IOException("Message prive invalide");
         }
-        JsonNode senderNode = node.path("sender");
-        JsonNode recipientNode = node.path("recipient");
-        if (!senderNode.isObject() || !recipientNode.isObject()) {
+        MessageUserDto sender = dto.sender();
+        MessageUserDto recipient = dto.recipient();
+        if (sender == null || recipient == null) {
             throw new IOException("Participants du message prive invalides");
         }
-        String id = node.path("id").asText("");
-        String text = node.path("text").asText("");
-        Instant createdAt = parseInstant(node.path("createdAt").asText(""));
-        String direction = node.path("direction").asText("");
-        Instant deletedAt = parseOptionalInstant(node.path("deletedAt").asText(""));
-        if (direction.isBlank()) {
+        String direction = dto.direction();
+        if (direction == null || direction.isBlank()) {
             String currentUsername = session.authenticated()
                     .map(ClientSession.AuthState::username)
                     .orElse("");
             if (!currentUsername.isBlank()
-                    && currentUsername.equalsIgnoreCase(senderNode.path("username").asText(""))) {
+                    && currentUsername.equalsIgnoreCase(sender.username())) {
                 direction = "sent";
             } else {
                 direction = "received";
             }
         }
         return new PrivateMessage(
-                id,
-                senderNode.path("id").asInt(-1),
-                senderNode.path("username").asText(""),
-                recipientNode.path("id").asInt(-1),
-                recipientNode.path("username").asText(""),
-                text,
-                createdAt,
+                dto.id(),
+                sender.id(),
+                sender.username(),
+                recipient.id(),
+                recipient.username(),
+                dto.text(),
+                parseInstant(dto.createdAt()),
                 direction,
-                deletedAt
+                parseOptionalInstant(dto.deletedAt())
         );
     }
 

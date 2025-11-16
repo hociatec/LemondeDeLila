@@ -1,6 +1,6 @@
 package com.lemondelila.client.user.controller;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.lemondelila.client.user.dto.RegistrationResponseDto;
 import com.lemondelila.client.user.events.RegistrationFailed;
 import com.lemondelila.client.user.events.RegistrationRequested;
 import com.lemondelila.client.user.events.RegistrationSucceeded;
@@ -40,12 +40,14 @@ public final class RegistrationController implements AutoCloseable {
         }
         scheduler.runAsync(() -> {
             try {
-                JsonNode response = restClient.post("register", Map.of(
+                RegistrationResponseDto response = restClient.post("register", Map.of(
                         "username", request.username(),
                         "password", String.valueOf(request.password()),
                         "email", request.email()
-                ));
-                String username = response.path("username").asText(request.username());
+                ), RegistrationResponseDto.class);
+                String username = response.username() == null || response.username().isBlank()
+                        ? request.username()
+                        : response.username();
                 eventBus.publish(new RegistrationSucceeded(username));
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();

@@ -1,6 +1,7 @@
 package com.lemondelila.client.game.controller;
 
 import com.lemondelila.client.catalogue.model.GameSummary;
+import com.lemondelila.client.framework.access.shortcut.ShortcutBinder;
 import com.lemondelila.client.framework.ui.dialog.DialogService;
 
 import javax.swing.AbstractAction;
@@ -14,26 +15,36 @@ import java.util.function.Supplier;
 
 import static javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW;
 
-final class GameQuitController {
+public final class GameQuitController {
 
     private final DialogService dialogService;
     private final Supplier<Optional<GameSummary>> currentGameSupplier;
     private final Runnable onQuitConfirmed;
     private final Consumer<String> statusConsumer;
+    private final ShortcutBinder shortcutBinder;
 
     GameQuitController(JComponent component,
                        DialogService dialogService,
                        Supplier<Optional<GameSummary>> currentGameSupplier,
                        Runnable onQuitConfirmed,
-                       Consumer<String> statusConsumer) {
+                       Consumer<String> statusConsumer,
+                       ShortcutBinder shortcutBinder) {
         this.dialogService = dialogService;
         this.currentGameSupplier = currentGameSupplier;
         this.onQuitConfirmed = onQuitConfirmed;
         this.statusConsumer = statusConsumer;
+        this.shortcutBinder = shortcutBinder;
         installBindings(component);
     }
 
     private void installBindings(JComponent component) {
+        if (shortcutBinder != null) {
+            shortcutBinder.registerLetter('q',
+                    "game.quit",
+                    "Lettre Q : quitter la partie.",
+                    e -> handleQuit());
+            return;
+        }
         component.getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("Q"), "game.quit");
         component.getActionMap().put("game.quit", new AbstractAction() {
             @Override

@@ -4,6 +4,7 @@ import com.lemondelila.client.framework.access.NarrationQueue;
 import com.lemondelila.client.framework.access.ScreenReaderAnnouncer;
 
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -16,6 +17,7 @@ public final class AccessibilityService {
 
     private final ScreenReaderAnnouncer announcer;
     private final NarrationQueue queue;
+    private final JLabel fallbackAnnouncer = buildFallbackComponent();
 
     public record TurnContext(boolean yourTurn, String playerName, Integer lastRoll) {}
 
@@ -122,7 +124,15 @@ public final class AccessibilityService {
             queue.enqueue(component, message);
             return;
         }
-        announcer.announce(component, message);
+        announcer.announce(fallbackAnnouncer, message);
+    }
+
+    private static JLabel buildFallbackComponent() {
+        JLabel label = new JLabel("Narration");
+        label.getAccessibleContext().setAccessibleDescription("Canal de narration général");
+        label.setFocusable(false);
+        label.setOpaque(false);
+        return label;
     }
 
     private static String joinList(List<String> items) {

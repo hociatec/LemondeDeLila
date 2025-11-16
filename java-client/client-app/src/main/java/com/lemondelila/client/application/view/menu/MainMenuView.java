@@ -1,5 +1,10 @@
 package com.lemondelila.client.application.view.menu;
 
+import com.lemondelila.client.application.Internationalization;
+import com.lemondelila.client.framework.access.AccessibleDecorator;
+import com.lemondelila.client.framework.access.AccessibleSpec;
+import com.lemondelila.client.framework.access.NarrationQueue;
+import com.lemondelila.client.framework.ui.component.StatusBanner;
 import com.lemondelila.client.framework.ui.util.ButtonUtils;
 
 import javax.swing.Box;
@@ -17,14 +22,13 @@ import java.util.List;
 final class MainMenuView {
 
     private final JPanel root = new JPanel();
-    private final JLabel statusLabel = new JLabel(" ");
-
-    private final JButton shelvesButton = new JButton("Etageres");
-    private final JButton joinGameButton = new JButton("Rejoindre une partie");
-    private final JButton chatButton = new JButton("Tchat");
-    private final JButton socialButton = new JButton("Social");
-    private final JButton optionsButton = new JButton("Options");
-    private final JButton logoutButton = new JButton("Se deconnecter");
+    private final StatusBanner statusBanner;
+    private final JButton shelvesButton = new JButton(Internationalization.text("mainmenu.shelves"));
+    private final JButton joinGameButton = new JButton(Internationalization.text("mainmenu.join"));
+    private final JButton chatButton = new JButton(Internationalization.text("mainmenu.chat"));
+    private final JButton socialButton = new JButton(Internationalization.text("mainmenu.social"));
+    private final JButton optionsButton = new JButton(Internationalization.text("mainmenu.options"));
+    private final JButton logoutButton = new JButton(Internationalization.text("mainmenu.logout"));
 
     private final List<JButton> buttons = List.of(
             shelvesButton,
@@ -35,7 +39,13 @@ final class MainMenuView {
             logoutButton
     );
 
-    MainMenuView() {
+    MainMenuView(NarrationQueue narrationQueue) {
+        this.statusBanner = new StatusBanner(
+                Internationalization.text("mainmenu.status.banner"),
+                Internationalization.text("mainmenu.status.banner.desc"),
+                root,
+                narrationQueue
+        );
         buildUi();
     }
 
@@ -72,7 +82,7 @@ final class MainMenuView {
     }
 
     void setStatus(String text) {
-        statusLabel.setText(text == null || text.isBlank() ? " " : text);
+        statusBanner.setStatus(text);
     }
 
     void focusFirstButton() {
@@ -83,9 +93,13 @@ final class MainMenuView {
         root.setLayout(new BoxLayout(root, BoxLayout.Y_AXIS));
         root.setBorder(new EmptyBorder(48, 64, 48, 64));
 
-        JLabel title = new JLabel("Menu principal");
+        JLabel title = new JLabel(Internationalization.text("mainmenu.title"));
         title.setAlignmentX(Component.CENTER_ALIGNMENT);
         title.setFont(title.getFont().deriveFont(26f));
+        AccessibleDecorator.apply(title, AccessibleSpec.builder()
+                .name(Internationalization.text("mainmenu.title.accessible"))
+                .description(Internationalization.text("mainmenu.title.desc"))
+                .build());
         root.add(title);
         root.add(Box.createRigidArea(new Dimension(0, 32)));
 
@@ -97,8 +111,9 @@ final class MainMenuView {
         });
 
         root.add(Box.createRigidArea(new Dimension(0, 24)));
-        statusLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        root.add(statusLabel);
+        JLabel bannerComponent = statusBanner.component();
+        bannerComponent.setAlignmentX(Component.CENTER_ALIGNMENT);
+        root.add(bannerComponent);
     }
 
     private void addMenuButton(JButton button) {
@@ -106,10 +121,14 @@ final class MainMenuView {
         button.setMaximumSize(new Dimension(320, 48));
         button.setFocusTraversalKeysEnabled(false);
         ButtonUtils.enterActivates(button);
+        AccessibleDecorator.apply(button, AccessibleSpec.builder()
+                .name(button.getText())
+                .description(Internationalization.text("mainmenu.button.desc", button.getText()))
+                .build());
         button.addFocusListener(new FocusAdapter() {
             @Override
             public void focusGained(FocusEvent e) {
-                statusLabel.setText("Selection : " + button.getText());
+                statusBanner.setStatus("Selection : " + button.getText());
             }
         });
         root.add(button);

@@ -4,8 +4,12 @@ import com.lemondelila.client.chat.model.ChatConnection;
 import com.lemondelila.client.chat.service.ChatConnectionFactory;
 import com.lemondelila.client.chat.model.ChatMessage;
 import com.lemondelila.client.chat.model.ChatState;
+import com.lemondelila.client.presence.event.PresenceEvent;
+import com.lemondelila.client.presence.event.PresenceEventListener;
+import com.lemondelila.client.presence.event.PresenceUpdateEvent;
 import com.lemondelila.client.presence.model.PresenceChat;
 import com.lemondelila.client.presence.model.PresencePlayer;
+import com.lemondelila.client.presence.service.PresenceRealtimeService;
 import com.lemondelila.client.settings.service.AppSettingsService;
 import com.lemondelila.client.framework.ui.dialog.DialogService;
 
@@ -47,15 +51,21 @@ public final class ChatWindow extends JDialog {
     private final ChatConnection connection;
     private final AppSettingsService settingsService;
     private final DialogService dialogService;
+    private final PresenceRealtimeService presenceService;
+    private final PresenceEventListener presenceListener;
+    private boolean presenceStarted;
 
     public ChatWindow(Window owner,
                       ChatConnectionFactory connectionFactory,
                       AppSettingsService settingsService,
-                      DialogService dialogService) {
+                      DialogService dialogService,
+                      PresenceRealtimeService presenceService) {
         super(owner, "Tchat", ModalityType.MODELESS);
         this.settingsService = settingsService;
         this.dialogService = dialogService;
-        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        this.presenceService = presenceService;
+        this.presenceListener = this::handlePresenceEvent;
+        setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         setLayout(new BorderLayout(8, 8));
         setPreferredSize(new Dimension(520, 440));
 
@@ -92,9 +102,21 @@ public final class ChatWindow extends JDialog {
         add(composer, BorderLayout.SOUTH);
 
         this.connection = connectionFactory.open();
+        if (presenceService != null) {
+            presenceService.addListener(presenceListener);
+            presenceService.start();
+            presenceStarted = true;
+            List<PresencePlayer> snapshot = presenceService.latestPresence();
+            if (snapshot != null && !snapshot.isEmpty()) {
+                updatePresenceList(snapshot);
+            } else {
+                updatePresenceList(List.of());
+            }
+        } else {
+            updatePresenceList(List.of());
+        }
         registerHandlers();
         connection.connect();
-        updatePresenceList(connection.latestPresence());
 
         inputField.addActionListener(e -> sendCurrentMessage());
         inputField.getInputMap().put(javax.swing.KeyStroke.getKeyStroke("shift ENTER"), "insert-break");
@@ -115,7 +137,6 @@ public final class ChatWindow extends JDialog {
                         return;
                     }
                 }
-                connection.close();
                 dispose();
             }
         });
@@ -128,8 +149,13 @@ public final class ChatWindow extends JDialog {
         connection.onHistory(messages -> SwingUtilities.invokeLater(() -> renderHistory(messages)));
         connection.onMessage(message -> SwingUtilities.invokeLater(() -> appendMessage(message)));
         connection.onState(state -> SwingUtilities.invokeLater(() -> appendStatus(state)));
-        connection.onPresence(players -> SwingUtilities.invokeLater(() -> updatePresenceList(players)));
         connection.onError(error -> SwingUtilities.invokeLater(() -> dialogService.error("Tchat", error)));
+    }
+
+    private void handlePresenceEvent(PresenceEvent event) {
+        if (event instanceof PresenceUpdateEvent update) {
+            SwingUtilities.invokeLater(() -> updatePresenceList(update.players()));
+        }
     }
 
     private void renderHistory(List<ChatMessage> messages) {
@@ -194,6 +220,19 @@ public final class ChatWindow extends JDialog {
             presenceModel.addElement(player.username() + rooms);
         });
         presenceList.setSelectedIndex(0);
+    }
+
+    @Override
+    public void dispose() {
+        if (presenceService != null) {
+            presenceService.removeListener(presenceListener);
+            if (presenceStarted) {
+                presenceService.stop();
+                presenceStarted = false;
+            }
+        }
+        connection.close();
+        super.dispose();
     }
 }
 

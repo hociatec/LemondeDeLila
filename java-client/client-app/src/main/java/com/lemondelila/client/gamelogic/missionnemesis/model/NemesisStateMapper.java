@@ -1,134 +1,174 @@
 package com.lemondelila.client.gamelogic.missionnemesis.model;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.lemondelila.client.gamelogic.missionnemesis.model.NemesisState.Ship;
-import com.lemondelila.client.gamelogic.missionnemesis.model.NemesisState.Shot;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lemondelila.client.gamelogic.missionnemesis.dto.NemesisStateDto;
+import com.lemondelila.client.gamelogic.missionnemesis.dto.NemesisStateDto.LogEntryDto;
+import com.lemondelila.client.gamelogic.missionnemesis.dto.NemesisStateDto.PlayerDto;
+import com.lemondelila.client.gamelogic.missionnemesis.dto.NemesisStateDto.ShipDto;
+import com.lemondelila.client.gamelogic.missionnemesis.dto.NemesisStateDto.ShotDto;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 public final class NemesisStateMapper {
 
+    private static final ObjectMapper TREE_MAPPER = new ObjectMapper();
+
     private NemesisStateMapper() {
     }
 
-    public static NemesisState fromJson(JsonNode root) throws IOException {
-        if (root == null || !root.isObject()) {
+    public static NemesisState fromJson(JsonNode node) throws IOException {
+        if (node == null || !node.isObject()) {
+            throw new IOException("Etat Mission Nemesis invalide");
+        }
+        NemesisStateDto dto = TREE_MAPPER.treeToValue(node, NemesisStateDto.class);
+        return fromDto(dto);
+    }
+
+    public static NemesisState fromDto(NemesisStateDto dto) throws IOException {
+        if (dto == null) {
             throw new IOException("Etat Mission Nemesis invalide");
         }
 
-        String type = root.path("type").asText("mission-nemesis");
-        int turnIndex = root.path("turnIndex").asInt(0);
-        String status = root.path("status").asText("placement");
-        Integer winnerId = root.hasNonNull("winner") ? root.get("winner").asInt() : null;
-        int round = root.path("round").asInt(1);
+        String type = dto.type() == null ? "mission-nemesis" : dto.type();
+        String status = dto.status() == null ? "placement" : dto.status();
+        int turnIndex = dto.turnIndex();
+        int round = dto.round();
 
-        List<NemesisState.Player> players = new ArrayList<>();
-        JsonNode playersNode = root.path("players");
-        if (playersNode.isArray()) {
-            for (JsonNode playerNode : playersNode) {
-                players.add(readPlayer(playerNode));
-            }
-        }
-
-        List<NemesisState.LogEntry> logEntries = new ArrayList<>();
-        JsonNode logNode = root.path("log");
-        if (logNode.isArray()) {
-            for (JsonNode entry : logNode) {
-                logEntries.add(readLog(entry));
-            }
-        }
+        List<NemesisState.Player> players = mapPlayers(dto.players());
+        List<NemesisState.LogEntry> logEntries = mapLog(dto.log());
 
         return new NemesisState(
                 type,
                 players,
                 turnIndex,
                 status,
-                winnerId,
+                dto.winner(),
                 round,
                 logEntries
         );
     }
 
-    private static NemesisState.Player readPlayer(JsonNode node) {
-        int id = node == null ? -1 : node.path("id").asInt(-1);
-        String username = node == null ? "Inconnu" : node.path("username").asText("Inconnu");
-        String status = node == null ? "placing" : node.path("status").asText("placing");
-
-        List<Ship> ships = new ArrayList<>();
-        JsonNode shipsNode = node == null ? null : node.path("ships");
-        if (shipsNode != null && shipsNode.isArray()) {
-            for (JsonNode shipNode : shipsNode) {
-                ships.add(readShip(shipNode));
-            }
+    private static List<NemesisState.Player> mapPlayers(List<PlayerDto> dtos) {
+        if (dtos == null || dtos.isEmpty()) {
+            return List.of();
         }
-
-        List<Shot> shots = new ArrayList<>();
-        JsonNode shotsNode = node == null ? null : node.path("shots");
-        if (shotsNode != null && shotsNode.isArray()) {
-            for (JsonNode shotNode : shotsNode) {
-                shots.add(readShot(shotNode));
+        List<NemesisState.Player> players = new ArrayList<>(dtos.size());
+        for (PlayerDto dto : dtos) {
+            if (dto == null) {
+                continue;
             }
+            List<NemesisState.Ship> ships = mapShips(dto.ships());
+            List<NemesisState.Shot> shots = mapShots(dto.shots());
+            players.add(new NemesisState.Player(
+                    dto.id(),
+                    dto.username() == null ? "Inconnu" : dto.username(),
+                    ships,
+                    shots,
+                    dto.status() == null ? "placing" : dto.status(),
+                    dto.isBot(),
+                    dto.isSelf()
+            ));
         }
-
-        boolean isBot = node != null && node.path("isBot").asBoolean(false);
-        boolean isSelf = node != null && node.path("isSelf").asBoolean(false);
-        return new NemesisState.Player(id, username, ships, shots, status, isBot, isSelf);
+        return List.copyOf(players);
     }
 
-    private static Ship readShip(JsonNode node) {
-        String name = node.path("name").asText("Inconnu");
-        List<NemesisState.Coordinate> coordinates = new ArrayList<>();
-        JsonNode coordsNode = node.has("coordinates") ? node.get("coordinates") : node.get("coords");
-        if (coordsNode != null && coordsNode.isArray()) {
-            for (JsonNode coordNode : coordsNode) {
-                coordinates.add(new NemesisState.Coordinate(
-                        coordNode.path("x").asInt(),
-                        coordNode.path("y").asInt()
-                ));
-            }
+    private static List<NemesisState.Ship> mapShips(List<ShipDto> dtos) {
+        if (dtos == null || dtos.isEmpty()) {
+            return List.of();
         }
-
-        boolean[] hits = readHits(node.path("hits"), coordinates.size());
-
-        return new Ship(name, coordinates, hits);
-    }
-
-    private static boolean[] readHits(JsonNode node, int size) {
-        boolean[] hits = new boolean[size];
-        if (node != null && node.isArray()) {
-            Iterator<JsonNode> iterator = node.iterator();
-            int index = 0;
-            while (iterator.hasNext() && index < size) {
-                hits[index] = iterator.next().asBoolean(false);
-                index++;
+        List<NemesisState.Ship> ships = new ArrayList<>(dtos.size());
+        for (ShipDto dto : dtos) {
+            if (dto == null) {
+                continue;
             }
+            List<NemesisState.Coordinate> coordinates = mapCoordinates(dto.coordinates(), dto.coords());
+            boolean[] hits = mapHits(dto.hits(), coordinates.size());
+            ships.add(new NemesisState.Ship(
+                    dto.name() == null ? "Inconnu" : dto.name(),
+                    coordinates,
+                    hits
+            ));
         }
-        return hits;
+        return List.copyOf(ships);
     }
 
-    private static Shot readShot(JsonNode node) {
-        int x = node.path("x").asInt();
-        int y = node.path("y").asInt();
-        int targetId = node.path("targetId").asInt(-1);
-        String result = node.path("result").asText("miss");
-        Integer shipIndex = node.hasNonNull("shipIndex") ? node.get("shipIndex").asInt() : null;
-        Boolean damage = node.hasNonNull("damage") ? node.get("damage").asBoolean() : null;
-        return new Shot(x, y, targetId, result, shipIndex, damage);
+    private static List<NemesisState.Coordinate> mapCoordinates(
+            List<NemesisStateDto.CoordinateDto> coordinates,
+            List<NemesisStateDto.CoordinateDto> fallback) {
+        List<NemesisStateDto.CoordinateDto> nodes = coordinates != null && !coordinates.isEmpty()
+                ? coordinates
+                : fallback;
+        if (nodes == null || nodes.isEmpty()) {
+            return List.of();
+        }
+        List<NemesisState.Coordinate> mapped = new ArrayList<>(nodes.size());
+        for (NemesisStateDto.CoordinateDto node : nodes) {
+            if (node == null) {
+                continue;
+            }
+            mapped.add(new NemesisState.Coordinate(node.x(), node.y()));
+        }
+        return List.copyOf(mapped);
     }
 
-    private static NemesisState.LogEntry readLog(JsonNode node) {
-        String type = node.path("type").asText(null);
-        String message = node.path("message").asText(null);
-        Integer from = node.hasNonNull("from") ? node.get("from").asInt() :
-                (node.hasNonNull("fromPlayerId") ? node.get("fromPlayerId").asInt() : null);
-        Integer target = node.hasNonNull("target") ? node.get("target").asInt() :
-                (node.hasNonNull("targetPlayerId") ? node.get("targetPlayerId").asInt() : null);
-        Integer x = node.hasNonNull("x") ? node.get("x").asInt() : null;
-        Integer y = node.hasNonNull("y") ? node.get("y").asInt() : null;
-        String result = node.path("result").isNull() ? null : node.path("result").asText(null);
-        return new NemesisState.LogEntry(type, message, from, target, x, y, result);
+    private static boolean[] mapHits(List<Boolean> hits, int shipSize) {
+        boolean[] resolved = new boolean[Math.max(shipSize, 0)];
+        if (hits == null || hits.isEmpty()) {
+            return resolved;
+        }
+        for (int i = 0; i < resolved.length && i < hits.size(); i++) {
+            resolved[i] = Boolean.TRUE.equals(hits.get(i));
+        }
+        return resolved;
+    }
+
+    private static List<NemesisState.Shot> mapShots(List<ShotDto> dtos) {
+        if (dtos == null || dtos.isEmpty()) {
+            return List.of();
+        }
+        List<NemesisState.Shot> shots = new ArrayList<>(dtos.size());
+        for (ShotDto dto : dtos) {
+            if (dto == null) {
+                continue;
+            }
+            shots.add(new NemesisState.Shot(
+                    dto.x(),
+                    dto.y(),
+                    dto.targetId(),
+                    dto.result() == null ? "miss" : dto.result(),
+                    dto.shipIndex(),
+                    dto.damage()
+            ));
+        }
+        return List.copyOf(shots);
+    }
+
+    private static List<NemesisState.LogEntry> mapLog(List<LogEntryDto> entries) {
+        if (entries == null || entries.isEmpty()) {
+            return List.of();
+        }
+        List<NemesisState.LogEntry> logEntries = new ArrayList<>(entries.size());
+        for (LogEntryDto entry : entries) {
+            if (entry == null) {
+                continue;
+            }
+            logEntries.add(new NemesisState.LogEntry(
+                    entry.type(),
+                    entry.message(),
+                    firstNonNull(entry.from(), entry.fromPlayerId()),
+                    firstNonNull(entry.target(), entry.targetPlayerId()),
+                    entry.x(),
+                    entry.y(),
+                    entry.result()
+            ));
+        }
+        return List.copyOf(logEntries);
+    }
+
+    private static Integer firstNonNull(Integer primary, Integer secondary) {
+        return primary != null ? primary : secondary;
     }
 }

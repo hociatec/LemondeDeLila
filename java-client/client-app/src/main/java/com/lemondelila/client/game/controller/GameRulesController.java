@@ -2,6 +2,7 @@ package com.lemondelila.client.game.controller;
 
 import com.lemondelila.client.catalogue.model.GameSummary;
 import com.lemondelila.client.catalogue.service.GameRulesService;
+import com.lemondelila.client.framework.access.shortcut.ShortcutBinder;
 import com.lemondelila.client.framework.ui.dialog.DialogService;
 
 import javax.swing.AbstractAction;
@@ -17,13 +18,14 @@ import java.util.function.Supplier;
 
 import static javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW;
 
-final class GameRulesController {
+public final class GameRulesController {
 
     private final DialogService dialogService;
     private final GameRulesService rulesService;
     private final Supplier<Optional<GameSummary>> currentGameSupplier;
     private final Consumer<String> statusConsumer;
     private final BooleanSupplier enabledSupplier;
+    private final ShortcutBinder shortcutBinder;
     private final AtomicBoolean rulesLoading = new AtomicBoolean(false);
 
     GameRulesController(JComponent component,
@@ -31,12 +33,14 @@ final class GameRulesController {
                         GameRulesService rulesService,
                         Supplier<Optional<GameSummary>> currentGameSupplier,
                         Consumer<String> statusConsumer,
-                        BooleanSupplier enabledSupplier) {
+                        BooleanSupplier enabledSupplier,
+                        ShortcutBinder shortcutBinder) {
         this.dialogService = dialogService;
         this.rulesService = rulesService;
         this.currentGameSupplier = currentGameSupplier;
         this.statusConsumer = statusConsumer;
         this.enabledSupplier = enabledSupplier;
+        this.shortcutBinder = shortcutBinder;
         installBindings(component);
     }
 
@@ -45,6 +49,13 @@ final class GameRulesController {
     }
 
     private void installBindings(JComponent component) {
+        if (shortcutBinder != null) {
+            shortcutBinder.registerStroke("control F1",
+                    "game.rules",
+                    "Ctrl+F1 : afficher les règles du jeu.",
+                    e -> handleRules());
+            return;
+        }
         component.getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("control F1"), "game.rules");
         component.getActionMap().put("game.rules", new AbstractAction() {
             @Override

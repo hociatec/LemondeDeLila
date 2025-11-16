@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.lemondelila.client.settings.model.AppSettings;
 import com.lemondelila.client.settings.service.AppSettingsService;
+import com.lemondelila.client.settings.storage.UserStoragePaths;
 import com.lemondelila.client.user.events.LoginSucceeded;
 import com.lemondelila.client.user.events.UserLoggedOut;
 import com.lemondelila.client.user.model.ClientSession;
@@ -19,12 +20,11 @@ import java.util.Optional;
 
 public final class SessionPersistenceService implements AutoCloseable {
 
-    private static final Path SESSION_FILE = Path.of("config", "session.json");
-
     private final DomainEventBus eventBus;
     private final ClientSession session;
     private final AppSettingsService settingsService;
     private final ObjectMapper mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
+    private final Path sessionFile;
 
     private final AutoCloseable loginSubscription;
     private final AutoCloseable logoutSubscription;
@@ -33,10 +33,12 @@ public final class SessionPersistenceService implements AutoCloseable {
     @Inject
     public SessionPersistenceService(DomainEventBus eventBus,
                                      ClientSession session,
-                                     AppSettingsService settingsService) {
+                                     AppSettingsService settingsService,
+                                     UserStoragePaths storagePaths) {
         this.eventBus = Objects.requireNonNull(eventBus, "eventBus");
         this.session = Objects.requireNonNull(session, "session");
         this.settingsService = Objects.requireNonNull(settingsService, "settingsService");
+        this.sessionFile = storagePaths.sessionFile();
 
         restoreIfNeeded();
 
@@ -51,11 +53,11 @@ public final class SessionPersistenceService implements AutoCloseable {
             deleteStoredSession();
             return;
         }
-        if (!Files.exists(SESSION_FILE)) {
+        if (!Files.exists(sessionFile)) {
             return;
         }
         try {
-            JsonNode node = mapper.readTree(SESSION_FILE.toFile());
+            JsonNode node = mapper.readTree(sessionFile.toFile());
             String username = node.path("username").asText(null);
             String token = node.path("token").asText(null);
             if (username == null || token == null || username.isBlank() || token.isBlank()) {
@@ -91,8 +93,8 @@ public final class SessionPersistenceService implements AutoCloseable {
 
     private void storeSession(String username, String token) {
         try {
-            Files.createDirectories(SESSION_FILE.getParent());
-            mapper.writeValue(SESSION_FILE.toFile(), java.util.Map.of(
+            Files.createDirectories(sessionFile.getParent());
+            mapper.writeValue(sessionFile.toFile(), java.util.Map.of(
                     "username", username,
                     "token", token
             ));
@@ -102,7 +104,7 @@ public final class SessionPersistenceService implements AutoCloseable {
 
     private void deleteStoredSession() {
         try {
-            Files.deleteIfExists(SESSION_FILE);
+            Files.deleteIfExists(sessionFile);
         } catch (IOException ignored) {
         }
     }

@@ -47,7 +47,17 @@ public final class RestClient {
         headers.forEach(builder::header);
         HttpRequest request = builder.build();
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-        return parse(response);
+        return parseNode(response);
+    }
+
+    public <T> T get(String path, Map<String, String> headers, Class<T> type) throws IOException, InterruptedException {
+        HttpRequest.Builder builder = HttpRequest.newBuilder(baseUri.resolve(path))
+                .GET()
+                .timeout(Duration.ofSeconds(10));
+        headers.forEach(builder::header);
+        HttpRequest request = builder.build();
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        return parse(response, type);
     }
 
     public JsonNode post(String path, Map<String, Object> payload) throws IOException, InterruptedException {
@@ -57,6 +67,19 @@ public final class RestClient {
     public JsonNode post(String path,
                          Map<String, String> headers,
                          Map<String, Object> payload) throws IOException, InterruptedException {
+        return post(path, headers, payload, JsonNode.class);
+    }
+
+    public <T> T post(String path,
+                      Map<String, Object> payload,
+                      Class<T> type) throws IOException, InterruptedException {
+        return post(path, Collections.emptyMap(), payload, type);
+    }
+
+    public <T> T post(String path,
+                      Map<String, String> headers,
+                      Map<String, Object> payload,
+                      Class<T> type) throws IOException, InterruptedException {
         String body = objectMapper.writeValueAsString(payload);
         HttpRequest.Builder builder = HttpRequest.newBuilder(baseUri.resolve(path))
                 .timeout(Duration.ofSeconds(10))
@@ -64,7 +87,10 @@ public final class RestClient {
                 .POST(HttpRequest.BodyPublishers.ofString(body));
         headers.forEach(builder::header);
         HttpResponse<String> response = httpClient.send(builder.build(), HttpResponse.BodyHandlers.ofString());
-        return parse(response);
+        if (type == JsonNode.class) {
+            return type.cast(parseNode(response));
+        }
+        return parse(response, type);
     }
 
     public JsonNode delete(String path, Map<String, String> headers) throws IOException, InterruptedException {
@@ -73,20 +99,48 @@ public final class RestClient {
                 .DELETE();
         headers.forEach(builder::header);
         HttpResponse<String> response = httpClient.send(builder.build(), HttpResponse.BodyHandlers.ofString());
-        return parse(response);
+        return parseNode(response);
     }
 
-    private JsonNode parse(HttpResponse<String> response) throws IOException {
-        String body = response.body();
-        if (response.statusCode() >= 400) {
-            LOGGER.warn("Reponse HTTP {}: {}", response.statusCode(), body);
-            throw new IOException("HTTP " + response.statusCode() + ": " + body);
+    public <T> T delete(String path, Map<String, String> headers, Class<T> type) throws IOException, InterruptedException {
+        HttpRequest.Builder builder = HttpRequest.newBuilder(baseUri.resolve(path))
+                .timeout(Duration.ofSeconds(10))
+                .DELETE();
+        headers.forEach(builder::header);
+        HttpResponse<String> response = httpClient.send(builder.build(), HttpResponse.BodyHandlers.ofString());
+        if (type == JsonNode.class) {
+            return type.cast(parseNode(response));
         }
+        return parse(response, type);
+    }
+
+    private JsonNode parseNode(HttpResponse<String> response) throws IOException {
+        ensureSuccess(response);
+        String body = response.body();
         try {
             return objectMapper.readTree(body);
         } catch (IOException ex) {
             LOGGER.error("Impossible d'analyser la reponse HTTP {}: {}", response.statusCode(), body, ex);
             throw ex;
+        }
+    }
+
+    private <T> T parse(HttpResponse<String> response, Class<T> type) throws IOException {
+        ensureSuccess(response);
+        String body = response.body();
+        try {
+            return objectMapper.readValue(body, type);
+        } catch (IOException ex) {
+            LOGGER.error("Impossible de deserialiser la reponse HTTP {}: {}", response.statusCode(), body, ex);
+            throw ex;
+        }
+    }
+
+    private void ensureSuccess(HttpResponse<String> response) throws IOException {
+        if (response.statusCode() >= 400) {
+            String body = response.body();
+            LOGGER.warn("Reponse HTTP {}: {}", response.statusCode(), body);
+            throw new IOException("HTTP " + response.statusCode() + ": " + body);
         }
     }
 }

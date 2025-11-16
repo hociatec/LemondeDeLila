@@ -2,6 +2,7 @@ package com.lemondelila.client.settings;
 
 import com.lemondelila.client.settings.controller.OptionsController;
 import com.lemondelila.client.settings.service.AppSettingsService;
+import com.lemondelila.client.settings.storage.UserStoragePaths;
 import com.lemondelila.client.settings.update.UpdateService;
 import com.lemondelila.client.framework.core.context.ApplicationContext;
 import com.lemondelila.client.framework.core.module.LilaModule;
@@ -10,6 +11,7 @@ public final class SettingsModule implements LilaModule {
 
     @Override
     public void configure(ApplicationContext.Builder builder) {
+        builder.bindAuto(UserStoragePaths.class);
         builder.bindAuto(AppSettingsService.class);
         builder.bindAuto(UpdateService.class);
         builder.bindAuto(OptionsController.class);

@@ -19,6 +19,9 @@ import java.awt.Dimension;
 import java.awt.Window;
 import java.awt.Dialog.ModalityType;
 import java.awt.event.ActionEvent;
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 import static javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT;
@@ -27,10 +30,22 @@ import static javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW;
 
 public final class DialogService {
 
-    private Component parent;
+    private final Deque<Component> parentStack = new ArrayDeque<>();
 
-    public void attach(Component parent) {
-        this.parent = parent;
+    public AutoCloseable attach(Component parent) {
+        Objects.requireNonNull(parent, "parent");
+        synchronized (parentStack) {
+            parentStack.push(parent);
+        }
+        return () -> {
+            synchronized (parentStack) {
+                if (!parentStack.isEmpty() && parentStack.peek() == parent) {
+                    parentStack.pop();
+                } else {
+                    parentStack.removeFirstOccurrence(parent);
+                }
+            }
+        };
     }
 
     public void info(String title, String message) {
@@ -147,10 +162,17 @@ public final class DialogService {
     }
 
     private JDialog createDialog(JOptionPane pane, String title) {
-        Window window = parent instanceof Window w ? w : SwingUtilities.getWindowAncestor(parent);
-        JDialog dialog = pane.createDialog(window, title);
+        Component parent = currentParent();
+        Window window = parent instanceof Window w ? w : (parent != null ? SwingUtilities.getWindowAncestor(parent) : null);
+        JDialog dialog = (window != null) ? pane.createDialog(window, title) : pane.createDialog(title);
         configureDialog(dialog);
         return dialog;
+    }
+
+    private Component currentParent() {
+        synchronized (parentStack) {
+            return parentStack.peek();
+        }
     }
 
     private void configureDialog(JDialog dialog) {

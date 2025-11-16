@@ -1,6 +1,6 @@
 package com.lemondelila.client.user.controller;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.lemondelila.client.user.dto.LoginResponseDto;
 import com.lemondelila.client.user.events.LoginFailed;
 import com.lemondelila.client.user.events.LoginRequested;
 import com.lemondelila.client.user.events.LoginSucceeded;
@@ -44,11 +44,11 @@ public final class LoginController implements AutoCloseable {
         }
         scheduler.runAsync(() -> {
             try {
-                JsonNode response = restClient.post("login", Map.of(
+                LoginResponseDto response = restClient.post("login", Map.of(
                         "username", request.username(),
                         "password", String.valueOf(request.password())
-                ));
-                String token = response.path("token").asText();
+                ), LoginResponseDto.class);
+                String token = response.token();
                 if (token == null || token.isBlank()) {
                     throw new IOException("Token JWT absent dans la reponse");
                 }

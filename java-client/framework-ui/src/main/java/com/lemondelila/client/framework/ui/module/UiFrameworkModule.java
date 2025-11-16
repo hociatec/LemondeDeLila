@@ -5,6 +5,8 @@ import com.lemondelila.client.framework.core.module.LilaModule;
 import com.lemondelila.client.framework.ui.LilaFrame;
 import com.lemondelila.client.framework.ui.action.ActionManager;
 import com.lemondelila.client.framework.ui.dialog.DialogService;
+import com.lemondelila.client.framework.ui.lifecycle.ApplicationLifecycle;
+import com.lemondelila.client.framework.ui.lifecycle.DialogBackedApplicationLifecycle;
 import com.lemondelila.client.framework.ui.lifecycle.ShutdownManager;
 import com.lemondelila.client.framework.ui.menu.MenuFactory;
 import com.lemondelila.client.framework.ui.screen.ScreenManager;
@@ -19,6 +21,8 @@ public final class UiFrameworkModule implements LilaModule {
         builder.bindAuto(ScreenManager.class);
         builder.bindAuto(LilaFrame.class);
         builder.bindAuto(ShutdownManager.class);
+        builder.bindFactory(ApplicationLifecycle.class, ctx ->
+                new DialogBackedApplicationLifecycle(ctx.get(DialogService.class), ctx.get(ShutdownManager.class)));
     }
 
     @Override

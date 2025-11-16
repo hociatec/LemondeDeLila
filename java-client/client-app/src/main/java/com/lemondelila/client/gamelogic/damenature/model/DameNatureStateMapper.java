@@ -1,13 +1,21 @@
 package com.lemondelila.client.gamelogic.damenature.model;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.lemondelila.client.gamelogic.damenature.dto.DameNatureStateDto;
+import com.lemondelila.client.gamelogic.damenature.dto.DameNatureStateDto.CatalogDto;
+import com.lemondelila.client.gamelogic.damenature.dto.DameNatureStateDto.CardDefinitionDto;
+import com.lemondelila.client.gamelogic.damenature.dto.DameNatureStateDto.DangerCardDto;
+import com.lemondelila.client.gamelogic.damenature.dto.DameNatureStateDto.DeckDto;
+import com.lemondelila.client.gamelogic.damenature.dto.DameNatureStateDto.FamilyDto;
+import com.lemondelila.client.gamelogic.damenature.dto.DameNatureStateDto.FamilyMemberDto;
+import com.lemondelila.client.gamelogic.damenature.dto.DameNatureStateDto.HandCardDto;
+import com.lemondelila.client.gamelogic.damenature.dto.DameNatureStateDto.LogEntryDto;
+import com.lemondelila.client.gamelogic.damenature.dto.DameNatureStateDto.MetadataDto;
+import com.lemondelila.client.gamelogic.damenature.dto.DameNatureStateDto.PendingQuizDto;
+import com.lemondelila.client.gamelogic.damenature.dto.DameNatureStateDto.PlayerDto;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -16,68 +24,24 @@ public final class DameNatureStateMapper {
     private DameNatureStateMapper() {
     }
 
-    public static DameNatureState fromJson(JsonNode root) throws IOException {
-        if (root == null || !root.isObject()) {
+    public static DameNatureState fromDto(DameNatureStateDto dto) throws IOException {
+        if (dto == null) {
             throw new IOException("Etat Dame Nature invalide");
         }
 
-        String type = root.path("type").asText("dame-nature");
-        String status = root.path("status").asText("playing");
-        int turnIndex = root.path("turnIndex").asInt(0);
-        int round = root.path("round").asInt(1);
-        int pollution = root.path("pollution").asInt(0);
-        int maxPollution = root.path("metadata").path("maxPollution").asInt(12);
+        String type = defaultString(dto.type(), "dame-nature");
+        String status = defaultString(dto.status(), "playing");
+        int turnIndex = dto.turnIndex();
+        int round = dto.round();
+        int pollution = dto.pollution();
+        int maxPollution = extractMaxPollution(dto.metadata());
 
-        DameNatureState.Deck deck = new DameNatureState.Deck(root.path("deck").path("remaining").asInt(0));
-
-        List<DameNatureState.Player> players = new ArrayList<>();
-        ArrayNode playersNode = root.withArray("players");
-        for (JsonNode playerNode : playersNode) {
-            int id = playerNode.path("id").asInt();
-            String username = playerNode.path("username").asText("?");
-            int handCount = playerNode.path("handCount").asInt(playerNode.withArray("hand").size());
-            List<DameNatureState.HandCard> hand = new ArrayList<>();
-            for (JsonNode cardNode : playerNode.withArray("hand")) {
-                hand.add(new DameNatureState.HandCard(
-                        cardNode.path("code").asText(),
-                        cardNode.path("type").asText(),
-                        nullIfBlank(cardNode.path("familyId").asText(null)),
-                        nullIfBlank(cardNode.path("familyName").asText(null)),
-                        nullIfBlank(cardNode.path("memberName").asText(null)),
-                        nullIfBlank(cardNode.path("role").asText(null))
-                ));
-            }
-            List<String> books = new ArrayList<>();
-            for (JsonNode bookNode : playerNode.withArray("books")) {
-                books.add(bookNode.asText());
-            }
-            boolean isBot = playerNode.path("isBot").asBoolean(false);
-            players.add(new DameNatureState.Player(id, username, handCount, hand, books, isBot));
-        }
-
-        DameNatureState.PendingQuiz pendingQuiz = null;
-        JsonNode quizNode = root.path("pendingQuiz");
-        if (quizNode.isObject() && quizNode.path("question").isTextual()) {
-            List<String> choices = new ArrayList<>();
-            for (JsonNode choice : quizNode.withArray("choices")) {
-                choices.add(choice.asText());
-            }
-            pendingQuiz = new DameNatureState.PendingQuiz(
-                    quizNode.path("question").asText(),
-                    choices
-            );
-        }
-
-        List<DameNatureState.LogEntry> logEntries = new ArrayList<>();
-        for (JsonNode logNode : root.withArray("log")) {
-            logEntries.add(new DameNatureState.LogEntry(
-                    logNode.path("message").asText(""),
-                    logNode.path("type").asText("info")
-            ));
-        }
-
-        DameNatureState.Catalog catalog = parseCatalog(root.path("catalog"));
-        Map<String, DameNatureState.CardDefinition> cards = parseCardDefinitions(root.path("cards"));
+        DameNatureState.Deck deck = new DameNatureState.Deck(extractRemaining(dto.deck()));
+        List<DameNatureState.Player> players = mapPlayers(dto.players());
+        DameNatureState.PendingQuiz pendingQuiz = mapQuiz(dto.pendingQuiz());
+        List<DameNatureState.LogEntry> logEntries = mapLog(dto.log());
+        DameNatureState.Catalog catalog = mapCatalog(dto.catalog());
+        Map<String, DameNatureState.CardDefinition> cards = mapCards(dto.cards());
 
         return new DameNatureState(
                 type,
@@ -95,52 +59,166 @@ public final class DameNatureStateMapper {
         );
     }
 
-    private static DameNatureState.Catalog parseCatalog(JsonNode catalogNode) {
-        List<DameNatureState.Family> families = new ArrayList<>();
-        for (JsonNode familyNode : catalogNode.withArray("families")) {
-            String familyId = familyNode.path("id").asText();
-            String familyName = familyNode.path("name").asText(familyId);
-            List<DameNatureState.FamilyMember> members = new ArrayList<>();
-            for (JsonNode memberNode : familyNode.withArray("members")) {
-                members.add(new DameNatureState.FamilyMember(
-                        memberNode.path("id").asText(),
-                        memberNode.path("name").asText(),
-                        memberNode.path("role").asText()
-                ));
-            }
-            families.add(new DameNatureState.Family(familyId, familyName, members));
-        }
+    private static int extractMaxPollution(MetadataDto metadata) {
+        return metadata == null ? 12 : Math.max(0, metadata.maxPollution());
+    }
 
-        List<DameNatureState.DangerCard> dangerCards = new ArrayList<>();
-        for (JsonNode dangerNode : catalogNode.withArray("dangerCards")) {
-            dangerCards.add(new DameNatureState.DangerCard(
-                    dangerNode.path("id").asText(),
-                    dangerNode.path("name").asText(),
-                    dangerNode.path("pollutionDelta").asInt()
+    private static int extractRemaining(DeckDto deck) {
+        return deck == null ? 0 : Math.max(0, deck.remaining());
+    }
+
+    private static List<DameNatureState.Player> mapPlayers(List<PlayerDto> dtos) {
+        if (dtos == null || dtos.isEmpty()) {
+            return List.of();
+        }
+        List<DameNatureState.Player> players = new ArrayList<>(dtos.size());
+        for (PlayerDto dto : dtos) {
+            if (dto == null) {
+                continue;
+            }
+            int id = dto.id();
+            String username = defaultString(dto.username(), "?");
+            List<DameNatureState.HandCard> hand = mapHand(dto.hand());
+            int handCount = dto.handCount() > 0 ? dto.handCount() : hand.size();
+            List<String> books = dto.books() == null ? List.of() : List.copyOf(dto.books());
+            players.add(new DameNatureState.Player(id, username, handCount, hand, books, dto.isBot()));
+        }
+        return List.copyOf(players);
+    }
+
+    private static List<DameNatureState.HandCard> mapHand(List<HandCardDto> cards) {
+        if (cards == null || cards.isEmpty()) {
+            return List.of();
+        }
+        List<DameNatureState.HandCard> hand = new ArrayList<>(cards.size());
+        for (HandCardDto card : cards) {
+            if (card == null) {
+                continue;
+            }
+            hand.add(new DameNatureState.HandCard(
+                    card.code(),
+                    card.type(),
+                    nullIfBlank(card.familyId()),
+                    nullIfBlank(card.familyName()),
+                    nullIfBlank(card.memberName()),
+                    nullIfBlank(card.role())
             ));
         }
+        return List.copyOf(hand);
+    }
 
+    private static DameNatureState.PendingQuiz mapQuiz(PendingQuizDto quiz) {
+        if (quiz == null || quiz.question() == null || quiz.question().isBlank()) {
+            return null;
+        }
+        List<String> choices = quiz.choices() == null ? List.of() : List.copyOf(quiz.choices());
+        return new DameNatureState.PendingQuiz(quiz.question(), choices);
+    }
+
+    private static List<DameNatureState.LogEntry> mapLog(List<LogEntryDto> entries) {
+        if (entries == null || entries.isEmpty()) {
+            return List.of();
+        }
+        List<DameNatureState.LogEntry> logEntries = new ArrayList<>(entries.size());
+        for (LogEntryDto entry : entries) {
+            if (entry == null) {
+                continue;
+            }
+            logEntries.add(new DameNatureState.LogEntry(
+                    defaultString(entry.message(), ""),
+                    defaultString(entry.type(), "info")
+            ));
+        }
+        return List.copyOf(logEntries);
+    }
+
+    private static DameNatureState.Catalog mapCatalog(CatalogDto dto) {
+        if (dto == null) {
+            return new DameNatureState.Catalog(List.of(), List.of());
+        }
+        List<DameNatureState.Family> families = mapFamilies(dto.families());
+        List<DameNatureState.DangerCard> dangerCards = mapDangerCards(dto.dangerCards());
         return new DameNatureState.Catalog(families, dangerCards);
     }
 
-    private static Map<String, DameNatureState.CardDefinition> parseCardDefinitions(JsonNode node) {
-        Map<String, DameNatureState.CardDefinition> map = new HashMap<>();
-        if (node instanceof ObjectNode objectNode) {
-            Iterator<Map.Entry<String, JsonNode>> fields = objectNode.fields();
-            while (fields.hasNext()) {
-                Map.Entry<String, JsonNode> entry = fields.next();
-                JsonNode value = entry.getValue();
-                map.put(entry.getKey(), new DameNatureState.CardDefinition(
-                        value.path("type").asText(),
-                        value.path("familyId").asText(null),
-                        value.path("familyName").asText(null),
-                        value.path("memberId").asText(null),
-                        value.path("memberName").asText(null),
-                        value.path("role").asText(null)
-                ));
-            }
+    private static List<DameNatureState.Family> mapFamilies(List<FamilyDto> families) {
+        if (families == null || families.isEmpty()) {
+            return List.of();
         }
-        return map;
+        List<DameNatureState.Family> mapped = new ArrayList<>(families.size());
+        for (FamilyDto family : families) {
+            if (family == null) {
+                continue;
+            }
+            List<DameNatureState.FamilyMember> members = mapMembers(family.members());
+            mapped.add(new DameNatureState.Family(
+                    family.id(),
+                    defaultString(family.name(), family.id()),
+                    members
+            ));
+        }
+        return List.copyOf(mapped);
+    }
+
+    private static List<DameNatureState.FamilyMember> mapMembers(List<FamilyMemberDto> members) {
+        if (members == null || members.isEmpty()) {
+            return List.of();
+        }
+        List<DameNatureState.FamilyMember> mapped = new ArrayList<>(members.size());
+        for (FamilyMemberDto member : members) {
+            if (member == null) {
+                continue;
+            }
+            mapped.add(new DameNatureState.FamilyMember(
+                    member.id(),
+                    member.name(),
+                    member.role()
+            ));
+        }
+        return List.copyOf(mapped);
+    }
+
+    private static List<DameNatureState.DangerCard> mapDangerCards(List<DangerCardDto> cards) {
+        if (cards == null || cards.isEmpty()) {
+            return List.of();
+        }
+        List<DameNatureState.DangerCard> mapped = new ArrayList<>(cards.size());
+        for (DangerCardDto card : cards) {
+            if (card == null) {
+                continue;
+            }
+            mapped.add(new DameNatureState.DangerCard(
+                    card.id(),
+                    card.name(),
+                    card.pollutionDelta()
+            ));
+        }
+        return List.copyOf(mapped);
+    }
+
+    private static Map<String, DameNatureState.CardDefinition> mapCards(Map<String, CardDefinitionDto> cards) {
+        if (cards == null || cards.isEmpty()) {
+            return Map.of();
+        }
+        Map<String, DameNatureState.CardDefinition> mapped = new HashMap<>();
+        cards.forEach((code, definition) -> {
+            if (definition == null) {
+                return;
+            }
+            mapped.put(code, new DameNatureState.CardDefinition(
+                    definition.type(),
+                    definition.familyId(),
+                    definition.familyName(),
+                    definition.memberId(),
+                    definition.memberName(),
+                    definition.role()
+            ));
+        });
+        return Map.copyOf(mapped);
+    }
+
+    private static String defaultString(String value, String fallback) {
+        return value == null || value.isBlank() ? fallback : value;
     }
 
     private static String nullIfBlank(String value) {

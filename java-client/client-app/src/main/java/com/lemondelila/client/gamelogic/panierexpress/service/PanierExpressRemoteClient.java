@@ -1,11 +1,10 @@
 package com.lemondelila.client.gamelogic.panierexpress.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.lemondelila.client.gamelogic.panierexpress.model.PanierExpressGameOptions;
 import com.lemondelila.client.gamelogic.panierexpress.model.PanierExpressSession;
 import com.lemondelila.client.gamelogic.panierexpress.model.PanierExpressState;
 import com.lemondelila.client.gamelogic.panierexpress.model.PanierExpressStateMapper;
-import com.lemondelila.client.gamelogic.panierexpress.service.PanierExpressCommands;
+import com.lemondelila.client.gamelogic.panierexpress.dto.PanierExpressStateDto;
 import com.lemondelila.client.game.model.GameSessionManager;
 import com.lemondelila.client.game.service.RoomBotRemoteClient;
 import com.lemondelila.client.user.model.ClientSession;
@@ -89,16 +88,25 @@ public final class PanierExpressRemoteClient extends RemoteGameServiceSupport
     private CompletableFuture<PanierExpressSession> sendAction(int roomId,
                                                                Map<String, Object> payload) {
         return supplyAsync(() -> {
-            JsonNode node = restClient.post(GAME_PATH + "/rooms/" + roomId + "/move", authHeaders(), payload);
-            PanierExpressState state = PanierExpressStateMapper.fromJson(node);
+            PanierExpressStateDto dto = restClient.post(
+                    GAME_PATH + "/rooms/" + roomId + "/move",
+                    authHeaders(),
+                    payload,
+                    PanierExpressStateDto.class
+            );
+            PanierExpressState state = PanierExpressStateMapper.fromDto(dto);
             return new PanierExpressSession(roomId, state);
         });
     }
 
     private PanierExpressState fetchStateInternal(int roomId,
                                                   Map<String, String> headers) throws IOException, InterruptedException {
-        JsonNode node = restClient.get(GAME_PATH + "/rooms/" + roomId + "/state", headers);
-        return PanierExpressStateMapper.fromJson(node);
+        PanierExpressStateDto dto = restClient.get(
+                GAME_PATH + "/rooms/" + roomId + "/state",
+                headers,
+                PanierExpressStateDto.class
+        );
+        return PanierExpressStateMapper.fromDto(dto);
     }
 
     private CompletableFuture<Void> addBotsForRoom(int roomId, int botCount) {

@@ -1,0 +1,7 @@
+com\lemondelila\client\framework\core\config\ConfigurationService.class
+com\lemondelila\client\framework\core\event\DomainEventBus.class
+com\lemondelila\client\framework\core\module\FrameworkCoreModule.class
+com\lemondelila\client\framework\core\task\TaskScheduler$FrameworkThreadFactory.class
+com\lemondelila\client\framework\core\event\DomainEventBus$Subscriber.class
+com\lemondelila\client\framework\core\task\TaskScheduler.class
+com\lemondelila\client\framework\core\module\LilaModule.class

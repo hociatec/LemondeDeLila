@@ -18,7 +18,7 @@ import java.util.function.Supplier;
 /**
  * Centralise la narration et les effets sonores liés à Panier Express.
  */
-final class PanierExpressVoiceFeedback {
+public final class PanierExpressVoiceFeedback {
 
     private final Supplier<NarrationQueue> narrationQueueSupplier;
     private final SoundEffectManager sounds;
@@ -34,9 +34,9 @@ final class PanierExpressVoiceFeedback {
     private int lastLogSize;
     private int turnReminderCounter;
 
-    PanierExpressVoiceFeedback(Supplier<NarrationQueue> narrationQueueSupplier,
-                               SoundEffectManager sounds,
-                               Supplier<JComponent> componentSupplier) {
+    public PanierExpressVoiceFeedback(Supplier<NarrationQueue> narrationQueueSupplier,
+                                      SoundEffectManager sounds,
+                                      Supplier<JComponent> componentSupplier) {
         this.narrationQueueSupplier = Objects.requireNonNull(narrationQueueSupplier, "narrationQueueSupplier");
         this.sounds = Objects.requireNonNull(sounds, "sounds");
         this.componentSupplier = Objects.requireNonNull(componentSupplier, "componentSupplier");

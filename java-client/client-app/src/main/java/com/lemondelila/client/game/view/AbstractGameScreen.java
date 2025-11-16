@@ -5,19 +5,19 @@ import com.lemondelila.client.framework.ui.screen.Screen;
 import com.lemondelila.client.framework.ui.screen.ScreenContext;
 import com.lemondelila.client.framework.ui.screen.ScreenId;
 import com.lemondelila.client.framework.ui.screen.ScreenManager;
-import com.lemondelila.client.game.controller.GameInteractionController;
+import com.lemondelila.client.game.controller.GameActionState;
 
 import javax.swing.JPanel;
 
 public abstract class AbstractGameScreen extends JPanel implements Screen {
 
     private final ScreenId id;
-    private GameInteractionController interactionController;
     private ScreenManager screenManager;
+    private GameActionState gameActionState;
 
-    protected AbstractGameScreen(ScreenId id, GameInteractionController interactionController) {
+    protected AbstractGameScreen(ScreenId id, GameActionState actionState) {
         this.id = id;
-        this.interactionController = interactionController;
+        this.gameActionState = actionState;
     }
 
     @Override
@@ -32,16 +32,16 @@ public abstract class AbstractGameScreen extends JPanel implements Screen {
     @Override
     public void onShow(ScreenContext context) {
         this.screenManager = context.screenManager();
-        if (interactionController != null) {
-            interactionController.setEnabled(true);
+        if (gameActionState != null) {
+            gameActionState.setEnabled(true);
         }
     }
 
     @Override
     public void onHide(ScreenContext context) {
         this.screenManager = null;
-        if (interactionController != null) {
-            interactionController.setEnabled(false);
+        if (gameActionState != null) {
+            gameActionState.setEnabled(false);
         }
     }
 
@@ -64,7 +64,14 @@ public abstract class AbstractGameScreen extends JPanel implements Screen {
         // default no-op; concrete screens can override to update their status UI
     }
 
-    protected void bindInteractionController(GameInteractionController controller) {
-        this.interactionController = controller;
+    protected GameActionState ensureGameActionState() {
+        if (gameActionState == null) {
+            gameActionState = new GameActionState();
+        }
+        return gameActionState;
+    }
+
+    protected void bindGameActionState(GameActionState actionState) {
+        this.gameActionState = actionState;
     }
 }
