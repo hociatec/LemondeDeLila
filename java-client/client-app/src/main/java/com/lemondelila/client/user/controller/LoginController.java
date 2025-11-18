@@ -7,6 +7,7 @@ import com.lemondelila.client.user.events.LoginSucceeded;
 import com.lemondelila.client.user.model.ClientSession;
 import com.lemondelila.client.framework.core.di.Inject;
 import com.lemondelila.client.framework.core.event.DomainEventBus;
+import com.lemondelila.client.framework.core.event.EventSubscriptions;
 import com.lemondelila.client.framework.core.task.TaskScheduler;
 import com.lemondelila.client.framework.network.rest.RestClient;
 
@@ -20,7 +21,7 @@ public final class LoginController implements AutoCloseable {
     private final TaskScheduler scheduler;
     private final ClientSession session;
     private final UserOperationGuard guard;
-    private final AutoCloseable subscription;
+    private final EventSubscriptions subscriptions = new EventSubscriptions();
 
     @Inject
     public LoginController(DomainEventBus eventBus,
@@ -33,7 +34,7 @@ public final class LoginController implements AutoCloseable {
         this.scheduler = scheduler;
         this.session = session;
         this.guard = guard;
-        this.subscription = eventBus.subscribe(LoginRequested.class, this::handleLogin);
+        subscriptions.subscribe(eventBus, LoginRequested.class, this::handleLogin);
     }
 
     private void handleLogin(LoginRequested request) {
@@ -73,9 +74,7 @@ public final class LoginController implements AutoCloseable {
 
     @Override
     public void close() throws Exception {
-        if (subscription != null) {
-            subscription.close();
-        }
+        subscriptions.close();
         session.clear();
     }
 }

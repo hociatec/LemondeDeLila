@@ -1,5 +1,6 @@
 package com.lemondelila.client.user.view;
 
+import com.lemondelila.client.application.Internationalization;
 import com.lemondelila.client.framework.access.AccessibleDecorator;
 import com.lemondelila.client.framework.access.AccessibleSpec;
 import com.lemondelila.client.framework.access.FocusHighlighter;
@@ -22,42 +23,42 @@ public final class LoginFormPanel extends JPanel {
 
     private final JTextField usernameField = new JTextField();
     private final JPasswordField passwordField = new JPasswordField();
-    private final JButton submitButton = new JButton("Se connecter");
-    private final JButton backButton = new JButton("Retour a l'accueil");
+    private final JButton submitButton = new JButton(Internationalization.text("home.login.submit"));
+    private final JButton backButton = new JButton(Internationalization.text("home.login.back"));
 
     public LoginFormPanel(FocusHighlighter focusHighlighter) {
         setOpaque(false);
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-        JLabel usernameLabel = new JLabel("Nom d'utilisateur");
+        JLabel usernameLabel = new JLabel(Internationalization.text("home.login.username.label"));
         AccessibleDecorator.apply(usernameLabel, AccessibleSpec.builder()
-                .name("Nom d'utilisateur")
-                .description("Champ pour saisir votre identifiant")
+                .name(Internationalization.text("home.login.username.label"))
+                .description(Internationalization.text("home.login.username.desc"))
                 .build());
         add(usernameLabel);
 
         usernameField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 32));
         focusHighlighter.apply(usernameField);
         AccessibleDecorator.apply(usernameField, AccessibleSpec.builder()
-                .name("Champ nom d'utilisateur")
-                .description("Saisissez votre identifiant de connexion")
+                .name(Internationalization.text("home.login.username.field"))
+                .description(Internationalization.text("home.login.username.field.desc"))
                 .build());
         add(usernameField);
 
         add(Box.createRigidArea(new Dimension(0, 16)));
 
-        JLabel passwordLabel = new JLabel("Mot de passe");
+        JLabel passwordLabel = new JLabel(Internationalization.text("home.login.password.label"));
         AccessibleDecorator.apply(passwordLabel, AccessibleSpec.builder()
-                .name("Mot de passe")
-                .description("Champ pour saisir votre mot de passe")
+                .name(Internationalization.text("home.login.password.label"))
+                .description(Internationalization.text("home.login.password.desc"))
                 .build());
         add(passwordLabel);
 
         passwordField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 32));
         focusHighlighter.apply(passwordField);
         AccessibleDecorator.apply(passwordField, AccessibleSpec.builder()
-                .name("Champ mot de passe")
-                .description("Saisissez votre mot de passe")
+                .name(Internationalization.text("home.login.password.field"))
+                .description(Internationalization.text("home.login.password.field.desc"))
                 .build());
         add(passwordField);
 
@@ -65,7 +66,8 @@ public final class LoginFormPanel extends JPanel {
 
         submitButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         AccessibleDecorator.apply(submitButton, AccessibleSpec.builder()
-                .name("Bouton valider la connexion")
+                .name(Internationalization.text("home.login.submit.name"))
+                .description(Internationalization.text("home.login.submit.desc"))
                 .shortcut("Alt+C")
                 .build());
         ButtonUtils.enterActivates(submitButton);
@@ -75,7 +77,8 @@ public final class LoginFormPanel extends JPanel {
 
         backButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         AccessibleDecorator.apply(backButton, AccessibleSpec.builder()
-                .name("Retour accueil")
+                .name(Internationalization.text("home.login.back.name"))
+                .description(Internationalization.text("home.login.back.desc"))
                 .shortcut("Alt+R")
                 .build());
         ButtonUtils.enterActivates(backButton);

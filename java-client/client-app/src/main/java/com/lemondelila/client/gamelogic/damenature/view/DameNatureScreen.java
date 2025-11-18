@@ -1,5 +1,6 @@
 package com.lemondelila.client.gamelogic.damenature.view;
 
+import com.lemondelila.client.application.Internationalization;
 import com.lemondelila.client.catalogue.model.GameSummary;
 import com.lemondelila.client.catalogue.view.CatalogScreen;
 import com.lemondelila.client.catalogue.service.GameRulesService;
@@ -22,6 +23,7 @@ import com.lemondelila.client.gamelogic.damenature.model.DameNatureConfig;
 import com.lemondelila.client.gamelogic.damenature.model.DameNatureSession;
 import com.lemondelila.client.gamelogic.damenature.model.DameNatureState;
 import com.lemondelila.client.gamelogic.damenature.presenter.DameNaturePresenter;
+import com.lemondelila.client.gamelogic.damenature.presenter.DameNatureScreenPresenter;
 
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -42,11 +44,11 @@ public final class DameNatureScreen extends AbstractGameScreen implements DameNa
 
     private static final GameSummary GAME_SUMMARY = new GameSummary(
             "dame-nature",
-            "Dame Nature",
+            Internationalization.text("damenature.name"),
             1,
             4,
             "damenature",
-            "Rassemblez les familles de cartes nature avant vos adversaires.",
+            Internationalization.text("damenature.summary"),
             true,
             List.of("jeux-de-cartes")
     );
@@ -71,8 +73,7 @@ public final class DameNatureScreen extends AbstractGameScreen implements DameNa
     private final DameNatureConfigPanel configView;
     private final DameNatureGameplayPanel gameplayView;
     private final DameNaturePresenter presenter;
-
-    private final java.util.function.Consumer<DameNatureSession> sessionListener;
+    private final DameNatureScreenPresenter screenPresenter;
     private AutoCloseable dialogBinding;
 
     public DameNatureScreen(DameNatureController controller,
@@ -87,9 +88,7 @@ public final class DameNatureScreen extends AbstractGameScreen implements DameNa
         this.dialogService = Objects.requireNonNull(dialogService, "dialogService");
         this.configView = new DameNatureConfigPanel(new ConfigListener());
         this.gameplayView = new DameNatureGameplayPanel(accessibilityService);
-        this.presenter = new DameNaturePresenter(controller, accessibilityService, configView, gameplayView, this);
-        this.sessionListener = presenter::applySession;
-        buildUi();
+        this.presenter = new DameNaturePresenter(controller, accessibilityService, configView, gameplayView, this);\n        this.screenPresenter = new DameNatureScreenPresenter(controller, presenter);\n        this.screenPresenter.bind(this);\n        buildUi();
         this.gameActionState = ensureGameActionState();
         this.shortcutBinder = new ShortcutBinder(shortcutRegistry,
                 () -> mode == Mode.GAMEPLAY && gameActionState.isEnabled(),
@@ -157,24 +156,24 @@ public final class DameNatureScreen extends AbstractGameScreen implements DameNa
     private void installGlobalKeyBindings() {
         resetShortcutScopes();
         shortcutScope = shortcutRegistry.openScope();
-        shortcutBinder.registerStroke("ENTER", "damenature-draw", "Entree : piocher une carte.", e -> presenter.triggerDraw());
-        shortcutBinder.registerStroke("UP", "damenature-target-prev", "Fleche haut : selectionner l'adversaire precedent.", e -> announce(gameplayView.cycleTarget(-1)));
-        shortcutBinder.registerStroke("DOWN", "damenature-target-next", "Fleche bas : selectionner l'adversaire suivant.", e -> announce(gameplayView.cycleTarget(1)));
-        shortcutBinder.registerStroke("LEFT", "damenature-card-prev", "Fleche gauche : choisir la carte precedente a demander.", e -> announce(gameplayView.cycleCard(-1)));
-        shortcutBinder.registerStroke("RIGHT", "damenature-card-next", "Fleche droite : choisir la carte suivante a demander.", e -> announce(gameplayView.cycleCard(1)));
-        shortcutBinder.registerLetter('e', "damenature-request", "Lettre E : demander une carte a l'adversaire selectionne.", e -> presenter.sendAskAction());
-        shortcutBinder.registerLetter('r', "damenature-refresh", "Lettre R : actualiser l'etat de la partie.", e -> presenter.refreshGame());
-        shortcutBinder.registerLetter('c', "damenature-open-config", "Lettre C : ouvrir la configuration.", e -> presenter.openConfiguration());
+        shortcutBinder.registerStroke("ENTER", "damenature-draw", Internationalization.text("damenature.shortcut.enter"), e -> presenter.triggerDraw());
+        shortcutBinder.registerStroke("UP", "damenature-target-prev", Internationalization.text("damenature.shortcut.up"), e -> announce(gameplayView.cycleTarget(-1)));
+        shortcutBinder.registerStroke("DOWN", "damenature-target-next", Internationalization.text("damenature.shortcut.down"), e -> announce(gameplayView.cycleTarget(1)));
+        shortcutBinder.registerStroke("LEFT", "damenature-card-prev", Internationalization.text("damenature.shortcut.left"), e -> announce(gameplayView.cycleCard(-1)));
+        shortcutBinder.registerStroke("RIGHT", "damenature-card-next", Internationalization.text("damenature.shortcut.right"), e -> announce(gameplayView.cycleCard(1)));
+        shortcutBinder.registerLetter('e', "damenature-request", Internationalization.text("damenature.shortcut.request"), e -> presenter.sendAskAction());
+        shortcutBinder.registerLetter('r', "damenature-refresh", Internationalization.text("damenature.shortcut.refresh"), e -> presenter.refreshGame());
+        shortcutBinder.registerLetter('c', "damenature-open-config", Internationalization.text("damenature.shortcut.config"), e -> presenter.openConfiguration());
 
         for (int i = 0; i < 9; i++) {
             char digit = (char) ('1' + i);
             final int index = i;
             shortcutBinder.registerStroke(String.valueOf(digit), "damenature-quiz-" + digit,
-                    "Chiffre " + digit + " : repondre au quiz avec l'option " + (i + 1) + ".", e -> presenter.answerQuiz(index));
+                    Internationalization.text("damenature.shortcut.quiz", String.valueOf(digit), i + 1), e -> presenter.answerQuiz(index));
         }
 
         JTextArea historyComponent = gameplayView.historyComponent();
-        shortcutBinder.registerStroke("TAB", "damenature-focus-history", "Tab : consulter l'historique de la partie.", e ->
+        shortcutBinder.registerStroke("TAB", "damenature-focus-history", Internationalization.text("damenature.shortcut.history"), e ->
                 SwingUtilities.invokeLater(() -> {
                     historyComponent.requestFocusInWindow();
                     historyComponent.setCaretPosition(historyComponent.getDocument().getLength());
@@ -243,15 +242,13 @@ public final class DameNatureScreen extends AbstractGameScreen implements DameNa
         super.onShow(context);
         bindDialogService();
         installGlobalKeyBindings();
-        controller.addListener(sessionListener);
-        presenter.onShow();
+        screenPresenter.onShow();
     }
 
     @Override
     public void onHide(ScreenContext context) {
         super.onHide(context);
-        controller.removeListener(sessionListener);
-        presenter.onHide();
+        screenPresenter.onHide();
         resetShortcutScopes();
         releaseDialogBinding();
     }
@@ -285,9 +282,9 @@ public final class DameNatureScreen extends AbstractGameScreen implements DameNa
 
     private static String decorateBot(String base, boolean isBot) {
         if (base == null || base.isBlank()) {
-            return isBot ? "Bot" : "";
+            return isBot ? Internationalization.text("damenature.bot.only") : "";
         }
-        return isBot ? base + " (bot)" : base;
+        return isBot ? base + Internationalization.text("damenature.bot.suffix") : base;
     }
 
     private CompletableFuture<Void> addBotCommand() {
@@ -316,5 +313,6 @@ public final class DameNatureScreen extends AbstractGameScreen implements DameNa
         }
     }
 }
+
 
 

@@ -1,5 +1,6 @@
 package com.lemondelila.client.application.view.menu;
 
+import com.lemondelila.client.application.Internationalization;
 import com.lemondelila.client.application.view.home.HomeScreen;
 import com.lemondelila.client.framework.ui.ControllerResult;
 import com.lemondelila.client.framework.ui.dialog.DialogService;
@@ -67,7 +68,7 @@ final class MainMenuPresenter {
 
     void onShow(ScreenManager manager) {
         this.screenManager = manager;
-        setStatus("Pret.");
+        setStatus(Internationalization.text("mainmenu.status.ready"));
         audio.playAppLaunch();
         audio.startBackground();
         SwingUtilities.invokeLater(view::focusFirstButton);
@@ -80,7 +81,7 @@ final class MainMenuPresenter {
 
     private void registerHandlers() {
         view.shelvesButton().addActionListener(e -> onMenuSelected(this::openCatalog));
-        view.joinGameButton().addActionListener(e -> onMenuSelected(() -> featureSoon("Rejoindre une partie")));
+        view.joinGameButton().addActionListener(e -> onMenuSelected(() -> featureSoon(Internationalization.text("mainmenu.join"))));
         view.chatButton().addActionListener(e -> onMenuSelected(this::openChat));
         view.socialButton().addActionListener(e -> onMenuSelected(this::openSocial));
         view.optionsButton().addActionListener(e -> onMenuSelected(this::openOptions));
@@ -148,8 +149,10 @@ final class MainMenuPresenter {
     }
 
     private void featureSoon(String feature) {
-        dialogService.info("Bientot disponible", feature + " sera disponible prochainement.");
-        setStatus("Fonctionnalite \"" + feature + "\" en cours de developpement.");
+        dialogService.info(
+                Internationalization.text("mainmenu.feature.soon.title"),
+                Internationalization.text("mainmenu.feature.soon.body", feature));
+        setStatus(Internationalization.text("mainmenu.feature.soon.status", feature));
     }
 
     private void openPresenceDialog() {
@@ -194,7 +197,7 @@ final class MainMenuPresenter {
         session.clear();
         eventBus.publish(new UserLoggedOut(username));
         audio.playSelect();
-        setStatus("Deconnecte.");
+        setStatus(Internationalization.text("mainmenu.status.loggedout"));
         showScreen(HomeScreen.ID);
     }
 
@@ -202,7 +205,9 @@ final class MainMenuPresenter {
         if (session.authenticated().isPresent()) {
             return true;
         }
-        dialogService.error("Authentification requise", "Veuillez vous reconnecter pour acceder a ce module.");
+        dialogService.error(
+                Internationalization.text("mainmenu.auth.required.title"),
+                Internationalization.text("mainmenu.auth.required.body"));
         showScreen(HomeScreen.ID);
         return false;
     }

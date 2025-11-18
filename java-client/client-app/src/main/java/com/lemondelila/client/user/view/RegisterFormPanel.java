@@ -1,5 +1,6 @@
 package com.lemondelila.client.user.view;
 
+import com.lemondelila.client.application.Internationalization;
 import com.lemondelila.client.framework.access.AccessibleDecorator;
 import com.lemondelila.client.framework.access.AccessibleSpec;
 import com.lemondelila.client.framework.access.FocusHighlighter;
@@ -23,59 +24,59 @@ public final class RegisterFormPanel extends JPanel {
     private final JTextField usernameField = new JTextField();
     private final JTextField emailField = new JTextField();
     private final JPasswordField passwordField = new JPasswordField();
-    private final JButton submitButton = new JButton("Valider l'inscription");
-    private final JButton backButton = new JButton("Retour a l'accueil");
+    private final JButton submitButton = new JButton(Internationalization.text("home.register.submit"));
+    private final JButton backButton = new JButton(Internationalization.text("home.register.back"));
 
     public RegisterFormPanel(FocusHighlighter focusHighlighter) {
         setOpaque(false);
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-        JLabel usernameLabel = new JLabel("Nom d'utilisateur");
+        JLabel usernameLabel = new JLabel(Internationalization.text("home.register.username.label"));
         AccessibleDecorator.apply(usernameLabel, AccessibleSpec.builder()
-                .name("Nom d'utilisateur")
-                .description("Champ pour saisir le nom affiche")
+                .name(Internationalization.text("home.register.username.label"))
+                .description(Internationalization.text("home.register.username.desc"))
                 .build());
         add(usernameLabel);
 
         usernameField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 32));
         focusHighlighter.apply(usernameField);
         AccessibleDecorator.apply(usernameField, AccessibleSpec.builder()
-                .name("Champ nom d'utilisateur")
-                .description("Saisissez le nom d'utilisateur souhaite")
+                .name(Internationalization.text("home.register.username.field"))
+                .description(Internationalization.text("home.register.username.field.desc"))
                 .build());
         add(usernameField);
 
         add(Box.createRigidArea(new Dimension(0, 16)));
 
-        JLabel emailLabel = new JLabel("Adresse e-mail");
+        JLabel emailLabel = new JLabel(Internationalization.text("home.register.email.label"));
         AccessibleDecorator.apply(emailLabel, AccessibleSpec.builder()
-                .name("Adresse e-mail")
-                .description("Champ pour saisir votre adresse e-mail")
+                .name(Internationalization.text("home.register.email.label"))
+                .description(Internationalization.text("home.register.email.desc"))
                 .build());
         add(emailLabel);
 
         emailField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 32));
         focusHighlighter.apply(emailField);
         AccessibleDecorator.apply(emailField, AccessibleSpec.builder()
-                .name("Champ adresse e-mail")
-                .description("Saisissez votre e-mail pour creer le compte")
+                .name(Internationalization.text("home.register.email.field"))
+                .description(Internationalization.text("home.register.email.field.desc"))
                 .build());
         add(emailField);
 
         add(Box.createRigidArea(new Dimension(0, 16)));
 
-        JLabel passwordLabel = new JLabel("Mot de passe");
+        JLabel passwordLabel = new JLabel(Internationalization.text("home.register.password.label"));
         AccessibleDecorator.apply(passwordLabel, AccessibleSpec.builder()
-                .name("Mot de passe")
-                .description("Champ pour saisir votre mot de passe")
+                .name(Internationalization.text("home.register.password.label"))
+                .description(Internationalization.text("home.register.password.desc"))
                 .build());
         add(passwordLabel);
 
         passwordField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 32));
         focusHighlighter.apply(passwordField);
         AccessibleDecorator.apply(passwordField, AccessibleSpec.builder()
-                .name("Champ mot de passe")
-                .description("Saisissez un mot de passe d'au moins six caracteres")
+                .name(Internationalization.text("home.register.password.field"))
+                .description(Internationalization.text("home.register.password.field.desc"))
                 .build());
         add(passwordField);
 
@@ -83,7 +84,8 @@ public final class RegisterFormPanel extends JPanel {
 
         submitButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         AccessibleDecorator.apply(submitButton, AccessibleSpec.builder()
-                .name("Bouton valider l'inscription")
+                .name(Internationalization.text("home.register.submit.name"))
+                .description(Internationalization.text("home.register.submit.desc"))
                 .shortcut("Alt+I")
                 .build());
         ButtonUtils.enterActivates(submitButton);
@@ -93,7 +95,8 @@ public final class RegisterFormPanel extends JPanel {
 
         backButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         AccessibleDecorator.apply(backButton, AccessibleSpec.builder()
-                .name("Retour accueil")
+                .name(Internationalization.text("home.register.back.name"))
+                .description(Internationalization.text("home.register.back.desc"))
                 .shortcut("Alt+R")
                 .build());
         ButtonUtils.enterActivates(backButton);

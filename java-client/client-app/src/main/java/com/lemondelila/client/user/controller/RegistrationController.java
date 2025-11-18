@@ -6,6 +6,7 @@ import com.lemondelila.client.user.events.RegistrationRequested;
 import com.lemondelila.client.user.events.RegistrationSucceeded;
 import com.lemondelila.client.framework.core.di.Inject;
 import com.lemondelila.client.framework.core.event.DomainEventBus;
+import com.lemondelila.client.framework.core.event.EventSubscriptions;
 import com.lemondelila.client.framework.core.task.TaskScheduler;
 import com.lemondelila.client.framework.network.rest.RestClient;
 
@@ -18,7 +19,7 @@ public final class RegistrationController implements AutoCloseable {
     private final RestClient restClient;
     private final TaskScheduler scheduler;
     private final UserOperationGuard guard;
-    private final AutoCloseable subscription;
+    private final EventSubscriptions subscriptions = new EventSubscriptions();
 
     @Inject
     public RegistrationController(DomainEventBus eventBus,
@@ -29,7 +30,7 @@ public final class RegistrationController implements AutoCloseable {
         this.restClient = restClient;
         this.scheduler = scheduler;
         this.guard = guard;
-        this.subscription = eventBus.subscribe(RegistrationRequested.class, this::handleRegistration);
+        subscriptions.subscribe(eventBus, RegistrationRequested.class, this::handleRegistration);
     }
 
     private void handleRegistration(RegistrationRequested request) {
@@ -65,8 +66,6 @@ public final class RegistrationController implements AutoCloseable {
 
     @Override
     public void close() throws Exception {
-        if (subscription != null) {
-            subscription.close();
-        }
+        subscriptions.close();
     }
 }

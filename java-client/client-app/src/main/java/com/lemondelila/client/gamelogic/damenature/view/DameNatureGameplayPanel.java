@@ -1,5 +1,6 @@
 package com.lemondelila.client.gamelogic.damenature.view;
 
+import com.lemondelila.client.application.Internationalization;
 import com.lemondelila.client.framework.access.game.AccessibilityService;
 import com.lemondelila.client.framework.access.game.GameHistorySidebar;
 import com.lemondelila.client.framework.access.game.GameHistoryTracker;
@@ -34,14 +35,14 @@ final class DameNatureGameplayPanel extends JPanel {
     private final GameHistoryTracker historyTracker = new GameHistoryTracker();
     private final GameHistorySidebar historySidebar;
 
-    private final JLabel turnLabel = new JLabel("Tour : -");
-    private final JLabel selectionLabel = new JLabel("Sélection : aucune");
+    private final JLabel turnLabel = new JLabel(t("damenature.game.turn.default"));
+    private final JLabel selectionLabel = new JLabel(t("damenature.game.selection.default"));
     private final JLabel statusLabel = new JLabel(" ");
-    private final JTextArea instructionsArea = createReadOnlyArea(8, "Commandes disponibles");
-    private final JTextArea handArea = createReadOnlyArea(8, "Votre main");
-    private final JTextArea booksArea = createReadOnlyArea(4, "Familles complétées");
-    private final JTextArea opponentsArea = createReadOnlyArea(6, "Adversaires");
-    private final JTextArea quizArea = createReadOnlyArea(4, "Quiz en cours");
+    private final JTextArea instructionsArea = createReadOnlyArea(8, "damenature.game.instructions.name");
+    private final JTextArea handArea = createReadOnlyArea(8, "damenature.game.hand.name");
+    private final JTextArea booksArea = createReadOnlyArea(4, "damenature.game.books.name");
+    private final JTextArea opponentsArea = createReadOnlyArea(6, "damenature.game.opponents.name");
+    private final JTextArea quizArea = createReadOnlyArea(4, "damenature.game.quiz.name");
 
     private List<PlayerOption> playerOptions = List.of();
     private List<CardOption> cardOptions = List.of();
@@ -50,11 +51,11 @@ final class DameNatureGameplayPanel extends JPanel {
     private int selectedCardIndex = -1;
 
     DameNatureGameplayPanel(AccessibilityService accessibilityService) {
-        this.accessibilityService = Objects.requireNonNull(accessibilityService, \"accessibilityService\");
+        this.accessibilityService = Objects.requireNonNull(accessibilityService, "accessibilityService");
         this.historySidebar = new GameHistorySidebar(
-                \"Historique\",
-                \"Historique des actions\",
-                \"Derniers ?v??nements de la partie Dame Nature.\",
+                t("damenature.game.history.title"),
+                t("damenature.game.history.name"),
+                t("damenature.game.history.desc"),
                 new Dimension(420, 380)
         );
         historyTracker.setMaxEntries(400);
@@ -64,12 +65,12 @@ final class DameNatureGameplayPanel extends JPanel {
     }
 
     void reset() {
-        turnLabel.setText("Tour : -");
-        setSelectionDescription("Sélection : aucune");
-        handArea.setText("Aucune carte en main.");
-        booksArea.setText("Aucune famille complétée.");
-        opponentsArea.setText("Aucun adversaire.");
-        quizArea.setText("Aucun quiz en cours.");
+        turnLabel.setText(t("damenature.game.turn.default"));
+        setSelectionDescription(t("damenature.game.selection.default"));
+        handArea.setText(t("damenature.game.hand.empty"));
+        booksArea.setText(t("damenature.game.books.empty"));
+        opponentsArea.setText(t("damenature.game.opponents.empty"));
+        quizArea.setText(t("damenature.game.quiz.none"));
         statusLabel.setText(" ");
         setAccessibleDescription(statusLabel, " ");
         currentQuizChoices = List.of();
@@ -98,25 +99,25 @@ final class DameNatureGameplayPanel extends JPanel {
     String cycleTarget(int delta) {
         if (playerOptions.isEmpty()) {
             selectedPlayerIndex = -1;
-            setSelectionDescription("Sélection : aucun adversaire | carte " + currentCardLabel());
-            return "Aucun adversaire disponible.";
+            setSelectionDescription(t("damenature.game.selection.no.player", currentCardLabel()));
+            return t("damenature.game.selection.no.player.message");
         }
         selectedPlayerIndex = Math.floorMod(selectedPlayerIndex + delta, playerOptions.size());
         PlayerOption option = playerOptions.get(selectedPlayerIndex);
         updateSelectionLabel();
-        return "Adversaire sélectionné : " + option.label();
+        return t("damenature.game.selection.player.selected", option.label());
     }
 
     String cycleCard(int delta) {
         if (cardOptions.isEmpty()) {
             selectedCardIndex = -1;
-            setSelectionDescription("Sélection : adversaire " + currentPlayerLabel() + " | carte aucune");
-            return "Aucune carte disponible à demander.";
+            setSelectionDescription(t("damenature.game.selection.no.card", currentPlayerLabel()));
+            return t("damenature.game.selection.no.card.message");
         }
         selectedCardIndex = Math.floorMod(selectedCardIndex + delta, cardOptions.size());
         CardOption option = cardOptions.get(selectedCardIndex);
         updateSelectionLabel();
-        return "Carte sélectionnée : " + option.label();
+        return t("damenature.game.selection.card.selected", option.label());
     }
 
     Optional<PlayerOption> selectedPlayer() {
@@ -146,7 +147,7 @@ final class DameNatureGameplayPanel extends JPanel {
     }
 
     String currentSelectionAnnouncement() {
-        String description = "Sélection : adversaire " + currentPlayerLabel() + " | carte " + currentCardLabel();
+        String description = t("damenature.game.selection.template", currentPlayerLabel(), currentCardLabel());
         setSelectionDescription(description);
         return description;
     }
@@ -160,10 +161,10 @@ final class DameNatureGameplayPanel extends JPanel {
         header.setLayout(new BoxLayout(header, BoxLayout.Y_AXIS));
         turnLabel.setFont(turnLabel.getFont().deriveFont(20f));
         turnLabel.setAlignmentX(LEFT_ALIGNMENT);
-        setAccessibleName(turnLabel, "Tour en cours");
+        setAccessibleName(turnLabel, t("damenature.game.turn.accessible"));
         selectionLabel.setAlignmentX(LEFT_ALIGNMENT);
-        setAccessibleName(selectionLabel, "Sélection courante");
-        setAccessibleDescription(selectionLabel, "Sélection : aucune");
+        setAccessibleName(selectionLabel, t("damenature.game.selection.accessible"));
+        setAccessibleDescription(selectionLabel, t("damenature.game.selection.desc"));
         header.add(turnLabel);
         header.add(Box.createRigidArea(new Dimension(0, 6)));
         header.add(selectionLabel);
@@ -177,15 +178,15 @@ final class DameNatureGameplayPanel extends JPanel {
         JPanel infoPanel = new JPanel();
         infoPanel.setOpaque(false);
         infoPanel.setLayout(new BoxLayout(infoPanel, BoxLayout.Y_AXIS));
-        infoPanel.add(section("Commandes", wrap(instructionsArea, 320, 140)));
+        infoPanel.add(section(t("damenature.game.section.commands"), wrap(instructionsArea, 320, 140)));
         infoPanel.add(Box.createRigidArea(new Dimension(0, 12)));
-        infoPanel.add(section("Votre main", wrap(handArea, 320, 160)));
+        infoPanel.add(section(t("damenature.game.section.hand"), wrap(handArea, 320, 160)));
         infoPanel.add(Box.createRigidArea(new Dimension(0, 12)));
-        infoPanel.add(section("Familles complétées", wrap(booksArea, 320, 120)));
+        infoPanel.add(section(t("damenature.game.section.books"), wrap(booksArea, 320, 120)));
         infoPanel.add(Box.createRigidArea(new Dimension(0, 12)));
-        infoPanel.add(section("Adversaires", wrap(opponentsArea, 320, 140)));
+        infoPanel.add(section(t("damenature.game.section.opponents"), wrap(opponentsArea, 320, 140)));
         infoPanel.add(Box.createRigidArea(new Dimension(0, 12)));
-        infoPanel.add(section("Quiz en cours", wrap(quizArea, 320, 140)));
+        infoPanel.add(section(t("damenature.game.section.quiz"), wrap(quizArea, 320, 140)));
 
         center.add(infoPanel);
         center.add(Box.createRigidArea(new Dimension(16, 0)));
@@ -195,7 +196,7 @@ final class DameNatureGameplayPanel extends JPanel {
         add(center, BorderLayout.CENTER);
 
         statusLabel.setBorder(new EmptyBorder(8, 0, 0, 0));
-        setAccessibleName(statusLabel, "Statut de la partie");
+        setAccessibleName(statusLabel, t("damenature.game.status.accessible"));
         add(statusLabel, BorderLayout.SOUTH);
     }
 
@@ -203,22 +204,9 @@ final class DameNatureGameplayPanel extends JPanel {
         instructionsArea.setLineWrap(true);
         instructionsArea.setWrapStyleWord(true);
         instructionsArea.setBorder(new EmptyBorder(4, 6, 4, 6));
-        setAccessibleDescription(instructionsArea, """
-                Entrée pour piocher, flèches pour sélectionner les adversaires et cartes, E pour demander, R rafraîchit, T annonce le tour, W annonce les joueurs présents, C ouvre la configuration, chiffres 1-9 répondent au quiz, Tab va à l'historique, Q ouvre la confirmation de sortie.
-                """);
-        instructionsArea.setText("""
-                Entrée : piocher.
-                Flèches haut / bas : changer d'adversaire.
-                Flèches gauche / droite : changer la carte à demander.
-                E : demander la carte sélectionnée.
-                R : actualiser la partie.
-                T : annoncer le tour en cours.
-                W : annoncer les joueurs autour de la table.
-                C : ouvrir la configuration et relancer la partie.
-                1-9 : répondre à un quiz.
-                Tab : aller à l'historique, Maj+Tab pour revenir.
-                Q : quitter la partie après confirmation.
-                """);
+        String instructionsText = t("damenature.game.instructions.text");
+        instructionsArea.setText(instructionsText);
+        setAccessibleDescription(instructionsArea, t("damenature.game.instructions.desc"));
         instructionsArea.setCaretPosition(0);
     }
 
@@ -238,9 +226,9 @@ final class DameNatureGameplayPanel extends JPanel {
         List<DameNatureState.Player> players = state.players();
         if (!players.isEmpty() && state.turnIndex() >= 0 && state.turnIndex() < players.size()) {
             DameNatureState.Player current = players.get(state.turnIndex());
-            turnLabel.setText("Tour : " + formatPlayerName(current));
+            turnLabel.setText(t("damenature.game.turn.player", formatPlayerName(current)));
         } else {
-            turnLabel.setText("Tour : -");
+            turnLabel.setText(t("damenature.game.turn.default"));
         }
     }
 
@@ -248,7 +236,7 @@ final class DameNatureGameplayPanel extends JPanel {
         if (self != null) {
             StringBuilder handBuilder = new StringBuilder();
             self.hand().forEach(card -> handBuilder.append("• ").append(card).append('\n'));
-            handArea.setText(handBuilder.isEmpty() ? "Aucune carte en main." : handBuilder.toString());
+            handArea.setText(handBuilder.isEmpty() ? t("damenature.game.hand.empty") : handBuilder.toString());
             setAccessibleDescription(handArea, handArea.getText());
 
             if (!self.books().isEmpty()) {
@@ -259,12 +247,12 @@ final class DameNatureGameplayPanel extends JPanel {
                         .forEach(family -> booksBuilder.append("• ").append(family.name()).append('\n'));
                 booksArea.setText(booksBuilder.toString());
             } else {
-                booksArea.setText("Aucune famille complétée.");
+                booksArea.setText(t("damenature.game.books.empty"));
             }
             setAccessibleDescription(booksArea, booksArea.getText());
         } else {
-            handArea.setText("Rejoignez la partie pour consulter votre main.");
-            booksArea.setText("Aucune information disponible.");
+            handArea.setText(t("damenature.game.hand.locked"));
+            booksArea.setText(t("damenature.game.books.unknown"));
             setAccessibleDescription(handArea, handArea.getText());
             setAccessibleDescription(booksArea, booksArea.getText());
         }
@@ -272,15 +260,16 @@ final class DameNatureGameplayPanel extends JPanel {
         StringBuilder opponentsBuilder = new StringBuilder();
         state.players().forEach(player -> {
             opponentsBuilder.append("• ")
-                    .append(formatPlayerName(player))
-                    .append(" - cartes : ").append(player.handCount())
-                    .append(" - familles : ").append(player.books().size());
+                    .append(t("damenature.game.opponents.entry",
+                            formatPlayerName(player),
+                            player.handCount(),
+                            player.books().size()));
             if (state.turnIndex() == state.players().indexOf(player)) {
-                opponentsBuilder.append(" (au tour)");
+                opponentsBuilder.append(t("damenature.game.opponents.current"));
             }
             opponentsBuilder.append('\n');
         });
-        opponentsArea.setText(opponentsBuilder.isEmpty() ? "Aucun adversaire." : opponentsBuilder.toString());
+        opponentsArea.setText(opponentsBuilder.isEmpty() ? t("damenature.game.opponents.empty") : opponentsBuilder.toString());
         setAccessibleDescription(opponentsArea, opponentsArea.getText());
     }
 
@@ -345,12 +334,12 @@ final class DameNatureGameplayPanel extends JPanel {
             StringBuilder builder = new StringBuilder();
             builder.append(quiz.question()).append('\n');
             for (int i = 0; i < currentQuizChoices.size(); i++) {
-                builder.append(i + 1).append(") ").append(currentQuizChoices.get(i)).append('\n');
+                builder.append(t("damenature.game.quiz.choice", i + 1, currentQuizChoices.get(i))).append('\n');
             }
             quizArea.setText(builder.toString());
         } else {
             currentQuizChoices = List.of();
-            quizArea.setText("Aucun quiz en cours.");
+            quizArea.setText(t("damenature.game.quiz.none"));
         }
         quizArea.setCaretPosition(0);
         setAccessibleDescription(quizArea, quizArea.getText());
@@ -366,26 +355,26 @@ final class DameNatureGameplayPanel extends JPanel {
                     .filter(msg -> !msg.isEmpty())
                     .toList());
         }
-        historySidebar.render(historyTracker, "Aucun �v�nement pour le moment.");
+        historySidebar.render(historyTracker, t("damenature.game.history.empty"));
         historyComponent().setCaretPosition(historyComponent().getDocument().getLength());
     }
 
     private void updateSelectionLabel() {
-        String description = "Sélection : adversaire " + currentPlayerLabel() + " | carte " + currentCardLabel();
+        String description = t("damenature.game.selection.template", currentPlayerLabel(), currentCardLabel());
         setSelectionDescription(description);
         accessibilityService.announceCustom(selectionLabel, description);
     }
 
     private String currentPlayerLabel() {
         if (selectedPlayerIndex < 0 || selectedPlayerIndex >= playerOptions.size()) {
-            return "aucun adversaire";
+            return t("damenature.game.selection.no.player.label");
         }
         return playerOptions.get(selectedPlayerIndex).label();
     }
 
     private String currentCardLabel() {
         if (selectedCardIndex < 0 || selectedCardIndex >= cardOptions.size()) {
-            return "aucune carte";
+            return t("damenature.game.selection.no.card.label");
         }
         return cardOptions.get(selectedCardIndex).label();
     }
@@ -399,9 +388,9 @@ final class DameNatureGameplayPanel extends JPanel {
 
     private static String decorateBot(String base, boolean isBot) {
         if (base == null || base.isBlank()) {
-            return isBot ? "Bot" : "";
+            return isBot ? t("damenature.bot.only") : "";
         }
-        return isBot ? base + " (bot)" : base;
+        return isBot ? base + t("damenature.bot.suffix") : base;
     }
 
     private void setSelectionDescription(String description) {
@@ -409,13 +398,13 @@ final class DameNatureGameplayPanel extends JPanel {
         setAccessibleDescription(selectionLabel, description);
     }
 
-    private static JTextArea createReadOnlyArea(int rows, String accessibleName) {
+    private static JTextArea createReadOnlyArea(int rows, String accessibleNameKey) {
         JTextArea area = new JTextArea(rows, 32);
         area.setEditable(false);
         area.setLineWrap(true);
         area.setWrapStyleWord(true);
         area.setBorder(BorderFactory.createEmptyBorder(4, 6, 4, 6));
-        area.getAccessibleContext().setAccessibleName(accessibleName);
+        area.getAccessibleContext().setAccessibleName(t(accessibleNameKey));
         return area;
     }
 
@@ -463,13 +452,17 @@ final class DameNatureGameplayPanel extends JPanel {
         }
     }
 
+    private static String t(String key, Object... args) {
+        return Internationalization.text(key, args);
+    }
+
     static record PlayerOption(int id, String name, int handCount, boolean bot) {
         String label() {
-            return displayName() + " (" + handCount + " cartes)";
+            return t("damenature.game.player.label", displayName(), handCount);
         }
 
         String displayName() {
-            return name == null ? "" : (bot ? name + " (bot)" : name);
+            return decorateBot(name, bot);
         }
     }
 

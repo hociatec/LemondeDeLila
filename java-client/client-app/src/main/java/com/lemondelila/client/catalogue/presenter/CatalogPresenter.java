@@ -1,16 +1,18 @@
 package com.lemondelila.client.catalogue.presenter;
 
+import com.lemondelila.client.application.Internationalization;
 import com.lemondelila.client.catalogue.model.GameSummary;
-import com.lemondelila.client.catalogue.view.CatalogDataLoader;
-import com.lemondelila.client.catalogue.view.CatalogNavigationController;
+import com.lemondelila.client.framework.core.di.Inject;
 import com.lemondelila.client.framework.ui.ControllerResult;
 import com.lemondelila.client.framework.ui.dialog.DialogService;
 import com.lemondelila.client.framework.ui.screen.ScreenId;
 import com.lemondelila.client.framework.ui.screen.ScreenManager;
+import com.lemondelila.client.game.controller.GameCatalogController;
 import com.lemondelila.client.game.launcher.GameLauncher;
 import com.lemondelila.client.game.launcher.GameLauncherRegistry;
 
 import javax.swing.SwingUtilities;
+import java.util.Objects;
 import java.util.Optional;
 
 public final class CatalogPresenter {
@@ -27,21 +29,40 @@ public final class CatalogPresenter {
 
     private final DialogService dialogService;
     private final GameLauncherRegistry launcherRegistry;
+    private final CatalogDataIndex dataIndex = new CatalogDataIndex();
     private final CatalogDataLoader dataLoader;
-    private final CatalogNavigationController navigation;
-    private final View view;
+
+    private CatalogNavigationController navigation;
+    private CatalogViewPort contentView;
+    private View view;
     private ScreenManager screenManager;
 
+    @Inject
     public CatalogPresenter(DialogService dialogService,
                             GameLauncherRegistry launcherRegistry,
-                            CatalogDataLoader dataLoader,
-                            CatalogNavigationController navigation,
-                            View view) {
-        this.dialogService = dialogService;
-        this.launcherRegistry = launcherRegistry;
-        this.dataLoader = dataLoader;
-        this.navigation = navigation;
-        this.view = view;
+                            GameCatalogController catalogController) {
+        this.dialogService = Objects.requireNonNull(dialogService, "dialogService");
+        this.launcherRegistry = Objects.requireNonNull(launcherRegistry, "launcherRegistry");
+        this.dataLoader = new CatalogDataLoader(
+                Objects.requireNonNull(catalogController, "catalogController"),
+                dataIndex);
+    }
+
+    public void bind(View view, CatalogViewPort contentView) {
+        this.view = Objects.requireNonNull(view, "view");
+        this.contentView = Objects.requireNonNull(contentView, "contentView");
+        this.navigation = new CatalogNavigationController(
+                dataIndex,
+                contentView,
+                dataLoader,
+                this::handleSelection);
+    }
+
+    public void unbind() {
+        this.view = null;
+        this.contentView = null;
+        this.navigation = null;
+        this.screenManager = null;
     }
 
     public void onShow(ScreenManager manager) {
@@ -51,20 +72,27 @@ public final class CatalogPresenter {
 
     public void onHide() {
         this.screenManager = null;
-        view.setGameActionsEnabled(false);
+        if (view != null) {
+            view.setGameActionsEnabled(false);
+        }
     }
 
     public void refresh(boolean forceReload) {
         ensureCatalogReady(forceReload);
     }
 
-    public void handleSelection(GameSummary selection) {
+    private void handleSelection(GameSummary selection) {
+        if (view == null) {
+            return;
+        }
         view.onGameSelection(selection);
         view.setGameActionsEnabled(selection != null);
     }
 
     public void onGameSelectionChanged(GameSummary selection, int index) {
-        navigation.updateGameSelectionIndex(index);
+        if (navigation != null) {
+            navigation.updateGameSelectionIndex(index);
+        }
         handleSelection(selection);
     }
 
@@ -72,22 +100,32 @@ public final class CatalogPresenter {
         if (categoryId == null || categoryId.isBlank()) {
             return;
         }
-        view.playSelectSound();
-        navigation.openCategory(categoryId, categoryIndex);
+        if (view != null) {
+            view.playSelectSound();
+        }
+        if (navigation != null) {
+            navigation.openCategory(categoryId, categoryIndex);
+        }
     }
 
     public void onGameActivated(GameSummary game) {
         if (game == null) {
             return;
         }
-        view.playSelectSound();
+        if (view != null) {
+            view.playSelectSound();
+        }
         handlePlayRequest(game);
     }
 
     public void onNavigateBack() {
-        view.playSelectSound();
-        if (!navigation.navigateBack()) {
-            view.showMainMenu();
+        if (view != null) {
+            view.playSelectSound();
+        }
+        if (navigation == null || !navigation.navigateBack()) {
+            if (view != null) {
+                view.showMainMenu();
+            }
         }
     }
 
@@ -97,15 +135,20 @@ public final class CatalogPresenter {
         }
         Optional<GameLauncher> launcher = launcherRegistry.find(game);
         if (launcher.isEmpty()) {
-            dialogService.info("Fonctionnalite indisponible",
-                    "Ce jeu ne peut pas encore etre lance depuis cette interface.");
+            dialogService.info(
+                    Internationalization.text("catalog.presenter.feature.title"),
+                    Internationalization.text("catalog.presenter.feature.body"));
             return;
         }
-        view.setStatus("Initialisation de " + game.name() + "...");
+        if (view != null) {
+            view.setStatus(Internationalization.text("catalog.presenter.launch.start", game.name()));
+        }
         launcher.get().launch(game).whenComplete((result, error) -> SwingUtilities.invokeLater(() -> {
             if (error != null) {
-                dialogService.error("Lancement impossible", describeError(error));
-                view.setStatus("Echec du lancement de " + game.name() + ".");
+                dialogService.error(Internationalization.text("catalog.presenter.launch.error.title"), describeError(error));
+                if (view != null) {
+                    view.setStatus(Internationalization.text("catalog.presenter.launch.error.status", game.name()));
+                }
                 return;
             }
             applyLaunchResult(result);
@@ -113,14 +156,18 @@ public final class CatalogPresenter {
     }
 
     private void ensureCatalogReady(boolean forceReload) {
-        view.setStatus("Chargement du catalogue...");
+        if (view == null || navigation == null) {
+            return;
+        }
+        view.setStatus(Internationalization.text("catalog.presenter.load.start"));
         view.setLoadingState(true);
         dataLoader.loadCatalog(forceReload).whenComplete((changed, error) -> SwingUtilities.invokeLater(() -> {
             view.setLoadingState(false);
             if (error != null) {
-                dialogService.error("Catalogue indisponible",
-                        "Impossible de charger le catalogue pour le moment.");
-                view.setStatus("Erreur lors du chargement du catalogue.");
+                dialogService.error(
+                        Internationalization.text("catalog.presenter.load.error.title"),
+                        Internationalization.text("catalog.presenter.load.error.body"));
+                view.setStatus(Internationalization.text("catalog.presenter.load.error.status"));
                 return;
             }
             if (!navigation.hasState() || Boolean.TRUE.equals(changed)) {
@@ -135,7 +182,9 @@ public final class CatalogPresenter {
         if (result == null) {
             return;
         }
-        result.statusMessage().ifPresent(view::setStatus);
+        if (view != null) {
+            result.statusMessage().ifPresent(view::setStatus);
+        }
         result.navigationTarget().ifPresent(this::navigate);
     }
 
@@ -145,14 +194,14 @@ public final class CatalogPresenter {
         }
         if (screenManager != null) {
             screenManager.show(id);
-        } else {
+        } else if (view != null) {
             view.navigateTo(id);
         }
     }
 
     private String describeError(Throwable error) {
         if (error == null) {
-            return "Erreur inconnue";
+            return Internationalization.text("catalog.presenter.error.unknown");
         }
         Throwable cause = error;
         while (cause.getCause() != null && cause.getCause() != cause) {

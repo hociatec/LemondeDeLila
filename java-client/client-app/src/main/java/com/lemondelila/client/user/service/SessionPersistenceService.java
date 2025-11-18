@@ -11,6 +11,7 @@ import com.lemondelila.client.user.events.UserLoggedOut;
 import com.lemondelila.client.user.model.ClientSession;
 import com.lemondelila.client.framework.core.di.Inject;
 import com.lemondelila.client.framework.core.event.DomainEventBus;
+import com.lemondelila.client.framework.core.event.EventSubscriptions;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -26,9 +27,7 @@ public final class SessionPersistenceService implements AutoCloseable {
     private final ObjectMapper mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
     private final Path sessionFile;
 
-    private final AutoCloseable loginSubscription;
-    private final AutoCloseable logoutSubscription;
-    private final AutoCloseable settingsSubscription;
+    private final EventSubscriptions subscriptions = new EventSubscriptions();
 
     @Inject
     public SessionPersistenceService(DomainEventBus eventBus,
@@ -42,9 +41,9 @@ public final class SessionPersistenceService implements AutoCloseable {
 
         restoreIfNeeded();
 
-        this.loginSubscription = eventBus.subscribe(LoginSucceeded.class, this::handleLoginSucceeded);
-        this.logoutSubscription = eventBus.subscribe(UserLoggedOut.class, event -> handleLogout());
-        this.settingsSubscription = settingsService.listen(this::handleSettingsUpdate);
+        subscriptions.subscribe(eventBus, LoginSucceeded.class, this::handleLoginSucceeded);
+        subscriptions.subscribe(eventBus, UserLoggedOut.class, event -> handleLogout());
+        subscriptions.add(settingsService.listen(this::handleSettingsUpdate));
     }
 
     private void restoreIfNeeded() {
@@ -111,14 +110,6 @@ public final class SessionPersistenceService implements AutoCloseable {
 
     @Override
     public void close() throws Exception {
-        if (loginSubscription != null) {
-            loginSubscription.close();
-        }
-        if (logoutSubscription != null) {
-            logoutSubscription.close();
-        }
-        if (settingsSubscription != null) {
-            settingsSubscription.close();
-        }
+        subscriptions.close();
     }
 }

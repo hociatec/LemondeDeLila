@@ -1,5 +1,6 @@
 package com.lemondelila.client.catalogue.view;
 
+import com.lemondelila.client.application.Internationalization;
 import com.lemondelila.client.framework.access.AccessibleSpec;
 import com.lemondelila.client.framework.media.sound.SoundEffectManager;
 
@@ -11,9 +12,9 @@ final class CategoryListPanel extends AbstractCatalogListPanel<CategoryListPanel
     static final String CARD = "categories";
 
     CategoryListPanel(SoundEffectManager soundManager) {
-        super("Categories", AccessibleSpec.builder()
-                .name("Liste des catégories")
-                .description("Sélectionnez une catégorie et validez avec Entrée pour afficher son contenu")
+        super(Internationalization.text("catalog.categories.list.title"), AccessibleSpec.builder()
+                .name(Internationalization.text("catalog.categories.list.name"))
+                .description(Internationalization.text("catalog.categories.list.desc"))
                 .build(), soundManager);
     }
 
@@ -41,16 +42,16 @@ final class CategoryListPanel extends AbstractCatalogListPanel<CategoryListPanel
                                                                boolean isSelected,
                                                                boolean cellHasFocus) {
             String text = " ";
-            if (value instanceof CategoryItem item) {
-                StringBuilder builder = new StringBuilder(item.label());
-                if (item.hasChildren()) {
-                    builder.append(" (sous-categories)");
+                if (value instanceof CategoryItem item) {
+                    StringBuilder builder = new StringBuilder(item.label());
+                    if (item.hasChildren()) {
+                        builder.append(' ').append(Internationalization.text("catalog.categories.item.children"));
+                    }
+                    if (item.gameCount() > 0) {
+                        builder.append(Internationalization.text("catalog.categories.item.games", item.gameCount()));
+                    }
+                    text = builder.toString();
                 }
-                if (item.gameCount() > 0) {
-                    builder.append(" - ").append(item.gameCount()).append(" jeu(x)");
-                }
-                text = builder.toString();
-            }
             return super.getListCellRendererComponent(list, text, index, isSelected, cellHasFocus);
         }
     }

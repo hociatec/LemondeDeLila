@@ -15,10 +15,8 @@ import com.lemondelila.client.framework.ui.screen.ScreenContext;
 import com.lemondelila.client.framework.ui.screen.ScreenId;
 import com.lemondelila.client.framework.ui.screen.ScreenManager;
 import com.lemondelila.client.game.controller.GameActionState;
-import com.lemondelila.client.game.controller.GameCatalogController;
 import com.lemondelila.client.game.controller.GameQuitController;
 import com.lemondelila.client.game.controller.GameRulesController;
-import com.lemondelila.client.game.launcher.GameLauncherRegistry;
 
 import javax.swing.JPanel;
 import java.util.Objects;
@@ -32,9 +30,6 @@ public final class CatalogScreen extends JPanel implements Screen, CatalogPresen
     private final CatalogViewCoordinator view;
     private final CategoryListPanel categoryListPanel;
     private final GameListPanel gameListPanel;
-    private final CatalogDataIndex dataIndex = new CatalogDataIndex();
-    private final CatalogDataLoader dataLoader;
-    private final CatalogNavigationController navigation;
     private final GameActionState gameActionState = new GameActionState();
     private final NarrationQueue narrationQueue;
     private final GameQuitController quitController;
@@ -50,38 +45,20 @@ public final class CatalogScreen extends JPanel implements Screen, CatalogPresen
     private final CatalogPresenter presenter;
 
     @Inject
-    public CatalogScreen(GameCatalogController catalogController,
+    public CatalogScreen(CatalogPresenter presenter,
                          GameRulesService rulesService,
                          DialogService dialogService,
-                         GameLauncherRegistry launcherRegistry,
                          SoundEffectManager soundManager,
                          AccessibleShortcutRegistry shortcutRegistry,
                          NarrationQueue narrationQueue) {
         this.dialogService = Objects.requireNonNull(dialogService, "dialogService");
+        this.presenter = Objects.requireNonNull(presenter, "presenter");
         this.shortcutRegistry = Objects.requireNonNull(shortcutRegistry, "shortcutRegistry");
         this.narrationQueue = narrationQueue;
         this.view = new CatalogViewCoordinator(this, soundManager, narrationQueue);
         this.categoryListPanel = view.categoryListPanel();
         this.gameListPanel = view.gameListPanel();
-        this.dataLoader = new CatalogDataLoader(catalogController, dataIndex);
-        this.navigation = new CatalogNavigationController(
-                dataIndex,
-                view,
-                dataLoader,
-                view::playNavigateSound,
-                selection -> {
-                    if (selection == null) {
-                        presenter.handleSelection(null);
-                    }
-                }
-        );
-        this.presenter = new CatalogPresenter(
-                dialogService,
-                Objects.requireNonNull(launcherRegistry, "launcherRegistry"),
-                dataLoader,
-                navigation,
-                this
-        );
+        this.presenter.bind(this, view);
         installActions();
         this.gameListPanel.onSelectionChange(selection ->
                 presenter.onGameSelectionChanged(selection, gameListPanel.selectedIndex()));

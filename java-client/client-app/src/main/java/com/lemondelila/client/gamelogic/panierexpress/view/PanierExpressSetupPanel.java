@@ -1,5 +1,6 @@
 package com.lemondelila.client.gamelogic.panierexpress.view;
 
+import com.lemondelila.client.application.Internationalization;
 import com.lemondelila.client.gamelogic.panierexpress.model.PanierExpressGameOptions;
 import com.lemondelila.client.framework.access.AccessibleDecorator;
 import com.lemondelila.client.framework.access.AccessibleSpec;
@@ -42,27 +43,24 @@ final class PanierExpressSetupPanel extends JPanel {
         setFocusCycleRoot(true);
         setFocusable(true);
 
-        JLabel title = new JLabel("Préparer Panier Express");
+        JLabel title = new JLabel(Internationalization.text("panier.setup.title"));
         title.setAlignmentX(Component.LEFT_ALIGNMENT);
         title.setFont(title.getFont().deriveFont(title.getFont().getStyle() | java.awt.Font.BOLD, 20f));
         AccessibleDecorator.apply(title, AccessibleSpec.builder()
-                .name("Titre")
-                .description("Paramétrez la partie Panier Express avant de la lancer.")
+                .name(Internationalization.text("panier.setup.title"))
+                .description(Internationalization.text("panier.setup.title.desc"))
                 .build());
         add(title);
         add(Box.createRigidArea(new Dimension(0, 16)));
 
-        JTextArea instructions = new JTextArea("""
-Sélectionnez les paramètres de la partie, puis validez avec le bouton Lancer.
-Utilisez les flèches haut et bas pour naviguer entre les éléments.
-""".strip());
+        JTextArea instructions = new JTextArea(Internationalization.text("panier.setup.instructions"));
         instructions.setEditable(false);
         instructions.setLineWrap(true);
         instructions.setWrapStyleWord(true);
         instructions.setFocusable(false);
         instructions.setAlignmentX(Component.LEFT_ALIGNMENT);
         AccessibleDecorator.apply(instructions, AccessibleSpec.builder()
-                .name("Instructions")
+                .name(Internationalization.text("panier.setup.instructions.title"))
                 .description(instructions.getText())
                 .build());
         add(instructions);
@@ -71,10 +69,10 @@ Utilisez les flèches haut et bas pour naviguer entre les éléments.
         JPanel robotPanel = new JPanel();
         robotPanel.setLayout(new BoxLayout(robotPanel, BoxLayout.X_AXIS));
         robotPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        JLabel robotLabel = new JLabel("Robots coéquipiers : ");
+        JLabel robotLabel = new JLabel(Internationalization.text("panier.setup.robot.label"));
         AccessibleDecorator.apply(robotLabel, AccessibleSpec.builder()
-                .name("Nombre de robots")
-                .description("Nombre de robots qui joueront avec vous.")
+                .name(Internationalization.text("panier.setup.robot.name"))
+                .description(Internationalization.text("panier.setup.robot.desc"))
                 .build());
         robotPanel.add(robotLabel);
 
@@ -85,26 +83,26 @@ Utilisez les flèches haut et bas pour naviguer entre les éléments.
                 1
         ));
         robotSpinner.setAlignmentX(Component.LEFT_ALIGNMENT);
-        robotSpinner.getAccessibleContext().setAccessibleName("Sélection du nombre de robots");
-        robotSpinner.getAccessibleContext().setAccessibleDescription("Choisissez combien de robots rejoignent la partie.");
+        robotSpinner.getAccessibleContext().setAccessibleName(Internationalization.text("panier.setup.robot.field"));
+        robotSpinner.getAccessibleContext().setAccessibleDescription(Internationalization.text("panier.setup.robot.field.desc"));
         ((JComponent) robotSpinner.getEditor()).setFocusable(true);
         robotPanel.add(robotSpinner);
         add(robotPanel);
         add(Box.createRigidArea(new Dimension(0, 20)));
 
-        JButton cancelButton = new JButton("Annuler");
+        JButton cancelButton = new JButton(Internationalization.text("panier.setup.cancel"));
         cancelButton.setAlignmentX(Component.LEFT_ALIGNMENT);
         AccessibleDecorator.apply(cancelButton, AccessibleSpec.builder()
-                .name("Annuler la configuration")
-                .description("Retourner au catalogue sans lancer la partie.")
+                .name(Internationalization.text("panier.setup.cancel.name"))
+                .description(Internationalization.text("panier.setup.cancel.desc"))
                 .build());
         cancelButton.addActionListener(e -> listener.onCancel());
 
-        JButton startButton = new JButton("Lancer la partie");
+        JButton startButton = new JButton(Internationalization.text("panier.setup.start"));
         startButton.setAlignmentX(Component.LEFT_ALIGNMENT);
         AccessibleDecorator.apply(startButton, AccessibleSpec.builder()
-                .name("Lancer la partie")
-                .description("Démarrer Panier Express avec les paramètres sélectionnés.")
+                .name(Internationalization.text("panier.setup.start.name"))
+                .description(Internationalization.text("panier.setup.start.desc"))
                 .build());
         startButton.addActionListener(e -> {
             int robots = (int) robotSpinner.getValue();

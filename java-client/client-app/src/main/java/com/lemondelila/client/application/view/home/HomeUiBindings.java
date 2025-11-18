@@ -1,5 +1,6 @@
 package com.lemondelila.client.application.view.home;
 
+import com.lemondelila.client.application.Internationalization;
 import com.lemondelila.client.framework.core.event.DomainEventBus;
 import com.lemondelila.client.framework.access.shortcut.AccessibleShortcutRegistry;
 import com.lemondelila.client.framework.ui.action.ActionManager;
@@ -57,7 +58,7 @@ final class HomeUiBindings {
             if (!validateLogin(credentials)) {
                 return;
             }
-            view.setStatus("Connexion en cours...");
+            view.setStatus(Internationalization.text("home.login.inprogress"));
             eventBus.publish(new LoginRequested(credentials.username(), credentials.password()));
         });
         view.loginForm().onBack(() -> {
@@ -69,7 +70,7 @@ final class HomeUiBindings {
             if (!validateRegistration(data)) {
                 return;
             }
-            view.setStatus("Inscription en cours...");
+            view.setStatus(Internationalization.text("home.register.inprogress"));
             eventBus.publish(new RegistrationRequested(data.username(), data.password(), data.email()));
         });
         view.registerForm().onBack(() -> {
@@ -82,12 +83,12 @@ final class HomeUiBindings {
         String username = credentials.username();
         char[] password = credentials.password();
         if (username == null || username.isBlank()) {
-            view.setStatus("Merci de saisir votre identifiant.");
+            view.setStatus(Internationalization.text("home.login.validation.username"));
             view.loginForm().focusDefaultField();
             return false;
         }
         if (password == null || password.length == 0) {
-            view.setStatus("Merci de saisir votre mot de passe.");
+            view.setStatus(Internationalization.text("home.login.validation.password"));
             view.loginForm().focusDefaultField();
             return false;
         }
@@ -99,17 +100,17 @@ final class HomeUiBindings {
         String email = data.email();
         char[] password = data.password();
         if (username == null || username.isBlank()) {
-            view.setStatus("Merci d'indiquer un nom d'utilisateur.");
+            view.setStatus(Internationalization.text("home.register.validation.username"));
             view.registerForm().focusDefaultField();
             return false;
         }
         if (email == null || email.isBlank() || !SIMPLE_EMAIL.matcher(email).matches()) {
-            view.setStatus("Adresse e-mail invalide.");
+            view.setStatus(Internationalization.text("home.register.validation.email"));
             view.registerForm().focusDefaultField();
             return false;
         }
         if (password == null || password.length < 6) {
-            view.setStatus("Le mot de passe doit contenir au moins 6 caractères.");
+            view.setStatus(Internationalization.text("home.register.validation.password"));
             view.registerForm().focusDefaultField();
             return false;
         }
@@ -121,8 +122,8 @@ final class HomeUiBindings {
         view.landingPanel().onRegister(view::showRegister);
         view.landingPanel().onQuit(() ->
                 applicationLifecycle.requestExitWithConfirmation(
-                        "Quitter",
-                        "Voulez-vous quitter l'application ?"
+                        Internationalization.text("home.exit.title"),
+                        Internationalization.text("home.exit.message")
                 ));
     }
 
@@ -137,7 +138,7 @@ final class HomeUiBindings {
                 landingAction.run();
             }
         }, escapeKey);
-        shortcutRegistry.register(escapeKey, "Retour accueil");
+        shortcutRegistry.register(escapeKey, Internationalization.text("home.shortcut.return"));
         AutoCloseable actionScope = actionManager.attachTo(view.component());
         AutoCloseable shortcutScope = shortcutRegistry.applyTo(view.component());
         return () -> {

@@ -1,6 +1,9 @@
 package com.lemondelila.client.catalogue.view;
 
+import com.lemondelila.client.application.Internationalization;
 import com.lemondelila.client.catalogue.model.GameSummary;
+import com.lemondelila.client.catalogue.presenter.CatalogCategoryItem;
+import com.lemondelila.client.catalogue.presenter.CatalogViewPort;
 import com.lemondelila.client.framework.access.AccessibleDecorator;
 import com.lemondelila.client.framework.access.AccessibleSpec;
 import com.lemondelila.client.framework.access.NarrationQueue;
@@ -22,11 +25,11 @@ import java.awt.Font;
 /**
  * Coordonne la vue principale du catalogue : en-tête, panneaux et retours audio.
  */
-final class CatalogViewCoordinator {
+final class CatalogViewCoordinator implements CatalogViewPort {
 
     private final CardLayout viewLayout = new CardLayout();
     private final JPanel viewPanel = new JPanel(viewLayout);
-    private final JLabel breadcrumbLabel = new JLabel("Categories");
+    private final JLabel breadcrumbLabel = new JLabel(Internationalization.text("catalog.nav.breadcrumb.root"));
     private final StatusBanner statusBanner;
     private final CategoryListPanel categoryListPanel;
     private final GameListPanel gameListPanel;
@@ -41,8 +44,8 @@ final class CatalogViewCoordinator {
         this.categoryListPanel = new CategoryListPanel(soundManager);
         this.gameListPanel = new GameListPanel(soundManager);
         this.statusBanner = new StatusBanner(
-                "Statut catalogue",
-                "Annonce les chargements et actions dans le catalogue",
+                Internationalization.text("catalog.status.banner.name"),
+                Internationalization.text("catalog.status.banner.desc"),
                 host,
                 narrationQueue
         );
@@ -53,16 +56,16 @@ final class CatalogViewCoordinator {
         host.setLayout(new BorderLayout(16, 16));
         host.setBorder(BorderFactory.createEmptyBorder(32, 48, 32, 48));
 
-        JLabel titleLabel = new JLabel("Etageres");
+        JLabel titleLabel = new JLabel(Internationalization.text("catalog.title"));
         titleLabel.setFont(titleLabel.getFont().deriveFont(Font.BOLD, 26f));
         AccessibleDecorator.apply(titleLabel, AccessibleSpec.builder()
-                .name("Catalogue des jeux")
-                .description("Sélection de catégories et jeux disponibles")
+                .name(Internationalization.text("catalog.title.accessible"))
+                .description(Internationalization.text("catalog.title.desc"))
                 .build());
         breadcrumbLabel.setFont(breadcrumbLabel.getFont().deriveFont(Font.ITALIC, 14f));
         AccessibleDecorator.apply(breadcrumbLabel, AccessibleSpec.builder()
-                .name("Fil d'Ariane catalogue")
-                .description("Indique la catégorie ou le jeu en cours de consultation")
+                .name(Internationalization.text("catalog.breadcrumb.name"))
+                .description(Internationalization.text("catalog.breadcrumb.desc"))
                 .build());
 
         JPanel titleContainer = new JPanel();
@@ -87,21 +90,30 @@ final class CatalogViewCoordinator {
         host.add(bannerComponent, BorderLayout.SOUTH);
     }
 
-    void showCategories(java.util.List<CategoryListPanel.CategoryItem> items,
-                        int selectedIndex,
-                        String breadcrumb,
-                        String status) {
-        categoryListPanel.show(items, selectedIndex);
+    @Override
+    public void showCategories(java.util.List<CatalogCategoryItem> items,
+                               int selectedIndex,
+                               String breadcrumb,
+                               String status) {
+        java.util.List<CategoryListPanel.CategoryItem> mapped = items.stream()
+                .map(item -> new CategoryListPanel.CategoryItem(
+                        item.id(),
+                        item.label(),
+                        item.hasChildren(),
+                        item.gameCount()))
+                .toList();
+        categoryListPanel.show(mapped, selectedIndex);
         switchTo(CategoryListPanel.CARD);
         setBreadcrumb(breadcrumb);
         setStatus(status);
         SwingUtilities.invokeLater(categoryListPanel::requestFocusInWindow);
     }
 
-    void showGames(java.util.List<GameSummary> games,
-                   int selectedIndex,
-                   String breadcrumb,
-                   String status) {
+    @Override
+    public void showGames(java.util.List<GameSummary> games,
+                          int selectedIndex,
+                          String breadcrumb,
+                          String status) {
         gameListPanel.show(games, selectedIndex);
         switchTo(GameListPanel.CARD);
         setBreadcrumb(breadcrumb);
@@ -109,12 +121,14 @@ final class CatalogViewCoordinator {
         SwingUtilities.invokeLater(gameListPanel::requestFocusInWindow);
     }
 
-    void setStatus(String text) {
+    @Override
+    public void setStatus(String text) {
         String safe = (text == null || text.isBlank()) ? " " : text;
         SwingUtilities.invokeLater(() -> statusBanner.setStatus(safe));
     }
 
-    void setLoadingState(boolean busy) {
+    @Override
+    public void setLoadingState(boolean busy) {
         categoryListPanel.setEnabled(!busy);
         gameListPanel.setEnabled(!busy);
     }
@@ -125,7 +139,8 @@ final class CatalogViewCoordinator {
         }
     }
 
-    void playNavigateSound() {
+    @Override
+    public void playNavigateSound() {
         if (soundManager != null) {
             soundManager.play(SoundBank.MENU_NAVIGATE);
         }

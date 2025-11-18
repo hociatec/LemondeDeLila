@@ -1,36 +1,36 @@
 package com.lemondelila.client.gamelogic.panierexpress.model;
 
 import com.lemondelila.client.game.model.GameSessionStore;
+import com.lemondelila.client.game.model.InMemoryGameSessionStore;
 
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 
 public final class PanierExpressSessionStore implements GameSessionStore<PanierExpressSession> {
 
-    private final AtomicReference<PanierExpressSession> session = new AtomicReference<>();
+    private final InMemoryGameSessionStore<PanierExpressSession> delegate = new InMemoryGameSessionStore<>();
 
     @Override
     public void save(PanierExpressSession value) {
-        session.set(value);
+        delegate.save(value);
     }
 
     @Override
     public Optional<PanierExpressSession> find(int roomId) {
-        return current().filter(s -> s.roomId() == roomId);
+        return delegate.find(roomId);
     }
 
     @Override
     public Optional<PanierExpressSession> current() {
-        return Optional.ofNullable(session.get());
+        return delegate.current();
     }
 
     @Override
     public void clear(int roomId) {
-        session.getAndUpdate(existing -> existing != null && existing.roomId() == roomId ? null : existing);
+        delegate.clear(roomId);
     }
 
     @Override
     public void clearAll() {
-        session.set(null);
+        delegate.clearAll();
     }
 }

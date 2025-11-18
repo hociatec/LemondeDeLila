@@ -1,5 +1,6 @@
 package com.lemondelila.client.catalogue.controller;
 
+import com.lemondelila.client.application.Internationalization;
 import com.lemondelila.client.catalogue.view.CatalogScreen;
 import com.lemondelila.client.framework.core.di.Inject;
 import com.lemondelila.client.framework.ui.ControllerResult;
@@ -27,10 +28,12 @@ public final class CatalogController {
      */
     public ControllerResult openCatalog() {
         if (session.authenticated().isEmpty()) {
-            dialogService.error("Authentification requise", "Veuillez vous reconnecter pour acceder au catalogue.");
-            return ControllerResult.status("Connexion requise pour ouvrir le catalogue.");
+            dialogService.error(
+                    Internationalization.text("catalog.controller.auth.title"),
+                    Internationalization.text("catalog.controller.auth.body"));
+            return ControllerResult.status(Internationalization.text("catalog.controller.auth.status"));
         }
         return ControllerResult.navigate(CatalogScreen.ID)
-                .withStatus("Catalogue ouvert.");
+                .withStatus(Internationalization.text("catalog.controller.open.status"));
     }
 }

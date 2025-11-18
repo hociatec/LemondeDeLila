@@ -1,5 +1,6 @@
 package com.lemondelila.client.catalogue.view;
 
+import com.lemondelila.client.application.Internationalization;
 import com.lemondelila.client.catalogue.model.GameSummary;
 import com.lemondelila.client.framework.access.AccessibleSpec;
 import com.lemondelila.client.framework.media.sound.SoundEffectManager;
@@ -12,9 +13,9 @@ final class GameListPanel extends AbstractCatalogListPanel<GameSummary> {
     static final String CARD = "games";
 
     GameListPanel(SoundEffectManager soundManager) {
-        super("Jeux disponibles", AccessibleSpec.builder()
-                .name("Liste des jeux")
-                .description("Choisissez un jeu et validez avec Entrée pour consulter sa fiche")
+        super(Internationalization.text("catalog.games.list.title"), AccessibleSpec.builder()
+                .name(Internationalization.text("catalog.games.list.name"))
+                .description(Internationalization.text("catalog.games.list.desc"))
                 .build(), soundManager);
     }
 

@@ -1,5 +1,6 @@
 package com.lemondelila.client.application.view.home;
 
+import com.lemondelila.client.application.Internationalization;
 import com.lemondelila.client.framework.access.NarrationQueue;
 import com.lemondelila.client.framework.core.event.DomainEventBus;
 import com.lemondelila.client.framework.core.task.TaskScheduler;
@@ -12,7 +13,6 @@ import com.lemondelila.client.user.model.ClientSession;
 import javax.swing.SwingUtilities;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
@@ -56,7 +56,7 @@ final class HomeScreenLifecycle {
         if (autoLogin) {
             attemptAutoLogin(view);
         } else if (narrationQueue != null) {
-            narrationQueue.enqueue(screen, "Ecran d'accueil, utilisez les fleches pour naviguer.");
+            narrationQueue.enqueue(screen, Internationalization.text("home.narration.welcome"));
         }
     }
 
@@ -71,7 +71,7 @@ final class HomeScreenLifecycle {
         if (auth == null) {
             return;
         }
-        view.setStatus("Restauration de votre session...");
+        view.setStatus(Internationalization.text("home.restore.inprogress"));
         CompletableFuture<Void> future = new CompletableFuture<>();
         autoLoginTask = future;
         taskScheduler.runAsync(() -> {
@@ -92,11 +92,11 @@ final class HomeScreenLifecycle {
             autoLoginTask = null;
             if (error == null) {
                 eventBus.publish(new LoginSucceeded(auth.username(), auth.token()));
-                SwingUtilities.invokeLater(() -> view.setStatus("Session restaurée."));
+                SwingUtilities.invokeLater(() -> view.setStatus(Internationalization.text("home.restore.success")));
             } else {
                 session.clear();
                 SwingUtilities.invokeLater(() -> {
-                    view.setStatus("Impossible de restaurer votre session. Merci de vous reconnecter.");
+                    view.setStatus(Internationalization.text("home.restore.failed"));
                     view.showLanding();
                 });
             }

@@ -22,6 +22,7 @@ import com.lemondelila.client.framework.ui.screen.ScreenId;
 import com.lemondelila.client.game.view.AbstractGameScreen;
 import com.lemondelila.client.gamelogic.missionnemesis.presenter.NemesisGamePresenter;
 import com.lemondelila.client.gamelogic.missionnemesis.presenter.NemesisGameInteractor;
+import com.lemondelila.client.gamelogic.missionnemesis.presenter.NemesisScreenPresenter;
 import com.lemondelila.client.gamelogic.missionnemesis.presenter.NemesisSessionPresenter;
 
 import javax.swing.BorderFactory;
@@ -34,9 +35,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
 
-public final class NemesisScreen extends AbstractGameScreen {
+public final class NemesisScreen extends AbstractGameScreen implements NemesisScreenPresenter.View {
 
     public static final ScreenId ID = ScreenId.of("mission-nemesis");
 
@@ -85,7 +85,7 @@ public final class NemesisScreen extends AbstractGameScreen {
     private final JPanel mainPanel = new JPanel(mainLayout);
     private final NemesisSessionPresenter sessionPresenter;
     private final NemesisGamePresenter gamePresenter;
-    private final Consumer<NemesisSession> sessionListener;
+    private final NemesisScreenPresenter screenPresenter;
     private AutoCloseable dialogBinding;
 
     @Inject
@@ -133,7 +133,8 @@ public final class NemesisScreen extends AbstractGameScreen {
                 }
         );
         this.enemyGrid.setFireHandler(gamePresenter::fireAt);
-        this.sessionListener = gamePresenter::handleSessionUpdate;
+        this.screenPresenter = new NemesisScreenPresenter(controller, sessionPresenter, gamePresenter);
+        this.screenPresenter.bind(this);
         this.gameActionState = ensureGameActionState();
         this.shortcutBinder = new ShortcutBinder(shortcutRegistry, gameActionState.guard(), this);
         this.gameInteractor = new NemesisGameInteractor(
@@ -277,6 +278,11 @@ public final class NemesisScreen extends AbstractGameScreen {
     }
 
     @Override
+    public void requestGameplayFocus() {
+        SwingUtilities.invokeLater(() -> NemesisScreen.this.requestFocusInWindow());
+    }
+
+    @Override
     public ScreenId id() {
         return ID;
     }
@@ -289,16 +295,16 @@ public final class NemesisScreen extends AbstractGameScreen {
     @Override
     public void onShow(ScreenContext context) {
         super.onShow(context);
-        controller.addListener(sessionListener);
         bindDialogService();
         configureKeyMap();
         showSetup();
+        screenPresenter.onShow();
     }
 
     @Override
     public void onHide(ScreenContext context) {
         super.onHide(context);
-        controller.removeListener(sessionListener);
+        screenPresenter.onHide();
         resetShortcutScopes();
         releaseDialogBinding();
     }

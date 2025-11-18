@@ -1,5 +1,6 @@
 package com.lemondelila.client.gamelogic.panierexpress.view;
 
+import com.lemondelila.client.application.Internationalization;
 import com.lemondelila.client.framework.access.AccessibleDecorator;
 import com.lemondelila.client.framework.access.AccessibleSpec;
 import com.lemondelila.client.framework.access.game.GameHistorySidebar;
@@ -25,12 +26,12 @@ import java.util.List;
  */
 public final class PanierExpressGamePanel extends JPanel {
 
-    private final JLabel statusLabel = new JLabel("Partie en pr?paration...");
+    private final JLabel statusLabel = new JLabel(Internationalization.text("panier.game.status.default"));
     private final JLabel pendingLabel = new JLabel(" ");
     private final GameHistorySidebar historySidebar = new GameHistorySidebar(
-            "Historique",
-            "Historique des actions",
-            "Liste des derniers ?v??nements de la partie.",
+            Internationalization.text("panier.game.history.title"),
+            Internationalization.text("panier.game.history.accessible"),
+            Internationalization.text("panier.game.history.desc"),
             new Dimension(320, 400)
     );
 
@@ -38,9 +39,9 @@ public final class PanierExpressGamePanel extends JPanel {
     private final JLabel quizQuestionLabel = new JLabel(" ");
     private final JTextArea quizChoicesArea = new JTextArea();
 
-    private final JTextArea yourProgressArea = createReadOnlyArea("Votre progression");
-    private final JTextArea playersArea = createReadOnlyArea("Progression des joueurs");
-    private final JTextArea scoreArea = createReadOnlyArea("Score en cours");
+    private final JTextArea yourProgressArea = createReadOnlyArea("panier.game.progress.self");
+    private final JTextArea playersArea = createReadOnlyArea("panier.game.progress.players");
+    private final JTextArea scoreArea = createReadOnlyArea("panier.game.score");
     private boolean accessibleToggle;
 
     PanierExpressGamePanel() {
@@ -60,8 +61,8 @@ public final class PanierExpressGamePanel extends JPanel {
         statusLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         statusLabel.setFocusable(false);
         AccessibleDecorator.apply(statusLabel, AccessibleSpec.builder()
-                .name("Statut de la partie")
-                .description("Informations générales sur l'état du tour en cours.")
+                .name(Internationalization.text("panier.game.status.name"))
+                .description(Internationalization.text("panier.game.status.desc"))
                 .build());
         leftColumn.add(statusLabel);
 
@@ -69,8 +70,8 @@ public final class PanierExpressGamePanel extends JPanel {
         pendingLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         pendingLabel.setFocusable(false);
         AccessibleDecorator.apply(pendingLabel, AccessibleSpec.builder()
-                .name("Informations de tour")
-                .description("Indications supplémentaires sur les actions attendues.")
+                .name(Internationalization.text("panier.game.pending.name"))
+                .description(Internationalization.text("panier.game.pending.desc"))
                 .build());
         leftColumn.add(pendingLabel);
 
@@ -79,11 +80,11 @@ public final class PanierExpressGamePanel extends JPanel {
         leftColumn.add(quizPanel);
 
         leftColumn.add(Box.createRigidArea(new Dimension(0, 12)));
-        leftColumn.add(wrap(yourProgressArea, "Votre progression"));
+        leftColumn.add(wrap(yourProgressArea, Internationalization.text("panier.game.progress.self.title")));
         leftColumn.add(Box.createRigidArea(new Dimension(0, 12)));
-        leftColumn.add(wrap(playersArea, "Progression des joueurs"));
+        leftColumn.add(wrap(playersArea, Internationalization.text("panier.game.progress.players.title")));
         leftColumn.add(Box.createRigidArea(new Dimension(0, 12)));
-        leftColumn.add(wrap(scoreArea, "Score en cours"));
+        leftColumn.add(wrap(scoreArea, Internationalization.text("panier.game.score.title")));
 
         add(leftColumn, BorderLayout.CENTER);
 
@@ -92,12 +93,12 @@ public final class PanierExpressGamePanel extends JPanel {
 
     private void buildQuizPanel() {
         quizPanel.setLayout(new BoxLayout(quizPanel, BoxLayout.Y_AXIS));
-        quizPanel.setBorder(BorderFactory.createTitledBorder("Quiz"));
+        quizPanel.setBorder(BorderFactory.createTitledBorder(Internationalization.text("panier.game.quiz.title")));
         quizPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
         quizPanel.setVisible(false);
         AccessibleDecorator.apply(quizQuestionLabel, AccessibleSpec.builder()
-                .name("Question de quiz")
-                .description("Texte de la question actuellement posée.")
+                .name(Internationalization.text("panier.game.quiz.question.name"))
+                .description(Internationalization.text("panier.game.quiz.question.desc"))
                 .build());
         quizQuestionLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         quizPanel.add(quizQuestionLabel);
@@ -108,21 +109,21 @@ public final class PanierExpressGamePanel extends JPanel {
         quizChoicesArea.setWrapStyleWord(true);
         quizChoicesArea.setFocusable(false);
         AccessibleDecorator.apply(quizChoicesArea, AccessibleSpec.builder()
-                .name("Choix du quiz")
-                .description("Réponses possibles à la question du quiz.")
+                .name(Internationalization.text("panier.game.quiz.choices.name"))
+                .description(Internationalization.text("panier.game.quiz.choices.desc"))
                 .build());
         quizPanel.add(wrap(quizChoicesArea, null));
     }
 
-    private static JTextArea createReadOnlyArea(String accessibleName) {
+    private static JTextArea createReadOnlyArea(String nameKey) {
         JTextArea area = new JTextArea();
         area.setEditable(false);
         area.setLineWrap(true);
         area.setWrapStyleWord(true);
         area.setFocusable(false);
         AccessibleDecorator.apply(area, AccessibleSpec.builder()
-                .name(accessibleName)
-                .description("Informations détaillées : " + accessibleName.toLowerCase() + '.')
+                .name(Internationalization.text(nameKey + ".name"))
+                .description(Internationalization.text(nameKey + ".desc"))
                 .build());
         return area;
     }

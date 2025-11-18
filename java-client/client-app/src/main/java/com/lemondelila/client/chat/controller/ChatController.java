@@ -2,14 +2,13 @@ package com.lemondelila.client.chat.controller;
 
 import com.lemondelila.client.chat.events.ChatClosed;
 import com.lemondelila.client.chat.events.ChatOpened;
-import com.lemondelila.client.chat.service.ChatConnectionFactory;
+import com.lemondelila.client.chat.presenter.ChatPresenter;
 import com.lemondelila.client.chat.view.ChatWindow;
 import com.lemondelila.client.framework.core.di.Inject;
 import com.lemondelila.client.framework.core.event.DomainEventBus;
 import com.lemondelila.client.framework.ui.ControllerResult;
 import com.lemondelila.client.framework.ui.dialog.DialogService;
 import com.lemondelila.client.settings.service.AppSettingsService;
-import com.lemondelila.client.presence.service.PresenceRealtimeService;
 import com.lemondelila.client.user.model.ClientSession;
 
 import javax.swing.SwingUtilities;
@@ -21,10 +20,9 @@ import java.util.Objects;
  */
 public final class ChatController implements AutoCloseable {
 
-    private final ChatConnectionFactory connectionFactory;
+    private final ChatPresenter presenter;
     private final AppSettingsService settingsService;
     private final DialogService dialogService;
-    private final PresenceRealtimeService presenceService;
     private final ClientSession session;
     private final DomainEventBus eventBus;
 
@@ -32,16 +30,14 @@ public final class ChatController implements AutoCloseable {
     private boolean opened;
 
     @Inject
-    public ChatController(ChatConnectionFactory connectionFactory,
+    public ChatController(ChatPresenter presenter,
                           AppSettingsService settingsService,
                           DialogService dialogService,
-                          PresenceRealtimeService presenceService,
                           ClientSession session,
                           DomainEventBus eventBus) {
-        this.connectionFactory = Objects.requireNonNull(connectionFactory, "connectionFactory");
+        this.presenter = Objects.requireNonNull(presenter, "presenter");
         this.settingsService = Objects.requireNonNull(settingsService, "settingsService");
         this.dialogService = Objects.requireNonNull(dialogService, "dialogService");
-        this.presenceService = Objects.requireNonNull(presenceService, "presenceService");
         this.session = Objects.requireNonNull(session, "session");
         this.eventBus = Objects.requireNonNull(eventBus, "eventBus");
     }
@@ -62,7 +58,7 @@ public final class ChatController implements AutoCloseable {
             return ControllerResult.status("Tchat desactive.");
         }
         if (chatWindow == null || !chatWindow.isDisplayable()) {
-            chatWindow = new ChatWindow(owner, connectionFactory, settingsService, dialogService, presenceService);
+            chatWindow = new ChatWindow(owner, presenter, settingsService, dialogService);
             opened = false;
         }
         ChatWindow window = chatWindow;

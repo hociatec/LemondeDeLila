@@ -1,6 +1,7 @@
 package com.lemondelila.client.application.view.home;
 
 import com.lemondelila.client.application.AppBranding;
+import com.lemondelila.client.application.Internationalization;
 import com.lemondelila.client.framework.access.AccessibleDecorator;
 import com.lemondelila.client.framework.access.AccessibleSpec;
 import com.lemondelila.client.framework.access.FocusHighlighter;
@@ -42,8 +43,8 @@ final class HomeView {
         this.registerForm = new RegisterFormPanel(focusHighlighter);
         this.applicationName = branding.applicationName();
         this.statusBanner = new StatusBanner(
-                "Zone de statut",
-                "Affiche l'état des actions de connexion et d'inscription",
+                Internationalization.text("home.status.banner.name"),
+                Internationalization.text("home.status.banner.desc"),
                 root,
                 narrationQueue
         );
@@ -108,7 +109,7 @@ final class HomeView {
         root.setLayout(new BoxLayout(root, BoxLayout.Y_AXIS));
         root.setBorder(new EmptyBorder(48, 64, 48, 64));
 
-        JLabel title = new JLabel("Bienvenue dans " + applicationName);
+        JLabel title = new JLabel(Internationalization.text("home.heading", applicationName));
         title.setAlignmentX(Component.CENTER_ALIGNMENT);
         title.setFont(title.getFont().deriveFont(24f));
         root.add(title);

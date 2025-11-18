@@ -1,5 +1,6 @@
 package com.lemondelila.client.gamelogic.damenature.presenter;
 
+import com.lemondelila.client.application.Internationalization;
 import com.lemondelila.client.framework.access.game.AccessibilityService;
 import com.lemondelila.client.framework.ui.screen.ScreenId;
 import com.lemondelila.client.gamelogic.damenature.controller.DameNatureController;
@@ -58,11 +59,11 @@ public final class DameNaturePresenter {
         } else {
             gameplayPanel.reset();
             view.showGameplay();
-            view.announce("Lancement de la partie...");
+            view.announce(t("damenature.presenter.launch.start"));
             launchInProgress = true;
             handleActionFeedback(
                     controller.startNewGame(activeConfig),
-                    "Lancement de la partie...",
+                    t("damenature.presenter.launch.start"),
                     this::onLaunchCompleted,
                     throwable -> launchInProgress = false
             );
@@ -78,7 +79,7 @@ public final class DameNaturePresenter {
         controller.reset();
         pendingConfig = activeConfig;
         configPanel.setConfig(pendingConfig);
-        configPanel.setStatusMessage("Ajustez les options puis appuyez sur Entrée pour relancer.");
+        configPanel.setStatusMessage(t("damenature.presenter.config.adjust"));
         currentSession = null;
         launchInProgress = false;
         gameplayPanel.reset();
@@ -88,19 +89,21 @@ public final class DameNaturePresenter {
 
     public void startConfiguredGame(DameNatureConfig config) {
         launchInProgress = true;
-        configPanel.setStatusMessage("Initialisation de la partie...");
-        handleActionFeedback(controller.startNewGame(config), "Initialisation de la partie...",
+        configPanel.setStatusMessage(t("damenature.presenter.launch.init"));
+        handleActionFeedback(controller.startNewGame(config), t("damenature.presenter.launch.init"),
                 () -> {
                     activeConfig = config;
-                    configPanel.setStatusMessage("Partie lancée.");
+                    configPanel.setStatusMessage(t("damenature.presenter.launch.success"));
                     launchInProgress = false;
                     view.showGameplay();
                     view.requestGameplayFocus();
                 },
                 throwable -> {
                     launchInProgress = false;
-                    configPanel.setStatusMessage("Impossible de lancer la partie : " +
-                            (throwable.getMessage() == null ? "erreur inconnue" : throwable.getMessage()));
+                    String detail = throwable.getMessage() == null || throwable.getMessage().isBlank()
+                            ? t("damenature.presenter.error.unknown")
+                            : throwable.getMessage();
+                    configPanel.setStatusMessage(t("damenature.presenter.launch.failure", detail));
                 });
     }
 
@@ -134,41 +137,41 @@ public final class DameNaturePresenter {
     public void sendAskAction() {
         Optional<DameNatureGameplayPanel.PlayerOption> target = gameplayPanel.selectedPlayer();
         if (target.isEmpty()) {
-            view.announce("Choisissez un adversaire avec les flèches haut ou bas.");
+            view.announce(t("damenature.presenter.ask.select.opponent"));
             return;
         }
         Optional<DameNatureGameplayPanel.CardOption> card = gameplayPanel.selectedCard();
         if (card.isEmpty()) {
-            view.announce("Choisissez une carte avec les flèches gauche ou droite.");
+            view.announce(t("damenature.presenter.ask.select.card"));
             return;
         }
         DameNatureGameplayPanel.PlayerOption player = target.get();
         DameNatureGameplayPanel.CardOption cardOption = card.get();
         handleActionFeedback(
                 controller.askCard(player.id(), cardOption.familyId(), cardOption.memberId()),
-                "Demande de " + cardOption.memberName() + " à " + player.displayName() + "...",
+                t("damenature.presenter.ask.inprogress", cardOption.memberName(), player.displayName()),
                 null,
                 null
         );
     }
 
     public void triggerDraw() {
-        handleActionFeedback(controller.draw(), "Pioche en cours...", null, null);
+        handleActionFeedback(controller.draw(), t("damenature.presenter.draw.inprogress"), null, null);
     }
 
     public void answerQuiz(int index) {
         List<String> choices = gameplayPanel.currentQuizChoices();
         if (choices.isEmpty()) {
-            view.announce("Aucun quiz à répondre.");
+            view.announce(t("damenature.presenter.quiz.none"));
             return;
         }
         if (index < 0 || index >= choices.size()) {
-            view.announce("Choix invalide.");
+            view.announce(t("damenature.presenter.quiz.invalid"));
             return;
         }
         handleActionFeedback(
                 controller.answerQuiz(index),
-                "Réponse " + (index + 1) + " envoyée.",
+                t("damenature.presenter.quiz.sent", index + 1),
                 null,
                 null
         );
@@ -176,13 +179,13 @@ public final class DameNaturePresenter {
 
     public void announceCurrentTurn() {
         if (currentSession == null) {
-            view.announce("Aucune partie active.");
+            view.announce(t("damenature.presenter.no.session"));
             return;
         }
         DameNatureState state = currentSession.state();
         List<DameNatureState.Player> players = state.players();
         if (players.isEmpty() || state.turnIndex() < 0 || state.turnIndex() >= players.size()) {
-            view.announce("Tour inconnu.");
+            view.announce(t("damenature.presenter.turn.unknown"));
             return;
         }
         DameNatureState.Player player = players.get(state.turnIndex());
@@ -198,33 +201,38 @@ public final class DameNaturePresenter {
 
     public void announceTableParticipants() {
         if (currentSession == null) {
-            view.announce("Aucune partie en cours.");
+            view.announce(t("damenature.presenter.no.session"));
             return;
         }
         DameNatureState state = currentSession.state();
         List<DameNatureState.Player> players = state != null ? state.players() : null;
         if (players == null || players.isEmpty()) {
-            view.announce("Aucun joueur autour de la table.");
+            view.announce(t("damenature.presenter.table.empty"));
             return;
         }
         DameNatureState.Player selfPlayer = currentSession.self();
         String selfUsername = selfPlayer != null ? selfPlayer.username() : null;
         StringBuilder builder = new StringBuilder();
-        builder.append("Table de ").append(players.size())
-                .append(players.size() > 1 ? " joueurs : " : " joueur : ");
+        builder.append(t("damenature.presenter.table.header",
+                players.size(),
+                players.size() > 1
+                        ? t("damenature.presenter.table.players")
+                        : t("damenature.presenter.table.player")));
         for (int i = 0; i < players.size(); i++) {
             DameNatureState.Player player = players.get(i);
             String name = player != null ? player.username() : null;
-            String display = (name == null || name.isBlank()) ? "Joueur " + (i + 1) : name;
+            String display = (name == null || name.isBlank())
+                    ? t("damenature.presenter.table.anon", i + 1)
+                    : name;
             if (selfUsername != null && name != null && name.equalsIgnoreCase(selfUsername)) {
-                display = display + " (vous)";
+                display = display + t("damenature.presenter.table.self");
             }
             if (player != null && player.isBot()) {
-                display = display + " (bot)";
+                display = display + t("damenature.bot.suffix");
             }
             builder.append(display);
             if (i < players.size() - 1) {
-                builder.append(", ");
+                builder.append(t("damenature.presenter.table.separator"));
             }
         }
         view.announce(builder.toString());
@@ -240,7 +248,7 @@ public final class DameNaturePresenter {
     }
 
     public void refreshGame() {
-        handleActionFeedback(controller.refresh(), "Actualisation en cours...", null, null);
+        handleActionFeedback(controller.refresh(), t("damenature.presenter.refresh.inprogress"), null, null);
     }
 
     private void handleActionFeedback(CompletableFuture<DameNatureSession> future,
@@ -255,12 +263,13 @@ public final class DameNaturePresenter {
                 Throwable cause = error.getCause() != null ? error.getCause() : error;
                 String message = cause.getMessage();
                 view.announce(message == null || message.isBlank()
-                        ? "Action impossible."
+                        ? t("damenature.presenter.action.failed")
                         : message);
                 if (onError != null) {
                     onError.accept(cause);
                 }
             } else if (session != null) {
+                view.announce(t("damenature.presenter.action.success"));
                 if (onSuccess != null) {
                     onSuccess.run();
                 }
@@ -277,13 +286,17 @@ public final class DameNaturePresenter {
         if (logs != null && !logs.isEmpty()) {
             return logs.get(logs.size() - 1).message();
         }
-        return "Action effectuée.";
+        return t("damenature.presenter.action.success");
     }
 
     private static String decorateBot(String base, boolean isBot) {
         if (base == null || base.isBlank()) {
-            return isBot ? "Bot" : "";
+            return isBot ? t("damenature.bot.only") : "";
         }
-        return isBot ? base + " (bot)" : base;
+        return isBot ? base + t("damenature.bot.suffix") : base;
+    }
+
+    private static String t(String key, Object... args) {
+        return Internationalization.text(key, args);
     }
 }

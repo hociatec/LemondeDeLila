@@ -1,5 +1,6 @@
 package com.lemondelila.client.catalogue.view;
 
+import com.lemondelila.client.application.Internationalization;
 import com.lemondelila.client.catalogue.model.GameSummary;
 import com.lemondelila.client.framework.access.AccessibleDecorator;
 import com.lemondelila.client.framework.access.AccessibleSpec;
@@ -30,15 +31,15 @@ final class CatalogGameCard extends JPanel implements ListCellRenderer<GameSumma
         setBorder(new EmptyBorder(8, 10, 8, 10));
         title.setFont(title.getFont().deriveFont(Font.BOLD, 16f));
         AccessibleDecorator.apply(title, AccessibleSpec.builder()
-                .name("Nom du jeu")
-                .description("Nom du jeu présenté dans la liste.")
+                .name(Internationalization.text("catalog.gamecard.title.name"))
+                .description(Internationalization.text("catalog.gamecard.title.desc"))
                 .build());
 
         meta.setFont(meta.getFont().deriveFont(Font.PLAIN, 12f));
         meta.setForeground(new Color(80, 80, 80));
         AccessibleDecorator.apply(meta, AccessibleSpec.builder()
-                .name("Informations de jeu")
-                .description("Nombre de joueurs et catégories associées.")
+                .name(Internationalization.text("catalog.gamecard.meta.name"))
+                .description(Internationalization.text("catalog.gamecard.meta.desc"))
                 .build());
 
         summary.setLineWrap(true);
@@ -48,8 +49,8 @@ final class CatalogGameCard extends JPanel implements ListCellRenderer<GameSumma
         summary.setFocusable(false);
         summary.setBorder(null);
         AccessibleDecorator.apply(summary, AccessibleSpec.builder()
-                .name("Résumé du jeu")
-                .description("Bref résumé du jeu.")
+                .name(Internationalization.text("catalog.gamecard.summary.name"))
+                .description(Internationalization.text("catalog.gamecard.summary.desc"))
                 .build());
 
         JPanel header = new JPanel(new BorderLayout());
@@ -97,7 +98,9 @@ final class CatalogGameCard extends JPanel implements ListCellRenderer<GameSumma
 
     private String buildMeta(GameSummary summary) {
         StringBuilder builder = new StringBuilder();
-        builder.append(summary.minPlayers()).append(" - ").append(summary.maxPlayers()).append(" joueurs");
+        builder.append(Internationalization.text("catalog.gamecard.meta.players",
+                summary.minPlayers(),
+                summary.maxPlayers()));
         if (summary.categories() != null && !summary.categories().isEmpty()) {
             builder.append(" | ").append(String.join(", ", summary.categories()));
         }
@@ -107,7 +110,7 @@ final class CatalogGameCard extends JPanel implements ListCellRenderer<GameSumma
     private String buildSummary(GameSummary summary) {
         String description = summary.summary();
         if (description == null || description.isBlank()) {
-            return "Aucune description disponible.";
+            return Internationalization.text("catalog.gamecard.summary.none");
         }
         if (description.length() > 240) {
             return description.substring(0, 237).trim() + "...";

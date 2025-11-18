@@ -1,5 +1,6 @@
 package com.lemondelila.client.application.view.home;
 
+import com.lemondelila.client.application.Internationalization;
 import com.lemondelila.client.framework.access.AccessibleDecorator;
 import com.lemondelila.client.framework.access.AccessibleSpec;
 import com.lemondelila.client.framework.ui.util.ButtonUtils;
@@ -14,9 +15,9 @@ import java.awt.Dimension;
 
 final class LandingPanel extends JPanel {
 
-    private final JButton loginButton = new JButton("Se connecter");
-    private final JButton registerButton = new JButton("Créer un compte");
-    private final JButton quitButton = new JButton("Quitter");
+    private final JButton loginButton = new JButton(Internationalization.text("home.landing.login"));
+    private final JButton registerButton = new JButton(Internationalization.text("home.landing.register"));
+    private final JButton quitButton = new JButton(Internationalization.text("home.landing.quit"));
 
     LandingPanel() {
         setOpaque(false);
@@ -24,7 +25,8 @@ final class LandingPanel extends JPanel {
 
         loginButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         AccessibleDecorator.apply(loginButton, AccessibleSpec.builder()
-                .name("Bouton connexion")
+                .name(Internationalization.text("home.landing.login.name"))
+                .description(Internationalization.text("home.landing.login.desc"))
                 .shortcut("Alt+C")
                 .build());
         ButtonUtils.enterActivates(loginButton);
@@ -34,7 +36,8 @@ final class LandingPanel extends JPanel {
 
         registerButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         AccessibleDecorator.apply(registerButton, AccessibleSpec.builder()
-                .name("Bouton inscription")
+                .name(Internationalization.text("home.landing.register.name"))
+                .description(Internationalization.text("home.landing.register.desc"))
                 .shortcut("Alt+I")
                 .build());
         ButtonUtils.enterActivates(registerButton);
@@ -44,7 +47,8 @@ final class LandingPanel extends JPanel {
 
         quitButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         AccessibleDecorator.apply(quitButton, AccessibleSpec.builder()
-                .name("Quitter l'application")
+                .name(Internationalization.text("home.landing.quit.name"))
+                .description(Internationalization.text("home.landing.quit.desc"))
                 .shortcut("Alt+Q")
                 .build());
         ButtonUtils.enterActivates(quitButton);

@@ -103,12 +103,17 @@ final class MainMenuView {
         root.add(title);
         root.add(Box.createRigidArea(new Dimension(0, 32)));
 
-        buttons.forEach(button -> {
-            addMenuButton(button);
-            if (button != logoutButton) {
-                addSpacer();
-            }
-        });
+        addMenuButton(shelvesButton, "mainmenu.button.shelves.desc");
+        addSpacer();
+        addMenuButton(joinGameButton, "mainmenu.button.join.desc");
+        addSpacer();
+        addMenuButton(chatButton, "mainmenu.button.chat.desc");
+        addSpacer();
+        addMenuButton(socialButton, "mainmenu.button.social.desc");
+        addSpacer();
+        addMenuButton(optionsButton, "mainmenu.button.options.desc");
+        addSpacer();
+        addMenuButton(logoutButton, "mainmenu.button.logout.desc");
 
         root.add(Box.createRigidArea(new Dimension(0, 24)));
         JLabel bannerComponent = statusBanner.component();
@@ -116,19 +121,19 @@ final class MainMenuView {
         root.add(bannerComponent);
     }
 
-    private void addMenuButton(JButton button) {
+    private void addMenuButton(JButton button, String descKey) {
         button.setAlignmentX(Component.CENTER_ALIGNMENT);
         button.setMaximumSize(new Dimension(320, 48));
         button.setFocusTraversalKeysEnabled(false);
         ButtonUtils.enterActivates(button);
         AccessibleDecorator.apply(button, AccessibleSpec.builder()
                 .name(button.getText())
-                .description(Internationalization.text("mainmenu.button.desc", button.getText()))
+                .description(Internationalization.text(descKey))
                 .build());
         button.addFocusListener(new FocusAdapter() {
             @Override
             public void focusGained(FocusEvent e) {
-                statusBanner.setStatus("Selection : " + button.getText());
+                statusBanner.setStatus(Internationalization.text("mainmenu.selection", button.getText()));
             }
         });
         root.add(button);

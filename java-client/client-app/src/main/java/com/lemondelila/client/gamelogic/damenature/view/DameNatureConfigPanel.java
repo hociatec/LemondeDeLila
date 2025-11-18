@@ -1,5 +1,6 @@
 package com.lemondelila.client.gamelogic.damenature.view;
 
+import com.lemondelila.client.application.Internationalization;
 import com.lemondelila.client.gamelogic.damenature.model.DameNatureConfig;
 
 import javax.swing.AbstractAction;
@@ -75,31 +76,31 @@ final class DameNatureConfigPanel extends JPanel {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setBorder(new EmptyBorder(16, 16, 16, 16));
 
-        JLabel title = new JLabel("Préparer la partie Dame Nature");
+        JLabel title = new JLabel(Internationalization.text("damenature.config.title"));
         title.setFont(title.getFont().deriveFont(24f));
         title.setAlignmentX(LEFT_ALIGNMENT);
         add(title);
         add(Box.createRigidArea(new Dimension(0, 16)));
 
-        JLabel instructions = new JLabel("Utilisez ↑/↓ pour naviguer, ←/→ pour ajuster, Entrée pour lancer.");
+        JLabel instructions = new JLabel(Internationalization.text("damenature.config.instructions"));
         instructions.setAlignmentX(LEFT_ALIGNMENT);
         add(instructions);
         add(Box.createRigidArea(new Dimension(0, 12)));
 
-        add(optionRow("Nombre d’adversaires", botsValueLabel));
+        add(optionRow(Internationalization.text("damenature.config.option.bots"), botsValueLabel));
         add(Box.createRigidArea(new Dimension(0, 6)));
-        add(optionRow("Cartes danger", dangerValueLabel));
+        add(optionRow(Internationalization.text("damenature.config.option.danger"), dangerValueLabel));
         add(Box.createRigidArea(new Dimension(0, 6)));
-        add(optionRow("Quiz nature", quizValueLabel));
+        add(optionRow(Internationalization.text("damenature.config.option.quiz"), quizValueLabel));
         add(Box.createRigidArea(new Dimension(0, 12)));
 
-        JLabel launchHint = new JLabel("Entrée : lancer la partie, Q : quitter.");
+        JLabel launchHint = new JLabel(Internationalization.text("damenature.config.launch.hint"));
         launchHint.setAlignmentX(LEFT_ALIGNMENT);
         add(launchHint);
         add(Box.createRigidArea(new Dimension(0, 16)));
 
         statusLabel.setAlignmentX(LEFT_ALIGNMENT);
-        setAccessibleName(statusLabel, "Statut configuration");
+        setAccessibleName(statusLabel, Internationalization.text("damenature.config.status.name"));
         setAccessibleDescription(statusLabel, "");
         add(statusLabel);
     }

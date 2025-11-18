@@ -1,5 +1,6 @@
 package com.lemondelila.client.gamelogic.panierexpress.view;
 
+import com.lemondelila.client.application.Internationalization;
 import com.lemondelila.client.framework.access.AccessibleDecorator;
 import com.lemondelila.client.framework.access.AccessibleSpec;
 
@@ -66,8 +67,8 @@ final class PanierExpressActionPanel extends JPanel {
             }
         });
         AccessibleDecorator.apply(list, AccessibleSpec.builder()
-                .name("Actions disponibles")
-                .description("Utilisez les flèches haut et bas pour parcourir les actions, Entrée pour exécuter l'action sélectionnée.")
+                .name(Internationalization.text("panier.action.list.name"))
+                .description(Internationalization.text("panier.action.list.desc"))
                 .build());
 
         list.getInputMap(WHEN_FOCUSED).put(KeyStroke.getKeyStroke("ENTER"), "execute");
@@ -79,7 +80,7 @@ final class PanierExpressActionPanel extends JPanel {
         });
 
         JScrollPane scroll = new JScrollPane(list);
-        scroll.setBorder(javax.swing.BorderFactory.createTitledBorder("Actions"));
+        scroll.setBorder(javax.swing.BorderFactory.createTitledBorder(Internationalization.text("panier.action.list.title")));
         add(scroll, BorderLayout.CENTER);
     }
 

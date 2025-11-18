@@ -1,15 +1,11 @@
 package com.lemondelila.client.chat.view;
 
-import com.lemondelila.client.chat.model.ChatConnection;
-import com.lemondelila.client.chat.service.ChatConnectionFactory;
 import com.lemondelila.client.chat.model.ChatMessage;
 import com.lemondelila.client.chat.model.ChatState;
-import com.lemondelila.client.presence.event.PresenceEvent;
-import com.lemondelila.client.presence.event.PresenceEventListener;
-import com.lemondelila.client.presence.event.PresenceUpdateEvent;
+import com.lemondelila.client.chat.presenter.ChatPresenter;
+import com.lemondelila.client.chat.presenter.ChatView;
 import com.lemondelila.client.presence.model.PresenceChat;
 import com.lemondelila.client.presence.model.PresencePlayer;
-import com.lemondelila.client.presence.service.PresenceRealtimeService;
 import com.lemondelila.client.settings.service.AppSettingsService;
 import com.lemondelila.client.framework.ui.dialog.DialogService;
 
@@ -37,7 +33,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public final class ChatWindow extends JDialog {
+public final class ChatWindow extends JDialog implements ChatView {
 
     private static final ZoneId LOCAL_ZONE = ZoneId.systemDefault();
     private static final DateTimeFormatter TIME_FORMATTER =
@@ -48,23 +44,18 @@ public final class ChatWindow extends JDialog {
     private final DefaultListModel<String> presenceModel = new DefaultListModel<>();
     private final JList<String> presenceList = new JList<>(presenceModel);
 
-    private final ChatConnection connection;
+    private final ChatPresenter presenter;
     private final AppSettingsService settingsService;
     private final DialogService dialogService;
-    private final PresenceRealtimeService presenceService;
-    private final PresenceEventListener presenceListener;
-    private boolean presenceStarted;
 
     public ChatWindow(Window owner,
-                      ChatConnectionFactory connectionFactory,
+                      ChatPresenter presenter,
                       AppSettingsService settingsService,
-                      DialogService dialogService,
-                      PresenceRealtimeService presenceService) {
+                      DialogService dialogService) {
         super(owner, "Tchat", ModalityType.MODELESS);
+        this.presenter = presenter;
         this.settingsService = settingsService;
         this.dialogService = dialogService;
-        this.presenceService = presenceService;
-        this.presenceListener = this::handlePresenceEvent;
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         setLayout(new BorderLayout(8, 8));
         setPreferredSize(new Dimension(520, 440));
@@ -101,22 +92,9 @@ public final class ChatWindow extends JDialog {
         composer.add(inputField, BorderLayout.CENTER);
         add(composer, BorderLayout.SOUTH);
 
-        this.connection = connectionFactory.open();
-        if (presenceService != null) {
-            presenceService.addListener(presenceListener);
-            presenceService.start();
-            presenceStarted = true;
-            List<PresencePlayer> snapshot = presenceService.latestPresence();
-            if (snapshot != null && !snapshot.isEmpty()) {
-                updatePresenceList(snapshot);
-            } else {
-                updatePresenceList(List.of());
-            }
-        } else {
-            updatePresenceList(List.of());
-        }
-        registerHandlers();
-        connection.connect();
+        presenter.attach(this);
+        presenter.start();
+        updatePresence(List.of());
 
         inputField.addActionListener(e -> sendCurrentMessage());
         inputField.getInputMap().put(javax.swing.KeyStroke.getKeyStroke("shift ENTER"), "insert-break");
@@ -145,26 +123,38 @@ public final class ChatWindow extends JDialog {
         setLocationRelativeTo(owner);
     }
 
-    private void registerHandlers() {
-        connection.onHistory(messages -> SwingUtilities.invokeLater(() -> renderHistory(messages)));
-        connection.onMessage(message -> SwingUtilities.invokeLater(() -> appendMessage(message)));
-        connection.onState(state -> SwingUtilities.invokeLater(() -> appendStatus(state)));
-        connection.onError(error -> SwingUtilities.invokeLater(() -> dialogService.error("Tchat", error)));
+    @Override
+    public void showHistory(List<ChatMessage> messages) {
+        invokeOnEdt(() -> renderHistory(messages));
     }
 
-    private void handlePresenceEvent(PresenceEvent event) {
-        if (event instanceof PresenceUpdateEvent update) {
-            SwingUtilities.invokeLater(() -> updatePresenceList(update.players()));
-        }
+    @Override
+    public void appendMessage(ChatMessage message) {
+        invokeOnEdt(() -> appendMessageInternal(message));
+    }
+
+    @Override
+    public void showStatus(ChatState state) {
+        invokeOnEdt(() -> appendStatus(state));
+    }
+
+    @Override
+    public void showError(String message) {
+        invokeOnEdt(() -> dialogService.error("Tchat", message));
+    }
+
+    @Override
+    public void updatePresence(List<PresencePlayer> players) {
+        invokeOnEdt(() -> updatePresenceListInternal(players));
     }
 
     private void renderHistory(List<ChatMessage> messages) {
         historyArea.setText("");
-        messages.forEach(this::appendMessage);
+        messages.forEach(this::appendMessageInternal);
         appendBlankLine();
     }
 
-    private void appendMessage(ChatMessage message) {
+    private void appendMessageInternal(ChatMessage message) {
         removeTrailingBlankLine();
         String timestamp = TIME_FORMATTER.format(message.createdAt().atZone(LOCAL_ZONE));
         historyArea.append(String.format("[%s] %s : %s%n", timestamp, message.username(), message.text()));
@@ -187,7 +177,7 @@ public final class ChatWindow extends JDialog {
         if (text.isEmpty()) {
             return;
         }
-        connection.sendMessage(text);
+        presenter.sendMessage(text);
         inputField.setText("");
     }
 
@@ -206,7 +196,7 @@ public final class ChatWindow extends JDialog {
         }
     }
 
-    private void updatePresenceList(List<PresencePlayer> players) {
+    private void updatePresenceListInternal(List<PresencePlayer> players) {
         presenceModel.clear();
         if (players.isEmpty()) {
             presenceModel.addElement("Aucun joueur en ligne");
@@ -224,15 +214,17 @@ public final class ChatWindow extends JDialog {
 
     @Override
     public void dispose() {
-        if (presenceService != null) {
-            presenceService.removeListener(presenceListener);
-            if (presenceStarted) {
-                presenceService.stop();
-                presenceStarted = false;
-            }
-        }
-        connection.close();
+        presenter.close();
+        presenter.detach();
         super.dispose();
+    }
+
+    private void invokeOnEdt(Runnable runnable) {
+        if (SwingUtilities.isEventDispatchThread()) {
+            runnable.run();
+        } else {
+            SwingUtilities.invokeLater(runnable);
+        }
     }
 }
 

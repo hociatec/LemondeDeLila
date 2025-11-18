@@ -4,8 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lemondelila.client.chat.model.ChatConnection;
 import com.lemondelila.client.framework.core.config.ConfigurationService;
 import com.lemondelila.client.framework.core.di.Inject;
-import com.lemondelila.client.framework.network.channel.PresenceRealtimeChannel;
-import com.lemondelila.client.framework.network.channel.RealtimeChannel;
+import com.lemondelila.framework.network.channel.PresenceRealtimeChannel;
+import com.lemondelila.framework.network.channel.RealtimeChannel;
 import com.lemondelila.client.user.model.ClientSession;
 
 import java.net.URI;
