@@ -4,7 +4,7 @@
 
 | Service | Rôle | Commandes utiles |
 |---------|------|------------------|
-| `nginx` | Reverse-proxy HTTPS pour `hociatec.fr` et `api.hociatec.fr`. Sert Symfony et relaie les WebSockets pour `wss://hociatec.fr`. | `sudo systemctl reload nginx` |
+| `nginx` | Reverse-proxy HTTPS pour `lilas.hociatec.fr`. Sert Symfony et relaie les WebSockets pour `wss://lilas.hociatec.fr`. | `sudo systemctl reload nginx` |
 | `php8.2-fpm` | Pools PHP pour les requêtes HTTP/API. | `sudo systemctl restart php8.2-fpm` |
 | `lila-realtime.service` | Lance `bin/console app:realtime:serve --env=prod` (WebSocket/push). | `sudo systemctl restart|status lila-realtime.service` |
 | `lila-backend.service` | Service one-shot qui préchauffe le cache Symfony au boot. | `sudo systemctl start lila-backend.service` |
@@ -32,26 +32,26 @@ Le script suppose que l’utilisateur courant peut exécuter `sudo systemctl` sa
 
 ## Configuration réseau
 
-- `hociatec.fr`, `www.hociatec.fr` et `api.hociatec.fr` pointent vers `/home/ubuntu/lemondeDeLila/backend/public` via HTTPS (TLS Let’s Encrypt).
-- `hociatec.fr` relaie aussi les WebSockets (`wss://hociatec.fr`) vers `http://127.0.0.1:8081`, avec les en-têtes nécessaires (`Upgrade`, `Connection`, `X-Forwarded-*`).
+- `lilas.hociatec.fr` pointe vers `/home/ubuntu/lemondeDeLila/backend/public` via HTTPS (TLS Let’s Encrypt).
+- `lilas.hociatec.fr` relaie aussi les WebSockets (`wss://lilas.hociatec.fr`) vers `http://127.0.0.1:8081`, avec les en-têtes nécessaires (`Upgrade`, `Connection`, `X-Forwarded-*`).
 - Le backend répond maintenant sur `/` avec un JSON de santé (`App\Module\Core\Controller\LandingController`), ce qui évite les 404 pour les vérifications simples.
 
 ### Client Java
 
 - Le fichier `java-client/client-app/src/main/resources/config/client.properties` pointe désormais sur la production :
-  - `network.http.base=https://hociatec.fr/api/`
-  - `network.ws.url=wss://hociatec.fr/ws`
-  - `network.ws.presence=wss://hociatec.fr/presence`
+  - `network.http.base=https://lilas.hociatec.fr/api/`
+  - `network.ws.url=wss://lilas.hociatec.fr/ws`
+  - `network.ws.presence=wss://lilas.hociatec.fr/presence`
 - Les valeurs par défaut côté code (fallbacks) ont été alignées, ce qui permet d’utiliser le client sans modification locale.
-- Les variables `APP_CLIENT_VERSION` / `APP_CLIENT_DOWNLOAD_URL` (définies dans `.env*`) alimentent l’endpoint `/client/version` : le client Swing s’en sert pour le bouton “Vérifier/Installer les mises à jour”. Le fichier ZIP est généré localement via `./tools/build-client-package.sh` et exposé par Nginx (`https://hociatec.fr/downloads/le-monde-de-lila-client.zip`).
-- `updates.check.url` contrôle l’URL interrogée côté client (`client.properties`). Par défaut : `https://hociatec.fr/client/version`.
+- Les variables `APP_CLIENT_VERSION` / `APP_CLIENT_DOWNLOAD_URL` (définies dans `.env*`) alimentent l’endpoint `/client/version` : le client Swing s’en sert pour le bouton “Vérifier/Installer les mises à jour”. Le fichier ZIP est généré localement via `./tools/build-client-package.sh` et exposé par Nginx (`https://lilas.hociatec.fr/downloads/le-monde-de-lila-client.zip`).
+- `updates.check.url` contrôle l’URL interrogée côté client (`client.properties`). Par défaut : `https://lilas.hociatec.fr/client/version`.
 
 Vérifications rapides :
 
 ```bash
-curl https://hociatec.fr/
-curl -I https://hociatec.fr/api
-curl -I https://hociatec.fr/ws
+curl https://lilas.hociatec.fr/
+curl -I https://lilas.hociatec.fr/api
+curl -I https://lilas.hociatec.fr/ws
 systemctl status lila-realtime.service
 ```
 

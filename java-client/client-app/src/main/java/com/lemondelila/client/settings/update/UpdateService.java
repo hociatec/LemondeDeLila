@@ -54,7 +54,7 @@ public final class UpdateService {
         this.objectMapper = Objects.requireNonNull(objectMapper, "objectMapper");
         this.scheduler = Objects.requireNonNull(scheduler, "scheduler");
         Objects.requireNonNull(configurationService, "configurationService");
-        this.checkUri = URI.create(configurationService.get("updates.check.url", "https://hociatec.fr/client/version"));
+        this.checkUri = URI.create(configurationService.get("updates.check.url", "https://lilas.hociatec.fr/client/version"));
         this.currentVersion = resolveVersion(configurationService);
         this.configuredRoot = configurationService.get("updates.root.dir")
                 .map(String::trim)

@@ -44,7 +44,7 @@ public final class ChatConnectionFactory {
         if (!presenceUrl.isEmpty()) {
             return URI.create(presenceUrl);
         }
-        String fallback = configuration.get("network.ws.url", "wss://hociatec.fr/ws").trim();
+        String fallback = configuration.get("network.ws.url", "wss://lilas.hociatec.fr/ws").trim();
         if (!fallback.endsWith("/presence")) {
             if (fallback.endsWith("/ws")) {
                 fallback = fallback.substring(0, fallback.length() - 3);
@@ -58,4 +58,3 @@ public final class ChatConnectionFactory {
     }
 
 }
-
