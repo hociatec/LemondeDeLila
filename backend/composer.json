@@ -44,10 +44,10 @@
     },
     "autoload": {
         "psr-4": {
-            "App\\Module\\Game\\GameCatalogue\\JeuxDeCartes\\": "src/Module/Game/GameCatalogue/Jeux De Cartes/",
-            "App\\Module\\Game\\GameCatalogue\\JeuxDeCartes\\VentsDansants\\": "src/Module/Game/GameCatalogue/Jeux De Cartes/Vents Dansants/",
-            "App\\Module\\Game\\GameCatalogue\\JeuxDePlateaux\\": "src/Module/Game/GameCatalogue/Jeux De Plateaux/",
-            "App\\Module\\Game\\GameCatalogue\\JeuxDePlateaux\\LesQuatreVents\\": "src/Module/Game/GameCatalogue/Jeux De Plateaux/Les Quatre Vents/",
+            "App\\Module\\Game\\GameCatalogue\\JeuxDeCartes\\": "src/Module/Game/GameCatalogue/JeuxDeCartes/",
+            "App\\Module\\Game\\GameCatalogue\\JeuxDeCartes\\VentsDansants\\": "src/Module/Game/GameCatalogue/JeuxDeCartes/VentsDansants/",
+            "App\\Module\\Game\\GameCatalogue\\JeuxDePlateaux\\": "src/Module/Game/GameCatalogue/JeuxDePlateaux/",
+            "App\\Module\\Game\\GameCatalogue\\JeuxDePlateaux\\LesQuatreVents\\": "src/Module/Game/GameCatalogue/JeuxDePlateaux/LesQuatreVents/",
             "App\\": "src/"
         }
     },

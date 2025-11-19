@@ -2,6 +2,7 @@
 
 namespace App\Tests\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress;
 
+use App\Module\Game\Bot\BotAllocator;
 use App\Module\Game\Entity\Room;
 use App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Service\PanierExpressCommand;
 use App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Service\PanierExpressGameService;
@@ -9,6 +10,7 @@ use App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Se
 use App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Service\Support\PanierExpressDeckManager;
 use App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Service\Support\PanierExpressRandomizerInterface;
 use App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Service\Support\PanierExpressTileResolver;
+use App\Module\Game\Service\ParticipantResolver;
 use App\Module\User\Entity\User;
 use PHPUnit\Framework\TestCase;
 
@@ -22,6 +24,8 @@ final class PanierExpressGameServiceTest extends TestCase
             new PanierExpressService(),
             new PanierExpressDeckManager(),
             new PanierExpressTileResolver(),
+            new ParticipantResolver(),
+            new BotAllocator(),
             new class implements PanierExpressRandomizerInterface {
                 public function randomInt(int $min, int $max): int
                 {
