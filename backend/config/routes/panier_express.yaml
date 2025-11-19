@@ -20,3 +20,23 @@ panier_express_move:
         trailingSlash: '/?'
     defaults:
         trailingSlash: ''
+
+panier_express_table_prepare:
+    path: /api/games/panier-express/table
+    controller: App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Controller\PanierExpressTableController::prepare
+    methods: [POST]
+
+panier_express_table_add_bot:
+    path: /api/games/panier-express/table/{id}/bots
+    controller: App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Controller\PanierExpressTableController::addBot
+    methods: [POST]
+
+panier_express_table_remove_bot:
+    path: /api/games/panier-express/table/{id}/bots
+    controller: App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Controller\PanierExpressTableController::removeBot
+    methods: [DELETE]
+
+panier_express_table_launch:
+    path: /api/games/panier-express/table/{id}/launch
+    controller: App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Controller\PanierExpressTableController::launch
+    methods: [POST]

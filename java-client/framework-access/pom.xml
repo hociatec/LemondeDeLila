@@ -23,9 +23,18 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.lemondelila</groupId>
-            <artifactId>framework-ui</artifactId>
-            <version>${project.version}</version>
+            <groupId>net.java.dev.jna</groupId>
+            <artifactId>jna</artifactId>
+            <version>5.13.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.auto.service</groupId>
+            <artifactId>auto-service-annotations</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.google.auto.service</groupId>
+            <artifactId>auto-service</artifactId>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>

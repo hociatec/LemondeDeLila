@@ -2,10 +2,10 @@ package com.lemondelila.client.chat.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lemondelila.client.chat.model.ChatConnection;
-import com.lemondelila.client.framework.core.config.ConfigurationService;
 import com.lemondelila.client.framework.core.di.Inject;
-import com.lemondelila.framework.network.channel.PresenceRealtimeChannel;
-import com.lemondelila.framework.network.channel.RealtimeChannel;
+import com.lemondelila.client.framework.network.config.NetworkEndpoints;
+import com.lemondelila.client.framework.network.channel.PresenceRealtimeChannel;
+import com.lemondelila.client.framework.network.channel.RealtimeChannel;
 import com.lemondelila.client.user.model.ClientSession;
 
 import java.net.URI;
@@ -15,20 +15,20 @@ public final class ChatConnectionFactory {
 
     private final HttpClient httpClient;
     private final ObjectMapper mapper;
-    private final ConfigurationService configuration;
+    private final NetworkEndpoints endpoints;
     private final ClientSession session;
     private final RealtimeChannel presenceChannel;
 
     @Inject
     public ChatConnectionFactory(HttpClient httpClient,
                                  ObjectMapper mapper,
-                                 ConfigurationService configuration,
+                                 NetworkEndpoints endpoints,
                                  ClientSession session) {
         this.httpClient = httpClient;
         this.mapper = mapper;
-        this.configuration = configuration;
+        this.endpoints = endpoints;
         this.session = session;
-        this.presenceChannel = new PresenceRealtimeChannel(configuration);
+        this.presenceChannel = new PresenceRealtimeChannel(endpoints);
     }
 
     public ChatConnection open() {

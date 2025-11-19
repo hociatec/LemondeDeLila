@@ -5,7 +5,9 @@ import com.lemondelila.client.game.model.GameSession;
 
 import java.util.Optional;
 
-public record PanierExpressSession(int roomId, PanierExpressState state) implements GameSession<PanierExpressState> {
+public record PanierExpressSession(int roomId,
+                                   PanierExpressState state,
+                                   PanierExpressTableInfo table) implements GameSession<PanierExpressState> {
 
     private static final String GAME_TYPE = "panier-express";
 
@@ -22,5 +24,9 @@ public record PanierExpressSession(int roomId, PanierExpressState state) impleme
     @Override
     public Optional<GameEngine.Score> score() {
         return Optional.empty();
+    }
+
+    public Optional<PanierExpressTableInfo> tableInfo() {
+        return Optional.ofNullable(table);
     }
 }

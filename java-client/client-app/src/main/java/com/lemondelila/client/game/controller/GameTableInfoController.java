@@ -20,7 +20,7 @@ public final class GameTableInfoController {
     private final Runnable showTurnAction;
     private final ShortcutBinder shortcutBinder;
 
-    GameTableInfoController(JComponent component,
+    public GameTableInfoController(JComponent component,
                             Consumer<String> statusConsumer,
                             BooleanSupplier enabledSupplier,
                             Runnable showTableAction,

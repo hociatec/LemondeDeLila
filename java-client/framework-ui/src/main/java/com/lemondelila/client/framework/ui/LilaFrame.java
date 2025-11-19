@@ -1,6 +1,6 @@
 package com.lemondelila.client.framework.ui;
 
-import com.lemondelila.client.application.AppBranding;
+import com.lemondelila.client.framework.core.branding.AppBrandingProvider;
 import com.lemondelila.client.framework.core.di.Inject;
 import com.lemondelila.client.framework.ui.dialog.DialogService;
 import com.lemondelila.client.framework.ui.screen.ScreenManager;
@@ -14,7 +14,7 @@ public final class LilaFrame extends JFrame {
     private final ScreenManager screenManager;
 
     @Inject
-    public LilaFrame(ScreenManager screenManager, DialogService dialogService, AppBranding branding) {
+    public LilaFrame(ScreenManager screenManager, DialogService dialogService, AppBrandingProvider branding) {
         super(branding.applicationName());
         this.screenManager = screenManager;
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);

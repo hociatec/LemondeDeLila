@@ -100,6 +100,17 @@ abstract class AbstractCatalogListPanel<T> extends JPanel {
         selectionListeners.add(listener);
     }
 
+    void onEscape(Runnable action) {
+        Objects.requireNonNull(action, "action");
+        list.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke("ESCAPE"), "catalog.escape");
+        list.getActionMap().put("catalog.escape", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                action.run();
+            }
+        });
+    }
+
     T selectedItem() {
         return list.getSelectedValue();
     }

@@ -1,8 +1,10 @@
 package com.lemondelila.client.presence.controller;
 
+import com.lemondelila.client.application.Internationalization;
 import com.lemondelila.client.framework.core.di.Inject;
 import com.lemondelila.client.framework.ui.ControllerResult;
 import com.lemondelila.client.framework.ui.dialog.DialogService;
+import com.lemondelila.client.game.service.SimpleRateLimiter;
 import com.lemondelila.client.presence.view.PresenceDialogLauncher;
 import com.lemondelila.client.user.model.ClientSession;
 
@@ -17,6 +19,7 @@ public final class PresenceController {
     private final PresenceDialogLauncher dialogLauncher;
     private final DialogService dialogService;
     private final ClientSession session;
+    private final SimpleRateLimiter rateLimiter = new SimpleRateLimiter(1500);
 
     @Inject
     public PresenceController(PresenceDialogLauncher dialogLauncher,
@@ -34,11 +37,16 @@ public final class PresenceController {
      * @return résultat à appliquer (message, navigation ...).
      */
     public ControllerResult open(Component anchor) {
+        if (!rateLimiter.tryAcquire()) {
+            return ControllerResult.status(Internationalization.text("presence.status.open"));
+        }
         if (session.authenticated().isEmpty()) {
-            dialogService.error("Authentification requise", "Veuillez vous reconnecter pour acceder a la presence.");
-            return ControllerResult.status("Connexion requise pour voir la presence.");
+            dialogService.error(
+                    Internationalization.text("presence.auth.required.title"),
+                    Internationalization.text("presence.auth.required.body"));
+            return ControllerResult.status(Internationalization.text("presence.status.auth"));
         }
         dialogLauncher.show(anchor);
-        return ControllerResult.status("Liste des connectes ouverte.");
+        return ControllerResult.status(Internationalization.text("presence.status.open"));
     }
 }

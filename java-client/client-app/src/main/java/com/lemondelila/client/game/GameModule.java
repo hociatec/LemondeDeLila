@@ -1,5 +1,6 @@
 package com.lemondelila.client.game;
 
+import com.google.auto.service.AutoService;
 import com.lemondelila.client.framework.core.context.ApplicationContext;
 import com.lemondelila.client.framework.core.event.DomainEventBus;
 import com.lemondelila.client.framework.core.event.EventSubscriptions;
@@ -7,12 +8,16 @@ import com.lemondelila.client.framework.core.module.LilaModule;
 import com.lemondelila.client.game.launcher.GameLauncherRegistry;
 import com.lemondelila.client.game.model.GameEngineRegistry;
 import com.lemondelila.client.game.plugin.GamePlugin;
+import com.lemondelila.client.game.service.ActiveRoomTracker;
+import com.lemondelila.client.game.service.GameCommandCenter;
+import com.lemondelila.client.game.service.GameSessionSupport;
 import com.lemondelila.client.game.service.RoomBotRemoteClient;
 import com.lemondelila.client.user.events.UserLoggedOut;
 
 import java.util.List;
 import java.util.ServiceLoader;
 
+@AutoService(LilaModule.class)
 public final class GameModule implements LilaModule {
 
     private final EventSubscriptions subscriptions = new EventSubscriptions();
@@ -28,7 +33,10 @@ public final class GameModule implements LilaModule {
     @Override
     public void configure(ApplicationContext.Builder builder) {
         builder.bindAuto(GameLauncherRegistry.class);
+        builder.bindAuto(GameCommandCenter.class);
+        builder.bindAuto(GameSessionSupport.class);
         builder.bindAuto(RoomBotRemoteClient.class);
+        builder.bindAuto(ActiveRoomTracker.class);
         builder.bindFactory(GameEngineRegistry.class, ctx -> {
             GameEngineRegistry registry = new GameEngineRegistry();
             plugins.forEach(plugin -> plugin.registerEngines(ctx, registry));

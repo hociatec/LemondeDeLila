@@ -4,11 +4,11 @@ import com.lemondelila.client.application.view.menu.MainMenuScreen;
 import com.lemondelila.client.catalogue.model.GameSummary;
 import com.lemondelila.client.catalogue.presenter.CatalogPresenter;
 import com.lemondelila.client.catalogue.service.GameRulesService;
+import com.lemondelila.client.catalogue.view.CatalogViewFactory;
 import com.lemondelila.client.framework.access.NarrationQueue;
 import com.lemondelila.client.framework.access.shortcut.AccessibleShortcutRegistry;
 import com.lemondelila.client.framework.access.shortcut.ShortcutBinder;
 import com.lemondelila.client.framework.core.di.Inject;
-import com.lemondelila.client.framework.media.sound.SoundEffectManager;
 import com.lemondelila.client.framework.ui.dialog.DialogService;
 import com.lemondelila.client.framework.ui.screen.Screen;
 import com.lemondelila.client.framework.ui.screen.ScreenContext;
@@ -48,14 +48,14 @@ public final class CatalogScreen extends JPanel implements Screen, CatalogPresen
     public CatalogScreen(CatalogPresenter presenter,
                          GameRulesService rulesService,
                          DialogService dialogService,
-                         SoundEffectManager soundManager,
+                         CatalogViewFactory viewFactory,
                          AccessibleShortcutRegistry shortcutRegistry,
                          NarrationQueue narrationQueue) {
         this.dialogService = Objects.requireNonNull(dialogService, "dialogService");
         this.presenter = Objects.requireNonNull(presenter, "presenter");
         this.shortcutRegistry = Objects.requireNonNull(shortcutRegistry, "shortcutRegistry");
         this.narrationQueue = narrationQueue;
-        this.view = new CatalogViewCoordinator(this, soundManager, narrationQueue);
+        this.view = viewFactory.create(this);
         this.categoryListPanel = view.categoryListPanel();
         this.gameListPanel = view.gameListPanel();
         this.presenter.bind(this, view);
@@ -89,20 +89,15 @@ public final class CatalogScreen extends JPanel implements Screen, CatalogPresen
             presenter.onCategoryActivated(item != null ? item.id() : null, categoryListPanel.selectedIndex());
         });
         gameListPanel.onEnter(() -> presenter.onGameActivated(gameListPanel.selectedItem()));
+        Runnable backAction = presenter::onNavigateBack;
+        categoryListPanel.onEscape(backAction);
+        gameListPanel.onEscape(backAction);
     }
 
     private void showScreen(ScreenId id) {
         if (screenManager != null && id != null) {
             screenManager.show(id);
         }
-    }
-
-    private void setLoadingState(boolean busy) {
-        view.setLoadingState(busy);
-    }
-
-    private void setStatus(String text) {
-        view.setStatus(text);
     }
 
     private void updateActiveGame(GameSummary selection) {
@@ -210,7 +205,8 @@ public final class CatalogScreen extends JPanel implements Screen, CatalogPresen
         shortcutBinder.registerStroke("ESCAPE",
                 ACTION_BACK,
                 "Échap : revenir à l'écran précédent.",
-                e -> presenter.onNavigateBack());
+                e -> presenter.onNavigateBack(),
+                () -> true);
     }
 
     private void resetShortcutScope() {

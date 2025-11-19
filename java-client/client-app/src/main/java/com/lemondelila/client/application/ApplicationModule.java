@@ -1,48 +1,24 @@
 package com.lemondelila.client.application;
 
+import com.lemondelila.client.application.AppBranding;
 import com.lemondelila.client.framework.core.context.ApplicationContext;
 import com.lemondelila.client.framework.core.module.LilaModule;
-import com.lemondelila.client.catalogue.CatalogueModule;
-import com.lemondelila.client.chat.ChatModule;
-import com.lemondelila.client.application.AppBranding;
-import com.lemondelila.client.media.AudioModule;
-import com.lemondelila.client.game.GameModule;
-import com.lemondelila.client.game.RealtimeModule;
-import com.lemondelila.client.presence.PresenceModule;
-import com.lemondelila.client.social.SocialModule;
-import com.lemondelila.client.messaging.MessagingModule;
-import com.lemondelila.client.settings.SettingsModule;
-import com.lemondelila.client.user.UserModule;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.ServiceLoader;
 
 public final class ApplicationModule implements LilaModule {
 
-    private final List<LilaModule> modules;
     private final List<LilaModule> startOrder;
     private final List<LilaModule> stopOrder;
+    private static final Comparator<LilaModule> ORDER = Comparator.comparingInt(LilaModule::order);
 
     public ApplicationModule() {
-        this.modules = List.of(
-                new SettingsModule(),
-                new UserModule(),
-                new ChatModule(),
-                new MessagingModule(),
-                new SocialModule(),
-                new PresenceModule(),
-                new CatalogueModule(),
-                new GameModule(),
-                new AudioModule(),
-                new ScreenModule(),
-                new RealtimeModule()
-        );
-        this.startOrder = modules.stream()
-                .sorted(Comparator.comparingInt(LilaModule::order))
-                .toList();
+        this.startOrder = discoverModules();
         List<LilaModule> descending = new ArrayList<>(startOrder);
-        descending.sort(Comparator.comparingInt(LilaModule::order).reversed());
+        descending.sort(ORDER.reversed());
         this.stopOrder = List.copyOf(descending);
     }
 
@@ -79,6 +55,15 @@ public final class ApplicationModule implements LilaModule {
     @Override
     public int order() {
         return 100;
+    }
+
+    private static List<LilaModule> discoverModules() {
+        return ServiceLoader.load(LilaModule.class, ApplicationModule.class.getClassLoader())
+                .stream()
+                .map(ServiceLoader.Provider::get)
+                .filter(module -> !(module instanceof ApplicationModule))
+                .sorted(ORDER)
+                .toList();
     }
 }
 

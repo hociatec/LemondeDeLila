@@ -34,25 +34,27 @@ final class CategoryListPanel extends AbstractCatalogListPanel<CategoryListPanel
     record CategoryItem(String id, String label, boolean hasChildren, int gameCount) {
     }
 
-    private static final class CategoryItemRenderer extends javax.swing.DefaultListCellRenderer {
+    private static final class CategoryItemRenderer implements ListCellRenderer<CategoryItem> {
+        private final javax.swing.DefaultListCellRenderer delegate = new javax.swing.DefaultListCellRenderer();
+
         @Override
-        public java.awt.Component getListCellRendererComponent(JList<?> list,
-                                                               Object value,
+        public java.awt.Component getListCellRendererComponent(JList<? extends CategoryItem> list,
+                                                               CategoryItem value,
                                                                int index,
                                                                boolean isSelected,
                                                                boolean cellHasFocus) {
             String text = " ";
-                if (value instanceof CategoryItem item) {
-                    StringBuilder builder = new StringBuilder(item.label());
-                    if (item.hasChildren()) {
-                        builder.append(' ').append(Internationalization.text("catalog.categories.item.children"));
-                    }
-                    if (item.gameCount() > 0) {
-                        builder.append(Internationalization.text("catalog.categories.item.games", item.gameCount()));
-                    }
-                    text = builder.toString();
+            if (value != null) {
+                StringBuilder builder = new StringBuilder(value.label());
+                if (value.hasChildren()) {
+                    builder.append(' ').append(Internationalization.text("catalog.categories.item.children"));
                 }
-            return super.getListCellRendererComponent(list, text, index, isSelected, cellHasFocus);
+                if (value.gameCount() > 0) {
+                    builder.append(Internationalization.text("catalog.categories.item.games", value.gameCount()));
+                }
+                text = builder.toString();
+            }
+            return delegate.getListCellRendererComponent(list, text, index, isSelected, cellHasFocus);
         }
     }
 }

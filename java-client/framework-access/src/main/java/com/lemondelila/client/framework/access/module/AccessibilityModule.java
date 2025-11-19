@@ -1,5 +1,6 @@
 package com.lemondelila.client.framework.access.module;
 
+import com.google.auto.service.AutoService;
 import com.lemondelila.client.framework.access.FocusHighlighter;
 import com.lemondelila.client.framework.access.NarrationQueue;
 import com.lemondelila.client.framework.access.ScreenReaderAnnouncer;
@@ -8,6 +9,7 @@ import com.lemondelila.client.framework.access.game.AccessibilityService;
 import com.lemondelila.client.framework.core.context.ApplicationContext;
 import com.lemondelila.client.framework.core.module.LilaModule;
 
+@AutoService(LilaModule.class)
 public final class AccessibilityModule implements LilaModule {
 
     private NarrationQueue narrationQueue;

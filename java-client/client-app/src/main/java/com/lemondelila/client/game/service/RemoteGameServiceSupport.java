@@ -29,12 +29,6 @@ public abstract class RemoteGameServiceSupport {
         this.session = Objects.requireNonNull(session, "session");
     }
 
-    protected Map<String, String> authHeaders() {
-        ClientSession.AuthState auth = session.authenticated()
-                .orElseThrow(() -> new IllegalStateException("Utilisateur non authentifie"));
-        return Map.of("Authorization", "Bearer " + auth.token());
-    }
-
     protected <T> CompletableFuture<T> supplyAsync(ThrowingSupplier<T> supplier) {
         CompletableFuture<T> future = new CompletableFuture<>();
         scheduler.runAsync(() -> {
@@ -52,13 +46,12 @@ public abstract class RemoteGameServiceSupport {
 
     protected int createRoom(String gameType,
                              String defaultName,
-                             int maxPlayers,
-                             Map<String, String> headers) throws IOException, InterruptedException {
+                             int maxPlayers) throws IOException, InterruptedException {
         Map<String, Object> payload = new HashMap<>();
         payload.put("gameType", gameType);
         payload.put("name", defaultName);
         payload.put("maxPlayers", maxPlayers);
-        RoomResponseDto response = restClient.post("rooms/", headers, payload, RoomResponseDto.class);
+        RoomResponseDto response = restClient.post("rooms/", payload, RoomResponseDto.class);
         if (response == null || response.id() <= 0) {
             throw new IOException("Identifiant de salle invalide pour " + gameType);
         }

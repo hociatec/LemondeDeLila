@@ -1,17 +1,13 @@
 package com.lemondelila.client.presence.view;
 
 import com.lemondelila.client.framework.core.di.Inject;
-import com.lemondelila.client.framework.ui.dialog.DialogService;
-import com.lemondelila.client.messaging.controller.MessagingController;
-import com.lemondelila.client.messaging.service.UserRelationshipService;
 import com.lemondelila.client.presence.service.PresenceRealtimeService;
+import com.lemondelila.client.presence.view.PresenceListDialogFactory;
 
 import javax.swing.SwingUtilities;
 import java.awt.Component;
 import java.awt.KeyboardFocusManager;
 import java.awt.Window;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.util.Objects;
 
 /**
@@ -21,21 +17,15 @@ import java.util.Objects;
 public final class PresenceDialogLauncher {
 
     private final PresenceRealtimeService realtimeService;
-    private final DialogService dialogService;
-    private final MessagingController messagingController;
-    private final UserRelationshipService relationshipService;
+    private final PresenceListDialogFactory dialogFactory;
 
     private PresenceListDialog currentDialog;
 
     @Inject
     public PresenceDialogLauncher(PresenceRealtimeService realtimeService,
-                                  DialogService dialogService,
-                                  MessagingController messagingController,
-                                  UserRelationshipService relationshipService) {
+                                  PresenceListDialogFactory dialogFactory) {
         this.realtimeService = Objects.requireNonNull(realtimeService, "realtimeService");
-        this.dialogService = Objects.requireNonNull(dialogService, "dialogService");
-        this.messagingController = Objects.requireNonNull(messagingController, "messagingController");
-        this.relationshipService = Objects.requireNonNull(relationshipService, "relationshipService");
+        this.dialogFactory = Objects.requireNonNull(dialogFactory, "dialogFactory");
     }
 
     public void show(Component anchor) {
@@ -47,18 +37,7 @@ public final class PresenceDialogLauncher {
             }
 
             Window owner = resolveOwner(anchor);
-            PresenceListDialog dialog = new PresenceListDialog(
-                    owner,
-                    dialogService,
-                    messagingController,
-                    relationshipService,
-                    realtimeService);
-            dialog.addWindowListener(new WindowAdapter() {
-                @Override
-                public void windowClosed(WindowEvent e) {
-                    currentDialog = null;
-                }
-            });
+            PresenceListDialog dialog = dialogFactory.create(owner, () -> currentDialog = null);
             currentDialog = dialog;
             dialog.setVisible(true);
         });

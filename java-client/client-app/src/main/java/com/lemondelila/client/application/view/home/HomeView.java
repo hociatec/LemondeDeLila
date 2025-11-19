@@ -5,8 +5,8 @@ import com.lemondelila.client.application.Internationalization;
 import com.lemondelila.client.framework.access.AccessibleDecorator;
 import com.lemondelila.client.framework.access.AccessibleSpec;
 import com.lemondelila.client.framework.access.FocusHighlighter;
-import com.lemondelila.client.framework.access.NarrationQueue;
 import com.lemondelila.client.framework.ui.component.StatusBanner;
+import com.lemondelila.client.framework.ui.component.StatusBannerFactory;
 import com.lemondelila.client.user.view.LoginFormPanel;
 import com.lemondelila.client.user.view.RegisterFormPanel;
 
@@ -38,15 +38,14 @@ final class HomeView {
 
     private final String applicationName;
 
-    HomeView(FocusHighlighter focusHighlighter, AppBranding branding, NarrationQueue narrationQueue) {
+    HomeView(FocusHighlighter focusHighlighter, AppBranding branding, StatusBannerFactory statusBannerFactory) {
         this.loginForm = new LoginFormPanel(focusHighlighter);
         this.registerForm = new RegisterFormPanel(focusHighlighter);
         this.applicationName = branding.applicationName();
-        this.statusBanner = new StatusBanner(
+        this.statusBanner = statusBannerFactory.create(
                 Internationalization.text("home.status.banner.name"),
                 Internationalization.text("home.status.banner.desc"),
-                root,
-                narrationQueue
+                root
         );
         buildUi();
     }

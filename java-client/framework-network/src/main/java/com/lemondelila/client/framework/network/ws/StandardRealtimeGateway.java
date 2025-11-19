@@ -2,9 +2,9 @@ package com.lemondelila.client.framework.network.ws;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.lemondelila.client.framework.core.config.ConfigurationService;
 import com.lemondelila.client.framework.core.di.Inject;
 import com.lemondelila.client.framework.core.event.DomainEventBus;
+import com.lemondelila.client.framework.network.config.NetworkEndpoints;
 import com.lemondelila.client.framework.network.ws.WebSocketConnectionLifecycle.Delegate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,9 +60,9 @@ public final class StandardRealtimeGateway implements RealtimeGateway, Delegate 
     public StandardRealtimeGateway(HttpClient httpClient,
                                    ObjectMapper objectMapper,
                                    DomainEventBus eventBus,
-                                   ConfigurationService configurationService) {
+                                   NetworkEndpoints endpoints) {
         this(httpClient,
-                () -> URI.create(configurationService.get("network.ws.url", "ws://127.0.0.1:8080/ws")),
+                endpoints::realtimeGateway,
                 objectMapper,
                 eventBus);
     }

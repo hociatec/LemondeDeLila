@@ -35,8 +35,9 @@
         <li><a href="#checklist">7. Checklist de validation</a></li>
         <li><a href="#options-locales">8. Options locales et prÃ©fÃ©rences</a></li>
         <li><a href="#tchat">9. Tchat en temps rÃ©el</a></li>
-        <li><a href="#game-nemesis">10. Module Nemesis</a></li>
-        <li><a href="#network-config">11. Configuration reseau</a></li>
+        <li><a href="#text-migration">10. Migration des textes UI</a></li>
+        <li><a href="#game-nemesis">11. Module Nemesis</a></li>
+        <li><a href="#network-config">12. Configuration reseau</a></li>
     </ul>
 </nav>
 
@@ -253,6 +254,17 @@ shortcutRegistry.register(KeyStroke.getKeyStroke("alt G"), "Ouvrir le catalogue"
         <li>En cas dâ€™erreur rÃ©seau, le <code>DialogService</code> affiche un message tout en conservant la fenÃªtre
             ouverte.</li>
     </ul>
+</section>
+
+<section id="text-migration">
+    <h2>10. Migration des textes UI</h2>
+    <p>Nous centralisons désormais les textes utilisés par les vues Swing dans <code>messages.properties</code> afin de rendre les chaînes accessibles depuis <code>Internationalization</code>. Cela concerne :</p>
+    <ul>
+        <li>Les statuts et descriptions affichés dans les <code>StatusBanner</code> des écrans Accueil, Menu et Catalogue.</li>
+        <li>Les dialogues classiques du <code>DialogService</code> (authentification requise, erreur réseau, confirmations).</li>
+        <li>Les contrôleurs Chat/Social/Présence qui publient des statuts et labels (voir les clés <code>chat.*</code>, <code>social.*</code> et <code>presence.*</code>).</li>
+    </ul>
+    <p>Lorsqu’un nouveau composant Swing affiche du texte ou un état, commencez par créer la clé correspondante dans <code>messages.properties</code>, puis appelez <code>Internationalization.text("clef", ...)</code> plutôt que d’utiliser une chaîne littérale. Mentionnez brièvement ici les migrations opérées (module, date, contexte) pour conserver une référence accessible aux développeurs.</p>
 </section>
 
 <section id="game-nemesis">

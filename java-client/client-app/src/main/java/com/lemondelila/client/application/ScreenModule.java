@@ -1,5 +1,6 @@
 package com.lemondelila.client.application;
 
+import com.google.auto.service.AutoService;
 import com.lemondelila.client.application.view.home.HomeScreen;
 import com.lemondelila.client.application.view.menu.MainMenuScreen;
 import com.lemondelila.client.application.view.shortcuts.ApplicationShortcuts;
@@ -9,6 +10,7 @@ import com.lemondelila.client.framework.ui.LilaFrame;
 import com.lemondelila.client.framework.ui.screen.Screen;
 import com.lemondelila.client.framework.ui.screen.ScreenManager;
 
+@AutoService(LilaModule.class)
 public final class ScreenModule implements LilaModule {
 
     @Override

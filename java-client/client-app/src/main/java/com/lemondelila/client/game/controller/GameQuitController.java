@@ -23,7 +23,7 @@ public final class GameQuitController {
     private final Consumer<String> statusConsumer;
     private final ShortcutBinder shortcutBinder;
 
-    GameQuitController(JComponent component,
+    public GameQuitController(JComponent component,
                        DialogService dialogService,
                        Supplier<Optional<GameSummary>> currentGameSupplier,
                        Runnable onQuitConfirmed,

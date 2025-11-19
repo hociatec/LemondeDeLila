@@ -28,7 +28,7 @@ public final class GameRulesController {
     private final ShortcutBinder shortcutBinder;
     private final AtomicBoolean rulesLoading = new AtomicBoolean(false);
 
-    GameRulesController(JComponent component,
+    public GameRulesController(JComponent component,
                         DialogService dialogService,
                         GameRulesService rulesService,
                         Supplier<Optional<GameSummary>> currentGameSupplier,
@@ -44,8 +44,12 @@ public final class GameRulesController {
         installBindings(component);
     }
 
-    void clearLoading() {
+    public void clearLoading() {
         rulesLoading.set(false);
+    }
+
+    public void showRules() {
+        handleRules();
     }
 
     private void installBindings(JComponent component) {

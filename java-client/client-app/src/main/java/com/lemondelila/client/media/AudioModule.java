@@ -1,5 +1,6 @@
 package com.lemondelila.client.media;
 
+import com.google.auto.service.AutoService;
 import com.lemondelila.client.media.SoundBank;
 import com.lemondelila.client.settings.model.AppSettings;
 import com.lemondelila.client.settings.service.AppSettingsService;
@@ -11,6 +12,7 @@ import com.lemondelila.client.framework.media.sound.SoundPreferences;
 
 import java.util.List;
 
+@AutoService(LilaModule.class)
 public final class AudioModule implements LilaModule {
 
     @Override

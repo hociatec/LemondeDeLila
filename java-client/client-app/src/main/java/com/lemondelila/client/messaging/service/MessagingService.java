@@ -16,7 +16,6 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -43,7 +42,6 @@ public final class MessagingService {
             try {
                 MessagesResponseDto response = restClient.get(
                         "messaging/conversations/" + userId + "?limit=" + clamp(limit),
-                        authHeaders(),
                         MessagesResponseDto.class);
                 future.complete(toMessages(response.items()));
             } catch (InterruptedException e) {
@@ -62,7 +60,6 @@ public final class MessagingService {
             try {
                 MessageResponseDto response = restClient.post(
                         "messaging/messages",
-                        authHeaders(),
                         Map.of("recipientId", recipientId, "text", text),
                         MessageResponseDto.class);
                 future.complete(toMessage(response.message()));
@@ -94,7 +91,6 @@ public final class MessagingService {
             try {
                 MessageResponseDto response = restClient.delete(
                         "messaging/messages/" + messageId,
-                        authHeaders(),
                         MessageResponseDto.class);
                 future.complete(toMessage(response.message()));
             } catch (InterruptedException e) {
@@ -113,7 +109,6 @@ public final class MessagingService {
             try {
                 MessageResponseDto response = restClient.post(
                         "messaging/messages/" + messageId + "/restore",
-                        authHeaders(),
                         Map.of(),
                         MessageResponseDto.class);
                 future.complete(toMessage(response.message()));
@@ -134,7 +129,6 @@ public final class MessagingService {
                 String encoded = URLEncoder.encode(username, StandardCharsets.UTF_8);
                 UserLookupResponseDto response = restClient.get(
                         "messaging/users/search?username=" + encoded,
-                        authHeaders(),
                         UserLookupResponseDto.class);
                 MessageUserDto user = response.user();
                 if (user == null || user.id() <= 0 || user.username() == null || user.username().isBlank()) {
@@ -157,7 +151,6 @@ public final class MessagingService {
             try {
                 MessagesResponseDto response = restClient.get(
                         "messaging/messages?box=" + box + "&limit=" + clamp(limit),
-                        authHeaders(),
                         MessagesResponseDto.class);
                 future.complete(toMessages(response.items()));
             } catch (InterruptedException e) {
@@ -168,13 +161,6 @@ public final class MessagingService {
             }
         });
         return future;
-    }
-
-    private Map<String, String> authHeaders() {
-        Map<String, String> headers = new HashMap<>();
-        session.authenticated().ifPresent(auth ->
-                headers.put("Authorization", "Bearer " + auth.token()));
-        return headers;
     }
 
     private List<PrivateMessage> toMessages(List<MessageDto> dtos) throws IOException {

@@ -1,5 +1,6 @@
 package com.lemondelila.client.presence.controller;
 
+import com.lemondelila.client.application.Internationalization;
 import com.lemondelila.client.chat.model.ChatState;
 import com.lemondelila.client.framework.ui.dialog.DialogService;
 import com.lemondelila.client.messaging.controller.MessagingController;
@@ -71,7 +72,7 @@ public final class PresenceListController {
         if (latest != null && !latest.isEmpty()) {
             updateList(latest);
         } else {
-            updateStatus("Recherche des joueurs connectés...");
+            updateStatus(Internationalization.text("presence.status.searching"));
         }
     }
 
@@ -118,7 +119,7 @@ public final class PresenceListController {
         DefaultListModel<PresencePlayer> model = view.model();
         model.clear();
         if (players == null || players.isEmpty()) {
-            updateStatus("Aucun joueur en ligne pour le moment.");
+            updateStatus(Internationalization.text("presence.status.none"));
             view.setListEnabled(false);
             return;
         }
@@ -129,19 +130,21 @@ public final class PresenceListController {
     }
 
     private String formatPlayerCount(int size) {
-        return size == 1 ? "1 joueur en ligne" : size + " joueurs en ligne";
+        return size == 1
+                ? Internationalization.text("presence.status.playercount.single")
+                : Internationalization.text("presence.status.playercount.multiple", size);
     }
 
     private void showAccessibleActions() {
         JList<PresencePlayer> playerList = view.list();
         int index = playerList.getSelectedIndex();
         if (index < 0) {
-            updateStatus("Sélectionnez un joueur pour afficher les options disponibles.");
+            updateStatus(Internationalization.text("presence.status.selection.prompt"));
             return;
         }
         PresencePlayer player = playerList.getSelectedValue();
         if (player == null) {
-            updateStatus("Aucun joueur sélectionné.");
+            updateStatus(Internationalization.text("presence.status.selection.empty"));
             return;
         }
         showActionsForSelection();
@@ -159,7 +162,7 @@ public final class PresenceListController {
         }
         PresencePlayer selected = playerList.getSelectedValue();
         if (selected == null) {
-            updateStatus("Aucun joueur sélectionné.");
+            updateStatus(Internationalization.text("presence.status.selection.empty"));
             return;
         }
         List<String> options = actionMenu.showAt(selected, playerList,
@@ -174,8 +177,8 @@ public final class PresenceListController {
         }
         relationshipService.toggleFriend(player.id(), player.username());
         updateStatus(relationshipService.isFriend(player.id())
-                ? player.username() + " ajouté dans vos amis."
-                : player.username() + " retiré de vos amis.");
+                ? Internationalization.text("presence.status.friend.added", player.username())
+                : Internationalization.text("presence.status.friend.removed", player.username()));
         view.list().repaint();
     }
 
@@ -186,8 +189,8 @@ public final class PresenceListController {
         relationshipService.toggleBlock(player.id(), player.username());
         boolean blocked = relationshipService.isBlocked(player.id());
         updateStatus(blocked
-                ? player.username() + " est bloqué."
-                : player.username() + " est débloqué.");
+                ? Internationalization.text("presence.status.blocked", player.username())
+                : Internationalization.text("presence.status.unblocked", player.username()));
         view.list().repaint();
     }
 
@@ -204,11 +207,11 @@ public final class PresenceListController {
 
     private void updateStatusFromOptions(List<String> options) {
         if (options.isEmpty()) {
-            updateStatus("Aucune action disponible pour ce joueur.");
+            updateStatus(Internationalization.text("presence.status.action.none"));
         } else if (options.size() == 1) {
-            updateStatus("Option disponible : " + options.get(0) + ".");
+            updateStatus(Internationalization.text("presence.status.action.single", options.get(0)));
         } else {
-            updateStatus("Actions disponibles affichées.");
+            updateStatus(Internationalization.text("presence.status.action.multiple"));
         }
     }
 
@@ -219,7 +222,7 @@ public final class PresenceListController {
             handleStateChange(stateChanged);
         } else if (event instanceof PresenceErrorEvent errorEvent) {
             SwingUtilities.invokeLater(() ->
-                    dialogService.error("Présence", errorEvent.message()));
+            dialogService.error(Internationalization.text("presence.dialog.title"), errorEvent.message()));
         }
     }
 
@@ -227,13 +230,13 @@ public final class PresenceListController {
         ChatState state = stateChanged.state();
         if (state == ChatState.FAILED) {
             SwingUtilities.invokeLater(() ->
-                    updateStatus("Erreur de connexion au serveur de présence."));
+                    updateStatus(Internationalization.text("presence.status.state.failed")));
         } else if (state == ChatState.CONNECTED) {
             SwingUtilities.invokeLater(() ->
-                    updateStatus("Connecté au serveur de présence."));
+                    updateStatus(Internationalization.text("presence.status.state.connected")));
         } else if (state == ChatState.CONNECTING) {
             SwingUtilities.invokeLater(() ->
-                    updateStatus("Connexion au serveur de présence..."));
+                    updateStatus(Internationalization.text("presence.status.state.connecting")));
         }
     }
 }

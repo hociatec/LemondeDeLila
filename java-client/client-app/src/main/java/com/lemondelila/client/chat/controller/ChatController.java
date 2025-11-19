@@ -2,6 +2,7 @@ package com.lemondelila.client.chat.controller;
 
 import com.lemondelila.client.chat.events.ChatClosed;
 import com.lemondelila.client.chat.events.ChatOpened;
+import com.lemondelila.client.application.Internationalization;
 import com.lemondelila.client.chat.presenter.ChatPresenter;
 import com.lemondelila.client.chat.view.ChatWindow;
 import com.lemondelila.client.framework.core.di.Inject;
@@ -50,12 +51,16 @@ public final class ChatController implements AutoCloseable {
      */
     public ControllerResult open(Window owner) {
         if (session.authenticated().isEmpty()) {
-            dialogService.error("Authentification requise", "Veuillez vous reconnecter pour acceder au tchat.");
-            return ControllerResult.status("Connexion requise pour ouvrir le tchat.");
+            dialogService.error(
+                    Internationalization.text("chat.auth.required.title"),
+                    Internationalization.text("chat.auth.required.body"));
+            return ControllerResult.status(Internationalization.text("chat.status.auth"));
         }
         if (!settingsService.current().chatEnabled()) {
-            dialogService.info("Tchat desactive", "Activez le tchat dans les options pour l'utiliser.");
-            return ControllerResult.status("Tchat desactive.");
+            dialogService.info(
+                    Internationalization.text("chat.disabled.title"),
+                    Internationalization.text("chat.disabled.body"));
+            return ControllerResult.status(Internationalization.text("chat.status.disabled"));
         }
         if (chatWindow == null || !chatWindow.isDisplayable()) {
             chatWindow = new ChatWindow(owner, presenter, settingsService, dialogService);
@@ -71,7 +76,7 @@ public final class ChatController implements AutoCloseable {
             eventBus.publish(new ChatOpened(username));
             opened = true;
         }
-        return ControllerResult.status("Tchat ouvert.");
+        return ControllerResult.status(Internationalization.text("chat.status.open"));
     }
 
     @Override

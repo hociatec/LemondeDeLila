@@ -1,0 +1,6 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Tue Nov 18 23:14:50 CET 2025
+@default-central-https\://repo.maven.apache.org/maven2/.lastUpdated=1763504090877
+@default-java-net-https\://maven.java.net/content/groups/public/.lastUpdated=1763504090968
+https\://maven.java.net/content/groups/public/.error=Could not transfer artifact com.lemondelila\:framework-di\:jar\:1.0.4 from/to java-net (https\://maven.java.net/content/groups/public/)\: maven.java.net\: Temporary failure in name resolution
+https\://repo.maven.apache.org/maven2/.error=Could not transfer artifact com.lemondelila\:framework-di\:jar\:1.0.4 from/to central (https\://repo.maven.apache.org/maven2)\: repo.maven.apache.org\: Temporary failure in name resolution

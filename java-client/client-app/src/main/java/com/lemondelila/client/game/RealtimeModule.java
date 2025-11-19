@@ -1,5 +1,6 @@
 package com.lemondelila.client.game;
 
+import com.google.auto.service.AutoService;
 import com.lemondelila.client.user.events.LoginSucceeded;
 import com.lemondelila.client.user.events.UserLoggedOut;
 import com.lemondelila.client.user.model.ClientSession;
@@ -12,6 +13,7 @@ import com.lemondelila.client.framework.network.ws.RealtimeGateway;
 
 import java.net.http.WebSocket;
 
+@AutoService(LilaModule.class)
 public final class RealtimeModule implements LilaModule {
 
     private final EventSubscriptions subscriptions = new EventSubscriptions();

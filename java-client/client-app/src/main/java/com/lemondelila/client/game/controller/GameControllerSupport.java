@@ -12,6 +12,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * Mutualise les primitives communes aux contr�leurs de jeux :
@@ -74,5 +75,33 @@ public final class GameControllerSupport<S extends GameSession<?>> {
         }
         return new RuntimeException(error);
     }
-}
 
+    public S recordSession(S session) {
+        if (session == null) {
+            return null;
+        }
+        sessions.save(session);
+        return session;
+    }
+
+    public CompletableFuture<S> applyOnActiveSession(String missingSessionMessage,
+                                                     String errorContext,
+                                                     Function<S, CompletableFuture<S>> action) {
+
+        Optional<S> snapshot = currentSession();
+        if (snapshot.isEmpty()) {
+            return failedFuture(new IllegalStateException(
+                    missingSessionMessage == null || missingSessionMessage.isBlank()
+                            ? "Aucune partie active"
+                            : missingSessionMessage));
+        }
+        return action.apply(snapshot.get())
+                .thenApply(this::recordSession)
+                .exceptionally(error -> {
+                    if (errorContext != null && !errorContext.isBlank()) {
+                        errorHandler.show(errorContext, error);
+                    }
+                    throw propagate(error);
+                });
+    }
+}

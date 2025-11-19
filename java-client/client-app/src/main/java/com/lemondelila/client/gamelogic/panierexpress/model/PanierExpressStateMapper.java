@@ -1,9 +1,9 @@
 package com.lemondelila.client.gamelogic.panierexpress.model;
 
-import com.lemondelila.client.gamelogic.panierexpress.dto.PanierExpressStateDto;
-import com.lemondelila.client.gamelogic.panierexpress.dto.PanierExpressStateDto.LogEntryDto;
-import com.lemondelila.client.gamelogic.panierexpress.dto.PanierExpressStateDto.PendingDto;
-import com.lemondelila.client.gamelogic.panierexpress.dto.PanierExpressStateDto.PlayerDto;
+import com.lemondelila.client.gamelogic.panierexpress.service.dto.PanierExpressStateDto;
+import com.lemondelila.client.gamelogic.panierexpress.service.dto.PanierExpressStateDto.LogEntryDto;
+import com.lemondelila.client.gamelogic.panierexpress.service.dto.PanierExpressStateDto.PendingDto;
+import com.lemondelila.client.gamelogic.panierexpress.service.dto.PanierExpressStateDto.PlayerDto;
 
 import java.io.IOException;
 import java.util.ArrayList;

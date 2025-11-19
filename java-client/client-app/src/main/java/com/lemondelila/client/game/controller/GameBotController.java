@@ -24,7 +24,7 @@ public final class GameBotController {
     private final ShortcutBinder shortcutBinder;
     private final AtomicBoolean botActionRunning = new AtomicBoolean(false);
 
-    GameBotController(JComponent component,
+    public GameBotController(JComponent component,
                       Consumer<String> statusConsumer,
                       BooleanSupplier enabledSupplier,
                       Supplier<CompletableFuture<Void>> addBotAction,
@@ -38,7 +38,7 @@ public final class GameBotController {
         installBindings(component);
     }
 
-    void resetAction() {
+    public void resetAction() {
         botActionRunning.set(false);
     }
 

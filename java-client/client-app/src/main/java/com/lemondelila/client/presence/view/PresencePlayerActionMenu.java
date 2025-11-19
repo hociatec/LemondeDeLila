@@ -1,5 +1,6 @@
 package com.lemondelila.client.presence.view;
 
+import com.lemondelila.client.application.Internationalization;
 import com.lemondelila.client.messaging.service.UserRelationshipService;
 import com.lemondelila.client.presence.model.PresencePlayer;
 
@@ -16,9 +17,9 @@ import java.util.function.Consumer;
 public final class PresencePlayerActionMenu {
 
     private final JPopupMenu menu = new JPopupMenu();
-    private final JMenuItem messageItem = new JMenuItem("Envoyer un message privé");
-    private final JMenuItem friendItem = new JMenuItem("Ajouter en tant qu'ami");
-    private final JMenuItem blockItem = new JMenuItem("Bloquer");
+    private final JMenuItem messageItem = new JMenuItem(Internationalization.text("presence.menu.message"));
+    private final JMenuItem friendItem = new JMenuItem(Internationalization.text("presence.menu.friend.add"));
+    private final JMenuItem blockItem = new JMenuItem(Internationalization.text("presence.menu.block"));
 
     private final Consumer<PresencePlayer> onMessage;
     private final Consumer<PresencePlayer> onFriendToggle;
@@ -81,11 +82,15 @@ public final class PresencePlayerActionMenu {
         }
 
         friendItem.setEnabled(true);
-        friendItem.setText(friend ? "Retirer des amis" : "Ajouter en tant qu'ami");
+        friendItem.setText(friend
+                ? Internationalization.text("presence.menu.friend.remove")
+                : Internationalization.text("presence.menu.friend.add"));
         available.add(friendItem.getText());
 
         blockItem.setEnabled(true);
-        blockItem.setText(blocked ? "Débloquer" : "Bloquer");
+        blockItem.setText(blocked
+                ? Internationalization.text("presence.menu.unblock")
+                : Internationalization.text("presence.menu.block"));
         available.add(blockItem.getText());
         return available;
     }

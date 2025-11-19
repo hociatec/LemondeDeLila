@@ -3,10 +3,10 @@ package com.lemondelila.client.catalogue.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lemondelila.client.catalogue.model.GameSummary;
-import com.lemondelila.client.user.model.ClientSession;
-import com.lemondelila.client.framework.core.config.ConfigurationService;
 import com.lemondelila.client.framework.core.di.Inject;
 import com.lemondelila.client.framework.core.task.TaskScheduler;
+import com.lemondelila.client.framework.network.config.NetworkEndpoints;
+import com.lemondelila.client.user.model.ClientSession;
 
 import java.io.IOException;
 import java.net.URI;
@@ -38,14 +38,13 @@ public final class GameRulesService {
     public GameRulesService(HttpClient httpClient,
                             ObjectMapper objectMapper,
                             TaskScheduler scheduler,
-                            ConfigurationService configuration,
+                            NetworkEndpoints endpoints,
                             ClientSession session) {
         this.httpClient = Objects.requireNonNull(httpClient, "httpClient");
         this.objectMapper = Objects.requireNonNull(objectMapper, "objectMapper");
         this.scheduler = Objects.requireNonNull(scheduler, "scheduler");
         this.session = Objects.requireNonNull(session, "session");
-        Objects.requireNonNull(configuration, "configuration");
-        this.baseUri = URI.create(configuration.get("network.http.base", "https://hociatec.fr/api/"));
+        this.baseUri = endpoints.httpBase();
     }
 
     public CompletableFuture<String> fetchRules(GameSummary game) {

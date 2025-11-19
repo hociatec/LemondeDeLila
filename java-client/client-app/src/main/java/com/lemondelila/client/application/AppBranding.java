@@ -3,7 +3,9 @@ package com.lemondelila.client.application;
 import com.lemondelila.client.framework.core.config.ConfigurationService;
 import com.lemondelila.client.framework.core.di.Inject;
 
-public final class AppBranding {
+import com.lemondelila.client.framework.core.branding.AppBrandingProvider;
+
+public final class AppBranding implements AppBrandingProvider {
 
     private final String applicationName;
 

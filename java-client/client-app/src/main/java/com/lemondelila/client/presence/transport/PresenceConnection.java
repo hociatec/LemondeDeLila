@@ -1,5 +1,6 @@
 package com.lemondelila.client.presence.transport;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lemondelila.client.chat.model.ChatState;
 import com.lemondelila.client.presence.model.PresenceChat;
@@ -155,6 +156,7 @@ public final class PresenceConnection implements AutoCloseable {
         return new PresencePlayer(dto.id(), username, List.copyOf(chats));
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     private record PresenceUpdateEnvelope(String type, List<PresencePlayerDto> players) {
     }
 }

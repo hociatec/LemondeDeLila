@@ -7,6 +7,7 @@ import com.lemondelila.client.media.SoundBank;
 import com.lemondelila.client.settings.service.AppSettingsService;
 import com.lemondelila.client.settings.update.UpdateService;
 import com.lemondelila.client.settings.view.OptionsDialog;
+import com.lemondelila.client.settings.view.OptionsDialogFactory;
 
 import java.awt.Window;
 import java.util.Objects;
@@ -19,14 +20,17 @@ public final class OptionsController {
     private final AppSettingsService settingsService;
     private final UpdateService updateService;
     private final SoundEffectManager sounds;
+    private final OptionsDialogFactory dialogFactory;
 
     @Inject
     public OptionsController(AppSettingsService settingsService,
                              UpdateService updateService,
-                             SoundEffectManager sounds) {
+                             SoundEffectManager sounds,
+                             OptionsDialogFactory dialogFactory) {
         this.settingsService = Objects.requireNonNull(settingsService, "settingsService");
         this.updateService = Objects.requireNonNull(updateService, "updateService");
         this.sounds = sounds;
+        this.dialogFactory = Objects.requireNonNull(dialogFactory, "dialogFactory");
     }
 
     /**
@@ -39,7 +43,7 @@ public final class OptionsController {
         if (sounds != null) {
             sounds.play(SoundBank.MENU_SELECT);
         }
-        OptionsDialog dialog = new OptionsDialog(owner, settingsService, updateService, sounds);
+        OptionsDialog dialog = dialogFactory.create(owner);
         dialog.setVisible(true);
         return ControllerResult.status("Options mises a jour.");
     }

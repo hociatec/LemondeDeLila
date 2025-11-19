@@ -1,21 +1,12 @@
 
 package com.lemondelila.client.application.view.menu;
 
-import com.lemondelila.client.framework.access.NarrationQueue;
 import com.lemondelila.client.framework.core.di.Inject;
-import com.lemondelila.client.framework.core.event.DomainEventBus;
-import com.lemondelila.client.framework.media.sound.SoundEffectManager;
 import com.lemondelila.client.framework.ui.dialog.DialogService;
 import com.lemondelila.client.framework.ui.screen.Screen;
 import com.lemondelila.client.framework.ui.screen.ScreenContext;
 import com.lemondelila.client.framework.ui.screen.ScreenId;
 import com.lemondelila.client.framework.ui.screen.ScreenManager;
-import com.lemondelila.client.game.controller.CatalogController;
-import com.lemondelila.client.game.controller.ChatController;
-import com.lemondelila.client.game.controller.OptionsController;
-import com.lemondelila.client.game.controller.PresenceController;
-import com.lemondelila.client.game.controller.SocialController;
-import com.lemondelila.client.user.model.ClientSession;
 
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
@@ -29,30 +20,10 @@ public final class MainMenuScreen extends JPanel implements Screen {
     private final MainMenuPresenter presenter;
 
     @Inject
-    public MainMenuScreen(DialogService dialogService,
-                          ChatController chatController,
-                          PresenceController presenceController,
-                          SocialController socialController,
-                          OptionsController optionsController,
-                          CatalogController catalogController,
-                          ClientSession session,
-                          DomainEventBus eventBus,
-                          SoundEffectManager sounds,
-                          NarrationQueue narrationQueue) {
-        this.view = new MainMenuView(narrationQueue);
-        this.presenter = new MainMenuPresenter(
-                dialogService,
-                chatController,
-                presenceController,
-                socialController,
-                optionsController,
-                catalogController,
-                session,
-                eventBus,
-                new MainMenuAudio(sounds),
-                view,
-                this
-        );
+    public MainMenuScreen(MainMenuView view, MainMenuPresenter presenter) {
+        this.view = view;
+        this.presenter = presenter;
+        this.presenter.attachRoot(this);
         setLayout(new BorderLayout());
         add(view.component(), BorderLayout.CENTER);
     }

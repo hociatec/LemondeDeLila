@@ -1,10 +1,12 @@
 package com.lemondelila.client.framework.core.module;
 
+import com.google.auto.service.AutoService;
 import com.lemondelila.client.framework.core.config.ConfigurationService;
 import com.lemondelila.client.framework.core.context.ApplicationContext;
 import com.lemondelila.client.framework.core.event.DomainEventBus;
 import com.lemondelila.client.framework.core.task.TaskScheduler;
 
+@AutoService(LilaModule.class)
 public final class FrameworkCoreModule implements LilaModule {
 
     private TaskScheduler scheduler;

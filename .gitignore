@@ -1,5 +1,58 @@
+###############################
+# Build & distribution folders
+###############################
 dist/
+out/
+build/
+target/
+*.tmp
+
+###############################
+# Java / Maven / JPackage
+###############################
+java-client/client-app/target/
 java-client/client-app/target/jpackage-input/
+*.jar
+*.war
+*.ear
+
+###############################
+# Tools & SDK (NE PAS VERSIONNER)
+###############################
 tools/wix*/
 tools/wix*.zip
+tools/jdk*/
+tools/**/*.tar.gz
+tools/**/*.zip
+
+###############################
+# Logs files
+###############################
 logs/
+*.log
+
+###############################
+# System files
+###############################
+.DS_Store
+Thumbs.db
+
+###############################
+# IDE / Editors
+###############################
+# IntelliJ
+.idea/
+*.iml
+
+# VSCode
+.vscode/
+
+# Eclipse
+.project
+.classpath
+.settings/
+
+###############################
+# Node (si présent)
+###############################
+node_modules/

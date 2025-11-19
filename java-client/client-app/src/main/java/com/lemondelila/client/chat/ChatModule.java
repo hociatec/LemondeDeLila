@@ -1,5 +1,6 @@
 package com.lemondelila.client.chat;
 
+import com.google.auto.service.AutoService;
 import com.lemondelila.client.chat.controller.ChatController;
 import com.lemondelila.client.chat.presenter.ChatPresenter;
 import com.lemondelila.client.user.events.UserLoggedOut;
@@ -9,6 +10,7 @@ import com.lemondelila.client.framework.core.event.DomainEventBus;
 import com.lemondelila.client.framework.core.event.EventSubscriptions;
 import com.lemondelila.client.framework.core.module.LilaModule;
 
+@AutoService(LilaModule.class)
 public final class ChatModule implements LilaModule {
 
     private final EventSubscriptions subscriptions = new EventSubscriptions();

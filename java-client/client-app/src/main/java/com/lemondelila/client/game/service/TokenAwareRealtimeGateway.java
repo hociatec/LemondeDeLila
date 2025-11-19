@@ -2,24 +2,22 @@ package com.lemondelila.client.game.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.lemondelila.client.framework.core.config.ConfigurationService;
 import com.lemondelila.client.framework.core.di.Inject;
 import com.lemondelila.client.framework.core.event.DomainEventBus;
+import com.lemondelila.client.framework.network.channel.GameRealtimeChannel;
+import com.lemondelila.client.framework.network.channel.RealtimeChannel;
+import com.lemondelila.client.framework.network.config.NetworkEndpoints;
 import com.lemondelila.client.framework.network.ws.RealtimeGateway;
 import com.lemondelila.client.framework.network.ws.StandardRealtimeGateway;
-import com.lemondelila.framework.network.channel.GameRealtimeChannel;
-import com.lemondelila.framework.network.channel.RealtimeChannel;
-import com.lemondelila.client.gamelogic.missionnemesis.model.NemesisSession;
-import com.lemondelila.client.gamelogic.missionnemesis.model.NemesisSessionStore;
 import com.lemondelila.client.user.model.ClientSession;
+import com.lemondelila.client.game.service.ActiveRoomTracker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
-import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.WebSocket;
-import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -33,6 +31,8 @@ public final class TokenAwareRealtimeGateway implements RealtimeGateway {
     private final Supplier<Optional<Integer>> roomIdSupplier;
     private final StandardRealtimeGateway delegate;
     private final RealtimeChannel channel;
+    private final URI baseUri;
+    private final RealtimeSignatureService signatureService;
     private volatile Integer activeRoomId;
     private volatile String activeToken;
 
@@ -41,13 +41,16 @@ public final class TokenAwareRealtimeGateway implements RealtimeGateway {
                                      DomainEventBus eventBus,
                                      URI baseUri,
                                      ClientSession session,
-                                     Supplier<Optional<Integer>> roomIdSupplier) {
+                                     Supplier<Optional<Integer>> roomIdSupplier,
+                                     RealtimeSignatureService signatureService) {
         this.session = Objects.requireNonNull(session, "session");
         this.roomIdSupplier = Objects.requireNonNull(roomIdSupplier, "roomIdSupplier");
+        this.baseUri = Objects.requireNonNull(baseUri, "baseUri");
         this.channel = new GameRealtimeChannel(() -> baseUri);
+        this.signatureService = Objects.requireNonNull(signatureService, "signatureService");
         this.delegate = new StandardRealtimeGateway(
                 httpClient,
-                () -> channel.resolve(activeToken, activeRoomId),
+                () -> channel.resolve(activeToken, activeRoomId, buildSignatureParams()),
                 objectMapper,
                 eventBus
         );
@@ -57,38 +60,38 @@ public final class TokenAwareRealtimeGateway implements RealtimeGateway {
     public TokenAwareRealtimeGateway(HttpClient httpClient,
                                      ObjectMapper objectMapper,
                                      DomainEventBus eventBus,
-                                     ConfigurationService configurationService,
+                                     NetworkEndpoints endpoints,
                                      ClientSession session,
-                                     NemesisSessionStore store) {
+                                     ActiveRoomTracker roomTracker,
+                                     RealtimeSignatureService signatureService) {
         this.session = Objects.requireNonNull(session, "session");
-        this.roomIdSupplier = () -> store.current().map(NemesisSession::roomId);
-        this.channel = new GameRealtimeChannel(configurationService);
+        this.roomIdSupplier = () -> roomTracker.currentRoom();
+        this.baseUri = endpoints.realtimeGateway();
+        this.channel = new GameRealtimeChannel(endpoints);
+        this.signatureService = Objects.requireNonNull(signatureService, "signatureService");
         this.delegate = new StandardRealtimeGateway(
                 httpClient,
-                () -> channel.resolve(activeToken, activeRoomId),
+                () -> channel.resolve(activeToken, activeRoomId, buildSignatureParams()),
                 objectMapper,
                 eventBus
         );
     }
 
-    private URI buildEndpoint() {
+    private Map<String, String> buildSignatureParams() {
+        if (signatureService == null) {
+            return Map.of();
+        }
         Optional<ClientSession.AuthState> auth = session.authenticated();
         if (auth.isEmpty()) {
-            return baseUri;
+            return Map.of();
         }
         String token = auth.get().token();
         if (token == null || token.isBlank()) {
-            return baseUri;
+            return Map.of();
         }
-        String encoded = URLEncoder.encode(token, StandardCharsets.UTF_8);
-        StringBuilder uriBuilder = new StringBuilder(baseUri.toString());
-        char separator = uriBuilder.indexOf("?") >= 0 ? '&' : '?';
-        uriBuilder.append(separator).append("token=").append(encoded);
-        Integer room = activeRoomId;
-        if (room != null) {
-            uriBuilder.append('&').append("room=").append(room);
-        }
-        return URI.create(uriBuilder.toString());
+        long timestamp = System.currentTimeMillis() / 1_000L;
+        String signature = signatureService.sign(token, activeRoomId, timestamp);
+        return Map.of("ts", Long.toString(timestamp), "sig", signature);
     }
 
     @Override

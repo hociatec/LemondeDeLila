@@ -6,9 +6,9 @@ import com.lemondelila.client.catalogue.presenter.CatalogCategoryItem;
 import com.lemondelila.client.catalogue.presenter.CatalogViewPort;
 import com.lemondelila.client.framework.access.AccessibleDecorator;
 import com.lemondelila.client.framework.access.AccessibleSpec;
-import com.lemondelila.client.framework.access.NarrationQueue;
 import com.lemondelila.client.framework.media.sound.SoundEffectManager;
 import com.lemondelila.client.framework.ui.component.StatusBanner;
+import com.lemondelila.client.framework.ui.component.StatusBannerFactory;
 import com.lemondelila.client.media.SoundBank;
 
 import javax.swing.BorderFactory;
@@ -34,20 +34,17 @@ final class CatalogViewCoordinator implements CatalogViewPort {
     private final CategoryListPanel categoryListPanel;
     private final GameListPanel gameListPanel;
     private final SoundEffectManager soundManager;
-    private final NarrationQueue narrationQueue;
 
     CatalogViewCoordinator(JPanel host,
                            SoundEffectManager soundManager,
-                           NarrationQueue narrationQueue) {
+                           StatusBannerFactory bannerFactory) {
         this.soundManager = soundManager;
-        this.narrationQueue = narrationQueue;
         this.categoryListPanel = new CategoryListPanel(soundManager);
         this.gameListPanel = new GameListPanel(soundManager);
-        this.statusBanner = new StatusBanner(
+        this.statusBanner = bannerFactory.create(
                 Internationalization.text("catalog.status.banner.name"),
                 Internationalization.text("catalog.status.banner.desc"),
-                host,
-                narrationQueue
+                host
         );
         buildUi(host);
     }

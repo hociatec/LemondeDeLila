@@ -1,0 +1,2 @@
+#!/bin/sh
+exec "/mnt/c/Program Files/Eclipse Adoptium/jdk-21.0.9.10-hotspot/bin/java.exe" "$@"

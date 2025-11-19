@@ -55,8 +55,8 @@ final class HomeScreenLifecycle {
         boolean autoLogin = settingsService.current().stayConnected() && session.authenticated().isPresent();
         if (autoLogin) {
             attemptAutoLogin(view);
-        } else if (narrationQueue != null) {
-            narrationQueue.enqueue(screen, Internationalization.text("home.narration.welcome"));
+        } else if (narrationQueue != null && screen != null && screen.getComponent() != null) {
+            narrationQueue.enqueue(screen.getComponent(), Internationalization.text("home.narration.welcome"));
         }
     }
 

@@ -1,9 +1,11 @@
 package com.lemondelila.client.framework.media.module;
 
+import com.google.auto.service.AutoService;
 import com.lemondelila.client.framework.core.context.ApplicationContext;
 import com.lemondelila.client.framework.core.module.LilaModule;
 import com.lemondelila.client.framework.media.audio.AudioService;
 
+@AutoService(LilaModule.class)
 public final class MediaModule implements LilaModule {
 
     @Override

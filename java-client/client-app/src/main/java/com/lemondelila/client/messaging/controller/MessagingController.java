@@ -4,6 +4,7 @@ import com.lemondelila.client.messaging.model.PrivateMessage;
 import com.lemondelila.client.messaging.service.MessagingService;
 import com.lemondelila.client.messaging.service.UserRelationshipService;
 import com.lemondelila.client.messaging.view.PrivateConversationDialog;
+import com.lemondelila.client.messaging.view.PrivateConversationDialogFactory;
 import com.lemondelila.client.user.model.ClientSession;
 import com.lemondelila.client.framework.core.di.Inject;
 import com.lemondelila.client.framework.ui.dialog.DialogService;
@@ -23,17 +24,20 @@ public final class MessagingController {
     private final UserRelationshipService relationshipService;
     private final DialogService dialogService;
     private final ClientSession session;
+    private final PrivateConversationDialogFactory dialogFactory;
     private final Map<Integer, PrivateConversationDialog> openDialogs = new ConcurrentHashMap<>();
 
     @Inject
     public MessagingController(MessagingService messagingService,
                                UserRelationshipService relationshipService,
                                DialogService dialogService,
-                               ClientSession session) {
+                               ClientSession session,
+                               PrivateConversationDialogFactory dialogFactory) {
         this.messagingService = Objects.requireNonNull(messagingService, "messagingService");
         this.relationshipService = Objects.requireNonNull(relationshipService, "relationshipService");
         this.dialogService = Objects.requireNonNull(dialogService, "dialogService");
         this.session = Objects.requireNonNull(session, "session");
+        this.dialogFactory = Objects.requireNonNull(dialogFactory, "dialogFactory");
     }
 
     public void openConversation(Window owner, PresencePlayer player) {
@@ -55,8 +59,7 @@ public final class MessagingController {
         }
         PrivateConversationDialog dialog = openDialogs.get(player.id());
         if (dialog == null || !dialog.isDisplayable()) {
-            dialog = new PrivateConversationDialog(owner, player, messagingService, dialogService,
-                    () -> openDialogs.remove(player.id()));
+            dialog = dialogFactory.create(owner, player, () -> openDialogs.remove(player.id()));
             openDialogs.put(player.id(), dialog);
         }
         PrivateConversationDialog finalDialog = dialog;

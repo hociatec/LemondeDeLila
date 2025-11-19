@@ -5,6 +5,8 @@ import com.lemondelila.client.game.model.DialogGameErrorHandler;
 import com.lemondelila.client.game.model.GameSession;
 
 import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
@@ -23,6 +25,16 @@ public final class GameRoomBotManager<S extends GameSession<?>> {
                            String listError,
                            String removeError,
                            String noBotAvailable) {
+
+        public static Messages defaults() {
+            return new Messages(
+                    "Aucune partie active pour gérer les bots.",
+                    "Impossible d'ajouter un bot.",
+                    "Impossible de récupérer la liste des bots.",
+                    "Impossible de retirer le bot.",
+                    "Aucun bot disponible."
+            );
+        }
     }
 
     private final RoomBotRemoteClient roomBots;
@@ -44,6 +56,14 @@ public final class GameRoomBotManager<S extends GameSession<?>> {
         this.refresher = Objects.requireNonNull(refresher, "refresher");
         this.botNamesResolver = Objects.requireNonNull(botNamesResolver, "botNamesResolver");
         this.messages = Objects.requireNonNull(messages, "messages");
+    }
+
+    public GameRoomBotManager(RoomBotRemoteClient roomBots,
+                              DialogGameErrorHandler errorHandler,
+                              Supplier<Optional<S>> sessionSupplier,
+                              Supplier<CompletableFuture<S>> refresher,
+                              Function<S, Collection<String>> botNamesResolver) {
+        this(roomBots, errorHandler, sessionSupplier, refresher, botNamesResolver, Messages.defaults());
     }
 
     public CompletableFuture<S> addBot() {
@@ -115,5 +135,33 @@ public final class GameRoomBotManager<S extends GameSession<?>> {
         }
         return bots.get(bots.size() - 1);
     }
-}
 
+    public static <S, P> Function<S, Collection<String>> botNamesResolver(Function<S, Collection<P>> playerExtractor,
+                                                                          Function<P, Boolean> botPredicate,
+                                                                          Function<P, String> usernameExtractor) {
+        Objects.requireNonNull(playerExtractor, "playerExtractor");
+        Objects.requireNonNull(botPredicate, "botPredicate");
+        Objects.requireNonNull(usernameExtractor, "usernameExtractor");
+        return session -> {
+            Collection<P> players = playerExtractor.apply(session);
+            if (players == null || players.isEmpty()) {
+                return List.of();
+            }
+            Collection<String> names = new LinkedHashSet<>();
+            for (P player : players) {
+                if (player == null) {
+                    continue;
+                }
+                Boolean isBot = botPredicate.apply(player);
+                if (isBot == null || !isBot) {
+                    continue;
+                }
+                String name = usernameExtractor.apply(player);
+                if (name != null && !name.isBlank()) {
+                    names.add(name);
+                }
+            }
+            return names;
+        };
+    }
+}

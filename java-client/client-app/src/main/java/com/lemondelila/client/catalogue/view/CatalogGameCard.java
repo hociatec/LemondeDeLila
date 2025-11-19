@@ -5,7 +5,6 @@ import com.lemondelila.client.catalogue.model.GameSummary;
 import com.lemondelila.client.framework.access.AccessibleDecorator;
 import com.lemondelila.client.framework.access.AccessibleSpec;
 
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -82,7 +81,7 @@ final class CatalogGameCard extends JPanel implements ListCellRenderer<GameSumma
         return this;
     }
 
-    private void applySelectionColors(JComponent list, boolean isSelected) {
+    private void applySelectionColors(JList<?> list, boolean isSelected) {
         Color background = isSelected
                 ? list.getSelectionBackground()
                 : list.getBackground();

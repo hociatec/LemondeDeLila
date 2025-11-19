@@ -1,5 +1,6 @@
 package com.lemondelila.client.user;
 
+import com.google.auto.service.AutoService;
 import com.lemondelila.client.user.controller.LoginController;
 import com.lemondelila.client.user.controller.RegistrationController;
 import com.lemondelila.client.user.controller.UserOperationGuard;
@@ -8,6 +9,7 @@ import com.lemondelila.client.user.service.SessionPersistenceService;
 import com.lemondelila.client.framework.core.context.ApplicationContext;
 import com.lemondelila.client.framework.core.module.LilaModule;
 
+@AutoService(LilaModule.class)
 public final class UserModule implements LilaModule {
 
     @Override

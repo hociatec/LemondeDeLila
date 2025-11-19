@@ -4,7 +4,9 @@ com\lemondelila\client\framework\core\task\TaskScheduler$TaskListener.class
 com\lemondelila\client\framework\core\event\DomainEventBus.class
 com\lemondelila\client\framework\core\module\FrameworkCoreModule.class
 com\lemondelila\client\framework\core\task\TaskScheduler$TaskHandle.class
+com\lemondelila\client\framework\core\branding\AppBrandingProvider.class
 com\lemondelila\client\framework\core\task\TaskScheduler$FrameworkThreadFactory.class
+META-INF\services\com.lemondelila.client.framework.core.module.LilaModule
+com\lemondelila\client\framework\core\event\EventSubscriptions.class
 com\lemondelila\client\framework\core\event\DomainEventBus$Subscriber.class
 com\lemondelila\client\framework\core\task\TaskScheduler.class
-com\lemondelila\client\framework\core\module\LilaModule.class

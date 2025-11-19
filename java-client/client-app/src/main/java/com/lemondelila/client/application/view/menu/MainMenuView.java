@@ -3,8 +3,8 @@ package com.lemondelila.client.application.view.menu;
 import com.lemondelila.client.application.Internationalization;
 import com.lemondelila.client.framework.access.AccessibleDecorator;
 import com.lemondelila.client.framework.access.AccessibleSpec;
-import com.lemondelila.client.framework.access.NarrationQueue;
 import com.lemondelila.client.framework.ui.component.StatusBanner;
+import com.lemondelila.client.framework.ui.component.StatusBannerFactory;
 import com.lemondelila.client.framework.ui.util.ButtonUtils;
 
 import javax.swing.Box;
@@ -39,12 +39,11 @@ final class MainMenuView {
             logoutButton
     );
 
-    MainMenuView(NarrationQueue narrationQueue) {
-        this.statusBanner = new StatusBanner(
+    MainMenuView(StatusBannerFactory statusBannerFactory) {
+        this.statusBanner = statusBannerFactory.create(
                 Internationalization.text("mainmenu.status.banner"),
                 Internationalization.text("mainmenu.status.banner.desc"),
-                root,
-                narrationQueue
+                root
         );
         buildUi();
     }
@@ -130,12 +129,6 @@ final class MainMenuView {
                 .name(button.getText())
                 .description(Internationalization.text(descKey))
                 .build());
-        button.addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusGained(FocusEvent e) {
-                statusBanner.setStatus(Internationalization.text("mainmenu.selection", button.getText()));
-            }
-        });
         root.add(button);
     }
 

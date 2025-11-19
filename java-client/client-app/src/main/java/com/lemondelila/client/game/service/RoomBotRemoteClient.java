@@ -26,7 +26,6 @@ public final class RoomBotRemoteClient extends RemoteGameServiceSupport {
         return supplyAsync(() -> {
             RoomBotCreateResponseDto response = restClient.post(
                     "rooms/" + roomId + "/bots",
-                    authHeaders(),
                     Map.of(),
                     RoomBotCreateResponseDto.class
             );
@@ -40,7 +39,7 @@ public final class RoomBotRemoteClient extends RemoteGameServiceSupport {
 
     public CompletableFuture<List<RoomBotInfo>> listBots(int roomId) {
         return supplyAsync(() -> {
-            RoomDetailsDto response = restClient.get("rooms/" + roomId, authHeaders(), RoomDetailsDto.class);
+            RoomDetailsDto response = restClient.get("rooms/" + roomId, RoomDetailsDto.class);
             if (response == null || response.bots() == null || response.bots().isEmpty()) {
                 return List.of();
             }
@@ -53,7 +52,7 @@ public final class RoomBotRemoteClient extends RemoteGameServiceSupport {
 
     public CompletableFuture<Void> removeBot(int roomId, int botId) {
         return supplyAsync(() -> {
-            restClient.delete("rooms/" + roomId + "/bots/" + botId, authHeaders());
+            restClient.delete("rooms/" + roomId + "/bots/" + botId);
             return null;
         });
     }

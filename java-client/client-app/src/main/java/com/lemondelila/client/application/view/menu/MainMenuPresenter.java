@@ -6,11 +6,11 @@ import com.lemondelila.client.framework.ui.ControllerResult;
 import com.lemondelila.client.framework.ui.dialog.DialogService;
 import com.lemondelila.client.framework.ui.screen.ScreenId;
 import com.lemondelila.client.framework.ui.screen.ScreenManager;
-import com.lemondelila.client.game.controller.CatalogController;
-import com.lemondelila.client.game.controller.ChatController;
-import com.lemondelila.client.game.controller.OptionsController;
-import com.lemondelila.client.game.controller.PresenceController;
-import com.lemondelila.client.game.controller.SocialController;
+import com.lemondelila.client.catalogue.controller.CatalogController;
+import com.lemondelila.client.chat.controller.ChatController;
+import com.lemondelila.client.settings.controller.OptionsController;
+import com.lemondelila.client.presence.controller.PresenceController;
+import com.lemondelila.client.social.controller.SocialController;
 import com.lemondelila.client.user.events.UserLoggedOut;
 import com.lemondelila.client.user.model.ClientSession;
 import com.lemondelila.client.framework.core.event.DomainEventBus;
@@ -36,7 +36,7 @@ final class MainMenuPresenter {
     private final DomainEventBus eventBus;
     private final MainMenuAudio audio;
     private final MainMenuView view;
-    private final JComponent root;
+    private JComponent root;
     private ScreenManager screenManager;
 
     MainMenuPresenter(DialogService dialogService,
@@ -48,8 +48,7 @@ final class MainMenuPresenter {
                       ClientSession session,
                       DomainEventBus eventBus,
                       MainMenuAudio audio,
-                      MainMenuView view,
-                      JComponent root) {
+                      MainMenuView view) {
         this.dialogService = Objects.requireNonNull(dialogService, "dialogService");
         this.chatController = Objects.requireNonNull(chatController, "chatController");
         this.presenceController = Objects.requireNonNull(presenceController, "presenceController");
@@ -60,9 +59,7 @@ final class MainMenuPresenter {
         this.eventBus = Objects.requireNonNull(eventBus, "eventBus");
         this.audio = Objects.requireNonNull(audio, "audio");
         this.view = Objects.requireNonNull(view, "view");
-        this.root = Objects.requireNonNull(root, "root");
         registerHandlers();
-        registerShortcuts();
         registerNavigation();
     }
 
@@ -81,11 +78,16 @@ final class MainMenuPresenter {
 
     private void registerHandlers() {
         view.shelvesButton().addActionListener(e -> onMenuSelected(this::openCatalog));
-        view.joinGameButton().addActionListener(e -> onMenuSelected(() -> featureSoon(Internationalization.text("mainmenu.join"))));
+        view.joinGameButton().addActionListener(e -> onMenuSelected(this::openPresenceDialog));
         view.chatButton().addActionListener(e -> onMenuSelected(this::openChat));
         view.socialButton().addActionListener(e -> onMenuSelected(this::openSocial));
         view.optionsButton().addActionListener(e -> onMenuSelected(this::openOptions));
         view.logoutButton().addActionListener(e -> onMenuSelected(this::logout));
+    }
+
+    void attachRoot(JComponent root) {
+        this.root = Objects.requireNonNull(root, "root");
+        registerShortcuts();
     }
 
     private void registerShortcuts() {

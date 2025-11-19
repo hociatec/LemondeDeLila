@@ -1,66 +1,41 @@
 package com.lemondelila.client.gamelogic.panierexpress.model;
 
-import java.util.Objects;
-
 /**
- * Paramètres de lancement pour Panier Express.
+ * Paramètres minimaux pour lancer Panier Express côté client.
+ * Seul le nombre de bots est configurable pour l'instant.
  */
 public final class PanierExpressGameOptions {
 
-    public static final int DEFAULT_ROBOT_COUNT = 1;
-    public static final int MIN_ROBOT_COUNT = 1;
+    public static final int MIN_ROBOT_COUNT = 0;
     public static final int MAX_ROBOT_COUNT = 5;
+    public static final int DEFAULT_ROBOT_COUNT = 1;
 
     private final int robotCount;
 
     private PanierExpressGameOptions(int robotCount) {
-        this.robotCount = robotCount;
+        this.robotCount = clamp(robotCount);
     }
 
     public static PanierExpressGameOptions defaults() {
-        return of(DEFAULT_ROBOT_COUNT);
+        return new PanierExpressGameOptions(DEFAULT_ROBOT_COUNT);
     }
 
-    public static PanierExpressGameOptions of(int robotCount) {
-        int clamped = Math.max(MIN_ROBOT_COUNT, Math.min(MAX_ROBOT_COUNT, robotCount));
-        return new PanierExpressGameOptions(clamped);
+    public static PanierExpressGameOptions ofRobots(int robotCount) {
+        return new PanierExpressGameOptions(robotCount);
     }
 
     public int robotCount() {
         return robotCount;
     }
 
-    public int totalSeats() {
-        return 1 + robotCount;
-    }
-
-    public PanierExpressGameOptions withRobotCount(int value) {
-        if (value == robotCount) {
-            return this;
+    private static int clamp(int value) {
+        if (value < MIN_ROBOT_COUNT) {
+            return MIN_ROBOT_COUNT;
         }
-        return of(value);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
+        if (value > MAX_ROBOT_COUNT) {
+            return MAX_ROBOT_COUNT;
         }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        PanierExpressGameOptions that = (PanierExpressGameOptions) o;
-        return robotCount == that.robotCount;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(robotCount);
-    }
-
-    @Override
-    public String toString() {
-        return "PanierExpressGameOptions{robotCount=" + robotCount + '}';
+        return value;
     }
 }
 

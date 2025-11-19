@@ -1,12 +1,9 @@
 package com.lemondelila.client.social.view;
 
 import com.lemondelila.client.framework.core.di.Inject;
-import com.lemondelila.client.framework.ui.dialog.DialogService;
 import com.lemondelila.client.framework.ui.screen.Screen;
 import com.lemondelila.client.framework.ui.screen.ScreenContext;
 import com.lemondelila.client.framework.ui.screen.ScreenId;
-import com.lemondelila.client.social.controller.SocialMessagesCenterController;
-import com.lemondelila.client.social.controller.SocialRelationshipsController;
 import com.lemondelila.client.user.model.ClientSession;
 
 import javax.swing.AbstractAction;
@@ -52,22 +49,14 @@ public final class SocialCenterScreen extends JPanel implements Screen {
     };
 
     @Inject
-    SocialCenterScreen(SocialRelationshipsController relationshipsController,
-                       SocialMessagesCenterController messagesController,
-                       DialogService dialogService,
+    SocialCenterScreen(SocialRelationshipsContainerFactory relationshipsFactory,
+                       SocialMessagesPanelFactory messagesFactory,
                        ClientSession session) {
         this.session = Objects.requireNonNull(session, "session");
 
-        Objects.requireNonNull(relationshipsController, "relationshipsController");
-        Objects.requireNonNull(messagesController, "messagesController");
-        Objects.requireNonNull(dialogService, "dialogService");
-
         Supplier<Window> ownerSupplier = () -> SwingUtilities.getWindowAncestor(SocialCenterScreen.this);
-        this.relationshipsContainer = new SocialRelationshipsContainer(relationshipsController, this::updateGlobalStatus);
-        this.messagesPanel = new SocialMessagesPanel(ownerSupplier, messagesController, dialogService, this::updateGlobalStatus);
-
-        this.relationshipsContainer.setOnEscape(this::focusNavigationBar);
-        this.messagesPanel.setOnEscape(this::focusNavigationBar);
+        this.relationshipsContainer = relationshipsFactory.create(this::updateGlobalStatus, this::focusNavigationBar);
+        this.messagesPanel = messagesFactory.create(ownerSupplier, this::updateGlobalStatus, this::focusNavigationBar);
 
         buildUi();
     }
