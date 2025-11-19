@@ -14,6 +14,7 @@ import java.util.Properties;
 public final class ConfigurationService {
 
     private final Properties properties = new Properties();
+    private Path externalConfigPath;
 
     public ConfigurationService() {
         loadClasspath("config/client.properties");
@@ -28,6 +29,10 @@ public final class ConfigurationService {
     public Optional<String> get(String key) {
         Objects.requireNonNull(key, "key");
         return Optional.ofNullable(properties.getProperty(key));
+    }
+
+    public Optional<Path> getExternalConfigPath() {
+        return Optional.ofNullable(externalConfigPath);
     }
 
     public int getInt(String key, int defaultValue) {
@@ -55,10 +60,11 @@ public final class ConfigurationService {
         if (!Files.exists(path)) {
             return;
         }
-        try (InputStream in = Files.newInputStream(path)) {
+        Path absolutePath = path.toAbsolutePath().normalize();
+        try (InputStream in = Files.newInputStream(absolutePath)) {
             properties.load(in);
+            externalConfigPath = absolutePath;
         } catch (IOException ignored) {
         }
     }
 }
-

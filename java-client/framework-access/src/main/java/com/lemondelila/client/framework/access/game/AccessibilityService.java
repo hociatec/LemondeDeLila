@@ -46,17 +46,17 @@ public final class AccessibilityService {
         Objects.requireNonNull(context, "context");
         StringBuilder builder = new StringBuilder();
         if (context.yourTurn()) {
-            builder.append("C’est votre tour !");
+            builder.append("C'est votre tour !");
         } else {
             String player = Optional.ofNullable(context.playerName())
                     .map(String::trim)
                     .filter(name -> !name.isEmpty())
                     .orElse("un joueur");
-            builder.append("C’est au tour de ").append(player).append('.');
+            builder.append("C'est au tour de ").append(player).append('.');
         }
         if (context.lastRoll() != null) {
             builder.append(' ')
-                    .append("Dernier dé : ")
+                    .append("Dernier d\u00E9 : ")
                     .append(context.lastRoll())
                     .append('.');
         }
@@ -85,20 +85,20 @@ public final class AccessibilityService {
         List<String> missing = Optional.ofNullable(context.missingItems()).orElse(List.of());
         if (!missing.isEmpty()) {
             builder.append(' ')
-                    .append("À trouver encore : ")
+                    .append("\u00C0 trouver encore : ")
                     .append(joinList(missing))
                     .append('.');
         } else if (context.total() > 0) {
             builder.append(' ')
                     .append(context.forSelf()
-                            ? "Votre liste est complète."
-                            : "La liste est complète.");
+                            ? "Votre liste est compl\u00E8te."
+                            : "La liste est compl\u00E8te.");
         }
 
         List<String> inventory = Optional.ofNullable(context.inventoryItems()).orElse(List.of());
         if (!inventory.isEmpty()) {
             builder.append(' ')
-                    .append("Inventaire pour échange : ")
+                    .append("Inventaire pour \u00E9change : ")
                     .append(joinList(inventory))
                     .append('.');
         }
@@ -106,8 +106,8 @@ public final class AccessibilityService {
         if (context.readyForCheckout()) {
             builder.append(' ')
                     .append(context.forSelf()
-                            ? "Vous êtes prêt pour la caisse."
-                            : "Prêt pour la caisse.");
+                            ? "Vous \u00EAtes pr\u00EAt pour la caisse."
+                            : "Pr\u00EAt pour la caisse.");
         }
         return builder.toString();
     }

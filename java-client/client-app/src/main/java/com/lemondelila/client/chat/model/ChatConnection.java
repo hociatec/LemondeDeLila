@@ -3,10 +3,14 @@ package com.lemondelila.client.chat.model;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.lemondelila.client.presence.model.PresencePlayer;
+import com.lemondelila.client.presence.model.PresenceChat;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.WebSocket;
+import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -14,6 +18,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
@@ -22,34 +27,38 @@ public final class ChatConnection implements AutoCloseable {
     private final HttpClient httpClient;
     private final ObjectMapper mapper;
     private final URI endpoint;
+    private final String authorizationHeader;
+    private final com.lemondelila.client.framework.core.task.TaskScheduler scheduler;
     private final CopyOnWriteArrayList<Consumer<List<ChatMessage>>> historyHandlers = new CopyOnWriteArrayList<>();
     private final CopyOnWriteArrayList<Consumer<ChatMessage>> messageHandlers = new CopyOnWriteArrayList<>();
+    private final CopyOnWriteArrayList<Consumer<List<PresencePlayer>>> presenceHandlers = new CopyOnWriteArrayList<>();
     private final CopyOnWriteArrayList<Consumer<ChatState>> stateHandlers = new CopyOnWriteArrayList<>();
     private final CopyOnWriteArrayList<Consumer<String>> errorHandlers = new CopyOnWriteArrayList<>();
     private final AtomicReference<WebSocket> socketRef = new AtomicReference<>();
+    private volatile List<PresencePlayer> lastPresence = List.of();
+    private final Duration heartbeatInterval = Duration.ofSeconds(25);
+    private final Duration reconnectDelay = Duration.ofSeconds(5);
+    private volatile ScheduledFuture<?> heartbeatTask;
+    private volatile ScheduledFuture<?> reconnectTask;
+    private volatile boolean closing;
 
-    public ChatConnection(HttpClient httpClient, ObjectMapper mapper, URI endpoint) {
+    public ChatConnection(HttpClient httpClient,
+                          ObjectMapper mapper,
+                          URI endpoint,
+                          String authorizationHeader,
+                          com.lemondelila.client.framework.core.task.TaskScheduler scheduler) {
         this.httpClient = httpClient;
         this.mapper = mapper;
         this.endpoint = endpoint;
+        this.authorizationHeader = authorizationHeader;
+        this.scheduler = scheduler;
     }
 
     public CompletableFuture<Void> connect() {
+        closing = false;
+        cancelReconnect();
         emitState(ChatState.CONNECTING);
-        CompletableFuture<WebSocket> connection = httpClient.newWebSocketBuilder()
-                .connectTimeout(Duration.ofSeconds(10))
-                .buildAsync(endpoint, new ListenerImpl());
-        CompletableFuture<Void> result = connection.thenAccept(socket -> {
-            socketRef.set(socket);
-            emitState(ChatState.CONNECTED);
-        });
-        return result.whenComplete((ignored, error) -> {
-            if (error != null) {
-                emitState(ChatState.FAILED);
-                String message = error.getMessage() == null ? error.toString() : error.getMessage();
-                emitError("Connexion au tchat impossible : " + message);
-            }
-        });
+        return establishConnection();
     }
 
     public CompletableFuture<Void> sendMessage(String text) {
@@ -86,6 +95,17 @@ public final class ChatConnection implements AutoCloseable {
         messageHandlers.add(handler);
     }
 
+    public void onPresence(Consumer<List<PresencePlayer>> handler) {
+        presenceHandlers.add(handler);
+        if (!lastPresence.isEmpty()) {
+            handler.accept(List.copyOf(lastPresence));
+        }
+    }
+
+    public List<PresencePlayer> latestPresence() {
+        return List.copyOf(lastPresence);
+    }
+
     public void onState(Consumer<ChatState> handler) {
         stateHandlers.add(handler);
     }
@@ -118,6 +138,17 @@ public final class ChatConnection implements AutoCloseable {
         parseMessage(node).ifPresent(message -> messageHandlers.forEach(handler -> handler.accept(message)));
     }
 
+    private void dispatchPresence(JsonNode node) {
+        JsonNode playersNode = node.path("players");
+        if (!playersNode.isArray()) {
+            return;
+        }
+        List<PresencePlayer> players = new ArrayList<>();
+        playersNode.forEach(item -> parsePresence(item).ifPresent(players::add));
+        lastPresence = players;
+        presenceHandlers.forEach(handler -> handler.accept(players));
+    }
+
     private java.util.Optional<ChatMessage> parseMessage(JsonNode node) {
         if (node == null || !node.isObject()) {
             return java.util.Optional.empty();
@@ -138,6 +169,9 @@ public final class ChatConnection implements AutoCloseable {
 
     @Override
     public void close() {
+        closing = true;
+        cancelHeartbeat();
+        cancelReconnect();
         WebSocket socket = socketRef.getAndSet(null);
         if (socket != null) {
             socket.sendClose(WebSocket.NORMAL_CLOSURE, "closing");
@@ -150,6 +184,7 @@ public final class ChatConnection implements AutoCloseable {
         public void onOpen(WebSocket webSocket) {
             webSocket.request(1);
             WebSocket.Listener.super.onOpen(webSocket);
+            startHeartbeat();
         }
 
         @Override
@@ -162,6 +197,8 @@ public final class ChatConnection implements AutoCloseable {
                     dispatchHistory(node);
                 } else if ("chat-message".equals(type)) {
                     dispatchMessage(node);
+                } else if ("presence-update".equals(type)) {
+                    dispatchPresence(node);
                 }
             } catch (Exception e) {
                 emitError("Message tchat invalide : " + e.getMessage());
@@ -172,6 +209,9 @@ public final class ChatConnection implements AutoCloseable {
         @Override
         public CompletionStage<?> onClose(WebSocket webSocket, int statusCode, String reason) {
             emitState(ChatState.CLOSED);
+            socketRef.compareAndSet(webSocket, null);
+            cancelHeartbeat();
+            attemptReconnect();
             return WebSocket.Listener.super.onClose(webSocket, statusCode, reason);
         }
 
@@ -179,6 +219,91 @@ public final class ChatConnection implements AutoCloseable {
         public void onError(WebSocket webSocket, Throwable error) {
             emitState(ChatState.FAILED);
             emitError("WebSocket tchat : " + error.getMessage());
+            socketRef.compareAndSet(webSocket, null);
+            cancelHeartbeat();
+            attemptReconnect();
+        }
+    }
+
+    private java.util.Optional<PresencePlayer> parsePresence(JsonNode node) {
+        if (node == null || !node.isObject()) {
+            return java.util.Optional.empty();
+        }
+        int id = node.path("id").asInt(-1);
+        String username = node.path("username").asText("inconnu");
+        List<PresenceChat> rooms = new ArrayList<>();
+        JsonNode roomsNode = node.path("rooms");
+        if (roomsNode.isArray()) {
+            roomsNode.forEach(room -> {
+                int roomId = room.path("id").asInt(-1);
+                String name = room.path("name").asText("");
+                if (roomId >= 0 && !name.isEmpty()) {
+                    rooms.add(new PresenceChat(roomId, name));
+                }
+            });
+        }
+        return java.util.Optional.of(new PresencePlayer(id, username, rooms));
+    }
+
+    private CompletableFuture<Void> establishConnection() {
+        return httpClient.newWebSocketBuilder()
+                .connectTimeout(Duration.ofSeconds(10))
+                .header("Authorization", authorizationHeader)
+                .buildAsync(endpoint, new ListenerImpl())
+                .thenAccept(socket -> {
+                    socketRef.set(socket);
+                    emitState(ChatState.CONNECTED);
+                })
+                .exceptionally(throwable -> {
+                    emitState(ChatState.FAILED);
+                    emitError("Connexion au tchat impossible : " + throwable.getMessage());
+                    attemptReconnect();
+                    return null;
+                });
+    }
+
+    private void startHeartbeat() {
+        cancelHeartbeat();
+        heartbeatTask = scheduler.scheduleAtFixedRate(
+                () -> {
+                    WebSocket socket = socketRef.get();
+                    if (socket != null) {
+                        socket.sendPing(ByteBuffer.wrap(new byte[]{1}));
+                    }
+                },
+                heartbeatInterval,
+                heartbeatInterval);
+    }
+
+    private void cancelHeartbeat() {
+        ScheduledFuture<?> task = heartbeatTask;
+        if (task != null) {
+            task.cancel(true);
+            heartbeatTask = null;
+        }
+    }
+
+    private void attemptReconnect() {
+        if (closing) {
+            return;
+        }
+        if (reconnectTask != null && !reconnectTask.isDone()) {
+            return;
+        }
+        reconnectTask = scheduler.schedule(() -> {
+            if (closing) {
+                return;
+            }
+            emitState(ChatState.CONNECTING);
+            establishConnection();
+        }, reconnectDelay);
+    }
+
+    private void cancelReconnect() {
+        ScheduledFuture<?> task = reconnectTask;
+        if (task != null) {
+            task.cancel(true);
+            reconnectTask = null;
         }
     }
 }
