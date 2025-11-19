@@ -255,7 +255,7 @@ if (-not $shadedJar) {
 
 [xml]$pom = Get-Content (Join-Path $javaRoot 'pom.xml')
 $rawVersion = [string]$pom.project.version
-if ([string]::IsNullOrWhiteSpace($rawVersion)) { $rawVersion = '1.0.5' }
+if ([string]::IsNullOrWhiteSpace($rawVersion)) { $rawVersion = '1.0.8' }
 $appVersion = $rawVersion
 
 New-Item -ItemType Directory -Path $distDir -Force | Out-Null

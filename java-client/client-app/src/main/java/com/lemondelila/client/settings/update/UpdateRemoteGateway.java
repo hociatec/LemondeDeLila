@@ -44,8 +44,9 @@ final class UpdateRemoteGateway {
         String remoteVersion = root.path("version").asText("");
         String downloadUrl = root.path("downloadUrl").asText("");
         String notes = root.path("notes").asText("");
+        String checksum = root.path("checksum").asText(null);
         boolean newer = isRemoteNewer(remoteVersion, currentVersion);
-        return new UpdateCheckResult(currentVersion, remoteVersion, downloadUrl, notes, newer);
+        return new UpdateCheckResult(currentVersion, remoteVersion, downloadUrl, notes, newer, checksum);
     }
 
     void downloadArchive(String url, Path destination) throws IOException, InterruptedException {
