@@ -10,6 +10,7 @@ target/
 ###############################
 # Java / Maven / JPackage
 ###############################
+.m2/
 java-client/client-app/target/
 java-client/client-app/target/jpackage-input/
 *.jar
