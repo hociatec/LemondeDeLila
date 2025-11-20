@@ -36,24 +36,24 @@ public final class OptionsDialog extends JDialog {
     private final JSlider backgroundVolumeSlider = slider();
     private final JSlider navigateVolumeSlider = slider();
     private final JSlider selectVolumeSlider = slider();
-    private final JCheckBox muteAll = new JCheckBox("Désactiver tous les sons");
+    private final JCheckBox muteAll = new JCheckBox("DÃƒÂ©sactiver tous les sons");
     private final JCheckBox confirmExit = new JCheckBox("Demander confirmation a la fermeture");
     private final JCheckBox chatEnabled = new JCheckBox("Activer le tchat global");
     private final JCheckBox confirmChatExit = new JCheckBox("Demander confirmation avant de fermer le tchat");
-    private final JCheckBox stayConnected = new JCheckBox("Rester connecté automatiquement");
-    private final JCheckBox soundAppLaunch = new JCheckBox("Son d'entrée dans la taverne");
+    private final JCheckBox stayConnected = new JCheckBox("Rester connectÃƒÂ© automatiquement");
+    private final JCheckBox soundAppLaunch = new JCheckBox("Son d'entrÃƒÂ©e dans la taverne");
     private final JCheckBox soundBackground = new JCheckBox("Ambiance de taverne en fond");
     private final JCheckBox soundNavigate = new JCheckBox("Son lors de la navigation");
-    private final JCheckBox soundSelect = new JCheckBox("Son lors de la sélection");
+    private final JCheckBox soundSelect = new JCheckBox("Son lors de la sÃƒÂ©lection");
     private final JButton saveButton = new JButton("Enregistrer");
     private final JButton cancelButton = new JButton("Annuler");
     private final AppSettingsService settingsService;
     private final UpdateService updateService;
     private final SoundEffectManager sounds;
     private final JLabel currentVersionLabel = new JLabel();
-    private final JLabel updateStatusLabel = new JLabel("Aucune vérification en cours.");
-    private final JButton checkUpdateButton = new JButton("Vérifier les mises à jour");
-    private final JButton installUpdateButton = new JButton("Installer la mise à jour");
+    private final JLabel updateStatusLabel = new JLabel("Aucune vÃƒÂ©rification en cours.");
+    private final JButton checkUpdateButton = new JButton("VÃƒÂ©rifier les mises ÃƒÂ  jour");
+    private final JButton installUpdateButton = new JButton("Installer la mise ÃƒÂ  jour");
     private volatile UpdateCheckResult pendingUpdate;
 
     public OptionsDialog(Window owner,
@@ -70,8 +70,8 @@ public final class OptionsDialog extends JDialog {
         tabs.setBorder(new EmptyBorder(8, 16, 8, 16));
         tabs.addTab("Volume", buildVolumePanel());
         tabs.addTab("Chat", buildChatPanel());
-        tabs.addTab("Général", buildGeneralPanel());
-        tabs.addTab("Mises à jour", buildUpdatePanel());
+        tabs.addTab("GÃƒÂ©nÃƒÂ©ral", buildGeneralPanel());
+        tabs.addTab("Mises ÃƒÂ  jour", buildUpdatePanel());
 
         add(tabs, BorderLayout.CENTER);
         add(buildButtons(), BorderLayout.SOUTH);
@@ -281,13 +281,13 @@ public final class OptionsDialog extends JDialog {
 
     private void performUpdateCheck() {
         if (updateService == null) {
-            updateStatusLabel.setText("Service de mise à jour indisponible.");
+            updateStatusLabel.setText("Service de mise ÃƒÂ  jour indisponible.");
             setUpdateButtonsState(true, false);
             return;
         }
         playSelect();
         pendingUpdate = null;
-        updateStatusLabel.setText("Recherche de mise à jour...");
+        updateStatusLabel.setText("Recherche de mise ÃƒÂ  jour...");
         setUpdateButtonsState(false, false);
         updateService.checkForUpdates().whenComplete((result, error) ->
                 SwingUtilities.invokeLater(() -> {
@@ -300,24 +300,36 @@ public final class OptionsDialog extends JDialog {
         );
     }
 
+    
     private void handleUpdateCheckSuccess(UpdateCheckResult result) {
         pendingUpdate = null;
         currentVersionLabel.setText("Version actuelle : " + result.currentVersion());
+        boolean mandatory = isMandatory(result);
         if (result.updateAvailable()) {
             pendingUpdate = result;
-            String message = "Nouvelle version " + result.remoteVersion() + " disponible.";
-            if (result.notes() != null && !result.notes().isBlank()) {
-                message += " " + result.notes();
+            StringBuilder message = new StringBuilder("Nouvelle version " + result.remoteVersion() + " disponible.");
+            if (mandatory && result.minSupportedVersion() != null) {
+                message.append(" Mise a jour obligatoire (min ").append(result.minSupportedVersion()).append(").");
             }
-            updateStatusLabel.setText(message);
+            String changelog = summarizeChangelog(result);
+            if (changelog != null) {
+                message.append(" ").append(changelog);
+            } else if (result.notes() != null && !result.notes().isBlank()) {
+                message.append(" ").append(result.notes());
+            }
+            updateStatusLabel.setText(message.toString());
             setUpdateButtonsState(true, true);
         } else {
-            updateStatusLabel.setText("Vous disposez déjà de la dernière version.");
+            if (mandatory) {
+                updateStatusLabel.setText("Version locale trop ancienne : mise a jour requise.");
+            } else {
+                updateStatusLabel.setText("Vous disposez deja de la derniere version.");
+            }
             setUpdateButtonsState(true, false);
         }
     }
 
-    private void handleUpdateFailure(Throwable error) {
+private void handleUpdateFailure(Throwable error) {
         pendingUpdate = null;
         String message = error != null && error.getMessage() != null
                 ? error.getMessage()
@@ -331,14 +343,14 @@ public final class OptionsDialog extends JDialog {
             return;
         }
         if (pendingUpdate == null) {
-            updateStatusLabel.setText("Aucune mise à jour disponible.");
+            updateStatusLabel.setText("Aucune mise ÃƒÂ  jour disponible.");
             setUpdateButtonsState(true, false);
             return;
         }
         playSelect();
         UpdateCheckResult target = pendingUpdate;
         setUpdateButtonsState(false, false);
-        updateStatusLabel.setText("Téléchargement de la mise à jour...");
+        updateStatusLabel.setText("TÃƒÂ©lÃƒÂ©chargement de la mise ÃƒÂ  jour...");
         updateService.downloadAndInstall(target, status ->
                 SwingUtilities.invokeLater(() -> updateStatusLabel.setText(status))
         ).whenComplete((ignored, error) -> SwingUtilities.invokeLater(() -> {
@@ -348,11 +360,11 @@ public final class OptionsDialog extends JDialog {
                 return;
             }
             pendingUpdate = null;
-            updateStatusLabel.setText("Mise à jour installée. Redémarrez l'application pour l'appliquer.");
+            updateStatusLabel.setText("Mise ÃƒÂ  jour installÃƒÂ©e. RedÃƒÂ©marrez l'application pour l'appliquer.");
             JOptionPane.showMessageDialog(
                     this,
-                    "La mise à jour a été installée avec succès.\nVeuillez redémarrer l'application.",
-                    "Mise à jour terminée",
+                    "La mise ÃƒÂ  jour a ÃƒÂ©tÃƒÂ© installÃƒÂ©e avec succÃƒÂ¨s.\nVeuillez redÃƒÂ©marrer l'application.",
+                    "Mise ÃƒÂ  jour terminÃƒÂ©e",
                     JOptionPane.INFORMATION_MESSAGE
             );
             setUpdateButtonsState(true, false);
@@ -362,5 +374,54 @@ public final class OptionsDialog extends JDialog {
     private void setUpdateButtonsState(boolean checkEnabled, boolean installEnabled) {
         checkUpdateButton.setEnabled(checkEnabled);
         installUpdateButton.setEnabled(installEnabled);
+    }
+
+    private boolean isMandatory(UpdateCheckResult result) {
+        if (result == null || result.minSupportedVersion() == null) {
+            return false;
+        }
+        return compareVersions(result.minSupportedVersion(), result.currentVersion()) > 0;
+    }
+
+    private int compareVersions(String left, String right) {
+        if (left == null || right == null) {
+            return 0;
+        }
+        String[] leftParts = left.split("[\\.\\-]");
+        String[] rightParts = right.split("[\\.\\-]");
+        int length = Math.max(leftParts.length, rightParts.length);
+        for (int i = 0; i < length; i++) {
+            int leftValue = i < leftParts.length ? parsePart(leftParts[i]) : 0;
+            int rightValue = i < rightParts.length ? parsePart(rightParts[i]) : 0;
+            if (leftValue != rightValue) {
+                return Integer.compare(leftValue, rightValue);
+            }
+        }
+        return 0;
+    }
+
+    private int parsePart(String part) {
+        try {
+            return Integer.parseInt(part.replaceAll("[^0-9]", ""));
+        } catch (NumberFormatException ex) {
+            return 0;
+        }
+    }
+
+    private String summarizeChangelog(UpdateCheckResult result) {
+        if (result == null || result.changelog() == null || result.changelog().isEmpty()) {
+            return null;
+        }
+        var entry = result.changelog().get(0);
+        if (entry.notes() != null && !entry.notes().isBlank()) {
+            return entry.notes();
+        }
+        if (!entry.highlights().isEmpty()) {
+            return "Nouveautes: " + String.join(", ", entry.highlights());
+        }
+        if (!entry.fixes().isEmpty()) {
+            return "Corrections: " + String.join(", ", entry.fixes());
+        }
+        return null;
     }
 }

@@ -165,4 +165,43 @@
         </plugins>
     </build>
 
+    <profiles>
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.github.wvengen</groupId>
+                        <artifactId>proguard-maven-plugin</artifactId>
+                        <version>2.6.1</version>
+                        <executions>
+                            <execution>
+                                <id>obfuscate</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>proguard</goal>
+                                </goals>
+                                <configuration>
+                                    <attach>true</attach>
+                                    <obfuscate>true</obfuscate>
+                                    <optimize>true</optimize>
+                                    <injar>${project.build.directory}/${project.artifactId}-${project.version}-all.jar</injar>
+                                    <outjar>${project.build.directory}/${project.artifactId}-${project.version}-obf.jar</outjar>
+                                    <options>
+                                        <option>-dontnote</option>
+                                        <option>-dontoptimize</option>
+                                        <option>-dontwarn</option>
+                                        <option>-keep class com.lemondelila.client.AppLauncher { *; }</option>
+                                        <option>-keep class com.lemondelila.client.** { public *; }</option>
+                                        <option>-keepclassmembers class * { @com.google.auto.service.AutoService *; }</option>
+                                    </options>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
 </project>

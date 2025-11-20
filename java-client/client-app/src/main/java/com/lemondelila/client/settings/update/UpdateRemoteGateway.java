@@ -14,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.Duration;
+import java.util.List;
 import java.util.Objects;
 
 final class UpdateRemoteGateway {
@@ -45,8 +46,12 @@ final class UpdateRemoteGateway {
         String downloadUrl = root.path("downloadUrl").asText("");
         String notes = root.path("notes").asText("");
         String checksum = root.path("checksum").asText(null);
-        boolean newer = isRemoteNewer(remoteVersion, currentVersion);
-        return new UpdateCheckResult(currentVersion, remoteVersion, downloadUrl, notes, newer, checksum);
+        String minSupportedVersion = root.path("minSupportedVersion").asText(null);
+        String signatureUrl = root.path("signatureUrl").asText(null);
+        String signature = root.path("signature").asText(null);
+        boolean requiresMinimum = minSupportedVersion != null && compareVersions(minSupportedVersion, currentVersion) > 0;
+        boolean newer = isRemoteNewer(remoteVersion, currentVersion) || requiresMinimum;
+        return new UpdateCheckResult(currentVersion, remoteVersion, downloadUrl, notes, newer, checksum, minSupportedVersion, signatureUrl, signature, List.of());
     }
 
     void downloadArchive(String url, Path destination) throws IOException, InterruptedException {

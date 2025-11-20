@@ -9,7 +9,10 @@
 #>
 [CmdletBinding()]
 param(
-    [switch]$SkipBuild
+    [switch]$SkipBuild,
+    [string]$CertificatePath,
+    [string]$CertificatePassword,
+    [string]$TimestampUrl = 'http://timestamp.digicert.com'
 )
 
 Set-StrictMode -Version Latest
@@ -197,6 +200,27 @@ function Ensure-AssistiveLibraries {
     Ensure-NvdaHelperRemote -WindowsLibsDir $windowsDir
 }
 
+function Remove-UnneededArtifacts {
+    param(
+        [string]$Root
+    )
+
+    if (-not (Test-Path $Root)) {
+        return
+    }
+
+    foreach ($dirName in @('logs', 'tmp', 'temp', 'debug', '.idea', '.vscode')) {
+        $candidate = Join-Path $Root $dirName
+        if (Test-Path $candidate) {
+            Remove-Item -Path $candidate -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    Get-ChildItem -Path $Root -Recurse -Include '*.log','*.tmp','*.pdb' -File -ErrorAction SilentlyContinue | ForEach-Object {
+        Remove-Item -Path $_.FullName -Force -ErrorAction SilentlyContinue
+    }
+}
+
 function Invoke-Step {
     param(
         [string]$Message,
@@ -231,7 +255,7 @@ if (-not $SkipBuild) {
     Invoke-Step "Compilation Maven (client-app)" {
         Push-Location $javaRoot
         try {
-            & $mavenCmd -pl client-app -am clean package -DskipTests
+            & $mavenCmd -pl client-app -am clean package -DskipTests -Prelease
             if ($LASTEXITCODE -ne 0) {
                 throw "La compilation Maven a échoué (code $LASTEXITCODE)."
             }
@@ -245,9 +269,12 @@ elseif (!(Test-Path $targetDir)) {
     throw "-SkipBuild a été demandé mais aucun dossier target n'existe : $targetDir"
 }
 
-$shadedJar = Get-ChildItem -Path $targetDir -Filter 'client-app-*-all.jar' -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+$shadedJar = Get-ChildItem -Path $targetDir -Filter 'client-app-*-obf.jar' -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1
 if (-not $shadedJar) {
-    $shadedJar = Get-ChildItem -Path $targetDir -Filter 'client-app-*.jar' | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+    $shadedJar = Get-ChildItem -Path $targetDir -Filter 'client-app-*-all.jar' -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+}
+if (-not $shadedJar) {
+    $shadedJar = Get-ChildItem -Path $targetDir -Filter 'client-app-*.jar' -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1
 }
 if (-not $shadedJar) {
     throw "Aucun jar client-app trouvé. Relancez sans -SkipBuild."
@@ -274,6 +301,8 @@ if (Test-Path $libsDir) {
     Copy-Item -Path $libsDir -Destination $stagingLibs -Recurse -Force
     Ensure-AssistiveLibraries -LibsRoot $stagingLibs
 }
+
+Remove-UnneededArtifacts -Root $stagingDir
 
 $appName = 'LeMondeDeLila'
 $vendor  = 'Le Monde de Lila'
@@ -307,6 +336,24 @@ Invoke-Step "Création de l'installateur Windows (.exe)" {
 }
 
 $installer = Get-ChildItem -Path $installerDir -Filter '*.exe' | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+if ($installer -and $CertificatePath) {
+    if (-not (Get-Command signtool.exe -ErrorAction SilentlyContinue)) {
+        Write-Warning "signtool.exe introuvable : saut de la signature code signing."
+    }
+    else {
+        $signArgs = @('sign', '/fd', 'SHA256', '/tr', $TimestampUrl, '/td', 'SHA256', '/f', $CertificatePath)
+        if ($CertificatePassword) { $signArgs += @('/p', $CertificatePassword) }
+        $signArgs += @('/d', 'Le Monde de Lila - Client') + $installer.FullName
+        Invoke-Step "Signature code signing ($($installer.Name))" {
+            & signtool.exe @signArgs
+            if ($LASTEXITCODE -ne 0) { throw "Echec de la signature code signing (code $LASTEXITCODE)." }
+        }
+        Invoke-Step "Verification de la signature" {
+            & signtool.exe verify /pa $installer.FullName
+            if ($LASTEXITCODE -ne 0) { throw "Verification de la signature echouee (code $LASTEXITCODE)." }
+        }
+    }
+}
 Write-Host ""
 if ($installer) {
     Write-Host "Installateur généré : $($installer.FullName)" -ForegroundColor Green

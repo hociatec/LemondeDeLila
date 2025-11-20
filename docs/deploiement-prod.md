@@ -37,24 +37,24 @@ Le script suppose que l’utilisateur courant peut exécuter `sudo systemctl` sa
 - `ws.lilas.hociatec.fr` relaie les WebSockets (`/ws`, `/presence`) vers `http://127.0.0.1:8081`, avec les en-têtes nécessaires (`Upgrade`, `Connection`, `X-Forwarded-*`).
 - Le backend répond maintenant sur `/` avec un JSON de santé (`App\Module\Core\Controller\LandingController`), ce qui évite les 404 pour les vérifications simples.
 
-### Client Java
+### Client Java / mises a jour
 
-- Le fichier `java-client/client-app/src/main/resources/config/client.properties` pointe désormais sur la production :
+- Le fichier `java-client/client-app/src/main/resources/config/client.properties` pointe desormais sur la production :
   - `network.http.base=https://api.lilas.hociatec.fr/api/`
   - `network.ws.url=wss://ws.lilas.hociatec.fr/ws`
   - `network.ws.presence=wss://ws.lilas.hociatec.fr/presence`
-- Les valeurs par défaut côté code (fallbacks) ont été alignées, ce qui permet d’utiliser le client sans modification locale.
-- Les variables `APP_CLIENT_VERSION` / `APP_CLIENT_DOWNLOAD_URL` (définies dans `.env*`) alimentent l’endpoint `/client/version` : le client Swing s’en sert pour le bouton “Vérifier/Installer les mises à jour”. Le fichier ZIP est généré localement via `./tools/build-client-package.sh` et exposé par Nginx (`https://lilas.hociatec.fr/downloads/le-monde-de-lila-client.zip`).
-- `updates.check.url` contrôle l’URL interrogée côté client (`client.properties`). Par défaut : `https://api.lilas.hociatec.fr/client/version`.
-
-Vérifications rapides :
-
-```bash
-curl https://lilas.hociatec.fr/
-curl -I https://api.lilas.hociatec.fr/api
-curl -I https://ws.lilas.hociatec.fr/ws
-systemctl status lila-realtime.service
-```
+- Les valeurs par defaut cote code (fallbacks) ont ete alignees, ce qui permet d'utiliser le client sans modification locale.
+- Manifest `/client/version` (JSON) : `version`, `downloadUrl`, `checksum`, `timestamp`, `tokenRequired`, `tokenHeader`, `tokenQueryParameter` et maintenant :
+  - `minSupportedVersion` (bloque le client si version locale < valeur)
+  - `signatureUrl` (fichier de signature de l'artefact a verifier cote client)
+  - `changelog` (array JSON libre, ex. liste de blocs `{version, highlights, fixes}`)
+- Variables d'environnement associees (dans `.env*`) :
+  - `APP_CLIENT_VERSION`, `APP_CLIENT_DOWNLOAD_URL`, `APP_CLIENT_CHECKSUM`, `APP_CLIENT_DOWNLOAD_SECRET`
+  - `APP_CLIENT_MIN_VERSION` (optionnel)
+  - `APP_CLIENT_SIGNATURE_URL` (URL du .sig/.p7s)
+  - `APP_CLIENT_CHANGELOG` (JSON, ex. `[{"version":"1.2.4","highlights":["Nouveau launcher"],"fixes":["Correction NVDA"]}]`)
+- Le ZIP client est genere via `./tools/build-client-package.sh` et depose en HTTPS (`backend/var/updates` par Nginx).
+- `updates.check.url` controle l'URL interrogee cote client (`client.properties`). Par defaut : `https://api.lilas.hociatec.fr/client/version`.
 
 ## Secrets et variables d’environnement
 
