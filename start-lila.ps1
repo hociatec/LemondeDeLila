@@ -98,6 +98,52 @@ function Ensure-PHPDependencies {
     & $composer.Source install --no-interaction --working-dir $BackendDir
 }
 
+function Build-FrameworkModules {
+    param(
+        [string]$JavaDir,
+        [string]$MavenPath
+    )
+
+    $frameworks = @(
+        'framework-di',
+        'framework-core',
+        'framework-access',
+        'framework-ui',
+        'framework-network',
+        'framework-media'
+    )
+
+    Push-Location $JavaDir
+    try {
+        Write-Host "Installation du parent java-client..."
+        & $MavenPath install -N
+        if ($LASTEXITCODE -ne 0) {
+            throw "L'installation du parent java-client a echoue (code $LASTEXITCODE)."
+        }
+    }
+    finally {
+        Pop-Location
+    }
+
+    foreach ($module in $frameworks) {
+        $modulePath = Join-Path $JavaDir $module
+        if (-not (Test-Path $modulePath)) {
+            continue
+        }
+        Write-Host "Installation du module $module..."
+        Push-Location $modulePath
+        try {
+            & $MavenPath install -DskipTests
+            if ($LASTEXITCODE -ne 0) {
+                throw "La compilation du module $module a echoue (code $LASTEXITCODE)."
+            }
+        }
+        finally {
+            Pop-Location
+        }
+    }
+}
+
 function Remove-BomFromFile {
     param(
         [string]$FilePath
@@ -341,6 +387,7 @@ try {
     $javaLocationPushed = $true
 
     if (-not $SkipBuild) {
+        Build-FrameworkModules -JavaDir $javaDirectory -MavenPath $mavenPath
         Remove-BomFromSource -RootPath $javaDirectory -Extensions @('.java', '.xml', '.properties', '.yml', '.yaml')
         Write-Host "Compilation du client Java..."
         & $mavenPath clean package -DskipTests

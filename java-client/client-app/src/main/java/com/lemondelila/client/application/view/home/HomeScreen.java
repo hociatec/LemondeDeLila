@@ -1,4 +1,3 @@
-
 package com.lemondelila.client.application.view.home;
 
 import com.lemondelila.client.application.AppBranding;

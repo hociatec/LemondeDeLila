@@ -1,4 +1,3 @@
-
 package com.lemondelila.client.application.view.menu;
 
 import com.lemondelila.client.framework.core.di.Inject;
