@@ -28,6 +28,7 @@ class RoomRealtimeClientHandler implements ClientHandler
     private const ATTR_USER_ID = 'app.realtime.user_id';
     private const ATTR_USERNAME = 'app.realtime.username';
     private const ATTR_TOKEN_EXP = 'app.realtime.token_exp';
+    private const ATTR_ROOM_NAME = 'app.realtime.room_name';
 
     public function __construct(
         private readonly JWTTokenManagerInterface $jwtManager,
@@ -95,6 +96,7 @@ class RoomRealtimeClientHandler implements ClientHandler
             $request->setAttribute(self::ATTR_USER_ID, $user->getId());
             $request->setAttribute(self::ATTR_USERNAME, $user->getUsername());
             $request->setAttribute(self::ATTR_TOKEN_EXP, $expiresAt);
+            $request->setAttribute(self::ATTR_ROOM_NAME, $room->getName());
 
             return $response;
         });
@@ -107,6 +109,7 @@ class RoomRealtimeClientHandler implements ClientHandler
             $userId = $request->getAttribute(self::ATTR_USER_ID);
             $username = $request->getAttribute(self::ATTR_USERNAME);
             $expiresAt = $request->getAttribute(self::ATTR_TOKEN_EXP);
+            $roomName = $request->getAttribute(self::ATTR_ROOM_NAME) ?? '';
 
             if (!is_int($roomId) || $roomId <= 0 || !is_int($userId)) {
                 yield $client->close();
@@ -116,7 +119,7 @@ class RoomRealtimeClientHandler implements ClientHandler
             $this->broker->register($roomId, $client, [
                 'userId' => $userId,
                 'username' => $username,
-                'roomName' => $room->getName(),
+                'roomName' => $roomName,
             ]);
 
             $expiryWatcher = null;

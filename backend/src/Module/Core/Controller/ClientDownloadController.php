@@ -41,6 +41,7 @@ final class ClientDownloadController
         }
 
         $response = new BinaryFileResponse($this->packagePath);
+        $response->headers->set('Content-Type', 'application/zip');
         $response->setContentDisposition(
             ResponseHeaderBag::DISPOSITION_ATTACHMENT,
             basename($this->packagePath)

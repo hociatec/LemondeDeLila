@@ -44,8 +44,55 @@ services:
     App\Module\Game\Realtime\Command\RealtimeServerCommand:
         tags: ['console.command']
 
-    App\Module\Core\Controller\ClientVersionController:
+    App\Module\Core\Controller\:
+        resource: '../src/Module/Core/Controller'
         tags: ['controller.service_arguments']
+        public: true
+
+    App\Module\User\Controller\:
+        resource: '../src/Module/User/Controller'
+        tags: ['controller.service_arguments']
+        public: true
+
+    App\Module\Admin\Controller\:
+        resource: '../src/Module/Admin/Controller'
+        tags: ['controller.service_arguments']
+        public: true
+
+    App\Module\Messaging\Controller\:
+        resource: '../src/Module/Messaging/Controller'
+        tags: ['controller.service_arguments']
+        public: true
+
+    App\Module\Chat\Controller\:
+        resource: '../src/Module/Chat/Controller'
+        tags: ['controller.service_arguments']
+        public: true
+
+    App\Module\Rules\Controller\:
+        resource: '../src/Module/Rules/Controller'
+        tags: ['controller.service_arguments']
+        public: true
+
+    App\Module\Game\Controller\:
+        resource: '../src/Module/Game/Controller'
+        tags: ['controller.service_arguments']
+        public: true
+
+    App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Controller\:
+        resource: '../src/Module/Game/GameCatalogue/JeuxDePlateaux/LesQuatreVents/PanierExpress/Controller'
+        tags: ['controller.service_arguments']
+        public: true
+
+    App\Module\Game\GameCatalogue\Actions\VentsInfinis\MissionNemesis\Controller\:
+        resource: '../src/Module/Game/GameCatalogue/Actions/VentsInfinis/MissionNemesis/Controller'
+        tags: ['controller.service_arguments']
+        public: true
+
+    App\Module\Game\GameCatalogue\JeuxDeCartes\VentsDansants\DameNature\Controller\:
+        resource: '../src/Module/Game/GameCatalogue/JeuxDeCartes/VentsDansants/DameNature/Controller'
+        tags: ['controller.service_arguments']
+        public: true
     App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Controller\PanierExpressController: ~
     App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Controller\PanierExpressGameController: ~
     App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Controller\PanierExpressTableController: ~
