@@ -4,12 +4,12 @@
 
 | Service | Rôle | Commandes utiles |
 |---------|------|------------------|
-| `nginx` | Reverse-proxy HTTPS pour `lilas.hociatec.fr`. Sert Symfony et relaie les WebSockets pour `wss://lilas.hociatec.fr`. | `sudo systemctl reload nginx` |
+| `nginx` | Reverse-proxy HTTPS pour `lilas.hociatec.fr` (front), `api.lilas.hociatec.fr` (API) et `ws.lilas.hociatec.fr` (WebSocket). | `sudo systemctl reload nginx` |
 | `php8.2-fpm` | Pools PHP pour les requêtes HTTP/API. | `sudo systemctl restart php8.2-fpm` |
 | `lila-realtime.service` | Lance `bin/console app:realtime:serve --env=prod` (WebSocket/push). | `sudo systemctl restart|status lila-realtime.service` |
 | `lila-backend.service` | Service one-shot qui préchauffe le cache Symfony au boot. | `sudo systemctl start lila-backend.service` |
 
-Les journaux applicatifs sont écrits dans `logs/backend-http*.log` (HTTP), `logs/backend-realtime*.log` (WS) et dans les logs système (`journalctl -u lila-realtime`).
+Les journaux applicatifs sont écrits dans `backend/var/log/prod.log` (HTTP/WS) et `backend/var/log/deprecation.log`, et restent visibles via `journalctl -u lila-realtime` pour le service WebSocket.
 
 ## Script de déploiement
 
@@ -33,25 +33,26 @@ Le script suppose que l’utilisateur courant peut exécuter `sudo systemctl` sa
 ## Configuration réseau
 
 - `lilas.hociatec.fr` pointe vers `/home/ubuntu/lemondeDeLila/backend/public` via HTTPS (TLS Let’s Encrypt).
-- `lilas.hociatec.fr` relaie aussi les WebSockets (`wss://lilas.hociatec.fr`) vers `http://127.0.0.1:8081`, avec les en-têtes nécessaires (`Upgrade`, `Connection`, `X-Forwarded-*`).
+- `api.lilas.hociatec.fr` pointe également vers `/home/ubuntu/lemondeDeLila/backend/public` pour l’API REST (`/api`).
+- `ws.lilas.hociatec.fr` relaie les WebSockets (`/ws`, `/presence`) vers `http://127.0.0.1:8081`, avec les en-têtes nécessaires (`Upgrade`, `Connection`, `X-Forwarded-*`).
 - Le backend répond maintenant sur `/` avec un JSON de santé (`App\Module\Core\Controller\LandingController`), ce qui évite les 404 pour les vérifications simples.
 
 ### Client Java
 
 - Le fichier `java-client/client-app/src/main/resources/config/client.properties` pointe désormais sur la production :
-  - `network.http.base=https://lilas.hociatec.fr/api/`
-  - `network.ws.url=wss://lilas.hociatec.fr/ws`
-  - `network.ws.presence=wss://lilas.hociatec.fr/presence`
+  - `network.http.base=https://api.lilas.hociatec.fr/api/`
+  - `network.ws.url=wss://ws.lilas.hociatec.fr/ws`
+  - `network.ws.presence=wss://ws.lilas.hociatec.fr/presence`
 - Les valeurs par défaut côté code (fallbacks) ont été alignées, ce qui permet d’utiliser le client sans modification locale.
 - Les variables `APP_CLIENT_VERSION` / `APP_CLIENT_DOWNLOAD_URL` (définies dans `.env*`) alimentent l’endpoint `/client/version` : le client Swing s’en sert pour le bouton “Vérifier/Installer les mises à jour”. Le fichier ZIP est généré localement via `./tools/build-client-package.sh` et exposé par Nginx (`https://lilas.hociatec.fr/downloads/le-monde-de-lila-client.zip`).
-- `updates.check.url` contrôle l’URL interrogée côté client (`client.properties`). Par défaut : `https://lilas.hociatec.fr/client/version`.
+- `updates.check.url` contrôle l’URL interrogée côté client (`client.properties`). Par défaut : `https://api.lilas.hociatec.fr/client/version`.
 
 Vérifications rapides :
 
 ```bash
 curl https://lilas.hociatec.fr/
-curl -I https://lilas.hociatec.fr/api
-curl -I https://lilas.hociatec.fr/ws
+curl -I https://api.lilas.hociatec.fr/api
+curl -I https://ws.lilas.hociatec.fr/ws
 systemctl status lila-realtime.service
 ```
 

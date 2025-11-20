@@ -6,7 +6,8 @@ use App\Module\Game\Repository\GameStatRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: GameStatRepository::class)]
-#[ORM\Table(name: 'game_stat', uniqueConstraints: [new ORM\UniqueConstraint(name: 'uniq_game_stat_game_type', columns: ['game_type'])])]
+#[ORM\Table(name: 'game_stat')]
+#[ORM\UniqueConstraint(name: 'uniq_game_stat_game_type', columns: ['game_type'])]
 class GameStat
 {
     #[ORM\Id]
@@ -35,4 +36,3 @@ class GameStat
     public function setData(array $data): self { $this->data = $data; $this->updatedAt = new \DateTimeImmutable(); return $this; }
     public function getUpdatedAt(): \DateTimeImmutable { return $this->updatedAt; }
 }
-
