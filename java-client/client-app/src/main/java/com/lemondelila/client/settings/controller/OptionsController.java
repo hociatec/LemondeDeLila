@@ -1,5 +1,6 @@
 package com.lemondelila.client.settings.controller;
 
+import com.lemondelila.client.application.Internationalization;
 import com.lemondelila.client.framework.core.di.Inject;
 import com.lemondelila.client.framework.media.sound.SoundEffectManager;
 import com.lemondelila.client.framework.ui.ControllerResult;
@@ -45,6 +46,6 @@ public final class OptionsController {
         }
         OptionsDialog dialog = dialogFactory.create(owner);
         dialog.setVisible(true);
-        return ControllerResult.status("Options mises a jour.");
+        return ControllerResult.status(Internationalization.text("options.controller.status"));
     }
 }

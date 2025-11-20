@@ -7,7 +7,8 @@ import javax.swing.JLabel;
 import java.util.Objects;
 
 /**
- * Label accessible qui simplifie la mise à jour du texte et de la description.
+ * Label accessible qui simplifie la mise a jour du texte et de la description et force un
+ * evenement d'accessibilite pour les lecteurs d'ecran.
  */
 public final class AccessibleStatusPanel {
 
@@ -16,7 +17,7 @@ public final class AccessibleStatusPanel {
     public AccessibleStatusPanel(String accessibleName, String accessibleDescription) {
         AccessibleDecorator.apply(label, AccessibleSpec.builder()
                 .name(Objects.requireNonNullElse(accessibleName, "Statut"))
-                .description(Objects.requireNonNullElse(accessibleDescription, "Indique l'état"))
+                .description(Objects.requireNonNullElse(accessibleDescription, "Indique l'etat"))
                 .build());
         label.setFocusable(false);
     }
@@ -32,6 +33,13 @@ public final class AccessibleStatusPanel {
         if (description == null || description.isBlank()) {
             description = safeText;
         }
-        label.getAccessibleContext().setAccessibleDescription(description);
+        var context = label.getAccessibleContext();
+        context.setAccessibleDescription(description);
+        context.setAccessibleName(description);
+        context.firePropertyChange(
+                javax.accessibility.AccessibleContext.ACCESSIBLE_DESCRIPTION_PROPERTY,
+                null,
+                description
+        );
     }
 }

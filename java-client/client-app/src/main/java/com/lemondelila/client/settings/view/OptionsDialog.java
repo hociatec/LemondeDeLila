@@ -1,12 +1,16 @@
 package com.lemondelila.client.settings.view;
 
+import com.lemondelila.client.application.Internationalization;
+import com.lemondelila.client.framework.access.AccessibleDecorator;
+import com.lemondelila.client.framework.access.AccessibleSpec;
+import com.lemondelila.client.framework.media.sound.SoundEffectManager;
+import com.lemondelila.client.framework.ui.component.AccessibleStatusPanel;
+import com.lemondelila.client.framework.ui.util.ButtonUtils;
 import com.lemondelila.client.media.SoundBank;
 import com.lemondelila.client.settings.model.AppSettings;
 import com.lemondelila.client.settings.service.AppSettingsService;
 import com.lemondelila.client.settings.update.UpdateCheckResult;
 import com.lemondelila.client.settings.update.UpdateService;
-import com.lemondelila.client.framework.media.sound.SoundEffectManager;
-import com.lemondelila.client.framework.ui.util.ButtonUtils;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -19,10 +23,12 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
-import javax.swing.SwingConstants;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Window;
@@ -36,31 +42,35 @@ public final class OptionsDialog extends JDialog {
     private final JSlider backgroundVolumeSlider = slider();
     private final JSlider navigateVolumeSlider = slider();
     private final JSlider selectVolumeSlider = slider();
-    private final JCheckBox muteAll = new JCheckBox("DÃƒÂ©sactiver tous les sons");
-    private final JCheckBox confirmExit = new JCheckBox("Demander confirmation a la fermeture");
-    private final JCheckBox chatEnabled = new JCheckBox("Activer le tchat global");
-    private final JCheckBox confirmChatExit = new JCheckBox("Demander confirmation avant de fermer le tchat");
-    private final JCheckBox stayConnected = new JCheckBox("Rester connectÃƒÂ© automatiquement");
-    private final JCheckBox soundAppLaunch = new JCheckBox("Son d'entrÃƒÂ©e dans la taverne");
-    private final JCheckBox soundBackground = new JCheckBox("Ambiance de taverne en fond");
-    private final JCheckBox soundNavigate = new JCheckBox("Son lors de la navigation");
-    private final JCheckBox soundSelect = new JCheckBox("Son lors de la sÃƒÂ©lection");
-    private final JButton saveButton = new JButton("Enregistrer");
-    private final JButton cancelButton = new JButton("Annuler");
+    private final JCheckBox muteAll = new JCheckBox(Internationalization.text("options.sound.muteAll"));
+    private final JCheckBox confirmExit = new JCheckBox(Internationalization.text("options.sound.confirmExit"));
+    private final JCheckBox chatEnabled = new JCheckBox(Internationalization.text("options.chat.enabled"));
+    private final JCheckBox confirmChatExit = new JCheckBox(Internationalization.text("options.chat.confirmExit"));
+    private final JCheckBox stayConnected = new JCheckBox(Internationalization.text("options.general.stayConnected"));
+    private final JCheckBox soundAppLaunch = new JCheckBox(Internationalization.text("options.sound.appLaunch"));
+    private final JCheckBox soundBackground = new JCheckBox(Internationalization.text("options.sound.background"));
+    private final JCheckBox soundNavigate = new JCheckBox(Internationalization.text("options.sound.navigate"));
+    private final JCheckBox soundSelect = new JCheckBox(Internationalization.text("options.sound.select"));
+    private final JButton saveButton = new JButton(Internationalization.text("options.buttons.save"));
+    private final JButton cancelButton = new JButton(Internationalization.text("options.buttons.cancel"));
     private final AppSettingsService settingsService;
     private final UpdateService updateService;
     private final SoundEffectManager sounds;
     private final JLabel currentVersionLabel = new JLabel();
-    private final JLabel updateStatusLabel = new JLabel("Aucune vÃƒÂ©rification en cours.");
-    private final JButton checkUpdateButton = new JButton("VÃƒÂ©rifier les mises ÃƒÂ  jour");
-    private final JButton installUpdateButton = new JButton("Installer la mise ÃƒÂ  jour");
+    private final AccessibleStatusPanel updateStatusPanel = new AccessibleStatusPanel(
+            Internationalization.text("options.updates.status.accessible.name"),
+            Internationalization.text("options.updates.status.accessible.desc")
+    );
+    private final int updateTabIndex;
+    private final JButton checkUpdateButton = new JButton(Internationalization.text("options.updates.check"));
+    private final JButton installUpdateButton = new JButton(Internationalization.text("options.updates.install"));
     private volatile UpdateCheckResult pendingUpdate;
 
     public OptionsDialog(Window owner,
                          AppSettingsService service,
                          UpdateService updateService,
                          SoundEffectManager sounds) {
-        super(owner, "Options", ModalityType.APPLICATION_MODAL);
+        super(owner, Internationalization.text("options.dialog.title"), ModalityType.APPLICATION_MODAL);
         this.settingsService = service;
         this.updateService = updateService;
         this.sounds = sounds;
@@ -68,10 +78,14 @@ public final class OptionsDialog extends JDialog {
         setLayout(new BorderLayout(12, 12));
         JTabbedPane tabs = new JTabbedPane();
         tabs.setBorder(new EmptyBorder(8, 16, 8, 16));
-        tabs.addTab("Volume", buildVolumePanel());
-        tabs.addTab("Chat", buildChatPanel());
-        tabs.addTab("GÃƒÂ©nÃƒÂ©ral", buildGeneralPanel());
-        tabs.addTab("Mises ÃƒÂ  jour", buildUpdatePanel());
+        tabs.addTab(Internationalization.text("options.tab.volume"), buildVolumePanel());
+        tabs.addTab(Internationalization.text("options.tab.chat"), buildChatPanel());
+        tabs.addTab(Internationalization.text("options.tab.general"), buildGeneralPanel());
+        tabs.addTab(Internationalization.text("options.tab.updates"), buildUpdatePanel());
+        updateTabIndex = tabs.getTabCount() - 1;
+        TabDefaultButtonSwitcher switcher = new TabDefaultButtonSwitcher(tabs);
+        tabs.addChangeListener(switcher);
+        switcher.stateChanged(null);
 
         add(tabs, BorderLayout.CENTER);
         add(buildButtons(), BorderLayout.SOUTH);
@@ -100,7 +114,6 @@ public final class OptionsDialog extends JDialog {
         registerNavigationSound(checkUpdateButton);
         registerNavigationSound(installUpdateButton);
         loadValues();
-        getRootPane().setDefaultButton(saveButton);
         pack();
         setLocationRelativeTo(owner);
     }
@@ -134,7 +147,7 @@ public final class OptionsDialog extends JDialog {
 
     private JPanel buildVolumePanel() {
         JPanel panel = verticalPanel();
-        panel.add(labelled("Musique", musicVolumeSlider));
+        panel.add(labelled(Internationalization.text("options.volume.music"), musicVolumeSlider));
         panel.add(Box.createRigidArea(new java.awt.Dimension(0, 12)));
         panel.add(muteAll);
         panel.add(Box.createRigidArea(new java.awt.Dimension(0, 12)));
@@ -164,9 +177,8 @@ public final class OptionsDialog extends JDialog {
     private JPanel buildUpdatePanel() {
         JPanel panel = verticalPanel();
         currentVersionLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        String currentVersion = updateService != null ? updateService.currentVersion() : "inconnue";
-        currentVersionLabel.setText("Version actuelle : " + currentVersion);
-        updateStatusLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        String currentVersion = updateService != null ? updateService.currentVersion() : Internationalization.text("options.updates.version.unknown");
+        currentVersionLabel.setText(Internationalization.text("options.updates.currentVersion", currentVersion));
         checkUpdateButton.setAlignmentX(Component.LEFT_ALIGNMENT);
         installUpdateButton.setAlignmentX(Component.LEFT_ALIGNMENT);
         installUpdateButton.setEnabled(false);
@@ -180,7 +192,12 @@ public final class OptionsDialog extends JDialog {
         panel.add(Box.createRigidArea(new java.awt.Dimension(0, 8)));
         panel.add(installUpdateButton);
         panel.add(Box.createRigidArea(new java.awt.Dimension(0, 8)));
-        panel.add(updateStatusLabel);
+        panel.add(updateStatusPanel.component());
+        setUpdateStatus(Internationalization.text("options.updates.status.none"));
+        applyAccessibility(currentVersionLabel, "options.updates.currentVersion", "options.updates.currentVersion.desc");
+        applyAccessibility(checkUpdateButton, "options.updates.check");
+        applyAccessibility(installUpdateButton, "options.updates.install");
+        applyAccessibility(updateStatusPanel.component(), "options.updates.status.accessible.name", "options.updates.status.accessible.desc");
         return panel;
     }
 
@@ -281,13 +298,13 @@ public final class OptionsDialog extends JDialog {
 
     private void performUpdateCheck() {
         if (updateService == null) {
-            updateStatusLabel.setText("Service de mise ÃƒÂ  jour indisponible.");
+            setUpdateStatus(Internationalization.text("options.updates.status.unavailable"));
             setUpdateButtonsState(true, false);
             return;
         }
         playSelect();
         pendingUpdate = null;
-        updateStatusLabel.setText("Recherche de mise ÃƒÂ  jour...");
+        setUpdateStatus(Internationalization.text("options.updates.status.checking"));
         setUpdateButtonsState(false, false);
         updateService.checkForUpdates().whenComplete((result, error) ->
                 SwingUtilities.invokeLater(() -> {
@@ -300,16 +317,15 @@ public final class OptionsDialog extends JDialog {
         );
     }
 
-    
     private void handleUpdateCheckSuccess(UpdateCheckResult result) {
         pendingUpdate = null;
-        currentVersionLabel.setText("Version actuelle : " + result.currentVersion());
+        currentVersionLabel.setText(Internationalization.text("options.updates.currentVersion", result.currentVersion()));
         boolean mandatory = isMandatory(result);
         if (result.updateAvailable()) {
             pendingUpdate = result;
-            StringBuilder message = new StringBuilder("Nouvelle version " + result.remoteVersion() + " disponible.");
+            StringBuilder message = new StringBuilder(Internationalization.text("options.updates.status.new", result.remoteVersion()));
             if (mandatory && result.minSupportedVersion() != null) {
-                message.append(" Mise a jour obligatoire (min ").append(result.minSupportedVersion()).append(").");
+                message.append(Internationalization.text("options.updates.status.mandatorySuffix", result.minSupportedVersion()));
             }
             String changelog = summarizeChangelog(result);
             if (changelog != null) {
@@ -317,25 +333,28 @@ public final class OptionsDialog extends JDialog {
             } else if (result.notes() != null && !result.notes().isBlank()) {
                 message.append(" ").append(result.notes());
             }
-            updateStatusLabel.setText(message.toString());
+            setUpdateStatus(message.toString());
             setUpdateButtonsState(true, true);
+            showUpdateDialog(message.toString(), JOptionPane.INFORMATION_MESSAGE);
         } else {
             if (mandatory) {
-                updateStatusLabel.setText("Version locale trop ancienne : mise a jour requise.");
+                setUpdateStatus(Internationalization.text("options.updates.status.mandatory"));
             } else {
-                updateStatusLabel.setText("Vous disposez deja de la derniere version.");
+                setUpdateStatus(Internationalization.text("options.updates.status.uptodate"));
             }
             setUpdateButtonsState(true, false);
+            showUpdateDialog(updateStatusPanel.component().getText(), JOptionPane.INFORMATION_MESSAGE);
         }
     }
 
-private void handleUpdateFailure(Throwable error) {
+    private void handleUpdateFailure(Throwable error) {
         pendingUpdate = null;
         String message = error != null && error.getMessage() != null
                 ? error.getMessage()
-                : "erreur inconnue";
-        updateStatusLabel.setText("Erreur : " + message);
+                : Internationalization.text("options.updates.status.unknownError");
+        setUpdateStatus(Internationalization.text("options.updates.status.error", message));
         setUpdateButtonsState(true, false);
+        showUpdateDialog(Internationalization.text("options.updates.status.error", message), JOptionPane.ERROR_MESSAGE);
     }
 
     private void performUpdateInstall() {
@@ -343,16 +362,16 @@ private void handleUpdateFailure(Throwable error) {
             return;
         }
         if (pendingUpdate == null) {
-            updateStatusLabel.setText("Aucune mise ÃƒÂ  jour disponible.");
+            setUpdateStatus(Internationalization.text("options.updates.status.noneAvailable"));
             setUpdateButtonsState(true, false);
             return;
         }
         playSelect();
         UpdateCheckResult target = pendingUpdate;
         setUpdateButtonsState(false, false);
-        updateStatusLabel.setText("TÃƒÂ©lÃƒÂ©chargement de la mise ÃƒÂ  jour...");
+        setUpdateStatus(Internationalization.text("options.updates.status.downloading"));
         updateService.downloadAndInstall(target, status ->
-                SwingUtilities.invokeLater(() -> updateStatusLabel.setText(status))
+                SwingUtilities.invokeLater(() -> setUpdateStatus(status))
         ).whenComplete((ignored, error) -> SwingUtilities.invokeLater(() -> {
             if (error != null) {
                 handleUpdateFailure(error);
@@ -360,11 +379,11 @@ private void handleUpdateFailure(Throwable error) {
                 return;
             }
             pendingUpdate = null;
-            updateStatusLabel.setText("Mise ÃƒÂ  jour installÃƒÂ©e. RedÃƒÂ©marrez l'application pour l'appliquer.");
+            setUpdateStatus(Internationalization.text("options.updates.status.installed"));
             JOptionPane.showMessageDialog(
                     this,
-                    "La mise ÃƒÂ  jour a ÃƒÂ©tÃƒÂ© installÃƒÂ©e avec succÃƒÂ¨s.\nVeuillez redÃƒÂ©marrer l'application.",
-                    "Mise ÃƒÂ  jour terminÃƒÂ©e",
+                    Internationalization.text("options.updates.status.installingDialogBody"),
+                    Internationalization.text("options.updates.status.installingDialogTitle"),
                     JOptionPane.INFORMATION_MESSAGE
             );
             setUpdateButtonsState(true, false);
@@ -374,6 +393,48 @@ private void handleUpdateFailure(Throwable error) {
     private void setUpdateButtonsState(boolean checkEnabled, boolean installEnabled) {
         checkUpdateButton.setEnabled(checkEnabled);
         installUpdateButton.setEnabled(installEnabled);
+    }
+
+    private void setUpdateStatus(String text) {
+        updateStatusPanel.setStatus(text, text);
+    }
+
+    private void showUpdateDialog(String message, int messageType) {
+        JOptionPane.showMessageDialog(
+                this,
+                message,
+                Internationalization.text("options.updates.dialog.title"),
+                messageType
+        );
+    }
+
+    private void applyAccessibility(JComponent component, String nameKey) {
+        applyAccessibility(component, nameKey, nameKey + ".desc");
+    }
+
+    private void applyAccessibility(JComponent component, String nameKey, String descKey) {
+        AccessibleDecorator.apply(component, AccessibleSpec.builder()
+                .name(Internationalization.text(nameKey))
+                .description(Internationalization.text(descKey))
+                .build());
+    }
+
+    private final class TabDefaultButtonSwitcher implements ChangeListener {
+        private final JTabbedPane tabs;
+
+        private TabDefaultButtonSwitcher(JTabbedPane tabs) {
+            this.tabs = tabs;
+        }
+
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            int index = tabs.getSelectedIndex();
+            if (index == updateTabIndex) {
+                getRootPane().setDefaultButton(checkUpdateButton);
+            } else {
+                getRootPane().setDefaultButton(saveButton);
+            }
+        }
     }
 
     private boolean isMandatory(UpdateCheckResult result) {
@@ -417,10 +478,10 @@ private void handleUpdateFailure(Throwable error) {
             return entry.notes();
         }
         if (!entry.highlights().isEmpty()) {
-            return "Nouveautes: " + String.join(", ", entry.highlights());
+            return Internationalization.text("options.updates.status.features", String.join(", ", entry.highlights()));
         }
         if (!entry.fixes().isEmpty()) {
-            return "Corrections: " + String.join(", ", entry.fixes());
+            return Internationalization.text("options.updates.status.fixes", String.join(", ", entry.fixes()));
         }
         return null;
     }
