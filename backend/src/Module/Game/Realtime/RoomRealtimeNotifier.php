@@ -59,11 +59,22 @@ class RoomRealtimeNotifier
         }
 
         try {
-            $this->httpClient->request('POST', $this->pushUrl, [
+            $response = $this->httpClient->request('POST', $this->pushUrl, [
                 'headers' => $headers,
                 'json' => $body,
                 'timeout' => 3,
             ]);
+            // Consume the response to avoid HttpException being thrown at destruction time.
+            $statusCode = $response->getStatusCode();
+            if ($statusCode >= 400) {
+                $this->logger->warning('Echec envoi notification temps reel', [
+                    'status' => $statusCode,
+                    'url' => $this->pushUrl,
+                    'room' => $room->getId(),
+                ]);
+                // Ignore realtime failures to avoid breaking the main request.
+            }
+            $response->getContent(false); // discard body without throwing on 4xx/5xx
         } catch (TransportExceptionInterface $exception) {
             $this->logger->warning('Echec envoi notification temps reel', [
                 'exception' => $exception,

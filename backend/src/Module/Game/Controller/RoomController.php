@@ -47,31 +47,46 @@ class RoomController extends AbstractController
     #[Route('/', name: 'rooms_create', methods: ['POST'])]
     public function create(Request $request, EntityManagerInterface $em): Response
     {
-        /** @var User $me */
-        $me = $this->getUser();
-        $payload = json_decode($request->getContent(), true) ?? [];
-        $gameType = $payload['gameType'] ?? 'tictactoe';
+        try {
+            /** @var User $me */
+            $me = $this->getUser();
+            $payload = json_decode($request->getContent(), true) ?? [];
+            $gameType = $payload['gameType'] ?? 'tictactoe';
 
-        // Default maxPlayers and name based on shared catalog when not provided
-        $defaultName = 'Table';
-        $defaultMax = 4;
-        foreach (\App\Module\Game\Shared\Catalog::categories() as $cat) {
-            foreach ($cat['games'] as $g) {
-                if ($g['id'] === $gameType) { $defaultName = 'Table '.$g['name']; $defaultMax = (int)$g['maxPlayers']; }
+            // Default maxPlayers and name based on shared catalog when not provided
+            $defaultName = 'Table';
+            $defaultMax = 4;
+            foreach (\App\Module\Game\Shared\Catalog::categories() as $cat) {
+                foreach ($cat['games'] as $g) {
+                    if ($g['id'] === $gameType) { $defaultName = 'Table '.$g['name']; $defaultMax = (int)$g['maxPlayers']; }
+                }
             }
-        }
 
-        $room = (new Room())
-            ->setName($payload['name'] ?? $defaultName)
-            ->setIsPrivate((bool)($payload['isPrivate'] ?? false))
-            ->setMaxPlayers((int)($payload['maxPlayers'] ?? $defaultMax))
-            ->setGameType($gameType)
-            ->setOwner($me);
-        $room->addPlayer($me);
-        $em->persist($room);
-        $em->flush();
-        $this->realtime->notify($room, 'created');
-        return $this->json(['id' => $room->getId()], 201);
+            $room = (new Room())
+                ->setName($payload['name'] ?? $defaultName)
+                ->setIsPrivate((bool)($payload['isPrivate'] ?? false))
+                ->setMaxPlayers((int)($payload['maxPlayers'] ?? $defaultMax))
+                ->setGameType($gameType)
+                ->setOwner($me);
+            $room->addPlayer($me);
+            $em->persist($room);
+            $em->flush();
+            $this->realtime->notify($room, 'created');
+            return $this->json(['id' => $room->getId()], 201);
+        } catch (\Throwable $e) {
+            // Log diagnostic details to ease production debugging when stderr is not collected.
+            $message = sprintf(
+                "[%s] %s in %s:%d\nPayload: %s\nTrace:\n%s\n\n",
+                (new \DateTimeImmutable())->format(\DATE_ATOM),
+                $e->getMessage(),
+                $e->getFile(),
+                $e->getLine(),
+                $request->getContent(),
+                $e->getTraceAsString()
+            );
+            @file_put_contents('/tmp/room_create_error.log', $message, FILE_APPEND);
+            throw $e;
+        }
     }
 
     #[Route('/{id}/join', name: 'rooms_join', methods: ['POST'])]
