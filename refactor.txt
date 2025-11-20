@@ -1,0 +1,11 @@
+Plan refacto game (modules presentes)
+- bot : GameBotController -> controller, GameRoomBotManager -> service
+- catalog : GameCatalogController -> game/catalog/controller (imports MAJ)
+- controller/core : AbstractGameController, GameControllerSupport, GameActionState, GameRulesController, GameScreenController, GameTableInfoController
+- session : GameSession*, stores, tracker, events
+- quiz : ChoicePanel, GamePendingQuizPresenter
+- exchange : GameExchangePanel, GamePendingExchangePresenter
+- history : GameHistoryPanel
+- view/common : GameSetupHeaderPanel, GameStatusSummaryPanel, GamePanelUtilities
+- Reste : corriger imports restants, supprimer anciens fichiers en D, ajouter table/presentation/plugin, compiler client-app.
+

@@ -21,5 +21,16 @@ public interface GameScreenController<S extends GameSession<?>> {
     CompletableFuture<S> refreshGame();
 
     void reset();
-}
 
+    default CompletableFuture<S> addBot() {
+        CompletableFuture<S> future = new CompletableFuture<>();
+        future.completeExceptionally(new UnsupportedOperationException("Bot management not supported"));
+        return future;
+    }
+
+    default CompletableFuture<S> removeBot() {
+        CompletableFuture<S> future = new CompletableFuture<>();
+        future.completeExceptionally(new UnsupportedOperationException("Bot management not supported"));
+        return future;
+    }
+}

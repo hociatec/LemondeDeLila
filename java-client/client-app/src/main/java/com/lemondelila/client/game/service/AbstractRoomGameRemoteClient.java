@@ -20,6 +20,7 @@ public abstract class AbstractRoomGameRemoteClient<S, D> extends RemoteGameServi
     private final String gameDisplayName;
     private final String gamePath;
     private final Class<D> stateDtoType;
+    private final SessionBuilder<D, S> sessionBuilder;
 
     protected AbstractRoomGameRemoteClient(RestClient restClient,
                                            TaskScheduler scheduler,
@@ -28,46 +29,43 @@ public abstract class AbstractRoomGameRemoteClient<S, D> extends RemoteGameServi
                                            String gameType,
                                            String gameDisplayName,
                                            String gamePath,
-                                           Class<D> stateDtoType) {
+                                           Class<D> stateDtoType,
+                                           SessionBuilder<D, S> sessionBuilder) {
         super(restClient, scheduler, session);
         this.roomBots = Objects.requireNonNull(roomBots, "roomBots");
         this.gameType = Objects.requireNonNull(gameType, "gameType");
         this.gameDisplayName = Objects.requireNonNull(gameDisplayName, "gameDisplayName");
         this.gamePath = Objects.requireNonNull(gamePath, "gamePath");
         this.stateDtoType = Objects.requireNonNull(stateDtoType, "stateDtoType");
+        this.sessionBuilder = Objects.requireNonNull(sessionBuilder, "sessionBuilder");
     }
 
     protected CompletableFuture<S> startRoom(int seats,
-                                             int initialBots,
-                                             SessionBuilder<D, S> builder) {
+                                             int initialBots) {
         int resolvedSeats = Math.max(2, seats);
         int resolvedBots = Math.max(0, initialBots);
         return supplyAsync(() -> createRoom(gameType, gameDisplayName, resolvedSeats))
                 .thenCompose(roomId ->
                         addBotsForRoom(roomId, resolvedBots)
-                                .thenCompose(ignored -> fetchState(roomId, builder)));
+                                .thenCompose(ignored -> fetchState(roomId)));
     }
 
-    protected CompletableFuture<S> fetchState(int roomId,
-                                              SessionBuilder<D, S> builder) {
-        Objects.requireNonNull(builder, "builder");
+    protected CompletableFuture<S> fetchState(int roomId) {
         return supplyAsync(() -> {
             D dto = restClient.get(gamePath + "/rooms/" + roomId + "/state", stateDtoType);
-            return builder.build(roomId, dto);
+            return sessionBuilder.build(roomId, dto);
         });
     }
 
     protected CompletableFuture<S> sendAction(int roomId,
-                                              Map<String, Object> payload,
-                                              SessionBuilder<D, S> builder) {
-        Objects.requireNonNull(builder, "builder");
+                                              Map<String, Object> payload) {
         return supplyAsync(() -> {
             D dto = restClient.post(
                     gamePath + "/rooms/" + roomId + "/move",
                     payload,
                     stateDtoType
             );
-            return builder.build(roomId, dto);
+            return sessionBuilder.build(roomId, dto);
         });
     }
 
