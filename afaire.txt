@@ -25,6 +25,7 @@ Sécurité – pistes d’amélioration significatives
 
 6. Client Java
    - Signer l’application (code signing) et vérifier son intégrité au lancement (checksum).
+   - Remplacer le secret statique de téléchargement par un jeton signé court-vécu : endpoint `/client/download/token` émet un JWT scpé «client-download» avec exp court, le client le présente en Bearer sur `/client/download`; côté serveur, validation signature/exp/scope (et optionnel jti anti-rejeu).
 
 7. Politique de sécurité continue
    - Scanner les dépendances (OWASP Dependency Check, etc.) et maintenir à jour.
