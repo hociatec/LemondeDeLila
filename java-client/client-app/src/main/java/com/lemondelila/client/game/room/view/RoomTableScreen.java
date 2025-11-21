@@ -15,6 +15,8 @@ import com.lemondelila.client.game.bot.event.BotRemoved;
 import com.lemondelila.client.game.bot.event.RemoveBotRequested;
 import com.lemondelila.client.game.core.BaseTableScreen;
 import com.lemondelila.client.game.core.GameAnnouncer;
+import com.lemondelila.client.game.core.GameInteractionComponent;
+import com.lemondelila.client.game.core.GameInteractionRegistry;
 import com.lemondelila.client.game.history.controller.GameHistoryController;
 import com.lemondelila.client.game.history.view.GameHistorySidebar;
 import com.lemondelila.client.game.room.model.BotState;
@@ -23,6 +25,8 @@ import com.lemondelila.client.game.room.model.TableState;
 import com.lemondelila.client.game.room.model.RoomState;
 import com.lemondelila.client.game.room.service.RoomApiService;
 import com.lemondelila.client.framework.core.task.TaskScheduler;
+import com.lemondelila.client.framework.ui.keyboard.KeyboardBindings;
+import com.lemondelila.client.gamelogic.panierexpress.view.PanierExpressInteractionComponent;
 
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -46,7 +50,9 @@ public final class RoomTableScreen extends BaseTableScreen {
     private final RoomApiService roomApi;
     private final TaskScheduler scheduler;
     private final RoomTableView view;
+    private final GameInteractionRegistry interactionRegistry;
     private ScreenManager screenManager;
+    private GameInteractionComponent currentInteraction;
 
     @Inject
     public RoomTableScreen(RoomDetailsState detailsState,
@@ -58,7 +64,8 @@ public final class RoomTableScreen extends BaseTableScreen {
                            GameHistorySidebar historySidebar,
                            TableState tableState,
                            RoomApiService roomApi,
-                           TaskScheduler scheduler) {
+                           TaskScheduler scheduler,
+                           GameInteractionRegistry interactionRegistry) {
         super(detailsState, shortcutManager, announcer, historySidebar, eventBus);
         setLayout(new BorderLayout(8, 8));
         this.detailsState = detailsState;
@@ -68,6 +75,7 @@ public final class RoomTableScreen extends BaseTableScreen {
         this.tableState = tableState;
         this.roomApi = roomApi;
         this.scheduler = scheduler;
+        this.interactionRegistry = interactionRegistry;
         this.view = new RoomTableView(focusHighlighter, historySidebar);
 
         add(view, BorderLayout.CENTER);
@@ -128,6 +136,7 @@ public final class RoomTableScreen extends BaseTableScreen {
         setFocusable(true);
         Integer roomId = detailsState.roomId();
         String gameName = detailsState.gameType() == null ? "" : detailsState.gameType();
+        swapInteraction(gameName);
         if (roomId != null) {
             if (tableState.roomId() == null || !roomId.equals(tableState.roomId())) {
                 tableState.setRoom(roomId, gameName);
@@ -138,6 +147,7 @@ public final class RoomTableScreen extends BaseTableScreen {
                     tableState.setRoom(state.id(), state.gameType());
                     tableState.updateBots(state.bots());
                     tableState.updatePlayers(state.players());
+                    tableState.updateStatus(state.status());
                 } catch (Exception ignored) { }
             });
         } else {
@@ -153,6 +163,9 @@ public final class RoomTableScreen extends BaseTableScreen {
             view.interactionTitle().setText("Zone de jeu : " + gameName);
             view.interactionTitle().getAccessibleContext().setAccessibleName("Zone de jeu " + gameName);
             view.interactionPanel().getAccessibleContext().setAccessibleName("Zone de jeu " + gameName);
+            if (roomId != null && currentInteraction != null) {
+                currentInteraction.onAttach(roomId);
+            }
         } else {
             view.interactionTitle().setText("Zone de jeu");
             view.interactionTitle().getAccessibleContext().setAccessibleName("Zone de jeu");
@@ -167,6 +180,10 @@ public final class RoomTableScreen extends BaseTableScreen {
         Integer roomId = detailsState.roomId();
         if (roomId == null) {
             announcer.announce(view.historySidebar(), "Aucune table selectionnee pour ajouter un bot.");
+            return;
+        }
+        if (isGameStarted()) {
+            announcer.announce(view.historySidebar(), "La partie a commence : impossible d'ajouter un bot.");
             return;
         }
         announcer.announce(view.historySidebar(), "Ajout d'un bot en cours...");
@@ -209,6 +226,9 @@ public final class RoomTableScreen extends BaseTableScreen {
             screenManager.show(MainMenuScreen.ID);
         }
         tableState.clear();
+        if (currentInteraction != null) {
+            currentInteraction.onDetach();
+        }
     }
 
     private boolean matchesCurrentRoom(int roomId) {
@@ -238,5 +258,44 @@ public final class RoomTableScreen extends BaseTableScreen {
                         .reduce((a, b) -> a + ", " + b)
                         .orElse("joueurs");
         announcer.announce(view.historySidebar(), "Table #" + roomId + " " + game + " : joueurs " + playerNames + "; bots " + botNames + ".");
+    }
+
+    private void swapInteraction(String gameType) {
+        if (currentInteraction != null) {
+            currentInteraction.onDetach();
+        }
+        view.interactionPanel().removeAll();
+        GameInteractionComponent component = interactionRegistry.find(gameType)
+                .map(provider -> provider.create())
+                .orElse(null);
+        currentInteraction = component;
+        if (component != null) {
+            view.interactionPanel().add(component.component());
+            if (component instanceof PanierExpressInteractionComponent pe) {
+                KeyboardBindings.bindEnter(view.interactionPanel(), pe::triggerRoll, "panierexpress.enter.roll.container");
+            }
+        } else {
+            view.interactionPanel().add(new javax.swing.JLabel("Aucune interface specifique pour ce jeu."));
+        }
+        view.interactionPanel().revalidate();
+        view.interactionPanel().repaint();
+    }
+
+    private boolean isGameStarted() {
+        String status = tableState.status();
+        if (status != null && !"open".equalsIgnoreCase(status)) {
+            return true;
+        }
+        Integer roomId = detailsState.roomId();
+        if (roomId == null) {
+            return false;
+        }
+        try {
+            RoomState state = roomApi.fetchRoom(roomId);
+            tableState.updateStatus(state.status());
+            return state.status() != null && !"open".equalsIgnoreCase(state.status());
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

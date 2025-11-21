@@ -20,6 +20,45 @@ final class PanierExpressGameController extends AbstractController
     ) {
     }
 
+    public function actions(int $id, Request $request, EntityManagerInterface $em): Response
+    {
+        $room = $em->getRepository(Room::class)->find($id);
+        if (!$room) {
+            return $this->json(['error' => 'Not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        $game = $em->getRepository(Game::class)->findOneBy(['room' => $room]);
+        if (!$game) {
+            $state = $this->service->defaultState($room);
+            $game = (new Game())
+                ->setRoom($room)
+                ->setState($state)
+                ->setCurrentRound($this->service->currentRound($state))
+                ->setStartedAt(new \DateTimeImmutable());
+            $em->persist($game);
+        }
+
+        /** @var \App\Module\User\Entity\User $player */
+        $player = $this->getUser();
+        $payload = json_decode($request->getContent() ?: '{}', true);
+        $actions = is_array($payload['actions'] ?? null) ? $payload['actions'] : [];
+
+        $state = $this->service->applyActions($game->getState(), $actions, $room, $player);
+        $game
+            ->setState($state)
+            ->setCurrentRound($this->service->currentRound($state));
+
+        if (($state['status'] ?? null) === 'ended' && !$game->getEndedAt()) {
+            $game->setEndedAt(new \DateTimeImmutable());
+        }
+
+        $em->flush();
+        $this->stats->onStateUpdated($game, $state);
+        $this->realtime->notify($room, 'state-updated', ['game' => $game->getId()]);
+
+        return $this->json($this->service->presentState($state, $player));
+    }
+
     public function state(int $id, EntityManagerInterface $em): Response
     {
         $room = $em->getRepository(Room::class)->find($id);
@@ -45,41 +84,4 @@ final class PanierExpressGameController extends AbstractController
         return $this->json($this->service->presentState($game->getState(), $viewer));
     }
 
-    public function move(int $id, Request $request, EntityManagerInterface $em): Response
-    {
-        $room = $em->getRepository(Room::class)->find($id);
-        if (!$room) {
-            return $this->json(['error' => 'Not found'], Response::HTTP_NOT_FOUND);
-        }
-
-        $game = $em->getRepository(Game::class)->findOneBy(['room' => $room]);
-        if (!$game) {
-            $state = $this->service->defaultState($room);
-            $game = (new Game())
-                ->setRoom($room)
-                ->setState($state)
-                ->setCurrentRound($this->service->currentRound($state))
-                ->setStartedAt(new \DateTimeImmutable());
-            $em->persist($game);
-        }
-
-        /** @var \App\Module\User\Entity\User $player */
-        $player = $this->getUser();
-        $payload = json_decode($request->getContent() ?: '{}', true);
-
-        $state = $this->service->apply($game->getState(), is_array($payload) ? $payload : [], $room, $player);
-        $game
-            ->setState($state)
-            ->setCurrentRound($this->service->currentRound($state));
-
-        if (($state['status'] ?? null) === 'ended' && !$game->getEndedAt()) {
-            $game->setEndedAt(new \DateTimeImmutable());
-        }
-
-        $em->flush();
-        $this->stats->onStateUpdated($game, $state);
-        $this->realtime->notify($room, 'state-updated', ['game' => $game->getId()]);
-
-        return $this->json($this->service->presentState($state, $player));
-    }
 }

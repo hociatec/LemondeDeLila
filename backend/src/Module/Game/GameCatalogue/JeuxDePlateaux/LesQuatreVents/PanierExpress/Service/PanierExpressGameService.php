@@ -13,6 +13,10 @@ use App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Se
 use App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Service\Support\PanierExpressRandomizerInterface;
 use App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Service\Support\PanierExpressTileAction;
 use App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Service\Support\PanierExpressTileResolver;
+use App\Module\Game\Shared\Action\Action;
+use App\Module\Game\Shared\Action\ActionResolver;
+use App\Module\Game\Shared\Dice\DiceRoll;
+use App\Module\Game\Shared\Dice\DiceService;
 use App\Module\User\Entity\User;
 
 final class PanierExpressGameService implements GameEngineInterface
@@ -27,6 +31,11 @@ final class PanierExpressGameService implements GameEngineInterface
         private readonly PanierExpressTileResolver $tileResolver,
         private readonly ParticipantResolver $participants,
         private readonly BotAllocator $botAllocator,
+        private readonly DiceService $diceService = new DiceService(),
+        private readonly ActionResolver $actionResolver = new ActionResolver(
+            new \App\Module\Game\Shared\Deck\DeckManager(),
+            new \App\Module\Game\Shared\Quiz\QuizService()
+        ),
         private readonly PanierExpressRandomizerInterface $randomizer = new NativePanierExpressRandomizer(),
     ) {
     }
@@ -80,6 +89,83 @@ final class PanierExpressGameService implements GameEngineInterface
             'players' => $players,
             'lastRoll' => null,
         ];
+
+        return $this->runBotTurns($state);
+    }
+
+    /**
+     * Traite une liste d'actions génériques (moteur partagé) pour Panier Express.
+     * Chaque action est mappée sur les primitives internes (roll, quiz, pioche, log).
+     *
+     * @param Action[] $actions
+     */
+    public function applyActions(array $state, array $actions, Room $room, User $user): array
+    {
+        if (($state['status'] ?? null) === 'ended') {
+            return $state;
+        }
+
+        $playerIndex = $this->locatePlayer($state, (int) $user->getId());
+        if ($playerIndex === -1) {
+            return $state;
+        }
+
+        foreach ($actions as $raw) {
+            if ($raw instanceof Action) {
+                $action = $raw;
+            } elseif (is_array($raw)) {
+                $type = (string) ($raw['type'] ?? '');
+                $payload = is_array($raw['payload'] ?? null) ? $raw['payload'] : [];
+                $action = new Action($type, $payload);
+            } else {
+                continue;
+            }
+
+            switch ($action->type) {
+                case 'ROLL_DICE':
+                    $config = $action->payload['config'] ?? null;
+                    $diceCount = (int) ($config['diceCount'] ?? 1);
+                    $faces = (int) ($config['faces'] ?? 6);
+                    $modifier = (int) ($config['modifier'] ?? 0);
+                    $roll = $this->diceService->roll(new DiceRoll(
+                        max(1, $diceCount),
+                        max(2, $faces),
+                        $modifier
+                    ));
+                    $state = $this->handleRoll($state, ['steps' => max(1, $roll->total)], $playerIndex);
+                    break;
+
+                case 'DRAW_CARD':
+                    $deck = strtolower((string) ($action->payload['deck'] ?? 'course'));
+                    $this->drawFromDeck($state, $playerIndex, $deck);
+                    break;
+
+                case 'QUIZ_VALIDATE':
+                    $choice = $action->payload['answer'] ?? $action->payload['choice'] ?? null;
+                    if ($choice !== null) {
+                        $state = $this->handleQuizAnswer($state, ['choice' => (int) $choice], $playerIndex);
+                    }
+                    break;
+
+                case 'LOG':
+                    $this->log($state, (string) ($action->payload['message'] ?? ''));
+                    break;
+
+                default:
+                    // Action non reconnue : on délègue au resolver générique qui renverra des logs éventuels.
+                    $effects = $this->actionResolver->resolve([$action]);
+                    foreach ($effects as $effect) {
+                        if (($effect['type'] ?? '') === 'log' && isset($effect['message'])) {
+                            $this->log($state, (string) $effect['message']);
+                        }
+                    }
+                    break;
+            }
+
+            if (($state['status'] ?? null) === 'ended') {
+                break;
+            }
+        }
 
         return $this->runBotTurns($state);
     }
@@ -601,6 +687,31 @@ final class PanierExpressGameService implements GameEngineInterface
         $state['phase'] = 'quiz';
 
         $this->log($state, sprintf('Quiz pour %s : %s', $state['players'][$playerIndex]['username'], $question));
+    }
+
+    private function drawFromDeck(array &$state, int $playerIndex, string $deck): void
+    {
+        switch ($deck) {
+            case 'course':
+            case PanierExpressDeckManager::DECK_COURSES:
+                $this->drawCourseCard($state, $playerIndex);
+                break;
+            case 'event':
+            case PanierExpressDeckManager::DECK_EVENT:
+                $this->drawEventCard($state, $playerIndex);
+                break;
+            case 'exchange':
+            case PanierExpressDeckManager::DECK_EXCHANGE:
+                $this->drawExchangeCard($state, $playerIndex);
+                break;
+            case 'quiz':
+            case PanierExpressDeckManager::DECK_QUIZ:
+                $this->startQuiz($state, $playerIndex);
+                break;
+            default:
+                $this->log($state, 'Pioche inconnue pour Panier Express.', 'warning');
+                break;
+        }
     }
 
     private function adjustPosition(array &$state, int $playerIndex, int $delta, int $depth): void

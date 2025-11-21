@@ -12,6 +12,7 @@ public final class TableState {
 
     private Integer roomId;
     private String gameType;
+    private String status;
     private final List<BotState> bots = new ArrayList<>();
     private final List<PlayerState> players = new ArrayList<>();
 
@@ -21,6 +22,10 @@ public final class TableState {
 
     public String gameType() {
         return gameType;
+    }
+
+    public String status() {
+        return status;
     }
 
     public List<BotState> bots() {
@@ -34,6 +39,7 @@ public final class TableState {
     public void setRoom(Integer id, String gameType) {
         this.roomId = id;
         this.gameType = gameType;
+        this.status = null;
         bots.clear();
         players.clear();
     }
@@ -41,6 +47,7 @@ public final class TableState {
     public void clear() {
         this.roomId = null;
         this.gameType = null;
+        this.status = null;
         bots.clear();
         players.clear();
     }
@@ -57,5 +64,9 @@ public final class TableState {
         if (list != null) {
             list.stream().filter(Objects::nonNull).forEach(players::add);
         }
+    }
+
+    public void updateStatus(String status) {
+        this.status = status;
     }
 }

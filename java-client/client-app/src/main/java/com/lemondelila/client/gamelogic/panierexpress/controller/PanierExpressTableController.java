@@ -3,10 +3,11 @@ package com.lemondelila.client.gamelogic.panierexpress.controller;
 import com.lemondelila.client.framework.core.di.Inject;
 import com.lemondelila.client.framework.core.event.DomainEventBus;
 import com.lemondelila.client.game.core.GameTableLauncher;
+import com.lemondelila.client.gamelogic.panierexpress.PanierExpressGameModule;
 
 public final class PanierExpressTableController {
 
-    public static final String GAME_TYPE = "panier-express";
+    public static final String GAME_TYPE = PanierExpressGameModule.GAME_TYPE;
 
     private final GameTableLauncher tableLauncher;
     private final DomainEventBus eventBus;

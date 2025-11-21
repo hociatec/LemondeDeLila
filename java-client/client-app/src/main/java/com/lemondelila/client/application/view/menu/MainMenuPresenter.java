@@ -98,13 +98,6 @@ final class MainMenuPresenter {
                 onMenuSelected(MainMenuPresenter.this::openCatalog);
             }
         });
-        root.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("ESCAPE"), "main-menu.exit");
-        root.getActionMap().put("main-menu.exit", new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                handleEscape();
-            }
-        });
     }
 
     private void registerNavigation() {
@@ -137,12 +130,7 @@ final class MainMenuPresenter {
     }
 
     private void handleEscape() {
-        if (session.authenticated().isPresent()) {
-            setStatus("Appuyez sur \"Deconnexion\" pour quitter votre session.");
-            return;
-        }
-        audio.playSelect();
-        showScreen(HomeScreen.ID);
+        // Echap inactif sur le menu principal (pas d'action).
     }
 
     private void onMenuSelected(Runnable action) {

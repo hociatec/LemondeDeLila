@@ -11,6 +11,7 @@ public final class GameCoreModule implements LilaModule {
     public void configure(ApplicationContext.Builder builder) {
         builder.bindAuto(GameTableLauncher.class);
         builder.bindAuto(GameAnnouncer.class);
+        builder.bindAuto(GameInteractionRegistry.class);
     }
 
     @Override
