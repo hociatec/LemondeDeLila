@@ -113,7 +113,7 @@ public final class RoomTableScreen extends BaseTableScreen {
             announcer.announce(historyView, name + " a quitte la table.");
         });
         subscriptions().subscribe(eventBus, BotOperationFailed.class, e -> {
-            announcer.announce(historyView, "Action bot impossible : " + e.message());
+            announcer.announce(historyView, "Ajout de bot impossible, vous êtes trop nombreux!");
         });
     }
 
@@ -181,7 +181,6 @@ public final class RoomTableScreen extends BaseTableScreen {
             announcer.announce(historyView, "Aucune table selectionnee pour ajouter un bot.");
             return;
         }
-        announcer.announce(historyView, "Ajout d'un bot en cours...");
         eventBus.publish(new AddBotRequested(roomId, null));
     }
 
@@ -198,7 +197,6 @@ public final class RoomTableScreen extends BaseTableScreen {
             announcer.announce(historyView, "Aucun bot a retirer.");
             return;
         }
-        announcer.announce(historyView, "Retrait du bot " + candidate.name() + "...");
         eventBus.publish(new RemoveBotRequested(roomId, candidate.id()));
     }
 

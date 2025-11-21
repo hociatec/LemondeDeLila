@@ -93,4 +93,25 @@ public final class TableShortcutManager {
             }
         });
     }
+
+    /**
+     * Raccourci r��capitulatif (ex : 'w') sur un composant racine.
+     */
+    public void bindSummary(JComponent root, Runnable onSummary) {
+        Objects.requireNonNull(root, "root");
+        Objects.requireNonNull(onSummary, "onSummary");
+        KeyStroke summary = KeyStroke.getKeyStroke(KeyEvent.VK_W, 0);
+        registerShortcut(summary, "Afficher les informations de table");
+        InputMap windowMap = root.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        InputMap ancestorMap = root.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        ActionMap actions = root.getActionMap();
+        windowMap.put(summary, "table.summary");
+        ancestorMap.put(summary, "table.summary");
+        actions.put("table.summary", new javax.swing.AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                onSummary.run();
+            }
+        });
+    }
 }
