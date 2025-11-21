@@ -5,11 +5,13 @@ import com.lemondelila.client.framework.core.context.ApplicationContext;
 import com.lemondelila.client.framework.core.module.LilaModule;
 import com.lemondelila.client.game.room.controller.RoomController;
 import com.lemondelila.client.game.room.controller.RoomAccessGuard;
+import com.lemondelila.client.game.room.model.RoomDetailsState;
 import com.lemondelila.client.game.room.model.RoomState;
 import com.lemondelila.client.game.room.service.RoomApiService;
 import com.lemondelila.client.game.room.service.RoomRealtimeService;
 import com.lemondelila.client.game.room.view.RoomPresenter;
 import com.lemondelila.client.game.room.view.RoomView;
+import com.lemondelila.client.game.room.view.RoomTableScreen;
 
 @AutoService(LilaModule.class)
 public final class GameRoomModule implements LilaModule {
@@ -23,6 +25,8 @@ public final class GameRoomModule implements LilaModule {
         builder.bindAuto(RoomPresenter.class);
         builder.bindAuto(RoomView.class);
         builder.bindAuto(RoomState.class);
+        builder.bindAuto(RoomDetailsState.class);
+        builder.bindAuto(RoomTableScreen.class);
     }
 
     @Override

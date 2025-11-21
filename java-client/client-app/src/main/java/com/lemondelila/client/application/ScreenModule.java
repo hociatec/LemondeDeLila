@@ -10,6 +10,8 @@ import com.lemondelila.client.framework.ui.LilaFrame;
 import com.lemondelila.client.framework.ui.screen.Screen;
 import com.lemondelila.client.framework.ui.screen.ScreenManager;
 import com.lemondelila.client.game.catalog.view.GameCatalogScreen;
+import com.lemondelila.client.game.room.view.RoomDetailsScreen;
+import com.lemondelila.client.game.room.view.RoomTableScreen;
 
 @AutoService(LilaModule.class)
 public final class ScreenModule implements LilaModule {
@@ -19,14 +21,15 @@ public final class ScreenModule implements LilaModule {
         builder.bindAuto(HomeScreen.class);
         builder.bindAuto(MainMenuScreen.class);
         builder.bindAuto(GameCatalogScreen.class);
+        builder.bindAuto(RoomDetailsScreen.class);
+        builder.bindAuto(RoomTableScreen.class);
         builder.bindAuto(ApplicationShortcuts.class);
     }
 
     @Override
     public void start(ApplicationContext context) {
         ScreenManager manager = context.get(ScreenManager.class);
-        context.getAll(Screen.class)
-                .forEach(manager::register);
+        context.getAll(Screen.class).forEach(manager::register);
 
         ApplicationShortcuts shortcuts = context.get(ApplicationShortcuts.class);
         LilaFrame frame = context.get(LilaFrame.class);

@@ -1,15 +1,10 @@
-package com.lemondelila.client.framework.access.game;
+package com.lemondelila.client.game.history.view;
 
 import javax.swing.JPanel;
-import javax.swing.JTextArea;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.util.Objects;
 
-/**
- * Enveloppe réutilisable autour d'un {@link GameHistoryView} pour afficher l'historique
- * d'une partie avec des helpers de rendu et de focus.
- */
 public final class GameHistorySidebar extends JPanel {
 
     private final GameHistoryView historyView;
@@ -38,7 +33,7 @@ public final class GameHistorySidebar extends JPanel {
         add(historyView, BorderLayout.CENTER);
     }
 
-    public void render(GameHistoryTracker tracker, String emptyMessage) {
+    public void render(com.lemondelila.client.game.history.model.GameHistoryTracker tracker, String emptyMessage) {
         historyView.render(tracker, emptyMessage);
     }
 
@@ -50,7 +45,7 @@ public final class GameHistorySidebar extends JPanel {
         historyView.focusHistory();
     }
 
-    public JTextArea historyComponent() {
+    public javax.swing.JTextArea historyComponent() {
         return historyView.historyComponent();
     }
 

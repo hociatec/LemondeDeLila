@@ -22,7 +22,8 @@ public final class RoomApiService {
     }
 
     public RoomState createRoom(String name, String gameType, int maxPlayers, boolean isPrivate) throws IOException, InterruptedException {
-        JsonNode json = restClient.post("rooms", Map.of(
+        // Le backend attend un POST sur /api/rooms/ (avec slash)
+        JsonNode json = restClient.post("rooms/", Map.of(
                 "name", name,
                 "gameType", gameType,
                 "maxPlayers", maxPlayers,

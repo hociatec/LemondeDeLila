@@ -1,13 +1,11 @@
-package com.lemondelila.client.framework.access.game;
+package com.lemondelila.client.game.history.model;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 /**
- * Utilitaire pour centraliser l'historique d'un jeu et générer des
- * représentations lisibles (texte complet ou derniers évènements).
+ * Centralise l'historique d'un jeu et g�n�re des repr�sentations lisibles.
  */
 public final class GameHistoryTracker {
 
@@ -16,7 +14,7 @@ public final class GameHistoryTracker {
 
     public void setMaxEntries(int maxEntries) {
         if (maxEntries <= 0) {
-            throw new IllegalArgumentException("maxEntries doit être positif");
+            throw new IllegalArgumentException("maxEntries doit �tre positif");
         }
         this.maxEntries = maxEntries;
         trim();
@@ -53,39 +51,21 @@ public final class GameHistoryTracker {
         newEntries.forEach(this::add);
     }
 
-    public void setEntries(List<String> newEntries) {
-        clear();
-        addAll(newEntries);
-    }
-
-    public List<String> latest(int limit) {
-        if (limit <= 0 || entries.isEmpty()) {
-            return List.of();
-        }
-        int start = Math.max(entries.size() - limit, 0);
-        return Collections.unmodifiableList(entries.subList(start, entries.size()));
-    }
-
-    public String formatLatest(int limit) {
-        if (limit <= 0) {
-            return "";
-        }
-        return formatEntries(latest(limit));
+    public List<String> all() {
+        return Collections.unmodifiableList(entries);
     }
 
     public String formatAll() {
-        return formatEntries(entries);
+        return String.join("\n", entries);
     }
 
-    private static String formatEntries(List<String> values) {
-        if (values.isEmpty()) {
+    public String formatTail(int count) {
+        if (count <= 0 || entries.isEmpty()) {
             return "";
         }
-        StringBuilder builder = new StringBuilder();
-        for (String value : values) {
-            builder.append("• ").append(value).append(System.lineSeparator());
-        }
-        return builder.toString().strip();
+        int start = Math.max(0, entries.size() - count);
+        List<String> slice = entries.subList(start, entries.size());
+        return String.join("\n", slice);
     }
 
     private void trim() {
