@@ -37,10 +37,13 @@ public final class FocusCycleManager {
 
         for (JComponent area : areas) {
             disableTraversal(area);
-            InputMap inputMap = area.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+            InputMap focusMap = area.getInputMap(JComponent.WHEN_FOCUSED);
+            InputMap ancestorMap = area.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
             ActionMap actionMap = area.getActionMap();
-            inputMap.put(KeyStroke.getKeyStroke("TAB"), "cycle.next");
-            inputMap.put(KeyStroke.getKeyStroke("shift TAB"), "cycle.prev");
+            focusMap.put(KeyStroke.getKeyStroke("TAB"), "cycle.next");
+            focusMap.put(KeyStroke.getKeyStroke("shift TAB"), "cycle.prev");
+            ancestorMap.put(KeyStroke.getKeyStroke("TAB"), "cycle.next");
+            ancestorMap.put(KeyStroke.getKeyStroke("shift TAB"), "cycle.prev");
             actionMap.put("cycle.next", new AbstractAction() {
                 @Override
                 public void actionPerformed(java.awt.event.ActionEvent e) {

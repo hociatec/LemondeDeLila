@@ -30,6 +30,10 @@ public final class ClientUnauthorizedHandler implements UnauthorizedHandler {
 
     @Override
     public void onUnauthorized(HttpResponse<String> response) {
+        // Si aucune session active (tentative de login raté), ne pas afficher "session expirée".
+        if (session.authenticated().isEmpty()) {
+            return;
+        }
         if (!notified.compareAndSet(false, true)) {
             return;
         }

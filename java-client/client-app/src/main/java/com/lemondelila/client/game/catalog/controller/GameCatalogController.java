@@ -82,6 +82,7 @@ public final class GameCatalogController implements AutoCloseable {
             history.addEntry(msg);
             if (room != null && room.id() != null) {
                 roomDetailsState.setRoomId(room.id());
+                roomDetailsState.setGameType(gameCode);
                 return ControllerResult.navigate(RoomTableScreen.ID).withStatus(msg);
             }
             return ControllerResult.status(msg);

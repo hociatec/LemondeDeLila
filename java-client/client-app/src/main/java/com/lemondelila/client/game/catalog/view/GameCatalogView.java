@@ -49,8 +49,8 @@ public final class GameCatalogView {
         KeyboardBindings.bindEnter(gameList, () -> onGameActivated.accept(gameList.getSelectedIndex()), "catalog.game.enter");
 
         JPanel lists = new JPanel(new GridLayout(1, 3, 8, 8));
-        lists.add(wrap("Catégories", catList));
-        lists.add(wrap("Sous-catégories", subcatList));
+        lists.add(wrap("Categories", catList));
+        lists.add(wrap("Sous-categories", subcatList));
         lists.add(wrap("Jeux", gameList));
 
         panel.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
@@ -129,14 +129,6 @@ public final class GameCatalogView {
         }
     }
 
-    public void focusCategories() {
-        catList.requestFocusInWindow();
-    }
-
-    public void focusSubcategories() {
-        subcatList.requestFocusInWindow();
-    }
-
     public void selectGame(int index) {
         if (index >= 0 && index < games.size()) {
             gameList.setSelectedIndex(index);
@@ -144,6 +136,14 @@ public final class GameCatalogView {
         } else {
             gameList.clearSelection();
         }
+    }
+
+    public void focusCategories() {
+        catList.requestFocusInWindow();
+    }
+
+    public void focusSubcategories() {
+        subcatList.requestFocusInWindow();
     }
 
     public void focusGames() {

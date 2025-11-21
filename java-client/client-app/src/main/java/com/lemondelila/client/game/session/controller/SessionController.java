@@ -51,12 +51,8 @@ public final class SessionController implements AutoCloseable {
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 eventBus.publish(new LoginFailed("Connexion interrompue"));
-                state.clear();
-                eventBus.publish(new SessionChanged(Optional.empty(), "cleared"));
             } catch (Exception e) {
                 eventBus.publish(new LoginFailed("Echec de connexion : " + cleanMessage(e.getMessage())));
-                state.clear();
-                eventBus.publish(new SessionChanged(Optional.empty(), "cleared"));
             } finally {
                 wipe(password);
             }

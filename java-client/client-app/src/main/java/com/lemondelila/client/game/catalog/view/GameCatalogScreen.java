@@ -13,6 +13,7 @@ import com.lemondelila.client.game.catalog.event.CatalogFailed;
 import com.lemondelila.client.game.catalog.event.CatalogLoaded;
 import com.lemondelila.client.game.catalog.model.CatalogCategory;
 import com.lemondelila.client.game.catalog.model.CatalogGame;
+import com.lemondelila.client.game.shortcut.CatalogShortcuts;
 
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
@@ -33,13 +34,17 @@ public final class GameCatalogScreen extends JPanel implements Screen, AutoClose
     private CatalogCategory selectedSubCategory;
     private int selectedSubIndex = -1;
     private ScreenManager screenManager;
+    private boolean gamesVisible = false;
+    private final CatalogShortcuts shortcuts;
 
     @Inject
     public GameCatalogScreen(GameCatalogView view,
                              GameCatalogController controller,
-                             DomainEventBus eventBus) {
+                             DomainEventBus eventBus,
+                             CatalogShortcuts shortcuts) {
         this.view = view;
         this.controller = controller;
+        this.shortcuts = shortcuts;
         setLayout(new BorderLayout());
         add(view.component(), BorderLayout.CENTER);
 
@@ -79,6 +84,7 @@ public final class GameCatalogScreen extends JPanel implements Screen, AutoClose
     public void onShow(ScreenContext context) {
         controller.fetchAll();
         this.screenManager = context.screenManager();
+        shortcuts.bindEscape(view.component(), this::onEscape);
         view.focusCategories();
     }
 
@@ -98,6 +104,7 @@ public final class GameCatalogScreen extends JPanel implements Screen, AutoClose
         currentSubCategories = Collections.emptyList();
         selectedSubCategory = null;
         selectedSubIndex = -1;
+        gamesVisible = false;
     }
 
     private void onCategorySelected(int index) {
@@ -123,6 +130,7 @@ public final class GameCatalogScreen extends JPanel implements Screen, AutoClose
             selectedSubCategory = selected;
             selectedSubIndex = -1;
             view.selectSubcategory(-1);
+            gamesVisible = !filtered.isEmpty();
             if (!filtered.isEmpty()) {
                 view.selectGame(0);
             }
@@ -131,12 +139,14 @@ public final class GameCatalogScreen extends JPanel implements Screen, AutoClose
             view.setGames(List.of());
             view.selectSubcategory(0);
             view.focusSubcategories();
+            gamesVisible = false;
         }
     }
 
     private void onSubCategorySelected(int index) {
         if (index < 0 || index >= currentSubCategories.size()) {
             view.setGames(List.of());
+            gamesVisible = false;
             return;
         }
         CatalogCategory sub = currentSubCategories.get(index);
@@ -144,6 +154,7 @@ public final class GameCatalogScreen extends JPanel implements Screen, AutoClose
         selectedSubIndex = index;
         List<CatalogGame> filtered = filterGames(sub.id());
         view.setGames(filtered.stream().map(CatalogGame::name).toList());
+        gamesVisible = !filtered.isEmpty();
         if (!filtered.isEmpty()) {
             view.selectGame(0);
         }
@@ -172,6 +183,38 @@ public final class GameCatalogScreen extends JPanel implements Screen, AutoClose
         }
         if (result != null && result.navigationTarget().isPresent() && screenManager != null) {
             screenManager.show(result.navigationTarget().get());
+        }
+    }
+
+    /**
+     * Raccourci Echap : remonte l'arborescence.
+     * - Si des jeux sont visibles => on les masque et on revient au niveau sous-cat/cat.
+     * - Dans tous les autres cas => retour direct au menu principal.
+     */
+    private void onEscape() {
+        if (gamesVisible) {
+            view.setGames(List.of());
+            gamesVisible = false;
+            if (!currentSubCategories.isEmpty()) {
+                view.focusSubcategories();
+            } else {
+                view.focusCategories();
+            }
+            return;
+        }
+        // Si des sous-categories sont ouvertes, on remonte d'un niveau (reste dans le catalogue)
+        if (!currentSubCategories.isEmpty() || selectedSubCategory != null) {
+            currentSubCategories = Collections.emptyList();
+            selectedSubCategory = null;
+            selectedSubIndex = -1;
+            view.setSubcategories(List.of());
+            view.setGames(List.of());
+            gamesVisible = false;
+            view.focusCategories();
+            return;
+        }
+        if (screenManager != null) {
+            screenManager.show(com.lemondelila.client.application.view.menu.MainMenuScreen.ID);
         }
     }
 

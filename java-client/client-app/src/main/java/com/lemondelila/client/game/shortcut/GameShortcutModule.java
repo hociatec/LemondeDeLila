@@ -10,6 +10,7 @@ public final class GameShortcutModule implements LilaModule {
     @Override
     public void configure(ApplicationContext.Builder builder) {
         builder.bindAuto(TableShortcutManager.class);
+        builder.bindAuto(CatalogShortcuts.class);
     }
 
     @Override
