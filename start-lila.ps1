@@ -22,7 +22,8 @@ param(
     [switch]$SkipBackend,
     [switch]$SkipRealtime,
     [switch]$SkipBuild,
-    [switch]$ForceBuild
+    [switch]$ForceBuild,
+    [switch]$FastStart
 )
 
 Set-StrictMode -Version Latest
@@ -413,17 +414,25 @@ try {
     $javaLocationPushed = $true
 
     if (-not $SkipBuild) {
-        Build-FrameworkModules -JavaDir $javaDirectory -MavenPath $mavenPath -Force:$ForceBuild
-        Remove-BomFromSource -RootPath $javaDirectory -Extensions @('.java', '.xml', '.properties', '.yml', '.yaml')
-        Write-Host "Compilation du client Java..."
-        & $mavenPath clean package -DskipTests
-        if ($LASTEXITCODE -ne 0) {
-            throw "La compilation Maven a echoue (code $LASTEXITCODE). Consultez les logs ci-dessus."
-        }
-        # Copier les dependances runtime du module client-app uniquement (sinon l'agregateur n'en produit aucune)
-        & $mavenPath -pl client-app dependency:copy-dependencies -DincludeScope=runtime -DoutputDirectory=client-app\target\dependency
-        if ($LASTEXITCODE -ne 0) {
-            throw "La copie des dependances a echoue (code $LASTEXITCODE)."
+        if ($FastStart) {
+            Write-Host "Compilation rapide du client Java (FastStart)" -ForegroundColor Cyan
+            & $mavenPath -pl client-app -am install -DskipTests
+            if ($LASTEXITCODE -ne 0) {
+                throw "La compilation Maven rapide a echoue (code $LASTEXITCODE)."
+            }
+        } else {
+            Build-FrameworkModules -JavaDir $javaDirectory -MavenPath $mavenPath -Force:$ForceBuild
+            Remove-BomFromSource -RootPath $javaDirectory -Extensions @('.java', '.xml', '.properties', '.yml', '.yaml')
+            Write-Host "Compilation du client Java..."
+            & $mavenPath clean package -DskipTests
+            if ($LASTEXITCODE -ne 0) {
+                throw "La compilation Maven a echoue (code $LASTEXITCODE). Consultez les logs ci-dessus."
+            }
+            # Copier les dependances runtime du module client-app uniquement (sinon l'agregateur n'en produit aucune)
+            & $mavenPath -pl client-app dependency:copy-dependencies -DincludeScope=runtime -DoutputDirectory=client-app\target\dependency
+            if ($LASTEXITCODE -ne 0) {
+                throw "La copie des dependances a echoue (code $LASTEXITCODE)."
+            }
         }
     }
 

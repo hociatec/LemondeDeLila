@@ -2240,3 +2240,252 @@ Native library (win32-x86-64/SAAPI32.dll) not found in resource path (C:\wamp64\
 [2025-11-21 17:51:16] NVDA spoke text successfully.
 [2025-11-21 17:51:29] NVDA spoke text successfully.
 [2025-11-21 17:51:30] NVDA spoke text successfully.
+[2025-11-21 17:54:15] Attempting to load NVDA library from C:\wamp64\www\LemondeDeLila\java-client\libs\windows\x64\nvdaHelperRemote.dll
+[2025-11-21 17:54:15] NVDA controller client API not available, trying controller API: Error looking up function 'nvdaControllerClient_testIfRunning': La procédure spécifiée est introuvable.
+
+[2025-11-21 17:54:15] Detected NVDA controller API.
+[2025-11-21 17:54:15] NVDA controller bridge initialised successfully (CONTROLLER).
+[2025-11-21 17:54:16] JAWS DLL load failed at C:\wamp64\www\LemondeDeLila\java-client\libs\windows\x64\saapi32.dll: Unable to load library 'C:\wamp64\www\LemondeDeLila\java-client\libs\windows\x64\saapi32.dll':
+%1 n’est pas une application Win32 valide.
+
+%1 n’est pas une application Win32 valide.
+
+Native library (win32-x86-64/C:\wamp64\www\LemondeDeLila\java-client\libs\windows\x64\saapi32.dll) not found in resource path (C:\wamp64\www\LemondeDeLila\java-client\client-app\target\client-app-1.0.8-all.jar)
+[2025-11-21 17:54:16] JAWS DLL load failed at C:\wamp64\www\LemondeDeLila\java-client\libs\windows\x64\SAAPI32.dll: Unable to load library 'C:\wamp64\www\LemondeDeLila\java-client\libs\windows\x64\SAAPI32.dll':
+%1 n’est pas une application Win32 valide.
+
+%1 n’est pas une application Win32 valide.
+
+Native library (win32-x86-64/C:\wamp64\www\LemondeDeLila\java-client\libs\windows\x64\SAAPI32.dll) not found in resource path (C:\wamp64\www\LemondeDeLila\java-client\client-app\target\client-app-1.0.8-all.jar)
+[2025-11-21 17:54:16] JAWS DLL load failed at fsapi32: Unable to load library 'fsapi32':
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Native library (win32-x86-64/fsapi32.dll) not found in resource path (C:\wamp64\www\LemondeDeLila\java-client\client-app\target\client-app-1.0.8-all.jar)
+[2025-11-21 17:54:16] JAWS DLL load failed at SAAPI32: Unable to load library 'SAAPI32':
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Native library (win32-x86-64/SAAPI32.dll) not found in resource path (C:\wamp64\www\LemondeDeLila\java-client\client-app\target\client-app-1.0.8-all.jar)
+[2025-11-21 17:54:16] FSAPI DLL not available on this system.
+[2025-11-21 17:54:16] NVDA spoke text successfully.
+[2025-11-21 17:54:46] NVDA spoke text successfully.
+[2025-11-21 17:54:47] NVDA spoke text successfully.
+[2025-11-21 17:54:47] NVDA spoke text successfully.
+[2025-11-21 17:54:47] NVDA spoke text successfully.
+[2025-11-21 17:54:49] NVDA spoke text successfully.
+[2025-11-21 17:54:56] NVDA spoke text successfully.
+[2025-11-21 17:55:11] NVDA spoke text successfully.
+[2025-11-21 17:55:11] NVDA spoke text successfully.
+[2025-11-21 17:57:13] Attempting to load NVDA library from C:\wamp64\www\LemondeDeLila\java-client\libs\windows\x64\nvdaHelperRemote.dll
+[2025-11-21 17:57:13] NVDA controller client API not available, trying controller API: Error looking up function 'nvdaControllerClient_testIfRunning': La procédure spécifiée est introuvable.
+
+[2025-11-21 17:57:13] Detected NVDA controller API.
+[2025-11-21 17:57:13] NVDA controller bridge initialised successfully (CONTROLLER).
+[2025-11-21 17:57:13] JAWS DLL load failed at C:\wamp64\www\LemondeDeLila\java-client\libs\windows\x64\saapi32.dll: Unable to load library 'C:\wamp64\www\LemondeDeLila\java-client\libs\windows\x64\saapi32.dll':
+%1 n’est pas une application Win32 valide.
+
+%1 n’est pas une application Win32 valide.
+
+Native library (win32-x86-64/C:\wamp64\www\LemondeDeLila\java-client\libs\windows\x64\saapi32.dll) not found in resource path (C:\wamp64\www\LemondeDeLila\java-client\client-app\target\client-app-1.0.8-all.jar)
+[2025-11-21 17:57:13] JAWS DLL load failed at C:\wamp64\www\LemondeDeLila\java-client\libs\windows\x64\SAAPI32.dll: Unable to load library 'C:\wamp64\www\LemondeDeLila\java-client\libs\windows\x64\SAAPI32.dll':
+%1 n’est pas une application Win32 valide.
+
+%1 n’est pas une application Win32 valide.
+
+Native library (win32-x86-64/C:\wamp64\www\LemondeDeLila\java-client\libs\windows\x64\SAAPI32.dll) not found in resource path (C:\wamp64\www\LemondeDeLila\java-client\client-app\target\client-app-1.0.8-all.jar)
+[2025-11-21 17:57:13] JAWS DLL load failed at fsapi32: Unable to load library 'fsapi32':
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Native library (win32-x86-64/fsapi32.dll) not found in resource path (C:\wamp64\www\LemondeDeLila\java-client\client-app\target\client-app-1.0.8-all.jar)
+[2025-11-21 17:57:13] JAWS DLL load failed at SAAPI32: Unable to load library 'SAAPI32':
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Native library (win32-x86-64/SAAPI32.dll) not found in resource path (C:\wamp64\www\LemondeDeLila\java-client\client-app\target\client-app-1.0.8-all.jar)
+[2025-11-21 17:57:13] FSAPI DLL not available on this system.
+[2025-11-21 17:57:14] NVDA spoke text successfully.
+[2025-11-21 17:57:19] NVDA spoke text successfully.
+[2025-11-21 17:57:20] NVDA spoke text successfully.
+[2025-11-21 17:57:20] NVDA spoke text successfully.
+[2025-11-21 17:57:21] NVDA spoke text successfully.
+[2025-11-21 17:57:22] NVDA spoke text successfully.
+[2025-11-21 17:57:25] NVDA spoke text successfully.
+[2025-11-21 17:57:25] NVDA spoke text successfully.
+[2025-11-21 17:58:03] NVDA spoke text successfully.
+[2025-11-21 17:58:03] NVDA spoke text successfully.
+[2025-11-21 17:58:05] NVDA spoke text successfully.
+[2025-11-21 17:58:05] NVDA spoke text successfully.
+[2025-11-21 17:58:05] NVDA spoke text successfully.
+[2025-11-21 17:58:06] NVDA spoke text successfully.
+[2025-11-21 17:58:06] NVDA spoke text successfully.
+[2025-11-21 17:58:06] NVDA spoke text successfully.
+[2025-11-21 17:58:06] NVDA spoke text successfully.
+[2025-11-21 17:58:06] NVDA spoke text successfully.
+[2025-11-21 17:58:07] NVDA spoke text successfully.
+[2025-11-21 17:58:07] NVDA spoke text successfully.
+[2025-11-21 17:58:07] NVDA spoke text successfully.
+[2025-11-21 17:58:07] NVDA spoke text successfully.
+[2025-11-21 17:58:08] NVDA spoke text successfully.
+[2025-11-21 17:58:09] NVDA spoke text successfully.
+[2025-11-21 17:58:12] NVDA spoke text successfully.
+[2025-11-21 17:58:12] NVDA spoke text successfully.
+[2025-11-21 17:58:12] NVDA spoke text successfully.
+[2025-11-21 17:58:13] NVDA spoke text successfully.
+[2025-11-21 17:58:13] NVDA spoke text successfully.
+[2025-11-21 17:58:13] NVDA spoke text successfully.
+[2025-11-21 17:58:14] NVDA spoke text successfully.
+[2025-11-21 17:58:14] NVDA spoke text successfully.
+[2025-11-21 17:58:14] NVDA spoke text successfully.
+[2025-11-21 17:58:14] NVDA spoke text successfully.
+[2025-11-21 17:58:14] NVDA spoke text successfully.
+[2025-11-21 17:58:15] NVDA spoke text successfully.
+[2025-11-21 17:58:15] NVDA spoke text successfully.
+[2025-11-21 17:58:15] NVDA spoke text successfully.
+[2025-11-21 17:58:15] NVDA spoke text successfully.
+[2025-11-21 18:00:30] Attempting to load NVDA library from C:\wamp64\www\LemondeDeLila\java-client\libs\windows\x64\nvdaHelperRemote.dll
+[2025-11-21 18:00:31] NVDA controller client API not available, trying controller API: Error looking up function 'nvdaControllerClient_testIfRunning': La procédure spécifiée est introuvable.
+
+[2025-11-21 18:00:31] Detected NVDA controller API.
+[2025-11-21 18:00:31] NVDA controller bridge initialised successfully (CONTROLLER).
+[2025-11-21 18:00:31] JAWS DLL load failed at C:\wamp64\www\LemondeDeLila\java-client\libs\windows\x64\saapi32.dll: Unable to load library 'C:\wamp64\www\LemondeDeLila\java-client\libs\windows\x64\saapi32.dll':
+%1 n’est pas une application Win32 valide.
+
+%1 n’est pas une application Win32 valide.
+
+Native library (win32-x86-64/C:\wamp64\www\LemondeDeLila\java-client\libs\windows\x64\saapi32.dll) not found in resource path (C:\wamp64\www\LemondeDeLila\java-client\client-app\target\client-app-1.0.8-all.jar)
+[2025-11-21 18:00:31] JAWS DLL load failed at C:\wamp64\www\LemondeDeLila\java-client\libs\windows\x64\SAAPI32.dll: Unable to load library 'C:\wamp64\www\LemondeDeLila\java-client\libs\windows\x64\SAAPI32.dll':
+%1 n’est pas une application Win32 valide.
+
+%1 n’est pas une application Win32 valide.
+
+Native library (win32-x86-64/C:\wamp64\www\LemondeDeLila\java-client\libs\windows\x64\SAAPI32.dll) not found in resource path (C:\wamp64\www\LemondeDeLila\java-client\client-app\target\client-app-1.0.8-all.jar)
+[2025-11-21 18:00:31] JAWS DLL load failed at fsapi32: Unable to load library 'fsapi32':
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Native library (win32-x86-64/fsapi32.dll) not found in resource path (C:\wamp64\www\LemondeDeLila\java-client\client-app\target\client-app-1.0.8-all.jar)
+[2025-11-21 18:00:31] JAWS DLL load failed at SAAPI32: Unable to load library 'SAAPI32':
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Native library (win32-x86-64/SAAPI32.dll) not found in resource path (C:\wamp64\www\LemondeDeLila\java-client\client-app\target\client-app-1.0.8-all.jar)
+[2025-11-21 18:00:31] FSAPI DLL not available on this system.
+[2025-11-21 18:00:32] NVDA spoke text successfully.
+[2025-11-21 18:00:37] NVDA spoke text successfully.
+[2025-11-21 18:00:37] NVDA spoke text successfully.
+[2025-11-21 18:00:38] NVDA spoke text successfully.
+[2025-11-21 18:00:38] NVDA spoke text successfully.
+[2025-11-21 18:00:40] NVDA spoke text successfully.
+[2025-11-21 18:00:52] NVDA spoke text successfully.
+[2025-11-21 18:00:52] NVDA spoke text successfully.
+[2025-11-21 18:02:19] Attempting to load NVDA library from C:\wamp64\www\LemondeDeLila\java-client\libs\windows\x64\nvdaHelperRemote.dll
+[2025-11-21 18:02:19] NVDA controller client API not available, trying controller API: Error looking up function 'nvdaControllerClient_testIfRunning': La procédure spécifiée est introuvable.
+
+[2025-11-21 18:02:19] Detected NVDA controller API.
+[2025-11-21 18:02:19] NVDA controller bridge initialised successfully (CONTROLLER).
+[2025-11-21 18:02:19] JAWS DLL load failed at C:\wamp64\www\LemondeDeLila\java-client\libs\windows\x64\saapi32.dll: Unable to load library 'C:\wamp64\www\LemondeDeLila\java-client\libs\windows\x64\saapi32.dll':
+%1 n’est pas une application Win32 valide.
+
+%1 n’est pas une application Win32 valide.
+
+Native library (win32-x86-64/C:\wamp64\www\LemondeDeLila\java-client\libs\windows\x64\saapi32.dll) not found in resource path (C:\wamp64\www\LemondeDeLila\java-client\client-app\target\client-app-1.0.8-all.jar)
+[2025-11-21 18:02:19] JAWS DLL load failed at C:\wamp64\www\LemondeDeLila\java-client\libs\windows\x64\SAAPI32.dll: Unable to load library 'C:\wamp64\www\LemondeDeLila\java-client\libs\windows\x64\SAAPI32.dll':
+%1 n’est pas une application Win32 valide.
+
+%1 n’est pas une application Win32 valide.
+
+Native library (win32-x86-64/C:\wamp64\www\LemondeDeLila\java-client\libs\windows\x64\SAAPI32.dll) not found in resource path (C:\wamp64\www\LemondeDeLila\java-client\client-app\target\client-app-1.0.8-all.jar)
+[2025-11-21 18:02:19] JAWS DLL load failed at fsapi32: Unable to load library 'fsapi32':
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Native library (win32-x86-64/fsapi32.dll) not found in resource path (C:\wamp64\www\LemondeDeLila\java-client\client-app\target\client-app-1.0.8-all.jar)
+[2025-11-21 18:02:19] JAWS DLL load failed at SAAPI32: Unable to load library 'SAAPI32':
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Native library (win32-x86-64/SAAPI32.dll) not found in resource path (C:\wamp64\www\LemondeDeLila\java-client\client-app\target\client-app-1.0.8-all.jar)
+[2025-11-21 18:02:19] FSAPI DLL not available on this system.
+[2025-11-21 18:02:20] NVDA spoke text successfully.
+[2025-11-21 18:02:34] NVDA spoke text successfully.
+[2025-11-21 18:02:34] NVDA spoke text successfully.
+[2025-11-21 18:02:35] NVDA spoke text successfully.
+[2025-11-21 18:02:35] NVDA spoke text successfully.
+[2025-11-21 18:02:37] NVDA spoke text successfully.
+[2025-11-21 18:02:38] NVDA spoke text successfully.
+[2025-11-21 18:02:39] NVDA spoke text successfully.
+[2025-11-21 18:02:40] NVDA spoke text successfully.
+[2025-11-21 18:02:40] NVDA spoke text successfully.
+[2025-11-21 18:07:02] Attempting to load NVDA library from C:\wamp64\www\LemondeDeLila\java-client\libs\windows\x64\nvdaHelperRemote.dll
+[2025-11-21 18:07:02] NVDA controller client API not available, trying controller API: Error looking up function 'nvdaControllerClient_testIfRunning': La procédure spécifiée est introuvable.
+
+[2025-11-21 18:07:02] Detected NVDA controller API.
+[2025-11-21 18:07:02] NVDA controller bridge initialised successfully (CONTROLLER).
+[2025-11-21 18:07:02] JAWS DLL load failed at C:\wamp64\www\LemondeDeLila\java-client\libs\windows\x64\saapi32.dll: Unable to load library 'C:\wamp64\www\LemondeDeLila\java-client\libs\windows\x64\saapi32.dll':
+%1 n’est pas une application Win32 valide.
+
+%1 n’est pas une application Win32 valide.
+
+Native library (win32-x86-64/C:\wamp64\www\LemondeDeLila\java-client\libs\windows\x64\saapi32.dll) not found in resource path (C:\wamp64\www\LemondeDeLila\java-client\client-app\target\client-app-1.0.8-all.jar)
+[2025-11-21 18:07:02] JAWS DLL load failed at C:\wamp64\www\LemondeDeLila\java-client\libs\windows\x64\SAAPI32.dll: Unable to load library 'C:\wamp64\www\LemondeDeLila\java-client\libs\windows\x64\SAAPI32.dll':
+%1 n’est pas une application Win32 valide.
+
+%1 n’est pas une application Win32 valide.
+
+Native library (win32-x86-64/C:\wamp64\www\LemondeDeLila\java-client\libs\windows\x64\SAAPI32.dll) not found in resource path (C:\wamp64\www\LemondeDeLila\java-client\client-app\target\client-app-1.0.8-all.jar)
+[2025-11-21 18:07:02] JAWS DLL load failed at fsapi32: Unable to load library 'fsapi32':
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Native library (win32-x86-64/fsapi32.dll) not found in resource path (C:\wamp64\www\LemondeDeLila\java-client\client-app\target\client-app-1.0.8-all.jar)
+[2025-11-21 18:07:02] JAWS DLL load failed at SAAPI32: Unable to load library 'SAAPI32':
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Native library (win32-x86-64/SAAPI32.dll) not found in resource path (C:\wamp64\www\LemondeDeLila\java-client\client-app\target\client-app-1.0.8-all.jar)
+[2025-11-21 18:07:02] FSAPI DLL not available on this system.
+[2025-11-21 18:07:03] NVDA spoke text successfully.
+[2025-11-21 18:07:07] NVDA spoke text successfully.
+[2025-11-21 18:07:08] NVDA spoke text successfully.
+[2025-11-21 18:07:08] NVDA spoke text successfully.
+[2025-11-21 18:07:09] NVDA spoke text successfully.
+[2025-11-21 18:07:21] NVDA spoke text successfully.
+[2025-11-21 18:07:31] NVDA spoke text successfully.
+[2025-11-21 18:07:39] NVDA spoke text successfully.
+[2025-11-21 18:07:40] NVDA spoke text successfully.
+[2025-11-21 18:07:42] NVDA spoke text successfully.
+[2025-11-21 18:07:42] NVDA spoke text successfully.
+[2025-11-21 18:07:43] NVDA spoke text successfully.
+[2025-11-21 18:07:44] NVDA spoke text successfully.

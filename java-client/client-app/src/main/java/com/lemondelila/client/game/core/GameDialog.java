@@ -7,6 +7,8 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
+import javax.swing.ActionMap;
+import javax.swing.InputMap;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.FlowLayout;
@@ -42,8 +44,6 @@ public final class GameDialog {
         buttons.add(yes);
         dialog.add(buttons, BorderLayout.SOUTH);
 
-        dialog.getRootPane().setDefaultButton(yes);
-
         yes.addActionListener(e -> {
             result.set(true);
             dialog.dispose();
@@ -55,6 +55,9 @@ public final class GameDialog {
 
         bindCycle(yes, no);
         bindCycle(no, yes);
+        bindEnter(yes);
+        bindEnter(no);
+        yes.requestFocusInWindow();
 
         dialog.pack();
         dialog.setLocationRelativeTo(parent);
@@ -77,6 +80,18 @@ public final class GameDialog {
             @Override
             public void actionPerformed(ActionEvent e) {
                 target.requestFocusInWindow();
+            }
+        });
+    }
+
+    private static void bindEnter(JButton button) {
+        InputMap map = button.getInputMap(JComponent.WHEN_FOCUSED);
+        ActionMap actions = button.getActionMap();
+        map.put(KeyStroke.getKeyStroke("ENTER"), "press");
+        actions.put("press", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                button.doClick();
             }
         });
     }

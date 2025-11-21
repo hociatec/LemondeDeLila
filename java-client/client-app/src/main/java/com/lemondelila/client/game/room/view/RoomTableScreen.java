@@ -25,6 +25,7 @@ import com.lemondelila.client.game.room.service.RoomApiService;
 import com.lemondelila.client.framework.core.task.TaskScheduler;
 
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import java.awt.BorderLayout;
 import java.util.ArrayList;
 import java.util.List;
@@ -197,7 +198,7 @@ public final class RoomTableScreen extends BaseTableScreen {
                 "Quitter la table",
                 "Etes-vous sur de quitter la table ?");
         if (!confirmed) {
-            view.focusInteraction();
+            SwingUtilities.invokeLater(view::focusInteraction);
             return;
         }
         announcer.announce(view.historySidebar(), "Demande de sortie de la table.");
