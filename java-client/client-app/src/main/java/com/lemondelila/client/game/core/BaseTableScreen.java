@@ -10,7 +10,7 @@ import com.lemondelila.client.game.history.view.GameHistorySidebar;
 import com.lemondelila.client.game.room.event.LeaveRoomRequested;
 import com.lemondelila.client.game.room.model.RoomDetailsState;
 import com.lemondelila.client.game.shortcut.TableShortcutManager;
-import com.lemondelila.client.framework.access.shortcut.AccessibleShortcutRegistry;
+import com.lemondelila.client.game.core.GameDialog;
 
 import javax.swing.JPanel;
 import java.util.Objects;

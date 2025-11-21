@@ -89,6 +89,7 @@ public final class RoomTableScreen extends BaseTableScreen {
         KeyboardBindings.bindEnter(interactionPanel, interactionPanel::requestFocusInWindow, "table.enter");
 
         installShortcuts();
+        tableShortcutManager.bindSummary(this, this::handleTableSummary);
 
         subscriptions().subscribe(eventBus, BotAdded.class, e -> {
             if (!matchesCurrentRoom(e.roomId())) return;
@@ -223,5 +224,29 @@ public final class RoomTableScreen extends BaseTableScreen {
     private boolean matchesCurrentRoom(int roomId) {
         Integer current = detailsState.roomId();
         return current != null && current.equals(roomId);
+    }
+
+    private void handleTableSummary() {
+        Integer roomId = detailsState.roomId();
+        if (roomId == null) {
+            announcer.announce(historyView, "Aucune table selectionnee.");
+            return;
+        }
+        String game = detailsState.gameType() == null ? "" : detailsState.gameType();
+        var bots = tableState.bots();
+        var players = tableState.players();
+        String botNames = bots.isEmpty()
+                ? "aucun bot"
+                : bots.stream()
+                        .map(b -> b.name() == null ? "Bot" : b.name())
+                        .reduce((a, b) -> a + ", " + b)
+                        .orElse("bots");
+        String playerNames = players.isEmpty()
+                ? "aucun joueur"
+                : players.stream()
+                        .map(p -> p.username() == null ? "Joueur" : p.username())
+                        .reduce((a, b) -> a + ", " + b)
+                        .orElse("joueurs");
+        announcer.announce(historyView, "Table #" + roomId + " " + game + " : joueurs " + playerNames + "; bots " + botNames + ".");
     }
 }

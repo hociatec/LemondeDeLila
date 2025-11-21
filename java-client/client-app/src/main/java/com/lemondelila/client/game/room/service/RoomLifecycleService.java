@@ -25,6 +25,7 @@ public final class RoomLifecycleService implements AutoCloseable {
             if (e.room().id() != null) {
                 tableState.setRoom(e.room().id(), e.room().gameType());
                 tableState.updateBots(e.room().bots());
+                tableState.updatePlayers(e.room().players());
             }
         });
         subscriptions.subscribe(eventBus, BotAdded.class, e -> {
