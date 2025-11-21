@@ -114,6 +114,11 @@ public final class RestClient {
         return parse(response, type);
     }
 
+    public byte[] getRawBytes(String path) throws IOException, InterruptedException {
+        HttpResponse<byte[]> response = executeBytes(() -> buildRequest(path, HttpMethod.GET, Collections.emptyMap(), null));
+        return response.body() == null ? new byte[0] : response.body();
+    }
+
     public JsonNode post(String path, Map<String, Object> payload) throws IOException, InterruptedException {
         return post(path, Collections.emptyMap(), payload);
     }
@@ -133,6 +138,34 @@ public final class RestClient {
             return type.cast(parseNode(response));
         }
         return parse(response, type);
+    }
+
+    private HttpResponse<byte[]> executeBytes(Supplier<HttpRequest> requestSupplier) throws IOException, InterruptedException {
+        int attempt = 0;
+        while (true) {
+            HttpRequest request = requestSupplier.get();
+            LOGGER.debug("Envoi requête {} {}", request.method(), request.uri());
+            try {
+                HttpResponse<byte[]> response = httpClient.send(request, HttpResponse.BodyHandlers.ofByteArray());
+                LOGGER.trace("Réponse HTTP {} {}", response.statusCode(), request.uri());
+                return response;
+            } catch (IOException ex) {
+                attempt++;
+                if (!retryStrategy.shouldRetry(attempt, ex)) {
+                    throw ex;
+                }
+                Duration delay = retryStrategy.nextDelay(attempt);
+                if (!delay.isZero()) {
+                    try {
+                        Thread.sleep(delay.toMillis());
+                    } catch (InterruptedException interrupted) {
+                        Thread.currentThread().interrupt();
+                        throw interrupted;
+                    }
+                }
+                LOGGER.debug("Nouvelle tentative HTTP {} après erreur {} (tentative #{})", request.uri(), ex.getMessage(), attempt + 1);
+            }
+        }
     }
 
     public JsonNode delete(String path, Map<String, String> headers) throws IOException, InterruptedException {

@@ -13,7 +13,7 @@ import com.lemondelila.client.framework.network.rest.RestHeadersProvider;
 import com.lemondelila.client.framework.network.rest.RetryStrategy;
 import com.lemondelila.client.framework.network.rest.UnauthorizedHandler;
 import com.lemondelila.client.framework.ui.dialog.DialogService;
-import com.lemondelila.client.game.service.RealtimeSignatureService;
+import com.lemondelila.client.framework.network.realtime.RealtimeSignatureService;
 import com.lemondelila.client.user.model.ClientSession;
 
 import java.net.http.HttpClient;

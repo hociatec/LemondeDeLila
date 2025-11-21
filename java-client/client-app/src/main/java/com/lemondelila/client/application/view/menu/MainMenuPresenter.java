@@ -6,7 +6,7 @@ import com.lemondelila.client.framework.ui.ControllerResult;
 import com.lemondelila.client.framework.ui.dialog.DialogService;
 import com.lemondelila.client.framework.ui.screen.ScreenId;
 import com.lemondelila.client.framework.ui.screen.ScreenManager;
-import com.lemondelila.client.catalogue.controller.CatalogController;
+import com.lemondelila.client.game.catalog.controller.GameCatalogController;
 import com.lemondelila.client.chat.controller.ChatController;
 import com.lemondelila.client.settings.controller.OptionsController;
 import com.lemondelila.client.presence.controller.PresenceController;
@@ -31,7 +31,7 @@ final class MainMenuPresenter {
     private final PresenceController presenceController;
     private final SocialController socialController;
     private final OptionsController optionsController;
-    private final CatalogController catalogController;
+    private final GameCatalogController catalogController;
     private final ClientSession session;
     private final DomainEventBus eventBus;
     private final MainMenuAudio audio;
@@ -44,7 +44,7 @@ final class MainMenuPresenter {
                       PresenceController presenceController,
                       SocialController socialController,
                       OptionsController optionsController,
-                      CatalogController catalogController,
+                      GameCatalogController catalogController,
                       ClientSession session,
                       DomainEventBus eventBus,
                       MainMenuAudio audio,

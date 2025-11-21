@@ -4,7 +4,7 @@ import com.lemondelila.client.application.Internationalization;
 import com.lemondelila.client.framework.core.di.Inject;
 import com.lemondelila.client.framework.ui.ControllerResult;
 import com.lemondelila.client.framework.ui.dialog.DialogService;
-import com.lemondelila.client.game.service.SimpleRateLimiter;
+import com.lemondelila.client.framework.core.util.SimpleRateLimiter;
 import com.lemondelila.client.social.view.SocialCenterScreen;
 import com.lemondelila.client.user.model.ClientSession;
 

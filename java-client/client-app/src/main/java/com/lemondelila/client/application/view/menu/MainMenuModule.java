@@ -7,12 +7,12 @@ import com.lemondelila.client.framework.core.module.LilaModule;
 import com.lemondelila.client.framework.core.event.DomainEventBus;
 import com.lemondelila.client.framework.media.sound.SoundEffectManager;
 import com.lemondelila.client.framework.ui.dialog.DialogService;
-import com.lemondelila.client.catalogue.controller.CatalogController;
 import com.lemondelila.client.chat.controller.ChatController;
 import com.lemondelila.client.settings.controller.OptionsController;
 import com.lemondelila.client.presence.controller.PresenceController;
 import com.lemondelila.client.social.controller.SocialController;
 import com.lemondelila.client.user.model.ClientSession;
+import com.lemondelila.client.game.catalog.controller.GameCatalogController;
 
 @AutoService(LilaModule.class)
 public final class MainMenuModule implements LilaModule {
@@ -27,7 +27,7 @@ public final class MainMenuModule implements LilaModule {
                 ctx.get(PresenceController.class),
                 ctx.get(SocialController.class),
                 ctx.get(OptionsController.class),
-                ctx.get(CatalogController.class),
+                ctx.get(GameCatalogController.class),
                 ctx.get(ClientSession.class),
                 ctx.get(DomainEventBus.class),
                 ctx.get(MainMenuAudio.class),

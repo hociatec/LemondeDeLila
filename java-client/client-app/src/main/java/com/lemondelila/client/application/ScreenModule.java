@@ -9,6 +9,7 @@ import com.lemondelila.client.framework.core.module.LilaModule;
 import com.lemondelila.client.framework.ui.LilaFrame;
 import com.lemondelila.client.framework.ui.screen.Screen;
 import com.lemondelila.client.framework.ui.screen.ScreenManager;
+import com.lemondelila.client.game.catalog.view.GameCatalogScreen;
 
 @AutoService(LilaModule.class)
 public final class ScreenModule implements LilaModule {
@@ -17,6 +18,7 @@ public final class ScreenModule implements LilaModule {
     public void configure(ApplicationContext.Builder builder) {
         builder.bindAuto(HomeScreen.class);
         builder.bindAuto(MainMenuScreen.class);
+        builder.bindAuto(GameCatalogScreen.class);
         builder.bindAuto(ApplicationShortcuts.class);
     }
 

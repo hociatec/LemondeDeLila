@@ -1,8 +1,0 @@
-Etat refacto game (en cours)
-- bot : GameBotController -> controller ; GameRoomBotManager -> service (imports MAJ sur PanierExpress, GameScreenSupport).
-- catalog : GameCatalogController -> game/catalog/controller (imports MAJ sur Catalogue prezenters/module).
-- controller : bascule core (AbstractGameController, GameControllerSupport, GameActionState, GameRulesController, GameScreenController, GameTableInfoController) ; anciens chemins encore en D.
-- quiz/exchange/history/session/view/common deja deplaces.
-- Reste : corriger tous les imports residuels (anciens packages controller/model), ajouter les nouveaux dossiers, supprimer les anciens fichiers en D, corriger DI, compiler/tester client-app.
-- Dep?t tres modifie (backend inclus). Pas de compile/test.
-

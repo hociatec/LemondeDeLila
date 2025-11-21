@@ -21,7 +21,8 @@
 param(
     [switch]$SkipBackend,
     [switch]$SkipRealtime,
-    [switch]$SkipBuild
+    [switch]$SkipBuild,
+    [switch]$ForceBuild
 )
 
 Set-StrictMode -Version Latest
@@ -98,10 +99,19 @@ function Ensure-PHPDependencies {
     & $composer.Source install --no-interaction --working-dir $BackendDir
 }
 
+function Get-PomVersion {
+    param([string]$PomPath)
+    $content = Get-Content -Path $PomPath -Raw
+    $match = [regex]::Match($content, '<version>([^<]+)</version>')
+    if ($match.Success) { return $match.Groups[1].Value }
+    return $null
+}
+
 function Build-FrameworkModules {
     param(
         [string]$JavaDir,
-        [string]$MavenPath
+        [string]$MavenPath,
+        [switch]$Force
     )
 
     $frameworks = @(
@@ -113,21 +123,37 @@ function Build-FrameworkModules {
         'framework-media'
     )
 
-    Push-Location $JavaDir
-    try {
-        Write-Host "Installation du parent java-client..."
-        & $MavenPath install -N
-        if ($LASTEXITCODE -ne 0) {
-            throw "L'installation du parent java-client a echoue (code $LASTEXITCODE)."
-        }
+    $parentPom = Join-Path $JavaDir 'pom.xml'
+    $parentVer = Get-PomVersion -PomPath $parentPom
+    $parentInstalled = $false
+    if ($parentVer) {
+        $localPom = Join-Path $env:USERPROFILE ".m2\repository\com\lemondelila\java-client\$parentVer\java-client-$parentVer.pom"
+        $parentInstalled = Test-Path $localPom
     }
-    finally {
-        Pop-Location
+
+    if (-not $parentInstalled -or $Force) {
+        Push-Location $JavaDir
+        try {
+            Write-Host "Installation du parent java-client..."
+            & $MavenPath install -N
+            if ($LASTEXITCODE -ne 0) {
+                throw "L'installation du parent java-client a echoue (code $LASTEXITCODE)."
+            }
+        }
+        finally {
+            Pop-Location
+        }
+    } else {
+        Write-Host "Parent java-client déjà dans le cache Maven, skip."
     }
 
     foreach ($module in $frameworks) {
         $modulePath = Join-Path $JavaDir $module
         if (-not (Test-Path $modulePath)) {
+            continue
+        }
+        if (-not $Force -and (Test-Path (Join-Path $modulePath 'target'))) {
+            Write-Host "Skip build $module (target/ existant)."
             continue
         }
         Write-Host "Installation du module $module..."
@@ -387,7 +413,7 @@ try {
     $javaLocationPushed = $true
 
     if (-not $SkipBuild) {
-        Build-FrameworkModules -JavaDir $javaDirectory -MavenPath $mavenPath
+        Build-FrameworkModules -JavaDir $javaDirectory -MavenPath $mavenPath -Force:$ForceBuild
         Remove-BomFromSource -RootPath $javaDirectory -Extensions @('.java', '.xml', '.properties', '.yml', '.yaml')
         Write-Host "Compilation du client Java..."
         & $mavenPath clean package -DskipTests
