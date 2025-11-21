@@ -13,6 +13,7 @@ import com.lemondelila.client.game.shortcut.TableShortcutManager;
 import com.lemondelila.client.game.core.GameDialog;
 
 import javax.swing.JPanel;
+import javax.swing.JComponent;
 import java.util.Objects;
 
 /**
@@ -63,11 +64,11 @@ public abstract class BaseTableScreen extends JPanel implements Screen, GameTabl
         return subscriptions;
     }
 
-    protected void installShortcuts() {
-        KeyboardBindings.disableTabTraversal(interactionPanel());
-        KeyboardBindings.disableTabTraversal(historySidebar());
-        KeyboardBindings.bindEnter(interactionPanel(), interactionPanel()::requestFocusInWindow, "table.enter");
-        shortcuts.installNavigation(this, interactionPanel(), historySidebar().historyComponent());
+    protected void installShortcuts(JComponent interaction, JComponent history) {
+        KeyboardBindings.disableTabTraversal(interaction);
+        KeyboardBindings.disableTabTraversal(history);
+        KeyboardBindings.bindEnter(interaction, interaction::requestFocusInWindow, "table.enter");
+        shortcuts.installNavigation(this, interaction, history);
         shortcuts.bindQuit(this, this::handleQuit);
         shortcuts.bindBotShortcuts(this, this::handleAddBot, this::handleRemoveBot);
     }

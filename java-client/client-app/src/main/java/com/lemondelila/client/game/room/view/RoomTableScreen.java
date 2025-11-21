@@ -1,8 +1,6 @@
 package com.lemondelila.client.game.room.view;
 
 import com.lemondelila.client.application.view.menu.MainMenuScreen;
-import com.lemondelila.client.framework.access.AccessibleDecorator;
-import com.lemondelila.client.framework.access.AccessibleSpec;
 import com.lemondelila.client.framework.access.FocusHighlighter;
 import com.lemondelila.client.framework.core.di.Inject;
 import com.lemondelila.client.framework.core.event.DomainEventBus;
@@ -17,26 +15,23 @@ import com.lemondelila.client.game.bot.event.BotRemoved;
 import com.lemondelila.client.game.bot.event.RemoveBotRequested;
 import com.lemondelila.client.game.core.BaseTableScreen;
 import com.lemondelila.client.game.core.GameAnnouncer;
-import com.lemondelila.client.game.core.GameDialog;
 import com.lemondelila.client.game.history.controller.GameHistoryController;
 import com.lemondelila.client.game.history.view.GameHistorySidebar;
 import com.lemondelila.client.game.room.model.BotState;
 import com.lemondelila.client.game.room.model.RoomDetailsState;
 import com.lemondelila.client.game.room.model.TableState;
-import com.lemondelila.client.game.shortcut.TableShortcutManager;
+import com.lemondelila.client.game.room.model.RoomState;
+import com.lemondelila.client.game.room.service.RoomApiService;
+import com.lemondelila.client.framework.core.task.TaskScheduler;
 
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.BorderFactory;
 import java.awt.BorderLayout;
-import java.awt.GridLayout;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 /**
  * Ecran table generique avec deux zones : interaction et historique.
- * Tab / Shift+Tab alternent le focus entre les deux.
  */
 public final class RoomTableScreen extends BaseTableScreen {
 
@@ -47,49 +42,36 @@ public final class RoomTableScreen extends BaseTableScreen {
     private final DomainEventBus eventBus;
     private final GameAnnouncer announcer;
     private final TableState tableState;
-    private final JPanel interactionPanel = new JPanel(new GridLayout(3, 1, 8, 8));
-    private final JLabel header = new JLabel();
-    private final JLabel interactionTitle = new JLabel();
-    private final GameHistorySidebar historyView;
+    private final RoomApiService roomApi;
+    private final TaskScheduler scheduler;
+    private final RoomTableView view;
     private ScreenManager screenManager;
 
     @Inject
     public RoomTableScreen(RoomDetailsState detailsState,
                            GameHistoryController historyController,
                            FocusHighlighter focusHighlighter,
-                           TableShortcutManager tableShortcutManager,
+                           com.lemondelila.client.game.shortcut.TableShortcutManager shortcutManager,
                            DomainEventBus eventBus,
                            GameAnnouncer announcer,
                            GameHistorySidebar historySidebar,
-                           TableState tableState) {
-        super(detailsState, tableShortcutManager, announcer, historySidebar, eventBus);
+                           TableState tableState,
+                           RoomApiService roomApi,
+                           TaskScheduler scheduler) {
+        super(detailsState, shortcutManager, announcer, historySidebar, eventBus);
         setLayout(new BorderLayout(8, 8));
         this.detailsState = detailsState;
         this.historyController = historyController;
         this.eventBus = eventBus;
         this.announcer = announcer;
-        this.historyView = historySidebar;
         this.tableState = tableState;
+        this.roomApi = roomApi;
+        this.scheduler = scheduler;
+        this.view = new RoomTableView(focusHighlighter, historySidebar);
 
-        buildInteractionArea(focusHighlighter);
-
-        JPanel left = new JPanel(new BorderLayout());
-        left.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
-        JPanel titles = new JPanel(new GridLayout(2, 1));
-        titles.add(header);
-        titles.add(interactionTitle);
-        left.add(titles, BorderLayout.NORTH);
-        left.add(interactionPanel, BorderLayout.CENTER);
-
-        add(left, BorderLayout.CENTER);
-        add(historyView, BorderLayout.EAST);
-
-        KeyboardBindings.disableTabTraversal(interactionPanel);
-        KeyboardBindings.disableTabTraversal(historyView);
-        KeyboardBindings.bindEnter(interactionPanel, interactionPanel::requestFocusInWindow, "table.enter");
-
-        installShortcuts();
-        tableShortcutManager.bindSummary(this, this::handleTableSummary);
+        add(view, BorderLayout.CENTER);
+        installShortcuts(view.interactionPanel(), view.historyComponent());
+        shortcutManager.bindSummary(this, this::handleTableSummary);
 
         subscriptions().subscribe(eventBus, BotAdded.class, e -> {
             if (!matchesCurrentRoom(e.roomId())) return;
@@ -98,7 +80,7 @@ public final class RoomTableScreen extends BaseTableScreen {
                 var bots = new ArrayList<>(tableState.bots());
                 bots.add(bot);
                 tableState.updateBots(bots);
-                announcer.announce(historyView, "Bot " + bot.name() + " a rejoint la table.");
+                announcer.announce(view.historySidebar(), "Bot " + bot.name() + " a rejoint la table.");
             }
         });
         subscriptions().subscribe(eventBus, BotRemoved.class, e -> {
@@ -111,21 +93,11 @@ public final class RoomTableScreen extends BaseTableScreen {
             bots.removeIf(b -> b.id() != null && Objects.equals(b.id(), e.botId()));
             tableState.updateBots(bots);
             String name = bot != null ? bot.name() : "Bot";
-            announcer.announce(historyView, name + " a quitte la table.");
+            announcer.announce(view.historySidebar(), name + " a quitte la table.");
         });
         subscriptions().subscribe(eventBus, BotOperationFailed.class, e -> {
-            announcer.announce(historyView, "Ajout de bot impossible, vous êtes trop nombreux!");
+            announcer.announce(view.historySidebar(), "Action bot impossible : " + e.message());
         });
-    }
-
-    private void buildInteractionArea(FocusHighlighter focusHighlighter) {
-        interactionPanel.setFocusable(true);
-        AccessibleDecorator.apply(interactionPanel, AccessibleSpec.builder()
-                .name("Zone de jeu")
-                .description("Zone principale du jeu")
-                .build());
-        focusHighlighter.apply(interactionPanel);
-        focusHighlighter.apply(historyView);
     }
 
     @Override
@@ -140,48 +112,63 @@ public final class RoomTableScreen extends BaseTableScreen {
 
     @Override
     public JPanel interactionPanel() {
-        return interactionPanel;
+        return view.interactionPanel();
     }
 
     @Override
     public JPanel interactionArea() {
-        return interactionPanel;
+        return view.interactionPanel();
     }
 
     @Override
     public void onShow(ScreenContext context) {
         super.onShow(context);
         this.screenManager = context.screenManager();
-        tableState.updateBots(List.of());
         setFocusable(true);
         Integer roomId = detailsState.roomId();
         String gameName = detailsState.gameType() == null ? "" : detailsState.gameType();
-        if (roomId == null) {
-            header.setText("Aucune table selectionnee");
+        if (roomId != null) {
+            if (tableState.roomId() == null || !roomId.equals(tableState.roomId())) {
+                tableState.setRoom(roomId, gameName);
+            }
+            scheduler.runAsync(() -> {
+                try {
+                    RoomState state = roomApi.fetchRoom(roomId);
+                    tableState.setRoom(state.id(), state.gameType());
+                    tableState.updateBots(state.bots());
+                    tableState.updatePlayers(state.players());
+                } catch (Exception ignored) { }
+            });
         } else {
-            header.setText("Table #" + roomId);
-            announcer.announce(historyView, "Ouverture table #" + roomId);
+            tableState.clear();
+        }
+        if (roomId == null) {
+            view.headerLabel().setText("Aucune table selectionnee");
+        } else {
+            view.headerLabel().setText("Table #" + roomId);
+            announcer.announce(view.historySidebar(), "Ouverture table #" + roomId);
         }
         if (!gameName.isBlank()) {
-            interactionTitle.setText("Zone de jeu : " + gameName);
-            interactionTitle.getAccessibleContext().setAccessibleName("Zone de jeu " + gameName);
-            interactionPanel.getAccessibleContext().setAccessibleName("Zone de jeu " + gameName);
+            view.interactionTitle().setText("Zone de jeu : " + gameName);
+            view.interactionTitle().getAccessibleContext().setAccessibleName("Zone de jeu " + gameName);
+            view.interactionPanel().getAccessibleContext().setAccessibleName("Zone de jeu " + gameName);
         } else {
-            interactionTitle.setText("Zone de jeu");
-            interactionTitle.getAccessibleContext().setAccessibleName("Zone de jeu");
-            interactionPanel.getAccessibleContext().setAccessibleName("Zone de jeu");
+            view.interactionTitle().setText("Zone de jeu");
+            view.interactionTitle().getAccessibleContext().setAccessibleName("Zone de jeu");
+            view.interactionPanel().getAccessibleContext().setAccessibleName("Zone de jeu");
         }
-        historyView.render(historyController.tracker(), "Pas encore d'evenement.");
-        interactionPanel.requestFocusInWindow();
+        view.renderHistory(historyController);
+        view.focusInteraction();
     }
 
     @Override
     protected void handleAddBot() {
         Integer roomId = detailsState.roomId();
         if (roomId == null) {
-            announcer.announce(historyView, "Aucune table selectionnee pour ajouter un bot.");
+            announcer.announce(view.historySidebar(), "Aucune table selectionnee pour ajouter un bot.");
             return;
         }
+        announcer.announce(view.historySidebar(), "Ajout d'un bot en cours...");
         eventBus.publish(new AddBotRequested(roomId, null));
     }
 
@@ -189,29 +176,31 @@ public final class RoomTableScreen extends BaseTableScreen {
     protected void handleRemoveBot() {
         Integer roomId = detailsState.roomId();
         if (roomId == null) {
-            announcer.announce(historyView, "Aucune table selectionnee pour retirer un bot.");
+            announcer.announce(view.historySidebar(), "Aucune table selectionnee pour retirer un bot.");
             return;
         }
         var bots = tableState.bots();
         BotState candidate = bots.isEmpty() ? null : bots.get(bots.size() - 1);
         if (candidate == null || candidate.id() == null) {
-            announcer.announce(historyView, "Aucun bot a retirer.");
+            announcer.announce(view.historySidebar(), "Aucun bot a retirer.");
             return;
         }
+        announcer.announce(view.historySidebar(), "Retrait du bot " + candidate.name() + "...");
         eventBus.publish(new RemoveBotRequested(roomId, candidate.id()));
     }
 
     @Override
     protected void handleQuit() {
         Integer roomId = detailsState.roomId();
-        boolean confirmed = GameDialog.confirm(
+        boolean confirmed = com.lemondelila.client.game.core.GameDialog.confirm(
                 this,
                 "Quitter la table",
                 "Etes-vous sur de quitter la table ?");
         if (!confirmed) {
+            view.focusInteraction();
             return;
         }
-        announcer.announce(historyView, "Demande de sortie de la table.");
+        announcer.announce(view.historySidebar(), "Demande de sortie de la table.");
         if (roomId != null) {
             eventBus.publish(new com.lemondelila.client.game.room.event.LeaveRoomRequested(roomId));
         }
@@ -229,7 +218,7 @@ public final class RoomTableScreen extends BaseTableScreen {
     private void handleTableSummary() {
         Integer roomId = detailsState.roomId();
         if (roomId == null) {
-            announcer.announce(historyView, "Aucune table selectionnee.");
+            announcer.announce(view.historySidebar(), "Aucune table selectionnee.");
             return;
         }
         String game = detailsState.gameType() == null ? "" : detailsState.gameType();
@@ -247,6 +236,6 @@ public final class RoomTableScreen extends BaseTableScreen {
                         .map(p -> p.username() == null ? "Joueur" : p.username())
                         .reduce((a, b) -> a + ", " + b)
                         .orElse("joueurs");
-        announcer.announce(historyView, "Table #" + roomId + " " + game + " : joueurs " + playerNames + "; bots " + botNames + ".");
+        announcer.announce(view.historySidebar(), "Table #" + roomId + " " + game + " : joueurs " + playerNames + "; bots " + botNames + ".");
     }
 }
