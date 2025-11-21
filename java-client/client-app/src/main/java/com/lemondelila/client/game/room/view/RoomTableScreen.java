@@ -26,7 +26,7 @@ import com.lemondelila.client.game.room.model.RoomState;
 import com.lemondelila.client.game.room.service.RoomApiService;
 import com.lemondelila.client.framework.core.task.TaskScheduler;
 import com.lemondelila.client.framework.ui.keyboard.KeyboardBindings;
-import com.lemondelila.client.gamelogic.panierexpress.view.PanierExpressInteractionComponent;
+import com.lemondelila.client.game.core.view.GenericGameInteractionComponent;
 
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -182,7 +182,7 @@ public final class RoomTableScreen extends BaseTableScreen {
             announcer.announce(view.historySidebar(), "Aucune table selectionnee pour ajouter un bot.");
             return;
         }
-        if (isGameStarted()) {
+        if (tableState.started()) {
             announcer.announce(view.historySidebar(), "La partie a commence : impossible d'ajouter un bot.");
             return;
         }
@@ -195,6 +195,10 @@ public final class RoomTableScreen extends BaseTableScreen {
         Integer roomId = detailsState.roomId();
         if (roomId == null) {
             announcer.announce(view.historySidebar(), "Aucune table selectionnee pour retirer un bot.");
+            return;
+        }
+        if (tableState.started()) {
+            announcer.announce(view.historySidebar(), "La partie a commence : impossible de retirer un bot.");
             return;
         }
         var bots = tableState.bots();
@@ -271,8 +275,20 @@ public final class RoomTableScreen extends BaseTableScreen {
         currentInteraction = component;
         if (component != null) {
             view.interactionPanel().add(component.component());
-            if (component instanceof PanierExpressInteractionComponent pe) {
-                KeyboardBindings.bindEnter(view.interactionPanel(), pe::triggerRoll, "panierexpress.enter.roll.container");
+            if (component instanceof com.lemondelila.client.game.core.PrimaryActionCapable capable) {
+                javax.swing.InputMap windowMap = view.interactionPanel().getInputMap(javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW);
+                javax.swing.InputMap ancestorMap = view.interactionPanel().getInputMap(javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+                javax.swing.InputMap focusedMap = view.interactionPanel().getInputMap(javax.swing.JComponent.WHEN_FOCUSED);
+                javax.swing.ActionMap actions = view.interactionPanel().getActionMap();
+                windowMap.put(javax.swing.KeyStroke.getKeyStroke("ENTER"), "table.interaction.primary");
+                ancestorMap.put(javax.swing.KeyStroke.getKeyStroke("ENTER"), "table.interaction.primary");
+                focusedMap.put(javax.swing.KeyStroke.getKeyStroke("ENTER"), "table.interaction.primary");
+                actions.put("table.interaction.primary", new javax.swing.AbstractAction() {
+                    @Override
+                    public void actionPerformed(java.awt.event.ActionEvent e) {
+                        capable.triggerPrimaryAction();
+                    }
+                });
             }
         } else {
             view.interactionPanel().add(new javax.swing.JLabel("Aucune interface specifique pour ce jeu."));

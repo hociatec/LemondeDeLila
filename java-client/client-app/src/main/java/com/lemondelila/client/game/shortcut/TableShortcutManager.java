@@ -74,12 +74,9 @@ public final class TableShortcutManager {
         registerShortcut(add, "Ajouter un bot");
         registerShortcut(remove, "Retirer un bot");
         InputMap windowMap = root.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
-        InputMap ancestorMap = root.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         ActionMap actions = root.getActionMap();
         windowMap.put(add, "table.bot.add");
         windowMap.put(remove, "table.bot.remove");
-        ancestorMap.put(add, "table.bot.add");
-        ancestorMap.put(remove, "table.bot.remove");
         actions.put("table.bot.add", new javax.swing.AbstractAction() {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -103,10 +100,8 @@ public final class TableShortcutManager {
         KeyStroke summary = KeyStroke.getKeyStroke(KeyEvent.VK_W, 0);
         registerShortcut(summary, "Afficher les informations de table");
         InputMap windowMap = root.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
-        InputMap ancestorMap = root.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         ActionMap actions = root.getActionMap();
         windowMap.put(summary, "table.summary");
-        ancestorMap.put(summary, "table.summary");
         actions.put("table.summary", new javax.swing.AbstractAction() {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {

@@ -168,6 +168,13 @@ class RoomController extends AbstractController
     {
         $room = $em->getRepository(Room::class)->find($id);
         if (!$room) { return $this->json(['error' => 'Not found'], 404); }
+        if ($room->getStatus() !== 'open') {
+            return $this->json(['error' => 'Room already started'], 400);
+        }
+        $participantsCount = count($room->getPlayers()) + count($room->getBots());
+        if ($participantsCount < 2) {
+            return $this->json(['error' => 'Not enough participants to start (add a player or a bot)'], 400);
+        }
         $game = $tables->ensureGame($room);
         $this->realtime->notify($room, 'started');
         return $this->json(['message' => 'Started', 'gameId' => $game->getId()]);

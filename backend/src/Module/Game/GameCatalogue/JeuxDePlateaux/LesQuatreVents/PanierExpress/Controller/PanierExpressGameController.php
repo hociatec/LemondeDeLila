@@ -26,6 +26,9 @@ final class PanierExpressGameController extends AbstractController
         if (!$room) {
             return $this->json(['error' => 'Not found'], Response::HTTP_NOT_FOUND);
         }
+        if (!$this->hasEnoughParticipants($room)) {
+            return $this->json(['error' => 'Au moins deux participants (joueurs ou bots) sont nécessaires pour démarrer ce jeu.'], Response::HTTP_BAD_REQUEST);
+        }
 
         $game = $em->getRepository(Game::class)->findOneBy(['room' => $room]);
         if (!$game) {
@@ -65,6 +68,9 @@ final class PanierExpressGameController extends AbstractController
         if (!$room) {
             return $this->json(['error' => 'Not found'], Response::HTTP_NOT_FOUND);
         }
+        if (!$this->hasEnoughParticipants($room)) {
+            return $this->json(['error' => 'Au moins deux participants (joueurs ou bots) sont nécessaires pour démarrer ce jeu.'], Response::HTTP_BAD_REQUEST);
+        }
 
         $game = $em->getRepository(Game::class)->findOneBy(['room' => $room]);
         if (!$game) {
@@ -84,4 +90,8 @@ final class PanierExpressGameController extends AbstractController
         return $this->json($this->service->presentState($game->getState(), $viewer));
     }
 
+    private function hasEnoughParticipants(Room $room): bool
+    {
+        return (count($room->getPlayers()) + count($room->getBots())) >= 2;
+    }
 }

@@ -61,8 +61,9 @@ final class PanierExpressGameService implements GameEngineInterface
             $players[] = $this->buildPlayerFromParticipant($participant, $data['shoppingLists'] ?? []);
         }
 
+        // Pas de bot auto : si un seul participant, on refuse de démarrer la partie.
         if (count($players) < 2) {
-            $players[] = $this->createEphemeralBot($players, $data['shoppingLists'] ?? []);
+            throw new \RuntimeException('Au moins deux participants (joueurs ou bots) sont nécessaires pour démarrer Panier Express.');
         }
 
         $state = [

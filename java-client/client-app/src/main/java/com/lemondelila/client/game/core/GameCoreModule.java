@@ -12,6 +12,9 @@ public final class GameCoreModule implements LilaModule {
         builder.bindAuto(GameTableLauncher.class);
         builder.bindAuto(GameAnnouncer.class);
         builder.bindAuto(GameInteractionRegistry.class);
+        builder.bindAuto(com.lemondelila.client.game.core.service.GameActionService.class);
+        builder.bindAuto(com.lemondelila.client.game.core.mapper.GenericGameStateMapper.class);
+        builder.bindAuto(com.lemondelila.client.game.core.service.GameStateService.class);
     }
 
     @Override

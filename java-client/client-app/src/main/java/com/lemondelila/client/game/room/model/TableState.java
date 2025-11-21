@@ -15,6 +15,7 @@ public final class TableState {
     private String status;
     private final List<BotState> bots = new ArrayList<>();
     private final List<PlayerState> players = new ArrayList<>();
+    private boolean started;
 
     public Integer roomId() {
         return roomId;
@@ -26,6 +27,10 @@ public final class TableState {
 
     public String status() {
         return status;
+    }
+
+    public boolean started() {
+        return started;
     }
 
     public List<BotState> bots() {
@@ -40,6 +45,7 @@ public final class TableState {
         this.roomId = id;
         this.gameType = gameType;
         this.status = null;
+        this.started = false;
         bots.clear();
         players.clear();
     }
@@ -48,6 +54,7 @@ public final class TableState {
         this.roomId = null;
         this.gameType = null;
         this.status = null;
+        this.started = false;
         bots.clear();
         players.clear();
     }
@@ -68,5 +75,9 @@ public final class TableState {
 
     public void updateStatus(String status) {
         this.status = status;
+    }
+
+    public void markStarted() {
+        this.started = true;
     }
 }
