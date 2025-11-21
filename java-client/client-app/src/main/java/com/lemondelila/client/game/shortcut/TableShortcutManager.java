@@ -2,12 +2,14 @@ package com.lemondelila.client.game.shortcut;
 
 import com.lemondelila.client.framework.access.shortcut.AccessibleShortcutRegistry;
 import com.lemondelila.client.framework.core.di.Inject;
-import com.lemondelila.client.game.core.FocusCycleManager;
+import com.lemondelila.client.game.core.FocusNavigator;
 
 import javax.swing.JComponent;
 import javax.swing.KeyStroke;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.util.Objects;
 
 /**
@@ -16,10 +18,12 @@ import java.util.Objects;
 public final class TableShortcutManager {
 
     private final AccessibleShortcutRegistry shortcuts;
+    private final FocusNavigator navigator;
 
     @Inject
     public TableShortcutManager(AccessibleShortcutRegistry shortcuts) {
         this.shortcuts = Objects.requireNonNull(shortcuts, "shortcuts");
+        this.navigator = new FocusNavigator(shortcuts);
     }
 
     /**
@@ -32,7 +36,7 @@ public final class TableShortcutManager {
         if (container != null) {
             shortcuts.applyTo(container);
         }
-        new FocusCycleManager(shortcuts, focusAreas).install();
+        navigator.install(focusAreas);
     }
 
     public void registerShortcut(javax.swing.KeyStroke stroke, String description) {
@@ -54,6 +58,38 @@ public final class TableShortcutManager {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 onQuit.run();
+            }
+        });
+    }
+
+    /**
+     * Raccourcis bots (b pour ajouter, shift+b pour retirer).
+     */
+    public void bindBotShortcuts(JComponent root, Runnable onAdd, Runnable onRemove) {
+        Objects.requireNonNull(root, "root");
+        Objects.requireNonNull(onAdd, "onAdd");
+        Objects.requireNonNull(onRemove, "onRemove");
+        KeyStroke add = KeyStroke.getKeyStroke(KeyEvent.VK_B, 0);
+        KeyStroke remove = KeyStroke.getKeyStroke(KeyEvent.VK_B, InputEvent.SHIFT_DOWN_MASK);
+        registerShortcut(add, "Ajouter un bot");
+        registerShortcut(remove, "Retirer un bot");
+        InputMap windowMap = root.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        InputMap ancestorMap = root.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        ActionMap actions = root.getActionMap();
+        windowMap.put(add, "table.bot.add");
+        windowMap.put(remove, "table.bot.remove");
+        ancestorMap.put(add, "table.bot.add");
+        ancestorMap.put(remove, "table.bot.remove");
+        actions.put("table.bot.add", new javax.swing.AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                onAdd.run();
+            }
+        });
+        actions.put("table.bot.remove", new javax.swing.AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                onRemove.run();
             }
         });
     }

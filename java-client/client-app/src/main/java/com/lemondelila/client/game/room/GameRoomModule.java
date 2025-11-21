@@ -27,6 +27,8 @@ public final class GameRoomModule implements LilaModule {
         builder.bindAuto(RoomState.class);
         builder.bindAuto(RoomDetailsState.class);
         builder.bindAuto(RoomTableScreen.class);
+        builder.bindAuto(com.lemondelila.client.game.room.model.TableState.class);
+        builder.bindAuto(com.lemondelila.client.game.room.service.RoomLifecycleService.class);
     }
 
     @Override

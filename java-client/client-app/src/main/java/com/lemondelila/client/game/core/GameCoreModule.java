@@ -10,6 +10,7 @@ public final class GameCoreModule implements LilaModule {
     @Override
     public void configure(ApplicationContext.Builder builder) {
         builder.bindAuto(GameTableLauncher.class);
+        builder.bindAuto(GameAnnouncer.class);
     }
 
     @Override

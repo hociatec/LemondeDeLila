@@ -15,6 +15,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 #[Route('/api/rooms')]
 class RoomController extends AbstractController
@@ -22,6 +24,8 @@ class RoomController extends AbstractController
     public function __construct(
         private readonly RoomRealtimeNotifier $realtime,
         private readonly BotAllocator $botAllocator,
+        #[Autowire(service: 'monolog.logger.bot')]
+        private readonly LoggerInterface $botLogger,
     ) {
     }
 
@@ -257,6 +261,12 @@ class RoomController extends AbstractController
         $em->persist($bot);
         $em->flush();
 
+        $this->botLogger->info('Bot added', [
+            'roomId' => $room->getId(),
+            'botId' => $bot->getId(),
+            'botName' => $bot->getName(),
+        ]);
+
         $this->realtime->notify($room, 'bot-added', ['bot' => $this->serializeBot($bot)]);
 
         return $this->json(['bot' => $this->serializeBot($bot)], 201);
@@ -284,6 +294,12 @@ class RoomController extends AbstractController
         $room->removeBot($bot);
         $em->remove($bot);
         $em->flush();
+
+        $this->botLogger->info('Bot removed', [
+            'roomId' => $room->getId(),
+            'botId' => $bot->getId(),
+            'botName' => $bot->getName(),
+        ]);
 
         $this->realtime->notify($room, 'bot-removed', ['botId' => $botId]);
 

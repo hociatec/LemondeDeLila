@@ -1,6 +1,7 @@
 package com.lemondelila.client.game.history.view;
 
 import javax.swing.JPanel;
+import com.lemondelila.client.framework.core.di.Inject;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.util.Objects;
@@ -8,6 +9,11 @@ import java.util.Objects;
 public final class GameHistorySidebar extends JPanel {
 
     private final GameHistoryView historyView;
+
+    @Inject
+    public GameHistorySidebar() {
+        this("Historique", "Historique de table", "Evenements de la table");
+    }
 
     public GameHistorySidebar(String title,
                               String accessibleTitle,

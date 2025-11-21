@@ -35,6 +35,8 @@ public final class GameCatalogScreen extends JPanel implements Screen, AutoClose
     private int selectedSubIndex = -1;
     private ScreenManager screenManager;
     private boolean gamesVisible = false;
+    private boolean programmaticSelection = false;
+    private boolean userNavigated = false;
     private final CatalogShortcuts shortcuts;
 
     @Inject
@@ -54,7 +56,7 @@ public final class GameCatalogScreen extends JPanel implements Screen, AutoClose
             currentGames = ev.payload().games();
             applyCategories();
             if (!currentCategories.isEmpty()) {
-                view.selectCategory(0);
+                withProgrammatic(() -> view.selectCategory(0));
                 view.focusCategories();
             }
         });
@@ -108,6 +110,9 @@ public final class GameCatalogScreen extends JPanel implements Screen, AutoClose
     }
 
     private void onCategorySelected(int index) {
+        if (!programmaticSelection) {
+            userNavigated = true;
+        }
         if (index < 0 || index >= currentCategories.size()) {
             view.setSubcategories(List.of());
             view.setGames(List.of());
@@ -129,21 +134,24 @@ public final class GameCatalogScreen extends JPanel implements Screen, AutoClose
             view.setGames(filtered.stream().map(CatalogGame::name).toList());
             selectedSubCategory = selected;
             selectedSubIndex = -1;
-            view.selectSubcategory(-1);
+            withProgrammatic(() -> view.selectSubcategory(-1));
             gamesVisible = !filtered.isEmpty();
             if (!filtered.isEmpty()) {
-                view.selectGame(0);
+                withProgrammatic(() -> view.selectGame(0));
             }
             view.focusGames();
         } else {
             view.setGames(List.of());
-            view.selectSubcategory(0);
+            withProgrammatic(() -> view.selectSubcategory(0));
             view.focusSubcategories();
             gamesVisible = false;
         }
     }
 
     private void onSubCategorySelected(int index) {
+        if (!programmaticSelection) {
+            userNavigated = true;
+        }
         if (index < 0 || index >= currentSubCategories.size()) {
             view.setGames(List.of());
             gamesVisible = false;
@@ -192,6 +200,14 @@ public final class GameCatalogScreen extends JPanel implements Screen, AutoClose
      * - Dans tous les autres cas => retour direct au menu principal.
      */
     private void onEscape() {
+        // Si l'utilisateur n'a pas navigué (sélection initiale auto) et qu'aucune liste de jeux n'est visible,
+        // on quitte directement.
+        if (!userNavigated && !gamesVisible) {
+            if (screenManager != null) {
+                screenManager.show(com.lemondelila.client.application.view.menu.MainMenuScreen.ID);
+            }
+            return;
+        }
         if (gamesVisible) {
             view.setGames(List.of());
             gamesVisible = false;
@@ -202,8 +218,9 @@ public final class GameCatalogScreen extends JPanel implements Screen, AutoClose
             }
             return;
         }
-        // Si des sous-categories sont ouvertes, on remonte d'un niveau (reste dans le catalogue)
-        if (!currentSubCategories.isEmpty() || selectedSubCategory != null) {
+        // Si des sous-categories sont ouvertes ET qu'on est réellement dans ce niveau (selection sous-cat),
+        // on remonte d'un cran. Sinon on sort directement.
+        if (!currentSubCategories.isEmpty() && (selectedSubCategory != null || selectedSubIndex >= 0)) {
             currentSubCategories = Collections.emptyList();
             selectedSubCategory = null;
             selectedSubIndex = -1;
@@ -225,5 +242,14 @@ public final class GameCatalogScreen extends JPanel implements Screen, AutoClose
         return currentGames.stream()
                 .filter(g -> g.categories() != null && g.categories().contains(categoryId))
                 .toList();
+    }
+
+    private void withProgrammatic(Runnable action) {
+        programmaticSelection = true;
+        try {
+            action.run();
+        } finally {
+            programmaticSelection = false;
+        }
     }
 }
