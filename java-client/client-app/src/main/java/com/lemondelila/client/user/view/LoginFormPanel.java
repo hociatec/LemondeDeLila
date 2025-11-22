@@ -8,6 +8,7 @@ import com.lemondelila.client.framework.ui.util.ButtonUtils;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.JCheckBox;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -23,6 +24,7 @@ public final class LoginFormPanel extends JPanel {
 
     private final JTextField usernameField = new JTextField();
     private final JPasswordField passwordField = new JPasswordField();
+    private final JCheckBox rememberCredentials = new JCheckBox(Internationalization.text("home.login.remember.label"));
     private final JButton submitButton = new JButton(Internationalization.text("home.login.submit"));
     private final JButton backButton = new JButton(Internationalization.text("home.login.back"));
 
@@ -64,6 +66,15 @@ public final class LoginFormPanel extends JPanel {
 
         add(Box.createRigidArea(new Dimension(0, 24)));
 
+        rememberCredentials.setAlignmentX(Component.CENTER_ALIGNMENT);
+        AccessibleDecorator.apply(rememberCredentials, AccessibleSpec.builder()
+                .name(Internationalization.text("home.login.remember.name"))
+                .description(Internationalization.text("home.login.remember.desc"))
+                .build());
+        add(rememberCredentials);
+
+        add(Box.createRigidArea(new Dimension(0, 8)));
+
         submitButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         AccessibleDecorator.apply(submitButton, AccessibleSpec.builder()
                 .name(Internationalization.text("home.login.submit.name"))
@@ -100,6 +111,7 @@ public final class LoginFormPanel extends JPanel {
         backButton.setEnabled(!busy);
         usernameField.setEnabled(!busy);
         passwordField.setEnabled(!busy);
+        rememberCredentials.setEnabled(!busy);
     }
 
     public void focusDefaultField() {
@@ -114,8 +126,21 @@ public final class LoginFormPanel extends JPanel {
         return new LoginCredentials(usernameField.getText().trim(), passwordField.getPassword());
     }
 
+    public void setRememberCredentials(boolean enabled) {
+        rememberCredentials.setSelected(enabled);
+    }
+
+    public boolean rememberCredentialsSelected() {
+        return rememberCredentials.isSelected();
+    }
+
+    public void fillCredentials(String username, char[] password) {
+        usernameField.setText(username != null ? username : "");
+        if (password != null) {
+            passwordField.setText(String.valueOf(password));
+        }
+    }
+
     public record LoginCredentials(String username, char[] password) {
     }
 }
-
-

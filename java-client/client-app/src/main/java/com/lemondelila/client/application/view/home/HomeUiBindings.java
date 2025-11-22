@@ -8,6 +8,7 @@ import com.lemondelila.client.framework.ui.dialog.DialogService;
 import com.lemondelila.client.framework.ui.lifecycle.ApplicationLifecycle;
 import com.lemondelila.client.user.events.LoginRequested;
 import com.lemondelila.client.user.events.RegistrationRequested;
+import com.lemondelila.client.user.service.RememberedCredentialsService;
 import com.lemondelila.client.user.view.LoginFormPanel;
 import com.lemondelila.client.user.view.RegisterFormPanel;
 
@@ -28,6 +29,7 @@ final class HomeUiBindings {
     private final ActionManager actionManager;
     private final AccessibleShortcutRegistry shortcutRegistry;
     private final ApplicationLifecycle applicationLifecycle;
+    private final RememberedCredentialsService rememberedCredentialsService;
     private boolean initialized;
 
     HomeUiBindings(HomeView view,
@@ -35,13 +37,15 @@ final class HomeUiBindings {
                    DomainEventBus eventBus,
            ActionManager actionManager,
                    AccessibleShortcutRegistry shortcutRegistry,
-                   ApplicationLifecycle applicationLifecycle) {
+                   ApplicationLifecycle applicationLifecycle,
+                   RememberedCredentialsService rememberedCredentialsService) {
         this.view = Objects.requireNonNull(view, "view");
         this.dialogService = Objects.requireNonNull(dialogService, "dialogService");
         this.eventBus = Objects.requireNonNull(eventBus, "eventBus");
         this.actionManager = Objects.requireNonNull(actionManager, "actionManager");
         this.shortcutRegistry = Objects.requireNonNull(shortcutRegistry, "shortcutRegistry");
         this.applicationLifecycle = Objects.requireNonNull(applicationLifecycle, "applicationLifecycle");
+        this.rememberedCredentialsService = Objects.requireNonNull(rememberedCredentialsService, "rememberedCredentialsService");
     }
 
     AutoCloseable install(Runnable landingAction) {
@@ -50,6 +54,10 @@ final class HomeUiBindings {
             registerLandingButtons();
             initialized = true;
         }
+        rememberedCredentialsService.load().ifPresent(creds -> {
+            view.loginForm().fillCredentials(creds.username(), creds.password());
+            view.loginForm().setRememberCredentials(true);
+        });
         return registerShortcuts(landingAction);
     }
 
@@ -58,8 +66,12 @@ final class HomeUiBindings {
             if (!validateLogin(credentials)) {
                 return;
             }
+            boolean remember = view.loginForm().rememberCredentialsSelected();
+            if (!remember) {
+                rememberedCredentialsService.clear();
+            }
             view.setStatus(Internationalization.text("home.login.inprogress"));
-            eventBus.publish(new LoginRequested(credentials.username(), credentials.password()));
+            eventBus.publish(new LoginRequested(credentials.username(), credentials.password(), remember));
         });
         view.loginForm().onBack(() -> {
             view.showLanding();

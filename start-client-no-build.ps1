@@ -1,19 +1,19 @@
 <#
 Lance le client Java en (re)construisant un JAR frais, sans lancer les backends.
 
-Pré-requis :
+Pre-requis :
   - JDK accessible dans le PATH.
-  - Maven accessible dans le PATH (utilisé pour (re)générer le JAR).
+  - Maven : installe automatiquement tools\apache-maven-3.9.6 si absent du PATH.
 
 Utilisation :
   powershell -ExecutionPolicy Bypass -File .\start-client-no-build.ps1            # build + run
-  powershell -ExecutionPolicy Bypass -File .\start-client-no-build.ps1 -SkipBuild # run le dernier JAR trouvé
+  powershell -ExecutionPolicy Bypass -File .\start-client-no-build.ps1 -SkipBuild # run le dernier JAR trouve
   powershell -ExecutionPolicy Bypass -File .\start-client-no-build.ps1 -JarPath "C:\chemin\client-app-1.2.3-all.jar"
 
-Paramètres :
-  -JarPath    : chemin vers un JAR déjà généré (ignore la recherche auto).
-  -JavaOpts   : options JVM supplémentaires (par ex. '-DproxyHost=...').
-  -SkipBuild  : ne pas lancer Maven (utilise le JAR déjà présent).
+Parametres :
+  -JarPath    : chemin vers un JAR deja genere (ignore la recherche auto).
+  -JavaOpts   : options JVM supplementaires (par ex. '-DproxyHost=...').
+  -SkipBuild  : ne pas lancer Maven (utilise le JAR deja present).
 #>
 [CmdletBinding()]
 param(
@@ -34,12 +34,45 @@ if (-not $javaCmd) {
     throw "Java introuvable dans le PATH. Installez un JDK (21+) puis relancez."
 }
 
-function Resolve-Maven {
+function Ensure-Maven {
+    param([string]$Root)
+
     $mvn = Get-Command mvn -ErrorAction SilentlyContinue
-    if (-not $mvn) {
-        throw "Maven introuvable dans le PATH. Installez Maven ou ajoutez-le au PATH."
+    if ($mvn) { return $mvn.Source }
+
+    $toolsDir    = Join-Path $Root 'tools'
+    $mavenVer    = '3.9.6'
+    $archiveName = "apache-maven-$mavenVer-bin.zip"
+    $mavenHome   = Join-Path $toolsDir "apache-maven-$mavenVer"
+    $archivePath = Join-Path $toolsDir $archiveName
+
+    if (-not (Test-Path $mavenHome)) {
+        if (-not (Test-Path $toolsDir)) {
+            New-Item -ItemType Directory -Path $toolsDir | Out-Null
+        }
+
+        if (-not (Test-Path $archivePath)) {
+            Write-Host "Telechargement de Maven $mavenVer..." -ForegroundColor Cyan
+            $uri = "https://archive.apache.org/dist/maven/maven-3/$mavenVer/binaries/$archiveName"
+            Invoke-WebRequest -Uri $uri -OutFile $archivePath
+        }
+
+        Write-Host "Extraction de Maven..." -ForegroundColor Cyan
+        Expand-Archive -Path $archivePath -DestinationPath $toolsDir -Force
     }
-    return $mvn.Source
+
+    $mvnExe = Join-Path $mavenHome 'bin\mvn.cmd'
+    if (-not (Test-Path $mvnExe)) {
+        throw "Installation Maven incomplete (fichier $mvnExe introuvable)."
+    }
+
+    $env:MAVEN_HOME = $mavenHome
+    if (-not (($env:PATH -split ';') -contains "$mavenHome\bin")) {
+        $env:PATH = "$mavenHome\bin;$env:PATH"
+    }
+
+    Write-Host "Maven disponible : $mvnExe" -ForegroundColor Green
+    return $mvnExe
 }
 
 function Resolve-Jar {
@@ -52,7 +85,7 @@ function Resolve-Jar {
     }
 
     if (-not (Test-Path $target)) {
-        throw "Dossier cible absent : $target. Lancez d'abord la compilation complète."
+        throw "Dossier cible absent : $target. Lancez d'abord la compilation complete."
     }
 
     $jar = Get-ChildItem -Path $target -Filter 'client-app-*-all.jar' -File -ErrorAction SilentlyContinue |
@@ -60,19 +93,19 @@ function Resolve-Jar {
         Select-Object -First 1
 
     if (-not $jar) {
-        throw "Aucun client-app-*-all.jar trouvé dans $target. Compilez d'abord (start-lila.ps1 sans -SkipBuild)."
+        throw "Aucun client-app-*-all.jar trouve dans $target. Compilez d'abord (start-lila.ps1 sans -SkipBuild)."
     }
     return $jar.FullName
 }
 
 if (-not $SkipBuild -and -not $JarPath) {
-    $mvn = Resolve-Maven
+    $mvn = Ensure-Maven -Root $root
     Write-Host "Compilation du client (clean package -pl client-app -am -DskipTests)..." -ForegroundColor Cyan
     Push-Location $javaDir
     try {
         & $mvn -pl client-app -am clean package -DskipTests
         if ($LASTEXITCODE -ne 0) {
-            throw "La compilation Maven a échoué (code $LASTEXITCODE)."
+            throw "La compilation Maven a echoue (code $LASTEXITCODE)."
         }
     }
     finally {
@@ -82,14 +115,14 @@ if (-not $SkipBuild -and -not $JarPath) {
 
 $jarToRun = Resolve-Jar -ExplicitPath $JarPath
 
-Write-Host "Démarrage du client : $jarToRun" -ForegroundColor Cyan
+Write-Host "Demarrage du client : $jarToRun" -ForegroundColor Cyan
 Write-Host "Java    : $($javaCmd.Source)" -ForegroundColor DarkGray
 
-# Forcer UTF-8 pour éviter les libellés corrompus dans l'IHM/lecteur d'écran.
+# Forcer UTF-8 pour eviter les libelles corrompus dans l'IHM/lecteur d'ecran.
 $baseArgs = @('-Dfile.encoding=UTF-8', '-jar', $jarToRun)
 $allArgs  = $baseArgs + $JavaOpts
 
 & $javaCmd.Source @allArgs
 if ($LASTEXITCODE -ne 0) {
-    throw "Le client s'est terminé avec le code $LASTEXITCODE."
+    throw "Le client s'est termine avec le code $LASTEXITCODE."
 }

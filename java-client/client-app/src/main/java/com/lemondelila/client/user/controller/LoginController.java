@@ -1,15 +1,16 @@
 package com.lemondelila.client.user.controller;
 
-import com.lemondelila.client.user.dto.LoginResponseDto;
-import com.lemondelila.client.user.events.LoginFailed;
-import com.lemondelila.client.user.events.LoginRequested;
-import com.lemondelila.client.user.events.LoginSucceeded;
-import com.lemondelila.client.user.model.ClientSession;
 import com.lemondelila.client.framework.core.di.Inject;
 import com.lemondelila.client.framework.core.event.DomainEventBus;
 import com.lemondelila.client.framework.core.event.EventSubscriptions;
 import com.lemondelila.client.framework.core.task.TaskScheduler;
 import com.lemondelila.client.framework.network.rest.RestClient;
+import com.lemondelila.client.user.dto.LoginResponseDto;
+import com.lemondelila.client.user.events.LoginFailed;
+import com.lemondelila.client.user.events.LoginRequested;
+import com.lemondelila.client.user.events.LoginSucceeded;
+import com.lemondelila.client.user.model.ClientSession;
+import com.lemondelila.client.user.service.RememberedCredentialsService;
 
 import java.io.IOException;
 import java.util.Map;
@@ -21,6 +22,7 @@ public final class LoginController implements AutoCloseable {
     private final TaskScheduler scheduler;
     private final ClientSession session;
     private final UserOperationGuard guard;
+    private final RememberedCredentialsService rememberedCredentialsService;
     private final EventSubscriptions subscriptions = new EventSubscriptions();
 
     @Inject
@@ -28,12 +30,14 @@ public final class LoginController implements AutoCloseable {
                            RestClient restClient,
                            TaskScheduler scheduler,
                            ClientSession session,
-                           UserOperationGuard guard) {
+                           UserOperationGuard guard,
+                           RememberedCredentialsService rememberedCredentialsService) {
         this.eventBus = eventBus;
         this.restClient = restClient;
         this.scheduler = scheduler;
         this.session = session;
         this.guard = guard;
+        this.rememberedCredentialsService = rememberedCredentialsService;
         subscriptions.subscribe(eventBus, LoginRequested.class, this::handleLogin);
     }
 
@@ -54,6 +58,11 @@ public final class LoginController implements AutoCloseable {
                     throw new IOException("Token JWT absent dans la reponse");
                 }
                 session.setAuthenticated(request.username(), token);
+                if (request.rememberMe()) {
+                    rememberedCredentialsService.save(request.username(), request.password());
+                } else {
+                    rememberedCredentialsService.clear();
+                }
                 eventBus.publish(new LoginSucceeded(request.username(), token));
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
