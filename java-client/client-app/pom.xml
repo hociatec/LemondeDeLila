@@ -1,15 +1,15 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
-    <!-- Hérite du POM parent (java-client/pom.xml) -->
+    <!-- HÃ©rite du POM parent (java-client/pom.xml) -->
     <parent>
         <groupId>com.lemondelila</groupId>
         <artifactId>java-client</artifactId>
-        <version>1.0.8</version>
+        <version>1.0.9</version>
     </parent>
 
     <artifactId>client-app</artifactId>
@@ -87,7 +87,7 @@
 
     <build>
         <plugins>
-            <!-- Génère le .jar avec la classe principale -->
+            <!-- GÃ©nÃ¨re le .jar avec la classe principale -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
@@ -102,7 +102,7 @@
                 </configuration>
             </plugin>
 
-            <!-- Copie les dépendances dans target/dependency (utilisé par start-lila.ps1) -->
+            <!-- Copie les dÃ©pendances dans target/dependency (utilisÃ© par start-lila.ps1) -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
@@ -121,7 +121,7 @@
                 </executions>
             </plugin>
 
-            <!-- Produit un JAR autonome embarquant toutes les dépendances -->
+            <!-- Produit un JAR autonome embarquant toutes les dÃ©pendances -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
@@ -205,3 +205,4 @@
     </profiles>
 
 </project>
+
