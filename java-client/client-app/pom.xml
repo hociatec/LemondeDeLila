@@ -185,9 +185,13 @@
                                     <attach>true</attach>
                                     <obfuscate>true</obfuscate>
                                     <optimize>true</optimize>
-                                    <injar>${project.build.directory}/${project.artifactId}-${project.version}-all.jar</injar>
-                                    <outjar>${project.build.directory}/${project.artifactId}-${project.version}-obf.jar</outjar>
+                                    <injar>${project.build.finalName}-all.jar</injar>
+                                    <outjar>${project.build.finalName}-obf.jar</outjar>
                                     <options>
+                                        <!-- Add JDK modules so ProGuard can resolve java.lang.Object and Swing classes on JDK 21 -->
+                                        <option>-libraryjars ${java.home}/jmods/java.base.jmod(!module-info.class)</option>
+                                        <option>-libraryjars ${java.home}/jmods/java.desktop.jmod(!module-info.class)</option>
+                                        <option>-dontpreverify</option>
                                         <option>-dontnote</option>
                                         <option>-dontoptimize</option>
                                         <option>-dontwarn</option>
