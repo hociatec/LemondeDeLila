@@ -23,8 +23,9 @@ public final class GameHistoryView extends JPanel {
 
     private void buildUi(String title, String accessibleName, String accessibleDescription) {
         historyArea.setEditable(false);
-        historyArea.setLineWrap(true);
-        historyArea.setWrapStyleWord(true);
+        historyArea.setLineWrap(false); // pas de coupure automatique pour garder les messages sur une seule ligne
+        historyArea.setWrapStyleWord(false);
+        historyArea.setColumns(60);
         historyArea.setFocusable(true);
         AccessibleDecorator.apply(historyArea, AccessibleSpec.builder()
                 .name(accessibleName != null ? accessibleName : "Historique de la partie")
@@ -32,6 +33,7 @@ public final class GameHistoryView extends JPanel {
                 .build());
 
         JScrollPane scrollPane = new JScrollPane(historyArea);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         if (title != null && !title.isBlank()) {
             scrollPane.setBorder(BorderFactory.createTitledBorder(title));
         } else {

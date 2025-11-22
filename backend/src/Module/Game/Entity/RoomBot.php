@@ -4,6 +4,7 @@ namespace App\Module\Game\Entity;
 
 use App\Module\Game\Repository\RoomBotRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: RoomBotRepository::class)]
 #[ORM\Table(name: 'room_bot')]
@@ -12,6 +13,7 @@ class RoomBot
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
+    #[Groups(['room:read'])]
     private ?int $id = null;
 
     #[ORM\ManyToOne(targetEntity: Room::class, inversedBy: 'bots')]
@@ -19,6 +21,7 @@ class RoomBot
     private Room $room;
 
     #[ORM\Column(type: 'string', length: 80)]
+    #[Groups(['room:read'])]
     private string $name;
 
     #[ORM\Column(type: 'datetime_immutable')]

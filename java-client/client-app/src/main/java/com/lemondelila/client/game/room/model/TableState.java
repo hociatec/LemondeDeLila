@@ -16,6 +16,9 @@ public final class TableState {
     private final List<BotState> bots = new ArrayList<>();
     private final List<PlayerState> players = new ArrayList<>();
     private boolean started;
+    private int turnIndex = 0;
+    private int turnRound = 1;
+    private int turnDirection = 1;
 
     public Integer roomId() {
         return roomId;
@@ -41,6 +44,18 @@ public final class TableState {
         return Collections.unmodifiableList(players);
     }
 
+    public int turnIndex() {
+        return turnIndex;
+    }
+
+    public int turnRound() {
+        return turnRound;
+    }
+
+    public int turnDirection() {
+        return turnDirection;
+    }
+
     public void setRoom(Integer id, String gameType) {
         this.roomId = id;
         this.gameType = gameType;
@@ -48,6 +63,9 @@ public final class TableState {
         this.started = false;
         bots.clear();
         players.clear();
+        this.turnIndex = 0;
+        this.turnRound = 1;
+        this.turnDirection = 1;
     }
 
     public void clear() {
@@ -57,6 +75,9 @@ public final class TableState {
         this.started = false;
         bots.clear();
         players.clear();
+        this.turnIndex = 0;
+        this.turnRound = 1;
+        this.turnDirection = 1;
     }
 
     public void updateBots(List<BotState> list) {
@@ -75,6 +96,12 @@ public final class TableState {
 
     public void updateStatus(String status) {
         this.status = status;
+    }
+
+    public void updateTurn(int round, int index, int direction) {
+        this.turnRound = round;
+        this.turnIndex = index;
+        this.turnDirection = direction == -1 ? -1 : 1;
     }
 
     public void markStarted() {

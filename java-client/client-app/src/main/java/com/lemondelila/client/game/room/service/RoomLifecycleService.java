@@ -22,27 +22,18 @@ public final class RoomLifecycleService implements AutoCloseable {
     public RoomLifecycleService(TableState tableState, DomainEventBus eventBus) {
         this.tableState = tableState;
         subscriptions.subscribe(eventBus, RoomUpdated.class, e -> {
-            if (e.room().id() != null) {
-                tableState.setRoom(e.room().id(), e.room().gameType());
-                tableState.updateBots(e.room().bots());
-                tableState.updatePlayers(e.room().players());
+            if (e.room().id() == null) {
+                return;
             }
+            // Toujours aligné sur l'état back.
+            tableState.setRoom(e.room().id(), e.room().gameType());
+            tableState.updateBots(e.room().bots());
+            tableState.updatePlayers(e.room().players());
+            tableState.updateStatus(e.room().status());
         });
-        subscriptions.subscribe(eventBus, BotAdded.class, e -> {
-            if (tableState.roomId() != null && tableState.roomId().equals(e.roomId()) && e.bot() != null) {
-                var bots = tableState.bots();
-                var mutable = new java.util.ArrayList<>(bots);
-                mutable.add(e.bot());
-                tableState.updateBots(mutable);
-            }
-        });
-        subscriptions.subscribe(eventBus, BotRemoved.class, e -> {
-            if (tableState.roomId() != null && tableState.roomId().equals(e.roomId())) {
-                var mutable = new java.util.ArrayList<>(tableState.bots());
-                mutable.removeIf(b -> b.id() != null && b.id().equals(e.botId()));
-                tableState.updateBots(mutable);
-            }
-        });
+        // On s'aligne uniquement sur RoomUpdated (pas de cache local).
+        subscriptions.subscribe(eventBus, BotAdded.class, e -> { });
+        subscriptions.subscribe(eventBus, BotRemoved.class, e -> { });
         subscriptions.subscribe(eventBus, BotOperationFailed.class, e -> {
             // no-op, but could expose a state flag if needed
         });

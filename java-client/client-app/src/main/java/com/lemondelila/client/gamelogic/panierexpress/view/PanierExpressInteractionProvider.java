@@ -67,8 +67,9 @@ public final class PanierExpressInteractionProvider implements GameInteractionPr
                 primary,
                 scheduler
         );
+        controller.setParticipantGate(() -> (tableState.players().size() + tableState.bots().size()) >= 2);
         return new GenericGameInteractionComponent(controller,
-                new GameActionEmitter(announcer, historySidebar),
+                new GameActionEmitter(announcer, historySidebar, history),
                 history,
                 tableState,
                 focusHighlighter,

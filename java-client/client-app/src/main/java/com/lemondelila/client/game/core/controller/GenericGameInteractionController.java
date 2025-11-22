@@ -5,6 +5,7 @@ import com.lemondelila.client.game.core.model.GenericGameState;
 import com.lemondelila.client.game.core.model.PrimaryActionDescriptor;
 import com.lemondelila.client.game.core.service.GameStateService;
 import com.lemondelila.client.framework.core.task.TaskScheduler;
+import java.util.function.BooleanSupplier;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -27,6 +28,7 @@ public final class GenericGameInteractionController {
     private final AtomicBoolean detached = new AtomicBoolean(false);
     private volatile Integer roomId;
     private volatile Listener listener;
+    private volatile BooleanSupplier participantGate;
 
     public GenericGameInteractionController(String gameType,
                                             GameStateService states,
@@ -54,6 +56,9 @@ public final class GenericGameInteractionController {
     public void refresh() {
         Integer id = roomId;
         if (id == null || detached.get()) return;
+        if (participantGate != null && !participantGate.getAsBoolean()) {
+            return;
+        }
         scheduler.runAsync(() -> {
             try {
                 GenericGameState state = states.fetchState(gameType, id);
@@ -70,12 +75,20 @@ public final class GenericGameInteractionController {
         if (primaryAction == null) {
             return;
         }
+        if (participantGate != null && !participantGate.getAsBoolean()) {
+            notifyError("Impossible de démarrer : ajoutez au moins un autre joueur ou un bot.");
+            return;
+        }
         sendActions(Collections.singletonList(primaryAction.action()));
     }
 
     public void sendActions(List<ActionRequest> actions) {
         Integer id = roomId;
         if (id == null || detached.get()) return;
+        if (participantGate != null && !participantGate.getAsBoolean()) {
+            notifyError("Action impossible : ajoutez au moins un autre joueur ou un bot.");
+            return;
+        }
         scheduler.runAsync(() -> {
             try {
                 GenericGameState state = states.sendActions(gameType, id, actions);
@@ -91,6 +104,10 @@ public final class GenericGameInteractionController {
     private void notifyState(GenericGameState state) {
         if (detached.get()) return;
         Optional.ofNullable(listener).ifPresent(l -> l.onState(state));
+    }
+
+    public void setParticipantGate(BooleanSupplier gate) {
+        this.participantGate = gate;
     }
 
     private void notifyError(String message) {

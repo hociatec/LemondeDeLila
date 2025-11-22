@@ -11,7 +11,7 @@ import com.lemondelila.client.game.catalog.event.CatalogRequested;
 import com.lemondelila.client.game.catalog.model.CatalogPayload;
 import com.lemondelila.client.game.catalog.service.GameCatalogService;
 import com.lemondelila.client.game.core.GameTableLauncher;
-import com.lemondelila.client.game.history.controller.GameHistoryController;
+import com.lemondelila.client.game.core.GameAnnouncer;
 import com.lemondelila.client.game.room.model.RoomState;
 import com.lemondelila.client.game.room.service.RoomApiService;
 import com.lemondelila.client.game.room.model.RoomDetailsState;
@@ -24,7 +24,7 @@ public final class GameCatalogController implements AutoCloseable {
     private final TaskScheduler scheduler;
     private final EventSubscriptions subscriptions = new EventSubscriptions();
     private final GameTableLauncher tableLauncher;
-    private final GameHistoryController history;
+    private final GameAnnouncer announcer;
     private final RoomApiService roomApi;
     private final RoomDetailsState roomDetailsState;
 
@@ -33,14 +33,14 @@ public final class GameCatalogController implements AutoCloseable {
                                  DomainEventBus eventBus,
                                  TaskScheduler scheduler,
                                  GameTableLauncher tableLauncher,
-                                 GameHistoryController history,
+                                 GameAnnouncer announcer,
                                  RoomApiService roomApi,
                                  RoomDetailsState roomDetailsState) {
         this.service = service;
         this.eventBus = eventBus;
         this.scheduler = scheduler;
         this.tableLauncher = tableLauncher;
-        this.history = history;
+        this.announcer = announcer;
         this.roomApi = roomApi;
         this.roomDetailsState = roomDetailsState;
         subscriptions.subscribe(eventBus, CatalogRequested.class, ev -> fetchAll());
@@ -79,7 +79,7 @@ public final class GameCatalogController implements AutoCloseable {
             tableLauncher.createTemporaryTable(gameCode, name, maxPlayers, isPrivate);
             String msg = String.format("Table \"%s\" (jeu %s) créée (id=%s), max %d joueurs, privée=%s.",
                     name, gameCode, room != null ? room.id() : "?", maxPlayers, isPrivate ? "oui" : "non");
-            history.addEntry(msg);
+            announcer.announce(msg);
             if (room != null && room.id() != null) {
                 roomDetailsState.setRoomId(room.id());
                 roomDetailsState.setGameType(gameCode);
@@ -89,11 +89,11 @@ public final class GameCatalogController implements AutoCloseable {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             String err = "Création de table interrompue";
-            history.addEntry(err);
+            announcer.announce(err);
             return ControllerResult.status(err);
         } catch (Exception e) {
             String err = "Création de table impossible : " + clean(e.getMessage());
-            history.addEntry(err);
+            announcer.announce(err);
             return ControllerResult.status(err);
         }
     }

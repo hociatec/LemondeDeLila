@@ -1,8 +1,9 @@
-package com.lemondelila.client.game.shortcut;
+package com.lemondelila.client.game.shortcut.controller;
 
 import com.lemondelila.client.framework.access.shortcut.AccessibleShortcutRegistry;
 import com.lemondelila.client.framework.core.di.Inject;
 import com.lemondelila.client.game.core.FocusNavigator;
+import com.lemondelila.client.game.shortcut.model.ShortcutEntry;
 
 import javax.swing.JComponent;
 import javax.swing.KeyStroke;
@@ -10,6 +11,9 @@ import javax.swing.ActionMap;
 import javax.swing.InputMap;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -19,6 +23,7 @@ public final class TableShortcutManager {
 
     private final AccessibleShortcutRegistry shortcuts;
     private final FocusNavigator navigator;
+    private final List<ShortcutEntry> entries = new ArrayList<>();
 
     @Inject
     public TableShortcutManager(AccessibleShortcutRegistry shortcuts) {
@@ -28,7 +33,7 @@ public final class TableShortcutManager {
 
     /**
      * Installe la navigation de base (Tab / Shift+Tab) entre les zones.
-     * @param container composant racine qui re��oit la description des raccourcis (inutile pour le cycle)
+     * @param container composant racine qui re�oit la description des raccourcis (inutile pour le cycle)
      * @param focusAreas zones focusables (ordre de cycle)
      */
     public void installNavigation(JComponent container, JComponent... focusAreas) {
@@ -41,6 +46,9 @@ public final class TableShortcutManager {
 
     public void registerShortcut(javax.swing.KeyStroke stroke, String description) {
         shortcuts.register(stroke, description);
+        if (stroke != null && description != null) {
+            entries.add(new ShortcutEntry(stroke.toString(), description));
+        }
     }
 
     /**
@@ -92,7 +100,26 @@ public final class TableShortcutManager {
     }
 
     /**
-     * Raccourci r��capitulatif (ex : 'w') sur un composant racine.
+     * Raccourci Echap pour sortir ou remonter.
+     */
+    public void bindEscape(JComponent root, Runnable onEscape) {
+        Objects.requireNonNull(root, "root");
+        Objects.requireNonNull(onEscape, "onEscape");
+        KeyStroke esc = KeyStroke.getKeyStroke("ESCAPE");
+        registerShortcut(esc, "Retour");
+        InputMap map = root.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        ActionMap actions = root.getActionMap();
+        map.put(esc, "table.escape");
+        actions.put("table.escape", new javax.swing.AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                onEscape.run();
+            }
+        });
+    }
+
+    /**
+     * Raccourci r�capitulatif (ex : 'w') sur un composant racine.
      */
     public void bindSummary(JComponent root, Runnable onSummary) {
         Objects.requireNonNull(root, "root");
@@ -108,5 +135,53 @@ public final class TableShortcutManager {
                 onSummary.run();
             }
         });
+    }
+
+    /**
+     * Raccourci tour en cours (ex : 't') sur un composant racine.
+     */
+    public void bindTurnInfo(JComponent root, Runnable onTurnInfo) {
+        Objects.requireNonNull(root, "root");
+        Objects.requireNonNull(onTurnInfo, "onTurnInfo");
+        KeyStroke turn = KeyStroke.getKeyStroke(KeyEvent.VK_T, 0);
+        registerShortcut(turn, "Information de tour");
+        InputMap windowMap = root.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        ActionMap actions = root.getActionMap();
+        windowMap.put(turn, "table.turn.info");
+        actions.put("table.turn.info", new javax.swing.AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                onTurnInfo.run();
+            }
+        });
+    }
+
+    /**
+     * Binde en une fois les raccourcis d'info (w pour participants, t pour tour en cours).
+     */
+    public void bindInfoShortcuts(JComponent root, Runnable onSummary, Runnable onTurnInfo) {
+        bindSummary(root, onSummary);
+        bindTurnInfo(root, onTurnInfo);
+    }
+
+    /**
+     * Binde l'ensemble des raccourcis de table (infos, bots, quit) en une fois.
+     */
+    public void bindAll(JComponent root,
+                        Runnable onSummary,
+                        Runnable onTurnInfo,
+                        Runnable onAddBot,
+                        Runnable onRemoveBot,
+                        Runnable onQuit) {
+        bindInfoShortcuts(root, onSummary, onTurnInfo);
+        bindBotShortcuts(root, onAddBot, onRemoveBot);
+        bindQuit(root, onQuit);
+    }
+
+    /**
+     * Fournit le modèle des raccourcis enregistrés (pour une éventuelle vue d'aide).
+     */
+    public List<ShortcutEntry> shortcutsModel() {
+        return Collections.unmodifiableList(entries);
     }
 }

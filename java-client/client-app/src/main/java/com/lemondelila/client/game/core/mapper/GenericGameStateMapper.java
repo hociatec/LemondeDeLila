@@ -55,6 +55,9 @@ public final class GenericGameStateMapper {
         if (json.has("board")) {
             extras.put("board", json.get("board"));
         }
+        if (json.has("turn")) {
+            extras.put("turn", json.get("turn"));
+        }
 
         return new GenericGameState(status, phase, round, turnIndex, lastRoll, logs, pending, extras);
     }

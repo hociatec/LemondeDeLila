@@ -4,6 +4,7 @@ import com.lemondelila.client.framework.access.AccessibleDecorator;
 import com.lemondelila.client.framework.access.AccessibleSpec;
 import com.lemondelila.client.framework.access.FocusHighlighter;
 import com.lemondelila.client.game.history.view.GameHistorySidebar;
+import com.lemondelila.client.game.turn.view.TurnView;
 
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
@@ -21,10 +22,12 @@ public final class RoomTableView extends JPanel {
     private final JLabel header = new JLabel();
     private final JLabel interactionTitle = new JLabel();
     private final GameHistorySidebar historySidebar;
+    private final TurnView turnView;
 
     public RoomTableView(FocusHighlighter focusHighlighter, GameHistorySidebar historySidebar) {
         super(new BorderLayout(8, 8));
         this.historySidebar = Objects.requireNonNull(historySidebar, "historySidebar");
+        this.turnView = new TurnView(focusHighlighter);
         buildUi(focusHighlighter);
     }
 
@@ -43,6 +46,7 @@ public final class RoomTableView extends JPanel {
         titles.add(header);
         titles.add(interactionTitle);
         left.add(titles, BorderLayout.NORTH);
+        left.add(turnView, BorderLayout.SOUTH);
         left.add(interactionPanel, BorderLayout.CENTER);
 
         add(left, BorderLayout.CENTER);
@@ -75,5 +79,9 @@ public final class RoomTableView extends JPanel {
 
     public void focusInteraction() {
         interactionPanel.requestFocusInWindow();
+    }
+
+    public TurnView turnView() {
+        return turnView;
     }
 }

@@ -33,8 +33,9 @@ public final class GameRoomModule implements LilaModule {
 
     @Override
     public void start(ApplicationContext context) {
-        // Warm controller to subscribe immediately.
+        // Warm services/controllers to subscribe immediately.
         context.get(RoomController.class);
+        context.get(com.lemondelila.client.game.room.service.RoomLifecycleService.class);
     }
 
     @Override

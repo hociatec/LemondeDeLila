@@ -18,17 +18,12 @@ use App\Module\Game\Shared\Action\ActionResolver;
 use App\Module\Game\Shared\Dice\DiceRoll;
 use App\Module\Game\Shared\Dice\DiceService;
 use App\Module\User\Entity\User;
-use App\Module\Game\Shared\Turn\TurnManager;
-use App\Module\Game\Shared\Turn\TurnState;
 
 final class PanierExpressGameService implements GameEngineInterface
 {
     private const GAME_TYPE = 'panier-express';
     private const BOARD_SIZE = 40;
     private const MAX_CHAINED_ACTIONS = 5;
-
-    /** @var array<string,string> */
-    private array $courseCatalog = [];
 
     public function __construct(
         private readonly PanierExpressService $reference,
@@ -43,160 +38,6 @@ final class PanierExpressGameService implements GameEngineInterface
         ),
         private readonly PanierExpressRandomizerInterface $randomizer = new NativePanierExpressRandomizer(),
     ) {
-    }
-
-    private function neighborIndex(array $state, int $playerIndex, string $direction): ?int
-    {
-        $players = $state['players'] ?? [];
-        $count = count($players);
-        if ($count <= 1) {
-            return null;
-        }
-        if ($direction === 'left') {
-            return ($playerIndex - 1 + $count) % $count;
-        }
-        return ($playerIndex + 1) % $count;
-    }
-
-    private function passCardInDirection(array &$state, string $direction): void
-    {
-        $players = $state['players'] ?? [];
-        $count = count($players);
-        if ($count <= 1) {
-            return;
-        }
-        $passing = [];
-        foreach (array_keys($players) as $index) {
-            $passing[$index] = $this->removeRandomCourseFromPlayer($state, (int)$index, true);
-        }
-        foreach ($passing as $index => $item) {
-            if ($item === null) {
-                continue;
-            }
-            $target = $this->neighborIndex($state, (int)$index, $direction);
-            if ($target === null) {
-                continue;
-            }
-            $this->addCourseToInventory($state, $target, $item);
-            $this->log($state, sprintf('%s transmet %s à %s.', $state['players'][$index]['username'], $item, $state['players'][$target]['username']));
-        }
-    }
-
-    private function collectivePoolExchange(array &$state): void
-    {
-        $pool = [];
-        foreach (array_keys($state['players'] ?? []) as $index) {
-            $card = $this->removeRandomCourseFromPlayer($state, (int)$index, true);
-            if ($card !== null) {
-                $pool[] = ['item' => $card, 'from' => (int)$index];
-            }
-        }
-        if ($pool === []) {
-            return;
-        }
-        $items = array_column($pool, 'item');
-        $receivers = array_column($pool, 'from');
-        $this->randomizer->shuffle($items);
-        foreach ($receivers as $idx => $receiver) {
-            $item = $items[$idx] ?? null;
-            if ($item === null) {
-                continue;
-            }
-            $this->addCourseToInventory($state, $receiver, $item);
-        }
-    }
-
-    private function mixInventories(array &$state, int $playerIndex): void
-    {
-        $target = $this->findRandomOtherPlayerIndex($state, $playerIndex);
-        if ($target === null) {
-            return;
-        }
-        $pool = array_merge(
-            $state['players'][$playerIndex]['inventory'] ?? [],
-            $state['players'][$target]['inventory'] ?? []
-        );
-        if ($pool === []) {
-            return;
-        }
-        $this->randomizer->shuffle($pool);
-        $state['players'][$playerIndex]['inventory'] = [];
-        $state['players'][$target]['inventory'] = [];
-        foreach ($pool as $i => $item) {
-            $receiver = ($i % 2 === 0) ? $playerIndex : $target;
-            $this->addCourseToInventory($state, $receiver, $item);
-        }
-    }
-
-    private function swapRandomCourseBetween(array &$state, int $firstIndex, int $secondIndex): void
-    {
-        $first = $this->removeRandomCourseFromPlayer($state, $firstIndex, true);
-        $second = $this->removeRandomCourseFromPlayer($state, $secondIndex, true);
-        if ($first !== null) {
-            $this->addCourseToInventory($state, $secondIndex, $first);
-        }
-        if ($second !== null) {
-            $this->addCourseToInventory($state, $firstIndex, $second);
-        }
-    }
-
-    private function swapAllCourses(array &$state, int $firstIndex, int $secondIndex): void
-    {
-        $firstInv = $state['players'][$firstIndex]['inventory'] ?? [];
-        $secondInv = $state['players'][$secondIndex]['inventory'] ?? [];
-        $state['players'][$firstIndex]['inventory'] = array_values($secondInv);
-        $state['players'][$secondIndex]['inventory'] = array_values($firstInv);
-
-        $firstBasket = $state['players'][$firstIndex]['basket'] ?? [];
-        $secondBasket = $state['players'][$secondIndex]['basket'] ?? [];
-        $state['players'][$firstIndex]['basket'] = array_values($secondBasket);
-        $state['players'][$secondIndex]['basket'] = array_values($firstBasket);
-
-        $this->refreshCheckoutFlag($state, $firstIndex);
-        $this->refreshCheckoutFlag($state, $secondIndex);
-    }
-
-    private function removeCourseByCategory(array &$state, int $playerIndex, string $category): ?string
-    {
-        $this->ensureCourseCatalog();
-        $inventory = &$state['players'][$playerIndex]['inventory'];
-        if (is_array($inventory)) {
-            foreach ($inventory as $idx => $item) {
-                $cat = $this->courseCategory((string)$item);
-                if ($cat === $category) {
-                    $value = $inventory[$idx];
-                    unset($inventory[$idx]);
-                    $inventory = array_values($inventory);
-                    return $value;
-                }
-            }
-        }
-        return null;
-    }
-
-    private function ensureCourseCatalog(): void
-    {
-        if ($this->courseCatalog !== []) {
-            return;
-        }
-        $reference = $this->reference->referenceData();
-        foreach ($reference['courses']['fruits'] ?? [] as $card) {
-            $name = (string)($card['name'] ?? '');
-            if ($name !== '') {
-                $this->courseCatalog[$name] = 'fruit';
-            }
-        }
-        foreach ($reference['courses']['vegetables'] ?? [] as $card) {
-            $name = (string)($card['name'] ?? '');
-            if ($name !== '') {
-                $this->courseCatalog[$name] = 'vegetable';
-            }
-        }
-    }
-
-    private function courseCategory(string $item): ?string
-    {
-        return $this->courseCatalog[$item] ?? null;
     }
 
     public function getType(): string
@@ -250,8 +91,6 @@ final class PanierExpressGameService implements GameEngineInterface
             'lastRoll' => null,
         ];
 
-        $this->syncTurnMeta($state);
-
         return $this->runBotTurns($state);
     }
 
@@ -300,6 +139,50 @@ final class PanierExpressGameService implements GameEngineInterface
                 case 'DRAW_CARD':
                     $deck = strtolower((string) ($action->payload['deck'] ?? 'course'));
                     $this->drawFromDeck($state, $playerIndex, $deck);
+                    break;
+
+                case 'EXCHANGE_REQUEST':
+                    if (($state['pending']['type'] ?? null) === 'exchange') {
+                        $targetId = (int) ($action->payload['targetPlayerId'] ?? 0);
+                        $giveItem = $action->payload['giveItem'] ?? null;
+                        $takeItem = $action->payload['takeItem'] ?? null;
+                        $players = &$state['players'];
+
+                        $targetIndex = $this->locatePlayer($state, $targetId);
+                        if ($targetIndex === -1 && count($players) > 1) {
+                            $targetIndex = ($playerIndex + 1) % count($players);
+                        }
+
+                        // Déplace un item de l'inventaire du joueur vers le target si demandé.
+                        if ($giveItem !== null && $targetIndex !== -1) {
+                            $srcInv = &$players[$playerIndex]['inventory'];
+                            $dstInv = &$players[$targetIndex]['inventory'];
+                            $key = array_search($giveItem, $srcInv ?? [], true);
+                            if ($key !== false) {
+                                unset($srcInv[$key]);
+                                $dstInv[] = $giveItem;
+                                $this->log($state, sprintf('%s échange %s avec %s.', $players[$playerIndex]['username'], $giveItem, $players[$targetIndex]['username']));
+                            } else {
+                                $this->log($state, sprintf('%s ne possède pas %s pour l\'échange.', $players[$playerIndex]['username'], $giveItem), 'warning');
+                            }
+                        }
+
+                        // Récupère un item du target si demandé.
+                        if ($takeItem !== null && $targetIndex !== -1) {
+                            $tInv = &$players[$targetIndex]['inventory'];
+                            $key = array_search($takeItem, $tInv ?? [], true);
+                            if ($key !== false) {
+                                unset($tInv[$key]);
+                                $players[$playerIndex]['inventory'][] = $takeItem;
+                                $this->log($state, sprintf('%s récupère %s de %s.', $players[$playerIndex]['username'], $takeItem, $players[$targetIndex]['username']));
+                            } else {
+                                $this->log($state, sprintf('%s ne peut pas récupérer %s (non trouvé chez %s).', $players[$playerIndex]['username'], $takeItem, $players[$targetIndex]['username']), 'warning');
+                            }
+                        }
+
+                        $state['pending'] = null;
+                        $this->advanceTurn($state, $playerIndex);
+                    }
                     break;
 
                 case 'QUIZ_VALIDATE':
@@ -509,8 +392,6 @@ final class PanierExpressGameService implements GameEngineInterface
             $this->advanceTurn($state, $playerIndex);
         }
 
-        $this->syncTurnMeta($state);
-
         return $state;
     }
 
@@ -693,7 +574,7 @@ final class PanierExpressGameService implements GameEngineInterface
                 break;
 
             case PanierExpressTileAction::DRAW_EXCHANGE:
-                $this->drawExchangeCard($state, $playerIndex);
+                $this->drawExchangeCardWithPending($state, $playerIndex);
                 break;
 
             case PanierExpressTileAction::START_QUIZ:
@@ -764,15 +645,6 @@ final class PanierExpressGameService implements GameEngineInterface
 
     private function drawCourseCard(array &$state, int $playerIndex): void
     {
-        if ($this->consumeDrawBlock($state, $playerIndex)) {
-            $this->log(
-                $state,
-                sprintf('%s ne peut pas piocher de carte Courses ce tour.', $state['players'][$playerIndex]['username']),
-                'warning'
-            );
-            return;
-        }
-
         $card = $this->deckManager->drawCard($state, PanierExpressDeckManager::DECK_COURSES, $this->randomizer);
         if ($card === null) {
             $this->log($state, 'La pioche Courses est vide.', 'warning');
@@ -792,544 +664,52 @@ final class PanierExpressGameService implements GameEngineInterface
             $player['inventory'][] = $item;
             $this->log($state, sprintf('%s ajoute %s à son panier pour un échange futur.', $player['username'], $item));
         }
-
-        $player['lastGain'] = $item;
     }
 
     private function drawEventCard(array &$state, int $playerIndex): void
     {
         $card = $this->deckManager->drawCard($state, PanierExpressDeckManager::DECK_EVENT, $this->randomizer);
         if ($card === null) {
-            $this->log($state, 'La pioche evenement est vide.', 'warning');
+            $this->log($state, 'La pioche Événement est vide.', 'warning');
             return;
         }
 
-        $title = $card['title'] ?? 'Evenement';
+        $title = $card['title'] ?? 'Événement';
         $effect = $card['effect'] ?? '';
 
-        $this->log($state, sprintf('Carte evenement : %s. %s', $title, $effect));
+        $this->log($state, sprintf('Carte événement : %s. %s', $title, $effect));
 
-        $this->handleEventEffect($state, $playerIndex, $effect);
-    }
-
-    private function handleEventEffect(array &$state, int $playerIndex, string $effect): void
-    {
         $normalized = $this->normalizeText($effect);
-        if ($normalized === '') {
+        if (str_contains($normalized, 'avance de 2')) {
+            $this->adjustPosition($state, $playerIndex, 2, 0);
             return;
         }
-
-        if (str_contains($normalized, 'pioche 2 cartes courses') || str_contains($normalized, 'pioche deux cartes courses')) {
-            $this->drawCourseCard($state, $playerIndex);
-            $this->drawCourseCard($state, $playerIndex);
+        if (str_contains($normalized, 'recule de 3')) {
+            $this->adjustPosition($state, $playerIndex, -3, 0);
             return;
         }
-
-        if (str_contains($normalized, 'pioche une carte courses') || str_contains($normalized, 'gagne un fruit') || str_contains($normalized, 'gagne une carte courses')) {
-            $this->drawCourseCard($state, $playerIndex);
-            return;
-        }
-
-        if (str_contains($normalized, 'tous les joueurs piochent')) {
-            foreach (array_keys($state['players'] ?? []) as $index) {
-                $this->drawCourseCard($state, (int)$index);
-            }
-            return;
-        }
-
-        if (str_contains($normalized, 'tous les joueurs sur un stand bio piochent')) {
-            $this->drawForPlayersOnStand($state, 'bio');
-            return;
-        }
-
-        if (str_contains($normalized, 'tous les joueurs presents sur ton stand')) {
-            $this->drawForPlayersOnSameTile($state, $playerIndex);
-            return;
-        }
-
-        if (preg_match('/avance de ([0-9]+)/', $normalized, $matches)) {
-            $this->adjustPosition($state, $playerIndex, (int)$matches[1], 0);
-            return;
-        }
-
-        if (preg_match('/recule de ([0-9]+)/', $normalized, $matches)) {
-            $this->adjustPosition($state, $playerIndex, -1 * (int)$matches[1], 0);
-            return;
-        }
-
-        if (str_contains($normalized, 'perds ton prochain tour') || str_contains($normalized, 'perd ton prochain tour') || str_contains($normalized, 'passe ton prochain tour')) {
+        if (str_contains($normalized, 'perds ton prochain tour') || str_contains($normalized, 'perd ton prochain tour')) {
             $state['players'][$playerIndex]['skipTurns'] = ($state['players'][$playerIndex]['skipTurns'] ?? 0) + 1;
-            return;
         }
-
-        if (str_contains($normalized, 'rejoue immediatement')) {
-            $this->grantExtraTurn($state, $playerIndex);
-            return;
-        }
-
-        if (str_contains($normalized, 'pioche inconnue') || str_contains($normalized, 'rien ne se passe')) {
-            return;
-        }
-
-        if (str_contains($normalized, 'pioche une carte courses bonus')) {
+        if (str_contains($normalized, 'pioche une carte courses')) {
             $this->drawCourseCard($state, $playerIndex);
-            return;
-        }
-
-        if (str_contains($normalized, 'pioche une carte courses') || str_contains($normalized, 'gagne une carte courses')) {
-            $this->drawCourseCard($state, $playerIndex);
-            return;
-        }
-
-        if (str_contains($normalized, 'ne peut pas piocher') || str_contains($normalized, 'ne pioche rien ce tour')) {
-            $this->blockDrawForPlayer($state, $playerIndex);
-            return;
-        }
-
-        if (str_contains($normalized, 'compare') && str_contains($normalized, 'nombre de cartes')) {
-            $this->penalizeLargestInventory($state);
-            return;
-        }
-
-        if (str_contains($normalized, 'prends lui une carte courses au hasard')) {
-            $target = $this->findRandomOtherPlayerIndex($state, $playerIndex);
-            if ($target !== null) {
-                $this->stealRandomCourse($state, $playerIndex, $target, false);
-            }
-            return;
-        }
-
-        if (str_contains($normalized, 'donne en une a un joueur')) {
-            $target = $this->findRandomOtherPlayerIndex($state, $playerIndex);
-            if ($target !== null) {
-                $this->giveRandomCourseToPlayer($state, $playerIndex, $target);
-            }
-            return;
-        }
-
-        if (str_contains($normalized, 'si tu as 3 cartes') && str_contains($normalized, 'coches une')) {
-            $this->completeShoppingItemWithoutCard($state, $playerIndex);
-            return;
-        }
-
-        if (str_contains($normalized, 'remets une carte courses au bas de la pioche')) {
-            $this->returnRandomCourseToDeck($state, $playerIndex);
-            return;
-        }
-
-        if (str_contains($normalized, 'derniere carte courses que tu as obtenue')) {
-            $this->removeLastGain($state, $playerIndex);
-            return;
-        }
-
-        if (str_contains($normalized, 'ajoute un 6e produit')) {
-            $this->addExtraShoppingItem($state, $playerIndex);
-            return;
-        }
-
-        if (str_contains($normalized, 'carte courses dans la defausse')) {
-            $this->takeCourseFromDiscard($state, $playerIndex);
-            return;
-        }
-
-        if (str_contains($normalized, 'le sens du tour change')) {
-            $this->invertTurnDirection($state, $playerIndex);
-            return;
-        }
-
-        if (str_contains($normalized, 'stand surprise')) {
-            $this->applyStandSurprise($state, $playerIndex);
-            return;
-        }
-
-        if (str_contains($normalized, 'avance jusqu au stand de ton choix')) {
-            $this->moveToPreferredStand($state, $playerIndex, true);
-            return;
-        }
-
-        if (str_contains($normalized, 'stand exceptionnel')) {
-            $this->drawCourseCard($state, $playerIndex);
-            return;
-        }
-
-        if (str_contains($normalized, 'producteur genereux')) {
-            $this->drawCourseCard($state, $playerIndex);
-            $target = $this->findRandomOtherPlayerIndex($state, $playerIndex);
-            if ($target !== null) {
-                $this->giveRandomCourseToPlayer($state, $playerIndex, $target);
-            }
-            return;
         }
     }
 
-    private function grantExtraTurn(array &$state, int $playerIndex): void
-    {
-        $state['flags']['extraTurn'] = $playerIndex;
-    }
-
-    private function blockDrawForPlayer(array &$state, int $playerIndex): void
-    {
-        if (!isset($state['flags']['blockedDraw']) || !is_array($state['flags']['blockedDraw'])) {
-            $state['flags']['blockedDraw'] = [];
-        }
-        $state['flags']['blockedDraw'][$playerIndex] = true;
-    }
-
-    private function consumeDrawBlock(array &$state, int $playerIndex): bool
-    {
-        if (isset($state['flags']['blockedDraw'][$playerIndex]) && $state['flags']['blockedDraw'][$playerIndex] === true) {
-            unset($state['flags']['blockedDraw'][$playerIndex]);
-            return true;
-        }
-        return false;
-    }
-
-    private function penalizeLargestInventory(array &$state): void
-    {
-        $players = $state['players'] ?? [];
-        $max = 0;
-        $targets = [];
-        foreach ($players as $index => $player) {
-            $count = count($player['inventory'] ?? []) + count($player['basket'] ?? []);
-            if ($count > $max) {
-                $max = $count;
-                $targets = [$index];
-            } elseif ($count === $max) {
-                $targets[] = $index;
-            }
-        }
-        if ($max === 0) {
-            return;
-        }
-        foreach ($targets as $idx) {
-            $this->removeRandomCourseFromPlayer($state, (int)$idx, true);
-        }
-    }
-
-    private function findRandomOtherPlayerIndex(array $state, int $playerIndex): ?int
-    {
-        $indexes = array_keys($state['players'] ?? []);
-        $candidates = array_values(array_filter($indexes, static fn($i) => (int)$i !== $playerIndex));
-        if ($candidates === []) {
-            return null;
-        }
-        $choice = $candidates[random_int(0, count($candidates) - 1)];
-        return (int)$choice;
-    }
-
-    private function removeRandomCourseFromPlayer(array &$state, int $playerIndex, bool $allowBasket): ?string
-    {
-        if (!isset($state['players'][$playerIndex]['inventory']) || !is_array($state['players'][$playerIndex]['inventory'])) {
-            $state['players'][$playerIndex]['inventory'] = [];
-        }
-        $inventory = &$state['players'][$playerIndex]['inventory'];
-        if ($inventory !== []) {
-            $key = array_rand($inventory);
-            $item = $inventory[$key];
-            unset($inventory[$key]);
-            $inventory = array_values($inventory);
-            return $item;
-        }
-
-        if ($allowBasket) {
-            if (!isset($state['players'][$playerIndex]['basket']) || !is_array($state['players'][$playerIndex]['basket'])) {
-                $state['players'][$playerIndex]['basket'] = [];
-            }
-            $basket = &$state['players'][$playerIndex]['basket'];
-            if ($basket !== []) {
-                $key = array_rand($basket);
-                $item = $basket[$key];
-                unset($basket[$key]);
-                $basket = array_values($basket);
-                $this->refreshCheckoutFlag($state, $playerIndex);
-                return $item;
-            }
-        }
-        return null;
-    }
-
-    private function stealRandomCourse(array &$state, int $thiefIndex, int $victimIndex, bool $returnTheft = true): void
-    {
-        $item = $this->removeRandomCourseFromPlayer($state, $victimIndex, true);
-        if ($item === null) {
-            return;
-        }
-        $this->addCourseToInventory($state, $thiefIndex, $item);
-        $this->log($state, sprintf('%s prend %s à %s.', $state['players'][$thiefIndex]['username'], $item, $state['players'][$victimIndex]['username']));
-
-        if ($returnTheft) {
-            $back = $this->removeRandomCourseFromPlayer($state, $thiefIndex, true);
-            if ($back !== null) {
-                $this->addCourseToInventory($state, $victimIndex, $back);
-            }
-        }
-    }
-
-    private function giveRandomCourseToPlayer(array &$state, int $fromIndex, int $toIndex): void
-    {
-        $item = $this->removeRandomCourseFromPlayer($state, $fromIndex, true);
-        if ($item === null) {
-            return;
-        }
-        $this->addCourseToInventory($state, $toIndex, $item);
-        $this->log($state, sprintf('%s donne %s à %s.', $state['players'][$fromIndex]['username'], $item, $state['players'][$toIndex]['username']));
-    }
-
-    private function completeShoppingItemWithoutCard(array &$state, int $playerIndex): void
-    {
-        $player = &$state['players'][$playerIndex];
-        $list = $player['shoppingList'] ?? [];
-        $basket = $player['basket'] ?? [];
-        foreach ($list as $item) {
-            if (!in_array($item, $basket, true)) {
-                $player['basket'][] = $item;
-                $this->log($state, sprintf('%s coche %s sur sa liste.', $player['username'], $item), 'success');
-                $this->refreshCheckoutFlag($state, $playerIndex);
-                return;
-            }
-        }
-    }
-
-    private function returnRandomCourseToDeck(array &$state, int $playerIndex): void
-    {
-        $item = $this->removeRandomCourseFromPlayer($state, $playerIndex, true);
-        if ($item === null) {
-            return;
-        }
-        $state['discard'][PanierExpressDeckManager::DECK_COURSES][] = ['name' => $item];
-        $this->log($state, sprintf('%s remet %s dans la pioche Courses.', $state['players'][$playerIndex]['username'], $item));
-    }
-
-    private function removeLastGain(array &$state, int $playerIndex): void
-    {
-        $last = $state['players'][$playerIndex]['lastGain'] ?? null;
-        if ($last === null) {
-            return;
-        }
-        $removed = false;
-        $inv = &$state['players'][$playerIndex]['inventory'];
-        if (($k = array_search($last, $inv ?? [], true)) !== false) {
-            unset($inv[$k]);
-            $inv = array_values($inv);
-            $removed = true;
-        } else {
-            $basket = &$state['players'][$playerIndex]['basket'];
-            if (($k = array_search($last, $basket ?? [], true)) !== false) {
-                unset($basket[$k]);
-                $basket = array_values($basket);
-                $removed = true;
-                $this->refreshCheckoutFlag($state, $playerIndex);
-            }
-        }
-        if ($removed) {
-            $this->log($state, sprintf('%s perd la dernière carte obtenue : %s.', $state['players'][$playerIndex]['username'], $last), 'warning');
-        }
-    }
-
-    private function addExtraShoppingItem(array &$state, int $playerIndex): void
-    {
-        $this->ensureCourseCatalog();
-        $pool = array_keys($this->courseCatalog);
-        if ($pool === []) {
-            return;
-        }
-        $item = $pool[random_int(0, count($pool) - 1)];
-        $state['players'][$playerIndex]['shoppingList'][] = $item;
-        $this->log($state, sprintf('%s ajoute un produit à sa liste : %s.', $state['players'][$playerIndex]['username'], $item), 'info');
-    }
-
-    private function takeCourseFromDiscard(array &$state, int $playerIndex): void
-    {
-        $discard = &$state['discard'][PanierExpressDeckManager::DECK_COURSES];
-        if (!is_array($discard) || $discard === []) {
-            return;
-        }
-        $card = array_pop($discard);
-        $item = $card['name'] ?? null;
-        if ($item === null) {
-            return;
-        }
-        $this->addCourseToInventory($state, $playerIndex, $item);
-        $this->log($state, sprintf('%s récupère %s dans la défausse.', $state['players'][$playerIndex]['username'], $item));
-    }
-
-    private function invertTurnDirection(array &$state, int $playerIndex): void
-    {
-        $state['flags']['turnDirection'] = (($state['flags']['turnDirection'] ?? 1) === 1) ? -1 : 1;
-        $state['flags']['turnDirectionResetPlayer'] = $state['players'][$playerIndex]['id'] ?? null;
-    }
-
-    private function applyStandSurprise(array &$state, int $playerIndex): void
-    {
-        $roll = $this->randomizer->randomInt(1, 6);
-        $targets = [
-            1 => 'bio',
-            2 => 'bio',
-            3 => 'fruitier',
-            4 => 'fruitier',
-            5 => 'primeur',
-            6 => 'primeur',
-        ];
-        $want = $targets[$roll] ?? null;
-        if ($want === null) {
-            return;
-        }
-        $target = $this->findStandByCategory($state, $want);
-        if ($target !== null) {
-            $state['players'][$playerIndex]['position'] = $target;
-            $this->log($state, sprintf('%s est téléporté sur un stand %s.', $state['players'][$playerIndex]['username'], $want));
-            $this->processTile($state, $playerIndex, 0);
-        }
-    }
-
-    private function findStandByCategory(array $state, string $category): ?int
-    {
-        foreach ($state['board']['tiles'] ?? [] as $tile) {
-            $label = $this->normalizeText((string)($tile['label'] ?? ''));
-            if (($tile['type'] ?? '') === 'stand' && str_contains($label, $category)) {
-                return (int)($tile['index'] ?? 0);
-            }
-        }
-        return null;
-    }
-
-    private function moveToPreferredStand(array &$state, int $playerIndex, bool $drawAfter = false): void
-    {
-        $target = $this->findNextStandPosition($state, $state['players'][$playerIndex]['position'] ?? 1);
-        if ($target !== null) {
-            $state['players'][$playerIndex]['position'] = $target;
-            $this->processTile($state, $playerIndex, 0);
-            if ($drawAfter) {
-                $this->drawCourseCard($state, $playerIndex);
-            }
-        }
-    }
-
-    private function drawForPlayersOnStand(array &$state, string $match): void
-    {
-        $match = $this->normalizeText($match);
-        foreach ($state['players'] ?? [] as $index => $player) {
-            $tile = $this->tileAt($state, (int)($player['position'] ?? 1));
-            $label = $this->normalizeText((string)($tile['label'] ?? ''));
-            if (str_contains($label, $match)) {
-                $this->drawCourseCard($state, (int)$index);
-            }
-        }
-    }
-
-    private function drawForPlayersOnSameTile(array &$state, int $playerIndex): void
-    {
-        $pos = $state['players'][$playerIndex]['position'] ?? 1;
-        foreach ($state['players'] ?? [] as $index => $player) {
-            if (($player['position'] ?? null) === $pos) {
-                $this->drawCourseCard($state, (int)$index);
-            }
-        }
-    }
-
-    private function handleExchangeCardEffect(array &$state, int $playerIndex, array $card): bool
-    {
-        $effect = (string) ($card['effect'] ?? '');
-        $normalized = $this->normalizeText($effect);
-        if ($normalized === '') {
-            return false;
-        }
-
-        if (str_contains($normalized, 'voisin de gauche')) {
-            $target = $this->neighborIndex($state, $playerIndex, 'left');
-            if ($target !== null) {
-                $this->swapRandomCourseBetween($state, $playerIndex, $target);
-            }
-            return true;
-        }
-
-        if (str_contains($normalized, 'voisin de droite')) {
-            $target = $this->neighborIndex($state, $playerIndex, 'right');
-            if ($target !== null) {
-                $this->swapRandomCourseBetween($state, $playerIndex, $target);
-            }
-            return true;
-        }
-
-        if (str_contains($normalized, 'sans lui en rendre') || str_contains($normalized, 'vol discret')) {
-            $target = $this->findRandomOtherPlayerIndex($state, $playerIndex);
-            if ($target !== null) {
-                $this->stealRandomCourse($state, $playerIndex, $target, false);
-            }
-            return true;
-        }
-
-        if (str_contains($normalized, 'il t en prend une en retour') || str_contains($normalized, 'echange force')) {
-            $target = $this->findRandomOtherPlayerIndex($state, $playerIndex);
-            if ($target !== null) {
-                $this->swapRandomCourseBetween($state, $playerIndex, $target);
-            }
-            return true;
-        }
-
-        if (str_contains($normalized, 'toutes tes cartes courses') || str_contains($normalized, 'chariot echange')) {
-            $target = $this->findRandomOtherPlayerIndex($state, $playerIndex);
-            if ($target !== null) {
-                $this->swapAllCourses($state, $playerIndex, $target);
-            }
-            return true;
-        }
-
-        if (str_contains($normalized, 'tous les joueurs passent une carte') || str_contains($normalized, 'echange simultane')) {
-            $this->passCardInDirection($state, 'left');
-            return true;
-        }
-
-        if (str_contains($normalized, 'panier collectif')) {
-            $this->collectivePoolExchange($state);
-            return true;
-        }
-
-        if (str_contains($normalized, 'panier mixe')) {
-            $this->mixInventories($state, $playerIndex);
-            return true;
-        }
-
-        if (str_contains($normalized, 'troque un fruit contre un legume')) {
-            $target = $this->findRandomOtherPlayerIndex($state, $playerIndex);
-            if ($target !== null) {
-                $fruit = $this->removeCourseByCategory($state, $playerIndex, 'fruit');
-                $vegetable = $this->removeCourseByCategory($state, $target, 'vegetable');
-                if ($fruit !== null && $vegetable !== null) {
-                    $this->addCourseToInventory($state, $playerIndex, $vegetable);
-                    $this->addCourseToInventory($state, $target, $fruit);
-                } else {
-                    if ($fruit !== null) {
-                        $this->addCourseToInventory($state, $playerIndex, $fruit);
-                    }
-                    if ($vegetable !== null) {
-                        $this->addCourseToInventory($state, $target, $vegetable);
-                    }
-                }
-            }
-            return true;
-        }
-
-        return false;
-    }
-
-    private function drawExchangeCard(array &$state, int $playerIndex): void
+    private function drawExchangeCardWithPending(array &$state, int $playerIndex): void
     {
         $card = $this->deckManager->drawCard($state, PanierExpressDeckManager::DECK_EXCHANGE, $this->randomizer);
         if ($card === null) {
-            $this->log($state, 'La pioche echange est vide.', 'warning');
+            $this->log($state, 'La pioche �%change est vide.', 'warning');
             return;
         }
 
-        $title = $card['title'] ?? 'Echange';
+        $title = $card['title'] ?? '�%change';
         $effect = $card['effect'] ?? '';
 
-        $this->log($state, sprintf('Carte echange : %s. %s', $title, $effect));
+        $this->log($state, sprintf('Carte �%change : %s. %s', $title, $effect));
 
-        if ($this->handleExchangeCardEffect($state, $playerIndex, $card)) {
-            return;
-        }
-
+        // Place un �change en attente : le client pourra envoyer une action EXCHANGE_REQUEST.
         $state['pending'] = [
             'type' => 'exchange',
             'playerId' => $state['players'][$playerIndex]['id'] ?? null,
@@ -1339,6 +719,7 @@ final class PanierExpressGameService implements GameEngineInterface
             ],
         ];
     }
+
     private function startQuiz(array &$state, int $playerIndex): void
     {
         $card = $this->deckManager->drawCard($state, PanierExpressDeckManager::DECK_QUIZ, $this->randomizer);
@@ -1376,7 +757,7 @@ final class PanierExpressGameService implements GameEngineInterface
                 break;
             case 'exchange':
             case PanierExpressDeckManager::DECK_EXCHANGE:
-                $this->drawExchangeCard($state, $playerIndex);
+                $this->drawExchangeCardWithPending($state, $playerIndex);
                 break;
             case 'quiz':
             case PanierExpressDeckManager::DECK_QUIZ:
@@ -1458,29 +839,33 @@ final class PanierExpressGameService implements GameEngineInterface
             return;
         }
 
-        // Construit un état de tour générique pour gérer direction/skip/extra-turn.
-        $turnState = $this->buildTurnState($state, $currentPlayerIndex);
-        $manager = new TurnManager($turnState);
-        $next = $manager->next($count);
+        $next = $currentPlayerIndex;
+        $safety = 0;
 
-        // Répercute les skips restants sur les joueurs.
-        foreach ($state['players'] as $idx => &$player) {
-            $player['skipTurns'] = (int)($turnState->skips[$idx] ?? 0);
+        do {
+            $next = ($next + 1) % $count;
+            if ($next === 0) {
+                $state['round'] = $this->currentRound($state) + 1;
+            }
+            $safety++;
+            if ($safety > $count) {
+                break;
+            }
+        } while (($players[$next]['skipTurns'] ?? 0) > 0);
+
+        if (($players[$next]['skipTurns'] ?? 0) > 0) {
+            $state['players'][$next]['skipTurns']--;
+            $state['log'][] = [
+                'type' => 'info',
+                'message' => sprintf('%s saute son tour.', $state['players'][$next]['username']),
+            ];
+            $this->advanceTurn($state, $next);
+            return;
         }
-        unset($player);
 
-        // Réinitialise l’éventuelle demande de reset de direction si on revient sur le joueur ciblé.
-        if (isset($state['flags']['turnDirectionResetPlayer']) && ($players[$next]['id'] ?? null) === ($state['flags']['turnDirectionResetPlayer'] ?? null)) {
-            unset($state['flags']['turnDirectionResetPlayer']);
-            $turnState->direction = 1;
-        }
-
-        $state['flags']['turnDirection'] = $turnState->direction;
         $state['turnIndex'] = $next;
-        $state['round'] = $turnState->round;
         $state['phase'] = 'turn';
         $state['lastRoll'] = null;
-        $this->syncTurnMeta($state);
     }
 
     private function tileAt(array $state, int $position): ?array
@@ -1555,49 +940,5 @@ final class PanierExpressGameService implements GameEngineInterface
             'type' => $type,
             'message' => $message,
         ];
-    }
-
-    private function syncTurnMeta(array &$state): void
-    {
-        $turnState = $this->buildTurnState($state, (int)($state['turnIndex'] ?? 0));
-        $state['turn'] = $turnState->toArray();
-    }
-
-    private function buildTurnState(array $state, int $currentPlayerIndex): TurnState
-    {
-        // Si un état de tour existe déjà, on le recharge, sinon on le construit à partir des champs legacy.
-        $turn = isset($state['turn']) && is_array($state['turn'])
-            ? TurnState::fromArray($state['turn'])
-            : new TurnState(
-                (int)($state['turnIndex'] ?? $currentPlayerIndex),
-                (int)($state['round'] ?? 1),
-                (int)($state['flags']['turnDirection'] ?? 1),
-                [],
-                null
-            );
-
-        // Synchronise la direction legacy si présente.
-        if (isset($state['flags']['turnDirection'])) {
-            $dir = (int)$state['flags']['turnDirection'];
-            $turn->direction = ($dir === -1) ? -1 : 1;
-        }
-
-        // Intègre les skips stockés sur les joueurs.
-        foreach ($state['players'] ?? [] as $idx => $player) {
-            $skips = (int)($player['skipTurns'] ?? 0);
-            if ($skips > 0) {
-                $turn->skips[$idx] = $skips;
-            } else {
-                unset($turn->skips[$idx]);
-            }
-        }
-
-        // Extra-turn legacy
-        if (isset($state['flags']['extraTurn']) && (int)$state['flags']['extraTurn'] === $currentPlayerIndex) {
-            $turn->extraTurnFor = $currentPlayerIndex;
-            unset($state['flags']['extraTurn']);
-        }
-
-        return $turn;
     }
 }

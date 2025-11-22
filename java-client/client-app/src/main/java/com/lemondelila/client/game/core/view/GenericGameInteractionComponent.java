@@ -14,6 +14,8 @@ import com.lemondelila.client.game.history.controller.GameHistoryController;
 import com.lemondelila.client.game.room.model.BotState;
 import com.lemondelila.client.game.room.model.PlayerState;
 import com.lemondelila.client.game.room.model.TableState;
+import com.lemondelila.client.game.turn.controller.TurnController;
+import com.lemondelila.client.game.turn.model.TurnState;
 import com.lemondelila.client.game.core.PrimaryActionCapable;
 
 import javax.swing.JComponent;
@@ -38,11 +40,13 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
     private final GameStatusPanel statusPanel;
     private final GameQuizPanel quizPanel;
     private final PrimaryActionDescriptor primaryAction;
+    private final TurnController turnController;
     private final JLabel infoLabel = new JLabel();
     private final Set<String> seenLogs = new HashSet<>();
     private Integer lastRollSeen;
     private boolean gameStarted;
     private boolean firstActionDone;
+    private Integer lastTurnIndexSeen;
 
     public GenericGameInteractionComponent(GenericGameInteractionController controller,
                                            GameActionEmitter emitter,
@@ -57,6 +61,7 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         this.history = Objects.requireNonNull(history, "history");
         this.tableState = Objects.requireNonNull(tableState, "tableState");
         this.primaryAction = primaryAction;
+        this.turnController = new TurnController();
         this.statusPanel = new GameStatusPanel(focusHighlighter);
         this.quizPanel = new GameQuizPanel(focusHighlighter);
         buildUi(focusHighlighter);
@@ -109,6 +114,13 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         controller.detach();
     }
 
+    /**
+     * Rafraichit explicitement l'‚tat (utile aprŠs ajout de bot avant le premier tour).
+     */
+    public void refreshState() {
+        controller.refresh();
+    }
+
     @Override
     public void onState(GenericGameState state) {
         SwingUtilities.invokeLater(() -> {
@@ -121,7 +133,6 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
     public void onError(String message) {
         SwingUtilities.invokeLater(() -> {
             emitter.announceError(message);
-            history.addEntry(message);
             // Sur erreur (ex: pas assez de participants), on autorise encore les bots/participants.
             gameStarted = false;
             tableState.updateStatus("open");
@@ -135,6 +146,7 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
             tableState.markStarted();
             tableState.updateStatus(state.status());
         }
+        renderTurn(state);
         if (state.lastRoll() != null && !state.lastRoll().equals(lastRollSeen)) {
             lastRollSeen = state.lastRoll();
             emitter.announceEvent("Résultat du lancer : " + state.lastRoll());
@@ -162,6 +174,22 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         quizPanel.showQuiz(quiz.question(), quiz.choices());
     }
 
+    private void renderTurn(GenericGameState state) {
+        Object turnNode = state.extras().get("turn");
+        if (!(turnNode instanceof JsonNode node) || !node.isObject()) {
+            return;
+        }
+        turnController.map(node).ifPresent(turn -> {
+            statusPanel.update(state.status(), state.phase(), turn.round(), turn.index(), state.lastRoll());
+            tableState.updateTurn(turn.round(), turn.index(), turn.direction());
+            if (lastTurnIndexSeen == null || !lastTurnIndexSeen.equals(turn.index())) {
+                lastTurnIndexSeen = turn.index();
+                String message = turnController.formatTurn(turn, tableState);
+                emitter.announceEvent(message);
+            }
+        });
+    }
+
     @Override
     public void triggerPrimaryAction() {
         if (primaryAction != null) {
@@ -178,7 +206,7 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
             return;
         }
         Object playersNode = state.extras().get("players");
-        if (playersNode instanceof JsonNode node && node.isArray()) {
+        if (playersNode instanceof JsonNode node && node.isArray() && node.size() > 0) {
             var players = new java.util.ArrayList<PlayerState>();
             node.forEach(p -> players.add(new PlayerState(
                     p.path("id").isInt() ? p.get("id").asInt() : null,
@@ -187,7 +215,7 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
             tableState.updatePlayers(players);
         }
         Object botsNode = state.extras().get("bots");
-        if (botsNode instanceof JsonNode node2 && node2.isArray()) {
+        if (botsNode instanceof JsonNode node2 && node2.isArray() && node2.size() > 0) {
             var bots = new java.util.ArrayList<BotState>();
             node2.forEach(b -> bots.add(new BotState(
                     b.path("id").isInt() ? b.get("id").asInt() : null,

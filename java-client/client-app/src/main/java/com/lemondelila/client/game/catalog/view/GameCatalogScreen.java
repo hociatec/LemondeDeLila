@@ -13,9 +13,13 @@ import com.lemondelila.client.game.catalog.event.CatalogFailed;
 import com.lemondelila.client.game.catalog.event.CatalogLoaded;
 import com.lemondelila.client.game.catalog.model.CatalogCategory;
 import com.lemondelila.client.game.catalog.model.CatalogGame;
-import com.lemondelila.client.game.shortcut.CatalogShortcuts;
+import com.lemondelila.client.game.shortcut.controller.TableShortcutManager;
 
 import javax.swing.JPanel;
+import javax.swing.KeyStroke;
+import javax.swing.InputMap;
+import javax.swing.ActionMap;
+import javax.swing.JComponent;
 import java.awt.BorderLayout;
 import java.util.Collections;
 import java.util.List;
@@ -37,13 +41,13 @@ public final class GameCatalogScreen extends JPanel implements Screen, AutoClose
     private boolean gamesVisible = false;
     private boolean programmaticSelection = false;
     private boolean userNavigated = false;
-    private final CatalogShortcuts shortcuts;
+    private final TableShortcutManager shortcuts;
 
     @Inject
     public GameCatalogScreen(GameCatalogView view,
                              GameCatalogController controller,
                              DomainEventBus eventBus,
-                             CatalogShortcuts shortcuts) {
+                             TableShortcutManager shortcuts) {
         this.view = view;
         this.controller = controller;
         this.shortcuts = shortcuts;
@@ -70,6 +74,9 @@ public final class GameCatalogScreen extends JPanel implements Screen, AutoClose
         view.onCategorySelected(this::onCategorySelected);
         view.onSubCategorySelected(this::onSubCategorySelected);
         view.onGameActivated(this::onGameActivated);
+
+        // Raccourci Échap : remonter ou sortir du catalogue.
+        shortcuts.bindEscape(view.component(), this::onEscape);
     }
 
     @Override
