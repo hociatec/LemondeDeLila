@@ -6,8 +6,6 @@
 parameters:
     app.ws.host: '%env(string:APP_WS_HOST)%'
     app.ws.port: '%env(int:APP_WS_PORT)%'
-    app.ws.push_secret: '%env(string:APP_WS_PUSH_SECRET)%'
-    app.ws.push_url: '%env(string:APP_WS_PUSH_URL)%'
     app.client.version: '%env(string:APP_CLIENT_VERSION)%'
     app.client.download_url: '%env(string:APP_CLIENT_DOWNLOAD_URL)%'
     app.client.checksum: '%env(string:APP_CLIENT_CHECKSUM)%'
@@ -33,9 +31,6 @@ services:
         decorates: 'api_platform.openapi.factory'
         arguments: ['@App\Module\User\Api\CustomOpenApiFactory.inner']
 
-    App\Module\Game\Realtime\RoomRealtimePushHandler:
-        arguments:
-            $secret: '%app.ws.push_secret%'
 
     App\Module\Game\Engine\EngineRegistry:
         arguments:

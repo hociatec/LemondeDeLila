@@ -10,12 +10,15 @@ import com.lemondelila.client.game.catalog.event.CatalogLoaded;
 import com.lemondelila.client.game.catalog.event.CatalogRequested;
 import com.lemondelila.client.game.catalog.model.CatalogPayload;
 import com.lemondelila.client.game.catalog.service.GameCatalogService;
-import com.lemondelila.client.game.core.GameTableLauncher;
-import com.lemondelila.client.game.core.GameAnnouncer;
-import com.lemondelila.client.game.room.model.RoomState;
-import com.lemondelila.client.game.room.service.RoomApiService;
+import com.lemondelila.client.game.room.service.GameTableLauncher;
+import com.lemondelila.client.game.history.service.GameAnnouncer;
+import com.lemondelila.client.game.room.event.RoomCreated;
 import com.lemondelila.client.game.room.model.RoomDetailsState;
+import com.lemondelila.client.game.room.model.RoomState;
+import com.lemondelila.client.game.room.service.RoomRealtimeService;
 import com.lemondelila.client.game.room.view.RoomTableScreen;
+
+import java.util.Map;
 
 public final class GameCatalogController implements AutoCloseable {
 
@@ -25,7 +28,7 @@ public final class GameCatalogController implements AutoCloseable {
     private final EventSubscriptions subscriptions = new EventSubscriptions();
     private final GameTableLauncher tableLauncher;
     private final GameAnnouncer announcer;
-    private final RoomApiService roomApi;
+    private final RoomRealtimeService realtime;
     private final RoomDetailsState roomDetailsState;
 
     @Inject
@@ -34,16 +37,26 @@ public final class GameCatalogController implements AutoCloseable {
                                  TaskScheduler scheduler,
                                  GameTableLauncher tableLauncher,
                                  GameAnnouncer announcer,
-                                 RoomApiService roomApi,
+                                 RoomRealtimeService realtime,
                                  RoomDetailsState roomDetailsState) {
         this.service = service;
         this.eventBus = eventBus;
         this.scheduler = scheduler;
         this.tableLauncher = tableLauncher;
         this.announcer = announcer;
-        this.roomApi = roomApi;
+        this.realtime = realtime;
         this.roomDetailsState = roomDetailsState;
         subscriptions.subscribe(eventBus, CatalogRequested.class, ev -> fetchAll());
+        subscriptions.subscribe(eventBus, RoomCreated.class, this::onRoomCreated);
+    }
+
+    private void onRoomCreated(RoomCreated event) {
+        RoomState room = event.room();
+        if (room == null || room.id() == null) {
+            return;
+        }
+        roomDetailsState.setRoomId(room.id());
+        roomDetailsState.setGameType(room.gameType());
     }
 
     public ControllerResult openCatalog() {
@@ -75,22 +88,18 @@ public final class GameCatalogController implements AutoCloseable {
      */
     public ControllerResult createTableForGame(String gameCode, String name, int maxPlayers, boolean isPrivate) {
         try {
-            RoomState room = roomApi.createRoom(name, gameCode, maxPlayers, isPrivate);
+            Map<String, Object> payload = Map.of(
+                    "gameType", gameCode,
+                    "name", name,
+                    "maxPlayers", maxPlayers,
+                    "isPrivate", isPrivate
+            );
+            realtime.sendCommand("room.create", payload);
             tableLauncher.createTemporaryTable(gameCode, name, maxPlayers, isPrivate);
-            String msg = String.format("Table \"%s\" (jeu %s) créée (id=%s), max %d joueurs, privée=%s.",
-                    name, gameCode, room != null ? room.id() : "?", maxPlayers, isPrivate ? "oui" : "non");
+            roomDetailsState.setGameType(gameCode);
+            String msg = String.format("Table \"%s\" (jeu %s) demandée, création en cours.", name, gameCode);
             announcer.announce(msg);
-            if (room != null && room.id() != null) {
-                roomDetailsState.setRoomId(room.id());
-                roomDetailsState.setGameType(gameCode);
-                return ControllerResult.navigate(RoomTableScreen.ID).withStatus(msg);
-            }
-            return ControllerResult.status(msg);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            String err = "Création de table interrompue";
-            announcer.announce(err);
-            return ControllerResult.status(err);
+            return ControllerResult.navigate(RoomTableScreen.ID).withStatus(msg);
         } catch (Exception e) {
             String err = "Création de table impossible : " + clean(e.getMessage());
             announcer.announce(err);

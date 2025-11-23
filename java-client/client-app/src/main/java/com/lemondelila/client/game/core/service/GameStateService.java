@@ -1,8 +1,8 @@
 package com.lemondelila.client.game.core.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.lemondelila.client.game.core.action.ActionRequest;
-import com.lemondelila.client.game.core.mapper.GenericGameStateMapper;
+import com.lemondelila.client.game.core.model.ActionRequest;
+import com.lemondelila.client.game.core.service.GenericGameStateMapper;
 import com.lemondelila.client.game.core.model.GenericGameState;
 
 import java.io.IOException;

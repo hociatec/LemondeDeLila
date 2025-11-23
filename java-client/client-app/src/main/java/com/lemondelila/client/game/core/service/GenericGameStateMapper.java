@@ -1,4 +1,4 @@
-package com.lemondelila.client.game.core.mapper;
+package com.lemondelila.client.game.core.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.lemondelila.client.game.core.model.GenericGameState;
@@ -48,7 +48,6 @@ public final class GenericGameStateMapper {
         }
 
         Map<String, Object> extras = new HashMap<>();
-        // Stocke l'ère JSON brute si nécessaire pour d'autres jeux (ex: players, board...) -> facultatif.
         if (json.has("players")) {
             extras.put("players", json.get("players"));
         }

@@ -1,4 +1,4 @@
-package com.lemondelila.client.game.core;
+package com.lemondelila.client.game.room.view;
 
 import com.lemondelila.client.framework.core.event.DomainEventBus;
 import com.lemondelila.client.framework.core.event.EventSubscriptions;
@@ -6,18 +6,20 @@ import com.lemondelila.client.framework.ui.keyboard.KeyboardBindings;
 import com.lemondelila.client.framework.ui.screen.Screen;
 import com.lemondelila.client.framework.ui.screen.ScreenContext;
 import com.lemondelila.client.framework.ui.screen.ScreenManager;
+import com.lemondelila.client.game.history.service.GameAnnouncer;
 import com.lemondelila.client.game.history.view.GameHistorySidebar;
 import com.lemondelila.client.game.room.event.LeaveRoomRequested;
 import com.lemondelila.client.game.room.model.RoomDetailsState;
 import com.lemondelila.client.game.shortcut.controller.TableShortcutManager;
-import com.lemondelila.client.game.core.GameDialog;
+import com.lemondelila.client.game.core.view.GameDialog;
+import com.lemondelila.client.game.core.view.GameTableScreen;
 
 import javax.swing.JPanel;
 import javax.swing.JComponent;
 import java.util.Objects;
 
 /**
- * Socle commun pour les �crans de table : raccourcis (Tab/Shift+Tab, q, bots),
+ * Socle commun pour les écrans de table : raccourcis (Tab/Shift+Tab, q, bots),
  * historique + narration via GameAnnouncer.
  */
 public abstract class BaseTableScreen extends JPanel implements Screen, GameTableScreen {
@@ -65,6 +67,12 @@ public abstract class BaseTableScreen extends JPanel implements Screen, GameTabl
     }
 
     protected void installShortcuts(JComponent interaction, JComponent history) {
+        interaction.setFocusable(true);
+        history.setFocusable(true);
+        // Désactive la navigation Tab par défaut pour que nos bindings captent les touches.
+        interaction.setFocusTraversalKeysEnabled(false);
+        history.setFocusTraversalKeysEnabled(false);
+        this.setFocusTraversalKeysEnabled(false);
         KeyboardBindings.disableTabTraversal(interaction);
         KeyboardBindings.disableTabTraversal(history);
         KeyboardBindings.bindEnter(interaction, interaction::requestFocusInWindow, "table.enter");
@@ -76,7 +84,7 @@ public abstract class BaseTableScreen extends JPanel implements Screen, GameTabl
     @Override
     public void onShow(ScreenContext context) {
         this.screenManager = context.screenManager();
-        // Rien par d�faut
+        // Rien par défaut
     }
 
     @Override

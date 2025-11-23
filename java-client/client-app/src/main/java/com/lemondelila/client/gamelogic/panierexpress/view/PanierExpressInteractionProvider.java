@@ -3,18 +3,19 @@ package com.lemondelila.client.gamelogic.panierexpress.view;
 import com.lemondelila.client.framework.access.FocusHighlighter;
 import com.lemondelila.client.framework.core.di.Inject;
 import com.lemondelila.client.framework.core.task.TaskScheduler;
-import com.lemondelila.client.game.core.GameActionEmitter;
-import com.lemondelila.client.game.core.GameAnnouncer;
-import com.lemondelila.client.game.core.GameInteractionComponent;
-import com.lemondelila.client.game.core.GameInteractionProvider;
-import com.lemondelila.client.game.core.action.ActionRequest;
+import com.lemondelila.client.game.history.service.GameActionEmitter;
+import com.lemondelila.client.game.history.service.GameAnnouncer;
+import com.lemondelila.client.game.core.view.GameInteractionComponent;
+import com.lemondelila.client.game.core.controller.GameInteractionProvider;
+import com.lemondelila.client.game.core.model.ActionRequest;
 import com.lemondelila.client.game.core.controller.GenericGameInteractionController;
 import com.lemondelila.client.game.room.model.TableState;
 import com.lemondelila.client.game.core.model.PrimaryActionDescriptor;
 import com.lemondelila.client.game.core.service.GameStateService;
-import com.lemondelila.client.game.core.view.GenericGameInteractionComponent;
+import com.lemondelila.client.game.room.view.GenericGameInteractionComponent;
 import com.lemondelila.client.game.history.controller.GameHistoryController;
 import com.lemondelila.client.game.history.view.GameHistorySidebar;
+import com.lemondelila.client.game.room.service.GameLaunchCoordinator;
 import com.lemondelila.client.gamelogic.panierexpress.PanierExpressGameModule;
 
 public final class PanierExpressInteractionProvider implements GameInteractionProvider {
@@ -26,6 +27,7 @@ public final class PanierExpressInteractionProvider implements GameInteractionPr
     private final FocusHighlighter focusHighlighter;
     private final TaskScheduler scheduler;
     private final TableState tableState;
+    private final GameLaunchCoordinator launchCoordinator;
 
     @Inject
     public PanierExpressInteractionProvider(GameStateService states,
@@ -34,7 +36,8 @@ public final class PanierExpressInteractionProvider implements GameInteractionPr
                                             GameHistorySidebar historySidebar,
                                             FocusHighlighter focusHighlighter,
                                             TaskScheduler scheduler,
-                                            TableState tableState) {
+                                            TableState tableState,
+                                            GameLaunchCoordinator launchCoordinator) {
         this.states = states;
         this.announcer = announcer;
         this.history = history;
@@ -42,6 +45,7 @@ public final class PanierExpressInteractionProvider implements GameInteractionPr
         this.focusHighlighter = focusHighlighter;
         this.scheduler = scheduler;
         this.tableState = tableState;
+        this.launchCoordinator = launchCoordinator;
     }
 
     @Override
@@ -68,11 +72,23 @@ public final class PanierExpressInteractionProvider implements GameInteractionPr
                 scheduler
         );
         controller.setParticipantGate(() -> (tableState.players().size() + tableState.bots().size()) >= 2);
+        Runnable startHandler = () -> {
+            Integer roomId = tableState.roomId();
+            if (roomId == null) {
+                announcer.announce(historySidebar, "Aucune table sélectionnée pour démarrer le jeu.");
+                return;
+            }
+            boolean dispatched = launchCoordinator.launch(roomId, PanierExpressGameModule.GAME_TYPE);
+            if (!dispatched) {
+                announcer.announce(historySidebar, "Lancement de partie impossible : identifiant de table invalide.");
+            }
+        };
         return new GenericGameInteractionComponent(controller,
                 new GameActionEmitter(announcer, historySidebar, history),
                 history,
                 tableState,
                 focusHighlighter,
-                primary);
+                primary,
+                startHandler);
     }
 }

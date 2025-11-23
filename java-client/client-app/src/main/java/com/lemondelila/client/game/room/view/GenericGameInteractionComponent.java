@@ -1,22 +1,24 @@
-package com.lemondelila.client.game.core.view;
+package com.lemondelila.client.game.room.view;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.lemondelila.client.framework.access.AccessibleDecorator;
 import com.lemondelila.client.framework.access.AccessibleSpec;
 import com.lemondelila.client.framework.access.FocusHighlighter;
 import com.lemondelila.client.framework.ui.keyboard.KeyboardBindings;
-import com.lemondelila.client.game.core.GameActionEmitter;
-import com.lemondelila.client.game.core.GameInteractionComponent;
+import com.lemondelila.client.game.history.service.GameActionEmitter;
+import com.lemondelila.client.game.core.view.GameInteractionComponent;
+import com.lemondelila.client.game.core.view.PrimaryActionCapable;
 import com.lemondelila.client.game.core.controller.GenericGameInteractionController;
 import com.lemondelila.client.game.core.model.GenericGameState;
 import com.lemondelila.client.game.core.model.PrimaryActionDescriptor;
 import com.lemondelila.client.game.history.controller.GameHistoryController;
-import com.lemondelila.client.game.room.model.BotState;
-import com.lemondelila.client.game.room.model.PlayerState;
+import com.lemondelila.client.game.quiz.view.GameQuizPanel;
 import com.lemondelila.client.game.room.model.TableState;
+import com.lemondelila.client.game.room.service.RoomExtrasMapper;
 import com.lemondelila.client.game.turn.controller.TurnController;
 import com.lemondelila.client.game.turn.model.TurnState;
-import com.lemondelila.client.game.core.PrimaryActionCapable;
+import com.lemondelila.client.game.turn.view.GameStatusPanel;
+import com.lemondelila.client.framework.ui.screen.ScreenId;
 
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -29,7 +31,7 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * Interaction générique : affiche statut, quiz, logs, et supporte une action primaire (ENTER).
+ * Interaction générique pour une table : statut, quiz, logs et action primaire (ENTER).
  */
 public final class GenericGameInteractionComponent extends JPanel implements GameInteractionComponent, GenericGameInteractionController.Listener, PrimaryActionCapable {
 
@@ -37,6 +39,8 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
     private final GameActionEmitter emitter;
     private final GameHistoryController history;
     private final TableState tableState;
+    private final Runnable startHandler;
+    private final RoomExtrasMapper extrasMapper = new RoomExtrasMapper();
     private final GameStatusPanel statusPanel;
     private final GameQuizPanel quizPanel;
     private final PrimaryActionDescriptor primaryAction;
@@ -53,7 +57,8 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
                                            GameHistoryController history,
                                            TableState tableState,
                                            FocusHighlighter focusHighlighter,
-                                           PrimaryActionDescriptor primaryAction) {
+                                           PrimaryActionDescriptor primaryAction,
+                                           Runnable startHandler) {
         super(new BorderLayout(8, 8));
         setFocusable(true);
         this.controller = Objects.requireNonNull(controller, "controller");
@@ -61,6 +66,7 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         this.history = Objects.requireNonNull(history, "history");
         this.tableState = Objects.requireNonNull(tableState, "tableState");
         this.primaryAction = primaryAction;
+        this.startHandler = startHandler;
         this.turnController = new TurnController();
         this.statusPanel = new GameStatusPanel(focusHighlighter);
         this.quizPanel = new GameQuizPanel(focusHighlighter);
@@ -81,10 +87,8 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
 
         add(left, BorderLayout.CENTER);
 
-        // Entrée déclenche l'action primaire si définie.
         if (primaryAction != null) {
             KeyboardBindings.bindEnter(this, this::triggerPrimaryAction, "generic.enter.primary");
-            // Bind global (fenêtré) pour capter Entrée même si le focus est ailleurs dans la table.
             javax.swing.InputMap windowMap = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
             javax.swing.ActionMap actions = getActionMap();
             windowMap.put(javax.swing.KeyStroke.getKeyStroke("ENTER"), "generic.enter.primary.global");
@@ -98,9 +102,17 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
     }
 
     @Override
-    public JComponent component() {
+    public ScreenId id() {
+        return ScreenId.of("generic-game-interaction");
+    }
+
+    @Override
+    public JComponent getComponent() {
         return this;
     }
+
+    // Compatibilité avec les usages existants.
+    public JComponent component() { return this; }
 
     @Override
     public void onAttach(int roomId) {
@@ -114,9 +126,6 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         controller.detach();
     }
 
-    /**
-     * Rafraichit explicitement l'‚tat (utile aprŠs ajout de bot avant le premier tour).
-     */
     public void refreshState() {
         controller.refresh();
     }
@@ -133,7 +142,6 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
     public void onError(String message) {
         SwingUtilities.invokeLater(() -> {
             emitter.announceError(message);
-            // Sur erreur (ex: pas assez de participants), on autorise encore les bots/participants.
             gameStarted = false;
             tableState.updateStatus("open");
         });
@@ -192,6 +200,10 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
 
     @Override
     public void triggerPrimaryAction() {
+        if (startHandler != null && !tableState.started()) {
+            startHandler.run();
+            return;
+        }
         if (primaryAction != null) {
             controller.triggerPrimaryAction();
         }
@@ -205,23 +217,6 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         if (state.extras().isEmpty()) {
             return;
         }
-        Object playersNode = state.extras().get("players");
-        if (playersNode instanceof JsonNode node && node.isArray() && node.size() > 0) {
-            var players = new java.util.ArrayList<PlayerState>();
-            node.forEach(p -> players.add(new PlayerState(
-                    p.path("id").isInt() ? p.get("id").asInt() : null,
-                    p.path("username").asText("Joueur")
-            )));
-            tableState.updatePlayers(players);
-        }
-        Object botsNode = state.extras().get("bots");
-        if (botsNode instanceof JsonNode node2 && node2.isArray() && node2.size() > 0) {
-            var bots = new java.util.ArrayList<BotState>();
-            node2.forEach(b -> bots.add(new BotState(
-                    b.path("id").isInt() ? b.get("id").asInt() : null,
-                    b.path("name").asText("Bot")
-            )));
-            tableState.updateBots(bots);
-        }
+        extrasMapper.updateTableState(tableState, state.extras());
     }
 }

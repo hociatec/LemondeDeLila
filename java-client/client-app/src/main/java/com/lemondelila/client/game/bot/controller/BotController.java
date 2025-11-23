@@ -5,39 +5,30 @@ import com.lemondelila.client.framework.core.event.DomainEventBus;
 import com.lemondelila.client.framework.core.event.EventSubscriptions;
 import com.lemondelila.client.framework.core.task.TaskScheduler;
 import com.lemondelila.client.game.bot.event.AddBotRequested;
-import com.lemondelila.client.game.bot.event.BotAdded;
 import com.lemondelila.client.game.bot.event.BotOperationFailed;
-import com.lemondelila.client.game.bot.event.BotRemoved;
 import com.lemondelila.client.game.bot.event.RemoveBotRequested;
-import com.lemondelila.client.game.bot.service.BotApiService;
-import com.lemondelila.client.game.room.event.RoomOperationFailed;
-import com.lemondelila.client.game.room.event.RoomUpdated;
-import com.lemondelila.client.game.room.model.BotState;
-import com.lemondelila.client.game.room.model.RoomState;
-import com.lemondelila.client.game.room.service.RoomApiService;
+import com.lemondelila.client.game.bot.controller.BotGuard;
+import com.lemondelila.client.game.room.service.RoomRealtimeService;
 
-import java.io.IOException;
+import java.util.Map;
 
 public final class BotController implements AutoCloseable {
 
     private final DomainEventBus eventBus;
-    private final BotApiService botApi;
+    private final RoomRealtimeService realtime;
     private final BotGuard guard;
     private final TaskScheduler scheduler;
-    private final RoomApiService roomApi;
     private final EventSubscriptions subscriptions = new EventSubscriptions();
 
     @Inject
     public BotController(DomainEventBus eventBus,
-                         BotApiService botApi,
+                         RoomRealtimeService realtime,
                          BotGuard guard,
-                         TaskScheduler scheduler,
-                         RoomApiService roomApi) {
+                         TaskScheduler scheduler) {
         this.eventBus = eventBus;
-        this.botApi = botApi;
+        this.realtime = realtime;
         this.guard = guard;
         this.scheduler = scheduler;
-        this.roomApi = roomApi;
         subscriptions.subscribe(eventBus, AddBotRequested.class, this::onAddBot);
         subscriptions.subscribe(eventBus, RemoveBotRequested.class, this::onRemoveBot);
     }
@@ -49,15 +40,12 @@ public final class BotController implements AutoCloseable {
         }
         scheduler.runAsync(() -> {
             try {
-                BotState bot = botApi.addBot(req.roomId(), req.name());
-                eventBus.publish(new BotAdded(req.roomId(), bot));
-                refreshRoom(req.roomId());
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            } catch (IOException e) {
-                eventBus.publish(new BotOperationFailed("Ajout bot impossible : " + clean(e.getMessage())));
+                realtime.sendCommand("bot.add", Map.of(
+                        "roomId", req.roomId(),
+                        "name", req.name() == null ? "" : req.name()
+                ));
             } catch (Exception e) {
-                eventBus.publish(new BotOperationFailed("Erreur ajout bot : " + clean(e.getMessage())));
+                eventBus.publish(new BotOperationFailed("Ajout bot impossible : " + clean(e.getMessage())));
             }
         });
     }
@@ -69,28 +57,14 @@ public final class BotController implements AutoCloseable {
         }
         scheduler.runAsync(() -> {
             try {
-                botApi.removeBot(req.roomId(), req.botId());
-                eventBus.publish(new BotRemoved(req.roomId(), req.botId()));
-                refreshRoom(req.roomId());
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            } catch (IOException e) {
-                eventBus.publish(new BotOperationFailed("Suppression bot impossible : " + clean(e.getMessage())));
+                realtime.sendCommand("bot.remove", Map.of(
+                        "roomId", req.roomId(),
+                        "botId", req.botId()
+                ));
             } catch (Exception e) {
-                eventBus.publish(new BotOperationFailed("Erreur suppression bot : " + clean(e.getMessage())));
+                eventBus.publish(new BotOperationFailed("Suppression bot impossible : " + clean(e.getMessage())));
             }
         });
-    }
-
-    private void refreshRoom(int roomId) {
-        try {
-            RoomState state = roomApi.fetchRoom(roomId);
-            eventBus.publish(new RoomUpdated(state));
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        } catch (Exception e) {
-            eventBus.publish(new RoomOperationFailed("Impossible d'actualiser la table : " + clean(e.getMessage())));
-        }
     }
 
     @Override

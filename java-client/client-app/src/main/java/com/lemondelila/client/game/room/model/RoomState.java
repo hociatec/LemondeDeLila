@@ -11,6 +11,7 @@ public final class RoomState {
     private String name;
     private String status;
     private String gameType;
+    private boolean isPrivate;
     private int maxPlayers;
     private Owner owner;
     private final List<PlayerState> players = new ArrayList<>();
@@ -21,6 +22,7 @@ public final class RoomState {
     public String name() { return name; }
     public String status() { return status; }
     public String gameType() { return gameType; }
+    public boolean isPrivate() { return isPrivate; }
     public int maxPlayers() { return maxPlayers; }
     public Optional<Owner> owner() { return Optional.ofNullable(owner); }
     public List<PlayerState> players() { return Collections.unmodifiableList(players); }
@@ -31,6 +33,7 @@ public final class RoomState {
     public RoomState withName(String name) { this.name = name; return this; }
     public RoomState withStatus(String status) { this.status = status; return this; }
     public RoomState withGameType(String gameType) { this.gameType = gameType; return this; }
+    public RoomState withIsPrivate(boolean isPrivate) { this.isPrivate = isPrivate; return this; }
     public RoomState withMaxPlayers(int maxPlayers) { this.maxPlayers = maxPlayers; return this; }
     public RoomState withOwner(Owner owner) { this.owner = owner; return this; }
     public RoomState withCounts(Counts counts) { this.counts = counts; return this; }

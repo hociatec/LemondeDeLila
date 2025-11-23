@@ -1,4 +1,4 @@
-package com.lemondelila.client.game.core.view;
+package com.lemondelila.client.game.quiz.view;
 
 import com.lemondelila.client.framework.access.AccessibleDecorator;
 import com.lemondelila.client.framework.access.AccessibleSpec;

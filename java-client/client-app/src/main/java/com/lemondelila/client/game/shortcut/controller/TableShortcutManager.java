@@ -2,7 +2,7 @@ package com.lemondelila.client.game.shortcut.controller;
 
 import com.lemondelila.client.framework.access.shortcut.AccessibleShortcutRegistry;
 import com.lemondelila.client.framework.core.di.Inject;
-import com.lemondelila.client.game.core.FocusNavigator;
+import com.lemondelila.client.game.core.service.FocusNavigator;
 import com.lemondelila.client.game.shortcut.model.ShortcutEntry;
 
 import javax.swing.JComponent;
@@ -41,7 +41,7 @@ public final class TableShortcutManager {
         if (container != null) {
             shortcuts.applyTo(container);
         }
-        navigator.install(focusAreas);
+        navigator.install(container, focusAreas);
     }
 
     public void registerShortcut(javax.swing.KeyStroke stroke, String description) {
@@ -66,6 +66,25 @@ public final class TableShortcutManager {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 onQuit.run();
+            }
+        });
+    }
+
+    /**
+     * Raccourci pour basculer la confidentialite (Ctrl+H).
+     */
+    public void bindPrivacyToggle(JComponent root, Runnable onToggle) {
+        Objects.requireNonNull(root, "root");
+        Objects.requireNonNull(onToggle, "onToggle");
+        KeyStroke toggle = KeyStroke.getKeyStroke(KeyEvent.VK_H, InputEvent.CTRL_DOWN_MASK);
+        registerShortcut(toggle, "Rendre la table publique/privee");
+        InputMap windowMap = root.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        ActionMap actions = root.getActionMap();
+        windowMap.put(toggle, "table.privacy.toggle");
+        actions.put("table.privacy.toggle", new javax.swing.AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                onToggle.run();
             }
         });
     }
@@ -172,9 +191,11 @@ public final class TableShortcutManager {
                         Runnable onTurnInfo,
                         Runnable onAddBot,
                         Runnable onRemoveBot,
+                        Runnable onTogglePrivacy,
                         Runnable onQuit) {
         bindInfoShortcuts(root, onSummary, onTurnInfo);
         bindBotShortcuts(root, onAddBot, onRemoveBot);
+        bindPrivacyToggle(root, onTogglePrivacy);
         bindQuit(root, onQuit);
     }
 

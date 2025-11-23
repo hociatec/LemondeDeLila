@@ -13,24 +13,24 @@ import com.lemondelila.client.game.bot.event.BotAdded;
 import com.lemondelila.client.game.bot.event.BotOperationFailed;
 import com.lemondelila.client.game.bot.event.BotRemoved;
 import com.lemondelila.client.game.bot.event.RemoveBotRequested;
-import com.lemondelila.client.game.core.BaseTableScreen;
-import com.lemondelila.client.game.core.GameAnnouncer;
-import com.lemondelila.client.game.core.GameInteractionComponent;
-import com.lemondelila.client.game.core.GameInteractionRegistry;
+import com.lemondelila.client.game.room.view.BaseTableScreen;
+import com.lemondelila.client.game.history.service.GameAnnouncer;
+import com.lemondelila.client.game.core.service.GameInteractionRegistry;
 import com.lemondelila.client.game.history.controller.GameHistoryController;
 import com.lemondelila.client.game.history.view.GameHistorySidebar;
 import com.lemondelila.client.game.room.model.BotState;
 import com.lemondelila.client.game.room.model.RoomDetailsState;
-import com.lemondelila.client.game.room.model.RoomState;
 import com.lemondelila.client.game.room.model.TableState;
-import com.lemondelila.client.game.room.service.RoomApiService;
 import com.lemondelila.client.game.room.event.RoomUpdated;
-import com.lemondelila.client.framework.core.task.TaskScheduler;
-import com.lemondelila.client.framework.ui.keyboard.KeyboardBindings;
-import com.lemondelila.client.game.core.view.GenericGameInteractionComponent;
+import com.lemondelila.client.game.room.event.RoomPrivacyChanged;
+import com.lemondelila.client.game.room.event.RoomOperationFailed;
+import com.lemondelila.client.game.room.view.GenericGameInteractionComponent;
+import com.lemondelila.client.game.room.service.RoomRealtimeService;
 import com.lemondelila.client.game.turn.model.TurnState;
 import com.lemondelila.client.game.turn.view.TurnView;
 import com.lemondelila.client.game.turn.model.TurnState;
+import com.lemondelila.client.game.room.service.RoomLifecycleService;
+import com.lemondelila.client.game.core.view.GameInteractionComponent;
 
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -51,12 +51,12 @@ public final class RoomTableScreen extends BaseTableScreen {
     private final DomainEventBus eventBus;
     private final GameAnnouncer announcer;
     private final TableState tableState;
-    private final RoomApiService roomApi;
-    private final TaskScheduler scheduler;
+    private final RoomLifecycleService lifecycleService;
+    private final RoomRealtimeService realtimeService;
     private final RoomTableView view;
     private final GameInteractionRegistry interactionRegistry;
     private ScreenManager screenManager;
-    private GameInteractionComponent currentInteraction;
+    private com.lemondelila.client.game.core.view.GameInteractionComponent currentInteraction;
 
     @Inject
     public RoomTableScreen(RoomDetailsState detailsState,
@@ -67,8 +67,8 @@ public final class RoomTableScreen extends BaseTableScreen {
                            GameAnnouncer announcer,
                            GameHistorySidebar historySidebar,
                            TableState tableState,
-                           RoomApiService roomApi,
-                           TaskScheduler scheduler,
+                           RoomLifecycleService lifecycleService,
+                           RoomRealtimeService realtimeService,
                            GameInteractionRegistry interactionRegistry) {
         super(detailsState, shortcutManager, announcer, historySidebar, eventBus);
         setLayout(new BorderLayout(8, 8));
@@ -77,8 +77,8 @@ public final class RoomTableScreen extends BaseTableScreen {
         this.eventBus = eventBus;
         this.announcer = announcer;
         this.tableState = tableState;
-        this.roomApi = roomApi;
-        this.scheduler = scheduler;
+        this.lifecycleService = lifecycleService;
+        this.realtimeService = realtimeService;
         this.interactionRegistry = interactionRegistry;
         this.view = new RoomTableView(focusHighlighter, historySidebar);
 
@@ -89,6 +89,7 @@ public final class RoomTableScreen extends BaseTableScreen {
                 this::handleTurnInfo,
                 this::handleAddBot,
                 this::handleRemoveBot,
+                this::handleTogglePrivacy,
                 this::handleQuit);
 
         subscriptions().subscribe(eventBus, BotAdded.class, e -> {
@@ -100,22 +101,26 @@ public final class RoomTableScreen extends BaseTableScreen {
         });
         subscriptions().subscribe(eventBus, BotRemoved.class, e -> {
             if (!matchesCurrentRoom(e.roomId())) return;
-            BotState bot = tableState.bots().stream()
-                    .filter(b -> b.id() != null && Objects.equals(b.id(), e.botId()))
-                    .findFirst()
-                    .orElse(null);
-            String name = bot != null ? bot.name() : "Bot";
-            announcer.announce(view.historySidebar(), name + " a quitte la table.");
+            String name = findBotName(e.botId(), e.name());
+            announcer.announce(view.historySidebar(), name + " a quitté la table.");
         });
         subscriptions().subscribe(eventBus, BotOperationFailed.class, e -> {
             announcer.announce(view.historySidebar(), "Action bot impossible : " + e.message());
         });
         subscriptions().subscribe(eventBus, RoomUpdated.class, e -> {
             if (!matchesCurrentRoom(e.room().id())) return;
-            RoomState state = e.room();
+            var state = e.room();
             tableState.updateBots(state.bots());
             tableState.updatePlayers(state.players());
             tableState.updateStatus(state.status());
+        });
+        subscriptions().subscribe(eventBus, RoomPrivacyChanged.class, e -> {
+            if (!matchesCurrentRoom(e.roomId())) return;
+            String status = e.isPrivate() ? "privée" : "publique";
+            announcer.announce(view.historySidebar(), "Table désormais " + status + ".");
+        });
+        subscriptions().subscribe(eventBus, RoomOperationFailed.class, e -> {
+            announcer.announce(view.historySidebar(), "Action table impossible : " + e.message());
         });
     }
 
@@ -135,11 +140,6 @@ public final class RoomTableScreen extends BaseTableScreen {
     }
 
     @Override
-    public JPanel interactionArea() {
-        return view.interactionPanel();
-    }
-
-    @Override
     public void onShow(ScreenContext context) {
         super.onShow(context);
         this.screenManager = context.screenManager();
@@ -147,21 +147,11 @@ public final class RoomTableScreen extends BaseTableScreen {
         Integer roomId = detailsState.roomId();
         String gameName = detailsState.gameType() == null ? "" : detailsState.gameType();
         swapInteraction(gameName);
+        lifecycleService.trackRoom(roomId, gameName);
         if (roomId != null) {
             if (tableState.roomId() == null || !roomId.equals(tableState.roomId())) {
                 tableState.setRoom(roomId, gameName);
             }
-            scheduler.runAsync(() -> {
-                try {
-                    RoomState state = roomApi.fetchRoom(roomId);
-                    tableState.setRoom(state.id(), state.gameType());
-                    tableState.updateBots(state.bots());
-                    tableState.updatePlayers(state.players());
-                    tableState.updateStatus(state.status());
-                    // Rafraichit l'affichage/annonce après mise à jour
-                    announcer.announce(view.historySidebar(), "");
-                } catch (Exception ignored) { }
-            });
         } else {
             tableState.clear();
         }
@@ -198,7 +188,6 @@ public final class RoomTableScreen extends BaseTableScreen {
             announcer.announce(view.historySidebar(), "La partie a commence : impossible d'ajouter un bot.");
             return;
         }
-        announcer.announce(view.historySidebar(), "Ajout d'un bot en cours...");
         eventBus.publish(new AddBotRequested(roomId, null));
     }
 
@@ -219,14 +208,26 @@ public final class RoomTableScreen extends BaseTableScreen {
             announcer.announce(view.historySidebar(), "Aucun bot a retirer.");
             return;
         }
-        announcer.announce(view.historySidebar(), "Retrait du bot " + candidate.name() + "...");
         eventBus.publish(new RemoveBotRequested(roomId, candidate.id()));
+    }
+
+    private void handleTogglePrivacy() {
+        Integer roomId = detailsState.roomId();
+        if (roomId == null) {
+            announcer.announce(view.historySidebar(), "Aucune table selectionnee pour changer la confidentialite.");
+            return;
+        }
+        try {
+            realtimeService.sendCommand("room.toggle-privacy", java.util.Map.of());
+        } catch (Exception ex) {
+            announcer.announce(view.historySidebar(), "Impossible de changer la confidentialite : " + ex.getMessage());
+        }
     }
 
     @Override
     protected void handleQuit() {
         Integer roomId = detailsState.roomId();
-        boolean confirmed = com.lemondelila.client.game.core.GameDialog.confirm(
+        boolean confirmed = com.lemondelila.client.game.core.view.GameDialog.confirm(
                 this,
                 "Quitter la table",
                 "Etes-vous sur de quitter la table ?");
@@ -235,6 +236,7 @@ public final class RoomTableScreen extends BaseTableScreen {
             return;
         }
         announcer.announce(view.historySidebar(), "Demande de sortie de la table.");
+        lifecycleService.stopTracking();
         if (roomId != null) {
             eventBus.publish(new com.lemondelila.client.game.room.event.LeaveRoomRequested(roomId));
         }
@@ -252,37 +254,38 @@ public final class RoomTableScreen extends BaseTableScreen {
         return current != null && current.equals(roomId);
     }
 
+    private String findBotName(Integer botId, String fallback) {
+        if (botId != null) {
+            return tableState.bots().stream()
+                    .filter(b -> b.id() != null && Objects.equals(b.id(), botId))
+                    .map(b -> b.name() == null || b.name().isBlank() ? "Bot" : b.name())
+                    .findFirst()
+                    .orElse(fallback == null || fallback.isBlank() ? "Bot" : fallback);
+        }
+        return fallback == null || fallback.isBlank() ? "Bot" : fallback;
+    }
+
     private void handleTableSummary() {
         Integer roomId = detailsState.roomId();
         if (roomId == null) {
             announcer.announce(view.historySidebar(), "Aucune table selectionnee.");
             return;
         }
-        // Récupère la liste la plus fraîche depuis le back
-        scheduler.runAsync(() -> {
-            try {
-                RoomState state = roomApi.fetchRoom(roomId);
-                var bots = state.bots();
-                var players = state.players();
-                String names = java.util.stream.Stream.concat(
-                                players.stream().map(p -> p.username() == null ? "Joueur" : p.username()),
-                                bots.stream().map(b -> b.name() == null ? "Bot" : b.name())
-                        )
-                        .filter(java.util.Objects::nonNull)
-                        .map(String::trim)
-                        .filter(s -> !s.isEmpty())
-                        .reduce((a, b) -> a + ", " + b)
-                        .orElse("aucun participant");
-                int count = players.size() + bots.size();
-                SwingUtilities.invokeLater(() ->
-                        announcer.announce(view.historySidebar(), count + " personnes assises à la table : " + names + ".")
-                );
-            } catch (Exception e) {
-                SwingUtilities.invokeLater(() ->
-                        announcer.announce(view.historySidebar(), "Impossible de récupérer les participants.")
-                );
-            }
-        });
+        var players = tableState.players();
+        var bots = tableState.bots();
+        String names = java.util.stream.Stream.concat(
+                        players.stream().map(p -> p.username() == null ? "Joueur" : p.username()),
+                        bots.stream().map(b -> b.name() == null ? "Bot" : b.name())
+                )
+                .filter(java.util.Objects::nonNull)
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .reduce((a, b) -> a + ", " + b)
+                .orElse("aucun participant");
+        int count = players.size() + bots.size();
+        SwingUtilities.invokeLater(() ->
+                announcer.announce(view.historySidebar(), count + " personnes assises à la table : " + names + ".")
+        );
     }
 
     private void handleTurnInfo() {
@@ -309,8 +312,8 @@ public final class RoomTableScreen extends BaseTableScreen {
                 .orElse(null);
         currentInteraction = component;
         if (component != null) {
-            view.interactionPanel().add(component.component());
-            if (component instanceof com.lemondelila.client.game.core.PrimaryActionCapable capable) {
+            view.interactionPanel().add(component.getComponent());
+            if (component instanceof com.lemondelila.client.game.core.view.PrimaryActionCapable capable) {
                 javax.swing.InputMap windowMap = view.interactionPanel().getInputMap(javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW);
                 javax.swing.InputMap ancestorMap = view.interactionPanel().getInputMap(javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
                 javax.swing.InputMap focusedMap = view.interactionPanel().getInputMap(javax.swing.JComponent.WHEN_FOCUSED);
@@ -332,21 +335,4 @@ public final class RoomTableScreen extends BaseTableScreen {
         view.interactionPanel().repaint();
     }
 
-    private boolean isGameStarted() {
-        String status = tableState.status();
-        if (status != null && !"open".equalsIgnoreCase(status)) {
-            return true;
-        }
-        Integer roomId = detailsState.roomId();
-        if (roomId == null) {
-            return false;
-        }
-        try {
-            RoomState state = roomApi.fetchRoom(roomId);
-            tableState.updateStatus(state.status());
-            return state.status() != null && !"open".equalsIgnoreCase(state.status());
-        } catch (Exception e) {
-            return false;
-        }
-    }
 }

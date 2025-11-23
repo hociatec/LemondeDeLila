@@ -1,11 +1,11 @@
-package com.lemondelila.client.game.core;
+package com.lemondelila.client.game.history.service;
 
-import com.lemondelila.client.game.history.view.GameHistorySidebar;
 import com.lemondelila.client.game.history.controller.GameHistoryController;
+import com.lemondelila.client.game.history.view.GameHistorySidebar;
 
 /**
- * Petit helper pour annoncer des actions/événements de jeu de façon unifiée
- * (historique + vocalisation).
+ * Helper pour annoncer des actions/événements de jeu de façon unifiée
+ * (historique + vocalisation via GameAnnouncer).
  */
 public final class GameActionEmitter {
 

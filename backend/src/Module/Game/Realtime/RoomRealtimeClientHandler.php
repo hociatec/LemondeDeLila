@@ -6,20 +6,25 @@ use Amp\Http\Server\Request;
 use Amp\Http\Server\Response;
 use Amp\Http\Status;
 use Amp\Promise;
-use Amp\Success;
 use Amp\Loop;
 use Amp\Websocket\Client;
 use Amp\Websocket\Code;
 use Amp\Websocket\Message;
 use Amp\Websocket\Server\ClientHandler;
 use Amp\Websocket\Server\Gateway;
+use App\Module\Game\Bot\BotAllocator;
 use App\Module\Game\Entity\Room;
+use App\Module\Game\Entity\RoomBot;
+use App\Module\Game\Entity\RoomParticipant;
 use App\Module\Game\Repository\RoomRepository;
+use App\Module\Game\Service\TableManager;
 use App\Module\User\Entity\User;
 use App\Module\User\Repository\UserRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Exception\JWTDecodeFailureException;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Psr\Log\LoggerInterface;
+use function Amp\asyncCall;
 use function Amp\call;
 
 class RoomRealtimeClientHandler implements ClientHandler
@@ -37,6 +42,9 @@ class RoomRealtimeClientHandler implements ClientHandler
         private readonly RoomRealtimeAccessChecker $accessChecker,
         private readonly RoomRealtimeBroker $broker,
         private readonly RoomRealtimePayloadBuilder $payloadBuilder,
+        private readonly BotAllocator $botAllocator,
+        private readonly TableManager $tables,
+        private readonly EntityManagerInterface $entityManager,
         private readonly LoggerInterface $logger
     ) {
     }
@@ -45,43 +53,59 @@ class RoomRealtimeClientHandler implements ClientHandler
     {
         return call(function () use ($gateway, $request, $response) {
             $roomId = $this->extractRoomId($request);
-            if ($roomId === null) {
-                return yield $gateway->getErrorHandler()->handleError(Status::BAD_REQUEST, 'Room id requis', $request);
-            }
 
             $token = $this->extractToken($request);
             if ($token === null) {
-                return yield $gateway->getErrorHandler()->handleError(Status::UNAUTHORIZED, 'Token manquant', $request);
+                return yield $this->rejectHandshake($gateway, $request, Status::UNAUTHORIZED, 'Token manquant', [
+                    'roomId' => $roomId,
+                ]);
             }
 
             try {
                 $payload = $this->jwtManager->parse($token);
             } catch (JWTDecodeFailureException $exception) {
                 $this->logger->warning('Handshake rejete (token invalide)', ['exception' => $exception]);
-                return yield $gateway->getErrorHandler()->handleError(Status::UNAUTHORIZED, 'Token invalide', $request);
+                return yield $this->rejectHandshake($gateway, $request, Status::UNAUTHORIZED, 'Token invalide', [
+                    'roomId' => $roomId,
+                ]);
             }
 
             $identifierClaim = $this->jwtManager->getUserIdClaim();
             $identifier = $payload[$identifierClaim] ?? null;
             if (!is_string($identifier) || $identifier === '') {
-                return yield $gateway->getErrorHandler()->handleError(Status::UNAUTHORIZED, 'Identifiant token invalide', $request);
+                $this->logger->warning('Handshake refusé : identifiant token invalide', ['identifier'=>$identifier]);
+                return yield $this->rejectHandshake($gateway, $request, Status::UNAUTHORIZED, 'Identifiant token invalide', [
+                    'roomId' => $roomId,
+                ]);
             }
 
             /** @var User|null $user */
             $user = $this->userRepository->findOneBy(['username' => $identifier]) ??
                 $this->userRepository->find($identifier);
             if (!$user) {
-                return yield $gateway->getErrorHandler()->handleError(Status::UNAUTHORIZED, 'Utilisateur introuvable', $request);
+                return yield $this->rejectHandshake($gateway, $request, Status::UNAUTHORIZED, 'Utilisateur introuvable', [
+                    'roomId' => $roomId,
+                    'username' => $identifier,
+                ]);
             }
 
-            /** @var Room|null $room */
-            $room = $this->roomRepository->find($roomId);
-            if (!$room) {
-                return yield $gateway->getErrorHandler()->handleError(Status::NOT_FOUND, 'Table introuvable', $request);
+            $room = null;
+            if ($roomId !== null && $roomId > 0) {
+                /** @var Room|null $room */
+                $room = $this->roomRepository->find($roomId);
+                if (!$room) {
+                $this->logger->warning('Handshake refusé : table introuvable', ['roomId'=>$roomId]);
+                 return yield $this->rejectHandshake($gateway, $request, Status::NOT_FOUND, 'Table introuvable', [
+                    'roomId' => $roomId,
+                ]);
             }
-
-            if (!$this->accessChecker->canAccess($user, $room)) {
-                return yield $gateway->getErrorHandler()->handleError(Status::FORBIDDEN, 'Acces refuse', $request);
+                if (!$this->accessChecker->canAccess($user, $room)) {
+                $this->logger->warning('Handshake refusé : accès refusé', ['roomId'=>$roomId, 'user'=>$userId]);
+                 return yield $this->rejectHandshake($gateway, $request, Status::FORBIDDEN, 'Acces refuse', [
+                    'roomId' => $roomId,
+                    'userId' => $user->getId(),
+                ]);
+            }
             }
 
             $expiresAt = null;
@@ -89,14 +113,24 @@ class RoomRealtimeClientHandler implements ClientHandler
                 $expiresAt = (int) $payload['exp'];
             }
             if ($expiresAt !== null && $expiresAt <= time()) {
-                return yield $gateway->getErrorHandler()->handleError(Status::UNAUTHORIZED, 'Session expiree', $request);
+                return yield $this->rejectHandshake($gateway, $request, Status::UNAUTHORIZED, 'Session expiree', [
+                    'roomId' => $roomId,
+                    'userId' => $user->getId(),
+                ]);
             }
+
+            $this->logger->info('Handshake accepte pour la table', [
+                'roomId' => $roomId,
+                'userId' => $user->getId(),
+                'username' => $user->getUsername(),
+                'query' => $request->getUri()->getQuery(),
+            ]);
 
             $request->setAttribute(self::ATTR_ROOM_ID, $roomId);
             $request->setAttribute(self::ATTR_USER_ID, $user->getId());
             $request->setAttribute(self::ATTR_USERNAME, $user->getUsername());
             $request->setAttribute(self::ATTR_TOKEN_EXP, $expiresAt);
-            $request->setAttribute(self::ATTR_ROOM_NAME, $room->getName());
+            $request->setAttribute(self::ATTR_ROOM_NAME, $room?->getName() ?? '');
 
             return $response;
         });
@@ -111,15 +145,20 @@ class RoomRealtimeClientHandler implements ClientHandler
             $expiresAt = $request->getAttribute(self::ATTR_TOKEN_EXP);
             $roomName = $request->getAttribute(self::ATTR_ROOM_NAME) ?? '';
 
-            if (!is_int($roomId) || $roomId <= 0 || !is_int($userId)) {
+            if (!is_int($userId)) {
+                yield $client->close();
+                return;
+            }
+            if ($roomId !== null && $roomId < 0) {
                 yield $client->close();
                 return;
             }
 
-            $this->broker->register($roomId, $client, [
+            $targetRoom = $roomId ?? 0;
+            $this->broker->register($targetRoom, $client, [
                 'userId' => $userId,
                 'username' => $username,
-                'roomName' => $roomName,
+                'roomName' => $roomId === null ? 'lobby' : $roomName,
             ]);
 
             $expiryWatcher = null;
@@ -169,28 +208,34 @@ class RoomRealtimeClientHandler implements ClientHandler
                 });
             }
 
-            try {
-                $snapshotPayload = $this->payloadBuilder->buildById($roomId);
-                $initialMessage = [
-                    'type' => 'initial',
-                    'roomId' => $roomId,
-                    'payload' => $snapshotPayload,
-                ];
-                yield $client->send(json_encode($initialMessage, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
-            } catch (\Throwable $exception) {
-                $this->logger->error('Impossible de préparer la charge initiale WS', [
-                    'exception' => $exception,
-                    'roomId' => $roomId,
-                ]);
+            if ($roomId !== null && $roomId > 0) {
+                try {
+                    $snapshotPayload = $this->payloadBuilder->buildById($roomId);
+                    $initialMessage = [
+                        'type' => 'initial',
+                        'roomId' => $roomId,
+                        'payload' => $snapshotPayload,
+                    ];
+                    yield $client->send(json_encode($initialMessage, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+                } catch (\Throwable $exception) {
+                    $this->logger->error('Impossible de préparer la charge initiale WS', [
+                        'exception' => $exception,
+                        'roomId' => $roomId,
+                    ]);
+                }
             }
 
             try {
                 while ($message = yield $client->receive()) {
                     \assert($message instanceof Message);
+                    $buffer = null;
                     try {
-                        yield $message->buffer(); // ignore any inbound message
+                        $buffer = yield $message->buffer();
                     } catch (\Throwable) {
-                        // ignore
+                        // ignore invalid
+                    }
+                    if ($buffer !== null) {
+                        $this->processCommand($roomId, $client, $buffer);
                     }
                 }
             } catch (\Throwable $exception) {
@@ -208,6 +253,438 @@ class RoomRealtimeClientHandler implements ClientHandler
         });
     }
 
+    private function processCommand(int $roomId, Client $client, string $buffer): void
+    {
+        $decoded = \json_decode($buffer, true);
+        if (!is_array($decoded)) {
+            return;
+        }
+        $type = $decoded['type'] ?? '';
+        if (!is_string($type) || $type === '') {
+            return;
+        }
+        $payload = $decoded['payload'] ?? [];
+        asyncCall(function () use ($roomId, $client, $type, $payload) {
+            try {
+                switch ($type) {
+                    case 'bot.add':
+                        yield $this->handleBotAdd($roomId, $client, $payload);
+                        break;
+                    case 'bot.remove':
+                        yield $this->handleBotRemove($roomId, $client, $payload);
+                        break;
+                    case 'room.join':
+                        yield $this->handleRoomJoin($roomId, $client, $payload);
+                        break;
+                    case 'room.leave':
+                        yield $this->handleRoomLeave($roomId, $client);
+                        break;
+                    case 'room.start':
+                        yield $this->handleRoomStart($roomId, $client);
+                        break;
+                    case 'room.toggle-privacy':
+                        yield $this->handleRoomTogglePrivacy($roomId, $client);
+                        break;
+                    case 'room.create':
+                        yield $this->handleRoomCreate($client, $payload);
+                        break;
+                    default:
+                        yield $this->sendError($client, 'Commande non reconnue : ' . $type);
+                        break;
+                }
+            } catch (\Throwable $exception) {
+                $this->logger->error('Erreur commande room WS', [
+                    'roomId' => $roomId,
+                    'type' => $type,
+                    'error' => $exception->getMessage(),
+                ]);
+                yield $this->sendError($client, 'Erreur interne');
+            }
+        });
+    }
+
+    private function handleBotAdd(int $roomId, Client $client, array $payload): Promise
+    {
+        return call(function () use ($roomId, $client, $payload) {
+            $room = $this->roomRepository->find($roomId);
+            if (!$room) {
+                yield $this->sendError($client, 'Table introuvable');
+                return;
+            }
+
+            $ownerId = $room->getOwner()?->getId();
+            $userId = $this->getUserIdFromClient($client);
+            if ($userId === null || $ownerId !== $userId) {
+                yield $this->sendError($client, 'Seul le propriétaire peut gérer les bots');
+                return;
+            }
+
+            if ($room->getStatus() !== 'open') {
+                yield $this->sendError($client, 'Table déjà démarrée');
+                return;
+            }
+
+            $currentCount = $room->getPlayers()->count() + $room->getBots()->count();
+            if ($currentCount >= $room->getMaxPlayers()) {
+                yield $this->sendError($client, 'Table pleine');
+                return;
+            }
+
+            $requestedName = isset($payload['name']) ? trim((string)$payload['name']) : '';
+            $usedNames = [];
+            foreach ($room->getBots() as $bot) {
+                $usedNames[] = $bot->getName();
+            }
+            foreach ($room->getPlayers() as $player) {
+                $usedNames[] = $player->getUsername();
+            }
+
+            if ($requestedName !== '' && \in_array($requestedName, $usedNames, true)) {
+                yield $this->sendError($client, 'Nom de bot déjà utilisé');
+                return;
+            }
+
+            try {
+                $name = $requestedName !== '' ? $requestedName : $this->botAllocator->pick($usedNames);
+            } catch (\Throwable $exception) {
+                yield $this->sendError($client, 'Impossible de générer un bot : ' . $exception->getMessage());
+                return;
+            }
+            $bot = (new RoomBot())->setName($name);
+            $room->addBot($bot);
+            $this->entityManager->persist($bot);
+            $this->entityManager->flush();
+
+            yield $this->broadcastRoomUpdate($roomId, 'bot.added', ['bot' => $this->serializeBot($bot)]);
+        });
+    }
+
+    private function handleRoomJoin(int $roomId, Client $client, array $payload): Promise
+    {
+        return call(function () use ($roomId, $client) {
+            $room = $this->roomRepository->find($roomId);
+            if (!$room) {
+                yield $this->sendError($client, 'Table introuvable');
+                return;
+            }
+            if ($room->getStatus() !== 'open') {
+                yield $this->sendError($client, 'Table déjà démarrée');
+                return;
+            }
+            $userId = $this->getUserIdFromClient($client);
+            if ($userId === null) {
+                yield $this->sendError($client, 'Utilisateur introuvable');
+                return;
+            }
+            $user = $this->userRepository->find($userId);
+            if (!$user) {
+                yield $this->sendError($client, 'Utilisateur introuvable');
+                return;
+            }
+
+            $currentCount = $this->totalParticipants($room);
+            if ($currentCount >= $room->getMaxPlayers()) {
+                yield $this->sendError($client, 'Table pleine');
+                return;
+            }
+
+            if (!$room->getPlayers()->contains($user)) {
+                $room->addPlayer($user);
+            }
+
+            $repo = $this->entityManager->getRepository(RoomParticipant::class);
+            $active = $repo->createQueryBuilder('p')
+                ->andWhere('p.room = :room')
+                ->andWhere('p.user = :user')
+                ->andWhere('p.leftAt IS NULL')
+                ->setParameter('room', $room)
+                ->setParameter('user', $user)
+                ->setMaxResults(1)
+                ->getQuery()
+                ->getOneOrNullResult();
+            if (!$active) {
+                $participant = (new RoomParticipant())
+                    ->setRoom($room)
+                    ->setUser($user)
+                    ->setRole('player');
+                $this->entityManager->persist($participant);
+            }
+
+            $this->entityManager->flush();
+            yield $this->broadcastRoomUpdate($roomId, 'room.joined');
+        });
+    }
+
+    private function handleRoomLeave(int $roomId, Client $client): Promise
+    {
+        return call(function () use ($roomId, $client) {
+            $room = $this->roomRepository->find($roomId);
+            if (!$room) {
+                yield $this->sendError($client, 'Table introuvable');
+                return;
+            }
+            $userId = $this->getUserIdFromClient($client);
+            if ($userId === null) {
+                yield $this->sendError($client, 'Utilisateur introuvable');
+                return;
+            }
+            $user = $this->userRepository->find($userId);
+            if (!$user) {
+                yield $this->sendError($client, 'Utilisateur introuvable');
+                return;
+            }
+
+            if ($room->getPlayers()->contains($user)) {
+                $room->removePlayer($user);
+            }
+            $repo = $this->entityManager->getRepository(RoomParticipant::class);
+            $active = $repo->createQueryBuilder('p')
+                ->andWhere('p.room = :room')
+                ->andWhere('p.user = :user')
+                ->andWhere('p.leftAt IS NULL')
+                ->setParameter('room', $room)
+                ->setParameter('user', $user)
+                ->setMaxResults(1)
+                ->getQuery()
+                ->getOneOrNullResult();
+            if ($active instanceof RoomParticipant) {
+                $active->leave();
+            }
+
+            $this->entityManager->flush();
+            yield $this->broadcastRoomUpdate($roomId, 'room.left');
+        });
+    }
+
+    private function handleRoomStart(int $roomId, Client $client): Promise
+    {
+        return call(function () use ($roomId, $client) {
+            $room = $this->roomRepository->find($roomId);
+            if (!$room) {
+                yield $this->sendError($client, 'Table introuvable');
+                return;
+            }
+            if ($room->getStatus() !== 'open') {
+                yield $this->sendError($client, 'Table déjà démarrée');
+                return;
+            }
+            $participants = $this->totalParticipants($room);
+            if ($participants < 2) {
+                yield $this->sendError($client, 'Au moins deux participants sont requis pour démarrer');
+                return;
+            }
+
+            $room->setStatus('started');
+            $this->tables->ensureGame($room);
+            $this->entityManager->flush();
+            yield $this->broadcastRoomUpdate($roomId, 'room.started');
+        });
+    }
+
+    private function handleRoomTogglePrivacy(int $roomId, Client $client): Promise
+    {
+        return call(function () use ($roomId, $client) {
+            $room = $this->roomRepository->find($roomId);
+            if (!$room) {
+                yield $this->sendError($client, 'Table introuvable');
+                return;
+            }
+            $ownerId = $room->getOwner()?->getId();
+            $userId = $this->getUserIdFromClient($client);
+            if ($userId === null || $ownerId !== $userId) {
+                yield $this->sendError($client, 'Seul le propriétaire peut modifier la confidentialité');
+                return;
+            }
+            $room->setIsPrivate(!$room->isPrivate());
+            $this->entityManager->flush();
+            yield $this->broadcastRoomUpdate($roomId, 'room.privacy', ['isPrivate' => $room->isPrivate()]);
+        });
+    }
+
+    private function handleRoomCreate(Client $client, array $payload): Promise
+    {
+        return call(function () use ($client, $payload) {
+            $userId = $this->getUserIdFromClient($client);
+            if ($userId === null) {
+                yield $this->sendError($client, 'Authentification requise');
+                return;
+            }
+            $user = $this->userRepository->find($userId);
+            if (!$user) {
+                yield $this->sendError($client, 'Utilisateur introuvable');
+                return;
+            }
+
+            $gameType = trim((string)($payload['gameType'] ?? 'panier-express'));
+            $name = trim((string)($payload['name'] ?? ''));
+            $maxPlayers = isset($payload['maxPlayers']) ? (int)$payload['maxPlayers'] : 0;
+            $isPrivate = isset($payload['isPrivate']) ? (bool)$payload['isPrivate'] : true;
+
+            $defaults = $this->resolveGameDefaults($gameType);
+            if ($name === '') {
+                $name = $defaults['name'];
+            }
+            if ($maxPlayers <= 0) {
+                $maxPlayers = $defaults['maxPlayers'];
+            }
+
+            $room = (new Room())
+                ->setName($name)
+                ->setGameType($gameType)
+                ->setMaxPlayers($maxPlayers)
+                ->setIsPrivate($isPrivate)
+                ->setOwner($user);
+            $room->addPlayer($user);
+
+            $participant = (new RoomParticipant())
+                ->setRoom($room)
+                ->setUser($user)
+                ->setRole('player');
+            $this->entityManager->persist($room);
+            $this->entityManager->persist($participant);
+            $this->entityManager->flush();
+
+            $roomId = $room->getId();
+            if ($roomId === null) {
+                yield $this->sendError($client, 'Impossible de créer la table');
+                return;
+            }
+
+            $payload = $this->payloadBuilder->buildById($roomId);
+            yield $client->send(json_encode([
+                'type' => 'room.created',
+                'roomId' => $roomId,
+                'payload' => $payload,
+            ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+            yield $this->broadcastRoomUpdate($roomId, 'room.created');
+        });
+    }
+
+    private function resolveGameDefaults(string $gameType): array
+    {
+        $name = 'Table ' . $gameType;
+        $max = 4;
+        foreach (\App\Module\Game\Shared\Catalog::categories() as $category) {
+            foreach ($category['games'] ?? [] as $game) {
+                if (($game['id'] ?? '') === $gameType) {
+                    $name = 'Table ' . ($game['name'] ?? $gameType);
+                    $max = (int)($game['maxPlayers'] ?? $max);
+                }
+            }
+        }
+        return ['name' => $name, 'maxPlayers' => $max];
+    }
+
+    private function handleBotRemove(int $roomId, Client $client, array $payload): Promise
+    {
+        return call(function () use ($roomId, $client, $payload) {
+            $room = $this->roomRepository->find($roomId);
+            if (!$room) {
+                yield $this->sendError($client, 'Table introuvable');
+                return;
+            }
+
+            $ownerId = $room->getOwner()?->getId();
+            $userId = $this->getUserIdFromClient($client);
+            if ($userId === null || $ownerId !== $userId) {
+                yield $this->sendError($client, 'Seul le propriétaire peut gérer les bots');
+                return;
+            }
+
+            if ($room->getStatus() !== 'open') {
+                yield $this->sendError($client, 'Table déjà démarrée');
+                return;
+            }
+
+            $botId = $payload['botId'] ?? null;
+            if (!is_int($botId) && is_numeric($botId)) {
+                $botId = (int)$botId;
+            }
+            if (!is_int($botId)) {
+                yield $this->sendError($client, 'Identifiant de bot invalide');
+                return;
+            }
+
+            $bot = $this->entityManager->getRepository(RoomBot::class)->find($botId);
+            if (!$bot || $bot->getRoom()->getId() !== $roomId) {
+                yield $this->sendError($client, 'Bot introuvable');
+                return;
+            }
+
+            $botData = $this->serializeBot($bot);
+            $room->removeBot($bot);
+            $this->entityManager->remove($bot);
+            $this->entityManager->flush();
+
+            yield $this->broadcastRoomUpdate($roomId, 'bot.removed', [
+                'botId' => $botId,
+                'bot' => $botData,
+            ]);
+        });
+    }
+
+    private function getUserIdFromClient(Client $client): ?int
+    {
+        $meta = $this->broker->getClientMeta($client);
+        if (!is_array($meta)) {
+            return null;
+        }
+        $userId = $meta['userId'] ?? null;
+        if (is_int($userId)) {
+            return $userId;
+        }
+        if (is_numeric($userId)) {
+            return (int)$userId;
+        }
+        return null;
+    }
+
+    private function broadcastRoomUpdate(int $roomId, string $type, array $extra = []): Promise
+    {
+        return call(function () use ($roomId, $type, $extra) {
+            $payload = $this->payloadBuilder->buildById($roomId);
+            foreach ($extra as $key => $value) {
+                $payload[$key] = $value;
+            }
+            yield $this->broker->broadcast($roomId, [
+                'type' => $type,
+                'roomId' => $roomId,
+                'payload' => $payload,
+            ]);
+        });
+    }
+
+    private function totalParticipants(Room $room): int
+    {
+        $repo = $this->entityManager->getRepository(RoomParticipant::class);
+        $humanPlayers = method_exists($repo, 'countActiveByRoomAndRole')
+            ? $repo->countActiveByRoomAndRole($room, 'player')
+            : $room->getPlayers()->count();
+        return $humanPlayers + $room->getBots()->count();
+    }
+
+    private function serializeBot(RoomBot $bot): array
+    {
+        return [
+            'id' => $bot->getId(),
+            'name' => $bot->getName(),
+        ];
+    }
+
+    private function sendError(Client $client, string $message): Promise
+    {
+        return call(function () use ($client, $message) {
+            try {
+                yield $client->send(json_encode([
+                    'type' => 'error',
+                    'payload' => ['message' => $message],
+                ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+            } catch (\Throwable) {
+                // ignore
+            }
+        });
+    }
+
     private function extractRoomId(Request $request): ?int
     {
         parse_str($request->getUri()->getQuery(), $query);
@@ -219,7 +696,7 @@ class RoomRealtimeClientHandler implements ClientHandler
             return null;
         }
         $id = (int) $raw;
-        return $id > 0 ? $id : null;
+        return $id >= 0 ? $id : null;
     }
 
     private function extractToken(Request $request): ?string
@@ -236,5 +713,16 @@ class RoomRealtimeClientHandler implements ClientHandler
         }
 
         return is_string($token) && $token !== '' ? $token : null;
+    }
+
+    private function rejectHandshake(Gateway $gateway, Request $request, int $status, string $reason, array $context = []): Promise
+    {
+        $payload = array_merge([
+            'status' => $status,
+            'reason' => $reason,
+            'query' => $request->getUri()->getQuery(),
+        ], $context);
+        $this->logger->warning('Handshake refuse', $payload);
+        return $gateway->getErrorHandler()->handleError($status, $reason, $request);
     }
 }

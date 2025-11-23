@@ -1,4 +1,4 @@
-﻿<#
+<#
     Script de démarrage « one-click » pour Les mondes de Lilas.
 
     Ce script :
@@ -280,17 +280,35 @@ function Start-RealtimeServer {
         [string]$LogDir
     )
 
+    # On arrête les serveurs WS encore lancés pour recharger le code.
+    $existing = @(Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object {
+            $_.CommandLine -match 'app:realtime:serve'
+        })
+    if ($existing.Count -gt 0) {
+        Write-Host "Arrêt des serveurs WebSocket existants..."
+        foreach ($item in $existing) {
+            $oldPid = $item.ProcessId
+            try {
+                Stop-Process -Id $oldPid -Force -ErrorAction Stop
+                Write-Host "Processus WebSocket arrêté (PID $oldPid)."
+            } catch {
+                Write-Warning "Impossible d'arrêter le serveur WebSocket PID $oldPid : $_"
+            }
+        }
+    }
+
     Write-Host "Lancement du serveur WebSocket..."
     $stdout = Join-Path $LogDir 'backend-realtime.log'
     $stderr = Join-Path $LogDir 'backend-realtime.err.log'
     $arguments = @('bin/console','app:realtime:serve','--env=dev')
-    return Start-Process -FilePath $PhpPath `
+    $proc = Start-Process -FilePath $PhpPath `
         -ArgumentList $arguments `
         -WorkingDirectory $BackendDir `
         -PassThru `
         -RedirectStandardOutput $stdout `
         -RedirectStandardError $stderr `
         -WindowStyle Hidden
+    return @{ Process = $proc; Owned = $true }
 }
 
 function Wait-ForEndpoint {
@@ -321,7 +339,7 @@ function Wait-ForTcpPort {
         [int]$TimeoutSeconds = 45
     )
 
-    Write-Host "Attente de disponibilit� du port $TcpHost`:$TcpPort ..."
+    Write-Host "Attente de disponibilit? du port $TcpHost`:$TcpPort ..."
     $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
     while ($stopwatch.Elapsed.TotalSeconds -lt $TimeoutSeconds) {
         try {
@@ -340,7 +358,7 @@ function Wait-ForTcpPort {
         }
         Start-Sleep -Seconds 1
     }
-    throw "Impossible de joindre $Host`:$Port apr�s $TimeoutSeconds secondes."
+    throw "Impossible de joindre $Host`:$Port apr?s $TimeoutSeconds secondes."
 }
 
 Set-Location $rootDirectory
@@ -388,6 +406,7 @@ if (!$javaCmd) {
 
 $backendProcess = $null
 $realtimeProcess = $null
+$realtimeOwned = $false
 
 $javaLocationPushed = $false
 try {
@@ -398,12 +417,14 @@ try {
     }
 
     if ((-not $SkipRealtime) -and $phpCmd) {
-        $realtimeProcess = Start-RealtimeServer -BackendDir $backendDirectory -PhpPath $phpCmd.Source -LogDir $logDirectory
+        $realtimeInfo = Start-RealtimeServer -BackendDir $backendDirectory -PhpPath $phpCmd.Source -LogDir $logDirectory
+        $realtimeProcess = $realtimeInfo.Process
+        $realtimeOwned   = $realtimeInfo.Owned
         try {
             Wait-ForTcpPort -TcpHost $wsHost -TcpPort $wsPort
         }
         catch {
-            if ($realtimeProcess -and -not $realtimeProcess.HasExited) {
+            if ($realtimeOwned -and $realtimeProcess -and -not $realtimeProcess.HasExited) {
                 try { $realtimeProcess.Kill() } catch {}
             }
             throw
@@ -441,7 +462,7 @@ try {
         throw "Compilation incomplete : $appLauncherClass introuvable. Relancez le script sans -SkipBuild."
     }
 
-    # ✅ Recherche du JAR autonome généré par Maven (classifier -all)
+    # ? Recherche du JAR autonome généré par Maven (classifier -all)
     $shadedJar = Get-ChildItem -Path (Join-Path $javaDirectory 'client-app\target') `
         -Filter 'client-app-*-all.jar' `
         -ErrorAction SilentlyContinue `
@@ -460,11 +481,10 @@ try {
 finally {
     if ($javaLocationPushed) { Pop-Location }
 
-    if ($realtimeProcess -and -not $realtimeProcess.HasExited) {
-        Write-Host "Arrêt du serveur WebSocket..."
+    if ($realtimeOwned -and $realtimeProcess -and -not $realtimeProcess.HasExited) {
+        Write-Host "Arr?t du serveur WebSocket..."
         try { $realtimeProcess.Kill() } catch {}
     }
-
     if ($backendProcess -and -not $backendProcess.HasExited) {
         Write-Host "Arrêt du serveur HTTP..."
         try { $backendProcess.Kill() } catch {}
@@ -472,4 +492,5 @@ finally {
 
     Set-Location $rootDirectory
 }
+
 

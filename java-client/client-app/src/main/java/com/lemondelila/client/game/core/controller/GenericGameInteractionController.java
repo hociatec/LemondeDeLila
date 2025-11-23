@@ -1,6 +1,6 @@
 package com.lemondelila.client.game.core.controller;
 
-import com.lemondelila.client.game.core.action.ActionRequest;
+import com.lemondelila.client.game.core.model.ActionRequest;
 import com.lemondelila.client.game.core.model.GenericGameState;
 import com.lemondelila.client.game.core.model.PrimaryActionDescriptor;
 import com.lemondelila.client.game.core.service.GameStateService;

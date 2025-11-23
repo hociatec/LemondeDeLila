@@ -2,7 +2,7 @@ package com.lemondelila.client.gamelogic.panierexpress.controller;
 
 import com.lemondelila.client.framework.core.di.Inject;
 import com.lemondelila.client.framework.core.event.DomainEventBus;
-import com.lemondelila.client.game.core.GameTableLauncher;
+import com.lemondelila.client.game.room.service.GameTableLauncher;
 import com.lemondelila.client.gamelogic.panierexpress.PanierExpressGameModule;
 
 public final class PanierExpressTableController {

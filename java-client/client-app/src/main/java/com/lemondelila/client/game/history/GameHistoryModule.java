@@ -17,6 +17,7 @@ public final class GameHistoryModule implements LilaModule {
         builder.bindAuto(GameHistoryView.class);
         builder.bindAuto(GameHistorySidebar.class);
         builder.bindAuto(GameHistoryController.class);
+        builder.bindAuto(com.lemondelila.client.game.history.service.GameAnnouncer.class);
     }
 
     @Override

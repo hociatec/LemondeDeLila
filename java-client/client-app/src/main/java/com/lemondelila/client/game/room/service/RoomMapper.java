@@ -19,6 +19,7 @@ final class RoomMapper {
                 .withName(json.path("name").asText(""))
                 .withStatus(json.path("status").asText(""))
                 .withGameType(json.path("gameType").asText(""))
+                .withIsPrivate(json.path("isPrivate").asBoolean(true))
                 .withMaxPlayers(json.path("maxPlayers").asInt(0));
 
         JsonNode owner = json.path("owner");

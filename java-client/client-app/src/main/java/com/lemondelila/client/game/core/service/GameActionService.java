@@ -2,7 +2,7 @@ package com.lemondelila.client.game.core.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.lemondelila.client.framework.network.rest.RestClient;
-import com.lemondelila.client.game.core.action.ActionRequest;
+import com.lemondelila.client.game.core.model.ActionRequest;
 
 import java.io.IOException;
 import java.util.List;

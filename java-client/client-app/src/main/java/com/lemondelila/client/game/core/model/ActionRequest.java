@@ -1,4 +1,4 @@
-package com.lemondelila.client.game.core.action;
+package com.lemondelila.client.game.core.model;
 
 import java.util.Map;
 

@@ -1,4 +1,4 @@
-package com.lemondelila.client.game.core;
+package com.lemondelila.client.game.history.service;
 
 import com.lemondelila.client.framework.access.NarrationQueue;
 import com.lemondelila.client.framework.core.di.Inject;
