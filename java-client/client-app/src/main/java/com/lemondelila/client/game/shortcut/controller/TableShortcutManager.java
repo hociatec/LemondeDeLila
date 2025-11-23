@@ -119,6 +119,25 @@ public final class TableShortcutManager {
     }
 
     /**
+     * Raccourci pour lancer la partie (Enter).
+     */
+    public void bindLaunch(JComponent root, Runnable onLaunch) {
+        Objects.requireNonNull(root, "root");
+        Objects.requireNonNull(onLaunch, "onLaunch");
+        KeyStroke enter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
+        registerShortcut(enter, "Lancer la partie");
+        InputMap windowMap = root.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        ActionMap actions = root.getActionMap();
+        windowMap.put(enter, "table.launch");
+        actions.put("table.launch", new javax.swing.AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                onLaunch.run();
+            }
+        });
+    }
+
+    /**
      * Raccourci Echap pour sortir ou remonter.
      */
     public void bindEscape(JComponent root, Runnable onEscape) {
@@ -192,10 +211,12 @@ public final class TableShortcutManager {
                         Runnable onAddBot,
                         Runnable onRemoveBot,
                         Runnable onTogglePrivacy,
+                        Runnable onLaunch,
                         Runnable onQuit) {
         bindInfoShortcuts(root, onSummary, onTurnInfo);
         bindBotShortcuts(root, onAddBot, onRemoveBot);
         bindPrivacyToggle(root, onTogglePrivacy);
+        bindLaunch(root, onLaunch);
         bindQuit(root, onQuit);
     }
 
