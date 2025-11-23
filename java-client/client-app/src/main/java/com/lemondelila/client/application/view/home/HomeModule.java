@@ -16,6 +16,7 @@ import com.lemondelila.client.framework.ui.lifecycle.ApplicationLifecycle;
 import com.lemondelila.client.framework.network.rest.RestClient;
 import com.lemondelila.client.settings.service.AppSettingsService;
 import com.lemondelila.client.user.model.ClientSession;
+import com.lemondelila.client.user.service.RememberedCredentialsService;
 
 import java.util.function.Supplier;
 
@@ -36,7 +37,8 @@ public final class HomeModule implements LilaModule {
                 ctx.get(DomainEventBus.class),
                 ctx.get(ActionManager.class),
                 ctx.get(AccessibleShortcutRegistry.class),
-                ctx.get(ApplicationLifecycle.class)
+                ctx.get(ApplicationLifecycle.class),
+                ctx.get(RememberedCredentialsService.class)
         ));
         builder.bindFactory(HomeScreenLifecycle.class, ctx -> new HomeScreenLifecycle(
                 ctx.get(HomeEventCoordinator.class),

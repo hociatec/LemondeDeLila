@@ -11,6 +11,9 @@ parameters:
     app.client.checksum: '%env(string:APP_CLIENT_CHECKSUM)%'
     app.client.package_path: '%kernel.project_dir%/%env(string:APP_CLIENT_PACKAGE_PATH)%'
     app.client.download_secret: '%env(string:APP_CLIENT_DOWNLOAD_SECRET)%'
+    app.client.min_version: '%env(string:APP_CLIENT_MIN_VERSION)%'
+    app.client.signature_url: '%env(string:APP_CLIENT_SIGNATURE_URL)%'
+    app.client.changelog_json: '%env(string:APP_CLIENT_CHANGELOG)%'
 
 services:
     # default configuration for services in *this* file

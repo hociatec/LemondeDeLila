@@ -9,6 +9,9 @@ import com.lemondelila.client.user.controller.LoginController;
 import com.lemondelila.client.user.controller.RegistrationController;
 import com.lemondelila.client.user.controller.UserOperationGuard;
 import com.lemondelila.client.user.model.ClientSession;
+import com.lemondelila.client.security.CredentialsVault;
+import com.lemondelila.client.security.EncryptedCredentialsVault;
+import com.lemondelila.client.user.service.RememberedCredentialsService;
 import com.lemondelila.client.user.service.SessionPersistenceService;
 
 @AutoService(LilaModule.class)
@@ -22,6 +25,8 @@ public final class UserModule implements LilaModule {
         builder.bindAuto(RegistrationController.class);
         builder.bindAuto(SessionPersistenceService.class);
         builder.bind(SessionVault.class, EncryptedSessionVault::defaultVault);
+        builder.bind(CredentialsVault.class, EncryptedCredentialsVault::defaultVault);
+        builder.bindAuto(RememberedCredentialsService.class);
     }
 
     @Override

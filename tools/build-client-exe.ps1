@@ -1,15 +1,18 @@
-<#
-    Génère l’installateur Windows (.exe) pour le client Java « Le Monde de Lila ».
+﻿<#
+    GÃ©nÃ¨re lâ€™installateur Windows (.exe) pour le client Java Â«Â Le Monde de LilaÂ Â».
 
     Usage :
         powershell -ExecutionPolicy Bypass -File .\tools\build-client-exe.ps1 [-SkipBuild]
 
-    Paramètre :
-        -SkipBuild : saute Maven (suppose que target\ contient déjà les artéfacts à jour).
+    ParamÃ¨tre :
+        -SkipBuild : saute Maven (suppose que target\ contient dÃ©jÃ  les artÃ©facts Ã  jour).
 #>
 [CmdletBinding()]
 param(
-    [switch]$SkipBuild
+    [switch]$SkipBuild,
+    [string]$CertificatePath,
+    [string]$CertificatePassword,
+    [string]$TimestampUrl = 'http://timestamp.digicert.com'
 )
 
 Set-StrictMode -Version Latest
@@ -22,7 +25,7 @@ function Get-MavenCommand {
     $localMaven = Join-Path $PSScriptRoot 'apache-maven-3.9.6\bin\mvn.cmd'
     if (Test-Path $localMaven) { return $localMaven }
 
-    throw "Maven introuvable. Installez-le ou exécutez d'abord start-lila.ps1 pour le provisionner."
+    throw "Maven introuvable. Installez-le ou exÃ©cutez d'abord start-lila.ps1 pour le provisionner."
 }
 
 function Ensure-WiXOnPath {
@@ -42,7 +45,7 @@ function Ensure-WiXOnPath {
         return
     }
 
-    throw "WiX Toolset (candle.exe + light.exe) est requis. Déposez-le dans tools/ ou ajoutez-le au PATH."
+    throw "WiX Toolset (candle.exe + light.exe) est requis. DÃ©posez-le dans tools/ ou ajoutez-le au PATH."
 }
 
 function Get-NvdaSearchRoots {
@@ -177,9 +180,9 @@ function Ensure-NvdaHelperRemote {
                 New-Item -ItemType Directory -Path $destDir -Force | Out-Null
             }
             Copy-Item -Path $source -Destination $destination -Force
-            Write-Host ("nvdaHelperRemote ({0}) ajouté depuis {1}" -f $req.Arch, $source)
+            Write-Host ("nvdaHelperRemote ({0}) ajoutÃ© depuis {1}" -f $req.Arch, $source)
         } else {
-            throw ("nvdaHelperRemote introuvable pour l'architecture {0}. Installez NVDA ou définissez LILA_NVDA_DIR avant d'exécuter tools/build-client-exe.ps1." -f $req.Arch)
+            throw ("nvdaHelperRemote introuvable pour l'architecture {0}. Installez NVDA ou dÃ©finissez LILA_NVDA_DIR avant d'exÃ©cuter tools/build-client-exe.ps1." -f $req.Arch)
         }
     }
 }
@@ -195,6 +198,27 @@ function Ensure-AssistiveLibraries {
 
     $windowsDir = Join-Path $LibsRoot 'windows'
     Ensure-NvdaHelperRemote -WindowsLibsDir $windowsDir
+}
+
+function Remove-UnneededArtifacts {
+    param(
+        [string]$Root
+    )
+
+    if (-not (Test-Path $Root)) {
+        return
+    }
+
+    foreach ($dirName in @('logs', 'tmp', 'temp', 'debug', '.idea', '.vscode')) {
+        $candidate = Join-Path $Root $dirName
+        if (Test-Path $candidate) {
+            Remove-Item -Path $candidate -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    Get-ChildItem -Path $Root -Recurse -Include '*.log','*.tmp','*.pdb' -File -ErrorAction SilentlyContinue | ForEach-Object {
+        Remove-Item -Path $_.FullName -Force -ErrorAction SilentlyContinue
+    }
 }
 
 function Invoke-Step {
@@ -217,7 +241,7 @@ $distDir     = Join-Path $repoRoot 'dist'
 $installerDir= Join-Path $distDir 'installer'
 
 if (!(Test-Path $javaRoot)) {
-    throw "Répertoire java-client introuvable."
+    throw "RÃ©pertoire java-client introuvable."
 }
 
 Ensure-WiXOnPath
@@ -231,9 +255,9 @@ if (-not $SkipBuild) {
     Invoke-Step "Compilation Maven (client-app)" {
         Push-Location $javaRoot
         try {
-            & $mavenCmd -pl client-app -am clean package -DskipTests
+            & $mavenCmd -pl client-app -am clean package -DskipTests -Prelease
             if ($LASTEXITCODE -ne 0) {
-                throw "La compilation Maven a échoué (code $LASTEXITCODE)."
+                throw "La compilation Maven a Ã©chouÃ© (code $LASTEXITCODE)."
             }
         }
         finally {
@@ -242,20 +266,23 @@ if (-not $SkipBuild) {
     }
 }
 elseif (!(Test-Path $targetDir)) {
-    throw "-SkipBuild a été demandé mais aucun dossier target n'existe : $targetDir"
+    throw "-SkipBuild a Ã©tÃ© demandÃ© mais aucun dossier target n'existe : $targetDir"
 }
 
-$shadedJar = Get-ChildItem -Path $targetDir -Filter 'client-app-*-all.jar' -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+$shadedJar = Get-ChildItem -Path $targetDir -Filter 'client-app-*-obf.jar' -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1
 if (-not $shadedJar) {
-    $shadedJar = Get-ChildItem -Path $targetDir -Filter 'client-app-*.jar' | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+    $shadedJar = Get-ChildItem -Path $targetDir -Filter 'client-app-*-all.jar' -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1
 }
 if (-not $shadedJar) {
-    throw "Aucun jar client-app trouvé. Relancez sans -SkipBuild."
+    $shadedJar = Get-ChildItem -Path $targetDir -Filter 'client-app-*.jar' -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+}
+if (-not $shadedJar) {
+    throw "Aucun jar client-app trouvÃ©. Relancez sans -SkipBuild."
 }
 
 [xml]$pom = Get-Content (Join-Path $javaRoot 'pom.xml')
 $rawVersion = [string]$pom.project.version
-if ([string]::IsNullOrWhiteSpace($rawVersion)) { $rawVersion = '1.0.8' }
+if ([string]::IsNullOrWhiteSpace($rawVersion)) { $rawVersion = '1.0.9' }
 $appVersion = $rawVersion
 
 New-Item -ItemType Directory -Path $distDir -Force | Out-Null
@@ -274,6 +301,8 @@ if (Test-Path $libsDir) {
     Copy-Item -Path $libsDir -Destination $stagingLibs -Recurse -Force
     Ensure-AssistiveLibraries -LibsRoot $stagingLibs
 }
+
+Remove-UnneededArtifacts -Root $stagingDir
 
 $appName = 'LeMondeDeLila'
 $vendor  = 'Le Monde de Lila'
@@ -299,17 +328,36 @@ $commonArgs = @(
     '--java-options','-Duser.country=FR'
 )
 
-Invoke-Step "Création de l'installateur Windows (.exe)" {
+Invoke-Step "CrÃ©ation de l'installateur Windows (.exe)" {
     & jpackage @commonArgs '--type' 'exe'
     if ($LASTEXITCODE -ne 0) {
-        throw "jpackage a échoué (code $LASTEXITCODE)."
+        throw "jpackage a Ã©chouÃ© (code $LASTEXITCODE)."
     }
 }
 
 $installer = Get-ChildItem -Path $installerDir -Filter '*.exe' | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+if ($installer -and $CertificatePath) {
+    if (-not (Get-Command signtool.exe -ErrorAction SilentlyContinue)) {
+        Write-Warning "signtool.exe introuvable : saut de la signature code signing."
+    }
+    else {
+        $signArgs = @('sign', '/fd', 'SHA256', '/tr', $TimestampUrl, '/td', 'SHA256', '/f', $CertificatePath)
+        if ($CertificatePassword) { $signArgs += @('/p', $CertificatePassword) }
+        $signArgs += @('/d', 'Le Monde de Lila - Client') + $installer.FullName
+        Invoke-Step "Signature code signing ($($installer.Name))" {
+            & signtool.exe @signArgs
+            if ($LASTEXITCODE -ne 0) { throw "Echec de la signature code signing (code $LASTEXITCODE)." }
+        }
+        Invoke-Step "Verification de la signature" {
+            & signtool.exe verify /pa $installer.FullName
+            if ($LASTEXITCODE -ne 0) { throw "Verification de la signature echouee (code $LASTEXITCODE)." }
+        }
+    }
+}
 Write-Host ""
 if ($installer) {
-    Write-Host "Installateur généré : $($installer.FullName)" -ForegroundColor Green
+    Write-Host "Installateur gÃ©nÃ©rÃ© : $($installer.FullName)" -ForegroundColor Green
 } else {
-    Write-Warning "jpackage a terminé sans générer d'exécutable ?"
+    Write-Warning "jpackage a terminÃ© sans gÃ©nÃ©rer d'exÃ©cutable ?"
 }
+
