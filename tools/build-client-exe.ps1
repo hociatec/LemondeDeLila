@@ -12,7 +12,8 @@ param(
     [switch]$SkipBuild,
     [string]$CertificatePath,
     [string]$CertificatePassword,
-    [string]$TimestampUrl = 'http://timestamp.digicert.com'
+    [string]$TimestampUrl = 'http://timestamp.digicert.com',
+    [switch]$AllowUnsigned
 )
 
 Set-StrictMode -Version Latest
@@ -221,6 +222,27 @@ function Remove-UnneededArtifacts {
     }
 }
 
+function Write-InstallerChecksum {
+    param(
+        [string]$InstallerPath
+    )
+
+    if (-not (Test-Path $InstallerPath)) {
+        throw "Installateur introuvable pour calcul de checksum : $InstallerPath"
+    }
+
+    $hash = Get-FileHash -Path $InstallerPath -Algorithm SHA256
+    $checksumFile = "$InstallerPath.sha256"
+    "$($hash.Hash)  $(Split-Path $InstallerPath -Leaf)" | Out-File -FilePath $checksumFile -Encoding ascii -Force
+
+    $recheck = Get-FileHash -Path $InstallerPath -Algorithm SHA256
+    if ($recheck.Hash -ne $hash.Hash) {
+        throw "Verification immediate du checksum echouee pour $InstallerPath"
+    }
+
+    return $checksumFile
+}
+
 function Invoke-Step {
     param(
         [string]$Message,
@@ -271,13 +293,7 @@ elseif (!(Test-Path $targetDir)) {
 
 $shadedJar = Get-ChildItem -Path $targetDir -Filter 'client-app-*-obf.jar' -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1
 if (-not $shadedJar) {
-    $shadedJar = Get-ChildItem -Path $targetDir -Filter 'client-app-*-all.jar' -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1
-}
-if (-not $shadedJar) {
-    $shadedJar = Get-ChildItem -Path $targetDir -Filter 'client-app-*.jar' -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1
-}
-if (-not $shadedJar) {
-    throw "Aucun jar client-app trouvÃ©. Relancez sans -SkipBuild."
+    throw "Jar obfusque introuvable (client-app-*-obf.jar). Recompilez avec le profil release pour eviter de livrer un -all.jar non protege."
 }
 
 [xml]$pom = Get-Content (Join-Path $javaRoot 'pom.xml')
@@ -336,11 +352,14 @@ Invoke-Step "CrÃ©ation de l'installateur Windows (.exe)" {
 }
 
 $installer = Get-ChildItem -Path $installerDir -Filter '*.exe' | Sort-Object LastWriteTime -Descending | Select-Object -First 1
-if ($installer -and $CertificatePath) {
-    if (-not (Get-Command signtool.exe -ErrorAction SilentlyContinue)) {
-        Write-Warning "signtool.exe introuvable : saut de la signature code signing."
+if ($installer) {
+    if (-not $CertificatePath -and -not $AllowUnsigned) {
+        throw "CertificatePath requis pour signer l'installateur. Ajoutez -AllowUnsigned explicitement si vous devez construire sans signature (deconseille)."
     }
-    else {
+    if ($CertificatePath) {
+        if (-not (Get-Command signtool.exe -ErrorAction SilentlyContinue)) {
+            throw "signtool.exe introuvable : signature code signing obligatoire pour les livrables."
+        }
         $signArgs = @('sign', '/fd', 'SHA256', '/tr', $TimestampUrl, '/td', 'SHA256', '/f', $CertificatePath)
         if ($CertificatePassword) { $signArgs += @('/p', $CertificatePassword) }
         $signArgs += @('/d', 'Le Monde de Lila - Client') + $installer.FullName
@@ -352,12 +371,22 @@ if ($installer -and $CertificatePath) {
             & signtool.exe verify /pa $installer.FullName
             if ($LASTEXITCODE -ne 0) { throw "Verification de la signature echouee (code $LASTEXITCODE)." }
         }
+    } else {
+        Write-Warning "Construction d'un installeur non signe (-AllowUnsigned). A utiliser uniquement en environnement de test."
     }
-}
-Write-Host ""
-if ($installer) {
-    Write-Host "Installateur gÃ©nÃ©rÃ© : $($installer.FullName)" -ForegroundColor Green
+
+    $checksumFile = Invoke-Step "Generation du checksum SHA-256" {
+        Write-InstallerChecksum -InstallerPath $installer.FullName
+    }
+
+    Write-Host ""
+    Write-Host "Installateur genere : $($installer.FullName)" -ForegroundColor Green
+    if ($checksumFile) {
+        Write-Host "Checksum SHA-256 : $checksumFile" -ForegroundColor Green
+    }
 } else {
-    Write-Warning "jpackage a terminÃ© sans gÃ©nÃ©rer d'exÃ©cutable ?"
+    Write-Warning "jpackage a termine sans generer d'executable ?"
+}
+
 }
 

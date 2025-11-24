@@ -196,7 +196,8 @@
                                         <option>-dontoptimize</option>
                                         <option>-dontwarn</option>
                                         <option>-keep class com.lemondelila.client.AppLauncher { *; }</option>
-                                        <option>-keep class com.lemondelila.client.** { public *; }</option>
+                                        <option>-keepclassmembers class * { public static void main(java.lang.String[]); }</option>
+                                        <option>-keep @com.google.auto.service.AutoService class * { *; }</option>
                                         <option>-keepclassmembers class * { @com.google.auto.service.AutoService *; }</option>
                                     </options>
                                 </configuration>

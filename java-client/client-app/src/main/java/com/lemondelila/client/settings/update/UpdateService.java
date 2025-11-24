@@ -46,6 +46,12 @@ import java.util.zip.ZipInputStream;
 public final class UpdateService {
 
     private static final String DOWNLOAD_HEADER = "X-Client-Update-Token";
+    private static final String DOWNLOAD_TOKEN_ENV = "LILA_UPDATE_TOKEN";
+    private static final String DOWNLOAD_TOKEN_FALLBACK_ENV = "UPDATES_AUTH_TOKEN";
+    private static final String SIGNATURE_PUBLIC_KEY_ENV = "UPDATES_SIGNATURE_PUBLIC_KEY";
+    private static final String SIGNATURE_PUBLIC_KEY_B64_ENV = "UPDATES_SIGNATURE_PUBLIC_KEY_B64";
+    private static final String SIGNATURE_ALGO_ENV = "UPDATES_SIGNATURE_ALGO";
+    private static final String DEFAULT_SIGNATURE_RESOURCE = "config/update-signing-public.pem";
 
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
@@ -55,7 +61,8 @@ public final class UpdateService {
     private final Path configuredRoot;
     private final Path configRootFromFile;
     private final String downloadToken;
-    private final Path signaturePublicKeyPath;
+    private final String signaturePublicKeyLocation;
+    private final String signaturePublicKeyB64;
     private final String signatureAlgorithm;
 
     @Inject
@@ -83,16 +90,10 @@ public final class UpdateService {
         this.configRootFromFile = configurationService.getExternalConfigPath()
                 .map(UpdateService::deriveRootFromConfig)
                 .orElse(null);
-        this.downloadToken = configurationService.get("updates.auth.token")
-                .map(String::trim)
-                .orElse("");
-        this.signaturePublicKeyPath = configurationService.get("updates.signature.publicKey")
-                .map(String::trim)
-                .filter(value -> !value.isEmpty())
-                .map(Paths::get)
-                .map(Path::toAbsolutePath)
-                .orElse(null);
-        this.signatureAlgorithm = configurationService.get("updates.signature.algorithm", "SHA256withRSA");
+        this.downloadToken = resolveDownloadToken(configurationService);
+        this.signaturePublicKeyLocation = resolveSignatureKeyLocation(configurationService);
+        this.signaturePublicKeyB64 = resolveSignatureKeyB64();
+        this.signatureAlgorithm = resolveSignatureAlgorithm(configurationService);
     }
 
     public String currentVersion() {
@@ -115,7 +116,6 @@ public final class UpdateService {
         return future;
     }
 
-    
     public CompletableFuture<Void> downloadAndInstall(UpdateCheckResult result, Consumer<String> statusConsumer) {
         Objects.requireNonNull(result, "result");
         if (result.downloadUrl() == null || result.downloadUrl().isBlank()) {
@@ -155,7 +155,7 @@ public final class UpdateService {
                     throw new IOException("Checksum SHA-256 invalide. Attendu: " + result.checksum() + " Recu: " + archiveHash);
                 }
                 updateStatus(statusConsumer, "Verification de la signature...");
-                verifySignatureIfNeeded(result, archive, updatesDir, logFile);
+                verifySignature(result, archive, logFile);
                 updateStatus(statusConsumer, "Extraction des fichiers...");
                 stagedDir = extractArchive(archive, updatesDir);
                 Path payloadRoot = detectPayloadRoot(stagedDir);
@@ -476,20 +476,14 @@ private Path extractArchive(Path archive, Path updatesDir) throws IOException {
     }
 
 
-    private void verifySignatureIfNeeded(UpdateCheckResult result, Path archive, Path updatesDir, Path logFile) throws IOException, InterruptedException {
-        boolean hasSignature = (result.signature() != null && !result.signature().isBlank())
-                || (result.signatureUrl() != null && !result.signatureUrl().isBlank());
-        if (!hasSignature) {
-            appendLog(logFile, "Aucune signature fournie dans le manifest.");
-            return;
-        }
-        if (signaturePublicKeyPath == null || !Files.exists(signaturePublicKeyPath)) {
-            throw new IOException("Signature presente mais aucune cle publique configuree (updates.signature.publicKey).");
+    private void verifySignature(UpdateCheckResult result, Path archive, Path logFile) throws IOException, InterruptedException {
+        if (result.signature() == null && (result.signatureUrl() == null || result.signatureUrl().isBlank())) {
+            throw new IOException("Manifest de mise a jour non signe : signature requise.");
         }
         byte[] signatureBytes = result.signature() != null
                 ? Base64.getDecoder().decode(result.signature())
                 : downloadSignature(result.signatureUrl());
-        PublicKey publicKey = loadPublicKey(signaturePublicKeyPath);
+        PublicKey publicKey = resolvePublicKey();
         Signature verifier;
         try {
             verifier = Signature.getInstance(signatureAlgorithm);
@@ -537,8 +531,31 @@ private Path extractArchive(Path archive, Path updatesDir) throws IOException {
         return body;
     }
 
-    private PublicKey loadPublicKey(Path path) throws IOException {
-        byte[] content = Files.readAllBytes(path);
+    private PublicKey resolvePublicKey() throws IOException {
+        if (signaturePublicKeyB64 != null && !signaturePublicKeyB64.isBlank()) {
+            return decodePublicKey(signaturePublicKeyB64.getBytes(StandardCharsets.US_ASCII));
+        }
+        if (signaturePublicKeyLocation != null) {
+            Path path = Paths.get(signaturePublicKeyLocation);
+            if (Files.exists(path)) {
+                return decodePublicKey(Files.readAllBytes(path));
+            }
+            try (InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(signaturePublicKeyLocation)) {
+                if (in != null) {
+                    return decodePublicKey(in.readAllBytes());
+                }
+            }
+            throw new IOException("Cle publique introuvable a l'emplacement configure: " + signaturePublicKeyLocation);
+        }
+        try (InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(DEFAULT_SIGNATURE_RESOURCE)) {
+            if (in != null) {
+                return decodePublicKey(in.readAllBytes());
+            }
+        }
+        throw new IOException("Aucune cle publique de verification de signature disponible (configurez " + SIGNATURE_PUBLIC_KEY_ENV + " ou " + SIGNATURE_PUBLIC_KEY_B64_ENV + ").");
+    }
+
+    private PublicKey decodePublicKey(byte[] content) throws IOException {
         String asString = new String(content, StandardCharsets.US_ASCII);
         try {
             if (asString.contains("BEGIN CERTIFICATE")) {
@@ -635,5 +652,42 @@ private Path extractArchive(Path archive, Path updatesDir) throws IOException {
                     StandardOpenOption.CREATE, StandardOpenOption.APPEND);
         } catch (IOException ignored) {
         }
+    }
+
+    private String resolveDownloadToken(ConfigurationService configurationService) {
+        String env = System.getenv(DOWNLOAD_TOKEN_ENV);
+        if (env == null || env.isBlank()) {
+            env = System.getenv(DOWNLOAD_TOKEN_FALLBACK_ENV);
+        }
+        if (env != null && !env.isBlank()) {
+            return env.trim();
+        }
+        return configurationService.get("updates.auth.token")
+                .map(String::trim)
+                .orElse("");
+    }
+
+    private String resolveSignatureKeyLocation(ConfigurationService configurationService) {
+        String envLocation = System.getenv(SIGNATURE_PUBLIC_KEY_ENV);
+        if (envLocation != null && !envLocation.isBlank()) {
+            return envLocation.trim();
+        }
+        return configurationService.get("updates.signature.publicKey")
+                .map(String::trim)
+                .filter(value -> !value.isEmpty())
+                .orElse(null);
+    }
+
+    private String resolveSignatureKeyB64() {
+        String fromEnv = System.getenv(SIGNATURE_PUBLIC_KEY_B64_ENV);
+        return (fromEnv == null || fromEnv.isBlank()) ? null : fromEnv.trim();
+    }
+
+    private String resolveSignatureAlgorithm(ConfigurationService configurationService) {
+        String envAlgo = System.getenv(SIGNATURE_ALGO_ENV);
+        if (envAlgo != null && !envAlgo.isBlank()) {
+            return envAlgo.trim();
+        }
+        return configurationService.get("updates.signature.algorithm", "SHA256withRSA");
     }
 }
