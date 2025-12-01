@@ -1,8 +1,9 @@
 package com.lemondelila.client.application;
 
 import com.google.auto.service.AutoService;
-import com.lemondelila.client.application.view.home.HomeScreen;
-import com.lemondelila.client.application.view.menu.MainMenuScreen;
+import com.lemondelila.client.home.view.HomeScreen;
+import com.lemondelila.client.menu.view.MainMenuScreen;
+import com.lemondelila.client.social.view.SocialScreen;
 import com.lemondelila.client.application.view.shortcuts.ApplicationShortcuts;
 import com.lemondelila.client.framework.core.context.ApplicationContext;
 import com.lemondelila.client.framework.core.module.LilaModule;
@@ -24,6 +25,7 @@ public final class ScreenModule implements LilaModule {
         builder.bindAuto(RoomDetailsScreen.class);
         builder.bindAuto(RoomTableScreen.class);
         builder.bindAuto(ApplicationShortcuts.class);
+        builder.bindAuto(SocialScreen.class);
     }
 
     @Override

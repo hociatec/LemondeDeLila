@@ -7,6 +7,7 @@ use App\Module\Game\Entity\Room;
 use App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Service\PanierExpressGameService;
 use App\Module\Game\Realtime\RoomRealtimeNotifier;
 use App\Module\Game\Service\StatsAggregator;
+use App\Module\Game\Service\TableManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -16,7 +17,8 @@ final class PanierExpressGameController extends AbstractController
     public function __construct(
         private readonly PanierExpressGameService $service,
         private readonly StatsAggregator $stats,
-        private readonly RoomRealtimeNotifier $realtime
+        private readonly RoomRealtimeNotifier $realtime,
+        private readonly TableManager $tables
     ) {
     }
 
@@ -26,19 +28,16 @@ final class PanierExpressGameController extends AbstractController
         if (!$room) {
             return $this->json(['error' => 'Not found'], Response::HTTP_NOT_FOUND);
         }
-        if (!$this->hasEnoughParticipants($room)) {
-            return $this->json(['error' => 'Au moins deux participants (joueurs ou bots) sont nécessaires pour démarrer ce jeu.'], Response::HTTP_BAD_REQUEST);
+        if (!$this->isRoomInProgress($room)) {
+            return $this->json(['error' => 'Room not started'], Response::HTTP_BAD_REQUEST);
         }
+        $game = $em->getRepository(Game::class)->findOneBy(['room' => $room]) ?? $this->tables->ensureGame($room);
 
-        $game = $em->getRepository(Game::class)->findOneBy(['room' => $room]);
-        if (!$game) {
-            $state = $this->service->defaultState($room);
-            $game = (new Game())
-                ->setRoom($room)
-                ->setState($state)
-                ->setCurrentRound($this->service->currentRound($state))
-                ->setStartedAt(new \DateTimeImmutable());
-            $em->persist($game);
+        // Si la room est marquée démarrée mais que l'état est resté en "open", on le bascule en playing.
+        $state = $game->getState();
+        if ($this->isRoomInProgress($room) && ($state['status'] ?? '') !== 'playing') {
+            $state = $this->service->startState($state);
+            $game->setState($state);
         }
 
         /** @var \App\Module\User\Entity\User $player */
@@ -51,8 +50,13 @@ final class PanierExpressGameController extends AbstractController
             ->setState($state)
             ->setCurrentRound($this->service->currentRound($state));
 
-        if (($state['status'] ?? null) === 'ended' && !$game->getEndedAt()) {
-            $game->setEndedAt(new \DateTimeImmutable());
+        if (($state['status'] ?? null) === 'ended') {
+            if (!$game->getEndedAt()) {
+                $game->setEndedAt(new \DateTimeImmutable());
+            }
+            if ($room->getStatus() !== 'ended') {
+                $room->setStatus('ended');
+            }
         }
 
         $em->flush();
@@ -68,8 +72,13 @@ final class PanierExpressGameController extends AbstractController
         if (!$room) {
             return $this->json(['error' => 'Not found'], Response::HTTP_NOT_FOUND);
         }
-        if (!$this->hasEnoughParticipants($room)) {
-            return $this->json(['error' => 'Au moins deux participants (joueurs ou bots) sont nécessaires pour démarrer ce jeu.'], Response::HTTP_BAD_REQUEST);
+
+        /** @var \App\Module\User\Entity\User $viewer */
+        $viewer = $this->getUser();
+
+        if (!$this->isRoomInProgress($room)) {
+            $state = $this->service->defaultState($room);
+            return $this->json($this->service->presentState($state, $viewer));
         }
 
         $game = $em->getRepository(Game::class)->findOneBy(['room' => $room]);
@@ -77,21 +86,45 @@ final class PanierExpressGameController extends AbstractController
             $state = $this->service->defaultState($room);
             $game = (new Game())
                 ->setRoom($room)
-                ->setState($state)
+                ->setState($this->service->startState($state))
                 ->setCurrentRound($this->service->currentRound($state))
                 ->setStartedAt(new \DateTimeImmutable());
             $em->persist($game);
             $em->flush();
         }
 
-        /** @var \App\Module\User\Entity\User $viewer */
-        $viewer = $this->getUser();
+        $state = $this->service->advanceBots($game->getState());
+        if ($state !== $game->getState()) {
+            $game
+                ->setState($state)
+                ->setCurrentRound($this->service->currentRound($state));
+            if (($state['status'] ?? null) === 'ended') {
+                if (!$game->getEndedAt()) {
+                    $game->setEndedAt(new \DateTimeImmutable());
+                }
+                if ($room->getStatus() !== 'ended') {
+                    $room->setStatus('ended');
+                }
+            }
+            $em->flush();
+            $this->stats->onStateUpdated($game, $state);
+            $this->realtime->notify($room, 'state-updated', ['game' => $game->getId()]);
+        }
 
-        return $this->json($this->service->presentState($game->getState(), $viewer));
+        return $this->json($this->service->presentState($state, $viewer));
     }
 
     private function hasEnoughParticipants(Room $room): bool
     {
+        if ($this->isRoomInProgress($room)) {
+            return true;
+        }
         return (count($room->getPlayers()) + count($room->getBots())) >= 2;
+    }
+
+    private function isRoomInProgress(Room $room): bool
+    {
+        $status = $room->getStatus();
+        return in_array($status, ['started', 'in_progress', 'en_cours'], true);
     }
 }

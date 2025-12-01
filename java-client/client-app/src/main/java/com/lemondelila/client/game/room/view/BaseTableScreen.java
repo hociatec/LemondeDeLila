@@ -1,21 +1,22 @@
 package com.lemondelila.client.game.room.view;
 
+import com.lemondelila.client.menu.view.MainMenuScreen;
 import com.lemondelila.client.framework.core.event.DomainEventBus;
 import com.lemondelila.client.framework.core.event.EventSubscriptions;
 import com.lemondelila.client.framework.ui.keyboard.KeyboardBindings;
 import com.lemondelila.client.framework.ui.screen.Screen;
 import com.lemondelila.client.framework.ui.screen.ScreenContext;
 import com.lemondelila.client.framework.ui.screen.ScreenManager;
+import com.lemondelila.client.game.core.view.GameDialog;
+import com.lemondelila.client.game.core.view.GameTableScreen;
 import com.lemondelila.client.game.history.service.GameAnnouncer;
 import com.lemondelila.client.game.history.view.GameHistorySidebar;
 import com.lemondelila.client.game.room.event.LeaveRoomRequested;
 import com.lemondelila.client.game.room.model.RoomDetailsState;
 import com.lemondelila.client.game.shortcut.controller.TableShortcutManager;
-import com.lemondelila.client.game.core.view.GameDialog;
-import com.lemondelila.client.game.core.view.GameTableScreen;
 
-import javax.swing.JPanel;
 import javax.swing.JComponent;
+import javax.swing.JPanel;
 import java.util.Objects;
 
 /**
@@ -75,7 +76,6 @@ public abstract class BaseTableScreen extends JPanel implements Screen, GameTabl
         this.setFocusTraversalKeysEnabled(false);
         KeyboardBindings.disableTabTraversal(interaction);
         KeyboardBindings.disableTabTraversal(history);
-        KeyboardBindings.bindEnter(interaction, interaction::requestFocusInWindow, "table.enter");
         shortcuts.installNavigation(this, interaction, history);
         shortcuts.bindQuit(this, this::handleQuit);
         shortcuts.bindBotShortcuts(this, this::handleAddBot, this::handleRemoveBot);
@@ -104,7 +104,7 @@ public abstract class BaseTableScreen extends JPanel implements Screen, GameTabl
             eventBus.publish(new LeaveRoomRequested(roomId));
         }
         if (screenManager != null) {
-            screenManager.show(com.lemondelila.client.application.view.menu.MainMenuScreen.ID);
+            screenManager.show(MainMenuScreen.ID);
         }
     }
 

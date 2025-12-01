@@ -1,5 +1,6 @@
 package com.lemondelila.client.framework.network.ws;
 
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lemondelila.client.framework.core.di.Inject;
@@ -128,11 +129,31 @@ public final class StandardRealtimeGateway implements RealtimeGateway, Delegate 
 
     @Override
     public void onText(CharSequence data) {
-        try {
-            JsonNode node = objectMapper.readTree(data.toString());
-            messageHandlers.forEach(handler -> handler.accept(node));
+        String raw = data == null ? "" : data.toString();
+        String trimmed = raw.trim();
+        if (trimmed.isEmpty() || "ping".equalsIgnoreCase(trimmed) || "pong".equalsIgnoreCase(trimmed)) {
+            return;
+        }
+        if (!dispatchStreamed(trimmed)) {
+            String snippet = trimmed.length() > 120 ? trimmed.substring(0, 120) + "..." : trimmed;
+            LOGGER.warn("Message WebSocket ignoré (non JSON) : {}", snippet);
+        }
+    }
+
+    private boolean dispatchStreamed(String payload) {
+        try (JsonParser parser = objectMapper.getFactory().createParser(payload)) {
+            boolean parsed = false;
+            while (parser.nextToken() != null) {
+                JsonNode node = objectMapper.readTree(parser);
+                if (node == null) {
+                    continue;
+                }
+                parsed = true;
+                messageHandlers.forEach(handler -> handler.accept(node));
+            }
+            return parsed;
         } catch (Exception ex) {
-            LOGGER.error("Message WebSocket invalide", ex);
+            return false;
         }
     }
 

@@ -189,7 +189,7 @@ class Room
 
     #[ORM\Column(type: 'string', length: 50)]
     #[Groups(['room:read'])]
-    private string $status = 'open';
+    private string $status = 'setup';
 
     #[ORM\Column(type: 'string', length: 50)]
     #[Groups(['room:read'])]

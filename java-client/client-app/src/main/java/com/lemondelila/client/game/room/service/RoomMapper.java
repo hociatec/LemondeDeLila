@@ -1,12 +1,7 @@
 package com.lemondelila.client.game.room.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.lemondelila.client.game.room.model.BotState;
-import com.lemondelila.client.game.room.model.PlayerState;
 import com.lemondelila.client.game.room.model.RoomState;
-
-import java.util.ArrayList;
-import java.util.List;
 
 final class RoomMapper {
 
@@ -30,25 +25,11 @@ final class RoomMapper {
             ));
         }
 
-        List<PlayerState> players = new ArrayList<>();
         JsonNode playersNode = json.path("players");
-        if (playersNode.isArray()) {
-            playersNode.forEach(p -> players.add(new PlayerState(
-                    p.path("id").isInt() ? p.get("id").asInt() : null,
-                    p.path("username").asText("")
-            )));
-        }
-        room.replacePlayers(players);
+        room.replacePlayers(RoomParticipantsMapper.mapPlayers(playersNode));
 
-        List<BotState> bots = new ArrayList<>();
         JsonNode botsNode = json.path("bots");
-        if (botsNode.isArray()) {
-            botsNode.forEach(b -> bots.add(new BotState(
-                    b.path("id").isInt() ? b.get("id").asInt() : null,
-                    b.path("name").asText("")
-            )));
-        }
-        room.replaceBots(bots);
+        room.replaceBots(RoomParticipantsMapper.mapBots(botsNode));
 
         JsonNode counts = json.path("counts");
         room.withCounts(new RoomState.Counts(

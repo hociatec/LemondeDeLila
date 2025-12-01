@@ -17,6 +17,7 @@ use App\Module\Game\Entity\Room;
 use App\Module\Game\Entity\RoomBot;
 use App\Module\Game\Entity\RoomParticipant;
 use App\Module\Game\Repository\RoomRepository;
+use App\Module\Game\Service\Initializer\GameInitializerRegistry;
 use App\Module\Game\Service\TableManager;
 use App\Module\User\Entity\User;
 use App\Module\User\Repository\UserRepository;
@@ -44,6 +45,7 @@ class RoomRealtimeClientHandler implements ClientHandler
         private readonly RoomRealtimePayloadBuilder $payloadBuilder,
         private readonly BotAllocator $botAllocator,
         private readonly TableManager $tables,
+        private readonly GameInitializerRegistry $initializerRegistry,
         private readonly EntityManagerInterface $entityManager,
         private readonly LoggerInterface $logger
     ) {
@@ -319,7 +321,7 @@ class RoomRealtimeClientHandler implements ClientHandler
                 return;
             }
 
-            if ($room->getStatus() !== 'open') {
+            if (!$this->isRoomOpen($room)) {
                 yield $this->sendError($client, 'Table déjà démarrée');
                 return;
             }
@@ -367,7 +369,7 @@ class RoomRealtimeClientHandler implements ClientHandler
                 yield $this->sendError($client, 'Table introuvable');
                 return;
             }
-            if ($room->getStatus() !== 'open') {
+            if (!$this->isRoomOpen($room)) {
                 yield $this->sendError($client, 'Table déjà démarrée');
                 return;
             }
@@ -451,6 +453,26 @@ class RoomRealtimeClientHandler implements ClientHandler
                 $active->leave();
             }
 
+            $ownerId = $room->getOwner()?->getId();
+            $remainingPlayers = $repo->countActiveByRoomAndRole($room, 'player');
+
+            if ($remainingPlayers === 0) {
+                // Aucun joueur : on supprime la table et on arrête là.
+                $this->entityManager->remove($room);
+                $this->entityManager->flush();
+                return;
+            }
+
+            $ownerIsStillPlayer = $ownerId !== null && $room->getPlayers()->exists(
+                static fn($_, User $u) => $u->getId() === $ownerId
+            );
+            if (!$ownerIsStillPlayer) {
+                $nextOwner = $this->pickNextOwner($room);
+                if ($nextOwner) {
+                    $room->setOwner($nextOwner);
+                }
+            }
+
             $this->entityManager->flush();
             yield $this->broadcastRoomUpdate($roomId, 'room.left');
         });
@@ -464,7 +486,7 @@ class RoomRealtimeClientHandler implements ClientHandler
                 yield $this->sendError($client, 'Table introuvable');
                 return;
             }
-            if ($room->getStatus() !== 'open') {
+            if (!$this->isRoomOpen($room)) {
                 yield $this->sendError($client, 'Table déjà démarrée');
                 return;
             }
@@ -475,7 +497,15 @@ class RoomRealtimeClientHandler implements ClientHandler
             }
 
             $room->setStatus('started');
-            $this->tables->ensureGame($room);
+            $initialization = $this->initializerRegistry->initialize($room);
+            $game = $this->tables->ensureGame($room);
+            $game
+                ->setState($initialization->getState())
+                ->setCurrentRound($initialization->getCurrentRound());
+            if (!$game->getStartedAt()) {
+                $game->setStartedAt(new \DateTimeImmutable());
+            }
+
             $this->entityManager->flush();
             yield $this->broadcastRoomUpdate($roomId, 'room.started');
         });
@@ -515,7 +545,11 @@ class RoomRealtimeClientHandler implements ClientHandler
                 return;
             }
 
-            $gameType = trim((string)($payload['gameType'] ?? 'panier-express'));
+            $gameType = isset($payload['gameType']) ? trim((string) $payload['gameType']) : '';
+            if ($gameType === '') {
+                yield $this->sendError($client, 'Type de jeu requis pour créer une table');
+                return;
+            }
             $name = trim((string)($payload['name'] ?? ''));
             $maxPlayers = isset($payload['maxPlayers']) ? (int)$payload['maxPlayers'] : 0;
             $isPrivate = isset($payload['isPrivate']) ? (bool)$payload['isPrivate'] : true;
@@ -533,7 +567,8 @@ class RoomRealtimeClientHandler implements ClientHandler
                 ->setGameType($gameType)
                 ->setMaxPlayers($maxPlayers)
                 ->setIsPrivate($isPrivate)
-                ->setOwner($user);
+                ->setOwner($user)
+                ->setStatus('setup');
             $room->addPlayer($user);
 
             $participant = (new RoomParticipant())
@@ -591,7 +626,7 @@ class RoomRealtimeClientHandler implements ClientHandler
                 return;
             }
 
-            if ($room->getStatus() !== 'open') {
+            if (!$this->isRoomOpen($room)) {
                 yield $this->sendError($client, 'Table déjà démarrée');
                 return;
             }
@@ -654,6 +689,23 @@ class RoomRealtimeClientHandler implements ClientHandler
         });
     }
 
+    private function pickNextOwner(Room $room): ?User
+    {
+        $repo = $this->entityManager->getRepository(RoomParticipant::class);
+        /** @var RoomParticipant|null $next */
+        $next = $repo->createQueryBuilder('p')
+            ->andWhere('p.room = :room')
+            ->andWhere('p.role = :role')
+            ->andWhere('p.leftAt IS NULL')
+            ->setParameter('room', $room)
+            ->setParameter('role', 'player')
+            ->orderBy('p.joinedAt', 'ASC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+        return $next?->getUser();
+    }
+
     private function totalParticipants(Room $room): int
     {
         $repo = $this->entityManager->getRepository(RoomParticipant::class);
@@ -661,6 +713,18 @@ class RoomRealtimeClientHandler implements ClientHandler
             ? $repo->countActiveByRoomAndRole($room, 'player')
             : $room->getPlayers()->count();
         return $humanPlayers + $room->getBots()->count();
+    }
+
+    private function isRoomOpen(Room $room): bool
+    {
+        $status = strtolower((string) $room->getStatus());
+        return \in_array($status, ['setup', 'open', 'ouvert', 'pending', 'preparing'], true);
+    }
+
+    private function isRoomInProgress(Room $room): bool
+    {
+        $status = $room->getStatus();
+        return in_array($status, ['in_progress', 'started', 'en_cours'], true);
     }
 
     private function serializeBot(RoomBot $bot): array
@@ -726,3 +790,9 @@ class RoomRealtimeClientHandler implements ClientHandler
         return $gateway->getErrorHandler()->handleError($status, $reason, $request);
     }
 }
+
+
+
+
+
+

@@ -60,9 +60,7 @@ public final class GameCatalogController implements AutoCloseable {
     }
 
     public ControllerResult openCatalog() {
-        fetchAll();
-        return ControllerResult.navigate(com.lemondelila.client.game.catalog.view.GameCatalogScreen.ID)
-                .withStatus("Catalogue en cours de chargement");
+        return ControllerResult.navigate(com.lemondelila.client.game.catalog.view.GameCatalogScreen.ID);
     }
 
     public void fetchAll() {
@@ -88,6 +86,11 @@ public final class GameCatalogController implements AutoCloseable {
      */
     public ControllerResult createTableForGame(String gameCode, String name, int maxPlayers, boolean isPrivate) {
         try {
+            if (gameCode == null || gameCode.isBlank()) {
+                String err = "Création de table impossible : code de jeu manquant";
+                announcer.announce(err);
+                return ControllerResult.status(err);
+            }
             Map<String, Object> payload = Map.of(
                     "gameType", gameCode,
                     "name", name,
@@ -97,9 +100,7 @@ public final class GameCatalogController implements AutoCloseable {
             realtime.sendCommand("room.create", payload);
             tableLauncher.createTemporaryTable(gameCode, name, maxPlayers, isPrivate);
             roomDetailsState.setGameType(gameCode);
-            String msg = String.format("Table \"%s\" (jeu %s) demandée, création en cours.", name, gameCode);
-            announcer.announce(msg);
-            return ControllerResult.navigate(RoomTableScreen.ID).withStatus(msg);
+            return ControllerResult.navigate(RoomTableScreen.ID);
         } catch (Exception e) {
             String err = "Création de table impossible : " + clean(e.getMessage());
             announcer.announce(err);

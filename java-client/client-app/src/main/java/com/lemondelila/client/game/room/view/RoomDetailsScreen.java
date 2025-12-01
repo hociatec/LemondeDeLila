@@ -10,6 +10,8 @@ import com.lemondelila.client.game.room.event.RoomUpdated;
 import com.lemondelila.client.game.room.model.RoomDetailsState;
 import com.lemondelila.client.game.room.model.RoomState;
 import com.lemondelila.client.game.room.model.TableState;
+import com.lemondelila.client.game.history.service.RoomNarrationService;
+import com.lemondelila.client.game.history.service.RoomNarrationService.RoomSummary;
 
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -23,16 +25,19 @@ public final class RoomDetailsScreen extends JPanel implements Screen {
 
     private final RoomDetailsState state;
     private final TableState tableState;
+    private final RoomNarrationService narration;
     private final EventSubscriptions subscriptions = new EventSubscriptions();
     private final JTextArea area = new JTextArea();
 
     @Inject
     public RoomDetailsScreen(DomainEventBus eventBus,
                              RoomDetailsState state,
-                             TableState tableState) {
+                             TableState tableState,
+                             RoomNarrationService narration) {
         super(new BorderLayout());
         this.state = state;
         this.tableState = tableState;
+        this.narration = narration;
         subscriptions.subscribe(eventBus, RoomUpdated.class, e -> {
             if (e.room() == null || e.room().id() == null) return;
             if (!e.room().id().equals(state.roomId())) return;
@@ -63,17 +68,17 @@ public final class RoomDetailsScreen extends JPanel implements Screen {
             area.setText("Aucune table sélectionnée.");
             return;
         }
-        int participants = tableState.players().size() + tableState.bots().size();
+        RoomSummary summary = narration.summarize(tableState);
         String gameType = tableState.gameType() == null ? "?" : tableState.gameType();
         String name = "Table #" + roomId;
-        String privacy = tableState.isPrivate() ? "Privée" : "Publique";
+        String privacy = narration.privacyLabel(tableState.isPrivate());
         String txt = String.format("Table #%d%nNom: %s%nJeu: %s%nStatut: %s%nConfidentialité: %s%nParticipants: %d",
                 roomId,
                 name,
                 gameType,
                 tableState.status() == null ? "?" : tableState.status(),
                 privacy,
-                participants);
+                summary.participantCount());
         area.setText(txt);
     }
 
@@ -83,8 +88,8 @@ public final class RoomDetailsScreen extends JPanel implements Screen {
                 room.name() == null ? "?" : room.name(),
                 room.gameType() == null ? "?" : room.gameType(),
                 room.status() == null ? "?" : room.status(),
-                room.isPrivate() ? "Privée" : "Publique",
-                room.counts() != null ? room.counts().players() : tableState.players().size() + tableState.bots().size());
+                narration.privacyLabel(room.isPrivate()),
+                room.counts() != null ? room.counts().players() : tableState.participantCountIncludingLocalParticipant());
         area.setText(txt);
     }
 

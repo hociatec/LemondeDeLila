@@ -132,8 +132,8 @@ final class WebSocketConnectionLifecycle {
         cancelScheduledReconnectLocked();
         socket = ws;
         retryAttempts = 0;
-        emitState(ConnectionState.CONNECTED);
         delegate.onOpen(ws);
+        emitState(ConnectionState.CONNECTED);
     }
 
     private void handleConnectFailureLocked(Throwable error) {

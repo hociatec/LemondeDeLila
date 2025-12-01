@@ -31,7 +31,7 @@ public final class GameCatalogView {
 
     public GameCatalogView() {
         this.panel = new JPanel(new BorderLayout(8, 8));
-        this.status = new JLabel("Catalogue en cours de chargement...");
+        this.status = new JLabel("");
 
         catList = new JList<>(categories);
         catList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);

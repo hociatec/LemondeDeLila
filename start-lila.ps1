@@ -273,19 +273,16 @@ function Start-BackendHttp {
         -WindowStyle Hidden
 }
 
-function Start-RealtimeServer {
+function Stop-RealtimeServers {
     param(
-        [string]$BackendDir,
-        [string]$PhpPath,
-        [string]$LogDir
+        [string]$Reason = ""
     )
 
-    # On arrête les serveurs WS encore lancés pour recharger le code.
     $existing = @(Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object {
             $_.CommandLine -match 'app:realtime:serve'
         })
     if ($existing.Count -gt 0) {
-        Write-Host "Arrêt des serveurs WebSocket existants..."
+        if ($Reason) { Write-Host $Reason }
         foreach ($item in $existing) {
             $oldPid = $item.ProcessId
             try {
@@ -296,6 +293,16 @@ function Start-RealtimeServer {
             }
         }
     }
+}
+
+function Start-RealtimeServer {
+    param(
+        [string]$BackendDir,
+        [string]$PhpPath,
+        [string]$LogDir
+    )
+
+    Stop-RealtimeServers -Reason "Arrêt des serveurs WebSocket existants..."
 
     Write-Host "Lancement du serveur WebSocket..."
     $stdout = Join-Path $LogDir 'backend-realtime.log'
@@ -339,7 +346,7 @@ function Wait-ForTcpPort {
         [int]$TimeoutSeconds = 45
     )
 
-    Write-Host "Attente de disponibilit? du port $TcpHost`:$TcpPort ..."
+    Write-Host "Attente de disponibilité du port $TcpHost`:$TcpPort ..."
     $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
     while ($stopwatch.Elapsed.TotalSeconds -lt $TimeoutSeconds) {
         try {
@@ -358,7 +365,7 @@ function Wait-ForTcpPort {
         }
         Start-Sleep -Seconds 1
     }
-    throw "Impossible de joindre $Host`:$Port apr?s $TimeoutSeconds secondes."
+    throw "Impossible de joindre $Host`:$Port après $TimeoutSeconds secondes."
 }
 
 Set-Location $rootDirectory
@@ -482,9 +489,10 @@ finally {
     if ($javaLocationPushed) { Pop-Location }
 
     if ($realtimeOwned -and $realtimeProcess -and -not $realtimeProcess.HasExited) {
-        Write-Host "Arr?t du serveur WebSocket..."
+        Write-Host "Arrêt du serveur WebSocket..."
         try { $realtimeProcess.Kill() } catch {}
     }
+    Stop-RealtimeServers -Reason "Nettoyage des serveurs WebSocket restants..."
     if ($backendProcess -and -not $backendProcess.HasExited) {
         Write-Host "Arrêt du serveur HTTP..."
         try { $backendProcess.Kill() } catch {}
@@ -492,5 +500,4 @@ finally {
 
     Set-Location $rootDirectory
 }
-
 

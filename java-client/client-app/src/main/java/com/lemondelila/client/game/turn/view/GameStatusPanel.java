@@ -29,15 +29,51 @@ public final class GameStatusPanel extends JPanel {
         add(statusLabel);
         add(turnLabel);
         add(rollLabel);
+        clear();
     }
 
     public void update(String status, String phase, int round, int turnIndex, Integer lastRoll) {
-        statusLabel.setText("Statut : " + nullTo(status) + " | Phase : " + nullTo(phase));
-        turnLabel.setText("Tour " + Math.max(1, round) + " - Joueur actif #" + Math.max(0, turnIndex));
+        statusLabel.setText("Statut : " + formatStatus(status) + " | Phase : " + formatPhase(phase));
+        if (round <= 0 && turnIndex <= 0) {
+            turnLabel.setText("Tour : en attente");
+        } else {
+            turnLabel.setText("Tour " + Math.max(1, round) + " - Joueur actif #" + Math.max(1, turnIndex));
+        }
         rollLabel.setText(lastRoll == null ? "Dernier lancer : n/a" : "Dernier lancer : " + lastRoll);
+        setVisible(true);
     }
 
-    private static String nullTo(String v) {
-        return v == null ? "n/a" : v;
+    public void clear() {
+        statusLabel.setText("Statut : en attente | Phase : n/a");
+        turnLabel.setText("Tour : en attente");
+        rollLabel.setText("Dernier lancer : n/a");
+        setVisible(false);
+    }
+
+    private static String formatStatus(String status) {
+        if (status == null || status.isBlank()) {
+            return "en attente";
+        }
+        String value = status.trim().toLowerCase();
+        if ("open".equals(value)) {
+            return "en attente";
+        }
+        if ("setup".equals(value) || "pending".equals(value) || "preparing".equals(value)) {
+            return "preparation";
+        }
+        if ("running".equals(value)) {
+            return "partie en cours";
+        }
+        if ("finished".equals(value)) {
+            return "partie terminee";
+        }
+        return status;
+    }
+
+    private static String formatPhase(String phase) {
+        if (phase == null || phase.isBlank()) {
+            return "n/a";
+        }
+        return phase;
     }
 }

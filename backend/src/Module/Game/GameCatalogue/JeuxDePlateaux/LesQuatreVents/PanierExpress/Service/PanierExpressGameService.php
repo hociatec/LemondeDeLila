@@ -5,6 +5,9 @@ namespace App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpr
 use App\Module\Game\Bot\BotAllocator;
 use App\Module\Game\Engine\GameEngineInterface;
 use App\Module\Game\Entity\Room;
+use App\Module\Game\Exchange\ExchangeCard;
+use App\Module\Game\Exchange\ExchangePending;
+use App\Module\Game\Exchange\ExchangePresenter;
 use App\Module\Game\Service\Participant;
 use App\Module\Game\Service\ParticipantResolver;
 use App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Service\PanierExpressCommand;
@@ -18,7 +21,8 @@ use App\Module\Game\Shared\Action\ActionResolver;
 use App\Module\Game\Shared\Dice\DiceRoll;
 use App\Module\Game\Shared\Dice\DiceService;
 use App\Module\User\Entity\User;
-use App\Module\Game\Shared\Turn\TurnManager;
+use App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Service\Support\PanierExpressTurnCoordinator;
+use App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Service\Support\PanierExpressTurnStateFactory;
 use App\Module\Game\Shared\Turn\TurnState;
 
 final class PanierExpressGameService implements GameEngineInterface
@@ -42,6 +46,7 @@ final class PanierExpressGameService implements GameEngineInterface
             new \App\Module\Game\Shared\Quiz\QuizService()
         ),
         private readonly PanierExpressRandomizerInterface $randomizer = new NativePanierExpressRandomizer(),
+        private readonly ExchangePresenter $exchangePresenter = new ExchangePresenter(),
     ) {
     }
 
@@ -220,15 +225,11 @@ final class PanierExpressGameService implements GameEngineInterface
             $players[] = $this->buildPlayerFromParticipant($participant, $data['shoppingLists'] ?? []);
         }
 
-        // Pas de bot auto : si un seul participant, on refuse de démarrer la partie.
-        if (count($players) < 2) {
-            throw new \RuntimeException('Au moins deux participants (joueurs ou bots) sont nécessaires pour démarrer Panier Express.');
-        }
-
         $state = [
             'type' => self::GAME_TYPE,
-            'status' => 'playing',
-            'phase' => 'turn',
+            // Toujours en attente tant qu'un start explicite n'a pas été demandé.
+            'status' => 'open',
+            'phase' => 'open',
             'round' => 1,
             'turnIndex' => 0,
             'board' => [
@@ -242,17 +243,31 @@ final class PanierExpressGameService implements GameEngineInterface
                 PanierExpressDeckManager::DECK_QUIZ => [],
             ],
             'pending' => null,
-            'log' => [[
-                'type' => 'info',
-                'message' => 'Bienvenue au marché ! Lancez le dé pour commencer.',
-            ]],
+            'exchangePending' => null,
+            'log' => [],
             'players' => $players,
             'lastRoll' => null,
         ];
 
-        $this->syncTurnMeta($state);
+        return $state;
+    }
 
-        return $this->runBotTurns($state);
+    /**
+     * Bascule l'état en mode « partie en cours » (phase de tour).
+     */
+    public function startState(array $state): array
+    {
+        $state['status'] = 'playing';
+        $state['phase'] = 'turn';
+        if (!isset($state['log']) || !is_array($state['log'])) {
+            $state['log'] = [];
+        }
+        $state['log'][] = [
+            'type' => 'info',
+            'message' => 'Bienvenue au marché ! Lancez le dé pour commencer.',
+        ];
+        $this->syncTurnMeta($state);
+        return $state;
     }
 
     /**
@@ -329,7 +344,7 @@ final class PanierExpressGameService implements GameEngineInterface
             }
         }
 
-        return $this->runBotTurns($state);
+        return $this->advanceBots($state);
     }
 
     public function apply(array $state, array $payload, Room $room, User $user): array
@@ -344,22 +359,28 @@ final class PanierExpressGameService implements GameEngineInterface
         }
 
         $action = (string) ($payload['action'] ?? '');
-        $pending = $state['pending']['type'] ?? null;
+        $pendingType = $state['pending']['type'] ?? null;
 
-        if ($pending === 'quiz') {
+        if ($pendingType === 'quiz') {
             if ($action === PanierExpressCommand::ANSWER_QUIZ) {
                 $state = $this->handleQuizAnswer($state, $payload, $playerIndex);
-                return $this->runBotTurns($state);
             }
-            return $state;
+            return $this->advanceBots($state);
+        }
+
+        if ($pendingType === 'exchange') {
+            if ($action === PanierExpressCommand::APPLY_EXCHANGE) {
+                $state = $this->handleExchangeChoice($state, $payload, $playerIndex);
+            }
+            return $this->advanceBots($state);
         }
 
         if ($action === PanierExpressCommand::ROLL) {
             $state = $this->handleRoll($state, $payload, $playerIndex);
-            return $this->runBotTurns($state);
+            return $this->advanceBots($state);
         }
 
-        return $this->runBotTurns($state);
+        return $this->advanceBots($state);
     }
 
     public function currentRound(array $state): int
@@ -511,44 +532,35 @@ final class PanierExpressGameService implements GameEngineInterface
 
         $this->syncTurnMeta($state);
 
-        return $state;
+        return $this->advanceBots($state);
     }
 
     private function runBotTurns(array $state): array
     {
-        while (($state['status'] ?? null) === 'playing') {
-            $turnIndex = (int) ($state['turnIndex'] ?? 0);
-            $players = $state['players'] ?? [];
-            if (!isset($players[$turnIndex]) || ($players[$turnIndex]['isBot'] ?? false) !== true) {
-                break;
-            }
-
-            $playerId = $players[$turnIndex]['id'] ?? null;
-            if ($this->isPendingQuizFor($state, $playerId)) {
-                $choices = $state['pending']['choices'] ?? [];
-                $choice = $choices && is_array($choices)
-                    ? random_int(0, max(0, count($choices) - 1))
-                    : 0;
-                $state = $this->handleQuizAnswer($state, ['choice' => $choice], $turnIndex);
-                continue;
-            }
-
-            if (($state['phase'] ?? 'turn') !== 'turn' || ($state['pending']['type'] ?? null) !== null) {
-                break;
-            }
-
-            $state = $this->handleRoll($state, [], $turnIndex);
-
-            if (($state['status'] ?? null) !== 'playing') {
-                break;
-            }
-
-            if ((int) ($state['turnIndex'] ?? -1) === $turnIndex) {
-                break;
-            }
+        if (($state['status'] ?? null) !== 'playing') {
+            return $state;
         }
 
-        return $state;
+        $turnIndex = (int) ($state['turnIndex'] ?? 0);
+        $players = $state['players'] ?? [];
+        if (!isset($players[$turnIndex]) || ($players[$turnIndex]['isBot'] ?? false) !== true) {
+            return $state;
+        }
+
+        $playerId = $players[$turnIndex]['id'] ?? null;
+        if ($this->isPendingQuizFor($state, $playerId)) {
+            $choices = $state['pending']['choices'] ?? [];
+            $choice = $choices && is_array($choices)
+                ? random_int(0, max(0, count($choices) - 1))
+                : 0;
+            return $this->handleQuizAnswer($state, ['choice' => $choice], $turnIndex);
+        }
+
+        if (($state['phase'] ?? 'turn') !== 'turn' || ($state['pending']['type'] ?? null) !== null) {
+            return $state;
+        }
+
+        return $this->handleRoll($state, [], $turnIndex);
     }
 
     private function isPendingQuizFor(array $state, ?int $playerId): bool
@@ -1017,6 +1029,18 @@ final class PanierExpressGameService implements GameEngineInterface
         return (int)$choice;
     }
 
+    private function addCourseToInventory(array &$state, int $playerIndex, string $item): void
+    {
+        if ($item === '') {
+            return;
+        }
+        if (!isset($state['players'][$playerIndex]['inventory']) || !is_array($state['players'][$playerIndex]['inventory'])) {
+            $state['players'][$playerIndex]['inventory'] = [];
+        }
+        $state['players'][$playerIndex]['inventory'][] = $item;
+        $state['players'][$playerIndex]['lastGain'] = $item;
+    }
+
     private function removeRandomCourseFromPlayer(array &$state, int $playerIndex, bool $allowBasket): ?string
     {
         if (!isset($state['players'][$playerIndex]['inventory']) || !is_array($state['players'][$playerIndex]['inventory'])) {
@@ -1229,6 +1253,20 @@ final class PanierExpressGameService implements GameEngineInterface
 
     private function handleExchangeCardEffect(array &$state, int $playerIndex, array $card): bool
     {
+        $id = strtolower((string)($card['id'] ?? ''));
+        if ($id === 'echange-simultane') {
+            $this->passCardInDirection($state, 'left');
+            return true;
+        }
+        if ($id === 'panier-collectif') {
+            $this->collectivePoolExchange($state);
+            return true;
+        }
+        if ($id === 'panier-mixe') {
+            $this->mixInventories($state, $playerIndex);
+            return true;
+        }
+
         $effect = (string) ($card['effect'] ?? '');
         $normalized = $this->normalizeText($effect);
         if ($normalized === '') {
@@ -1330,15 +1368,365 @@ final class PanierExpressGameService implements GameEngineInterface
             return;
         }
 
-        $state['pending'] = [
-            'type' => 'exchange',
+        $playerId = $state['players'][$playerIndex]['id'] ?? null;
+        $rawCard = new ExchangeCard(
+            (string)($card['id'] ?? uniqid('exchange_', true)),
+            $title,
+            $effect,
+            ['raw' => $card]
+        );
+        $exchangePending = new ExchangePending($playerId, $rawCard);
+
+        $payload = array_merge(
+            ['type' => 'exchange'],
+            $this->exchangePresenter->presentPending($exchangePending)
+        );
+
+        $payload['card'] = [
+            'id' => $rawCard->id(),
+            'title' => $rawCard->title(),
+            'description' => $rawCard->description(),
+            'effect' => $rawCard->description(),
+            'metadata' => $rawCard->metadata(),
+        ];
+
+        $this->startExchangeInteraction($state, $playerIndex, $payload, (string)($card['id'] ?? uniqid('exchange_', true)));
+    }
+
+    private function startExchangeInteraction(array &$state, int $playerIndex, array $cardPayload, string $exchangeId): void
+    {
+        $cards = $this->listExchangeableItems($state, $playerIndex);
+        $targets = $this->listExchangeTargets($state, $playerIndex);
+
+        if ($cards === [] || $targets === []) {
+            $this->log($state, 'Aucun echange possible.', 'warning');
+            $state['exchangePending'] = null;
+            return;
+        }
+
+        $isBot = (bool)($state['players'][$playerIndex]['isBot'] ?? false);
+        if ($isBot) {
+            $choice = $cards[array_rand($cards)];
+            $offer = $this->removeExchangeItem($state, $playerIndex, (string)($choice['id'] ?? ''));
+            if ($offer === null) {
+                $this->log($state, 'Aucun echange possible pour ce bot.', 'warning');
+                return;
+            }
+            $targetInfo = $targets[array_rand($targets)];
+            $targetIndex = $this->locatePlayerByIdentifier($state, $targetInfo['id'] ?? null);
+            if ($targetIndex === null) {
+                $this->addCourseToInventory($state, $playerIndex, $offer);
+                return;
+            }
+            $state['flags']['exchangeContext'] = [
+                'id' => $exchangeId,
+                'stage' => 'target',
+                'initiator' => $playerIndex,
+                'target' => $targetIndex,
+                'offer' => $offer,
+                'card' => $cardPayload['card'] ?? null,
+            ];
+            if (($state['players'][$targetIndex]['isBot'] ?? false) === true) {
+                $received = $this->pickRandomExchangeItem($state, $targetIndex);
+                $this->finalizeExchange($state, $received);
+                return;
+            }
+            $targetCards = $this->listExchangeableItems($state, $targetIndex);
+            if ($targetCards === []) {
+                $this->finalizeExchange($state, null);
+                return;
+            }
+            $pending = [
+                'type' => 'exchange',
+                'stage' => 'target',
+                'exchangeId' => $exchangeId,
+                'playerId' => $state['players'][$targetIndex]['id'] ?? null,
+                'cards' => $targetCards,
+                'requestedBy' => [
+                    'id' => $state['players'][$playerIndex]['id'] ?? null,
+                    'username' => $state['players'][$playerIndex]['username'] ?? '',
+                ],
+                'offer' => $offer,
+                'card' => $cardPayload['card'] ?? null,
+            ];
+            $state['pending'] = $pending;
+            $state['exchangePending'] = $pending;
+            $state['phase'] = 'exchange';
+            return;
+        }
+
+        $pending = array_merge($cardPayload, [
+            'stage' => 'select',
+            'exchangeId' => $exchangeId,
             'playerId' => $state['players'][$playerIndex]['id'] ?? null,
-            'card' => [
-                'title' => $title,
-                'effect' => $effect,
-            ],
+            'cards' => $cards,
+            'targets' => $targets,
+        ]);
+
+        $state['pending'] = $pending;
+        $state['exchangePending'] = $pending;
+        $state['phase'] = 'exchange';
+        $state['flags']['exchangeContext'] = [
+            'id' => $exchangeId,
+            'stage' => 'select',
+            'initiator' => $playerIndex,
+            'card' => $cardPayload['card'] ?? null,
         ];
     }
+
+    private function handleExchangeChoice(array $state, array $payload, int $playerIndex): array
+    {
+        $context = $state['flags']['exchangeContext'] ?? null;
+        if (!is_array($context)) {
+            return $state;
+        }
+        $exchangeId = $payload['exchangeId'] ?? null;
+        if (!is_string($exchangeId) || $exchangeId === '' || $exchangeId !== ($context['id'] ?? null)) {
+            return $state;
+        }
+
+        $stage = (string) ($context['stage'] ?? 'select');
+        if ($stage === 'select') {
+            if ((int) ($context['initiator'] ?? -1) !== $playerIndex) {
+                return $state;
+            }
+            $cardKey = (string) ($payload['card'] ?? '');
+            if ($cardKey === '') {
+                return $state;
+            }
+            $targetId = $payload['targetId'] ?? null;
+            $targetIndex = $this->locatePlayerByIdentifier($state, $targetId);
+            if ($targetIndex === null || $targetIndex === $playerIndex) {
+                return $state;
+            }
+            $offer = $this->removeExchangeItem($state, $playerIndex, $cardKey);
+            if ($offer === null) {
+                return $state;
+            }
+
+            $state['flags']['exchangeContext'] = [
+                'id' => $exchangeId,
+                'stage' => 'target',
+                'initiator' => $playerIndex,
+                'target' => $targetIndex,
+                'offer' => $offer,
+            ];
+
+            if (($state['players'][$targetIndex]['isBot'] ?? false) === true) {
+                $received = $this->pickRandomExchangeItem($state, $targetIndex);
+                return $this->finalizeExchange($state, $received);
+            }
+
+            $cards = $this->listExchangeableItems($state, $targetIndex);
+            if ($cards === []) {
+                return $this->finalizeExchange($state, null);
+            }
+
+            $pending = [
+                'type' => 'exchange',
+                'stage' => 'target',
+                'exchangeId' => $exchangeId,
+                'playerId' => $state['players'][$targetIndex]['id'] ?? null,
+                'cards' => $cards,
+                'requestedBy' => [
+                    'id' => $state['players'][$playerIndex]['id'] ?? null,
+                    'username' => $state['players'][$playerIndex]['username'] ?? '',
+                ],
+                'offer' => $offer,
+                'card' => $context['card'] ?? null,
+            ];
+            $state['pending'] = $pending;
+            $state['exchangePending'] = $pending;
+            $state['phase'] = 'exchange';
+            return $state;
+        }
+
+        if ($stage === 'target') {
+            if ((int) ($context['target'] ?? -1) !== $playerIndex) {
+                return $state;
+            }
+            $cardKey = (string) ($payload['card'] ?? '');
+            $received = $this->removeExchangeItem($state, $playerIndex, $cardKey);
+            if ($received === null) {
+                return $state;
+            }
+            return $this->finalizeExchange($state, $received);
+        }
+
+        return $state;
+    }
+
+    private function finalizeExchange(array $state, ?string $received): array
+    {
+        $context = $state['flags']['exchangeContext'] ?? null;
+        if (!is_array($context)) {
+            return $state;
+        }
+        $initiator = (int) ($context['initiator'] ?? -1);
+        $target = (int) ($context['target'] ?? -1);
+        $offer = $context['offer'] ?? null;
+        if ($offer !== null && $target >= 0) {
+            $this->addCourseToInventory($state, $target, $offer);
+            $this->log($state, sprintf('%s donne %s a %s.', $state['players'][$initiator]['username'], $offer, $state['players'][$target]['username']));
+        }
+        if ($received !== null && $initiator >= 0) {
+            $this->addCourseToInventory($state, $initiator, $received);
+            $this->log($state, sprintf('%s recoit %s en echange.', $state['players'][$initiator]['username'], $received));
+        }
+
+        $state['pending'] = null;
+        $state['exchangePending'] = null;
+        $state['phase'] = 'turn';
+        unset($state['flags']['exchangeContext']);
+        if (($state['status'] ?? null) !== 'ended' && $initiator >= 0) {
+            $this->advanceTurn($state, $initiator);
+        }
+
+        return $state;
+    }
+
+    /**
+     * @return array<int,array<string,mixed>>
+     */
+    private function listExchangeableItems(array $state, int $playerIndex): array
+    {
+        $cards = [];
+        $inventory = $state['players'][$playerIndex]['inventory'] ?? [];
+        if (is_array($inventory)) {
+            foreach ($inventory as $idx => $item) {
+                if (!is_string($item) || $item === '') {
+                    continue;
+                }
+                $cards[] = [
+                    'id' => 'inventory:' . $idx,
+                    'label' => $item,
+                ];
+            }
+        }
+        $basket = $state['players'][$playerIndex]['basket'] ?? [];
+        if (is_array($basket)) {
+            foreach ($basket as $idx => $item) {
+                if (!is_string($item) || $item === '') {
+                    continue;
+                }
+                $cards[] = [
+                    'id' => 'basket:' . $idx,
+                    'label' => $item,
+                ];
+            }
+        }
+        return $cards;
+    }
+
+    /**
+     * @return array<int,array<string,mixed>>
+     */
+    private function listExchangeTargets(array $state, int $playerIndex): array
+    {
+        $targets = [];
+        foreach ($state['players'] ?? [] as $idx => $player) {
+            if ($idx === $playerIndex) {
+                continue;
+            }
+            $cards = $this->listExchangeableItems($state, (int) $idx);
+            if ($cards === []) {
+                continue;
+            }
+            $targets[] = [
+                'id' => $player['id'] ?? null,
+                'username' => $player['username'] ?? '',
+                'isBot' => (bool) ($player['isBot'] ?? false),
+            ];
+        }
+        return $targets;
+    }
+
+    private function removeExchangeItem(array &$state, int $playerIndex, string $key): ?string
+    {
+        if (strncmp($key, 'inventory:', 10) === 0) {
+            $idx = (int) substr($key, 10);
+            $inventory = &$state['players'][$playerIndex]['inventory'];
+            if (!is_array($inventory) || !isset($inventory[$idx])) {
+                return null;
+            }
+            $item = $inventory[$idx];
+            unset($inventory[$idx]);
+            $inventory = array_values($inventory);
+            return is_string($item) ? $item : null;
+        }
+        if (strncmp($key, 'basket:', 7) === 0) {
+            $idx = (int) substr($key, 7);
+            $basket = &$state['players'][$playerIndex]['basket'];
+            if (!is_array($basket) || !isset($basket[$idx])) {
+                return null;
+            }
+            $item = $basket[$idx];
+            unset($basket[$idx]);
+            $basket = array_values($basket);
+            $this->refreshCheckoutFlag($state, $playerIndex);
+            return is_string($item) ? $item : null;
+        }
+        return null;
+    }
+
+    private function pickRandomExchangeItem(array &$state, int $playerIndex): ?string
+    {
+        $cards = $this->listExchangeableItems($state, $playerIndex);
+        if ($cards === []) {
+            return null;
+        }
+        $choice = $cards[array_rand($cards)];
+        return $this->removeExchangeItem($state, $playerIndex, (string) ($choice['id'] ?? ''));
+    }
+
+    private function locatePlayerByIdentifier(array $state, $identifier): ?int
+    {
+        if ($identifier === null) {
+            return null;
+        }
+        foreach ($state['players'] ?? [] as $index => $player) {
+            if (($player['id'] ?? null) == $identifier) { // loose comparison to allow string/int
+                return (int) $index;
+            }
+        }
+        return null;
+    }
+
+    public function advanceBots(array $state): array
+    {
+        if (($state['status'] ?? null) !== 'playing') {
+            return $state;
+        }
+        $turnIndex = (int) ($state['turnIndex'] ?? 0);
+        $players = $state['players'] ?? [];
+        if (!isset($players[$turnIndex]) || ($players[$turnIndex]['isBot'] ?? false) !== true) {
+            return $state;
+        }
+        $pendingType = $state['pending']['type'] ?? null;
+        if ($pendingType === 'exchange') {
+            return $state;
+        }
+        if (!isset($state['flags']) || !is_array($state['flags'])) {
+            $state['flags'] = [];
+        }
+        if (($state['flags']['botProcessing'] ?? false) === true) {
+            return $state;
+        }
+        $now = (int) round(microtime(true) * 1000);
+        $cooldown = (int) ($state['flags']['botCooldownUntil'] ?? 0);
+        if ($now < $cooldown) {
+            return $state;
+        }
+        $state['flags']['botProcessing'] = true;
+        try {
+            $state = $this->runBotTurns($state);
+        } finally {
+            $state['flags']['botProcessing'] = false;
+        }
+        $state['flags']['botCooldownUntil'] = $now + 2000;
+        return $state;
+    }
+
     private function startQuiz(array &$state, int $playerIndex): void
     {
         $card = $this->deckManager->drawCard($state, PanierExpressDeckManager::DECK_QUIZ, $this->randomizer);
@@ -1452,35 +1840,37 @@ final class PanierExpressGameService implements GameEngineInterface
             return;
         }
 
-        $players = $state['players'] ?? [];
+        if (!isset($state['players']) || !is_array($state['players'])) {
+            $state['players'] = [];
+        }
+        $players = &$state['players'];
         $count = count($players);
         if ($count === 0) {
             return;
         }
 
-        // Construit un état de tour générique pour gérer direction/skip/extra-turn.
-        $turnState = $this->buildTurnState($state, $currentPlayerIndex);
-        $manager = new TurnManager($turnState);
-        $next = $manager->next($count);
-
-        // Répercute les skips restants sur les joueurs.
-        foreach ($state['players'] as $idx => &$player) {
-            $player['skipTurns'] = (int)($turnState->skips[$idx] ?? 0);
+        if (!isset($state['flags']) || !is_array($state['flags'])) {
+            $state['flags'] = [];
         }
-        unset($player);
 
-        // Réinitialise l’éventuelle demande de reset de direction si on revient sur le joueur ciblé.
-        if (isset($state['flags']['turnDirectionResetPlayer']) && ($players[$next]['id'] ?? null) === ($state['flags']['turnDirectionResetPlayer'] ?? null)) {
+        $coordinator = PanierExpressTurnCoordinator::forState($state, $currentPlayerIndex);
+        $next = $coordinator->nextIndex();
+
+        $directionResetId = $state['flags']['turnDirectionResetPlayer'] ?? null;
+        if ($directionResetId !== null && ($players[$next]['id'] ?? null) === $directionResetId) {
             unset($state['flags']['turnDirectionResetPlayer']);
-            $turnState->direction = 1;
+            $coordinator->resetDirection();
         }
 
-        $state['flags']['turnDirection'] = $turnState->direction;
+        $coordinator->syncSkips($players);
+
+        $state['flags']['turnDirection'] = $coordinator->getDirection();
         $state['turnIndex'] = $next;
-        $state['round'] = $turnState->round;
+        $state['round'] = $coordinator->getRound();
         $state['phase'] = 'turn';
         $state['lastRoll'] = null;
-        $this->syncTurnMeta($state);
+
+        $this->syncTurnMeta($state, $coordinator->getTurnState());
     }
 
     private function tileAt(array $state, int $position): ?array
@@ -1528,6 +1918,13 @@ final class PanierExpressGameService implements GameEngineInterface
             unset($public['pending']['answerIndex']);
         }
 
+        if (isset($public['exchangePending'])) {
+            $public['exchangePending'] = array_merge(
+                $public['exchangePending'],
+                ['type' => 'exchange']
+            );
+        }
+
         if (isset($public['log']) && is_array($public['log'])) {
             $public['log'] = array_slice(array_values($public['log']), -20);
         }
@@ -1557,47 +1954,12 @@ final class PanierExpressGameService implements GameEngineInterface
         ];
     }
 
-    private function syncTurnMeta(array &$state): void
+    private function syncTurnMeta(array &$state, ?TurnState $turnState = null): void
     {
-        $turnState = $this->buildTurnState($state, (int)($state['turnIndex'] ?? 0));
+        $turnState = $turnState ?? PanierExpressTurnStateFactory::build($state, (int)($state['turnIndex'] ?? 0));
         $state['turn'] = $turnState->toArray();
     }
-
-    private function buildTurnState(array $state, int $currentPlayerIndex): TurnState
-    {
-        // Si un état de tour existe déjà, on le recharge, sinon on le construit à partir des champs legacy.
-        $turn = isset($state['turn']) && is_array($state['turn'])
-            ? TurnState::fromArray($state['turn'])
-            : new TurnState(
-                (int)($state['turnIndex'] ?? $currentPlayerIndex),
-                (int)($state['round'] ?? 1),
-                (int)($state['flags']['turnDirection'] ?? 1),
-                [],
-                null
-            );
-
-        // Synchronise la direction legacy si présente.
-        if (isset($state['flags']['turnDirection'])) {
-            $dir = (int)$state['flags']['turnDirection'];
-            $turn->direction = ($dir === -1) ? -1 : 1;
-        }
-
-        // Intègre les skips stockés sur les joueurs.
-        foreach ($state['players'] ?? [] as $idx => $player) {
-            $skips = (int)($player['skipTurns'] ?? 0);
-            if ($skips > 0) {
-                $turn->skips[$idx] = $skips;
-            } else {
-                unset($turn->skips[$idx]);
-            }
-        }
-
-        // Extra-turn legacy
-        if (isset($state['flags']['extraTurn']) && (int)$state['flags']['extraTurn'] === $currentPlayerIndex) {
-            $turn->extraTurnFor = $currentPlayerIndex;
-            unset($state['flags']['extraTurn']);
-        }
-
-        return $turn;
-    }
 }
+
+
+

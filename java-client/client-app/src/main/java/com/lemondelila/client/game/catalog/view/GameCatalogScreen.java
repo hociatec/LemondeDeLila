@@ -1,5 +1,6 @@
 package com.lemondelila.client.game.catalog.view;
 
+import com.lemondelila.client.menu.view.MainMenuScreen;
 import com.lemondelila.client.framework.core.di.Inject;
 import com.lemondelila.client.framework.core.event.DomainEventBus;
 import com.lemondelila.client.framework.core.event.EventSubscriptions;
@@ -15,11 +16,11 @@ import com.lemondelila.client.game.catalog.model.CatalogCategory;
 import com.lemondelila.client.game.catalog.model.CatalogGame;
 import com.lemondelila.client.game.shortcut.controller.TableShortcutManager;
 
+import javax.swing.ActionMap;
+import javax.swing.InputMap;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
-import javax.swing.InputMap;
-import javax.swing.ActionMap;
-import javax.swing.JComponent;
 import java.awt.BorderLayout;
 import java.util.Collections;
 import java.util.List;
@@ -55,9 +56,9 @@ public final class GameCatalogScreen extends JPanel implements Screen, AutoClose
         add(view.component(), BorderLayout.CENTER);
 
         subscriptions.subscribe(eventBus, CatalogLoaded.class, ev -> {
-            view.setStatus("Catalogue chargé");
-            currentCategories = ev.payload().categories();
-            currentGames = ev.payload().games();
+            view.setStatus("Catalogue charge");
+            currentCategories = dedupeCategories(ev.payload().categories());
+            currentGames = dedupeGames(ev.payload().games());
             applyCategories();
             if (!currentCategories.isEmpty()) {
                 withProgrammatic(() -> view.selectCategory(0));
@@ -91,9 +92,11 @@ public final class GameCatalogScreen extends JPanel implements Screen, AutoClose
 
     @Override
     public void onShow(ScreenContext context) {
-        controller.fetchAll();
         this.screenManager = context.screenManager();
         shortcuts.bindEscape(view.component(), this::onEscape);
+        if (currentCategories.isEmpty() && currentGames.isEmpty()) {
+            controller.fetchAll();
+        }
         view.focusCategories();
     }
 
@@ -131,14 +134,14 @@ public final class GameCatalogScreen extends JPanel implements Screen, AutoClose
         }
         CatalogCategory selected = currentCategories.get(index);
         selectedCategoryIndex = index;
-        List<CatalogCategory> children = selected.children();
+        List<CatalogCategory> children = dedupeCategories(selected.children());
         currentSubCategories = children;
         selectedSubCategory = null;
         selectedSubIndex = -1;
-        view.setSubcategories(children.stream().map(CatalogCategory::name).toList());
+        view.setSubcategories(dedupeCategoryNames(children));
         if (children.isEmpty()) {
             List<CatalogGame> filtered = filterGames(selected.id());
-            view.setGames(filtered.stream().map(CatalogGame::name).toList());
+            view.setGames(dedupeGameNames(filtered));
             selectedSubCategory = selected;
             selectedSubIndex = -1;
             withProgrammatic(() -> view.selectSubcategory(-1));
@@ -168,7 +171,7 @@ public final class GameCatalogScreen extends JPanel implements Screen, AutoClose
         selectedSubCategory = sub;
         selectedSubIndex = index;
         List<CatalogGame> filtered = filterGames(sub.id());
-        view.setGames(filtered.stream().map(CatalogGame::name).toList());
+        view.setGames(dedupeGameNames(filtered));
         gamesVisible = !filtered.isEmpty();
         if (!filtered.isEmpty()) {
             view.selectGame(0);
@@ -211,7 +214,7 @@ public final class GameCatalogScreen extends JPanel implements Screen, AutoClose
         // on quitte directement.
         if (!userNavigated && !gamesVisible) {
             if (screenManager != null) {
-                screenManager.show(com.lemondelila.client.application.view.menu.MainMenuScreen.ID);
+                screenManager.show(MainMenuScreen.ID);
             }
             return;
         }
@@ -238,7 +241,7 @@ public final class GameCatalogScreen extends JPanel implements Screen, AutoClose
             return;
         }
         if (screenManager != null) {
-            screenManager.show(com.lemondelila.client.application.view.menu.MainMenuScreen.ID);
+            screenManager.show(MainMenuScreen.ID);
         }
     }
 
@@ -249,6 +252,88 @@ public final class GameCatalogScreen extends JPanel implements Screen, AutoClose
         return currentGames.stream()
                 .filter(g -> g.categories() != null && g.categories().contains(categoryId))
                 .toList();
+    }
+
+    private List<CatalogCategory> dedupeCategories(List<CatalogCategory> source) {
+        if (source == null || source.isEmpty()) {
+            return List.of();
+        }
+        java.util.LinkedHashMap<String, CatalogCategory> map = new java.util.LinkedHashMap<>();
+        for (CatalogCategory cat : source) {
+            if (cat == null || cat.id() == null || cat.id().isBlank()) {
+                continue;
+            }
+            List<CatalogCategory> children = dedupeCategories(cat.children());
+            String key = normalizeCategoryKey(cat);
+            if (!map.containsKey(key)) {
+                map.put(key, new CatalogCategory(cat.id(), cat.name(), children));
+            }
+        }
+        return List.copyOf(map.values());
+    }
+
+    private List<CatalogGame> dedupeGames(List<CatalogGame> source) {
+        if (source == null || source.isEmpty()) {
+            return List.of();
+        }
+        java.util.LinkedHashMap<String, CatalogGame> map = new java.util.LinkedHashMap<>();
+        for (CatalogGame game : source) {
+            if (game == null || game.code() == null || game.code().isBlank()) {
+                continue;
+            }
+            map.putIfAbsent(normalizeGameCode(game.code()), game);
+        }
+        return List.copyOf(map.values());
+    }
+
+    private List<String> dedupeCategoryNames(List<CatalogCategory> categories) {
+        java.util.LinkedHashMap<String, String> map = new java.util.LinkedHashMap<>();
+        for (CatalogCategory cat : categories) {
+            if (cat == null) {
+                continue;
+            }
+            String name = cat.name() == null ? "" : cat.name();
+            String key = normalizeName(name);
+            if (!map.containsKey(key)) {
+                map.put(key, name);
+            }
+        }
+        return List.copyOf(map.values());
+    }
+
+    private List<String> dedupeGameNames(List<CatalogGame> games) {
+        java.util.LinkedHashMap<String, String> map = new java.util.LinkedHashMap<>();
+        for (CatalogGame game : games) {
+            if (game == null) {
+                continue;
+            }
+            String name = game.name() == null ? "" : game.name();
+            String key = normalizeName(name);
+            if (!map.containsKey(key)) {
+                map.put(key, name);
+            }
+        }
+        return List.copyOf(map.values());
+    }
+
+    private String normalizeCategoryKey(CatalogCategory cat) {
+        if (cat == null) {
+            return "";
+        }
+        String id = cat.id();
+        if (id != null && !id.isBlank()) {
+            return id.trim().toLowerCase(java.util.Locale.ROOT);
+        }
+        String name = cat.name();
+        return name == null ? "" : name.trim().toLowerCase(java.util.Locale.ROOT);
+    }
+
+    private String normalizeGameCode(String code) {
+        return code == null ? "" : code.trim().toLowerCase(java.util.Locale.ROOT);
+    }
+
+    private String normalizeName(String value) {
+        return value == null ? "" : value.trim().toLowerCase(java.util.Locale.ROOT);
     }
 
     private void withProgrammatic(Runnable action) {

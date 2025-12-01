@@ -1,17 +1,13 @@
 package com.lemondelila.client.game.room.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.lemondelila.client.framework.core.di.Inject;
 import com.lemondelila.client.framework.core.event.DomainEventBus;
-import com.lemondelila.client.framework.network.channel.GameRealtimeChannel;
-import com.lemondelila.client.framework.network.config.NetworkEndpoints;
-import com.lemondelila.client.framework.network.realtime.RealtimeSignatureService;
-import com.lemondelila.client.framework.network.ws.StandardRealtimeGateway;
 import com.lemondelila.client.game.bot.event.BotAdded;
 import com.lemondelila.client.game.bot.event.BotOperationFailed;
 import com.lemondelila.client.game.bot.event.BotRemoved;
+import com.lemondelila.client.game.realtime.service.RealtimeManager;
+import com.lemondelila.client.game.realtime.service.RealtimeManager.ChannelSubscription;
 import com.lemondelila.client.game.room.event.RoomCreated;
 import com.lemondelila.client.game.room.event.RoomOperationFailed;
 import com.lemondelila.client.game.room.event.RoomRealtimeEvent;
@@ -19,65 +15,44 @@ import com.lemondelila.client.game.room.event.RoomRealtimeFailed;
 import com.lemondelila.client.game.room.event.RoomUpdated;
 import com.lemondelila.client.game.room.model.BotState;
 import com.lemondelila.client.game.room.model.RoomState;
-import com.lemondelila.client.user.model.ClientSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.URI;
-import java.net.http.HttpClient;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.Map;
-import java.util.function.Supplier;
 
 /**
- * Pousse les mises à jour de room via WebSocket et publie les événements de jeu.
+ * Pousse les mises à jour de room via WebSocket et publie les évènements de jeu.
  */
 public final class RoomRealtimeService implements AutoCloseable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RoomRealtimeService.class);
 
-    private final HttpClient httpClient;
-    private final ObjectMapper objectMapper;
     private final DomainEventBus eventBus;
-    private final GameRealtimeChannel channel;
-    private final ClientSession session;
-    private final RealtimeSignatureService signatureService;
+    private final RealtimeManager realtimeManager;
 
     private final Object lock = new Object();
-    private RoomSubscription current;
+    private ChannelSubscription current;
 
     @Inject
-    public RoomRealtimeService(HttpClient httpClient,
-                               ObjectMapper objectMapper,
-                               DomainEventBus eventBus,
-                               NetworkEndpoints endpoints,
-                               ClientSession session,
-                               RealtimeSignatureService signatureService) {
-        this.httpClient = Objects.requireNonNull(httpClient, "httpClient");
-        this.objectMapper = Objects.requireNonNull(objectMapper, "objectMapper");
+    public RoomRealtimeService(DomainEventBus eventBus,
+                               RealtimeManager realtimeManager) {
         this.eventBus = Objects.requireNonNull(eventBus, "eventBus");
-        this.channel = new GameRealtimeChannel(endpoints);
-        this.session = Objects.requireNonNull(session, "session");
-        this.signatureService = Objects.requireNonNull(signatureService, "signatureService");
+        this.realtimeManager = Objects.requireNonNull(realtimeManager, "realtimeManager");
     }
 
     public AutoCloseable subscribe(int roomId) {
         synchronized (lock) {
             closeCurrent();
-            Optional<ClientSession.AuthState> auth = session.authenticated();
-            if (auth.isEmpty() || auth.get().token() == null || auth.get().token().isBlank()) {
-                String reason = "Authentification requise pour les mises à jour en temps réel";
+            try {
+                current = realtimeManager.openRoomChannel(roomId, this::handleMessage);
+                return current;
+            } catch (IllegalStateException ex) {
+                String reason = clean(ex.getMessage());
                 LOGGER.debug("Impossible de souscrire à la room {} : {}", roomId, reason);
                 eventBus.publish(new RoomRealtimeFailed(roomId, reason));
-                return () -> {
-                };
+                return () -> { };
             }
-            RoomSubscription subscription = new RoomSubscription(roomId, auth.get().token());
-            current = subscription;
-            subscription.start();
-            return subscription;
         }
     }
 
@@ -85,7 +60,12 @@ public final class RoomRealtimeService implements AutoCloseable {
         Objects.requireNonNull(type, "type");
         synchronized (lock) {
             if (current == null || current.isClosed()) {
-                subscribe(0);
+                try {
+                    current = realtimeManager.openRoomChannel(0, this::handleMessage);
+                } catch (IllegalStateException ex) {
+                    eventBus.publish(new RoomRealtimeFailed(0, clean(ex.getMessage())));
+                    return;
+                }
             }
             current.send(type, payload);
         }
@@ -147,8 +127,7 @@ public final class RoomRealtimeService implements AutoCloseable {
             case "bot.removed", "bot-removed" -> publishBotRemoved(roomId, payload);
             case "room.privacy" -> publishRoomPrivacyChanged(roomId, payload);
             case "error" -> publishOperationFailed(payload.path("message").asText("Erreur temps réel"));
-            default -> {
-            }
+            default -> { }
         }
     }
 
@@ -249,78 +228,5 @@ public final class RoomRealtimeService implements AutoCloseable {
             return "Erreur temps réel";
         }
         return message.replaceAll("\\s+", " ").trim();
-    }
-
-    private final class RoomSubscription implements AutoCloseable {
-
-        private final int roomId;
-        private final String token;
-        private final StandardRealtimeGateway gateway;
-
-        private volatile boolean connected = false;
-        private volatile boolean closed = false;
-
-        RoomSubscription(int roomId, String token) {
-            this.roomId = roomId;
-            this.token = token;
-            Supplier<URI> endpointSupplier = () -> channel.resolve(token, roomId, buildSignatureParams());
-            this.gateway = new StandardRealtimeGateway(httpClient, endpointSupplier, objectMapper, eventBus);
-        }
-
-        void start() {
-            gateway.onMessage(RoomRealtimeService.this::handleMessage);
-            gateway.onConnectionState(state -> connected = state == com.lemondelila.client.framework.network.ws.RealtimeGateway.ConnectionState.CONNECTED);
-            gateway.connect();
-        }
-
-        void send(String type, Map<String, ?> payload) {
-            // Si la connexion n'est pas encore établie, on attend brièvement avant d'envoyer.
-            if (!connected) {
-                gateway.connect();
-                int attempts = 0;
-                while (!connected && attempts < 20) { // ~1 seconde max
-                    try {
-                        Thread.sleep(50);
-                    } catch (InterruptedException ignored) {
-                        Thread.currentThread().interrupt();
-                        break;
-                    }
-                    attempts++;
-                }
-            }
-
-            ObjectNode message = RoomRealtimeService.this.objectMapper.createObjectNode();
-            message.put("type", type);
-            if (payload == null || payload.isEmpty()) {
-                message.set("payload", RoomRealtimeService.this.objectMapper.createObjectNode());
-            } else {
-                message.set("payload", RoomRealtimeService.this.objectMapper.valueToTree(payload));
-            }
-            gateway.send(message);
-        }
-
-        @Override
-        public void close() {
-            gateway.close();
-            connected = false;
-            closed = true;
-            synchronized (lock) {
-                if (current == this) {
-                    current = null;
-                }
-            }
-        }
-
-        boolean isClosed() {
-            return closed;
-        }
-
-        private Map<String, String> buildSignatureParams() {
-            String signature = signatureService.signature();
-            if (signature == null || signature.isBlank()) {
-                return Map.of();
-            }
-            return Map.of("signature", signature);
-        }
     }
 }

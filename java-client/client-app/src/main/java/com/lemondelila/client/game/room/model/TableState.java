@@ -3,6 +3,7 @@ package com.lemondelila.client.game.room.model;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 
 /**
@@ -47,6 +48,18 @@ public final class TableState {
         return Collections.unmodifiableList(players);
     }
 
+    public int playerCountIncludingLocalParticipant() {
+        int count = players.size();
+        if (roomId != null) {
+            count = Math.max(1, count);
+        }
+        return count;
+    }
+
+    public int participantCountIncludingLocalParticipant() {
+        return playerCountIncludingLocalParticipant() + bots.size();
+    }
+
     public int turnIndex() {
         return turnIndex;
     }
@@ -60,6 +73,9 @@ public final class TableState {
     }
 
     public void setRoom(Integer id, String gameType) {
+        if (Objects.equals(this.roomId, id) && Objects.equals(this.gameType, gameType)) {
+            return;
+        }
         this.roomId = id;
         this.gameType = gameType;
         this.status = null;
@@ -101,6 +117,19 @@ public final class TableState {
 
     public void updateStatus(String status) {
         this.status = status;
+        if (status == null || status.isBlank()) {
+            return;
+        }
+        String normalized = status.trim().toLowerCase(Locale.ROOT);
+        if ("open".equals(normalized)
+                || "setup".equals(normalized)
+                || "ouvert".equals(normalized)
+                || "preparing".equals(normalized)
+                || "pending".equals(normalized)) {
+            this.started = false;
+            return;
+        }
+        this.started = true;
     }
 
     public void updatePrivacy(boolean isPrivate) {

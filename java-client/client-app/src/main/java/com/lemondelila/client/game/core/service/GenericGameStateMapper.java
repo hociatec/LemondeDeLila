@@ -46,6 +46,10 @@ public final class GenericGameStateMapper {
                     pendingNode.path("playerId").isInt() ? pendingNode.get("playerId").asInt() : null
             );
         }
+        JsonNode pendingExchangeNode = json.path("exchangePending");
+        if (!pendingExchangeNode.isObject()) {
+            pendingExchangeNode = null;
+        }
 
         Map<String, Object> extras = new HashMap<>();
         if (json.has("players")) {
@@ -56,6 +60,9 @@ public final class GenericGameStateMapper {
         }
         if (json.has("turn")) {
             extras.put("turn", json.get("turn"));
+        }
+        if (pendingExchangeNode != null) {
+            extras.put("pendingExchange", pendingExchangeNode);
         }
 
         return new GenericGameState(status, phase, round, turnIndex, lastRoll, logs, pending, extras);

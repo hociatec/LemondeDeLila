@@ -3,7 +3,7 @@
 namespace App\Module\Game\Realtime;
 
 use App\Module\Game\Entity\Room;
-use Amp\asyncCall;
+use function Amp\asyncCall;
 use App\Module\Game\Realtime\RoomRealtimeBroker;
 use App\Module\Game\Realtime\RoomRealtimePayloadBuilder;
 use Psr\Log\LoggerInterface;
