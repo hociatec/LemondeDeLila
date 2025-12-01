@@ -77,6 +77,31 @@ final class DameNatureServiceTest extends TestCase
         $unusedCard = $this->findUnownedFamilyCard($state);
         self::assertNotNull($unusedCard);
 
+        $familyCards = $state['familyMap'][$unusedCard['familyId']] ?? [];
+        $alphaHand = &$state['players'][$alphaIndex]['hand'];
+        $alphaHasFamily = false;
+        foreach ($alphaHand as $code) {
+            if (($state['cards'][$code]['familyId'] ?? null) === $unusedCard['familyId']) {
+                $alphaHasFamily = true;
+                break;
+            }
+        }
+        if (!$alphaHasFamily) {
+            foreach ($familyCards as $familyCode) {
+                if ($familyCode === $unusedCard['code']) {
+                    continue;
+                }
+                $alphaHand[] = $familyCode;
+                $state['deck'] = array_values(array_filter(
+                    $state['deck'],
+                    static fn ($candidate) => $candidate !== $familyCode
+                ));
+                $alphaHasFamily = true;
+                break;
+            }
+        }
+        self::assertTrue($alphaHasFamily, 'Le joueur actif doit posseder une carte de la famille demandee.');
+
         // Force deck to ne contenir qu'une seule carte familiale connue.
         $state['deck'] = [$unusedCard['code']];
 

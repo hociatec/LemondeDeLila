@@ -5,16 +5,17 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.lemondelila</groupId>
     <artifactId>java-client</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.9</version>
     <packaging>pom</packaging>
-    <name>Le Monde de Lila Client</name>
+    <name>Les mondes de Lilas Client</name>
 
     <modules>
+        <module>framework-di</module>
         <module>framework-core</module>
         <module>framework-ui</module>
-        <module>framework-access</module>
         <module>framework-network</module>
         <module>framework-media</module>
+        <module>framework-access</module>
         <module>client-app</module>
     </modules>
 
@@ -24,6 +25,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <slf4j.version>2.0.13</slf4j.version>
         <jackson.version>2.17.1</jackson.version>
+        <auto.service.version>1.1.1</auto.service.version>
     </properties>
 
     <dependencyManagement>
@@ -48,6 +50,66 @@
                 <artifactId>jackson-core</artifactId>
                 <version>${jackson.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.google.auto.service</groupId>
+                <artifactId>auto-service</artifactId>
+                <version>${auto.service.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.auto.service</groupId>
+                <artifactId>auto-service-annotations</artifactId>
+                <version>${auto.service.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <repositories>
+        <repository>
+            <id>central</id>
+            <url>https://repo.maven.apache.org/maven2</url>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>java-net</id>
+            <name>java.net legacy repository</name>
+            <url>https://maven.java.net/content/groups/public/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.11.0</version>
+                    <configuration>
+                        <source>${maven.compiler.source}</source>
+                        <target>${maven.compiler.target}</target>
+                        <encoding>${project.build.sourceEncoding}</encoding>
+                        <annotationProcessorPaths>
+                            <path>
+                                <groupId>com.google.auto.service</groupId>
+                                <artifactId>auto-service</artifactId>
+                                <version>${auto.service.version}</version>
+                            </path>
+                        </annotationProcessorPaths>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
 </project>
+

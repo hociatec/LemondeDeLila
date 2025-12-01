@@ -1,0 +1,135 @@
+Cartes "Événement" (40 cartes)
+
+
+Effets positifs (14 cartes)
+1. 
+Promo surprise
+Pioche 2 cartes Courses au lieu d'une.
+2. 
+Coup de chance !
+Avance de 2 cases immédiatement.
+3. 
+Stand exceptionnel
+Pioche une carte Courses de n’importe quel stand, même à distance.
+4. 
+Fidélité récompensée
+Rejoue immédiatement.
+5. 
+Panier bonus
+Choisis un autre joueur et prends-lui une carte Courses au hasard.
+6. 
+Tirage chanceux
+Regarde les 3 premières cartes Courses et choisis celle que tu veux.
+7. 
+Don du maraîcher
+Gagne un fruit ou légume au choix dans la pioche.
+8. 
+Journée bio
+Tous les joueurs sur un stand "Bio" piochent une carte bonus.
+9. 
+Stand ouvert en avance
+Avance jusqu’au stand de ton choix et pioche une carte Courses.
+10. 
+Échange spontané
+Échange une carte Courses de ton choix avec un autre joueur (sans tirage au sort).
+11. 
+Marché animé
+Tous les joueurs piochent une carte Courses.
+12. 
+Producteur généreux
+Gagne 1 carte Courses et donne-en une à un joueur de ton choix.
+13. 
+Recette express
+Si tu as 3 cartes qui sont sur ta liste, tu en coches une supplémentaire sans la trouver.
+14. 
+Stand en fête !
+Tous les joueurs présents sur ton stand reçoivent une carte Courses bonus.
+ 
+Effets négatifs (14 cartes)
+15. 
+Rupture de stock
+Tu ne peux pas piocher de carte Courses ce tour-ci.
+16. 
+Stand fermé
+Tu perds ton prochain tour.
+17. 
+Emballage défectueux
+Une de tes cartes Courses est abîmée : défausse-la (au choix).
+18. 
+Retour en arrière
+Reviens en arrière de 3 cases.
+19. 
+Marché bondé
+Reste sur place, mais ne pioche rien ce tour.
+20. 
+Stand détrempé
+Toutes les cartes Courses du stand sont inaccessibles ce tour (à annoncer aux autres joueurs).
+21. 
+File d’attente interminable
+Tu ne peux ni avancer ni jouer ton prochain tour.
+22. 
+Erreur de livraison
+Remets une carte Courses au bas de la pioche.
+23. 
+Produit avarié
+Défausse une carte Courses au hasard.
+24. 
+Emballage oublié
+Tu perds une carte Courses de ton choix.
+25. 
+Orage au marché
+Tous les joueurs reculent d’une case.
+26. 
+Panne de caisse
+Passe ton prochain tour.
+27. 
+Inspection sanitaire
+Montre ta main aux autres joueurs (pas de pioche ce tour).
+28. 
+Chariot percé
+Tu perds la dernière carte Courses que tu as obtenue.
+ 
+Effets neutres ou stratégiques (12 cartes)
+29. 
+Échange obligatoire
+Échange une carte Courses avec le joueur de gauche.
+30. 
+Inversion de panier
+Échange toutes tes cartes Courses avec un joueur au hasard.
+31. 
+Troc improvisé
+Tous les joueurs donnent une carte de leur choix à leur voisin de droite.
+32. 
+Changement de saison
+Tous les joueurs défaussent une carte et piochent une nouvelle.
+33. 
+Produit oublié
+Ajoute un 6e produit à ta liste (pioché au hasard et visible).
+34. 
+Offre éphémère
+Tu as 30 secondes pour choisir 1 carte Courses dans la défausse (si existante).
+35. 
+Stand surprise
+Lance le dé :
+• 
+1-2 : Bio
+• 
+3-4 : Fruitier
+• 
+5-6 : Primeur, Tu y es téléporté.
+36. 
+Conseil de voisinage
+Demande à un joueur s’il a un produit que tu cherches. Il doit répondre honnêtement (oui/non).
+37. 
+Contrôle du panier
+Tous les joueurs comparent leur nombre de cartes : le joueur avec le plus en perd une.
+38. 
+Carton abîmé
+Tu montres ta liste de courses à tous les joueurs pendant 1 tour.
+39. 
+File inversée
+Le sens du tour change jusqu'à ton prochain passage.
+40. 
+Pause café
+Rien ne se passe. Détends-toi 
+ 

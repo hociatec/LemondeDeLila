@@ -1,0 +1,337 @@
+[
+  {
+    "index": 1,
+    "label": "Départ",
+    "type": "action",
+    "actions": [
+      {
+        "type": "log",
+        "message": "Top départ ! Le marché s'anime."
+      }
+    ]
+  },
+  {
+    "index": 2,
+    "label": "Stand Fruitier",
+    "type": "stand",
+    "actions": [
+      { "type": "draw_course" }
+    ]
+  },
+  {
+    "index": 3,
+    "label": "Case \"Pioche carte Événement\"",
+    "type": "action",
+    "actions": [
+      { "type": "draw_event" }
+    ]
+  },
+  {
+    "index": 4,
+    "label": "Stand Maraîcher (légumes frais)",
+    "type": "stand",
+    "actions": [
+      { "type": "draw_course" }
+    ]
+  },
+  {
+    "index": 5,
+    "label": "Case \"Échange avec un joueur\"",
+    "type": "action",
+    "actions": [
+      {
+        "type": "log",
+        "message": "Choisissez un joueur et échangez un produit de votre panier."
+      }
+    ]
+  },
+  {
+    "index": 6,
+    "label": "Stand Bio",
+    "type": "stand",
+    "actions": [
+      { "type": "draw_course" }
+    ]
+  },
+  {
+    "index": 7,
+    "label": "Case \"Avance d’une case\"",
+    "type": "action",
+    "actions": [
+      { "type": "move", "delta": 1 }
+    ]
+  },
+  {
+    "index": 8,
+    "label": "Stand Primeur",
+    "type": "stand",
+    "actions": [
+      { "type": "draw_course" }
+    ]
+  },
+  {
+    "index": 9,
+    "label": "Case \"Perd ton prochain tour\"",
+    "type": "action",
+    "actions": [
+      { "type": "skip_turn", "count": 1 }
+    ]
+  },
+  {
+    "index": 10,
+    "label": "Stand des Fruits Exotiques",
+    "type": "stand",
+    "actions": [
+      { "type": "draw_course" }
+    ]
+  },
+  {
+    "index": 11,
+    "label": "Case \"Pioche carte Échange\"",
+    "type": "action",
+    "actions": [
+      { "type": "draw_exchange" }
+    ]
+  },
+  {
+    "index": 12,
+    "label": "Stand Légumes Racines",
+    "type": "stand",
+    "actions": [
+      { "type": "draw_course" }
+    ]
+  },
+  {
+    "index": 13,
+    "label": "Case \"Recule de 2 cases\"",
+    "type": "action",
+    "actions": [
+      { "type": "move", "delta": -2 }
+    ]
+  },
+  {
+    "index": 14,
+    "label": "Stand Légumes Feuilles",
+    "type": "stand",
+    "actions": [
+      { "type": "draw_course" }
+    ]
+  },
+  {
+    "index": 15,
+    "label": "Case \"Mini Quiz (réponds à une question)\"",
+    "type": "action",
+    "actions": [
+      { "type": "start_quiz" }
+    ]
+  },
+  {
+    "index": 16,
+    "label": "Stand des Fruits Rouges",
+    "type": "stand",
+    "actions": [
+      { "type": "draw_course" }
+    ]
+  },
+  {
+    "index": 17,
+    "label": "Case \"Pioche carte Événement\"",
+    "type": "action",
+    "actions": [
+      { "type": "draw_event" }
+    ]
+  },
+  {
+    "index": 18,
+    "label": "Stand des Légumes Secs",
+    "type": "stand",
+    "actions": [
+      { "type": "draw_course" }
+    ]
+  },
+  {
+    "index": 19,
+    "label": "Case \"Échange de cartes avec un autre joueur\"",
+    "type": "action",
+    "actions": [
+      {
+        "type": "log",
+        "message": "Échange obligatoire : choisissez une carte à troquer avec un autre joueur."
+      }
+    ]
+  },
+  {
+    "index": 20,
+    "label": "Stand Bio",
+    "type": "stand",
+    "actions": [
+      { "type": "draw_course" }
+    ]
+  },
+  {
+    "index": 21,
+    "label": "Case \"Avance jusqu’à un stand de ton choix\"",
+    "type": "action",
+    "actions": [
+      { "type": "advance_to_next_stand" }
+    ]
+  },
+  {
+    "index": 22,
+    "label": "Stand Primeur",
+    "type": "stand",
+    "actions": [
+      { "type": "draw_course" }
+    ]
+  },
+  {
+    "index": 23,
+    "label": "Case \"Pioche carte Courses supplémentaire\"",
+    "type": "action",
+    "actions": [
+      { "type": "bonus_course" }
+    ]
+  },
+  {
+    "index": 24,
+    "label": "Stand des Agrumes",
+    "type": "stand",
+    "actions": [
+      { "type": "draw_course" }
+    ]
+  },
+  {
+    "index": 25,
+    "label": "Case \"Reste un tour sur place\"",
+    "type": "action",
+    "actions": [
+      { "type": "skip_turn", "count": 1 }
+    ]
+  },
+  {
+    "index": 26,
+    "label": "Stand Fruits Secs",
+    "type": "stand",
+    "actions": [
+      { "type": "draw_course" }
+    ]
+  },
+  {
+    "index": 27,
+    "label": "Case \"Troc improvisé (échange une carte avec joueur voisin)\"",
+    "type": "action",
+    "actions": [
+      {
+        "type": "log",
+        "message": "Troc improvisé ! Échangez une carte avec un voisin."
+      }
+    ]
+  },
+  {
+    "index": 28,
+    "label": "Stand Légumes d’Été",
+    "type": "stand",
+    "actions": [
+      { "type": "draw_course" }
+    ]
+  },
+  {
+    "index": 29,
+    "label": "Case \"Retour en arrière de 3 cases\"",
+    "type": "action",
+    "actions": [
+      { "type": "move", "delta": -3 }
+    ]
+  },
+  {
+    "index": 30,
+    "label": "Stand Fruits d’Hiver",
+    "type": "stand",
+    "actions": [
+      { "type": "draw_course" }
+    ]
+  },
+  {
+    "index": 31,
+    "label": "Case \"Pioche carte Échange\"",
+    "type": "action",
+    "actions": [
+      { "type": "draw_exchange" }
+    ]
+  },
+  {
+    "index": 32,
+    "label": "Stand Légumes Exotiques",
+    "type": "stand",
+    "actions": [
+      { "type": "draw_course" }
+    ]
+  },
+  {
+    "index": 33,
+    "label": "Case \"Mini Quiz (réponds à une question)\"",
+    "type": "action",
+    "actions": [
+      { "type": "start_quiz" }
+    ]
+  },
+  {
+    "index": 34,
+    "label": "Stand des Champignons",
+    "type": "stand",
+    "actions": [
+      { "type": "draw_course" }
+    ]
+  },
+  {
+    "index": 35,
+    "label": "Case \"Avance de 2 cases\"",
+    "type": "action",
+    "actions": [
+      { "type": "move", "delta": 2 }
+    ]
+  },
+  {
+    "index": 36,
+    "label": "Stand Primeur",
+    "type": "stand",
+    "actions": [
+      { "type": "draw_course" }
+    ]
+  },
+  {
+    "index": 37,
+    "label": "Case \"Pioche carte Événement\"",
+    "type": "action",
+    "actions": [
+      { "type": "draw_event" }
+    ]
+  },
+  {
+    "index": 38,
+    "label": "Stand Maraîcher",
+    "type": "stand",
+    "actions": [
+      { "type": "draw_course" }
+    ]
+  },
+  {
+    "index": 39,
+    "label": "Case \"Échange libre de cartes entre joueurs\"",
+    "type": "action",
+    "actions": [
+      {
+        "type": "log",
+        "message": "Échange libre : discutez et partagez des cartes avec les autres joueurs."
+      }
+    ]
+  },
+  {
+    "index": 40,
+    "label": "Arrivée (Termine la course !)",
+    "type": "action",
+    "actions": [
+      { "type": "arrival" }
+    ]
+  }
+]

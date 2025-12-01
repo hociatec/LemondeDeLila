@@ -5,11 +5,11 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <!-- Hérite du POM parent (java-client/pom.xml) -->
+    <!-- HÃ©rite du POM parent (java-client/pom.xml) -->
     <parent>
         <groupId>com.lemondelila</groupId>
         <artifactId>java-client</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>1.0.9</version>
     </parent>
 
     <artifactId>client-app</artifactId>
@@ -21,7 +21,6 @@
     </properties>
 
     <dependencies>
-        <!-- Framework interne -->
         <dependency>
             <groupId>com.lemondelila</groupId>
             <artifactId>framework-core</artifactId>
@@ -34,11 +33,6 @@
         </dependency>
         <dependency>
             <groupId>com.lemondelila</groupId>
-            <artifactId>framework-access</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.lemondelila</groupId>
             <artifactId>framework-network</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -47,6 +41,24 @@
             <artifactId>framework-media</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.lemondelila</groupId>
+            <artifactId>framework-access</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.java.dev.jna</groupId>
+            <artifactId>jna</artifactId>
+            <version>5.13.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
 
         <!-- Binding SLF4J obligatoire pour LoggerFactory -->
         <dependency>
@@ -54,12 +66,28 @@
             <artifactId>slf4j-simple</artifactId>
             <version>${slf4j.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.google.auto.service</groupId>
+            <artifactId>auto-service-annotations</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.google.auto.service</groupId>
+            <artifactId>auto-service</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>5.10.2</version>
+            <scope>test</scope>
+        </dependency>
 
     </dependencies>
 
     <build>
         <plugins>
-            <!-- Génère le .jar avec la classe principale -->
+            <!-- GÃ©nÃ¨re le .jar avec la classe principale -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
@@ -74,19 +102,7 @@
                 </configuration>
             </plugin>
 
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.11.0</version>
-                <configuration>
-                    <source>${maven.compiler.source}</source>
-                    <target>${maven.compiler.target}</target>
-                    <encoding>${project.build.sourceEncoding}</encoding>
-                    <skip>false</skip>
-                </configuration>
-            </plugin>
-
-            <!-- Copie les dépendances dans target/dependency (utilisé par start-lila.ps1) -->
+            <!-- Copie les dÃ©pendances dans target/dependency (utilisÃ© par start-lila.ps1) -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
@@ -105,7 +121,93 @@
                 </executions>
             </plugin>
 
+            <!-- Produit un JAR autonome embarquant toutes les dÃ©pendances -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.5.2</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
+                            <shadedClassifierName>all</shadedClassifierName>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>com.lemondelila.client.AppLauncher</mainClass>
+                                </transformer>
+                            </transformers>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/MANIFEST.MF</exclude>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                        <exclude>META-INF/LICENSE*</exclude>
+                                        <exclude>META-INF/NOTICE*</exclude>
+                                        <exclude>module-info.class</exclude>
+                                        <exclude>META-INF/versions/**/module-info.class</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
         </plugins>
     </build>
 
+    <profiles>
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.github.wvengen</groupId>
+                        <artifactId>proguard-maven-plugin</artifactId>
+                        <version>2.6.1</version>
+                        <executions>
+                            <execution>
+                                <id>obfuscate</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>proguard</goal>
+                                </goals>
+                                <configuration>
+                                    <attach>true</attach>
+                                    <obfuscate>true</obfuscate>
+                                    <optimize>true</optimize>
+                                    <injar>${project.build.finalName}-all.jar</injar>
+                                    <outjar>${project.build.finalName}-obf.jar</outjar>
+                                    <options>
+                                        <!-- Add JDK modules so ProGuard can resolve java.lang.Object and Swing classes on JDK 21 -->
+                                        <option>-libraryjars ${java.home}/jmods/java.base.jmod(!module-info.class)</option>
+                                        <option>-libraryjars ${java.home}/jmods/java.desktop.jmod(!module-info.class)</option>
+                                        <option>-dontpreverify</option>
+                                        <option>-dontnote</option>
+                                        <option>-dontoptimize</option>
+                                        <option>-dontwarn</option>
+                                        <option>-keep class com.lemondelila.client.AppLauncher { *; }</option>
+                                        <option>-keepclassmembers class * { public static void main(java.lang.String[]); }</option>
+                                        <option>-keep @com.google.auto.service.AutoService class * { *; }</option>
+                                        <option>-keepclassmembers class * { @com.google.auto.service.AutoService *; }</option>
+                                    </options>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
 </project>
+

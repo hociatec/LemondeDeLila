@@ -1,5 +1,5 @@
-﻿<#
-    Script de démarrage « one-click » pour Le Monde de Lila.
+<#
+    Script de démarrage « one-click » pour Les mondes de Lilas.
 
     Ce script :
       1. Vérifie (et installe si besoin) Maven 3.9.6 dans tools\.
@@ -21,7 +21,9 @@
 param(
     [switch]$SkipBackend,
     [switch]$SkipRealtime,
-    [switch]$SkipBuild
+    [switch]$SkipBuild,
+    [switch]$ForceBuild,
+    [switch]$FastStart
 )
 
 Set-StrictMode -Version Latest
@@ -96,6 +98,77 @@ function Ensure-PHPDependencies {
 
     Write-Host "Installation des dépendances PHP (composer install)..."
     & $composer.Source install --no-interaction --working-dir $BackendDir
+}
+
+function Get-PomVersion {
+    param([string]$PomPath)
+    $content = Get-Content -Path $PomPath -Raw
+    $match = [regex]::Match($content, '<version>([^<]+)</version>')
+    if ($match.Success) { return $match.Groups[1].Value }
+    return $null
+}
+
+function Build-FrameworkModules {
+    param(
+        [string]$JavaDir,
+        [string]$MavenPath,
+        [switch]$Force
+    )
+
+    $frameworks = @(
+        'framework-di',
+        'framework-core',
+        'framework-access',
+        'framework-ui',
+        'framework-network',
+        'framework-media'
+    )
+
+    $parentPom = Join-Path $JavaDir 'pom.xml'
+    $parentVer = Get-PomVersion -PomPath $parentPom
+    $parentInstalled = $false
+    if ($parentVer) {
+        $localPom = Join-Path $env:USERPROFILE ".m2\repository\com\lemondelila\java-client\$parentVer\java-client-$parentVer.pom"
+        $parentInstalled = Test-Path $localPom
+    }
+
+    if (-not $parentInstalled -or $Force) {
+        Push-Location $JavaDir
+        try {
+            Write-Host "Installation du parent java-client..."
+            & $MavenPath install -N
+            if ($LASTEXITCODE -ne 0) {
+                throw "L'installation du parent java-client a echoue (code $LASTEXITCODE)."
+            }
+        }
+        finally {
+            Pop-Location
+        }
+    } else {
+        Write-Host "Parent java-client déjà dans le cache Maven, skip."
+    }
+
+    foreach ($module in $frameworks) {
+        $modulePath = Join-Path $JavaDir $module
+        if (-not (Test-Path $modulePath)) {
+            continue
+        }
+        if (-not $Force -and (Test-Path (Join-Path $modulePath 'target'))) {
+            Write-Host "Skip build $module (target/ existant)."
+            continue
+        }
+        Write-Host "Installation du module $module..."
+        Push-Location $modulePath
+        try {
+            & $MavenPath install -DskipTests
+            if ($LASTEXITCODE -ne 0) {
+                throw "La compilation du module $module a echoue (code $LASTEXITCODE)."
+            }
+        }
+        finally {
+            Pop-Location
+        }
+    }
 }
 
 function Remove-BomFromFile {
@@ -200,6 +273,28 @@ function Start-BackendHttp {
         -WindowStyle Hidden
 }
 
+function Stop-RealtimeServers {
+    param(
+        [string]$Reason = ""
+    )
+
+    $existing = @(Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object {
+            $_.CommandLine -match 'app:realtime:serve'
+        })
+    if ($existing.Count -gt 0) {
+        if ($Reason) { Write-Host $Reason }
+        foreach ($item in $existing) {
+            $oldPid = $item.ProcessId
+            try {
+                Stop-Process -Id $oldPid -Force -ErrorAction Stop
+                Write-Host "Processus WebSocket arrêté (PID $oldPid)."
+            } catch {
+                Write-Warning "Impossible d'arrêter le serveur WebSocket PID $oldPid : $_"
+            }
+        }
+    }
+}
+
 function Start-RealtimeServer {
     param(
         [string]$BackendDir,
@@ -207,17 +302,20 @@ function Start-RealtimeServer {
         [string]$LogDir
     )
 
+    Stop-RealtimeServers -Reason "Arrêt des serveurs WebSocket existants..."
+
     Write-Host "Lancement du serveur WebSocket..."
     $stdout = Join-Path $LogDir 'backend-realtime.log'
     $stderr = Join-Path $LogDir 'backend-realtime.err.log'
     $arguments = @('bin/console','app:realtime:serve','--env=dev')
-    return Start-Process -FilePath $PhpPath `
+    $proc = Start-Process -FilePath $PhpPath `
         -ArgumentList $arguments `
         -WorkingDirectory $BackendDir `
         -PassThru `
         -RedirectStandardOutput $stdout `
         -RedirectStandardError $stderr `
         -WindowStyle Hidden
+    return @{ Process = $proc; Owned = $true }
 }
 
 function Wait-ForEndpoint {
@@ -248,7 +346,7 @@ function Wait-ForTcpPort {
         [int]$TimeoutSeconds = 45
     )
 
-    Write-Host "Attente de disponibilit� du port $TcpHost`:$TcpPort ..."
+    Write-Host "Attente de disponibilité du port $TcpHost`:$TcpPort ..."
     $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
     while ($stopwatch.Elapsed.TotalSeconds -lt $TimeoutSeconds) {
         try {
@@ -267,7 +365,7 @@ function Wait-ForTcpPort {
         }
         Start-Sleep -Seconds 1
     }
-    throw "Impossible de joindre $Host`:$Port apr�s $TimeoutSeconds secondes."
+    throw "Impossible de joindre $Host`:$Port après $TimeoutSeconds secondes."
 }
 
 Set-Location $rootDirectory
@@ -315,6 +413,7 @@ if (!$javaCmd) {
 
 $backendProcess = $null
 $realtimeProcess = $null
+$realtimeOwned = $false
 
 $javaLocationPushed = $false
 try {
@@ -325,12 +424,14 @@ try {
     }
 
     if ((-not $SkipRealtime) -and $phpCmd) {
-        $realtimeProcess = Start-RealtimeServer -BackendDir $backendDirectory -PhpPath $phpCmd.Source -LogDir $logDirectory
+        $realtimeInfo = Start-RealtimeServer -BackendDir $backendDirectory -PhpPath $phpCmd.Source -LogDir $logDirectory
+        $realtimeProcess = $realtimeInfo.Process
+        $realtimeOwned   = $realtimeInfo.Owned
         try {
             Wait-ForTcpPort -TcpHost $wsHost -TcpPort $wsPort
         }
         catch {
-            if ($realtimeProcess -and -not $realtimeProcess.HasExited) {
+            if ($realtimeOwned -and $realtimeProcess -and -not $realtimeProcess.HasExited) {
                 try { $realtimeProcess.Kill() } catch {}
             }
             throw
@@ -341,16 +442,25 @@ try {
     $javaLocationPushed = $true
 
     if (-not $SkipBuild) {
-        Remove-BomFromSource -RootPath $javaDirectory -Extensions @('.java', '.xml', '.properties', '.yml', '.yaml')
-        Write-Host "Compilation du client Java..."
-        & $mavenPath clean package -DskipTests
-        if ($LASTEXITCODE -ne 0) {
-            throw "La compilation Maven a echoue (code $LASTEXITCODE). Consultez les logs ci-dessus."
-        }
-        # Copier les dependances runtime du module client-app uniquement (sinon l'agregateur n'en produit aucune)
-        & $mavenPath -pl client-app dependency:copy-dependencies -DincludeScope=runtime -DoutputDirectory=client-app\target\dependency
-        if ($LASTEXITCODE -ne 0) {
-            throw "La copie des dependances a echoue (code $LASTEXITCODE)."
+        if ($FastStart) {
+            Write-Host "Compilation rapide du client Java (FastStart)" -ForegroundColor Cyan
+            & $mavenPath -pl client-app -am install -DskipTests
+            if ($LASTEXITCODE -ne 0) {
+                throw "La compilation Maven rapide a echoue (code $LASTEXITCODE)."
+            }
+        } else {
+            Build-FrameworkModules -JavaDir $javaDirectory -MavenPath $mavenPath -Force:$ForceBuild
+            Remove-BomFromSource -RootPath $javaDirectory -Extensions @('.java', '.xml', '.properties', '.yml', '.yaml')
+            Write-Host "Compilation du client Java..."
+            & $mavenPath clean package -DskipTests
+            if ($LASTEXITCODE -ne 0) {
+                throw "La compilation Maven a echoue (code $LASTEXITCODE). Consultez les logs ci-dessus."
+            }
+            # Copier les dependances runtime du module client-app uniquement (sinon l'agregateur n'en produit aucune)
+            & $mavenPath -pl client-app dependency:copy-dependencies -DincludeScope=runtime -DoutputDirectory=client-app\target\dependency
+            if ($LASTEXITCODE -ne 0) {
+                throw "La copie des dependances a echoue (code $LASTEXITCODE)."
+            }
         }
     }
 
@@ -359,36 +469,30 @@ try {
         throw "Compilation incomplete : $appLauncherClass introuvable. Relancez le script sans -SkipBuild."
     }
 
-    # ✅ Ajout de tous les modules au classpath
-    $moduleClassDirs = @(
-        Join-Path $javaDirectory 'framework-core\target\classes'
-        Join-Path $javaDirectory 'framework-ui\target\classes'
-        Join-Path $javaDirectory 'framework-access\target\classes'
-        Join-Path $javaDirectory 'framework-network\target\classes'
-        Join-Path $javaDirectory 'framework-media\target\classes'
-        Join-Path $javaDirectory 'client-app\target\classes'
-    ) | Where-Object { Test-Path $_ }
+    # ? Recherche du JAR autonome généré par Maven (classifier -all)
+    $shadedJar = Get-ChildItem -Path (Join-Path $javaDirectory 'client-app\target') `
+        -Filter 'client-app-*-all.jar' `
+        -ErrorAction SilentlyContinue `
+        | Sort-Object LastWriteTime -Descending `
+        | Select-Object -First 1
 
-    $dependencyDir = Join-Path $javaDirectory 'client-app\target\dependency'
-    if (!(Test-Path $dependencyDir)) {
-        New-Item -ItemType Directory -Path $dependencyDir -Force | Out-Null
+    if (-not $shadedJar) {
+        throw "JAR exécutable introuvable (client-app-*-all.jar). Relancez sans -SkipBuild."
     }
 
-    $classPathEntries = $moduleClassDirs + (Join-Path $dependencyDir '*')
-    $classPath = ($classPathEntries -join ';')
-
     Write-Host "Démarrage du client Swing..."
-    & $javaCmd.Source -cp $classPath com.lemondelila.client.AppLauncher
+    $javaArguments = @('-jar', $shadedJar.FullName)
+    & $javaCmd.Source @javaArguments
 
 }
 finally {
     if ($javaLocationPushed) { Pop-Location }
 
-    if ($realtimeProcess -and -not $realtimeProcess.HasExited) {
+    if ($realtimeOwned -and $realtimeProcess -and -not $realtimeProcess.HasExited) {
         Write-Host "Arrêt du serveur WebSocket..."
         try { $realtimeProcess.Kill() } catch {}
     }
-
+    Stop-RealtimeServers -Reason "Nettoyage des serveurs WebSocket restants..."
     if ($backendProcess -and -not $backendProcess.HasExited) {
         Write-Host "Arrêt du serveur HTTP..."
         try { $backendProcess.Kill() } catch {}
@@ -396,3 +500,4 @@ finally {
 
     Set-Location $rootDirectory
 }
+

@@ -12,7 +12,11 @@
         "doctrine/dbal": "^3.10.3",
         "doctrine/doctrine-bundle": "^2.18.1",
         "doctrine/doctrine-migrations-bundle": "^3.6",
+<<<<<<< HEAD
         "doctrine/orm": "^3.5.3",
+=======
+        "doctrine/orm": "^3.5.7",
+>>>>>>> 45b293a21fcbd30af6d1b54b5dfa15894ed28818
         "lexik/jwt-authentication-bundle": "^3.1.1",
         "nelmio/cors-bundle": "^2.6",
         "phpdocumentor/reflection-docblock": "^5.6.3",
@@ -20,6 +24,7 @@
         "symfony/asset": "7.3.*",
         "symfony/console": "7.3.*",
         "symfony/dotenv": "7.3.*",
+        "symfony/expression-language": "7.3.*",
         "symfony/flex": "^2.9.0",
         "symfony/framework-bundle": "7.3.*",
         "symfony/http-client": "7.3.*",
@@ -43,6 +48,10 @@
     },
     "autoload": {
         "psr-4": {
+            "App\\Module\\Game\\GameCatalogue\\JeuxDeCartes\\": "src/Module/Game/GameCatalogue/JeuxDeCartes/",
+            "App\\Module\\Game\\GameCatalogue\\JeuxDeCartes\\VentsDansants\\": "src/Module/Game/GameCatalogue/JeuxDeCartes/VentsDansants/",
+            "App\\Module\\Game\\GameCatalogue\\JeuxDePlateaux\\": "src/Module/Game/GameCatalogue/JeuxDePlateaux/",
+            "App\\Module\\Game\\GameCatalogue\\JeuxDePlateaux\\LesQuatreVents\\": "src/Module/Game/GameCatalogue/JeuxDePlateaux/LesQuatreVents/",
             "App\\": "src/"
         }
     },

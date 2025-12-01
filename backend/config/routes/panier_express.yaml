@@ -1,0 +1,22 @@
+panier_express_reference:
+    path: /api/games/panier-express/reference
+    controller: App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Controller\PanierExpressController::reference
+    methods: [GET]
+
+panier_express_state:
+    path: /api/games/panier-express/rooms/{id}/state{trailingSlash}
+    controller: App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Controller\PanierExpressGameController::state
+    methods: [GET]
+    requirements:
+        trailingSlash: '/?'
+    defaults:
+        trailingSlash: ''
+
+panier_express_actions:
+    path: /api/games/panier-express/rooms/{id}/actions{trailingSlash}
+    controller: App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Controller\PanierExpressGameController::actions
+    methods: [POST]
+    requirements:
+        trailingSlash: '/?'
+    defaults:
+        trailingSlash: ''

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="{{ app.request.locale ?? 'fr' }}">
+<head>
+    <meta charset="{{ _charset }}">
+    <meta name="robots" content="noindex,nofollow,noarchive">
+    <title>Erreur {{ status_code }} — {{ status_text }}</title>
+    <link rel="icon"
+          href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'><text y='1.2em' font-size='96'>❌</text></svg>">
+    <style>
+        :root {
+            color-scheme: light;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 40px 20px;
+            background-color: #fff;
+            color: #222;
+            font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        .container {
+            margin: 30px auto;
+            max-width: 600px;
+            padding: 32px 28px;
+            border-radius: 14px;
+            background-color: #fff;
+            box-shadow: 0 18px 45px rgba(0, 0, 0, 0.08);
+        }
+
+        h1 {
+            margin: 0 0 12px;
+            color: #dc3545;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        h2 {
+            margin: 0 0 18px;
+            font-size: 18px;
+            font-weight: 500;
+            color: #444;
+        }
+
+        p {
+            margin: 0 0 14px;
+        }
+
+        .tips {
+            margin-top: 20px;
+            padding: 16px;
+            border-left: 4px solid #dc3545;
+            background-color: #fff5f5;
+            border-radius: 8px;
+            color: #612222;
+        }
+
+        code {
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+            padding: 2px 4px;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: #121212;
+                color: #e6e6e6;
+            }
+
+            .container {
+                background-color: #1f1f1f;
+                box-shadow: 0 18px 45px rgba(0, 0, 0, 0.5);
+            }
+
+            h2 {
+                color: #cfcfcf;
+            }
+
+            .tips {
+                background-color: rgba(220, 53, 69, 0.15);
+                color: #ffd7dc;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Impossible d'initialiser la partie</h1>
+    <h2>Le serveur a renvoyé une erreur {{ status_code }} — {{ status_text }}</h2>
+    <p>
+        Merci de réessayer dans un instant. Si le problème persiste, notez la page que vous consultiez
+        ou l'action réalisée (lancement de Panier Express, rafraîchissement d'une table, etc.) puis
+        partagez ces détails à l'équipe support.
+    </p>
+
+    <div class="tips">
+        <p>
+            Vérifiez que vos serveurs Symfony (HTTP <code>app:serve</code> et WebSocket <code>app:realtime:serve</code>)
+            sont démarrés et que la base de données est accessible. Consultez les logs dans <code>backend/var/log/</code>
+            pour plus d'informations.
+        </p>
+    </div>
+</div>
+</body>
+</html>

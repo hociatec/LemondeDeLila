@@ -6,8 +6,14 @@
 parameters:
     app.ws.host: '%env(string:APP_WS_HOST)%'
     app.ws.port: '%env(int:APP_WS_PORT)%'
-    app.ws.push_secret: '%env(string:APP_WS_PUSH_SECRET)%'
-    app.ws.push_url: '%env(string:APP_WS_PUSH_URL)%'
+    app.client.version: '%env(string:APP_CLIENT_VERSION)%'
+    app.client.download_url: '%env(string:APP_CLIENT_DOWNLOAD_URL)%'
+    app.client.checksum: '%env(string:APP_CLIENT_CHECKSUM)%'
+    app.client.package_path: '%kernel.project_dir%/%env(string:APP_CLIENT_PACKAGE_PATH)%'
+    app.client.download_secret: '%env(string:APP_CLIENT_DOWNLOAD_SECRET)%'
+    app.client.min_version: '%env(string:APP_CLIENT_MIN_VERSION)%'
+    app.client.signature_url: '%env(string:APP_CLIENT_SIGNATURE_URL)%'
+    app.client.changelog_json: '%env(string:APP_CLIENT_CHANGELOG)%'
 
 services:
     # default configuration for services in *this* file
@@ -28,9 +34,6 @@ services:
         decorates: 'api_platform.openapi.factory'
         arguments: ['@App\Module\User\Api\CustomOpenApiFactory.inner']
 
-    App\Module\Game\Realtime\RoomRealtimePushHandler:
-        arguments:
-            $secret: '%app.ws.push_secret%'
 
     App\Module\Game\Engine\EngineRegistry:
         arguments:
@@ -38,6 +41,69 @@ services:
 
     App\Module\Game\Realtime\Command\RealtimeServerCommand:
         tags: ['console.command']
+
+    App\Module\Core\Controller\:
+        resource: '../src/Module/Core/Controller'
+        tags: ['controller.service_arguments']
+        public: true
+
+    App\Module\User\Controller\:
+        resource: '../src/Module/User/Controller'
+        tags: ['controller.service_arguments']
+        public: true
+
+    App\Module\Admin\Controller\:
+        resource: '../src/Module/Admin/Controller'
+        tags: ['controller.service_arguments']
+        public: true
+
+    App\Module\Messaging\Controller\:
+        resource: '../src/Module/Messaging/Controller'
+        tags: ['controller.service_arguments']
+        public: true
+
+    App\Module\Chat\Controller\:
+        resource: '../src/Module/Chat/Controller'
+        tags: ['controller.service_arguments']
+        public: true
+
+    App\Module\Rules\Controller\:
+        resource: '../src/Module/Rules/Controller'
+        tags: ['controller.service_arguments']
+        public: true
+
+    App\Module\Game\Controller\:
+        resource: '../src/Module/Game/Controller'
+        tags: ['controller.service_arguments']
+        public: true
+
+    App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Controller\:
+        resource: '../src/Module/Game/GameCatalogue/JeuxDePlateaux/LesQuatreVents/PanierExpress/Controller'
+        tags: ['controller.service_arguments']
+        public: true
+
+    App\Module\Game\GameCatalogue\Actions\VentsInfinis\MissionNemesis\Controller\:
+        resource: '../src/Module/Game/GameCatalogue/Actions/VentsInfinis/MissionNemesis/Controller'
+        tags: ['controller.service_arguments']
+        public: true
+
+    App\Module\Game\GameCatalogue\JeuxDeCartes\VentsDansants\DameNature\Controller\:
+        resource: '../src/Module/Game/GameCatalogue/JeuxDeCartes/VentsDansants/DameNature/Controller'
+        tags: ['controller.service_arguments']
+        public: true
+    App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Controller\PanierExpressController: ~
+    App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Controller\PanierExpressGameController: ~
+    App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Service\PanierExpressService: ~
+    App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Service\PanierExpressGameService: ~
+    App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Service\Support\PanierExpressDeckManager: ~
+    App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Service\Support\PanierExpressTileResolver: ~
+    App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Service\Support\NativePanierExpressRandomizer: ~
+    App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Service\Support\PanierExpressRandomizerInterface: '@App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Service\Support\NativePanierExpressRandomizer'
+    App\Module\Game\Service\Initializer\GameInitializerRegistry:
+        arguments:
+            $initializers: !tagged_iterator app.game_initializer
+    App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Service\PanierExpressGameInitializer:
+        tags: ['app.game_initializer']
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

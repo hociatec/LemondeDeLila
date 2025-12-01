@@ -95,17 +95,26 @@ class GameCatalogProvider
         $games = [];
 
         foreach ($this->fetchDatabaseGames() as $game) {
-            $games[$game['code']] = $game;
+            $canonical = $this->normalizeGameCode($game['code'] ?? '');
+            if ($canonical === null) {
+                continue;
+            }
+            $game['code'] = $canonical;
+            $games[$canonical] = $game;
         }
 
         $filesystem = $this->scanFilesystem();
         foreach ($filesystem['games'] as $game) {
-            $code = $game['code'];
+            $canonical = $this->normalizeGameCode($game['code'] ?? '');
+            if ($canonical === null) {
+                continue;
+            }
+            $game['code'] = $canonical;
             $categoryDefinitions = $game['categoryDefinitions'] ?? [];
             unset($game['categoryDefinitions']);
 
-            $games[$code] = isset($games[$code])
-                ? array_merge($games[$code], $game, ['source' => 'merged'])
+            $games[$canonical] = isset($games[$canonical])
+                ? array_merge($games[$canonical], $game, ['source' => 'merged'])
                 : $game;
             $categories = array_merge($categories, $categoryDefinitions);
         }
@@ -135,8 +144,12 @@ class GameCatalogProvider
             if (!$entity instanceof CatalogGame) {
                 continue;
             }
+            $code = $this->normalizeGameCode((string)$entity->getCode());
+            if ($code === null) {
+                continue;
+            }
             $games[] = [
-                'code' => $entity->getCode(),
+                'code' => $code,
                 'name' => $entity->getName(),
                 'minPlayers' => $entity->getMinPlayers(),
                 'maxPlayers' => $entity->getMaxPlayers(),
@@ -176,6 +189,9 @@ class GameCatalogProvider
 
             if ($item->isDir()) {
                 $dirPath = $item->getPathname();
+                if ($this->isUnderGameDirectory($dirPath)) {
+                    continue;
+                }
                 $relativeDir = ltrim(str_replace($this->catalogPath, '', $dirPath), DIRECTORY_SEPARATOR);
                 if ($relativeDir === '') {
                     continue;
@@ -238,6 +254,21 @@ class GameCatalogProvider
             'games' => $games,
             'categories' => $categoryCollection,
         ];
+    }
+
+    private function isUnderGameDirectory(string $dirPath): bool
+    {
+        $current = $dirPath;
+        while (true) {
+            $parent = dirname($current);
+            if ($parent === $current || !str_starts_with($parent, $this->catalogPath)) {
+                return false;
+            }
+            if (is_file($parent . DIRECTORY_SEPARATOR . 'manifest.json')) {
+                return true;
+            }
+            $current = $parent;
+        }
     }
 
     /**
@@ -459,6 +490,11 @@ class GameCatalogProvider
     private function normalizeGames(array $games): array
     {
         foreach ($games as $code => &$game) {
+            $canonicalCode = $this->normalizeGameCode($code);
+            if ($canonicalCode === null) {
+                unset($game);
+                continue;
+            }
             $categories = [];
             if (isset($game['categories']) && is_array($game['categories'])) {
                 foreach ($game['categories'] as $categoryId) {
@@ -477,10 +513,19 @@ class GameCatalogProvider
                     }
                 }
             }
+            $game['code'] = $canonicalCode;
             $game['categories'] = array_keys($categories);
         }
         unset($game);
-        return $games;
+        // Re-index by canonical code to avoid duplicates after normalization.
+        $normalized = [];
+        foreach ($games as $game) {
+            if (!isset($game['code'])) {
+                continue;
+            }
+            $normalized[$game['code']] = $game;
+        }
+        return $normalized;
     }
 
     private function normalizeCategoryPath(string $path): ?string
@@ -503,6 +548,17 @@ class GameCatalogProvider
         }
 
         return implode('/', $normalized);
+    }
+
+    private function normalizeGameCode(string $code): ?string
+    {
+        $trimmed = trim($code);
+        if ($trimmed === '') {
+            return null;
+        }
+        $compact = preg_replace('/\s+/', '', strtolower($trimmed));
+        $compact = $compact === null ? '' : trim($compact);
+        return $compact === '' ? null : $compact;
     }
 
     private function slugify(string $value): string

@@ -4,6 +4,7 @@ namespace App\Module\Game\Realtime;
 
 use App\Module\Game\Entity\Game;
 use App\Module\Game\Entity\Room;
+use App\Module\Game\Entity\RoomBot;
 use App\Module\Game\Entity\RoomParticipant;
 use App\Module\Game\Entity\TableSnapshot;
 use App\Module\Game\Engine\EngineRegistry;
@@ -41,6 +42,14 @@ class RoomRealtimePayloadBuilder
             ? $participantRepo->countActiveByRoomAndRole($room, 'spectator')
             : 0;
 
+        $bots = $em->getRepository(RoomBot::class)
+            ->createQueryBuilder('b')
+            ->andWhere('b.room = :room')
+            ->setParameter('room', $room)
+            ->orderBy('b.createdAt', 'ASC')
+            ->getQuery()
+            ->getResult();
+
         $roomData = [
             'id' => $room->getId(),
             'name' => $room->getName(),
@@ -55,6 +64,10 @@ class RoomRealtimePayloadBuilder
             'players' => array_map(
                 static fn(User $u) => ['id' => $u->getId(), 'username' => $u->getUsername()],
                 $room->getPlayers()->toArray()
+            ),
+            'bots' => array_map(
+                static fn(RoomBot $bot) => ['id' => $bot->getId(), 'name' => $bot->getName()],
+                $bots
             ),
         ];
 
