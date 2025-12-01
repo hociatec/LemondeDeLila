@@ -139,6 +139,24 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         });
         inputMap.put(KeyStroke.getKeyStroke("UP"), "quiz.navigate.up");
         inputMap.put(KeyStroke.getKeyStroke("DOWN"), "quiz.navigate.down");
+        bindQuizNumberShortcuts(inputMap, actions);
+    }
+
+    private void bindQuizNumberShortcuts(InputMap inputMap, ActionMap actions) {
+        if (quizComponent == null) {
+            return;
+        }
+        for (int i = 1; i <= 9; i++) {
+            final int index = i - 1;
+            String actionName = "quiz.answer." + i;
+            actions.put(actionName, new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    handleQuizAnswerShortcut(index);
+                }
+            });
+            inputMap.put(KeyStroke.getKeyStroke(Integer.toString(i)), actionName);
+        }
     }
 
     public void registerExchangeComponent(JComponent component) {
@@ -174,6 +192,17 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         }
         quizChoiceIndex = next;
         updateQuizHighlight();
+    }
+
+    private void handleQuizAnswerShortcut(int index) {
+        if (activeQuiz == null || activeQuiz.choices().isEmpty()) {
+            return;
+        }
+        if (index < 0 || index >= activeQuiz.choices().size()) {
+            return;
+        }
+        quizChoiceIndex = index;
+        submitQuizAnswer();
     }
 
     @Override

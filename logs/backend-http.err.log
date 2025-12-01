@@ -1,10 +1,232 @@
-[Mon Nov 10 22:59:15 2025] PHP 8.3.27 Development Server (http://127.0.0.1:8000) started
-[Mon Nov 10 22:59:16 2025] 127.0.0.1:12176 Accepted
-[Mon Nov 10 22:59:16 2025] 127.0.0.1:12176 [200]: GET /
-[Mon Nov 10 22:59:16 2025] 127.0.0.1:12176 Closing
-[Mon Nov 10 22:59:52 2025] 127.0.0.1:12181 Accepted
-[Mon Nov 10 22:59:53 2025] 127.0.0.1:12181 [201]: POST /api/register
-[Mon Nov 10 22:59:53 2025] 127.0.0.1:12181 Closing
-[Mon Nov 10 23:00:03 2025] 127.0.0.1:12183 Accepted
-[Mon Nov 10 23:00:04 2025] 127.0.0.1:12183 [500]: POST /api/login
-[Mon Nov 10 23:00:04 2025] 127.0.0.1:12183 Closing
+[Mon Dec  1 17:56:29 2025] PHP 8.3.14 Development Server (http://127.0.0.1:8000) started
+[Mon Dec  1 17:56:29 2025] 127.0.0.1:51517 Accepted
+[Mon Dec  1 17:56:30 2025] 127.0.0.1:51517 [200]: GET /
+[Mon Dec  1 17:56:30 2025] 127.0.0.1:51517 Closing
+[Mon Dec  1 17:57:06 2025] 127.0.0.1:57952 Accepted
+[Mon Dec  1 17:57:06 2025] 127.0.0.1:57952 [200]: POST /api/login
+[Mon Dec  1 17:57:06 2025] 127.0.0.1:57952 Closing
+[Mon Dec  1 17:57:06 2025] 127.0.0.1:57954 Accepted
+[Mon Dec  1 17:57:07 2025] 127.0.0.1:57954 [200]: GET /api/catalog
+[Mon Dec  1 17:57:07 2025] 127.0.0.1:57954 Closing
+[Mon Dec  1 17:57:12 2025] 127.0.0.1:57958 Accepted
+[Mon Dec  1 17:57:12 2025] 127.0.0.1:57958 [200]: GET /api/games/dame-nature/rooms/16/state
+[Mon Dec  1 17:57:12 2025] 127.0.0.1:57958 Closing
+[Mon Dec  1 17:57:14 2025] 127.0.0.1:57961 Accepted
+[Mon Dec  1 17:57:14 2025] 127.0.0.1:57961 [200]: GET /api/games/dame-nature/rooms/16/state
+[Mon Dec  1 17:57:14 2025] 127.0.0.1:57961 Closing
+[Mon Dec  1 17:57:17 2025] 127.0.0.1:57963 Accepted
+[Mon Dec  1 17:57:17 2025] 127.0.0.1:57963 [200]: GET /api/games/dame-nature/rooms/16/state
+[Mon Dec  1 17:57:17 2025] 127.0.0.1:57963 Closing
+[Mon Dec  1 17:57:19 2025] 127.0.0.1:57965 Accepted
+[Mon Dec  1 17:57:19 2025] 127.0.0.1:57965 [200]: GET /api/games/dame-nature/rooms/16/state
+[Mon Dec  1 17:57:19 2025] 127.0.0.1:57965 Closing
+[Mon Dec  1 17:57:22 2025] 127.0.0.1:57967 Accepted
+[Mon Dec  1 17:57:22 2025] 127.0.0.1:57967 [200]: GET /api/games/dame-nature/rooms/16/state
+[Mon Dec  1 17:57:22 2025] 127.0.0.1:57967 Closing
+[Mon Dec  1 17:57:24 2025] 127.0.0.1:57969 Accepted
+[Mon Dec  1 17:57:24 2025] 127.0.0.1:57969 [200]: GET /api/games/dame-nature/rooms/16/state
+[Mon Dec  1 17:57:24 2025] 127.0.0.1:57969 Closing
+[Mon Dec  1 17:57:27 2025] 127.0.0.1:57971 Accepted
+[Mon Dec  1 17:57:27 2025] 127.0.0.1:57971 [200]: GET /api/games/dame-nature/rooms/16/state
+[Mon Dec  1 17:57:27 2025] 127.0.0.1:57971 Closing
+[Mon Dec  1 17:57:29 2025] 127.0.0.1:57973 Accepted
+[Mon Dec  1 17:57:29 2025] 127.0.0.1:57973 [200]: GET /api/games/dame-nature/rooms/16/state
+[Mon Dec  1 17:57:29 2025] 127.0.0.1:57973 Closing
+[Mon Dec  1 17:57:32 2025] 127.0.0.1:57975 Accepted
+[Mon Dec  1 17:57:32 2025] 127.0.0.1:57975 [200]: GET /api/games/dame-nature/rooms/16/state
+[Mon Dec  1 17:57:32 2025] 127.0.0.1:57975 Closing
+[Mon Dec  1 17:57:41 2025] 127.0.0.1:57980 Accepted
+[Mon Dec  1 17:57:41 2025] 127.0.0.1:57980 [200]: GET /api/games/panier-express/rooms/17/state
+[Mon Dec  1 17:57:41 2025] 127.0.0.1:57980 Closing
+[Mon Dec  1 17:57:43 2025] 127.0.0.1:57982 Accepted
+[Mon Dec  1 17:57:43 2025] 127.0.0.1:57982 [200]: GET /api/games/panier-express/rooms/17/state
+[Mon Dec  1 17:57:43 2025] 127.0.0.1:57982 Closing
+[Mon Dec  1 17:57:45 2025] 127.0.0.1:57984 Accepted
+[Mon Dec  1 17:57:45 2025] 127.0.0.1:57984 [200]: GET /api/games/panier-express/rooms/17/state
+[Mon Dec  1 17:57:45 2025] 127.0.0.1:57984 Closing
+[Mon Dec  1 17:57:47 2025] 127.0.0.1:57986 Accepted
+[Mon Dec  1 17:57:47 2025] 127.0.0.1:57986 [200]: GET /api/games/panier-express/rooms/17/state
+[Mon Dec  1 17:57:47 2025] 127.0.0.1:57986 Closing
+[Mon Dec  1 17:57:49 2025] 127.0.0.1:57988 Accepted
+[Mon Dec  1 17:57:49 2025] 127.0.0.1:57988 [200]: GET /api/games/panier-express/rooms/17/state
+[Mon Dec  1 17:57:49 2025] 127.0.0.1:57988 Closing
+[Mon Dec  1 17:57:51 2025] 127.0.0.1:57990 Accepted
+[Mon Dec  1 17:57:51 2025] 127.0.0.1:57990 [200]: GET /api/games/panier-express/rooms/17/state
+[Mon Dec  1 17:57:51 2025] 127.0.0.1:57990 Closing
+[Mon Dec  1 17:57:53 2025] 127.0.0.1:57992 Accepted
+[Mon Dec  1 17:57:53 2025] 127.0.0.1:57992 [200]: GET /api/games/panier-express/rooms/17/state
+[Mon Dec  1 17:57:53 2025] 127.0.0.1:57992 Closing
+[Mon Dec  1 17:57:55 2025] 127.0.0.1:57994 Accepted
+[Mon Dec  1 17:57:55 2025] 127.0.0.1:57994 [200]: GET /api/games/panier-express/rooms/17/state
+[Mon Dec  1 17:57:55 2025] 127.0.0.1:57994 Closing
+[Mon Dec  1 17:57:57 2025] 127.0.0.1:57996 Accepted
+[Mon Dec  1 17:57:57 2025] 127.0.0.1:57996 [200]: GET /api/games/panier-express/rooms/17/state
+[Mon Dec  1 17:57:57 2025] 127.0.0.1:57996 Closing
+[Mon Dec  1 17:57:59 2025] 127.0.0.1:57998 Accepted
+[Mon Dec  1 17:57:59 2025] 127.0.0.1:57998 [200]: GET /api/games/panier-express/rooms/17/state
+[Mon Dec  1 17:57:59 2025] 127.0.0.1:57998 Closing
+[Mon Dec  1 17:58:01 2025] 127.0.0.1:58001 Accepted
+[Mon Dec  1 17:58:01 2025] 127.0.0.1:58001 [200]: GET /api/games/panier-express/rooms/17/state
+[Mon Dec  1 17:58:01 2025] 127.0.0.1:58001 Closing
+[Mon Dec  1 17:58:03 2025] 127.0.0.1:58003 Accepted
+[Mon Dec  1 17:58:03 2025] 127.0.0.1:58003 [200]: GET /api/games/panier-express/rooms/17/state
+[Mon Dec  1 17:58:03 2025] 127.0.0.1:58003 Closing
+[Mon Dec  1 17:58:05 2025] 127.0.0.1:58005 Accepted
+[Mon Dec  1 17:58:05 2025] 127.0.0.1:58005 [200]: GET /api/games/panier-express/rooms/17/state
+[Mon Dec  1 17:58:05 2025] 127.0.0.1:58005 Closing
+[Mon Dec  1 17:58:07 2025] 127.0.0.1:58007 Accepted
+[Mon Dec  1 17:58:07 2025] 127.0.0.1:58007 [200]: GET /api/games/panier-express/rooms/17/state
+[Mon Dec  1 17:58:07 2025] 127.0.0.1:58007 Closing
+[Mon Dec  1 17:58:09 2025] 127.0.0.1:58009 Accepted
+[Mon Dec  1 17:58:10 2025] 127.0.0.1:58009 [200]: GET /api/games/panier-express/rooms/17/state
+[Mon Dec  1 17:58:10 2025] 127.0.0.1:58009 Closing
+[Mon Dec  1 17:58:10 2025] 127.0.0.1:58011 Accepted
+[Mon Dec  1 17:58:10 2025] 127.0.0.1:58011 [200]: POST /api/games/panier-express/rooms/17/actions
+[Mon Dec  1 17:58:10 2025] 127.0.0.1:58011 Closing
+[Mon Dec  1 17:58:11 2025] 127.0.0.1:58013 Accepted
+[Mon Dec  1 17:58:12 2025] 127.0.0.1:58013 [200]: GET /api/games/panier-express/rooms/17/state
+[Mon Dec  1 17:58:12 2025] 127.0.0.1:58013 Closing
+[Mon Dec  1 17:58:13 2025] 127.0.0.1:58015 Accepted
+[Mon Dec  1 17:58:14 2025] 127.0.0.1:58015 [200]: GET /api/games/panier-express/rooms/17/state
+[Mon Dec  1 17:58:14 2025] 127.0.0.1:58015 Closing
+[Mon Dec  1 17:58:15 2025] 127.0.0.1:58017 Accepted
+[Mon Dec  1 17:58:16 2025] 127.0.0.1:58017 [200]: GET /api/games/panier-express/rooms/17/state
+[Mon Dec  1 17:58:16 2025] 127.0.0.1:58017 Closing
+[Mon Dec  1 17:58:17 2025] 127.0.0.1:58021 Accepted
+[Mon Dec  1 17:58:18 2025] 127.0.0.1:58021 [200]: GET /api/games/panier-express/rooms/17/state
+[Mon Dec  1 17:58:18 2025] 127.0.0.1:58021 Closing
+[Mon Dec  1 17:58:19 2025] 127.0.0.1:58023 Accepted
+[Mon Dec  1 17:58:20 2025] 127.0.0.1:58023 [200]: GET /api/games/panier-express/rooms/17/state
+[Mon Dec  1 17:58:20 2025] 127.0.0.1:58023 Closing
+[Mon Dec  1 17:58:21 2025] 127.0.0.1:58025 Accepted
+[Mon Dec  1 17:58:22 2025] 127.0.0.1:58025 [200]: GET /api/games/panier-express/rooms/17/state
+[Mon Dec  1 17:58:22 2025] 127.0.0.1:58025 Closing
+[Mon Dec  1 17:58:23 2025] 127.0.0.1:58027 Accepted
+[Mon Dec  1 17:58:24 2025] 127.0.0.1:58027 [200]: GET /api/games/panier-express/rooms/17/state
+[Mon Dec  1 17:58:24 2025] 127.0.0.1:58027 Closing
+[Mon Dec  1 17:58:25 2025] 127.0.0.1:58029 Accepted
+[Mon Dec  1 17:58:26 2025] 127.0.0.1:58029 [200]: GET /api/games/panier-express/rooms/17/state
+[Mon Dec  1 17:58:26 2025] 127.0.0.1:58029 Closing
+[Mon Dec  1 17:58:27 2025] 127.0.0.1:58031 Accepted
+[Mon Dec  1 17:58:28 2025] 127.0.0.1:58031 [200]: GET /api/games/panier-express/rooms/17/state
+[Mon Dec  1 17:58:28 2025] 127.0.0.1:58031 Closing
+[Mon Dec  1 17:58:29 2025] 127.0.0.1:58033 Accepted
+[Mon Dec  1 17:58:30 2025] 127.0.0.1:58033 [200]: GET /api/games/panier-express/rooms/17/state
+[Mon Dec  1 17:58:30 2025] 127.0.0.1:58033 Closing
+[Mon Dec  1 17:58:31 2025] 127.0.0.1:58035 Accepted
+[Mon Dec  1 17:58:32 2025] 127.0.0.1:58035 [200]: GET /api/games/panier-express/rooms/17/state
+[Mon Dec  1 17:58:32 2025] 127.0.0.1:58035 Closing
+[Mon Dec  1 17:58:33 2025] 127.0.0.1:58037 Accepted
+[Mon Dec  1 17:58:34 2025] 127.0.0.1:58037 [200]: GET /api/games/panier-express/rooms/17/state
+[Mon Dec  1 17:58:34 2025] 127.0.0.1:58037 Closing
+[Mon Dec  1 17:58:35 2025] 127.0.0.1:58039 Accepted
+[Mon Dec  1 17:58:36 2025] 127.0.0.1:58039 [200]: GET /api/games/panier-express/rooms/17/state
+[Mon Dec  1 17:58:36 2025] 127.0.0.1:58039 Closing
+[Mon Dec  1 17:58:37 2025] 127.0.0.1:58041 Accepted
+[Mon Dec  1 17:58:38 2025] 127.0.0.1:58041 [200]: GET /api/games/panier-express/rooms/17/state
+[Mon Dec  1 17:58:38 2025] 127.0.0.1:58041 Closing
+[Mon Dec  1 17:58:38 2025] 127.0.0.1:58043 Accepted
+[Mon Dec  1 17:58:38 2025] 127.0.0.1:58043 [200]: POST /api/games/panier-express/rooms/17/actions
+[Mon Dec  1 17:58:38 2025] 127.0.0.1:58043 Closing
+[Mon Dec  1 17:58:39 2025] 127.0.0.1:58045 Accepted
+[Mon Dec  1 17:58:40 2025] 127.0.0.1:58045 [200]: GET /api/games/panier-express/rooms/17/state
+[Mon Dec  1 17:58:40 2025] 127.0.0.1:58045 Closing
+[Mon Dec  1 17:58:41 2025] 127.0.0.1:58047 Accepted
+[Mon Dec  1 17:58:42 2025] 127.0.0.1:58047 [200]: GET /api/games/panier-express/rooms/17/state
+[Mon Dec  1 17:58:42 2025] 127.0.0.1:58047 Closing
+[Mon Dec  1 17:58:43 2025] 127.0.0.1:58049 Accepted
+[Mon Dec  1 17:58:44 2025] 127.0.0.1:58049 [200]: GET /api/games/panier-express/rooms/17/state
+[Mon Dec  1 17:58:44 2025] 127.0.0.1:58049 Closing
+[Mon Dec  1 17:58:45 2025] 127.0.0.1:58051 Accepted
+[Mon Dec  1 17:58:46 2025] 127.0.0.1:58051 [200]: GET /api/games/panier-express/rooms/17/state
+[Mon Dec  1 17:58:46 2025] 127.0.0.1:58051 Closing
+[Mon Dec  1 17:58:47 2025] 127.0.0.1:58053 Accepted
+[Mon Dec  1 17:58:48 2025] 127.0.0.1:58053 [200]: GET /api/games/panier-express/rooms/17/state
+[Mon Dec  1 17:58:48 2025] 127.0.0.1:58053 Closing
+[Mon Dec  1 17:58:49 2025] 127.0.0.1:58055 Accepted
+[Mon Dec  1 17:58:50 2025] 127.0.0.1:58055 [200]: GET /api/games/panier-express/rooms/17/state
+[Mon Dec  1 17:58:50 2025] 127.0.0.1:58055 Closing
+[Mon Dec  1 17:58:51 2025] 127.0.0.1:58057 Accepted
+[Mon Dec  1 17:58:52 2025] 127.0.0.1:58057 [200]: GET /api/games/panier-express/rooms/17/state
+[Mon Dec  1 17:58:52 2025] 127.0.0.1:58057 Closing
+[Mon Dec  1 17:58:58 2025] 127.0.0.1:58061 Accepted
+[Mon Dec  1 17:58:58 2025] 127.0.0.1:58061 [200]: GET /api/games/dame-nature/rooms/18/state
+[Mon Dec  1 17:58:58 2025] 127.0.0.1:58061 Closing
+[Mon Dec  1 17:59:06 2025] 127.0.0.1:58066 Accepted
+[Mon Dec  1 17:59:07 2025] 127.0.0.1:58066 [200]: GET /api/games/dame-nature/rooms/19/state
+[Mon Dec  1 17:59:07 2025] 127.0.0.1:58066 Closing
+[Mon Dec  1 17:59:09 2025] 127.0.0.1:58068 Accepted
+[Mon Dec  1 17:59:09 2025] 127.0.0.1:58068 [200]: GET /api/games/dame-nature/rooms/19/state
+[Mon Dec  1 17:59:09 2025] 127.0.0.1:58068 Closing
+[Mon Dec  1 17:59:11 2025] 127.0.0.1:58070 Accepted
+[Mon Dec  1 17:59:12 2025] 127.0.0.1:58070 [200]: GET /api/games/dame-nature/rooms/19/state
+[Mon Dec  1 17:59:12 2025] 127.0.0.1:58070 Closing
+[Mon Dec  1 17:59:14 2025] 127.0.0.1:58072 Accepted
+[Mon Dec  1 17:59:14 2025] 127.0.0.1:58072 [200]: GET /api/games/dame-nature/rooms/19/state
+[Mon Dec  1 17:59:14 2025] 127.0.0.1:58072 Closing
+[Mon Dec  1 17:59:16 2025] 127.0.0.1:58074 Accepted
+[Mon Dec  1 17:59:17 2025] 127.0.0.1:58074 [200]: GET /api/games/dame-nature/rooms/19/state
+[Mon Dec  1 17:59:17 2025] 127.0.0.1:58074 Closing
+[Mon Dec  1 17:59:19 2025] 127.0.0.1:58076 Accepted
+[Mon Dec  1 17:59:19 2025] 127.0.0.1:58076 [200]: GET /api/games/dame-nature/rooms/19/state
+[Mon Dec  1 17:59:19 2025] 127.0.0.1:58076 Closing
+[Mon Dec  1 17:59:21 2025] 127.0.0.1:58078 Accepted
+[Mon Dec  1 17:59:22 2025] 127.0.0.1:58078 [200]: GET /api/games/dame-nature/rooms/19/state
+[Mon Dec  1 17:59:22 2025] 127.0.0.1:58078 Closing
+[Mon Dec  1 17:59:24 2025] 127.0.0.1:58080 Accepted
+[Mon Dec  1 17:59:24 2025] 127.0.0.1:58080 [200]: GET /api/games/dame-nature/rooms/19/state
+[Mon Dec  1 17:59:24 2025] 127.0.0.1:58080 Closing
+[Mon Dec  1 17:59:26 2025] 127.0.0.1:58082 Accepted
+[Mon Dec  1 17:59:27 2025] 127.0.0.1:58082 [200]: GET /api/games/dame-nature/rooms/19/state
+[Mon Dec  1 17:59:27 2025] 127.0.0.1:58082 Closing
+[Mon Dec  1 17:59:29 2025] 127.0.0.1:58084 Accepted
+[Mon Dec  1 17:59:29 2025] 127.0.0.1:58084 [200]: GET /api/games/dame-nature/rooms/19/state
+[Mon Dec  1 17:59:29 2025] 127.0.0.1:58084 Closing
+[Mon Dec  1 17:59:31 2025] 127.0.0.1:58086 Accepted
+[Mon Dec  1 17:59:32 2025] 127.0.0.1:58086 [200]: GET /api/games/dame-nature/rooms/19/state
+[Mon Dec  1 17:59:32 2025] 127.0.0.1:58086 Closing
+[Mon Dec  1 17:59:34 2025] 127.0.0.1:58088 Accepted
+[Mon Dec  1 17:59:34 2025] 127.0.0.1:58088 [200]: GET /api/games/dame-nature/rooms/19/state
+[Mon Dec  1 17:59:34 2025] 127.0.0.1:58088 Closing
+[Mon Dec  1 17:59:36 2025] 127.0.0.1:58090 Accepted
+[Mon Dec  1 17:59:37 2025] 127.0.0.1:58090 [200]: GET /api/games/dame-nature/rooms/19/state
+[Mon Dec  1 17:59:37 2025] 127.0.0.1:58090 Closing
+[Mon Dec  1 17:59:39 2025] 127.0.0.1:58092 Accepted
+[Mon Dec  1 17:59:39 2025] 127.0.0.1:58092 [200]: GET /api/games/dame-nature/rooms/19/state
+[Mon Dec  1 17:59:39 2025] 127.0.0.1:58092 Closing
+[Mon Dec  1 17:59:42 2025] 127.0.0.1:58094 Accepted
+[Mon Dec  1 17:59:42 2025] 127.0.0.1:58094 [200]: GET /api/games/dame-nature/rooms/19/state
+[Mon Dec  1 17:59:42 2025] 127.0.0.1:58094 Closing
+[Mon Dec  1 17:59:44 2025] 127.0.0.1:58096 Accepted
+[Mon Dec  1 17:59:44 2025] 127.0.0.1:58096 [200]: GET /api/games/dame-nature/rooms/19/state
+[Mon Dec  1 17:59:44 2025] 127.0.0.1:58096 Closing
+[Mon Dec  1 17:59:47 2025] 127.0.0.1:58098 Accepted
+[Mon Dec  1 17:59:47 2025] 127.0.0.1:58098 [200]: GET /api/games/dame-nature/rooms/19/state
+[Mon Dec  1 17:59:47 2025] 127.0.0.1:58098 Closing
+[Mon Dec  1 17:59:49 2025] 127.0.0.1:58100 Accepted
+[Mon Dec  1 17:59:49 2025] 127.0.0.1:58100 [200]: GET /api/games/dame-nature/rooms/19/state
+[Mon Dec  1 17:59:49 2025] 127.0.0.1:58100 Closing
+[Mon Dec  1 17:59:52 2025] 127.0.0.1:58102 Accepted
+[Mon Dec  1 17:59:52 2025] 127.0.0.1:58102 [200]: GET /api/games/dame-nature/rooms/19/state
+[Mon Dec  1 17:59:52 2025] 127.0.0.1:58102 Closing
+[Mon Dec  1 17:59:54 2025] 127.0.0.1:58104 Accepted
+[Mon Dec  1 17:59:54 2025] 127.0.0.1:58104 [200]: GET /api/games/dame-nature/rooms/19/state
+[Mon Dec  1 17:59:54 2025] 127.0.0.1:58104 Closing
+[Mon Dec  1 17:59:57 2025] 127.0.0.1:58106 Accepted
+[Mon Dec  1 17:59:57 2025] 127.0.0.1:58106 [200]: GET /api/games/dame-nature/rooms/19/state
+[Mon Dec  1 17:59:57 2025] 127.0.0.1:58106 Closing
+[Mon Dec  1 17:59:59 2025] 127.0.0.1:58108 Accepted
+[Mon Dec  1 17:59:59 2025] 127.0.0.1:58108 [200]: GET /api/games/dame-nature/rooms/19/state
+[Mon Dec  1 17:59:59 2025] 127.0.0.1:58108 Closing
+[Mon Dec  1 18:00:02 2025] 127.0.0.1:58111 Accepted
+[Mon Dec  1 18:00:02 2025] 127.0.0.1:58111 [200]: GET /api/games/dame-nature/rooms/19/state
+[Mon Dec  1 18:00:02 2025] 127.0.0.1:58111 Closing
+[Mon Dec  1 18:00:04 2025] 127.0.0.1:58113 Accepted
+[Mon Dec  1 18:00:04 2025] 127.0.0.1:58113 [200]: GET /api/games/dame-nature/rooms/19/state
+[Mon Dec  1 18:00:04 2025] 127.0.0.1:58113 Closing
+[Mon Dec  1 18:00:07 2025] 127.0.0.1:58115 Accepted
+[Mon Dec  1 18:00:07 2025] 127.0.0.1:58115 [200]: GET /api/games/dame-nature/rooms/19/state
+[Mon Dec  1 18:00:07 2025] 127.0.0.1:58115 Closing
+[Mon Dec  1 18:00:09 2025] 127.0.0.1:58117 Accepted
+[Mon Dec  1 18:00:09 2025] 127.0.0.1:58117 [200]: GET /api/games/dame-nature/rooms/19/state
+[Mon Dec  1 18:00:09 2025] 127.0.0.1:58117 Closing

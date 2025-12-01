@@ -77,8 +77,6 @@ public abstract class BaseTableScreen extends JPanel implements Screen, GameTabl
         KeyboardBindings.disableTabTraversal(interaction);
         KeyboardBindings.disableTabTraversal(history);
         shortcuts.installNavigation(this, interaction, history);
-        shortcuts.bindQuit(this, this::handleQuit);
-        shortcuts.bindBotShortcuts(this, this::handleAddBot, this::handleRemoveBot);
     }
 
     @Override

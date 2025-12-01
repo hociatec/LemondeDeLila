@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: RoomBotRepository::class)]
-#[ORM\Table(name: 'room_bot')]
+#[ORM\Table(name: 'room_bot', uniqueConstraints: [new ORM\UniqueConstraint(name: 'uniq_room_bot_room_name', columns: ['room_id', 'name'])])]
 class RoomBot
 {
     #[ORM\Id]

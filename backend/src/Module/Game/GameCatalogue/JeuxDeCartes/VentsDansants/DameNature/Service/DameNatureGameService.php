@@ -4,12 +4,13 @@ namespace App\Module\Game\GameCatalogue\JeuxDeCartes\VentsDansants\DameNature\Se
 
 use App\Module\Game\Bot\BotAllocator;
 use App\Module\Game\Engine\GameEngineInterface;
+use App\Module\Game\Entity\Room;
 use App\Module\Game\Service\Participant;
 use App\Module\Game\Service\ParticipantResolver;
-use App\Module\Game\Entity\Room;
+use App\Module\Game\Shared\Action\Action;
 use App\Module\User\Entity\User;
 
-final class DameNatureService implements GameEngineInterface
+final class DameNatureGameService implements GameEngineInterface
 {
     private const GAME_TYPE = 'dame-nature';
     private const TARGET_FAMILIES_TO_WIN = 4;
@@ -19,15 +20,12 @@ final class DameNatureService implements GameEngineInterface
     private ?array $familyMembersMap = null;
     private ?array $quizCards = null;
     private ?array $dangerCards = null;
-    private ParticipantResolver $participants;
-    private BotAllocator $botAllocator;
 
     public function __construct(
-        ParticipantResolver $participants,
-        BotAllocator $botAllocator
+        private ParticipantResolver $participants,
+        private BotAllocator $botAllocator,
+        private DameNatureReferenceService $reference
     ) {
-        $this->participants = $participants;
-        $this->botAllocator = $botAllocator;
     }
 
     public function getType(): string
@@ -48,8 +46,8 @@ final class DameNatureService implements GameEngineInterface
 
         $state = [
             'type' => self::GAME_TYPE,
-            'status' => 'playing',
-            'phase' => 'turn',
+            'status' => 'open',
+            'phase' => 'open',
             'round' => 1,
             'turnIndex' => 0,
             'players' => $players,
@@ -58,7 +56,7 @@ final class DameNatureService implements GameEngineInterface
             'cards' => $setup['cards'],
             'quizAnswers' => $setup['quizAnswers'],
             'pollution' => 0,
-            'log' => [['message' => 'La partie commence. Gardez Dame Nature en bonne sante !', 'type' => 'info']],
+            'log' => [],
             'pendingQuiz' => null,
             'familyMap' => $setup['familyMap'],
             'metadata' => [
@@ -75,7 +73,49 @@ final class DameNatureService implements GameEngineInterface
 
         $this->checkCompletedFamilies($state, 0);
 
-        return $this->executeBotTurns($state);
+        return $state;
+    }
+
+    public function startState(array $state): array
+    {
+        if (($state['status'] ?? null) === 'playing') {
+            return $state;
+        }
+
+        $state['status'] = 'playing';
+        $state['phase'] = 'turn';
+        if (!isset($state['log']) || !is_array($state['log'])) {
+            $state['log'] = [];
+        }
+        $state['log'][] = [
+            'message' => 'La partie commence. Gardez Dame Nature en bonne sante !',
+            'type' => 'info',
+        ];
+
+        return $state;
+    }
+
+    /**
+     * @param array<int, Action|array<string, mixed>> $actions
+     */
+    public function applyActions(array $state, array $actions, Room $room, User $user): array
+    {
+        if (($state['status'] ?? null) === 'ended') {
+            return $state;
+        }
+
+        foreach ($actions as $raw) {
+            $payload = $this->normalizeActionPayload($raw);
+            if ($payload === null) {
+                continue;
+            }
+            $state = $this->apply($state, $payload, $room, $user);
+            if (($state['status'] ?? null) === 'ended') {
+                break;
+            }
+        }
+
+        return $state;
     }
 
     public function apply(array $state, array $payload, Room $room, User $user): array
@@ -90,16 +130,88 @@ final class DameNatureService implements GameEngineInterface
             return $state;
         }
 
-        $action = (string)($payload['action'] ?? '');
+        $action = $this->normalizeActionName((string)($payload['action'] ?? $payload['command'] ?? ''));
 
         $next = match ($action) {
-            'ask_card' => $this->handleAskCard($state, $payload, $playerIndex),
-            'answer_quiz' => $this->handleQuizAnswer($state, $payload, $playerIndex),
-            'draw' => $this->handleDraw($state, $playerIndex),
+            DameNatureCommand::ASK_CARD => $this->handleAskCard($state, $payload, $playerIndex),
+            DameNatureCommand::ANSWER_QUIZ => $this->handleQuizAnswer($state, $payload, $playerIndex),
+            DameNatureCommand::DRAW => $this->handleDraw($state, $playerIndex),
             default => $state,
         };
 
         return $this->executeBotTurns($next);
+    }
+
+    public function advanceBots(array $state): array
+    {
+        if (($state['status'] ?? null) !== 'playing') {
+            return $state;
+        }
+
+        return $this->executeBotTurns($state);
+    }
+
+    /**
+     * @param Action|array<string, mixed> $action
+     */
+    private function normalizeActionPayload(Action|array $action): ?array
+    {
+        if ($action instanceof Action) {
+            $payload = is_array($action->payload ?? null) ? $action->payload : [];
+            if (isset($payload['command']) && !isset($payload['action'])) {
+                $payload['action'] = $payload['command'];
+            }
+            if (!isset($payload['action'])) {
+                $mapped = $this->mapGenericActionName($action->type);
+                if ($mapped !== null) {
+                    $payload['action'] = $mapped;
+                }
+            }
+            $payload['action'] ??= $action->type;
+
+            return $payload;
+        }
+
+        if (is_array($action)) {
+            if (isset($action['command']) && !isset($action['action'])) {
+                $action['action'] = $action['command'];
+            }
+            return $action;
+        }
+
+        return null;
+    }
+
+    private function mapGenericActionName(string $type): ?string
+    {
+        $normalized = strtoupper($type);
+        return match ($normalized) {
+            'ASK_CARD', 'REQUEST_CARD' => DameNatureCommand::ASK_CARD,
+            'DRAW_CARD', 'DRAW' => DameNatureCommand::DRAW,
+            'ANSWER_QUIZ', 'QUIZ_VALIDATE' => DameNatureCommand::ANSWER_QUIZ,
+            default => null,
+        };
+    }
+
+    private function normalizeActionName(string $action): string
+    {
+        $action = trim($action);
+        if ($action === '') {
+            return '';
+        }
+        $action = strtolower($action);
+        $action = str_replace(
+            ['dame_nature:', 'dame-nature:', 'dame_nature_', 'dame-nature_'],
+            '',
+            $action
+        );
+
+        return match ($action) {
+            'ask_card', 'ask-card' => DameNatureCommand::ASK_CARD,
+            'answer_quiz', 'answer-quiz' => DameNatureCommand::ANSWER_QUIZ,
+            'draw', 'draw_card', 'draw-card' => DameNatureCommand::DRAW,
+            default => $action,
+        };
     }
 
     public function currentRound(array $state): int
@@ -180,10 +292,6 @@ final class DameNatureService implements GameEngineInterface
                 continue;
             }
             $players[] = $this->playerFromParticipant($participant);
-        }
-
-        if (count($players) < 2) {
-            $players[] = $this->createEphemeralBot($players);
         }
 
         return $players;
@@ -782,12 +890,6 @@ final class DameNatureService implements GameEngineInterface
         return sprintf('family:%s:%s', $familyId, $memberId);
     }
 
-    private function dataDirectory(): string
-    {
-        // Base the path on the current directory to avoid mismatches with spaces or case differences.
-        return \dirname(__DIR__) . '/Data';
-    }
-
     /**
      * @return array<int,array{id:string,name:string,members:array<int,array{id:string,name:string,role:string}>}>
      */
@@ -796,7 +898,7 @@ final class DameNatureService implements GameEngineInterface
         if ($this->families !== null) {
             return $this->families;
         }
-        $this->families = $this->decodeJsonFile($this->dataDirectory() . '/families.json');
+        $this->families = $this->reference->families();
         return $this->families;
     }
 
@@ -808,7 +910,7 @@ final class DameNatureService implements GameEngineInterface
         if ($this->dangerCards !== null) {
             return $this->dangerCards;
         }
-        $this->dangerCards = $this->decodeJsonFile($this->dataDirectory() . '/dangers.json');
+        $this->dangerCards = $this->reference->dangerCards();
         return $this->dangerCards;
     }
 
@@ -820,7 +922,7 @@ final class DameNatureService implements GameEngineInterface
         if ($this->quizCards !== null) {
             return $this->quizCards;
         }
-        $this->quizCards = $this->decodeJsonFile($this->dataDirectory() . '/quiz.json');
+        $this->quizCards = $this->reference->quizCards();
         return $this->quizCards;
     }
 
@@ -858,18 +960,4 @@ final class DameNatureService implements GameEngineInterface
         return ucfirst($familyId);
     }
 
-    /**
-     * @return array<mixed>
-     */
-    private function decodeJsonFile(string $path): array
-    {
-        $content = file_get_contents($path);
-        if ($content === false) {
-            throw new \RuntimeException(sprintf('Impossible de lire %s', $path));
-        }
-        if (str_starts_with($content, "\xEF\xBB\xBF")) {
-            $content = substr($content, 3);
-        }
-        return json_decode($content, true, 512, JSON_THROW_ON_ERROR);
-    }
 }

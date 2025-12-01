@@ -1,0 +1,22 @@
+dame_nature_reference:
+    path: /api/games/dame-nature/reference
+    controller: App\Module\Game\GameCatalogue\JeuxDeCartes\VentsDansants\DameNature\Controller\DameNatureController::reference
+    methods: [GET]
+
+dame_nature_state:
+    path: /api/games/dame-nature/rooms/{id}/state{trailingSlash}
+    controller: App\Module\Game\GameCatalogue\JeuxDeCartes\VentsDansants\DameNature\Controller\DameNatureGameController::state
+    methods: [GET]
+    requirements:
+        trailingSlash: '/?'
+    defaults:
+        trailingSlash: ''
+
+dame_nature_actions:
+    path: /api/games/dame-nature/rooms/{id}/actions{trailingSlash}
+    controller: App\Module\Game\GameCatalogue\JeuxDeCartes\VentsDansants\DameNature\Controller\DameNatureGameController::actions
+    methods: [POST]
+    requirements:
+        trailingSlash: '/?'
+    defaults:
+        trailingSlash: ''

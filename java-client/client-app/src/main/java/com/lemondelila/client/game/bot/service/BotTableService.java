@@ -64,7 +64,10 @@ public final class BotTableService {
         for (int i = bots.size() - 1; i >= 0; i--) {
             BotState candidate = bots.get(i);
             if (candidate != null && candidate.id() != null) {
-                return candidate.id();
+                Integer id = candidate.id();
+                if (id != null && id > 0) {
+                    return id;
+                }
             }
         }
         return null;

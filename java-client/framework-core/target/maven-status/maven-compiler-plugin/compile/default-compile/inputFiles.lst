@@ -1,7 +1,7 @@
-C:\wamp\www\LemondeDeLila\java-client\framework-core\src\main\java\com\lemondelila\framework\core\config\ConfigurationService.java
-C:\wamp\www\LemondeDeLila\java-client\framework-core\src\main\java\com\lemondelila\framework\core\module\FrameworkCoreModule.java
-C:\wamp\www\LemondeDeLila\java-client\framework-core\src\main\java\com\lemondelila\framework\core\module\LilaModule.java
-C:\wamp\www\LemondeDeLila\java-client\framework-core\src\main\java\com\lemondelila\framework\core\module\FrameworkBootstrap.java
-C:\wamp\www\LemondeDeLila\java-client\framework-core\src\main\java\com\lemondelila\framework\core\task\TaskScheduler.java
-C:\wamp\www\LemondeDeLila\java-client\framework-core\src\main\java\com\lemondelila\framework\core\context\ApplicationContext.java
-C:\wamp\www\LemondeDeLila\java-client\framework-core\src\main\java\com\lemondelila\framework\core\event\DomainEventBus.java
+C:\wamp64\www\LemondeDeLila\java-client\framework-core\src\main\java\com\lemondelila\client\framework\core\event\EventSubscriptions.java
+C:\wamp64\www\LemondeDeLila\java-client\framework-core\src\main\java\com\lemondelila\client\framework\core\branding\AppBrandingProvider.java
+C:\wamp64\www\LemondeDeLila\java-client\framework-core\src\main\java\com\lemondelila\client\framework\core\config\ConfigurationService.java
+C:\wamp64\www\LemondeDeLila\java-client\framework-core\src\main\java\com\lemondelila\client\framework\core\task\TaskScheduler.java
+C:\wamp64\www\LemondeDeLila\java-client\framework-core\src\main\java\com\lemondelila\client\framework\core\event\DomainEventBus.java
+C:\wamp64\www\LemondeDeLila\java-client\framework-core\src\main\java\com\lemondelila\client\framework\core\module\FrameworkCoreModule.java
+C:\wamp64\www\LemondeDeLila\java-client\framework-core\src\main\java\com\lemondelila\client\framework\core\util\SimpleRateLimiter.java

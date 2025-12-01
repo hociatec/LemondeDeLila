@@ -54,9 +54,6 @@ final class MissionNemesisService implements GameEngineInterface
         }
 
         $players = $this->initialPlayers($participants);
-        if (count($players) < 2) {
-            $players[] = $this->createEphemeralBot($players);
-        }
 
         $state = [
             'type' => $this->getType(),

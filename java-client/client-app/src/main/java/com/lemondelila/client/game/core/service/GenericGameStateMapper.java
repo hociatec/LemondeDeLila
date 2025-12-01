@@ -61,6 +61,18 @@ public final class GenericGameStateMapper {
         if (json.has("turn")) {
             extras.put("turn", json.get("turn"));
         }
+        if (json.has("deck")) {
+            extras.put("deck", json.get("deck"));
+        }
+        if (json.has("metadata")) {
+            extras.put("metadata", json.get("metadata"));
+        }
+        if (json.has("catalog")) {
+            extras.put("catalog", json.get("catalog"));
+        }
+        if (json.has("pollution")) {
+            extras.put("pollution", json.get("pollution"));
+        }
         if (pendingExchangeNode != null) {
             extras.put("pendingExchange", pendingExchangeNode);
         }

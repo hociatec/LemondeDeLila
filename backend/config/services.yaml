@@ -104,6 +104,12 @@ services:
             $initializers: !tagged_iterator app.game_initializer
     App\Module\Game\GameCatalogue\JeuxDePlateaux\LesQuatreVents\PanierExpress\Service\PanierExpressGameInitializer:
         tags: ['app.game_initializer']
+    App\Module\Game\GameCatalogue\JeuxDeCartes\VentsDansants\DameNature\Controller\DameNatureController: ~
+    App\Module\Game\GameCatalogue\JeuxDeCartes\VentsDansants\DameNature\Controller\DameNatureGameController: ~
+    App\Module\Game\GameCatalogue\JeuxDeCartes\VentsDansants\DameNature\Service\DameNatureReferenceService: ~
+    App\Module\Game\GameCatalogue\JeuxDeCartes\VentsDansants\DameNature\Service\DameNatureGameService: ~
+    App\Module\Game\GameCatalogue\JeuxDeCartes\VentsDansants\DameNature\Service\DameNatureGameInitializer:
+        tags: ['app.game_initializer']
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

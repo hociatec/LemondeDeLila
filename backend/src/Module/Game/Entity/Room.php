@@ -229,10 +229,14 @@ class Room
 
     public function addBot(RoomBot $bot): self
     {
-        if (!$this->bots->contains($bot)) {
-            $bot->setRoom($this);
-            $this->bots->add($bot);
+        $incoming = $this->normalizeBotName($bot->getName());
+        foreach ($this->bots as $existing) {
+            if ($this->normalizeBotName($existing->getName()) === $incoming) {
+                return $this;
+            }
         }
+        $bot->setRoom($this);
+        $this->bots->add($bot);
         return $this;
     }
 
@@ -246,4 +250,9 @@ class Room
     public function getGameType(): string { return $this->gameType; }
     public function setGameType(string $gameType): self { $this->gameType = $gameType; return $this; }
     public function getCreatedAt(): \DateTimeImmutable { return $this->createdAt; }
+
+    private function normalizeBotName(string $name): string
+    {
+        return strtolower(trim($name));
+    }
 }

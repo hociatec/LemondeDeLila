@@ -22,6 +22,7 @@ use App\Module\Game\Service\TableManager;
 use App\Module\User\Entity\User;
 use App\Module\User\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Lexik\Bundle\JWTAuthenticationBundle\Exception\JWTDecodeFailureException;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Psr\Log\LoggerInterface;
@@ -304,7 +305,6 @@ class RoomRealtimeClientHandler implements ClientHandler
             }
         });
     }
-
     private function handleBotAdd(int $roomId, Client $client, array $payload): Promise
     {
         return call(function () use ($roomId, $client, $payload) {
@@ -317,12 +317,12 @@ class RoomRealtimeClientHandler implements ClientHandler
             $ownerId = $room->getOwner()?->getId();
             $userId = $this->getUserIdFromClient($client);
             if ($userId === null || $ownerId !== $userId) {
-                yield $this->sendError($client, 'Seul le propriétaire peut gérer les bots');
+                yield $this->sendError($client, 'Seul le proprietaire peut gerer les bots');
                 return;
             }
 
             if (!$this->isRoomOpen($room)) {
-                yield $this->sendError($client, 'Table déjà démarrée');
+                yield $this->sendError($client, 'Table deja demarree');
                 return;
             }
 
@@ -340,22 +340,32 @@ class RoomRealtimeClientHandler implements ClientHandler
             foreach ($room->getPlayers() as $player) {
                 $usedNames[] = $player->getUsername();
             }
+            $normalizedUsed = array_map([$this, 'normalizeName'], $usedNames);
 
-            if ($requestedName !== '' && \in_array($requestedName, $usedNames, true)) {
-                yield $this->sendError($client, 'Nom de bot déjà utilisé');
+            if ($requestedName !== '' && \in_array($this->normalizeName($requestedName), $normalizedUsed, true)) {
+                yield $this->sendError($client, 'Nom de bot deja utilise');
                 return;
             }
 
             try {
                 $name = $requestedName !== '' ? $requestedName : $this->botAllocator->pick($usedNames);
+                if (\in_array($this->normalizeName($name), $normalizedUsed, true)) {
+                    throw new \RuntimeException('Nom de bot deja utilise');
+                }
             } catch (\Throwable $exception) {
-                yield $this->sendError($client, 'Impossible de générer un bot : ' . $exception->getMessage());
+                yield $this->sendError($client, 'Impossible de generer un bot : ' . $exception->getMessage());
                 return;
             }
             $bot = (new RoomBot())->setName($name);
             $room->addBot($bot);
             $this->entityManager->persist($bot);
-            $this->entityManager->flush();
+            try {
+                $this->entityManager->flush();
+            } catch (UniqueConstraintViolationException) {
+                $this->entityManager->detach($bot);
+                yield $this->sendError($client, 'Nom de bot deja utilise');
+                return;
+            }
 
             yield $this->broadcastRoomUpdate($roomId, 'bot.added', ['bot' => $this->serializeBot($bot)]);
         });
@@ -725,6 +735,11 @@ class RoomRealtimeClientHandler implements ClientHandler
     {
         $status = $room->getStatus();
         return in_array($status, ['in_progress', 'started', 'en_cours'], true);
+    }
+
+    private function normalizeName(string $value): string
+    {
+        return strtolower(trim($value));
     }
 
     private function serializeBot(RoomBot $bot): array

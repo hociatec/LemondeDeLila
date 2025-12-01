@@ -2,18 +2,25 @@
 
 namespace App\Tests\Module\Game\GameCatalogue\JeuxDeCartes\VentsDansants\DameNature;
 
+use App\Module\Game\Bot\BotAllocator;
 use App\Module\Game\Entity\Room;
-use App\Module\Game\GameCatalogue\JeuxDeCartes\VentsDansants\DameNature\Service\DameNatureService;
+use App\Module\Game\GameCatalogue\JeuxDeCartes\VentsDansants\DameNature\Service\DameNatureGameService;
+use App\Module\Game\GameCatalogue\JeuxDeCartes\VentsDansants\DameNature\Service\DameNatureReferenceService;
+use App\Module\Game\Service\ParticipantResolver;
 use App\Module\User\Entity\User;
 use PHPUnit\Framework\TestCase;
 
 final class DameNatureServiceTest extends TestCase
 {
-    private DameNatureService $service;
+    private DameNatureGameService $service;
 
     protected function setUp(): void
     {
-        $this->service = new DameNatureService();
+        $this->service = new DameNatureGameService(
+            new ParticipantResolver(),
+            new BotAllocator(),
+            new DameNatureReferenceService()
+        );
     }
 
     public function testDefaultStateDealsExpectedHandSize(): void
@@ -22,6 +29,7 @@ final class DameNatureServiceTest extends TestCase
         $room = $this->makeRoom($users);
 
         $state = $this->service->defaultState($room);
+        $state = $this->service->startState($state);
 
         self::assertSame('dame-nature', $state['type']);
         $hands = array_map(static fn (array $player) => count($player['hand']), $state['players']);
@@ -38,6 +46,7 @@ final class DameNatureServiceTest extends TestCase
         $room = $this->makeRoom([$alpha, $bravo]);
 
         $state = $this->service->defaultState($room);
+        $state = $this->service->startState($state);
 
         $familyId = array_key_first($state['familyMap']);
         self::assertIsString($familyId);
@@ -71,6 +80,7 @@ final class DameNatureServiceTest extends TestCase
         $room = $this->makeRoom([$alpha, $bravo]);
 
         $state = $this->service->defaultState($room);
+        $state = $this->service->startState($state);
         $alphaIndex = 0;
         $initialTurn = $state['turnIndex'];
 
