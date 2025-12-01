@@ -5,17 +5,16 @@ namespace App\Module\Game\Realtime;
 use Amp\Http\Server\Request;
 use Amp\Http\Server\RequestHandler;
 use Amp\Http\Server\Response;
-use Amp\Http\Status;
-use Amp\Promise;
+use Amp\Http\Server\Status;
 use Amp\Websocket\Server\Websocket;
+use Amp\Promise;
 use function Amp\call;
 
 class RoomRealtimeHttpHandler implements RequestHandler
 {
     public function __construct(
         private readonly Websocket $roomWebsocket,
-        private readonly Websocket $presenceWebsocket,
-        private readonly RoomRealtimePushHandler $pushHandler
+        private readonly Websocket $presenceWebsocket
     ) {
     }
 
@@ -29,10 +28,6 @@ class RoomRealtimeHttpHandler implements RequestHandler
             if ($path === '/presence') {
                 return yield $this->presenceWebsocket->handleRequest($request);
             }
-            if ($path === '/push') {
-                return yield $this->pushHandler->handleRequest($request);
-            }
-
             return new Response(Status::NOT_FOUND);
         });
     }

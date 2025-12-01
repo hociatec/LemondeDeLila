@@ -1,14 +1,18 @@
 package com.lemondelila.client.application;
 
 import com.google.auto.service.AutoService;
-import com.lemondelila.client.application.view.home.HomeScreen;
-import com.lemondelila.client.application.view.menu.MainMenuScreen;
+import com.lemondelila.client.home.view.HomeScreen;
+import com.lemondelila.client.menu.view.MainMenuScreen;
+import com.lemondelila.client.social.view.SocialScreen;
 import com.lemondelila.client.application.view.shortcuts.ApplicationShortcuts;
 import com.lemondelila.client.framework.core.context.ApplicationContext;
 import com.lemondelila.client.framework.core.module.LilaModule;
 import com.lemondelila.client.framework.ui.LilaFrame;
 import com.lemondelila.client.framework.ui.screen.Screen;
 import com.lemondelila.client.framework.ui.screen.ScreenManager;
+import com.lemondelila.client.game.catalog.view.GameCatalogScreen;
+import com.lemondelila.client.game.room.view.RoomDetailsScreen;
+import com.lemondelila.client.game.room.view.RoomTableScreen;
 
 @AutoService(LilaModule.class)
 public final class ScreenModule implements LilaModule {
@@ -17,14 +21,17 @@ public final class ScreenModule implements LilaModule {
     public void configure(ApplicationContext.Builder builder) {
         builder.bindAuto(HomeScreen.class);
         builder.bindAuto(MainMenuScreen.class);
+        builder.bindAuto(GameCatalogScreen.class);
+        builder.bindAuto(RoomDetailsScreen.class);
+        builder.bindAuto(RoomTableScreen.class);
         builder.bindAuto(ApplicationShortcuts.class);
+        builder.bindAuto(SocialScreen.class);
     }
 
     @Override
     public void start(ApplicationContext context) {
         ScreenManager manager = context.get(ScreenManager.class);
-        context.getAll(Screen.class)
-                .forEach(manager::register);
+        context.getAll(Screen.class).forEach(manager::register);
 
         ApplicationShortcuts shortcuts = context.get(ApplicationShortcuts.class);
         LilaFrame frame = context.get(LilaFrame.class);

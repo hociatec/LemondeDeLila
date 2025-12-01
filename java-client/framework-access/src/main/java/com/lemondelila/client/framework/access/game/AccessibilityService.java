@@ -1,7 +1,7 @@
 package com.lemondelila.client.framework.access.game;
 
-import com.lemondelila.client.framework.access.NarrationQueue;
 import com.lemondelila.client.framework.access.ScreenReaderAnnouncer;
+import com.lemondelila.client.framework.access.NarrationQueue;
 
 import javax.swing.JComponent;
 import javax.swing.JLabel;

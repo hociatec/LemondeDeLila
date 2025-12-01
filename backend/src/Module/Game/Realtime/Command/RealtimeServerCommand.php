@@ -12,7 +12,6 @@ use App\Module\Game\Realtime\PresenceRealtimeClientHandler;
 use App\Module\Game\Realtime\RoomRealtimeBroker;
 use App\Module\Game\Realtime\RoomRealtimeClientHandler;
 use App\Module\Game\Realtime\RoomRealtimeHttpHandler;
-use App\Module\Game\Realtime\RoomRealtimePushHandler;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -34,8 +33,7 @@ class RealtimeServerCommand extends Command
         private readonly RoomRealtimeBroker $broker,
         private readonly PresenceRealtimeBroker $presenceBroker,
         private readonly RoomRealtimeClientHandler $clientHandler,
-        private readonly PresenceRealtimeClientHandler $presenceClientHandler,
-        private readonly RoomRealtimePushHandler $pushHandler
+        private readonly PresenceRealtimeClientHandler $presenceClientHandler
     ) {
         parent::__construct();
     }
@@ -59,7 +57,7 @@ class RealtimeServerCommand extends Command
             $presenceWebsocket = new Websocket($this->presenceClientHandler);
             $this->presenceBroker->setGateway($presenceWebsocket);
             $errorHandler = new DefaultErrorHandler($serverLogger);
-            $httpHandler = new RoomRealtimeHttpHandler($roomWebsocket, $presenceWebsocket, $this->pushHandler);
+            $httpHandler = new RoomRealtimeHttpHandler($roomWebsocket, $presenceWebsocket);
 
             Loop::run(function () use ($host, $port, $serverLogger, $errorHandler, $httpHandler, $io, $roomWebsocket, $presenceWebsocket) {
                 $socket = SocketServer::listen(sprintf('%s:%d', $host, $port));

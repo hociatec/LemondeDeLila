@@ -184,11 +184,12 @@ class Room
     private Collection $players;
 
     #[ORM\OneToMany(mappedBy: 'room', targetEntity: RoomBot::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[Groups(['room:read'])]
     private Collection $bots;
 
     #[ORM\Column(type: 'string', length: 50)]
     #[Groups(['room:read'])]
-    private string $status = 'open';
+    private string $status = 'setup';
 
     #[ORM\Column(type: 'string', length: 50)]
     #[Groups(['room:read'])]

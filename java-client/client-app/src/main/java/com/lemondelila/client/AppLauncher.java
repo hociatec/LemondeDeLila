@@ -3,7 +3,7 @@ package com.lemondelila.client;
 import com.lemondelila.client.settings.service.AppSettingsService;
 import com.lemondelila.client.application.AppBranding;
 import com.lemondelila.client.application.view.dialog.ConfirmExitDialog;
-import com.lemondelila.client.application.view.home.HomeScreen;
+import com.lemondelila.client.home.view.HomeScreen;
 import com.lemondelila.client.framework.core.context.ApplicationContext;
 import com.lemondelila.client.framework.core.module.FrameworkBootstrap;
 import com.lemondelila.client.framework.ui.LilaFrame;

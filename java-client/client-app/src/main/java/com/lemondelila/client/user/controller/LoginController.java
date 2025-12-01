@@ -67,13 +67,10 @@ public final class LoginController implements AutoCloseable {
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 eventBus.publish(new LoginFailed("Connexion interrompue"));
-                session.clear();
             } catch (IOException e) {
                 eventBus.publish(new LoginFailed("Connexion impossible : " + UserControllerSupport.cleanMessage(e.getMessage())));
-                session.clear();
             } catch (Exception e) {
                 eventBus.publish(new LoginFailed("Echec de connexion : " + UserControllerSupport.cleanMessage(e.getMessage())));
-                session.clear();
             } finally {
                 UserControllerSupport.wipe(request.password());
                 guard.release();

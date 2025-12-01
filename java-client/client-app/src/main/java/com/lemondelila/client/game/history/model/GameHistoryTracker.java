@@ -1,0 +1,78 @@
+package com.lemondelila.client.game.history.model;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+/**
+ * Centralise l'historique d'un jeu et g�n�re des repr�sentations lisibles.
+ */
+public final class GameHistoryTracker {
+
+    private final List<String> entries = new ArrayList<>();
+    private int maxEntries = 200;
+
+    public void setMaxEntries(int maxEntries) {
+        if (maxEntries <= 0) {
+            throw new IllegalArgumentException("maxEntries doit �tre positif");
+        }
+        this.maxEntries = maxEntries;
+        trim();
+    }
+
+    public int maxEntries() {
+        return maxEntries;
+    }
+
+    public void clear() {
+        entries.clear();
+    }
+
+    public int size() {
+        return entries.size();
+    }
+
+    public void add(String entry) {
+        if (entry == null) {
+            return;
+        }
+        String trimmed = entry.trim();
+        if (trimmed.isEmpty()) {
+            return;
+        }
+        entries.add(trimmed);
+        trim();
+    }
+
+    public void addAll(List<String> newEntries) {
+        if (newEntries == null) {
+            return;
+        }
+        newEntries.forEach(this::add);
+    }
+
+    public List<String> all() {
+        return Collections.unmodifiableList(entries);
+    }
+
+    public String formatAll() {
+        return String.join("\n", entries);
+    }
+
+    public String formatTail(int count) {
+        if (count <= 0 || entries.isEmpty()) {
+            return "";
+        }
+        int start = Math.max(0, entries.size() - count);
+        List<String> slice = entries.subList(start, entries.size());
+        return String.join("\n", slice);
+    }
+
+    private void trim() {
+        int excess = entries.size() - maxEntries;
+        if (excess <= 0) {
+            return;
+        }
+        entries.subList(0, excess).clear();
+    }
+}
