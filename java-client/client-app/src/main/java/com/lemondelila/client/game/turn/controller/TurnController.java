@@ -18,18 +18,69 @@ public final class TurnController {
         int round = turnNode.path("round").asInt(1);
         int index = turnNode.path("index").asInt(0);
         int direction = turnNode.path("direction").asInt(1);
-        return Optional.of(new TurnState(round, index, direction));
+        Integer currentPlayerId = turnNode.has("currentPlayerId") && turnNode.get("currentPlayerId").isInt()
+                ? turnNode.get("currentPlayerId").asInt()
+                : null;
+        return Optional.of(new TurnState(round, index, direction, currentPlayerId));
     }
 
     public String formatTurn(TurnState turn, TableState tableState) {
-        String name = "Joueur";
-        var players = tableState.players();
-        if (turn.index() >= 0 && turn.index() < players.size()) {
-            String candidate = players.get(turn.index()).username();
-            if (candidate != null && !candidate.isBlank()) {
-                name = candidate;
+        if (tableState != null && !tableState.started()) {
+            String game = tableState.gameType() == null ? "La table" : "La table " + tableState.gameType();
+            return game + " a été créée, ajoutez des bots et démarrez-la !";
+        }
+        String name = resolveName(turn, tableState);
+        return "Tour de " + name + ".";
+    }
+
+    private String resolveName(TurnState turn, TableState tableState) {
+        String fallback = "Joueur";
+        if (tableState == null) {
+            return fallback;
+        }
+        // priorité : currentPlayerId si présent
+        if (turn.currentPlayerId() != null) {
+            Integer id = turn.currentPlayerId();
+            String byPlayer = tableState.players().stream()
+                    .filter(p -> p.id() != null && p.id().equals(id))
+                    .map(p -> p.username() == null || p.username().isBlank() ? "Joueur" : p.username())
+                    .findFirst()
+                    .orElse(null);
+            if (byPlayer != null) {
+                return byPlayer;
+            }
+            String byBot = tableState.bots().stream()
+                    .filter(b -> b.id() != null && b.id().equals(id))
+                    .map(b -> b.name() == null || b.name().isBlank() ? "Bot" : b.name())
+                    .findFirst()
+                    .orElse(null);
+            if (byBot != null) {
+                return byBot;
             }
         }
-        return "Tour de " + name + " (round " + turn.round() + ", " + turn.directionLabel() + ").";
+
+        // sinon, fallback sur l'index
+        var players = tableState.players();
+        var bots = tableState.bots();
+        int totalPlayers = players.size();
+        int totalParticipants = totalPlayers + bots.size();
+
+        if (turn.index() >= 0 && turn.index() < totalParticipants) {
+            if (turn.index() < totalPlayers) {
+                String candidate = players.get(turn.index()).username();
+                if (candidate != null && !candidate.isBlank()) {
+                    return candidate;
+                }
+            } else {
+                int botIndex = turn.index() - totalPlayers;
+                if (botIndex >= 0 && botIndex < bots.size()) {
+                    String botName = bots.get(botIndex).name();
+                    if (botName != null && !botName.isBlank()) {
+                        return botName;
+                    }
+                }
+            }
+        }
+        return fallback;
     }
 }

@@ -1,0 +1,8 @@
+{
+  "code": "dame-nature",
+  "name": "Dame Nature",
+  "minPlayers": 2,
+  "maxPlayers": 6,
+  "engine": "dame-nature",
+  "summary": "Jeu de familles coopératif avec quiz et pollution à gérer."
+}

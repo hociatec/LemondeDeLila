@@ -195,7 +195,7 @@ public final class GameCatalogScreen extends JPanel implements Screen, AutoClose
         CatalogGame game = source.get(index);
         String name = "Table " + game.name();
         int max = game.maxPlayers() > 0 ? game.maxPlayers() : 4;
-        ControllerResult result = controller.createTableForGame(game.code(), name, max, true);
+        ControllerResult result = controller.createTableForGame(game.code(), name, max, false);
         if (result != null && result.statusMessage().isPresent()) {
             view.setStatus(result.statusMessage().orElse(""));
         }

@@ -1,7 +1,7 @@
 package com.lemondelila.client.game.bot.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.lemondelila.client.framework.network.rest.RestClient;
+import com.lemondelila.client.network.RealtimeApiClient;
 import com.lemondelila.client.game.room.model.BotState;
 
 import java.io.IOException;
@@ -9,14 +9,14 @@ import java.util.Map;
 
 public final class BotApiService {
 
-    private final RestClient restClient;
+    private final RealtimeApiClient apiClient;
 
-    public BotApiService(RestClient restClient) {
-        this.restClient = restClient;
+    public BotApiService(RealtimeApiClient apiClient) {
+        this.apiClient = apiClient;
     }
 
     public BotState addBot(int roomId, String name) throws IOException, InterruptedException {
-        JsonNode json = restClient.post("rooms/" + roomId + "/bots", Map.of("name", name == null ? "" : name));
+        JsonNode json = apiClient.request("bot.add", Map.of("roomId", roomId, "name", name == null ? "" : name), JsonNode.class);
         JsonNode botNode = json.path("bot");
         if (!botNode.isObject()) {
             return null;
@@ -27,6 +27,6 @@ public final class BotApiService {
     }
 
     public void removeBot(int roomId, int botId) throws IOException, InterruptedException {
-        restClient.delete("rooms/" + roomId + "/bots/" + botId);
+        apiClient.request("bot.remove", Map.of("roomId", roomId, "botId", botId), JsonNode.class);
     }
 }

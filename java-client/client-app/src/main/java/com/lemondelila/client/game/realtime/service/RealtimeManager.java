@@ -48,13 +48,14 @@ public final class RealtimeManager {
         this.signatureService = Objects.requireNonNull(signatureService, "signatureService");
     }
 
-    public ChannelSubscription openRoomChannel(Integer roomId, Consumer<JsonNode> handler) {
-        return openChannel(roomId, handler, Map.of());
+    public ChannelSubscription openRoomChannel(Integer roomId, Consumer<JsonNode> handler, Consumer<RealtimeGateway.ConnectionState> onState) {
+        return openChannel(roomId, handler, Map.of(), onState);
     }
 
     public ChannelSubscription openChannel(Integer roomId,
                                            Consumer<JsonNode> handler,
-                                           Map<String, String> extraParams) {
+                                           Map<String, String> extraParams,
+                                           Consumer<RealtimeGateway.ConnectionState> onState) {
         String token = requireToken();
         Map<String, String> params = new HashMap<>(extraParams == null ? Map.of() : extraParams);
         String signature = signatureService.signature();
@@ -63,7 +64,7 @@ public final class RealtimeManager {
         }
         Supplier<URI> supplier = () -> new GameRealtimeChannel(endpoints).resolve(token, roomId, params);
         StandardRealtimeGateway gateway = new StandardRealtimeGateway(httpClient, supplier, objectMapper, eventBus);
-        ChannelSubscription subscription = new ChannelSubscription(gateway, objectMapper);
+        ChannelSubscription subscription = new ChannelSubscription(gateway, objectMapper, onState);
         subscription.start(handler);
         return subscription;
     }
@@ -80,19 +81,28 @@ public final class RealtimeManager {
 
         private final StandardRealtimeGateway gateway;
         private final ObjectMapper mapper;
+        private final Consumer<RealtimeGateway.ConnectionState> stateListener;
         private static final int CONNECT_WAIT_ATTEMPTS = 200;
         private static final long CONNECT_WAIT_DELAY_MS = 50L;
         private volatile boolean connected;
         private volatile boolean closed;
 
-        ChannelSubscription(StandardRealtimeGateway gateway, ObjectMapper mapper) {
+        ChannelSubscription(StandardRealtimeGateway gateway,
+                            ObjectMapper mapper,
+                            Consumer<RealtimeGateway.ConnectionState> stateListener) {
             this.gateway = gateway;
             this.mapper = mapper;
+            this.stateListener = stateListener;
         }
 
         void start(Consumer<JsonNode> handler) {
             gateway.onMessage(handler);
-            gateway.onConnectionState(state -> connected = state == RealtimeGateway.ConnectionState.CONNECTED);
+            gateway.onConnectionState(state -> {
+                connected = state == RealtimeGateway.ConnectionState.CONNECTED;
+                if (stateListener != null) {
+                    stateListener.accept(state);
+                }
+            });
             gateway.connect();
         }
 

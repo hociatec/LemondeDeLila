@@ -2,7 +2,7 @@ package com.lemondelila.client.messaging.service;
 
 import com.lemondelila.client.framework.core.di.Inject;
 import com.lemondelila.client.framework.core.task.TaskScheduler;
-import com.lemondelila.client.framework.network.rest.RestClient;
+import com.lemondelila.client.network.RealtimeApiClient;
 import com.lemondelila.client.messaging.model.PrivateMessage;
 import com.lemondelila.client.messaging.dto.MessageDto;
 import com.lemondelila.client.messaging.dto.MessageResponseDto;
@@ -23,15 +23,15 @@ import java.util.concurrent.CompletableFuture;
 
 public final class MessagingService {
 
-    private final RestClient restClient;
+    private final RealtimeApiClient apiClient;
     private final TaskScheduler scheduler;
     private final ClientSession session;
 
     @Inject
-    public MessagingService(RestClient restClient,
+    public MessagingService(RealtimeApiClient apiClient,
                             TaskScheduler scheduler,
                             ClientSession session) {
-        this.restClient = Objects.requireNonNull(restClient, "restClient");
+        this.apiClient = Objects.requireNonNull(apiClient, "apiClient");
         this.scheduler = Objects.requireNonNull(scheduler, "scheduler");
         this.session = Objects.requireNonNull(session, "session");
     }
@@ -40,8 +40,9 @@ public final class MessagingService {
         CompletableFuture<List<PrivateMessage>> future = new CompletableFuture<>();
         scheduler.runAsync(() -> {
             try {
-                MessagesResponseDto response = restClient.get(
-                        "messaging/conversations/" + userId + "?limit=" + clamp(limit),
+                MessagesResponseDto response = apiClient.request(
+                        "messaging.conversation",
+                        Map.of("userId", userId, "limit", clamp(limit)),
                         MessagesResponseDto.class);
                 future.complete(toMessages(response.items()));
             } catch (InterruptedException e) {
@@ -58,8 +59,8 @@ public final class MessagingService {
         CompletableFuture<PrivateMessage> future = new CompletableFuture<>();
         scheduler.runAsync(() -> {
             try {
-                MessageResponseDto response = restClient.post(
-                        "messaging/messages",
+                MessageResponseDto response = apiClient.request(
+                        "messaging.send",
                         Map.of("recipientId", recipientId, "text", text),
                         MessageResponseDto.class);
                 future.complete(toMessage(response.message()));
@@ -89,8 +90,9 @@ public final class MessagingService {
         CompletableFuture<PrivateMessage> future = new CompletableFuture<>();
         scheduler.runAsync(() -> {
             try {
-                MessageResponseDto response = restClient.delete(
-                        "messaging/messages/" + messageId,
+                MessageResponseDto response = apiClient.request(
+                        "messaging.delete",
+                        Map.of("messageId", messageId),
                         MessageResponseDto.class);
                 future.complete(toMessage(response.message()));
             } catch (InterruptedException e) {
@@ -107,9 +109,9 @@ public final class MessagingService {
         CompletableFuture<PrivateMessage> future = new CompletableFuture<>();
         scheduler.runAsync(() -> {
             try {
-                MessageResponseDto response = restClient.post(
-                        "messaging/messages/" + messageId + "/restore",
-                        Map.of(),
+                MessageResponseDto response = apiClient.request(
+                        "messaging.restore",
+                        Map.of("messageId", messageId),
                         MessageResponseDto.class);
                 future.complete(toMessage(response.message()));
             } catch (InterruptedException e) {
@@ -126,9 +128,9 @@ public final class MessagingService {
         CompletableFuture<KnownUser> future = new CompletableFuture<>();
         scheduler.runAsync(() -> {
             try {
-                String encoded = URLEncoder.encode(username, StandardCharsets.UTF_8);
-                UserLookupResponseDto response = restClient.get(
-                        "messaging/users/search?username=" + encoded,
+                UserLookupResponseDto response = apiClient.request(
+                        "messaging.search",
+                        Map.of("username", username),
                         UserLookupResponseDto.class);
                 MessageUserDto user = response.user();
                 if (user == null || user.id() <= 0 || user.username() == null || user.username().isBlank()) {
@@ -149,8 +151,9 @@ public final class MessagingService {
         CompletableFuture<List<PrivateMessage>> future = new CompletableFuture<>();
         scheduler.runAsync(() -> {
             try {
-                MessagesResponseDto response = restClient.get(
-                        "messaging/messages?box=" + box + "&limit=" + clamp(limit),
+                MessagesResponseDto response = apiClient.request(
+                        "messaging.messages",
+                        Map.of("box", box, "limit", clamp(limit)),
                         MessagesResponseDto.class);
                 future.complete(toMessages(response.items()));
             } catch (InterruptedException e) {

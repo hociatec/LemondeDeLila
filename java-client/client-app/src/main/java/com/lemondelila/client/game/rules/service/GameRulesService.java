@@ -1,10 +1,10 @@
 package com.lemondelila.client.game.rules.service;
 
-import com.lemondelila.client.framework.network.rest.RestClient;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.lemondelila.client.network.RealtimeApiClient;
 import com.lemondelila.client.game.rules.model.GameRuleDocument;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -13,11 +13,11 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class GameRulesService {
 
-    private final RestClient restClient;
+    private final RealtimeApiClient apiClient;
     private final Map<String, GameRuleDocument> cache = new ConcurrentHashMap<>();
 
-    public GameRulesService(RestClient restClient) {
-        this.restClient = restClient;
+    public GameRulesService(RealtimeApiClient apiClient) {
+        this.apiClient = apiClient;
     }
 
     public GameRuleDocument load(String gameId) throws IOException, InterruptedException {
@@ -28,9 +28,8 @@ public final class GameRulesService {
         if (cached != null) {
             return cached;
         }
-        // Le backend renvoie du text/plain
-        byte[] bytes = restClient.getRawBytes("games/" + gameId + "/rules");
-        String content = new String(bytes, StandardCharsets.UTF_8);
+        JsonNode response = apiClient.request("game.rules", Map.of("gameType", gameId), JsonNode.class);
+        String content = response.path("rules").asText("");
         GameRuleDocument doc = new GameRuleDocument(gameId, content, System.currentTimeMillis());
         cache.put(gameId, doc);
         return doc;

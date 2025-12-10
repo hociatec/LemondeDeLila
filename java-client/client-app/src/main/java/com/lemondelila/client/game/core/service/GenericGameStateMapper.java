@@ -21,6 +21,7 @@ public final class GenericGameStateMapper {
         Integer lastRoll = json.has("lastRoll") && !json.get("lastRoll").isNull()
                 ? json.get("lastRoll").asInt()
                 : null;
+        boolean botThinking = json.path("botThinking").asBoolean(false);
 
         List<String> logs = new ArrayList<>();
         JsonNode logNode = json.path("log");
@@ -77,6 +78,6 @@ public final class GenericGameStateMapper {
             extras.put("pendingExchange", pendingExchangeNode);
         }
 
-        return new GenericGameState(status, phase, round, turnIndex, lastRoll, logs, pending, extras);
+        return new GenericGameState(status, phase, round, turnIndex, lastRoll, logs, pending, botThinking, extras);
     }
 }

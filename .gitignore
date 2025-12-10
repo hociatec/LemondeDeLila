@@ -20,6 +20,12 @@ java-client/client-app/target/jpackage-input/
 *.ear
 
 ###############################
+# Client config & credentials
+###############################
+java-client/config/credentials.bin
+java-client/libs/windows/x64/log.txt
+
+###############################
 # Tools & SDK (NE PAS VERSIONNER)
 ###############################
 tools/wix*/
@@ -33,6 +39,7 @@ tools/**/*.zip
 ###############################
 logs/
 *.log
+logsse.txt
 
 ###############################
 # System files

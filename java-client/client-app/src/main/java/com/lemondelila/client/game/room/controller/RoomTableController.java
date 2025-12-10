@@ -155,7 +155,7 @@ public final class RoomTableController {
     }
 
     public TurnState currentTurn() {
-        return new TurnState(tableState.turnRound(), tableState.turnIndex(), tableState.turnDirection());
+        return new TurnState(tableState.turnRound(), tableState.turnIndex(), tableState.turnDirection(), tableState.currentPlayerId());
     }
 
     private boolean ensureRoomSelected(String action) {

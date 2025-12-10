@@ -70,7 +70,6 @@ com\lemondelila\client\game\rules\service\GameRulesService.class
 com\lemondelila\client\game\room\event\RoomCreated.class
 com\lemondelila\client\settings\service\AppSettingsService.class
 com\lemondelila\client\user\model\ClientSession.class
-com\lemondelila\client\network\SessionAuthHeadersProvider.class
 com\lemondelila\client\game\history\service\GameActionEmitter.class
 com\lemondelila\client\presence\PresenceModule.class
 com\lemondelila\client\settings\update\UpdateService$3.class
@@ -136,6 +135,7 @@ com\lemondelila\client\presence\controller\PresenceController.class
 com\lemondelila\client\game\history\service\RoomNarrationService.class
 com\lemondelila\client\game\core\view\GameDialog$2.class
 com\lemondelila\client\game\room\event\LeaveRoomRequested.class
+com\lemondelila\client\game\room\event\GameStateUpdated.class
 com\lemondelila\client\game\session\model\SessionState$AuthSnapshot.class
 com\lemondelila\client\gamelogic\panierexpress\view\PanierExpressGameComponent$2.class
 com\lemondelila\client\home\controller\HomeUiBindings$1.class
@@ -225,6 +225,7 @@ com\lemondelila\client\settings\update\UpdateService$2.class
 com\lemondelila\client\chat\ChatModule.class
 com\lemondelila\client\game\bot\view\BotView.class
 com\lemondelila\client\game\bot\controller\BotGuard.class
+com\lemondelila\client\network\WebsocketApiModule.class
 com\lemondelila\client\game\room\event\RoomOperationFailed.class
 META-INF\services\com.lemondelila.client.framework.core.module.LilaModule
 com\lemondelila\client\chat\events\ChatOpened.class
@@ -239,6 +240,7 @@ com\lemondelila\client\game\turn\controller\TurnController.class
 com\lemondelila\client\security\EncryptedCredentialsVault$VaultPayload.class
 com\lemondelila\client\messaging\MessagingModule.class
 com\lemondelila\client\messaging\view\PrivateConversationDialog.class
+com\lemondelila\client\game\room\service\RoomRealtimeService$1.class
 com\lemondelila\client\home\controller\HomePresenter.class
 com\lemondelila\client\user\service\RememberedCredentialsService$RememberedCredentials.class
 com\lemondelila\client\game\session\view\SessionPresenter.class
@@ -273,6 +275,7 @@ com\lemondelila\client\game\catalog\GameCatalogModule.class
 com\lemondelila\client\game\core\view\PrimaryActionCapable.class
 com\lemondelila\client\game\core\view\GameInteractionComponent.class
 com\lemondelila\client\settings\update\UpdateCheckResult.class
+com\lemondelila\client\network\RealtimeApiClient.class
 com\lemondelila\client\game\history\service\RoomNarrationService$RoomSummary.class
 com\lemondelila\client\game\room\view\RoomTableScreen.class
 com\lemondelila\client\menu\view\MainMenuScreen.class
@@ -310,7 +313,6 @@ com\lemondelila\client\game\room\service\GameTableLauncher.class
 com\lemondelila\client\chat\controller\ChatController.class
 com\lemondelila\client\game\room\model\SnapshotInfo.class
 com\lemondelila\client\settings\view\DefaultOptionsDialogFactory.class
-com\lemondelila\client\network\ClientNetworkModule.class
 com\lemondelila\client\game\core\view\GenericGameInteractionComponent.class
 com\lemondelila\client\gamelogic\damenature\service\DameNatureLaunchHandler.class
 com\lemondelila\client\game\room\view\RoomTableView.class

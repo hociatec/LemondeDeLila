@@ -1,0 +1,67 @@
+La Course au Marché
+Jeu de société familial (2 à 6 joueurs
+ 
+Objectif du jeu
+Être le premier joueur à compléter sa liste de courses en récupérant 5 fruits ou légumes spécifiques dans les différents stands du marché.
+ 
+Contenu du jeu
+1 plateau de jeu représentant un marché avec plusieurs stands :
+-Fruitier
+- Maraîcher
+- Bio
+- Producteur local
+- Primeur
+- Jus et conserves
+6 pions (formes de panier, chariot, cabas etc...)
+1 dé à 6 faces
+60 cartes "Courses" (illustrant fruits et légumes variés)
+36 cartes "Liste de courses" (chacune avec 5 produits)
+40 cartes "Événement"
+20 cartes "Échange"
+30 cartes "Quiz Fruité"
+
+Mise en place
+1. 
+Chaque joueur choisit un pion et le place sur la case de départ du plateau.
+2. 
+Distribuer à chaque joueur 1 carte "Liste de courses" face visible.
+3. 
+Mélanger les cartes "Courses" pour former une pioche.
+4. 
+Mélanger séparément les cartes Événement, Échange, et Quiz Fruité.
+5. 
+Le plus jeune joueur commence, le jeu continue dans le sens des aiguilles d’une montre.
+ 
+Déroulement d’un tour
+1. Le joueur lance le dé et avance son pion du nombre de cases indiquées.
+2. Selon la case d’arrivée :
+Case Stand (fruitier, bio, etc.) :
+pioche 1 carte "Courses". Si l’aliment est sur sa liste : il le garde. Sinon : il peut le garder pour l’échanger plus tard.
+Case Événement : pioche une carte "Événement" et applique son effet.
+Case Échange : pioche une carte "Échange" ou propose un échange avec un joueur.
+Case Quiz : pioche une carte "Quiz Fruité" et répond à la question. Bonne réponse = 1 carte "Courses" en bonus. Mauvaise réponse = aucun effet.
+ 
+Détail des cartes
+Cartes "Courses"
+Fruits et légumes communs ou exotiques : pomme, poire, carotte, courgette, fraise, avocat, etc.
+Cartes "Événement" (exemples)
+- "Rupture de stock" Tu ne peux rien acheter ce tour-ci.
+- "Stand fermé" Tu perds ton prochain tour.
+- "Promo surprise" Pioche 2 cartes Courses.
+- "Orage au marché" Recule de 2 cases.
+Cartes "Échange" (exemples)
+- "Échange un fruit contre un légume avec un joueur."
+- "Donne une carte au joueur de ton choix et prends-en une au hasard."
+Cartes "Quiz Fruité" (exemples)
+- Q : Quel fruit contient le plus de vitamine C ?
+R : Le kiwi.
+- Q : Quel légume est en réalité un fruit ?
+R : La tomate.
+- Q : Quel fruit a ses graines à l’extérieur ?
+R : La fraise.
+ 
+Fin du jeu
+Dès qu’un joueur a les 5 aliments de sa liste, il doit se rendre sur la case d’entrée du marché (départ) pour valider ses achats.
+Il doit arriver pile dessus (comme au jeu de l’oie).
+Le premier à valider ses courses gagne la partie !
+  

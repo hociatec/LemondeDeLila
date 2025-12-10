@@ -18,7 +18,7 @@ import com.lemondelila.client.framework.ui.action.ActionManager;
 import com.lemondelila.client.framework.ui.component.StatusBannerFactory;
 import com.lemondelila.client.framework.ui.dialog.DialogService;
 import com.lemondelila.client.framework.ui.lifecycle.ApplicationLifecycle;
-import com.lemondelila.client.framework.network.rest.RestClient;
+import com.lemondelila.client.network.RealtimeApiClient;
 import com.lemondelila.client.settings.service.AppSettingsService;
 import com.lemondelila.client.user.model.ClientSession;
 import com.lemondelila.client.user.service.RememberedCredentialsService;
@@ -51,7 +51,7 @@ public final class HomeModule implements LilaModule {
                 ctx.get(AppSettingsService.class),
                 ctx.get(ClientSession.class),
                 ctx.get(DomainEventBus.class),
-                ctx.get(RestClient.class),
+                ctx.get(RealtimeApiClient.class),
                 ctx.get(TaskScheduler.class)
         ));
         builder.bindFactory(HomePresenter.class, ctx -> new HomePresenter(

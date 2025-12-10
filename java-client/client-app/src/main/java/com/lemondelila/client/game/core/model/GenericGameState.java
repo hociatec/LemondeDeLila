@@ -14,10 +14,11 @@ public record GenericGameState(
         Integer lastRoll,
         List<String> logs,
         PendingQuiz pendingQuiz,
+        boolean botThinking,
         java.util.Map<String, Object> extras
 ) {
     public static GenericGameState empty() {
-        return new GenericGameState("", "", 1, 0, null, List.of(), null, java.util.Map.of());
+        return new GenericGameState("", "", 1, 0, null, List.of(), null, false, java.util.Map.of());
     }
 
     public List<String> logs() {

@@ -17,4 +17,12 @@ public interface GameInteractionComponent extends Screen {
      * Composant Swing à afficher.
      */
     javax.swing.JComponent getComponent();
+
+    /**
+     * Rafraîchir l'état du jeu (par défaut ne fait rien).
+     * Appelé quand le serveur notifie un changement d'état (par ex. après un tour de bot).
+     */
+    default void refreshState() {
+        // Default implementation does nothing
+    }
 }

@@ -6,7 +6,7 @@ import com.lemondelila.client.framework.access.NarrationQueue;
 import com.lemondelila.client.framework.core.event.DomainEventBus;
 import com.lemondelila.client.framework.core.task.TaskScheduler;
 import com.lemondelila.client.framework.ui.screen.Screen;
-import com.lemondelila.client.framework.network.rest.RestClient;
+import com.lemondelila.client.network.RealtimeApiClient;
 import com.lemondelila.client.settings.service.AppSettingsService;
 import com.lemondelila.client.user.events.LoginSucceeded;
 import com.lemondelila.client.user.model.ClientSession;
@@ -24,7 +24,7 @@ public final class HomeScreenLifecycle {
     private final AppSettingsService settingsService;
     private final ClientSession session;
     private final DomainEventBus eventBus;
-    private final RestClient restClient;
+    private final RealtimeApiClient apiClient;
     private final TaskScheduler taskScheduler;
 
     private NarrationQueue narrationQueue;
@@ -35,14 +35,14 @@ public final class HomeScreenLifecycle {
                                AppSettingsService settingsService,
                                ClientSession session,
                                DomainEventBus eventBus,
-                               RestClient restClient,
+                               RealtimeApiClient apiClient,
                                TaskScheduler taskScheduler) {
         this.eventCoordinator = Objects.requireNonNull(eventCoordinator, "eventCoordinator");
         this.narrationQueueSupplier = Objects.requireNonNull(narrationQueueSupplier, "narrationQueueSupplier");
         this.settingsService = Objects.requireNonNull(settingsService, "settingsService");
         this.session = Objects.requireNonNull(session, "session");
         this.eventBus = Objects.requireNonNull(eventBus, "eventBus");
-        this.restClient = Objects.requireNonNull(restClient, "restClient");
+        this.apiClient = Objects.requireNonNull(apiClient, "apiClient");
         this.taskScheduler = Objects.requireNonNull(taskScheduler, "taskScheduler");
     }
 
@@ -77,7 +77,7 @@ public final class HomeScreenLifecycle {
         autoLoginTask = future;
         taskScheduler.runAsync(() -> {
             try {
-                restClient.get("me", buildAuthHeaders(auth));
+                apiClient.request("users.get", Map.of("id", auth.username()), Object.class);
                 future.complete(null);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();

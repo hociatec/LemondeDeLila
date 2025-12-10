@@ -66,6 +66,7 @@ public final class RoomLifecycleService implements AutoCloseable {
                 tableState.clear();
                 detailsState.setRoomId(null);
                 detailsState.setGameType(null);
+                realtimeService.resetTracking();
                 return;
             }
             tableState.setRoom(roomId, gameType);

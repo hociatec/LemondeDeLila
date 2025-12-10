@@ -1,14 +1,14 @@
 package com.lemondelila.client.user.controller;
 
-import com.lemondelila.client.user.dto.RegistrationResponseDto;
-import com.lemondelila.client.user.events.RegistrationFailed;
-import com.lemondelila.client.user.events.RegistrationRequested;
-import com.lemondelila.client.user.events.RegistrationSucceeded;
 import com.lemondelila.client.framework.core.di.Inject;
 import com.lemondelila.client.framework.core.event.DomainEventBus;
 import com.lemondelila.client.framework.core.event.EventSubscriptions;
 import com.lemondelila.client.framework.core.task.TaskScheduler;
-import com.lemondelila.client.framework.network.rest.RestClient;
+import com.lemondelila.client.network.RealtimeApiClient;
+import com.lemondelila.client.user.dto.RegistrationResponseDto;
+import com.lemondelila.client.user.events.RegistrationFailed;
+import com.lemondelila.client.user.events.RegistrationRequested;
+import com.lemondelila.client.user.events.RegistrationSucceeded;
 
 import java.io.IOException;
 import java.util.Map;
@@ -16,18 +16,18 @@ import java.util.Map;
 public final class RegistrationController implements AutoCloseable {
 
     private final DomainEventBus eventBus;
-    private final RestClient restClient;
+    private final RealtimeApiClient apiClient;
     private final TaskScheduler scheduler;
     private final UserOperationGuard guard;
     private final EventSubscriptions subscriptions = new EventSubscriptions();
 
     @Inject
     public RegistrationController(DomainEventBus eventBus,
-                                  RestClient restClient,
+                                  RealtimeApiClient apiClient,
                                   TaskScheduler scheduler,
                                   UserOperationGuard guard) {
         this.eventBus = eventBus;
-        this.restClient = restClient;
+        this.apiClient = apiClient;
         this.scheduler = scheduler;
         this.guard = guard;
         subscriptions.subscribe(eventBus, RegistrationRequested.class, this::handleRegistration);
@@ -41,7 +41,7 @@ public final class RegistrationController implements AutoCloseable {
         }
         scheduler.runAsync(() -> {
             try {
-                RegistrationResponseDto response = restClient.post("register", Map.of(
+                RegistrationResponseDto response = apiClient.request("auth.register", Map.of(
                         "username", request.username(),
                         "password", String.valueOf(request.password()),
                         "email", request.email()

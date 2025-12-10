@@ -34,7 +34,7 @@ public final class ChatConnectionFactory {
     public ChatConnection open() {
         ClientSession.AuthState auth = session.authenticated()
                 .orElseThrow(() -> new IllegalStateException("Vous devez etre connecte pour ouvrir le tchat."));
-        URI endpoint = resolvePresenceEndpoint();
+        URI endpoint = appendToken(resolvePresenceEndpoint(), auth.token());
         String authorization = "Bearer " + auth.token();
         return new ChatConnection(httpClient, mapper, endpoint, authorization, scheduler);
     }
@@ -55,6 +55,19 @@ public final class ChatConnectionFactory {
             fallback = fallback + "presence";
         }
         return URI.create(fallback);
+    }
+
+    private URI appendToken(URI base, String token) {
+        if (token == null || token.isBlank()) {
+            return base;
+        }
+        String query = base.getQuery();
+        String newQuery = (query == null || query.isBlank())
+                ? "token=" + token
+                : query + "&token=" + token;
+        return URI.create(base.getScheme() + "://" + base.getAuthority()
+                + (base.getPath() == null ? "" : base.getPath())
+                + "?" + newQuery);
     }
 
 }

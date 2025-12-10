@@ -29,7 +29,6 @@ final class PanierExpressGameComponent extends JPanel implements GameInteraction
     private final GenericGameInteractionController controller;
     private final ExchangeController exchangeController;
     private final ExchangeView exchangeView;
-    private final javax.swing.Timer pollTimer;
     private final PanierExpressStateAdapter stateAdapter;
     private Consumer<GenericGameState> observer;
     private final PanierExpressInventoryPanel inventoryPanel = new PanierExpressInventoryPanel();
@@ -50,8 +49,6 @@ final class PanierExpressGameComponent extends JPanel implements GameInteraction
         add(baseComponent, BorderLayout.CENTER);
         add(inventoryPanel, BorderLayout.EAST);
         inventoryPanel.setVisible(false);
-        this.pollTimer = new javax.swing.Timer(2000, evt -> controller.refresh());
-        this.pollTimer.setRepeats(true);
         registerInventoryShortcuts();
     }
 
@@ -59,13 +56,11 @@ final class PanierExpressGameComponent extends JPanel implements GameInteraction
     public void onAttach(int roomId) {
         registerObserver();
         baseComponent.onAttach(roomId);
-        pollTimer.start();
     }
 
     @Override
     public void onDetach() {
         baseComponent.onDetach();
-        pollTimer.stop();
         if (observer != null) {
             controller.removeStateObserver(observer);
             observer = null;

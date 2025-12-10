@@ -34,7 +34,6 @@ final class DameNatureGameComponent extends JPanel implements GameInteractionCom
     private final DameNatureSidebar sidebar = new DameNatureSidebar();
     private final DameNatureStateAdapter stateAdapter;
     private final DameNatureConfigState configState;
-    private final Timer pollTimer;
     private Consumer<GenericGameState> observer;
     private DameNatureViewState currentState = DameNatureViewState.empty();
     private int selectedOpponentIndex = 0;
@@ -55,8 +54,6 @@ final class DameNatureGameComponent extends JPanel implements GameInteractionCom
         this.configState = configState;
         add(baseComponent, BorderLayout.CENTER);
         add(sidebar, BorderLayout.EAST);
-        this.pollTimer = new Timer(2500, evt -> controller.refresh());
-        this.pollTimer.setRepeats(true);
         registerShortcuts();
         updateSidebar();
     }
@@ -65,13 +62,11 @@ final class DameNatureGameComponent extends JPanel implements GameInteractionCom
     public void onAttach(int roomId) {
         registerObserver();
         baseComponent.onAttach(roomId);
-        pollTimer.start();
     }
 
     @Override
     public void onDetach() {
         baseComponent.onDetach();
-        pollTimer.stop();
         if (observer != null) {
             controller.removeStateObserver(observer);
             observer = null;

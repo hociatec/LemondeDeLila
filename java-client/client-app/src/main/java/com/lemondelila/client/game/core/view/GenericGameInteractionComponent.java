@@ -17,6 +17,7 @@ import com.lemondelila.client.game.quiz.view.GameQuizComponentFactory;
 import com.lemondelila.client.game.room.model.TableState;
 import com.lemondelila.client.game.room.service.RoomParticipantsMapper;
 import com.lemondelila.client.game.turn.controller.TurnController;
+import com.lemondelila.client.game.turn.model.TurnState;
 import com.lemondelila.client.game.turn.view.GameStatusPanel;
 
 import javax.swing.AbstractAction;
@@ -55,6 +56,7 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
     private final Set<String> seenLogs = new HashSet<>();
     private Integer lastRollSeen;
     private boolean gameStarted;
+    private boolean startAnnounced;
     private Integer lastTurnIndexSeen;
     private GenericGameState.PendingQuiz activeQuiz;
     private int quizChoiceIndex = -1;
@@ -225,6 +227,7 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         controller.detach();
     }
 
+    @Override
     public void refreshState() {
         controller.refresh();
     }
@@ -240,24 +243,27 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
     public void onError(String message) {
         SwingUtilities.invokeLater(() -> {
             emitter.announceError(message);
-            gameStarted = false;
-            tableState.updateStatus("open");
+            // Ne pas réinitialiser l'état de démarrage sur une erreur d'action ponctuelle,
+            // sinon chaque réponse serveur réaffiche "La partie vient de démarrer".
             statusPanel.clear();
         });
     }
 
     private void renderState(GenericGameState state) {
         statusPanel.update(state.status(), state.phase(), state.round(), state.turnIndex(), state.lastRoll());
-        gameStarted = state.status() != null && !"open".equalsIgnoreCase(state.status());
-        if (gameStarted) {
+        boolean startedFlag = "started".equalsIgnoreCase(state.status());
+        gameStarted = startedFlag;
+        tableState.updateStatus(state.status());
+        if (startedFlag) {
             tableState.markStarted();
-            tableState.updateStatus(state.status());
+            if (!startAnnounced) {
+                emitter.announceEvent("La partie vient de démarrer, bon jeu !");
+                startAnnounced = true;
+            }
+        } else {
+            startAnnounced = false;
         }
         renderTurn(state);
-        if (state.lastRoll() != null && !state.lastRoll().equals(lastRollSeen)) {
-            lastRollSeen = state.lastRoll();
-            emitter.announceEvent("Résultat du lancer : " + state.lastRoll());
-        }
         renderLogs(state.logs());
         renderQuiz(state.pendingQuiz());
         syncTableState(state);
@@ -349,19 +355,47 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
     }
 
     private void renderTurn(GenericGameState state) {
+        TurnState turn = null;
         Object turnNode = state.extras().get("turn");
-        if (!(turnNode instanceof JsonNode node) || !node.isObject()) {
-            return;
+        if (turnNode instanceof JsonNode node && node.isObject()) {
+            turn = turnController.map(node).orElse(null);
         }
-        turnController.map(node).ifPresent(turn -> {
-            statusPanel.update(state.status(), state.phase(), turn.round(), turn.index(), state.lastRoll());
-            tableState.updateTurn(turn.round(), turn.index(), turn.direction());
-            if (lastTurnIndexSeen == null || !lastTurnIndexSeen.equals(turn.index())) {
-                lastTurnIndexSeen = turn.index();
-                String message = turnController.formatTurn(turn, tableState);
-                emitter.announceEvent(message);
+        if (turn == null) {
+            turn = new TurnState(state.round(), state.turnIndex(), 1, null);
+        }
+        statusPanel.update(state.status(), state.phase(), turn.round(), turn.index(), state.lastRoll());
+        tableState.updateTurn(turn.round(), turn.index(), turn.direction());
+        tableState.updateCurrentPlayerId(turn.currentPlayerId());
+        if (lastTurnIndexSeen == null || !lastTurnIndexSeen.equals(turn.index())) {
+            lastTurnIndexSeen = turn.index();
+            String message = turnController.formatTurn(turn, tableState);
+            emitter.announceEvent(message);
+        }
+    }
+
+    private String buildRollMessage(Integer roll) {
+        String name = resolveCurrentName();
+        return name + " lance le dé : \"" + roll + "\"";
+    }
+
+    private String resolveCurrentName() {
+        int idx = tableState.turnIndex();
+        var players = tableState.players();
+        var bots = tableState.bots();
+        if (idx >= 0 && idx < players.size()) {
+            String username = players.get(idx).username();
+            if (username != null && !username.isBlank()) {
+                return username;
             }
-        });
+        }
+        int botIdx = idx - players.size();
+        if (botIdx >= 0 && botIdx < bots.size()) {
+            String name = bots.get(botIdx).name();
+            if (name != null && !name.isBlank()) {
+                return name;
+            }
+        }
+        return "Le joueur";
     }
 
     @Override
@@ -381,6 +415,10 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
             if (startHandler != null) {
                 controller.markStartPending();
                 startHandler.run();
+            }
+            // Auto-trigger primary action after starting
+            if (primaryAction != null) {
+                controller.triggerPrimaryAction();
             }
             return;
         }

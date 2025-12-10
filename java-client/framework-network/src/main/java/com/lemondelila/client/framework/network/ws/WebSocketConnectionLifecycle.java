@@ -184,6 +184,14 @@ final class WebSocketConnectionLifecycle {
     private void handleSocketClosed(int statusCode, String reason) {
         synchronized (lifecycleLock) {
             socket = null;
+            // Codes 4xxx = fermetures applicatives côté serveur (auth, droits, etc.).
+            // On arrête de se reconnecter en boucle pour éviter le spam si le serveur refuse la connexion.
+            if (statusCode >= 4000 && statusCode < 5000) {
+                manualDisconnect = true;
+                emitState(ConnectionState.FAILED);
+                delegate.onClosed(statusCode, reason);
+                return;
+            }
             if (manualDisconnect) {
                 return;
             }
@@ -210,10 +218,17 @@ final class WebSocketConnectionLifecycle {
 
     private final class InternalListener implements Listener {
 
+        private final StringBuilder messageBuffer = new StringBuilder();
+
         @Override
         public CompletionStage<?> onText(WebSocket webSocket, CharSequence data, boolean last) {
             webSocket.request(1);
-            delegate.onText(data);
+            messageBuffer.append(data);
+            if (last) {
+                String completeMessage = messageBuffer.toString();
+                messageBuffer.setLength(0);
+                delegate.onText(completeMessage);
+            }
             return null;
         }
 

@@ -9,6 +9,7 @@ import com.lemondelila.client.game.room.model.TableState;
 import com.lemondelila.client.framework.core.task.TaskScheduler;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -16,6 +17,7 @@ import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
+import java.util.concurrent.ScheduledFuture;
 
 public final class GenericGameInteractionController {
 
@@ -37,6 +39,7 @@ public final class GenericGameInteractionController {
     private volatile Integer roomId;
     private volatile Listener listener;
     private volatile boolean startPending = false;
+    private volatile ScheduledFuture<?> autoRefresh;
 
     public GenericGameInteractionController(String gameType,
                                             GameStateService states,
@@ -57,12 +60,14 @@ public final class GenericGameInteractionController {
         this.listener = listener;
         this.detached.set(false);
         refresh();
+        startAutoRefresh(Duration.ofSeconds(1));
     }
 
     public void detach() {
         detached.set(true);
         listener = null;
         roomId = null;
+        stopAutoRefresh();
     }
 
     public void refresh() {
@@ -78,6 +83,22 @@ public final class GenericGameInteractionController {
                 notifyError(buildFriendlyError(e));
             }
         });
+    }
+
+    public void startAutoRefresh(Duration period) {
+        stopAutoRefresh();
+        if (period == null || period.isNegative() || period.isZero()) {
+            return;
+        }
+        autoRefresh = scheduler.scheduleAtFixedRate(this::refresh, period, period);
+    }
+
+    public void stopAutoRefresh() {
+        ScheduledFuture<?> future = autoRefresh;
+        if (future != null) {
+            future.cancel(true);
+            autoRefresh = null;
+        }
     }
 
     public void triggerPrimaryAction() {

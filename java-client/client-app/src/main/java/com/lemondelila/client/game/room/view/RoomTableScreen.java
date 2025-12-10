@@ -95,6 +95,7 @@ public final class RoomTableScreen extends BaseTableScreen {
         subscriptions().subscribe(eventBus, RoomCreated.class, event -> refreshFromState());
         subscriptions().subscribe(eventBus, RoomUpdated.class, event -> refreshFromState());
         subscriptions().subscribe(eventBus, RoomPrivacyChanged.class, event -> refreshFromState());
+        subscriptions().subscribe(eventBus, com.lemondelila.client.game.room.event.GameStateUpdated.class, this::handleGameStateUpdated);
     }
 
     @Override
@@ -206,6 +207,13 @@ public final class RoomTableScreen extends BaseTableScreen {
         var turn = controller.currentTurn();
         view.turnView().render(turn);
         controller.announceTurnInfo();
+    }
+
+    private void handleGameStateUpdated(com.lemondelila.client.game.room.event.GameStateUpdated event) {
+        Integer currentRoomId = resolvedRoomId();
+        if (currentRoomId != null && currentRoomId == event.roomId() && currentInteraction != null) {
+            SwingUtilities.invokeLater(() -> currentInteraction.refreshState());
+        }
     }
 
     private boolean hasEnoughParticipants() {

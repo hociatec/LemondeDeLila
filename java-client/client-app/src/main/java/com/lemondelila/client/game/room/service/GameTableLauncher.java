@@ -15,7 +15,7 @@ public final class GameTableLauncher {
     }
 
     public void createTable(String gameType) {
-        createTemporaryTable(gameType, null, 0, true);
+        createTemporaryTable(gameType, null, 0, false);
     }
 
     public void createTemporaryTable(String gameType, String name, int maxPlayers, boolean isPrivate) {

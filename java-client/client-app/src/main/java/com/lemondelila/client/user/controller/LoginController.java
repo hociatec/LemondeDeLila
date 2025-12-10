@@ -4,7 +4,7 @@ import com.lemondelila.client.framework.core.di.Inject;
 import com.lemondelila.client.framework.core.event.DomainEventBus;
 import com.lemondelila.client.framework.core.event.EventSubscriptions;
 import com.lemondelila.client.framework.core.task.TaskScheduler;
-import com.lemondelila.client.framework.network.rest.RestClient;
+import com.lemondelila.client.network.RealtimeApiClient;
 import com.lemondelila.client.user.dto.LoginResponseDto;
 import com.lemondelila.client.user.events.LoginFailed;
 import com.lemondelila.client.user.events.LoginRequested;
@@ -18,7 +18,7 @@ import java.util.Map;
 public final class LoginController implements AutoCloseable {
 
     private final DomainEventBus eventBus;
-    private final RestClient restClient;
+    private final RealtimeApiClient apiClient;
     private final TaskScheduler scheduler;
     private final ClientSession session;
     private final UserOperationGuard guard;
@@ -27,13 +27,13 @@ public final class LoginController implements AutoCloseable {
 
     @Inject
     public LoginController(DomainEventBus eventBus,
-                           RestClient restClient,
+                           RealtimeApiClient apiClient,
                            TaskScheduler scheduler,
                            ClientSession session,
                            UserOperationGuard guard,
                            RememberedCredentialsService rememberedCredentialsService) {
         this.eventBus = eventBus;
-        this.restClient = restClient;
+        this.apiClient = apiClient;
         this.scheduler = scheduler;
         this.session = session;
         this.guard = guard;
@@ -49,7 +49,7 @@ public final class LoginController implements AutoCloseable {
         }
         scheduler.runAsync(() -> {
             try {
-                LoginResponseDto response = restClient.post("login", Map.of(
+                LoginResponseDto response = apiClient.request("auth.login", Map.of(
                         "username", request.username(),
                         "password", String.valueOf(request.password())
                 ), LoginResponseDto.class);

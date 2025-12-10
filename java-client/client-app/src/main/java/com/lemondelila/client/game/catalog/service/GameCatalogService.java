@@ -1,7 +1,7 @@
 package com.lemondelila.client.game.catalog.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.lemondelila.client.framework.network.rest.RestClient;
+import com.lemondelila.client.network.RealtimeApiClient;
 import com.lemondelila.client.game.catalog.model.CatalogCategory;
 import com.lemondelila.client.game.catalog.model.CatalogGame;
 import com.lemondelila.client.game.catalog.model.CatalogPayload;
@@ -10,35 +10,36 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public final class GameCatalogService {
 
-    private final RestClient restClient;
+    private final RealtimeApiClient apiClient;
 
-    public GameCatalogService(RestClient restClient) {
-        this.restClient = restClient;
+    public GameCatalogService(RealtimeApiClient apiClient) {
+        this.apiClient = apiClient;
     }
 
     public CatalogPayload fetchAll() throws IOException, InterruptedException {
-        JsonNode json = restClient.get("catalog");
+        JsonNode json = apiClient.request("catalog.all", Map.of(), JsonNode.class);
         List<CatalogCategory> categories = parseCategories(json.path("categories"));
         List<CatalogGame> games = parseGames(json.path("games"));
         return new CatalogPayload(categories, games);
     }
 
     public List<CatalogGame> fetchGames() throws IOException, InterruptedException {
-        JsonNode json = restClient.get("catalog/games");
+        JsonNode json = apiClient.request("catalog.games", Map.of(), JsonNode.class);
         return parseGames(json);
     }
 
     public List<CatalogCategory> fetchCategories() throws IOException, InterruptedException {
-        JsonNode json = restClient.get("catalog/categories");
+        JsonNode json = apiClient.request("catalog.categories", Map.of(), JsonNode.class);
         return parseCategories(json);
     }
 
     public List<CatalogGame> fetchGamesForCategory(String categoryId) throws IOException, InterruptedException {
-        JsonNode json = restClient.get("catalog/categories/" + encode(categoryId) + "/games");
+        JsonNode json = apiClient.request("catalog.categoryGames", Map.of("id", categoryId), JsonNode.class);
         return parseGames(json);
     }
 
@@ -83,7 +84,4 @@ public final class GameCatalogService {
         return list;
     }
 
-    private String encode(String value) {
-        return java.net.URLEncoder.encode(value, java.nio.charset.StandardCharsets.UTF_8);
-    }
 }

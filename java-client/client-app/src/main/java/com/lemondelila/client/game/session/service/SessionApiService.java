@@ -1,6 +1,6 @@
 package com.lemondelila.client.game.session.service;
 
-import com.lemondelila.client.framework.network.rest.RestClient;
+import com.lemondelila.client.network.RealtimeApiClient;
 import com.lemondelila.client.user.dto.LoginResponseDto;
 
 import java.io.IOException;
@@ -8,14 +8,14 @@ import java.util.Map;
 
 public final class SessionApiService {
 
-    private final RestClient restClient;
+    private final RealtimeApiClient apiClient;
 
-    public SessionApiService(RestClient restClient) {
-        this.restClient = restClient;
+    public SessionApiService(RealtimeApiClient apiClient) {
+        this.apiClient = apiClient;
     }
 
     public LoginResponseDto login(String username, char[] password) throws IOException, InterruptedException {
-        return restClient.post("login", Map.of(
+        return apiClient.request("auth.login", Map.of(
                 "username", username,
                 "password", String.valueOf(password)
         ), LoginResponseDto.class);

@@ -1,7 +1,7 @@
 package com.lemondelila.client.game.core.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.lemondelila.client.framework.network.rest.RestClient;
+import com.lemondelila.client.network.RealtimeApiClient;
 import com.lemondelila.client.game.core.model.ActionRequest;
 
 import java.io.IOException;
@@ -14,10 +14,10 @@ import java.util.stream.Collectors;
  */
 public final class GameActionService {
 
-    private final RestClient restClient;
+    private final RealtimeApiClient apiClient;
 
-    public GameActionService(RestClient restClient) {
-        this.restClient = restClient;
+    public GameActionService(RealtimeApiClient apiClient) {
+        this.apiClient = apiClient;
     }
 
     /**
@@ -30,10 +30,16 @@ public final class GameActionService {
                         "payload", a.payload() == null ? Map.of() : a.payload()
                 ))
                 .collect(Collectors.toList());
-        return restClient.post("games/" + gameType + "/rooms/" + roomId + "/actions", Map.of("actions", serialized));
+        return apiClient.request(
+                "game.actions.apply",
+                Map.of("gameType", gameType, "roomId", roomId, "actions", serialized),
+                JsonNode.class);
     }
 
     public JsonNode fetchState(String gameType, int roomId) throws IOException, InterruptedException {
-        return restClient.get("games/" + gameType + "/rooms/" + roomId + "/state");
+        return apiClient.request(
+                "game.state",
+                Map.of("gameType", gameType, "roomId", roomId),
+                JsonNode.class);
     }
 }
