@@ -1,0 +1,77 @@
+Plan d'implementation du module Admin (utilisateurs) - Monde de Lila
+
+Objectif
+- Ajouter un espace Admin pour gerer les utilisateurs (lecture, creation, modification, suspension) avec controle d'acces.
+
+Backend (NestJS)
+- Modules/services: creer un module Admin dedie (par ex. AdminModule) qui importe le module User existant. Exposer un service AdminUsersService encapsulant la logique (validation, securite, audit).
+- Entites/DB: reutiliser l'entite User; ajouter si besoin des champs `isSuspended`, `role` (enum: admin, staff, player) et `lastLoginAt`. Prevoir un index sur email et username pour la recherche.
+- DTO/Validation: DTO pour CreateUserAdminDto, UpdateUserAdminDto (champs optionnels), FilterUserAdminDto (pagination, search, role, statut).
+- Controleurs/API (versionner sous /admin):
+  - GET /admin/users?search=&page=&limit=&role=&status= : liste paginee, triable, filtrable.
+  - GET /admin/users/:id : detail.
+  - POST /admin/users : creation (email unique, role, mot de passe genere si absent).
+  - PATCH /admin/users/:id : mise a jour (role, profil, activation/suspension).
+  - POST /admin/users/:id/reset-password : genere un mot de passe temporaire et le renvoie (ou envoie via email si disponible).
+  - POST /admin/users/:id/impersonate : retourne un token JWT limite pour se connecter en tant qu'utilisateur (optionnel, a proteger fortement).
+- Authz/guards:
+  - Ajouter un guard RolesGuard (verifie role admin/staff).
+  - Middleware ou decorator @Roles('admin') sur les routes /admin.
+  - Logger/Audit: chaque action admin loggee (qui fait quoi, sur quel user, quand).
+- Services auxiliaires:
+  - Password service: generation mot de passe temporaire securise.
+  - Email (optionnel): envoi du mot de passe temporaire.
+- Tests:
+  - Unit tests pour guards, services (creation, update, suspension).
+  - E2E tests basiques sur les routes /admin/users.
+
+Frontend (client Admin)
+- Architecture: section Admin accessible apres auth (role admin/staff) via un layout /admin.
+- Routage: /admin/users (liste), /admin/users/new, /admin/users/:id (vue + edition), /admin/users/:id/reset-password.
+- Pages/fonctionnalites:
+  - Liste utilisateurs: table paginee, recherche texte (email, username), filtres par role/statut, tri (date creation, derniere connexion). Bouton "Nouveau".
+  - Detail/Edition: formulaire (email, username, role, statut actif/suspendu). Afficher metadonnees (dates, derniere connexion).
+  - Creation: formulaire simple; si mot de passe non fourni, bouton "Generer".
+  - Reset mot de passe: bouton declenchant l'appel API et affichant le mot de passe temporaire (avec copie).
+  - Impersonation (optionnel): bouton visible uniquement pour admins; affiche un token ou redirige avec ce token.
+- UI/UX:
+  - Garde de route: redirige vers login si non authentifie ou si role insuffisant.
+  - Etat global: stocker l'utilisateur courant et ses roles; invalider si 401/403.
+  - Feedback: toasts pour succes/erreur; confirmations pour suspension et reset password.
+  - Accessibilite: composants form/table accessibles, focus states clairs.
+- Client API:
+  - Service AdminUsersApi avec methodes list/get/create/update/resetPassword/impersonate.
+  - Gestion des erreurs centralisee (notamment 401/403).
+- Tests:
+  - Tests unitaires des vues (affichage, validation) et du service API mocke.
+
+Securite et contraintes
+- JWT avec verification du role admin/staff sur toutes les routes /admin.
+- Rate limiting et CSRF selon l'app actuelle; journaliser toutes les actions sensibles.
+- Masquer les mots de passe generes apres affichage initial; ne jamais logger de secrets.
+
+Livrables minimaux (MVP)
+- Backend: routes /admin/users GET/POST/PATCH + guard de role + tests basiques.
+- Frontend: table liste avec recherche/pagination, formulaire creation/edition, reset password, protection de route.
+
+Etapes suivantes possibles
+- Gestion des roles/permissions fines par ressource.
+- Historique d'audit consultable dans l'UI.
+- Exports CSV, filtres avances, impersonation avec trace d'audit.
+
+Implementation actuelle (code)
+- Backend NestJS:
+  - Module: AdminModule importe TypeOrm(User).
+  - Gardes: HttpJwtGuard + AdminRoleGuard (roles doit contenir ROLE_ADMIN ou admin) sur toutes les routes admin.
+  - Routes REST sous /api/admin/users :
+    - GET /api/admin/users?search=&page=&limit=&role= -> liste paginee (email/username) avec filtre role via JSON_CONTAINS.
+    - GET /api/admin/users/:id -> detail (sans mot de passe).
+    - POST /api/admin/users -> creation utilisateur (roles par defaut ROLE_USER, mot de passe genere si absent; retourne temporaryPassword si genere).
+    - PATCH /api/admin/users/:id -> mise a jour email/username/roles/avatar/emailVerified/password.
+    - POST /api/admin/users/:id/reset-password -> genere un mot de passe temporaire, le retourne et met a jour le hash.
+- UserModule expose maintenant UserController et UserAuthController pour que les routes existantes fonctionnent.
+- Aucun changement de schema DB (pas de nouvelle colonne) pour rester compatible avec la base actuelle.
+- Client Java (desktop):
+  - Nouveau AdminModule (auto-charge) avec AdminUserService (HTTP REST sur /api/admin/users), AdminController et AdminUserDialog.
+  - Acces via bouton "Admin" dans le menu principal (necessite un token avec ROLE_ADMIN/ admin sous peine d'erreur HTTP 403).
+  - AdminUserDialog : liste paginee (50), filtre recherche/role, creation utilisateur (avec mot de passe temporaire si non fourni), reset mot de passe (affiche le mot de passe genere).

@@ -17,8 +17,9 @@ public final class TableState {
     private boolean isPrivate = false;
     private final List<BotState> bots = new ArrayList<>();
     private final List<PlayerState> players = new ArrayList<>();
+    private final List<Integer> participantOrder = new ArrayList<>();
     private boolean started;
-    private int turnIndex = 0;
+    private int turnIndex = -1;
     private int turnRound = 1;
     private int turnDirection = 1;
     private Integer currentPlayerId = null;
@@ -47,6 +48,10 @@ public final class TableState {
 
     public List<PlayerState> players() {
         return Collections.unmodifiableList(players);
+    }
+
+    public List<Integer> participantOrder() {
+        return Collections.unmodifiableList(participantOrder);
     }
 
     public int playerCountIncludingLocalParticipant() {
@@ -88,7 +93,8 @@ public final class TableState {
         this.isPrivate = false;
         bots.clear();
         players.clear();
-        this.turnIndex = 0;
+        participantOrder.clear();
+        this.turnIndex = -1;
         this.turnRound = 1;
         this.turnDirection = 1;
         this.currentPlayerId = null;
@@ -102,7 +108,8 @@ public final class TableState {
         this.isPrivate = false;
         bots.clear();
         players.clear();
-        this.turnIndex = 0;
+        participantOrder.clear();
+        this.turnIndex = -1;
         this.turnRound = 1;
         this.turnDirection = 1;
         this.currentPlayerId = null;
@@ -119,6 +126,13 @@ public final class TableState {
         players.clear();
         if (list != null) {
             list.stream().filter(Objects::nonNull).forEach(players::add);
+        }
+    }
+
+    public void updateParticipantOrder(List<Integer> order) {
+        participantOrder.clear();
+        if (order != null) {
+            order.stream().filter(Objects::nonNull).forEach(participantOrder::add);
         }
     }
 
@@ -187,6 +201,9 @@ public final class TableState {
     }
 
     private Integer resolveCurrentPlayerId(int index) {
+        if (index >= 0 && index < participantOrder.size()) {
+            return participantOrder.get(index);
+        }
         int totalPlayers = players.size();
         if (index >= 0 && index < totalPlayers) {
             return players.get(index).id();

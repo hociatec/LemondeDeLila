@@ -32,6 +32,7 @@ public final class TurnStatusPanel extends JPanel {
             return;
         }
         String roll = lastRoll == null ? "" : " — Dernier dé: " + lastRoll;
-        label.setText("Round " + turn.round() + " — Joueur " + turn.index() + " — " + turn.directionLabel() + roll);
+        String playerIndex = turn.index() < 0 ? "?" : Integer.toString(turn.index());
+        label.setText("Round " + turn.round() + " — Joueur " + playerIndex + " — " + turn.directionLabel() + roll);
     }
 }

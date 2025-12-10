@@ -16,7 +16,7 @@ public final class TurnController {
             return Optional.empty();
         }
         int round = turnNode.path("round").asInt(1);
-        int index = turnNode.path("index").asInt(0);
+        int index = turnNode.path("index").asInt(-1);
         int direction = turnNode.path("direction").asInt(1);
         Integer currentPlayerId = turnNode.has("currentPlayerId") && turnNode.get("currentPlayerId").isInt()
                 ? turnNode.get("currentPlayerId").asInt()
@@ -38,7 +38,7 @@ public final class TurnController {
         if (tableState == null) {
             return fallback;
         }
-        // priorité : currentPlayerId si présent
+        // Priorité absolue : currentPlayerId
         if (turn.currentPlayerId() != null) {
             Integer id = turn.currentPlayerId();
             String byPlayer = tableState.players().stream()
@@ -58,8 +58,29 @@ public final class TurnController {
                 return byBot;
             }
         }
+        var order = tableState.participantOrder();
+        if (turn.index() >= 0 && turn.index() < order.size()) {
+            Integer id = order.get(turn.index());
+            if (id != null) {
+                String byPlayer = tableState.players().stream()
+                        .filter(p -> p.id() != null && p.id().equals(id))
+                        .map(p -> p.username() == null || p.username().isBlank() ? "Joueur" : p.username())
+                        .findFirst()
+                        .orElse(null);
+                if (byPlayer != null) {
+                    return byPlayer;
+                }
+                String byBot = tableState.bots().stream()
+                        .filter(b -> b.id() != null && b.id().equals(id))
+                        .map(b -> b.name() == null || b.name().isBlank() ? "Bot" : b.name())
+                    .findFirst()
+                    .orElse(null);
+                if (byBot != null) {
+                    return byBot;
+                }
+            }
+        }
 
-        // sinon, fallback sur l'index
         var players = tableState.players();
         var bots = tableState.bots();
         int totalPlayers = players.size();
@@ -71,6 +92,7 @@ public final class TurnController {
                 if (candidate != null && !candidate.isBlank()) {
                     return candidate;
                 }
+                return "Joueur";
             } else {
                 int botIndex = turn.index() - totalPlayers;
                 if (botIndex >= 0 && botIndex < bots.size()) {
@@ -78,8 +100,14 @@ public final class TurnController {
                     if (botName != null && !botName.isBlank()) {
                         return botName;
                     }
+                    return "Bot";
                 }
             }
+        }
+        // Ultime fallback : si des bots existent, annoncer le premier bot plutôt que "Joueur".
+        if (!bots.isEmpty()) {
+            String botName = bots.get(0).name();
+            return (botName == null || botName.isBlank()) ? "Bot" : botName;
         }
         return fallback;
     }

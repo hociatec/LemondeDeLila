@@ -44,6 +44,7 @@ public final class RoomParticipantsMapper {
 
         List<PlayerState> players = null;
         List<BotState> bots = new ArrayList<>(tableState.bots());
+        List<Integer> order = new ArrayList<>();
 
         Object playersNode = extras.get("players");
         if (playersNode instanceof JsonNode) {
@@ -59,6 +60,9 @@ public final class RoomParticipantsMapper {
                     } else {
                         players.add(new PlayerState(id, name));
                     }
+                    if (id != null) {
+                        order.add(id);
+                    }
                 }
             }
         }
@@ -68,6 +72,14 @@ public final class RoomParticipantsMapper {
             JsonNode node = (JsonNode) botsNode;
             if (node.isArray()) {
                 mapBots(node).forEach(bot -> mergeBot(bots, bot));
+                node.forEach(b -> {
+                    if (b.path("id").isInt()) {
+                        Integer id = b.get("id").asInt();
+                        if (id != null && order.stream().noneMatch(existing -> Objects.equals(existing, id))) {
+                            order.add(id);
+                        }
+                    }
+                });
             }
         }
 
@@ -75,6 +87,21 @@ public final class RoomParticipantsMapper {
             tableState.updatePlayers(players);
         }
         tableState.updateBots(deduplicateBots(bots));
+        if (order.isEmpty()) {
+            // Fallback : ordre joueurs puis bots connus
+            players = players == null ? tableState.players() : players;
+            for (PlayerState p : players) {
+                if (p != null && p.id() != null && order.stream().noneMatch(id -> Objects.equals(id, p.id()))) {
+                    order.add(p.id());
+                }
+            }
+            for (BotState b : bots) {
+                if (b != null && b.id() != null && order.stream().noneMatch(id -> Objects.equals(id, b.id()))) {
+                    order.add(b.id());
+                }
+            }
+        }
+        tableState.updateParticipantOrder(order);
     }
 
     private static List<BotState> deduplicateBots(List<BotState> bots) {

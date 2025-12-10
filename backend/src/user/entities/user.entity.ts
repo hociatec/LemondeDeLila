@@ -31,6 +31,12 @@ export class User {
   @Column({ name: 'email_verified', type: 'boolean', default: false })
   emailVerified!: boolean;
 
+  @Column({ name: 'banned_until', type: 'datetime', nullable: true })
+  bannedUntil?: Date | null;
+
+  @Column({ name: 'ban_reason', type: 'varchar', length: 255, nullable: true })
+  banReason?: string | null;
+
   @CreateDateColumn({ name: 'created_at', type: 'datetime' })
   createdAt!: Date;
 }

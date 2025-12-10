@@ -15,6 +15,7 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+import java.awt.CardLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.util.Objects;
@@ -24,6 +25,10 @@ public final class LoginFormPanel extends JPanel {
 
     private final JTextField usernameField = new JTextField();
     private final JPasswordField passwordField = new JPasswordField();
+    private final JTextField passwordPlainField = new JTextField();
+    private final JPanel passwordCard = new JPanel(new CardLayout());
+    private final JCheckBox passwordVisibilityToggle = new JCheckBox("Afficher le mot de passe", false);
+    private final char passwordEchoChar;
     private final JCheckBox rememberCredentials = new JCheckBox(Internationalization.text("home.login.remember.label"));
     private final JButton submitButton = new JButton(Internationalization.text("home.login.submit"));
     private final JButton backButton = new JButton(Internationalization.text("home.login.back"));
@@ -31,6 +36,7 @@ public final class LoginFormPanel extends JPanel {
     public LoginFormPanel(FocusHighlighter focusHighlighter) {
         setOpaque(false);
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        this.passwordEchoChar = resolveMaskChar(passwordField.getEchoChar());
 
         JLabel usernameLabel = new JLabel(Internationalization.text("home.login.username.label"));
         AccessibleDecorator.apply(usernameLabel, AccessibleSpec.builder()
@@ -57,12 +63,30 @@ public final class LoginFormPanel extends JPanel {
         add(passwordLabel);
 
         passwordField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 32));
+        passwordPlainField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 32));
         focusHighlighter.apply(passwordField);
+        focusHighlighter.apply(passwordPlainField);
         AccessibleDecorator.apply(passwordField, AccessibleSpec.builder()
                 .name(Internationalization.text("home.login.password.field"))
                 .description(Internationalization.text("home.login.password.field.desc"))
                 .build());
-        add(passwordField);
+        AccessibleDecorator.apply(passwordPlainField, AccessibleSpec.builder()
+                .name(Internationalization.text("home.login.password.field"))
+                .description(Internationalization.text("home.login.password.field.desc"))
+                .build());
+        passwordCard.setOpaque(false);
+        passwordCard.add(passwordField, "masked");
+        passwordCard.add(passwordPlainField, "visible");
+        ((CardLayout) passwordCard.getLayout()).show(passwordCard, "masked");
+        add(passwordCard);
+
+        passwordVisibilityToggle.setAlignmentX(Component.CENTER_ALIGNMENT);
+        AccessibleDecorator.apply(passwordVisibilityToggle, AccessibleSpec.builder()
+                .name("Affichage du mot de passe")
+                .description("Cochez pour afficher le mot de passe saisi, décochez pour le masquer.")
+                .build());
+        passwordVisibilityToggle.addActionListener(e -> togglePasswordVisibility());
+        add(passwordVisibilityToggle);
 
         add(Box.createRigidArea(new Dimension(0, 24)));
 
@@ -111,6 +135,8 @@ public final class LoginFormPanel extends JPanel {
         backButton.setEnabled(!busy);
         usernameField.setEnabled(!busy);
         passwordField.setEnabled(!busy);
+        passwordPlainField.setEnabled(!busy);
+        passwordVisibilityToggle.setEnabled(!busy);
         rememberCredentials.setEnabled(!busy);
     }
 
@@ -119,11 +145,21 @@ public final class LoginFormPanel extends JPanel {
     }
 
     public void clearPassword() {
-        SwingUtilities.invokeLater(() -> passwordField.setText(""));
+        SwingUtilities.invokeLater(() -> {
+            passwordField.setText("");
+            passwordPlainField.setText("");
+            restorePasswordMask();
+        });
     }
 
     public LoginCredentials credentials() {
-        return new LoginCredentials(usernameField.getText().trim(), passwordField.getPassword());
+        char[] pwd;
+        if (isPasswordVisible()) {
+            pwd = passwordPlainField.getText().toCharArray();
+        } else {
+            pwd = passwordField.getPassword();
+        }
+        return new LoginCredentials(usernameField.getText().trim(), pwd);
     }
 
     public void setRememberCredentials(boolean enabled) {
@@ -137,8 +173,51 @@ public final class LoginFormPanel extends JPanel {
     public void fillCredentials(String username, char[] password) {
         usernameField.setText(username != null ? username : "");
         if (password != null) {
-            passwordField.setText(String.valueOf(password));
+            String pwdStr = String.valueOf(password);
+            passwordField.setText(pwdStr);
+            passwordPlainField.setText(pwdStr);
         }
+    }
+
+    private void togglePasswordVisibility() {
+        boolean show = passwordVisibilityToggle.isSelected();
+        CardLayout cl = (CardLayout) passwordCard.getLayout();
+        if (show) {
+            passwordPlainField.setText(getMaskedPassword());
+            cl.show(passwordCard, "visible");
+            passwordPlainField.requestFocusInWindow();
+            passwordPlainField.setCaretPosition(passwordPlainField.getText().length());
+            passwordVisibilityToggle.setText("Masquer le mot de passe");
+        } else {
+            passwordField.setText(getVisiblePassword());
+            restorePasswordMask();
+            cl.show(passwordCard, "masked");
+            passwordField.requestFocusInWindow();
+            passwordField.setCaretPosition(passwordField.getPassword().length);
+        }
+    }
+
+    private void restorePasswordMask() {
+        passwordField.setEchoChar(passwordEchoChar);
+        passwordVisibilityToggle.setSelected(false);
+        passwordVisibilityToggle.setText("Afficher le mot de passe");
+        ((CardLayout) passwordCard.getLayout()).show(passwordCard, "masked");
+    }
+
+    private char resolveMaskChar(char initial) {
+        return initial != 0 ? initial : '*';
+    }
+
+    private boolean isPasswordVisible() {
+        return passwordVisibilityToggle.isSelected();
+    }
+
+    private String getVisiblePassword() {
+        return isPasswordVisible() ? passwordPlainField.getText() : new String(passwordField.getPassword());
+    }
+
+    private String getMaskedPassword() {
+        return new String(passwordField.getPassword());
     }
 
     public record LoginCredentials(String username, char[] password) {

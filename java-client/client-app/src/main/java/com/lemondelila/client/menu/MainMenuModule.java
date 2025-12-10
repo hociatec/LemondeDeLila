@@ -15,6 +15,7 @@ import com.lemondelila.client.game.catalog.controller.GameCatalogController;
 import com.lemondelila.client.presence.controller.PresenceController;
 import com.lemondelila.client.settings.controller.OptionsController;
 import com.lemondelila.client.user.model.ClientSession;
+import com.lemondelila.client.admin.controller.AdminController;
 
 @AutoService(LilaModule.class)
 public final class MainMenuModule implements LilaModule {
@@ -29,6 +30,7 @@ public final class MainMenuModule implements LilaModule {
                 ctx.get(PresenceController.class),
                 ctx.get(OptionsController.class),
                 ctx.get(GameCatalogController.class),
+                ctx.get(AdminController.class),
                 ctx.get(ClientSession.class),
                 ctx.get(DomainEventBus.class),
                 ctx.get(MainMenuAudio.class),

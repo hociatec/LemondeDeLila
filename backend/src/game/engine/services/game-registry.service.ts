@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { GameDefinition, GameRulesAdapter } from '../interfaces/game-rules-adapter.interface';
 import { PanierExpressService } from '../../games/jeux-de-plateaux/les-quatre-vents/panier-express/services/panier-express.service';
+import { DameNatureService } from '../../games/jeux-de-cartes/vents-dansants/dame-nature/services/dame-nature.service';
 
 @Injectable()
 export class GameRegistryService {
@@ -11,8 +12,11 @@ export class GameRegistryService {
   private readonly logger = new Logger(GameRegistryService.name);
   private cachedDefinitions: GameDefinition[] | null = null;
 
-  constructor(private readonly panierExpress: PanierExpressService) {
-    this.handlers = [panierExpress];
+  constructor(
+    private readonly panierExpress: PanierExpressService,
+    private readonly dameNature: DameNatureService,
+  ) {
+    this.handlers = [panierExpress, dameNature];
     this.gamesRoot =
       process.env.GAME_CATALOG_PATH ??
       path.resolve(process.cwd(), 'src', 'game', 'games');

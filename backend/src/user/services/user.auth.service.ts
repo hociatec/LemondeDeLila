@@ -67,6 +67,11 @@ export class UserAuthService {
     if (!user.emailVerified) {
       throw new UnauthorizedException('Email non vérifié');
     }
+    if (user.bannedUntil && user.bannedUntil.getTime() > Date.now()) {
+      const until = user.bannedUntil.toISOString();
+      const reason = user.banReason ? ` (motif : ${user.banReason})` : '';
+      throw new UnauthorizedException(`Compte banni jusqu'au ${until}${reason}`);
+    }
 
     const token = jwt.sign(
       {

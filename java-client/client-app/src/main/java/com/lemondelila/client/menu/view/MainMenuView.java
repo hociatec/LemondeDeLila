@@ -25,6 +25,7 @@ public final class MainMenuView {
     private final JButton joinGameButton = new JButton(Internationalization.text("mainmenu.join"));
     private final JButton chatButton = new JButton(Internationalization.text("mainmenu.chat"));
     private final JButton socialButton = new JButton(Internationalization.text("mainmenu.social"));
+    private final JButton adminButton = new JButton(Internationalization.text("mainmenu.admin"));
     private final JButton optionsButton = new JButton(Internationalization.text("mainmenu.options"));
     private final JButton logoutButton = new JButton(Internationalization.text("mainmenu.logout"));
 
@@ -33,6 +34,7 @@ public final class MainMenuView {
             joinGameButton,
             chatButton,
             socialButton,
+            adminButton,
             optionsButton,
             logoutButton
     );
@@ -68,6 +70,14 @@ public final class MainMenuView {
 
     public JButton optionsButton() {
         return optionsButton;
+    }
+
+    public JButton adminButton() {
+        return adminButton;
+    }
+
+    public void setAdminVisible(boolean visible) {
+        adminButton.setVisible(visible);
     }
 
     public JButton logoutButton() {
@@ -107,6 +117,8 @@ public final class MainMenuView {
         addMenuButton(chatButton, "mainmenu.button.chat.desc");
         addSpacer();
         addMenuButton(socialButton, "mainmenu.button.social.desc");
+        addSpacer();
+        addMenuButton(adminButton, "mainmenu.button.admin.desc");
         addSpacer();
         addMenuButton(optionsButton, "mainmenu.button.options.desc");
         addSpacer();

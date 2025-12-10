@@ -107,7 +107,8 @@ public final class DameNatureInteractionProvider implements GameInteractionProvi
                 focusHighlighter,
                 quizFactory,
                 primary,
-                startHandler
+                startHandler,
+                false // ne pas auto-déclencher la pioche juste après le lancement
         );
 
         return new DameNatureGameComponent(base, controller, emitter, session, configState);

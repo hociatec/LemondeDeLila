@@ -17,6 +17,7 @@ import { GameModule } from './game/game.module';
 import { BotModule } from './bot/bot.module';
 import { ApiModule } from './api/api.module';
 import { BotName } from './bot/entities/bot-name.entity';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -55,6 +56,7 @@ import { BotName } from './bot/entities/bot-name.entity';
     GameModule,
     BotModule,
     ApiModule,
+    AdminModule,
   ],
 })
 export class AppModule {}

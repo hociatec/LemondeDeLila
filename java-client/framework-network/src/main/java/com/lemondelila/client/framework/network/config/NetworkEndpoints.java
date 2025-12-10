@@ -39,6 +39,10 @@ public final class NetworkEndpoints {
         return presenceGateway;
     }
 
+    public URI httpBase() {
+        return httpBase;
+    }
+
     public URI apiGateway(String token) {
         String base = apiGatewayBase.toString();
         if (token == null || token.isBlank()) {

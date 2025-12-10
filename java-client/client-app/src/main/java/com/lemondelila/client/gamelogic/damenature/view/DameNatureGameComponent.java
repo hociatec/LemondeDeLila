@@ -18,7 +18,6 @@ import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
-import javax.swing.Timer;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.util.HashMap;
@@ -130,30 +129,41 @@ final class DameNatureGameComponent extends JPanel implements GameInteractionCom
     private void registerShortcuts() {
         InputMap windowMap = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
         ActionMap actions = getActionMap();
-        actions.put("damenature.ask", new AbstractAction() {
+        // m => afficher main/familles
+        actions.put("damenature.showhand", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                showHandSummary();
+            }
+        });
+        windowMap.put(KeyStroke.getKeyStroke('M'), "damenature.showhand");
+
+        // p => piocher si possible
+        actions.put("damenature.draw", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                requestDraw();
+            }
+        });
+        windowMap.put(KeyStroke.getKeyStroke('P'), "damenature.draw");
+
+        // d => demander une carte (reuse requestCard)
+        actions.put("damenature.ask.shortcut", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 requestCard();
             }
         });
-        windowMap.put(KeyStroke.getKeyStroke('E'), "damenature.ask");
+        windowMap.put(KeyStroke.getKeyStroke('D'), "damenature.ask.shortcut");
 
-        actions.put("damenature.refresh", new AbstractAction() {
+        // h => aide rapide
+        actions.put("damenature.help", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                controller.refresh();
+                showHelp();
             }
         });
-        windowMap.put(KeyStroke.getKeyStroke('R'), "damenature.refresh");
-
-        actions.put("damenature.config", new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                new DameNatureConfigDialog(configState).show(DameNatureGameComponent.this);
-                updateSidebar();
-            }
-        });
-        windowMap.put(KeyStroke.getKeyStroke('C'), "damenature.config");
+        windowMap.put(KeyStroke.getKeyStroke('H'), "damenature.help");
 
         registerArrowShortcut(KeyStroke.getKeyStroke("UP"), "damenature.opponent.prev", () -> moveOpponentSelection(-1));
         registerArrowShortcut(KeyStroke.getKeyStroke("DOWN"), "damenature.opponent.next", () -> moveOpponentSelection(1));
@@ -236,6 +246,42 @@ final class DameNatureGameComponent extends JPanel implements GameInteractionCom
         payload.put("memberId", extractMemberId(card));
         payload.put("target", opponent.id());
         controller.sendActions(List.of(ActionRequest.of("ask_card", payload)));
+    }
+
+    private void requestDraw() {
+        if (quizActive) {
+            emitter.announceError("Répondez d'abord au quiz.");
+            return;
+        }
+        if (currentState.deckRemaining() <= 0) {
+            emitter.announceError("Pioche vide.");
+            return;
+        }
+        controller.sendActions(List.of(ActionRequest.of("draw")));
+    }
+
+    private void showHandSummary() {
+        DameNatureViewState.PlayerView me = currentState.localPlayer();
+        List<DameNatureViewState.CardView> hand = currentState.hand();
+        List<String> books = currentState.completedFamilies();
+        StringBuilder sb = new StringBuilder();
+        sb.append("Main (").append(hand.size()).append(" cartes)");
+        if (!hand.isEmpty()) {
+            sb.append(" : ");
+            hand.forEach(card -> sb.append(card.familyName())
+                    .append("-").append(card.memberName())
+                    .append(" ; "));
+        }
+        sb.append(" | Familles complétées: ").append(books.size());
+        if (!books.isEmpty()) {
+            sb.append(" (").append(String.join(", ", books)).append(")");
+        }
+        emitter.announceEvent(sb.toString());
+    }
+
+    private void showHelp() {
+        emitter.announceEvent(
+                "Raccourcis Dame Nature : M=main, P=piocher, D=demander carte, H=aide, flèches pour naviguer.");
     }
 
     private static String extractMemberId(DameNatureViewState.CardView card) {

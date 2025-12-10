@@ -11,6 +11,7 @@ import { PendingRequirementService } from '../../../../../modules/effects/servic
 import { TurnActionsService } from '../../../../../modules/turn/services/turn-actions.service';
 import { PanierExpressMetadata, PanierExpressTile } from '../entities/panier-express-state.entity';
 import { playingLog } from '../../../../../../common/utils/playing-logger';
+import { suggestPanierExpressBotActions } from '../bot/panier-express-bot.strategy';
 
 @Injectable()
 export class PanierExpressService implements GameRulesAdapter {
@@ -104,33 +105,11 @@ export class PanierExpressService implements GameRulesAdapter {
       return [];
     }
 
-    // Si un quiz est en attente pour ce bot, il répond (par défaut "correct: true").
-    const pendingQuiz = this.pendingQuiz.get(botPlayerId);
-    if (pendingQuiz) {
-      playingLog('panier.bot.quiz', { botPlayerId });
-      return [
-        {
-          type: 'answer_quiz',
-          payload: { playerId: botPlayerId, correct: true },
-        },
-      ];
+    const actions = suggestPanierExpressBotActions(state, botPlayerId, this.pendingQuiz);
+    if (actions.length) {
+      playingLog('panier.bot.actions', { botPlayerId, actions: actions.map((a) => a.type) });
     }
-
-    const position = meta.positions[botPlayerId] ?? 0;
-    const tile = meta.tiles[position];
-
-    if (tile?.type === 'exchange') {
-      const options = this.buildExchangeActions(state, botPlayerId);
-      if (options.length > 0) {
-        const pick = options[Math.floor(Math.random() * options.length)];
-        playingLog('panier.bot.exchange', { botPlayerId, position, tile: tile.id, action: pick.type });
-        return [pick];
-      }
-    }
-
-    // Par défaut : lancer le dé.
-    playingLog('panier.bot.roll', { botPlayerId, position, tile: tile?.id });
-    return [{ type: 'roll' }];
+    return actions;
   }
 
   getAvailableActions(state: GameStateEntity, playerId: number): GameSingleActionDto[] {

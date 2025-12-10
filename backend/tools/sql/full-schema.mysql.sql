@@ -12,6 +12,8 @@ CREATE TABLE IF NOT EXISTS `users` (
   `avatar` varchar(255) DEFAULT NULL,
   `preferences` json DEFAULT NULL,
   `email_verified` tinyint(1) NOT NULL DEFAULT 0,
+  `banned_until` datetime DEFAULT NULL,
+  `ban_reason` varchar(255) DEFAULT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uniq_users_email` (`email`),
@@ -130,5 +132,10 @@ VALUES
   ('CraquelinBot', 1),
   ('Loqueteux', 1),
   ('Grelottin', 1),
-  ('Soupe-a-Bot', 1)
+('Soupe-a-Bot', 1)
 ON DUPLICATE KEY UPDATE enabled = VALUES(enabled);
+
+-- Mise à niveau si la table users existe déjà (ajout des colonnes de ban).
+ALTER TABLE `users`
+  ADD COLUMN IF NOT EXISTS `banned_until` datetime NULL,
+  ADD COLUMN IF NOT EXISTS `ban_reason` varchar(255) NULL;

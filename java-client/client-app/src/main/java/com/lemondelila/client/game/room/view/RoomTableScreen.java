@@ -204,6 +204,9 @@ public final class RoomTableScreen extends BaseTableScreen {
     }
 
     private void handleTurnInfo() {
+        if (!tableState.started()) {
+            return;
+        }
         var turn = controller.currentTurn();
         view.turnView().render(turn);
         controller.announceTurnInfo();

@@ -118,7 +118,8 @@ public final class PanierExpressInteractionProvider implements GameInteractionPr
                 focusHighlighter,
                 quizFactory,
                 primary,
-                startHandler);
+                startHandler,
+                false);
 
         return new PanierExpressGameComponent(baseComponent, controller, exchangeController, exchangeView, session);
     }
