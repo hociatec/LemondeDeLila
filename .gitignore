@@ -6,6 +6,8 @@ out/
 build/
 target/
 *.tmp
+*_backup.php
+*_backup*.php
 
 ###############################
 # Java / Maven / JPackage
