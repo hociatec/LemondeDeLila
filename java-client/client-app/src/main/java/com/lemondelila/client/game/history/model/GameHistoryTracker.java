@@ -5,16 +5,17 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Centralise l'historique d'un jeu et g�n�re des repr�sentations lisibles.
+ * Centralise l'historique d'un jeu et gère des représentations lisibles.
  */
 public final class GameHistoryTracker {
 
     private final List<String> entries = new ArrayList<>();
+    private final List<Object> structured = new ArrayList<>();
     private int maxEntries = 200;
 
     public void setMaxEntries(int maxEntries) {
         if (maxEntries <= 0) {
-            throw new IllegalArgumentException("maxEntries doit �tre positif");
+            throw new IllegalArgumentException("maxEntries doit etre positif");
         }
         this.maxEntries = maxEntries;
         trim();
@@ -26,6 +27,7 @@ public final class GameHistoryTracker {
 
     public void clear() {
         entries.clear();
+        structured.clear();
     }
 
     public int size() {
@@ -44,6 +46,13 @@ public final class GameHistoryTracker {
         trim();
     }
 
+    public void addStructured(Object entry) {
+        if (entry == null) {
+            return;
+        }
+        structured.add(entry);
+    }
+
     public void addAll(List<String> newEntries) {
         if (newEntries == null) {
             return;
@@ -53,6 +62,10 @@ public final class GameHistoryTracker {
 
     public List<String> all() {
         return Collections.unmodifiableList(entries);
+    }
+
+    public List<Object> structuredAll() {
+        return Collections.unmodifiableList(structured);
     }
 
     public String formatAll() {

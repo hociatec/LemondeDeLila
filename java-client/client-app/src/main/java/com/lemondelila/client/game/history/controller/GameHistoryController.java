@@ -4,6 +4,7 @@ import com.lemondelila.client.framework.core.di.Inject;
 import com.lemondelila.client.framework.core.event.DomainEventBus;
 import com.lemondelila.client.framework.core.event.EventSubscriptions;
 import com.lemondelila.client.game.history.model.GameHistoryTracker;
+import com.lemondelila.client.game.core.model.GenericGameState;
 import com.lemondelila.client.game.room.event.LeaveRoomRequested;
 
 public final class GameHistoryController implements AutoCloseable {
@@ -24,6 +25,14 @@ public final class GameHistoryController implements AutoCloseable {
 
     public void addEntry(String entry) {
         tracker.add(entry);
+    }
+
+    public void addStructured(GenericGameState.ActionLogEntry entry) {
+        tracker.addStructured(entry);
+    }
+
+    public void addStructuredRaw(Object entry) {
+        tracker.addStructured(entry);
     }
 
     public void clear() {

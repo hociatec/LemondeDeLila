@@ -1,5 +1,5 @@
 import { GameStateEntity } from '../../core/entities/game-state.entity';
-import { GameSingleActionDto } from '../dto/game-action.dto';
+import { GameSingleActionDto, GameStateWithActions } from '../dto/game-action.dto';
 
 export interface BotStrategy {
   suggest(state: GameStateEntity, botPlayerId: number): GameSingleActionDto[] | null;
@@ -30,6 +30,17 @@ export interface GameRulesAdapter {
    * Optionnel : liste des actions légales pour un joueur donné.
    */
   getAvailableActions?(state: GameStateEntity, playerId: number): GameSingleActionDto[];
+
+  /**
+   * Optionnel : validation personnalisée des acteurs.
+   * Si retourne true, le moteur ne bloque pas sur currentPlayerId.
+   */
+  validateActor?(state: GameStateEntity, actions: GameSingleActionDto[], actorId: number | null): boolean;
+
+  /**
+   * Optionnel : fournit un état enrichi avec actions/pending pour le client générique.
+   */
+  exposeState?(state: GameStateEntity): GameStateWithActions;
 }
 
 export type GameDefinition = {

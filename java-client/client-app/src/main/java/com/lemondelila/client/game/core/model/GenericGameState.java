@@ -15,10 +15,26 @@ public record GenericGameState(
         List<String> logs,
         PendingQuiz pendingQuiz,
         boolean botThinking,
-        java.util.Map<String, Object> extras
+        java.util.Map<String, Object> extras,
+        List<GenericAction> actions,
+        List<ActionLogEntry> actionLog,
+        Object pending
 ) {
     public static GenericGameState empty() {
-        return new GenericGameState("", "", 1, 0, null, List.of(), null, false, java.util.Map.of());
+        return new GenericGameState(
+                "",
+                "",
+                1,
+                0,
+                null,
+                java.util.List.<String>of(),
+                null,
+                false,
+                java.util.Map.<String, Object>of(),
+                java.util.List.<GenericAction>of(),
+                java.util.List.<ActionLogEntry>of(),
+                null
+        );
     }
 
     public List<String> logs() {
@@ -29,9 +45,19 @@ public record GenericGameState(
         return extras == null ? java.util.Map.of() : java.util.Collections.unmodifiableMap(extras);
     }
 
+    public List<GenericAction> actions() {
+        return actions == null ? List.of() : Collections.unmodifiableList(actions);
+    }
+
     public record PendingQuiz(String question, List<String> choices, Integer playerId) {
         public List<String> choices() {
             return choices == null ? List.of() : Collections.unmodifiableList(choices);
         }
     }
+
+    public record PendingGeneric(String type, String name, Integer playerId, Integer targetPlayerId, Object raw) {}
+
+    public record GenericAction(String type, String label, Object payload) {}
+
+    public record ActionLogEntry(Integer actorId, String type, Object payload, Long timestamp, String step) {}
 }

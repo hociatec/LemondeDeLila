@@ -1,6 +1,6 @@
 import { Type } from 'class-transformer';
 import { IsArray, IsObject, IsOptional, IsString, ValidateNested } from 'class-validator';
-import { GameStateEntity } from '../../core/entities/game-state.entity';
+import { GameStateEntity, PendingState } from '../../core/entities/game-state.entity';
 
 export class GameSingleActionDto {
   @IsString()
@@ -22,4 +22,10 @@ export class GameActionListDto {
   actions!: GameSingleActionDto[];
 }
 
-export type GameStateResponse = GameStateEntity;
+export type GameStateResponse = GameStateWithActions;
+
+// Étend la réponse d'état pour inclure les actions/pending exposées au client générique.
+export interface GameStateWithActions extends GameStateEntity {
+  actions?: Array<{ type: string; label?: string; payload?: any }>;
+  pending?: PendingState | null;
+}

@@ -36,6 +36,8 @@ import java.awt.FocusTraversalPolicy;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusAdapter;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.Window;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -75,6 +77,10 @@ public final class AdminUserDialog extends JDialog {
         }
     };
     private final JTable table = new JTable(tableModel);
+    private final JScrollPane tableScrollPane = new JScrollPane(table);
+    private JPanel resetTableHolder;
+    private JPanel editTableHolder;
+    private JPanel banTableHolder;
 
     private final JTextField resetSearchField = new JTextField();
     private final JLabel resetSearchLabel = new JLabel("Rechercher un utilisateur (email ou identifiant) :");
@@ -125,6 +131,7 @@ public final class AdminUserDialog extends JDialog {
         this.ownerWindow = owner;
 
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        table.setFocusTraversalKeysEnabled(false);
         setLayout(new BorderLayout());
         add(buildNavigationPanel(), BorderLayout.WEST);
         add(buildContent(), BorderLayout.CENTER);
@@ -136,17 +143,33 @@ public final class AdminUserDialog extends JDialog {
         applyAccessibility();
         enforceSingleRoleSelection(createRoleCheckboxes);
         enforceSingleRoleSelection(editRoleCheckboxes);
-
         SwingUtilities.invokeLater(() -> navigationList.requestFocusInWindow());
     }
 
     private Component buildNavigationPanel() {
         navigationList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        navigationList.setSelectedIndex(0);
         navigationList.setFocusTraversalKeysEnabled(true);
+        navigationList.setSelectedIndex(0);
         navigationList.addListSelectionListener(e -> {
+            if (e.getValueIsAdjusting()) {
+                return;
+            }
             String value = navigationList.getSelectedValue();
+            if (value == null) {
+                return;
+            }
             setStatus("Option : " + value);
+        });
+        navigationList.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 1) {
+                    String value = navigationList.getSelectedValue();
+                    if (value != null) {
+                        openSelection(value, true, true);
+                    }
+                }
+            }
         });
 
         JPanel navPanel = new JPanel(new BorderLayout());
@@ -201,7 +224,8 @@ public final class AdminUserDialog extends JDialog {
         top.add(new JLabel("Sélectionnez un utilisateur dans la liste, puis activez \"Réinitialiser MDP\"."));
         panel.add(top, BorderLayout.NORTH);
 
-        panel.add(new JScrollPane(table), BorderLayout.CENTER);
+        resetTableHolder = new JPanel(new BorderLayout());
+        panel.add(resetTableHolder, BorderLayout.CENTER);
 
         JPanel bottom = new JPanel();
         bottom.setLayout(new BoxLayout(bottom, BoxLayout.X_AXIS));
@@ -271,7 +295,8 @@ public final class AdminUserDialog extends JDialog {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
 
-        panel.add(new JScrollPane(table), BorderLayout.CENTER);
+        editTableHolder = new JPanel(new BorderLayout());
+        panel.add(editTableHolder, BorderLayout.CENTER);
 
         JPanel form = new JPanel();
         form.setLayout(new BoxLayout(form, BoxLayout.Y_AXIS));
@@ -314,6 +339,7 @@ public final class AdminUserDialog extends JDialog {
         editOrder.add(resetButton);
         editOrder.add(deleteButton);
         editOrder.add(saveEditButton);
+        editOrder.add(table);
         panel.setFocusTraversalPolicy(new OrderedFocusTraversalPolicy(editOrder));
 
         // Sélection de table -> remplir le formulaire
@@ -348,6 +374,7 @@ public final class AdminUserDialog extends JDialog {
                 saveEditButton.requestFocusInWindow();
             }
         });
+        forceShiftTabToSave(editEmailField);
         focusTableButton.addActionListener(e -> focusTable());
         focusTableButton.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke("ENTER"), "admin.edit.focus-table");
         focusTableButton.getActionMap().put("admin.edit.focus-table", new AbstractAction() {
@@ -372,16 +399,6 @@ public final class AdminUserDialog extends JDialog {
                 deleteUser();
             }
         });
-        // Shift+Tab anywhere in the form revient sur Enregistrer
-        addShiftTabToSave(editEmailField);
-        addShiftTabToSave(editUsernameField);
-        addShiftTabToSave(editPasswordField);
-        editRoleCheckboxes.forEach(this::addShiftTabToSave);
-        addShiftTabToSave(editEmailVerified);
-        addShiftTabToSave(focusTableButton);
-        addShiftTabToSave(resetButton);
-        addShiftTabToSave(deleteButton);
-
         return panel;
     }
 
@@ -389,7 +406,8 @@ public final class AdminUserDialog extends JDialog {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
 
-        panel.add(new JScrollPane(table), BorderLayout.CENTER);
+        banTableHolder = new JPanel(new BorderLayout());
+        panel.add(banTableHolder, BorderLayout.CENTER);
 
         JPanel form = new JPanel();
         form.setLayout(new BoxLayout(form, BoxLayout.Y_AXIS));
@@ -463,12 +481,6 @@ public final class AdminUserDialog extends JDialog {
                 applyUnban();
             }
         });
-        addShiftTabToSave(banReasonField);
-        addShiftTabToSave(banDurationDaysField);
-        addShiftTabToSave(banUntilField);
-        addShiftTabToSave(banButton);
-        addShiftTabToSave(unbanButton);
-
         return panel;
     }
 
@@ -544,20 +556,31 @@ public final class AdminUserDialog extends JDialog {
         createButton.addActionListener(e -> createUser());
         editButton.addActionListener(e -> applyUserEdit());
 
-        navigationList.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke("ENTER"), "admin.menu.enter");
-        navigationList.getActionMap().put("admin.menu.enter", new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                openSelection(navigationList.getSelectedValue(), true, true);
-                focusTable();
-            }
-        });
+        registerNavigationActions();
         navigationList.addFocusListener(new FocusAdapter() {
             @Override
             public void focusGained(java.awt.event.FocusEvent e) {
                 getRootPane().setDefaultButton(null);
+                if (navigationList.getSelectedIndex() < 0) {
+                    navigationList.setSelectedIndex(0);
+                }
             }
         });
+    }
+
+    private void registerNavigationActions() {
+        AbstractAction openSelected = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                activateSelectedMenu();
+            }
+        };
+        navigationList.getInputMap(JComponent.WHEN_FOCUSED)
+                .put(KeyStroke.getKeyStroke("ENTER"), "admin.menu.enter");
+        navigationList.getActionMap().put("admin.menu.enter", openSelected);
+        navigationList.getInputMap(JComponent.WHEN_FOCUSED)
+                .put(KeyStroke.getKeyStroke("SPACE"), "admin.menu.space");
+        navigationList.getActionMap().put("admin.menu.space", openSelected);
     }
 
     private void openSelection(String selection, boolean focusTable, boolean allowClose) {
@@ -567,6 +590,7 @@ public final class AdminUserDialog extends JDialog {
         switch (selection) {
             case "Modifier un utilisateur" -> {
                 boolean changed = !"edit".equals(currentCard);
+                attachTableTo(editTableHolder);
                 showCard("edit");
                 getRootPane().setDefaultButton(saveEditButton);
                 if (changed || focusTable) {
@@ -577,6 +601,7 @@ public final class AdminUserDialog extends JDialog {
             }
             case "Bannir un utilisateur" -> {
                 boolean changed = !"ban".equals(currentCard);
+                attachTableTo(banTableHolder);
                 showCard("ban");
                 getRootPane().setDefaultButton(banButton);
                 if (changed || focusTable) {
@@ -597,6 +622,15 @@ public final class AdminUserDialog extends JDialog {
             }
             default -> showCard("empty");
         }
+    }
+
+    private void activateSelectedMenu() {
+        String value = navigationList.getSelectedValue();
+        if (value == null) {
+            setStatus("Choisissez une option avec les flèches, Entrée pour valider.");
+            return;
+        }
+        openSelection(value, true, true);
     }
 
     private void registerShortcuts() {
@@ -803,6 +837,21 @@ public final class AdminUserDialog extends JDialog {
         }
     }
 
+    private void attachTableTo(JPanel target) {
+        if (target == null || tableScrollPane.getParent() == target) {
+            return;
+        }
+        Container parent = tableScrollPane.getParent();
+        if (parent != null) {
+            parent.remove(tableScrollPane);
+            parent.revalidate();
+            parent.repaint();
+        }
+        target.add(tableScrollPane, BorderLayout.CENTER);
+        target.revalidate();
+        target.repaint();
+    }
+
     private void focusTable() {
         if (tableModel.getRowCount() > 0) {
             table.setRowSelectionAllowed(true);
@@ -892,6 +941,7 @@ public final class AdminUserDialog extends JDialog {
         editPasswordField.setText("");
         setSelectedRoles(editRoleCheckboxes, currentRoles);
         editEmailVerified.setSelected(verified);
+        attachTableTo(editTableHolder);
         showCard("edit");
         editEmailField.requestFocusInWindow();
     }
@@ -1138,16 +1188,6 @@ public final class AdminUserDialog extends JDialog {
         return selected;
     }
 
-    private void addShiftTabToSave(JComponent component) {
-        component.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke("shift TAB"), "admin.edit.focus-save");
-        component.getActionMap().put("admin.edit.focus-save", new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                saveEditButton.requestFocusInWindow();
-            }
-        });
-    }
-
     private void focusBanFormFromSelection() {
         fillEditFormFromSelection();
         updateBanFormVisibility();
@@ -1177,6 +1217,17 @@ public final class AdminUserDialog extends JDialog {
         }
         String s = val.toString().trim();
         return !s.isEmpty();
+    }
+
+    private void forceShiftTabToSave(JComponent component) {
+        component.getInputMap(JComponent.WHEN_FOCUSED)
+                .put(KeyStroke.getKeyStroke("shift TAB"), "admin.edit.wrap-save");
+        component.getActionMap().put("admin.edit.wrap-save", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                saveEditButton.requestFocusInWindow();
+            }
+        });
     }
 
     private static final class OrderedFocusTraversalPolicy extends FocusTraversalPolicy {

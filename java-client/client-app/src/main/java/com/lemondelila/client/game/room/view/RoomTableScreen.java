@@ -10,6 +10,7 @@ import com.lemondelila.client.framework.ui.screen.ScreenManager;
 import com.lemondelila.client.game.bot.event.BotAdded;
 import com.lemondelila.client.game.bot.event.BotOperationFailed;
 import com.lemondelila.client.game.bot.event.BotRemoved;
+import com.lemondelila.client.game.core.controller.GenericUniversalInteractionProvider;
 import com.lemondelila.client.game.core.service.GameInteractionRegistry;
 import com.lemondelila.client.game.core.view.GameDialog;
 import com.lemondelila.client.game.core.view.GameInteractionComponent;
@@ -45,6 +46,7 @@ public final class RoomTableScreen extends BaseTableScreen {
     private final RoomLifecycleService lifecycleService;
     private final RoomTableView view;
     private final GameInteractionRegistry interactionRegistry;
+    private final GenericUniversalInteractionProvider defaultInteractionProvider;
     private final RoomTableController controller;
     private ScreenManager screenManager;
     private GameInteractionComponent currentInteraction;
@@ -62,6 +64,7 @@ public final class RoomTableScreen extends BaseTableScreen {
                            TableState tableState,
                            RoomLifecycleService lifecycleService,
                            GameInteractionRegistry interactionRegistry,
+                           GenericUniversalInteractionProvider defaultInteractionProvider,
                            RoomTableController controller) {
         super(detailsState, shortcutManager, announcer, historySidebar, eventBus);
         setLayout(new BorderLayout(8, 8));
@@ -72,6 +75,7 @@ public final class RoomTableScreen extends BaseTableScreen {
         this.tableState = tableState;
         this.lifecycleService = lifecycleService;
         this.interactionRegistry = interactionRegistry;
+        this.defaultInteractionProvider = defaultInteractionProvider; // force l'initialisation et l'enregistrement du provider générique
         this.controller = controller;
         this.view = new RoomTableView(focusHighlighter, historySidebar);
 
@@ -144,6 +148,9 @@ public final class RoomTableScreen extends BaseTableScreen {
     private void handleLaunch() {
         if (currentInteraction instanceof PrimaryActionCapable capable) {
             capable.triggerPrimaryAction();
+            if (!tableState.started()) {
+                controller.requestStartGame();
+            }
             return;
         }
         if (tableState.started()) {

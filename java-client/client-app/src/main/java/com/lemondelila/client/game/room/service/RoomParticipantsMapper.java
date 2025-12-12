@@ -43,7 +43,7 @@ public final class RoomParticipantsMapper {
         if (tableState == null || extras == null || extras.isEmpty()) return;
 
         List<PlayerState> players = null;
-        List<BotState> bots = new ArrayList<>(tableState.bots());
+        List<BotState> bots = new ArrayList<>();
         List<Integer> order = new ArrayList<>();
 
         Object playersNode = extras.get("players");
@@ -84,18 +84,19 @@ public final class RoomParticipantsMapper {
         }
 
         if (players != null) {
-            tableState.updatePlayers(players);
+            tableState.updatePlayers(deduplicatePlayers(players));
         }
         tableState.updateBots(deduplicateBots(bots));
         if (order.isEmpty()) {
             // Fallback : ordre joueurs puis bots connus
             players = players == null ? tableState.players() : players;
-            for (PlayerState p : players) {
+            for (PlayerState p : deduplicatePlayers(players)) {
                 if (p != null && p.id() != null && order.stream().noneMatch(id -> Objects.equals(id, p.id()))) {
                     order.add(p.id());
                 }
             }
-            for (BotState b : bots) {
+            List<BotState> botsSource = bots.isEmpty() ? tableState.bots() : bots;
+            for (BotState b : deduplicateBots(botsSource)) {
                 if (b != null && b.id() != null && order.stream().noneMatch(id -> Objects.equals(id, b.id()))) {
                     order.add(b.id());
                 }
@@ -105,25 +106,27 @@ public final class RoomParticipantsMapper {
     }
 
     private static List<BotState> deduplicateBots(List<BotState> bots) {
-        List<BotState> unique = new ArrayList<>();
+        java.util.Map<Integer, BotState> byId = new java.util.HashMap<>();
+        java.util.Map<String, BotState> byName = new java.util.HashMap<>();
         for (BotState bot : bots) {
-            if (bot == null) {
-                continue;
-            }
-            boolean exists = unique.stream().anyMatch(existing -> {
-                if (existing.id() != null && bot.id() != null) {
-                    return Objects.equals(existing.id(), bot.id());
-                }
-                // prefer existing positive id when names collide
-                if (normalize(existing.name()).equals(normalize(bot.name()))) {
-                    return true;
-                }
-                return false;
-            });
-            if (!exists) {
-                unique.add(bot);
+            if (bot == null) continue;
+            Integer id = bot.id();
+            String nameKey = normalize(bot.name());
+            if (id != null) {
+                byId.put(id, bot); // id unique : on garde la dernière occurrence (id>0 prioritaire en mergeBot)
+            } else if (!nameKey.isEmpty()) {
+                // si pas d'id, on déduplique par nom seulement si aucun id n'existe déjà pour ce nom
+                byName.putIfAbsent(nameKey, bot);
             }
         }
+        List<BotState> unique = new ArrayList<>(byId.values());
+        byName.forEach((k, v) -> {
+            // n'ajouter que si aucun bot avec même nom et id dans byId
+            boolean existsSameName = unique.stream().anyMatch(b -> normalize(b.name()).equals(k));
+            if (!existsSameName) {
+                unique.add(v);
+            }
+        });
         return unique;
     }
 
@@ -131,18 +134,18 @@ public final class RoomParticipantsMapper {
         if (incoming == null) {
             return;
         }
-        String name = normalize(incoming.name());
         Integer id = incoming.id();
+        String nameKey = normalize(incoming.name());
         for (int i = 0; i < bots.size(); i++) {
             BotState existing = bots.get(i);
-            if (existing == null) {
-                continue;
-            }
+            if (existing == null) continue;
             boolean sameId = existing.id() != null && id != null && Objects.equals(existing.id(), id);
-            boolean sameName = normalize(existing.name()).equals(name);
-            if (sameId || sameName) {
-                // replace placeholder (id <= 0 or null) with a real id if available
+            boolean sameNameNoId = existing.id() == null && id == null && normalize(existing.name()).equals(nameKey);
+            if (sameId || sameNameNoId) {
+                // remplacer si le nouvel enregistrement est plus precis (id connu ou nom non vide)
                 if ((existing.id() == null || existing.id() <= 0) && id != null && id > 0) {
+                    bots.set(i, incoming);
+                } else if ((existing.name() == null || existing.name().isBlank()) && incoming.name() != null) {
                     bots.set(i, incoming);
                 }
                 return;
@@ -154,4 +157,28 @@ public final class RoomParticipantsMapper {
     private static String normalize(String value) {
         return value == null ? "" : value.trim().toLowerCase();
     }
+
+    private static List<PlayerState> deduplicatePlayers(List<PlayerState> players) {
+        java.util.Map<Integer, PlayerState> byId = new java.util.HashMap<>();
+        java.util.Map<String, PlayerState> byName = new java.util.HashMap<>();
+        for (PlayerState p : players) {
+            if (p == null) continue;
+            Integer id = p.id();
+            String nameKey = normalize(p.username());
+            if (id != null) {
+                byId.put(id, p);
+            } else if (!nameKey.isEmpty()) {
+                byName.putIfAbsent(nameKey, p);
+            }
+        }
+        List<PlayerState> unique = new ArrayList<>(byId.values());
+        byName.forEach((k, v) -> {
+            boolean existsSameName = unique.stream().anyMatch(x -> normalize(x.username()).equals(k));
+            if (!existsSameName) {
+                unique.add(v);
+            }
+        });
+        return unique;
+    }
 }
+

@@ -6,14 +6,13 @@ import { Server, WebSocket } from 'ws';
 import { GameEngineService } from '../services/game-engine.service';
 import { WsAuthPayload } from '../../../common/interfaces/ws-auth-payload';
 import { GameSingleActionDto } from '../dto/game-action.dto';
+import { playingLog } from '../../../common/utils/playing-logger';
 
 type IncomingPayload = { type?: string; payload?: any };
 type GameClient = { socket: WebSocket; userId: number; roomId: number | null; gameType: string | null };
 
 @WebSocketGateway({ path: '/ws/game' })
-export class GameGateway
-  implements OnGatewayConnection<WebSocket>, OnGatewayDisconnect<WebSocket>
-{
+export class GameGateway implements OnGatewayConnection<WebSocket>, OnGatewayDisconnect<WebSocket> {
   @WebSocketServer()
   server!: Server<WebSocket>;
 
@@ -22,16 +21,15 @@ export class GameGateway
   private readonly jwtSecret: string;
   private readonly logger = new Logger(GameGateway.name);
 
-  constructor(
-    private readonly engine: GameEngineService,
-    config: ConfigService,
-  ) {
+  constructor(private readonly engine: GameEngineService, config: ConfigService) {
     const secret = config.get<string>('JWT_SECRET');
     if (!secret) {
-      throw new Error('JWT_SECRET doit être défini pour le WS game');
+      throw new Error('JWT_SECRET doit etre defini pour le WS game');
     }
     this.jwtSecret = secret;
     this.engine.setBroadcaster((gameType, roomId, state) => this.broadcastState(gameType, roomId, state));
+    // Log d'amorçage pour vérifier le chemin de log.
+    playingLog('ws.game.gateway.init', { logPath: 'log/playing.log (racine ou backend/log)', gateway: '/ws/game' });
   }
 
   async handleConnection(client: WebSocket, ...args: any[]) {
@@ -91,7 +89,14 @@ export class GameGateway
           break;
       }
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Erreur temps réel';
+      const message = err instanceof Error ? err.message : 'Erreur temps reel';
+      playingLog('ws.game.error', {
+        userId: meta?.userId ?? null,
+        roomId: meta?.roomId ?? null,
+        gameType: meta?.gameType ?? null,
+        type,
+        message,
+      });
       this.sendError(client, message, type);
     }
   }
@@ -102,6 +107,7 @@ export class GameGateway
     await this.engine.checkAccess(roomId, meta.userId);
     const state = await this.engine.getState(roomId, gameType);
     this.setRoom(meta, roomId, gameType, client);
+    playingLog('ws.game.join', { userId: meta.userId, roomId, gameType });
     this.safeSend(client, { type: 'game.state', payload: state });
   }
 
@@ -109,11 +115,12 @@ export class GameGateway
     const roomId = Number(payload?.roomId ?? meta.roomId ?? 0);
     const gameType = String(payload?.gameType ?? meta.gameType ?? '');
     if (!roomId || !gameType) {
-      this.sendError(client, 'Paramètres jeu manquants', 'game.state');
+      this.sendError(client, 'Parametres jeu manquants', 'game.state');
       return;
     }
     await this.engine.checkAccess(roomId, meta.userId);
     const state = await this.engine.getState(roomId, gameType);
+    playingLog('ws.game.state.request', { userId: meta.userId, roomId, gameType });
     this.safeSend(client, { type: 'game.state', payload: state });
   }
 
@@ -125,6 +132,7 @@ export class GameGateway
     }
     await this.engine.checkAccess(roomId, meta.userId);
     const actions: GameSingleActionDto[] = Array.isArray(payload?.actions) ? payload.actions : [];
+    playingLog('ws.game.actions', { userId: meta.userId, roomId, gameType, count: actions.length });
     const nextState = await this.engine.applyActions(roomId, gameType, actions, meta.userId);
     this.broadcastState(gameType, roomId, nextState);
   }
@@ -135,11 +143,18 @@ export class GameGateway
     const gameType = String(payload?.gameType ?? meta.gameType ?? '');
     const playerId = payload?.playerId ? Number(payload.playerId) : meta.userId;
     if (!roomId || !gameType) {
-      this.sendError(client, 'Paramètres jeu manquants', 'game.actions.available');
+      this.sendError(client, 'Parametres jeu manquants', 'game.actions.available');
       return;
     }
     await this.engine.checkAccess(roomId, meta.userId);
     const actions = await this.engine.getAvailableActions(roomId, gameType, playerId);
+    playingLog('ws.game.actions.available', {
+      userId: meta.userId,
+      roomId,
+      gameType,
+      playerId,
+      count: actions.length,
+    });
     this.safeSend(client, {
       type: 'game.actions.available',
       payload: { actions, roomId, gameType, playerId },
@@ -152,9 +167,10 @@ export class GameGateway
     if (!roomId || !gameType) {
       return;
     }
-    // Seul le propriétaire de la table (ou un rôle privilégié côté RoomService) peut forcer le bot.
+    // Seul le proprietaire de la table (ou un role privilegie cote RoomService) peut forcer le bot.
     await this.engine.checkAccess(roomId, meta.userId, true);
     const state = await this.engine.playBotTurn(roomId, gameType);
+    playingLog('ws.game.bot.play', { userId: meta.userId, roomId, gameType });
     this.broadcastState(gameType, roomId, state);
   }
 
@@ -174,6 +190,14 @@ export class GameGateway
         targets.delete(socket);
       }
     }
+    playingLog('ws.game.broadcast', {
+      roomId,
+      gameType,
+      subscribers: targets ? targets.size : 0,
+      status: state?.status ?? null,
+      turnIndex: state?.turnIndex ?? null,
+      currentPlayerId: state?.turn?.currentPlayerId ?? null,
+    });
   }
 
   private setRoom(meta: GameClient, roomId: number, gameType: string, client: WebSocket) {

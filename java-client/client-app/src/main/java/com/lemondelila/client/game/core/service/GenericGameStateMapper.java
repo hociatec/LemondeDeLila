@@ -34,22 +34,43 @@ public final class GenericGameStateMapper {
             });
         }
 
-        GenericGameState.PendingQuiz pending = null;
+        GenericGameState.PendingQuiz pendingQuiz = null;
+        GenericGameState.PendingGeneric pendingGeneric = null;
         JsonNode pendingNode = json.path("pending");
         if (pendingNode.isObject() && "quiz".equalsIgnoreCase(pendingNode.path("type").asText())) {
             List<String> choices = new ArrayList<>();
             if (pendingNode.has("choices") && pendingNode.get("choices").isArray()) {
                 pendingNode.get("choices").forEach(c -> choices.add(c.asText("")));
             }
-            pending = new GenericGameState.PendingQuiz(
+            pendingQuiz = new GenericGameState.PendingQuiz(
                     pendingNode.path("question").asText(""),
                     choices,
                     pendingNode.path("playerId").isInt() ? pendingNode.get("playerId").asInt() : null
             );
+        } else if (pendingNode.isObject()) {
+            String pendingType = pendingNode.path("type").asText("");
+            String name = pendingNode.path("name").asText("");
+            Integer playerId = pendingNode.path("playerId").isInt() ? pendingNode.get("playerId").asInt() : null;
+            Integer targetPlayerId = pendingNode.path("targetPlayerId").isInt() ? pendingNode.get("targetPlayerId").asInt() : null;
+            pendingGeneric = new GenericGameState.PendingGeneric(
+                    pendingType,
+                    name,
+                    playerId,
+                    targetPlayerId,
+                    pendingNode
+            );
         }
-        JsonNode pendingExchangeNode = json.path("exchangePending");
-        if (!pendingExchangeNode.isObject()) {
-            pendingExchangeNode = null;
+        JsonNode pendingExchangeNode = null;
+
+        List<GenericGameState.GenericAction> actions = new ArrayList<>();
+        JsonNode actionsNode = json.path("actions");
+        if (actionsNode.isArray()) {
+            actionsNode.forEach(node -> {
+                String type = node.path("type").asText("");
+                String label = node.path("label").asText("");
+                JsonNode payload = node.path("payload");
+                actions.add(new GenericGameState.GenericAction(type, label, payload.isMissingNode() ? null : payload));
+            });
         }
 
         Map<String, Object> extras = new HashMap<>();
@@ -65,8 +86,21 @@ public final class GenericGameStateMapper {
         if (json.has("deck")) {
             extras.put("deck", json.get("deck"));
         }
+        List<GenericGameState.ActionLogEntry> actionLog = new ArrayList<>();
         if (json.has("metadata")) {
             extras.put("metadata", json.get("metadata"));
+            JsonNode metadata = json.get("metadata");
+            JsonNode actionLogNode = metadata.path("actionLog");
+            if (actionLogNode.isArray()) {
+                actionLogNode.forEach(entry -> {
+                    Integer actorId = entry.path("actorId").isInt() ? entry.get("actorId").asInt() : null;
+                    String type = entry.path("type").asText("");
+                    JsonNode payload = entry.path("payload");
+                    Long ts = entry.path("timestamp").isLong() ? entry.get("timestamp").asLong() : null;
+                    String step = entry.path("step").asText("");
+                    actionLog.add(new GenericGameState.ActionLogEntry(actorId, type, payload.isMissingNode() ? null : payload, ts, step));
+                });
+            }
         }
         if (json.has("catalog")) {
             extras.put("catalog", json.get("catalog"));
@@ -74,10 +108,17 @@ public final class GenericGameStateMapper {
         if (json.has("pollution")) {
             extras.put("pollution", json.get("pollution"));
         }
-        if (pendingExchangeNode != null) {
-            extras.put("pendingExchange", pendingExchangeNode);
+        if (pendingNode.isObject()) {
+            String pendingType = pendingNode.path("type").asText("");
+            if ("exchange".equalsIgnoreCase(pendingType)) {
+                extras.put("pendingExchange", pendingNode);
+            } else if ("vote".equalsIgnoreCase(pendingType) || "day_vote".equalsIgnoreCase(pendingType)) {
+                extras.put("pendingVote", pendingNode);
+            }
         }
 
-        return new GenericGameState(status, phase, round, turnIndex, lastRoll, logs, pending, botThinking, extras);
+        Object pending = pendingNode.isMissingNode() ? null : pendingNode;
+        Object exposedPending = pendingQuiz != null ? pendingQuiz : pendingGeneric;
+        return new GenericGameState(status, phase, round, turnIndex, lastRoll, logs, pendingQuiz, botThinking, extras, actions, actionLog, exposedPending);
     }
 }

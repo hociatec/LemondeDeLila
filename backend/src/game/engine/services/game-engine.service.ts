@@ -2,7 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { RoomService } from '../../../room/services/room.service';
 import { RoomPayload } from '../../../room/dto/room-response.dto';
 import { GameCoreService } from '../../core/services/game-core.service';
-import { GameSingleActionDto, GameStateResponse } from '../dto/game-action.dto';
+import { GameSingleActionDto, GameStateResponse, GameStateWithActions } from '../dto/game-action.dto';
 import { GameRegistryService } from './game-registry.service';
 import { GameStateEntity } from '../../core/entities/game-state.entity';
 import type { BotStrategy, GameRulesAdapter } from '../interfaces/game-rules-adapter.interface';
@@ -12,7 +12,7 @@ import { playingLog } from '../../../common/utils/playing-logger';
 export class GameEngineService {
   private readonly states = new Map<string, GameStateEntity>();
   private readonly botTimers = new Map<string, NodeJS.Timeout>();
-  private broadcaster?: (gameType: string, roomId: number, state: GameStateResponse) => void;
+  private broadcaster?: (gameType: string, roomId: number, state: GameStateWithActions) => void;
 
   constructor(
     private readonly rooms: RoomService,
@@ -21,12 +21,12 @@ export class GameEngineService {
   ) {}
 
   setBroadcaster(
-    fn: (gameType: string, roomId: number, state: GameStateResponse) => void,
+    fn: (gameType: string, roomId: number, state: GameStateWithActions) => void,
   ): void {
     this.broadcaster = fn;
   }
 
-  async getState(roomId: number, gameType: string): Promise<GameStateResponse> {
+  async getState(roomId: number, gameType: string): Promise<GameStateWithActions> {
     const key = this.buildKey(roomId, gameType);
     const payload = await this.rooms.getRoomPayload(roomId);
     const existing = this.states.get(key);
@@ -50,16 +50,16 @@ export class GameEngineService {
         const rebuilt = await this.buildInitialState(payload, gameType);
         const marked = this.markBotThinking(roomId, gameType, rebuilt);
         this.scheduleBotTurn(roomId, gameType, marked);
-        return marked;
+        return this.exposeState(marked, gameType);
       }
       const marked = this.markBotThinking(roomId, gameType, synced);
       this.scheduleBotTurn(roomId, gameType, marked);
-      return marked;
+      return this.exposeState(marked, gameType);
     }
     const state = await this.buildInitialState(payload, gameType);
     const marked = this.markBotThinking(roomId, gameType, state);
     this.scheduleBotTurn(roomId, gameType, marked);
-    return marked;
+    return this.exposeState(marked, gameType);
   }
 
   async applyActions(
@@ -71,8 +71,9 @@ export class GameEngineService {
   ): Promise<GameStateResponse> {
     const current = await this.getState(roomId, gameType);
     if ((current.status || '').toLowerCase() === 'finished') {
-      return current;
+      return this.exposeState(current, gameType);
     }
+    const handler = this.registry.getHandler(gameType);
     if (!allowBotTurn && (!actorId || Number.isNaN(actorId))) {
       throw new UnauthorizedException('Authentification requise pour jouer.');
     }
@@ -81,13 +82,15 @@ export class GameEngineService {
     }
     const currentPlayerId = current.turn?.currentPlayerId ?? null;
     const currentPlayer = current.players?.find((p) => p.id === currentPlayerId);
-    if (currentPlayer?.isBot && !allowBotTurn) {
-      throw new UnauthorizedException('Tour en cours : action réservée au bot.');
+    const actorOverride = handler?.validateActor?.(current, actions, actorId ?? null) === true;
+    if (!allowBotTurn && !actorOverride) {
+      if (currentPlayer?.isBot) {
+        throw new UnauthorizedException('Tour en cours : action réservée au bot.');
+      }
+      if (currentPlayerId !== actorId) {
+        throw new UnauthorizedException('Ce n’est pas votre tour.');
+      }
     }
-    if (!allowBotTurn && currentPlayerId !== actorId) {
-      throw new UnauthorizedException('Ce n’est pas votre tour.');
-    }
-    const handler = this.registry.getHandler(gameType);
 
     const actorLabel = allowBotTurn ? 'bot' : 'human';
     const sanitizedActions = Array.isArray(actions)
@@ -134,10 +137,11 @@ export class GameEngineService {
       isBotTurn: botTurn,
       botThinking: marked.botThinking ?? false,
     });
-    return marked;
+    return this.exposeState(marked, gameType);
   }
 
-  async playBotTurn(roomId: number, gameType: string): Promise<GameStateResponse> {
+  async playBotTurn(roomId: number, gameType: string): Promise<GameStateWithActions> {
+    playingLog('engine.bot.tick', { roomId, gameType });
     const state = await this.getState(roomId, gameType);
     const key = this.buildKey(roomId, gameType);
     this.clearBotTimer(key);
@@ -146,16 +150,29 @@ export class GameEngineService {
     const currentPlayer = state.players?.find((p) => p.id === currentPlayerId);
 
     if (!currentPlayer || !currentPlayer.isBot) {
-      return state;
+      return this.exposeState(state, gameType);
     }
 
-    const botActions =
+    let botActions =
       currentPlayerId != null ? this.suggestBotActions(handler, state, currentPlayerId) : null;
     if (!botActions || botActions.length === 0) {
-      const logged = this.core.appendLog(state, 'Aucune action bot disponible.');
-      this.states.set(key, logged);
-      this.broadcaster?.(gameType, roomId, logged);
-      return logged;
+      // Tentative de secours : prendre la première action disponible si le handler l'expose.
+      const fallback =
+        handler?.getAvailableActions && currentPlayerId != null
+          ? handler.getAvailableActions(state, currentPlayerId)
+          : [];
+      if (Array.isArray(fallback) && fallback.length > 0) {
+        botActions = [fallback[0]];
+      }
+    }
+    if (!botActions || botActions.length === 0) {
+      const logged = this.core.appendLog(state, 'Aucune action bot disponible, passage automatique.');
+      // Passage de tour implicite : on stocke l'état et on planifie le prochain tick sans bloquer.
+      const marked = this.markBotThinking(roomId, gameType, logged, false);
+      this.states.set(key, marked);
+      this.broadcaster?.(gameType, roomId, this.exposeState(marked, gameType));
+      this.scheduleBotTurn(roomId, gameType, marked);
+      return this.exposeState(marked, gameType);
     }
 
     playingLog('engine.bot.play', {
@@ -170,7 +187,7 @@ export class GameEngineService {
     const next = await this.applyActions(roomId, gameType, botActions, null, true);
     this.broadcaster?.(gameType, roomId, next);
     this.scheduleBotTurn(roomId, gameType, next);
-    return next;
+    return this.exposeState(next, gameType);
   }
 
   private suggestBotActions(
@@ -216,8 +233,13 @@ export class GameEngineService {
       this.clearBotTimer(key);
       return;
     }
+    const blockingPending = (state as any).pending?.blocking === true;
     const currentId = state.turn?.currentPlayerId ?? null;
     const currentPlayer = state.players?.find((p) => p.id === currentId);
+    if (blockingPending && !currentPlayer?.isBot) {
+      this.clearBotTimer(key);
+      return;
+    }
     if (!currentPlayer || !currentPlayer.isBot) {
       this.clearBotTimer(key);
       return;
@@ -240,7 +262,14 @@ export class GameEngineService {
       delayMs,
     });
     const timer = setTimeout(() => {
-      this.playBotTurn(roomId, gameType).catch(() => {});
+      playingLog('engine.bot.timer', { roomId, gameType });
+      this.playBotTurn(roomId, gameType).catch((err) => {
+        playingLog('engine.bot.error', {
+          roomId,
+          gameType,
+          message: err instanceof Error ? err.message : String(err),
+        });
+      });
     }, delayMs);
     this.botTimers.set(key, timer);
   }
@@ -296,6 +325,18 @@ export class GameEngineService {
     if (!payloadStatus || payloadStatus === state.status) {
       return state;
     }
+    // Ne pas rétrograder un état déjà démarré vers setup/open si le payload n'est pas à jour.
+    if ((state.status || '').toLowerCase() === 'started' && payloadStatus !== 'finished') {
+      return state;
+    }
     return { ...state, status: payloadStatus };
+  }
+
+  private exposeState(state: GameStateEntity, gameType: string): GameStateWithActions {
+    const handler = this.registry.getHandler(gameType);
+    if (handler?.exposeState) {
+      return handler.exposeState(state) as GameStateWithActions;
+    }
+    return state as GameStateWithActions;
   }
 }

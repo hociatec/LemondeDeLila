@@ -1,10 +1,10 @@
 package com.lemondelila.client.game.core.view;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lemondelila.client.framework.access.AccessibleDecorator;
 import com.lemondelila.client.framework.access.AccessibleSpec;
 import com.lemondelila.client.framework.access.FocusHighlighter;
-import com.lemondelila.client.framework.ui.keyboard.KeyboardBindings;
 import com.lemondelila.client.framework.ui.screen.ScreenId;
 import com.lemondelila.client.game.core.controller.GenericGameInteractionController;
 import com.lemondelila.client.game.core.model.ActionRequest;
@@ -19,6 +19,10 @@ import com.lemondelila.client.game.room.service.RoomParticipantsMapper;
 import com.lemondelila.client.game.turn.controller.TurnController;
 import com.lemondelila.client.game.turn.model.TurnState;
 import com.lemondelila.client.game.turn.view.GameStatusPanel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import javax.swing.DefaultListModel;
+import javax.swing.JList;
 
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
@@ -37,12 +41,17 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.IntStream;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.text.Normalizer;
 
 /**
  * Composant d'interaction gĂŠnĂŠrique pour les jeux (statut, quiz, logs, action primaire).
  */
 public final class GenericGameInteractionComponent extends JPanel implements GameInteractionComponent, GenericGameInteractionController.Listener, PrimaryActionCapable {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(GenericGameInteractionComponent.class);
     private final GenericGameInteractionController controller;
     private final GameActionEmitter emitter;
     private final GameHistoryController history;
@@ -53,7 +62,11 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
     private final PrimaryActionDescriptor primaryAction;
     private final boolean autoPrimaryAfterStart;
     private final TurnController turnController;
+    private final ObjectMapper mapper = new ObjectMapper();
     private final JLabel infoLabel = new JLabel();
+    private final JLabel pendingLabel = new JLabel();
+    private final DefaultListModel<GenericGameState.GenericAction> actionsModel = new DefaultListModel<>();
+    private final JList<GenericGameState.GenericAction> actionsList = new JList<>(actionsModel);
     private Integer lastRollSeen;
     private boolean gameStarted;
     private boolean startAnnounced;
@@ -104,30 +117,79 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
                 .description("Informations sur la partie")
                 .build());
         focusHighlighter.apply(infoLabel);
+        AccessibleDecorator.apply(pendingLabel, AccessibleSpec.builder()
+                .name("Action en attente")
+                .description("Indication sur l’action ou le vote en attente")
+                .build());
+        focusHighlighter.apply(pendingLabel);
+        AccessibleDecorator.apply(actionsList, AccessibleSpec.builder()
+                .name("Actions disponibles")
+                .description("Liste des actions exposées par le serveur")
+                .build());
+        focusHighlighter.apply(actionsList);
 
         JPanel left = new JPanel(new BorderLayout(6, 6));
         left.add(statusPanel, BorderLayout.NORTH);
         if (quizComponent != null) {
             left.add(quizComponent.getComponent(), BorderLayout.CENTER);
         }
-        left.add(infoLabel, BorderLayout.SOUTH);
+        JPanel infoPanel = new JPanel(new BorderLayout(4, 4));
+        infoPanel.add(pendingLabel, BorderLayout.NORTH);
+        javax.swing.JLabel shortcutsLabel = new javax.swing.JLabel("Raccourcis : [Espace] piocher, [Entrée] lancer le dé");
+        AccessibleDecorator.apply(shortcutsLabel, AccessibleSpec.builder()
+                .name("Raccourcis clavier")
+                .description("Espace pour piocher, Entrée pour lancer le dé quand disponible")
+                .build());
+        focusHighlighter.apply(shortcutsLabel);
+        infoPanel.add(shortcutsLabel, BorderLayout.CENTER);
+        infoPanel.add(infoLabel, BorderLayout.SOUTH);
+        left.add(infoPanel, BorderLayout.SOUTH);
 
         cardContainer.add(left, CARD_DEFAULT);
         add(cardContainer, BorderLayout.CENTER);
+        // Liste cachée : les actions se déclenchent via les raccourcis clavier.
+        actionsList.setVisible(false);
 
-        if (primaryAction != null) {
-            KeyboardBindings.bindEnter(this, this::triggerPrimaryAction, "generic.enter.primary");
-            javax.swing.InputMap windowMap = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
-            javax.swing.ActionMap actions = getActionMap();
-            windowMap.put(javax.swing.KeyStroke.getKeyStroke("ENTER"), "generic.enter.primary.global");
-            actions.put("generic.enter.primary.global", new javax.swing.AbstractAction() {
-                @Override
-                public void actionPerformed(java.awt.event.ActionEvent e) {
-                    triggerPrimaryAction();
+        actionsList.addListSelectionListener(e -> refreshInfoLabel());
+        actionsList.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                if (e.getClickCount() >= 2) {
+                    dispatchSelectedAction();
                 }
-            });
-            configureQuizNavigation(windowMap, actions);
-        }
+            }
+        });
+        javax.swing.InputMap listMap = actionsList.getInputMap(JComponent.WHEN_FOCUSED);
+        javax.swing.ActionMap listActions = actionsList.getActionMap();
+        listMap.put(KeyStroke.getKeyStroke("ENTER"), "actions.trigger");
+        listActions.put("actions.trigger", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dispatchSelectedAction();
+            }
+        });
+
+        javax.swing.InputMap windowMap = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        javax.swing.ActionMap actions = getActionMap();
+        windowMap.put(javax.swing.KeyStroke.getKeyStroke("ENTER"), "shortcut.roll-or-primary");
+        actions.put("shortcut.roll-or-primary", new javax.swing.AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                handleRollShortcut();
+            }
+        });
+        windowMap.put(javax.swing.KeyStroke.getKeyStroke("SPACE"), "shortcut.draw");
+        actions.put("shortcut.draw", new javax.swing.AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                handleDrawShortcut();
+            }
+        });
+        configureQuizNavigation(windowMap, actions);
+        actionsList.setCellRenderer((list, value, index, isSelected, cellHasFocus) -> {
+            String label = (value.label() != null && !value.label().isBlank()) ? value.label() : value.type();
+            return new javax.swing.JLabel(label);
+        });
     }
 
     private void configureQuizNavigation(InputMap inputMap, ActionMap actions) {
@@ -293,6 +355,8 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         renderLogs(state.logs());
         renderTurn(state);
         renderQuiz(state.pendingQuiz());
+        renderPending(state.pending());
+        renderActions(state);
     }
 
     private void renderLogs(List<String> logs) {
@@ -377,13 +441,27 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         if (quizChoiceIndex < 0 || quizChoiceIndex >= activeQuiz.choices().size()) {
             quizChoiceIndex = 0;
         }
-        controller.sendActions(List.of(ActionRequest.of("answer_quiz", Map.of("choice", quizChoiceIndex))));
+        String answer = "";
+        if (activeQuiz != null && quizChoiceIndex >= 0 && quizChoiceIndex < activeQuiz.choices().size()) {
+            answer = activeQuiz.choices().get(quizChoiceIndex);
+        }
+        controller.sendActions(List.of(ActionRequest.of("answer_quiz", Map.of("answer", answer))));
         activeQuiz = null;
         quizChoiceIndex = -1;
         if (quizComponent != null) {
             quizComponent.highlightChoice(-1);
         }
         infoLabel.setText("");
+    }
+
+    private void renderActions(GenericGameState state) {
+        actionsModel.clear();
+        if (state != null && state.actions() != null) {
+            state.actions().forEach(actionsModel::addElement);
+        }
+        if (!actionsModel.isEmpty()) {
+            selectActionForPending(state);
+        }
     }
 
     private void renderTurn(GenericGameState state) {
@@ -470,6 +548,112 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         return "Le joueur";
     }
 
+    private void dispatchSelectedAction() {
+        GenericGameState.GenericAction selected = actionsList.getSelectedValue();
+        if (selected == null || selected.type() == null || selected.type().isBlank()) {
+            emitter.announceError("Aucune action sélectionnée.");
+            return;
+        }
+        Map<String, Object> payload = toPayload(selected.payload());
+        controller.sendActions(List.of(ActionRequest.of(selected.type(), payload)));
+    }
+
+    private Map<String, Object> toPayload(Object payload) {
+        if (payload == null) return Map.of();
+        if (payload instanceof Map<?, ?> map) {
+            Map<String, Object> safe = new LinkedHashMap<>();
+            map.forEach((k, v) -> {
+                if (k != null) {
+                    safe.put(k.toString(), v);
+                }
+            });
+            return safe;
+        }
+        if (payload instanceof JsonNode node) {
+            return mapper.convertValue(node, Map.class);
+        }
+        try {
+            return mapper.convertValue(payload, Map.class);
+        } catch (IllegalArgumentException ex) {
+            return Collections.emptyMap();
+        }
+    }
+
+    private void selectActionForPending(GenericGameState state) {
+        String pendingType = null;
+        Object pendingRaw = state.pending();
+        if (pendingRaw instanceof JsonNode node) {
+            pendingType = node.path("type").asText("");
+        } else if (pendingRaw != null) {
+            JsonNode node = mapper.valueToTree(pendingRaw);
+            pendingType = node.path("type").asText("");
+        }
+        if (pendingType == null || pendingType.isBlank()) {
+            actionsList.setSelectedIndex(0);
+            return;
+        }
+        for (int i = 0; i < actionsModel.size(); i++) {
+            GenericGameState.GenericAction act = actionsModel.get(i);
+            if (act == null || act.type() == null) continue;
+            if (pendingType.equalsIgnoreCase(act.type())) {
+                actionsList.setSelectedIndex(i);
+                actionsList.ensureIndexIsVisible(i);
+                return;
+            }
+            if ("vote".equalsIgnoreCase(pendingType) && "day_vote".equalsIgnoreCase(act.type())) {
+                actionsList.setSelectedIndex(i);
+                actionsList.ensureIndexIsVisible(i);
+                return;
+            }
+            if ("exchange".equalsIgnoreCase(pendingType) && act.type().toLowerCase().contains("exchange")) {
+                actionsList.setSelectedIndex(i);
+                actionsList.ensureIndexIsVisible(i);
+                return;
+            }
+        }
+        actionsList.setSelectedIndex(0);
+    }
+
+    private void renderPending(Object pending) {
+        if (pending == null) {
+            pendingLabel.setText("");
+            if (infoLabel.getText() != null && !infoLabel.getText().startsWith("Quiz")) {
+                infoLabel.setText("");
+            }
+            return;
+        }
+        String text = describePending(pending);
+        if (text != null && !text.isBlank()) {
+            pendingLabel.setText(text);
+        }
+    }
+
+    private String describePending(Object pending) {
+        if (pending instanceof GenericGameState.PendingQuiz) {
+            return null; // déjà géré ailleurs
+        }
+        JsonNode node = mapper.valueToTree(pending);
+        if (!node.isObject()) return "";
+        String type = node.path("type").asText("");
+        if ("exchange".equalsIgnoreCase(type)) {
+            String target = node.path("targetPlayerId").isInt() ? " avec le joueur " + node.get("targetPlayerId").asInt() : "";
+            return "Échange en attente" + target;
+        }
+        if ("vote".equalsIgnoreCase(type) || "day_vote".equalsIgnoreCase(type)) {
+            return "Vote en cours : choisissez une cible.";
+        }
+        if ("phase".equalsIgnoreCase(type)) {
+            return "Phase en cours : " + node.path("name").asText("");
+        }
+        if ("quiz".equalsIgnoreCase(type)) {
+            return null;
+        }
+        if (node.has("message")) {
+            return node.get("message").asText("");
+        }
+        return "Action en attente...";
+    }
+
     @Override
     public void triggerPrimaryAction() {
         if (exchangeActive) {
@@ -496,7 +680,121 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         }
         if (primaryAction != null) {
             controller.triggerPrimaryAction();
+        } else {
+            triggerSelectedAction();
         }
+    }
+
+    private void triggerSelectedAction() {
+        GenericGameState.GenericAction selected = actionsList.getSelectedValue();
+        if (selected == null) return;
+        dispatchAction(selected);
+    }
+
+    private boolean dispatchAction(GenericGameState.GenericAction action) {
+        if (action == null || action.type() == null || action.type().isBlank()) {
+            return false;
+        }
+        Map<String, Object> payload = toPayload(action.payload());
+        controller.sendActions(List.of(ActionRequest.of(action.type(), payload)));
+        LOGGER.info("[shortcut] action envoyee type={} payloadKeys={}", action.type(), payload.keySet());
+        return true;
+    }
+
+    private void handleDrawShortcut() {
+        LOGGER.info("[shortcut] espace pressed actions={}", describeActions());
+        if (activeQuiz != null) {
+            // En mode quiz, on ignore Espace pour ne pas envoyer d'action parasite.
+            return;
+        }
+        if (!tableState.started()) {
+            return; // Pas de pioche avant le dンmarrage de la partie.
+        }
+        if (hasActionMatching(this::isDrawAction)) {
+            dispatchActionMatching(this::isDrawAction);
+        }
+    }
+
+    private void handleRollShortcut() {
+        LOGGER.info("[shortcut] entree pressed actions={}", describeActions());
+        if (submitIfQuizActive()) {
+            return;
+        }
+        // Si la partie n'est pas lancee, utiliser le comportement de demarrage (equivalent bouton Start).
+        if (!tableState.started()) {
+            triggerPrimaryAction();
+            return;
+        }
+        if (hasActionMatching(this::isDiceAction)) {
+            dispatchActionMatching(this::isDiceAction);
+        }
+    }
+
+    private boolean dispatchActionMatching(java.util.function.Predicate<GenericGameState.GenericAction> matcher) {
+        for (int i = 0; i < actionsModel.size(); i++) {
+            GenericGameState.GenericAction act = actionsModel.get(i);
+            if (act == null) continue;
+            if (matcher.test(act)) {
+                actionsList.setSelectedIndex(i);
+                return dispatchAction(act);
+            }
+        }
+        return false;
+    }
+
+    private boolean hasActionMatching(java.util.function.Predicate<GenericGameState.GenericAction> matcher) {
+        for (int i = 0; i < actionsModel.size(); i++) {
+            GenericGameState.GenericAction act = actionsModel.get(i);
+            if (act == null) continue;
+            if (matcher.test(act)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean dispatchFirstAvailable() {
+        if (actionsModel.isEmpty()) return false;
+        GenericGameState.GenericAction first = actionsModel.get(0);
+        return dispatchAction(first);
+    }
+
+    private boolean isDrawAction(GenericGameState.GenericAction action) {
+        String text = normalize(action);
+        return containsAny(text, "pioch", "draw", "pick", "take_card", "takecard", "take card");
+    }
+
+    private boolean isDiceAction(GenericGameState.GenericAction action) {
+        String text = normalize(action);
+        return containsAny(text, "roll", "dice", "lancer", "lance", "throw");
+    }
+
+    private String normalize(GenericGameState.GenericAction action) {
+        String raw = ((action.label() == null ? "" : action.label()) + " " + (action.type() == null ? "" : action.type()))
+                .trim();
+        String nfd = Normalizer.normalize(raw, Normalizer.Form.NFD);
+        return nfd.replaceAll("\\p{M}", "").toLowerCase();
+    }
+
+    private boolean containsAny(String text, String... tokens) {
+        if (text == null || text.isBlank()) return false;
+        for (String token : tokens) {
+            if (token != null && !token.isBlank() && text.contains(token.toLowerCase())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private String describeActions() {
+        if (actionsModel.isEmpty()) return "[]";
+        java.util.List<String> list = new java.util.ArrayList<>();
+        for (int i = 0; i < actionsModel.size(); i++) {
+            GenericGameState.GenericAction a = actionsModel.get(i);
+            if (a == null) continue;
+            list.add((a.type() == null ? "" : a.type()) + ":" + (a.label() == null ? "" : a.label()));
+        }
+        return list.toString();
     }
 
     private void syncTableState(GenericGameState state) {

@@ -9,14 +9,24 @@ import java.util.Optional;
 public final class GameInteractionRegistry {
 
     private final Map<String, GameInteractionProvider> providers = new HashMap<>();
+    private GameInteractionProvider defaultProvider;
 
     public void register(GameInteractionProvider provider) {
         if (provider == null || provider.gameType() == null) return;
-        providers.put(provider.gameType(), provider);
+        String key = provider.gameType().trim();
+        if ("*".equals(key)) {
+            defaultProvider = provider;
+            return;
+        }
+        providers.put(key, provider);
     }
 
     public Optional<GameInteractionProvider> find(String gameType) {
         if (gameType == null) return Optional.empty();
-        return Optional.ofNullable(providers.get(gameType));
+        GameInteractionProvider provider = providers.get(gameType);
+        if (provider == null) {
+            provider = defaultProvider;
+        }
+        return Optional.ofNullable(provider);
     }
 }

@@ -33,6 +33,7 @@ export class GameCoreService {
       players: state.players ? [...state.players] : undefined,
       turn: state.turn ? { ...state.turn } : undefined,
       metadata: state.metadata ? { ...state.metadata } : undefined,
+      pending: state.pending ? { ...state.pending } : state.pending,
     };
   }
 

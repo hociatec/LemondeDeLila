@@ -15,6 +15,13 @@ export type PlayerStateEntity = {
   shoppingList: unknown[];
 };
 
+export type PendingState = {
+  type: string;
+  playerId?: number | null;
+  blocking?: boolean;
+  data?: Record<string, unknown>;
+};
+
 export type GameStateEntity = {
   status: string;
   phase: string;
@@ -25,8 +32,9 @@ export type GameStateEntity = {
   players?: PlayerStateEntity[];
   turn?: TurnStateEntity;
   metadata?: Record<string, unknown>;
+  pending?: PendingState | null;
   /**
-   * Indique qu'un bot est en cours de "réflexion" et qu'aucune action humaine ne doit être acceptée.
+   * Indique qu'un bot est en cours de "reflexion" et qu'aucune action humaine ne doit etre acceptee.
    */
   botThinking?: boolean;
 };

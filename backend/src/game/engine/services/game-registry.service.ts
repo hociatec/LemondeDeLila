@@ -2,28 +2,35 @@ import { Injectable, Logger } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
 import { GameDefinition, GameRulesAdapter } from '../interfaces/game-rules-adapter.interface';
-import { PanierExpressService } from '../../games/jeux-de-plateaux/les-quatre-vents/panier-express/services/panier-express.service';
-import { DameNatureService } from '../../games/jeux-de-cartes/vents-dansants/dame-nature/services/dame-nature.service';
 
 @Injectable()
 export class GameRegistryService {
-  private readonly handlers: GameRulesAdapter[];
+  private readonly handlers = new Map<string, GameRulesAdapter>();
   private readonly gamesRoot: string;
   private readonly logger = new Logger(GameRegistryService.name);
   private cachedDefinitions: GameDefinition[] | null = null;
 
-  constructor(
-    private readonly panierExpress: PanierExpressService,
-    private readonly dameNature: DameNatureService,
-  ) {
-    this.handlers = [panierExpress, dameNature];
+  constructor() {
     this.gamesRoot =
       process.env.GAME_CATALOG_PATH ??
       path.resolve(process.cwd(), 'src', 'game', 'games');
   }
 
   getHandler(gameType: string): GameRulesAdapter | undefined {
-    return this.handlers.find((handler) => handler.gameType === gameType);
+    return this.handlers.get(gameType);
+  }
+
+  register(handler: GameRulesAdapter): void {
+    if (!handler?.gameType) {
+      this.logger.warn('Tentative de registre d’un handler sans gameType, ignoré.');
+      return;
+    }
+    const existing = this.handlers.get(handler.gameType);
+    if (existing && existing !== handler) {
+      this.logger.log(`Remplacement du handler existant pour ${handler.gameType}`);
+    }
+    this.handlers.set(handler.gameType, handler);
+    this.logger.log(`Handler enregistré : ${handler.gameType}`);
   }
 
   async listGames(): Promise<GameDefinition[]> {

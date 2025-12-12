@@ -1,3 +1,6 @@
+import { QuizState } from '../../../../../modules/quiz/services/quiz-runner.service';
+import { BotProfile } from '../../../../../modules/bot/services/bot-strategy.service';
+
 export type PanierExpressTile =
   | { id: string; type: 'start' }
   | { id: string; type: 'stand'; standId: string }
@@ -8,22 +11,12 @@ export type PanierExpressTile =
 export type PanierExpressMetadata = {
   stands: string[];
   tiles: PanierExpressTile[];
-  decks: {
-    courses: string[];
-    shoppingLists: string[][];
-    events: string[];
-    exchanges: string[];
-    quizzes: Array<{ question: string; answer: string }>;
-  };
-  discards: {
-    courses: string[];
-    shoppingLists: string[][];
-    events: string[];
-    exchanges: string[];
-    quizzes: Array<{ question: string; answer: string }>;
-  };
+  decks: Record<string, { deck: any[]; discards: any[] }>;
   positions: Record<number, number>;
-  winnerId?: number | null;
+  winnerId: number | null;
+  quiz?: QuizState;
+  actionLog?: { type: string; actorId: number | null; payload?: any; timestamp: number }[];
+  botProfile?: BotProfile;
   statuses: {
     skipTurn: Record<number, number>;
   };

@@ -3,13 +3,9 @@ package com.lemondelila.client.game.core.controller;
 import com.lemondelila.client.game.core.model.ActionRequest;
 import com.lemondelila.client.game.core.model.GenericGameState;
 import com.lemondelila.client.game.core.model.PrimaryActionDescriptor;
-import com.lemondelila.client.game.core.service.GameStateService;
+import com.lemondelila.client.game.core.service.GameRealtimeClient;
 import com.lemondelila.client.game.room.service.RoomParticipantsMapper;
 import com.lemondelila.client.game.room.model.TableState;
-import com.lemondelila.client.framework.core.task.TaskScheduler;
-
-import java.io.IOException;
-import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -17,7 +13,8 @@ import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
-import java.util.concurrent.ScheduledFuture;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class GenericGameInteractionController {
 
@@ -26,31 +23,30 @@ public final class GenericGameInteractionController {
         void onError(String message);
     }
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(GenericGameInteractionController.class);
     private static final String PARTICIPANT_ERROR = "Vous ne pouvez demarrer une partie avec un joueur.";
 
     private final String gameType;
-    private final GameStateService states;
+    private final GameRealtimeClient realtime;
     private final PrimaryActionDescriptor primaryAction;
-    private final TaskScheduler scheduler;
     private final TableState tableState;
     private final int minimumParticipants;
     private final List<Consumer<GenericGameState>> stateObservers = new CopyOnWriteArrayList<>();
     private final AtomicBoolean detached = new AtomicBoolean(false);
     private volatile Integer roomId;
     private volatile Listener listener;
+    private GameRealtimeClient.Subscription subscription;
     private volatile boolean startPending = false;
-    private volatile ScheduledFuture<?> autoRefresh;
+    private volatile Consumer<GenericGameState.ActionLogEntry> historyRef;
 
     public GenericGameInteractionController(String gameType,
-                                            GameStateService states,
+                                            GameRealtimeClient realtime,
                                             PrimaryActionDescriptor primaryAction,
-                                            TaskScheduler scheduler,
                                             TableState tableState,
                                             int minimumParticipants) {
         this.gameType = Objects.requireNonNull(gameType, "gameType");
-        this.states = Objects.requireNonNull(states, "states");
+        this.realtime = Objects.requireNonNull(realtime, "realtime");
         this.primaryAction = primaryAction;
-        this.scheduler = Objects.requireNonNull(scheduler, "scheduler");
         this.tableState = Objects.requireNonNull(tableState, "tableState");
         this.minimumParticipants = Math.max(1, minimumParticipants);
     }
@@ -59,45 +55,38 @@ public final class GenericGameInteractionController {
         this.roomId = roomId;
         this.listener = listener;
         this.detached.set(false);
-        refresh();
-        startAutoRefresh(Duration.ofSeconds(1));
+        LOGGER.info("[interaction] attach room={} gameType={}", roomId, gameType);
+        openRealtime(roomId);
     }
 
     public void detach() {
         detached.set(true);
         listener = null;
         roomId = null;
-        stopAutoRefresh();
+        LOGGER.info("[interaction] detach gameType={}", gameType);
+        closeRealtime();
     }
 
     public void refresh() {
         Integer id = roomId;
         if (id == null || detached.get()) return;
-        scheduler.runAsync(() -> {
-            try {
-                GenericGameState state = states.fetchState(gameType, id);
-                notifyState(state);
-            } catch (IOException e) {
-                notifyError(buildFriendlyError(e));
-            } catch (Exception e) {
-                notifyError(buildFriendlyError(e));
-            }
-        });
-    }
-
-    public void startAutoRefresh(Duration period) {
-        stopAutoRefresh();
-        if (period == null || period.isNegative() || period.isZero()) {
-            return;
+        if (subscription != null) {
+            LOGGER.debug("[interaction] refresh -> request state room={} gameType={}", id, gameType);
+            subscription.requestState();
         }
-        autoRefresh = scheduler.scheduleAtFixedRate(this::refresh, period, period);
     }
 
-    public void stopAutoRefresh() {
-        ScheduledFuture<?> future = autoRefresh;
-        if (future != null) {
-            future.cancel(true);
-            autoRefresh = null;
+    private void openRealtime(int roomId) {
+        closeRealtime();
+        LOGGER.info("[interaction] open realtime room={} gameType={}", roomId, gameType);
+        subscription = realtime.open(roomId, gameType, this::notifyState, this::notifyError);
+    }
+
+    private void closeRealtime() {
+        if (subscription != null) {
+            LOGGER.info("[interaction] close realtime room={} gameType={}", roomId, gameType);
+            subscription.close();
+            subscription = null;
         }
     }
 
@@ -119,16 +108,14 @@ public final class GenericGameInteractionController {
             notifyError("Action impossible : ajoutez au moins un autre joueur ou un bot.");
             return;
         }
-        scheduler.runAsync(() -> {
-            try {
-                GenericGameState state = states.sendActions(gameType, id, actions);
-                notifyState(state);
-            } catch (IOException e) {
-                notifyError(buildFriendlyError(e));
-            } catch (Exception e) {
-                notifyError(buildFriendlyError(e));
+        try {
+            if (subscription != null) {
+                LOGGER.info("[interaction] sendActions count={} room={} gameType={}", actions == null ? 0 : actions.size(), id, gameType);
+                subscription.sendActions(actions);
             }
-        });
+        } catch (Exception e) {
+            notifyError(buildFriendlyError(e));
+        }
     }
 
     private void notifyState(GenericGameState state) {
@@ -141,6 +128,11 @@ public final class GenericGameInteractionController {
             tableState.updateStatus(state.status());
             if (state.extras() != null && !state.extras().isEmpty()) {
                 RoomParticipantsMapper.updateFromExtras(tableState, state.extras());
+            }
+            LOGGER.debug("[interaction] state status={} actions={} pending={} logs={}", state.status(), state.actions().size(), state.pending(), state.logs().size());
+            // Alimenter l'historique structuré si fourni
+            if (state.actionLog() != null && !state.actionLog().isEmpty() && historyRef != null) {
+                state.actionLog().forEach(entry -> historyRef.accept(entry));
             }
         }
         Optional.ofNullable(listener).ifPresent(l -> l.onState(state));
@@ -209,5 +201,9 @@ public final class GenericGameInteractionController {
 
     public void clearStartPending() {
         startPending = false;
+    }
+
+    public void setHistorySink(Consumer<GenericGameState.ActionLogEntry> sink) {
+        this.historyRef = sink;
     }
 }

@@ -57,6 +57,10 @@ public final class TurnController {
             if (byBot != null) {
                 return byBot;
             }
+            // Fallback : si l'ID est présent mais pas trouvé dans les listes locales, au moins varier le libellé.
+            if (id != null) {
+                return "Joueur " + id;
+            }
         }
         var order = tableState.participantOrder();
         if (turn.index() >= 0 && turn.index() < order.size()) {

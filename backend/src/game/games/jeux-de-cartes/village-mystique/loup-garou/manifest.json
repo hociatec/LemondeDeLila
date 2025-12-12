@@ -1,0 +1,9 @@
+{
+  "id": "loup-garou",
+  "name": "Loup Garou",
+  "category": "JeuxDeCartes",
+  "subcategory": "VillageMystique",
+  "summary": "Déduction sociale avec phases nuit/jour et rôles secrets.",
+  "minPlayers": 6,
+  "maxPlayers": 12
+}

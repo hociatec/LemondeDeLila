@@ -12,11 +12,11 @@ public final class RoomNarrationService {
 
     public RoomSummary summarize(TableState state) {
         Objects.requireNonNull(state, "tableState");
-        int count = state.players().size() + state.bots().size();
-        String names = Stream.concat(
-                        state.players().stream().map(p -> p.username() == null ? "Joueur" : p.username()),
-                        state.bots().stream().map(b -> b.name() == null ? "Bot" : b.name())
-                )
+        var unique = new java.util.LinkedHashMap<String, String>();
+        state.players().forEach(p -> addParticipant(unique, p.id(), p.username(), "Joueur"));
+        state.bots().forEach(b -> addParticipant(unique, b.id(), b.name(), "Bot"));
+        int count = unique.size();
+        String names = unique.values().stream()
                 .filter(Objects::nonNull)
                 .map(String::trim)
                 .filter(s -> !s.isEmpty())
@@ -41,4 +41,16 @@ public final class RoomNarrationService {
     }
 
     public record RoomSummary(int participantCount, String participantNames) { }
+
+    private static void addParticipant(java.util.Map<String, String> map, Integer id, String name, String fallback) {
+        String label = (name == null || name.isBlank()) ? fallback : name;
+        String key = id != null ? "id:" + id : "name:" + normalize(name);
+        if (!map.containsKey(key)) {
+            map.put(key, label);
+        }
+    }
+
+    private static String normalize(String value) {
+        return value == null ? "" : value.trim().toLowerCase();
+    }
 }
