@@ -20,6 +20,7 @@ import com.lemondelila.client.game.room.service.RoomParticipantsMapper;
 import com.lemondelila.client.game.turn.controller.TurnController;
 import com.lemondelila.client.game.turn.model.TurnState;
 import com.lemondelila.client.game.turn.view.GameStatusPanel;
+import com.lemondelila.client.security.EncryptedSessionVault;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import javax.swing.DefaultListModel;
@@ -66,6 +67,20 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
     private final ObjectMapper mapper = new ObjectMapper();
     private final JLabel infoLabel = new JLabel();
     private final JLabel pendingLabel = new JLabel();
+    private final JLabel shoppingLabel = new JLabel();
+    private final JLabel basketLabel = new JLabel();
+    private final JLabel inventoryLabel = new JLabel();
+    private final String localUsername;
+    private java.util.List<String> lastSelfShopping = java.util.List.of();
+    private java.util.List<String> lastSelfBasket = java.util.List.of();
+    private java.util.List<String> lastSelfInventory = java.util.List.of();
+    private java.util.List<String> shoppingView = java.util.List.of();
+    private java.util.List<String> basketView = java.util.List.of();
+    private java.util.List<String> inventoryView = java.util.List.of();
+    private java.util.List<Map<String, Object>> dynamicShortcuts = java.util.List.of();
+    private final java.util.Set<KeyStroke> registeredShortcutKeys = new java.util.HashSet<>();
+    private InputMap windowMapRef;
+    private ActionMap actionMapRef;
     private final DefaultListModel<GenericGameState.GenericAction> actionsModel = new DefaultListModel<>();
     private final JList<GenericGameState.GenericAction> actionsList = new JList<>(actionsModel);
     private Integer lastRollSeen;
@@ -110,6 +125,10 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         this.startHandler = startHandler;
         this.autoPrimaryAfterStart = autoPrimaryAfterStart;
         this.turnController = new TurnController();
+        this.localUsername = EncryptedSessionVault.defaultVault()
+                .load()
+                .map(EncryptedSessionVault.SessionRecord::username)
+                .orElse(null);
         this.statusPanel = new GameStatusPanel(focusHighlighter);
         if (quizFactory != null && quizFactory.isPresent()) {
             this.quizComponent = quizFactory.get().create(focusHighlighter);
@@ -127,6 +146,21 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
                 .description("Informations sur la partie")
                 .build());
         focusHighlighter.apply(infoLabel);
+        AccessibleDecorator.apply(shoppingLabel, AccessibleSpec.builder()
+                .name("Liste de courses")
+                .description("Contenu actuel de la liste de courses du joueur")
+                .build());
+        focusHighlighter.apply(shoppingLabel);
+        AccessibleDecorator.apply(basketLabel, AccessibleSpec.builder()
+                .name("Panier")
+                .description("Contenu du panier du joueur")
+                .build());
+        focusHighlighter.apply(basketLabel);
+        AccessibleDecorator.apply(inventoryLabel, AccessibleSpec.builder()
+                .name("Inventaire")
+                .description("Cartes en inventaire du joueur")
+                .build());
+        focusHighlighter.apply(inventoryLabel);
         AccessibleDecorator.apply(pendingLabel, AccessibleSpec.builder()
                 .name("Action en attente")
                 .description("Indication sur l’action ou le vote en attente")
@@ -144,11 +178,16 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
             left.add(quizComponent.getComponent(), BorderLayout.CENTER);
         }
         JPanel infoPanel = new JPanel(new BorderLayout(4, 4));
-        infoPanel.add(pendingLabel, BorderLayout.NORTH);
-        javax.swing.JLabel shortcutsLabel = new javax.swing.JLabel("Raccourcis : [Espace] piocher, [Entrée] lancer le dé");
+        javax.swing.JPanel topInfo = new javax.swing.JPanel(new java.awt.GridLayout(0, 1, 2, 2));
+        topInfo.add(pendingLabel);
+        topInfo.add(shoppingLabel);
+        topInfo.add(basketLabel);
+        topInfo.add(inventoryLabel);
+        infoPanel.add(topInfo, BorderLayout.NORTH);
+        javax.swing.JLabel shortcutsLabel = new javax.swing.JLabel("Raccourcis : [Espace] piocher, [Entrée] lancer/valider");
         AccessibleDecorator.apply(shortcutsLabel, AccessibleSpec.builder()
                 .name("Raccourcis clavier")
-                .description("Espace pour piocher, Entrée pour lancer le dé quand disponible")
+                .description("Espace pour piocher, Entrée pour lancer/valider quand disponible")
                 .build());
         focusHighlighter.apply(shortcutsLabel);
         infoPanel.add(shortcutsLabel, BorderLayout.CENTER);
@@ -184,6 +223,8 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
 
         javax.swing.InputMap windowMap = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
         javax.swing.ActionMap actions = getActionMap();
+        this.windowMapRef = windowMap;
+        this.actionMapRef = actions;
         windowMap.put(javax.swing.KeyStroke.getKeyStroke("ENTER"), "shortcut.roll-or-primary");
         actions.put("shortcut.roll-or-primary", new javax.swing.AbstractAction() {
             @Override
@@ -361,10 +402,12 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         }
         renderLogs(state.logs());
         renderTurn(state);
+        renderPlayerCollections(state);
         updateBotTurnLock(state);
         renderQuiz(state.pendingQuiz());
         renderPending(state.pending());
         renderActions(state);
+        renderShortcuts(state);
     }
 
     private void renderLogs(List<String> logs) {
@@ -553,7 +596,7 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         } else if (lastTurnIndexSeen != null) {
             alreadyAnnounced = lastTurnIndexSeen.equals(turn.index());
         }
-        if (!alreadyAnnounced) {
+        if (!alreadyAnnounced || turn.index() != lastTurnIndexSeen) {
             lastTurnIndexSeen = turn.index();
             lastAnnouncedPlayerId = announceId;
             String message = turnController.formatTurn(turn, tableState);
@@ -700,6 +743,205 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         }
     }
 
+    private void renderPlayerCollections(GenericGameState state) {
+        boolean updated = false;
+        if (localUsername != null) {
+            Object playersNode = state.extras().get("players");
+            if (playersNode instanceof JsonNode node && node.isArray()) {
+                for (JsonNode p : node) {
+                    String name = p.path("username").asText("");
+                    if (name != null && name.equalsIgnoreCase(localUsername)) {
+                        updateCollectionsFromLists(
+                                toStringList(p.get("shoppingList")),
+                                toStringList(p.get("basket")),
+                                toStringList(p.get("inventory"))
+                        );
+                        updated = true;
+                        break;
+                    }
+                }
+            }
+        }
+        Object view = state.extras().get("currentPlayerView");
+        if (view == null && state != null) {
+            // Fallback si le serveur ne met pas la vue dans extras.
+            view = state.extras().get("playerView");
+        }
+        if (view == null) {
+            // Conserver la dernière vue connue si disponible.
+            shoppingLabel.setText("S : " + formatList(shoppingView));
+            basketLabel.setText("B : " + formatList(basketView));
+            inventoryLabel.setText("I : " + formatList(inventoryView));
+            return;
+        }
+        java.util.Map<String, Object> asMap = mapper.convertValue(view, java.util.Map.class);
+        shoppingView = toStringList(asMap.get("shoppingList"));
+        basketView = toStringList(asMap.get("basket"));
+        inventoryView = toStringList(asMap.get("inventory"));
+        // Si la vue courante correspond à l'utilisateur local, la prendre comme source fiable.
+        String viewUser = asMap.get("username") == null ? "" : asMap.get("username").toString();
+        if (!updated && localUsername != null && viewUser.equalsIgnoreCase(localUsername)) {
+            updateCollectionsFromLists(shoppingView, basketView, inventoryView);
+            updated = true;
+        }
+        if (!updated) {
+            // Sinon, ne pas écraser la vue locale si nous l'avons déjà ; utiliser celle du tour uniquement si rien n'était connu.
+            shoppingLabel.setText("S : " + formatList(shoppingView));
+            basketLabel.setText("B : " + formatList(basketView));
+            inventoryLabel.setText("I : " + formatList(inventoryView));
+        }
+    }
+
+    private void renderShortcuts(GenericGameState state) {
+        // Ne pas écraser les raccourcis globaux de table (ex: b / Maj+b pour les bots) avant le démarrage.
+        boolean allowDynamic = tableState != null && tableState.started();
+        Object raw = allowDynamic ? state.extras().get("shortcuts") : null;
+        if (raw instanceof JsonNode node && node.isArray()) {
+            // Les extras arrivent souvent en JsonNode : les convertir pour que le binding fonctionne.
+            raw = mapper.convertValue(node, java.util.List.class);
+        }
+        if (raw instanceof java.util.List<?> list) {
+            java.util.List<Map<String, Object>> parsed = new java.util.ArrayList<>();
+            for (Object item : list) {
+                try {
+                    Map<String, Object> m = mapper.convertValue(item, Map.class);
+                    parsed.add(m);
+                } catch (IllegalArgumentException ignored) {
+                }
+            }
+            dynamicShortcuts = parsed;
+            rebindDynamicShortcuts();
+            return;
+        }
+        // Pas de shortcuts fournis ou partie non démarrée : nettoyer les bindings dynamiques.
+        dynamicShortcuts = java.util.List.of();
+        rebindDynamicShortcuts();
+    }
+
+    private void rebindDynamicShortcuts() {
+        if (windowMapRef == null || actionMapRef == null) return;
+        // retirer anciens
+        for (KeyStroke ks : registeredShortcutKeys) {
+            windowMapRef.remove(ks);
+            actionMapRef.remove("dyn." + ks.toString());
+        }
+        registeredShortcutKeys.clear();
+        for (Map<String, Object> sc : dynamicShortcuts) {
+            String key = sc.getOrDefault("key", "").toString();
+            if (key.isBlank()) continue;
+            String type = sc.getOrDefault("type", "").toString().toLowerCase();
+            KeyStroke ks = KeyStroke.getKeyStroke(key);
+            if (ks == null) continue;
+            String actionName = "dyn." + ks.toString();
+            registeredShortcutKeys.add(ks);
+            windowMapRef.put(ks, actionName);
+            if ("interface".equals(type)) {
+                String id = sc.getOrDefault("id", "").toString().toLowerCase();
+                actionMapRef.put(actionName, new AbstractAction() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        switch (id) {
+                            case "shopping" -> announceCollection("shopping", shoppingView);
+                            case "basket" -> announceCollection("basket", basketView);
+                            case "inventory" -> announceCollection("inventory", inventoryView);
+                            default -> {
+                                // noop
+                            }
+                        }
+                    }
+                });
+            } else if ("action".equals(type)) {
+                String targetType = sc.getOrDefault("actionType", "").toString().toLowerCase();
+                actionMapRef.put(actionName, new AbstractAction() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        if (targetType.isBlank()) return;
+                        // déclencher seulement si l'action est disponible
+                        for (int i = 0; i < actionsModel.size(); i++) {
+                            GenericGameState.GenericAction act = actionsModel.get(i);
+                            if (act != null && targetType.equalsIgnoreCase(act.type())) {
+                                actionsList.setSelectedIndex(i);
+                                dispatchAction(act);
+                                break;
+                            }
+                        }
+                    }
+                });
+            }
+        }
+    }
+
+    private java.util.List<String> toStringList(Object raw) {
+        if (raw == null) return java.util.List.of();
+        if (raw instanceof java.util.List<?> list) {
+            return list.stream()
+                    .map(v -> v == null ? "" : v.toString())
+                    .filter(s -> !s.isBlank())
+                    .toList();
+        }
+        if (raw instanceof JsonNode node && node.isArray()) {
+            java.util.List<String> vals = new java.util.ArrayList<>();
+            node.forEach(n -> {
+                if (n != null && !n.asText("").isBlank()) {
+                    vals.add(n.asText(""));
+                }
+            });
+            return vals;
+        }
+        String s = raw.toString();
+        return s.isBlank() ? java.util.List.of() : java.util.List.of(s);
+    }
+
+    private String formatList(Object raw) {
+        if (raw == null) return "-";
+        if (raw instanceof java.util.List<?> list) {
+            if (list.isEmpty()) return "-";
+            return String.join(", ", list.stream().map(v -> v == null ? "" : v.toString()).filter(s -> !s.isBlank()).toList());
+        }
+        if (raw instanceof JsonNode node && node.isArray()) {
+            java.util.List<String> vals = new java.util.ArrayList<>();
+            node.forEach(n -> {
+                if (n != null && !n.asText("").isBlank()) {
+                    vals.add(n.asText(""));
+                }
+            });
+            return vals.isEmpty() ? "-" : String.join(", ", vals);
+        }
+        return raw.toString();
+    }
+
+    private void announceCollection(String id, java.util.List<String> values) {
+        String label = switch (id == null ? "" : id.toLowerCase()) {
+            case "shopping", "s" -> "Liste de courses";
+            case "basket", "b" -> "Panier";
+            case "inventory", "i" -> "Inventaire";
+            default -> "Collection";
+        };
+        if (values == null || values.isEmpty()) {
+            emitter.announceEvent(label + " vide");
+            return;
+        }
+        emitter.announceEvent(label + " : " + String.join(", ", values));
+    }
+
+    private void updateCollectionsFromLists(java.util.List<String> shopping, java.util.List<String> basket, java.util.List<String> inventory) {
+        if (shopping != null) {
+            lastSelfShopping = shopping;
+        }
+        if (basket != null) {
+            lastSelfBasket = basket;
+        }
+        if (inventory != null) {
+            lastSelfInventory = inventory;
+        }
+        shoppingView = lastSelfShopping;
+        basketView = lastSelfBasket;
+        inventoryView = lastSelfInventory;
+        shoppingLabel.setText("S : " + formatList(shoppingView));
+        basketLabel.setText("B : " + formatList(basketView));
+        inventoryLabel.setText("I : " + formatList(inventoryView));
+    }
+
     private boolean blockIfBotTurn() {
         // Ne pas bloquer si un quiz est actif : le joueur doit pouvoir répondre.
         if (activeQuiz != null) {
@@ -707,10 +949,6 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         }
         if (!botTurnLocked) {
             return false;
-        }
-        if (!botLockNotified) {
-            emitter.announceEvent("Tour du bot : raccourcis clavier désactivés jusqu'au prochain tour.");
-            botLockNotified = true;
         }
         return true;
     }
@@ -830,6 +1068,11 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         }
         if (hasActionMatching(this::isDiceAction)) {
             dispatchActionMatching(this::isDiceAction);
+            return;
+        }
+        // Fallback : si aucune action n'est fournie mais que la partie est en cours, tenter un "roll" explicite.
+        if (actionsModel.isEmpty()) {
+            controller.sendActions(List.of(ActionRequest.of("roll", java.util.Map.of())));
         }
     }
 

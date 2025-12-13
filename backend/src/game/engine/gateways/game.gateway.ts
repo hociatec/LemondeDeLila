@@ -18,6 +18,9 @@ export class GameGateway implements OnGatewayConnection<WebSocket>, OnGatewayDis
 
   private readonly clients = new Map<WebSocket, GameClient>();
   private readonly rooms = new Map<string, Set<WebSocket>>();
+  private readonly heartbeats = new Map<WebSocket, NodeJS.Timeout>();
+  private readonly lastPong = new WeakMap<WebSocket, number>();
+  private readonly pingIntervalMs = 25000;
   private readonly jwtSecret: string;
   private readonly logger = new Logger(GameGateway.name);
 
@@ -41,6 +44,23 @@ export class GameGateway implements OnGatewayConnection<WebSocket>, OnGatewayDis
     this.clients.set(client, { socket: client, userId: auth.id, roomId: null, gameType: null });
     client.on('message', (raw) => this.handleMessage(client, raw));
     client.on('error', () => client.close());
+    // Heartbeat : ping régulier pour maintenir la connexion et détecter les resets silencieux.
+    client.on('pong', () => this.lastPong.set(client, Date.now()));
+    const interval = setInterval(() => {
+      if (client.readyState !== WebSocket.OPEN) return;
+      const last = this.lastPong.get(client) ?? Date.now();
+      if (Date.now() - last > this.pingIntervalMs * 2) {
+        client.terminate();
+        return;
+      }
+      try {
+        client.ping();
+      } catch {
+        /* ignore */
+      }
+    }, this.pingIntervalMs);
+    this.heartbeats.set(client, interval);
+    this.lastPong.set(client, Date.now());
   }
 
   handleDisconnect(client: WebSocket) {
@@ -54,6 +74,11 @@ export class GameGateway implements OnGatewayConnection<WebSocket>, OnGatewayDis
           this.rooms.delete(key);
         }
       }
+    }
+    const hb = this.heartbeats.get(client);
+    if (hb) {
+      clearInterval(hb);
+      this.heartbeats.delete(client);
     }
     this.clients.delete(client);
   }

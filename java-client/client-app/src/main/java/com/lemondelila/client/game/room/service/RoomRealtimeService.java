@@ -75,7 +75,8 @@ public final class RoomRealtimeService implements AutoCloseable {
     public void sendCommand(String type, Map<String, ?> payload) {
         Objects.requireNonNull(type, "type");
         synchronized (lock) {
-            int targetRoom = lastRoomId != null ? lastRoomId : extractRoomId(payload);
+            int payloadRoomId = extractRoomId(payload);
+            int targetRoom = payloadRoomId > 0 ? payloadRoomId : (lastRoomId != null ? lastRoomId : 0);
             boolean needReconnect = current == null || current.isClosed() || (targetRoom > 0 && !Objects.equals(lastRoomId, targetRoom));
             if (needReconnect) {
                 try {
@@ -95,7 +96,7 @@ public final class RoomRealtimeService implements AutoCloseable {
                                 }
                             });
                 } catch (IllegalStateException ex) {
-                    eventBus.publish(new RoomRealtimeFailed(0, clean(ex.getMessage())));
+                    eventBus.publish(new RoomRealtimeFailed(targetRoom, clean(ex.getMessage())));
                     return;
                 }
             }

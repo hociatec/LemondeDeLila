@@ -97,9 +97,9 @@ export class BotService {
     if (rows.length === 0) {
       await this.seedDefaultNames();
       const seeded = await this.botNames.find({ where: { enabled: true }, order: { name: 'ASC' } });
-      return seeded.map((r) => r.name);
+      return this.shuffle(seeded.map((r) => r.name));
     }
-    return rows.map((r) => r.name);
+    return this.shuffle(rows.map((r) => r.name));
   }
 
   private async seedDefaultNames(): Promise<void> {
@@ -108,6 +108,15 @@ export class BotService {
     if (count > 0) return;
     const rows = defaults.map((name) => this.botNames.create({ name, enabled: true }));
     await this.botNames.save(rows);
+  }
+
+  private shuffle(values: string[]): string[] {
+    const arr = [...values];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
   }
 
   private async countBots(roomId: number): Promise<number> {

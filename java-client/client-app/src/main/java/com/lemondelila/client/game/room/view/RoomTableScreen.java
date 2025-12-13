@@ -28,8 +28,14 @@ import com.lemondelila.client.game.room.model.TableState;
 import com.lemondelila.client.game.room.service.RoomLifecycleService;
 
 import javax.swing.JPanel;
+import javax.swing.InputMap;
+import javax.swing.ActionMap;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import javax.swing.JComponent;
 import java.awt.BorderLayout;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 
 /**
  * Ecran table generique avec deux zones : interaction et historique.
@@ -48,6 +54,7 @@ public final class RoomTableScreen extends BaseTableScreen {
     private final GameInteractionRegistry interactionRegistry;
     private final GenericUniversalInteractionProvider defaultInteractionProvider;
     private final RoomTableController controller;
+    private boolean botShortcutsDisabled = false;
     private ScreenManager screenManager;
     private GameInteractionComponent currentInteraction;
     private String activeGameType;
@@ -137,11 +144,19 @@ public final class RoomTableScreen extends BaseTableScreen {
 
     @Override
     protected void handleAddBot() {
+        if (tableState.started()) {
+            announcer().announce(view.historySidebar(), "Impossible d'ajouter un bot : la partie est déjà lancée.");
+            return;
+        }
         controller.addBot();
     }
 
     @Override
     protected void handleRemoveBot() {
+        if (tableState.started()) {
+            announcer().announce(view.historySidebar(), "Impossible de retirer un bot pendant la partie.");
+            return;
+        }
         controller.removeBot();
     }
 
@@ -224,6 +239,9 @@ public final class RoomTableScreen extends BaseTableScreen {
         if (currentRoomId != null && currentRoomId == event.roomId() && currentInteraction != null) {
             SwingUtilities.invokeLater(() -> currentInteraction.refreshState());
         }
+        if (tableState.started() && !botShortcutsDisabled) {
+            disableBotShortcuts();
+        }
     }
 
     private boolean hasEnoughParticipants() {
@@ -231,6 +249,9 @@ public final class RoomTableScreen extends BaseTableScreen {
     }
 
     private void swapInteraction(String gameType) {
+        if (tableState.started() && !botShortcutsDisabled) {
+            disableBotShortcuts();
+        }
         if (currentInteraction != null) {
             currentInteraction.onDetach();
         }
@@ -250,7 +271,26 @@ public final class RoomTableScreen extends BaseTableScreen {
         view.interactionPanel().repaint();
     }
 
+    private void disableBotShortcuts() {
+        botShortcutsDisabled = true;
+        InputMap windowMap = this.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        ActionMap actions = this.getActionMap();
+        if (windowMap != null) {
+            windowMap.remove(KeyStroke.getKeyStroke('b'));
+            windowMap.remove(KeyStroke.getKeyStroke('B'));
+            windowMap.remove(KeyStroke.getKeyStroke(KeyEvent.VK_B, 0));
+            windowMap.remove(KeyStroke.getKeyStroke(KeyEvent.VK_B, InputEvent.SHIFT_DOWN_MASK));
+        }
+        if (actions != null) {
+            actions.remove("table.bot.add");
+            actions.remove("table.bot.remove");
+        }
+    }
+
     private void refreshFromState() {
+        if (tableState.started() && !botShortcutsDisabled) {
+            disableBotShortcuts();
+        }
         SwingUtilities.invokeLater(() -> {
             Integer roomId = currentUiRoomId();
             String gameType = resolvedGameType();

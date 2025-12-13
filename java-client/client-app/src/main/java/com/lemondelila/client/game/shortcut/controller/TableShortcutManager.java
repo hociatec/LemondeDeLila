@@ -213,8 +213,26 @@ public final class TableShortcutManager {
                         Runnable onTogglePrivacy,
                         Runnable onLaunch,
                         Runnable onQuit) {
+        bindAll(root, onSummary, onTurnInfo, onAddBot, onRemoveBot, onTogglePrivacy, onLaunch, onQuit, true);
+    }
+
+    /**
+     * Binde l'ensemble des raccourcis de table (infos, bots, quit) en une fois, avec la possibilite
+     * de desactiver les raccourcis bots.
+     */
+    public void bindAll(JComponent root,
+                        Runnable onSummary,
+                        Runnable onTurnInfo,
+                        Runnable onAddBot,
+                        Runnable onRemoveBot,
+                        Runnable onTogglePrivacy,
+                        Runnable onLaunch,
+                        Runnable onQuit,
+                        boolean includeBotShortcuts) {
         bindInfoShortcuts(root, onSummary, onTurnInfo);
-        bindBotShortcuts(root, onAddBot, onRemoveBot);
+        if (includeBotShortcuts) {
+            bindBotShortcuts(root, onAddBot, onRemoveBot);
+        }
         bindPrivacyToggle(root, onTogglePrivacy);
         bindLaunch(root, onLaunch);
         bindQuit(root, onQuit);

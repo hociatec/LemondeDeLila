@@ -90,6 +90,16 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
         : rawPending && rawPending.type && rawPending.type !== 'quiz'
         ? rawPending
         : null;
+    const extras = {
+      ...((state as any).extras ?? {}),
+      currentPlayerView: typeof currentId === 'number' ? this.buildPlayerView(state, currentId) : null,
+      // "pressed X" => KeyEvent.KEY_PRESSED, fonctionne sur la touche seule (b, s, i) sans Maj.
+      shortcuts: [
+        { key: 'pressed S', type: 'interface', id: 'shopping' },
+        { key: 'pressed B', type: 'interface', id: 'basket' },
+        { key: 'pressed I', type: 'interface', id: 'inventory' },
+      ],
+    };
     return {
       ...(state as any),
       catalog: {
@@ -98,6 +108,7 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
       },
       actions: actions.map((a) => ({ type: a.type, label: a.type, payload: a.payload ?? {} })),
       pending,
+      extras,
     };
   }
 
@@ -236,10 +247,8 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
               { type: 'answer_quiz', payload: { playerId, correct: false } },
             ];
           }
-          return [
-            { type: 'answer_quiz', payload: { playerId, correct: true } },
-            { type: 'answer_quiz', payload: { playerId, correct: false } },
-          ];
+          // Si aucune question n'est en attente, on laisse le joueur relancer.
+          return [{ type: 'roll' }];
         case 'exchange':
           return this.buildExchangeActions(state, playerId);
         default:
@@ -350,7 +359,8 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
     pool = this.deckPool.set<any>(pool, 'events', ['rupture-de-stock', 'stand-ferme', 'promo-surprise', 'orage-au-marche']);
     pool = this.deckPool.set<any>(pool, 'exchanges', ['echange-fruit-legume', 'donne-une-carte', 'prend-au-hasard']);
     pool = this.deckPool.set<any>(pool, 'quizzes', this.buildQuizDeck());
-    pool = this.deckPool.set<any>(pool, 'shoppingLists', this.buildShoppingListDeck().flat());
+    // Ne pas aplatir : chaque carte est une liste complète de courses pour un joueur.
+    pool = this.deckPool.set<any>(pool, 'shoppingLists', this.buildShoppingListDeck());
     return pool as PanierExpressMetadata['decks'];
   }
 
@@ -452,6 +462,14 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
         return 'echange';
       case 'quiz':
         return 'quiz';
+      case 'move':
+        return 'avancer/reculer';
+      case 'move_to_stand':
+        return 'avance jusqu’au prochain stand';
+      case 'skip':
+        return 'perd un tour';
+      case 'bonus_course':
+        return 'pioche course bonus';
     }
     return (tile as any)?.id ?? 'inconnu';
   }
@@ -563,17 +581,25 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
     const drawn = this.drawFromPool(meta, 'exchanges');
     const metadata = drawn.metadata as PanierExpressMetadata;
     const card = drawn.card ?? 'exchange';
-    const next: GameStateEntity = { ...state, metadata };
+    const next: GameStateEntity = { ...state, metadata, pending: null };
 
     const players = state.players ?? [];
     const current = players.find((p) => p.id === playerId);
     if (!current || (current.inventory?.length ?? 0) === 0) {
-      return this.core.appendLog(next, `[Panier Express] Pas d'échange possible (${card}).`);
+      const moved = this.movePlayer(next, playerId, -5);
+      return this.core.appendLog(
+        moved,
+        `[Panier Express] Pas d'échange possible (${card}) : ${this.playerName(state, playerId)} recule de 5 cases.`,
+      );
     }
 
     const offers = this.exchangeHelper.buildActions<string>({ players }, playerId, 'inventory');
     if (!offers.length) {
-      return this.core.appendLog(next, `[Panier Express] Pas d'échange compatible (${card}).`);
+      const moved = this.movePlayer(next, playerId, -5);
+      return this.core.appendLog(
+        moved,
+        `[Panier Express] Pas d'échange compatible (${card}) : ${this.playerName(state, playerId)} recule de 5 cases.`,
+      );
     }
 
     // Laisser le joueur choisir : on marque un pending exchange et on expose les actions exchange_with.
@@ -617,11 +643,12 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
       return p;
     });
 
-    const next: GameStateEntity = { ...state, players: updatedPlayers };
-    return this.core.appendLog(
+    const next: GameStateEntity = { ...state, players: updatedPlayers, pending: null };
+    const logged = this.core.appendLog(
       next,
       `[Panier Express] Échange validé: ${current.username} donne ${give} et reçoit ${take} de ${target.username}`,
     );
+    return this.advanceTurn(logged);
   }
 
   private handleSkipTurn(state: GameStateEntity, action: GameSingleActionDto): GameStateEntity {
@@ -962,5 +989,23 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
     if (typeof value !== 'string') return '';
     // Remove control chars that can break JSON/log rendering (e.g., null bytes) then trim.
     return value.replace(/[\u0000-\u001F\u007F]/g, '').trim();
+  }
+
+  private buildPlayerView(state: GameStateEntity, playerId: number): {
+    id: number;
+    username: string | null;
+    shoppingList: string[];
+    basket: string[];
+    inventory: string[];
+  } | null {
+    const player = (state.players ?? []).find((p) => p.id === playerId) as any;
+    if (!player) return null;
+    return {
+      id: player.id,
+      username: typeof player.username === 'string' ? player.username : null,
+      shoppingList: this.toStringArray(player.shoppingList),
+      basket: Array.isArray(player.basket) ? player.basket.map((c: any) => String(c)) : [],
+      inventory: Array.isArray(player.inventory) ? player.inventory.map((c: any) => String(c)) : [],
+    };
   }
 }

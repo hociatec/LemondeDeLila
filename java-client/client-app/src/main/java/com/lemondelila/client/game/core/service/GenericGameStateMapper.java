@@ -86,6 +86,9 @@ public final class GenericGameStateMapper {
         if (json.has("deck")) {
             extras.put("deck", json.get("deck"));
         }
+        if (json.has("extras") && json.get("extras").isObject()) {
+            json.get("extras").fields().forEachRemaining(entry -> extras.putIfAbsent(entry.getKey(), entry.getValue()));
+        }
         List<GenericGameState.ActionLogEntry> actionLog = new ArrayList<>();
         if (json.has("metadata")) {
             extras.put("metadata", json.get("metadata"));
