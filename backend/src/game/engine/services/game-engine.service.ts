@@ -166,12 +166,11 @@ export class GameEngineService {
       }
     }
     if (!botActions || botActions.length === 0) {
-      const logged = this.core.appendLog(state, 'Aucune action bot disponible, passage automatique.');
-      // Passage de tour implicite : on stocke l'état et on planifie le prochain tick sans bloquer.
-      const marked = this.markBotThinking(roomId, gameType, logged, false);
+      playingLog('engine.bot.noaction', { roomId, gameType, currentPlayerId, status: state.status });
+      // Pas d'action possible : on reste sur l'état courant et on désactive l'indicateur botThinking.
+      const marked = this.markBotThinking(roomId, gameType, state, false);
       this.states.set(key, marked);
       this.broadcaster?.(gameType, roomId, this.exposeState(marked, gameType));
-      this.scheduleBotTurn(roomId, gameType, marked);
       return this.exposeState(marked, gameType);
     }
 

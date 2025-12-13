@@ -19,6 +19,8 @@ export type PendingState = {
   type: string;
   playerId?: number | null;
   blocking?: boolean;
+  question?: string | null;
+  choices?: string[];
   data?: Record<string, unknown>;
 };
 

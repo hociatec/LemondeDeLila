@@ -14,6 +14,7 @@ import com.lemondelila.client.game.history.controller.GameHistoryController;
 import com.lemondelila.client.game.history.service.GameActionEmitter;
 import com.lemondelila.client.game.quiz.view.GameQuizComponent;
 import com.lemondelila.client.game.quiz.view.GameQuizComponentFactory;
+import com.lemondelila.client.game.quiz.view.GameQuizPanel;
 import com.lemondelila.client.game.room.model.TableState;
 import com.lemondelila.client.game.room.service.RoomParticipantsMapper;
 import com.lemondelila.client.game.turn.controller.TurnController;
@@ -68,11 +69,17 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
     private final DefaultListModel<GenericGameState.GenericAction> actionsModel = new DefaultListModel<>();
     private final JList<GenericGameState.GenericAction> actionsList = new JList<>(actionsModel);
     private Integer lastRollSeen;
+    private int lastAnnouncedQuizChoice = -1;
+    private String lastQuizAnnouncementKey;
+    private boolean exchangePending;
+    private int lastAnnouncedExchangeIndex = -1;
     private boolean gameStarted;
     private boolean startAnnounced;
     private boolean firstStateRendered;
     private boolean pregameAnnounced;
     private boolean autoPrimaryDispatched;
+    private boolean botTurnLocked;
+    private boolean botLockNotified;
     private Integer lastAnnouncedPlayerId;
     private int lastLogCount;
     private Integer lastTurnIndexSeen;
@@ -104,9 +111,12 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         this.autoPrimaryAfterStart = autoPrimaryAfterStart;
         this.turnController = new TurnController();
         this.statusPanel = new GameStatusPanel(focusHighlighter);
-        this.quizComponent = quizFactory == null
-                ? null
-                : quizFactory.map(factory -> factory.create(focusHighlighter)).orElse(null);
+        if (quizFactory != null && quizFactory.isPresent()) {
+            this.quizComponent = quizFactory.get().create(focusHighlighter);
+        } else {
+            // Fallback simple pour s'assurer que le quiz s'affiche mÃªme si aucune fabrique n'est injectÃ©e.
+            this.quizComponent = new GameQuizPanel(focusHighlighter);
+        }
         buildUi(focusHighlighter);
         this.statusPanel.clear();
     }
@@ -165,6 +175,9 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         listActions.put("actions.trigger", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                if (submitIfQuizActive()) {
+                    return;
+                }
                 dispatchSelectedAction();
             }
         });
@@ -217,17 +230,7 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         if (quizComponent == null) {
             return;
         }
-        for (int i = 1; i <= 9; i++) {
-            final int index = i - 1;
-            String actionName = "quiz.answer." + i;
-            actions.put(actionName, new AbstractAction() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    handleQuizAnswerShortcut(index);
-                }
-            });
-            inputMap.put(KeyStroke.getKeyStroke(Integer.toString(i)), actionName);
-        }
+        // Désactivé : la sélection se fait uniquement avec flèche haut/bas puis Entrée.
     }
 
     public void registerExchangeComponent(JComponent component) {
@@ -248,7 +251,9 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
     }
 
     private void handleQuizNavigation(int delta) {
-        if (activeQuiz == null || activeQuiz.choices().isEmpty() || quizComponent == null) {
+        if ((activeQuiz == null || activeQuiz.choices().isEmpty() || quizComponent == null)) {
+            // Pas de quiz actif : on recycle la navigation pour les échanges si besoin.
+            handleExchangeNavigation(delta);
             return;
         }
         int size = activeQuiz.choices().size();
@@ -273,7 +278,7 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
             return;
         }
         quizChoiceIndex = index;
-        submitQuizAnswer();
+        updateQuizHighlight();
     }
 
     @Override
@@ -292,6 +297,8 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         firstStateRendered = false;
         pregameAnnounced = false;
         autoPrimaryDispatched = false;
+        botTurnLocked = false;
+        botLockNotified = false;
         lastAnnouncedPlayerId = null;
         requestFocusInWindow();
         controller.attach(roomId, this);
@@ -354,6 +361,7 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         }
         renderLogs(state.logs());
         renderTurn(state);
+        updateBotTurnLock(state);
         renderQuiz(state.pendingQuiz());
         renderPending(state.pending());
         renderActions(state);
@@ -370,7 +378,7 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         for (int i = lastLogCount; i < logs.size(); i++) {
             String line = logs.get(i);
             if (line == null || line.isBlank()) continue;
-            emitter.announceEvent(line);
+            emitter.announceEvent(sanitizeLogLine(line));
         }
         lastLogCount = logs.size();
     }
@@ -382,13 +390,34 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         if (quiz == null) {
             activeQuiz = null;
             quizChoiceIndex = -1;
+            lastAnnouncedQuizChoice = -1;
+            lastQuizAnnouncementKey = null;
+            exchangePending = false;
             quizComponent.clearQuiz();
             updateQuizHighlight();
             return;
         }
+        LOGGER.info("[quiz] render question={} choices={}", quiz.question(), quiz.choices());
+        String quizKey = quiz.question() + "|" + String.join("||", quiz.choices());
+        boolean sameQuiz = quizKey.equals(lastQuizAnnouncementKey);
+        lastQuizAnnouncementKey = quizKey;
         activeQuiz = quiz;
         quizChoiceIndex = -1;
+        if (!sameQuiz) {
+            lastAnnouncedQuizChoice = -1;
+        }
+        exchangePending = false;
         quizComponent.showQuiz(quiz.question(), quiz.choices());
+        if (!sameQuiz) {
+            // Annonce vocale compl?te pour les lecteurs d'?cran (question + options).
+            emitter.announceEvent(buildQuizAnnouncement(quiz.question(), quiz.choices()));
+            infoLabel.setText(buildQuizChoicesLabel(quiz.question(), quiz.choices()));
+        }
+        // Forcer le rafraichissement visuel du panneau quiz.
+        JComponent quizUi = quizComponent.getComponent();
+        quizUi.setVisible(true);
+        quizUi.revalidate();
+        quizUi.repaint();
         updateQuizHighlight();
     }
 
@@ -406,24 +435,29 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
             quizChoiceIndex = 0;
         }
         quizComponent.highlightChoice(quizChoiceIndex);
+        announceQuizSelectionIfNeeded();
         refreshInfoLabel();
     }
 
     private void refreshInfoLabel() {
         if (activeQuiz == null) {
-            infoLabel.setText("");
+            if (exchangePending) {
+                refreshExchangeInfoLabel();
+            } else {
+                infoLabel.setText("");
+            }
             return;
         }
         List<String> choices = activeQuiz.choices();
         if (choices.isEmpty()) {
-            infoLabel.setText("Quiz : aucune réponse disponible.");
+            infoLabel.setText("Quiz : aucune reponse disponible.");
             return;
         }
         if (quizChoiceIndex < 0 || quizChoiceIndex >= choices.size()) {
-            infoLabel.setText("Quiz : utilisez les flèches ↑/↓ puis Entrée.");
+            infoLabel.setText(buildQuizChoicesLabel(activeQuiz.question(), choices));
             return;
         }
-        infoLabel.setText("Quiz : réponse " + (quizChoiceIndex + 1) + "/" + choices.size() + " → " + choices.get(quizChoiceIndex));
+        infoLabel.setText("Quiz : reponse " + (quizChoiceIndex + 1) + "/" + choices.size() + " -> " + choices.get(quizChoiceIndex));
     }
 
     private boolean submitIfQuizActive() {
@@ -461,6 +495,10 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         }
         if (!actionsModel.isEmpty()) {
             selectActionForPending(state);
+            if (exchangePending) {
+                refreshExchangeInfoLabel();
+                announceExchangeSelectionIfNeeded(actionsList.getSelectedIndex() < 0 ? 0 : actionsList.getSelectedIndex());
+            }
         }
     }
 
@@ -523,6 +561,25 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         }
     }
 
+    private void updateBotTurnLock(GenericGameState state) {
+        boolean botFlag = state != null && state.botThinking();
+        if (!botFlag) {
+            botFlag = isCurrentPlayerBot();
+        }
+        botTurnLocked = botFlag;
+        if (!botTurnLocked) {
+            botLockNotified = false;
+        }
+    }
+
+    private boolean isCurrentPlayerBot() {
+        Integer currentId = tableState.currentPlayerId();
+        if (currentId == null) {
+            return false;
+        }
+        return tableState.bots().stream().anyMatch(b -> currentId.equals(b.id()));
+    }
+
     private String buildRollMessage(Integer roll) {
         String name = resolveCurrentName();
         return name + " lance le dé : \"" + roll + "\"";
@@ -552,6 +609,9 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         GenericGameState.GenericAction selected = actionsList.getSelectedValue();
         if (selected == null || selected.type() == null || selected.type().isBlank()) {
             emitter.announceError("Aucune action sélectionnée.");
+            return;
+        }
+        if (blockIfBotTurn()) {
             return;
         }
         Map<String, Object> payload = toPayload(selected.payload());
@@ -615,17 +675,44 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
     }
 
     private void renderPending(Object pending) {
+        boolean wasExchangePending = exchangePending;
         if (pending == null) {
+            exchangePending = false;
+            lastAnnouncedExchangeIndex = -1;
             pendingLabel.setText("");
             if (infoLabel.getText() != null && !infoLabel.getText().startsWith("Quiz")) {
                 infoLabel.setText("");
             }
             return;
         }
+        exchangePending = false;
+        if (pending instanceof GenericGameState.PendingGeneric gen && gen.type() != null && gen.type().equalsIgnoreCase("exchange")) {
+            exchangePending = true;
+        } else if (pending instanceof JsonNode node && "exchange".equalsIgnoreCase(node.path("type").asText())) {
+            exchangePending = true;
+        }
+        if (!wasExchangePending && exchangePending) {
+            lastAnnouncedExchangeIndex = -1;
+        }
         String text = describePending(pending);
         if (text != null && !text.isBlank()) {
             pendingLabel.setText(text);
         }
+    }
+
+    private boolean blockIfBotTurn() {
+        // Ne pas bloquer si un quiz est actif : le joueur doit pouvoir répondre.
+        if (activeQuiz != null) {
+            return false;
+        }
+        if (!botTurnLocked) {
+            return false;
+        }
+        if (!botLockNotified) {
+            emitter.announceEvent("Tour du bot : raccourcis clavier désactivés jusqu'au prochain tour.");
+            botLockNotified = true;
+        }
+        return true;
     }
 
     private String describePending(Object pending) {
@@ -656,6 +743,9 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
 
     @Override
     public void triggerPrimaryAction() {
+        if (blockIfBotTurn()) {
+            return;
+        }
         if (exchangeActive) {
             emitter.announceError("Terminez l'échange en cours avant de relancer le dé.");
             return;
@@ -695,6 +785,9 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         if (action == null || action.type() == null || action.type().isBlank()) {
             return false;
         }
+        if (blockIfBotTurn()) {
+            return false;
+        }
         Map<String, Object> payload = toPayload(action.payload());
         controller.sendActions(List.of(ActionRequest.of(action.type(), payload)));
         LOGGER.info("[shortcut] action envoyee type={} payloadKeys={}", action.type(), payload.keySet());
@@ -705,6 +798,9 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         LOGGER.info("[shortcut] espace pressed actions={}", describeActions());
         if (activeQuiz != null) {
             // En mode quiz, on ignore Espace pour ne pas envoyer d'action parasite.
+            return;
+        }
+        if (blockIfBotTurn()) {
             return;
         }
         if (!tableState.started()) {
@@ -718,6 +814,13 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
     private void handleRollShortcut() {
         LOGGER.info("[shortcut] entree pressed actions={}", describeActions());
         if (submitIfQuizActive()) {
+            return;
+        }
+        if (blockIfBotTurn()) {
+            return;
+        }
+        if (exchangePending && hasActionMatching(this::isExchangeAction)) {
+            dispatchActionMatching(this::isExchangeAction);
             return;
         }
         // Si la partie n'est pas lancee, utiliser le comportement de demarrage (equivalent bouton Start).
@@ -769,6 +872,11 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         return containsAny(text, "roll", "dice", "lancer", "lance", "throw");
     }
 
+    private boolean isExchangeAction(GenericGameState.GenericAction action) {
+        String text = normalize(action);
+        return containsAny(text, "exchange_with", "exchange", "echange");
+    }
+
     private String normalize(GenericGameState.GenericAction action) {
         String raw = ((action.label() == null ? "" : action.label()) + " " + (action.type() == null ? "" : action.type()))
                 .trim();
@@ -806,5 +914,129 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
             return;
         }
         RoomParticipantsMapper.updateFromExtras(tableState, state.extras());
+    }
+
+    private void announceQuizSelectionIfNeeded() {
+        if (activeQuiz == null || activeQuiz.choices().isEmpty()) {
+            lastAnnouncedQuizChoice = -1;
+            return;
+        }
+        if (quizChoiceIndex < 0 || quizChoiceIndex >= activeQuiz.choices().size()) {
+            return;
+        }
+        if (quizChoiceIndex == lastAnnouncedQuizChoice) {
+            return;
+        }
+        lastAnnouncedQuizChoice = quizChoiceIndex;
+        emitter.announceEvent(buildQuizSelectionAnnouncement(activeQuiz.choices(), quizChoiceIndex));
+    }
+
+    private String buildQuizSelectionAnnouncement(List<String> choices, int index) {
+        int total = choices.size();
+        String choice = choices.get(index);
+        return "Quiz, reponse " + (index + 1) + " sur " + total + " : " + choice;
+    }
+
+    private void handleExchangeNavigation(int delta) {
+        if (!exchangePending || actionsModel.isEmpty()) {
+            return;
+        }
+        int size = actionsModel.size();
+        int current = actionsList.getSelectedIndex();
+        if (current < 0 || current >= size) {
+            current = 0;
+        } else {
+            current = (current + delta) % size;
+            if (current < 0) {
+                current += size;
+            }
+        }
+        actionsList.setSelectedIndex(current);
+        actionsList.ensureIndexIsVisible(current);
+        announceExchangeSelectionIfNeeded(current);
+        refreshExchangeInfoLabel();
+    }
+
+    private void refreshExchangeInfoLabel() {
+        if (!exchangePending || actionsModel.isEmpty()) {
+            lastAnnouncedExchangeIndex = -1;
+            return;
+        }
+        int idx = actionsList.getSelectedIndex();
+        if (idx < 0 || idx >= actionsModel.size()) {
+            idx = 0;
+            actionsList.setSelectedIndex(idx);
+        }
+        GenericGameState.GenericAction act = actionsModel.get(idx);
+        infoLabel.setText(buildExchangeLabel(act, idx, actionsModel.size()));
+    }
+
+    private void announceExchangeSelectionIfNeeded(int index) {
+        if (!exchangePending || actionsModel.isEmpty()) {
+            lastAnnouncedExchangeIndex = -1;
+            return;
+        }
+        if (index == lastAnnouncedExchangeIndex) {
+            return;
+        }
+        lastAnnouncedExchangeIndex = index;
+        GenericGameState.GenericAction act = actionsModel.get(index);
+        emitter.announceEvent(buildExchangeLabel(act, index, actionsModel.size()));
+    }
+
+    private String buildExchangeLabel(GenericGameState.GenericAction action, int index, int total) {
+        Map<String, Object> payload = toPayload(action.payload());
+        Object target = payload.getOrDefault("targetPlayerId", "?");
+        Object give = payload.getOrDefault("give", "?");
+        Object take = payload.getOrDefault("take", "?");
+        return "Echange " + (index + 1) + "/" + total + " : cible " + target + ", donner " + give + ", recevoir " + take;
+    }
+
+    private String sanitizeLogLine(String line) {
+        if (line == null) {
+            return "";
+        }
+        return line.replaceFirst("^\\[Panier Express\\]\\s*", "");
+    }
+
+    private String buildQuizAnnouncement(String question, List<String> choices) {
+        StringBuilder sb = new StringBuilder();
+        if (question != null && !question.isBlank()) {
+            sb.append("Quiz : ").append(question.trim());
+        } else {
+            sb.append("Quiz en cours.");
+        }
+        if (choices != null && !choices.isEmpty()) {
+            sb.append(" Choix : ");
+            for (int i = 0; i < choices.size(); i++) {
+                sb.append(i + 1).append(") ").append(choices.get(i));
+                if (i < choices.size() - 1) {
+                    sb.append(", ");
+                }
+            }
+        } else {
+            sb.append(" Aucun choix fourni.");
+        }
+        return sb.toString();
+    }
+
+    private String buildQuizChoicesLabel(String question, List<String> choices) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Quiz");
+        if (question != null && !question.isBlank()) {
+            sb.append(" : ").append(question.trim());
+        }
+        if (choices != null && !choices.isEmpty()) {
+            sb.append(" - utilisez les fleches haut et bas puis Entree. Options : ");
+            for (int i = 0; i < choices.size(); i++) {
+                if (i > 0) {
+                    sb.append(" / ");
+                }
+                sb.append(i + 1).append(") ").append(choices.get(i));
+            }
+        } else {
+            sb.append(" - aucune option disponible.");
+        }
+        return sb.toString();
     }
 }

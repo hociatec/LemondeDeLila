@@ -64,6 +64,7 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
     const currentId = state.turn?.currentPlayerId ?? null;
     const actions = typeof currentId === 'number' ? this.getAvailableActions(state, currentId) : [];
     const meta = state.metadata as PanierExpressMetadata;
+    const rawPending = state.pending as any;
     const pendingQuiz = typeof currentId === 'number' ? meta.quiz?.pending?.[currentId] : null;
     const quizChoices =
       pendingQuiz && Array.isArray(pendingQuiz.choices) && pendingQuiz.choices.length
@@ -71,17 +72,24 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
         : pendingQuiz?.answer
         ? [pendingQuiz.answer]
         : [];
+    const pendingQuizChoices = quizChoices;
+    const sanitizedQuizChoices = Array.isArray(pendingQuizChoices)
+      ? pendingQuizChoices.map((c: any) => this.sanitizeText(String(c))).filter((c: string) => c.length > 0)
+      : [];
+    const pendingQuizQuestion = this.sanitizeText(pendingQuiz?.question ?? '');
+    const shouldExposeQuiz = pendingQuiz && (pendingQuizQuestion || sanitizedQuizChoices.length > 0);
     const pending =
-      (state.pending as any) ??
-      (pendingQuiz && pendingQuiz.question
+      shouldExposeQuiz
         ? {
             type: 'quiz',
-            question: pendingQuiz.question,
-            choices: quizChoices,
+            question: pendingQuizQuestion,
+            choices: sanitizedQuizChoices,
             playerId: currentId,
             blocking: true,
           }
-        : null);
+        : rawPending && rawPending.type && rawPending.type !== 'quiz'
+        ? rawPending
+        : null;
     return {
       ...(state as any),
       catalog: {
@@ -146,6 +154,8 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
         return this.handleAnswerQuiz(state, action);
       case 'exchange_with':
         return this.handleExchangeWith(state, action);
+      case 'skip_turn':
+        return this.handleSkipTurn(state, action);
       // Compat actions depuis le client Java
       case 'ROLL_DICE':
         return this.handleRoll(state, { ...action, type: 'roll' });
@@ -164,9 +174,9 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
     const profile = meta.botProfile ?? 'greedy';
     const skip = this.turnStatus.getStatus(state, botPlayerId, 'skipTurn');
     if (skip > 0) {
-      // Bot passe son tour : aucune action proposée.
+      // Bot passe son tour : action explicite pour avancer sans rester bloqué.
       playingLog('panier.bot.skip', { botPlayerId, skip });
-      return [];
+      return [{ type: 'skip_turn', payload: { playerId: botPlayerId } }];
     }
 
     const available = this.injectQuizAnswer(this.getAvailableActions(state, botPlayerId), meta, botPlayerId);
@@ -248,7 +258,7 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
   private buildExchangeActions(state: GameStateEntity, playerId: number): GameSingleActionDto[] {
     const actions = this.exchangeHelper.buildActions(state as any, playerId, 'inventory');
     if (!actions.length) return [{ type: 'roll' }];
-    return actions.flatMap((offer) =>
+    const offers = actions.flatMap((offer) =>
       (state.players ?? [])
         .filter((p) => p.id !== playerId)
         .map((target) => ({
@@ -256,11 +266,28 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
           payload: { playerId, targetPlayerId: target.id, give: offer.give, take: offer.take },
         })),
     );
+    return offers.length ? offers : [{ type: 'roll' }];
   }
 
   private buildMetadata(baseState: GameStateEntity): PanierExpressMetadata {
     return {
-      stands: ['fruitier', 'maraicher', 'bio', 'producteur-local', 'primeur', 'jus-et-conserves'],
+      stands: [
+        'fruitier',
+        'maraicher',
+        'bio',
+        'primeur',
+        'fruits-exotiques',
+        'legumes-racines',
+        'legumes-feuilles',
+        'fruits-rouges',
+        'legumes-secs',
+        'agrumes',
+        'fruits-secs',
+        'legumes-ete',
+        'fruits-hiver',
+        'legumes-exotiques',
+        'champignons',
+      ],
       tiles: this.buildTiles(),
       decks: this.buildDeckPool(),
       positions: {},
@@ -276,82 +303,73 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
   private buildTiles(): PanierExpressTile[] {
     return [
       { id: 'start', type: 'start' },
-      { id: 'stand-fruitier', type: 'stand', standId: 'fruitier' },
-      { id: 'event-1', type: 'event' },
-      { id: 'stand-maraicher', type: 'stand', standId: 'maraicher' },
-      { id: 'quiz-1', type: 'quiz' },
-      { id: 'stand-bio', type: 'stand', standId: 'bio' },
-      { id: 'exchange-1', type: 'exchange' },
-      { id: 'stand-producteur-local', type: 'stand', standId: 'producteur-local' },
-      { id: 'event-2', type: 'event' },
-      { id: 'stand-primeur', type: 'stand', standId: 'primeur' },
-      { id: 'quiz-2', type: 'quiz' },
-      { id: 'stand-jus', type: 'stand', standId: 'jus-et-conserves' },
-      { id: 'exchange-2', type: 'exchange' },
-      { id: 'event-3', type: 'event' },
+      { id: 'stand-fruitier', type: 'stand', standId: 'fruitier' }, // 2
+      { id: 'event-1', type: 'event' }, // 3 pioche evenement
+      { id: 'stand-maraicher', type: 'stand', standId: 'maraicher' }, // 4
+      { id: 'exchange-1', type: 'exchange' }, // 5 échange joueur
+      { id: 'stand-bio-1', type: 'stand', standId: 'bio' }, // 6
+      { id: 'move-plus-1', type: 'move', delta: 1 }, // 7 avance d'une case
+      { id: 'stand-primeur-1', type: 'stand', standId: 'primeur' }, // 8
+      { id: 'skip-1', type: 'skip', turns: 1 }, // 9 perd ton prochain tour
+      { id: 'stand-fruits-exotiques', type: 'stand', standId: 'fruits-exotiques' }, // 10
+      { id: 'exchange-2', type: 'exchange' }, // 11 pioche carte échange
+      { id: 'stand-legumes-racines', type: 'stand', standId: 'legumes-racines' }, // 12
+      { id: 'move-minus-2', type: 'move', delta: -2 }, // 13 recule de 2
+      { id: 'stand-legumes-feuilles', type: 'stand', standId: 'legumes-feuilles' }, // 14
+      { id: 'quiz-1', type: 'quiz' }, // 15 quiz
+      { id: 'stand-fruits-rouges', type: 'stand', standId: 'fruits-rouges' }, // 16
+      { id: 'event-2', type: 'event' }, // 17 pioche evenement
+      { id: 'stand-legumes-secs', type: 'stand', standId: 'legumes-secs' }, // 18
+      { id: 'exchange-3', type: 'exchange' }, // 19 échange cartes
+      { id: 'stand-bio-2', type: 'stand', standId: 'bio' }, // 20
+      { id: 'move-to-stand', type: 'move_to_stand' }, // 21 avance jusqu’à un stand
+      { id: 'stand-primeur-2', type: 'stand', standId: 'primeur' }, // 22
+      { id: 'bonus-course-1', type: 'bonus_course' }, // 23 pioche course supplémentaire
+      { id: 'stand-agrumes', type: 'stand', standId: 'agrumes' }, // 24
+      { id: 'skip-2', type: 'skip', turns: 1 }, // 25 reste un tour sur place
+      { id: 'stand-fruits-secs', type: 'stand', standId: 'fruits-secs' }, // 26
+      { id: 'exchange-4', type: 'exchange' }, // 27 troc improvisé
+      { id: 'stand-legumes-ete', type: 'stand', standId: 'legumes-ete' }, // 28
+      { id: 'move-minus-3', type: 'move', delta: -3 }, // 29 recule de 3
+      { id: 'stand-fruits-hiver', type: 'stand', standId: 'fruits-hiver' }, // 30
+      { id: 'exchange-5', type: 'exchange' }, // 31 pioche carte échange
+      { id: 'stand-legumes-exotiques', type: 'stand', standId: 'legumes-exotiques' }, // 32
+      { id: 'quiz-2', type: 'quiz' }, // 33 quiz
+      { id: 'stand-champignons', type: 'stand', standId: 'champignons' }, // 34
+      { id: 'move-plus-2', type: 'move', delta: 2 }, // 35 avance de 2
+      { id: 'stand-primeur-3', type: 'stand', standId: 'primeur' }, // 36
+      { id: 'event-3', type: 'event' }, // 37 pioche evenement
+      { id: 'stand-maraicher-2', type: 'stand', standId: 'maraicher' }, // 38
+      { id: 'exchange-6', type: 'exchange' }, // 39 échange libre
+      { id: 'arrival', type: 'start' }, // 40 arrivée (case victoire)
     ];
   }
 
   private buildDeckPool(): PanierExpressMetadata['decks'] {
-    let pool = this.deckPool.set<any>({}, 'courses', this.deckPool.shuffle([
-      'pomme',
-      'poire',
-      'carotte',
-      'courgette',
-      'fraise',
-      'avocat',
-      'banane',
-      'tomate',
-      'kiwi',
-      'melon',
-      'citron',
-      'ananas',
-      'peche',
-      'mangue',
-      'raisin',
-    ]));
+    let pool = this.deckPool.set<any>({}, 'courses', this.deckPool.shuffle(this.courseItems()));
     pool = this.deckPool.set<any>(pool, 'events', ['rupture-de-stock', 'stand-ferme', 'promo-surprise', 'orage-au-marche']);
     pool = this.deckPool.set<any>(pool, 'exchanges', ['echange-fruit-legume', 'donne-une-carte', 'prend-au-hasard']);
-    pool = this.deckPool.set<any>(pool, 'quizzes', [
-      { question: 'Quel fruit contient le plus de vitamine C ?', answer: 'kiwi' },
-      { question: 'Quel légume est en réalité un fruit ?', answer: 'tomate' },
-      { question: 'Quel fruit a ses graines à l’extérieur ?', answer: 'fraise' },
-    ]);
+    pool = this.deckPool.set<any>(pool, 'quizzes', this.buildQuizDeck());
     pool = this.deckPool.set<any>(pool, 'shoppingLists', this.buildShoppingListDeck().flat());
     return pool as PanierExpressMetadata['decks'];
   }
 
   private buildShoppingList(): string[] {
-    const pool = [
-      'pomme',
-      'poire',
-      'carotte',
-      'courgette',
-      'fraise',
-      'avocat',
-      'banane',
-      'tomate',
-      'kiwi',
-      'melon',
-      'citron',
-      'ananas',
-      'peche',
-      'mangue',
-      'raisin',
-    ];
-    return this.decks.shuffle([...pool]).slice(0, 5);
+    return this.decks.shuffle([...this.courseItems()]).slice(0, 5);
   }
 
   private ensureMetadata(state: GameStateEntity): GameStateEntity {
-    const base: PanierExpressMetadata = this.buildMetadata(state);
+    const existing = state.metadata as PanierExpressMetadata | undefined;
+    const base: PanierExpressMetadata = existing ?? this.buildMetadata(state);
+    const baseStatuses = base.statuses?.skipTurn ?? {};
+    const basePositions = base.positions ?? {};
     const metadata: PanierExpressMetadata = {
       ...base,
-      ...(state.metadata as PanierExpressMetadata | undefined),
-      quiz: { pending: {}, ...(state.metadata as PanierExpressMetadata | undefined)?.quiz },
+      quiz: { pending: {}, ...(base.quiz as any) },
       statuses: {
-        skipTurn: { ...base.statuses.skipTurn, ...(state.metadata as PanierExpressMetadata | undefined)?.statuses?.skipTurn },
+        skipTurn: { ...baseStatuses },
       },
-      positions: { ...base.positions, ...(state.metadata as PanierExpressMetadata | undefined)?.positions },
+      positions: { ...basePositions },
     };
     return { ...state, metadata, players: this.normalizePlayers(state.players) };
   }
@@ -399,7 +417,6 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
     const hasBlockingQuiz = Boolean(metaAfter.quiz?.pending?.[currentId]);
     const hasBlockingExchange = postActions.some((a) => (a.type || '').toLowerCase() === 'exchange_with');
     if (!hasBlockingQuiz && !hasBlockingExchange) {
-      next = this.applyVictory(next);
       next = this.advanceTurn(next);
     }
     return next;
@@ -454,6 +471,10 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
     this.tileRegistry.register('event', (s, ctx) => this.applyEvent(s, ctx.playerId));
     this.tileRegistry.register('exchange', (s, ctx) => this.applyExchange(s, ctx.playerId));
     this.tileRegistry.register('quiz', (s, ctx) => this.applyQuiz(s, ctx.playerId));
+    this.tileRegistry.register('move', (s, ctx) => this.applyMoveDelta(s, ctx.playerId, (ctx.tile as any).delta ?? 0));
+    this.tileRegistry.register('skip', (s, ctx) => this.applySkipTurnTile(s, ctx.playerId, (ctx.tile as any).turns ?? 1));
+    this.tileRegistry.register('bonus_course', (s, ctx) => this.drawBonusCourse(s, ctx.playerId));
+    this.tileRegistry.register('move_to_stand', (s, ctx) => this.applyMoveToNextStand(s, ctx.playerId));
   }
 
   private registerStandHandlers(): void {
@@ -498,16 +519,23 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
 
   private applyEvent(state: GameStateEntity, playerId: number): GameStateEntity {
     const meta = state.metadata as PanierExpressMetadata;
-    const drawn = this.drawFromPool(meta, 'events');
+    let drawn = this.drawFromPool(meta, 'events');
+    let metadata = drawn.metadata as PanierExpressMetadata;
     if (!drawn.card) {
-      return this.core.appendLog(state, `[Panier Express] Aucun événement disponible.`);
+      // R?initialiser le deck d'?v?nements si ?puis?, puis retenter.
+      const refilled = this.deckPool.set<any>(meta.decks as any, 'events', ['rupture-de-stock', 'stand-ferme', 'promo-surprise', 'orage-au-marche']);
+      drawn = this.drawFromPool({ ...meta, decks: refilled as any }, 'events');
+      metadata = drawn.metadata as PanierExpressMetadata;
+      if (!drawn.card) {
+        return state;
+      }
     }
-    const { card: event, metadata } = drawn;
+    const { card: event } = drawn;
     let next: GameStateEntity = { ...state, metadata };
     switch (event) {
       case 'stand-ferme':
         next = this.turnStatus.setStatus(next, playerId, 'skipTurn', 1);
-        next = this.core.appendLog(next, `[Panier Express] Stand fermé : ${this.playerName(state, playerId)} saute un tour.`);
+        next = this.core.appendLog(next, `[Panier Express] Stand ferm? : ${this.playerName(state, playerId)} saute un tour.`);
         next = this.appendActionLog(next, playerId, 'event', { event, effect: 'skipTurn' });
         break;
       case 'promo-surprise':
@@ -535,56 +563,22 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
     const drawn = this.drawFromPool(meta, 'exchanges');
     const metadata = drawn.metadata as PanierExpressMetadata;
     const card = drawn.card ?? 'exchange';
-    let next: GameStateEntity = { ...state, metadata };
+    const next: GameStateEntity = { ...state, metadata };
 
     const players = state.players ?? [];
     const current = players.find((p) => p.id === playerId);
     if (!current || (current.inventory?.length ?? 0) === 0) {
-      return this.core.appendLog(next, `[Panier Express] Pas d’échange possible (${card}).`);
+      return this.core.appendLog(next, `[Panier Express] Pas d'échange possible (${card}).`);
     }
 
     const offers = this.exchangeHelper.buildActions<string>({ players }, playerId, 'inventory');
     if (!offers.length) {
-      return this.core.appendLog(next, `[Panier Express] Pas d’échange compatible (${card}).`);
+      return this.core.appendLog(next, `[Panier Express] Pas d'échange compatible (${card}).`);
     }
 
-    // Choix automatique du premier échange valide (peut être enrichi par type de carte)
-    const chosen = offers.find((offer) =>
-      players.some((p) => p.id !== playerId && (p.inventory ?? []).includes(offer.take)),
-    );
-    if (!chosen) {
-      return this.core.appendLog(next, `[Panier Express] Aucun échange applicable (${card}).`);
-    }
-
-    const target = players.find(
-      (p) => p.id !== playerId && (p.inventory ?? []).includes(chosen.take) && (p.inventory?.length ?? 0) > 0,
-    );
-    if (!target) {
-      return this.core.appendLog(next, `[Panier Express] Cible introuvable pour l’échange (${card}).`);
-    }
-
-    const updatedPlayers = players.map((p) => {
-      if (p.id === current.id) {
-        return {
-          ...p,
-          inventory: [chosen.take, ...(p.inventory ?? []).filter((c) => c !== chosen.give)],
-        };
-      }
-      if (p.id === target.id) {
-        return {
-          ...p,
-          inventory: [chosen.give, ...(p.inventory ?? []).filter((c) => c !== chosen.take)],
-        };
-      }
-      return p;
-    });
-
-    next = { ...next, players: updatedPlayers };
-    const logged = this.core.appendLog(
-      next,
-      `[Panier Express] Échange (${card}) entre ${current.username} et ${target.username}: ${chosen.give} ↔ ${chosen.take}`,
-    );
-    return this.appendActionLog(logged, playerId, 'auto_exchange', { targetPlayerId: target.id, give: chosen.give, take: chosen.take, card });
+    // Laisser le joueur choisir : on marque un pending exchange et on expose les actions exchange_with.
+    const pending = { type: 'exchange', playerId, card } as any;
+    return { ...next, pending };
   }
 
   private handleExchangeWith(state: GameStateEntity, action: GameSingleActionDto): GameStateEntity {
@@ -628,6 +622,26 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
       next,
       `[Panier Express] Échange validé: ${current.username} donne ${give} et reçoit ${take} de ${target.username}`,
     );
+  }
+
+  private handleSkipTurn(state: GameStateEntity, action: GameSingleActionDto): GameStateEntity {
+    const playerId = action.payload?.playerId ?? state.turn?.currentPlayerId ?? null;
+    if (typeof playerId !== 'number') {
+      return state;
+    }
+    const meta = state.metadata as PanierExpressMetadata;
+    const currentSkip = meta.statuses?.skipTurn?.[playerId] ?? 0;
+    const nextSkip = Math.max(0, currentSkip - 1);
+    const nextMeta: PanierExpressMetadata = {
+      ...meta,
+      statuses: {
+        ...meta.statuses,
+        skipTurn: { ...(meta.statuses?.skipTurn ?? {}), [playerId]: nextSkip },
+      },
+    };
+    const next = { ...state, metadata: nextMeta };
+    const logged = this.core.appendLog(next, `[Panier Express] ${this.playerName(state, playerId)} passe son tour.`);
+    return this.advanceTurn(logged);
   }
 
   private handleLegacyExchange(state: GameStateEntity, action: GameSingleActionDto): GameStateEntity {
@@ -676,10 +690,13 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
     const choices = Array.isArray((quiz as any).choices) && (quiz as any).choices.length
       ? (quiz as any).choices
       : [(quiz as any).answer ?? ''];
+    const cleanQuestion = this.sanitizeText((quiz as any).question);
+    const cleanChoices = choices.map((c: any) => this.sanitizeText(String(c))).filter((c: string) => c.length > 0);
     const quizState = this.quizRunner.setPending(metadata.quiz ?? { pending: {} }, playerId, {
       id: `quiz-${Date.now()}`,
       ...quiz,
-      choices,
+      question: cleanQuestion,
+      choices: cleanChoices,
     });
     const nextMeta: PanierExpressMetadata = { ...metadata, quiz: quizState };
     const next: GameStateEntity = {
@@ -687,9 +704,10 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
       metadata: nextMeta,
       pending: {
         type: 'quiz',
+        question: cleanQuestion,
+        choices: cleanChoices,
         playerId,
         blocking: true,
-        data: { question: quiz.question, choices },
       },
     };
     return this.core.appendLog(
@@ -699,7 +717,10 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
   }
 
   private handleAnswerQuiz(state: GameStateEntity, action: GameSingleActionDto): GameStateEntity {
-    const playerId = action.payload?.playerId;
+    const playerId =
+      typeof action.payload?.playerId === 'number'
+        ? action.payload.playerId
+        : state.turn?.currentPlayerId ?? null;
     if (typeof playerId !== 'number') return state;
     const meta = state.metadata as PanierExpressMetadata;
     const quizState = meta.quiz ?? { pending: {} };
@@ -732,12 +753,38 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
     if (correct) {
       next = this.drawBonusCourse(next, playerId);
     }
-    next = this.applyVictory(next);
     return this.advanceTurn(next);
   }
 
   private drawBonusCourse(state: GameStateEntity, playerId: number): GameStateEntity {
     return this.drawCourse(state, playerId, 'bonus');
+  }
+
+  private applyMoveDelta(state: GameStateEntity, playerId: number, delta: number): GameStateEntity {
+    if (!delta || delta === 0) return state;
+    const next = this.movePlayer(state, playerId, delta);
+    return next;
+  }
+
+  private applyMoveToNextStand(state: GameStateEntity, playerId: number): GameStateEntity {
+    const meta = state.metadata as PanierExpressMetadata;
+    const currentPos = meta.positions[playerId] ?? 0;
+    const total = meta.tiles.length;
+    let steps = 1;
+    for (; steps < total; steps += 1) {
+      const idx = this.movement.moveCircular(total, currentPos, steps);
+      const tile = meta.tiles[idx];
+      if (tile?.type === 'stand') {
+        break;
+      }
+    }
+    return this.movePlayer(state, playerId, steps);
+  }
+
+  private applySkipTurnTile(state: GameStateEntity, playerId: number, turns: number): GameStateEntity {
+    const count = Math.max(1, turns || 1);
+    const next = this.turnStatus.setStatus(state, playerId, 'skipTurn', count);
+    return this.core.appendLog(next, `[Panier Express] ${this.playerName(state, playerId)} perd ${count} tour(s).`);
   }
 
   private applyVictory(state: GameStateEntity): GameStateEntity {
@@ -869,7 +916,16 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
   }
 
   private buildShoppingListDeck(): string[][] {
-    const pool = [
+    // Créer plusieurs listes de 5 items
+    const lists: string[][] = [];
+    for (let i = 0; i < 10; i += 1) {
+      lists.push(this.decks.shuffle([...this.courseItems()]).slice(0, 5));
+    }
+    return this.decks.shuffle(lists);
+  }
+
+  private courseItems(): string[] {
+    return [
       'pomme',
       'poire',
       'carotte',
@@ -886,11 +942,25 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
       'mangue',
       'raisin',
     ];
-    // Créer plusieurs listes de 5 items
-    const lists: string[][] = [];
-    for (let i = 0; i < 10; i += 1) {
-      lists.push(this.decks.shuffle([...pool]).slice(0, 5));
-    }
-    return this.decks.shuffle(lists);
+  }
+
+  private buildQuizDeck(): Array<{ question: string; answer: string; choices: string[] }> {
+    const pool = this.courseItems();
+    const base = [
+      { question: 'Quel fruit contient le plus de vitamine C ?', answer: 'kiwi' },
+      { question: 'Quel légume est en réalité un fruit ?', answer: 'tomate' },
+      { question: 'Quel fruit a ses graines à l’extérieur ?', answer: 'fraise' },
+    ];
+    return base.map((q) => {
+      const distractors = this.decks.shuffle(pool.filter((item) => item !== q.answer)).slice(0, 3);
+      const choices = this.decks.shuffle([q.answer, ...distractors]);
+      return { ...q, choices };
+    });
+  }
+
+  private sanitizeText(value: any): string {
+    if (typeof value !== 'string') return '';
+    // Remove control chars that can break JSON/log rendering (e.g., null bytes) then trim.
+    return value.replace(/[\u0000-\u001F\u007F]/g, '').trim();
   }
 }
