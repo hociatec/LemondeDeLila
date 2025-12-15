@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { RoomService } from '../../../room/services/room.service';
 import { RoomPayload } from '../../../room/dto/room-response.dto';
 import { GameCoreService } from '../../core/services/game-core.service';
@@ -251,7 +251,7 @@ export class GameEngineService {
     const delayMs = 4000;
     const thinking = { ...state, botThinking: true };
     this.states.set(key, thinking);
-    this.broadcaster?.(gameType, roomId, thinking);
+    this.broadcaster?.(gameType, roomId, this.exposeState(thinking, gameType));
     playingLog('engine.bot.schedule', {
       roomId,
       gameType,
@@ -263,6 +263,17 @@ export class GameEngineService {
     const timer = setTimeout(() => {
       playingLog('engine.bot.timer', { roomId, gameType });
       this.playBotTurn(roomId, gameType).catch((err) => {
+        if (this.isRoomNotFound(err)) {
+          // Table supprimée entre l'armement du timer et le tick : on nettoie et on ignore.
+          this.clearBotTimer(key);
+          this.states.delete(key);
+          playingLog('engine.bot.stale', {
+            roomId,
+            gameType,
+            reason: err instanceof Error ? err.message : String(err),
+          });
+          return;
+        }
         playingLog('engine.bot.error', {
           roomId,
           gameType,
@@ -271,6 +282,12 @@ export class GameEngineService {
       });
     }, delayMs);
     this.botTimers.set(key, timer);
+  }
+
+  private isRoomNotFound(err: unknown): boolean {
+    if (err instanceof NotFoundException) return true;
+    const message = err instanceof Error ? err.message : String(err ?? '');
+    return message.includes('Room introuvable') || message.includes('Table introuvable');
   }
 
   private clearBotTimer(key: string): void {

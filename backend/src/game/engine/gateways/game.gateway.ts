@@ -89,6 +89,11 @@ export class GameGateway implements OnGatewayConnection<WebSocket>, OnGatewayDis
       client.close();
       return;
     }
+    if (!meta.userId || Number.isNaN(meta.userId)) {
+      this.sendError(client, 'Authentification requise');
+      client.close();
+      return;
+    }
     const parsed = this.decode(raw);
     if (!parsed?.type) return;
     const { type, payload } = parsed;
@@ -121,6 +126,7 @@ export class GameGateway implements OnGatewayConnection<WebSocket>, OnGatewayDis
         gameType: meta?.gameType ?? null,
         type,
         message,
+        stack: err instanceof Error ? err.stack : null,
       });
       this.sendError(client, message, type);
     }

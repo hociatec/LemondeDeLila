@@ -47,6 +47,7 @@ import java.util.stream.IntStream;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.text.Normalizer;
+import java.util.Base64;
 
 /**
  * Composant d'interaction gĂŠnĂŠrique pour les jeux (statut, quiz, logs, action primaire).
@@ -71,6 +72,9 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
     private final JLabel basketLabel = new JLabel();
     private final JLabel inventoryLabel = new JLabel();
     private final String localUsername;
+    private final Integer localUserId;
+    private Integer localPlayerId;
+    private GenericGameState lastState;
     private java.util.List<String> lastSelfShopping = java.util.List.of();
     private java.util.List<String> lastSelfBasket = java.util.List.of();
     private java.util.List<String> lastSelfInventory = java.util.List.of();
@@ -125,10 +129,10 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         this.startHandler = startHandler;
         this.autoPrimaryAfterStart = autoPrimaryAfterStart;
         this.turnController = new TurnController();
-        this.localUsername = EncryptedSessionVault.defaultVault()
-                .load()
-                .map(EncryptedSessionVault.SessionRecord::username)
-                .orElse(null);
+        var session = EncryptedSessionVault.defaultVault().load();
+        this.localUsername = session.map(EncryptedSessionVault.SessionRecord::username).orElse(null);
+        this.localUserId = decodeUserIdFromToken(session.map(EncryptedSessionVault.SessionRecord::token).orElse(null));
+        this.localPlayerId = null;
         this.statusPanel = new GameStatusPanel(focusHighlighter);
         if (quizFactory != null && quizFactory.isPresent()) {
             this.quizComponent = quizFactory.get().create(focusHighlighter);
@@ -356,6 +360,7 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
 
     @Override
     public void onState(GenericGameState state) {
+        this.lastState = state;
         SwingUtilities.invokeLater(() -> {
             renderState(state);
         });
@@ -427,10 +432,24 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
     }
 
     private void renderQuiz(GenericGameState.PendingQuiz quiz) {
+        if (!isLocalQuiz(quiz)) {
+            // Quiz pour un autre joueur ou un bot : on le montre dans les logs mais pas comme quiz interactif.
+            activeQuiz = null;
+            quizChoiceIndex = -1;
+            lastAnnouncedQuizChoice = -1;
+            lastQuizAnnouncementKey = null;
+            exchangePending = false;
+            if (quizComponent != null) {
+                quizComponent.clearQuiz();
+                updateQuizHighlight();
+            }
+            return;
+        }
+
         if (quizComponent == null) {
             return;
         }
-        if (quiz == null) {
+        if (quiz == null || !isLocalQuiz(quiz)) {
             activeQuiz = null;
             quizChoiceIndex = -1;
             lastAnnouncedQuizChoice = -1;
@@ -612,6 +631,11 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         botTurnLocked = botFlag;
         if (!botTurnLocked) {
             botLockNotified = false;
+            infoLabel.setText("");
+        }
+        if (botTurnLocked && !botLockNotified) {
+            infoLabel.setText("Tour du bot, merci de patienter...");
+            botLockNotified = true;
         }
     }
 
@@ -718,6 +742,11 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
     }
 
     private void renderPending(Object pending) {
+        if (pending instanceof GenericGameState.PendingQuiz quiz && !isLocalQuiz(quiz)) {
+            pendingLabel.setText("");
+            return;
+        }
+
         boolean wasExchangePending = exchangePending;
         if (pending == null) {
             exchangePending = false;
@@ -745,16 +774,53 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
 
     private void renderPlayerCollections(GenericGameState state) {
         boolean updated = false;
-        if (localUsername != null) {
-            Object playersNode = state.extras().get("players");
-            if (playersNode instanceof JsonNode node && node.isArray()) {
-                for (JsonNode p : node) {
-                    String name = p.path("username").asText("");
-                    if (name != null && name.equalsIgnoreCase(localUsername)) {
+        String localNameKey = normalizeName(localUsername);
+        Integer resolvedId = localPlayerId;
+        JsonNode pvNode = null;
+
+        // 1) playerViews : vue complète par joueur envoyée par le serveur.
+        Object playerViewsNode = state.extras().get("playerViews");
+        if (playerViewsNode instanceof JsonNode node && node.isArray()) {
+            pvNode = node;
+            if (resolvedId == null && localUserId != null) {
+                for (JsonNode v : node) {
+                    if (v.path("id").isInt() && v.get("id").asInt() == localUserId) {
+                        resolvedId = v.get("id").asInt();
+                        break;
+                    }
+                }
+            }
+            if (resolvedId == null && localNameKey != null) {
+                for (JsonNode v : node) {
+                    String name = v.path("username").asText("");
+                    if (!name.isBlank() && normalizeName(name).equals(localNameKey) && v.path("id").isInt()) {
+                        resolvedId = v.get("id").asInt();
+                        break;
+                    }
+                }
+            }
+            if (resolvedId == null) {
+                // Dernier recours : prendre un joueur non-bot avec id connu.
+                for (JsonNode v : node) {
+                    boolean isBot = v.path("isBot").asBoolean(false);
+                    if (!isBot && v.path("id").isInt()) {
+                        resolvedId = v.get("id").asInt();
+                        break;
+                    }
+                }
+            }
+            if (resolvedId == null && node.size() > 0 && node.get(0).path("id").isInt()) {
+                resolvedId = node.get(0).get("id").asInt();
+            }
+            if (resolvedId != null) {
+                localPlayerId = resolvedId;
+                for (JsonNode v : node) {
+                    Integer pid = v.path("id").isInt() ? v.get("id").asInt() : null;
+                    if (pid != null && pid.equals(resolvedId)) {
                         updateCollectionsFromLists(
-                                toStringList(p.get("shoppingList")),
-                                toStringList(p.get("basket")),
-                                toStringList(p.get("inventory"))
+                                toStringList(v.get("shoppingList")),
+                                toStringList(v.get("basket")),
+                                toStringList(v.get("inventory"))
                         );
                         updated = true;
                         break;
@@ -762,30 +828,115 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
                 }
             }
         }
-        Object view = state.extras().get("currentPlayerView");
-        if (view == null && state != null) {
-            // Fallback si le serveur ne met pas la vue dans extras.
-            view = state.extras().get("playerView");
-        }
-        if (view == null) {
-            // Conserver la dernière vue connue si disponible.
-            shoppingLabel.setText("S : " + formatList(shoppingView));
-            basketLabel.setText("B : " + formatList(basketView));
-            inventoryLabel.setText("I : " + formatList(inventoryView));
-            return;
-        }
-        java.util.Map<String, Object> asMap = mapper.convertValue(view, java.util.Map.class);
-        shoppingView = toStringList(asMap.get("shoppingList"));
-        basketView = toStringList(asMap.get("basket"));
-        inventoryView = toStringList(asMap.get("inventory"));
-        // Si la vue courante correspond à l'utilisateur local, la prendre comme source fiable.
-        String viewUser = asMap.get("username") == null ? "" : asMap.get("username").toString();
-        if (!updated && localUsername != null && viewUser.equalsIgnoreCase(localUsername)) {
-            updateCollectionsFromLists(shoppingView, basketView, inventoryView);
-            updated = true;
-        }
+
+        // 2) Fallback sur extras.players pour identifier la vue locale.
         if (!updated) {
-            // Sinon, ne pas écraser la vue locale si nous l'avons déjà ; utiliser celle du tour uniquement si rien n'était connu.
+            Object playersNode = state.extras().get("players");
+            if (playersNode instanceof JsonNode node && node.isArray()) {
+                if (resolvedId == null && localUserId != null) {
+                    for (JsonNode p : node) {
+                        if (p.path("id").isInt() && p.get("id").asInt() == localUserId) {
+                            resolvedId = p.get("id").asInt();
+                            break;
+                        }
+                    }
+                }
+                if (resolvedId == null && localNameKey != null) {
+                    for (JsonNode p : node) {
+                        String name = p.path("username").asText("");
+                        if (!name.isBlank() && normalizeName(name).equals(localNameKey) && p.path("id").isInt()) {
+                            resolvedId = p.get("id").asInt();
+                            break;
+                        }
+                    }
+                }
+                if (resolvedId == null) {
+                    for (JsonNode p : node) {
+                        boolean isBot = p.path("isBot").asBoolean(false);
+                        if (!isBot && p.path("id").isInt()) {
+                            resolvedId = p.get("id").asInt();
+                            break;
+                        }
+                    }
+                }
+                if (resolvedId == null && node.size() > 0 && node.get(0).path("id").isInt()) {
+                    resolvedId = node.get(0).get("id").asInt();
+                }
+                if (resolvedId != null) {
+                    localPlayerId = resolvedId;
+                    for (JsonNode p : node) {
+                        Integer pid = p.path("id").isInt() ? p.get("id").asInt() : null;
+                        if (pid != null && pid.equals(resolvedId)) {
+                            updateCollectionsFromLists(
+                                    toStringList(p.get("shoppingList")),
+                                    toStringList(p.get("basket")),
+                                    toStringList(p.get("inventory"))
+                            );
+                            updated = true;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        // 2bis) si la vue par joueur existe mais qu'aucune correspondance n'a été trouvée, utiliser la première entrée pour ne pas laisser S/B/I vides.
+        if (!updated && pvNode != null && pvNode.size() > 0) {
+            JsonNode first = pvNode.get(0);
+            if (first != null) {
+                if (first.path("id").isInt()) {
+                    localPlayerId = first.get("id").asInt();
+                }
+                updateCollectionsFromLists(
+                        toStringList(first.get("shoppingList")),
+                        toStringList(first.get("basket")),
+                        toStringList(first.get("inventory"))
+                );
+                updated = true;
+            }
+        }
+
+        // 3) Fallback ultime : currentPlayerView seulement si on peut le rattacher à l'utilisateur local.
+        if (!updated) {
+            Object view = state.extras().get("currentPlayerView");
+            if (view == null && state != null) {
+                view = state.extras().get("playerView");
+            }
+            if (view != null) {
+                java.util.Map<String, Object> asMap = mapper.convertValue(view, java.util.Map.class);
+                java.util.List<String> vShopping = toStringList(asMap.get("shoppingList"));
+                java.util.List<String> vBasket = toStringList(asMap.get("basket"));
+                java.util.List<String> vInventory = toStringList(asMap.get("inventory"));
+                String viewUser = asMap.get("username") == null ? "" : asMap.get("username").toString();
+                Integer viewPlayerId = null;
+                try {
+                    Object raw = asMap.get("id");
+                    if (raw != null) {
+                        viewPlayerId = Integer.valueOf(raw.toString());
+                    }
+                } catch (NumberFormatException ignored) {
+                }
+                boolean viewIsSelf = false;
+                if (resolvedId != null && viewPlayerId != null && viewPlayerId.equals(resolvedId)) {
+                    viewIsSelf = true;
+                } else if (localUserId != null && viewPlayerId != null && viewPlayerId.equals(localUserId)) {
+                    viewIsSelf = true;
+                } else if (localNameKey != null && !viewUser.isBlank() && normalizeName(viewUser).equals(localNameKey)) {
+                    viewIsSelf = true;
+                }
+                if (viewIsSelf) {
+                    updateCollectionsFromLists(vShopping, vBasket, vInventory);
+                    updated = true;
+                } else if (!updated) {
+                    // Ultime filet : afficher quand même la vue courante pour ne pas laisser l'UI vide.
+                    updateCollectionsFromLists(vShopping, vBasket, vInventory);
+                    updated = true;
+                }
+            }
+        }
+
+        // 4) Si rien trouvé, conserver la dernière vue connue (évite de vider pendant une phase où le serveur n'expose pas playerViews).
+        if (!updated) {
             shoppingLabel.setText("S : " + formatList(shoppingView));
             basketLabel.setText("B : " + formatList(basketView));
             inventoryLabel.setText("I : " + formatList(inventoryView));
@@ -793,6 +944,10 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
     }
 
     private void renderShortcuts(GenericGameState state) {
+        if (state != null && state.pendingQuiz() != null && !isLocalQuiz(state.pendingQuiz())) {
+            infoLabel.setText("");
+        }
+
         // Ne pas écraser les raccourcis globaux de table (ex: b / Maj+b pour les bots) avant le démarrage.
         boolean allowDynamic = tableState != null && tableState.started();
         Object raw = allowDynamic ? state.extras().get("shortcuts") : null;
@@ -844,6 +999,7 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
                             case "shopping" -> announceCollection("shopping", shoppingView);
                             case "basket" -> announceCollection("basket", basketView);
                             case "inventory" -> announceCollection("inventory", inventoryView);
+                            case "position" -> announcePosition();
                             default -> {
                                 // noop
                             }
@@ -924,6 +1080,34 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         emitter.announceEvent(label + " : " + String.join(", ", values));
     }
 
+    private void announcePosition() {
+        Integer currentId = tableState.currentPlayerId();
+        int turn = tableState.turnRound();
+        // Les positions par joueur sont dans extras.board.positions si exposé, sinon annoncer juste le tour.
+        Object boardNode = currentStateExtras().get("board");
+        String message = null;
+        if (boardNode instanceof JsonNode board && board.has("positions") && board.get("positions").isObject() && currentId != null) {
+            JsonNode pos = board.get("positions").get(String.valueOf(currentId));
+            if (pos != null && pos.isInt() && board.has("tiles") && board.get("tiles").isArray()) {
+                int index = pos.asInt();
+                int total = board.get("tiles").size();
+                message = "Case " + (index + 1) + "/" + total + ", tour " + turn;
+            }
+        }
+        if (message == null) {
+            message = "Tour " + turn;
+        }
+        emitter.announceEvent(message);
+    }
+
+    private Map<String, Object> currentStateExtras() {
+        GenericGameState state = lastState;
+        if (state == null || state.extras() == null) {
+            return Map.of();
+        }
+        return state.extras();
+    }
+
     private void updateCollectionsFromLists(java.util.List<String> shopping, java.util.List<String> basket, java.util.List<String> inventory) {
         if (shopping != null) {
             lastSelfShopping = shopping;
@@ -940,6 +1124,28 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         shoppingLabel.setText("S : " + formatList(shoppingView));
         basketLabel.setText("B : " + formatList(basketView));
         inventoryLabel.setText("I : " + formatList(inventoryView));
+    }
+
+    private String normalizeName(String name) {
+        return name == null ? null : name.trim().toLowerCase();
+    }
+
+    private Integer decodeUserIdFromToken(String token) {
+        if (token == null || token.isBlank()) return null;
+        try {
+            String[] parts = token.split("\\.");
+            if (parts.length < 2) return null;
+            String payload = new String(Base64.getUrlDecoder().decode(parts[1]));
+            JsonNode node = mapper.readTree(payload);
+            if (node.has("id") && node.get("id").isInt()) {
+                return node.get("id").asInt();
+            }
+            if (node.has("userId") && node.get("userId").isInt()) {
+                return node.get("userId").asInt();
+            }
+        } catch (Exception ignored) {
+        }
+        return null;
     }
 
     private boolean blockIfBotTurn() {
@@ -1057,23 +1263,18 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         if (blockIfBotTurn()) {
             return;
         }
-        if (exchangePending && hasActionMatching(this::isExchangeAction)) {
-            dispatchActionMatching(this::isExchangeAction);
-            return;
-        }
         // Si la partie n'est pas lancee, utiliser le comportement de demarrage (equivalent bouton Start).
         if (!tableState.started()) {
             triggerPrimaryAction();
             return;
         }
-        if (hasActionMatching(this::isDiceAction)) {
-            dispatchActionMatching(this::isDiceAction);
+        // Si des actions sont disponibles, Entrée déclenche l'action actuellement sélectionnée.
+        if (!actionsModel.isEmpty()) {
+            dispatchSelectedAction();
             return;
         }
         // Fallback : si aucune action n'est fournie mais que la partie est en cours, tenter un "roll" explicite.
-        if (actionsModel.isEmpty()) {
-            controller.sendActions(List.of(ActionRequest.of("roll", java.util.Map.of())));
-        }
+        controller.sendActions(List.of(ActionRequest.of("roll", java.util.Map.of())));
     }
 
     private boolean dispatchActionMatching(java.util.function.Predicate<GenericGameState.GenericAction> matcher) {
@@ -1232,7 +1433,36 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         Object target = payload.getOrDefault("targetPlayerId", "?");
         Object give = payload.getOrDefault("give", "?");
         Object take = payload.getOrDefault("take", "?");
-        return "Echange " + (index + 1) + "/" + total + " : cible " + target + ", donner " + give + ", recevoir " + take;
+        String targetName = resolveNameForId(target);
+        return "Échanger " + give + " contre " + take + " avec " + targetName + " (" + (index + 1) + "/" + total + ")";
+    }
+
+    private String buildActionLabel(GenericGameState.GenericAction action) {
+        if (action == null) return "";
+        String type = action.type() == null ? "" : action.type();
+        String label = action.label() == null ? "" : action.label();
+        if (!label.isBlank()) return label;
+        return type;
+    }
+
+    private String resolveNameForId(Object idObj) {
+        if (idObj == null) return "?";
+        try {
+            Integer id = Integer.valueOf(idObj.toString());
+            for (var p : tableState.players()) {
+                if (p != null && p.id() != null && p.id().equals(id)) {
+                    return p.username() == null || p.username().isBlank() ? "Joueur" : p.username();
+                }
+            }
+            for (var b : tableState.bots()) {
+                if (b != null && b.id() != null && b.id().equals(id)) {
+                    return b.name() == null || b.name().isBlank() ? "Bot" : b.name();
+                }
+            }
+            return "Joueur " + id;
+        } catch (NumberFormatException e) {
+            return idObj.toString();
+        }
     }
 
     private String sanitizeLogLine(String line) {
@@ -1281,5 +1511,16 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
             sb.append(" - aucune option disponible.");
         }
         return sb.toString();
+    }
+
+    private boolean isLocalQuiz(GenericGameState.PendingQuiz quiz) {
+        if (quiz == null) {
+            return false;
+        }
+        Integer quizPlayerId = quiz.playerId();
+        if (quizPlayerId == null) {
+            return false;
+        }
+        return localPlayerId != null && localPlayerId.equals(quizPlayerId);
     }
 }

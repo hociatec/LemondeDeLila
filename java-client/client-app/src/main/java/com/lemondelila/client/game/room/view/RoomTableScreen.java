@@ -255,6 +255,8 @@ public final class RoomTableScreen extends BaseTableScreen {
         if (currentInteraction != null) {
             currentInteraction.onDetach();
         }
+        // Repartir d'un tracking vierge pour la nouvelle table/interface.
+        lifecycleService.stopTracking();
         view.interactionPanel().removeAll();
         GameInteractionComponent component = interactionRegistry.find(gameType)
                 .map(provider -> provider.create())
@@ -287,9 +289,36 @@ public final class RoomTableScreen extends BaseTableScreen {
         }
     }
 
+    private void enableBotShortcuts() {
+        if (!botShortcutsDisabled) return;
+        botShortcutsDisabled = false;
+        InputMap windowMap = this.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        ActionMap actions = this.getActionMap();
+        if (windowMap != null && actions != null) {
+            KeyStroke add = KeyStroke.getKeyStroke(KeyEvent.VK_B, 0);
+            KeyStroke remove = KeyStroke.getKeyStroke(KeyEvent.VK_B, InputEvent.SHIFT_DOWN_MASK);
+            windowMap.put(add, "table.bot.add");
+            windowMap.put(remove, "table.bot.remove");
+            actions.put("table.bot.add", new javax.swing.AbstractAction() {
+                @Override
+                public void actionPerformed(java.awt.event.ActionEvent e) {
+                    handleAddBot();
+                }
+            });
+            actions.put("table.bot.remove", new javax.swing.AbstractAction() {
+                @Override
+                public void actionPerformed(java.awt.event.ActionEvent e) {
+                    handleRemoveBot();
+                }
+            });
+        }
+    }
+
     private void refreshFromState() {
         if (tableState.started() && !botShortcutsDisabled) {
             disableBotShortcuts();
+        } else if (!tableState.started()) {
+            enableBotShortcuts();
         }
         SwingUtilities.invokeLater(() -> {
             Integer roomId = currentUiRoomId();

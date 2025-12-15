@@ -13,6 +13,10 @@ import { ExchangeModule } from '../../../../modules/exchange/exchange.module';
 import { VictoryModule } from '../../../../modules/victory/victory.module';
 import { BotModule } from '../../../../modules/bot/bot.module';
 import { PanierExpressService } from './services/panier-express.service';
+import { PanierExpressSetupService } from './services/panier-express-setup.service';
+import { PanierExpressDrawService } from './services/panier-express-draw.service';
+import { PanierExpressQuizService } from './services/panier-express-quiz.service';
+import { PanierExpressExchangeService } from './services/panier-express-exchange.service';
 
 @Module({
   imports: [
@@ -30,7 +34,7 @@ import { PanierExpressService } from './services/panier-express.service';
     VictoryModule,
     BotModule,
   ],
-  providers: [PanierExpressService],
-  exports: [PanierExpressService],
+  providers: [PanierExpressService, PanierExpressSetupService, PanierExpressDrawService, PanierExpressQuizService, PanierExpressExchangeService],
+  exports: [PanierExpressService, PanierExpressSetupService, PanierExpressDrawService, PanierExpressQuizService, PanierExpressExchangeService],
 })
 export class PanierExpressModule {}

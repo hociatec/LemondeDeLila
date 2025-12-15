@@ -63,6 +63,7 @@ public final class RoomLifecycleService implements AutoCloseable {
             closeRealtimeSubscription();
             observedRoomId = roomId;
             if (roomId == null) {
+                // Réinitialiser explicitement l'état local pour éviter de conserver des bots/flags d'une ancienne table.
                 tableState.clear();
                 detailsState.setRoomId(null);
                 detailsState.setGameType(null);
