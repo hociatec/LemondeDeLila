@@ -67,10 +67,18 @@ public final class RoomLifecycleService implements AutoCloseable {
                 tableState.clear();
                 detailsState.setRoomId(null);
                 detailsState.setGameType(null);
+                detailsState.setRoomName(null);
                 realtimeService.resetTracking();
                 return;
             }
             tableState.setRoom(roomId, gameType);
+            if (!Objects.equals(detailsState.roomId(), roomId)) {
+                detailsState.setRoomId(roomId);
+                detailsState.setRoomName(null);
+            }
+            if (gameType != null && !gameType.isBlank()) {
+                detailsState.setGameType(gameType);
+            }
             try {
                 realtimeSubscription = realtimeService.subscribe(roomId);
             } catch (Exception ex) {
@@ -120,6 +128,7 @@ public final class RoomLifecycleService implements AutoCloseable {
         updateStateFromRoom(room);
         detailsState.setRoomId(room.id());
         detailsState.setGameType(room.gameType());
+        detailsState.setRoomName(room.name());
     }
 
     private void onBotAdded(BotAdded event) {
@@ -144,6 +153,9 @@ public final class RoomLifecycleService implements AutoCloseable {
         tableState.updatePrivacy(room.isPrivate());
         RoomState.Owner owner = room.owner().orElse(null);
         tableState.updateOwner(owner != null ? owner.id() : null, owner != null ? owner.username() : null);
+        detailsState.setRoomId(room.id());
+        detailsState.setGameType(room.gameType());
+        detailsState.setRoomName(room.name());
     }
 
     private void closeRealtimeSubscription() {

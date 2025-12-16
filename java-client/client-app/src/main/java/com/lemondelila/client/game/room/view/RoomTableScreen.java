@@ -263,7 +263,7 @@ public final class RoomTableScreen extends BaseTableScreen {
         if (roomId == null) {
             return;
         }
-        presenceHandle = presenceReporter.enterTable(roomId, null);
+        presenceHandle = presenceReporter.enterTable(roomId, resolveRoomName());
     }
 
     private void releasePresenceActivity() {
@@ -378,7 +378,12 @@ public final class RoomTableScreen extends BaseTableScreen {
         if (roomId == null) {
             view.headerLabel().setText("Aucune table selectionnee");
         } else {
-            view.headerLabel().setText("Table #" + roomId);
+            String roomName = resolveRoomName();
+            if (roomName == null || roomName.isBlank()) {
+                view.headerLabel().setText("Table #" + roomId);
+            } else {
+                view.headerLabel().setText("Table \"" + roomName + "\" (#" + roomId + ")");
+            }
         }
     }
 
@@ -413,6 +418,15 @@ public final class RoomTableScreen extends BaseTableScreen {
             return id;
         }
         return detailsState.roomId();
+    }
+
+    private String resolveRoomName() {
+        String name = detailsState.roomName();
+        if (name == null) {
+            return null;
+        }
+        String trimmed = name.trim();
+        return trimmed.isBlank() ? null : trimmed;
     }
 
     private String resolvedGameType() {

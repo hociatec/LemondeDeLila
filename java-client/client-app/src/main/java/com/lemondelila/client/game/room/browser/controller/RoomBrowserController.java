@@ -69,6 +69,7 @@ public final class RoomBrowserController implements AutoCloseable {
                 var joined = service.joinPublicRoom(roomId);
                 detailsState.setRoomId(joined.roomId());
                 detailsState.setGameType(joined.gameType());
+                detailsState.setRoomName(joined.roomName());
                 eventBus.publish(new JoinRoomSucceeded(joined.roomId(), joined.gameType()));
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
@@ -93,6 +94,7 @@ public final class RoomBrowserController implements AutoCloseable {
             }
             detailsState.setRoomId(joined.roomId());
             detailsState.setGameType(joined.gameType());
+            detailsState.setRoomName(joined.roomName());
             return ControllerResult.navigate(RoomTableScreen.ID);
         } catch (Exception e) {
             return ControllerResult.status("Impossible d'accepter l'invitation : " + clean(e.getMessage()));
@@ -121,4 +123,3 @@ public final class RoomBrowserController implements AutoCloseable {
         return message.replaceAll("\\s+", " ").trim();
     }
 }
-

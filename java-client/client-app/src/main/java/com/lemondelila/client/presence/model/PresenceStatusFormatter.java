@@ -26,7 +26,11 @@ public final class PresenceStatusFormatter {
         if (room == null) {
             return "Sur une table";
         }
-        return "Sur la table \"" + room.name() + "\" (#" + room.id() + ")";
+        String name = room.name();
+        if (name == null || name.isBlank()) {
+            return "Sur la table #" + room.id();
+        }
+        return "Sur " + name.trim() + " (#" + room.id() + ")";
     }
 
     private static String defaultLabel(PresencePlayer player) {

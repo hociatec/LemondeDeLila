@@ -61,7 +61,8 @@ public final class RoomDirectoryService {
         JsonNode room = response.path("room");
         int id = response.path("roomId").asInt(roomId);
         String gameType = room.path("gameType").asText("");
-        return new JoinedRoom(id, gameType);
+        String roomName = extractRoomName(room, response);
+        return new JoinedRoom(id, gameType, roomName);
     }
 
     public JoinedRoom respondInvite(String invitationId, boolean accept) throws IOException, InterruptedException {
@@ -72,16 +73,28 @@ public final class RoomDirectoryService {
         JsonNode room = response.path("room");
         int id = response.path("roomId").asInt(room.path("id").asInt(-1));
         String gameType = room.path("gameType").asText("");
+        String roomName = extractRoomName(room, response);
         if (id <= 0 || gameType.isBlank()) {
             return null;
         }
-        return new JoinedRoom(id, gameType);
+        return new JoinedRoom(id, gameType, roomName);
     }
 
     public void sendInvite(int roomId, int userId) throws IOException, InterruptedException {
         apiClient.request("rooms.invite.send", Map.of("roomId", roomId, "userId", userId), JsonNode.class);
     }
 
-    public record JoinedRoom(int roomId, String gameType) {
+    public record JoinedRoom(int roomId, String gameType, String roomName) {
+    }
+
+    private static String extractRoomName(JsonNode room, JsonNode response) {
+        String name = room.path("name").asText("");
+        if (name == null || name.isBlank()) {
+            name = response.path("name").asText("");
+        }
+        if (name == null || name.isBlank()) {
+            return "";
+        }
+        return name;
     }
 }

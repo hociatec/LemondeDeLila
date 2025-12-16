@@ -19,22 +19,28 @@ public final class PresenceListView {
     private final DefaultListModel<PresencePlayer> model = new DefaultListModel<>();
     private final JList<PresencePlayer> list = new JList<>(model);
     private final JLabel statusLabel = new JLabel(Internationalization.text("presence.status.initial"));
+    private final JLabel hintLabel = new JLabel(Internationalization.text("presence.dialog.hint"));
     private final JPanel contentPanel = new JPanel(new BorderLayout(8, 8));
-    private final JPanel footerPanel = new JPanel();
 
-    PresenceListView(Runnable onClose) {
+    PresenceListView() {
         contentPanel.setBorder(new EmptyBorder(12, 12, 12, 12));
-        contentPanel.add(new JLabel(Internationalization.text("presence.dialog.title")), BorderLayout.NORTH);
+        contentPanel.add(buildHeader(), BorderLayout.NORTH);
         contentPanel.add(new JScrollPane(list), BorderLayout.CENTER);
         contentPanel.add(statusLabel, BorderLayout.SOUTH);
     }
 
-    public JPanel contentPanel() {
-        return contentPanel;
+    private JPanel buildHeader() {
+        JPanel header = new JPanel(new BorderLayout());
+        JLabel title = new JLabel(Internationalization.text("presence.dialog.title"));
+        title.setFont(title.getFont().deriveFont(16f));
+        header.add(title, BorderLayout.NORTH);
+        hintLabel.setFont(hintLabel.getFont().deriveFont(Math.max(10f, hintLabel.getFont().getSize2D() - 2f)));
+        header.add(hintLabel, BorderLayout.SOUTH);
+        return header;
     }
 
-    public JPanel footerPanel() {
-        return footerPanel;
+    public JPanel contentPanel() {
+        return contentPanel;
     }
 
     public JList<PresencePlayer> list() {

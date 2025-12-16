@@ -57,6 +57,7 @@ public final class GameCatalogController implements AutoCloseable {
         }
         roomDetailsState.setRoomId(room.id());
         roomDetailsState.setGameType(room.gameType());
+        roomDetailsState.setRoomName(room.name());
     }
 
     public ControllerResult openCatalog() {
@@ -100,6 +101,7 @@ public final class GameCatalogController implements AutoCloseable {
             realtime.sendCommand("room.create", payload);
             tableLauncher.createTemporaryTable(gameCode, name, maxPlayers, isPrivate);
             roomDetailsState.setGameType(gameCode);
+            roomDetailsState.setRoomName(name);
             return ControllerResult.navigate(RoomTableScreen.ID);
         } catch (Exception e) {
             String err = "Création de table impossible : " + clean(e.getMessage());

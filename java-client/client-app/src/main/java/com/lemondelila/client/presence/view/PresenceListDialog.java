@@ -38,7 +38,7 @@ public final class PresenceListDialog extends JDialog {
                               TableState tableState,
                               ClientSession session,
                               ObjectMapper mapper) {
-        super(owner, "Joueurs connectés", ModalityType.APPLICATION_MODAL);
+        super(owner, "Joueurs connectés", ModalityType.MODELESS);
 
         Objects.requireNonNull(dialogService, "dialogService");
         Objects.requireNonNull(messagingController, "messagingController");
@@ -50,7 +50,7 @@ public final class PresenceListDialog extends JDialog {
         Objects.requireNonNull(session, "session");
         Objects.requireNonNull(mapper, "mapper");
 
-        this.view = new PresenceListView(this::dispose);
+        this.view = new PresenceListView();
         this.controller = new PresenceListController(
                 owner,
                 dialogService,
@@ -69,7 +69,6 @@ public final class PresenceListDialog extends JDialog {
         setLayout(new BorderLayout(8, 8));
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         add(view.contentPanel(), BorderLayout.CENTER);
-        add(view.footerPanel(), BorderLayout.SOUTH);
         getRootPane().registerKeyboardAction(
                 e -> dispose(),
                 KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),

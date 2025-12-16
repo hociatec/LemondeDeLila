@@ -290,7 +290,11 @@ public final class PresenceListController {
             var joined = roomDirectoryService.joinPublicRoom(roomId);
             roomDetailsState.setRoomId(joined.roomId());
             roomDetailsState.setGameType(joined.gameType());
-            updateStatus("Table rejointe (#" + joined.roomId() + ").");
+            roomDetailsState.setRoomName(joined.roomName());
+            String roomName = joined.roomName() == null || joined.roomName().isBlank()
+                    ? "#" + joined.roomId()
+                    : "\"" + joined.roomName().trim() + "\" (#" + joined.roomId() + ")";
+            updateStatus("Table rejointe " + roomName + ".");
             navigateToRoomTable();
         } catch (Exception ex) {
             updateStatus("Impossible de rejoindre: " + ex.getMessage());

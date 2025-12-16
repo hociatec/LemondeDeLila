@@ -70,7 +70,9 @@ public final class RoomDetailsScreen extends JPanel implements Screen {
         }
         RoomSummary summary = narration.summarize(tableState);
         String gameType = tableState.gameType() == null ? "?" : tableState.gameType();
-        String name = "Table #" + roomId;
+        String name = state.roomName() == null || state.roomName().isBlank()
+                ? "Table #" + roomId
+                : state.roomName();
         String privacy = narration.privacyLabel(tableState.isPrivate());
         String txt = String.format("Table #%d%nNom: %s%nJeu: %s%nStatut: %s%nConfidentialité: %s%nParticipants: %d",
                 roomId,
