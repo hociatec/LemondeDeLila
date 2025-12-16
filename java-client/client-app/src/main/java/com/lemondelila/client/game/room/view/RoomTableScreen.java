@@ -370,6 +370,7 @@ public final class RoomTableScreen extends BaseTableScreen {
                 view.interactionPanel().repaint();
             }
             attachInteraction(roomId);
+            updatePresenceActivity(roomId);
         });
     }
 
