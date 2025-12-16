@@ -30,6 +30,8 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -72,6 +74,14 @@ public final class SocialMessagingDialog extends JDialog {
         this.dialogService = Objects.requireNonNull(dialogService, "dialogService");
         this.messagingService = Objects.requireNonNull(messagingService, "messagingService");
         this.messagingController = Objects.requireNonNull(messagingController, "messagingController");
+        setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+        installEscapeShortcut();
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                closeDialog();
+            }
+        });
         buildUi();
         showPlaceholder();
     }
@@ -254,6 +264,18 @@ public final class SocialMessagingDialog extends JDialog {
                             }
                             messagingController.openConversation(getOwner(), knownUser.id(), knownUser.username());
                             }));
+    }
+
+    private void installEscapeShortcut() {
+        getRootPane().registerKeyboardAction(
+                e -> closeDialog(),
+                KeyStroke.getKeyStroke("ESCAPE"),
+                javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
+        );
+    }
+
+    private void closeDialog() {
+        dispose();
     }
 
     private void sendInitialMessage() {
