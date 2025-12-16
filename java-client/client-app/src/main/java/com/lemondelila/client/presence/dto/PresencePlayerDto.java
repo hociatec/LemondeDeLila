@@ -2,14 +2,12 @@ package com.lemondelila.client.presence.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import java.util.List;
-
 @JsonIgnoreProperties(ignoreUnknown = true)
 public final class PresencePlayerDto {
 
     private int id;
     private String username;
-    private List<PresenceRoomDto> rooms;
+    private PresenceRoomDto currentRoom;
 
     public int id() {
         return id;
@@ -27,11 +25,11 @@ public final class PresencePlayerDto {
         this.username = username;
     }
 
-    public List<PresenceRoomDto> rooms() {
-        return rooms;
+    public PresenceRoomDto currentRoom() {
+        return currentRoom;
     }
 
-    public void setRooms(List<PresenceRoomDto> rooms) {
-        this.rooms = rooms;
+    public void setCurrentRoom(PresenceRoomDto currentRoom) {
+        this.currentRoom = currentRoom;
     }
 }

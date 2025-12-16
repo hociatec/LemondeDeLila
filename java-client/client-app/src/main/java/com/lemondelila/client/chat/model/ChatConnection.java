@@ -231,18 +231,16 @@ public final class ChatConnection implements AutoCloseable {
         }
         int id = node.path("id").asInt(-1);
         String username = node.path("username").asText("inconnu");
-        List<PresenceChat> rooms = new ArrayList<>();
-        JsonNode roomsNode = node.path("rooms");
-        if (roomsNode.isArray()) {
-            roomsNode.forEach(room -> {
-                int roomId = room.path("id").asInt(-1);
-                String name = room.path("name").asText("");
-                if (roomId >= 0 && !name.isEmpty()) {
-                    rooms.add(new PresenceChat(roomId, name));
-                }
-            });
+        PresenceChat currentRoom = null;
+        JsonNode roomNode = node.path("currentRoom");
+        if (roomNode != null && !roomNode.isMissingNode() && roomNode.isObject()) {
+            int roomId = roomNode.path("id").asInt(-1);
+            String name = roomNode.path("name").asText("");
+            if (roomId >= 0 && !name.isEmpty()) {
+                currentRoom = new PresenceChat(roomId, name);
+            }
         }
-        return java.util.Optional.of(new PresencePlayer(id, username, rooms));
+        return java.util.Optional.of(new PresencePlayer(id, username, currentRoom));
     }
 
     private CompletableFuture<Void> establishConnection() {

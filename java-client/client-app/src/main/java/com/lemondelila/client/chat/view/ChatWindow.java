@@ -4,7 +4,6 @@ import com.lemondelila.client.chat.model.ChatMessage;
 import com.lemondelila.client.chat.model.ChatState;
 import com.lemondelila.client.chat.presenter.ChatPresenter;
 import com.lemondelila.client.chat.presenter.ChatView;
-import com.lemondelila.client.presence.model.PresenceChat;
 import com.lemondelila.client.presence.model.PresencePlayer;
 import com.lemondelila.client.settings.service.AppSettingsService;
 import com.lemondelila.client.framework.ui.dialog.DialogService;
@@ -31,7 +30,6 @@ import java.awt.event.WindowEvent;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public final class ChatWindow extends JDialog implements ChatView {
 
@@ -204,10 +202,10 @@ public final class ChatWindow extends JDialog implements ChatView {
             return;
         }
         players.forEach(player -> {
-            String rooms = player.rooms().isEmpty()
+            String roomInfo = player.currentRoom() == null
                     ? ""
-                    : " [" + player.rooms().stream().map(PresenceChat::name).collect(Collectors.joining(", ")) + "]";
-            presenceModel.addElement(player.username() + rooms);
+                    : " [" + player.currentRoom().name() + "]";
+            presenceModel.addElement(player.username() + roomInfo);
         });
         presenceList.setSelectedIndex(0);
     }

@@ -12,6 +12,7 @@ import com.lemondelila.client.framework.media.sound.SoundEffectManager;
 import com.lemondelila.client.framework.ui.component.StatusBannerFactory;
 import com.lemondelila.client.framework.ui.dialog.DialogService;
 import com.lemondelila.client.game.catalog.controller.GameCatalogController;
+import com.lemondelila.client.game.room.browser.controller.RoomBrowserController;
 import com.lemondelila.client.presence.controller.PresenceController;
 import com.lemondelila.client.settings.controller.OptionsController;
 import com.lemondelila.client.user.model.ClientSession;
@@ -30,6 +31,7 @@ public final class MainMenuModule implements LilaModule {
                 ctx.get(PresenceController.class),
                 ctx.get(OptionsController.class),
                 ctx.get(GameCatalogController.class),
+                ctx.get(RoomBrowserController.class),
                 ctx.get(AdminController.class),
                 ctx.get(ClientSession.class),
                 ctx.get(DomainEventBus.class),

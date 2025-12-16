@@ -1,9 +1,14 @@
 package com.lemondelila.client.presence.view;
 
 import com.lemondelila.client.framework.ui.dialog.DialogService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lemondelila.client.game.room.browser.service.RoomDirectoryService;
+import com.lemondelila.client.game.room.model.RoomDetailsState;
+import com.lemondelila.client.game.room.model.TableState;
 import com.lemondelila.client.messaging.controller.MessagingController;
 import com.lemondelila.client.messaging.service.UserRelationshipService;
 import com.lemondelila.client.presence.service.PresenceRealtimeService;
+import com.lemondelila.client.user.model.ClientSession;
 
 import javax.inject.Inject;
 import java.awt.Window;
@@ -15,16 +20,31 @@ public final class DefaultPresenceListDialogFactory implements PresenceListDialo
     private final MessagingController messagingController;
     private final UserRelationshipService relationshipService;
     private final PresenceRealtimeService realtimeService;
+    private final RoomDirectoryService roomDirectoryService;
+    private final RoomDetailsState roomDetailsState;
+    private final TableState tableState;
+    private final ClientSession session;
+    private final ObjectMapper mapper;
 
     @Inject
     public DefaultPresenceListDialogFactory(DialogService dialogService,
                                             MessagingController messagingController,
                                             UserRelationshipService relationshipService,
-                                            PresenceRealtimeService realtimeService) {
+                                            PresenceRealtimeService realtimeService,
+                                            RoomDirectoryService roomDirectoryService,
+                                            RoomDetailsState roomDetailsState,
+                                            TableState tableState,
+                                            ClientSession session,
+                                            ObjectMapper mapper) {
         this.dialogService = Objects.requireNonNull(dialogService, "dialogService");
         this.messagingController = Objects.requireNonNull(messagingController, "messagingController");
         this.relationshipService = Objects.requireNonNull(relationshipService, "relationshipService");
         this.realtimeService = Objects.requireNonNull(realtimeService, "realtimeService");
+        this.roomDirectoryService = Objects.requireNonNull(roomDirectoryService, "roomDirectoryService");
+        this.roomDetailsState = Objects.requireNonNull(roomDetailsState, "roomDetailsState");
+        this.tableState = Objects.requireNonNull(tableState, "tableState");
+        this.session = Objects.requireNonNull(session, "session");
+        this.mapper = Objects.requireNonNull(mapper, "mapper");
     }
 
     @Override
@@ -34,7 +54,12 @@ public final class DefaultPresenceListDialogFactory implements PresenceListDialo
                 dialogService,
                 messagingController,
                 relationshipService,
-                realtimeService
+                realtimeService,
+                roomDirectoryService,
+                roomDetailsState,
+                tableState,
+                session,
+                mapper
         );
         dialog.addWindowListener(new java.awt.event.WindowAdapter() {
             @Override

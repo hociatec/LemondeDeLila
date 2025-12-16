@@ -3,11 +3,14 @@ package com.lemondelila.client.menu.controller;
 import com.lemondelila.client.application.Internationalization;
 import com.lemondelila.client.chat.controller.ChatController;
 import com.lemondelila.client.framework.core.event.DomainEventBus;
+import com.lemondelila.client.framework.core.event.EventSubscriptions;
 import com.lemondelila.client.framework.ui.ControllerResult;
 import com.lemondelila.client.framework.ui.dialog.DialogService;
 import com.lemondelila.client.framework.ui.screen.ScreenId;
 import com.lemondelila.client.framework.ui.screen.ScreenManager;
 import com.lemondelila.client.game.catalog.controller.GameCatalogController;
+import com.lemondelila.client.game.room.browser.controller.RoomBrowserController;
+import com.lemondelila.client.game.room.event.RoomInviteReceived;
 import com.lemondelila.client.home.view.HomeScreen;
 import com.lemondelila.client.admin.controller.AdminController;
 import com.lemondelila.client.menu.view.MainMenuView;
@@ -36,9 +39,11 @@ public final class MainMenuPresenter {
     private final PresenceController presenceController;
     private final OptionsController optionsController;
     private final GameCatalogController catalogController;
+    private final RoomBrowserController roomBrowserController;
     private final AdminController adminController;
     private final ClientSession session;
     private final DomainEventBus eventBus;
+    private final EventSubscriptions subscriptions = new EventSubscriptions();
     private final MainMenuAudio audio;
     private final MainMenuView view;
     private JComponent root;
@@ -50,6 +55,7 @@ public final class MainMenuPresenter {
                              PresenceController presenceController,
                              OptionsController optionsController,
                              GameCatalogController catalogController,
+                             RoomBrowserController roomBrowserController,
                              AdminController adminController,
                              ClientSession session,
                              DomainEventBus eventBus,
@@ -60,6 +66,7 @@ public final class MainMenuPresenter {
         this.presenceController = Objects.requireNonNull(presenceController, "presenceController");
         this.optionsController = Objects.requireNonNull(optionsController, "optionsController");
         this.catalogController = Objects.requireNonNull(catalogController, "catalogController");
+        this.roomBrowserController = Objects.requireNonNull(roomBrowserController, "roomBrowserController");
         this.adminController = Objects.requireNonNull(adminController, "adminController");
         this.session = Objects.requireNonNull(session, "session");
         this.eventBus = Objects.requireNonNull(eventBus, "eventBus");
@@ -67,6 +74,7 @@ public final class MainMenuPresenter {
         this.view = Objects.requireNonNull(view, "view");
         registerHandlers();
         registerNavigation();
+        subscriptions.subscribe(eventBus, RoomInviteReceived.class, this::onInviteReceived);
     }
 
     public void onShow(ScreenManager manager) {
@@ -89,7 +97,7 @@ public final class MainMenuPresenter {
 
     private void registerHandlers() {
         view.shelvesButton().addActionListener(e -> onMenuSelected(this::openCatalog));
-        view.joinGameButton().addActionListener(e -> onMenuSelected(this::openPresenceDialog));
+        view.joinGameButton().addActionListener(e -> onMenuSelected(this::openRoomBrowser));
         view.chatButton().addActionListener(e -> onMenuSelected(this::openChat));
         view.socialButton().addActionListener(e -> onMenuSelected(this::openSocialCenter));
         view.adminButton().addActionListener(e -> onMenuSelected(this::openAdmin));
@@ -150,12 +158,11 @@ public final class MainMenuPresenter {
         setStatus(Internationalization.text("mainmenu.feature.soon.status", feature));
     }
 
-    private void openPresenceDialog() {
+    private void openRoomBrowser() {
         if (!ensureAuthenticated()) {
             return;
         }
-        audio.playSelect();
-        applyResult(presenceController.open(root));
+        applyResult(roomBrowserController.openBrowser());
     }
 
     private void openChat() {
@@ -184,6 +191,25 @@ public final class MainMenuPresenter {
         }
         audio.playSelect();
         applyResult(catalogController.openCatalog());
+    }
+
+    private void onInviteReceived(RoomInviteReceived event) {
+        if (event == null || event.invite() == null) {
+            return;
+        }
+        if (!ensureAuthenticated()) {
+            return;
+        }
+        String title = "Invitation de table";
+        String body = "Invitation de " + event.invite().fromUsername() + " pour rejoindre \"" + event.invite().roomName() + "\".\nAccepter ?";
+        dialogService.confirm(title, body).thenAccept(accept -> {
+            if (accept != null && accept) {
+                ControllerResult result = roomBrowserController.acceptInviteAndOpenTable(event.invite().invitationId());
+                applyResult(result);
+            } else {
+                roomBrowserController.refuseInvite(event.invite().invitationId());
+            }
+        });
     }
 
     private void openAdmin() {

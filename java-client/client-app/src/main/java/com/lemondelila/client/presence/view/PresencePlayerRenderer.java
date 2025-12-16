@@ -1,7 +1,6 @@
 package com.lemondelila.client.presence.view;
 
 import com.lemondelila.client.messaging.service.UserRelationshipService;
-import com.lemondelila.client.presence.model.PresenceChat;
 import com.lemondelila.client.presence.model.PresencePlayer;
 
 import javax.swing.JLabel;
@@ -9,7 +8,6 @@ import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import javax.swing.border.EmptyBorder;
 import java.awt.Component;
-import java.util.stream.Collectors;
 
 /**
  * Rend chaque joueur connecté avec les informations de relation.
@@ -32,10 +30,10 @@ public final class PresencePlayerRenderer implements ListCellRenderer<PresencePl
         if (value == null) {
             label.setText("");
         } else {
-            String rooms = value.rooms().isEmpty()
+            String roomInfo = value.currentRoom() == null
                     ? ""
-                    : " [" + value.rooms().stream().map(PresenceChat::name).collect(Collectors.joining(", ")) + "]";
-            StringBuilder text = new StringBuilder(value.username()).append(rooms);
+                    : " [" + value.currentRoom().name() + "]";
+            StringBuilder text = new StringBuilder(value.username()).append(roomInfo);
             if (relationshipService.isFriend(value.id())) {
                 text.append(" ★");
             }

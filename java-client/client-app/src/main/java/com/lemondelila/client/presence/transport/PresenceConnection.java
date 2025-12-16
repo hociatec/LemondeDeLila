@@ -141,19 +141,15 @@ public final class PresenceConnection implements AutoCloseable {
 
     private PresencePlayer toPresencePlayer(PresencePlayerDto dto) {
         if (dto == null) {
-            return new PresencePlayer(-1, "inconnu", List.of());
+            return new PresencePlayer(-1, "inconnu", null);
         }
-        List<PresenceChat> chats = new ArrayList<>();
-        List<PresenceRoomDto> rooms = dto.rooms();
-        if (rooms != null) {
-            for (PresenceRoomDto room : rooms) {
-                if (room != null && room.id() >= 0 && room.name() != null && !room.name().isBlank()) {
-                    chats.add(new PresenceChat(room.id(), room.name()));
-                }
-            }
+        PresenceChat currentRoom = null;
+        PresenceRoomDto roomDto = dto.currentRoom();
+        if (roomDto != null && roomDto.id() >= 0 && roomDto.name() != null && !roomDto.name().isBlank()) {
+            currentRoom = new PresenceChat(roomDto.id(), roomDto.name());
         }
         String username = dto.username() == null || dto.username().isBlank() ? "inconnu" : dto.username();
-        return new PresencePlayer(dto.id(), username, List.copyOf(chats));
+        return new PresencePlayer(dto.id(), username, currentRoom);
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)

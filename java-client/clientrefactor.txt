@@ -1,0 +1,620 @@
+================================================================================
+PLAN DE REFACTORING - CLIENT JAVA "LES MONDES DE LILA"
+================================================================================
+Date: 2025-12-16
+Branch actuelle: damenature
+Objectif: Refactorer le client sans casser la compatibilité/fonctionnalité
+
+================================================================================
+RÉSUMÉ DE L'ARCHITECTURE ACTUELLE
+================================================================================
+
+STRUCTURE DU PROJET:
+- 7 modules framework (di, core, network, ui, media, access)
+- 1 module application (client-app) avec 275 fichiers Java
+- 25+ modules fonctionnels via LilaModule
+
+PATTERNS UTILISÉS:
+✓ Module-based Plugin Architecture (ServiceLoader + @AutoService)
+✓ Dependency Injection custom (ApplicationContext)
+✓ Event-Driven Communication (DomainEventBus)
+✓ WebSocket Gateway Pattern (3 APIs: /ws/api, /ws/game, /ws/notify)
+✓ Service Factory Pattern
+
+POINTS FORTS:
+✓ Système de modules mature et stable
+✓ Event Bus bien implémenté
+✓ Découplage efficace via événements
+✓ Pattern controller-service-model-view cohérent
+
+================================================================================
+PROBLÈMES IDENTIFIÉS ET OPPORTUNITÉS
+================================================================================
+
+[PRIORITÉ HAUTE]
+
+1. DUPLICATION: Connection Factory Pattern
+   Fichiers concernés:
+   - client-app/src/main/java/com/lemondelila/client/chat/service/ChatConnectionFactory.java (74 lignes)
+   - client-app/src/main/java/com/lemondelila/client/notification/service/NotificationConnectionFactory.java (35 lignes)
+   - client-app/src/main/java/com/lemondelila/client/presence/service/PresenceConnectionFactory.java (47 lignes)
+
+   Problème:
+   - Les 3 factories partagent le même pattern:
+     * Injection: HttpClient, ObjectMapper, NetworkEndpoints, ClientSession
+     * Résolution du token depuis session
+     * Création de connexion avec token
+     * Utilisation de appendToken() pour l'URI
+
+   Impact: Difficulté à maintenir, bugs potentiels si modification dans 1 seul
+   Risque refactoring: FAIBLE (abstraction simple)
+
+2. COMPLEXITÉ: RoomRealtimeService
+   Fichier:
+   - client-app/src/main/java/com/lemondelila/client/game/room/service/RoomRealtimeService.java (302 lignes)
+
+   Problème:
+   - Une seule classe gère:
+     * Lifecycle du WebSocket
+     * Parsing JSON (room, bot, state)
+     * Publication d'événements
+     * Logique de reconnexion
+   - Violation du Single Responsibility Principle
+
+   Impact: Difficile à tester, difficile à modifier
+   Risque refactoring: MOYEN (nécessite tests pour validation)
+
+[PRIORITÉ MOYENNE]
+
+3. DUPLICATION: Manipulation d'URI avec token
+   Fichiers:
+   - ChatConnectionFactory.appendToken() (11 lignes)
+   - PresenceConnectionFactory.appendToken() (9 lignes)
+   - NetworkEndpoints (inline, 3 lignes)
+
+   Problème: Même logique dupliquée
+   Impact: Maintenance difficile
+   Risque refactoring: TRÈS FAIBLE
+
+4. DUPLICATION: Validation JSON
+   Répété dans:
+   - RoomRealtimeService
+   - RoomInviteNotificationService
+   - Autres services...
+
+   Pattern: if (!node.isObject()) return null;
+   Impact: Code verbeux, maintenance difficile
+   Risque refactoring: TRÈS FAIBLE
+
+5. DISPERSION: Gestion des erreurs
+   Problème:
+   - Messages "Erreur temps réel" construits partout
+   - Méthodes clean(), detail() dispersées
+
+   Impact: Inconsistance dans les messages d'erreur
+   Risque refactoring: FAIBLE
+
+6. COUPLAGE: RoomLifecycleService ↔ RoomRealtimeService
+   Problème:
+   - Interdépendance forte
+   - Les deux maintiennent TableState
+   - Coordination complexe
+
+   Impact: Difficile de modifier la gestion d'état
+   Risque refactoring: MOYEN-ÉLEVÉ
+
+[PRIORITÉ BASSE]
+
+7. CONFIGURATION: Utilisation inconsistante
+   Problème: ConfigurationService utilisé différemment selon les modules
+   Impact: Difficile de valider la config au démarrage
+   Risque refactoring: FAIBLE
+
+8. TESTS: Coverage faible
+   Problème: Peu de tests existants
+   Impact: Difficile de valider les refactorings
+   Risque refactoring: N/A (amélioration nécessaire)
+
+================================================================================
+PLAN DE REFACTORING EN 3 PHASES
+================================================================================
+
+================================================================================
+PHASE 1: EXTRACTION D'UTILITAIRES ET ABSTRACTIONS
+================================================================================
+Objectif: Réduire la duplication sans toucher à la logique métier
+Risque: FAIBLE
+Durée estimée: Impact immédiat, fondations pour Phase 2
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ TÂCHE 1.1: Créer WebSocketConnectionFactory<T> abstrait                │
+└─────────────────────────────────────────────────────────────────────────┘
+
+Nouveau fichier:
+framework-network/src/main/java/com/lemondelila/client/framework/network/factory/AbstractWebSocketConnectionFactory.java
+
+Contenu:
+```java
+public abstract class AbstractWebSocketConnectionFactory<T extends AutoCloseable> {
+    protected final HttpClient httpClient;
+    protected final ObjectMapper objectMapper;
+    protected final NetworkEndpoints endpoints;
+    protected final ClientSession session;
+
+    protected AbstractWebSocketConnectionFactory(
+        HttpClient httpClient,
+        ObjectMapper objectMapper,
+        NetworkEndpoints endpoints,
+        ClientSession session
+    ) {
+        this.httpClient = httpClient;
+        this.objectMapper = objectMapper;
+        this.endpoints = endpoints;
+        this.session = session;
+    }
+
+    protected String resolveToken() throws AuthenticationRequiredException {
+        if (session.getAuth() == null) {
+            throw new AuthenticationRequiredException();
+        }
+        return session.getAuth().getAccessToken();
+    }
+
+    protected URI appendToken(URI uri, String token) {
+        // Logique extraite des factories existantes
+    }
+
+    public abstract T createConnection() throws Exception;
+}
+```
+
+Modifications:
+- ChatConnectionFactory extends AbstractWebSocketConnectionFactory<ChatConnection>
+- NotificationConnectionFactory extends AbstractWebSocketConnectionFactory<NotificationConnection>
+- PresenceConnectionFactory extends AbstractWebSocketConnectionFactory<PresenceConnection>
+
+Chaque factory conserve uniquement:
+- La méthode createConnection() spécifique
+- La résolution d'endpoint spécifique
+
+Compatibilité: ✓ PRÉSERVÉE (signature publique identique)
+Tests requis: Valider que chaque factory fonctionne toujours
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ TÂCHE 1.2: Créer UriUtils                                              │
+└─────────────────────────────────────────────────────────────────────────┘
+
+Nouveau fichier:
+framework-network/src/main/java/com/lemondelila/client/framework/network/util/UriUtils.java
+
+Contenu:
+```java
+public final class UriUtils {
+    private UriUtils() {}
+
+    public static URI appendToken(URI uri, String token) {
+        // Logique extraite et consolidée
+    }
+}
+```
+
+Utilisation:
+- AbstractWebSocketConnectionFactory utilise UriUtils.appendToken()
+- NetworkEndpoints peut aussi l'utiliser si nécessaire
+
+Compatibilité: ✓ PRÉSERVÉE (nouvelle classe, pas de modification de signatures)
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ TÂCHE 1.3: Créer JsonNodeUtils                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+
+Nouveau fichier:
+framework-core/src/main/java/com/lemondelila/client/framework/core/util/JsonNodeUtils.java
+
+Contenu:
+```java
+public final class JsonNodeUtils {
+    private JsonNodeUtils() {}
+
+    public static Optional<JsonNode> asObject(JsonNode node) {
+        return node != null && node.isObject()
+            ? Optional.of(node)
+            : Optional.empty();
+    }
+
+    public static Optional<String> asText(JsonNode node) {
+        return node != null && node.isTextual()
+            ? Optional.of(node.asText())
+            : Optional.empty();
+    }
+
+    // Autres helpers...
+}
+```
+
+Remplacement progressif dans:
+- RoomRealtimeService
+- RoomInviteNotificationService
+- GameRealtimeClient
+- Etc.
+
+Pattern actuel:
+```java
+if (!node.isObject()) return null;
+JsonNode field = node.get("field");
+```
+
+Nouveau pattern:
+```java
+return JsonNodeUtils.asObject(node)
+    .flatMap(n -> JsonNodeUtils.asText(n.get("field")))
+    .orElse(null);
+```
+
+Compatibilité: ✓ PRÉSERVÉE (refactoring interne uniquement)
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ TÂCHE 1.4: Créer ErrorMessageFormatter                                 │
+└─────────────────────────────────────────────────────────────────────────┘
+
+Nouveau fichier:
+framework-core/src/main/java/com/lemondelila/client/framework/core/error/ErrorMessageFormatter.java
+
+Contenu:
+```java
+public final class ErrorMessageFormatter {
+    public static String formatRealtimeError(String context, Throwable error) {
+        return String.format("Erreur temps réel (%s): %s",
+            context,
+            clean(error.getMessage())
+        );
+    }
+
+    public static String formatRealtimeErrorWithDetail(String context, String detail, Throwable error) {
+        return String.format("Erreur temps réel (%s - %s): %s",
+            context,
+            detail,
+            clean(error.getMessage())
+        );
+    }
+
+    private static String clean(String message) {
+        // Logique de nettoyage
+    }
+}
+```
+
+Utilisation dans:
+- RoomRealtimeService
+- GameRealtimeClient
+- Autres services avec WebSocket
+
+Compatibilité: ✓ PRÉSERVÉE (amélioration interne)
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ VALIDATION PHASE 1                                                      │
+└─────────────────────────────────────────────────────────────────────────┘
+
+Checklist avant passage Phase 2:
+□ Tous les tests existants passent
+□ Aucune régression dans les fonctionnalités
+□ Les 3 connection factories fonctionnent (chat, notification, presence)
+□ Les messages d'erreur sont toujours corrects
+□ Le parsing JSON fonctionne dans tous les services
+
+Tests manuels:
+□ Connexion au chat
+□ Réception de notifications
+□ Mise à jour de présence
+□ Rejoindre une room
+□ Accepter une invitation
+
+================================================================================
+PHASE 2: DÉCOMPOSITION DES SERVICES COMPLEXES
+================================================================================
+Objectif: Simplifier les services monolithiques
+Risque: MOYEN
+Durée estimée: Nécessite tests approfondis
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ TÂCHE 2.1: Décomposer RoomRealtimeService                              │
+└─────────────────────────────────────────────────────────────────────────┘
+
+Fichier actuel:
+client-app/src/main/java/com/lemondelila/client/game/room/service/RoomRealtimeService.java (302 lignes)
+
+Responsabilités actuelles:
+1. Gestion lifecycle WebSocket (connect, disconnect, reconnect)
+2. Parsing JSON → événements (parseRoomStateUpdate, parseBotUpdate, etc.)
+3. Publication d'événements via DomainEventBus
+4. Gestion de l'état de connexion
+
+Décomposition proposée:
+
+A) Créer RoomEventParser
+   Fichier: .../game/room/service/RoomEventParser.java
+   Responsabilité: Parsing JSON → objets domaine
+   Méthodes:
+   - parseRoomStateUpdate(JsonNode) → Optional<RoomState>
+   - parseBotUpdate(JsonNode) → Optional<BotUpdate>
+   - parsePlayerUpdate(JsonNode) → Optional<PlayerUpdate>
+
+B) Créer WebSocketChannelManager
+   Fichier: framework-network/.../WebSocketChannelManager.java (réutilisable)
+   Responsabilité: Lifecycle d'un channel WebSocket
+   Méthodes:
+   - connect(String channelId)
+   - disconnect()
+   - reconnect()
+   - onMessage(Consumer<JsonNode>)
+   - onConnectionState(Consumer<State>)
+
+C) Refactorer RoomRealtimeService
+   Nouveau rôle: Orchestrateur
+   Dépendances:
+   - WebSocketChannelManager (gestion connexion)
+   - RoomEventParser (parsing)
+   - DomainEventBus (publication)
+
+   Simplifié à ~100 lignes:
+   ```java
+   public void connectToRoom(String roomId) {
+       channelManager.connect(roomId);
+       channelManager.onMessage(this::handleMessage);
+   }
+
+   private void handleMessage(JsonNode message) {
+       parser.parseRoomStateUpdate(message)
+           .ifPresent(state -> eventBus.publish(new RoomUpdated(state)));
+       parser.parseBotUpdate(message)
+           .ifPresent(bot -> eventBus.publish(new BotJoinedRoom(bot)));
+       // etc.
+   }
+   ```
+
+Compatibilité: ✓ PRÉSERVÉE (API publique de RoomRealtimeService identique)
+Migration: Interne uniquement, pas de changement pour les appelants
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ TÂCHE 2.2: Clarifier ownership de TableState                           │
+└─────────────────────────────────────────────────────────────────────────┘
+
+Problème actuel:
+- RoomLifecycleService et RoomRealtimeService manipulent tous deux TableState
+- Coordination complexe
+
+Approche:
+1. Analyser qui doit vraiment "posséder" TableState
+2. Options:
+   A) RoomLifecycleService possède, RoomRealtimeService publie seulement événements
+   B) Créer RoomStateManager dédié
+
+Recommandation: Option A (moins de changements)
+- RoomLifecycleService subscribe à tous les événements room
+- RoomLifecycleService maintient TableState
+- RoomRealtimeService devient stateless (publish-only)
+
+Modification:
+- RoomRealtimeService ne stocke plus TableState
+- RoomLifecycleService écoute RoomUpdated, BotJoinedRoom, etc.
+
+Compatibilité: ✓ PRÉSERVÉE (changement interne)
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ TÂCHE 2.3: Standardiser la gestion de configuration                    │
+└─────────────────────────────────────────────────────────────────────────┘
+
+Créer ConfigurationValidator
+Fichier: framework-core/.../config/ConfigurationValidator.java
+
+Objectif:
+- Valider toute la configuration au démarrage
+- Fail-fast si configuration invalide
+- Centraliser les règles de validation
+
+Utilisation dans FrameworkCoreModule:
+```java
+@Override
+public void start(ApplicationContext context) {
+    ConfigurationService config = context.get(ConfigurationService.class);
+    ConfigurationValidator.validateAll(config);
+    // Continue si OK, throw sinon
+}
+```
+
+Compatibilité: ✓ PRÉSERVÉE (amélioration transparente)
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ VALIDATION PHASE 2                                                      │
+└─────────────────────────────────────────────────────────────────────────┘
+
+Checklist:
+□ RoomRealtimeService fonctionne avec la nouvelle architecture
+□ Les événements room sont correctement publiés
+□ TableState est correctement maintenu
+□ Pas de régression sur join/leave room
+□ Pas de régression sur invitations
+□ Configuration validée au démarrage
+
+Tests manuels approfondis:
+□ Créer une room
+□ Rejoindre une room
+□ Inviter un ami
+□ Accepter une invitation
+□ Ajouter/retirer un bot
+□ Démarrer une partie
+□ Déconnexion/reconnexion
+
+================================================================================
+PHASE 3: AMÉLIORATION CONTINUE
+================================================================================
+Objectif: Renforcer la qualité à long terme
+Risque: FAIBLE (incrémental)
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ TÂCHE 3.1: Augmenter la couverture de tests                            │
+└─────────────────────────────────────────────────────────────────────────┘
+
+Priorité tests:
+1. AbstractWebSocketConnectionFactory (tests unitaires)
+2. RoomEventParser (tests unitaires - parsing JSON)
+3. WebSocketChannelManager (tests unitaires - mock WebSocket)
+4. RoomRealtimeService (tests d'intégration)
+5. Connection factories (tests d'intégration)
+
+Framework: JUnit 5 + Mockito
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ TÂCHE 3.2: Documenter les dépendances entre modules                    │
+└─────────────────────────────────────────────────────────────────────────┘
+
+Créer: docs/module-dependencies.md
+
+Contenu:
+- Graphe des dépendances
+- Ordre d'initialisation
+- Événements publiés/écoutés par module
+- Règles de dépendances (framework → app, pas l'inverse)
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ TÂCHE 3.3: Monitoring et métriques                                     │
+└─────────────────────────────────────────────────────────────────────────┘
+
+Idées futures:
+- Logger les temps de connexion WebSocket
+- Compter les reconnexions
+- Mesurer la latence des messages
+- Alerter si trop de déconnexions
+
+Non-prioritaire pour compatibilité, mais utile pour production.
+
+================================================================================
+STRATÉGIE DE MIGRATION SÉCURISÉE
+================================================================================
+
+PRINCIPES:
+1. ✓ Interface-First: Créer abstractions avant de modifier les implémentations
+2. ✓ Backward Compatibility: Toujours préserver les signatures publiques
+3. ✓ Incremental: Une classe à la fois, valider avant de continuer
+4. ✓ Test-Driven: Valider après chaque changement
+5. ✓ Feature Branch: Ne pas merger avant validation complète
+
+WORKFLOW PAR TÂCHE:
+1. Créer nouvelle abstraction/utilitaire
+2. Ajouter tests pour la nouvelle abstraction
+3. Migrer UNE classe existante
+4. Valider que cette classe fonctionne
+5. Migrer les autres classes une par une
+6. Supprimer le code dupliqué
+7. Commit
+
+GIT WORKFLOW:
+- Chaque phase = une feature branch
+- Phase 1: feature/refactor-phase1-utilities
+- Phase 2: feature/refactor-phase2-services
+- Phase 3: feature/refactor-phase3-quality
+- Merge après validation complète
+
+================================================================================
+RISQUES ET MITIGATION
+================================================================================
+
+RISQUE 1: Régression dans les Connection Factories
+Probabilité: FAIBLE
+Impact: ÉLEVÉ (plus de connexion chat/presence/notifications)
+Mitigation:
+- Tests manuels après chaque migration
+- Valider en environnement de dev avant merge
+- Rollback plan: git revert simple
+
+RISQUE 2: État inconsistant après décomposition RoomRealtimeService
+Probabilité: MOYENNE
+Impact: ÉLEVÉ (rooms ne fonctionnent plus)
+Mitigation:
+- Tests d'intégration exhaustifs
+- Validation manuelle de tous les scénarios room
+- Déploiement progressif si possible
+
+RISQUE 3: Performance dégradée
+Probabilité: FAIBLE
+Impact: MOYEN
+Mitigation:
+- Profiling avant/après
+- Mesurer temps de connexion WebSocket
+- Vérifier latence des messages
+
+RISQUE 4: Événements perdus ou dupliqués
+Probabilité: FAIBLE
+Impact: ÉLEVÉ
+Mitigation:
+- Logging détaillé pendant migration
+- Vérifier EventSubscriptions lifecycle
+- Tests de stress (nombreux événements rapides)
+
+================================================================================
+CRITÈRES DE SUCCÈS
+================================================================================
+
+PHASE 1:
+✓ 0 régression fonctionnelle
+✓ Réduction de 50%+ de code dupliqué dans connection factories
+✓ Utilitaires réutilisables créés
+✓ Tous les tests existants passent
+
+PHASE 2:
+✓ RoomRealtimeService < 150 lignes (vs 302 actuellement)
+✓ Responsabilités clairement séparées
+✓ Facilité de test améliorée
+✓ État room géré de manière cohérente
+
+PHASE 3:
+✓ Couverture de tests > 60% pour code critique
+✓ Documentation à jour
+✓ 0 warning de build
+
+GLOBAL:
+✓ Compatibilité 100% préservée
+✓ Aucune modification de l'API publique des services
+✓ Facilité de maintenance améliorée
+✓ Base solide pour futures features
+
+================================================================================
+ORDRE D'EXÉCUTION RECOMMANDÉ
+================================================================================
+
+1. Phase 1 - Tâche 1.2 (UriUtils) → TRÈS FAIBLE RISQUE
+2. Phase 1 - Tâche 1.3 (JsonNodeUtils) → TRÈS FAIBLE RISQUE
+3. Phase 1 - Tâche 1.4 (ErrorMessageFormatter) → FAIBLE RISQUE
+4. Phase 1 - Tâche 1.1 (AbstractWebSocketConnectionFactory) → FAIBLE RISQUE
+5. VALIDATION PHASE 1
+6. Phase 2 - Tâche 2.1A (RoomEventParser) → MOYEN RISQUE
+7. Phase 2 - Tâche 2.1B (WebSocketChannelManager) → MOYEN RISQUE
+8. Phase 2 - Tâche 2.1C (Refactor RoomRealtimeService) → MOYEN RISQUE
+9. Phase 2 - Tâche 2.2 (TableState ownership) → MOYEN RISQUE
+10. Phase 2 - Tâche 2.3 (ConfigurationValidator) → FAIBLE RISQUE
+11. VALIDATION PHASE 2
+12. Phase 3 - Progressif
+
+================================================================================
+NOTES IMPORTANTES
+================================================================================
+
+COMPATIBILITÉ:
+- Aucune modification des signatures publiques des services
+- Les modules peuvent continuer à utiliser RoomRealtimeService, ChatConnectionFactory, etc. exactement comme avant
+- La migration est transparente pour les appelants
+- Les événements publiés restent identiques
+
+ÉVOLUTION FUTURE:
+- Ce refactoring facilite l'ajout de nouveaux types de connexions WebSocket
+- La décomposition de RoomRealtimeService sert de template pour autres services complexes
+- Les utilitaires créés sont réutilisables dans tout le projet
+
+FEATURE ACTUELLE (room invites):
+- Peut être finalisée AVANT le refactoring
+- Ou intégrée PENDANT Phase 1 (bénéficiera des utilitaires)
+- NotificationConnectionFactory sera automatiquement refactoré en Phase 1
+
+================================================================================
+FIN DU PLAN DE REFACTORING
+================================================================================

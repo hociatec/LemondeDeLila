@@ -3,6 +3,12 @@ package com.lemondelila.client.presence.controller;
 import com.lemondelila.client.application.Internationalization;
 import com.lemondelila.client.chat.model.ChatState;
 import com.lemondelila.client.framework.ui.dialog.DialogService;
+import com.lemondelila.client.framework.ui.LilaFrame;
+import com.lemondelila.client.framework.ui.screen.ScreenManager;
+import com.lemondelila.client.game.room.browser.service.RoomDirectoryService;
+import com.lemondelila.client.game.room.model.RoomDetailsState;
+import com.lemondelila.client.game.room.model.TableState;
+import com.lemondelila.client.game.room.view.RoomTableScreen;
 import com.lemondelila.client.messaging.controller.MessagingController;
 import com.lemondelila.client.messaging.service.UserRelationshipService;
 import com.lemondelila.client.presence.event.PresenceErrorEvent;
@@ -15,17 +21,22 @@ import com.lemondelila.client.presence.service.PresenceRealtimeService;
 import com.lemondelila.client.presence.view.PresenceListView;
 import com.lemondelila.client.presence.view.PresencePlayerActionMenu;
 import com.lemondelila.client.presence.view.PresencePlayerRenderer;
+import com.lemondelila.client.user.model.ClientSession;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.swing.AbstractAction;
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
 import javax.swing.KeyStroke;
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import java.awt.Point;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
 
@@ -40,6 +51,12 @@ public final class PresenceListController {
     private final UserRelationshipService relationshipService;
     private final PresenceRealtimeService realtimeService;
     private final PresenceListView view;
+    private final RoomDirectoryService roomDirectoryService;
+    private final RoomDetailsState roomDetailsState;
+    private final TableState tableState;
+    private final ClientSession session;
+    private final ObjectMapper mapper;
+    private final Runnable closeDialog;
     private final PresencePlayerActionMenu actionMenu;
     private final PresenceEventListener eventListener = this::handleEvent;
 
@@ -48,18 +65,33 @@ public final class PresenceListController {
                                   MessagingController messagingController,
                                   UserRelationshipService relationshipService,
                                   PresenceRealtimeService realtimeService,
-                                  PresenceListView view) {
+                                  PresenceListView view,
+                                  RoomDirectoryService roomDirectoryService,
+                                  RoomDetailsState roomDetailsState,
+                                  TableState tableState,
+                                  ClientSession session,
+                                  ObjectMapper mapper,
+                                  Runnable closeDialog) {
         this.owner = owner;
         this.dialogService = Objects.requireNonNull(dialogService, "dialogService");
         this.messagingController = Objects.requireNonNull(messagingController, "messagingController");
         this.relationshipService = Objects.requireNonNull(relationshipService, "relationshipService");
         this.realtimeService = Objects.requireNonNull(realtimeService, "realtimeService");
         this.view = Objects.requireNonNull(view, "view");
+        this.roomDirectoryService = Objects.requireNonNull(roomDirectoryService, "roomDirectoryService");
+        this.roomDetailsState = Objects.requireNonNull(roomDetailsState, "roomDetailsState");
+        this.tableState = Objects.requireNonNull(tableState, "tableState");
+        this.session = Objects.requireNonNull(session, "session");
+        this.mapper = Objects.requireNonNull(mapper, "mapper");
+        this.closeDialog = closeDialog;
         this.actionMenu = new PresencePlayerActionMenu(
                 this::openConversation,
+                this::joinPlayerRoom,
+                this::invitePlayerToMyRoom,
                 this::toggleFriend,
                 this::toggleBlock,
-                relationshipService
+                relationshipService,
+                this::canInvite
         );
     }
 
@@ -199,6 +231,86 @@ public final class PresenceListController {
             return;
         }
         messagingController.openConversation(owner, player);
+    }
+
+    private boolean canInvite(PresencePlayer player) {
+        if (player == null) return false;
+        Integer myUserId = currentUserId();
+        if (myUserId != null && player.id() == myUserId) return false;
+        Integer myRoomId = currentRoomId();
+        if (myRoomId == null) return false;
+        if (!tableState.isPrivate()) return false;
+        Integer ownerId = tableState.ownerId();
+        if (ownerId == null || myUserId == null) return false;
+        return ownerId.equals(myUserId);
+    }
+
+    private Integer currentRoomId() {
+        Integer id = tableState.roomId();
+        if (id != null) return id;
+        return roomDetailsState.roomId();
+    }
+
+    private Integer currentUserId() {
+        String token = session.authenticated().map(ClientSession.AuthState::token).orElse(null);
+        if (token == null || token.isBlank()) return null;
+        try {
+            String[] parts = token.split("\\.");
+            if (parts.length < 2) return null;
+            String payload = new String(Base64.getUrlDecoder().decode(parts[1]));
+            JsonNode node = mapper.readTree(payload);
+            if (node.has("id") && node.get("id").isInt()) {
+                return node.get("id").asInt();
+            }
+            if (node.has("userId") && node.get("userId").isInt()) {
+                return node.get("userId").asInt();
+            }
+        } catch (Exception ignored) {
+        }
+        return null;
+    }
+
+    private void joinPlayerRoom(PresencePlayer player) {
+        if (player == null || player.currentRoom() == null) {
+            updateStatus("Aucune table à rejoindre pour ce joueur.");
+            return;
+        }
+        int roomId = player.currentRoom().id();
+        try {
+            var joined = roomDirectoryService.joinPublicRoom(roomId);
+            roomDetailsState.setRoomId(joined.roomId());
+            roomDetailsState.setGameType(joined.gameType());
+            updateStatus("Table rejointe (#" + joined.roomId() + ").");
+            navigateToRoomTable();
+        } catch (Exception ex) {
+            updateStatus("Impossible de rejoindre: " + ex.getMessage());
+        }
+    }
+
+    private void invitePlayerToMyRoom(PresencePlayer player) {
+        if (player == null) return;
+        if (!canInvite(player)) {
+            updateStatus("Invitation impossible (vous n'êtes pas propriétaire).");
+            return;
+        }
+        Integer roomId = currentRoomId();
+        if (roomId == null) return;
+        try {
+            roomDirectoryService.sendInvite(roomId, player.id());
+            updateStatus("Invitation envoyée à " + player.username() + ".");
+        } catch (Exception ex) {
+            updateStatus("Invitation impossible: " + ex.getMessage());
+        }
+    }
+
+    private void navigateToRoomTable() {
+        if (closeDialog != null) {
+            SwingUtilities.invokeLater(closeDialog);
+        }
+        if (owner instanceof LilaFrame frame) {
+            ScreenManager manager = frame.screenManager();
+            SwingUtilities.invokeLater(() -> manager.show(RoomTableScreen.ID));
+        }
     }
 
     private void updateStatus(String message) {

@@ -29,7 +29,7 @@ public final class PresenceDialogLauncher {
     }
 
     public void show(Component anchor) {
-        SwingUtilities.invokeLater(() -> {
+        Runnable task = () -> {
             if (currentDialog != null && currentDialog.isDisplayable()) {
                 currentDialog.setLocationRelativeTo(resolveOwner(anchor));
                 currentDialog.toFront();
@@ -39,8 +39,15 @@ public final class PresenceDialogLauncher {
             Window owner = resolveOwner(anchor);
             PresenceListDialog dialog = dialogFactory.create(owner, () -> currentDialog = null);
             currentDialog = dialog;
+            dialog.pack();
             dialog.setVisible(true);
-        });
+        };
+
+        if (SwingUtilities.isEventDispatchThread()) {
+            task.run();
+        } else {
+            SwingUtilities.invokeLater(task);
+        }
     }
 
     private Window resolveOwner(Component anchor) {

@@ -1,8 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { WebSocket } from 'ws';
+import { InjectRepository } from '@nestjs/typeorm';
 import { ChatService } from '../../chat/services/chat.service';
 import { ChatValidator } from '../../chat/services/chat.validator';
 import { WsAuthPayload } from '../../common/interfaces/ws-auth-payload';
+import { RoomParticipant } from '../../room/entities/room-participant.entity';
+import { In, IsNull, Repository } from 'typeorm';
 
 type PresenceClient = {
   socket: WebSocket;
@@ -20,6 +23,8 @@ export class PresenceService {
   constructor(
     private readonly chat: ChatService,
     private readonly validator: ChatValidator,
+    @InjectRepository(RoomParticipant)
+    private readonly participants: Repository<RoomParticipant>,
   ) {}
 
   register(socket: WebSocket, user: WsAuthPayload) {
@@ -87,7 +92,7 @@ export class PresenceService {
   }
 
   broadcastPresence() {
-    const playersByUser = new Map<number, { id: number; username: string; rooms: any[] }>();
+    const playersByUser = new Map<number, { id: number; username: string; currentRoom: any }>();
     for (const { user } of this.clients.values()) {
       const existing = playersByUser.get(user.id);
       if (existing) {
@@ -96,15 +101,52 @@ export class PresenceService {
       playersByUser.set(user.id, {
         id: user.id,
         username: user.username,
-        rooms: [],
+        currentRoom: null,
       });
     }
-    const players = Array.from(playersByUser.values());
-    const payload = {
-      type: 'presence-update',
-      players,
-    };
-    this.broadcast(payload);
+    this.attachRooms(playersByUser)
+      .then(() => {
+        const payload = {
+          type: 'presence-update',
+          players: Array.from(playersByUser.values()),
+        };
+        this.broadcast(payload);
+      })
+      .catch(() => {
+        const payload = {
+          type: 'presence-update',
+          players: Array.from(playersByUser.values()),
+        };
+        this.broadcast(payload);
+      });
+  }
+
+  private async attachRooms(
+    playersByUser: Map<number, { id: number; username: string; currentRoom: any }>,
+  ) {
+    const userIds = Array.from(playersByUser.keys());
+    if (userIds.length === 0) {
+      return;
+    }
+    const participants = await this.participants.find({
+      where: {
+        leftAt: IsNull(),
+        user: { id: In(userIds) } as any,
+        room: { isPrivate: false } as any,
+      },
+      relations: ['room', 'user'],
+      order: { joinedAt: 'DESC' },
+    });
+    for (const p of participants) {
+      const entry = playersByUser.get(p.user.id);
+      if (!entry || !p.room) {
+        continue;
+      }
+      // Ne prendre que la room la plus récente (première dans l'ordre DESC)
+      if (entry.currentRoom === null) {
+        entry.currentRoom = { id: p.room.id, name: p.room.name };
+      }
+    }
   }
 
   private broadcast(payload: Record<string, unknown>) {

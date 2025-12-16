@@ -138,6 +138,9 @@ public final class RoomTableController {
         tableState.updateBots(state.bots());
         tableState.updatePlayers(state.players());
         tableState.updateStatus(state.status());
+        tableState.updatePrivacy(state.isPrivate());
+        RoomState.Owner owner = state.owner().orElse(null);
+        tableState.updateOwner(owner != null ? owner.id() : null, owner != null ? owner.username() : null);
     }
 
     public void onRoomPrivacyChanged(RoomPrivacyChanged event) {

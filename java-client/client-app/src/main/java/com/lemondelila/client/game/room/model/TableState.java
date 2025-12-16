@@ -15,6 +15,8 @@ public final class TableState {
     private String gameType;
     private String status;
     private boolean isPrivate = false;
+    private Integer ownerId;
+    private String ownerUsername;
     private final List<BotState> bots = new ArrayList<>();
     private final List<PlayerState> players = new ArrayList<>();
     private final List<Integer> participantOrder = new ArrayList<>();
@@ -37,6 +39,10 @@ public final class TableState {
     }
 
     public boolean isPrivate() { return isPrivate; }
+
+    public Integer ownerId() { return ownerId; }
+
+    public String ownerUsername() { return ownerUsername; }
 
     public boolean started() {
         return started;
@@ -91,6 +97,8 @@ public final class TableState {
         this.status = null;
         this.started = false;
         this.isPrivate = false;
+        this.ownerId = null;
+        this.ownerUsername = null;
         bots.clear();
         players.clear();
         participantOrder.clear();
@@ -106,6 +114,8 @@ public final class TableState {
         this.status = null;
         this.started = false;
         this.isPrivate = false;
+        this.ownerId = null;
+        this.ownerUsername = null;
         bots.clear();
         players.clear();
         participantOrder.clear();
@@ -155,6 +165,11 @@ public final class TableState {
 
     public void updatePrivacy(boolean isPrivate) {
         this.isPrivate = isPrivate;
+    }
+
+    public void updateOwner(Integer ownerId, String ownerUsername) {
+        this.ownerId = ownerId;
+        this.ownerUsername = ownerUsername;
     }
 
     public void updateTurn(int round, int index, int direction) {

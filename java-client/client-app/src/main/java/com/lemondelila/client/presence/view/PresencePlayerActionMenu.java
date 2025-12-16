@@ -18,28 +18,49 @@ public final class PresencePlayerActionMenu {
 
     private final JPopupMenu menu = new JPopupMenu();
     private final JMenuItem messageItem = new JMenuItem(Internationalization.text("presence.menu.message"));
+    private final JMenuItem joinItem = new JMenuItem(Internationalization.text("presence.menu.join"));
+    private final JMenuItem inviteItem = new JMenuItem(Internationalization.text("presence.menu.invite"));
     private final JMenuItem friendItem = new JMenuItem(Internationalization.text("presence.menu.friend.add"));
     private final JMenuItem blockItem = new JMenuItem(Internationalization.text("presence.menu.block"));
 
     private final Consumer<PresencePlayer> onMessage;
+    private final Consumer<PresencePlayer> onJoin;
+    private final Consumer<PresencePlayer> onInvite;
     private final Consumer<PresencePlayer> onFriendToggle;
     private final Consumer<PresencePlayer> onBlockToggle;
     private final UserRelationshipService relationshipService;
+    private final java.util.function.Predicate<PresencePlayer> canInvite;
 
     private PresencePlayer current;
 
     public PresencePlayerActionMenu(Consumer<PresencePlayer> onMessage,
+                                    Consumer<PresencePlayer> onJoin,
+                                    Consumer<PresencePlayer> onInvite,
                                     Consumer<PresencePlayer> onFriendToggle,
                                     Consumer<PresencePlayer> onBlockToggle,
-                                    UserRelationshipService relationshipService) {
+                                    UserRelationshipService relationshipService,
+                                    java.util.function.Predicate<PresencePlayer> canInvite) {
         this.onMessage = onMessage;
+        this.onJoin = onJoin;
+        this.onInvite = onInvite;
         this.onFriendToggle = onFriendToggle;
         this.onBlockToggle = onBlockToggle;
         this.relationshipService = relationshipService;
+        this.canInvite = canInvite == null ? p -> false : canInvite;
 
         messageItem.addActionListener(e -> {
             if (current != null) {
                 onMessage.accept(current);
+            }
+        });
+        joinItem.addActionListener(e -> {
+            if (current != null) {
+                onJoin.accept(current);
+            }
+        });
+        inviteItem.addActionListener(e -> {
+            if (current != null) {
+                onInvite.accept(current);
             }
         });
         friendItem.addActionListener(e -> {
@@ -54,6 +75,8 @@ public final class PresencePlayerActionMenu {
         });
 
         menu.add(messageItem);
+        menu.add(joinItem);
+        menu.add(inviteItem);
         menu.add(friendItem);
         menu.add(blockItem);
     }
@@ -81,6 +104,16 @@ public final class PresencePlayerActionMenu {
             available.add(messageItem.getText());
         }
 
+        joinItem.setEnabled(player.currentRoom() != null);
+        if (joinItem.isEnabled()) {
+            available.add(joinItem.getText());
+        }
+
+        inviteItem.setEnabled(canInvite.test(player));
+        if (inviteItem.isEnabled()) {
+            available.add(inviteItem.getText());
+        }
+
         friendItem.setEnabled(true);
         friendItem.setText(friend
                 ? Internationalization.text("presence.menu.friend.remove")
@@ -97,6 +130,8 @@ public final class PresencePlayerActionMenu {
 
     private void disableAll() {
         messageItem.setEnabled(false);
+        joinItem.setEnabled(false);
+        inviteItem.setEnabled(false);
         friendItem.setEnabled(false);
         blockItem.setEnabled(false);
     }

@@ -72,7 +72,7 @@ public final class MessagingController {
     }
 
     public void openConversation(Window owner, int userId, String username) {
-        PresencePlayer phantom = new PresencePlayer(userId, username == null ? ("Utilisateur #" + userId) : username, List.of());
+        PresencePlayer phantom = new PresencePlayer(userId, username == null ? ("Utilisateur #" + userId) : username, null);
         openConversation(owner, phantom);
     }
 

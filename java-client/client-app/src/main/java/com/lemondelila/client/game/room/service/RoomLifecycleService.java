@@ -142,6 +142,8 @@ public final class RoomLifecycleService implements AutoCloseable {
         tableState.updatePlayers(room.players());
         tableState.updateStatus(room.status());
         tableState.updatePrivacy(room.isPrivate());
+        RoomState.Owner owner = room.owner().orElse(null);
+        tableState.updateOwner(owner != null ? owner.id() : null, owner != null ? owner.username() : null);
     }
 
     private void closeRealtimeSubscription() {

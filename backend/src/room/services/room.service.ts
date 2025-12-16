@@ -12,6 +12,7 @@ import { RoomParticipant } from '../entities/room-participant.entity';
 import { User } from '../../user/entities/user.entity';
 import { RoomPayload } from '../dto/room-response.dto';
 import { BotService } from '../../bot/services/bot.service';
+import { PresenceService } from '../../presence/services/presence.service';
 import { OPEN_ROOM_STATUSES } from '../constants/room-status.constants';
 
 @Injectable()
@@ -23,6 +24,8 @@ export class RoomService {
     @InjectRepository(User) private readonly users: Repository<User>,
     @Inject(forwardRef(() => BotService))
     private readonly botService: BotService,
+    @Inject(forwardRef(() => PresenceService))
+    private readonly presenceService: PresenceService,
   ) {}
 
   async createRoom(userId: number, gameType: string, name?: string | null, maxPlayers?: number | null, isPrivate = false): Promise<Room> {
@@ -67,6 +70,9 @@ export class RoomService {
       where: { room: { id: room.id }, user: { id: user.id }, leftAt: IsNull() },
     });
     if (!existing) {
+      // Fermer toutes les participations actives de l'utilisateur dans d'autres rooms
+      await this.closeAllUserParticipations(userId);
+
       const participant = this.participants.create({
         room,
         user,
@@ -74,6 +80,10 @@ export class RoomService {
       });
       await this.participants.save(participant);
     }
+
+    // Broadcast la mise à jour de présence en temps réel
+    this.presenceService.broadcastPresence();
+
     return room;
   }
 
@@ -97,6 +107,8 @@ export class RoomService {
     const remaining = activeHumans + bots;
     if (remaining === 0) {
       await this.rooms.delete(room.id);
+      // Broadcast la mise à jour de présence en temps réel
+      this.presenceService.broadcastPresence();
       return null;
     }
     if (room.owner && room.owner.id === userId) {
@@ -113,6 +125,10 @@ export class RoomService {
         await this.rooms.save(room);
       }
     }
+
+    // Broadcast la mise à jour de présence en temps réel
+    this.presenceService.broadcastPresence();
+
     return room;
   }
 
@@ -212,5 +228,18 @@ export class RoomService {
 
   private async countBots(roomId: number): Promise<number> {
     return this.botService.countBotsForRoom(roomId);
+  }
+
+  private async closeAllUserParticipations(userId: number): Promise<void> {
+    const activeParticipations = await this.participants.find({
+      where: { user: { id: userId }, leftAt: IsNull() },
+    });
+    const now = new Date();
+    for (const participation of activeParticipations) {
+      participation.leftAt = now;
+    }
+    if (activeParticipations.length > 0) {
+      await this.participants.save(activeParticipations);
+    }
   }
 }

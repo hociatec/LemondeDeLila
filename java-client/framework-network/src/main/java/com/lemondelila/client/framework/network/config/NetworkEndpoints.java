@@ -15,12 +15,14 @@ public final class NetworkEndpoints {
     private static final String DEFAULT_WS = "ws://127.0.0.1:3001/ws";
     private static final String DEFAULT_WS_API = "ws://127.0.0.1:3001/ws/api";
     private static final String DEFAULT_WS_GAME = "ws://127.0.0.1:3001/ws/game";
+    private static final String DEFAULT_WS_NOTIFY = "ws://127.0.0.1:3001/ws/notify";
 
     private final URI httpBase;
     private final URI realtimeGateway;
     private final URI presenceGateway;
     private final URI apiGatewayBase;
     private final URI gameGateway;
+    private final URI notifyGatewayBase;
 
     public NetworkEndpoints(ConfigurationService configurationService) {
         Objects.requireNonNull(configurationService, "configurationService");
@@ -28,6 +30,7 @@ public final class NetworkEndpoints {
         this.realtimeGateway = URI.create(normalizeWs(configurationService.get("network.ws.url", DEFAULT_WS), "/ws"));
         this.apiGatewayBase = URI.create(normalizeWs(configurationService.get("network.ws.api", DEFAULT_WS_API), "/ws/api"));
         this.gameGateway = URI.create(normalizeWs(configurationService.get("network.ws.game", DEFAULT_WS_GAME), "/ws/game"));
+        this.notifyGatewayBase = URI.create(normalizeWs(configurationService.get("network.ws.notify", DEFAULT_WS_NOTIFY), "/ws/notify"));
         this.presenceGateway = resolvePresence(
                 configurationService.get("network.ws.presence", "").trim(),
                 realtimeGateway
@@ -57,6 +60,15 @@ public final class NetworkEndpoints {
 
     public URI gameGateway() {
         return gameGateway;
+    }
+
+    public URI notifyGateway(String token) {
+        String base = notifyGatewayBase.toString();
+        if (token == null || token.isBlank()) {
+            return URI.create(base);
+        }
+        String sep = base.contains("?") ? "&" : "?";
+        return URI.create(base + sep + "token=" + urlEncode(token));
     }
 
     private static String normalizeHttp(String candidate) {

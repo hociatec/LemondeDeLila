@@ -50,7 +50,23 @@ export class RoomDirectoryWsHandler {
       botsCount: (r.bots || []).length,
       owner: r.owner ? { id: r.owner.id, username: r.owner.username } : null,
     }));
-    return { type: 'rooms.public.listed', payload: { items } };
+
+    // Group server-side by gameType to match the expected plan, while keeping `items` for compatibility.
+    const grouped = new Map<string, typeof items>();
+    for (const item of items) {
+      const key = item.gameType || '';
+      const existing = grouped.get(key);
+      if (existing) {
+        existing.push(item);
+      } else {
+        grouped.set(key, [item]);
+      }
+    }
+    const groups = Array.from(grouped.entries())
+      .sort(([a], [b]) => a.localeCompare(b, undefined, { sensitivity: 'base' }))
+      .map(([gameType, rooms]) => ({ gameType, rooms }));
+
+    return { type: 'rooms.public.listed', payload: { items, groups } };
   }
 
   async joinPublic(session: WsSession, payload: any) {
@@ -111,9 +127,9 @@ export class RoomDirectoryWsHandler {
       });
       return { type: 'rooms.invite.responded', payload: { invitationId: dto.invitationId, accepted: false } };
     }
-    // accept: consume first (one-shot), then join private explicitly
-    this.invites.consume(dto.invitationId);
+    // accept: join first, then consume the invitation (one-shot) only on success
     await this.rooms.joinRoom(invite.roomId, user.id, { allowPrivate: true });
+    this.invites.consume(dto.invitationId);
     const state = await this.rooms.getRoomPayload(invite.roomId);
     this.notifications.notifyUser(invite.fromUserId, 'rooms.invite.responded', {
       invitationId: dto.invitationId,
@@ -124,4 +140,3 @@ export class RoomDirectoryWsHandler {
     return { type: 'rooms.invite.accepted', payload: { roomId: invite.roomId, room: state.room } };
   }
 }
-

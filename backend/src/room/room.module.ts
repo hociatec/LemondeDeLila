@@ -8,6 +8,7 @@ import { RoomGateway } from './gateways/room.gateway';
 import { User } from '../user/entities/user.entity';
 import { forwardRef } from '@nestjs/common';
 import { BotModule } from '../bot/bot.module';
+import { PresenceModule } from '../presence/presence.module';
 import { NotificationModule } from '../notification/notification.module';
 import { RoomInviteService } from './services/room-invite.service';
 import { RoomDirectoryWsHandler } from './ws/room-directory-ws.handler';
@@ -17,6 +18,7 @@ import { RoomWsRegistrar } from './ws/room-ws.registrar';
   imports: [
     TypeOrmModule.forFeature([Room, RoomParticipant, RoomBot, User]),
     forwardRef(() => BotModule),
+    forwardRef(() => PresenceModule),
     NotificationModule,
   ],
   providers: [RoomService, RoomGateway, RoomInviteService, RoomDirectoryWsHandler, RoomWsRegistrar],
