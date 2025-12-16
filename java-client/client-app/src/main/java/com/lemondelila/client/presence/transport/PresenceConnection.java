@@ -3,6 +3,7 @@ package com.lemondelila.client.presence.transport;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lemondelila.client.chat.model.ChatState;
+import com.lemondelila.client.presence.model.PresenceActivity;
 import com.lemondelila.client.presence.model.PresenceChat;
 import com.lemondelila.client.presence.model.PresencePlayer;
 import com.lemondelila.client.presence.dto.PresencePlayerDto;
@@ -141,7 +142,7 @@ public final class PresenceConnection implements AutoCloseable {
 
     private PresencePlayer toPresencePlayer(PresencePlayerDto dto) {
         if (dto == null) {
-            return new PresencePlayer(-1, "inconnu", null);
+            return new PresencePlayer(-1, "inconnu", null, PresenceActivity.UNKNOWN);
         }
         PresenceChat currentRoom = null;
         PresenceRoomDto roomDto = dto.currentRoom();
@@ -149,7 +150,8 @@ public final class PresenceConnection implements AutoCloseable {
             currentRoom = new PresenceChat(roomDto.id(), roomDto.name());
         }
         String username = dto.username() == null || dto.username().isBlank() ? "inconnu" : dto.username();
-        return new PresencePlayer(dto.id(), username, currentRoom);
+        PresenceActivity activity = PresenceActivity.fromWire(dto.activity());
+        return new PresencePlayer(dto.id(), username, currentRoom, activity);
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)

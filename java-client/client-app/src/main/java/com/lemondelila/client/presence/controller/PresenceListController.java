@@ -37,6 +37,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Base64;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
@@ -44,6 +45,10 @@ import java.util.Objects;
  * Coordonne la logique métier / réseau de la fenêtre de présence.
  */
 public final class PresenceListController {
+
+    private static final Comparator<PresencePlayer> DISPLAY_ORDER = Comparator
+            .comparingInt(PresenceListController::activityRank)
+            .thenComparing(PresencePlayer::username, String.CASE_INSENSITIVE_ORDER);
 
     private final Window owner;
     private final DialogService dialogService;
@@ -155,10 +160,15 @@ public final class PresenceListController {
             view.setListEnabled(false);
             return;
         }
-        players.forEach(model::addElement);
+        players.stream()
+                .filter(Objects::nonNull)
+                .sorted(DISPLAY_ORDER)
+                .forEach(model::addElement);
         view.setListEnabled(true);
         updateStatus(formatPlayerCount(players.size()));
         view.list().setSelectedIndex(0);
+        view.list().revalidate();
+        view.list().repaint();
     }
 
     private String formatPlayerCount(int size) {
@@ -325,6 +335,15 @@ public final class PresenceListController {
         } else {
             updateStatus(Internationalization.text("presence.status.action.multiple"));
         }
+    }
+
+    private static int activityRank(PresencePlayer player) {
+        return switch (player.activity()) {
+            case TABLE -> 0;
+            case CHAT -> 1;
+            case HOME -> 2;
+            default -> 3;
+        };
     }
 
     private void handleEvent(PresenceEvent event) {

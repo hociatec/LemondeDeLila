@@ -7,9 +7,20 @@ import { WsAuthPayload } from '../../common/interfaces/ws-auth-payload';
 import { RoomParticipant } from '../../room/entities/room-participant.entity';
 import { In, IsNull, Repository } from 'typeorm';
 
+export type PresenceConnectionContext = 'home' | 'chat';
+type PresenceActivity = 'home' | 'chat' | 'table';
+
 type PresenceClient = {
   socket: WebSocket;
   user: WsAuthPayload;
+  context: PresenceConnectionContext;
+};
+
+type PresenceBroadcastPlayer = {
+  id: number;
+  username: string;
+  currentRoom: { id: number; name: string } | null;
+  activity: PresenceActivity;
 };
 
 @Injectable()
@@ -27,8 +38,12 @@ export class PresenceService {
     private readonly participants: Repository<RoomParticipant>,
   ) {}
 
-  register(socket: WebSocket, user: WsAuthPayload) {
-    this.clients.set(socket, { socket, user });
+  register(
+    socket: WebSocket,
+    user: WsAuthPayload,
+    context: PresenceConnectionContext = 'home',
+  ) {
+    this.clients.set(socket, { socket, user, context });
     this.ensureHeartbeat();
   }
 
@@ -92,16 +107,21 @@ export class PresenceService {
   }
 
   broadcastPresence() {
-    const playersByUser = new Map<number, { id: number; username: string; currentRoom: any }>();
-    for (const { user } of this.clients.values()) {
+    const playersByUser = new Map<number, PresenceBroadcastPlayer>();
+    for (const { user, context } of this.clients.values()) {
       const existing = playersByUser.get(user.id);
+      const activity: PresenceActivity = context === 'chat' ? 'chat' : 'home';
       if (existing) {
+        if (activity === 'chat' && existing.activity !== 'table') {
+          existing.activity = 'chat';
+        }
         continue; // déjà ajouté, on évite les doublons si plusieurs connexions pour le même utilisateur
       }
       playersByUser.set(user.id, {
         id: user.id,
         username: user.username,
         currentRoom: null,
+        activity,
       });
     }
     this.attachRooms(playersByUser)
@@ -122,7 +142,7 @@ export class PresenceService {
   }
 
   private async attachRooms(
-    playersByUser: Map<number, { id: number; username: string; currentRoom: any }>,
+    playersByUser: Map<number, PresenceBroadcastPlayer>,
   ) {
     const userIds = Array.from(playersByUser.keys());
     if (userIds.length === 0) {
@@ -132,7 +152,6 @@ export class PresenceService {
       where: {
         leftAt: IsNull(),
         user: { id: In(userIds) } as any,
-        room: { isPrivate: false } as any,
       },
       relations: ['room', 'user'],
       order: { joinedAt: 'DESC' },
@@ -145,6 +164,7 @@ export class PresenceService {
       // Ne prendre que la room la plus récente (première dans l'ordre DESC)
       if (entry.currentRoom === null) {
         entry.currentRoom = { id: p.room.id, name: p.room.name };
+        entry.activity = 'table';
       }
     }
   }

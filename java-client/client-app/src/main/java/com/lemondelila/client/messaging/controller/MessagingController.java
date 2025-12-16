@@ -9,6 +9,7 @@ import com.lemondelila.client.user.model.ClientSession;
 import com.lemondelila.client.framework.core.di.Inject;
 import com.lemondelila.client.framework.ui.dialog.DialogService;
 import com.lemondelila.client.presence.model.PresencePlayer;
+import com.lemondelila.client.presence.model.PresenceActivity;
 
 import javax.swing.SwingUtilities;
 import java.awt.Window;
@@ -72,7 +73,11 @@ public final class MessagingController {
     }
 
     public void openConversation(Window owner, int userId, String username) {
-        PresencePlayer phantom = new PresencePlayer(userId, username == null ? ("Utilisateur #" + userId) : username, null);
+        PresencePlayer phantom = new PresencePlayer(
+                userId,
+                username == null ? ("Utilisateur #" + userId) : username,
+                null,
+                PresenceActivity.UNKNOWN);
         openConversation(owner, phantom);
     }
 

@@ -62,12 +62,14 @@ public final class ChatConnectionFactory {
             return base;
         }
         String query = base.getQuery();
-        String newQuery = (query == null || query.isBlank())
-                ? "token=" + token
-                : query + "&token=" + token;
+        StringBuilder builder = new StringBuilder();
+        if (query != null && !query.isBlank()) {
+            builder.append(query).append("&");
+        }
+        builder.append("token=").append(token).append("&context=chat");
         return URI.create(base.getScheme() + "://" + base.getAuthority()
                 + (base.getPath() == null ? "" : base.getPath())
-                + "?" + newQuery);
+                + "?" + builder);
     }
 
 }

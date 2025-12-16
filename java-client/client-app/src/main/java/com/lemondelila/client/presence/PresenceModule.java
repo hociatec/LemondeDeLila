@@ -4,6 +4,7 @@ import com.google.auto.service.AutoService;
 import com.lemondelila.client.presence.controller.PresenceController;
 import com.lemondelila.client.presence.service.PresenceConnectionFactory;
 import com.lemondelila.client.presence.service.PresenceRealtimeService;
+import com.lemondelila.client.presence.service.PresenceSessionBridge;
 import com.lemondelila.client.presence.view.DefaultPresenceListDialogFactory;
 import com.lemondelila.client.presence.view.PresenceDialogLauncher;
 import com.lemondelila.client.presence.view.PresenceListDialogFactory;
@@ -18,6 +19,7 @@ public final class PresenceModule implements LilaModule {
         builder.bindAuto(PresenceController.class);
         builder.bindAuto(PresenceConnectionFactory.class);
         builder.bindAuto(PresenceRealtimeService.class);
+        builder.bindAuto(PresenceSessionBridge.class);
         builder.bindAuto(DefaultPresenceListDialogFactory.class);
         builder.bindFactory(PresenceListDialogFactory.class, ctx -> ctx.get(DefaultPresenceListDialogFactory.class));
         builder.bindAuto(PresenceDialogLauncher.class);
@@ -27,6 +29,7 @@ public final class PresenceModule implements LilaModule {
     public void start(ApplicationContext context) {
         context.get(PresenceController.class);
         context.get(PresenceDialogLauncher.class);
+        context.get(PresenceSessionBridge.class);
     }
 
     @Override

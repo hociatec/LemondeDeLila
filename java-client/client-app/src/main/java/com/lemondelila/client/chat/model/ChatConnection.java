@@ -3,8 +3,9 @@ package com.lemondelila.client.chat.model;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.lemondelila.client.presence.model.PresencePlayer;
 import com.lemondelila.client.presence.model.PresenceChat;
+import com.lemondelila.client.presence.model.PresencePlayer;
+import com.lemondelila.client.presence.model.PresenceActivity;
 
 import java.io.IOException;
 import java.net.URI;
@@ -240,7 +241,8 @@ public final class ChatConnection implements AutoCloseable {
                 currentRoom = new PresenceChat(roomId, name);
             }
         }
-        return java.util.Optional.of(new PresencePlayer(id, username, currentRoom));
+        PresenceActivity activity = PresenceActivity.fromWire(node.path("activity").asText());
+        return java.util.Optional.of(new PresencePlayer(id, username, currentRoom, activity));
     }
 
     private CompletableFuture<Void> establishConnection() {

@@ -7,7 +7,10 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { Logger } from '@nestjs/common';
 import { Server, WebSocket } from 'ws';
-import { PresenceService } from '../services/presence.service';
+import {
+  PresenceConnectionContext,
+  PresenceService,
+} from '../services/presence.service';
 import { WsAuthPayload } from '../../common/interfaces/ws-auth-payload';
 import { WsJwtAuthService } from '../../common/ws/ws-jwt-auth.service';
 
@@ -41,7 +44,8 @@ export class PresenceGateway
       client.close(4001, 'auth required');
       return;
     }
-    this.presence.register(client, payload);
+    const context = this.resolveContext(client, args);
+    this.presence.register(client, payload, context);
     client.on('message', (raw) => this.handleIncoming(client, raw));
     client.on('error', () => client.close());
     await this.presence.sendHistory(client);
@@ -76,5 +80,24 @@ export class PresenceGateway
       // on refuse explicitement la connexion pour informer le client
       throw err;
     }
+  }
+
+  private resolveContext(
+    client: WebSocket,
+    args: any[],
+  ): PresenceConnectionContext {
+    const request: any =
+      (args && args[0]) || (client as any).upgradeReq || (client as any).req;
+    const urlCandidate = (client as any).url || request?.url || '';
+    try {
+      const url = new URL(urlCandidate, 'ws://localhost');
+      const raw = (url.searchParams.get('context') || '').toLowerCase();
+      if (raw === 'chat') {
+        return 'chat';
+      }
+    } catch {
+      /* ignore */
+    }
+    return 'home';
   }
 }

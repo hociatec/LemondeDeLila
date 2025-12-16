@@ -8,6 +8,7 @@ public final class PresencePlayerDto {
     private int id;
     private String username;
     private PresenceRoomDto currentRoom;
+    private String activity;
 
     public int id() {
         return id;
@@ -31,5 +32,13 @@ public final class PresencePlayerDto {
 
     public void setCurrentRoom(PresenceRoomDto currentRoom) {
         this.currentRoom = currentRoom;
+    }
+
+    public String activity() {
+        return activity;
+    }
+
+    public void setActivity(String activity) {
+        this.activity = activity;
     }
 }

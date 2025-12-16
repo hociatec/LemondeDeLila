@@ -5,6 +5,7 @@ import com.lemondelila.client.chat.model.ChatState;
 import com.lemondelila.client.chat.presenter.ChatPresenter;
 import com.lemondelila.client.chat.presenter.ChatView;
 import com.lemondelila.client.presence.model.PresencePlayer;
+import com.lemondelila.client.presence.model.PresenceStatusFormatter;
 import com.lemondelila.client.settings.service.AppSettingsService;
 import com.lemondelila.client.framework.ui.dialog.DialogService;
 
@@ -201,12 +202,9 @@ public final class ChatWindow extends JDialog implements ChatView {
             presenceList.clearSelection();
             return;
         }
-        players.forEach(player -> {
-            String roomInfo = player.currentRoom() == null
-                    ? ""
-                    : " [" + player.currentRoom().name() + "]";
-            presenceModel.addElement(player.username() + roomInfo);
-        });
+        players.forEach(player -> presenceModel.addElement(
+                player.username() + " - " + PresenceStatusFormatter.describe(player)
+        ));
         presenceList.setSelectedIndex(0);
     }
 
@@ -225,6 +223,4 @@ public final class ChatWindow extends JDialog implements ChatView {
         }
     }
 }
-
-
 

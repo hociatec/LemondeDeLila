@@ -39,9 +39,13 @@ public final class PresenceConnectionFactory {
     private URI appendToken(URI base, String token) {
         String encoded = URLEncoder.encode(token, StandardCharsets.UTF_8);
         String query = base.getQuery();
-        String newQuery = (query == null || query.isBlank()) ? "token=" + encoded : query + "&token=" + encoded;
+        StringBuilder builder = new StringBuilder();
+        if (query != null && !query.isBlank()) {
+            builder.append(query).append("&");
+        }
+        builder.append("token=").append(encoded).append("&context=home");
         return URI.create(base.getScheme() + "://" + base.getAuthority()
                 + (base.getPath() == null ? "" : base.getPath())
-                + "?" + newQuery);
+                + "?" + builder);
     }
 }
