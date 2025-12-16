@@ -13,6 +13,7 @@ import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.EmptyBorder;
+import javax.swing.SwingUtilities;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
@@ -91,6 +92,10 @@ public final class RoomBrowserView {
 
     public void onJoin(Consumer<Integer> handler) {
         this.onJoin = handler;
+    }
+
+    public void focusList() {
+        SwingUtilities.invokeLater(() -> list.requestFocusInWindow());
     }
 
     private Integer extractRoomId(Object value) {

@@ -10,6 +10,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.util.List;
@@ -139,11 +140,11 @@ public final class GameCatalogView {
     }
 
     public void focusCategories() {
-        catList.requestFocusInWindow();
+        SwingUtilities.invokeLater(catList::requestFocusInWindow);
     }
 
     public void focusSubcategories() {
-        subcatList.requestFocusInWindow();
+        SwingUtilities.invokeLater(subcatList::requestFocusInWindow);
     }
 
     public void focusGames() {
@@ -151,6 +152,6 @@ public final class GameCatalogView {
             gameList.setSelectedIndex(0);
             gameList.ensureIndexIsVisible(0);
         }
-        gameList.requestFocusInWindow();
+        SwingUtilities.invokeLater(gameList::requestFocusInWindow);
     }
 }

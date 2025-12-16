@@ -65,6 +65,7 @@ public final class SocialMessagingDialog extends JDialog {
     private final JLabel statusLabel = new JLabel(" ");
 
     private MenuOption currentOption;
+    private boolean ignoreNextCloseRequest = false;
 
     public SocialMessagingDialog(Window owner,
                                  DialogService dialogService,
@@ -79,6 +80,10 @@ public final class SocialMessagingDialog extends JDialog {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
+                if (ignoreNextCloseRequest) {
+                    ignoreNextCloseRequest = false;
+                    return;
+                }
                 closeDialog();
             }
         });
@@ -270,6 +275,14 @@ public final class SocialMessagingDialog extends JDialog {
         getRootPane().registerKeyboardAction(
                 e -> closeDialog(),
                 KeyStroke.getKeyStroke("ESCAPE"),
+                javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
+        );
+        getRootPane().registerKeyboardAction(
+                e -> {
+                    ignoreNextCloseRequest = true;
+                    setStatus(Internationalization.text("social.messaging.close.hint"));
+                },
+                KeyStroke.getKeyStroke("alt F4"),
                 javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
         );
     }

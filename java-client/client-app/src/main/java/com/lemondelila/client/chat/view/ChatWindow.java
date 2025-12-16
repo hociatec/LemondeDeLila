@@ -4,10 +4,12 @@ import com.lemondelila.client.chat.model.ChatMessage;
 import com.lemondelila.client.chat.model.ChatState;
 import com.lemondelila.client.chat.presenter.ChatPresenter;
 import com.lemondelila.client.chat.presenter.ChatView;
+import com.lemondelila.client.application.Internationalization;
 import com.lemondelila.client.presence.model.PresencePlayer;
 import com.lemondelila.client.presence.model.PresenceStatusFormatter;
 import com.lemondelila.client.settings.service.AppSettingsService;
 import com.lemondelila.client.framework.ui.dialog.DialogService;
+import com.lemondelila.client.framework.ui.lifecycle.ApplicationLifecycle;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JDialog;
@@ -47,21 +49,26 @@ public final class ChatWindow extends JDialog implements ChatView {
     private final AppSettingsService settingsService;
     private final DialogService dialogService;
     private final Runnable onDisposeCallback;
+    private final ApplicationLifecycle applicationLifecycle;
+    private volatile boolean appExitRequested = false;
 
     public ChatWindow(Window owner,
                       ChatPresenter presenter,
                       AppSettingsService settingsService,
                       DialogService dialogService,
+                      ApplicationLifecycle applicationLifecycle,
                       Runnable onDisposeCallback) {
         super(owner, "Tchat", ModalityType.MODELESS);
         this.presenter = presenter;
         this.settingsService = settingsService;
         this.dialogService = dialogService;
+        this.applicationLifecycle = applicationLifecycle;
         this.onDisposeCallback = onDisposeCallback == null ? () -> { } : onDisposeCallback;
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         setLayout(new BorderLayout(8, 8));
         setPreferredSize(new Dimension(520, 440));
         installEscapeShortcut();
+        installAltF4Shortcut();
 
         historyArea.setEditable(false);
         historyArea.setLineWrap(true);
@@ -106,6 +113,9 @@ public final class ChatWindow extends JDialog implements ChatView {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
+                if (appExitRequested) {
+                    return;
+                }
                 attemptClose();
             }
         });
@@ -214,6 +224,26 @@ public final class ChatWindow extends JDialog implements ChatView {
                 javax.swing.KeyStroke.getKeyStroke("ESCAPE"),
                 javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
         );
+    }
+
+    private void installAltF4Shortcut() {
+        getRootPane().registerKeyboardAction(
+                e -> requestApplicationExit(),
+                javax.swing.KeyStroke.getKeyStroke("alt F4"),
+                javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
+        );
+    }
+
+    private void requestApplicationExit() {
+        if (applicationLifecycle == null || appExitRequested) {
+            return;
+        }
+        appExitRequested = true;
+        applicationLifecycle.requestExitWithConfirmation(
+                        Internationalization.text("home.exit.title"),
+                        Internationalization.text("home.exit.message"))
+                .whenComplete((ignored, error) ->
+                        SwingUtilities.invokeLater(() -> appExitRequested = false));
     }
 
     private void attemptClose() {

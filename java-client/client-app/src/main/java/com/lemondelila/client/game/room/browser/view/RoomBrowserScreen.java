@@ -61,6 +61,7 @@ public final class RoomBrowserScreen extends JPanel implements Screen, AutoClose
             } else {
                 view.setStatus("Tables publiques chargées.");
             }
+            view.focusList();
         }));
         subscriptions.subscribe(eventBus, PublicRoomsFailed.class, ev -> SwingUtilities.invokeLater(() -> view.setStatus("Erreur: " + ev.message())));
         subscriptions.subscribe(eventBus, JoinRoomSucceeded.class, ev -> {
@@ -86,6 +87,7 @@ public final class RoomBrowserScreen extends JPanel implements Screen, AutoClose
         this.screenManager = context.screenManager();
         view.setStatus("Chargement...");
         eventBus.publish(new PublicRoomsRequested(null));
+        view.focusList();
     }
 
     @Override

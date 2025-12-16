@@ -12,6 +12,7 @@ import com.lemondelila.client.framework.ui.dialog.DialogService;
 import com.lemondelila.client.settings.service.AppSettingsService;
 import com.lemondelila.client.user.model.ClientSession;
 import com.lemondelila.client.presence.service.PresenceActivityReporter;
+import com.lemondelila.client.framework.ui.lifecycle.ApplicationLifecycle;
 
 import javax.swing.SwingUtilities;
 import java.awt.Window;
@@ -28,6 +29,7 @@ public final class ChatController implements AutoCloseable {
     private final ClientSession session;
     private final DomainEventBus eventBus;
     private final PresenceActivityReporter presenceReporter;
+    private final ApplicationLifecycle applicationLifecycle;
 
     private ChatWindow chatWindow;
     private boolean opened;
@@ -39,13 +41,15 @@ public final class ChatController implements AutoCloseable {
                           DialogService dialogService,
                           ClientSession session,
                           DomainEventBus eventBus,
-                          PresenceActivityReporter presenceReporter) {
+                          PresenceActivityReporter presenceReporter,
+                          ApplicationLifecycle applicationLifecycle) {
         this.presenter = Objects.requireNonNull(presenter, "presenter");
         this.settingsService = Objects.requireNonNull(settingsService, "settingsService");
         this.dialogService = Objects.requireNonNull(dialogService, "dialogService");
         this.session = Objects.requireNonNull(session, "session");
         this.eventBus = Objects.requireNonNull(eventBus, "eventBus");
         this.presenceReporter = Objects.requireNonNull(presenceReporter, "presenceReporter");
+        this.applicationLifecycle = Objects.requireNonNull(applicationLifecycle, "applicationLifecycle");
     }
 
     /**
@@ -68,7 +72,7 @@ public final class ChatController implements AutoCloseable {
             return ControllerResult.status(Internationalization.text("chat.status.disabled"));
         }
         if (chatWindow == null || !chatWindow.isDisplayable()) {
-            chatWindow = new ChatWindow(owner, presenter, settingsService, dialogService, this::handleWindowDisposed);
+            chatWindow = new ChatWindow(owner, presenter, settingsService, dialogService, applicationLifecycle, this::handleWindowDisposed);
             opened = false;
         }
         ChatWindow window = chatWindow;
