@@ -15,8 +15,8 @@ public final class PresenceStatusFormatter {
         PresenceActivity activity = player.activity();
         return switch (activity) {
             case TABLE -> describeTable(player);
-            case CHAT -> "Tchat";
-            case HOME -> "Accueil";
+            case CHAT -> "Dans le tchat";
+            case HOME -> "Sur l'accueil";
             case UNKNOWN -> defaultLabel(player);
         };
     }
@@ -24,9 +24,9 @@ public final class PresenceStatusFormatter {
     private static String describeTable(PresencePlayer player) {
         PresenceChat room = player.currentRoom();
         if (room == null) {
-            return "Table en cours";
+            return "Sur une table";
         }
-        return "Table \"" + room.name() + "\" (#" + room.id() + ")";
+        return "Sur la table \"" + room.name() + "\" (#" + room.id() + ")";
     }
 
     private static String defaultLabel(PresencePlayer player) {

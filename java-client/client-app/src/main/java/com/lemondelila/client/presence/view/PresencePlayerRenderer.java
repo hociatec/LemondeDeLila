@@ -47,6 +47,7 @@ public final class PresencePlayerRenderer implements ListCellRenderer<PresencePl
         if (value == null) {
             nameLabel.setText("");
             statusLabel.setText("");
+            applyAccessibleText("");
         } else {
             String status = PresenceStatusFormatter.describe(value);
             StringBuilder text = new StringBuilder(value.username());
@@ -59,6 +60,9 @@ public final class PresencePlayerRenderer implements ListCellRenderer<PresencePl
             nameLabel.setText(text.toString());
             statusLabel.setText(status);
             statusLabel.setVisible(!status.isBlank());
+            applyAccessibleText(status.isBlank()
+                    ? text.toString()
+                    : text + " - " + status);
         }
         Color bg = isSelected ? list.getSelectionBackground() : list.getBackground();
         Color fg = isSelected ? list.getSelectionForeground() : list.getForeground();
@@ -68,5 +72,23 @@ public final class PresencePlayerRenderer implements ListCellRenderer<PresencePl
         nameLabel.setOpaque(false);
         statusLabel.setOpaque(false);
         return container;
+    }
+
+    private void applyAccessibleText(String text) {
+        if (text == null) {
+            text = "";
+        }
+        if (container.getAccessibleContext() != null) {
+            container.getAccessibleContext().setAccessibleName(text);
+            container.getAccessibleContext().setAccessibleDescription(text);
+        }
+        if (nameLabel.getAccessibleContext() != null) {
+            nameLabel.getAccessibleContext().setAccessibleName(text);
+            nameLabel.getAccessibleContext().setAccessibleDescription(text);
+        }
+        if (statusLabel.getAccessibleContext() != null) {
+            statusLabel.getAccessibleContext().setAccessibleName(text);
+            statusLabel.getAccessibleContext().setAccessibleDescription(text);
+        }
     }
 }
