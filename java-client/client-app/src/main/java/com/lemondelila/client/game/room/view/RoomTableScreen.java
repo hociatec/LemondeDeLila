@@ -26,6 +26,7 @@ import com.lemondelila.client.game.room.event.RoomUpdated;
 import com.lemondelila.client.game.room.model.RoomDetailsState;
 import com.lemondelila.client.game.room.model.TableState;
 import com.lemondelila.client.game.room.service.RoomLifecycleService;
+import com.lemondelila.client.presence.service.PresenceActivityReporter;
 
 import javax.swing.JPanel;
 import javax.swing.InputMap;
@@ -36,6 +37,7 @@ import javax.swing.JComponent;
 import java.awt.BorderLayout;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.util.Objects;
 
 /**
  * Ecran table generique avec deux zones : interaction et historique.
@@ -54,11 +56,13 @@ public final class RoomTableScreen extends BaseTableScreen {
     private final GameInteractionRegistry interactionRegistry;
     private final GenericUniversalInteractionProvider defaultInteractionProvider;
     private final RoomTableController controller;
+    private final PresenceActivityReporter presenceReporter;
     private boolean botShortcutsDisabled = false;
     private ScreenManager screenManager;
     private GameInteractionComponent currentInteraction;
     private String activeGameType;
     private Integer attachedRoomId;
+    private AutoCloseable presenceHandle;
 
     @Inject
     public RoomTableScreen(RoomDetailsState detailsState,
@@ -72,7 +76,8 @@ public final class RoomTableScreen extends BaseTableScreen {
                            RoomLifecycleService lifecycleService,
                            GameInteractionRegistry interactionRegistry,
                            GenericUniversalInteractionProvider defaultInteractionProvider,
-                           RoomTableController controller) {
+                           RoomTableController controller,
+                           PresenceActivityReporter presenceReporter) {
         super(detailsState, shortcutManager, announcer, historySidebar, eventBus);
         setLayout(new BorderLayout(8, 8));
         this.detailsState = detailsState;
@@ -84,6 +89,7 @@ public final class RoomTableScreen extends BaseTableScreen {
         this.interactionRegistry = interactionRegistry;
         this.defaultInteractionProvider = defaultInteractionProvider; // force l'initialisation et l'enregistrement du provider générique
         this.controller = controller;
+        this.presenceReporter = Objects.requireNonNull(presenceReporter, "presenceReporter");
         this.view = new RoomTableView(focusHighlighter, historySidebar);
 
         add(view, BorderLayout.CENTER);
@@ -125,6 +131,12 @@ public final class RoomTableScreen extends BaseTableScreen {
     }
 
     @Override
+    public void onHide(ScreenContext context) {
+        super.onHide(context);
+        releasePresenceActivity();
+    }
+
+    @Override
     public void onShow(ScreenContext context) {
         super.onShow(context);
         this.screenManager = context.screenManager();
@@ -140,6 +152,7 @@ public final class RoomTableScreen extends BaseTableScreen {
         refreshFromState();
         view.renderHistory(historyController);
         view.focusInteraction();
+        updatePresenceActivity(roomId);
     }
 
     @Override
@@ -211,6 +224,7 @@ public final class RoomTableScreen extends BaseTableScreen {
             currentInteraction.onDetach();
         }
         lastDetached();
+        releasePresenceActivity();
     }
 
     private Integer resolvedRoomId() {
@@ -241,6 +255,26 @@ public final class RoomTableScreen extends BaseTableScreen {
         }
         if (tableState.started() && !botShortcutsDisabled) {
             disableBotShortcuts();
+        }
+    }
+
+    private void updatePresenceActivity(Integer roomId) {
+        releasePresenceActivity();
+        if (roomId == null) {
+            return;
+        }
+        presenceHandle = presenceReporter.enterTable(roomId, null);
+    }
+
+    private void releasePresenceActivity() {
+        if (presenceHandle == null) {
+            return;
+        }
+        try {
+            presenceHandle.close();
+        } catch (Exception ignored) {
+        } finally {
+            presenceHandle = null;
         }
     }
 

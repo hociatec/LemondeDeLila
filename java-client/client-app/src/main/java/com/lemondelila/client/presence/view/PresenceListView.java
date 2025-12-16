@@ -1,11 +1,9 @@
 package com.lemondelila.client.presence.view;
 
 import com.lemondelila.client.application.Internationalization;
-import com.lemondelila.client.framework.ui.util.ButtonUtils;
 import com.lemondelila.client.presence.model.PresencePlayer;
 
 import javax.swing.DefaultListModel;
-import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -29,11 +27,6 @@ public final class PresenceListView {
         contentPanel.add(new JLabel(Internationalization.text("presence.dialog.title")), BorderLayout.NORTH);
         contentPanel.add(new JScrollPane(list), BorderLayout.CENTER);
         contentPanel.add(statusLabel, BorderLayout.SOUTH);
-
-        JButton closeButton = new JButton(Internationalization.text("presence.dialog.close"));
-        ButtonUtils.enterActivates(closeButton);
-        closeButton.addActionListener(e -> onClose.run());
-        footerPanel.add(closeButton);
     }
 
     public JPanel contentPanel() {

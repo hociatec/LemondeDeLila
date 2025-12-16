@@ -46,15 +46,18 @@ public final class ChatWindow extends JDialog implements ChatView {
     private final ChatPresenter presenter;
     private final AppSettingsService settingsService;
     private final DialogService dialogService;
+    private final Runnable onDisposeCallback;
 
     public ChatWindow(Window owner,
                       ChatPresenter presenter,
                       AppSettingsService settingsService,
-                      DialogService dialogService) {
+                      DialogService dialogService,
+                      Runnable onDisposeCallback) {
         super(owner, "Tchat", ModalityType.MODELESS);
         this.presenter = presenter;
         this.settingsService = settingsService;
         this.dialogService = dialogService;
+        this.onDisposeCallback = onDisposeCallback == null ? () -> { } : onDisposeCallback;
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         setLayout(new BorderLayout(8, 8));
         setPreferredSize(new Dimension(520, 440));
@@ -213,6 +216,7 @@ public final class ChatWindow extends JDialog implements ChatView {
         presenter.close();
         presenter.detach();
         super.dispose();
+        onDisposeCallback.run();
     }
 
     private void invokeOnEdt(Runnable runnable) {
@@ -223,4 +227,3 @@ public final class ChatWindow extends JDialog implements ChatView {
         }
     }
 }
-

@@ -65,7 +65,7 @@ export class PresenceGateway
     }
     // tracer la reception brute pour debug
     this.logger.log(`WS message reçu (${typeof raw}) de ${session.user.username}`);
-    await this.presence.handleChatSend(session, raw);
+    await this.presence.handleClientPayload(session, raw);
   }
 
   private resolveAuth(client: WebSocket, args: any[]): WsAuthPayload | null {

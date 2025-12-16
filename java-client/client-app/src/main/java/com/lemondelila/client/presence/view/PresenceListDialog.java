@@ -11,8 +11,11 @@ import com.lemondelila.client.presence.controller.PresenceListController;
 import com.lemondelila.client.presence.service.PresenceRealtimeService;
 import com.lemondelila.client.user.model.ClientSession;
 
+import javax.swing.JComponent;
 import javax.swing.JDialog;
+import javax.swing.KeyStroke;
 import java.awt.BorderLayout;
+import java.awt.event.KeyEvent;
 import java.awt.Window;
 import java.util.Objects;
 
@@ -67,6 +70,11 @@ public final class PresenceListDialog extends JDialog {
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         add(view.contentPanel(), BorderLayout.CENTER);
         add(view.footerPanel(), BorderLayout.SOUTH);
+        getRootPane().registerKeyboardAction(
+                e -> dispose(),
+                KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
+                JComponent.WHEN_IN_FOCUSED_WINDOW
+        );
 
         addWindowListener(new java.awt.event.WindowAdapter() {
             @Override

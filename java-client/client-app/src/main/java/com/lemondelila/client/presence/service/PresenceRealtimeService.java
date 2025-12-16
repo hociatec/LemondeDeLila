@@ -6,6 +6,7 @@ import com.lemondelila.client.presence.event.PresenceEvent;
 import com.lemondelila.client.presence.event.PresenceEventListener;
 import com.lemondelila.client.presence.event.PresenceStateChangedEvent;
 import com.lemondelila.client.presence.event.PresenceUpdateEvent;
+import com.lemondelila.client.presence.model.PresenceActivity;
 import com.lemondelila.client.presence.model.PresencePlayer;
 import com.lemondelila.client.presence.transport.PresenceConnection;
 
@@ -18,6 +19,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Service responsable de la connexion temps réel de présence.
@@ -35,6 +37,8 @@ public final class PresenceRealtimeService {
 
     private volatile PresenceConnection connection;
     private volatile List<PresencePlayer> lastPresence = List.of();
+    private final AtomicReference<PresenceContextState> desiredContext =
+            new AtomicReference<>(PresenceContextState.home());
     private ScheduledFuture<?> pendingReconnect;
     private int retryAttempts;
     private int activeClients;
@@ -74,6 +78,17 @@ public final class PresenceRealtimeService {
         listeners.remove(listener);
     }
 
+    public void updateContext(PresenceActivity activity, Integer roomId, String roomName) {
+        PresenceActivity effective = activity == null ? PresenceActivity.HOME : activity;
+        PresenceContextState state = new PresenceContextState(effective, roomId, roomName);
+        desiredContext.set(state);
+        PresenceConnection conn = connection;
+        if (conn != null) {
+            conn.updateContext(state.activity, state.roomId, state.roomName)
+                    .exceptionally(throwable -> null);
+        }
+    }
+
     private void emit(PresenceEvent event) {
         listeners.forEach(listener -> listener.onEvent(event));
     }
@@ -101,6 +116,7 @@ public final class PresenceRealtimeService {
                 retryAttempts = 0;
                 cancelReconnectLocked();
             }
+            pushDesiredContext();
             return;
         }
         if (state == ChatState.CLOSED || state == ChatState.FAILED) {
@@ -160,6 +176,22 @@ public final class PresenceRealtimeService {
             Thread thread = new Thread(r, "presence-reconnect-" + counter++);
             thread.setDaemon(true);
             return thread;
+        }
+    }
+
+    private void pushDesiredContext() {
+        PresenceConnection conn = connection;
+        if (conn == null) {
+            return;
+        }
+        PresenceContextState state = desiredContext.get();
+        conn.updateContext(state.activity, state.roomId, state.roomName)
+                .exceptionally(throwable -> null);
+    }
+
+    private record PresenceContextState(PresenceActivity activity, Integer roomId, String roomName) {
+        private static PresenceContextState home() {
+            return new PresenceContextState(PresenceActivity.HOME, null, null);
         }
     }
 }

@@ -2,6 +2,7 @@ package com.lemondelila.client.presence;
 
 import com.google.auto.service.AutoService;
 import com.lemondelila.client.presence.controller.PresenceController;
+import com.lemondelila.client.presence.service.PresenceActivityReporter;
 import com.lemondelila.client.presence.service.PresenceConnectionFactory;
 import com.lemondelila.client.presence.service.PresenceRealtimeService;
 import com.lemondelila.client.presence.service.PresenceSessionBridge;
@@ -19,6 +20,7 @@ public final class PresenceModule implements LilaModule {
         builder.bindAuto(PresenceController.class);
         builder.bindAuto(PresenceConnectionFactory.class);
         builder.bindAuto(PresenceRealtimeService.class);
+        builder.bindAuto(PresenceActivityReporter.class);
         builder.bindAuto(PresenceSessionBridge.class);
         builder.bindAuto(DefaultPresenceListDialogFactory.class);
         builder.bindFactory(PresenceListDialogFactory.class, ctx -> ctx.get(DefaultPresenceListDialogFactory.class));

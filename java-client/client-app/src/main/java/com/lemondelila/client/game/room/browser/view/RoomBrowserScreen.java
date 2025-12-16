@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.stream.Collectors;
 
 public final class RoomBrowserScreen extends JPanel implements Screen, AutoCloseable {
 
@@ -42,9 +41,8 @@ public final class RoomBrowserScreen extends JPanel implements Screen, AutoClose
         setLayout(new BorderLayout());
         add(view.component(), BorderLayout.CENTER);
 
-        view.onRefresh(() -> eventBus.publish(new PublicRoomsRequested(view.selectedGameType())));
+        view.onRefresh(() -> eventBus.publish(new PublicRoomsRequested(null)));
         view.onJoin(roomId -> eventBus.publish(new JoinRoomRequested(roomId)));
-        view.onGameTypeSelected(gameType -> eventBus.publish(new PublicRoomsRequested(gameType)));
 
         // Échap = retour menu principal.
         getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("ESCAPE"), "go-back");
@@ -59,12 +57,10 @@ public final class RoomBrowserScreen extends JPanel implements Screen, AutoClose
 
         subscriptions.subscribe(eventBus, PublicRoomsLoaded.class, ev -> SwingUtilities.invokeLater(() -> {
             view.setRooms(groupByGame(ev.rooms()));
-            view.setAvailableGameTypes(extractGameTypes(ev.rooms()));
-            String filter = view.selectedGameType();
             if (ev.rooms().isEmpty()) {
-                view.setStatus(filter == null ? "Aucune table publique en cours." : "Aucune table publique en cours pour " + filter + ".");
+                view.setStatus("Aucune table publique en cours.");
             } else {
-                view.setStatus(filter == null ? "Tables publiques chargees." : "Tables publiques chargees (" + filter + ").");
+                view.setStatus("Tables publiques chargées.");
             }
         }));
         subscriptions.subscribe(eventBus, PublicRoomsFailed.class, ev -> SwingUtilities.invokeLater(() -> view.setStatus("Erreur: " + ev.message())));
@@ -90,7 +86,7 @@ public final class RoomBrowserScreen extends JPanel implements Screen, AutoClose
     public void onShow(ScreenContext context) {
         this.screenManager = context.screenManager();
         view.setStatus("Chargement...");
-        eventBus.publish(new PublicRoomsRequested(view.selectedGameType()));
+        eventBus.publish(new PublicRoomsRequested(null));
     }
 
     @Override
@@ -121,15 +117,4 @@ public final class RoomBrowserScreen extends JPanel implements Screen, AutoClose
         return merged;
     }
 
-    private static List<String> extractGameTypes(List<PublicRoomSummary> rooms) {
-        if (rooms == null || rooms.isEmpty()) {
-            return List.of();
-        }
-        return rooms.stream()
-                .map(PublicRoomSummary::gameType)
-                .filter(t -> t != null && !t.isBlank())
-                .map(String::trim)
-                .distinct()
-                .collect(Collectors.toList());
-    }
 }

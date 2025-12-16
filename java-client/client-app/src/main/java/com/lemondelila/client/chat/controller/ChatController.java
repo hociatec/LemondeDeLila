@@ -11,6 +11,7 @@ import com.lemondelila.client.framework.ui.ControllerResult;
 import com.lemondelila.client.framework.ui.dialog.DialogService;
 import com.lemondelila.client.settings.service.AppSettingsService;
 import com.lemondelila.client.user.model.ClientSession;
+import com.lemondelila.client.presence.service.PresenceActivityReporter;
 
 import javax.swing.SwingUtilities;
 import java.awt.Window;
@@ -26,21 +27,25 @@ public final class ChatController implements AutoCloseable {
     private final DialogService dialogService;
     private final ClientSession session;
     private final DomainEventBus eventBus;
+    private final PresenceActivityReporter presenceReporter;
 
     private ChatWindow chatWindow;
     private boolean opened;
+    private AutoCloseable chatPresenceHandle;
 
     @Inject
     public ChatController(ChatPresenter presenter,
                           AppSettingsService settingsService,
                           DialogService dialogService,
                           ClientSession session,
-                          DomainEventBus eventBus) {
+                          DomainEventBus eventBus,
+                          PresenceActivityReporter presenceReporter) {
         this.presenter = Objects.requireNonNull(presenter, "presenter");
         this.settingsService = Objects.requireNonNull(settingsService, "settingsService");
         this.dialogService = Objects.requireNonNull(dialogService, "dialogService");
         this.session = Objects.requireNonNull(session, "session");
         this.eventBus = Objects.requireNonNull(eventBus, "eventBus");
+        this.presenceReporter = Objects.requireNonNull(presenceReporter, "presenceReporter");
     }
 
     /**
@@ -63,7 +68,7 @@ public final class ChatController implements AutoCloseable {
             return ControllerResult.status(Internationalization.text("chat.status.disabled"));
         }
         if (chatWindow == null || !chatWindow.isDisplayable()) {
-            chatWindow = new ChatWindow(owner, presenter, settingsService, dialogService);
+            chatWindow = new ChatWindow(owner, presenter, settingsService, dialogService, this::handleWindowDisposed);
             opened = false;
         }
         ChatWindow window = chatWindow;
@@ -71,6 +76,7 @@ public final class ChatController implements AutoCloseable {
             window.setVisible(true);
             window.toFront();
         });
+        attachChatPresence();
         if (!opened) {
             String username = session.authenticated().map(ClientSession.AuthState::username).orElse(null);
             eventBus.publish(new ChatOpened(username));
@@ -83,9 +89,36 @@ public final class ChatController implements AutoCloseable {
     public void close() {
         if (chatWindow != null) {
             ChatWindow window = chatWindow;
-            chatWindow = null;
             SwingUtilities.invokeLater(window::dispose);
+        } else {
+            handleWindowDisposed();
         }
+    }
+
+    private void attachChatPresence() {
+        if (chatPresenceHandle != null) {
+            return;
+        }
+        chatPresenceHandle = presenceReporter.enterChat();
+    }
+
+    private void releaseChatPresence() {
+        if (chatPresenceHandle == null) {
+            return;
+        }
+        try {
+            chatPresenceHandle.close();
+        } catch (Exception ignored) {
+        } finally {
+            chatPresenceHandle = null;
+        }
+    }
+
+    private void handleWindowDisposed() {
+        if (chatWindow != null && !chatWindow.isDisplayable()) {
+            chatWindow = null;
+        }
+        releaseChatPresence();
         if (opened) {
             String username = session.authenticated().map(ClientSession.AuthState::username).orElse(null);
             eventBus.publish(new ChatClosed(username));

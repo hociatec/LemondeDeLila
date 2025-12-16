@@ -17,15 +17,18 @@ public final class PresenceSessionBridge implements AutoCloseable {
 
     private final PresenceRealtimeService realtimeService;
     private final ClientSession session;
+    private final PresenceActivityReporter activityReporter;
     private final EventSubscriptions subscriptions = new EventSubscriptions();
     private final AtomicBoolean running = new AtomicBoolean();
 
     @Inject
     public PresenceSessionBridge(PresenceRealtimeService realtimeService,
                                  ClientSession session,
-                                 DomainEventBus eventBus) {
+                                 DomainEventBus eventBus,
+                                 PresenceActivityReporter activityReporter) {
         this.realtimeService = Objects.requireNonNull(realtimeService, "realtimeService");
         this.session = Objects.requireNonNull(session, "session");
+        this.activityReporter = Objects.requireNonNull(activityReporter, "activityReporter");
         Objects.requireNonNull(eventBus, "eventBus");
         subscriptions.subscribe(eventBus, LoginSucceeded.class, event -> ensureStarted());
         subscriptions.subscribe(eventBus, UserLoggedOut.class, event -> stop());
@@ -36,12 +39,14 @@ public final class PresenceSessionBridge implements AutoCloseable {
         if (running.compareAndSet(false, true)) {
             realtimeService.start();
         }
+        activityReporter.resetToHome();
     }
 
     private void stop() {
         if (running.compareAndSet(true, false)) {
             realtimeService.stop();
         }
+        activityReporter.resetToHome();
     }
 
     @Override

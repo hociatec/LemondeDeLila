@@ -2,14 +2,21 @@ package com.lemondelila.client.game.room.browser.view;
 
 import com.lemondelila.client.framework.ui.util.ButtonUtils;
 
-import javax.swing.*;
+import javax.swing.AbstractAction;
+import javax.swing.DefaultListModel;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.KeyStroke;
+import javax.swing.ListSelectionModel;
 import javax.swing.border.EmptyBorder;
-import java.awt.*;
-import java.util.ArrayList;
+import java.awt.BorderLayout;
+import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
 import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.TreeSet;
 import java.util.function.Consumer;
 
 public final class RoomBrowserView {
@@ -18,13 +25,11 @@ public final class RoomBrowserView {
     private final DefaultListModel<Object> model = new DefaultListModel<>();
     private final JList<Object> list = new JList<>(model);
     private final JLabel status = new JLabel(" ");
-    private final JComboBox<String> gameType = new JComboBox<>();
     private final JButton refresh = new JButton("Rafraichir");
     private final JButton join = new JButton("Rejoindre");
 
     private Consumer<Integer> onJoin;
     private Runnable onRefresh;
-    private Consumer<String> onGameTypeSelected;
 
     public RoomBrowserView() {
         root.setBorder(new EmptyBorder(16, 16, 16, 16));
@@ -33,12 +38,9 @@ public final class RoomBrowserView {
         title.setFont(title.getFont().deriveFont(18f));
         header.add(title, BorderLayout.NORTH);
 
-        JPanel filters = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
-        filters.add(new JLabel("Jeu :"));
-        filters.add(gameType);
-        header.add(filters, BorderLayout.CENTER);
-
-        header.add(status, BorderLayout.SOUTH);
+        JPanel statusPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        statusPanel.add(status);
+        header.add(statusPanel, BorderLayout.CENTER);
         root.add(header, BorderLayout.NORTH);
 
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -69,13 +71,7 @@ public final class RoomBrowserView {
             }
         });
 
-        gameType.addActionListener(e -> {
-            if (onGameTypeSelected != null) {
-                onGameTypeSelected.accept(selectedGameType());
-            }
-        });
-
-        setAvailableGameTypes(List.of());
+        setStatus(" ");
     }
 
     public JPanel component() {
@@ -100,47 +96,12 @@ public final class RoomBrowserView {
         status.setText(text == null ? " " : text);
     }
 
-    public void setAvailableGameTypes(List<String> gameTypes) {
-        String current = selectedGameType();
-        Set<String> unique = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
-        if (gameTypes != null) {
-            for (String t : gameTypes) {
-                if (t != null && !t.isBlank()) {
-                    unique.add(t.trim());
-                }
-            }
-        }
-        List<String> items = new ArrayList<>();
-        items.add("Tous");
-        items.addAll(unique);
-        gameType.setModel(new DefaultComboBoxModel<>(items.toArray(String[]::new)));
-        if (current == null) {
-            gameType.setSelectedIndex(0);
-        } else {
-            gameType.setSelectedItem(current);
-        }
-    }
-
-    public String selectedGameType() {
-        Object selected = gameType.getSelectedItem();
-        if (selected == null) return null;
-        String text = String.valueOf(selected).trim();
-        if (text.isBlank() || Objects.equals(text, "Tous")) {
-            return null;
-        }
-        return text;
-    }
-
     public void onJoin(Consumer<Integer> handler) {
         this.onJoin = handler;
     }
 
     public void onRefresh(Runnable handler) {
         this.onRefresh = handler;
-    }
-
-    public void onGameTypeSelected(Consumer<String> handler) {
-        this.onGameTypeSelected = handler;
     }
 
     private Integer extractRoomId(Object value) {

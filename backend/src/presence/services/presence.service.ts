@@ -7,13 +7,15 @@ import { WsAuthPayload } from '../../common/interfaces/ws-auth-payload';
 import { RoomParticipant } from '../../room/entities/room-participant.entity';
 import { In, IsNull, Repository } from 'typeorm';
 
-export type PresenceConnectionContext = 'home' | 'chat';
+export type PresenceConnectionContext = 'home' | 'chat' | 'table';
 type PresenceActivity = 'home' | 'chat' | 'table';
 
 type PresenceClient = {
   socket: WebSocket;
   user: WsAuthPayload;
   context: PresenceConnectionContext;
+  contextLocked: boolean;
+  roomHint: { id: number; name?: string | null } | null;
 };
 
 type PresenceBroadcastPlayer = {
@@ -21,6 +23,7 @@ type PresenceBroadcastPlayer = {
   username: string;
   currentRoom: { id: number; name: string } | null;
   activity: PresenceActivity;
+  contextLocked: boolean;
 };
 
 @Injectable()
@@ -43,7 +46,7 @@ export class PresenceService {
     user: WsAuthPayload,
     context: PresenceConnectionContext = 'home',
   ) {
-    this.clients.set(socket, { socket, user, context });
+    this.clients.set(socket, { socket, user, context, contextLocked: false, roomHint: null });
     this.ensureHeartbeat();
   }
 
@@ -54,7 +57,7 @@ export class PresenceService {
     }
   }
 
-  async handleChatSend(from: PresenceClient, raw: any) {
+  async handleClientPayload(from: PresenceClient, raw: any) {
     let textPayload: string;
     if (typeof raw === 'string') {
       textPayload = raw;
@@ -75,9 +78,20 @@ export class PresenceService {
     } catch {
       return;
     }
-    if (!payload || payload.type !== 'chat-send') {
+    if (!payload || typeof payload.type !== 'string') {
       return;
     }
+    if (payload.type === 'chat-send') {
+      await this.handleChatSend(from, payload);
+      return;
+    }
+    if (payload.type === 'presence-context') {
+      this.handlePresenceContext(from, payload);
+      this.broadcastPresence();
+    }
+  }
+
+  private async handleChatSend(from: PresenceClient, payload: any) {
     const text = typeof payload.text === 'string' ? payload.text : '';
     let sanitized: string;
     try {
@@ -90,6 +104,46 @@ export class PresenceService {
     const message = await this.chat.recordMessage(from.user.id, sanitized);
     const normalized = this.chat.normalize(message);
     this.broadcast(normalized);
+  }
+
+  private handlePresenceContext(client: PresenceClient, payload: any) {
+    const raw = typeof payload.context === 'string' ? payload.context.toLowerCase() : '';
+    let context: PresenceConnectionContext = 'home';
+    if (raw === 'chat') {
+      context = 'chat';
+    } else if (raw === 'table') {
+      context = 'table';
+    }
+    client.context = context;
+    client.contextLocked = true;
+    if (context === 'table') {
+      const roomId = this.parseRoomId(payload.roomId);
+      if (roomId !== null) {
+        let name: string | null = null;
+        if (typeof payload.roomName === 'string') {
+          const trimmed = payload.roomName.trim();
+          name = trimmed.length > 0 ? trimmed : null;
+        }
+        client.roomHint = { id: roomId, name };
+      } else {
+        client.roomHint = null;
+      }
+    } else {
+      client.roomHint = null;
+    }
+  }
+
+  private parseRoomId(value: any): number | null {
+    if (typeof value === 'number' && Number.isInteger(value) && value > 0) {
+      return value;
+    }
+    if (typeof value === 'string') {
+      const parsed = parseInt(value, 10);
+      if (!Number.isNaN(parsed) && parsed > 0) {
+        return parsed;
+      }
+    }
+    return null;
   }
 
   async sendHistory(to: WebSocket) {
@@ -108,34 +162,48 @@ export class PresenceService {
 
   broadcastPresence() {
     const playersByUser = new Map<number, PresenceBroadcastPlayer>();
-    for (const { user, context } of this.clients.values()) {
-      const existing = playersByUser.get(user.id);
-      const activity: PresenceActivity = context === 'chat' ? 'chat' : 'home';
-      if (existing) {
-        if (activity === 'chat' && existing.activity !== 'table') {
-          existing.activity = 'chat';
-        }
-        continue; // déjà ajouté, on évite les doublons si plusieurs connexions pour le même utilisateur
-      }
-      playersByUser.set(user.id, {
+    for (const client of this.clients.values()) {
+      const { user, context, roomHint, contextLocked } = client;
+      const activity: PresenceActivity = context ?? 'home';
+      const candidate: PresenceBroadcastPlayer = {
         id: user.id,
         username: user.username,
-        currentRoom: null,
+        currentRoom: roomHint
+          ? { id: roomHint.id, name: roomHint.name ?? `Table #${roomHint.id}` }
+          : null,
         activity,
-      });
+        contextLocked,
+      };
+      const existing = playersByUser.get(user.id);
+      if (!existing) {
+        playersByUser.set(user.id, candidate);
+        continue;
+      }
+      const currentScore = this.scoreActivity(existing.activity);
+      const candidateScore = this.scoreActivity(candidate.activity);
+      if (candidateScore < currentScore) {
+        playersByUser.set(user.id, candidate);
+        continue;
+      }
+      if (candidateScore === currentScore) {
+        existing.contextLocked = existing.contextLocked || candidate.contextLocked;
+        if (!existing.currentRoom && candidate.currentRoom) {
+          existing.currentRoom = candidate.currentRoom;
+        }
+      }
     }
     this.attachRooms(playersByUser)
       .then(() => {
         const payload = {
           type: 'presence-update',
-          players: Array.from(playersByUser.values()),
+          players: Array.from(playersByUser.values()).map(({ contextLocked, ...rest }) => rest),
         };
         this.broadcast(payload);
       })
       .catch(() => {
         const payload = {
           type: 'presence-update',
-          players: Array.from(playersByUser.values()),
+          players: Array.from(playersByUser.values()).map(({ contextLocked, ...rest }) => rest),
         };
         this.broadcast(payload);
       });
@@ -161,12 +229,29 @@ export class PresenceService {
       if (!entry || !p.room) {
         continue;
       }
-      // Ne prendre que la room la plus récente (première dans l'ordre DESC)
+      if (entry.activity === 'chat') {
+        continue;
+      }
+      if (entry.contextLocked && entry.activity !== 'table') {
+        continue;
+      }
       if (entry.currentRoom === null) {
         entry.currentRoom = { id: p.room.id, name: p.room.name };
+      }
+      if (!entry.contextLocked) {
         entry.activity = 'table';
       }
     }
+  }
+
+  private scoreActivity(activity: PresenceActivity): number {
+    if (activity === 'table') {
+      return 0;
+    }
+    if (activity === 'chat') {
+      return 1;
+    }
+    return 2;
   }
 
   private broadcast(payload: Record<string, unknown>) {

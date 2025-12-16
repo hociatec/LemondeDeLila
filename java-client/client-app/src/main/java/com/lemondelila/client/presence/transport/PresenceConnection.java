@@ -9,12 +9,14 @@ import com.lemondelila.client.presence.model.PresencePlayer;
 import com.lemondelila.client.presence.dto.PresencePlayerDto;
 import com.lemondelila.client.presence.dto.PresenceRoomDto;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.WebSocket;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
@@ -70,6 +72,29 @@ public final class PresenceConnection implements AutoCloseable {
 
     public List<PresencePlayer> latestPresence() {
         return List.copyOf(lastPresence);
+    }
+
+    public CompletableFuture<Void> updateContext(PresenceActivity activity, Integer roomId, String roomName) {
+        WebSocket socket = socketRef.get();
+        if (socket == null) {
+            return CompletableFuture.failedFuture(new IllegalStateException("Socket non connectée"));
+        }
+        var payload = mapper.createObjectNode();
+        payload.put("type", "presence-context");
+        payload.put("context", mapActivity(activity));
+        if (activity == PresenceActivity.TABLE && roomId != null) {
+            payload.put("roomId", roomId);
+            if (roomName != null && !roomName.isBlank()) {
+                payload.put("roomName", roomName);
+            }
+        }
+        String encoded;
+        try {
+            encoded = mapper.writeValueAsString(payload);
+        } catch (IOException e) {
+            return CompletableFuture.failedFuture(e);
+        }
+        return socket.sendText(encoded, true).thenApply(ws -> null);
     }
 
     private void emitState(ChatState state) {
@@ -156,5 +181,16 @@ public final class PresenceConnection implements AutoCloseable {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     private record PresenceUpdateEnvelope(String type, List<PresencePlayerDto> players) {
+    }
+
+    private String mapActivity(PresenceActivity activity) {
+        if (activity == null) {
+            return "home";
+        }
+        return switch (activity) {
+            case CHAT -> "chat";
+            case TABLE -> "table";
+            default -> "home";
+        };
     }
 }

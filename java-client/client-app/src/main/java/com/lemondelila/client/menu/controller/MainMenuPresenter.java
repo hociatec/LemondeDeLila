@@ -15,6 +15,7 @@ import com.lemondelila.client.home.view.HomeScreen;
 import com.lemondelila.client.admin.controller.AdminController;
 import com.lemondelila.client.menu.view.MainMenuView;
 import com.lemondelila.client.presence.controller.PresenceController;
+import com.lemondelila.client.presence.service.PresenceActivityReporter;
 import com.lemondelila.client.social.view.SocialScreen;
 import com.lemondelila.client.settings.controller.OptionsController;
 import com.lemondelila.client.user.events.UserLoggedOut;
@@ -46,9 +47,11 @@ public final class MainMenuPresenter {
     private final EventSubscriptions subscriptions = new EventSubscriptions();
     private final MainMenuAudio audio;
     private final MainMenuView view;
+    private final PresenceActivityReporter presenceReporter;
     private JComponent root;
     private ScreenManager screenManager;
     private boolean catalogPrefetched;
+    private AutoCloseable presenceHandle;
 
     public MainMenuPresenter(DialogService dialogService,
                              ChatController chatController,
@@ -60,7 +63,8 @@ public final class MainMenuPresenter {
                              ClientSession session,
                              DomainEventBus eventBus,
                              MainMenuAudio audio,
-                             MainMenuView view) {
+                             MainMenuView view,
+                             PresenceActivityReporter presenceReporter) {
         this.dialogService = Objects.requireNonNull(dialogService, "dialogService");
         this.chatController = Objects.requireNonNull(chatController, "chatController");
         this.presenceController = Objects.requireNonNull(presenceController, "presenceController");
@@ -72,6 +76,7 @@ public final class MainMenuPresenter {
         this.eventBus = Objects.requireNonNull(eventBus, "eventBus");
         this.audio = Objects.requireNonNull(audio, "audio");
         this.view = Objects.requireNonNull(view, "view");
+        this.presenceReporter = Objects.requireNonNull(presenceReporter, "presenceReporter");
         registerHandlers();
         registerNavigation();
         subscriptions.subscribe(eventBus, RoomInviteReceived.class, this::onInviteReceived);
@@ -79,6 +84,7 @@ public final class MainMenuPresenter {
 
     public void onShow(ScreenManager manager) {
         this.screenManager = manager;
+        attachPresenceState();
         setStatus(Internationalization.text("mainmenu.status.ready"));
         refreshAdminVisibility();
         if (!catalogPrefetched && session.authenticated().isPresent()) {
@@ -93,6 +99,7 @@ public final class MainMenuPresenter {
     public void onHide() {
         this.screenManager = null;
         audio.stopBackground();
+        releasePresenceState();
     }
 
     private void registerHandlers() {
@@ -236,6 +243,7 @@ public final class MainMenuPresenter {
         setStatus(Internationalization.text("mainmenu.status.loggedout"));
         refreshAdminVisibility();
         showScreen(HomeScreen.ID);
+        attachPresenceState();
     }
 
     private boolean ensureAuthenticated() {
@@ -312,5 +320,21 @@ public final class MainMenuPresenter {
             return;
         }
         SwingUtilities.invokeLater(() -> screenManager.show(id));
+    }
+    private void attachPresenceState() {
+        releasePresenceState();
+        presenceHandle = presenceReporter.enterHome();
+    }
+
+    private void releasePresenceState() {
+        if (presenceHandle == null) {
+            return;
+        }
+        try {
+            presenceHandle.close();
+        } catch (Exception ignored) {
+        } finally {
+            presenceHandle = null;
+        }
     }
 }
