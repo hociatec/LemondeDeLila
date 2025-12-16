@@ -1,12 +1,11 @@
 import { Logger, UnauthorizedException } from '@nestjs/common';
 import { WebSocketGateway, WebSocketServer, OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
-import { ConfigService } from '@nestjs/config';
-import * as jwt from 'jsonwebtoken';
 import { Server, WebSocket } from 'ws';
 import { GameEngineService } from '../services/game-engine.service';
 import { WsAuthPayload } from '../../../common/interfaces/ws-auth-payload';
 import { GameSingleActionDto } from '../dto/game-action.dto';
 import { playingLog } from '../../../common/utils/playing-logger';
+import { WsJwtAuthService } from '../../../common/ws/ws-jwt-auth.service';
 
 type IncomingPayload = { type?: string; payload?: any };
 type GameClient = { socket: WebSocket; userId: number; roomId: number | null; gameType: string | null };
@@ -21,15 +20,9 @@ export class GameGateway implements OnGatewayConnection<WebSocket>, OnGatewayDis
   private readonly heartbeats = new Map<WebSocket, NodeJS.Timeout>();
   private readonly lastPong = new WeakMap<WebSocket, number>();
   private readonly pingIntervalMs = 25000;
-  private readonly jwtSecret: string;
   private readonly logger = new Logger(GameGateway.name);
 
-  constructor(private readonly engine: GameEngineService, config: ConfigService) {
-    const secret = config.get<string>('JWT_SECRET');
-    if (!secret) {
-      throw new Error('JWT_SECRET doit etre defini pour le WS game');
-    }
-    this.jwtSecret = secret;
+  constructor(private readonly engine: GameEngineService, private readonly auth: WsJwtAuthService) {
     this.engine.setBroadcaster((gameType, roomId, state) => this.broadcastState(gameType, roomId, state));
     // Log d'amorçage pour vérifier le chemin de log.
     playingLog('ws.game.gateway.init', { logPath: 'log/playing.log (racine ou backend/log)', gateway: '/ws/game' });
@@ -286,43 +279,8 @@ export class GameGateway implements OnGatewayConnection<WebSocket>, OnGatewayDis
   }
 
   private resolveAuth(client: WebSocket, args: any[]): WsAuthPayload | null {
-    const request: any = (args && args[0]) || (client as any).upgradeReq || (client as any).req;
-    const urlCandidate = (client as any).url || request?.url || '';
-    const token =
-      this.extractBearer((client as any).handshakeHeaders) ||
-      this.extractBearer(request?.headers) ||
-      this.extractQueryToken(urlCandidate);
-    if (!token) return null;
-    try {
-      return jwt.verify(token, this.jwtSecret) as WsAuthPayload;
-    } catch (err) {
-      this.logger.warn(`Token WS invalide: ${(err as Error).message}`);
-      return null;
-    }
-  }
-
-  private extractBearer(headers: any): string | null {
-    if (!headers) return null;
-    const authHeader = headers.authorization || headers.Authorization;
-    if (authHeader && typeof authHeader === 'string') {
-      const parts = authHeader.split(' ');
-      if (parts.length === 2 && parts[0].toLowerCase() === 'bearer') {
-        return parts[1];
-      }
-    }
-    return null;
-  }
-
-  private extractQueryToken(urlCandidate?: string): string | null {
-    if (!urlCandidate || typeof urlCandidate !== 'string') {
-      return null;
-    }
-    try {
-      const url = new URL(urlCandidate, 'ws://localhost');
-      return url.searchParams.get('token');
-    } catch {
-      return null;
-    }
+    const token = this.auth.extractToken(client, args);
+    return this.auth.tryVerify(token);
   }
 
   private buildRoomKey(gameType: string, roomId: number): string {

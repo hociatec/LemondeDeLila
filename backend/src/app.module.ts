@@ -15,9 +15,12 @@ import { RoomBot } from './room/entities/room-bot.entity';
 import { RoomModule } from './room/room.module';
 import { GameModule } from './game/game.module';
 import { BotModule } from './bot/bot.module';
-import { ApiModule } from './api/api.module';
 import { BotName } from './bot/entities/bot-name.entity';
 import { AdminModule } from './admin/admin.module';
+import { WsRoutingModule } from './common/ws/ws-routing.module';
+import { ValidationModule } from './common/validation/validation.module';
+import { GameWsModule } from './game/ws/game-ws.module';
+import { RealtimeModule } from './realtime/realtime.module';
 
 @Module({
   imports: [
@@ -54,8 +57,11 @@ import { AdminModule } from './admin/admin.module';
     PresenceModule,
     RoomModule,
     GameModule,
+    GameWsModule,
     BotModule,
-    ApiModule,
+    WsRoutingModule,
+    ValidationModule,
+    RealtimeModule,
     AdminModule,
   ],
 })

@@ -7,9 +7,9 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { Logger } from '@nestjs/common';
 import { Server, WebSocket } from 'ws';
-import * as jwt from 'jsonwebtoken';
 import { PresenceService } from '../services/presence.service';
 import { WsAuthPayload } from '../../common/interfaces/ws-auth-payload';
+import { WsJwtAuthService } from '../../common/ws/ws-jwt-auth.service';
 
 @WebSocketGateway({
   path: '/presence',
@@ -25,6 +25,7 @@ export class PresenceGateway
 
   constructor(
     private readonly presence: PresenceService,
+    private readonly auth: WsJwtAuthService,
     config: ConfigService,
   ) {
     const secret = config.get<string>('JWT_SECRET');
@@ -64,44 +65,16 @@ export class PresenceGateway
   }
 
   private resolveAuth(client: WebSocket, args: any[]): WsAuthPayload | null {
-    const request: any = (args && args[0]) || (client as any).upgradeReq || (client as any).req;
-    const token =
-      extractBearer((client as any).handshakeHeaders) ||
-      extractBearer(request?.headers) ||
-      extractQueryToken((client as any).url || request?.url);
+    const token = this.auth.extractToken(client, args);
     if (!token) {
       return null;
     }
     try {
-      return jwt.verify(token, this.jwtSecret) as WsAuthPayload;
+      return this.auth.verify(token);
     } catch (err) {
       this.logger.warn(`Token WS invalide: ${(err as Error).message}`);
       // on refuse explicitement la connexion pour informer le client
       throw err;
     }
-  }
-}
-
-function extractBearer(headers: any): string | null {
-  if (!headers) return null;
-  const authHeader = headers.authorization || headers.Authorization;
-  if (authHeader && typeof authHeader === 'string') {
-    const parts = authHeader.split(' ');
-    if (parts.length === 2 && parts[0].toLowerCase() === 'bearer') {
-      return parts[1];
-    }
-  }
-  return null;
-}
-
-function extractQueryToken(urlCandidate?: string): string | null {
-  if (!urlCandidate || typeof urlCandidate !== 'string') {
-    return null;
-  }
-  try {
-    const url = new URL(urlCandidate, 'ws://localhost');
-    return url.searchParams.get('token');
-  } catch {
-    return null;
   }
 }

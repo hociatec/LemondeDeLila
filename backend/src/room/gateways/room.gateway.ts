@@ -6,11 +6,11 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, WebSocket } from 'ws';
-import * as jwt from 'jsonwebtoken';
 import { ConfigService } from '@nestjs/config';
 import { RoomService } from '../services/room.service';
 import { BotService } from '../../bot/services/bot.service';
 import { Inject, forwardRef } from '@nestjs/common';
+import { WsJwtAuthService } from '../../common/ws/ws-jwt-auth.service';
 
 type AuthedClient = { socket: WebSocket; userId: number; roomId: number };
 type IncomingPayload = { type?: string; payload?: any };
@@ -31,6 +31,7 @@ export class RoomGateway
     @Inject(forwardRef(() => BotService))
     private readonly botService: BotService,
     config: ConfigService,
+    private readonly auth: WsJwtAuthService,
   ) {
     const secret = config.get<string>('JWT_SECRET');
     if (!secret) {
@@ -41,7 +42,7 @@ export class RoomGateway
 
   async handleConnection(client: WebSocket, ...args: any[]) {
     const { token, roomId } = this.extractParams(client, args);
-    const payload = this.verify(token);
+    const payload = this.auth.tryVerify(token);
     if (!payload?.id) {
       client.close(4001, 'auth required');
       return;
@@ -307,10 +308,4 @@ export class RoomGateway
     return null;
   }
 
-  private verify(token: string | null): any {
-    if (!token) {
-      throw new Error('Token manquant');
-    }
-    return jwt.verify(token, this.jwtSecret);
-  }
 }

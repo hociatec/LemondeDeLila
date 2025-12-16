@@ -1,0 +1,54 @@
+PLAN – Rejoindre une table existante (LemondeDeLila)
+
+Contexte (existant)
+- Backend REST : POST /api/rooms/:id/join (RoomController -> RoomService.joinRoom)
+- Backend temps réel : WS /ws?token=...&room=<id> => join automatique + room.updated
+- Client Java : création via commande WS room.create, puis suivi via RoomRealtimeService.subscribe(roomId)
+- Manque principal : “directory” (liste/recherche des tables ouvertes) + UI “rejoindre”
+
+Objectif
+- Permettre à un joueur de trouver une table existante et de la rejoindre, puis d’ouvrir le suivi temps réel de la table.
+- Respecter l’architecture actuelle : WS API (/ws/api) pour les requêtes, WS room (/ws) pour l’état live.
+
+Décisions à valider (avant dev)
+1) Join par identifiant numérique uniquement (roomId) OU via code d’invitation (inviteCode) ?
+2) Politique sur tables privées : visibles uniquement par code ? jamais listées ?
+3) Filtrage : par gameType + statut “open” (setup/…).
+
+Plan d’implémentation (backend)
+1) Ajouter une “directory” côté serveur (RoomService)
+   - Méthode listOpenRooms(filters): renvoie id, name, gameType, isPrivate, status, counts, owner (optionnel)
+   - Ne renvoyer que les statuts OPEN_ROOM_STATUSES, et exclure isPrivate=true (sauf mode code)
+2) Exposer via WS API (/ws/api) (pattern existant des handlers)
+   - Créer RoomMessageHandler avec routes :
+     - rooms.open (payload: { gameType? }) -> { rooms: [...] }
+     - rooms.get (payload: { roomId }) -> RoomPayload (via getRoomPayload)
+     - optionnel rooms.join (payload: { roomId }) -> valide joinRoom + renvoie RoomPayload
+   - Enregistrer ces routes dans RealtimeApiGateway.routes (comme catalog.*, game.*, messaging.*)
+3) Optionnel (si “invite code”)
+   - Ajouter colonne unique (invite_code) dans rooms + endpoint/handler rooms.joinByCode
+   - Règles : une table privée n’est joinable que via code
+
+Plan d’implémentation (client Java)
+1) Créer un RoomDirectoryService
+   - Utilise RealtimeApiClient.request("rooms.open"/"rooms.get"/"rooms.join")
+2) Ajouter événements + state minimal
+   - RoomsRequested -> async fetch list
+   - RoomsLoaded (liste)
+   - RoomJoinRequested(roomId) -> join, puis navigation
+   - RoomJoinFailed(message)
+3) UI “Rejoindre une table”
+   - Écran listant les rooms (nom, gameType, joueurs, statut) + champ “roomId” (ou code)
+   - Bouton “Rejoindre” -> RoomJoinRequested
+4) Sur succès
+   - RoomLifecycleService.trackRoom(roomId, gameType)
+   - Naviguer vers RoomTableScreen
+
+Tests / vérifications
+- Backend : cas table inexistante, table pleine, table démarrée, table privée, double join
+- Client : erreurs réseau, room supprimée, reconnect WS room, rafraîchissement de liste
+
+Livrables attendus
+- Backend : routes WS API rooms.open (+ rooms.get, rooms.join optionnel)
+- Client : nouvel écran “Rejoindre”, service directory, wiring vers RoomLifecycleService
+
