@@ -61,6 +61,7 @@ public final class ChatWindow extends JDialog implements ChatView {
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         setLayout(new BorderLayout(8, 8));
         setPreferredSize(new Dimension(520, 440));
+        installEscapeShortcut();
 
         historyArea.setEditable(false);
         historyArea.setLineWrap(true);
@@ -105,19 +106,7 @@ public final class ChatWindow extends JDialog implements ChatView {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                if (settingsService.current().confirmChatExit()) {
-                    int choice = JOptionPane.showConfirmDialog(
-                            ChatWindow.this,
-                            "Voulez-vous fermer le tchat ?",
-                            "Fermer le tchat",
-                            JOptionPane.YES_NO_OPTION,
-                            JOptionPane.QUESTION_MESSAGE
-                    );
-                    if (choice != JOptionPane.YES_OPTION) {
-                        return;
-                    }
-                }
-                dispose();
+                attemptClose();
             }
         });
 
@@ -217,6 +206,30 @@ public final class ChatWindow extends JDialog implements ChatView {
         presenter.detach();
         super.dispose();
         onDisposeCallback.run();
+    }
+
+    private void installEscapeShortcut() {
+        getRootPane().registerKeyboardAction(
+                e -> attemptClose(),
+                javax.swing.KeyStroke.getKeyStroke("ESCAPE"),
+                javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
+        );
+    }
+
+    private void attemptClose() {
+        if (settingsService.current().confirmChatExit()) {
+            int choice = JOptionPane.showConfirmDialog(
+                    ChatWindow.this,
+                    "Voulez-vous fermer le tchat ?",
+                    "Fermer le tchat",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.QUESTION_MESSAGE
+            );
+            if (choice != JOptionPane.YES_OPTION) {
+                return;
+            }
+        }
+        dispose();
     }
 
     private void invokeOnEdt(Runnable runnable) {

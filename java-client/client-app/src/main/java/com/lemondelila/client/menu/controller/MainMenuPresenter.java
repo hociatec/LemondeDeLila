@@ -319,7 +319,21 @@ public final class MainMenuPresenter {
         if (id == null || screenManager == null) {
             return;
         }
-        SwingUtilities.invokeLater(() -> screenManager.show(id));
+        Runnable task = () -> {
+            screenManager.show(id);
+            if (root != null) {
+                java.awt.Window window = SwingUtilities.getWindowAncestor(root);
+                if (window != null) {
+                    window.requestFocus();
+                    window.toFront();
+                }
+            }
+        };
+        if (SwingUtilities.isEventDispatchThread()) {
+            task.run();
+        } else {
+            SwingUtilities.invokeLater(task);
+        }
     }
     private void attachPresenceState() {
         releasePresenceState();
