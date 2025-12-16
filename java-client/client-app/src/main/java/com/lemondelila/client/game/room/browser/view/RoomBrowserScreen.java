@@ -41,7 +41,6 @@ public final class RoomBrowserScreen extends JPanel implements Screen, AutoClose
         setLayout(new BorderLayout());
         add(view.component(), BorderLayout.CENTER);
 
-        view.onRefresh(() -> eventBus.publish(new PublicRoomsRequested(null)));
         view.onJoin(roomId -> eventBus.publish(new JoinRoomRequested(roomId)));
 
         // Échap = retour menu principal.

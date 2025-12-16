@@ -25,11 +25,9 @@ public final class RoomBrowserView {
     private final DefaultListModel<Object> model = new DefaultListModel<>();
     private final JList<Object> list = new JList<>(model);
     private final JLabel status = new JLabel(" ");
-    private final JButton refresh = new JButton("Rafraichir");
     private final JButton join = new JButton("Rejoindre");
 
     private Consumer<Integer> onJoin;
-    private Runnable onRefresh;
 
     public RoomBrowserView() {
         root.setBorder(new EmptyBorder(16, 16, 16, 16));
@@ -48,15 +46,10 @@ public final class RoomBrowserView {
         root.add(scroll, BorderLayout.CENTER);
 
         JPanel actions = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        ButtonUtils.enterActivates(refresh);
         ButtonUtils.enterActivates(join);
-        actions.add(refresh);
         actions.add(join);
         root.add(actions, BorderLayout.SOUTH);
 
-        refresh.addActionListener(e -> {
-            if (onRefresh != null) onRefresh.run();
-        });
         join.addActionListener(e -> joinSelected());
 
         list.addListSelectionListener(e -> updateJoinEnabled());
@@ -98,10 +91,6 @@ public final class RoomBrowserView {
 
     public void onJoin(Consumer<Integer> handler) {
         this.onJoin = handler;
-    }
-
-    public void onRefresh(Runnable handler) {
-        this.onRefresh = handler;
     }
 
     private Integer extractRoomId(Object value) {
