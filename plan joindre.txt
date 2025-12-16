@@ -1,54 +1,135 @@
-PLAN – Rejoindre une table existante (LemondeDeLila)
-
-Contexte (existant)
-- Backend REST : POST /api/rooms/:id/join (RoomController -> RoomService.joinRoom)
-- Backend temps réel : WS /ws?token=...&room=<id> => join automatique + room.updated
-- Client Java : création via commande WS room.create, puis suivi via RoomRealtimeService.subscribe(roomId)
-- Manque principal : “directory” (liste/recherche des tables ouvertes) + UI “rejoindre”
-
-Objectif
-- Permettre à un joueur de trouver une table existante et de la rejoindre, puis d’ouvrir le suivi temps réel de la table.
-- Respecter l’architecture actuelle : WS API (/ws/api) pour les requêtes, WS room (/ws) pour l’état live.
-
-Décisions à valider (avant dev)
-1) Join par identifiant numérique uniquement (roomId) OU via code d’invitation (inviteCode) ?
-2) Politique sur tables privées : visibles uniquement par code ? jamais listées ?
-3) Filtrage : par gameType + statut “open” (setup/…).
-
-Plan d’implémentation (backend)
-1) Ajouter une “directory” côté serveur (RoomService)
-   - Méthode listOpenRooms(filters): renvoie id, name, gameType, isPrivate, status, counts, owner (optionnel)
-   - Ne renvoyer que les statuts OPEN_ROOM_STATUSES, et exclure isPrivate=true (sauf mode code)
-2) Exposer via WS API (/ws/api) (pattern existant des handlers)
-   - Créer RoomMessageHandler avec routes :
-     - rooms.open (payload: { gameType? }) -> { rooms: [...] }
-     - rooms.get (payload: { roomId }) -> RoomPayload (via getRoomPayload)
-     - optionnel rooms.join (payload: { roomId }) -> valide joinRoom + renvoie RoomPayload
-   - Enregistrer ces routes dans RealtimeApiGateway.routes (comme catalog.*, game.*, messaging.*)
-3) Optionnel (si “invite code”)
-   - Ajouter colonne unique (invite_code) dans rooms + endpoint/handler rooms.joinByCode
-   - Règles : une table privée n’est joinable que via code
-
-Plan d’implémentation (client Java)
-1) Créer un RoomDirectoryService
-   - Utilise RealtimeApiClient.request("rooms.open"/"rooms.get"/"rooms.join")
-2) Ajouter événements + state minimal
-   - RoomsRequested -> async fetch list
-   - RoomsLoaded (liste)
-   - RoomJoinRequested(roomId) -> join, puis navigation
-   - RoomJoinFailed(message)
-3) UI “Rejoindre une table”
-   - Écran listant les rooms (nom, gameType, joueurs, statut) + champ “roomId” (ou code)
-   - Bouton “Rejoindre” -> RoomJoinRequested
-4) Sur succès
-   - RoomLifecycleService.trackRoom(roomId, gameType)
-   - Naviguer vers RoomTableScreen
-
-Tests / vérifications
-- Backend : cas table inexistante, table pleine, table démarrée, table privée, double join
-- Client : erreurs réseau, room supprimée, reconnect WS room, rafraîchissement de liste
-
-Livrables attendus
-- Backend : routes WS API rooms.open (+ rooms.get, rooms.join optionnel)
-- Client : nouvel écran “Rejoindre”, service directory, wiring vers RoomLifecycleService
-
+Plan rejoindre une table publique ou privée par invitation via WebSocket
+Contexte technique
+Le système utilise uniquement des WebSocket
+Un canal WebSocket API pour les requêtes et commandes
+Un canal WebSocket room pour l’état temps réel des tables
+Un canal WebSocket notifications pour les messages ciblés utilisateur
+Le serveur est l’unique source de vérité
+Le client ne manipule jamais directement les règles d’accès
+Objectif fonctionnel
+Permettre à un utilisateur
+de voir les tables publiques ouvertes classées par jeu
+de rejoindre directement une table publique
+de rejoindre une table privée uniquement via invitation
+de recevoir une invitation et l’accepter ou la refuser
+Modèle des tables
+Une table possède
+un identifiant interne
+un type de jeu
+un statut
+une visibilité publique ou privée
+un propriétaire
+une liste de joueurs
+Une table publique
+est visible dans la liste
+est rejoignable librement
+Une table privée
+n’est jamais listée
+n’est rejoignable que via invitation
+Plan côté serveur WebSocket
+Liste des tables publiques
+Le serveur maintient une vue des tables publiques ouvertes groupées par type de jeu
+Message client vers serveur
+rooms.public.list
+avec filtre optionnel par type de jeu
+Message serveur vers client
+rooms.public.listed
+avec les tables groupées par jeu
+chaque entrée contient
+identifiant
+nom
+type de jeu
+nombre de joueurs
+nombre maximum
+statut
+Rejoindre une table publique
+Message client vers serveur
+rooms.public.join
+avec identifiant de la table
+Le serveur vérifie
+que la table existe
+qu’elle est publique
+qu’elle est ouverte
+qu’elle n’est pas pleine
+En cas de succès
+le joueur est ajouté à la table
+le serveur renvoie l’état minimal de la table
+le client ouvre ensuite le WebSocket room correspondant
+En cas d’échec
+le serveur renvoie une erreur explicite
+Gestion des invitations tables privées
+Envoi d’une invitation
+Message client vers serveur
+rooms.invite.send
+Contenu
+identifiant de la table
+identifiant du joueur à inviter
+Le serveur vérifie
+que l’expéditeur est propriétaire de la table
+que la table est privée
+que le joueur ciblé n’est pas déjà dans la table
+Le serveur crée une invitation unique
+et notifie le joueur ciblé
+Message serveur vers joueur ciblé
+rooms.invite.received
+Contenu
+identifiant de l’invitation
+informations minimales sur la table
+identité de l’expéditeur
+Réponse à une invitation
+Message client vers serveur
+rooms.invite.respond
+Contenu
+identifiant de l’invitation
+acceptation ou refus
+Si refus
+Le serveur marque l’invitation comme refusée
+optionnellement notifie le propriétaire
+aucune autre action n’est effectuée
+Si acceptation
+Le serveur vérifie que
+la table existe toujours
+la table n’est pas pleine
+l’invitation est valide
+Le joueur est ajouté à la table
+l’invitation est supprimée
+le serveur renvoie l’état de la table
+le client ouvre le WebSocket room correspondant
+Notifications et synchronisation
+Le serveur envoie
+des notifications ciblées pour les invitations
+des mises à jour room pour les joueurs déjà présents
+des erreurs explicites en cas de refus
+Règles de sécurité
+Une table privée
+ne peut jamais être listée
+Une invitation
+est liée à un joueur précis
+est à usage unique
+a une durée de validité limitée
+Un joueur
+ne peut rejoindre une table privée
+sans invitation valide
+Plan côté client
+Découverte
+Le client ouvre le WebSocket API
+demande la liste des tables publiques
+affiche les tables groupées par jeu
+Rejoindre une table publique
+L’utilisateur sélectionne une table
+le client envoie rooms.public.join
+en cas de succès ouvre le WebSocket room
+Invitations
+Le client écoute les messages rooms.invite.received
+affiche une notification
+propose accepter ou refuser
+Acceptation ou refus
+En cas de refus
+le client envoie rooms.invite.respond refus
+En cas d’acceptation
+le client envoie rooms.invite.respond accept
+puis ouvre le WebSocket room
+Résultat attendu
+Un système cohérent
+sans REST
+sans codes partagés

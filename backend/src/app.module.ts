@@ -21,6 +21,7 @@ import { WsRoutingModule } from './common/ws/ws-routing.module';
 import { ValidationModule } from './common/validation/validation.module';
 import { GameWsModule } from './game/ws/game-ws.module';
 import { RealtimeModule } from './realtime/realtime.module';
+import { NotificationModule } from './notification/notification.module';
 
 @Module({
   imports: [
@@ -62,6 +63,7 @@ import { RealtimeModule } from './realtime/realtime.module';
     WsRoutingModule,
     ValidationModule,
     RealtimeModule,
+    NotificationModule,
     AdminModule,
   ],
 })

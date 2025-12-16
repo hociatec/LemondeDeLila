@@ -49,8 +49,11 @@ export class RoomService {
     return room;
   }
 
-  async joinRoom(roomId: number, userId: number): Promise<Room> {
+  async joinRoom(roomId: number, userId: number, opts?: { allowPrivate?: boolean }): Promise<Room> {
     const room = await this.requireRoom(roomId);
+    if (room.isPrivate && !opts?.allowPrivate) {
+      throw new BadRequestException('Table privée');
+    }
     if (!this.isRoomOpen(room)) {
       throw new BadRequestException('Table déjà démarrée');
     }
