@@ -5,7 +5,7 @@ import { GameSingleActionDto } from '../../../../../engine/dto/game-action.dto';
 import { GenericExchangeService } from '../../../../../modules/exchange/services/generic-exchange.service';
 import { PanierExpressMetadata, PanierExpressPendingExchange } from '../entities/panier-express-state.entity';
 import { playingLog } from '../../../../../../common/utils/playing-logger';
-import { PanierExpressUtils } from './panier-express.utils';
+import { PanierExpressUtils } from '../utils/panier-express-utils.service';
 import { PanierExpressDeckService } from './panier-express-deck.service';
 
 type ExchangeEvent =

@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+<<<<<<< HEAD
 import { GameStateEntity } from '../../../../../core/entities/game-state.entity';
 import { PanierExpressPlayer } from '../entities/panier-express-state.entity';
 
@@ -165,4 +166,40 @@ export class PanierExpressUtilsService {
       player.shoppingList.every((item) => player.basket.includes(item))
     );
   }
+=======
+import { GameStateEntity, PlayerStateEntity } from '../../../../../core/entities/game-state.entity';
+
+/**
+ * Utilitaires partagés Panier Express.
+ * Centralise les helpers liés aux joueurs pour éviter les accès non typés.
+ */
+@Injectable()
+export class PanierExpressUtils {
+  playerName(state: GameStateEntity, playerId: number): string {
+    const player = state.players?.find((p) => p.id === playerId);
+    const username = typeof player?.username === 'string' ? player?.username.trim() : '';
+    return username.length ? username : `Joueur ${playerId}`;
+  }
+
+  missingShoppingItems(player: PlayerStateEntity | null | undefined): Set<string> {
+    if (!player) {
+      return new Set();
+    }
+    const basket = Array.isArray(player.basket) ? player.basket.map((item) => String(item)) : [];
+    const shoppingList = this.toStringArray(player.shoppingList);
+    return new Set(shoppingList.filter((item) => !basket.includes(item)));
+  }
+
+  private toStringArray(value: unknown): string[] {
+    if (Array.isArray(value)) {
+      return value
+        .map((entry) => (entry == null ? '' : String(entry)))
+        .filter((entry): entry is string => entry.length > 0);
+    }
+    if (typeof value === 'string') {
+      return [value];
+    }
+    return [];
+  }
+>>>>>>> 8179fa9694f1ee4e62f792502688e2386e82ce1e
 }

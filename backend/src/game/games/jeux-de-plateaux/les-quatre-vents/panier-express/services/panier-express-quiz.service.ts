@@ -5,7 +5,7 @@ import { QuizRunnerService, QuizQuestion, QuizState } from '../../../../../modul
 import { DeckPoolService, DeckPoolState } from '../../../../../modules/cards/services/deck-pool.service';
 import { sanitizeText } from '../../../../../../common/utils/sanitize-text';
 import { PanierExpressMetadata, PanierExpressDeckPool } from '../entities/panier-express-state.entity';
-import { PanierExpressUtils } from './panier-express.utils';
+import { PanierExpressUtils } from '../utils/panier-express-utils.service';
 
 @Injectable()
 export class PanierExpressQuizService {

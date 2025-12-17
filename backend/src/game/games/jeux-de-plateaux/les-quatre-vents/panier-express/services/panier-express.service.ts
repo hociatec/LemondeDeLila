@@ -32,7 +32,7 @@ import { PanierExpressSetupService } from './panier-express-setup.service';
 import { PanierExpressDrawService } from './panier-express-draw.service';
 import { PanierExpressQuizService } from './panier-express-quiz.service';
 import { PanierExpressExchangeService } from './panier-express-exchange.service';
-import { PanierExpressUtils } from './panier-express.utils';
+import { PanierExpressUtils } from '../utils/panier-express-utils.service';
 
 type PanierExpressPlayerView = {
   id: number;

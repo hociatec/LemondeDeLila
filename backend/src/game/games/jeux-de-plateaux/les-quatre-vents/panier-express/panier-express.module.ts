@@ -17,7 +17,7 @@ import { PanierExpressSetupService } from './services/panier-express-setup.servi
 import { PanierExpressDrawService } from './services/panier-express-draw.service';
 import { PanierExpressQuizService } from './services/panier-express-quiz.service';
 import { PanierExpressExchangeService } from './services/panier-express-exchange.service';
-import { PanierExpressUtils } from './services/panier-express.utils';
+import { PanierExpressUtils } from './utils/panier-express-utils.service';
 import { PanierExpressDeckService } from './services/panier-express-deck.service';
 
 @Module({

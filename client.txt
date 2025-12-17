@@ -1,0 +1,127 @@
+PLAN DE REMISE A NIVEAU (CLIENT JAVA) — ALIGNE AVEC LE MOTEUR BACKEND
+
+Source d’alignement (backend)
+- Contrat: `backend/CONTRACT.md` (état unifié exposé au client)
+- WebSocket jeu: `backend/src/game/engine/gateways/game.gateway.ts` (path `/ws/game`, types: `game.join`, `game.state`, `game.actions`, `game.actions.available`, `game.bot.play`)
+
+Principe directeur (contrat)
+1) Client 100% générique côté jeu: aucune logique métier (pas de règles, pas de calculs d’actions).
+2) Le serveur est la seule source de vérité: il expose intégralement `state`, `actions`, `pending`, `metadata.actionLog`.
+3) Le client affiche et renvoie “tel quel” les actions proposées.
+
+
+0) CIBLE D’ARCHITECTURE (à atteindre)
+Module game côté client = 3 couches nettes:
+- Transport/Realtime: connexion WS, (re)connexion, encodage/décodage message, heartbeat si nécessaire.
+- State mapping: JSON -> DTO typés alignés contrat (et uniquement ce qui est contractuel).
+- UI/Interaction: Swing (ou autre) qui ne fait que rendre et router l’intention utilisateur -> `game.actions`.
+
+Interdits dans l’UI:
+- parsing JSON direct (`JsonNode`), constructions d’actions “inventées”, logique de règles (ex: déterminer si une action est possible).
+
+
+1) ALIGNEMENT PROTOCOLE /WS/GAME (backend -> client)
+1.1. Messages sortants client
+- `game.join`: `{ roomId, gameType }`
+- `game.state`: `{ roomId, gameType }` (requête explicite d’état)
+- `game.actions`: `{ roomId, gameType, actions: GameSingleActionDto[] }`
+- (optionnel) `game.actions.available`: `{ roomId, gameType, playerId }`
+- (admin/owner) `game.bot.play`: `{ roomId, gameType }`
+
+1.2. Messages entrants serveur
+- `game.state`: payload = `GameStateWithActions` (voir §2)
+- `game.actions.available`: payload = `{ actions, roomId, gameType, playerId }`
+- `error`: payload = `{ message }` + champ `context` (voir gateway)
+
+1.3. Action item client
+- Centraliser les “types” WS dans une seule enum/constante et couvrir via tests (éviter string literals dispersés).
+
+
+2) ALIGNEMENT DU MODELE D’ETAT (GameStateWithActions)
+Référence: `backend/CONTRACT.md`
+Etat minimum à supporter côté client:
+- `status`, `turn`, `players`, `log`
+- `actions`: `{ type: string; label?: string; payload?: object }[]`
+- `pending`: objet ou null
+  - quiz: `{ type: "quiz", question, choices: string[], playerId }`
+  - vote/day_vote: `{ type: "vote", name?, day? }`
+  - exchange: `{ type: "exchange", playerId?, targetPlayerId?, ... }`
+  - phase: `{ type: "phase", name, day? }`
+- `metadata.actionLog`: `{ actorId, type, payload?, timestamp, step? }[]`
+
+Action items client (alignement code):
+- Remplacer le modèle actuel éclaté (`pendingQuiz` + `pending` raw + `extras Map<String,Object>`) par:
+  - `GenericGameState.pending` typé (sealed interface/record par type)
+  - `GenericGameState.metadata.actionLog` typé
+  - conserver un champ “rawJson” uniquement si nécessaire pour debug, mais ne pas en dépendre.
+- Remplacer `extras Map<String,Object>` par des champs explicitement supportés (ou une structure `extensions` versionnée par `gameType`).
+
+
+3) UNIFICATION DU TEMPS REEL (Realtime)
+Constat actuel:
+- `client-app` a un `GameRealtimeClient` spécifique et un `RealtimeManager` générique (doublement des responsabilités).
+
+Décision cible:
+- Un seul moteur de WS (basé sur `RealtimeManager`), et des adaptateurs minces par domaine:
+  - `GameRealtimeClient` devient un simple wrapper sur `RealtimeManager` (ou disparaît).
+
+Règles de robustesse:
+- Interdire toute attente bloquante (`Thread.sleep`, busy-wait) sur le thread Swing EDT.
+- API asynchrone: les envois doivent être mis en file tant que non CONNECTED, ou échouer avec erreur contrôlée + retry.
+- Gestion “close” idempotente (fermeture multiple safe).
+- Timeouts explicites et testés.
+
+Alignement backend:
+- Le backend gère heartbeat ping/pong dans `GameGateway`; côté client, ne pas implémenter un 2e heartbeat si la lib WS le gère déjà.
+
+
+4) DETTE PRINCIPALE DU MODULE GAME (priorité)
+4.1. Dé-monolithiser l’UI
+- Extraire `GenericGameInteractionComponent` en sous-composants:
+  - `GameActionListModel` (actions disponibles)
+  - `PendingRenderer` (quiz/vote/exchange/phase)
+  - `ActionDispatcher` (ENTER/SPACE/etc.)
+  - `GameStateViewModel` (dérivation d’état, sans Swing)
+  - Dialogs spécialisés (ask_card, exchange, etc.) isolés
+
+4.2. “Client générique” réel
+- Toute action envoyée doit provenir strictement de `state.actions`.
+- Supprimer les chemins qui fabriquent des actions en dur (ou les remplacer par “actions contractuelles” servies par le backend).
+
+4.3. Encodage / i18n
+- Corriger les chaînes “cassées” (problème d’encodage) à la source et normaliser: UTF-8 partout.
+- Déplacer les textes UI en `messages.properties` (pas de strings en dur dans la vue).
+
+4.4. Erreurs et logs
+- Ne jamais avaler silencieusement des exceptions (au minimum log `debug`).
+- Baisser les logs `info` “par frame” (ex: chaque `game.state`) en `debug`.
+
+
+5) PLAN D’EXECUTION (par lots, sans casser)
+Lot A — Contrat & DTO (sécurisation)
+- Implémenter des DTO alignés à `backend/CONTRACT.md` (pending + actionLog + actions).
+- Tests unitaires: mapping JSON -> DTO (cas quiz/vote/exchange/phase + logs).
+- Remplacer progressivement `GenericGameStateMapper` pour produire ces DTO.
+
+Lot B — Realtime unifié (robustesse)
+- Faire converger `GameRealtimeClient` vers `RealtimeManager` (ou inverse) et supprimer la duplication.
+- Enlever toute attente bloquante; introduire file d’attente + timeout.
+- Tests: connect/close/retry + non-blocage EDT (au moins via tests de non-régression sur méthodes appelées depuis UI).
+
+Lot C — UI refactor (maintenabilité)
+- Extraire sous-composants du monolithe `GenericGameInteractionComponent`.
+- Introduire `Presenter/ViewModel` testable.
+- Migrer les features jeu-spécifiques (Panier Express, Dame Nature, etc.) dans des renderers dédiés, mais toujours “data-driven” via `pending/actions/state`.
+
+Lot D — Durcissement (qualité)
+- Ajout de tests d’intégration “contrat” (fixtures JSON venant du backend).
+- Ajout lint/format Java si déjà présent (sinon rester minimal).
+- Ajout CI basique: `mvn test` sur modules pertinents.
+
+
+6) POINTS DE SYNCHRO BACKEND (à valider avant chaque lot)
+- Valider que le backend remplit systématiquement `actions` et `pending` pour l’utilisateur courant (CONTRACT.md).
+- Confirmer les conventions de `status` (ex: `setup/open/pending/preparing/finished`) et ne pas coder de logique client basée sur ces valeurs (affichage only).
+- Confirmer le set de types `pending.type` réellement émis (quiz/vote/exchange/phase + variantes `day_vote`).
+- Confirmer si `game.actions.available` est nécessaire côté UI (sinon le supprimer du client).
+
