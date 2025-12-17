@@ -24,6 +24,8 @@ export type PanierExpressPlayerState = PlayerStateEntity & {
   inventory: string[];
 };
 
+export type PanierExpressPlayer = PanierExpressPlayerState;
+
 export type PanierExpressPendingExchange = PendingState & {
   type: 'exchange';
   playerId: number;

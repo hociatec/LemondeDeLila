@@ -193,7 +193,7 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
       players: PanierExpressPlayerSummary[];
     },
   ): Record<string, unknown> {
-    const extrasFromState = (state as GameStateWithActions).extras;
+    const extrasFromState = (state as GameStateEntity & { extras?: unknown }).extras;
     const baseExtras: Record<string, unknown> =
       extrasFromState && typeof extrasFromState === 'object' ? (extrasFromState as Record<string, unknown>) : {};
     const currentPlayerView =
@@ -240,12 +240,14 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
       ...(existingMeta ?? {}),
       decks: existingMeta?.decks ? { ...baseMeta.decks, ...existingMeta.decks } : baseMeta.decks,
     };
-    const shoppingDeck = metadata.decks.shoppingLists?.deck ?? [];
+    const shoppingDeck = this.extractShoppingLists(metadata);
     const hydratedPlayers = players.map((p, idx) => {
       const username = (p.username ?? '').toLowerCase();
       const isBot = p.isBot === true || username.includes('bot');
       const hasList = Array.isArray(p.shoppingList) && p.shoppingList.length > 0;
-      const list = hasList ? this.toStringArray(p.shoppingList) : shoppingDeck[idx] ?? this.buildShoppingList();
+      const list: string[] = hasList
+        ? this.toStringArray(p.shoppingList)
+        : (shoppingDeck[idx] ?? this.buildShoppingList());
       return {
         ...p,
         isBot,
@@ -278,7 +280,8 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
       if (hadList) {
         return; // ne pas relogger une liste déjà attribuée (évite l'impression de réinitialisation).
       }
-      const list = Array.isArray(p.shoppingList) ? p.shoppingList : shoppingDeck[idx] ?? [];
+      const normalizedList = this.toStringArray(p.shoppingList);
+      const list: string[] = normalizedList.length ? normalizedList : (shoppingDeck[idx] ?? []);
       const label = (p.username ?? '').trim() || 'Joueur ' + p.id;
       withLogs = this.core.appendLog(
         withLogs,
@@ -594,6 +597,7 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
 
   private tileLabel(tile: PanierExpressTile | undefined): string {
     if (!tile) return 'inconnu';
+    const fallbackId = tile.id ?? 'inconnu';
     switch (tile.type) {
       case 'start':
         return 'depart';
@@ -614,7 +618,7 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
       case 'bonus_course':
         return 'pioche course bonus';
     }
-    return tile?.id ?? 'inconnu';
+    return fallbackId;
   }
 
   private resolveTile(state: GameStateEntity, playerId: number): GameStateEntity {
@@ -1002,6 +1006,14 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
         .filter((v) => v.length > 0);
     }
     return [];
+  }
+
+  private extractShoppingLists(meta: PanierExpressMetadata): string[][] {
+    const deck = meta.decks?.shoppingLists?.deck ?? [];
+    if (!Array.isArray(deck)) {
+      return [];
+    }
+    return deck.map((entry) => (Array.isArray(entry) ? entry.map((item) => String(item)) : this.toStringArray(entry)));
   }
 
   private buildShoppingList(): string[] {

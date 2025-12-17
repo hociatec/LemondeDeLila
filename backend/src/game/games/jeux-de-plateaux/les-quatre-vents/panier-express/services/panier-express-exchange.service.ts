@@ -52,20 +52,21 @@ export class PanierExpressExchangeService {
 
   private transitionExchange(state: GameStateEntity, event: ExchangeEvent): ExchangeResult {
     const pending = this.getPendingExchange(state.pending ?? null);
-    const status: ExchangeState = pending ? 'pending' : 'idle';
-
-    if (status === 'idle' && event.type === 'request') {
-      return this.requestExchange(state, event.playerId);
+    if (!pending) {
+      if (event.type === 'request') {
+        return this.requestExchange(state, event.playerId);
+      }
+      return this.rejectExchange(state, `[Panier Express] Échange invalide: aucun échange en attente.`, 'idle');
     }
 
-    if (status === 'pending' && event.type === 'resolve') {
+    if (event.type === 'resolve') {
       if (pending.playerId !== event.playerId) {
         return this.rejectExchange(state, `[Panier Express] Échange appartenant à un autre joueur.`, 'pending');
       }
       return this.resolveExchangeInternal(state, event, pending);
     }
 
-    if (status === 'pending' && event.type === 'request') {
+    if (event.type === 'request') {
       return this.rejectExchange(
         state,
         `[Panier Express] Échange déjà en attente pour ${this.utils.playerName(state, pending.playerId)}.`,
@@ -73,7 +74,7 @@ export class PanierExpressExchangeService {
       );
     }
 
-    return this.rejectExchange(state, `[Panier Express] Échange invalide: aucun échange en attente.`, 'idle');
+    return this.rejectExchange(state, `[Panier Express] Échange invalide: aucun échange en attente.`, 'pending');
   }
 
   private requestExchange(state: GameStateEntity, playerId: number): ExchangeResult {
