@@ -277,7 +277,8 @@ describe('PanierExpressService', () => {
       ],
       status: 'running',
     } as any);
-    const after = exchangeSvc.resolveExchange(state as any, 1, 2, 'pomme', 'poire');
+    const pendingState = exchangeSvc.applyExchange(state as any, 1);
+    const after = exchangeSvc.resolveExchange(pendingState as any, 1, 2, 'pomme', 'poire');
     const a = (after.players as any[]).find((p) => p.id === 1);
     const b = (after.players as any[]).find((p) => p.id === 2);
     expect(a.inventory).toContain('poire');
@@ -285,5 +286,31 @@ describe('PanierExpressService', () => {
     expect(b.inventory).toContain('pomme');
     expect(b.inventory).not.toContain('poire');
     expect(after.pending).toBeNull();
+  });
+
+  it('refuse de lancer un second échange tant que le premier est en attente', () => {
+    const base: any = service.hydrateInitialState({
+      players: [
+        { id: 1, username: 'A', inventory: ['pomme'] },
+        { id: 2, username: 'B', inventory: ['poire'] },
+      ],
+      status: 'running',
+    } as any);
+    const first = exchangeSvc.applyExchange(base as any, 1);
+    const second = exchangeSvc.applyExchange(first as any, 2);
+    expect(second.pending?.playerId).toBe(1);
+  });
+
+  it("rejette la résolution d'un autre joueur que celui concerné", () => {
+    const base: any = service.hydrateInitialState({
+      players: [
+        { id: 1, username: 'A', inventory: ['pomme'] },
+        { id: 2, username: 'B', inventory: ['poire'] },
+      ],
+      status: 'running',
+    } as any);
+    const pending = exchangeSvc.applyExchange(base as any, 1);
+    const after = exchangeSvc.resolveExchange(pending as any, 2, 1, 'poire', 'pomme');
+    expect(after.pending?.playerId).toBe(1);
   });
 });

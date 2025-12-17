@@ -18,6 +18,7 @@ import { PanierExpressDrawService } from './services/panier-express-draw.service
 import { PanierExpressQuizService } from './services/panier-express-quiz.service';
 import { PanierExpressExchangeService } from './services/panier-express-exchange.service';
 import { PanierExpressUtils } from './services/panier-express.utils';
+import { PanierExpressDeckService } from './services/panier-express-deck.service';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { PanierExpressUtils } from './services/panier-express.utils';
     PanierExpressQuizService,
     PanierExpressExchangeService,
     PanierExpressUtils,
+    PanierExpressDeckService,
   ],
   exports: [
     PanierExpressService,
@@ -50,6 +52,7 @@ import { PanierExpressUtils } from './services/panier-express.utils';
     PanierExpressQuizService,
     PanierExpressExchangeService,
     PanierExpressUtils,
+    PanierExpressDeckService,
   ],
 })
 export class PanierExpressModule {}

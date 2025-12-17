@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { DeckManagerService } from '../../../../../modules/cards/services/deck-manager.service';
-import { DeckPoolService } from '../../../../../modules/cards/services/deck-pool.service';
+import { DeckPoolService, DeckPoolState } from '../../../../../modules/cards/services/deck-pool.service';
 import { GameStateEntity } from '../../../../../core/entities/game-state.entity';
-import { PanierExpressMetadata, PanierExpressTile } from '../entities/panier-express-state.entity';
+import { PanierExpressMetadata, PanierExpressTile, PanierExpressDeckPool } from '../entities/panier-express-state.entity';
 
 @Injectable()
 export class PanierExpressSetupService {
@@ -95,11 +95,12 @@ export class PanierExpressSetupService {
   }
 
   buildDeckPool(baseState?: GameStateEntity): PanierExpressMetadata['decks'] {
-    let pool = this.deckPool.set<any>({}, 'courses', this.deckPool.shuffle(this.courseItems()));
-    pool = this.deckPool.set<any>(pool, 'events', ['rupture-de-stock', 'stand-ferme', 'promo-surprise', 'orage-au-marche']);
-    pool = this.deckPool.set<any>(pool, 'exchanges', ['echange-fruit-legume', 'donne-une-carte', 'prend-au-hasard']);
-    pool = this.deckPool.set<any>(pool, 'quizzes', this.buildQuizDeck());
-    pool = this.deckPool.set<any>(pool, 'shoppingLists', this.buildShoppingListDeck());
+    let pool: PanierExpressDeckPool = {};
+    pool = this.setDeck(pool, 'courses', this.deckPool.shuffle(this.courseItems()));
+    pool = this.setDeck(pool, 'events', ['rupture-de-stock', 'stand-ferme', 'promo-surprise', 'orage-au-marche']);
+    pool = this.setDeck(pool, 'exchanges', ['echange-fruit-legume', 'donne-une-carte', 'prend-au-hasard']);
+    pool = this.setDeck(pool, 'quizzes', this.buildQuizDeck());
+    pool = this.setDeck(pool, 'shoppingLists', this.buildShoppingListDeck());
 
     const standMap = this.standCourseMap();
     const standIds = new Set<string>();
@@ -110,10 +111,10 @@ export class PanierExpressSetupService {
     standIds.forEach((standId) => {
       const items = standMap[standId] ?? this.courseItems();
       const deck = this.buildReplenishableDeck(items);
-      pool = this.deckPool.set<any>(pool, `courses-${standId}`, this.deckPool.shuffle(deck));
+      pool = this.setDeck(pool, `courses-${standId}`, this.deckPool.shuffle(deck));
     });
 
-    return pool as PanierExpressMetadata['decks'];
+    return pool;
   }
 
   buildShoppingListDeck(): string[][] {
@@ -145,5 +146,10 @@ export class PanierExpressSetupService {
   buildReplenishableDeck(items?: string[]): string[] {
     const source = items && items.length ? [...items] : [...this.courseItems()];
     return [...source, ...source];
+  }
+
+  private setDeck<T>(pool: PanierExpressDeckPool, key: string, deck: T[]): PanierExpressDeckPool {
+    const updated = this.deckPool.set<T>(pool as DeckPoolState<T>, key, deck);
+    return updated as PanierExpressDeckPool;
   }
 }

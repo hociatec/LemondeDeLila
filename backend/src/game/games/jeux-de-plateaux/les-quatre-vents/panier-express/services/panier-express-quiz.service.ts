@@ -2,9 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { GameCoreService } from '../../../../../core/services/game-core.service';
 import { GameStateEntity } from '../../../../../core/entities/game-state.entity';
 import { QuizRunnerService, QuizQuestion, QuizState } from '../../../../../modules/quiz/services/quiz-runner.service';
-import { DeckPoolService } from '../../../../../modules/cards/services/deck-pool.service';
+import { DeckPoolService, DeckPoolState } from '../../../../../modules/cards/services/deck-pool.service';
 import { sanitizeText } from '../../../../../../common/utils/sanitize-text';
-import { PanierExpressMetadata } from '../entities/panier-express-state.entity';
+import { PanierExpressMetadata, PanierExpressDeckPool } from '../entities/panier-express-state.entity';
 import { PanierExpressUtils } from './panier-express.utils';
 
 @Injectable()
@@ -21,17 +21,17 @@ export class PanierExpressQuizService {
     if (!meta.decks) {
       return this.core.appendLog(state, '[Panier Express] Quiz : deck indisponible.');
     }
-    const { card, pool } = this.deckPool.draw<QuizQuestion>(meta.decks as any, 'quizzes');
-    const metadata = { ...meta, decks: pool as any } as PanierExpressMetadata;
+    const { card, pool } = this.deckPool.draw<QuizQuestion>(meta.decks as DeckPoolState<QuizQuestion>, 'quizzes');
+    const metadata = { ...meta, decks: pool as PanierExpressDeckPool };
     const quiz = card;
     if (!quiz) {
       return this.core.appendLog(state, '[Panier Express] Quiz : aucune carte disponible.');
     }
 
     const question = sanitizeText(quiz.question);
-    const choices = Array.isArray(quiz.choices) ? quiz.choices.map((c: any) => sanitizeText(String(c))) : [];
+    const choices = Array.isArray(quiz.choices) ? quiz.choices.map((choice) => sanitizeText(String(choice))) : [];
 
-    const currentQuizState: QuizState = (metadata.quiz as QuizState) ?? { pending: {} };
+    const currentQuizState: QuizState = metadata.quiz ?? { pending: {} };
     const nextQuizState = this.quizRunner.setPending(currentQuizState, playerId, {
       id: quiz.id ?? `quiz-${playerId}`,
       question,
@@ -42,10 +42,9 @@ export class PanierExpressQuizService {
     const nextMeta: PanierExpressMetadata = {
       ...metadata,
       quiz: nextQuizState,
-    } as any;
+    };
 
     const next = { ...state, metadata: nextMeta };
-    const log = this.core.appendLog(next, `Question pour ${this.utils.playerName(state, playerId)}: "${question}"`);
-    return log;
+    return this.core.appendLog(next, `Question pour ${this.utils.playerName(state, playerId)}: "${question}"`);
   }
 }
