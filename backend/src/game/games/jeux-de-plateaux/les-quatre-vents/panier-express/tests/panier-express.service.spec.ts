@@ -1,16 +1,19 @@
 import { Test } from '@nestjs/testing';
 import { PanierExpressService } from '../services/panier-express.service';
 import { PanierExpressModule } from '../panier-express.module';
+import { PanierExpressExchangeService } from '../services/panier-express-exchange.service';
 
 // Tests unitaires ciblés Panier Express (pioche stand/bonus, échange, quiz, flux de tour, bot, presenter).
 describe('PanierExpressService', () => {
   let service: PanierExpressService;
+  let exchangeSvc: PanierExpressExchangeService;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [PanierExpressModule],
     }).compile();
     service = moduleRef.get(PanierExpressService);
+    exchangeSvc = moduleRef.get(PanierExpressExchangeService);
   });
 
   it('expose un état initial avec decks et tuiles', () => {
@@ -71,6 +74,26 @@ describe('PanierExpressService', () => {
     const exposed = service.exposeState(base as any);
     expect(exposed.pending?.type).toBe('quiz');
     expect((exposed.pending as any)?.blocking).toBe(true);
+  });
+
+  it('sanitize et expose les quiz même sans question explicite', () => {
+    const base: any = service.hydrateInitialState({ players: [{ id: 1, username: 'A' }], status: 'running' } as any);
+    base.turn = { currentPlayerId: 1, direction: 1 };
+    base.turnIndex = 0;
+    base.metadata.quiz = {
+      pending: {
+        1: {
+          question: '   ',
+          choices: [],
+          answer: '  poire ',
+        },
+      },
+    };
+
+    const exposed = service.exposeState(base as any);
+    expect(exposed.pending?.type).toBe('quiz');
+    expect(exposed.pending?.choices).toEqual(['poire']);
+    expect(exposed.pending?.question).toBe('');
   });
 
   it('applique un skip_turn et avance le tour', () => {
@@ -153,7 +176,7 @@ describe('PanierExpressService', () => {
     } as any);
     state.turn = { currentPlayerId: 1, direction: 1 };
     state.turnIndex = 0;
-    const actions = (service as any)['exchangeSvc'].buildExchangeActions(state as any, 1);
+    const actions = exchangeSvc.buildExchangeActions(state as any, 1);
     expect(actions.some((a: any) => a.type === 'exchange_with')).toBe(true);
   });
 
@@ -192,6 +215,21 @@ describe('PanierExpressService', () => {
     expect(actions.some((a: any) => a.type === 'exchange_with')).toBe(true);
   });
 
+  it('met en pending un échange lorsqu’une offre est possible', () => {
+    const state: any = service.hydrateInitialState({
+      players: [
+        { id: 1, username: 'A', inventory: ['pomme'] },
+        { id: 2, username: 'B', inventory: ['poire'] },
+      ],
+      status: 'running',
+    } as any);
+
+    const after = exchangeSvc.applyExchange(state as any, 1);
+    expect(after.pending?.type).toBe('exchange');
+    expect((after.pending as any)?.playerId).toBe(1);
+    expect(typeof (after.pending as any)?.card).toBe('string');
+  });
+
   it("refuse un exchange_with sans pending exchange", () => {
     const state: any = service.hydrateInitialState({
       players: [
@@ -226,7 +264,7 @@ describe('PanierExpressService', () => {
       status: 'running',
     } as any);
     (state.metadata as any).positions[1] = 5;
-    const after = (service as any)['exchangeSvc'].applyExchange(state as any, 1);
+    const after = exchangeSvc.applyExchange(state as any, 1);
     expect((after as any).pending ?? null).toBeNull();
     expect((after.metadata as any).positions[1]).not.toBe(5);
   });
@@ -239,7 +277,7 @@ describe('PanierExpressService', () => {
       ],
       status: 'running',
     } as any);
-    const after = (service as any)['exchangeSvc'].resolveExchange(state as any, 1, 2, 'pomme', 'poire');
+    const after = exchangeSvc.resolveExchange(state as any, 1, 2, 'pomme', 'poire');
     const a = (after.players as any[]).find((p) => p.id === 1);
     const b = (after.players as any[]).find((p) => p.id === 2);
     expect(a.inventory).toContain('poire');

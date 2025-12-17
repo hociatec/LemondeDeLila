@@ -17,6 +17,7 @@ import { PanierExpressSetupService } from './services/panier-express-setup.servi
 import { PanierExpressDrawService } from './services/panier-express-draw.service';
 import { PanierExpressQuizService } from './services/panier-express-quiz.service';
 import { PanierExpressExchangeService } from './services/panier-express-exchange.service';
+import { PanierExpressUtils } from './services/panier-express.utils';
 
 @Module({
   imports: [
@@ -34,7 +35,21 @@ import { PanierExpressExchangeService } from './services/panier-express-exchange
     VictoryModule,
     BotModule,
   ],
-  providers: [PanierExpressService, PanierExpressSetupService, PanierExpressDrawService, PanierExpressQuizService, PanierExpressExchangeService],
-  exports: [PanierExpressService, PanierExpressSetupService, PanierExpressDrawService, PanierExpressQuizService, PanierExpressExchangeService],
+  providers: [
+    PanierExpressService,
+    PanierExpressSetupService,
+    PanierExpressDrawService,
+    PanierExpressQuizService,
+    PanierExpressExchangeService,
+    PanierExpressUtils,
+  ],
+  exports: [
+    PanierExpressService,
+    PanierExpressSetupService,
+    PanierExpressDrawService,
+    PanierExpressQuizService,
+    PanierExpressExchangeService,
+    PanierExpressUtils,
+  ],
 })
 export class PanierExpressModule {}

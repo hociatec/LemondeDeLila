@@ -5,6 +5,7 @@ import { QuizRunnerService, QuizQuestion, QuizState } from '../../../../../modul
 import { DeckPoolService } from '../../../../../modules/cards/services/deck-pool.service';
 import { sanitizeText } from '../../../../../../common/utils/sanitize-text';
 import { PanierExpressMetadata } from '../entities/panier-express-state.entity';
+import { PanierExpressUtils } from './panier-express.utils';
 
 @Injectable()
 export class PanierExpressQuizService {
@@ -12,6 +13,7 @@ export class PanierExpressQuizService {
     private readonly deckPool: DeckPoolService,
     private readonly quizRunner: QuizRunnerService,
     private readonly core: GameCoreService,
+    private readonly utils: PanierExpressUtils,
   ) {}
 
   applyQuiz(state: GameStateEntity, playerId: number): GameStateEntity {
@@ -43,12 +45,7 @@ export class PanierExpressQuizService {
     } as any;
 
     const next = { ...state, metadata: nextMeta };
-    const log = this.core.appendLog(next, `Question pour ${this.playerName(state, playerId)}: "${question}"`);
+    const log = this.core.appendLog(next, `Question pour ${this.utils.playerName(state, playerId)}: "${question}"`);
     return log;
-  }
-
-  private playerName(state: GameStateEntity, playerId: number): string {
-    const player = state.players?.find((p) => p.id === playerId);
-    return player?.username ?? `Joueur ${playerId}`;
   }
 }

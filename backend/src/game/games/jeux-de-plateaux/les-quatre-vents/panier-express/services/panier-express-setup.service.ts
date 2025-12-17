@@ -109,7 +109,7 @@ export class PanierExpressSetupService {
     standIds.add('bonus');
     standIds.forEach((standId) => {
       const items = standMap[standId] ?? this.courseItems();
-      const deck = items && items.length ? [...items, ...items] : this.courseItems();
+      const deck = this.buildReplenishableDeck(items);
       pool = this.deckPool.set<any>(pool, `courses-${standId}`, this.deckPool.shuffle(deck));
     });
 
@@ -136,5 +136,14 @@ export class PanierExpressSetupService {
       const choices = this.decks.shuffle([q.answer, ...distractors]);
       return { ...q, choices };
     });
+  }
+
+  /**
+   * Les stands doivent pouvoir être revisités plusieurs fois au cours d'une même partie.
+   * On duplique volontairement les cartes disponibles pour simuler le réassort permanent.
+   */
+  buildReplenishableDeck(items?: string[]): string[] {
+    const source = items && items.length ? [...items] : [...this.courseItems()];
+    return [...source, ...source];
   }
 }

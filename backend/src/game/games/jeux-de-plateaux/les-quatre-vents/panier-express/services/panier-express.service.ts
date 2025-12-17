@@ -1,6 +1,6 @@
 ﻿import { Injectable, OnModuleInit } from '@nestjs/common';
 import { GameCoreService } from '../../../../../core/services/game-core.service';
-import { GameStateEntity } from '../../../../../core/entities/game-state.entity';
+import { GameStateEntity, PendingState, PlayerStateEntity } from '../../../../../core/entities/game-state.entity';
 import { GameSingleActionDto } from '../../../../../engine/dto/game-action.dto';
 import { GameStateWithActions } from '../../../../../engine/dto/game-action.dto';
 import { GameRulesAdapter } from '../../../../../engine/interfaces/game-rules-adapter.interface';
@@ -13,7 +13,7 @@ import { TurnActionsService } from '../../../../../modules/turn/services/turn-ac
 import { StandEffectRegistryService } from '../../../../../modules/effects/services/stand-effect-registry.service';
 import { ActionResolverService } from '../../../../../modules/action-resolver/services/action-resolver.service';
 import { TurnStatusService } from '../../../../../modules/turn/services/turn-status.service';
-import { QuizRunnerService } from '../../../../../modules/quiz/services/quiz-runner.service';
+import { QuizRunnerService, QuizQuestion } from '../../../../../modules/quiz/services/quiz-runner.service';
 import { GenericExchangeService } from '../../../../../modules/exchange/services/generic-exchange.service';
 import { VictoryService } from '../../../../../modules/victory/services/victory.service';
 import { BotRunnerService } from '../../../../../modules/bot/services/bot-runner.service';
@@ -27,6 +27,26 @@ import { PanierExpressSetupService } from './panier-express-setup.service';
 import { PanierExpressDrawService } from './panier-express-draw.service';
 import { PanierExpressQuizService } from './panier-express-quiz.service';
 import { PanierExpressExchangeService } from './panier-express-exchange.service';
+import { PanierExpressUtils } from './panier-express.utils';
+
+type PanierExpressPlayerView = {
+  id: number;
+  username: string | null;
+  isBot: boolean;
+  shoppingList: string[];
+  basket: string[];
+  inventory: string[];
+};
+
+type PanierExpressPlayerSummary = Pick<
+  PanierExpressPlayerView,
+  'id' | 'username' | 'isBot' | 'shoppingList' | 'basket' | 'inventory'
+>;
+
+type PendingQuizPayload = {
+  question: string;
+  choices: string[];
+};
 
 @Injectable()
 export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
@@ -59,6 +79,7 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
     private readonly quizRunner: QuizRunnerService,
     private readonly exchangeHelper: GenericExchangeService,
     private readonly exchangeSvc: PanierExpressExchangeService,
+    private readonly utils: PanierExpressUtils,
   ) {}
 
   onModuleInit(): void {
@@ -70,73 +91,36 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
   exposeState(state: GameStateEntity): GameStateWithActions {
     const ensured = this.ensureMetadata(state);
     const currentId = ensured.turn?.currentPlayerId ?? null;
-    const current = (ensured.players ?? []).find((p) => p.id === currentId) as any;
+    const current = (ensured.players ?? []).find((p) => p.id === currentId);
     const isBot = current?.isBot === true;
     const actions = !isBot && typeof currentId === 'number' ? this.getAvailableActions(ensured, currentId) : [];
     const meta = ensured.metadata as PanierExpressMetadata;
-    const rawPending = state.pending as any;
-    const pendingQuiz = typeof currentId === 'number' ? meta.quiz?.pending?.[currentId] : null;
-    return this.buildView({ state, actions, meta, rawPending, pendingQuiz, currentId });
+    const rawPending: PendingState | null = ensured.pending ?? null;
+    const pendingQuiz: QuizQuestion | undefined =
+      typeof currentId === 'number' ? meta.quiz?.pending?.[currentId] ?? undefined : undefined;
+    return this.buildView({ state: ensured, actions, rawPending, pendingQuiz, currentId });
   }
 
   /** Presenter / ViewBuilder pour l'état exposé Panier Express. */
   private buildView(params: {
     state: GameStateEntity;
     actions: GameSingleActionDto[];
-    meta: PanierExpressMetadata;
-    rawPending: any;
-    pendingQuiz: any;
+    rawPending: PendingState | null;
+    pendingQuiz: QuizQuestion | undefined;
     currentId: number | null;
   }): GameStateWithActions {
-    const { state, actions, meta, rawPending, pendingQuiz, currentId } = params;
-    const quizChoices =
-      pendingQuiz && Array.isArray(pendingQuiz.choices) && pendingQuiz.choices.length
-        ? pendingQuiz.choices
-        : pendingQuiz?.answer
-        ? [pendingQuiz.answer]
-        : [];
-    const pendingQuizChoices = quizChoices;
-    const sanitizedQuizChoices = Array.isArray(pendingQuizChoices)
-      ? pendingQuizChoices.map((c: any) => sanitizeText(String(c))).filter((c: string) => c.length > 0)
-      : [];
-    const pendingQuizQuestion = sanitizeText(pendingQuiz?.question ?? '');
-    const shouldExposeQuiz = pendingQuiz && (pendingQuizQuestion || sanitizedQuizChoices.length > 0);
-    const pending =
-      shouldExposeQuiz
-        ? {
-            type: 'quiz',
-            question: pendingQuizQuestion,
-            choices: sanitizedQuizChoices,
-            playerId: currentId,
-            blocking: true,
-          }
-        : rawPending && rawPending.type && rawPending.type !== 'quiz'
-        ? rawPending
-        : null;
-    const playerViews = (state.players ?? [])
-      .map((p) => this.buildPlayerView(state, p.id))
-      .filter((v): v is NonNullable<ReturnType<typeof this.buildPlayerView>> => Boolean(v));
-    const players = (state.players ?? []).map((p) => ({
-      id: p.id,
-      username: typeof (p as any).username === 'string' ? (p as any).username : null,
-      isBot: (p as any).isBot === true,
-      shoppingList: this.toStringArray((p as any).shoppingList),
-      basket: Array.isArray((p as any).basket) ? (p as any).basket.map((c: any) => String(c)) : [],
-      inventory: Array.isArray((p as any).inventory) ? (p as any).inventory.map((c: any) => String(c)) : [],
+    const { state, actions, rawPending, pendingQuiz, currentId } = params;
+    const pending = this.buildPendingView({ rawPending, pendingQuiz, currentId });
+    const playerViews = this.buildPlayerViews(state);
+    const players = playerViews.map(({ id, username, isBot, shoppingList, basket, inventory }) => ({
+      id,
+      username,
+      isBot,
+      shoppingList,
+      basket,
+      inventory,
     }));
-    const extras = {
-      ...((state as any).extras ?? {}),
-      currentPlayerView: typeof currentId === 'number' ? this.buildPlayerView(state, currentId) : null,
-      playerViews,
-      players,
-      // "pressed X" => KeyEvent.KEY_PRESSED, fonctionne sur la touche seule (b, s, i) sans Maj.
-      shortcuts: [
-        { key: 'pressed S', type: 'interface', id: 'shopping' },
-        { key: 'pressed B', type: 'interface', id: 'basket' },
-        { key: 'pressed I', type: 'interface', id: 'inventory' },
-        { key: 'pressed P', type: 'interface', id: 'position' },
-      ],
-    };
+    const extras = this.buildExtrasView(state, { currentId, playerViews, players });
     return {
       ...(state as any),
       catalog: {
@@ -146,6 +130,81 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
       actions: actions.map((a) => ({ type: a.type, label: a.type, payload: a.payload ?? {} })),
       pending,
       extras,
+    };
+  }
+
+  private buildPendingView(params: {
+    rawPending: PendingState | null;
+    pendingQuiz: QuizQuestion | undefined;
+    currentId: number | null;
+  }): PendingState | null {
+    const quizPayload = this.normalizeQuizPending(params.pendingQuiz);
+    if (quizPayload) {
+      return {
+        type: 'quiz',
+        question: quizPayload.question,
+        choices: quizPayload.choices,
+        playerId: params.currentId,
+        blocking: true,
+      };
+    }
+    if (params.rawPending && params.rawPending.type && params.rawPending.type !== 'quiz') {
+      return params.rawPending;
+    }
+    return null;
+  }
+
+  private normalizeQuizPending(pendingQuiz: QuizQuestion | undefined): PendingQuizPayload | null {
+    if (!pendingQuiz) {
+      return null;
+    }
+    const question = sanitizeText(pendingQuiz.question ?? '');
+    const rawChoices =
+      Array.isArray(pendingQuiz.choices) && pendingQuiz.choices.length
+        ? pendingQuiz.choices
+        : pendingQuiz.answer
+        ? [pendingQuiz.answer]
+        : [];
+    const choices = rawChoices
+      .map((choice) => sanitizeText(String(choice)))
+      .filter((choice) => choice.length > 0);
+    if (!question && choices.length === 0) {
+      return null;
+    }
+    return { question, choices };
+  }
+
+  private buildPlayerViews(state: GameStateEntity): PanierExpressPlayerView[] {
+    return (state.players ?? [])
+      .map((p) => this.buildPlayerView(state, p.id))
+      .filter((view): view is PanierExpressPlayerView => Boolean(view));
+  }
+
+  private buildExtrasView(
+    state: GameStateEntity,
+    params: {
+      currentId: number | null;
+      playerViews: PanierExpressPlayerView[];
+      players: PanierExpressPlayerSummary[];
+    },
+  ): Record<string, unknown> {
+    const baseExtras = ((state as any).extras ?? {}) as Record<string, unknown>;
+    const currentPlayerView =
+      typeof params.currentId === 'number'
+        ? params.playerViews.find((view) => view.id === params.currentId) ?? null
+        : null;
+    return {
+      ...baseExtras,
+      currentPlayerView,
+      playerViews: params.playerViews,
+      players: params.players,
+      // "pressed X" => KeyEvent.KEY_PRESSED, fonctionne sur la touche seule (b, s, i) sans Maj.
+      shortcuts: [
+        { key: 'pressed S', type: 'interface', id: 'shopping' },
+        { key: 'pressed B', type: 'interface', id: 'basket' },
+        { key: 'pressed I', type: 'interface', id: 'inventory' },
+        { key: 'pressed P', type: 'interface', id: 'position' },
+      ],
     };
   }
 
@@ -375,30 +434,74 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
   }
 
   private ensureMetadata(state: GameStateEntity): GameStateEntity {
-    const existing = state.metadata as PanierExpressMetadata | undefined;
-    const fromSetup = this.buildMetadata(state);
-    const base: PanierExpressMetadata = existing
-      ? {
-          ...fromSetup,
-          ...existing,
-          decks: (existing as any).decks
-            ? { ...fromSetup.decks, ...(existing as any).decks }
-            : fromSetup.decks,
-        }
-      : fromSetup;
-    const decks = base.decks ?? this.setup.buildDeckPool(state);
-    const baseStatuses = base.statuses?.skipTurn ?? {};
-    const basePositions = base.positions ?? {};
-    const metadata: PanierExpressMetadata = {
-      ...base,
-      decks,
-      quiz: { pending: {}, ...(base.quiz as any) },
-      statuses: {
-        skipTurn: { ...baseStatuses },
-      },
-      positions: { ...basePositions },
+    const normalizedPlayers = this.normalizePlayers(state.players as PlayerStateEntity[] | undefined);
+    const merged = this.mergeMetadataWithDefaults(state);
+    const metadata = this.hydrateMetadataCollections(state, merged, normalizedPlayers);
+    return { ...state, metadata, players: normalizedPlayers };
+  }
+
+  private mergeMetadataWithDefaults(state: GameStateEntity): PanierExpressMetadata {
+    const defaults = this.buildMetadata(state);
+    const existing = (state.metadata as PanierExpressMetadata) ?? null;
+    if (!existing) {
+      return defaults;
+    }
+    return {
+      ...defaults,
+      ...existing,
+      decks: this.mergeDecks(defaults.decks, existing.decks),
+      positions: { ...defaults.positions, ...(existing.positions ?? {}) },
+      quiz: existing.quiz ?? defaults.quiz,
+      statuses: this.mergeStatuses(defaults.statuses, existing.statuses),
     };
-    return { ...state, metadata, players: this.normalizePlayers(state.players) };
+  }
+
+  private hydrateMetadataCollections(
+    state: GameStateEntity,
+    meta: PanierExpressMetadata,
+    players: PlayerStateEntity[],
+  ): PanierExpressMetadata {
+    const decks = meta.decks ?? this.setup.buildDeckPool(state);
+    const quiz = meta.quiz?.pending ? meta.quiz : { pending: {} };
+    const statuses = this.mergeStatuses({ skipTurn: {} }, meta.statuses);
+    const positions = this.ensurePlayerPositions(meta.positions, players);
+    return { ...meta, decks, quiz, statuses, positions };
+  }
+
+  private mergeDecks(
+    defaults: PanierExpressMetadata['decks'],
+    override?: PanierExpressMetadata['decks'],
+  ): PanierExpressMetadata['decks'] {
+    if (!override) {
+      return defaults;
+    }
+    const merged = { ...defaults };
+    Object.keys(override).forEach((key) => {
+      merged[key] = override[key];
+    });
+    return merged;
+  }
+
+  private mergeStatuses(
+    defaults: PanierExpressMetadata['statuses'],
+    override?: PanierExpressMetadata['statuses'],
+  ): PanierExpressMetadata['statuses'] {
+    return {
+      skipTurn: { ...(defaults.skipTurn ?? {}), ...(override?.skipTurn ?? {}) },
+    };
+  }
+
+  private ensurePlayerPositions(
+    positions: Record<number, number> | undefined,
+    players: PlayerStateEntity[],
+  ): Record<number, number> {
+    const resolved = { ...(positions ?? {}) };
+    players.forEach((player) => {
+      if (typeof resolved[player.id] !== 'number') {
+        resolved[player.id] = 0;
+      }
+    });
+    return resolved;
   }
 
   private ensureStarted(state: GameStateEntity): GameStateEntity {
@@ -435,7 +538,7 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
 
     let next = this.core.cloneState(state);
     next.lastRoll = roll;
-    next = this.core.appendLog(next, `${this.playerName(state, currentId)} lance le dé : "${roll}"`);
+    next = this.core.appendLog(next, `${this.utils.playerName(state, currentId)} lance le dé : "${roll}"`);
     next = this.appendActionLog(next, currentId, 'roll', { roll });
 
     // Orchestration : move -> resolve tile -> check blocking -> advance turn
@@ -467,7 +570,7 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
     const plural = Math.abs(roll) > 1 ? 'cases' : 'case';
     return this.core.appendLog(
       nextState,
-      `${this.playerName(state, playerId)} avance de ${roll} ${plural} sur ${this.tileLabel(tile)}`,
+      `${this.utils.playerName(state, playerId)} avance de ${roll} ${plural} sur ${this.tileLabel(tile)}`,
     );
   }
 
@@ -505,7 +608,7 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
     if (!tile) {
       return this.core.appendLog(
         state,
-        `[Panier Express] Résolution tuile: aucune tuile en position ${position} pour ${this.playerName(state, playerId)}.`,
+        `[Panier Express] Résolution tuile: aucune tuile en position ${position} pour ${this.utils.playerName(state, playerId)}.`,
       );
     }
     const resolved = this.tileRegistry.apply(tile.type, ensured, { playerId, tile });
@@ -552,17 +655,17 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
     switch (event) {
       case 'stand-ferme':
         next = this.turnStatus.setStatus(next, playerId, 'skipTurn', 1);
-        next = this.core.appendLog(next, `[Panier Express] Stand ferm? : ${this.playerName(state, playerId)} saute un tour.`);
+        next = this.core.appendLog(next, `[Panier Express] Stand ferm? : ${this.utils.playerName(state, playerId)} saute un tour.`);
         next = this.appendActionLog(next, playerId, 'event', { event, effect: 'skipTurn' });
         break;
       case 'promo-surprise':
-        next = this.core.appendLog(next, `[Panier Express] Promo surprise : ${this.playerName(state, playerId)} pioche 2 courses.`);
+        next = this.core.appendLog(next, `[Panier Express] Promo surprise : ${this.utils.playerName(state, playerId)} pioche 2 courses.`);
         next = this.drawSvc.drawCourse(next, playerId, 'bonus');
         next = this.drawSvc.drawCourse(next, playerId, 'bonus');
         next = this.appendActionLog(next, playerId, 'event', { event, effect: 'draw2' });
         break;
       case 'orage-au-marche':
-        next = this.core.appendLog(next, `[Panier Express] Orage : ${this.playerName(state, playerId)} recule de 2 cases.`);
+        next = this.core.appendLog(next, `[Panier Express] Orage : ${this.utils.playerName(state, playerId)} recule de 2 cases.`);
         next = this.movePlayer(next, playerId, -2);
         next = this.appendActionLog(next, playerId, 'event', { event, effect: 'move', delta: -2 });
         break;
@@ -614,7 +717,7 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
       },
     };
     const next = { ...state, metadata: nextMeta };
-    const logged = this.core.appendLog(next, `[Panier Express] ${this.playerName(state, playerId)} passe son tour.`);
+    const logged = this.core.appendLog(next, `[Panier Express] ${this.utils.playerName(state, playerId)} passe son tour.`);
     return this.advanceTurn(logged);
   }
 
@@ -673,7 +776,7 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
     if (!pending) {
       return this.core.appendLog(
         state,
-        `[Panier Express] Pas de question en attente pour ${this.playerName(state, playerId)}.`,
+        `[Panier Express] Pas de question en attente pour ${this.utils.playerName(state, playerId)}.`,
       );
     }
     let correct = Boolean(action.payload?.correct);
@@ -692,7 +795,7 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
     };
     next = this.core.appendLog(
       next,
-      `[Panier Express] ${this.playerName(state, playerId)} répond au quiz (${correct ? 'réussite' : 'échec'})`,
+      `[Panier Express] ${this.utils.playerName(state, playerId)} répond au quiz (${correct ? 'réussite' : 'échec'})`,
     );
     next = this.appendActionLog(next, playerId, 'answer_quiz', { correct });
     if (correct) {
@@ -732,7 +835,7 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
   private applySkipTurnTile(state: GameStateEntity, playerId: number, turns: number): GameStateEntity {
     const count = Math.max(1, turns || 1);
     const next = this.turnStatus.setStatus(state, playerId, 'skipTurn', count);
-    return this.core.appendLog(next, `[Panier Express] ${this.playerName(state, playerId)} perd ${count} tour(s).`);
+    return this.core.appendLog(next, `[Panier Express] ${this.utils.playerName(state, playerId)} perd ${count} tour(s).`);
   }
 
   private applyVictory(state: GameStateEntity): GameStateEntity {
@@ -747,7 +850,7 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
       metadata: nextMeta,
       status: 'finished',
     };
-    const winnerName = winnerId != null ? this.playerName(state, winnerId) : 'Partie terminée';
+    const winnerName = winnerId != null ? this.utils.playerName(state, winnerId) : 'Partie terminée';
     const logged = this.core.appendLog(nextState, `[Panier Express] ${winnerName} remporte la partie !`);
     return this.appendActionLog(logged, winnerId ?? null, 'victory', { conditionId: result.conditionId });
   }
@@ -811,11 +914,6 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
     return { ...state, metadata: { ...meta, actionLog } };
   }
 
-  private playerName(state: GameStateEntity, playerId: number): string {
-    const player = state.players?.find((p) => p.id === playerId);
-    return player?.username ?? `Joueur ${playerId}`;
-  }
-
   private injectQuizAnswer(
     actions: GameSingleActionDto[],
     meta: PanierExpressMetadata,
@@ -832,13 +930,13 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
     });
   }
 
-  private normalizePlayers(players: any[] | undefined): any[] {
+  private normalizePlayers(players: PlayerStateEntity[] | undefined): PlayerStateEntity[] {
     if (!Array.isArray(players)) return [];
     return players.map((p) => ({
       ...p,
-      shoppingList: this.toStringArray((p as any).shoppingList),
-      basket: Array.isArray((p as any).basket) ? (p as any).basket : [],
-      inventory: Array.isArray((p as any).inventory) ? (p as any).inventory : [],
+      shoppingList: this.toStringArray(p.shoppingList),
+      basket: Array.isArray(p.basket) ? [...p.basket] : [],
+      inventory: Array.isArray(p.inventory) ? [...p.inventory] : [],
     }));
   }
 
@@ -867,29 +965,16 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
     return this.deckPool.shuffle([...this.setup.courseItems()]).slice(0, 5);
   }
 
-  private buildPlayerView(state: GameStateEntity, playerId: number): {
-    id: number;
-    username: string | null;
-    shoppingList: string[];
-    basket: string[];
-    inventory: string[];
-  } | null {
+  private buildPlayerView(state: GameStateEntity, playerId: number): PanierExpressPlayerView | null {
     const player = (state.players ?? []).find((p) => p.id === playerId) as any;
     if (!player) return null;
     return {
       id: player.id,
       username: typeof player.username === 'string' ? player.username : null,
+      isBot: player?.isBot === true,
       shoppingList: this.toStringArray(player.shoppingList),
       basket: Array.isArray(player.basket) ? player.basket.map((c: any) => String(c)) : [],
       inventory: Array.isArray(player.inventory) ? player.inventory.map((c: any) => String(c)) : [],
     };
   }
 }
-
-
-
-
-
-
-
-

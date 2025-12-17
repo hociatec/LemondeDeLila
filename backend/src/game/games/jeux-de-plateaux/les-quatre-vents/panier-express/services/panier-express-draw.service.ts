@@ -5,6 +5,7 @@ import { GameStateEntity } from '../../../../../core/entities/game-state.entity'
 import { PanierExpressMetadata } from '../entities/panier-express-state.entity';
 import { PanierExpressSetupService } from './panier-express-setup.service';
 import { playingLog } from '../../../../../../common/utils/playing-logger';
+import { PanierExpressUtils } from './panier-express.utils';
 
 @Injectable()
 export class PanierExpressDrawService {
@@ -12,6 +13,7 @@ export class PanierExpressDrawService {
     private readonly deckPool: DeckPoolService,
     private readonly setup: PanierExpressSetupService,
     private readonly core: GameCoreService,
+    private readonly utils: PanierExpressUtils,
   ) {}
 
   drawCourse(state: GameStateEntity, playerId: number, standId?: string): GameStateEntity {
@@ -35,7 +37,11 @@ export class PanierExpressDrawService {
     if (resolvedStandId && !hasStandDeck) {
       const standIdKey = resolvedStandId as string;
       const replenish = this.setup.standCourseMap()[standIdKey] ?? this.setup.courseItems();
-      const refilledPool = this.deckPool.set<any>(metaAfter.decks as any, standKey, this.deckPool.shuffle([...replenish, ...replenish]));
+      const refilledPool = this.deckPool.set<any>(
+        metaAfter.decks as any,
+        standKey,
+        this.deckPool.shuffle(this.setup.buildReplenishableDeck(replenish)),
+      );
       metaAfter = { ...metaAfter, decks: refilledPool } as any;
     }
 
@@ -45,14 +51,22 @@ export class PanierExpressDrawService {
     if (!draw.card && (metaAfter.decks as any)[standKey]) {
       const standIdKey = resolvedStandId as string;
       const replenish = this.setup.standCourseMap()[standIdKey] ?? this.setup.courseItems();
-      const refilledPool = this.deckPool.set<any>(metaAfter.decks as any, standKey, this.deckPool.shuffle([...replenish, ...replenish]));
+      const refilledPool = this.deckPool.set<any>(
+        metaAfter.decks as any,
+        standKey,
+        this.deckPool.shuffle(this.setup.buildReplenishableDeck(replenish)),
+      );
       metaAfter = { ...metaAfter, decks: refilledPool } as any;
       draw = this.drawFromPool(metaAfter, standKey);
       metaAfter = draw.metadata as PanierExpressMetadata;
     }
 
     if (!draw.card) {
-      const refilledPool = this.deckPool.set<any>(metaAfter.decks as any, 'courses', this.deckPool.shuffle([...this.setup.courseItems(), ...this.setup.courseItems()]));
+      const refilledPool = this.deckPool.set<any>(
+        metaAfter.decks as any,
+        'courses',
+        this.deckPool.shuffle(this.setup.buildReplenishableDeck()),
+      );
       metaAfter = { ...metaAfter, decks: refilledPool } as any;
       draw = this.drawFromPool(metaAfter, 'courses');
       metaAfter = draw.metadata as PanierExpressMetadata;
@@ -95,7 +109,10 @@ export class PanierExpressDrawService {
         tileId: tile?.id ?? null,
       });
     }
-    const logged = this.core.appendLog(nextState, `[Panier Express] ${this.playerName(state, playerId)} pioche "${card}" au stand ${standLabel}`);
+    const logged = this.core.appendLog(
+      nextState,
+      `[Panier Express] ${this.utils.playerName(state, playerId)} pioche "${card}" au stand ${standLabel}`,
+    );
 
     const playerView = players.find((p) => p.id === playerId) as any;
     playingLog('panier.draw', {
@@ -118,8 +135,4 @@ export class PanierExpressDrawService {
     };
   }
 
-  private playerName(state: GameStateEntity, playerId: number): string {
-    const player = state.players?.find((p) => p.id === playerId);
-    return player?.username ?? `Joueur ${playerId}`;
-  }
 }
