@@ -4,7 +4,7 @@ import { GameStateEntity } from '../../../../../core/entities/game-state.entity'
 import { PanierExpressMetadata } from '../entities/panier-express-state.entity';
 import { PanierExpressSetupService } from './panier-express-setup.service';
 import { playingLog } from '../../../../../../common/utils/playing-logger';
-import { PanierExpressUtils } from './panier-express.utils';
+import { PanierExpressUtils } from '../utils/panier-express-utils.service';
 import { PanierExpressDeckService } from './panier-express-deck.service';
 
 @Injectable()
