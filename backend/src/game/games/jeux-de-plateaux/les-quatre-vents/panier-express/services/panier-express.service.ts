@@ -1,4 +1,4 @@
-﻿import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { GameCoreService } from '../../../../../core/services/game-core.service';
 import { GameStateEntity, PendingState, PlayerStateEntity } from '../../../../../core/entities/game-state.entity';
 import { GameSingleActionDto } from '../../../../../engine/dto/game-action.dto';
@@ -21,7 +21,7 @@ import { ActionLogService } from '../../../../../modules/actionlog/services/acti
 import {
   PanierExpressMetadata,
   PanierExpressTile,
-  PanierExpressPlayerState,
+  PanierExpressPlayer,
   PanierExpressDeckPool,
 } from '../entities/panier-express-state.entity';
 import { PANIER_EXPRESS_PHASES } from '../definitions/rules.definition';
@@ -452,7 +452,7 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
   }
 
   private ensureMetadata(state: GameStateEntity): GameStateEntity {
-    const normalizedPlayers = this.normalizePlayers(state.players as PlayerStateEntity[] | undefined);
+    const normalizedPlayers = this.utils.normalizePlayers(state.players as PlayerStateEntity[] | undefined);
     const merged = this.mergeMetadataWithDefaults(state);
     const metadata = this.hydrateMetadataCollections(state, merged, normalizedPlayers);
     return { ...state, metadata, players: normalizedPlayers };
@@ -479,7 +479,7 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
   private hydrateMetadataCollections(
     state: GameStateEntity,
     meta: PanierExpressMetadata,
-    players: PanierExpressPlayerState[],
+    players: PanierExpressPlayer[],
   ): PanierExpressMetadata {
     const decks = meta.decks ?? this.setup.buildDeckPool(state);
     const quiz = meta.quiz;
@@ -514,7 +514,7 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
 
   private ensurePlayerPositions(
     positions: Record<number, number> | undefined,
-    players: PanierExpressPlayerState[],
+    players: PanierExpressPlayer[],
   ): Record<number, number> {
     const resolved = { ...(positions ?? {}) };
     players.forEach((player) => {
@@ -971,16 +971,6 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
       if (!a || (a.type || '').toLowerCase() !== 'answer_quiz') return a;
       return { ...a, payload: { ...(a.payload ?? {}), answer } };
     });
-  }
-
-  private normalizePlayers(players: PlayerStateEntity[] | undefined): PanierExpressPlayerState[] {
-    if (!Array.isArray(players)) return [];
-    return players.map((p) => ({
-      ...p,
-      shoppingList: this.toStringArray(p.shoppingList),
-      basket: Array.isArray(p.basket) ? p.basket.map((card) => String(card)) : [],
-      inventory: Array.isArray(p.inventory) ? p.inventory.map((card) => String(card)) : [],
-    }));
   }
 
   private getMetadata(state: GameStateEntity): PanierExpressMetadata {

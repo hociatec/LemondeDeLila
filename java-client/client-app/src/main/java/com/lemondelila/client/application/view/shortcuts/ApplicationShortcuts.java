@@ -5,6 +5,7 @@ import com.lemondelila.client.framework.access.shortcut.AccessibleShortcutRegist
 import com.lemondelila.client.framework.core.di.Inject;
 import com.lemondelila.client.framework.ui.LilaFrame;
 import com.lemondelila.client.framework.ui.action.ActionManager;
+import com.lemondelila.client.game.room.service.RoomInviteAcceptanceService;
 
 import javax.swing.AbstractAction;
 import javax.swing.KeyStroke;
@@ -22,6 +23,7 @@ public final class ApplicationShortcuts {
     private final ActionManager actionManager;
     private final AccessibleShortcutRegistry shortcutRegistry;
     private final PresenceDialogLauncher presenceLauncher;
+    private final RoomInviteAcceptanceService inviteAcceptanceService;
 
     private final Set<String> registeredIds = new HashSet<>();
     private boolean installed;
@@ -32,10 +34,12 @@ public final class ApplicationShortcuts {
     @Inject
     public ApplicationShortcuts(ActionManager actionManager,
                                 AccessibleShortcutRegistry shortcutRegistry,
-                                PresenceDialogLauncher presenceLauncher) {
+                                PresenceDialogLauncher presenceLauncher,
+                                RoomInviteAcceptanceService inviteAcceptanceService) {
         this.actionManager = Objects.requireNonNull(actionManager, "actionManager");
         this.shortcutRegistry = Objects.requireNonNull(shortcutRegistry, "shortcutRegistry");
         this.presenceLauncher = Objects.requireNonNull(presenceLauncher, "presenceLauncher");
+        this.inviteAcceptanceService = Objects.requireNonNull(inviteAcceptanceService, "inviteAcceptanceService");
     }
 
     public synchronized void install(LilaFrame frame) {
@@ -50,6 +54,13 @@ public final class ApplicationShortcuts {
                 KeyStroke.getKeyStroke("control U"),
                 "Afficher la liste des joueurs connectés",
                 () -> presenceLauncher.show(frame)
+        );
+        registerShortcut(
+                "global.accept-invite",
+                "Ctrl+J",
+                KeyStroke.getKeyStroke("control J"),
+                "Accepter la dernière invitation reçue",
+                inviteAcceptanceService::acceptLatest
         );
 
         installed = true;

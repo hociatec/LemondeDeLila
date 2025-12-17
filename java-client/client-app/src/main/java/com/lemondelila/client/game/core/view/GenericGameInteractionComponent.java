@@ -37,7 +37,10 @@ import javax.swing.SwingUtilities;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -87,6 +90,17 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
     private ActionMap actionMapRef;
     private final DefaultListModel<GenericGameState.GenericAction> actionsModel = new DefaultListModel<>();
     private final JList<GenericGameState.GenericAction> actionsList = new JList<>(actionsModel);
+    // Dialog ask_card
+    private boolean askDialogOpen = false;
+    private int askTargetIndex = 0;
+    private int askCardIndex = 0;
+    private int askGiveIndex = 0;
+    private int askFocusIndex = 0;
+    private int discardIndex = 0;
+    private List<PlayerOption> askTargets = List.of();
+    private List<AskCardOption> askCards = List.of();
+    private List<AskCardOption> giveCards = List.of();
+    private List<AskCardOption> discardOptions = List.of();
     private Integer lastRollSeen;
     private int lastAnnouncedQuizChoice = -1;
     private String lastQuizAnnouncementKey;
@@ -99,6 +113,7 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
     private boolean autoPrimaryDispatched;
     private boolean botTurnLocked;
     private boolean botLockNotified;
+    private boolean discardDialogOpen;
     private Integer lastAnnouncedPlayerId;
     private int lastLogCount;
     private Integer lastTurnIndexSeen;
@@ -240,7 +255,80 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         actions.put("shortcut.draw", new javax.swing.AbstractAction() {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {
+                if (submitIfQuizActive()) return;
                 handleDrawShortcut();
+            }
+        });
+        // Demande de carte : navigation du mini-dialogue
+        windowMap.put(javax.swing.KeyStroke.getKeyStroke("TAB"), "ask.tab");
+        actions.put("ask.tab", new javax.swing.AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                if (askDialogOpen) {
+                    moveAskFocus(false);
+                }
+            }
+        });
+        windowMap.put(javax.swing.KeyStroke.getKeyStroke("shift TAB"), "ask.tab.back");
+        actions.put("ask.tab.back", new javax.swing.AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                if (askDialogOpen) {
+                    moveAskFocus(true);
+                }
+            }
+        });
+        windowMap.put(javax.swing.KeyStroke.getKeyStroke("LEFT"), "ask.prev");
+        windowMap.put(javax.swing.KeyStroke.getKeyStroke("RIGHT"), "ask.next");
+        actions.put("ask.prev", new javax.swing.AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                if (askDialogOpen) {
+                    moveAskSelection(-1);
+                }
+            }
+        });
+        actions.put("ask.next", new javax.swing.AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                if (askDialogOpen) {
+                    moveAskSelection(1);
+                }
+            }
+        });
+        windowMap.put(javax.swing.KeyStroke.getKeyStroke("ESCAPE"), "ask.cancel");
+        actions.put("ask.cancel", new javax.swing.AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                if (askDialogOpen) {
+                    cancelAskDialog();
+                }
+                if (discardDialogOpen) {
+                    cancelDiscardDialog();
+                }
+            }
+        });
+
+        // Statistiques rapides : touche S
+        windowMap.put(javax.swing.KeyStroke.getKeyStroke("S"), "stats.show");
+        actions.put("stats.show", new javax.swing.AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                announceStats();
+            }
+        });
+        windowMap.put(javax.swing.KeyStroke.getKeyStroke("A"), "ask.answer.accept");
+        windowMap.put(javax.swing.KeyStroke.getKeyStroke("R"), "ask.answer.refuse");
+        actions.put("ask.answer.accept", new javax.swing.AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                sendAskAnswer(true);
+            }
+        });
+        actions.put("ask.answer.refuse", new javax.swing.AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                sendAskAnswer(false);
             }
         });
         configureQuizNavigation(windowMap, actions);
@@ -296,6 +384,10 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
     }
 
     private void handleQuizNavigation(int delta) {
+        if (discardDialogOpen) {
+            moveDiscardSelection(delta);
+            return;
+        }
         if ((activeQuiz == null || activeQuiz.choices().isEmpty() || quizComponent == null)) {
             // Pas de quiz actif : on recycle la navigation pour les échanges si besoin.
             handleExchangeNavigation(delta);
@@ -344,6 +436,8 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         autoPrimaryDispatched = false;
         botTurnLocked = false;
         botLockNotified = false;
+        discardDialogOpen = false;
+        discardIndex = 0;
         lastAnnouncedPlayerId = null;
         requestFocusInWindow();
         controller.attach(roomId, this);
@@ -412,6 +506,9 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         renderQuiz(state.pendingQuiz());
         renderPending(state.pending());
         renderActions(state);
+        if (askDialogOpen) {
+            refreshAskDialogData(state);
+        }
         renderShortcuts(state);
     }
 
@@ -502,6 +599,14 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
     }
 
     private void refreshInfoLabel() {
+        if (discardDialogOpen) {
+            infoLabel.setText(buildDiscardLabel());
+            return;
+        }
+        if (askDialogOpen) {
+            infoLabel.setText(buildAskLabel());
+            return;
+        }
         if (activeQuiz == null) {
             if (exchangePending) {
                 refreshExchangeInfoLabel();
@@ -541,7 +646,12 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         if (activeQuiz != null && quizChoiceIndex >= 0 && quizChoiceIndex < activeQuiz.choices().size()) {
             answer = activeQuiz.choices().get(quizChoiceIndex);
         }
-        controller.sendActions(List.of(ActionRequest.of("answer_quiz", Map.of("answer", answer))));
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("answer", answer);
+        if (localPlayerId != null) {
+            payload.put("playerId", localPlayerId);
+        }
+        controller.sendActions(List.of(ActionRequest.of("answer_quiz", payload)));
         activeQuiz = null;
         quizChoiceIndex = -1;
         if (quizComponent != null) {
@@ -550,11 +660,18 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         infoLabel.setText("");
     }
 
+    /**
+     * Si une demande de carte est en attente pour le joueur local, envoie une réponse par défaut (refus)
+     * sauf si l'action sélectionnée est une acceptation explicite.
+     */
+    // (logique déplacée : répondre manuellement via actions/shortcuts)
+
     private void renderActions(GenericGameState state) {
         actionsModel.clear();
         if (state != null && state.actions() != null) {
             state.actions().forEach(actionsModel::addElement);
         }
+        refreshDiscardOptions(state);
         if (!actionsModel.isEmpty()) {
             selectActionForPending(state);
             if (exchangePending) {
@@ -746,7 +863,10 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
             pendingLabel.setText("");
             return;
         }
-
+        if (askDialogOpen) {
+            pendingLabel.setText(buildAskLabel());
+            return;
+        }
         boolean wasExchangePending = exchangePending;
         if (pending == null) {
             exchangePending = false;
@@ -1000,6 +1120,8 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
                             case "basket" -> announceCollection("basket", basketView);
                             case "inventory" -> announceCollection("inventory", inventoryView);
                             case "position" -> announcePosition();
+                            case "hand" -> announceHand();
+                            case "books" -> announceBooks();
                             default -> {
                                 // noop
                             }
@@ -1017,6 +1139,10 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
                             GenericGameState.GenericAction act = actionsModel.get(i);
                             if (act != null && targetType.equalsIgnoreCase(act.type())) {
                                 actionsList.setSelectedIndex(i);
+                                if ("ask_card".equals(targetType)) {
+                                    openAskDialog();
+                                    break;
+                                }
                                 dispatchAction(act);
                                 break;
                             }
@@ -1100,6 +1226,26 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         emitter.announceEvent(message);
     }
 
+    private void announceHand() {
+        Object handRaw = currentStateExtras().get("hand");
+        List<String> hand = toStringList(handRaw);
+        if (hand == null || hand.isEmpty()) {
+            emitter.announceEvent("Main vide");
+            return;
+        }
+        emitter.announceEvent("Main : " + String.join(", ", hand));
+    }
+
+    private void announceBooks() {
+        Object booksRaw = currentStateExtras().get("books");
+        List<String> books = toStringList(booksRaw);
+        if (books == null || books.isEmpty()) {
+            emitter.announceEvent("Aucune famille complétée");
+            return;
+        }
+        emitter.announceEvent("Familles complétées : " + String.join(", ", books));
+    }
+
     private Map<String, Object> currentStateExtras() {
         GenericGameState state = lastState;
         if (state == null || state.extras() == null) {
@@ -1149,14 +1295,66 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
     }
 
     private boolean blockIfBotTurn() {
+        // Avant le démarrage de la partie, ne jamais bloquer.
+        if (!tableState.started()) {
+            return false;
+        }
         // Ne pas bloquer si un quiz est actif : le joueur doit pouvoir répondre.
         if (activeQuiz != null) {
+            return false;
+        }
+        // Ne pas bloquer si une demande de carte cible le joueur local.
+        if (isPendingAskForMe()) {
             return false;
         }
         if (!botTurnLocked) {
             return false;
         }
         return true;
+    }
+
+    private boolean isPendingAskForMe() {
+        Object pending = lastState != null ? lastState.pending() : null;
+        if (pending == null || localPlayerId == null) return false;
+        if (pending instanceof com.lemondelila.client.game.core.model.GenericGameState.PendingGeneric gen) {
+            if ("ask_card".equalsIgnoreCase(gen.type())) {
+                Integer targetId = gen.targetPlayerId();
+                return targetId != null && targetId.equals(localPlayerId);
+            }
+        } else if (pending instanceof JsonNode node) {
+            if ("ask_card".equalsIgnoreCase(node.path("type").asText(""))) {
+                if (node.path("targetPlayerId").isInt() && node.get("targetPlayerId").asInt() == localPlayerId) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private record PlayerOption(int id, String name) {}
+    private record AskCardOption(String familyId, String memberId, String label) {}
+
+    private void announceStats() {
+        if (lastState == null || lastState.extras() == null) {
+            emitter.announceEvent("Aucune statistique disponible.");
+            return;
+        }
+        Object metaNode = lastState.extras().get("metadata");
+        if (!(metaNode instanceof JsonNode node)) {
+            emitter.announceEvent("Statistiques non disponibles.");
+            return;
+        }
+        int pollution = node.path("pollution").asInt(0);
+        int maxPollution = node.path("maxPollution").asInt(0);
+        int familyGoal = node.path("familyGoal").asInt(0);
+        int books = 0;
+        Object playersNode = lastState.extras().get("players");
+        if (playersNode instanceof JsonNode pNode && pNode.isArray()) {
+            for (JsonNode p : pNode) {
+                books += p.path("books").isArray() ? p.get("books").size() : 0;
+            }
+        }
+        emitter.announceEvent(String.format("Pollution: %d/%d | Familles complétées: %d/%d", pollution, maxPollution, books, familyGoal));
     }
 
     private String describePending(Object pending) {
@@ -1185,6 +1383,7 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         return "Action en attente...";
     }
 
+
     @Override
     public void triggerPrimaryAction() {
         if (blockIfBotTurn()) {
@@ -1198,11 +1397,12 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
             return;
         }
         if (!tableState.started()) {
-            if (!controller.hasEnoughParticipants()) {
-                emitter.announceError(controller.participantRequirementMessage());
-                return;
-            }
             if (startHandler != null) {
+                if (!controller.hasEnoughParticipants()) {
+                    // Participants parfois pas encore synchronisés localement (ex : bot ajouté juste avant).
+                    // On tente quand même le démarrage et on laisse le serveur valider.
+                    emitter.announceError(controller.participantRequirementMessage());
+                }
                 controller.markStartPending();
                 startHandler.run();
             }
@@ -1229,8 +1429,17 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         if (action == null || action.type() == null || action.type().isBlank()) {
             return false;
         }
+        if ("ask_card".equalsIgnoreCase(action.type())) {
+            openAskDialog();
+            return true;
+        }
         if (blockIfBotTurn()) {
-            return false;
+            // Exception : si une demande de carte est en attente pour moi, autoriser la réponse.
+            if ("answer_ask_card_accept".equalsIgnoreCase(action.type()) || "answer_ask_card_refuse".equalsIgnoreCase(action.type())) {
+                if (!isPendingAskForMe()) return false;
+            } else {
+                return false;
+            }
         }
         Map<String, Object> payload = toPayload(action.payload());
         controller.sendActions(List.of(ActionRequest.of(action.type(), payload)));
@@ -1260,21 +1469,302 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         if (submitIfQuizActive()) {
             return;
         }
+        // Si un mini-dialogue est ouvert, Entrée valide la sélection.
+        if (askDialogOpen) {
+            sendAskDialog();
+            return;
+        }
+        if (discardDialogOpen) {
+            sendDiscardSelection();
+            return;
+        }
         if (blockIfBotTurn()) {
             return;
         }
         // Si la partie n'est pas lancee, utiliser le comportement de demarrage (equivalent bouton Start).
         if (!tableState.started()) {
-            triggerPrimaryAction();
+            if (primaryAction != null) {
+                triggerPrimaryAction();
+                return;
+            }
+            // Toujours tenter un démarrage explicite (évite le blocage si le client sous-estime les participants).
+            if (startHandler != null) {
+                controller.markStartPending();
+                startHandler.run();
+                return;
+            }
+            dispatchFirstAvailable();
             return;
         }
-        // Si des actions sont disponibles, Entrée déclenche l'action actuellement sélectionnée.
-        if (!actionsModel.isEmpty()) {
-            dispatchSelectedAction();
+        // En partie : ouvrir la sélection de défausse si disponible, sinon lancer/défausser/actions.
+        if (handleDiscardFlow()) {
             return;
         }
-        // Fallback : si aucune action n'est fournie mais que la partie est en cours, tenter un "roll" explicite.
-        controller.sendActions(List.of(ActionRequest.of("roll", java.util.Map.of())));
+        if (dispatchActionMatching(this::isDiceAction)) {
+            return;
+        }
+        if (dispatchActionMatching(this::isDiscardAction)) {
+            return;
+        }
+        triggerSelectedAction();
+    }
+
+    private void openAskDialog() {
+        GenericGameState state = lastState;
+        if (state == null) return;
+        refreshAskDialogData(state);
+        if (askTargets.isEmpty() || askCards.isEmpty()) {
+            emitter.announceError("Aucune cible ou carte disponible pour demander.");
+            askDialogOpen = false;
+            return;
+        }
+        askDialogOpen = true;
+        askFocusIndex = 0;
+        refreshInfoLabel();
+        pendingLabel.setText(buildAskLabel());
+    }
+
+    private void refreshAskDialogData(GenericGameState state) {
+        this.askTargets = extractAskTargets(state);
+        this.askCards = extractAskCards(state);
+        this.giveCards = extractGiveCards(state);
+        if (askTargetIndex >= askTargets.size()) askTargetIndex = askTargets.isEmpty() ? 0 : askTargets.size() - 1;
+        if (askCardIndex >= askCards.size()) askCardIndex = askCards.isEmpty() ? 0 : askCards.size() - 1;
+        if (askFocusIndex == 2 && giveCards.isEmpty()) askFocusIndex = 0;
+        if (askTargets.isEmpty() || askCards.isEmpty()) {
+            askDialogOpen = false;
+        }
+        refreshInfoLabel();
+    }
+
+    private List<PlayerOption> extractAskTargets(GenericGameState state) {
+        List<PlayerOption> res = new ArrayList<>();
+        Object pvNode = state.extras().get("playerViews");
+        if (pvNode instanceof JsonNode node && node.isArray()) {
+            for (JsonNode v : node) {
+                if (!v.path("id").isInt()) continue;
+                int id = v.get("id").asInt();
+                if (localPlayerId != null && id == localPlayerId) continue;
+                String name = v.path("username").asText("Joueur " + id);
+                res.add(new PlayerOption(id, name));
+            }
+        }
+        return res;
+    }
+
+    private List<AskCardOption> extractAskCards(GenericGameState state) {
+        List<AskCardOption> res = new ArrayList<>();
+        Object handNode = state.extras().get("handCards");
+        if (handNode instanceof JsonNode node && node.isArray()) {
+            for (JsonNode c : node) {
+                String familyId = c.path("familyId").asText("");
+                String memberId = c.path("memberId").asText("");
+                String label = c.path("label").asText(familyId + "-" + memberId);
+                if (!familyId.isBlank() && !memberId.isBlank()) {
+                    res.add(new AskCardOption(familyId, memberId, label));
+                }
+            }
+        }
+        return res;
+    }
+
+    private List<AskCardOption> extractGiveCards(GenericGameState state) {
+        List<AskCardOption> res = new ArrayList<>();
+        Object handNode = state.extras().get("handCards");
+        if (handNode instanceof JsonNode node && node.isArray()) {
+            for (JsonNode c : node) {
+                String familyId = c.path("familyId").asText("");
+                String memberId = c.path("memberId").asText("");
+                String label = c.path("label").asText(familyId + "-" + memberId);
+                if (!familyId.isBlank() && !memberId.isBlank()) {
+                    res.add(new AskCardOption(familyId, memberId, label));
+                }
+            }
+        }
+        return res;
+    }
+
+    private void moveAskFocus(boolean backward) {
+        if (!askDialogOpen) return;
+        int step = backward ? -1 : 1;
+        askFocusIndex = (askFocusIndex + step + 5) % 5;
+        refreshInfoLabel();
+    }
+
+    private void moveAskSelection(int delta) {
+        if (!askDialogOpen) return;
+        if (askFocusIndex == 0 && !askTargets.isEmpty()) {
+            askTargetIndex = (askTargetIndex + delta + askTargets.size()) % askTargets.size();
+        } else if (askFocusIndex == 1 && !askCards.isEmpty()) {
+            askCardIndex = (askCardIndex + delta + askCards.size()) % askCards.size();
+        } else if (askFocusIndex == 2 && !giveCards.isEmpty()) {
+            askGiveIndex = (askGiveIndex + delta + giveCards.size()) % giveCards.size();
+        } else if (askFocusIndex == 3 && delta > 0) {
+            sendAskDialog();
+            return;
+        } else if (askFocusIndex == 4 && delta > 0) {
+            cancelAskDialog();
+            return;
+        }
+        refreshInfoLabel();
+    }
+
+    private void sendAskDialog() {
+        if (!askDialogOpen) return;
+        if (askTargets.isEmpty() || askCards.isEmpty() || localPlayerId == null) {
+            cancelAskDialog();
+            return;
+        }
+        PlayerOption target = askTargets.get(Math.max(0, Math.min(askTargetIndex, askTargets.size() - 1)));
+        AskCardOption card = askCards.get(Math.max(0, Math.min(askCardIndex, askCards.size() - 1)));
+        AskCardOption give = giveCards.isEmpty() ? null : giveCards.get(Math.max(0, Math.min(askGiveIndex, giveCards.size() - 1)));
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("target", target.id());
+        payload.put("familyId", card.familyId());
+        payload.put("memberId", card.memberId());
+        payload.put("playerId", localPlayerId);
+        if (give != null) {
+            payload.put("offerMemberId", give.memberId());
+        }
+        controller.sendActions(List.of(ActionRequest.of("ask_card", payload)));
+        askDialogOpen = false;
+        refreshInfoLabel();
+    }
+
+    private void cancelAskDialog() {
+        askDialogOpen = false;
+        refreshInfoLabel();
+    }
+
+    private List<AskCardOption> extractDiscardOptions(GenericGameState state) {
+        return extractGiveCards(state);
+    }
+
+    private void refreshDiscardOptions(GenericGameState state) {
+        List<AskCardOption> options = state == null ? List.of() : extractDiscardOptions(state);
+        discardOptions = options;
+        if (discardIndex >= discardOptions.size()) {
+            discardIndex = discardOptions.isEmpty() ? 0 : discardOptions.size() - 1;
+        }
+        if (discardOptions.isEmpty() || !hasActionMatching(this::isDiscardAction)) {
+            discardDialogOpen = false;
+        }
+        if (discardDialogOpen) {
+            refreshInfoLabel();
+        }
+    }
+
+    private void openDiscardDialog() {
+        if (discardOptions.isEmpty()) {
+            // Fallback : envoyer la première action si aucune info d'option n'est disponible.
+            dispatchActionMatching(this::isDiscardAction);
+            return;
+        }
+        discardDialogOpen = true;
+        if (discardIndex < 0 || discardIndex >= discardOptions.size()) {
+            discardIndex = 0;
+        }
+        refreshInfoLabel();
+    }
+
+    private void moveDiscardSelection(int delta) {
+        if (!discardDialogOpen || discardOptions.isEmpty()) {
+            return;
+        }
+        int size = discardOptions.size();
+        int next = discardIndex + delta;
+        if (next < 0) {
+            next = size - 1;
+        } else if (next >= size) {
+            next = 0;
+        }
+        discardIndex = next;
+        refreshInfoLabel();
+    }
+
+    private void sendDiscardSelection() {
+        if (!discardDialogOpen) return;
+        discardDialogOpen = false;
+        if (discardOptions.isEmpty()) {
+            dispatchActionMatching(this::isDiscardAction);
+            return;
+        }
+        AskCardOption opt = discardOptions.get(Math.max(0, Math.min(discardIndex, discardOptions.size() - 1)));
+        for (int i = 0; i < actionsModel.size(); i++) {
+            GenericGameState.GenericAction act = actionsModel.get(i);
+            if (act == null || act.type() == null) continue;
+            if (!"discard_card".equalsIgnoreCase(act.type())) continue;
+            Map<String, Object> payload = toPayload(act.payload());
+            String actMember = String.valueOf(payload.getOrDefault("memberId", ""));
+            String actFamily = String.valueOf(payload.getOrDefault("familyId", ""));
+            if (opt.memberId().equals(actMember) || (actMember.isBlank() && opt.familyId().equals(actFamily))) {
+                dispatchAction(act);
+                refreshInfoLabel();
+                return;
+            }
+        }
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("memberId", opt.memberId());
+        if (opt.familyId() != null && !opt.familyId().isBlank()) {
+            payload.put("familyId", opt.familyId());
+        }
+        controller.sendActions(List.of(ActionRequest.of("discard_card", payload)));
+        refreshInfoLabel();
+    }
+
+    private void cancelDiscardDialog() {
+        discardDialogOpen = false;
+        refreshInfoLabel();
+    }
+
+    private boolean handleDiscardFlow() {
+        if (!hasActionMatching(this::isDiscardAction)) {
+            discardDialogOpen = false;
+            return false;
+        }
+        if (discardDialogOpen) {
+            sendDiscardSelection();
+            return true;
+        }
+        openDiscardDialog();
+        return true;
+    }
+
+    private void sendAskAnswer(boolean accept) {
+        if (localPlayerId == null) return;
+        // Ne rien envoyer si aucune demande ne cible le joueur.
+        if (!isPendingAskForMe()) return;
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("playerId", localPlayerId);
+        controller.sendActions(List.of(ActionRequest.of(accept ? "answer_ask_card_accept" : "answer_ask_card_refuse", payload)));
+    }
+
+    private String buildAskLabel() {
+        if (!askDialogOpen || askTargets.isEmpty() || askCards.isEmpty()) {
+            return "";
+        }
+        PlayerOption target = askTargets.get(Math.max(0, Math.min(askTargetIndex, askTargets.size() - 1)));
+        AskCardOption card = askCards.get(Math.max(0, Math.min(askCardIndex, askCards.size() - 1)));
+        AskCardOption give = giveCards.isEmpty() ? null : giveCards.get(Math.max(0, Math.min(askGiveIndex, giveCards.size() - 1)));
+        String focus;
+        switch (askFocusIndex) {
+            case 0 -> focus = "[Cible]";
+            case 1 -> focus = "[Carte demandée]";
+            case 2 -> focus = "[Carte offerte]";
+            case 3 -> focus = "[Demander]";
+            case 4 -> focus = "[Annuler]";
+            default -> focus = "";
+        }
+        return String.format("%s Demander : cible=%s | carte=%s | offre=%s | Tab/Shift+Tab pour naviguer, ←/→ pour changer, Entrée pour valider, Échap pour annuler.",
+                focus, target.name(), card.label(), give != null ? give.label() : "(aucune)");
+    }
+
+    private String buildDiscardLabel() {
+        if (discardOptions.isEmpty()) {
+            return "Choisissez une carte à défausser (aucune carte disponible).";
+        }
+        AskCardOption opt = discardOptions.get(Math.max(0, Math.min(discardIndex, discardOptions.size() - 1)));
+        return "Défausser : " + opt.label() + " (" + (discardIndex + 1) + "/" + discardOptions.size() + ") - flèches pour naviguer, Entrée pour valider.";
     }
 
     private boolean dispatchActionMatching(java.util.function.Predicate<GenericGameState.GenericAction> matcher) {
@@ -1309,6 +1799,11 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
     private boolean isDrawAction(GenericGameState.GenericAction action) {
         String text = normalize(action);
         return containsAny(text, "pioch", "draw", "pick", "take_card", "takecard", "take card");
+    }
+
+    private boolean isDiscardAction(GenericGameState.GenericAction action) {
+        String text = normalize(action);
+        return containsAny(text, "discard", "defausse", "défausse", "jette", "trash");
     }
 
     private boolean isDiceAction(GenericGameState.GenericAction action) {

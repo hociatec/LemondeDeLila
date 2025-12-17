@@ -7,8 +7,8 @@ import { PayloadValidationService } from '../../common/validation/payload-valida
 import { NotificationService } from '../../notification/services/notification.service';
 import { Room } from '../entities/room.entity';
 import { RoomParticipant } from '../entities/room-participant.entity';
-import { RoomsPublicJoinDto, RoomsPublicListDto } from './dto/rooms-public.dto';
-import { RoomInviteRespondDto, RoomInviteSendDto } from './dto/room-invite.dto';
+import { RoomsPublicJoinDto, RoomsPublicListDto } from '../dto/rooms-public.dto';
+import { RoomInviteRespondDto, RoomInviteSendDto } from '../dto/room-invite.dto';
 import { RoomService } from '../services/room.service';
 import { RoomInviteService } from '../services/room-invite.service';
 import { OPEN_ROOM_STATUSES } from '../constants/room-status.constants';

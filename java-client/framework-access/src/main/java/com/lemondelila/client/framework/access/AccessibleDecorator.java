@@ -18,7 +18,7 @@ public final class AccessibleDecorator {
             return;
         }
         spec.name().ifPresent(context::setAccessibleName);
-        spec.description().ifPresent(context::setAccessibleDescription);
+        spec.description().ifPresent(desc -> AccessibilityPreferences.applyDescription(context, desc));
         spec.shortcut().ifPresent(shortcut -> context.firePropertyChange(
                 AccessibleContext.ACCESSIBLE_ACTION_PROPERTY,
                 null,
@@ -35,6 +35,6 @@ public final class AccessibleDecorator {
             return;
         }
         target.setAccessibleName(source.getAccessibleName());
-        target.setAccessibleDescription(source.getAccessibleDescription());
+        AccessibilityPreferences.applyDescription(target, source.getAccessibleDescription());
     }
 }

@@ -5,6 +5,7 @@ import com.lemondelila.client.framework.ui.dialog.DialogService;
 import com.lemondelila.client.messaging.controller.MessagingController;
 import com.lemondelila.client.messaging.model.PrivateMessage;
 import com.lemondelila.client.messaging.service.MessagingService;
+import com.lemondelila.client.framework.access.AccessibilityPreferences;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
@@ -118,7 +119,7 @@ public final class SocialMessagingDialog extends JDialog {
         menuList.setCellRenderer(new MenuRenderer());
         suppressTab(menuList);
         menuList.getAccessibleContext().setAccessibleName(Internationalization.text("social.messaging.menu.accessible"));
-        menuList.getAccessibleContext().setAccessibleDescription(Internationalization.text("social.messaging.menu.hint"));
+        AccessibilityPreferences.applyDescription(menuList.getAccessibleContext(), Internationalization.text("social.messaging.menu.hint"));
         menuList.getInputMap().put(KeyStroke.getKeyStroke("ENTER"), "messaging.menu.activate");
         menuList.getActionMap().put("messaging.menu.activate", new AbstractAction() {
             @Override
@@ -483,9 +484,9 @@ public final class SocialMessagingDialog extends JDialog {
             }
             String accessible = label.getText();
             getAccessibleContext().setAccessibleName(accessible);
-            getAccessibleContext().setAccessibleDescription(accessible);
+            AccessibilityPreferences.applyDescription(getAccessibleContext(), accessible);
             label.getAccessibleContext().setAccessibleName(accessible);
-            label.getAccessibleContext().setAccessibleDescription(accessible);
+            AccessibilityPreferences.applyDescription(label.getAccessibleContext(), accessible);
             return this;
         }
     }

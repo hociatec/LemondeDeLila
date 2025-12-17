@@ -6,6 +6,7 @@ import com.lemondelila.client.framework.core.event.DomainEventBus;
 import com.lemondelila.client.framework.core.event.EventSubscriptions;
 import com.lemondelila.client.game.room.event.RoomInviteReceived;
 import com.lemondelila.client.game.room.model.RoomInvite;
+import com.lemondelila.client.game.room.model.PendingRoomInvites;
 import com.lemondelila.client.notification.service.NotificationConnectionFactory;
 import com.lemondelila.client.notification.transport.NotificationConnection;
 import com.lemondelila.client.user.events.LoginSucceeded;
@@ -21,16 +22,22 @@ public final class RoomInviteNotificationService implements AutoCloseable {
 
     private final DomainEventBus eventBus;
     private final NotificationConnectionFactory factory;
+    private final PendingRoomInvites inviteStore;
     private final EventSubscriptions subscriptions = new EventSubscriptions();
     private NotificationConnection current;
 
     @Inject
     public RoomInviteNotificationService(DomainEventBus eventBus,
-                                         NotificationConnectionFactory factory) {
+                                         NotificationConnectionFactory factory,
+                                         PendingRoomInvites inviteStore) {
         this.eventBus = Objects.requireNonNull(eventBus, "eventBus");
         this.factory = Objects.requireNonNull(factory, "factory");
+        this.inviteStore = Objects.requireNonNull(inviteStore, "inviteStore");
         subscriptions.subscribe(eventBus, LoginSucceeded.class, ev -> connect());
-        subscriptions.subscribe(eventBus, UserLoggedOut.class, ev -> disconnect());
+        subscriptions.subscribe(eventBus, UserLoggedOut.class, ev -> {
+            inviteStore.clear();
+            disconnect();
+        });
     }
 
     public void connect() {
@@ -52,6 +59,7 @@ public final class RoomInviteNotificationService implements AutoCloseable {
         }
         RoomInvite invite = parseInvite(envelope.payload());
         if (invite != null) {
+            inviteStore.put(invite);
             eventBus.publish(new RoomInviteReceived(invite));
         }
     }

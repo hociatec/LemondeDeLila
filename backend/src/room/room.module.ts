@@ -11,8 +11,8 @@ import { BotModule } from '../bot/bot.module';
 import { PresenceModule } from '../presence/presence.module';
 import { NotificationModule } from '../notification/notification.module';
 import { RoomInviteService } from './services/room-invite.service';
-import { RoomDirectoryWsHandler } from './ws/room-directory-ws.handler';
-import { RoomWsRegistrar } from './ws/room-ws.registrar';
+import { RoomDirectoryWsHandler } from './gateways/room-directory-ws.handler';
+import { RoomWsRegistrar } from './gateways/room-ws.registrar';
 
 @Module({
   imports: [

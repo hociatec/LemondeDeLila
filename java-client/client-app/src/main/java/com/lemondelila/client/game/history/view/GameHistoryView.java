@@ -2,6 +2,7 @@ package com.lemondelila.client.game.history.view;
 
 import com.lemondelila.client.framework.access.AccessibleDecorator;
 import com.lemondelila.client.framework.access.AccessibleSpec;
+import com.lemondelila.client.framework.access.AccessibilityPreferences;
 import com.lemondelila.client.game.history.model.GameHistoryTracker;
 
 import javax.swing.BorderFactory;
@@ -70,6 +71,6 @@ public final class GameHistoryView extends JPanel {
         // Force la mise � jour c�t� lecteur d'�cran m�me si le contenu est identique.
         String payload = accessibilityToggle ? value + '\u200B' : value + '\u200C';
         accessibilityToggle = !accessibilityToggle;
-        historyArea.getAccessibleContext().setAccessibleDescription(payload);
+        AccessibilityPreferences.applyDescription(historyArea.getAccessibleContext(), payload);
     }
 }

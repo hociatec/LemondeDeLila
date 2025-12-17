@@ -2,6 +2,7 @@ package com.lemondelila.client.presence.view;
 
 import com.lemondelila.client.application.Internationalization;
 import com.lemondelila.client.presence.model.PresencePlayer;
+import com.lemondelila.client.framework.access.AccessibilityPreferences;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JLabel;
@@ -55,7 +56,7 @@ public final class PresenceListView {
         String safe = (message == null || message.isBlank()) ? " " : message;
         statusLabel.setText(safe);
         if (statusLabel.getAccessibleContext() != null) {
-            statusLabel.getAccessibleContext().setAccessibleDescription(safe);
+            AccessibilityPreferences.applyDescription(statusLabel.getAccessibleContext(), safe);
         }
     }
 

@@ -2,6 +2,7 @@ package com.lemondelila.client.framework.ui.component;
 
 import com.lemondelila.client.framework.access.AccessibleDecorator;
 import com.lemondelila.client.framework.access.AccessibleSpec;
+import com.lemondelila.client.framework.access.AccessibilityPreferences;
 
 import javax.swing.JLabel;
 import java.util.Objects;
@@ -34,7 +35,7 @@ public final class AccessibleStatusPanel {
             description = safeText;
         }
         var context = label.getAccessibleContext();
-        context.setAccessibleDescription(description);
+        AccessibilityPreferences.applyDescription(context, description);
         context.setAccessibleName(description);
         context.firePropertyChange(
                 javax.accessibility.AccessibleContext.ACCESSIBLE_DESCRIPTION_PROPERTY,

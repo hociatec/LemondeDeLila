@@ -5,6 +5,7 @@ import com.lemondelila.client.game.exchange.model.ExchangeCollection;
 import com.lemondelila.client.game.exchange.model.ExchangeOption;
 import com.lemondelila.client.game.exchange.model.ExchangePrompt;
 import com.lemondelila.client.game.exchange.model.ExchangeTarget;
+import com.lemondelila.client.framework.access.AccessibilityPreferences;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
@@ -59,14 +60,14 @@ public final class ExchangeView extends JPanel implements ExchangeCollection.Lis
         instructionArea.setOpaque(false);
         instructionArea.setFocusable(false);
         instructionArea.getAccessibleContext().setAccessibleName("Instructions d'échange");
-        instructionArea.getAccessibleContext().setAccessibleDescription("Détails de l'échange en cours");
+        AccessibilityPreferences.applyDescription(instructionArea.getAccessibleContext(), "Détails de l'échange en cours");
         add(instructionArea, BorderLayout.SOUTH);
 
-        getAccessibleContext().setAccessibleDescription("Zone d'échange");
+        AccessibilityPreferences.applyDescription(getAccessibleContext(), "Zone d'échange");
         cardsPanel.getAccessibleContext().setAccessibleName("Cartes échangeables");
-        cardsPanel.getAccessibleContext().setAccessibleDescription("Liste des cartes que vous pouvez offrir");
+        AccessibilityPreferences.applyDescription(cardsPanel.getAccessibleContext(), "Liste des cartes que vous pouvez offrir");
         targetsPanel.getAccessibleContext().setAccessibleName("Cibles disponibles");
-        targetsPanel.getAccessibleContext().setAccessibleDescription("Liste des joueurs disponibles pour l'échange");
+        AccessibilityPreferences.applyDescription(targetsPanel.getAccessibleContext(), "Liste des joueurs disponibles pour l'échange");
 
         setupLists();
         controller.collection().addListener(this);
@@ -109,9 +110,9 @@ public final class ExchangeView extends JPanel implements ExchangeCollection.Lis
         });
 
         cardList.getAccessibleContext().setAccessibleName("Cartes échangeables");
-        cardList.getAccessibleContext().setAccessibleDescription("Choisissez la carte à proposer");
+        AccessibilityPreferences.applyDescription(cardList.getAccessibleContext(), "Choisissez la carte à proposer");
         targetList.getAccessibleContext().setAccessibleName("Cibles échangeables");
-        targetList.getAccessibleContext().setAccessibleDescription("Choisissez le destinataire du cadeau");
+        AccessibilityPreferences.applyDescription(targetList.getAccessibleContext(), "Choisissez le destinataire du cadeau");
 
         bindListAction(cardList, () -> {
             ExchangeOption option = cardList.getSelectedValue();

@@ -7,6 +7,7 @@ import com.lemondelila.client.admin.dto.AdminUserPage;
 import com.lemondelila.client.admin.dto.AdminBanRequest;
 import com.lemondelila.client.admin.service.AdminUserService;
 import com.lemondelila.client.framework.ui.dialog.DialogService;
+import com.lemondelila.client.framework.access.AccessibilityPreferences;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
@@ -813,7 +814,7 @@ public final class AdminUserDialog extends JDialog {
     private void setAccessible(JComponent component, String name, String description) {
         if (component.getAccessibleContext() != null) {
             component.getAccessibleContext().setAccessibleName(name);
-            component.getAccessibleContext().setAccessibleDescription(description);
+            AccessibilityPreferences.applyDescription(component.getAccessibleContext(), description);
         }
     }
 

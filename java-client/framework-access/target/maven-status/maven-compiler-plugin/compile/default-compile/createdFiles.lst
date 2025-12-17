@@ -22,4 +22,5 @@ com\lemondelila\client\framework\access\shortcut\AccessibleShortcutRegistry.clas
 com\lemondelila\client\framework\access\shortcut\AccessibleShortcutRegistry$ShortcutScope.class
 com\lemondelila\client\framework\access\shortcut\AccessibleShortcutRegistry$Record.class
 com\lemondelila\client\framework\access\AccessibleDecorator.class
+com\lemondelila\client\framework\access\AccessibilityPreferences.class
 com\lemondelila\client\framework\access\FocusHighlighter.class

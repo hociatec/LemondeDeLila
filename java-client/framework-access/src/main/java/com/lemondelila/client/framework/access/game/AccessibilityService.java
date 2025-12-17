@@ -2,6 +2,7 @@ package com.lemondelila.client.framework.access.game;
 
 import com.lemondelila.client.framework.access.ScreenReaderAnnouncer;
 import com.lemondelila.client.framework.access.NarrationQueue;
+import com.lemondelila.client.framework.access.AccessibilityPreferences;
 
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -129,7 +130,7 @@ public final class AccessibilityService {
 
     private static JLabel buildFallbackComponent() {
         JLabel label = new JLabel("Narration");
-        label.getAccessibleContext().setAccessibleDescription("Canal de narration général");
+        AccessibilityPreferences.applyDescription(label.getAccessibleContext(), "Canal de narration général");
         label.setFocusable(false);
         label.setOpaque(false);
         return label;

@@ -10,6 +10,7 @@ import com.lemondelila.client.messaging.service.UserRelationshipService;
 import com.lemondelila.client.presence.controller.PresenceListController;
 import com.lemondelila.client.presence.service.PresenceRealtimeService;
 import com.lemondelila.client.user.model.ClientSession;
+import com.lemondelila.client.game.room.model.PendingRoomInvites;
 
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -37,6 +38,7 @@ public final class PresenceListDialog extends JDialog {
                               RoomDetailsState roomDetailsState,
                               TableState tableState,
                               ClientSession session,
+                              PendingRoomInvites inviteStore,
                               ObjectMapper mapper) {
         super(owner, "Joueurs connectés", ModalityType.MODELESS);
 
@@ -48,6 +50,7 @@ public final class PresenceListDialog extends JDialog {
         Objects.requireNonNull(roomDetailsState, "roomDetailsState");
         Objects.requireNonNull(tableState, "tableState");
         Objects.requireNonNull(session, "session");
+        Objects.requireNonNull(inviteStore, "inviteStore");
         Objects.requireNonNull(mapper, "mapper");
 
         this.view = new PresenceListView();
@@ -62,6 +65,7 @@ public final class PresenceListDialog extends JDialog {
                 roomDetailsState,
                 tableState,
                 session,
+                inviteStore,
                 mapper,
                 this::dispose
         );

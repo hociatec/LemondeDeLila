@@ -4,6 +4,7 @@ import com.lemondelila.client.settings.service.AppSettingsService;
 import com.lemondelila.client.application.AppBranding;
 import com.lemondelila.client.application.view.dialog.ConfirmExitDialog;
 import com.lemondelila.client.home.view.HomeScreen;
+import com.lemondelila.client.framework.access.AccessibilityPreferences;
 import com.lemondelila.client.framework.core.context.ApplicationContext;
 import com.lemondelila.client.framework.core.module.FrameworkBootstrap;
 import com.lemondelila.client.framework.ui.LilaFrame;
@@ -36,6 +37,8 @@ public final class AppLauncher {
         AppSettingsService settingsService = context.get(AppSettingsService.class);
         AppBranding branding = context.get(AppBranding.class);
         ShutdownManager shutdownManager = context.get(ShutdownManager.class);
+        AccessibilityPreferences.setExtraDescriptionsEnabled(settingsService.current().extraDescriptionsEnabled());
+        settingsService.listen(settings -> AccessibilityPreferences.setExtraDescriptionsEnabled(settings.extraDescriptionsEnabled()));
 
         SwingUtilities.invokeLater(() -> {
             LilaFrame frame = context.get(LilaFrame.class);

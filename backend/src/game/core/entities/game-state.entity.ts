@@ -18,6 +18,7 @@ export type PlayerStateEntity = {
 export type PendingState = {
   type: string;
   playerId?: number | null;
+  targetPlayerId?: number | null;
   blocking?: boolean;
   question?: string | null;
   choices?: string[];

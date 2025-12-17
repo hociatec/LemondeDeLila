@@ -4,26 +4,20 @@ import { GameStateEntity, PlayerStateEntity } from '../../../../../core/entities
 import { GameSingleActionDto, GameStateWithActions } from '../../../../../engine/dto/game-action.dto';
 import { GameRulesAdapter } from '../../../../../engine/interfaces/game-rules-adapter.interface';
 import { GameRegistryService } from '../../../../../engine/services/game-registry.service';
-import { DeckManagerService } from '../../../../../modules/cards/services/deck-manager.service';
-import { DeckPoolService, DeckPoolState } from '../../../../../modules/cards/services/deck-pool.service';
+import { DeckPoolState } from '../../../../../modules/cards/services/deck-pool.service';
 import { TurnService } from '../../../../../modules/turn/services/turn.service';
 import { ActionResolverService } from '../../../../../modules/action-resolver/services/action-resolver.service';
 import { ActionLogService, ActionLogEntry } from '../../../../../modules/actionlog/services/action-log.service';
 import { PhaseEngineService, PhaseDefinition } from '../../../../../modules/state/services/phase-engine.service';
-import { BotRunnerService } from '../../../../../modules/bot/services/bot-runner.service';
 import { VictoryService } from '../../../../../modules/victory/services/victory.service';
 import { dameNatureLog } from '../../../../../../common/utils/damenature-logger';
 import { DAME_NATURE_PHASES } from '../definitions/rules.definition';
 import { DAME_NATURE_VICTORY } from '../definitions/victory.definition';
 import { playingLog } from '../../../../../../common/utils/playing-logger';
-
-type FamilyCard = {
-  familyId: string;
-  familyName: string;
-  memberId: string;
-  memberName: string;
-  role: string;
-};
+import { DameNatureSetupService, FamilyCard } from './dame-nature-setup.service';
+import { DameNatureActionService } from './dame-nature-action.service';
+import { DameNatureBotService } from './dame-nature-bot.service';
+import { DameNatureBooksService } from './dame-nature-books.service';
 
 export type DameNatureMetadata = {
   decks: DeckPoolState<FamilyCard>;
@@ -36,6 +30,17 @@ export type DameNatureMetadata = {
   botProfile?: import('../../../../../modules/bot/services/bot-strategy.service').BotProfile;
   victoryId?: string | null;
   winnerId?: string | number | null;
+  pendingAsk?: {
+    fromId: number;
+    targetId: number;
+    familyId: string;
+    memberId?: string | null;
+    offerMemberId?: string | null;
+  } | null;
+  pendingQuiz?: {
+    playerId: number;
+    card: FamilyCard;
+  } | null;
 };
 
 type PlayerExt = PlayerStateEntity & {
@@ -57,15 +62,16 @@ export class DameNatureService implements GameRulesAdapter, OnModuleInit {
 
   constructor(
     private readonly core: GameCoreService,
-    private readonly decks: DeckManagerService,
-    private readonly deckPool: DeckPoolService,
     private readonly turns: TurnService,
     private readonly resolver: ActionResolverService,
     private readonly actionLog: ActionLogService,
     private readonly phases: PhaseEngineService<DameNatureMetadata>,
-    private readonly botRunner: BotRunnerService,
     private readonly victory: VictoryService,
     private readonly registry: GameRegistryService,
+    private readonly setup: DameNatureSetupService,
+    private readonly actions: DameNatureActionService,
+    private readonly bots: DameNatureBotService,
+    private readonly books: DameNatureBooksService,
   ) {}
 
   onModuleInit(): void {
@@ -73,8 +79,8 @@ export class DameNatureService implements GameRulesAdapter, OnModuleInit {
   }
 
   hydrateInitialState(baseState: GameStateEntity): GameStateEntity {
-    const metadata = this.buildMetadata();
-    const players = this.initializePlayers(baseState, metadata);
+    const metadata = this.setup.buildMetadata();
+    const players = this.setup.initializePlayers(baseState, metadata) as PlayerExt[];
     const initial: GameStateEntity = {
       ...baseState,
       players,
@@ -91,6 +97,10 @@ export class DameNatureService implements GameRulesAdapter, OnModuleInit {
       turnIndex: initial.turnIndex,
       players: players.map((p) => ({ id: p.id, bot: p.isBot })),
     });
+    if (initial.turn?.currentPlayerId != null) {
+      const current = players.find((p) => p.id === initial.turn?.currentPlayerId);
+      dameNatureLog('turn.start', { turnIndex: initial.turnIndex, playerId: current?.id ?? null, username: current?.username ?? null });
+    }
     return initial;
   }
 
@@ -114,28 +124,77 @@ export class DameNatureService implements GameRulesAdapter, OnModuleInit {
     if (!action?.type) return state;
 
     let next = this.ensureStarted(state);
-    // Verrou : seule l'action du joueur courant est acceptée.
-    const actorId = this.extractActorId(action);
+    // Verrou : seule l'action du joueur courant est acceptée, sauf réponse à une demande en attente.
+    const pendingAsk = (next.metadata as DameNatureMetadata)?.pendingAsk;
+    let actorId = this.extractActorId(action);
+    // Sécurité : si une réponse de demande arrive sans actorId, on l'assigne à la cible attendue.
+    if (actorId == null && action.type.toLowerCase().startsWith('answer_ask_card') && pendingAsk?.targetId != null) {
+      actorId = pendingAsk.targetId;
+    }
     if (next.turn?.currentPlayerId != null) {
       const currentId = next.turn.currentPlayerId;
-      if (actorId != null && actorId !== currentId) {
+      const pending = pendingAsk;
+      const pendingQuiz = (next.metadata as DameNatureMetadata)?.pendingQuiz;
+      const typeLower = action.type.toLowerCase();
+      const isAnswer =
+        typeLower === 'answer_ask_card' ||
+        typeLower === 'answer_ask_card_accept' ||
+        typeLower === 'answer_ask_card_refuse';
+      const isPendingTarget = pending && actorId != null && actorId === pending.targetId;
+      const isQuizAnswer = action.type.toLowerCase().startsWith('answer_quiz');
+      const isQuizTarget = pendingQuiz && actorId != null && actorId === pendingQuiz.playerId;
+      if (pending && !(isAnswer && isPendingTarget)) {
+        dameNatureLog('block.pending_ask', { actorId, currentId, pending });
+        return next; // rien d'autre tant que la demande n'est pas résolue
+      }
+      if (pendingQuiz && (!isQuizAnswer || !isQuizTarget)) {
+        dameNatureLog('block.pending_quiz', { actorId, currentId, pendingQuiz });
+        return next; // bloqué tant que le joueur concerné n'a pas répondu
+      }
+      if (actorId != null && actorId !== currentId && !(isAnswer && isPendingTarget)) {
+        dameNatureLog('block.not_current_player', { actorId, currentId, action: action.type });
         return next;
       }
       const currentIsBot = this.isBotId(currentId, next);
       if (currentIsBot && actorId == null) {
         // On ignore toute action humaine quand c'est le tour du bot.
+        dameNatureLog('block.bot_turn', { currentId, action: action.type });
         return next;
       }
     }
 
     switch (action.type.toLowerCase()) {
       case 'draw':
-        next = this.handleDraw(next);
-        next = this.appendAction(next, { actorId, type: 'draw' });
+        dameNatureLog('action.draw', { actorId, current: next.turn?.currentPlayerId ?? null });
+        next = this.handleDraw(next, actorId);
+        break;
+      case 'discard_card':
+        next = this.handleDiscard(next, action, actorId);
         break;
       case 'ask_card':
-        next = this.handleAskCard(next, action);
-        next = this.appendAction(next, { actorId, type: 'ask_card', payload: action.payload });
+        dameNatureLog('action.ask_card', { actorId, current: next.turn?.currentPlayerId ?? null });
+        next = this.handleAskCard(next, action, actorId);
+        break;
+      case 'answer_ask_card':
+        dameNatureLog('action.answer_ask', { actorId, pending: (next.metadata as DameNatureMetadata)?.pendingAsk ?? null });
+        next = this.handleAnswerAskCard(next, action, actorId);
+        break;
+      case 'answer_ask_card_accept': {
+        const payload = { ...(action.payload ?? {}), accept: true };
+        next = this.handleAnswerAskCard(next, { ...action, type: 'answer_ask_card', payload }, actorId);
+        break;
+      }
+      case 'answer_ask_card_refuse': {
+        const payload = { ...(action.payload ?? {}), accept: false };
+        dameNatureLog('action.answer_ask', { actorId, pending: (next.metadata as DameNatureMetadata)?.pendingAsk ?? null });
+        next = this.handleAnswerAskCard(next, { ...action, type: 'answer_ask_card', payload }, actorId);
+        break;
+      }
+      case 'answer_quiz':
+      case 'answer_quiz_correct':
+      case 'answer_quiz_wrong':
+        dameNatureLog('action.answer_quiz', { actorId, pending: (next.metadata as DameNatureMetadata)?.pendingQuiz ?? null });
+        next = this.handleQuizAnswer(next, action, actorId);
         break;
       default:
         next = this.core.appendLog(next, `Action non gérée: ${action.type}`);
@@ -144,96 +203,55 @@ export class DameNatureService implements GameRulesAdapter, OnModuleInit {
   }
 
   getBotActions(state: GameStateEntity, botPlayerId: number): GameSingleActionDto[] {
-    const current = state.turn?.currentPlayerId ?? null;
-    if (current !== botPlayerId) return [];
-    const profile = (state.metadata as DameNatureMetadata)?.botProfile ?? 'greedy';
-    const players = this.ensurePlayers(state);
-    const me = players.find((p) => p.id === botPlayerId);
-    const others = players.filter((p) => p.id !== botPlayerId);
-    const families = this.families();
-    const meta = state.metadata as DameNatureMetadata;
-    const recentRequests = new Set<string>(
-      (meta.actionLog ?? [])
-        .filter((e) => e.actorId === botPlayerId && e.type === 'ask_card')
-        .slice(-5)
-        .map((e) => {
-          const fam = e.payload?.familyId ?? '';
-          const member = e.payload?.memberId ?? '';
-          const target = e.payload?.target ?? e.payload?.targetId ?? '';
-          return `${fam}:${member}:${target}`;
-        }),
-    );
-
-    // Si main vide ou personne en face : pioche
-    if (!me || !me.hand.length || !others.length) {
-      return this.botRunner.choose([{ type: 'draw' }], { state, playerId: botPlayerId }, profile, {
-        preferTypes: ['draw'],
-      });
-    }
-
-    // Choix de famille où le bot a le plus de cartes non bookées
-    const familyCounts: Record<string, { count: number; cards: FamilyCard[] }> = {};
-    me.hand.forEach((c) => {
-      if (!familyCounts[c.familyId]) familyCounts[c.familyId] = { count: 0, cards: [] };
-      familyCounts[c.familyId].count += 1;
-      familyCounts[c.familyId].cards.push(c);
-    });
-    const candidateFamilies = Object.entries(familyCounts)
-      .filter(([fid]) => !(me.books ?? []).includes(fid))
-      .sort((a, b) => b[1].count - a[1].count);
-    const picked = candidateFamilies[0];
-
-    const familyCatalog = picked ? families.find((f) => f.id === picked[0]) : null;
-    const owned = new Set(picked?.[1].cards.map((c) => c.memberId) ?? []);
-    const missing = familyCatalog ? familyCatalog.members.filter((m) => !owned.has(m.id)) : [];
-    const memberId = missing.length
-      ? missing[Math.floor(Math.random() * missing.length)].id
-      : picked?.[1].cards[0]?.memberId;
-    // Choix du joueur avec le plus de cartes pour maximiser les chances
-    const sortedOthers = [...others].sort((a, b) => (b.handCount ?? 0) - (a.handCount ?? 0));
-    const target = sortedOthers[0] ?? null;
-
-    const actions: GameSingleActionDto[] = [];
-    if (memberId != null && target != null) {
-      const key = `${picked?.[0] ?? ''}:${memberId}:${target.id}`;
-      if (!recentRequests.has(key)) {
-        actions.push({
-          type: 'ask_card',
-          payload: { familyId: picked?.[0] ?? families[0].id, memberId, target: target.id, playerId: botPlayerId },
-        });
-      }
-    }
-    actions.push({ type: 'draw', payload: { playerId: botPlayerId } });
-
-    return this.botRunner.choose(actions, { state, playerId: botPlayerId }, profile, {
-      preferTypes: ['ask_card', 'draw'],
-      fallbackTypes: ['draw'],
-      score: (action) => {
-        if (action.type === 'ask_card') return 5;
-        // Piocher devient prioritaire si peu de cartes ou aucune famille majoritaire
-        if (action.type === 'draw') {
-          const maxFamilyCount = picked != null ? picked[1].count : 0;
-          return maxFamilyCount < 2 ? 6 : 3;
-        }
-        return 0;
-      },
-    });
+    return this.bots.getBotActions(state, botPlayerId);
   }
 
   getAvailableActions(state: GameStateEntity, playerId: number): GameSingleActionDto[] {
     const meta = state.metadata as DameNatureMetadata;
     const familyDeck = meta.decks?.family ?? { deck: [], discards: [] };
     const deckAvailable = (familyDeck.deck?.length ?? 0) + (familyDeck.discards?.length ?? 0) > 0;
+    const players = this.ensurePlayers(state);
+    const others = players.filter((p) => p.id !== playerId);
+    const families = this.setup.families();
+    if (meta.pendingAsk) {
+      if (meta.pendingAsk.targetId === playerId) {
+        return [
+          { type: 'answer_ask_card_accept', payload: { accept: true, playerId } },
+          { type: 'answer_ask_card_refuse', payload: { accept: false, playerId } },
+        ];
+      }
+      return [];
+    }
+    if (meta.pendingQuiz) {
+      if (meta.pendingQuiz.playerId === playerId) {
+        const choices = meta.pendingQuiz.card?.choices ?? ['Bonne réponse', 'Mauvaise réponse'];
+        return choices.map((choice) => ({
+          type: 'answer_quiz',
+          payload: { playerId, answer: choice },
+        }));
+      }
+      return [];
+    }
+
     const actions: GameSingleActionDto[] = [];
-    if (deckAvailable) {
+    const me = players.find((p) => p.id === playerId);
+    const canDraw = deckAvailable && (me?.hand?.length ?? 0) < 4;
+    if (canDraw) {
       actions.push({ type: 'draw' });
     }
-    actions.push({ type: 'ask_card' }); // le client enverra le payload exact
+    // Discard actions (obligatoire si main > 4 ou pour gérer l'espace pioche)
+    if ((me?.hand?.length ?? 0) > 0) {
+      (me?.hand ?? []).forEach((card) => {
+        actions.push({ type: 'discard_card', payload: { memberId: card.memberId, familyId: card.familyId } });
+      });
+    }
+    // Pas de payload par défaut : le client sélectionne la cible/la carte avant d'envoyer.
+    actions.push({ type: 'ask_card', payload: { playerId } });
     return actions;
   }
 
-  private handleDraw(state: GameStateEntity): GameStateEntity {
-    const meta = state.metadata as DameNatureMetadata;
+  private handleDraw(state: GameStateEntity, actorId: number | null): GameStateEntity {
+    const meta = (state.metadata as DameNatureMetadata) ?? this.setup.buildMetadata();
     const players = this.ensurePlayers(state);
     const currentId = state.turn?.currentPlayerId ?? null;
     const current = currentId != null ? players.find((p) => p.id === currentId) : null;
@@ -242,92 +260,142 @@ export class DameNatureService implements GameRulesAdapter, OnModuleInit {
       const fixed = this.advanceTurn(state);
       return fixed;
     }
-    const { card, metadata } = this.drawCard(meta);
-    if (!card) {
-      const logged = this.core.appendLog(state, `Pioche vide : ${current.username} passe son tour.`);
-      return this.advanceTurn({ ...logged, metadata });
+    const normalizedState: GameStateEntity = { ...state, players };
+    const result = this.actions.handleDraw(normalizedState, current, meta);
+    let next = result.state;
+    if (!result.skipAdvance) {
+      next = this.advanceTurn(next);
     }
-    current.hand.push(card);
-    current.handCount = current.hand.length;
-    dameNatureLog('draw', { player: current.id, card: `${card.familyId}:${card.memberId}` });
-    const nextState: GameStateEntity = {
-      ...state,
-      players: players,
-      metadata,
-    };
-    let next = this.core.appendLog(
-      nextState,
-      `${current.username} pioche ${card.familyName} - ${card.memberName}.`,
-    );
-    next = this.checkBooks(next, current);
-    next = this.advanceTurn(next);
-    return this.appendAction(next, { actorId: current.id, type: 'draw', payload: { cardId: card.memberId } });
+    return this.appendAction(next, { actorId: actorId ?? current.id, type: 'draw', payload: { cardId: result.card?.memberId ?? null } });
   }
 
-  private handleAskCard(state: GameStateEntity, action: GameSingleActionDto): GameStateEntity {
+  private handleDiscard(state: GameStateEntity, action: GameSingleActionDto, actorId: number | null): GameStateEntity {
+    const players = this.ensurePlayers(state);
+    const currentId = state.turn?.currentPlayerId ?? null;
+    const current = currentId != null ? players.find((p) => p.id === currentId) : null;
+    const memberId = action.payload?.memberId;
+    if (!current || !memberId) return state;
+    const card = current.hand.find((c) => c.memberId === String(memberId));
+    if (!card) return state;
+    current.hand = current.hand.filter((c) => c !== card);
+    current.handCount = current.hand.length;
+    const meta = (state.metadata as DameNatureMetadata) ?? this.setup.buildMetadata();
+    const metadata = this.setup.discardCard(meta, card);
+    let next: GameStateEntity = { ...state, players, metadata };
+    next = this.core.appendLog(next, `${current.username} défausse ${card.memberName} (${card.familyName}).`);
+    return this.advanceTurn(next);
+  }
+
+  private handleAskCard(state: GameStateEntity, action: GameSingleActionDto, actorId: number | null): GameStateEntity {
     const familyId = action.payload?.familyId;
     const memberId = action.payload?.memberId;
     const targetId = action.payload?.target;
+    const offerMemberId = action.payload?.offerMemberId ?? action.payload?.give ?? null;
     const players = this.ensurePlayers(state);
     const currentId = state.turn?.currentPlayerId ?? null;
     const current = currentId != null ? players.find((p) => p.id === currentId) : null;
     const target = typeof targetId === 'number' ? players.find((p) => p.id === targetId) : null;
     if (!current || !target || !familyId) {
+      // Demande invalide : log mais ne pas avancer le tour.
       return this.appendAction(
         this.core.appendLog(state, `Demande invalide (adversaire ou famille manquants).`),
-        { actorId: currentId ?? null, type: 'ask_card_invalid', payload: action.payload },
+        { actorId: actorId ?? currentId ?? null, type: 'ask_card_invalid', payload: action.payload },
       );
     }
-    const match = target.hand.find((c) => (memberId ? c.memberId === memberId : c.familyId === familyId));
-    if (match) {
-      target.hand = target.hand.filter((c) => c !== match);
-      target.handCount = target.hand.length;
-      current.hand.push(match);
-      current.handCount = current.hand.length;
-      dameNatureLog('ask.success', { from: current.id, target: target.id, familyId, memberId: match.memberId });
-      let next: GameStateEntity = { ...state, players };
-      next = this.core.appendLog(
-        next,
-        `${current.username} obtient ${match.memberName} (${match.familyName}) de ${target.username}.`,
-      );
-      next = this.checkBooks(next, current);
-      next = this.advanceTurn(next);
-      return next;
+    const meta = (state.metadata as DameNatureMetadata) ?? this.setup.buildMetadata();
+    if (meta.pendingAsk) {
+      return state; // une demande est déjà en attente
     }
-    let next = this.core.appendLog(
-      state,
-      `${current.username} demande ${familyId} à ${target.username} : refus.`,
-    );
-    dameNatureLog('ask.fail', { from: current.id, target: target.id, familyId, memberId: memberId ?? null });
-    next = this.advanceTurn(next);
-    return next;
-  }
+    // exiger un memberId précis
+    if (!memberId) {
+      return this.appendAction(
+        this.core.appendLog(state, `Demande invalide (carte précise requise).`),
+        { actorId: actorId ?? currentId ?? null, type: 'ask_card_invalid', payload: action.payload },
+      );
+    }
+    // vérifier que le demandeur possède la carte pour formuler la demande
+    const owns = current.hand.some((c) => c.memberId === String(memberId));
+    if (!owns) {
+      return this.appendAction(
+        this.core.appendLog(state, `Demande invalide (vous devez posséder la carte à demander).`),
+        { actorId: actorId ?? currentId ?? null, type: 'ask_card_invalid', payload: action.payload },
+      );
+    }
+    // vérifier que l'éventuelle carte offerte est bien dans la main du demandeur
+    const validOffer = offerMemberId
+      ? current.hand.find((c) => c.memberId === String(offerMemberId)) ?? null
+      : null;
+    if (offerMemberId && !validOffer) {
+      return this.appendAction(
+        this.core.appendLog(state, `Demande invalide (la carte offerte n'est pas dans votre main).`),
+        { actorId: actorId ?? currentId ?? null, type: 'ask_card_invalid', payload: action.payload },
+      );
+    }
+    const pending = {
+      fromId: current.id,
+      targetId: target.id,
+      familyId: typeof familyId === 'string' ? familyId : String(familyId ?? ''),
+      memberId: String(memberId),
+      offerMemberId: validOffer ? validOffer.memberId : null,
+    };
+    const hasCard = target.hand.some((c) => c.memberId === pending.memberId);
+    // Si la cible est un bot : résolution immédiate (accept si carte dispo).
+    if (target.isBot) {
+      const accept = hasCard;
+      const responseAction: GameSingleActionDto = {
+        type: 'answer_ask_card',
+        payload: { accept, playerId: target.id },
+      };
+      const withPending: GameStateEntity = { ...state, metadata: { ...meta, pendingAsk: pending }, players };
+      const logged = this.appendAction(withPending, { actorId: actorId ?? currentId ?? null, type: 'ask_card', payload: pending });
+      dameNatureLog('ask.auto', {
+        fromId: current.id,
+        targetId: target.id,
+        family: pending.familyId,
+        member: pending.memberId ?? null,
+        accept,
+      });
+      return this.handleAnswerAskCard(logged, responseAction, target.id);
+    }
 
-  private checkBooks(state: GameStateEntity, player: PlayerExt): GameStateEntity {
-    const families = this.families();
-    const toBook: string[] = [];
-    for (const fam of families) {
-      const members = fam.members.map((m) => m.id);
-      const hasAll = members.every((m) => player.hand.some((c) => c.memberId === m));
-      if (hasAll && !player.books.includes(fam.id)) {
-        toBook.push(fam.id);
-      }
-    }
-    if (!toBook.length) {
-      return state;
-    }
-    player.books.push(...toBook);
-    player.hand = player.hand.filter((c) => !toBook.includes(c.familyId));
-    player.handCount = player.hand.length;
-    return this.core.appendLog(
-      this.appendAction(state, { actorId: player.id, type: 'book', payload: { families: toBook } }),
-      `${player.username} complète ${toBook.length} famille(s): ${toBook.join(', ')}.`,
+    const nextMeta: DameNatureMetadata = { ...meta, pendingAsk: pending };
+    // Le tour passe temporairement à la cible pour la réponse.
+    let next: GameStateEntity = {
+      ...state,
+      metadata: nextMeta,
+      players,
+      pending: { type: 'ask_card', playerId: current.id, targetPlayerId: target.id, blocking: true },
+      turn: { currentPlayerId: target.id, direction: 1 as const },
+    };
+    next = this.appendAction(
+      next,
+      { actorId: actorId ?? currentId ?? null, type: 'ask_card', payload: pending },
     );
+    next = this.core.appendLog(next, `${current.username} demande ${pending.familyId} à ${target.username}.`);
+    dameNatureLog('ask.pending', {
+      fromId: current.id,
+      targetId: target.id,
+      family: pending.familyId,
+      member: pending.memberId ?? null,
+      handTarget: target.handCount,
+    });
+    // Pas d'avance de tour tant que la cible n'a pas répondu.
+    return next;
   }
 
   private advanceTurn(state: GameStateEntity): GameStateEntity {
     const players = this.ensurePlayers(state);
     if (!players.length) return state;
+    const meta = (state.metadata as DameNatureMetadata) ?? this.setup.buildMetadata();
+    if (meta.pendingAsk || meta.pendingQuiz) {
+      // Tant qu'une demande ou un quiz est en attente, ne pas avancer.
+      return state;
+    }
+    // Si la main du joueur courant dépasse 4, forcer la défausse uniquement.
+    const currentPlayer = players.find((p) => p.id === state.turn?.currentPlayerId);
+    if (currentPlayer && (currentPlayer.hand?.length ?? 0) > 4) {
+      return state;
+    }
     const currentId = state.turn?.currentPlayerId ?? null;
     const currentIndex = currentId != null ? players.findIndex((p) => p.id === currentId) : state.turnIndex;
     const next = this.turns.nextTurn(players as any, currentIndex >= 0 ? currentIndex : -1, {});
@@ -340,39 +408,16 @@ export class DameNatureService implements GameRulesAdapter, OnModuleInit {
       },
     };
     dameNatureLog('turn', { turnIndex: next.turnIndex, current: next.currentPlayerId });
-    return this.advancePhase(updated);
-  }
-
-  private initializePlayers(baseState: GameStateEntity, metadata: DameNatureMetadata): PlayerExt[] {
-    const allPlayers: PlayerExt[] = [];
-    (baseState.players ?? []).forEach((p) => {
-      allPlayers.push({
-        id: p.id,
-        username: p.username,
-        isBot: (p as any).isBot ?? false,
-        basket: p.basket ?? [],
-        inventory: p.inventory ?? [],
-        shoppingList: p.shoppingList ?? [],
-        hand: [],
-        handCount: 0,
-        books: [],
-      });
-    });
-    // distribution initiale (5 cartes)
-    for (let i = 0; i < 5; i += 1) {
-      for (const player of allPlayers) {
-        const draw = this.drawCard(metadata);
-        if (!draw.card) break;
-        metadata.decks = draw.metadata.decks;
-        player.hand.push(draw.card);
-        player.handCount = player.hand.length;
-      }
+    const newCurrent = players.find((p) => p.id === next.currentPlayerId);
+    if (newCurrent) {
+      dameNatureLog('turn.start', { turnIndex: next.turnIndex, playerId: newCurrent.id, username: newCurrent.username, hand: newCurrent.handCount, books: newCurrent.books.length });
     }
-    return allPlayers;
+    const advanced = this.advancePhase(updated);
+    return this.applyVictory(advanced);
   }
 
   private ensureMetadata(state: GameStateEntity): GameStateEntity {
-    const base = this.buildMetadata();
+    const base = this.setup.buildMetadata();
     const meta = (state.metadata as DameNatureMetadata | undefined) ?? base;
     return {
       ...state,
@@ -380,12 +425,13 @@ export class DameNatureService implements GameRulesAdapter, OnModuleInit {
         ...base,
         ...meta,
         actionLog: meta.actionLog ?? [],
-      catalog: meta.catalog ?? base.catalog,
-      decks: meta.decks ?? base.decks,
-      phaseId: meta.phaseId ?? 'turn',
-      botProfile: meta.botProfile ?? 'greedy',
+        catalog: meta.catalog ?? base.catalog,
+        decks: meta.decks ?? base.decks,
+        phaseId: meta.phaseId ?? 'turn',
+        botProfile: meta.botProfile ?? 'greedy',
         victoryId: meta.victoryId ?? null,
         winnerId: meta.winnerId ?? null,
+        pendingQuiz: meta.pendingQuiz ?? null,
       },
     };
   }
@@ -399,23 +445,7 @@ export class DameNatureService implements GameRulesAdapter, OnModuleInit {
   }
 
   private ensurePlayers(state: GameStateEntity): PlayerExt[] {
-    const players = state.players ?? [];
-    return players.map((p) => {
-      const anyPlayer = p as any;
-      const hand: FamilyCard[] = Array.isArray(anyPlayer.hand) ? anyPlayer.hand : [];
-      const books: string[] = Array.isArray(anyPlayer.books) ? anyPlayer.books : [];
-      return {
-        id: p.id,
-        username: p.username,
-        isBot: anyPlayer.isBot ?? false,
-        basket: p.basket ?? [],
-        inventory: p.inventory ?? [],
-        shoppingList: p.shoppingList ?? [],
-        hand,
-        handCount: anyPlayer.handCount ?? hand.length,
-        books,
-      };
-    });
+    return this.setup.ensurePlayers(state) as PlayerExt[];
   }
 
   private isStarted(state: GameStateEntity): boolean {
@@ -446,54 +476,196 @@ export class DameNatureService implements GameRulesAdapter, OnModuleInit {
     return typeof candidate === 'number' ? candidate : null;
   }
 
+  private handleAnswerAskCard(state: GameStateEntity, action: GameSingleActionDto, actorId: number | null): GameStateEntity {
+    const meta = (state.metadata as DameNatureMetadata) ?? this.setup.buildMetadata();
+    const pending = meta.pendingAsk;
+    if (!pending) return state;
+    if (actorId == null || actorId !== pending.targetId) {
+      return state; // seul le joueur ciblé peut répondre
+    }
+    const accept = !!action.payload?.accept;
+    const players = this.ensurePlayers(state);
+    const asker = players.find((p) => p.id === pending.fromId);
+    const target = players.find((p) => p.id === pending.targetId);
+    if (!asker || !target) {
+      const cleared: DameNatureMetadata = { ...meta, pendingAsk: null };
+      return { ...state, metadata: cleared, players };
+    }
+    let next: GameStateEntity = { ...state, players };
+    if (!accept) {
+      const label = pending.memberId ? pending.memberId : pending.familyId;
+      next = this.core.appendLog(next, `${target.username} refuse de donner ${label} à ${asker.username}.`);
+      const cleared: DameNatureMetadata = { ...meta, pendingAsk: null };
+      const requesterIndex = players.findIndex((p) => p.id === asker.id);
+      const restored: GameStateEntity = {
+        ...next,
+        metadata: cleared,
+        pending: null,
+        turn: { currentPlayerId: asker.id, direction: 1 as const },
+        turnIndex: requesterIndex >= 0 ? requesterIndex : next.turnIndex,
+      };
+      dameNatureLog('ask.refuse', { targetId: target.id, fromId: asker.id, family: pending.familyId, member: pending.memberId ?? null });
+      return this.advanceTurn(restored);
+    }
+    const match = target.hand.find((c) =>
+      pending.memberId ? c.memberId === pending.memberId : c.familyId === pending.familyId,
+    );
+    if (match) {
+      target.hand = target.hand.filter((c) => c !== match);
+      target.handCount = target.hand.length;
+      asker.hand.push(match);
+      asker.handCount = asker.hand.length;
+      // Transfert de la carte offerte (si fournie et encore en main).
+      if (pending.offerMemberId) {
+        const offer = asker.hand.find((c) => c.memberId === pending.offerMemberId);
+        if (offer) {
+          asker.hand = asker.hand.filter((c) => c !== offer);
+          asker.handCount = asker.hand.length;
+          target.hand.push(offer);
+          target.handCount = target.hand.length;
+          next = this.core.appendLog(
+            next,
+            `${asker.username} donne ${offer.memberName} (${offer.familyName}) à ${target.username} en échange.`,
+          );
+        }
+      }
+      next = this.core.appendLog(
+        next,
+        `${target.username} donne ${match.memberName} (${match.familyName}) à ${asker.username}.`,
+      );
+      const booked = this.books.checkAndBook(next, asker);
+      next = booked.state;
+      if (booked.booked.length) {
+        next = this.core.appendLog(
+          this.appendAction(next, { actorId: asker.id, type: 'book', payload: { families: booked.booked } }),
+          `${asker.username} complète ${booked.booked.length} famille(s): ${booked.booked.join(', ')}.`,
+        );
+      }
+    } else {
+      next = this.core.appendLog(
+        next,
+        `${target.username} n'a pas ${pending.familyId} à donner.`,
+      );
+    }
+    const cleared: DameNatureMetadata = { ...meta, pendingAsk: null };
+    const requesterIndex = players.findIndex((p) => p.id === asker.id);
+    const restored: GameStateEntity = {
+      ...next,
+      metadata: cleared,
+      pending: null,
+      turn: { currentPlayerId: asker.id, direction: 1 as const },
+      turnIndex: requesterIndex >= 0 ? requesterIndex : next.turnIndex,
+    };
+    return this.advanceTurn(restored);
+  }
+
+  private handleQuizAnswer(state: GameStateEntity, action: GameSingleActionDto, actorId: number | null): GameStateEntity {
+    const meta = (state.metadata as DameNatureMetadata) ?? this.setup.buildMetadata();
+    const pending = meta.pendingQuiz;
+    if (!pending) return state;
+    if (actorId == null || actorId !== pending.playerId) {
+      return state; // seul le joueur concerné peut répondre
+    }
+    const players = this.ensurePlayers(state);
+    const target = players.find((p) => p.id === pending.playerId);
+    const payloadAnswer = typeof action.payload?.answer === 'string' ? action.payload.answer : null;
+    const answerIsCorrect = (candidate: string | null | undefined) =>
+      (candidate ?? '').trim().toLowerCase() === (pending.card.answer ?? '').trim().toLowerCase();
+    const correctFromType = action.type.toLowerCase().endsWith('correct');
+    const correctFromPayload = typeof action.payload?.correct === 'boolean' ? action.payload.correct : null;
+    const correct =
+      correctFromPayload != null
+        ? correctFromPayload
+        : payloadAnswer != null
+        ? answerIsCorrect(payloadAnswer)
+        : correctFromType;
+    const clearedMeta: DameNatureMetadata = { ...meta, pendingQuiz: null };
+    let next: GameStateEntity = { ...state, metadata: clearedMeta, players: this.ensurePlayers(state), pending: null };
+    if (correct) {
+      next = this.actions.applyPollutionTick(next, 'Quiz réussi', -1);
+      next = this.core.appendLog(
+        next,
+        `${target?.username ?? 'Un joueur'} réussit le quiz (${pending.card.memberName ?? pending.card.question ?? ''}).`,
+      );
+    } else {
+      next = this.actions.applyPollutionTick(next, 'Quiz raté', 1);
+      next = this.core.appendLog(
+        next,
+        `${target?.username ?? 'Un joueur'} rate le quiz (${pending.card.memberName ?? pending.card.question ?? ''}).`,
+      );
+    }
+    dameNatureLog('quiz.resolved', {
+      playerId: pending.playerId,
+      cardId: pending.card.memberId,
+      correct,
+      answer: payloadAnswer ?? null,
+    });
+    return this.advanceTurn(next);
+  }
+
   private isBotId(id: number, state: GameStateEntity): boolean {
     const players = this.ensurePlayers(state);
     const found = players.find((p) => p.id === id);
     return found?.isBot ?? false;
   }
 
-  private buildMetadata(): DameNatureMetadata {
-    const families = this.families();
-    const deck: FamilyCard[] = [];
-    families.forEach((fam) => {
-      fam.members.forEach((m) => {
-        deck.push({
-          familyId: fam.id,
-          familyName: fam.name,
-          memberId: m.id,
-          memberName: m.name,
-          role: m.role,
-        });
-      });
-    });
-    return {
-      decks: this.deckPool.set<FamilyCard>({}, 'family', this.deckPool.shuffle(deck)),
-      familyGoal: 4,
-      pollution: 0,
-      maxPollution: 12,
-      catalog: { families: families.map((f) => ({ id: f.id, name: f.name })) },
-      actionLog: [],
-      phaseId: 'turn',
-      victoryId: null,
-      winnerId: null,
-    };
-  }
-
-  private drawCard(meta: DameNatureMetadata): { card: FamilyCard | null; metadata: DameNatureMetadata } {
-    const { card, pool } = this.deckPool.draw<FamilyCard>(meta.decks, 'family');
-    const metadata: DameNatureMetadata = { ...meta, decks: pool };
-    return { card: card ?? null, metadata };
-  }
-
   private appendAction(state: GameStateEntity, entry: Omit<ActionLogEntry, 'timestamp'>): GameStateEntity {
-    const meta = (state.metadata as DameNatureMetadata) ?? this.buildMetadata();
+    const meta = (state.metadata as DameNatureMetadata) ?? this.setup.buildMetadata();
     const actionLog = this.actionLog.append(meta.actionLog, entry);
     return { ...state, metadata: { ...meta, actionLog } };
   }
 
   exposeState(state: GameStateEntity): GameStateWithActions {
     const currentId = state.turn?.currentPlayerId ?? null;
-    const actions = typeof currentId === 'number' ? this.getAvailableActions(state, currentId) : [];
+    const meta = state.metadata as DameNatureMetadata;
+    const pendingAsk = meta?.pendingAsk ?? null;
+    const pendingQuiz = meta?.pendingQuiz ?? null;
+    const actionPlayerId =
+      pendingAsk?.targetId ?? pendingQuiz?.playerId ?? (typeof currentId === 'number' ? currentId : null);
+    const actions = typeof actionPlayerId === 'number' ? this.getAvailableActions(state, actionPlayerId) : [];
+    const players = this.ensurePlayers(state);
+    const families = this.setup.families();
+    const familyLabel = (familyId: string) => families.find((f) => f.id === familyId)?.name ?? familyId;
+    const handLabel = (card: FamilyCard) => `${familyLabel(card.familyId)} - ${card.memberName}`;
+    const playerViews = players.map((p) => {
+      const isCurrent = currentId != null && p.id === currentId;
+      return {
+        id: p.id,
+        username: p.username,
+        hand: isCurrent ? (p.hand ?? []).map(handLabel) : [],
+        books: isCurrent ? (p.books ?? []).map(familyLabel) : [],
+        handCount: p.handCount ?? (p.hand ?? []).length,
+        booksCount: (p.books ?? []).length,
+      };
+    });
+    const extrasFromState = (state as GameStateEntity & { extras?: unknown }).extras;
+    const baseExtras =
+      extrasFromState && typeof extrasFromState === 'object' ? (extrasFromState as Record<string, unknown>) : {};
+    const currentPlayerView = typeof currentId === 'number' ? playerViews.find((v) => v.id === currentId) ?? null : null;
+    const shortcuts: any[] = [
+      { key: 'pressed D', type: 'action', actionType: 'ask_card' },
+      { key: 'pressed C', type: 'interface', id: 'hand' },
+      { key: 'pressed F', type: 'interface', id: 'books' },
+    ];
+    const pending = pendingAsk;
+    if (pending && actionPlayerId != null && pending.targetId === actionPlayerId) {
+      shortcuts.push({ key: 'pressed A', type: 'action', actionType: 'answer_ask_card_accept' });
+      shortcuts.push({ key: 'pressed R', type: 'action', actionType: 'answer_ask_card_refuse' });
+    }
+    if (pendingQuiz && actionPlayerId != null && pendingQuiz.playerId === actionPlayerId) {
+      shortcuts.push({ key: 'pressed A', type: 'action', actionType: 'answer_quiz_correct' });
+      shortcuts.push({ key: 'pressed R', type: 'action', actionType: 'answer_quiz_wrong' });
+    }
+    const pendingState = pendingQuiz
+      ? {
+          type: 'quiz',
+          question: pendingQuiz.card?.question ?? pendingQuiz.card?.memberName ?? 'Quiz',
+          choices: pendingQuiz.card?.choices ?? ['Bonne réponse', 'Mauvaise réponse'],
+          playerId: pendingQuiz.playerId,
+        }
+      : pendingAsk
+      ? { type: 'ask_card', playerId: pendingAsk.fromId, targetPlayerId: pendingAsk.targetId, blocking: true }
+      : null;
     return {
       ...(state as any),
       catalog: {
@@ -501,12 +673,29 @@ export class DameNatureService implements GameRulesAdapter, OnModuleInit {
         victory: DAME_NATURE_VICTORY,
       },
       actions: actions.map((a) => ({ type: a.type, label: a.type, payload: a.payload ?? {} })),
-      pending: null,
+      pending: pendingState,
+      extras: {
+        ...baseExtras,
+        playerViews,
+        currentPlayerView,
+        hand: currentPlayerView?.hand ?? [],
+        handCards: currentPlayerView && currentId != null
+          ? players.find((p) => p.id === currentId)?.hand?.map((c) => ({
+              familyId: c.familyId,
+              memberId: c.memberId,
+              label: handLabel(c),
+            })) ?? []
+          : [],
+        books: currentPlayerView?.books ?? [],
+        shortcuts,
+        pendingAsk: (state.metadata as DameNatureMetadata)?.pendingAsk ?? null,
+        pendingQuiz,
+      },
     };
   }
 
   private advancePhase(state: GameStateEntity): GameStateEntity {
-    const meta = (state.metadata as DameNatureMetadata) ?? this.buildMetadata();
+    const meta = (state.metadata as DameNatureMetadata) ?? this.setup.buildMetadata();
     const current = meta.phaseId ?? 'turn';
     const result = this.phases.advance(state, meta, this.phaseOrder, current);
     const nextMeta: DameNatureMetadata = {
@@ -516,20 +705,13 @@ export class DameNatureService implements GameRulesAdapter, OnModuleInit {
     return this.applyVictory({ ...result.state, metadata: nextMeta });
   }
 
-  private applyPollution(state: GameStateEntity, meta: DameNatureMetadata): GameStateEntity {
-    if (meta.pollution >= meta.maxPollution) {
-      return { ...state, status: 'finished' };
-    }
-    return state;
-  }
-
   private applyVictory(state: GameStateEntity): GameStateEntity {
     if ((state.status || '').toLowerCase() === 'finished') return state;
     const result = this.victory.evaluate(state, DAME_NATURE_VICTORY);
     if (!result || !result.finished) {
       return state;
     }
-    const meta = (state.metadata as DameNatureMetadata) ?? this.buildMetadata();
+    const meta = (state.metadata as DameNatureMetadata) ?? this.setup.buildMetadata();
     const nextMeta: DameNatureMetadata = {
       ...meta,
       victoryId: result.conditionId,
@@ -548,58 +730,8 @@ export class DameNatureService implements GameRulesAdapter, OnModuleInit {
     return this.core.appendLog(next, message);
   }
 
-  private families() {
-    return [
-      {
-        id: 'arbres',
-        name: 'Famille des Arbres',
-        members: [
-          { id: 'chene', name: 'Chêne', role: 'Parent' },
-          { id: 'sapin', name: 'Sapin', role: 'Parent' },
-          { id: 'bouleau', name: 'Bouleau', role: 'Enfant' },
-          { id: 'erable', name: 'Érable', role: 'Enfant' },
-        ],
-      },
-      {
-        id: 'animaux',
-        name: 'Famille des Animaux',
-        members: [
-          { id: 'loup', name: 'Loup', role: 'Parent' },
-          { id: 'ours', name: 'Ours', role: 'Parent' },
-          { id: 'renard', name: 'Renard', role: 'Enfant' },
-          { id: 'biche', name: 'Biche', role: 'Enfant' },
-        ],
-      },
-      {
-        id: 'fleurs',
-        name: 'Famille des Fleurs',
-        members: [
-          { id: 'rose', name: 'Rose', role: 'Parent' },
-          { id: 'tulipe', name: 'Tulipe', role: 'Parent' },
-          { id: 'lys', name: 'Lys', role: 'Enfant' },
-          { id: 'violette', name: 'Violette', role: 'Enfant' },
-        ],
-      },
-      {
-        id: 'ocean',
-        name: 'Famille de l’Océan',
-        members: [
-          { id: 'baleine', name: 'Baleine', role: 'Parent' },
-          { id: 'requin', name: 'Requin', role: 'Parent' },
-          { id: 'dauphin', name: 'Dauphin', role: 'Enfant' },
-          { id: 'tortue', name: 'Tortue', role: 'Enfant' },
-        ],
-      },
-      {
-        id: 'montagne',
-        name: 'Famille de la Montagne',
-        members: [
-          { id: 'chamois', name: 'Chamois', role: 'Parent' },
-          { id: 'aigle', name: 'Aigle', role: 'Parent' },
-          { id: 'marmotte', name: 'Marmotte', role: 'Enfant' },
-          { id: 'bouquetin', name: 'Bouquetin', role: 'Enfant' },
-        ],
-      },
-    ];
+  private applyPollutionTick(state: GameStateEntity, reason: string, amount = 1): GameStateEntity {
+    // Compat : délégation vers le service d'actions
+    return this.actions.applyPollutionTick(state, reason, amount);
   }
 }

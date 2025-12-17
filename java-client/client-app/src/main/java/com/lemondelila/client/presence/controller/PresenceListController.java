@@ -7,6 +7,7 @@ import com.lemondelila.client.framework.ui.LilaFrame;
 import com.lemondelila.client.framework.ui.screen.ScreenManager;
 import com.lemondelila.client.game.room.browser.service.RoomDirectoryService;
 import com.lemondelila.client.game.room.model.RoomDetailsState;
+import com.lemondelila.client.game.room.model.PendingRoomInvites;
 import com.lemondelila.client.game.room.model.TableState;
 import com.lemondelila.client.game.room.view.RoomTableScreen;
 import com.lemondelila.client.messaging.controller.MessagingController;
@@ -60,6 +61,7 @@ public final class PresenceListController {
     private final RoomDetailsState roomDetailsState;
     private final TableState tableState;
     private final ClientSession session;
+    private final PendingRoomInvites inviteStore;
     private final ObjectMapper mapper;
     private final Runnable closeDialog;
     private final PresencePlayerActionMenu actionMenu;
@@ -75,6 +77,7 @@ public final class PresenceListController {
                                   RoomDetailsState roomDetailsState,
                                   TableState tableState,
                                   ClientSession session,
+                                  PendingRoomInvites inviteStore,
                                   ObjectMapper mapper,
                                   Runnable closeDialog) {
         this.owner = owner;
@@ -87,6 +90,7 @@ public final class PresenceListController {
         this.roomDetailsState = Objects.requireNonNull(roomDetailsState, "roomDetailsState");
         this.tableState = Objects.requireNonNull(tableState, "tableState");
         this.session = Objects.requireNonNull(session, "session");
+        this.inviteStore = Objects.requireNonNull(inviteStore, "inviteStore");
         this.mapper = Objects.requireNonNull(mapper, "mapper");
         this.closeDialog = closeDialog;
         this.actionMenu = new PresencePlayerActionMenu(
@@ -287,7 +291,10 @@ public final class PresenceListController {
         }
         int roomId = player.currentRoom().id();
         try {
-            var joined = roomDirectoryService.joinPublicRoom(roomId);
+            var joined = tryAcceptInvite(player, roomId);
+            if (joined == null) {
+                joined = roomDirectoryService.joinPublicRoom(roomId);
+            }
             roomDetailsState.setRoomId(joined.roomId());
             roomDetailsState.setGameType(joined.gameType());
             roomDetailsState.setRoomName(joined.roomName());
@@ -299,6 +306,24 @@ public final class PresenceListController {
         } catch (Exception ex) {
             updateStatus("Impossible de rejoindre: " + ex.getMessage());
         }
+    }
+
+    private RoomDirectoryService.JoinedRoom tryAcceptInvite(PresencePlayer player, int roomId) throws Exception {
+        if (inviteStore == null) {
+            return null;
+        }
+        var invite = inviteStore.findByRoom(roomId);
+        if (invite == null && player != null) {
+            invite = inviteStore.findBySender(player.id());
+        }
+        if (invite == null) {
+            return null;
+        }
+        var joined = roomDirectoryService.respondInvite(invite.invitationId(), true);
+        if (joined != null) {
+            inviteStore.remove(invite.invitationId());
+        }
+        return joined;
     }
 
     private void invitePlayerToMyRoom(PresencePlayer player) {

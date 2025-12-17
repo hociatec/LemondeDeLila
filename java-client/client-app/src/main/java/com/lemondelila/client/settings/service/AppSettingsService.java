@@ -81,7 +81,8 @@ public final class AppSettingsService {
                     readFlag(node, "confirmOnExit", defaults.confirmOnExit()),
                     readFlag(node, "chatEnabled", defaults.chatEnabled()),
                     readFlag(node, "confirmChatExit", defaults.confirmChatExit()),
-                    readFlag(node, "stayConnected", defaults.stayConnected())
+                    readFlag(node, "stayConnected", defaults.stayConnected()),
+                    readFlag(node, "extraDescriptionsEnabled", defaults.extraDescriptionsEnabled())
             );
             settings = sanitize(loaded);
         } catch (IOException ex) {
@@ -145,7 +146,8 @@ public final class AppSettingsService {
                 candidate.confirmOnExit(),
                 candidate.chatEnabled(),
                 candidate.confirmChatExit(),
-                candidate.stayConnected()
+                candidate.stayConnected(),
+                candidate.extraDescriptionsEnabled()
         );
     }
 

@@ -3,6 +3,7 @@ package com.lemondelila.client.presence.view;
 import com.lemondelila.client.messaging.service.UserRelationshipService;
 import com.lemondelila.client.presence.model.PresencePlayer;
 import com.lemondelila.client.presence.model.PresenceStatusFormatter;
+import com.lemondelila.client.framework.access.AccessibilityPreferences;
 
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -80,15 +81,15 @@ public final class PresencePlayerRenderer implements ListCellRenderer<PresencePl
         }
         if (container.getAccessibleContext() != null) {
             container.getAccessibleContext().setAccessibleName(text);
-            container.getAccessibleContext().setAccessibleDescription(text);
+            AccessibilityPreferences.applyDescription(container.getAccessibleContext(), text);
         }
         if (nameLabel.getAccessibleContext() != null) {
             nameLabel.getAccessibleContext().setAccessibleName(text);
-            nameLabel.getAccessibleContext().setAccessibleDescription(text);
+            AccessibilityPreferences.applyDescription(nameLabel.getAccessibleContext(), text);
         }
         if (statusLabel.getAccessibleContext() != null) {
             statusLabel.getAccessibleContext().setAccessibleName(text);
-            statusLabel.getAccessibleContext().setAccessibleDescription(text);
+            AccessibilityPreferences.applyDescription(statusLabel.getAccessibleContext(), text);
         }
     }
 }

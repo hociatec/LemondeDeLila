@@ -25,6 +25,8 @@ public final class GameRoomModule implements LilaModule {
         builder.bindAuto(com.lemondelila.client.game.room.service.RoomStartService.class);
         builder.bindAuto(com.lemondelila.client.notification.service.NotificationConnectionFactory.class);
         builder.bindAuto(com.lemondelila.client.game.room.service.RoomInviteNotificationService.class);
+        builder.bindAuto(com.lemondelila.client.game.room.service.RoomInviteAcceptanceService.class);
+        builder.bindAuto(com.lemondelila.client.game.room.model.PendingRoomInvites.class);
         builder.bindAuto(com.lemondelila.client.game.room.browser.service.RoomDirectoryService.class);
         builder.bindAuto(com.lemondelila.client.game.room.browser.controller.RoomBrowserController.class);
         builder.bindAuto(com.lemondelila.client.game.room.browser.view.RoomBrowserView.class);

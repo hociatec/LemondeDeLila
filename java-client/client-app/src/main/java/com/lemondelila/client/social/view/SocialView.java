@@ -1,6 +1,7 @@
 package com.lemondelila.client.social.view;
 
 import com.lemondelila.client.application.Internationalization;
+import com.lemondelila.client.framework.access.AccessibilityPreferences;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -45,7 +46,7 @@ public final class SocialView {
         menuList.setAlignmentX(Component.CENTER_ALIGNMENT);
         menuList.setFocusTraversalKeysEnabled(false);
         menuList.getAccessibleContext().setAccessibleName(Internationalization.text("social.menu.accessible"));
-        menuList.getAccessibleContext().setAccessibleDescription(Internationalization.text("social.menu.accessible"));
+        AccessibilityPreferences.applyDescription(menuList.getAccessibleContext(), Internationalization.text("social.menu.accessible"));
         menuList.setCellRenderer((list, value, index, isSelected, cellHasFocus) -> {
             JLabel label = new JLabel(value == null ? "" : value.label());
             label.setOpaque(true);
@@ -58,7 +59,7 @@ public final class SocialView {
                 label.setForeground(list.getForeground());
             }
             label.getAccessibleContext().setAccessibleName(label.getText());
-            label.getAccessibleContext().setAccessibleDescription(label.getText());
+            AccessibilityPreferences.applyDescription(label.getAccessibleContext(), label.getText());
             return label;
         });
         menuList.getInputMap().put(KeyStroke.getKeyStroke("ENTER"), "social.menu.activate");

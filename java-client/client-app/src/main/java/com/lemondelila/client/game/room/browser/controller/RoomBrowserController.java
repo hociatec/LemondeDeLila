@@ -13,6 +13,7 @@ import com.lemondelila.client.game.room.browser.event.PublicRoomsRequested;
 import com.lemondelila.client.game.room.browser.model.PublicRoomSummary;
 import com.lemondelila.client.game.room.browser.service.RoomDirectoryService;
 import com.lemondelila.client.game.room.model.RoomDetailsState;
+import com.lemondelila.client.game.room.model.PendingRoomInvites;
 import com.lemondelila.client.game.room.view.RoomTableScreen;
 import com.lemondelila.client.framework.ui.ControllerResult;
 import com.lemondelila.client.user.model.ClientSession;
@@ -27,6 +28,7 @@ public final class RoomBrowserController implements AutoCloseable {
     private final RoomDirectoryService service;
     private final RoomDetailsState detailsState;
     private final ClientSession session;
+    private final PendingRoomInvites inviteStore;
     private final EventSubscriptions subscriptions = new EventSubscriptions();
 
     @Inject
@@ -34,12 +36,14 @@ public final class RoomBrowserController implements AutoCloseable {
                                  TaskScheduler scheduler,
                                  RoomDirectoryService service,
                                  RoomDetailsState detailsState,
-                                 ClientSession session) {
+                                 ClientSession session,
+                                 PendingRoomInvites inviteStore) {
         this.eventBus = Objects.requireNonNull(eventBus, "eventBus");
         this.scheduler = Objects.requireNonNull(scheduler, "scheduler");
         this.service = Objects.requireNonNull(service, "service");
         this.detailsState = Objects.requireNonNull(detailsState, "detailsState");
         this.session = Objects.requireNonNull(session, "session");
+        this.inviteStore = Objects.requireNonNull(inviteStore, "inviteStore");
 
         subscriptions.subscribe(eventBus, PublicRoomsRequested.class, ev -> fetchPublic(ev.gameType()));
         subscriptions.subscribe(eventBus, JoinRoomRequested.class, ev -> join(ev.roomId()));
@@ -92,6 +96,7 @@ public final class RoomBrowserController implements AutoCloseable {
             if (joined == null) {
                 return ControllerResult.status("Invitation refusée ou expirée");
             }
+            inviteStore.remove(invitationId);
             detailsState.setRoomId(joined.roomId());
             detailsState.setGameType(joined.gameType());
             detailsState.setRoomName(joined.roomName());
@@ -105,6 +110,7 @@ public final class RoomBrowserController implements AutoCloseable {
         if (invitationId == null || invitationId.isBlank()) {
             return;
         }
+        inviteStore.remove(invitationId);
         scheduler.runAsync(() -> {
             try {
                 service.respondInvite(invitationId, false);

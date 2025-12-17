@@ -2,6 +2,7 @@ package com.lemondelila.client.framework.ui.component;
 
 import com.lemondelila.client.framework.access.AccessibleDecorator;
 import com.lemondelila.client.framework.access.AccessibleSpec;
+import com.lemondelila.client.framework.access.AccessibilityPreferences;
 
 import javax.accessibility.AccessibleContext;
 import javax.swing.JLabel;
@@ -72,7 +73,7 @@ public final class NarrationPanel {
         Runnable update = () -> {
             String textPayload = payload;
             bridge.setText(textPayload);
-            context.setAccessibleDescription(textPayload);
+            AccessibilityPreferences.applyDescription(context, textPayload);
             context.firePropertyChange(AccessibleContext.ACCESSIBLE_TEXT_PROPERTY, null, textPayload);
             context.firePropertyChange(AccessibleContext.ACCESSIBLE_NAME_PROPERTY, null, textPayload);
             context.firePropertyChange(AccessibleContext.ACCESSIBLE_DESCRIPTION_PROPERTY, null, textPayload);

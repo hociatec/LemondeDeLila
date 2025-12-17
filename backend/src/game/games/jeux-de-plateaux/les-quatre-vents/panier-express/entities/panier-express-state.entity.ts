@@ -3,6 +3,9 @@ import { BotProfile } from '../../../../../modules/bot/services/bot-strategy.ser
 import { DeckPoolState } from '../../../../../modules/cards/services/deck-pool.service';
 import { PendingState, PlayerStateEntity } from '../../../../../core/entities/game-state.entity';
 
+/**
+ * Types des tuiles Panier Express
+ */
 export type PanierExpressTile =
   | { id: string; type: 'start' }
   | { id: string; type: 'stand'; standId: string }
@@ -14,24 +17,47 @@ export type PanierExpressTile =
   | { id: string; type: 'bonus_course' }
   | { id: string; type: 'move_to_stand' };
 
+/**
+ * Deck pool Panier Express
+ */
 export type PanierExpressDeckPool = DeckPoolState<unknown>;
 
-export type PanierExpressActionLogEntry = { type: string; actorId: number | null; payload?: unknown; timestamp: number };
+/**
+ * Entrée du journal d'actions
+ */
+export type PanierExpressActionLogEntry = {
+  type: string;
+  actorId: number | null;
+  payload?: unknown;
+  timestamp: number;
+};
 
-export type PanierExpressPlayerState = PlayerStateEntity & {
+/**
+ * Joueur Panier Express
+ *
+ * IMPORTANT :
+ * On supprime les champs mal typés hérités de PlayerStateEntity
+ * et on les redéfinit correctement en string[]
+ */
+export interface PanierExpressPlayer
+  extends Omit<PlayerStateEntity, 'shoppingList' | 'basket' | 'inventory'> {
   shoppingList: string[];
   basket: string[];
   inventory: string[];
-};
+}
 
-export type PanierExpressPlayer = PanierExpressPlayerState;
-
+/**
+ * Échange en attente
+ */
 export type PanierExpressPendingExchange = PendingState & {
   type: 'exchange';
   playerId: number;
   card: string;
 };
 
+/**
+ * Métadonnées Panier Express
+ */
 export type PanierExpressMetadata = {
   stands: string[];
   tiles: PanierExpressTile[];

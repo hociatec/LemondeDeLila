@@ -47,6 +47,7 @@ public final class OptionsDialog extends JDialog {
     private final JCheckBox chatEnabled = new JCheckBox(Internationalization.text("options.chat.enabled"));
     private final JCheckBox confirmChatExit = new JCheckBox(Internationalization.text("options.chat.confirmExit"));
     private final JCheckBox stayConnected = new JCheckBox(Internationalization.text("options.general.stayConnected"));
+    private final JCheckBox extraDescriptions = new JCheckBox(Internationalization.text("options.general.extraDescriptions"));
     private final JCheckBox soundAppLaunch = new JCheckBox(Internationalization.text("options.sound.appLaunch"));
     private final JCheckBox soundBackground = new JCheckBox(Internationalization.text("options.sound.background"));
     private final JCheckBox soundNavigate = new JCheckBox(Internationalization.text("options.sound.navigate"));
@@ -109,6 +110,7 @@ public final class OptionsDialog extends JDialog {
         registerNavigationSound(chatEnabled);
         registerNavigationSound(confirmChatExit);
         registerNavigationSound(stayConnected);
+        registerNavigationSound(extraDescriptions);
         registerNavigationSound(saveButton);
         registerNavigationSound(cancelButton);
         registerNavigationSound(checkUpdateButton);
@@ -171,6 +173,8 @@ public final class OptionsDialog extends JDialog {
         panel.add(confirmExit);
         panel.add(Box.createRigidArea(new java.awt.Dimension(0, 8)));
         panel.add(stayConnected);
+        panel.add(Box.createRigidArea(new java.awt.Dimension(0, 8)));
+        panel.add(extraDescriptions);
         return panel;
     }
 
@@ -228,7 +232,8 @@ public final class OptionsDialog extends JDialog {
                     confirmExit.isSelected(),
                     chatEnabled.isSelected(),
                     confirmChatExit.isSelected(),
-                    stayConnected.isSelected()
+                    stayConnected.isSelected(),
+                    extraDescriptions.isSelected()
             ));
             dispose();
         });
@@ -259,6 +264,7 @@ public final class OptionsDialog extends JDialog {
         chatEnabled.setSelected(current.chatEnabled());
         confirmChatExit.setSelected(current.confirmChatExit());
         stayConnected.setSelected(current.stayConnected());
+        extraDescriptions.setSelected(current.extraDescriptionsEnabled());
         updateVolumeControls();
     }
 

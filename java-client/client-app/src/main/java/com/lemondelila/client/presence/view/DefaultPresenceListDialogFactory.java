@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lemondelila.client.game.room.browser.service.RoomDirectoryService;
 import com.lemondelila.client.game.room.model.RoomDetailsState;
 import com.lemondelila.client.game.room.model.TableState;
+import com.lemondelila.client.game.room.model.PendingRoomInvites;
 import com.lemondelila.client.messaging.controller.MessagingController;
 import com.lemondelila.client.messaging.service.UserRelationshipService;
 import com.lemondelila.client.presence.service.PresenceRealtimeService;
@@ -24,6 +25,7 @@ public final class DefaultPresenceListDialogFactory implements PresenceListDialo
     private final RoomDetailsState roomDetailsState;
     private final TableState tableState;
     private final ClientSession session;
+    private final PendingRoomInvites inviteStore;
     private final ObjectMapper mapper;
 
     @Inject
@@ -35,6 +37,7 @@ public final class DefaultPresenceListDialogFactory implements PresenceListDialo
                                             RoomDetailsState roomDetailsState,
                                             TableState tableState,
                                             ClientSession session,
+                                            PendingRoomInvites inviteStore,
                                             ObjectMapper mapper) {
         this.dialogService = Objects.requireNonNull(dialogService, "dialogService");
         this.messagingController = Objects.requireNonNull(messagingController, "messagingController");
@@ -44,6 +47,7 @@ public final class DefaultPresenceListDialogFactory implements PresenceListDialo
         this.roomDetailsState = Objects.requireNonNull(roomDetailsState, "roomDetailsState");
         this.tableState = Objects.requireNonNull(tableState, "tableState");
         this.session = Objects.requireNonNull(session, "session");
+        this.inviteStore = Objects.requireNonNull(inviteStore, "inviteStore");
         this.mapper = Objects.requireNonNull(mapper, "mapper");
     }
 
@@ -59,6 +63,7 @@ public final class DefaultPresenceListDialogFactory implements PresenceListDialo
                 roomDetailsState,
                 tableState,
                 session,
+                inviteStore,
                 mapper
         );
         dialog.addWindowListener(new java.awt.event.WindowAdapter() {
