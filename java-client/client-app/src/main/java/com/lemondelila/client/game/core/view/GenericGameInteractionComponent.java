@@ -2,6 +2,7 @@ package com.lemondelila.client.game.core.view;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lemondelila.client.application.Internationalization;
 import com.lemondelila.client.framework.access.AccessibleDecorator;
 import com.lemondelila.client.framework.access.AccessibleSpec;
 import com.lemondelila.client.framework.access.FocusHighlighter;
@@ -515,7 +516,7 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
             pregameAnnounced = false;
         } else if (startedFlag && !wasStarted && !startAnnounced) {
             tableState.markStarted();
-            emitter.announceEvent("La partie vient de démarrer, bon jeu !");
+            emitter.announceEvent(Internationalization.text("game.game.started"));
             startAnnounced = true;
             pregameAnnounced = false;
             if (autoPrimaryAfterStart && !autoPrimaryDispatched && primaryAction != null) {
@@ -531,7 +532,11 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         renderTurn(state);
         renderPlayerCollections(state);
         updateBotTurnLock(state);
-        renderQuiz(state.pendingQuiz());
+        if (state.pending() instanceof GenericGameState.PendingQuiz quiz) {
+            renderQuiz(quiz);
+        } else {
+            renderQuiz(null);
+        }
         renderPending(state.pending());
         renderActions(state);
         if (askDialogOpen) {
@@ -547,6 +552,17 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
     }
 
     private void renderQuiz(GenericGameState.PendingQuiz quiz) {
+        if (quiz == null) {
+            activeQuiz = null;
+            quizChoiceIndex = -1;
+            lastAnnouncedQuizChoice = -1;
+            lastQuizAnnouncementKey = null;
+            exchangePending = false;
+            if (quizComponent != null) {
+                quizComponent.clearQuiz();
+            }
+            return;
+        }
         if (!isLocalQuiz(quiz)) {
             // Quiz pour un autre joueur ou un bot : on le montre dans les logs mais pas comme quiz interactif.
             activeQuiz = null;
@@ -714,11 +730,7 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
     }
 
     private void renderTurn(GenericGameState state) {
-        TurnState turn = null;
-        Object turnNode = state.extras().get("turn");
-        if (turnNode instanceof JsonNode node && node.isObject()) {
-            turn = turnController.map(node).orElse(null);
-        }
+        TurnState turn = state.turn();
 
         if (turn == null) {
             // Pas d'info de tour -> on évite d'annoncer un faux joueur.
@@ -739,7 +751,9 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         tableState.updateTurn(turn.round(), turn.index(), turn.direction());
         tableState.updateCurrentPlayerId(turn.currentPlayerId());
         // resynchronise l'ordre des participants avant d'annoncer le tour
-        RoomParticipantsMapper.updateFromExtras(tableState, state.extras());
+        if (state.players() != null && state.players().isArray()) {
+            RoomParticipantsMapper.updateFromPlayers(tableState, state.players());
+        }
         if (!tableState.started()) {
             if (turnAnnouncementTracker.decide(false, null, -1, turn.round(), true, true).announce()) {
                 String message = turnController.formatTurn(turn, tableState);
@@ -921,7 +935,7 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
 
     private void renderPlayerCollections(GenericGameState state) {
         if (state != null) {
-            JsonNode extrasNode = mapper.valueToTree(state.extras());
+            JsonNode extrasNode = state.extras();
             var resolved = playerCollectionsViewModel.resolve(extrasNode, localUserId, localUsername);
             if (resolved.isPresent()) {
                 localPlayerId = resolved.get().playerId();
@@ -936,13 +950,14 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
     }
 
     private void renderShortcuts(GenericGameState state) {
-        if (state != null && state.pendingQuiz() != null && !isLocalQuiz(state.pendingQuiz())) {
+        if (state != null && state.pending() instanceof GenericGameState.PendingQuiz quiz && !isLocalQuiz(quiz)) {
             infoLabel.setText("");
         }
 
         // Ne pas écraser les raccourcis globaux de table (ex: b / Maj+b pour les bots) avant le démarrage.
         boolean allowDynamic = tableState != null && tableState.started();
-        Object raw = allowDynamic ? state.extras().get("shortcuts") : null;
+        JsonNode extras = state == null ? null : state.extras();
+        Object raw = allowDynamic && extras != null && extras.isObject() ? extras.get("shortcuts") : null;
         if (raw instanceof JsonNode node && node.isArray()) {
             // Les extras arrivent souvent en JsonNode : les convertir pour que le binding fonctionne.
             raw = mapper.convertValue(node, java.util.List.class);
@@ -1051,13 +1066,14 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         Integer currentId = tableState.currentPlayerId();
         int turn = tableState.turnRound();
         // Les positions par joueur sont dans extras.board.positions si exposé, sinon annoncer juste le tour.
-        Object boardNode = currentStateExtras().get("board");
+        GenericGameState state = lastState;
+        JsonNode boardNode = state == null ? null : state.board();
         String message = null;
-        if (boardNode instanceof JsonNode board && board.has("positions") && board.get("positions").isObject() && currentId != null) {
-            JsonNode pos = board.get("positions").get(String.valueOf(currentId));
-            if (pos != null && pos.isInt() && board.has("tiles") && board.get("tiles").isArray()) {
+        if (boardNode != null && boardNode.has("positions") && boardNode.get("positions").isObject() && currentId != null) {
+            JsonNode pos = boardNode.get("positions").get(String.valueOf(currentId));
+            if (pos != null && pos.isInt() && boardNode.has("tiles") && boardNode.get("tiles").isArray()) {
                 int index = pos.asInt();
-                int total = board.get("tiles").size();
+                int total = boardNode.get("tiles").size();
                 message = positionAnnouncementFormatter.formatPosition(index, total, turn);
             }
         }
@@ -1068,27 +1084,35 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
     }
 
     private void announceHand() {
-        Object handRaw = currentStateExtras().get("hand");
+        JsonNode extras = currentStateExtras();
+        Object handRaw = extras != null ? extras.get("hand") : null;
         List<String> hand = toStringList(handRaw);
-        emitter.announceEvent(listAnnouncementFormatter.format("Main", hand, "Main vide"));
+        emitter.announceEvent(listAnnouncementFormatter.format(
+                Internationalization.text("game.hand.title"),
+                hand,
+                Internationalization.text("game.hand.empty")
+        ));
     }
 
     private void announceBooks() {
-        Object booksRaw = currentStateExtras().get("books");
+        JsonNode extras = currentStateExtras();
+        Object booksRaw = extras != null ? extras.get("books") : null;
         List<String> books = toStringList(booksRaw);
         if (books == null || books.isEmpty()) {
-            emitter.announceEvent("Aucune famille complétée");
+            emitter.announceEvent(Internationalization.text("game.books.none"));
             return;
         }
-        emitter.announceEvent(listAnnouncementFormatter.format("Familles complétées", books, "Aucune famille complétée"));
+        emitter.announceEvent(listAnnouncementFormatter.format(
+                Internationalization.text("game.books.title"),
+                books,
+                Internationalization.text("game.books.none")
+        ));
     }
 
-    private Map<String, Object> currentStateExtras() {
+    private JsonNode currentStateExtras() {
         GenericGameState state = lastState;
-        if (state == null || state.extras() == null) {
-            return Map.of();
-        }
-        return state.extras();
+        JsonNode extras = state == null ? null : state.extras();
+        return extras != null && extras.isObject() ? extras : null;
     }
 
     private void updateCollectionsFromLists(java.util.List<String> shopping, java.util.List<String> basket, java.util.List<String> inventory) {
@@ -1158,21 +1182,21 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
     private record AskCardOption(String familyId, String memberId, String label) {}
 
     private void announceStats() {
-        if (lastState == null || lastState.extras() == null) {
-            emitter.announceEvent("Aucune statistique disponible.");
+        if (lastState == null || lastState.metadata() == null) {
+            emitter.announceEvent(Internationalization.text("game.stats.none"));
             return;
         }
-        Object metaNode = lastState.extras().get("metadata");
-        if (!(metaNode instanceof JsonNode node)) {
-            emitter.announceEvent("Statistiques non disponibles.");
+        JsonNode node = lastState.metadata();
+        if (node == null || !node.isObject()) {
+            emitter.announceEvent(Internationalization.text("game.stats.unavailable"));
             return;
         }
         int pollution = node.path("pollution").asInt(0);
         int maxPollution = node.path("maxPollution").asInt(0);
         int familyGoal = node.path("familyGoal").asInt(0);
         int books = 0;
-        Object playersNode = lastState.extras().get("players");
-        if (playersNode instanceof JsonNode pNode && pNode.isArray()) {
+        JsonNode pNode = lastState.players();
+        if (pNode != null && pNode.isArray()) {
             for (JsonNode p : pNode) {
                 books += p.path("books").isArray() ? p.get("books").size() : 0;
             }
@@ -1344,8 +1368,9 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
 
     private List<PlayerOption> extractAskTargets(GenericGameState state) {
         List<PlayerOption> res = new ArrayList<>();
-        Object pvNode = state.extras().get("playerViews");
-        if (pvNode instanceof JsonNode node && node.isArray()) {
+        JsonNode extras = state == null ? null : state.extras();
+        JsonNode node = extras != null && extras.isObject() ? extras.get("playerViews") : null;
+        if (node != null && node.isArray()) {
             for (JsonNode v : node) {
                 if (!v.path("id").isInt()) continue;
                 int id = v.get("id").asInt();
@@ -1359,8 +1384,9 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
 
     private List<AskCardOption> extractAskCards(GenericGameState state) {
         List<AskCardOption> res = new ArrayList<>();
-        Object handNode = state.extras().get("handCards");
-        if (handNode instanceof JsonNode node && node.isArray()) {
+        JsonNode extras = state == null ? null : state.extras();
+        JsonNode node = extras != null && extras.isObject() ? extras.get("handCards") : null;
+        if (node != null && node.isArray()) {
             for (JsonNode c : node) {
                 String familyId = c.path("familyId").asText("");
                 String memberId = c.path("memberId").asText("");
@@ -1375,8 +1401,9 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
 
     private List<AskCardOption> extractGiveCards(GenericGameState state) {
         List<AskCardOption> res = new ArrayList<>();
-        Object handNode = state.extras().get("handCards");
-        if (handNode instanceof JsonNode node && node.isArray()) {
+        JsonNode extras = state == null ? null : state.extras();
+        JsonNode node = extras != null && extras.isObject() ? extras.get("handCards") : null;
+        if (node != null && node.isArray()) {
             for (JsonNode c : node) {
                 String familyId = c.path("familyId").asText("");
                 String memberId = c.path("memberId").asText("");
@@ -1634,10 +1661,10 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
             return;
         }
         tableState.updateStatus(state.status());
-        if (state.extras().isEmpty()) {
+        if (state.players() == null || !state.players().isArray()) {
             return;
         }
-        RoomParticipantsMapper.updateFromExtras(tableState, state.extras());
+        RoomParticipantsMapper.updateFromPlayers(tableState, state.players());
     }
 
     private void announceQuizSelectionIfNeeded() {

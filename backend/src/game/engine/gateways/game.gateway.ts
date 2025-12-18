@@ -101,9 +101,6 @@ export class GameGateway implements OnGatewayConnection<WebSocket>, OnGatewayDis
         case 'game.actions':
           await this.handleActions(meta, payload);
           break;
-        case 'game.actions.available':
-          await this.handleAvailable(meta, payload);
-          break;
         case 'game.bot.play':
           await this.handleBot(meta, payload);
           break;
@@ -159,30 +156,6 @@ export class GameGateway implements OnGatewayConnection<WebSocket>, OnGatewayDis
     playingLog('ws.game.actions', { userId: meta.userId, roomId, gameType, count: actions.length });
     const nextState = await this.engine.applyActions(roomId, gameType, actions, meta.userId);
     this.broadcastState(gameType, roomId, nextState);
-  }
-
-  private async handleAvailable(meta: GameClient, payload: any) {
-    const client = meta.socket;
-    const roomId = Number(payload?.roomId ?? meta.roomId ?? 0);
-    const gameType = String(payload?.gameType ?? meta.gameType ?? '');
-    const playerId = payload?.playerId ? Number(payload.playerId) : meta.userId;
-    if (!roomId || !gameType) {
-      this.sendError(client, 'Parametres jeu manquants', 'game.actions.available');
-      return;
-    }
-    await this.engine.checkAccess(roomId, meta.userId);
-    const actions = await this.engine.getAvailableActions(roomId, gameType, playerId);
-    playingLog('ws.game.actions.available', {
-      userId: meta.userId,
-      roomId,
-      gameType,
-      playerId,
-      count: actions.length,
-    });
-    this.safeSend(client, {
-      type: 'game.actions.available',
-      payload: { actions, roomId, gameType, playerId },
-    });
   }
 
   private async handleBot(meta: GameClient, payload: any) {

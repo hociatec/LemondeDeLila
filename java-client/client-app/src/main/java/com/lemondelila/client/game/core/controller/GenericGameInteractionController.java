@@ -3,7 +3,7 @@ package com.lemondelila.client.game.core.controller;
 import com.lemondelila.client.game.core.model.ActionRequest;
 import com.lemondelila.client.game.core.model.GenericGameState;
 import com.lemondelila.client.game.core.model.PrimaryActionDescriptor;
-import com.lemondelila.client.game.core.service.GameRealtimeClient;
+import com.lemondelila.client.game.realtime.service.GameRealtimeSession;
 import com.lemondelila.client.game.room.service.RoomParticipantsMapper;
 import com.lemondelila.client.game.room.model.TableState;
 import java.util.Collections;
@@ -27,7 +27,7 @@ public final class GenericGameInteractionController {
     private static final String PARTICIPANT_ERROR = "Vous ne pouvez demarrer une partie avec un joueur.";
 
     private final String gameType;
-    private final GameRealtimeClient realtime;
+    private final GameRealtimeSession realtime;
     private final PrimaryActionDescriptor primaryAction;
     private final TableState tableState;
     private final int minimumParticipants;
@@ -35,12 +35,12 @@ public final class GenericGameInteractionController {
     private final AtomicBoolean detached = new AtomicBoolean(false);
     private volatile Integer roomId;
     private volatile Listener listener;
-    private GameRealtimeClient.Subscription subscription;
+    private GameRealtimeSession.Subscription subscription;
     private volatile boolean startPending = false;
     private volatile Consumer<GenericGameState.ActionLogEntry> historyRef;
 
     public GenericGameInteractionController(String gameType,
-                                            GameRealtimeClient realtime,
+                                            GameRealtimeSession realtime,
                                             PrimaryActionDescriptor primaryAction,
                                             TableState tableState,
                                             int minimumParticipants) {
@@ -79,7 +79,13 @@ public final class GenericGameInteractionController {
     private void openRealtime(int roomId) {
         closeRealtime();
         LOGGER.info("[interaction] open realtime room={} gameType={}", roomId, gameType);
-        subscription = realtime.open(roomId, gameType, this::notifyState, this::notifyError);
+        subscription = realtime.open(roomId, gameType, this::notifyState, this::notifyError, state -> {
+            if (state == com.lemondelila.client.framework.network.ws.RealtimeGateway.ConnectionState.CONNECTED) {
+                LOGGER.info("[ws-game] connected room={} gameType={}", roomId, gameType);
+            } else {
+                LOGGER.info("[ws-game] state={} room={} gameType={}", state, roomId, gameType);
+            }
+        });
     }
 
     private void closeRealtime() {
@@ -126,8 +132,8 @@ public final class GenericGameInteractionController {
                 clearStartPending();
             }
             tableState.updateStatus(state.status());
-            if (state.extras() != null && !state.extras().isEmpty()) {
-                RoomParticipantsMapper.updateFromExtras(tableState, state.extras());
+            if (state.players() != null && state.players().isArray()) {
+                RoomParticipantsMapper.updateFromPlayers(tableState, state.players());
             }
             LOGGER.debug("[interaction] state status={} actions={} pending={} logs={}", state.status(), state.actions().size(), state.pending(), state.logs().size());
             // Alimenter l'historique structuré si fourni

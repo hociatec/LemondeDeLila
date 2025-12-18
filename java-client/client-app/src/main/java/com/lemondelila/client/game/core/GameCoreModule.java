@@ -12,7 +12,7 @@ public final class GameCoreModule implements LilaModule {
     public void configure(ApplicationContext.Builder builder) {
         builder.bindAuto(GameInteractionRegistry.class);
         builder.bindAuto(com.lemondelila.client.game.core.service.GenericGameStateMapper.class);
-        builder.bindAuto(com.lemondelila.client.game.core.service.GameRealtimeClient.class);
+        builder.bindAuto(com.lemondelila.client.game.realtime.service.GameRealtimeSession.class);
         builder.bindAuto(com.lemondelila.client.game.core.controller.GenericUniversalInteractionProvider.class);
         java.nio.file.Path logPath = java.nio.file.Path.of(System.getProperty("user.dir")).resolve("logsse.txt");
         builder.bindInstance(com.lemondelila.client.game.core.service.SseLogger.class, new com.lemondelila.client.game.core.service.SseLogger(logPath));

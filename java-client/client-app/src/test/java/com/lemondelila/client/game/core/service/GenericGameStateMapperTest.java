@@ -27,10 +27,12 @@ class GenericGameStateMapperTest {
 
         GenericGameState state = stateMapper.map(node);
         assertEquals("started", state.status());
-        assertNotNull(state.pendingQuiz());
-        assertEquals("Q?", state.pendingQuiz().question());
-        assertEquals(2, state.pendingQuiz().choices().size());
-        assertEquals(7, state.pendingQuiz().playerId());
+        assertNotNull(state.pending());
+        assertTrue(state.pending() instanceof GenericGameState.PendingQuiz);
+        GenericGameState.PendingQuiz quiz = (GenericGameState.PendingQuiz) state.pending();
+        assertEquals("Q?", quiz.question());
+        assertEquals(2, quiz.choices().size());
+        assertEquals(7, quiz.playerId());
         assertEquals(1, state.actions().size());
         assertEquals("answer_quiz", state.actions().getFirst().type());
         assertEquals(1, state.actionLog().size());
@@ -52,7 +54,7 @@ class GenericGameStateMapperTest {
 
         GenericGameState state = stateMapper.map(node);
         assertEquals("pending", state.status());
-        assertNull(state.pendingQuiz());
+        assertFalse(state.pending() instanceof GenericGameState.PendingQuiz);
         assertNotNull(state.pending());
         assertTrue(state.pending() instanceof GenericGameState.PendingGeneric);
         GenericGameState.PendingGeneric pending = (GenericGameState.PendingGeneric) state.pending();

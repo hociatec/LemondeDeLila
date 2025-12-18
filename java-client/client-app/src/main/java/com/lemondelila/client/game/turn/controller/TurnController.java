@@ -1,6 +1,7 @@
 package com.lemondelila.client.game.turn.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.lemondelila.client.application.Internationalization;
 import com.lemondelila.client.game.room.model.TableState;
 import com.lemondelila.client.game.turn.model.TurnState;
 
@@ -33,10 +34,10 @@ public final class TurnController {
         if (tableState != null && tableState.started()) {
             String name = resolveCurrentName(turn, tableState);
             if (name != null && !name.isBlank()) {
-                return "C'est à " + name + " de jouer.";
+                return Internationalization.text("game.turn.player", name);
             }
         }
-        return "Tour en cours.";
+        return Internationalization.text("game.turn.default");
     }
 
     private String resolveCurrentName(TurnState turn, TableState tableState) {

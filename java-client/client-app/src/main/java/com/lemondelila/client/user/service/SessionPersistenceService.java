@@ -12,6 +12,8 @@ import com.lemondelila.client.security.EncryptedSessionVault;
 import com.lemondelila.client.security.SessionVault;
 import com.lemondelila.client.settings.model.AppSettings;
 import com.lemondelila.client.settings.service.AppSettingsService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -22,6 +24,7 @@ import java.time.Instant;
 
 public final class SessionPersistenceService implements AutoCloseable {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(SessionPersistenceService.class);
     private static final Path LEGACY_SESSION_FILE = Path.of("config", "session.json");
 
     private final DomainEventBus eventBus;

@@ -105,6 +105,32 @@ public final class RoomParticipantsMapper {
         tableState.updateParticipantOrder(order);
     }
 
+    public static void updateFromPlayers(TableState tableState, JsonNode playersNode) {
+        if (tableState == null || playersNode == null || !playersNode.isArray()) return;
+
+        List<PlayerState> players = new ArrayList<>();
+        List<BotState> bots = new ArrayList<>();
+        List<Integer> order = new ArrayList<>();
+
+        for (JsonNode p : playersNode) {
+            Integer id = p.path("id").isInt() ? p.get("id").asInt() : null;
+            String name = p.path("username").asText("Joueur");
+            boolean isBot = p.path("isBot").asBoolean(false);
+            if (isBot) {
+                mergeBot(bots, new BotState(id, name));
+            } else {
+                players.add(new PlayerState(id, name));
+            }
+            if (id != null && order.stream().noneMatch(existing -> Objects.equals(existing, id))) {
+                order.add(id);
+            }
+        }
+
+        tableState.updatePlayers(deduplicatePlayers(players));
+        tableState.updateBots(deduplicateBots(bots));
+        tableState.updateParticipantOrder(order);
+    }
+
     private static List<BotState> deduplicateBots(List<BotState> bots) {
         java.util.Map<Integer, BotState> byId = new java.util.HashMap<>();
         java.util.Map<String, BotState> byName = new java.util.HashMap<>();

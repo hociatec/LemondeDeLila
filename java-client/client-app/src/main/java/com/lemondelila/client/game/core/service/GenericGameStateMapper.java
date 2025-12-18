@@ -6,10 +6,11 @@ import com.lemondelila.client.game.core.contract.ContractAction;
 import com.lemondelila.client.game.core.contract.ContractActionLogEntry;
 import com.lemondelila.client.game.core.contract.ContractGameState;
 import com.lemondelila.client.game.core.contract.ContractPending;
+import com.lemondelila.client.game.turn.model.TurnState;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public final class GenericGameStateMapper {
@@ -27,6 +28,8 @@ public final class GenericGameStateMapper {
                 : null;
         boolean botThinking = json.path("botThinking").asBoolean(false);
 
+        TurnState turn = mapTurn(json.path("turn"), round);
+
         List<String> logs = new ArrayList<>();
         JsonNode logNode = json.path("log");
         if (logNode.isArray()) {
@@ -38,15 +41,14 @@ public final class GenericGameStateMapper {
             });
         }
 
-        GenericGameState.PendingQuiz pendingQuiz = null;
-        GenericGameState.PendingGeneric pendingGeneric = null;
+        GenericGameState.Pending pending = null;
         JsonNode pendingNode = json.path("pending");
         if (pendingNode.isObject() && "quiz".equalsIgnoreCase(pendingNode.path("type").asText())) {
             List<String> choices = new ArrayList<>();
             if (pendingNode.has("choices") && pendingNode.get("choices").isArray()) {
                 pendingNode.get("choices").forEach(c -> choices.add(c.asText("")));
             }
-            pendingQuiz = new GenericGameState.PendingQuiz(
+            pending = new GenericGameState.PendingQuiz(
                     pendingNode.path("question").asText(""),
                     choices,
                     pendingNode.path("playerId").isInt() ? pendingNode.get("playerId").asInt() : null
@@ -56,7 +58,7 @@ public final class GenericGameStateMapper {
             String name = pendingNode.path("name").asText("");
             Integer playerId = pendingNode.path("playerId").isInt() ? pendingNode.get("playerId").asInt() : null;
             Integer targetPlayerId = pendingNode.path("targetPlayerId").isInt() ? pendingNode.get("targetPlayerId").asInt() : null;
-            pendingGeneric = new GenericGameState.PendingGeneric(
+            pending = new GenericGameState.PendingGeneric(
                     pendingType,
                     name,
                     playerId,
@@ -77,26 +79,13 @@ public final class GenericGameStateMapper {
             });
         }
 
-        Map<String, Object> extras = new HashMap<>();
-        if (json.has("players")) {
-            extras.put("players", json.get("players"));
-        }
-        if (json.has("board")) {
-            extras.put("board", json.get("board"));
-        }
-        if (json.has("turn")) {
-            extras.put("turn", json.get("turn"));
-        }
-        if (json.has("deck")) {
-            extras.put("deck", json.get("deck"));
-        }
-        if (json.has("extras") && json.get("extras").isObject()) {
-            json.get("extras").fields().forEachRemaining(entry -> extras.putIfAbsent(entry.getKey(), entry.getValue()));
-        }
+        JsonNode players = json.has("players") && json.get("players").isArray() ? json.get("players") : null;
+        JsonNode board = json.has("board") && json.get("board").isObject() ? json.get("board") : null;
+        JsonNode metadata = json.has("metadata") && json.get("metadata").isObject() ? json.get("metadata") : null;
+        JsonNode extras = json.has("extras") && json.get("extras").isObject() ? json.get("extras") : null;
+        // turn est mappé sur un champ typé (TurnState) ; on ne le duplique plus dans extras.
         List<GenericGameState.ActionLogEntry> actionLog = new ArrayList<>();
-        if (json.has("metadata")) {
-            extras.put("metadata", json.get("metadata"));
-            JsonNode metadata = json.get("metadata");
+        if (metadata != null) {
             JsonNode actionLogNode = metadata.path("actionLog");
             if (actionLogNode.isArray()) {
                 actionLogNode.forEach(entry -> {
@@ -109,24 +98,21 @@ public final class GenericGameStateMapper {
                 });
             }
         }
-        if (json.has("catalog")) {
-            extras.put("catalog", json.get("catalog"));
-        }
-        if (json.has("pollution")) {
-            extras.put("pollution", json.get("pollution"));
-        }
-        if (pendingNode.isObject()) {
-            String pendingType = pendingNode.path("type").asText("");
-            if ("exchange".equalsIgnoreCase(pendingType)) {
-                extras.put("pendingExchange", pendingNode);
-            } else if ("vote".equalsIgnoreCase(pendingType) || "day_vote".equalsIgnoreCase(pendingType)) {
-                extras.put("pendingVote", pendingNode);
-            }
-        }
+        return new GenericGameState(status, phase, round, turnIndex, lastRoll, logs, turn, botThinking, players, board, metadata, extras, actions, actionLog, pending);
+    }
 
-        Object pending = pendingNode.isMissingNode() ? null : pendingNode;
-        Object exposedPending = pendingQuiz != null ? pendingQuiz : pendingGeneric;
-        return new GenericGameState(status, phase, round, turnIndex, lastRoll, logs, pendingQuiz, botThinking, extras, actions, actionLog, exposedPending);
+    private TurnState mapTurn(JsonNode turnNode, int roundFallback) {
+        if (turnNode == null || !turnNode.isObject()) {
+            return null;
+        }
+        int round = turnNode.path("round").asInt(roundFallback > 0 ? roundFallback : 1);
+        int index = turnNode.path("index").asInt(-1);
+        int direction = turnNode.path("direction").asInt(1);
+        Integer currentPlayerId = turnNode.has("currentPlayerId") && turnNode.get("currentPlayerId").isInt()
+                ? turnNode.get("currentPlayerId").asInt()
+                : null;
+        String label = turnNode.has("label") && turnNode.get("label").isTextual() ? turnNode.get("label").asText() : null;
+        return new TurnState(round, index, direction, currentPlayerId, label);
     }
 
     /**
@@ -145,6 +131,8 @@ public final class GenericGameStateMapper {
                 ? json.get("lastRoll").asInt()
                 : null;
         boolean botThinking = json.path("botThinking").asBoolean(false);
+
+        TurnState turn = mapTurn(json.path("turn"), round);
 
         List<String> logs = new ArrayList<>();
         JsonNode logNode = json.path("log");

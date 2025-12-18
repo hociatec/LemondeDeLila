@@ -187,20 +187,6 @@ export class GameEngineService {
     return this.exposeState(next, gameType);
   }
 
-  async getAvailableActions(roomId: number, gameType: string, playerId: number): Promise<GameSingleActionDto[]> {
-    const state = await this.getState(roomId, gameType);
-    const currentPlayerId = state.turn?.currentPlayerId ?? null;
-    const currentPlayer = state.players?.find((p) => p.id === currentPlayerId);
-    if (currentPlayer?.isBot && currentPlayer.id !== playerId) {
-      return [];
-    }
-    const handler = this.registry.getHandler(gameType);
-    if (handler?.getAvailableActions) {
-      return handler.getAvailableActions(state, playerId) ?? [];
-    }
-    return [];
-  }
-
   private isBotTurn(state: GameStateEntity): boolean {
     if (state.status === 'finished') return false;
     const currentId = state.turn?.currentPlayerId ?? null;

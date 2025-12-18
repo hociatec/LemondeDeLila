@@ -1,5 +1,8 @@
 package com.lemondelila.client.game.core.model;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.lemondelila.client.game.turn.model.TurnState;
+
 import java.util.Collections;
 import java.util.List;
 
@@ -13,12 +16,15 @@ public record GenericGameState(
         int turnIndex,
         Integer lastRoll,
         List<String> logs,
-        PendingQuiz pendingQuiz,
+        TurnState turn,
         boolean botThinking,
-        java.util.Map<String, Object> extras,
+        JsonNode players,
+        JsonNode board,
+        JsonNode metadata,
+        JsonNode extras,
         List<GenericAction> actions,
         List<ActionLogEntry> actionLog,
-        Object pending
+        Pending pending
 ) {
     public static GenericGameState empty() {
         return new GenericGameState(
@@ -30,7 +36,10 @@ public record GenericGameState(
                 java.util.List.<String>of(),
                 null,
                 false,
-                java.util.Map.<String, Object>of(),
+                null,
+                null,
+                null,
+                null,
                 java.util.List.<GenericAction>of(),
                 java.util.List.<ActionLogEntry>of(),
                 null
@@ -41,23 +50,28 @@ public record GenericGameState(
         return logs == null ? List.of() : Collections.unmodifiableList(logs);
     }
 
-    public java.util.Map<String, Object> extras() {
-        return extras == null ? java.util.Map.of() : java.util.Collections.unmodifiableMap(extras);
-    }
-
     public List<GenericAction> actions() {
         return actions == null ? List.of() : Collections.unmodifiableList(actions);
     }
 
-    public record PendingQuiz(String question, List<String> choices, Integer playerId) {
+    public sealed interface Pending permits PendingQuiz, PendingGeneric {
+        String type();
+    }
+
+    public record PendingQuiz(String question, List<String> choices, Integer playerId) implements Pending {
+        @Override
+        public String type() {
+            return "quiz";
+        }
+
         public List<String> choices() {
             return choices == null ? List.of() : Collections.unmodifiableList(choices);
         }
     }
 
-    public record PendingGeneric(String type, String name, Integer playerId, Integer targetPlayerId, Object raw) {}
+    public record PendingGeneric(String type, String name, Integer playerId, Integer targetPlayerId, Object raw) implements Pending {}
 
     public record GenericAction(String type, String label, Object payload) {}
 
-    public record ActionLogEntry(Integer actorId, String type, Object payload, Long timestamp, String step) {}
+    public record ActionLogEntry(Integer actorId, String type, JsonNode payload, Long timestamp, String step) {}
 }

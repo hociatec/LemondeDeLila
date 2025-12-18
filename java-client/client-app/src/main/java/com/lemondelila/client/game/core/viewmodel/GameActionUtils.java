@@ -1,5 +1,6 @@
 package com.lemondelila.client.game.core.viewmodel;
 
+import com.lemondelila.client.application.Internationalization;
 import com.lemondelila.client.game.core.model.GenericGameState;
 
 import javax.swing.ListModel;
@@ -46,10 +47,10 @@ public final class GameActionUtils {
     public static String buildQuizSelectionAnnouncement(List<String> choices, int index) {
         int total = choices == null ? 0 : choices.size();
         if (total <= 0 || index < 0 || index >= total) {
-            return "Quiz : réponse invalide.";
+            return Internationalization.text("game.quiz.invalid");
         }
         String choice = choices.get(index);
-        return "Quiz, reponse " + (index + 1) + " sur " + total + " : " + choice;
+        return Internationalization.text("game.quiz.choice", index + 1, total, choice);
     }
 
     private static String normalize(GenericGameState.GenericAction action) {

@@ -5,7 +5,7 @@ import com.lemondelila.client.framework.core.di.Inject;
 import com.lemondelila.client.framework.core.event.DomainEventBus;
 import com.lemondelila.client.game.core.model.PrimaryActionDescriptor;
 import com.lemondelila.client.game.core.service.GameInteractionRegistry;
-import com.lemondelila.client.game.core.service.GameRealtimeClient;
+import com.lemondelila.client.game.realtime.service.GameRealtimeSession;
 import com.lemondelila.client.game.core.view.GameInteractionComponent;
 import com.lemondelila.client.game.core.view.GenericGameInteractionComponent;
 import com.lemondelila.client.game.history.controller.GameHistoryController;
@@ -29,7 +29,7 @@ public final class GenericUniversalInteractionProvider implements GameInteractio
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GenericUniversalInteractionProvider.class);
 
-    private final GameRealtimeClient realtimeClient;
+    private final GameRealtimeSession realtimeClient;
     private final GameActionEmitter emitter;
     private final GameHistoryController history;
     private final TableState tableState;
@@ -41,7 +41,7 @@ public final class GenericUniversalInteractionProvider implements GameInteractio
 
     @Inject
     public GenericUniversalInteractionProvider(GameInteractionRegistry registry,
-                                               GameRealtimeClient realtimeClient,
+                                               GameRealtimeSession realtimeClient,
                                                GameActionEmitter emitter,
                                                GameHistoryController history,
                                                TableState tableState,

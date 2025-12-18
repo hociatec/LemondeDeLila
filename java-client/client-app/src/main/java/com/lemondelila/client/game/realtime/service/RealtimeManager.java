@@ -11,6 +11,8 @@ import com.lemondelila.client.framework.network.realtime.RealtimeSignatureServic
 import com.lemondelila.client.framework.network.ws.RealtimeGateway;
 import com.lemondelila.client.framework.network.ws.StandardRealtimeGateway;
 import com.lemondelila.client.user.model.ClientSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -27,6 +29,8 @@ import java.util.function.Supplier;
  * Manager générique pour ouvrir des canaux temps réel et envoyer des commandes.
  */
 public final class RealtimeManager {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(RealtimeManager.class);
 
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
