@@ -132,7 +132,8 @@ public final class SessionPersistenceService implements AutoCloseable {
     private void deleteLegacyFile() {
         try {
             Files.deleteIfExists(LEGACY_SESSION_FILE);
-        } catch (IOException ignored) {
+        } catch (IOException ex) {
+            LOGGER.debug("[session] impossible de supprimer l'ancien fichier de session: {}", ex.getMessage());
         }
     }
 }

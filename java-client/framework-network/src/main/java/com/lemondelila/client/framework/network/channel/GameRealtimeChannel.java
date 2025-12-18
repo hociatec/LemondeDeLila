@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.TreeMap;
 import java.util.function.Supplier;
 
 public final class GameRealtimeChannel implements RealtimeChannel {
@@ -30,7 +31,7 @@ public final class GameRealtimeChannel implements RealtimeChannel {
 
     @Override
     public URI resolve(String token, Integer roomId, Map<String, String> additionalParams) {
-        Map<String, String> params = new HashMap<>(additionalParams == null ? Map.of() : additionalParams);
+        Map<String, String> params = new TreeMap<>(additionalParams == null ? Map.of() : additionalParams);
         return resolveWithParams(token, roomId, params);
     }
 

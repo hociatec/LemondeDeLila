@@ -87,6 +87,11 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.5</version>
+            </plugin>
             <!-- GÃ©nÃ¨re le .jar avec la classe principale -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

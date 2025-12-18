@@ -8,8 +8,8 @@ import com.lemondelila.client.framework.core.event.DomainEventBus;
 import com.lemondelila.client.framework.network.channel.GameRealtimeChannel;
 import com.lemondelila.client.framework.network.config.NetworkEndpoints;
 import com.lemondelila.client.framework.network.realtime.RealtimeSignatureService;
-import com.lemondelila.client.framework.network.ws.StandardRealtimeGateway;
 import com.lemondelila.client.framework.network.ws.RealtimeGateway;
+import com.lemondelila.client.framework.network.ws.StandardRealtimeGateway;
 import com.lemondelila.client.user.model.ClientSession;
 
 import java.net.URI;
@@ -18,11 +18,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
- * Manager g├®n├®rique pour ouvrir des canaux temps r├®el et envoyer des commandes.
+ * Manager générique pour ouvrir des canaux temps réel et envoyer des commandes.
  */
 public final class RealtimeManager {
 
@@ -48,21 +50,44 @@ public final class RealtimeManager {
         this.signatureService = Objects.requireNonNull(signatureService, "signatureService");
     }
 
-    public ChannelSubscription openRoomChannel(Integer roomId, Consumer<JsonNode> handler, Consumer<RealtimeGateway.ConnectionState> onState) {
-        return openChannel(roomId, handler, Map.of(), onState);
+    public ChannelSubscription openRoomChannel(Integer roomId,
+                                               Consumer<JsonNode> handler,
+                                               Consumer<RealtimeGateway.ConnectionState> onState) {
+        return openChannel(endpoints::realtimeGateway, roomId, handler, Map.of(), true, onState);
     }
 
     public ChannelSubscription openChannel(Integer roomId,
                                            Consumer<JsonNode> handler,
                                            Map<String, String> extraParams,
                                            Consumer<RealtimeGateway.ConnectionState> onState) {
+        return openChannel(endpoints::realtimeGateway, roomId, handler, extraParams, true, onState);
+    }
+
+    /**
+     * Ouvre un canal vers le moteur de jeu (/ws/game).
+     * Le backend attend le token en query param (auth WS) et le gameType dans le payload des messages (join/state/actions).
+     */
+    public ChannelSubscription openGameChannel(Integer roomId,
+                                               Consumer<JsonNode> handler,
+                                               Consumer<RealtimeGateway.ConnectionState> onState) {
+        return openChannel(endpoints::gameGateway, roomId, handler, Map.of(), false, onState);
+    }
+
+    private ChannelSubscription openChannel(Supplier<URI> baseSupplier,
+                                           Integer roomId,
+                                           Consumer<JsonNode> handler,
+                                           Map<String, String> extraParams,
+                                           boolean includeSignature,
+                                           Consumer<RealtimeGateway.ConnectionState> onState) {
         String token = requireToken();
         Map<String, String> params = new HashMap<>(extraParams == null ? Map.of() : extraParams);
-        String signature = signatureService.signature();
-        if (signature != null && !signature.isBlank()) {
-            params.put("signature", signature);
+        if (includeSignature) {
+            String signature = signatureService.signature();
+            if (signature != null && !signature.isBlank()) {
+                params.put("signature", signature);
+            }
         }
-        Supplier<URI> supplier = () -> new GameRealtimeChannel(endpoints).resolve(token, roomId, params);
+        Supplier<URI> supplier = () -> new GameRealtimeChannel(baseSupplier).resolve(token, roomId, params);
         StandardRealtimeGateway gateway = new StandardRealtimeGateway(httpClient, supplier, objectMapper, eventBus);
         ChannelSubscription subscription = new ChannelSubscription(gateway, objectMapper, onState);
         subscription.start(handler);
@@ -72,18 +97,19 @@ public final class RealtimeManager {
     private String requireToken() {
         Optional<ClientSession.AuthState> auth = session.authenticated();
         if (auth.isEmpty() || auth.get().token() == null || auth.get().token().isBlank()) {
-            throw new IllegalStateException("Authentification requise pour le temps r\u00E9el");
+            throw new IllegalStateException("Authentification requise pour le temps réel");
         }
         return auth.get().token();
     }
 
     public static final class ChannelSubscription implements AutoCloseable {
 
+        private static final int PENDING_QUEUE_MAX = 200;
+
         private final StandardRealtimeGateway gateway;
         private final ObjectMapper mapper;
         private final Consumer<RealtimeGateway.ConnectionState> stateListener;
-        private static final int CONNECT_WAIT_ATTEMPTS = 200;
-        private static final long CONNECT_WAIT_DELAY_MS = 50L;
+        private final Queue<ObjectNode> pendingMessages = new ConcurrentLinkedQueue<>();
         private volatile boolean connected;
         private volatile boolean closed;
 
@@ -99,6 +125,9 @@ public final class RealtimeManager {
             gateway.onMessage(handler);
             gateway.onConnectionState(state -> {
                 connected = state == RealtimeGateway.ConnectionState.CONNECTED;
+                if (connected) {
+                    flushPending();
+                }
                 if (stateListener != null) {
                     stateListener.accept(state);
                 }
@@ -106,29 +135,26 @@ public final class RealtimeManager {
             gateway.connect();
         }
 
-        private void ensureConnected() {
-            if (connected) return;
-            gateway.connect();
-            int attempts = 0;
-            while (!connected && attempts < CONNECT_WAIT_ATTEMPTS) {
+        private void flushPending() {
+            if (closed || !connected) {
+                return;
+            }
+            ObjectNode next;
+            while ((next = pendingMessages.poll()) != null) {
                 try {
-                    Thread.sleep(CONNECT_WAIT_DELAY_MS);
-                } catch (InterruptedException ignored) {
-                    Thread.currentThread().interrupt();
+                    gateway.send(next);
+                } catch (Exception ex) {
+                    LOGGER.debug("[realtime] flushPending failed, will retry later: {}", ex.getMessage());
+                    pendingMessages.offer(next);
                     break;
                 }
-                attempts++;
-            }
-            if (!connected) {
-                throw new IllegalStateException("Socket non connecté (timeout)");
             }
         }
 
         public void send(String type, Map<String, ?> payload) {
             if (closed) {
-                throw new IllegalStateException("Canal temps r\u00E9el ferm\u00E9");
+                throw new IllegalStateException("Canal temps réel fermé");
             }
-            ensureConnected();
             ObjectNode message = mapper.createObjectNode();
             message.put("type", type);
             if (payload == null || payload.isEmpty()) {
@@ -136,12 +162,23 @@ public final class RealtimeManager {
             } else {
                 message.set("payload", mapper.valueToTree(payload));
             }
-            gateway.send(message);
+
+            if (connected) {
+                gateway.send(message);
+                return;
+            }
+
+            if (pendingMessages.size() >= PENDING_QUEUE_MAX) {
+                pendingMessages.poll();
+            }
+            pendingMessages.offer(message);
+            gateway.connect();
         }
 
         @Override
         public void close() {
             closed = true;
+            pendingMessages.clear();
             gateway.close();
             connected = false;
         }

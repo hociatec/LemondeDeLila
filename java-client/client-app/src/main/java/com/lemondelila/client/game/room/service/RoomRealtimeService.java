@@ -167,8 +167,8 @@ public final class RoomRealtimeService implements AutoCloseable {
         String type = message.path("type").asText("");
         switch (type) {
             case "room.created" -> publishRoomCreated(roomId, room, payload);
-            case "bot.added", "bot-added" -> publishBotAdded(roomId, payload.path("bot"));
-            case "bot.removed", "bot-removed" -> publishBotRemoved(roomId, payload);
+            case "bot.added" -> publishBotAdded(roomId, payload.path("bot"));
+            case "bot.removed" -> publishBotRemoved(roomId, payload);
             case "room.privacy" -> publishRoomPrivacyChanged(roomId, payload);
             case "state-updated" -> publishStateUpdated(roomId, payload);
             case "error" -> publishOperationFailed(payload.path("message").asText("Erreur temps réel"));
@@ -295,7 +295,8 @@ public final class RoomRealtimeService implements AutoCloseable {
         }
         try {
             return Integer.parseInt(String.valueOf(candidate));
-        } catch (Exception ignored) {
+        } catch (Exception ex) {
+            LOGGER.debug("[ws-room] invalid roomId payload candidate={} err={}", candidate, ex.getMessage());
             return 0;
         }
     }

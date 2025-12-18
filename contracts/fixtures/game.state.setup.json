@@ -1,0 +1,14 @@
+{
+  "status": "setup",
+  "phase": "playing",
+  "round": 1,
+  "turnIndex": 0,
+  "lastRoll": null,
+  "log": [],
+  "players": [{ "id": 10, "username": "alice", "isBot": false }],
+  "turn": { "currentPlayerId": 10, "direction": 1, "label": "La table PanierExpress a été créée, ajoutez des bots et démarrez-la !" },
+  "pending": null,
+  "metadata": { "gameType": "PanierExpress", "generatedAt": "2025-01-01T00:00:00.000Z" },
+  "botThinking": false,
+  "actions": []
+}

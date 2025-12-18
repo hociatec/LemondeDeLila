@@ -1,9 +1,6 @@
 import { GameStateEntity } from '../../core/entities/game-state.entity';
 import { GameSingleActionDto, GameStateWithActions } from '../dto/game-action.dto';
-
-export interface BotStrategy {
-  suggest(state: GameStateEntity, botPlayerId: number): GameSingleActionDto[] | null;
-}
+import type { BotStrategy } from '../../modules/bot/bot-strategy.interface';
 
 export interface GameRulesAdapter {
   readonly gameType: string;

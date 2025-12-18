@@ -4,6 +4,10 @@ export type TurnStateEntity = {
   currentPlayerId: number | null;
   direction: 1 | -1;
   skippedPlayerIds?: number[];
+  /**
+   * Libellé prêt à afficher pour le tour courant (serveur source de vérité).
+   */
+  label?: string;
 };
 
 export type PlayerStateEntity = {

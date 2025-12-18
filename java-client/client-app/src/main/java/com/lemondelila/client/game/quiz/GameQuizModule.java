@@ -3,7 +3,6 @@ package com.lemondelila.client.game.quiz;
 import com.google.auto.service.AutoService;
 import com.lemondelila.client.framework.core.context.ApplicationContext;
 import com.lemondelila.client.framework.core.module.LilaModule;
-import com.lemondelila.client.game.quiz.controller.QuizController;
 import com.lemondelila.client.game.quiz.service.DefaultGameQuizComponentFactory;
 import com.lemondelila.client.game.quiz.view.GameQuizComponentFactory;
 
@@ -12,7 +11,6 @@ public final class GameQuizModule implements LilaModule {
 
     @Override
     public void configure(ApplicationContext.Builder builder) {
-        builder.bindAuto(QuizController.class);
         builder.bind(GameQuizComponentFactory.class, DefaultGameQuizComponentFactory.class);
     }
 

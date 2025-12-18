@@ -7,6 +7,7 @@ import { InventoryModule } from '../modules/inventory/inventory.module';
 import { ExchangeModule } from '../modules/exchange/exchange.module';
 import { QuizModule } from '../modules/quiz/quiz.module';
 import { EffectsModule } from '../modules/effects/effects.module';
+import { BotModule } from '../modules/bot/bot.module';
 import { TurnModule } from '../modules/turn/turn.module';
 import { VictoryModule } from '../modules/victory/victory.module';
 
@@ -19,6 +20,7 @@ import { VictoryModule } from '../modules/victory/victory.module';
     ExchangeModule,
     QuizModule,
     EffectsModule,
+    BotModule,
     TurnModule,
     VictoryModule,
   ],

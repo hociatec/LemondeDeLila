@@ -23,7 +23,8 @@ public final class SseLogger {
                 Files.createDirectories(parent);
             }
             writeLine("SseLogger initialisé (" + file.toAbsolutePath() + ")");
-        } catch (IOException ignored) {
+        } catch (IOException ex) {
+            System.err.println("Impossible d'initialiser SseLogger (" + file + "): " + ex.getMessage());
         }
     }
 

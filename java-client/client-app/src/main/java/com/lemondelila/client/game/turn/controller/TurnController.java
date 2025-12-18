@@ -4,10 +4,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.lemondelila.client.game.room.model.TableState;
 import com.lemondelila.client.game.turn.model.TurnState;
 
+import java.util.Objects;
 import java.util.Optional;
 
 /**
- * Contrôleur chargé de mapper l'état de tour et de fournir des annonces formatées.
+ * Contrôleur chargé de mapper l'état de tour et de fournir des annonces "serveur source de vérité".
  */
 public final class TurnController {
 
@@ -21,98 +22,55 @@ public final class TurnController {
         Integer currentPlayerId = turnNode.has("currentPlayerId") && turnNode.get("currentPlayerId").isInt()
                 ? turnNode.get("currentPlayerId").asInt()
                 : null;
-        return Optional.of(new TurnState(round, index, direction, currentPlayerId));
+        String label = turnNode.has("label") && turnNode.get("label").isTextual() ? turnNode.get("label").asText() : null;
+        return Optional.of(new TurnState(round, index, direction, currentPlayerId, label));
     }
 
     public String formatTurn(TurnState turn, TableState tableState) {
-        if (tableState != null && !tableState.started()) {
-            String game = tableState.gameType() == null ? "La table" : "La table " + tableState.gameType();
-            return game + " a été créée, ajoutez des bots et démarrez-la !";
+        if (turn != null && turn.label() != null && !turn.label().isBlank()) {
+            return turn.label();
         }
-        String name = resolveName(turn, tableState);
-        return "Tour de " + name + ".";
+        if (tableState != null && tableState.started()) {
+            String name = resolveCurrentName(turn, tableState);
+            if (name != null && !name.isBlank()) {
+                return "C'est à " + name + " de jouer.";
+            }
+        }
+        return "Tour en cours.";
     }
 
-    private String resolveName(TurnState turn, TableState tableState) {
-        String fallback = "Joueur";
-        if (tableState == null) {
-            return fallback;
-        }
-        // Priorité absolue : currentPlayerId
-        if (turn.currentPlayerId() != null) {
-            Integer id = turn.currentPlayerId();
-            String byPlayer = tableState.players().stream()
-                    .filter(p -> p.id() != null && p.id().equals(id))
-                    .map(p -> p.username() == null || p.username().isBlank() ? "Joueur" : p.username())
+    private String resolveCurrentName(TurnState turn, TableState tableState) {
+        Integer currentPlayerId = turn != null ? turn.currentPlayerId() : null;
+        if (currentPlayerId != null) {
+            var byId = tableState.players().stream()
+                    .filter(p -> p != null && Objects.equals(p.id(), currentPlayerId))
                     .findFirst()
                     .orElse(null);
-            if (byPlayer != null) {
-                return byPlayer;
+            if (byId != null && byId.username() != null && !byId.username().isBlank()) {
+                return byId.username();
             }
-            String byBot = tableState.bots().stream()
-                    .filter(b -> b.id() != null && b.id().equals(id))
-                    .map(b -> b.name() == null || b.name().isBlank() ? "Bot" : b.name())
+            var bot = tableState.bots().stream()
+                    .filter(b -> b != null && Objects.equals(b.id(), currentPlayerId))
                     .findFirst()
                     .orElse(null);
-            if (byBot != null) {
-                return byBot;
-            }
-            // Fallback : si l'ID est présent mais pas trouvé dans les listes locales, au moins varier le libellé.
-            if (id != null) {
-                return "Joueur " + id;
-            }
-        }
-        var order = tableState.participantOrder();
-        if (turn.index() >= 0 && turn.index() < order.size()) {
-            Integer id = order.get(turn.index());
-            if (id != null) {
-                String byPlayer = tableState.players().stream()
-                        .filter(p -> p.id() != null && p.id().equals(id))
-                        .map(p -> p.username() == null || p.username().isBlank() ? "Joueur" : p.username())
-                        .findFirst()
-                        .orElse(null);
-                if (byPlayer != null) {
-                    return byPlayer;
-                }
-                String byBot = tableState.bots().stream()
-                        .filter(b -> b.id() != null && b.id().equals(id))
-                        .map(b -> b.name() == null || b.name().isBlank() ? "Bot" : b.name())
-                    .findFirst()
-                    .orElse(null);
-                if (byBot != null) {
-                    return byBot;
-                }
+            if (bot != null && bot.name() != null && !bot.name().isBlank()) {
+                return bot.name();
             }
         }
 
+        int idx = turn != null ? turn.index() : -1;
+        if (idx < 0) idx = tableState.turnIndex();
         var players = tableState.players();
         var bots = tableState.bots();
-        int totalPlayers = players.size();
-        int totalParticipants = totalPlayers + bots.size();
-
-        if (turn.index() >= 0 && turn.index() < totalParticipants) {
-            if (turn.index() < totalPlayers) {
-                String candidate = players.get(turn.index()).username();
-                if (candidate != null && !candidate.isBlank()) {
-                    return candidate;
-                }
-                return "Joueur";
-            } else {
-                int botIndex = turn.index() - totalPlayers;
-                if (botIndex >= 0 && botIndex < bots.size()) {
-                    String botName = bots.get(botIndex).name();
-                    if (botName != null && !botName.isBlank()) {
-                        return botName;
-                    }
-                    return "Bot";
-                }
-            }
+        if (idx >= 0 && idx < players.size()) {
+            String username = players.get(idx).username();
+            return username != null && !username.isBlank() ? username : null;
         }
-        // Ultime fallback : si des bots existent, annoncer le premier bot plutôt que "Joueur".
-        if (!bots.isEmpty()) {
-            String botName = bots.get(0).name();
-            return (botName == null || botName.isBlank()) ? "Bot" : botName;
+        int botIdx = idx - players.size();
+        if (botIdx >= 0 && botIdx < bots.size()) {
+            String name = bots.get(botIdx).name();
+            return name != null && !name.isBlank() ? name : null;
         }
-        return fallback;
+        return null;
     }
 }

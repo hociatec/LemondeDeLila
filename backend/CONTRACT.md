@@ -4,6 +4,7 @@ Objectif : tout client reste générique. Le serveur est la seule source de vér
 
 ## Schéma d’état exposé (`GameStateWithActions`)
 - Champ `status` + `turn` + `players` + `log` issus du moteur.
+- Champ `turn.label` (si présent) : libellé prêt à afficher pour le tour courant (serveur source de vérité).
 - Champ `actions`: tableau d’objets `{ type: string; label?: string; payload?: object }` prêts à être renvoyés tels quels.
 - Champ `pending`: objet décrivant l’attente en cours (ou `null`).
   - Quiz : `{ type: "quiz", question, choices: string[], playerId }`

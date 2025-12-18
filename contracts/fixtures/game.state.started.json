@@ -1,0 +1,17 @@
+{
+  "status": "started",
+  "phase": "playing",
+  "round": 1,
+  "turnIndex": 0,
+  "lastRoll": null,
+  "log": [],
+  "players": [
+    { "id": 10, "username": "alice", "isBot": false },
+    { "id": -1, "username": "Bot 1", "isBot": true }
+  ],
+  "turn": { "currentPlayerId": 10, "direction": 1, "label": "C'est à alice de jouer." },
+  "pending": null,
+  "metadata": { "gameType": "PanierExpress", "generatedAt": "2025-01-01T00:00:00.000Z" },
+  "botThinking": false,
+  "actions": [{ "type": "roll", "label": "Lancer le dé", "payload": {} }]
+}

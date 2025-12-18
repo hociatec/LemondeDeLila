@@ -14,6 +14,7 @@ import com.lemondelila.client.game.quiz.view.GameQuizComponentFactory;
 import com.lemondelila.client.game.room.event.StartRoomRequested;
 import com.lemondelila.client.game.room.model.RoomDetailsState;
 import com.lemondelila.client.game.room.model.TableState;
+import com.lemondelila.client.game.turn.controller.TurnController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,6 +37,7 @@ public final class GenericUniversalInteractionProvider implements GameInteractio
     private final FocusHighlighter focusHighlighter;
     private final Optional<GameQuizComponentFactory> quizFactory;
     private final DomainEventBus eventBus;
+    private final TurnController turnController;
 
     @Inject
     public GenericUniversalInteractionProvider(GameInteractionRegistry registry,
@@ -44,6 +46,7 @@ public final class GenericUniversalInteractionProvider implements GameInteractio
                                                GameHistoryController history,
                                                TableState tableState,
                                                RoomDetailsState detailsState,
+                                               TurnController turnController,
                                                FocusHighlighter focusHighlighter,
                                                Optional<GameQuizComponentFactory> quizFactory,
                                                DomainEventBus eventBus) {
@@ -52,6 +55,7 @@ public final class GenericUniversalInteractionProvider implements GameInteractio
         this.history = history;
         this.tableState = tableState;
         this.detailsState = detailsState;
+        this.turnController = turnController;
         this.focusHighlighter = focusHighlighter;
         this.quizFactory = quizFactory;
         this.eventBus = eventBus;
@@ -81,6 +85,7 @@ public final class GenericUniversalInteractionProvider implements GameInteractio
                 emitter,
                 history,
                 tableState,
+                turnController,
                 focusHighlighter,
                 quizFactory,
                 (PrimaryActionDescriptor) null,

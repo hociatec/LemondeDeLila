@@ -5,33 +5,36 @@ import { GameCoreService } from '../../core/services/game-core.service';
 import { GameSingleActionDto, GameStateResponse, GameStateWithActions } from '../dto/game-action.dto';
 import { GameRegistryService } from './game-registry.service';
 import { GameStateEntity } from '../../core/entities/game-state.entity';
-import type { BotStrategy, GameRulesAdapter } from '../interfaces/game-rules-adapter.interface';
+import type { GameRulesAdapter } from '../interfaces/game-rules-adapter.interface';
 import { playingLog } from '../../../common/utils/playing-logger';
+import { TurnLabelService } from '../../modules/turn/services/turn-label.service';
+import { BotRunnerService } from '../../modules/bot/services/bot-runner.service';
+import { BotSchedulerService } from '../../modules/bot/services/bot-scheduler.service';
+import { GameEngineStateStore } from './game-engine-state.store';
 
 @Injectable()
 export class GameEngineService {
-  private readonly states = new Map<string, GameStateEntity>();
-  private readonly botTimers = new Map<string, NodeJS.Timeout>();
   private broadcaster?: (gameType: string, roomId: number, state: GameStateWithActions) => void;
 
   constructor(
     private readonly rooms: RoomService,
     private readonly core: GameCoreService,
     private readonly registry: GameRegistryService,
+    private readonly turnLabel: TurnLabelService,
+    private readonly botRunner: BotRunnerService,
+    private readonly botScheduler: BotSchedulerService,
+    private readonly store: GameEngineStateStore,
   ) {}
 
-  setBroadcaster(
-    fn: (gameType: string, roomId: number, state: GameStateWithActions) => void,
-  ): void {
+  setBroadcaster(fn: (gameType: string, roomId: number, state: GameStateWithActions) => void): void {
     this.broadcaster = fn;
   }
 
   async getState(roomId: number, gameType: string): Promise<GameStateWithActions> {
-    const key = this.buildKey(roomId, gameType);
     const payload = await this.rooms.getRoomPayload(roomId);
-    const existing = this.states.get(key);
+    const existing = this.store.get(roomId, gameType);
     if (existing) {
-      const synced = this.syncRoomStatus(existing, payload);
+      const synced = this.store.syncRoomStatus(existing, payload);
       const currentPlayers = existing.players?.length ?? 0;
       const incomingPlayers = (payload.room.players?.length ?? 0) + (payload.room.bots?.length ?? 0);
       const gameStarted = (existing.status || '').toLowerCase() === 'started';
@@ -45,7 +48,6 @@ export class GameEngineService {
         incomingPlayers,
         gameStarted,
       });
-      // Si la table n'est pas démarrée et que la composition a changé, on reconstruit l'état initial.
       if (!gameStarted && incomingPlayers !== currentPlayers) {
         const rebuilt = await this.buildInitialState(payload, gameType);
         const marked = this.markBotThinking(roomId, gameType, rebuilt);
@@ -56,6 +58,7 @@ export class GameEngineService {
       this.scheduleBotTurn(roomId, gameType, marked);
       return this.exposeState(marked, gameType);
     }
+
     const state = await this.buildInitialState(payload, gameType);
     const marked = this.markBotThinking(roomId, gameType, state);
     this.scheduleBotTurn(roomId, gameType, marked);
@@ -88,7 +91,7 @@ export class GameEngineService {
         throw new UnauthorizedException('Tour en cours : action réservée au bot.');
       }
       if (currentPlayerId !== actorId) {
-        throw new UnauthorizedException('Ce n’est pas votre tour.');
+        throw new UnauthorizedException("Ce n'est pas votre tour.");
       }
     }
 
@@ -108,25 +111,23 @@ export class GameEngineService {
       status: current.status,
       turnIndex: current.turnIndex,
       currentPlayerId,
-      isBotTurn: Boolean(currentPlayer?.isBot),
-      botThinking: current.botThinking ?? false,
-      actions: sanitizedActions.map((a) => ({ type: a.type, meta: a.meta })),
+      actions: sanitizedActions.map((a) => ({ type: a.type, hasPayload: Boolean(a.payload) })),
     });
 
-    let next = this.core.cloneState(current);
-    next.botThinking = false;
-    if (handler) {
-      next = handler.applyActions(next, sanitizedActions);
-    } else if (Array.isArray(sanitizedActions)) {
-      sanitizedActions.forEach((action) => {
-        if (!action || !action.type) return;
-        next = this.core.appendLog(next, `Action reçue: ${action.type}`);
-      });
+    if (!handler) {
+      const next = this.core.appendLog(current, `Type de jeu non spécialisé: ${gameType}`);
+      const marked = this.markBotThinking(roomId, gameType, next);
+      this.scheduleBotTurn(roomId, gameType, marked);
+      this.broadcaster?.(gameType, roomId, this.exposeState(marked, gameType));
+      return this.exposeState(marked, gameType);
     }
 
+    const next = await handler.applyActions(current, sanitizedActions);
     const botTurn = this.isBotTurn(next);
     const marked = this.markBotThinking(roomId, gameType, next, botTurn);
     this.scheduleBotTurn(roomId, gameType, marked);
+    this.broadcaster?.(gameType, roomId, this.exposeState(marked, gameType));
+
     playingLog('engine.applyActions.after', {
       roomId,
       gameType,
@@ -137,6 +138,7 @@ export class GameEngineService {
       isBotTurn: botTurn,
       botThinking: marked.botThinking ?? false,
     });
+
     return this.exposeState(marked, gameType);
   }
 
@@ -144,7 +146,8 @@ export class GameEngineService {
     playingLog('engine.bot.tick', { roomId, gameType });
     const state = await this.getState(roomId, gameType);
     const key = this.buildKey(roomId, gameType);
-    this.clearBotTimer(key);
+    this.botScheduler.clear(key);
+
     const handler = this.registry.getHandler(gameType);
     const currentPlayerId = state.turn?.currentPlayerId ?? null;
     const currentPlayer = state.players?.find((p) => p.id === currentPlayerId);
@@ -154,22 +157,17 @@ export class GameEngineService {
     }
 
     let botActions =
-      currentPlayerId != null ? this.suggestBotActions(handler, state, currentPlayerId) : null;
+      currentPlayerId != null ? this.botRunner.suggestForHandler(handler, state, currentPlayerId) : null;
     if (!botActions || botActions.length === 0) {
-      // Tentative de secours : prendre la première action disponible si le handler l'expose.
       const fallback =
-        handler?.getAvailableActions && currentPlayerId != null
-          ? handler.getAvailableActions(state, currentPlayerId)
-          : [];
-      if (Array.isArray(fallback) && fallback.length > 0) {
-        botActions = [fallback[0]];
+        handler?.getAvailableActions && currentPlayerId != null ? handler.getAvailableActions(state, currentPlayerId) : [];
+      if (Array.isArray(fallback) && fallback.length > 0 && currentPlayerId != null) {
+        botActions = this.botRunner.choose(fallback, { state, playerId: currentPlayerId });
       }
     }
     if (!botActions || botActions.length === 0) {
       playingLog('engine.bot.noaction', { roomId, gameType, currentPlayerId, status: state.status });
-      // Pas d'action possible : on reste sur l'état courant et on désactive l'indicateur botThinking.
       const marked = this.markBotThinking(roomId, gameType, state, false);
-      this.states.set(key, marked);
       this.broadcaster?.(gameType, roomId, this.exposeState(marked, gameType));
       return this.exposeState(marked, gameType);
     }
@@ -187,21 +185,6 @@ export class GameEngineService {
     this.broadcaster?.(gameType, roomId, next);
     this.scheduleBotTurn(roomId, gameType, next);
     return this.exposeState(next, gameType);
-  }
-
-  private suggestBotActions(
-    handler: GameRulesAdapter | undefined,
-    state: GameStateEntity,
-    botPlayerId: number,
-  ): GameSingleActionDto[] | null {
-    if (handler?.getBotActions) {
-      return handler.getBotActions(state, botPlayerId) ?? null;
-    }
-    const strategy: BotStrategy | null | undefined = handler?.getBotStrategy ? handler.getBotStrategy() : null;
-    if (strategy?.suggest) {
-      return strategy.suggest(state, botPlayerId);
-    }
-    return null;
   }
 
   async getAvailableActions(roomId: number, gameType: string, playerId: number): Promise<GameSingleActionDto[]> {
@@ -229,28 +212,25 @@ export class GameEngineService {
     const key = this.buildKey(roomId, gameType);
     const status = (state.status || '').toLowerCase();
     if (status === 'finished' || status === 'setup' || status === 'open' || status === 'pending' || status === 'preparing') {
-      this.clearBotTimer(key);
+      this.botScheduler.clear(key);
       return;
     }
     const blockingPending = (state as any).pending?.blocking === true;
     const currentId = state.turn?.currentPlayerId ?? null;
     const currentPlayer = state.players?.find((p) => p.id === currentId);
     if (blockingPending && !currentPlayer?.isBot) {
-      this.clearBotTimer(key);
+      this.botScheduler.clear(key);
       return;
     }
     if (!currentPlayer || !currentPlayer.isBot) {
-      this.clearBotTimer(key);
+      this.botScheduler.clear(key);
       return;
     }
-    // Si un timer est déjà armé pour ce bot, ne pas le réinitialiser à chaque getState.
-    if (this.botTimers.has(key)) {
-      return;
-    }
-    // Délai artificiel pour laisser le bot "réfléchir" côté serveur.
+    if (this.botScheduler.has(key)) return;
+
     const delayMs = 4000;
     const thinking = { ...state, botThinking: true };
-    this.states.set(key, thinking);
+    this.store.set(roomId, gameType, thinking);
     this.broadcaster?.(gameType, roomId, this.exposeState(thinking, gameType));
     playingLog('engine.bot.schedule', {
       roomId,
@@ -260,42 +240,17 @@ export class GameEngineService {
       currentPlayerId: thinking.turn?.currentPlayerId ?? null,
       delayMs,
     });
-    const timer = setTimeout(() => {
-      playingLog('engine.bot.timer', { roomId, gameType });
-      this.playBotTurn(roomId, gameType).catch((err) => {
-        if (this.isRoomNotFound(err)) {
-          // Table supprimée entre l'armement du timer et le tick : on nettoie et on ignore.
-          this.clearBotTimer(key);
-          this.states.delete(key);
-          playingLog('engine.bot.stale', {
-            roomId,
-            gameType,
-            reason: err instanceof Error ? err.message : String(err),
-          });
-          return;
-        }
-        playingLog('engine.bot.error', {
-          roomId,
-          gameType,
-          message: err instanceof Error ? err.message : String(err),
-        });
-      });
-    }, delayMs);
-    this.botTimers.set(key, timer);
-  }
 
-  private isRoomNotFound(err: unknown): boolean {
-    if (err instanceof NotFoundException) return true;
-    const message = err instanceof Error ? err.message : String(err ?? '');
-    return message.includes('Room introuvable') || message.includes('Table introuvable');
-  }
-
-  private clearBotTimer(key: string): void {
-    const timer = this.botTimers.get(key);
-    if (timer) {
-      clearTimeout(timer);
-      this.botTimers.delete(key);
-    }
+    this.botScheduler.schedule({
+      key,
+      delayMs,
+      roomId,
+      gameType,
+      run: async () => {
+        await this.playBotTurn(roomId, gameType);
+      },
+      onStale: () => this.store.delete(roomId, gameType),
+    });
   }
 
   async checkAccess(roomId: number, userId: number, ownerOnly = false): Promise<void> {
@@ -306,7 +261,7 @@ export class GameEngineService {
       throw new UnauthorizedException('Seul le propriétaire peut effectuer cette action');
     }
     if (!ownerOnly && !isParticipant && !isOwner) {
-      throw new UnauthorizedException('Accès non autorisé à cette table');
+      throw new UnauthorizedException("Accès non autorisé à cette table");
     }
   }
 
@@ -320,39 +275,37 @@ export class GameEngineService {
   }
 
   private buildKey(roomId: number, gameType: string): string {
-    return `${gameType}:${roomId}`;
+    return this.store.buildKey(roomId, gameType);
   }
 
-  private markBotThinking(
-    roomId: number,
-    gameType: string,
-    state: GameStateEntity,
-    botTurn?: boolean,
-  ): GameStateEntity {
+  private markBotThinking(roomId: number, gameType: string, state: GameStateEntity, botTurn?: boolean): GameStateEntity {
     const isBot = botTurn !== undefined ? botTurn : this.isBotTurn(state);
-    const marked = { ...state, botThinking: isBot };
-    const key = this.buildKey(roomId, gameType);
-    this.states.set(key, marked);
+    const marked = this.store.markBotThinking(state, isBot);
+    this.store.set(roomId, gameType, marked);
     return marked;
   }
 
-  private syncRoomStatus(state: GameStateEntity, payload: RoomPayload): GameStateEntity {
-    const payloadStatus = payload?.room?.status;
-    if (!payloadStatus || payloadStatus === state.status) {
-      return state;
-    }
-    // Ne pas rétrograder un état déjà démarré vers setup/open si le payload n'est pas à jour.
-    if ((state.status || '').toLowerCase() === 'started' && payloadStatus !== 'finished') {
-      return state;
-    }
-    return { ...state, status: payloadStatus };
+  private exposeState(state: GameStateEntity, gameType: string): GameStateWithActions {
+    // Le label de tour doit rester aligné avec l'état interne (source de vérité),
+    // même si exposeState() d'un jeu masque/transforme la liste des joueurs.
+    const label = this.turnLabel.compute(state, gameType);
+    const handler = this.registry.getHandler(gameType);
+    const exposed = handler?.exposeState ? (handler.exposeState(state) as GameStateWithActions) : (state as GameStateWithActions);
+    return this.attachTurnLabel(exposed, label);
   }
 
-  private exposeState(state: GameStateEntity, gameType: string): GameStateWithActions {
-    const handler = this.registry.getHandler(gameType);
-    if (handler?.exposeState) {
-      return handler.exposeState(state) as GameStateWithActions;
+  private attachTurnLabel(state: GameStateWithActions, label: string | null): GameStateWithActions {
+    if (!label) return state;
+    const current = state.turn ?? null;
+    if (!current) {
+      return { ...state, turn: { currentPlayerId: null, direction: 1, label } };
     }
-    return state as GameStateWithActions;
+    return { ...state, turn: { ...current, label } };
+  }
+
+  private isRoomNotFound(err: unknown): boolean {
+    if (err instanceof NotFoundException) return true;
+    const message = err instanceof Error ? err.message : String(err ?? '');
+    return message.includes('Room introuvable') || message.includes('Table introuvable');
   }
 }

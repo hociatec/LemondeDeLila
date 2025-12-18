@@ -16,7 +16,7 @@ export class GameContentService {
         /* ignore */
       }
     }
-    return `RЁgles non disponibles pour ${gameType}.`;
+    return `Règles non disponibles pour ${gameType}.`;
   }
 }
 

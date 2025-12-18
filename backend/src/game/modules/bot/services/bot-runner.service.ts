@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { GameSingleActionDto } from '../../../engine/dto/game-action.dto';
 import { GameStateEntity } from '../../../core/entities/game-state.entity';
+import type { GameRulesAdapter } from '../../../engine/interfaces/game-rules-adapter.interface';
 import { BotStrategyService, BotDecisionOptions, BotProfile } from './bot-strategy.service';
 
 @Injectable()
@@ -17,5 +18,21 @@ export class BotRunnerService {
     opts: BotDecisionOptions = {},
   ): GameSingleActionDto[] {
     return this.strategy.chooseProfile(actions, ctx, profile, opts);
+  }
+
+  suggestForHandler(
+    handler: GameRulesAdapter | undefined,
+    state: GameStateEntity,
+    botPlayerId: number,
+  ): GameSingleActionDto[] | null {
+    if (!handler) return null;
+    if (handler.getBotActions) {
+      return handler.getBotActions(state, botPlayerId) ?? null;
+    }
+    const strategy = handler.getBotStrategy ? handler.getBotStrategy() : null;
+    if (strategy?.suggest) {
+      return strategy.suggest(state, botPlayerId);
+    }
+    return null;
   }
 }

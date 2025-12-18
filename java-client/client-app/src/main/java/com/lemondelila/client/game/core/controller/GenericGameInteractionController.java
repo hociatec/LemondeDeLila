@@ -139,7 +139,8 @@ public final class GenericGameInteractionController {
         for (Consumer<GenericGameState> observer : stateObservers) {
             try {
                 observer.accept(state);
-            } catch (Exception ignored) {
+            } catch (Exception ex) {
+                LOGGER.debug("[interaction] stateObserver failed: {}", ex.getMessage());
             }
         }
     }
