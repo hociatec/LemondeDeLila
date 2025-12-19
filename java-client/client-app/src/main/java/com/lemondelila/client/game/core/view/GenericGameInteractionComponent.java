@@ -625,6 +625,8 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
             var resolved = playerCollectionsRenderer.resolve(state, localUserId, localUsername);
             if (resolved.isPresent()) {
                 localPlayerId = resolved.get().playerId();
+                quizHandler.setLocalPlayerId(localPlayerId);
+                dialogManager.setLocalPlayerId(localPlayerId);
                 updateCollectionsFromLists(resolved.get().shopping(), resolved.get().basket(), resolved.get().inventory());
                 return;
             }
@@ -641,7 +643,7 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         }
 
         // Ne pas écraser les raccourcis globaux de table (ex: b / Maj+b pour les bots) avant le démarrage.
-        boolean allowDynamic = tableState != null && tableState.started();
+        boolean allowDynamic = (tableState != null && tableState.started()) || isGameStarted(state);
         dynamicShortcuts = shortcutResolver.resolve(state, allowDynamic);
         rebindDynamicShortcuts();
         // Pas de shortcuts fournis ou partie non démarrée : nettoyer les bindings dynamiques.
@@ -817,7 +819,7 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         if (quizHandler.submitIfActive()) {
             return;
         }
-        if (!tableState.started()) {
+        if (!isTableStarted()) {
             if (startHandler != null) {
                 if (!controller.hasEnoughParticipants()) {
                     // Participants parfois pas encore synchronisés localement (ex : bot ajouté juste avant).
@@ -842,6 +844,10 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
 
     private void triggerSelectedAction() {
         GenericGameState.GenericAction selected = actionsList.getSelectedValue();
+        if (selected == null && actionsModel.getSize() > 0) {
+            actionsList.setSelectedIndex(0);
+            selected = actionsList.getSelectedValue();
+        }
         if (selected == null) return;
         dispatchAction(selected);
     }
@@ -877,7 +883,7 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         if (blockIfBotTurn()) {
             return;
         }
-        if (!tableState.started()) {
+        if (!isTableStarted()) {
             return; // Pas de pioche avant le dンmarrage de la partie.
         }
         if (hasActionMatching(GameActionUtils::isDrawAction)) {
@@ -903,7 +909,7 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
             return;
         }
         // Si la partie n'est pas lancee, utiliser le comportement de demarrage (equivalent bouton Start).
-        if (!tableState.started()) {
+        if (!isTableStarted()) {
             if (primaryAction != null) {
                 triggerPrimaryAction();
                 return;
@@ -929,6 +935,28 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
             return;
         }
         triggerSelectedAction();
+    }
+
+    private boolean isTableStarted() {
+        if (tableState != null && tableState.started()) {
+            return true;
+        }
+        return isGameStarted(lastState);
+    }
+
+    private boolean isGameStarted(GenericGameState state) {
+        if (state == null || state.status() == null) {
+            return false;
+        }
+        String normalized = state.status().trim().toLowerCase(java.util.Locale.ROOT);
+        if (normalized.isBlank()) {
+            return false;
+        }
+        return !("open".equals(normalized)
+                || "setup".equals(normalized)
+                || "ouvert".equals(normalized)
+                || "preparing".equals(normalized)
+                || "pending".equals(normalized));
     }
 
     private void sendAskAnswer(boolean accept) {

@@ -23,7 +23,7 @@ public final class GameQuizHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(GameQuizHandler.class);
 
     private final GameQuizComponent quizComponent;
-    private final Integer localPlayerId;
+    private Integer localPlayerId;
     private final GameAnnouncementFormatter announcementFormatter;
     private final GameInfoLabelFormatter infoLabelFormatter;
 
@@ -39,9 +39,9 @@ public final class GameQuizHandler {
     private String lastQuizAnnouncementKey;
 
     public GameQuizHandler(GameQuizComponent quizComponent,
-                          Integer localPlayerId,
-                          GameAnnouncementFormatter announcementFormatter,
-                          GameInfoLabelFormatter infoLabelFormatter,
+                           Integer localPlayerId,
+                           GameAnnouncementFormatter announcementFormatter,
+                           GameInfoLabelFormatter infoLabelFormatter,
                           Consumer<String> announceEvent,
                           Consumer<String> updateInfoLabel,
                           BiConsumer<String, String> submitAnswer) {
@@ -52,6 +52,10 @@ public final class GameQuizHandler {
         this.announceEvent = announceEvent;
         this.updateInfoLabel = updateInfoLabel;
         this.submitAnswer = submitAnswer;
+    }
+
+    public void setLocalPlayerId(Integer localPlayerId) {
+        this.localPlayerId = localPlayerId;
     }
 
     /**

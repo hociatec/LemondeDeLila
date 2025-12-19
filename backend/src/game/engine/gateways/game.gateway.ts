@@ -126,7 +126,7 @@ export class GameGateway implements OnGatewayConnection<WebSocket>, OnGatewayDis
     const roomId = Number(payload?.roomId ?? payload?.room ?? 0);
     const gameType = String(payload?.gameType ?? '');
     await this.engine.checkAccess(roomId, meta.userId);
-    const state = await this.engine.getState(roomId, gameType);
+    const state = await this.engine.getStateForUser(roomId, gameType, meta.userId);
     this.setRoom(meta, roomId, gameType, client);
     playingLog('ws.game.join', { userId: meta.userId, roomId, gameType });
     this.safeSend(client, { type: 'game.state', payload: state });
@@ -140,7 +140,7 @@ export class GameGateway implements OnGatewayConnection<WebSocket>, OnGatewayDis
       return;
     }
     await this.engine.checkAccess(roomId, meta.userId);
-    const state = await this.engine.getState(roomId, gameType);
+    const state = await this.engine.getStateForUser(roomId, gameType, meta.userId);
     playingLog('ws.game.state.request', { userId: meta.userId, roomId, gameType });
     this.safeSend(client, { type: 'game.state', payload: state });
   }
@@ -154,8 +154,8 @@ export class GameGateway implements OnGatewayConnection<WebSocket>, OnGatewayDis
     await this.engine.checkAccess(roomId, meta.userId);
     const actions: GameSingleActionDto[] = Array.isArray(payload?.actions) ? payload.actions : [];
     playingLog('ws.game.actions', { userId: meta.userId, roomId, gameType, count: actions.length });
-    const nextState = await this.engine.applyActions(roomId, gameType, actions, meta.userId);
-    this.broadcastState(gameType, roomId, nextState);
+    // `GameEngineService` broadcast déjà via `setBroadcaster(...)` (pour inclure aussi `botThinking`).
+    await this.engine.applyActions(roomId, gameType, actions, meta.userId);
   }
 
   private async handleBot(meta: GameClient, payload: any) {
@@ -166,20 +166,30 @@ export class GameGateway implements OnGatewayConnection<WebSocket>, OnGatewayDis
     }
     // Seul le proprietaire de la table (ou un role privilegie cote RoomService) peut forcer le bot.
     await this.engine.checkAccess(roomId, meta.userId, true);
-    const state = await this.engine.playBotTurn(roomId, gameType);
+    await this.engine.playBotTurn(roomId, gameType);
     playingLog('ws.game.bot.play', { userId: meta.userId, roomId, gameType });
-    this.broadcastState(gameType, roomId, state);
   }
 
   private broadcastState(gameType: string, roomId: number, state: any): void {
     const room = this.buildRoomKey(gameType, roomId);
     const targets = this.rooms.get(room);
     if (!targets) return;
-    const encoded = JSON.stringify({ type: 'game.state', payload: state });
+    const encodedByUserId = new Map<number, string>();
     for (const socket of Array.from(targets)) {
       if (socket.readyState !== WebSocket.OPEN) {
         targets.delete(socket);
         continue;
+      }
+      const meta = this.clients.get(socket);
+      const userId = meta?.userId ?? null;
+      if (userId == null) {
+        continue;
+      }
+      let encoded = encodedByUserId.get(userId) ?? null;
+      if (!encoded) {
+        const payload = this.engine.exposeStateForUser(state, gameType, userId);
+        encoded = JSON.stringify({ type: 'game.state', payload });
+        encodedByUserId.set(userId, encoded);
       }
       try {
         socket.send(encoded);

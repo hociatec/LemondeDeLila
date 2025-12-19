@@ -38,6 +38,8 @@ export interface GameRulesAdapter {
    * Optionnel : fournit un état enrichi avec actions/pending pour le client générique.
    */
   exposeState?(state: GameStateEntity): GameStateWithActions;
+
+  exposeStateForUser?(state: GameStateEntity, userId: number): GameStateWithActions;
 }
 
 export type GameDefinition = {

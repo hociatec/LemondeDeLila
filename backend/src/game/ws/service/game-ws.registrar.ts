@@ -1,5 +1,5 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
-import { WsRouteRegistry } from '../../common/ws/ws-route-registry.service';
+import { WsRouteRegistry } from '../../../common/ws/ws-route-registry.service';
 import { GameWsHandler } from './game-ws.handler';
 
 @Injectable()

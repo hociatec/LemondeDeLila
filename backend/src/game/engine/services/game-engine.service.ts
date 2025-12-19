@@ -14,7 +14,7 @@ import { GameEngineStateStore } from './game-engine-state.store';
 
 @Injectable()
 export class GameEngineService {
-  private broadcaster?: (gameType: string, roomId: number, state: GameStateWithActions) => void;
+  private broadcaster?: (gameType: string, roomId: number, state: GameStateEntity) => void;
 
   constructor(
     private readonly rooms: RoomService,
@@ -26,11 +26,32 @@ export class GameEngineService {
     private readonly store: GameEngineStateStore,
   ) {}
 
-  setBroadcaster(fn: (gameType: string, roomId: number, state: GameStateWithActions) => void): void {
+  setBroadcaster(fn: (gameType: string, roomId: number, state: GameStateEntity) => void): void {
     this.broadcaster = fn;
   }
 
   async getState(roomId: number, gameType: string): Promise<GameStateWithActions> {
+    const internal = await this.getInternalState(roomId, gameType);
+    return this.exposeState(internal, gameType);
+  }
+
+  async getStateForUser(roomId: number, gameType: string, userId: number): Promise<GameStateWithActions> {
+    const internal = await this.getInternalState(roomId, gameType);
+    return this.exposeStateForUser(internal, gameType, userId);
+  }
+
+  exposeStateForUser(state: GameStateEntity, gameType: string, userId: number): GameStateWithActions {
+    const label = this.turnLabel.compute(state, gameType);
+    const handler = this.registry.getHandler(gameType);
+    const exposed = handler?.exposeStateForUser
+      ? (handler.exposeStateForUser(state, userId) as GameStateWithActions)
+      : handler?.exposeState
+        ? (handler.exposeState(state) as GameStateWithActions)
+        : (state as GameStateWithActions);
+    return this.attachTurnLabel(exposed, label);
+  }
+
+  private async getInternalState(roomId: number, gameType: string): Promise<GameStateEntity> {
     const payload = await this.rooms.getRoomPayload(roomId);
     const existing = this.store.get(roomId, gameType);
     if (existing) {
@@ -52,17 +73,17 @@ export class GameEngineService {
         const rebuilt = await this.buildInitialState(payload, gameType);
         const marked = this.markBotThinking(roomId, gameType, rebuilt);
         this.scheduleBotTurn(roomId, gameType, marked);
-        return this.exposeState(marked, gameType);
+        return marked;
       }
       const marked = this.markBotThinking(roomId, gameType, synced);
       this.scheduleBotTurn(roomId, gameType, marked);
-      return this.exposeState(marked, gameType);
+      return marked;
     }
 
     const state = await this.buildInitialState(payload, gameType);
     const marked = this.markBotThinking(roomId, gameType, state);
     this.scheduleBotTurn(roomId, gameType, marked);
-    return this.exposeState(marked, gameType);
+    return marked;
   }
 
   async applyActions(
@@ -72,7 +93,7 @@ export class GameEngineService {
     actorId: number | null,
     allowBotTurn = false,
   ): Promise<GameStateResponse> {
-    const current = await this.getState(roomId, gameType);
+    const current = await this.getInternalState(roomId, gameType);
     if ((current.status || '').toLowerCase() === 'finished') {
       return this.exposeState(current, gameType);
     }
@@ -126,7 +147,7 @@ export class GameEngineService {
     const botTurn = this.isBotTurn(next);
     const marked = this.markBotThinking(roomId, gameType, next, botTurn);
     this.scheduleBotTurn(roomId, gameType, marked);
-    this.broadcaster?.(gameType, roomId, this.exposeState(marked, gameType));
+    this.broadcaster?.(gameType, roomId, marked);
 
     playingLog('engine.applyActions.after', {
       roomId,
@@ -144,7 +165,7 @@ export class GameEngineService {
 
   async playBotTurn(roomId: number, gameType: string): Promise<GameStateWithActions> {
     playingLog('engine.bot.tick', { roomId, gameType });
-    const state = await this.getState(roomId, gameType);
+    const state = await this.getInternalState(roomId, gameType);
     const key = this.buildKey(roomId, gameType);
     this.botScheduler.clear(key);
 
@@ -181,10 +202,9 @@ export class GameEngineService {
       status: state.status,
     });
 
-    const next = await this.applyActions(roomId, gameType, botActions, null, true);
-    this.broadcaster?.(gameType, roomId, next);
-    this.scheduleBotTurn(roomId, gameType, next);
-    return this.exposeState(next, gameType);
+    await this.applyActions(roomId, gameType, botActions, null, true);
+    const updated = this.store.get(roomId, gameType) ?? state;
+    return this.exposeState(updated, gameType);
   }
 
   private isBotTurn(state: GameStateEntity): boolean {
@@ -217,7 +237,7 @@ export class GameEngineService {
     const delayMs = 4000;
     const thinking = { ...state, botThinking: true };
     this.store.set(roomId, gameType, thinking);
-    this.broadcaster?.(gameType, roomId, this.exposeState(thinking, gameType));
+    this.broadcaster?.(gameType, roomId, thinking);
     playingLog('engine.bot.schedule', {
       roomId,
       gameType,

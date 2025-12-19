@@ -93,12 +93,12 @@ export class PanierExpressDrawService {
 
   private resolveStandLabel(meta: PanierExpressMetadata, playerId: number, explicitStand?: string): string {
     if (explicitStand) {
-      return explicitStand;
+      return this.formatStandId(explicitStand);
     }
     const pos = meta.positions?.[playerId] ?? 0;
     const tile = meta.tiles?.[pos];
     if (tile?.type === 'stand') {
-      return tile.standId;
+      return this.formatStandId(tile.standId);
     }
     playingLog('panier.draw.warn', {
       playerId,
@@ -108,5 +108,19 @@ export class PanierExpressDrawService {
       tileId: tile?.id ?? null,
     });
     return 'hors-stand';
+  }
+
+  private formatStandId(standId: string | undefined): string {
+    const raw = (standId ?? 'inconnu').trim();
+    if (!raw) return 'inconnu';
+    const tokenMap: Record<string, string> = {
+      legumes: 'l\u00e9gumes',
+      ete: '\u00e9t\u00e9',
+      maraicher: 'mara\u00eecher',
+    };
+    return raw
+      .split('-')
+      .map((token) => tokenMap[token] ?? token)
+      .join('-');
   }
 }

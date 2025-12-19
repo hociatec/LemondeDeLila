@@ -694,6 +694,93 @@ export class DameNatureService implements GameRulesAdapter, OnModuleInit {
     };
   }
 
+  exposeStateForUser(state: GameStateEntity, userId: number): GameStateWithActions {
+    const currentId = state.turn?.currentPlayerId ?? null;
+    const meta = state.metadata as DameNatureMetadata;
+    const pendingAsk = meta?.pendingAsk ?? null;
+    const pendingQuiz = meta?.pendingQuiz ?? null;
+    const actionPlayerId =
+      pendingAsk?.targetId ?? pendingQuiz?.playerId ?? (typeof currentId === 'number' ? currentId : null);
+    const actions = typeof actionPlayerId === 'number' ? this.getAvailableActions(state, actionPlayerId) : [];
+
+    const players = this.ensurePlayers(state);
+    const families = this.setup.families();
+    const familyLabel = (familyId: string) => families.find((f) => f.id === familyId)?.name ?? familyId;
+    const handLabel = (card: FamilyCard) => `${familyLabel(card.familyId)} - ${card.memberName}`;
+
+    const playerViews = players.map((p) => {
+      const isViewer = typeof userId === 'number' && p.id === userId;
+      return {
+        id: p.id,
+        username: p.username,
+        hand: isViewer ? (p.hand ?? []).map(handLabel) : [],
+        books: isViewer ? (p.books ?? []).map(familyLabel) : [],
+        handCount: p.handCount ?? (p.hand ?? []).length,
+        booksCount: (p.books ?? []).length,
+      };
+    });
+
+    const extrasFromState = (state as GameStateEntity & { extras?: unknown }).extras;
+    const baseExtras =
+      extrasFromState && typeof extrasFromState === 'object' ? (extrasFromState as Record<string, unknown>) : {};
+
+    const viewerView = typeof userId === 'number' ? playerViews.find((v) => v.id === userId) ?? null : null;
+    const viewerPlayer = typeof userId === 'number' ? players.find((p) => p.id === userId) ?? null : null;
+    const handCards =
+      viewerPlayer?.hand?.map((c) => ({
+        familyId: c.familyId,
+        memberId: c.memberId,
+        label: handLabel(c),
+      })) ?? [];
+
+    const shortcuts: any[] = [
+      { key: 'pressed D', type: 'action', actionType: 'ask_card' },
+      { key: 'pressed C', type: 'interface', id: 'hand' },
+      { key: 'pressed F', type: 'interface', id: 'books' },
+    ];
+    const pending = pendingAsk;
+    if (pending && actionPlayerId != null && pending.targetId === actionPlayerId) {
+      shortcuts.push({ key: 'pressed A', type: 'action', actionType: 'answer_ask_card_accept' });
+      shortcuts.push({ key: 'pressed R', type: 'action', actionType: 'answer_ask_card_refuse' });
+    }
+    if (pendingQuiz && actionPlayerId != null && pendingQuiz.playerId === actionPlayerId) {
+      shortcuts.push({ key: 'pressed A', type: 'action', actionType: 'answer_quiz_correct' });
+      shortcuts.push({ key: 'pressed R', type: 'action', actionType: 'answer_quiz_wrong' });
+    }
+
+    const pendingState = pendingQuiz
+      ? {
+          type: 'quiz',
+          question: pendingQuiz.card?.question ?? pendingQuiz.card?.memberName ?? 'Quiz',
+          choices: pendingQuiz.card?.choices ?? ['Bonne rǸponse', 'Mauvaise rǸponse'],
+          playerId: pendingQuiz.playerId,
+        }
+      : pendingAsk
+      ? { type: 'ask_card', playerId: pendingAsk.fromId, targetPlayerId: pendingAsk.targetId, blocking: true }
+      : null;
+
+    return {
+      ...(state as any),
+      catalog: {
+        phases: DAME_NATURE_PHASES.map((p) => p.id),
+        victory: DAME_NATURE_VICTORY,
+      },
+      actions: actions.map((a) => ({ type: a.type, label: a.type, payload: a.payload ?? {} })),
+      pending: pendingState,
+      extras: {
+        ...baseExtras,
+        playerViews,
+        currentPlayerView: viewerView,
+        hand: viewerView?.hand ?? [],
+        handCards,
+        books: viewerView?.books ?? [],
+        shortcuts,
+        pendingAsk: (state.metadata as DameNatureMetadata)?.pendingAsk ?? null,
+        pendingQuiz,
+      },
+    };
+  }
+
   private advancePhase(state: GameStateEntity): GameStateEntity {
     const meta = (state.metadata as DameNatureMetadata) ?? this.setup.buildMetadata();
     const current = meta.phaseId ?? 'turn';

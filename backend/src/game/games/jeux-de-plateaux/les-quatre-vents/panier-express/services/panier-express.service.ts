@@ -285,7 +285,7 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
       const label = (p.username ?? '').trim() || 'Joueur ' + p.id;
       withLogs = this.core.appendLog(
         withLogs,
-        '[Panier Express] ' + label + ' recoit une liste de courses: ' + list.join(', '),
+        '[Panier Express] ' + label + ' re\u00e7oit une liste de courses: ' + list.join(', '),
       );
     });
     return withLogs;
@@ -602,11 +602,11 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
       case 'start':
         return 'depart';
       case 'stand':
-        return `stand ${tile.standId ?? 'inconnu'}`;
+        return `stand ${this.standLabel(tile.standId)}`;
       case 'event':
         return 'evenement';
       case 'exchange':
-        return 'echange';
+        return '\u00e9change';
       case 'quiz':
         return 'quiz';
       case 'move':
@@ -619,6 +619,20 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
         return 'pioche course bonus';
     }
     return fallbackId;
+  }
+
+  private standLabel(standId: string | undefined): string {
+    const raw = (standId ?? 'inconnu').trim();
+    if (!raw) return 'inconnu';
+    const tokenMap: Record<string, string> = {
+      legumes: 'l\u00e9gumes',
+      ete: '\u00e9t\u00e9',
+      maraicher: 'mara\u00eecher',
+    };
+    return raw
+      .split('-')
+      .map((token) => tokenMap[token] ?? token)
+      .join('-');
   }
 
   private resolveTile(state: GameStateEntity, playerId: number): GameStateEntity {
@@ -689,7 +703,7 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
     switch (event) {
       case 'stand-ferme':
         next = this.turnStatus.setStatus(next, playerId, 'skipTurn', 1);
-        next = this.core.appendLog(next, `[Panier Express] Stand ferm? : ${this.utils.playerName(state, playerId)} saute un tour.`);
+        next = this.core.appendLog(next, `[Panier Express] Stand ferm\u00e9 : ${this.utils.playerName(state, playerId)} saute un tour.`);
         next = this.appendActionLog(next, playerId, 'event', { event, effect: 'skipTurn' });
         break;
       case 'promo-surprise':
@@ -700,7 +714,7 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
         break;
       case 'orage-au-marche':
         next = this.core.appendLog(next, `[Panier Express] Orage : ${this.utils.playerName(state, playerId)} recule de 2 cases.`);
-        next = this.movePlayer(next, playerId, -2);
+        next = this.applyMoveDelta(next, playerId, -2);
         next = this.appendActionLog(next, playerId, 'event', { event, effect: 'move', delta: -2 });
         break;
       case 'rupture-de-stock':
@@ -845,7 +859,7 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
   private applyMoveDelta(state: GameStateEntity, playerId: number, delta: number): GameStateEntity {
     if (!delta || delta === 0) return state;
     const next = this.movePlayer(state, playerId, delta);
-    return next;
+    return this.resolveTile(next, playerId);
   }
 
   private applyMoveToNextStand(state: GameStateEntity, playerId: number): GameStateEntity {

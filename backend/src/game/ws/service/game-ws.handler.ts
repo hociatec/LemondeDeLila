@@ -1,18 +1,18 @@
 import { Injectable } from '@nestjs/common';
-import { requireUser } from '../../common/ws/ws-auth';
-import type { WsSession } from '../../common/ws/ws-route-registry.service';
-import { GameContentService } from '../engine/services/game-content.service';
-import { BoardService } from '../modules/board/services/board.service';
-import { CardsService } from '../modules/cards/services/cards.service';
-import { MovementService } from '../modules/movement/services/movement.service';
-import { InventoryService } from '../modules/inventory/services/inventory.service';
-import { ExchangeService } from '../modules/exchange/services/exchange.service';
-import { TurnService } from '../modules/turn/services/turn.service';
-import { EffectsService } from '../modules/effects/services/effects.service';
-import { QuizService } from '../modules/quiz/services/quiz.service';
-import { VictoryService } from '../modules/victory/services/victory.service';
-import { PayloadValidationService } from '../../common/validation/payload-validation.service';
-import { GameRulesDto } from './dto/game-rules.dto';
+import { requireUser } from '../../../common/ws/ws-auth';
+import type { WsSession } from '../../../common/ws/ws-route-registry.service';
+import { PayloadValidationService } from '../../../common/validation/payload-validation.service';
+import { GameContentService } from '../../engine/services/game-content.service';
+import { BoardService } from '../../modules/board/services/board.service';
+import { CardsService } from '../../modules/cards/services/cards.service';
+import { MovementService } from '../../modules/movement/services/movement.service';
+import { InventoryService } from '../../modules/inventory/services/inventory.service';
+import { ExchangeService } from '../../modules/exchange/services/exchange.service';
+import { TurnService } from '../../modules/turn/services/turn.service';
+import { EffectsService } from '../../modules/effects/services/effects.service';
+import { QuizService } from '../../modules/quiz/services/quiz.service';
+import { VictoryService } from '../../modules/victory/services/victory.service';
+import { GameRulesDto } from '../dto/game-rules.dto';
 
 @Injectable()
 export class GameWsHandler {

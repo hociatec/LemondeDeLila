@@ -26,7 +26,7 @@ public final class GameDialogManager {
     public record PlayerOption(int id, String name) {}
     public record AskCardOption(String familyId, String memberId, String label) {}
 
-    private final Integer localPlayerId;
+    private Integer localPlayerId;
     private final GameInfoLabelFormatter infoLabelFormatter;
 
     // Callbacks vers le composant parent
@@ -50,10 +50,10 @@ public final class GameDialogManager {
     private List<AskCardOption> discardOptions = List.of();
 
     public GameDialogManager(Integer localPlayerId,
-                            GameInfoLabelFormatter infoLabelFormatter,
-                            Consumer<String> updateInfoLabel,
-                            BiConsumer<String, Map<String, Object>> submitAction,
-                            Predicate<Predicate<GenericGameState.GenericAction>> hasActionMatching) {
+                             GameInfoLabelFormatter infoLabelFormatter,
+                             Consumer<String> updateInfoLabel,
+                             BiConsumer<String, Map<String, Object>> submitAction,
+                             Predicate<Predicate<GenericGameState.GenericAction>> hasActionMatching) {
         this.localPlayerId = localPlayerId;
         this.infoLabelFormatter = infoLabelFormatter;
         this.updateInfoLabel = updateInfoLabel;
@@ -230,6 +230,18 @@ public final class GameDialogManager {
         List<AskCardOption> res = new ArrayList<>();
         JsonNode extras = state == null ? null : state.extras();
         if (extras == null || !extras.isObject()) return res;
+        JsonNode handCards = extras.path("handCards");
+        if (handCards.isArray()) {
+            handCards.forEach(card -> {
+                String familyId = card.path("familyId").asText("");
+                String memberId = card.path("memberId").asText("");
+                String label = card.path("label").asText("");
+                if (!familyId.isBlank() && !memberId.isBlank()) {
+                    res.add(new AskCardOption(familyId.trim(), memberId.trim(), (label == null || label.isBlank()) ? (familyId + ":" + memberId) : label));
+                }
+            });
+            return res;
+        }
         JsonNode hand = extras.path("hand");
         if (hand.isArray()) {
             hand.forEach(cardNode -> {
@@ -241,6 +253,10 @@ public final class GameDialogManager {
             });
         }
         return res;
+    }
+
+    public void setLocalPlayerId(Integer localPlayerId) {
+        this.localPlayerId = localPlayerId;
     }
 
     // ===== DISCARD DIALOG =====
