@@ -22,7 +22,7 @@ public final class GenericGameStateMapper {
                 : null;
         boolean botThinking = json.path("botThinking").asBoolean(false);
 
-        TurnState turn = mapTurn(json.path("turn"), round);
+        TurnState turn = mapTurn(json.path("turn"), round, turnIndex);
 
         List<String> logs = new ArrayList<>();
         JsonNode logNode = json.path("log");
@@ -95,12 +95,14 @@ public final class GenericGameStateMapper {
         return new GenericGameState(status, phase, round, turnIndex, lastRoll, logs, turn, botThinking, players, board, metadata, extras, actions, actionLog, pending);
     }
 
-    private TurnState mapTurn(JsonNode turnNode, int roundFallback) {
+    private TurnState mapTurn(JsonNode turnNode, int roundFallback, int turnIndexFallback) {
         if (turnNode == null || !turnNode.isObject()) {
             return null;
         }
         int round = turnNode.path("round").asInt(roundFallback > 0 ? roundFallback : 1);
-        int index = turnNode.path("index").asInt(-1);
+        int index = turnNode.has("index") && turnNode.get("index").isInt()
+                ? turnNode.get("index").asInt()
+                : turnIndexFallback;
         int direction = turnNode.path("direction").asInt(1);
         Integer currentPlayerId = turnNode.has("currentPlayerId") && turnNode.get("currentPlayerId").isInt()
                 ? turnNode.get("currentPlayerId").asInt()

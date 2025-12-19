@@ -26,5 +26,12 @@ class TurnAnnouncementTrackerTest {
         var d2 = t.decide(false, null, -1, 1, false, true);
         assertFalse(d2.announce());
     }
-}
 
+    @Test
+    void clearLastSeen_doesNotResetPregameFlag() {
+        TurnAnnouncementTracker t = new TurnAnnouncementTracker();
+        assertTrue(t.decide(false, null, -1, 1, false, true).announce());
+        t.clearLastSeen();
+        assertFalse(t.decide(false, null, -1, 1, false, true).announce());
+    }
+}

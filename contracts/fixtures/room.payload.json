@@ -5,7 +5,7 @@
     "isPrivate": false,
     "maxPlayers": 4,
     "status": "setup",
-    "gameType": "PanierExpress",
+    "gameType": "panier-express",
     "counts": { "players": 1, "spectators": 0 },
     "owner": { "id": 10, "username": "alice" },
     "players": [{ "id": 10, "username": "alice" }],

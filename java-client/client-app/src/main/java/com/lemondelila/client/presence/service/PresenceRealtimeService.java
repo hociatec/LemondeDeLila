@@ -1,6 +1,7 @@
 package com.lemondelila.client.presence.service;
 
 import com.lemondelila.client.chat.model.ChatState;
+import com.lemondelila.client.framework.network.realtime.AbstractRealtimeService;
 import com.lemondelila.client.presence.event.PresenceErrorEvent;
 import com.lemondelila.client.presence.event.PresenceEvent;
 import com.lemondelila.client.presence.event.PresenceEventListener;
@@ -10,59 +11,55 @@ import com.lemondelila.client.presence.model.PresenceActivity;
 import com.lemondelila.client.presence.model.PresencePlayer;
 import com.lemondelila.client.presence.transport.PresenceConnection;
 
-import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Service responsable de la connexion temps réel de présence.
  */
-public final class PresenceRealtimeService {
+public final class PresenceRealtimeService extends AbstractRealtimeService<String, PresenceConnection> {
 
-    private static final Duration INITIAL_RETRY_DELAY = Duration.ofSeconds(2);
-    private static final Duration MAX_RETRY_DELAY = Duration.ofSeconds(30);
-    private static final int MAX_BACKOFF_POWER = 5;
+    private static final String PRESENCE_KEY = "presence";
 
     private final PresenceConnectionFactory connectionFactory;
     private final CopyOnWriteArrayList<PresenceEventListener> listeners = new CopyOnWriteArrayList<>();
-    private final ScheduledExecutorService reconnectExecutor =
-            Executors.newSingleThreadScheduledExecutor(new PresenceThreadFactory());
+    private final Object lifecycleLock = new Object();
+    private AutoCloseable lease;
+    private int localActiveClients;
 
-    private volatile PresenceConnection connection;
     private volatile List<PresencePlayer> lastPresence = List.of();
     private final AtomicReference<PresenceContextState> desiredContext =
             new AtomicReference<>(PresenceContextState.home());
-    private ScheduledFuture<?> pendingReconnect;
-    private int retryAttempts;
-    private int activeClients;
 
     public PresenceRealtimeService(PresenceConnectionFactory connectionFactory) {
+        super("ws-presence");
         this.connectionFactory = Objects.requireNonNull(connectionFactory, "connectionFactory");
     }
 
     public synchronized void start() {
-        activeClients++;
-        if (connection == null) {
-            openConnectionLocked();
+        synchronized (lifecycleLock) {
+            localActiveClients++;
+            if (localActiveClients == 1) {
+                lease = acquire(PRESENCE_KEY);
+            }
         }
     }
 
     public synchronized void stop() {
-        if (activeClients == 0) {
-            return;
-        }
-        activeClients--;
-        if (activeClients == 0) {
-            cancelReconnectLocked();
-            closeConnectionLocked();
-            retryAttempts = 0;
+        synchronized (lifecycleLock) {
+            if (localActiveClients == 0) {
+                return;
+            }
+            localActiveClients--;
+            if (localActiveClients == 0 && lease != null) {
+                try {
+                    lease.close();
+                } catch (Exception ignored) {
+                }
+                lease = null;
+            }
         }
     }
 
@@ -82,111 +79,48 @@ public final class PresenceRealtimeService {
         PresenceActivity effective = activity == null ? PresenceActivity.HOME : activity;
         PresenceContextState state = new PresenceContextState(effective, roomId, roomName);
         desiredContext.set(state);
-        PresenceConnection conn = connection;
-        if (conn != null) {
-            conn.updateContext(state.activity, state.roomId, state.roomName)
-                    .exceptionally(throwable -> null);
+        boolean started;
+        synchronized (lifecycleLock) {
+            started = localActiveClients > 0;
         }
+        if (!started) {
+            return;
+        }
+        enqueueOrRun(conn -> conn.updateContext(state.activity, state.roomId, state.roomName)
+                .exceptionally(throwable -> null));
     }
 
     private void emit(PresenceEvent event) {
         listeners.forEach(listener -> listener.onEvent(event));
     }
 
-    private void openConnectionLocked() {
-        cancelReconnectLocked();
+    @Override
+    protected PresenceConnection openConnection(String ignored, ConnectionCallbacks callbacks) {
         PresenceConnection conn = connectionFactory.open();
-        connection = conn;
         conn.onPresence(players -> {
             lastPresence = players;
             emit(new PresenceUpdateEvent(players));
         });
         conn.onState(state -> {
             emit(new PresenceStateChangedEvent(state));
-            handleStateChange(state);
+            if (state == ChatState.CONNECTED) {
+                callbacks.onConnected();
+                PresenceContextState desired = desiredContext.get();
+                conn.updateContext(desired.activity, desired.roomId, desired.roomName)
+                        .exceptionally(throwable -> null);
+                return;
+            }
+            if (state == ChatState.CLOSED || state == ChatState.FAILED) {
+                callbacks.onDisconnected(true);
+            }
         });
-        conn.onError(error -> emit(new PresenceErrorEvent(error)));
+        conn.onError(error -> {
+            emit(new PresenceErrorEvent(error));
+            callbacks.onError(new RuntimeException(error));
+        });
         lastPresence = conn.latestPresence();
         conn.connect();
-    }
-
-    private void handleStateChange(ChatState state) {
-        if (state == ChatState.CONNECTED) {
-            synchronized (this) {
-                retryAttempts = 0;
-                cancelReconnectLocked();
-            }
-            pushDesiredContext();
-            return;
-        }
-        if (state == ChatState.CLOSED || state == ChatState.FAILED) {
-            synchronized (this) {
-                if (activeClients == 0) {
-                    return;
-                }
-                closeConnectionLocked();
-                scheduleReconnectLocked();
-            }
-        }
-    }
-
-    private void closeConnectionLocked() {
-        PresenceConnection conn = connection;
-        connection = null;
-        if (conn != null) {
-            conn.close();
-        }
-    }
-
-    private void scheduleReconnectLocked() {
-        if (pendingReconnect != null && !pendingReconnect.isDone()) {
-            return;
-        }
-        retryAttempts = Math.min(retryAttempts + 1, MAX_BACKOFF_POWER);
-        long delay = computeDelayMillis(retryAttempts);
-        pendingReconnect = reconnectExecutor.schedule(() -> {
-            synchronized (PresenceRealtimeService.this) {
-                pendingReconnect = null;
-                if (activeClients == 0) {
-                    return;
-                }
-                openConnectionLocked();
-            }
-        }, delay, TimeUnit.MILLISECONDS);
-    }
-
-    private void cancelReconnectLocked() {
-        if (pendingReconnect != null) {
-            pendingReconnect.cancel(true);
-            pendingReconnect = null;
-        }
-    }
-
-    private long computeDelayMillis(int attempt) {
-        int exponent = Math.max(0, attempt - 1);
-        long base = INITIAL_RETRY_DELAY.toMillis() * (1L << exponent);
-        return Math.min(base, MAX_RETRY_DELAY.toMillis());
-    }
-
-    private static final class PresenceThreadFactory implements ThreadFactory {
-        private int counter;
-
-        @Override
-        public Thread newThread(Runnable r) {
-            Thread thread = new Thread(r, "presence-reconnect-" + counter++);
-            thread.setDaemon(true);
-            return thread;
-        }
-    }
-
-    private void pushDesiredContext() {
-        PresenceConnection conn = connection;
-        if (conn == null) {
-            return;
-        }
-        PresenceContextState state = desiredContext.get();
-        conn.updateContext(state.activity, state.roomId, state.roomName)
-                .exceptionally(throwable -> null);
+        return conn;
     }
 
     private record PresenceContextState(PresenceActivity activity, Integer roomId, String roomName) {

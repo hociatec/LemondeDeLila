@@ -16,6 +16,7 @@ C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\messaging\dto\MessageDto.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\network\WebsocketApiModule.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\chat\presenter\ChatPresenter.java
+C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\game\core\view\GameActionsRenderer.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\game\room\model\RoomState.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\game\core\viewmodel\PendingViewModel.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\presence\model\PresenceActivity.java
@@ -58,6 +59,7 @@ C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\game\bot\controller\BotGuard.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\game\catalog\service\GameCatalogService.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\game\bot\view\BotPresenter.java
+C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\game\core\view\GameExchangeRenderer.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\game\history\service\RoomHistoryAnnouncer.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\network\ClientUnauthorizedHandler.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\game\catalog\event\CatalogFailed.java
@@ -75,6 +77,7 @@ C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\game\core\controller\GenericGameInteractionController.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\admin\dto\AdminUserPage.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\game\room\event\RoomRealtimeFailed.java
+C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\game\core\view\GameTurnRenderer.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\game\core\viewmodel\ListAnnouncementFormatter.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\game\turn\view\GameStatusPanel.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\game\realtime\service\GameRealtimeSession.java
@@ -106,6 +109,7 @@ C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\game\history\service\GameAnnouncer.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\game\history\service\RoomNarrationService.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\game\core\service\SseLogger.java
+C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\game\core\viewmodel\DynamicShortcutResolver.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\media\SoundBank.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\game\bot\event\BotRemoved.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\game\room\event\GameStateUpdated.java
@@ -140,8 +144,10 @@ C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\game\shortcut\GameShortcutModule.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\game\turn\model\TurnState.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\security\SessionVault.java
+C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\game\core\view\KeyboardEventRouter.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\game\room\service\RoomStartService.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\application\view\shortcuts\ApplicationShortcuts.java
+C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\game\core\view\GameDialogManager.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\user\controller\LoginController.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\presence\event\PresenceEvent.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\home\controller\HomePresenter.java
@@ -150,6 +156,7 @@ C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\game\room\event\RoomInviteReceived.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\game\core\viewmodel\BotTurnGate.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\security\EncryptedCredentialsVault.java
+C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\game\core\view\GamePlayerCollectionsRenderer.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\chat\model\ChatConnection.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\messaging\service\MessagingService.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\user\controller\UserControllerSupport.java
@@ -198,12 +205,14 @@ C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\presence\service\PresenceActivityReporter.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\admin\view\AdminUserDialogFactory.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\game\room\view\BaseTableScreen.java
+C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\game\core\view\GameStatusRenderer.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\menu\MainMenuModule.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\game\room\service\RoomParticipantsMapper.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\home\view\HomeView.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\game\catalog\view\GameCatalogScreen.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\messaging\dto\MessageResponseDto.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\game\quiz\GameQuizModule.java
+C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\game\core\service\GameAnnouncementService.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\admin\view\EditUserDialog.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\social\view\SocialScreen.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\game\core\viewmodel\GameLogTracker.java
@@ -243,17 +252,21 @@ C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\social\controller\SocialPresenter.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\user\UserModule.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\game\room\service\GameTableLauncher.java
+C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\game\core\view\GamePendingRenderer.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\settings\service\AppSettingsService.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\game\quiz\model\QuizState.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\chat\events\ChatOpened.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\social\view\SocialView.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\messaging\MessagingModule.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\game\room\event\StartRoomRequested.java
+C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\framework\network\realtime\AbstractRealtimeService.java
+C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\game\core\viewmodel\BotTurnLockTracker.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\game\turn\controller\TurnController.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\game\bot\controller\BotController.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\messaging\dto\UserLookupResponseDto.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\messaging\view\PrivateConversationDialog.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\presence\dto\PresenceRoomDto.java
+C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\game\core\view\GameQuizHandler.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\user\events\RegistrationRequested.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\chat\view\ChatWindow.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\game\bot\service\BotApiService.java

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.lemondelila.client.framework.core.di.Inject;
 import com.lemondelila.client.framework.core.event.DomainEventBus;
 import com.lemondelila.client.framework.core.event.EventSubscriptions;
+import com.lemondelila.client.framework.network.realtime.AbstractRealtimeService;
 import com.lemondelila.client.game.bot.event.BotAdded;
 import com.lemondelila.client.game.bot.event.BotOperationFailed;
 import com.lemondelila.client.game.bot.event.BotRemoved;
@@ -16,7 +17,6 @@ import com.lemondelila.client.game.room.event.RoomRealtimeFailed;
 import com.lemondelila.client.game.room.event.RoomUpdated;
 import com.lemondelila.client.game.room.model.BotState;
 import com.lemondelila.client.game.room.model.RoomState;
-import com.lemondelila.client.framework.network.ws.RealtimeGateway;
 import com.lemondelila.client.framework.network.ws.StandardRealtimeGateway.SocketClosed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +27,7 @@ import java.util.Objects;
 /**
  * Pousse les mises à jour de room via WebSocket et publie les évènements de jeu.
  */
-public final class RoomRealtimeService implements AutoCloseable {
+public final class RoomRealtimeService extends AbstractRealtimeService<Integer, ChannelSubscription> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RoomRealtimeService.class);
 
@@ -36,12 +36,12 @@ public final class RoomRealtimeService implements AutoCloseable {
     private final EventSubscriptions subscriptions = new EventSubscriptions();
 
     private final Object lock = new Object();
-    private ChannelSubscription current;
     private Integer lastRoomId;
 
     @Inject
     public RoomRealtimeService(DomainEventBus eventBus,
                                RealtimeManager realtimeManager) {
+        super("ws-room");
         this.eventBus = Objects.requireNonNull(eventBus, "eventBus");
         this.realtimeManager = Objects.requireNonNull(realtimeManager, "realtimeManager");
         subscriptions.subscribe(eventBus, SocketClosed.class, this::onSocketClosed);
@@ -49,10 +49,10 @@ public final class RoomRealtimeService implements AutoCloseable {
 
     public AutoCloseable subscribe(int roomId) {
         synchronized (lock) {
-            closeCurrent();
             try {
                 lastRoomId = roomId;
-                current = realtimeManager.openRoomChannel(
+                return acquire(roomId);
+                /*
                         roomId,
                         this::handleMessage,
                         state -> {
@@ -61,8 +61,7 @@ public final class RoomRealtimeService implements AutoCloseable {
                                 case CLOSED, FAILED -> LOGGER.warn("WS room déconnecté pour la table {}", roomId);
                                 default -> { }
                             }
-                        });
-                return current;
+                        */
             } catch (IllegalStateException ex) {
                 String reason = clean(ex.getMessage());
                 LOGGER.debug("Impossible de souscrire à la room {} : {}", roomId, reason);
@@ -74,7 +73,20 @@ public final class RoomRealtimeService implements AutoCloseable {
 
     public void sendCommand(String type, Map<String, ?> payload) {
         Objects.requireNonNull(type, "type");
+        int targetRoom;
         synchronized (lock) {
+            int payloadRoomId = extractRoomId(payload);
+            targetRoom = payloadRoomId > 0 ? payloadRoomId : (lastRoomId != null ? lastRoomId : 0);
+            if (targetRoom > 0) {
+                lastRoomId = targetRoom;
+            }
+        }
+        if (targetRoom < 0) {
+            return;
+        }
+        ensureConnectedTo(targetRoom);
+        enqueueOrRun(conn -> conn.send(type, payload));
+        /*
             int payloadRoomId = extractRoomId(payload);
             int targetRoom = payloadRoomId > 0 ? payloadRoomId : (lastRoomId != null ? lastRoomId : 0);
             boolean needReconnect = current == null || current.isClosed() || (targetRoom > 0 && !Objects.equals(lastRoomId, targetRoom));
@@ -101,15 +113,13 @@ public final class RoomRealtimeService implements AutoCloseable {
                 }
             }
             current.send(type, payload);
-        }
+        */
     }
 
     @Override
     public void close() {
-        synchronized (lock) {
-            closeCurrent();
-        }
         subscriptions.close();
+        super.close();
     }
 
     /**
@@ -117,20 +127,24 @@ public final class RoomRealtimeService implements AutoCloseable {
      */
     public void resetTracking() {
         synchronized (lock) {
-            closeCurrent();
             lastRoomId = null;
         }
     }
 
-    private void closeCurrent() {
-        if (current != null) {
-            try {
-                current.close();
-            } catch (Exception e) {
-                LOGGER.debug("Erreur en fermant la subscription WS", e);
-            }
-            current = null;
-        }
+    @Override
+    protected ChannelSubscription openConnection(Integer roomId, ConnectionCallbacks callbacks) {
+        return realtimeManager.openRoomChannel(
+                roomId,
+                this::handleMessage,
+                state -> {
+                    switch (state) {
+                        case CONNECTED -> callbacks.onConnected();
+                        case CLOSED, FAILED -> callbacks.onDisconnected(true);
+                        default -> {
+                        }
+                    }
+                }
+        );
     }
 
     private void handleMessage(JsonNode message) {

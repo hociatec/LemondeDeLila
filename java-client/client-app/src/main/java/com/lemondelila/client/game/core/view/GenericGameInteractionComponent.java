@@ -53,15 +53,11 @@ import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.IntStream;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Base64;
@@ -93,6 +89,7 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
     private final DynamicShortcutResolver shortcutResolver = new DynamicShortcutResolver(mapper);
     private final GamePendingRenderer pendingRenderer = new GamePendingRenderer(mapper, pendingViewModel, exchangeNavigator);
     private final PlayerCollectionsViewModel playerCollectionsViewModel = new PlayerCollectionsViewModel();
+    private final GamePlayerCollectionsRenderer playerCollectionsRenderer = new GamePlayerCollectionsRenderer(playerCollectionsViewModel);
     private final TurnAnnouncementTracker turnAnnouncementTracker = new TurnAnnouncementTracker();
     private final GameAnnouncementService announcementService;
     private final GameStatusRenderer statusRenderer;
@@ -558,84 +555,6 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         actionsRenderer.render(state, exchangePending);
     }
 
-    private void renderTurn(GenericGameState state) {
-        turnRenderer.renderTurn(state);
-        /*
-        TurnState turn = state.turn();
-
-        if (turn == null) {
-            // Pas d'info de tour -> on évite d'annoncer un faux joueur.
-            tableState.updateTurn(state.round(), -1, 1);
-            tableState.updateCurrentPlayerId(null);
-            statusRenderer.renderTurnStatus(state, state.round(), -1);
-            lastTurnIndexSeen = null;
-            if (turnAnnouncementTracker.decide(tableState.started(), null, -1, state.round(), false, true).announce()) {
-                String message = turnController.formatTurn(new TurnState(state.round(), -1, 1, null, null), tableState);
-                emitter.announceEvent(message);
-                pregameAnnounced = true;
-            }
-            lastAnnouncedPlayerId = null;
-            return;
-        }
-
-        statusRenderer.renderTurnStatus(state, turn.round(), turn.index());
-        tableState.updateTurn(turn.round(), turn.index(), turn.direction());
-        tableState.updateCurrentPlayerId(turn.currentPlayerId());
-        // resynchronise l'ordre des participants avant d'annoncer le tour
-        if (state.players() != null && state.players().isArray()) {
-            RoomParticipantsMapper.updateFromPlayers(tableState, state.players());
-        }
-        if (!tableState.started()) {
-            if (turnAnnouncementTracker.decide(false, null, -1, turn.round(), true, true).announce()) {
-                String message = turnController.formatTurn(turn, tableState);
-                emitter.announceEvent(message);
-                pregameAnnounced = true;
-            }
-            lastTurnIndexSeen = null;
-            lastAnnouncedPlayerId = null;
-            return;
-        }
-        // Ne rien annoncer si l'index est inconnu et pas d'ID courant.
-        if (turn.index() < 0 && turn.currentPlayerId() == null) {
-            lastTurnIndexSeen = null;
-            lastAnnouncedPlayerId = null;
-            return;
-        }
-        // éviter les doublons quand le même joueur reste courant
-        if (turnAnnouncementTracker.decide(true, turn.currentPlayerId(), turn.index(), turn.round(), true, true).announce()) {
-            lastTurnIndexSeen = turn.index();
-            lastAnnouncedPlayerId = turn.currentPlayerId();
-            String message = turnController.formatTurn(turn, tableState);
-            emitter.announceEvent(message);
-        }
-        */
-    }
-
-    private String buildRollMessage(Integer roll) {
-        String name = resolveCurrentName();
-        return name + " lance le dé : \"" + roll + "\"";
-    }
-
-    private String resolveCurrentName() {
-        int idx = tableState.turnIndex();
-        var players = tableState.players();
-        var bots = tableState.bots();
-        if (idx >= 0 && idx < players.size()) {
-            String username = players.get(idx).username();
-            if (username != null && !username.isBlank()) {
-                return username;
-            }
-        }
-        int botIdx = idx - players.size();
-        if (botIdx >= 0 && botIdx < bots.size()) {
-            String name = bots.get(botIdx).name();
-            if (name != null && !name.isBlank()) {
-                return name;
-            }
-        }
-        return "Le joueur";
-    }
-
     private void dispatchSelectedAction() {
         GenericGameState.GenericAction selected = actionsList.getSelectedValue();
         if (selected == null || selected.type() == null || selected.type().isBlank()) {
@@ -703,8 +622,7 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
 
     private void renderPlayerCollections(GenericGameState state) {
         if (state != null) {
-            JsonNode extrasNode = state.extras();
-            var resolved = playerCollectionsViewModel.resolve(extrasNode, localUserId, localUsername);
+            var resolved = playerCollectionsRenderer.resolve(state, localUserId, localUsername);
             if (resolved.isPresent()) {
                 localPlayerId = resolved.get().playerId();
                 updateCollectionsFromLists(resolved.get().shopping(), resolved.get().basket(), resolved.get().inventory());
@@ -1084,53 +1002,12 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         RoomParticipantsMapper.updateFromPlayers(tableState, state.players());
     }
 
-    private void handleExchangeNavigation(int delta) {
-        exchangeRenderer.handleNavigation(delta, exchangePending);
-    }
-
     private void refreshExchangeInfoLabel() {
         exchangeRenderer.refreshInfoLabel(exchangePending);
     }
 
     private void announceExchangeSelectionIfNeeded(int index) {
         exchangeRenderer.announceSelectionIfNeeded(index, exchangePending);
-    }
-
-    private String buildExchangeLabel(GenericGameState.GenericAction action, int index, int total) {
-        Map<String, Object> payload = toPayload(action.payload());
-        Object target = payload.getOrDefault("targetPlayerId", "?");
-        Object give = payload.getOrDefault("give", "?");
-        Object take = payload.getOrDefault("take", "?");
-        String targetName = resolveNameForId(target);
-        return "Échanger " + give + " contre " + take + " avec " + targetName + " (" + (index + 1) + "/" + total + ")";
-    }
-
-    private String buildActionLabel(GenericGameState.GenericAction action) {
-        if (action == null) return "";
-        String type = action.type() == null ? "" : action.type();
-        String label = action.label() == null ? "" : action.label();
-        if (!label.isBlank()) return label;
-        return type;
-    }
-
-    private String resolveNameForId(Object idObj) {
-        if (idObj == null) return "?";
-        try {
-            Integer id = Integer.valueOf(idObj.toString());
-            for (var p : tableState.players()) {
-                if (p != null && p.id() != null && p.id().equals(id)) {
-                    return p.username() == null || p.username().isBlank() ? "Joueur" : p.username();
-                }
-            }
-            for (var b : tableState.bots()) {
-                if (b != null && b.id() != null && b.id().equals(id)) {
-                    return b.name() == null || b.name().isBlank() ? "Bot" : b.name();
-                }
-            }
-            return "Joueur " + id;
-        } catch (NumberFormatException e) {
-            return idObj.toString();
-        }
     }
 
     private String sanitizeLogLine(String line) {

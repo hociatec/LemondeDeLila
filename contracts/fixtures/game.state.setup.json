@@ -1,14 +1,29 @@
 {
   "status": "setup",
-  "phase": "playing",
+  "phase": "turn",
   "round": 1,
   "turnIndex": 0,
   "lastRoll": null,
   "log": [],
-  "players": [{ "id": 10, "username": "alice", "isBot": false }],
-  "turn": { "currentPlayerId": 10, "direction": 1, "label": "La table PanierExpress a été créée, ajoutez des bots et démarrez-la !" },
+  "players": [{ "id": 10, "username": "alice", "isBot": false, "shoppingList": [], "basket": [], "inventory": [] }],
+  "turn": {
+    "currentPlayerId": 10,
+    "direction": 1,
+    "label": "La table panier-express a été créée, ajoutez des bots et démarrez-la !"
+  },
   "pending": null,
-  "metadata": { "gameType": "PanierExpress", "generatedAt": "2025-01-01T00:00:00.000Z" },
+  "metadata": { "gameType": "panier-express", "generatedAt": "2025-01-01T00:00:00.000Z", "actionLog": [] },
   "botThinking": false,
-  "actions": []
+  "actions": [],
+  "extras": {
+    "currentPlayerView": { "id": 10, "username": "alice", "isBot": false, "shoppingList": [], "basket": [], "inventory": [] },
+    "playerViews": [{ "id": 10, "username": "alice", "isBot": false, "shoppingList": [], "basket": [], "inventory": [] }],
+    "players": [{ "id": 10, "username": "alice", "isBot": false, "shoppingList": [], "basket": [], "inventory": [] }],
+    "shortcuts": [
+      { "key": "pressed S", "type": "interface", "id": "shopping" },
+      { "key": "pressed B", "type": "interface", "id": "basket" },
+      { "key": "pressed I", "type": "interface", "id": "inventory" },
+      { "key": "pressed P", "type": "interface", "id": "position" }
+    ]
+  }
 }
