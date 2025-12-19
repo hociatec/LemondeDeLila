@@ -53,20 +53,28 @@ export class DameNatureBotService {
       familyCounts[c.familyId].count += 1;
       familyCounts[c.familyId].cards.push(c);
     });
-    const candidateFamilies = Object.entries(familyCounts)
+    const desiredFamilies = Object.entries(familyCounts)
       .filter(([fid]) => !(me.books ?? []).includes(fid))
-      .sort((a, b) => b[1].count - a[1].count);
-    const picked = candidateFamilies[0];
+      .sort((a, b) => b[1].count - a[1].count)
+      .map(([fid]) => fid);
 
-    const familyCatalog = picked ? families.find((f) => f.id === picked[0]) : null;
-    const owned = new Set(picked?.[1].cards.map((c) => c.memberId) ?? []);
-    const missing = familyCatalog ? familyCatalog.members.filter((m) => !owned.has(m.id)) : [];
-    const memberId = missing.length
-      ? missing[Math.floor(Math.random() * missing.length)].id
-      : picked?.[1].cards[0]?.memberId;
     // Choix du joueur avec le plus de cartes pour maximiser les chances
     const sortedOthers = [...others].sort((a, b) => (b.handCount ?? 0) - (a.handCount ?? 0));
     const target = sortedOthers[0] ?? null;
+
+    // Choisir une carte qui existe vraiment dans la main de la cible (sinon la demande serait invalide).
+    const pickRequestedCard = (): FamilyCard | null => {
+      if (!target?.hand?.length) return null;
+      for (const familyId of desiredFamilies) {
+        const catalog = families.find((f) => f.id === familyId);
+        const owned = new Set((me.hand ?? []).filter((c) => c.familyId === familyId).map((c) => c.memberId));
+        const missing = new Set((catalog?.members ?? []).filter((m) => !owned.has(m.id)).map((m) => m.id));
+        const match = target.hand.find((c) => c.familyId === familyId && missing.has(c.memberId));
+        if (match) return match;
+      }
+      return target.hand[0] ?? null;
+    };
+    const requested = pickRequestedCard();
 
     // Règle de tour : 1 pioche + 1 défausse. Si la main est à 5 ou si la pioche est déjà faite, on défausse.
     const mustDiscard = (me.hand?.length ?? 0) > 4 || (progress.drew && !progress.discarded);
@@ -87,22 +95,22 @@ export class DameNatureBotService {
     }
 
     const actions: GameSingleActionDto[] = [];
-    if (memberId != null && target != null) {
+    if (requested && target != null) {
       // Depuis que l'échange est obligatoire, on doit toujours proposer une carte en contrepartie.
-      const offer = me.hand.find((c) => c.memberId !== String(memberId)) ?? me.hand[0] ?? null;
+      const offer = me.hand[0] ?? null;
       if (!offer) {
         return this.botRunner.choose([{ type: 'draw', payload: { playerId: botPlayerId } }], { state, playerId: botPlayerId }, profile, {
           preferTypes: ['draw'],
         });
       }
-      const key = `${picked?.[0] ?? ''}:${memberId}:${target.id}`;
+      const key = `${requested.familyId}:${requested.memberId}:${target.id}`;
       if (!recentRequests.has(key)) {
         actions.push({
           type: 'ask_card',
           payload: {
             playerId: botPlayerId,
-            familyId: picked?.[0] ?? families[0].id,
-            memberId,
+            familyId: requested.familyId,
+            memberId: requested.memberId,
             target: target.id,
             targetPlayerId: target.id,
             // offre
@@ -123,7 +131,7 @@ export class DameNatureBotService {
         if (action.type === 'ask_card') return 5;
         // Piocher devient prioritaire si peu de cartes ou aucune famille majoritaire
         if (action.type === 'draw') {
-          const maxFamilyCount = picked != null ? picked[1].count : 0;
+          const maxFamilyCount = Object.values(familyCounts).reduce((m, v) => Math.max(m, v.count), 0);
           return maxFamilyCount < 2 ? 6 : 3;
         }
         return 0;

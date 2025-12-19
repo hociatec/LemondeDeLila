@@ -1,0 +1,441 @@
+{
+  "version": 1,
+  "families": [
+    {
+      "id": "arbres",
+      "name": "Famille des Arbres",
+      "members": [
+        {
+          "id": "chene",
+          "name": "Chêne"
+        },
+        {
+          "id": "sapin",
+          "name": "Sapin"
+        },
+        {
+          "id": "bouleau",
+          "name": "Bouleau"
+        },
+        {
+          "id": "erable",
+          "name": "Érable"
+        }
+      ]
+    },
+    {
+      "id": "oiseaux",
+      "name": "Famille des Oiseaux",
+      "members": [
+        {
+          "id": "aigle",
+          "name": "Aigle"
+        },
+        {
+          "id": "perroquet",
+          "name": "Perroquet"
+        },
+        {
+          "id": "colibri",
+          "name": "Colibri"
+        },
+        {
+          "id": "moineau",
+          "name": "Moineau"
+        }
+      ]
+    },
+    {
+      "id": "felins",
+      "name": "Famille des Félins",
+      "members": [
+        {
+          "id": "lion",
+          "name": "Lion"
+        },
+        {
+          "id": "tigre",
+          "name": "Tigre"
+        },
+        {
+          "id": "lynx",
+          "name": "Lynx"
+        },
+        {
+          "id": "chat",
+          "name": "Chat"
+        }
+      ]
+    },
+    {
+      "id": "poissons",
+      "name": "Famille des Poissons",
+      "members": [
+        {
+          "id": "requin",
+          "name": "Requin"
+        },
+        {
+          "id": "baleine",
+          "name": "Baleine"
+        },
+        {
+          "id": "saumon",
+          "name": "Saumon"
+        },
+        {
+          "id": "clown",
+          "name": "Poisson-clown"
+        }
+      ]
+    },
+    {
+      "id": "insectes",
+      "name": "Famille des Insectes",
+      "members": [
+        {
+          "id": "cigale",
+          "name": "Cigale"
+        },
+        {
+          "id": "scarabee",
+          "name": "Scarabée"
+        },
+        {
+          "id": "fourmi",
+          "name": "Fourmi"
+        },
+        {
+          "id": "papillon",
+          "name": "Papillon"
+        }
+      ]
+    },
+    {
+      "id": "reptiles",
+      "name": "Famille des Reptiles",
+      "members": [
+        {
+          "id": "serpent",
+          "name": "Serpent"
+        },
+        {
+          "id": "crocodile",
+          "name": "Crocodile"
+        },
+        {
+          "id": "tortue",
+          "name": "Tortue"
+        },
+        {
+          "id": "lezard",
+          "name": "Lézard"
+        }
+      ]
+    },
+    {
+      "id": "canides",
+      "name": "Famille des Canidés",
+      "members": [
+        {
+          "id": "loup",
+          "name": "Loup"
+        },
+        {
+          "id": "renard",
+          "name": "Renard"
+        },
+        {
+          "id": "chien",
+          "name": "Chien"
+        },
+        {
+          "id": "coyote",
+          "name": "Coyote"
+        }
+      ]
+    },
+    {
+      "id": "primates",
+      "name": "Famille des Primates",
+      "members": [
+        {
+          "id": "gorille",
+          "name": "Gorille"
+        },
+        {
+          "id": "chimpanze",
+          "name": "Chimpanzé"
+        },
+        {
+          "id": "orangoutan",
+          "name": "Orang-outan"
+        },
+        {
+          "id": "macaque",
+          "name": "Macaque"
+        }
+      ]
+    },
+    {
+      "id": "fleurs",
+      "name": "Famille des Fleurs",
+      "members": [
+        {
+          "id": "rose",
+          "name": "Rose"
+        },
+        {
+          "id": "tulipe",
+          "name": "Tulipe"
+        },
+        {
+          "id": "tournesol",
+          "name": "Tournesol"
+        },
+        {
+          "id": "lys",
+          "name": "Lys"
+        }
+      ]
+    },
+    {
+      "id": "champignons",
+      "name": "Famille des Champignons",
+      "members": [
+        {
+          "id": "amanite",
+          "name": "Amanite"
+        },
+        {
+          "id": "bolet",
+          "name": "Bolet"
+        },
+        {
+          "id": "girolle",
+          "name": "Girolle"
+        },
+        {
+          "id": "morille",
+          "name": "Morille"
+        }
+      ]
+    },
+    {
+      "id": "ocean",
+      "name": "Famille des Animaux Marins",
+      "members": [
+        {
+          "id": "dauphin",
+          "name": "Dauphin"
+        },
+        {
+          "id": "pieuvre",
+          "name": "Pieuvre"
+        },
+        {
+          "id": "meduse",
+          "name": "Méduse"
+        },
+        {
+          "id": "phoque",
+          "name": "Phoque"
+        }
+      ]
+    },
+    {
+      "id": "rapaces",
+      "name": "Famille des Rapaces",
+      "members": [
+        {
+          "id": "faucon",
+          "name": "Faucon"
+        },
+        {
+          "id": "hibou",
+          "name": "Hibou"
+        },
+        {
+          "id": "buse",
+          "name": "Buse"
+        },
+        {
+          "id": "vautour",
+          "name": "Vautour"
+        }
+      ]
+    },
+    {
+      "id": "herbivores",
+      "name": "Famille des Herbivores",
+      "members": [
+        {
+          "id": "cerf",
+          "name": "Cerf"
+        },
+        {
+          "id": "cheval",
+          "name": "Cheval"
+        },
+        {
+          "id": "vache",
+          "name": "Vache"
+        },
+        {
+          "id": "lapin",
+          "name": "Lapin"
+        }
+      ]
+    },
+    {
+      "id": "amphibiens",
+      "name": "Famille des Amphibiens",
+      "members": [
+        {
+          "id": "grenouille",
+          "name": "Grenouille"
+        },
+        {
+          "id": "crapaud",
+          "name": "Crapaud"
+        },
+        {
+          "id": "salamandre",
+          "name": "Salamandre"
+        },
+        {
+          "id": "triton",
+          "name": "Triton"
+        }
+      ]
+    },
+    {
+      "id": "mineraux",
+      "name": "Famille des Minéraux",
+      "members": [
+        {
+          "id": "quartz",
+          "name": "Quartz"
+        },
+        {
+          "id": "amethyste",
+          "name": "Améthyste"
+        },
+        {
+          "id": "granit",
+          "name": "Granit"
+        },
+        {
+          "id": "obsidienne",
+          "name": "Obsidienne"
+        }
+      ]
+    },
+    {
+      "id": "montagnes",
+      "name": "Famille des Montagnes",
+      "members": [
+        {
+          "id": "everest",
+          "name": "Everest"
+        },
+        {
+          "id": "montblanc",
+          "name": "Mont-Blanc"
+        },
+        {
+          "id": "kilimandjaro",
+          "name": "Kilimandjaro"
+        },
+        {
+          "id": "fuji",
+          "name": "Fuji"
+        }
+      ]
+    },
+    {
+      "id": "deserts",
+      "name": "Famille des Déserts",
+      "members": [
+        {
+          "id": "sahara",
+          "name": "Sahara"
+        },
+        {
+          "id": "gobi",
+          "name": "Gobi"
+        },
+        {
+          "id": "atakama",
+          "name": "Atacama"
+        },
+        {
+          "id": "mojave",
+          "name": "Mojave"
+        }
+      ]
+    },
+    {
+      "id": "arbustes",
+      "name": "Famille des Arbustes",
+      "members": [
+        {
+          "id": "noisetier",
+          "name": "Noisetier"
+        },
+        {
+          "id": "buisson",
+          "name": "Buisson"
+        },
+        {
+          "id": "houx",
+          "name": "Houx"
+        }
+      ]
+    },
+    {
+      "id": "vents",
+      "name": "Famille des Vents",
+      "members": [
+        {
+          "id": "mistral",
+          "name": "Mistral"
+        },
+        {
+          "id": "alize",
+          "name": "Alizé"
+        },
+        {
+          "id": "sirocco",
+          "name": "Sirocco"
+        },
+        {
+          "id": "tramontane",
+          "name": "Tramontane"
+        }
+      ]
+    },
+    {
+      "id": "constellations",
+      "name": "Famille des Constellations",
+      "members": [
+        {
+          "id": "orion",
+          "name": "Orion"
+        },
+        {
+          "id": "grandeourse",
+          "name": "Grande Ourse"
+        },
+        {
+          "id": "cassiopee",
+          "name": "Cassiopée"
+        },
+        {
+          "id": "scorpion",
+          "name": "Scorpion"
+        }
+      ]
+    }
+  ]
+}

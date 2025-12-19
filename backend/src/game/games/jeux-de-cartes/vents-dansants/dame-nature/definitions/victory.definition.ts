@@ -25,8 +25,10 @@ export const DAME_NATURE_VICTORY: VictoryCondition[] = [
     check: (state: GameStateEntity) => {
       const meta = state.metadata as DameNatureMetadata | undefined;
       if (!meta) return false;
-      if (meta.pollution >= meta.maxPollution) {
-        return { finished: true, winnerId: null, details: { pollution: meta.pollution } };
+      const pollutions = Object.values(meta.pollutionByPlayer ?? {}).filter((v) => typeof v === 'number') as number[];
+      const worst = pollutions.length ? Math.max(...pollutions) : 0;
+      if (worst >= meta.maxPollution) {
+        return { finished: true, winnerId: null, details: { pollution: worst } };
       }
       return false;
     },

@@ -116,11 +116,11 @@ public final class GameQuizHandler {
         int next = quizChoiceIndex;
 
         if (quizChoiceIndex < 0) {
-            next = delta > 0 ? 0 : size - 1;
+            next = 0;
         } else {
             next = quizChoiceIndex + delta;
-            if (next < 0) next = size - 1;
-            if (next >= size) next = 0;
+            if (next < 0) next = 0;
+            if (next >= size) next = size - 1;
         }
 
         quizChoiceIndex = next;

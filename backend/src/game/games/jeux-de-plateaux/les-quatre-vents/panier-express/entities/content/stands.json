@@ -1,0 +1,146 @@
+{
+  "version": 1,
+  "stands": [
+    {
+      "id": "fruitier",
+      "items": [
+        "pomme",
+        "poire",
+        "banane",
+        "melon"
+      ]
+    },
+    {
+      "id": "maraicher",
+      "items": [
+        "carotte",
+        "courgette",
+        "tomate"
+      ]
+    },
+    {
+      "id": "bio",
+      "items": [
+        "pomme",
+        "poire",
+        "carotte",
+        "courgette",
+        "fraise",
+        "avocat",
+        "banane",
+        "tomate",
+        "kiwi",
+        "melon",
+        "citron",
+        "ananas",
+        "peche",
+        "mangue",
+        "raisin"
+      ]
+    },
+    {
+      "id": "primeur",
+      "items": [
+        "pomme",
+        "poire",
+        "banane",
+        "tomate"
+      ]
+    },
+    {
+      "id": "fruits-exotiques",
+      "items": [
+        "ananas",
+        "mangue",
+        "kiwi"
+      ]
+    },
+    {
+      "id": "legumes-racines",
+      "items": [
+        "carotte",
+        "poire"
+      ]
+    },
+    {
+      "id": "legumes-feuilles",
+      "items": [
+        "avocat",
+        "courgette"
+      ]
+    },
+    {
+      "id": "fruits-rouges",
+      "items": [
+        "fraise",
+        "raisin"
+      ]
+    },
+    {
+      "id": "legumes-secs",
+      "items": [
+        "carotte",
+        "courgette"
+      ]
+    },
+    {
+      "id": "agrumes",
+      "items": [
+        "citron"
+      ]
+    },
+    {
+      "id": "legumes-ete",
+      "items": [
+        "tomate",
+        "courgette"
+      ]
+    },
+    {
+      "id": "fruits-secs",
+      "items": [
+        "raisin"
+      ]
+    },
+    {
+      "id": "fruits-hiver",
+      "items": [
+        "poire",
+        "pomme"
+      ]
+    },
+    {
+      "id": "legumes-exotiques",
+      "items": [
+        "avocat",
+        "mangue"
+      ]
+    },
+    {
+      "id": "champignons",
+      "items": [
+        "tomate"
+      ]
+    },
+    {
+      "id": "bonus",
+      "items": [
+        "pomme",
+        "poire",
+        "carotte",
+        "courgette",
+        "fraise",
+        "avocat",
+        "banane",
+        "tomate",
+        "kiwi",
+        "melon",
+        "citron",
+        "ananas",
+        "peche",
+        "mangue",
+        "raisin"
+      ]
+    }
+  ]
+}

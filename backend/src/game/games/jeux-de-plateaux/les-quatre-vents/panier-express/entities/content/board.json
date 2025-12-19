@@ -1,0 +1,190 @@
+{
+  "version": 1,
+  "tiles": [
+    {
+      "id": "start",
+      "type": "start"
+    },
+    {
+      "id": "stand-fruitier",
+      "type": "stand",
+      "standId": "fruitier"
+    },
+    {
+      "id": "event-1",
+      "type": "event"
+    },
+    {
+      "id": "stand-maraicher",
+      "type": "stand",
+      "standId": "maraicher"
+    },
+    {
+      "id": "exchange-1",
+      "type": "exchange"
+    },
+    {
+      "id": "stand-bio-1",
+      "type": "stand",
+      "standId": "bio"
+    },
+    {
+      "id": "move-plus-1",
+      "type": "move",
+      "delta": 1
+    },
+    {
+      "id": "stand-primeur-1",
+      "type": "stand",
+      "standId": "primeur"
+    },
+    {
+      "id": "skip-1",
+      "type": "skip",
+      "turns": 1
+    },
+    {
+      "id": "stand-fruits-exotiques",
+      "type": "stand",
+      "standId": "fruits-exotiques"
+    },
+    {
+      "id": "exchange-2",
+      "type": "exchange"
+    },
+    {
+      "id": "stand-legumes-racines",
+      "type": "stand",
+      "standId": "legumes-racines"
+    },
+    {
+      "id": "move-minus-2",
+      "type": "move",
+      "delta": -2
+    },
+    {
+      "id": "stand-legumes-feuilles",
+      "type": "stand",
+      "standId": "legumes-feuilles"
+    },
+    {
+      "id": "quiz-1",
+      "type": "quiz"
+    },
+    {
+      "id": "stand-fruits-rouges",
+      "type": "stand",
+      "standId": "fruits-rouges"
+    },
+    {
+      "id": "event-2",
+      "type": "event"
+    },
+    {
+      "id": "stand-legumes-secs",
+      "type": "stand",
+      "standId": "legumes-secs"
+    },
+    {
+      "id": "exchange-3",
+      "type": "exchange"
+    },
+    {
+      "id": "stand-bio-2",
+      "type": "stand",
+      "standId": "bio"
+    },
+    {
+      "id": "move-to-stand",
+      "type": "move_to_stand"
+    },
+    {
+      "id": "stand-primeur-2",
+      "type": "stand",
+      "standId": "primeur"
+    },
+    {
+      "id": "bonus-course-1",
+      "type": "bonus_course"
+    },
+    {
+      "id": "stand-agrumes",
+      "type": "stand",
+      "standId": "agrumes"
+    },
+    {
+      "id": "skip-2",
+      "type": "skip",
+      "turns": 1
+    },
+    {
+      "id": "stand-fruits-secs",
+      "type": "stand",
+      "standId": "fruits-secs"
+    },
+    {
+      "id": "exchange-4",
+      "type": "exchange"
+    },
+    {
+      "id": "stand-legumes-ete",
+      "type": "stand",
+      "standId": "legumes-ete"
+    },
+    {
+      "id": "move-minus-3",
+      "type": "move",
+      "delta": -3
+    },
+    {
+      "id": "stand-fruits-hiver",
+      "type": "stand",
+      "standId": "fruits-hiver"
+    },
+    {
+      "id": "exchange-5",
+      "type": "exchange"
+    },
+    {
+      "id": "stand-legumes-exotiques",
+      "type": "stand",
+      "standId": "legumes-exotiques"
+    },
+    {
+      "id": "quiz-2",
+      "type": "quiz"
+    },
+    {
+      "id": "stand-champignons",
+      "type": "stand",
+      "standId": "champignons"
+    },
+    {
+      "id": "move-plus-2",
+      "type": "move",
+      "delta": 2
+    },
+    {
+      "id": "stand-primeur-3",
+      "type": "stand",
+      "standId": "primeur"
+    },
+    {
+      "id": "event-3",
+      "type": "event"
+    },
+    {
+      "id": "stand-maraicher-2",
+      "type": "stand",
+      "standId": "maraicher"
+    },
+    {
+      "id": "exchange-6",
+      "type": "exchange"
+    },
+    {
+      "id": "arrival",
+      "type": "start"
+    }
+  ]
+}

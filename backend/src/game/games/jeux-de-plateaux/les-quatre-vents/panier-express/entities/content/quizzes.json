@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "quizzes": [
+    {
+      "id": "quiz-vitamine-c",
+      "question": "Quel fruit contient le plus de vitamine C ?",
+      "answer": "kiwi",
+      "choices": [
+        "kiwi",
+        "citron",
+        "ananas",
+        "melon"
+      ]
+    },
+    {
+      "id": "quiz-legume-fruit",
+      "question": "Quel légume est en réalité un fruit ?",
+      "answer": "tomate",
+      "choices": [
+        "tomate",
+        "carotte",
+        "fraise",
+        "avocat"
+      ]
+    },
+    {
+      "id": "quiz-graines-exterieur",
+      "question": "Quel fruit a ses graines à l'extérieur ?",
+      "answer": "fraise",
+      "choices": [
+        "fraise",
+        "kiwi",
+        "raisin",
+        "banane"
+      ]
+    }
+  ]
+}

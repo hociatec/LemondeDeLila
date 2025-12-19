@@ -12,10 +12,9 @@ public final class GameExchangeNavigator {
         if (current < 0 || current >= size) {
             current = 0;
         } else {
-            current = (current + delta) % size;
-            if (current < 0) {
-                current += size;
-            }
+            current = current + delta;
+            if (current < 0) current = 0;
+            if (current >= size) current = size - 1;
         }
         return current;
     }
@@ -36,4 +35,3 @@ public final class GameExchangeNavigator {
         lastAnnouncedIndex = -1;
     }
 }
-

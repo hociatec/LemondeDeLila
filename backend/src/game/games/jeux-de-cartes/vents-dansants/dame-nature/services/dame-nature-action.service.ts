@@ -37,13 +37,13 @@ export class DameNatureActionService {
       username: current.username,
       hand: current.handCount,
       books: current.books.length,
-      pollution: meta.pollution,
+      pollution: this.pollution.get(meta, current.id),
       maxPollution: meta.maxPollution,
     });
     if (!card) {
       let logged = this.core.appendLog(state, `Pioche vide : ${current.username} passe son tour.`);
-      const polluted = this.applyPollutionTick({ ...logged, metadata }, 'Pioche vide');
-      dameNatureLog('draw.empty', { playerId: current.id, username: current.username, pollution: (polluted.metadata as any)?.pollution ?? 0 });
+      const polluted = this.applyPollutionTick({ ...logged, metadata }, current, 'Pioche vide');
+      dameNatureLog('draw.empty', { playerId: current.id, username: current.username, pollution: this.pollution.get(polluted.metadata as any, current.id) });
       return { state: polluted, card: null, performed: true };
     }
     if (card.kind === 'danger') {
@@ -51,7 +51,7 @@ export class DameNatureActionService {
         { ...state, metadata },
         `${current.username} pioche une carte Nature en danger : ${card.memberName}.`,
       );
-      next = this.applyPollutionTick(next, card.memberName, card.pollutionDelta ?? 1);
+      next = this.applyPollutionTick(next, current, card.memberName, card.pollutionDelta ?? 1);
       const metaAfter = next.metadata as DameNatureMetadata;
       dameNatureLog('draw.danger', {
         playerId: current.id,
@@ -59,7 +59,7 @@ export class DameNatureActionService {
         cardId: card.memberId,
         cardName: card.memberName,
         delta: card.pollutionDelta ?? 1,
-        pollution: metaAfter.pollution,
+        pollution: this.pollution.get(metaAfter, current.id),
       });
       return { state: next, card, skipAdvance: false, performed: true };
     }
@@ -69,6 +69,7 @@ export class DameNatureActionService {
         const correct = true;
         const answered = this.applyPollutionTick(
           { ...state, metadata },
+          current,
           correct ? 'Quiz réussi (bot)' : 'Quiz raté (bot)',
           correct ? -1 : 1,
         );
@@ -139,6 +140,14 @@ export class DameNatureActionService {
     player: { id: number; username: string; hand: FamilyCard[]; handCount: number; books: string[] },
     meta: DameNatureMetadata,
   ): GameStateEntity {
+    return this.refillHandToFourWithCount(state, player, meta).state;
+  }
+
+  refillHandToFourWithCount(
+    state: GameStateEntity,
+    player: { id: number; username: string; hand: FamilyCard[]; handCount: number; books: string[] },
+    meta: DameNatureMetadata,
+  ): { state: GameStateEntity; drew: number } {
     let next = state;
     let currentMeta = meta;
     let drew = 0;
@@ -154,7 +163,7 @@ export class DameNatureActionService {
     if (drew > 0) {
       next = this.core.appendLog(next, `${player.username} pioche ${drew} carte(s) pour revenir à 4.`);
     }
-    return next;
+    return { state: next, drew };
   }
 
   handleAskCard(
@@ -198,20 +207,27 @@ export class DameNatureActionService {
     return { state: next, success: true };
   }
 
-  applyPollutionTick(state: GameStateEntity, reason: string, amount = 1): GameStateEntity {
+  applyPollutionTick(
+    state: GameStateEntity,
+    player: { id: number; username: string },
+    reason: string,
+    amount = 1,
+  ): GameStateEntity {
     const meta = (state.metadata as DameNatureMetadata) ?? this.setup.buildMetadata();
-    const { metadata, reachedMax, delta } = this.pollution.tick(meta, amount);
+    const { metadata, reachedMax, delta, playerPollution } = this.pollution.tick(meta, player.id, amount);
     let next: GameStateEntity = { ...state, metadata };
     if (reason && delta !== 0) {
       const sign = delta > 0 ? '+' : '-';
       next = this.core.appendLog(
         next,
-        `Pollution ${sign}${Math.abs(delta)} (${reason}). Total: ${metadata.pollution}/${metadata.maxPollution}.`,
+        `Pollution ${sign}${Math.abs(delta)} pour ${player.username} (${reason}). Total: ${playerPollution}/${metadata.maxPollution}.`,
       );
       dameNatureLog('pollution.tick', {
+        playerId: player.id,
+        username: player.username,
         reason,
         delta,
-        total: metadata.pollution,
+        total: playerPollution,
         max: metadata.maxPollution,
       });
     }

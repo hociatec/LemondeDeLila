@@ -1,8 +1,17 @@
 import { Injectable } from '@nestjs/common';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 import { DeckPoolService, DeckPoolState } from '../../../../../modules/cards/services/deck-pool.service';
 import { GameStateEntity, PlayerStateEntity } from '../../../../../core/entities/game-state.entity';
 import { DameNatureMetadata } from './dame-nature.service';
 import { dameNatureLog } from '../../../../../../common/utils/damenature-logger';
+import {
+  DameNatureDangerCardDef,
+  DameNatureFamiliesJsonV1,
+  DameNaturePollutionJsonV1,
+  DameNatureQuizCardDef,
+  DameNatureQuizJsonV1,
+} from '../models/dame-nature-catalog.model';
 
 export type FamilyCard = {
   kind?: 'family' | 'quiz' | 'danger';
@@ -17,67 +26,217 @@ export type FamilyCard = {
   pollutionDelta?: number;
 };
 
+type FamilyDef = {
+  id: string;
+  name: string;
+  members: Array<{ id: string; name: string; role: string }>;
+};
+
 @Injectable()
 export class DameNatureSetupService {
   constructor(private readonly deckPool: DeckPoolService) {}
 
-  families() {
-    return [
-      {
-        id: 'arbres',
-        name: 'Famille des Arbres',
-        members: [
-          { id: 'chene', name: 'Chêne', role: 'Parent' },
-          { id: 'sapin', name: 'Sapin', role: 'Parent' },
-          { id: 'bouleau', name: 'Bouleau', role: 'Enfant' },
-          { id: 'erable', name: 'Érable', role: 'Enfant' },
-        ],
-      },
-      {
-        id: 'oiseaux',
-        name: 'Famille des Oiseaux',
-        members: [
-          { id: 'aigle', name: 'Aigle', role: 'Parent' },
-          { id: 'perroquet', name: 'Perroquet', role: 'Parent' },
-          { id: 'colibri', name: 'Colibri', role: 'Enfant' },
-          { id: 'moineau', name: 'Moineau', role: 'Enfant' },
-        ],
-      },
-      {
-        id: 'felins',
-        name: 'Famille des Félins',
-        members: [
-          { id: 'lion', name: 'Lion', role: 'Parent' },
-          { id: 'tigre', name: 'Tigre', role: 'Parent' },
-          { id: 'lynx', name: 'Lynx', role: 'Enfant' },
-          { id: 'chat', name: 'Chat', role: 'Enfant' },
-        ],
-      },
-      {
-        id: 'poissons',
-        name: 'Famille des Poissons',
-        members: [
-          { id: 'requin', name: 'Requin', role: 'Parent' },
-          { id: 'baleine', name: 'Baleine', role: 'Parent' },
-          { id: 'saumon', name: 'Saumon', role: 'Enfant' },
-          { id: 'clown', name: 'Poisson-clown', role: 'Enfant' },
-        ],
-      },
-      {
-        id: 'insectes',
-        name: 'Famille des Insectes',
-        members: [
-          { id: 'cigale', name: 'Cigale', role: 'Parent' },
-          { id: 'scarabee', name: 'Scarabée', role: 'Parent' },
-          { id: 'fourmi', name: 'Fourmi', role: 'Enfant' },
-          { id: 'papillon', name: 'Papillon', role: 'Enfant' },
-        ],
-      },
-    ];
+  private familiesCache: FamilyDef[] | null = null;
+  private quizCache: DameNatureQuizCardDef[] | null = null;
+  private dangerCache: DameNatureDangerCardDef[] | null = null;
+  private familiesJsonCache: DameNatureFamiliesJsonV1 | null = null;
+  private quizJsonCache: DameNatureQuizJsonV1 | null = null;
+  private pollutionJsonCache: DameNaturePollutionJsonV1 | null = null;
+
+  private static findUp(startDir: string, filename: string, maxDepth = 10): string | null {
+    let current = startDir;
+    for (let depth = 0; depth < maxDepth; depth += 1) {
+      const candidate = path.join(current, filename);
+      if (fs.existsSync(candidate)) return candidate;
+      const parent = path.dirname(current);
+      if (parent === current) break;
+      current = parent;
+    }
+    return null;
+  }
+
+  private static readTextFileWithFallback(filePath: string): string {
+    const utf8 = fs.readFileSync(filePath, { encoding: 'utf8' }).replace(/^\uFEFF/, '');
+    const replacementCount = (utf8.match(/\uFFFD/g) ?? []).length;
+    if (replacementCount <= 2) return utf8;
+    return fs.readFileSync(filePath, { encoding: 'latin1' }).replace(/^\uFEFF/, '');
+  }
+
+  private static fixMojibakeString(value: string): string {
+    const score = (s: string) => {
+      const suspicious = (s.match(/[\u00C2\u00C3\u00E2\u0153\u0178\u0160\u0161\u017D\u017E\u2030]/g) ?? []).length;
+      const replacement = (s.match(/\uFFFD/g) ?? []).length;
+      return suspicious * 2 + replacement * 10;
+    };
+    const currentScore = score(value);
+    if (currentScore === 0) return value;
+
+    const windows1252ToBytes = (input: string): Uint8Array => {
+      // Convertit une string JS (Unicode) en bytes CP1252, pour corriger le mojibake du type "Ã‰" (Ã + ‰).
+      const map: Record<number, number> = {
+        0x20ac: 0x80,
+        0x201a: 0x82,
+        0x0192: 0x83,
+        0x201e: 0x84,
+        0x2026: 0x85,
+        0x2020: 0x86,
+        0x2021: 0x87,
+        0x02c6: 0x88,
+        0x2030: 0x89,
+        0x0160: 0x8a,
+        0x2039: 0x8b,
+        0x0152: 0x8c,
+        0x017d: 0x8e,
+        0x2018: 0x91,
+        0x2019: 0x92,
+        0x201c: 0x93,
+        0x201d: 0x94,
+        0x2022: 0x95,
+        0x2013: 0x96,
+        0x2014: 0x97,
+        0x02dc: 0x98,
+        0x2122: 0x99,
+        0x0161: 0x9a,
+        0x203a: 0x9b,
+        0x0153: 0x9c,
+        0x017e: 0x9e,
+        0x0178: 0x9f,
+      };
+      const bytes: number[] = [];
+      for (const ch of input) {
+        const cp = ch.codePointAt(0) ?? 0;
+        if (cp <= 0xff) {
+          bytes.push(cp);
+        } else if (map[cp] != null) {
+          bytes.push(map[cp]);
+        } else {
+          // caractère non représentable en cp1252 -> remplacer (laisser la string telle quelle)
+          bytes.push(0x3f); // '?'
+        }
+      }
+      return Uint8Array.from(bytes);
+    };
+
+    const candidates = [
+      Buffer.from(value, 'latin1').toString('utf8'),
+      Buffer.from(windows1252ToBytes(value)).toString('utf8'),
+    ].filter((c) => typeof c === 'string' && c.length > 0);
+
+    let best = value;
+    let bestScore = currentScore;
+    for (const c of candidates) {
+      const s = score(c);
+      if (s < bestScore) {
+        best = c;
+        bestScore = s;
+      }
+    }
+    return best;
+  }
+
+  private static fixMojibakeDeep<T>(value: T): T {
+    if (typeof value === 'string') {
+      return DameNatureSetupService.fixMojibakeString(value) as unknown as T;
+    }
+    if (Array.isArray(value)) {
+      return value.map((v) => DameNatureSetupService.fixMojibakeDeep(v)) as unknown as T;
+    }
+    if (value && typeof value === 'object') {
+      const obj = value as Record<string, unknown>;
+      const out: Record<string, unknown> = {};
+      Object.keys(obj).forEach((k) => {
+        out[k] = DameNatureSetupService.fixMojibakeDeep(obj[k]);
+      });
+      return out as T;
+    }
+    return value;
+  }
+
+  families(): FamilyDef[] {
+    if (this.familiesCache) return this.familiesCache;
+
+    const familiesJson = this.familiesJson();
+    this.familiesCache = familiesJson.families.map((f) => ({
+      id: f.id,
+      name: f.name,
+      members: (f.members ?? []).map((m) => ({ id: m.id, name: m.name, role: 'Membre' })),
+    }));
+    return this.familiesCache;
+  }
+
+  quizCards(): DameNatureQuizCardDef[] {
+    if (this.quizCache) return this.quizCache;
+    const quizJson = this.quizJson();
+    this.quizCache = quizJson.quiz ?? [];
+    return this.quizCache;
+  }
+
+  dangerCards(): DameNatureDangerCardDef[] {
+    if (this.dangerCache) return this.dangerCache;
+    const pollutionJson = this.pollutionJson();
+    this.dangerCache = pollutionJson.cards ?? [];
+    return this.dangerCache;
+  }
+
+  maxPollution(): number {
+    const pollutionJson = this.pollutionJson();
+    return typeof pollutionJson.maxPollution === 'number' ? pollutionJson.maxPollution : 12;
+  }
+
+  private familiesJson(): DameNatureFamiliesJsonV1 {
+    if (this.familiesJsonCache) return this.familiesJsonCache;
+    const filePath = path.join(__dirname, '..', 'models', 'families.json');
+    try {
+      const raw = DameNatureSetupService.readTextFileWithFallback(filePath);
+      const parsed = DameNatureSetupService.fixMojibakeDeep(JSON.parse(raw)) as DameNatureFamiliesJsonV1;
+      if (!parsed || (parsed as any).version !== 1) throw new Error('version');
+      if (!Array.isArray(parsed.families) || parsed.families.length === 0) throw new Error('families');
+      this.familiesJsonCache = parsed;
+      dameNatureLog('setup.families_json.loaded', { source: filePath, families: parsed.families.length });
+      return parsed;
+    } catch (e) {
+      throw new Error(`Catalogue Dame Nature introuvable/invalide: families.json (${String(e)})`);
+    }
+  }
+
+  private quizJson(): DameNatureQuizJsonV1 {
+    if (this.quizJsonCache) return this.quizJsonCache;
+    const filePath = path.join(__dirname, '..', 'models', 'quiz.json');
+    try {
+      const raw = DameNatureSetupService.readTextFileWithFallback(filePath);
+      const parsed = DameNatureSetupService.fixMojibakeDeep(JSON.parse(raw)) as DameNatureQuizJsonV1;
+      if (!parsed || (parsed as any).version !== 1) throw new Error('version');
+      if (!Array.isArray(parsed.quiz)) throw new Error('quiz');
+      this.quizJsonCache = parsed;
+      dameNatureLog('setup.quiz_json.loaded', { source: filePath, quiz: parsed.quiz.length });
+      return parsed;
+    } catch (e) {
+      throw new Error(`Catalogue Dame Nature introuvable/invalide: quiz.json (${String(e)})`);
+    }
+  }
+
+  private pollutionJson(): DameNaturePollutionJsonV1 {
+    if (this.pollutionJsonCache) return this.pollutionJsonCache;
+    const filePath = path.join(__dirname, '..', 'models', 'pollution.json');
+    try {
+      const raw = DameNatureSetupService.readTextFileWithFallback(filePath);
+      const parsed = DameNatureSetupService.fixMojibakeDeep(JSON.parse(raw)) as DameNaturePollutionJsonV1;
+      if (!parsed || (parsed as any).version !== 1) throw new Error('version');
+      if (!Array.isArray(parsed.cards)) throw new Error('cards');
+      if (typeof parsed.maxPollution !== 'number') throw new Error('maxPollution');
+      this.pollutionJsonCache = parsed;
+      dameNatureLog('setup.pollution_json.loaded', { source: filePath, max: parsed.maxPollution, cards: parsed.cards.length });
+      return parsed;
+    } catch (e) {
+      throw new Error(`Catalogue Dame Nature introuvable/invalide: pollution.json (${String(e)})`);
+    }
   }
 
   buildMetadata(): DameNatureMetadata {
     const families = this.families();
+    if (!families.length) {
+      throw new Error('Impossible de démarrer Dame Nature: aucune famille définie (catalogue vide).');
+    }
     const deck: FamilyCard[] = [];
     families.forEach((fam) => {
       fam.members.forEach((m) => {
@@ -91,89 +250,36 @@ export class DameNatureSetupService {
         });
       });
     });
-    // Cartes spéciales : Nature en danger / Quiz
-    const dangerCards: FamilyCard[] = [
-      { kind: 'danger', familyId: 'danger', familyName: 'Nature en danger', memberId: 'incendie', memberName: 'Incendie de forêt', role: 'Evenement', pollutionDelta: 2 },
-      { kind: 'danger', familyId: 'danger', familyName: 'Nature en danger', memberId: 'maree-noire', memberName: 'Marée noire', role: 'Evenement', pollutionDelta: 3 },
-      { kind: 'danger', familyId: 'danger', familyName: 'Nature en danger', memberId: 'canicule', memberName: 'Canicule', role: 'Evenement', pollutionDelta: 1 },
-      { kind: 'danger', familyId: 'danger', familyName: 'Nature en danger', memberId: 'deforestation', memberName: 'Déforestation', role: 'Evenement', pollutionDelta: 2 },
-      { kind: 'danger', familyId: 'danger', familyName: 'Nature en danger', memberId: 'usine', memberName: 'Usine polluante', role: 'Evenement', pollutionDelta: 2 },
-      { kind: 'danger', familyId: 'danger', familyName: 'Nature en danger', memberId: 'reforestation', memberName: 'Reforestation', role: 'Evenement', pollutionDelta: -2 },
-    ];
-    const quizCards: FamilyCard[] = [
-      {
-        kind: 'quiz',
-        familyId: 'quiz',
-        familyName: 'Quiz Nature',
-        memberId: 'quiz1',
-        memberName: 'Quelle plante produit de l’oxygène grâce au soleil ?',
-        role: 'Quiz',
-        question: 'Quelle plante produit de l’oxygène grâce au soleil ?',
-        answer: 'Algue',
-        choices: ['Cactus', 'Algue', 'Champignon'],
-      },
-      {
-        kind: 'quiz',
-        familyId: 'quiz',
-        familyName: 'Quiz Nature',
-        memberId: 'quiz2',
-        memberName: 'Quel animal est en danger à cause du plastique dans les océans ?',
-        role: 'Quiz',
-        question: 'Quel animal est en danger à cause du plastique dans les océans ?',
-        answer: 'Dauphin',
-        choices: ['Lion', 'Dauphin', 'Pigeon'],
-      },
-      {
-        kind: 'quiz',
-        familyId: 'quiz',
-        familyName: 'Quiz Nature',
-        memberId: 'quiz3',
-        memberName: 'Quelle action aide la planète ?',
-        role: 'Quiz',
-        question: 'Quelle action aide la planète ?',
-        answer: 'Planter un arbre',
-        choices: ['Laisser couler l’eau', 'Planter un arbre', 'Prendre l’avion tous les jours'],
-      },
-      {
-        kind: 'quiz',
-        familyId: 'quiz',
-        familyName: 'Quiz Nature',
-        memberId: 'quiz4',
-        memberName: 'Quelle source d’énergie est renouvelable ?',
-        role: 'Quiz',
-        question: 'Quelle source d’énergie est renouvelable ?',
-        answer: 'Le vent',
-        choices: ['Charbon', 'Le vent', 'Pétrole'],
-      },
-      {
-        kind: 'quiz',
-        familyId: 'quiz',
-        familyName: 'Quiz Nature',
-        memberId: 'quiz5',
-        memberName: 'Quel insecte joue un rôle essentiel dans la pollinisation ?',
-        role: 'Quiz',
-        question: 'Quel insecte joue un rôle essentiel dans la pollinisation ?',
-        answer: 'Abeille',
-        choices: ['Moustique', 'Abeille', 'Scarabée'],
-      },
-      {
-        kind: 'quiz',
-        familyId: 'quiz',
-        familyName: 'Quiz Nature',
-        memberId: 'quiz6',
-        memberName: 'Quel animal construit des barrages en bois ?',
-        role: 'Quiz',
-        question: 'Quel animal construit des barrages en bois ?',
-        answer: 'Castor',
-        choices: ['Castor', 'Rat', 'Renard'],
-      },
-    ];
+
+    // Cartes spéciales : Nature en danger / Quiz (définies via JSON/texte)
+    const dangerCards: FamilyCard[] = this.dangerCards().map((d) => ({
+      kind: 'danger',
+      familyId: 'danger',
+      familyName: 'Nature en danger',
+      memberId: d.id,
+      memberName: d.label,
+      role: 'Événement',
+      pollutionDelta: d.pollutionDelta,
+    }));
+
+    const quizCards: FamilyCard[] = this.quizCards().map((q) => ({
+      kind: 'quiz',
+      familyId: 'quiz',
+      familyName: 'Quiz Nature',
+      memberId: q.id,
+      memberName: q.question,
+      role: 'Quiz',
+      question: q.question,
+      answer: q.answer,
+      choices: q.choices,
+    }));
+
     deck.push(...dangerCards, ...quizCards);
     return {
       decks: this.deckPool.set<FamilyCard>({}, 'family', this.deckPool.shuffle(deck)),
       familyGoal: 4,
-      pollution: 0,
-      maxPollution: 12,
+      maxPollution: this.maxPollution(),
+      pollutionByPlayer: {},
       catalog: { families: families.map((f) => ({ id: f.id, name: f.name })) },
       actionLog: [],
       phaseId: 'turn',
@@ -214,16 +320,16 @@ export class DameNatureSetupService {
     return { card: null, metadata: currentMeta, skipped };
   }
 
-  initializePlayers(baseState: GameStateEntity, metadata: DameNatureMetadata): Array<PlayerStateEntity & { hand: FamilyCard[]; handCount: number; books: string[] }> {
+  initializePlayers(
+    baseState: GameStateEntity,
+    metadata: DameNatureMetadata,
+  ): Array<PlayerStateEntity & { hand: FamilyCard[]; handCount: number; books: string[] }> {
     const allPlayers: Array<PlayerStateEntity & { hand: FamilyCard[]; handCount: number; books: string[] }> = [];
     (baseState.players ?? []).forEach((p) => {
       allPlayers.push({
         id: p.id,
         username: p.username,
         isBot: (p as any).isBot ?? false,
-        basket: (p as any).basket ?? [],
-        inventory: (p as any).inventory ?? [],
-        shoppingList: (p as any).shoppingList ?? [],
         hand: [],
         handCount: 0,
         books: [],
@@ -258,9 +364,6 @@ export class DameNatureSetupService {
         id: p.id,
         username: p.username,
         isBot: anyPlayer.isBot ?? false,
-        basket: anyPlayer.basket ?? [],
-        inventory: anyPlayer.inventory ?? [],
-        shoppingList: anyPlayer.shoppingList ?? [],
         hand,
         handCount: anyPlayer.handCount ?? hand.length,
         books,

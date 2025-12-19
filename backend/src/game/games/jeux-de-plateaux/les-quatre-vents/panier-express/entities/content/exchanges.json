@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "exchanges": [
+    "echange-fruit-legume",
+    "donne-une-carte",
+    "prend-au-hasard"
+  ]
+}

@@ -84,6 +84,10 @@ public final class GameDialogManager {
         if (askTargets.isEmpty() && fallbackTargets != null && !fallbackTargets.isEmpty()) {
             askTargets = List.copyOf(fallbackTargets);
             if (askTargetIndex >= askTargets.size()) askTargetIndex = 0;
+            // Recalculer les cartes demandables pour la première cible (sinon on reste sur le catalogue générique).
+            askCardIndex = 0;
+            this.askCards = extractAskCards(state);
+            if (askCardIndex >= askCards.size()) askCardIndex = askCards.isEmpty() ? 0 : askCards.size() - 1;
         }
         // Dans Dame Nature, une demande doit toujours proposer une carte en échange.
         if (askTargets.isEmpty() || askCards.isEmpty() || giveCards.isEmpty()) {
@@ -92,17 +96,13 @@ public final class GameDialogManager {
             return;
         }
         askDialogOpen = true;
+        // UX guidée : commencer par la cible, puis TAB pour carte demandée, puis TAB pour carte offerte.
+        askTargetIndex = 0;
+        askCardIndex = 0;
+        askGiveIndex = 0;
         askFocusIndex = 0;
-        updateInfoLabel.accept(infoLabelFormatter.formatAskLabel(
-                askDialogOpen,
-                askTargets.stream().map(PlayerOption::name).toList(),
-                askTargetIndex,
-                askCards.stream().map(AskCardOption::label).toList(),
-                askCardIndex,
-                giveCards.stream().map(AskCardOption::label).toList(),
-                askGiveIndex,
-                askFocusIndex
-        ));
+        // Afficher uniquement l'élément courant (cible / carte demandée / carte offerte / valider / annuler).
+        updateInfoLabel.accept(buildAskAnnouncementText());
     }
 
     public void refreshAskDialogData(GenericGameState state) {
@@ -135,16 +135,25 @@ public final class GameDialogManager {
     public void moveAskSelection(int delta) {
         if (!askDialogOpen) return;
         if (askFocusIndex == 0 && !askTargets.isEmpty()) {
-            askTargetIndex = (askTargetIndex + delta + askTargets.size()) % askTargets.size();
+            int next = askTargetIndex + delta;
+            if (next < 0) next = 0;
+            if (next >= askTargets.size()) next = askTargets.size() - 1;
+            askTargetIndex = next;
             // Mettre à jour la liste des cartes demandables selon la cible.
             if (lastAskState != null) {
                 this.askCards = extractAskCards(lastAskState);
                 if (askCardIndex >= askCards.size()) askCardIndex = askCards.isEmpty() ? 0 : askCards.size() - 1;
             }
         } else if (askFocusIndex == 1 && !askCards.isEmpty()) {
-            askCardIndex = (askCardIndex + delta + askCards.size()) % askCards.size();
+            int next = askCardIndex + delta;
+            if (next < 0) next = 0;
+            if (next >= askCards.size()) next = askCards.size() - 1;
+            askCardIndex = next;
         } else if (askFocusIndex == 2 && !giveCards.isEmpty()) {
-            askGiveIndex = (askGiveIndex + delta + giveCards.size()) % giveCards.size();
+            int next = askGiveIndex + delta;
+            if (next < 0) next = 0;
+            if (next >= giveCards.size()) next = giveCards.size() - 1;
+            askGiveIndex = next;
         } else if (askFocusIndex == 3 && delta > 0) {
             sendAskDialog();
             return;
@@ -197,26 +206,43 @@ public final class GameDialogManager {
         AskCardOption give = giveCards.isEmpty() ? null : giveCards.get(Math.max(0, Math.min(askGiveIndex, giveCards.size() - 1)));
 
         switch (askFocusIndex) {
-            case 0 -> { return "Joueur cible : " + target.name() + " (" + (askTargetIndex + 1) + "/" + askTargets.size() + ")"; }
-            case 1 -> { return "Carte à demander : " + card.label() + " (" + (askCardIndex + 1) + "/" + askCards.size() + ")"; }
-            case 2 -> { return give == null ? "" : "Carte à donner : " + give.label() + " (" + (askGiveIndex + 1) + "/" + giveCards.size() + ")"; }
-            case 3 -> { return "Valider la demande"; }
+            case 0 -> { return "Cible : " + target.name() + " (" + (askTargetIndex + 1) + "/" + askTargets.size() + "). Tab pour la carte à demander."; }
+            case 1 -> { return "Carte à demander (dans la main de " + target.name() + ") : " + card.label() + " (" + (askCardIndex + 1) + "/" + askCards.size() + "). Tab pour la carte à donner."; }
+            case 2 -> { return give == null ? "" : "Carte à donner (dans votre main) : " + give.label() + " (" + (askGiveIndex + 1) + "/" + giveCards.size() + "). Tab pour valider."; }
+            case 3 -> { return "Valider la demande. Tab pour annuler."; }
+            case 4 -> { return "Annuler. Shift+Tab pour revenir à valider."; }
+            default -> { return ""; }
+        }
+    }
+
+    public String buildAskSelectionAnnouncementText() {
+        if (!askDialogOpen) {
+            return "";
+        }
+        switch (askFocusIndex) {
+            case 0 -> {
+                if (askTargets.isEmpty()) return "";
+                PlayerOption target = askTargets.get(Math.max(0, Math.min(askTargetIndex, askTargets.size() - 1)));
+                return target.name() + " (" + (askTargetIndex + 1) + "/" + askTargets.size() + ")";
+            }
+            case 1 -> {
+                if (askCards.isEmpty()) return "";
+                AskCardOption card = askCards.get(Math.max(0, Math.min(askCardIndex, askCards.size() - 1)));
+                return card.label() + " (" + (askCardIndex + 1) + "/" + askCards.size() + ")";
+            }
+            case 2 -> {
+                if (giveCards.isEmpty()) return "";
+                AskCardOption give = giveCards.get(Math.max(0, Math.min(askGiveIndex, giveCards.size() - 1)));
+                return give.label() + " (" + (askGiveIndex + 1) + "/" + giveCards.size() + ")";
+            }
+            case 3 -> { return "Valider"; }
             case 4 -> { return "Annuler"; }
             default -> { return ""; }
         }
     }
 
     private void refreshAskInfoLabel() {
-        updateInfoLabel.accept(infoLabelFormatter.formatAskLabel(
-                askDialogOpen,
-                askTargets.stream().map(PlayerOption::name).toList(),
-                askTargetIndex,
-                askCards.stream().map(AskCardOption::label).toList(),
-                askCardIndex,
-                giveCards.stream().map(AskCardOption::label).toList(),
-                askGiveIndex,
-                askFocusIndex
-        ));
+        updateInfoLabel.accept(buildAskAnnouncementText());
     }
 
     private List<PlayerOption> extractAskTargets(GenericGameState state) {
@@ -383,11 +409,8 @@ public final class GameDialogManager {
         }
         int size = discardOptions.size();
         int next = discardIndex + delta;
-        if (next < 0) {
-            next = size - 1;
-        } else if (next >= size) {
-            next = 0;
-        }
+        if (next < 0) next = 0;
+        if (next >= size) next = size - 1;
         discardIndex = next;
         refreshDiscardInfoLabel();
     }

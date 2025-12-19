@@ -1,97 +1,226 @@
 import { Injectable } from '@nestjs/common';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 import { DeckManagerService } from '../../../../../modules/cards/services/deck-manager.service';
 import { DeckPoolService, DeckPoolState } from '../../../../../modules/cards/services/deck-pool.service';
 import { GameStateEntity } from '../../../../../core/entities/game-state.entity';
-import { PanierExpressMetadata, PanierExpressTile, PanierExpressDeckPool } from '../entities/panier-express-state.entity';
+import { PanierExpressDeckPool, PanierExpressMetadata, PanierExpressTile } from '../entities/panier-express-state.entity';
+import {
+  PanierExpressBoardJsonV1,
+  PanierExpressCoursesJsonV1,
+  PanierExpressEventsJsonV1,
+  PanierExpressExchangesJsonV1,
+  PanierExpressQuizzesJsonV1,
+  PanierExpressShoppingListsJsonV1,
+  PanierExpressStandsJsonV1,
+} from '../entities/panier-express-content.entity';
 
 @Injectable()
 export class PanierExpressSetupService {
   constructor(private readonly decks: DeckManagerService, private readonly deckPool: DeckPoolService) {}
 
+  private cache: {
+    board?: PanierExpressBoardJsonV1;
+    courses?: PanierExpressCoursesJsonV1;
+    stands?: PanierExpressStandsJsonV1;
+    events?: PanierExpressEventsJsonV1;
+    exchanges?: PanierExpressExchangesJsonV1;
+    quizzes?: PanierExpressQuizzesJsonV1;
+    shoppingLists?: PanierExpressShoppingListsJsonV1;
+  } = {};
+
+  private static readJsonFile<T>(absPath: string): T {
+    const raw = fs.readFileSync(absPath, { encoding: 'utf8' }).replace(/^\uFEFF/, '');
+    const parsed = JSON.parse(raw) as T;
+    return PanierExpressSetupService.fixMojibakeDeep(parsed);
+  }
+
+  private static fixMojibakeString(value: string): string {
+    const score = (s: string) => {
+      const suspicious = (s.match(/[\u00C2\u00C3\u00E2\u0153\u0178\u0160\u0161\u017D\u017E\u2030]/g) ?? []).length;
+      const replacement = (s.match(/\uFFFD/g) ?? []).length;
+      return suspicious * 2 + replacement * 10;
+    };
+    const currentScore = score(value);
+    if (currentScore === 0) return value;
+
+    const windows1252ToBytes = (input: string): Uint8Array => {
+      const map: Record<number, number> = {
+        0x20ac: 0x80,
+        0x201a: 0x82,
+        0x0192: 0x83,
+        0x201e: 0x84,
+        0x2026: 0x85,
+        0x2020: 0x86,
+        0x2021: 0x87,
+        0x02c6: 0x88,
+        0x2030: 0x89,
+        0x0160: 0x8a,
+        0x2039: 0x8b,
+        0x0152: 0x8c,
+        0x017d: 0x8e,
+        0x2018: 0x91,
+        0x2019: 0x92,
+        0x201c: 0x93,
+        0x201d: 0x94,
+        0x2022: 0x95,
+        0x2013: 0x96,
+        0x2014: 0x97,
+        0x02dc: 0x98,
+        0x2122: 0x99,
+        0x0161: 0x9a,
+        0x203a: 0x9b,
+        0x0153: 0x9c,
+        0x017e: 0x9e,
+        0x0178: 0x9f,
+      };
+      const bytes: number[] = [];
+      for (const ch of input) {
+        const cp = ch.codePointAt(0) ?? 0;
+        if (cp <= 0xff) {
+          bytes.push(cp);
+        } else if (map[cp] != null) {
+          bytes.push(map[cp]);
+        } else {
+          bytes.push(0x3f);
+        }
+      }
+      return Uint8Array.from(bytes);
+    };
+
+    const candidates = [
+      Buffer.from(value, 'latin1').toString('utf8'),
+      Buffer.from(windows1252ToBytes(value)).toString('utf8'),
+    ].filter((c) => typeof c === 'string' && c.length > 0);
+
+    let best = value;
+    let bestScore = currentScore;
+    for (const c of candidates) {
+      const s = score(c);
+      if (s < bestScore) {
+        best = c;
+        bestScore = s;
+      }
+    }
+    return best;
+  }
+
+  private static fixMojibakeDeep<T>(value: T): T {
+    if (typeof value === 'string') {
+      return PanierExpressSetupService.fixMojibakeString(value) as unknown as T;
+    }
+    if (Array.isArray(value)) {
+      return value.map((v) => PanierExpressSetupService.fixMojibakeDeep(v)) as unknown as T;
+    }
+    if (value && typeof value === 'object') {
+      const obj = value as Record<string, unknown>;
+      const out: Record<string, unknown> = {};
+      Object.keys(obj).forEach((k) => {
+        out[k] = PanierExpressSetupService.fixMojibakeDeep(obj[k]);
+      });
+      return out as T;
+    }
+    return value;
+  }
+
+  private loadBoard(): PanierExpressBoardJsonV1 {
+    if (this.cache.board) return this.cache.board;
+    const abs = path.join(__dirname, '..', 'entities', 'content', 'board.json');
+    const parsed = PanierExpressSetupService.readJsonFile<PanierExpressBoardJsonV1>(abs);
+    if (!parsed || (parsed as any).version !== 1 || !Array.isArray(parsed.tiles) || parsed.tiles.length === 0) {
+      throw new Error('Panier Express: board.json invalide');
+    }
+    this.cache.board = parsed;
+    return parsed;
+  }
+
+  private loadCourses(): PanierExpressCoursesJsonV1 {
+    if (this.cache.courses) return this.cache.courses;
+    const abs = path.join(__dirname, '..', 'entities', 'content', 'courses.json');
+    const parsed = PanierExpressSetupService.readJsonFile<PanierExpressCoursesJsonV1>(abs);
+    if (!parsed || (parsed as any).version !== 1 || !Array.isArray(parsed.items) || parsed.items.length === 0) {
+      throw new Error('Panier Express: courses.json invalide');
+    }
+    this.cache.courses = parsed;
+    return parsed;
+  }
+
+  private loadStands(): PanierExpressStandsJsonV1 {
+    if (this.cache.stands) return this.cache.stands;
+    const abs = path.join(__dirname, '..', 'entities', 'content', 'stands.json');
+    const parsed = PanierExpressSetupService.readJsonFile<PanierExpressStandsJsonV1>(abs);
+    if (!parsed || (parsed as any).version !== 1 || !Array.isArray(parsed.stands) || parsed.stands.length === 0) {
+      throw new Error('Panier Express: stands.json invalide');
+    }
+    this.cache.stands = parsed;
+    return parsed;
+  }
+
+  private loadEvents(): PanierExpressEventsJsonV1 {
+    if (this.cache.events) return this.cache.events;
+    const abs = path.join(__dirname, '..', 'entities', 'content', 'events.json');
+    const parsed = PanierExpressSetupService.readJsonFile<PanierExpressEventsJsonV1>(abs);
+    if (!parsed || (parsed as any).version !== 1 || !Array.isArray(parsed.events) || parsed.events.length === 0) {
+      throw new Error('Panier Express: events.json invalide');
+    }
+    this.cache.events = parsed;
+    return parsed;
+  }
+
+  private loadExchanges(): PanierExpressExchangesJsonV1 {
+    if (this.cache.exchanges) return this.cache.exchanges;
+    const abs = path.join(__dirname, '..', 'entities', 'content', 'exchanges.json');
+    const parsed = PanierExpressSetupService.readJsonFile<PanierExpressExchangesJsonV1>(abs);
+    if (!parsed || (parsed as any).version !== 1 || !Array.isArray(parsed.exchanges) || parsed.exchanges.length === 0) {
+      throw new Error('Panier Express: exchanges.json invalide');
+    }
+    this.cache.exchanges = parsed;
+    return parsed;
+  }
+
+  private loadQuizzes(): PanierExpressQuizzesJsonV1 {
+    if (this.cache.quizzes) return this.cache.quizzes;
+    const abs = path.join(__dirname, '..', 'entities', 'content', 'quizzes.json');
+    const parsed = PanierExpressSetupService.readJsonFile<PanierExpressQuizzesJsonV1>(abs);
+    if (!parsed || (parsed as any).version !== 1 || !Array.isArray(parsed.quizzes)) {
+      throw new Error('Panier Express: quizzes.json invalide');
+    }
+    this.cache.quizzes = parsed;
+    return parsed;
+  }
+
+  private loadShoppingLists(): PanierExpressShoppingListsJsonV1 {
+    if (this.cache.shoppingLists) return this.cache.shoppingLists;
+    const abs = path.join(__dirname, '..', 'entities', 'content', 'shopping-lists.json');
+    const parsed = PanierExpressSetupService.readJsonFile<PanierExpressShoppingListsJsonV1>(abs);
+    if (!parsed || (parsed as any).version !== 1 || !Array.isArray(parsed.lists) || parsed.lists.length === 0) {
+      throw new Error('Panier Express: shopping-lists.json invalide');
+    }
+    this.cache.shoppingLists = parsed;
+    return parsed;
+  }
+
   courseItems(): string[] {
-    return [
-      'pomme',
-      'poire',
-      'carotte',
-      'courgette',
-      'fraise',
-      'avocat',
-      'banane',
-      'tomate',
-      'kiwi',
-      'melon',
-      'citron',
-      'ananas',
-      'peche',
-      'mangue',
-      'raisin',
-    ];
+    return this.loadCourses()
+      .items.map((v) => String(v))
+      .map((v) => v.trim())
+      .filter((v) => v.length > 0);
   }
 
   standCourseMap(): Record<string, string[]> {
-    return {
-      fruitier: ['pomme', 'poire', 'banane', 'melon'],
-      maraicher: ['carotte', 'courgette', 'tomate'],
-      bio: this.courseItems(),
-      primeur: ['pomme', 'poire', 'banane', 'tomate'],
-      'fruits-exotiques': ['ananas', 'mangue', 'kiwi'],
-      'legumes-racines': ['carotte', 'poire'],
-      'legumes-feuilles': ['avocat', 'courgette'],
-      'fruits-rouges': ['fraise', 'raisin'],
-      'legumes-secs': ['carotte', 'courgette'],
-      agrumes: ['citron'],
-      'legumes-ete': ['tomate', 'courgette'],
-      'fruits-secs': ['raisin'],
-      'fruits-hiver': ['poire', 'pomme'],
-      'legumes-exotiques': ['avocat', 'mangue'],
-      champignons: ['tomate'],
-      bonus: this.courseItems(),
-    };
+    const out: Record<string, string[]> = {};
+    this.loadStands().stands.forEach((s) => {
+      if (!s || typeof s.id !== 'string') return;
+      const id = s.id.trim();
+      if (!id) return;
+      const items = Array.isArray(s.items) ? s.items.map((v) => String(v)).map((v) => v.trim()).filter((v) => v.length > 0) : [];
+      out[id] = items;
+    });
+    return out;
   }
 
   buildTiles(): PanierExpressTile[] {
-    return [
-      { id: 'start', type: 'start' },
-      { id: 'stand-fruitier', type: 'stand', standId: 'fruitier' },
-      { id: 'event-1', type: 'event' },
-      { id: 'stand-maraicher', type: 'stand', standId: 'maraicher' },
-      { id: 'exchange-1', type: 'exchange' },
-      { id: 'stand-bio-1', type: 'stand', standId: 'bio' },
-      { id: 'move-plus-1', type: 'move', delta: 1 },
-      { id: 'stand-primeur-1', type: 'stand', standId: 'primeur' },
-      { id: 'skip-1', type: 'skip', turns: 1 },
-      { id: 'stand-fruits-exotiques', type: 'stand', standId: 'fruits-exotiques' },
-      { id: 'exchange-2', type: 'exchange' },
-      { id: 'stand-legumes-racines', type: 'stand', standId: 'legumes-racines' },
-      { id: 'move-minus-2', type: 'move', delta: -2 },
-      { id: 'stand-legumes-feuilles', type: 'stand', standId: 'legumes-feuilles' },
-      { id: 'quiz-1', type: 'quiz' },
-      { id: 'stand-fruits-rouges', type: 'stand', standId: 'fruits-rouges' },
-      { id: 'event-2', type: 'event' },
-      { id: 'stand-legumes-secs', type: 'stand', standId: 'legumes-secs' },
-      { id: 'exchange-3', type: 'exchange' },
-      { id: 'stand-bio-2', type: 'stand', standId: 'bio' },
-      { id: 'move-to-stand', type: 'move_to_stand' },
-      { id: 'stand-primeur-2', type: 'stand', standId: 'primeur' },
-      { id: 'bonus-course-1', type: 'bonus_course' },
-      { id: 'stand-agrumes', type: 'stand', standId: 'agrumes' },
-      { id: 'skip-2', type: 'skip', turns: 1 },
-      { id: 'stand-fruits-secs', type: 'stand', standId: 'fruits-secs' },
-      { id: 'exchange-4', type: 'exchange' },
-      { id: 'stand-legumes-ete', type: 'stand', standId: 'legumes-ete' },
-      { id: 'move-minus-3', type: 'move', delta: -3 },
-      { id: 'stand-fruits-hiver', type: 'stand', standId: 'fruits-hiver' },
-      { id: 'exchange-5', type: 'exchange' },
-      { id: 'stand-legumes-exotiques', type: 'stand', standId: 'legumes-exotiques' },
-      { id: 'quiz-2', type: 'quiz' },
-      { id: 'stand-champignons', type: 'stand', standId: 'champignons' },
-      { id: 'move-plus-2', type: 'move', delta: 2 },
-      { id: 'stand-primeur-3', type: 'stand', standId: 'primeur' },
-      { id: 'event-3', type: 'event' },
-      { id: 'stand-maraicher-2', type: 'stand', standId: 'maraicher' },
-      { id: 'exchange-6', type: 'exchange' },
-      { id: 'arrival', type: 'start' },
-    ];
+    return this.loadBoard().tiles as PanierExpressTile[];
   }
 
   buildDeckPool(baseState?: GameStateEntity): PanierExpressMetadata['decks'] {
@@ -100,12 +229,12 @@ export class PanierExpressSetupService {
     pool = this.setDeck(
       pool,
       'events',
-      this.deckPool.shuffle(['rupture-de-stock', 'stand-ferme', 'promo-surprise', 'orage-au-marche']),
+      this.deckPool.shuffle(this.loadEvents().events.map((v) => String(v)).filter((v) => v.length > 0)),
     );
     pool = this.setDeck(
       pool,
       'exchanges',
-      this.deckPool.shuffle(['echange-fruit-legume', 'donne-une-carte', 'prend-au-hasard']),
+      this.deckPool.shuffle(this.loadExchanges().exchanges.map((v) => String(v)).filter((v) => v.length > 0)),
     );
     pool = this.setDeck(pool, 'quizzes', this.buildQuizDeck());
     pool = this.setDeck(pool, 'shoppingLists', this.buildShoppingListDeck());
@@ -126,25 +255,24 @@ export class PanierExpressSetupService {
   }
 
   buildShoppingListDeck(): string[][] {
-    const lists: string[][] = [];
-    for (let i = 0; i < 10; i += 1) {
-      lists.push(this.decks.shuffle([...this.courseItems()]).slice(0, 5));
-    }
-    return this.decks.shuffle(lists);
+    const lists = this.loadShoppingLists().lists ?? [];
+    const normalized = lists
+      .map((entry) => (Array.isArray(entry) ? entry.map((v) => String(v)).map((v) => v.trim()).filter((v) => v.length > 0) : []))
+      .filter((entry) => entry.length > 0);
+    return this.decks.shuffle(normalized);
   }
 
-  buildQuizDeck(): Array<{ question: string; answer: string; choices: string[] }> {
-    const pool = this.courseItems();
-    const base = [
-      { question: 'Quel fruit contient le plus de vitamine C ?', answer: 'kiwi' },
-      { question: 'Quel légume est en réalité un fruit ?', answer: 'tomate' },
-      { question: 'Quel fruit a ses graines à l’extérieur ?', answer: 'fraise' },
-    ];
-    return base.map((q) => {
-      const distractors = this.decks.shuffle(pool.filter((item) => item !== q.answer)).slice(0, 3);
-      const choices = this.decks.shuffle([q.answer, ...distractors]);
-      return { ...q, choices };
-    });
+  buildQuizDeck(): Array<{ id?: string; question: string; answer: string; choices: string[] }> {
+    const quizzes = this.loadQuizzes().quizzes ?? [];
+    const normalized = quizzes
+      .map((q) => ({
+        id: typeof (q as any)?.id === 'string' ? String((q as any).id) : undefined,
+        question: String((q as any)?.question ?? '').trim(),
+        answer: String((q as any)?.answer ?? '').trim(),
+        choices: Array.isArray((q as any)?.choices) ? (q as any).choices.map((v: any) => String(v)).map((v: string) => v.trim()).filter((v: string) => v.length > 0) : [],
+      }))
+      .filter((q) => q.question.length > 0 && q.answer.length > 0);
+    return this.decks.shuffle(normalized);
   }
 
   /**

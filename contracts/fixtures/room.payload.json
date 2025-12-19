@@ -1,15 +1,13 @@
 {
   "room": {
     "id": 1,
-    "name": "PanierExpress",
-    "isPrivate": false,
-    "maxPlayers": 4,
-    "status": "setup",
-    "gameType": "panier-express",
-    "counts": { "players": 1, "spectators": 0 },
-    "owner": { "id": 10, "username": "alice" },
-    "players": [{ "id": 10, "username": "alice" }],
-    "bots": [{ "id": 1, "name": "Bot 1" }]
-  },
-  "generatedAt": "2025-01-01T00:00:00.000Z"
+    "gameType": "dame-nature",
+    "players": [
+      {
+        "id": 1,
+        "username": "Alice"
+      }
+    ]
+  }
 }
+

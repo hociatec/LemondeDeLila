@@ -13,10 +13,11 @@ export type TurnStateEntity = {
 export type PlayerStateEntity = {
   id: number;
   username: string;
-  isBot: boolean;
-  basket: unknown[];
-  inventory: unknown[];
-  shoppingList: unknown[];
+  isBot?: boolean;
+  // Champs historiques (Panier Express). Optionnels pour éviter de polluer les autres jeux.
+  basket?: unknown[];
+  inventory?: unknown[];
+  shoppingList?: unknown[];
 };
 
 export type PendingState = {

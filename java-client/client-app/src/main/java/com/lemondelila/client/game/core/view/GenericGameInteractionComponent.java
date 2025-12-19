@@ -48,6 +48,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
+import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
@@ -105,6 +106,7 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
     private final String localUsername;
     private final Integer localUserId;
     private Integer localPlayerId;
+    private final FocusHighlighter focusHighlighter;
     private GameQuizHandler quizHandler;
     private GameDialogManager dialogManager;
     private GenericGameState lastState;
@@ -132,6 +134,9 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
     private JComponent exchangeCard;
     private boolean exchangeActive;
 
+    private JDialog askModal;
+    private JLabel askModalLabel;
+
     public GenericGameInteractionComponent(GenericGameInteractionController controller,
                                            GameActionEmitter emitter,
                                            GameHistoryController history,
@@ -148,6 +153,7 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         this.emitter = Objects.requireNonNull(emitter, "emitter");
         this.history = Objects.requireNonNull(history, "history");
         this.tableState = Objects.requireNonNull(tableState, "tableState");
+        this.focusHighlighter = Objects.requireNonNull(focusHighlighter, "focusHighlighter");
         this.announcementService = new GameAnnouncementService(this.tableState, msg -> this.emitter.announceEvent(msg));
         this.primaryAction = primaryAction;
         this.startHandler = startHandler;
@@ -212,7 +218,7 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
                 this::refreshExchangeInfoLabel,
                 this::announceExchangeSelectionIfNeeded
         );
-        buildUi(focusHighlighter);
+        buildUi(this.focusHighlighter);
         this.statusRenderer.clear();
     }
 
@@ -267,6 +273,9 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
     }
 
     private void buildUi(FocusHighlighter focusHighlighter) {
+        // Les dialogues (demande / défausse) sont pilotés au clavier via TAB et flèches :
+        // on désactive la navigation de focus par TAB pour éviter que le focus parte dans l'historique.
+        disableFocusTraversalRecursively(this);
         AccessibleDecorator.apply(infoLabel, AccessibleSpec.builder()
                 .name("Information")
                 .description("Informations sur la partie")
@@ -324,6 +333,7 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         add(cardContainer, BorderLayout.CENTER);
         // Liste cachée : les actions se déclenchent via les raccourcis clavier.
         actionsList.setVisible(false);
+        disableFocusTraversalRecursively(actionsList);
 
         actionsList.addListSelectionListener(e -> refreshInfoLabel());
         actionsList.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -459,6 +469,11 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
     }
 
     private void handleQuizNavigation(int delta) {
+        if (dialogManager.isAskDialogOpen()) {
+            dialogManager.moveAskSelection(delta);
+            emitter.announceEvent(dialogManager.buildAskAnnouncementText());
+            return;
+        }
         if (dialogManager.isDiscardDialogOpen()) {
             dialogManager.moveDiscardSelection(delta);
             emitter.announceEvent(simplifyDiscardAnnouncement(lastState, dialogManager.buildDiscardAnnouncementText()));
@@ -503,6 +518,20 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         autoPrimaryDispatched = false;
         requestFocusInWindow();
         controller.attach(roomId, this);
+    }
+
+    private static void disableFocusTraversalRecursively(java.awt.Component component) {
+        if (component == null) return;
+        try {
+            component.setFocusTraversalKeysEnabled(false);
+            if (component instanceof java.awt.Container container) {
+                for (java.awt.Component child : container.getComponents()) {
+                    disableFocusTraversalRecursively(child);
+                }
+            }
+        } catch (Exception ignored) {
+            // some swing components may throw in odd states; best-effort only
+        }
     }
 
     public void onDetach() {
@@ -736,6 +765,88 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         return res;
     }
 
+    private void ensureAskModal() {
+        if (askModal != null) return;
+        java.awt.Window owner = SwingUtilities.getWindowAncestor(this);
+        if (owner == null) {
+            owner = javax.swing.JOptionPane.getFrameForComponent(this);
+        }
+        askModal = new JDialog(owner, "Demande de carte", java.awt.Dialog.ModalityType.APPLICATION_MODAL);
+        askModal.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+        askModal.setResizable(false);
+        askModal.setFocusTraversalKeysEnabled(false);
+
+        askModalLabel = new JLabel("");
+        AccessibleDecorator.apply(askModalLabel, AccessibleSpec.builder()
+                .name("Demande de carte")
+                .description("Tabulation pour changer de champ, flèches pour choisir, Entrée pour valider, Échap pour annuler.")
+                .build());
+        focusHighlighter.apply(askModalLabel);
+        disableFocusTraversalRecursively(askModalLabel);
+
+        JPanel content = new JPanel(new BorderLayout(8, 8));
+        content.setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 12, 12));
+        content.add(askModalLabel, BorderLayout.CENTER);
+        askModal.setContentPane(content);
+
+        javax.swing.JRootPane root = askModal.getRootPane();
+        InputMap im = root.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        ActionMap am = root.getActionMap();
+        KeyboardEventRouter router = new KeyboardEventRouter(im, am);
+        router.bind("TAB", "ask.modal.tab", () -> {
+            dialogManager.moveAskFocus(false);
+            refreshAskModal(true, false);
+        });
+        router.bind("shift TAB", "ask.modal.tab.back", () -> {
+            dialogManager.moveAskFocus(true);
+            refreshAskModal(true, false);
+        });
+        router.bind("UP", "ask.modal.up", () -> {
+            dialogManager.moveAskSelection(-1);
+            refreshAskModal(false, true);
+        });
+        router.bind("DOWN", "ask.modal.down", () -> {
+            dialogManager.moveAskSelection(1);
+            refreshAskModal(false, true);
+        });
+        router.bind("ENTER", "ask.modal.enter", () -> {
+            dialogManager.sendAskDialog();
+            closeAskModal();
+        });
+        router.bind("ESCAPE", "ask.modal.escape", () -> {
+            dialogManager.cancelAskDialog();
+            closeAskModal();
+        });
+    }
+
+    private void openAskModal() {
+        ensureAskModal();
+        refreshAskModal(true, false);
+        askModal.pack();
+        askModal.setLocationRelativeTo(SwingUtilities.getWindowAncestor(this));
+        askModal.setVisible(true);
+    }
+
+    private void refreshAskModal(boolean announceFull, boolean announceSelection) {
+        if (askModalLabel == null) return;
+        String full = dialogManager.buildAskAnnouncementText();
+        askModalLabel.setText(full);
+        if (announceFull) {
+            emitter.announceEvent(full);
+        } else if (announceSelection) {
+            String selection = dialogManager.buildAskSelectionAnnouncementText();
+            if (selection != null && !selection.isBlank()) {
+                emitter.announceEvent(selection);
+            }
+        }
+    }
+
+    private void closeAskModal() {
+        if (askModal != null) {
+            askModal.setVisible(false);
+        }
+    }
+
     private void handleActionShortcut(String targetType) {
         if (targetType == null || targetType.isBlank()) return;
         for (int i = 0; i < actionsModel.size(); i++) {
@@ -745,7 +856,7 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
                 if ("ask_card".equalsIgnoreCase(targetType)) {
                     dialogManager.openAskDialog(lastState, buildFallbackAskTargets());
                     if (dialogManager.isAskDialogOpen()) {
-                        emitter.announceEvent(dialogManager.buildAskAnnouncementText());
+                        openAskModal();
                     } else {
                         String reason = dialogManager.getLastAskBlockReason();
                         emitter.announceError("Impossible d'ouvrir la demande" + (reason.isBlank() ? "" : " : " + reason));
@@ -761,7 +872,49 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
             emitter.announceError("Demande de carte indisponible (pas d'action serveur : pas votre tour ou partie non démarrée).");
         } else if ("discard_card".equalsIgnoreCase(targetType)) {
             emitter.announceError("Défausse indisponible (pas d'action serveur : pas votre tour ou rien à défausser).");
+        } else if ("answer_ask_card_accept".equalsIgnoreCase(targetType)) {
+            if (!isPendingAskForMe()) {
+                emitter.announceError("Aucune demande de carte à accepter.");
+                return;
+            }
+            String missing = resolveRequestedMemberIdFromPendingAsk();
+            if (missing != null && !playerHasMemberInHand(missing)) {
+                emitter.announceError("Impossible d'accepter : vous n'avez pas la carte demandée.");
+            } else {
+                emitter.announceError("Acceptation indisponible (le serveur ne propose pas l'action).");
+            }
+        } else if ("answer_ask_card_refuse".equalsIgnoreCase(targetType)) {
+            if (!isPendingAskForMe()) {
+                emitter.announceError("Aucune demande de carte à refuser.");
+            } else {
+                emitter.announceError("Refus indisponible (le serveur ne propose pas l'action).");
+            }
         }
+    }
+
+    private String resolveRequestedMemberIdFromPendingAsk() {
+        if (lastState == null || lastState.extras() == null || !lastState.extras().isObject()) return null;
+        JsonNode pending = lastState.extras().path("pendingAsk");
+        if (pending != null && pending.isObject()) {
+            String memberId = pending.path("memberId").asText("");
+            return memberId.isBlank() ? null : memberId;
+        }
+        return null;
+    }
+
+    private boolean playerHasMemberInHand(String memberId) {
+        if (memberId == null || memberId.isBlank() || lastState == null || lastState.extras() == null || !lastState.extras().isObject()) {
+            return false;
+        }
+        JsonNode handCards = lastState.extras().path("handCards");
+        if (handCards != null && handCards.isArray()) {
+            for (JsonNode c : handCards) {
+                if (c != null && c.isObject() && memberId.equalsIgnoreCase(c.path("memberId").asText(""))) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private String formatList(Object raw) {
@@ -998,7 +1151,7 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         if ("ask_card".equalsIgnoreCase(action.type())) {
             dialogManager.openAskDialog(lastState, buildFallbackAskTargets());
             if (dialogManager.isAskDialogOpen()) {
-                emitter.announceEvent(dialogManager.buildAskAnnouncementText());
+                openAskModal();
             } else {
                 String reason = dialogManager.getLastAskBlockReason();
                 emitter.announceError("Impossible d'ouvrir la demande" + (reason.isBlank() ? "" : " : " + reason));

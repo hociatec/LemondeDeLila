@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "events": [
+    "rupture-de-stock",
+    "stand-ferme",
+    "promo-surprise",
+    "orage-au-marche"
+  ]
+}

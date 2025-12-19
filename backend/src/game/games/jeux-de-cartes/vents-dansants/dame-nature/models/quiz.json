@@ -1,0 +1,395 @@
+{
+  "version": 1,
+  "quiz": [
+    {
+      "id": "quiz1",
+      "question": "Quelle plante produit de l’oxygène grâce au soleil ?",
+      "choices": [
+        "•",
+        "Cactus",
+        "•",
+        "Algue",
+        "•",
+        "Champignon"
+      ],
+      "answer": "Algue"
+    },
+    {
+      "id": "quiz2",
+      "question": "Quel animal est en danger à cause du plastique dans les océans ?",
+      "choices": [
+        "•",
+        "Lion",
+        "•",
+        "Dauphin",
+        "•",
+        "Pigeon"
+      ],
+      "answer": "Dauphin"
+    },
+    {
+      "id": "quiz3",
+      "question": "Quelle action aide la planète ?",
+      "choices": [
+        "•",
+        "Laisser couler l’eau",
+        "•",
+        "Planter un arbre",
+        "•",
+        "Prendre l’avion tous les jours"
+      ],
+      "answer": "Planter un arbre"
+    },
+    {
+      "id": "quiz4",
+      "question": "Quelle source d’énergie est renouvelable ?",
+      "choices": [
+        "•",
+        "Charbon",
+        "•",
+        "Le vent",
+        "•",
+        "Pétrole"
+      ],
+      "answer": "Le vent"
+    },
+    {
+      "id": "quiz5",
+      "question": "Quel insecte joue un rôle essentiel dans la pollinisation ?",
+      "choices": [
+        "•",
+        "Moustique",
+        "•",
+        "Abeille",
+        "•",
+        "Scarabée"
+      ],
+      "answer": "Abeille"
+    },
+    {
+      "id": "quiz6",
+      "question": "Quel animal construit des barrages en bois ?",
+      "choices": [
+        "•",
+        "Castor",
+        "•",
+        "Rat",
+        "•",
+        "Renard"
+      ],
+      "answer": "Castor"
+    },
+    {
+      "id": "quiz7",
+      "question": "Quel arbre perd ses feuilles en hiver ?",
+      "choices": [
+        "•",
+        "Sapin",
+        "•",
+        "Chêne",
+        "•",
+        "Palmier"
+      ],
+      "answer": "Chêne"
+    },
+    {
+      "id": "quiz8",
+      "question": "Quel animal est le roi de la savane ?",
+      "choices": [
+        "•",
+        "Éléphant",
+        "•",
+        "Lion",
+        "•",
+        "Girafe"
+      ],
+      "answer": "Lion"
+    },
+    {
+      "id": "quiz9",
+      "question": "Quel déchet met le plus de temps à se décomposer ?",
+      "choices": [
+        "•",
+        "Papier",
+        "•",
+        "Plastique",
+        "•",
+        "Fruit"
+      ],
+      "answer": "Plastique"
+    },
+    {
+      "id": "quiz10",
+      "question": "Quel est le plus grand mammifère du monde ?",
+      "choices": [
+        "•",
+        "Éléphant",
+        "•",
+        "Baleine",
+        "•",
+        "Rhinocéros"
+      ],
+      "answer": "Baleine"
+    },
+    {
+      "id": "quiz11",
+      "question": "Quelle plante pousse surtout dans le désert ?",
+      "choices": [
+        "•",
+        "Fougère",
+        "•",
+        "Cactus",
+        "•",
+        "Nénuphar"
+      ],
+      "answer": "Cactus"
+    },
+    {
+      "id": "quiz12",
+      "question": "Quel gaz est responsable du réchauffement climatique ?",
+      "choices": [
+        "•",
+        "Oxygène",
+        "•",
+        "Dioxyde de carbone",
+        "•",
+        "Azote"
+      ],
+      "answer": "Dioxyde de carbone"
+    },
+    {
+      "id": "quiz13",
+      "question": "Quel animal vit dans une ruche ?",
+      "choices": [
+        "•",
+        "Fourmi",
+        "•",
+        "Abeille",
+        "•",
+        "Guêpe"
+      ],
+      "answer": "Abeille"
+    },
+    {
+      "id": "quiz14",
+      "question": "Quelle action économise l’énergie ?",
+      "choices": [
+        "•",
+        "Laisser la lumière allumée",
+        "•",
+        "Éteindre les appareils inutilisés",
+        "•",
+        "Ouvrir le frigo longtemps"
+      ],
+      "answer": "Éteindre les appareils inutilisés"
+    },
+    {
+      "id": "quiz15",
+      "question": "Quel animal peut changer de couleur pour se camoufler ?",
+      "choices": [
+        "•",
+        "Caméléon",
+        "•",
+        "Tigre",
+        "•",
+        "Zèbre"
+      ],
+      "answer": "Caméléon"
+    },
+    {
+      "id": "quiz16",
+      "question": "Quelle eau est potable après traitement ?",
+      "choices": [
+        "•",
+        "Eau de mer",
+        "•",
+        "Eau douce",
+        "•",
+        "Eau polluée"
+      ],
+      "answer": "Eau douce"
+    },
+    {
+      "id": "quiz17",
+      "question": "Quel animal transporte sa maison sur son dos ?",
+      "choices": [
+        "•",
+        "Escargot",
+        "•",
+        "Hérisson",
+        "•",
+        "Tatou"
+      ],
+      "answer": "Escargot"
+    },
+    {
+      "id": "quiz18",
+      "question": "Quelle forêt est la plus grande du monde ?",
+      "choices": [
+        "•",
+        "Forêt amazonienne",
+        "•",
+        "Forêt noire",
+        "•",
+        "Forêt de Fontainebleau"
+      ],
+      "answer": "Forêt amazonienne"
+    },
+    {
+      "id": "quiz19",
+      "question": "Quel geste réduit les déchets ?",
+      "choices": [
+        "•",
+        "Recycler",
+        "•",
+        "Jeter par terre",
+        "•",
+        "Brûler le plastique"
+      ],
+      "answer": "Recycler"
+    },
+    {
+      "id": "quiz20",
+      "question": "Quel animal vit principalement la nuit ?",
+      "choices": [
+        "•",
+        "Hibou",
+        "•",
+        "Poule",
+        "•",
+        "Dauphin"
+      ],
+      "answer": "Hibou"
+    },
+    {
+      "id": "quiz21",
+      "question": "Quelle énergie vient du soleil ?",
+      "choices": [
+        "•",
+        "Énergie solaire",
+        "•",
+        "Énergie nucléaire",
+        "•",
+        "Énergie fossile"
+      ],
+      "answer": "Énergie solaire"
+    },
+    {
+      "id": "quiz22",
+      "question": "Quel animal est un insecte ?",
+      "choices": [
+        "•",
+        "Araignée",
+        "•",
+        "Papillon",
+        "•",
+        "Escargot"
+      ],
+      "answer": "Papillon"
+    },
+    {
+      "id": "quiz23",
+      "question": "Quel arbre produit des glands ?",
+      "choices": [
+        "•",
+        "Chêne",
+        "•",
+        "Pin",
+        "•",
+        "Bouleau"
+      ],
+      "answer": "Chêne"
+    },
+    {
+      "id": "quiz24",
+      "question": "Quel animal vit dans les récifs coralliens ?",
+      "choices": [
+        "•",
+        "Poisson-clown",
+        "•",
+        "Ours",
+        "•",
+        "Loup"
+      ],
+      "answer": "Poisson-clown"
+    },
+    {
+      "id": "quiz25",
+      "question": "Quelle pratique protège la biodiversité ?",
+      "choices": [
+        "•",
+        "Déforestation",
+        "•",
+        "Réserve naturelle",
+        "•",
+        "Pollution"
+      ],
+      "answer": "Réserve naturelle"
+    },
+    {
+      "id": "quiz26",
+      "question": "Quel animal est un amphibien ?",
+      "choices": [
+        "•",
+        "Grenouille",
+        "•",
+        "Serpent",
+        "•",
+        "Aigle"
+      ],
+      "answer": "Grenouille"
+    },
+    {
+      "id": "quiz27",
+      "question": "Quel geste protège l’eau ?",
+      "choices": [
+        "•",
+        "Jeter des déchets dans la rivière",
+        "•",
+        "Utiliser moins de produits chimiques",
+        "•",
+        "Laisser couler le robinet"
+      ],
+      "answer": "Utiliser moins de produits chimiques"
+    },
+    {
+      "id": "quiz28",
+      "question": "Quel animal est herbivore ?",
+      "choices": [
+        "•",
+        "Vache",
+        "•",
+        "Loup",
+        "•",
+        "Requin"
+      ],
+      "answer": "Vache"
+    },
+    {
+      "id": "quiz29",
+      "question": "Quel phénomène naturel apporte la pluie ?",
+      "choices": [
+        "•",
+        "Nuage",
+        "•",
+        "Volcan",
+        "•",
+        "Séisme"
+      ],
+      "answer": "Nuage"
+    },
+    {
+      "id": "quiz30",
+      "question": "Pourquoi les arbres sont importants ?",
+      "choices": [
+        "•",
+        "Ils produisent de l’oxygène",
+        "•",
+        "Ils polluent l’air",
+        "•",
+        "Ils empêchent la pluie"
+      ],
+      "answer": "Ils produisent de l’oxygène"
+    }
+  ]
+}

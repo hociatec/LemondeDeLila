@@ -24,8 +24,8 @@ export type DameNatureMetadata = {
   gameType?: string;
   decks: DeckPoolState<FamilyCard>;
   familyGoal: number;
-  pollution: number;
   maxPollution: number;
+  pollutionByPlayer?: Record<string, number>;
   catalog: { families: { id: string; name: string }[] };
   actionLog: ActionLogEntry[];
   phaseId?: string;
@@ -309,10 +309,15 @@ export class DameNatureService implements GameRulesAdapter, OnModuleInit {
     current.hand = current.hand.filter((c) => c !== card);
     current.handCount = current.hand.length;
     const meta = (state.metadata as DameNatureMetadata) ?? this.setup.buildMetadata();
+    const progressBefore = this.getTurnProgress(meta, current.id);
     const metadata = this.setup.discardCard(meta, card);
     let next: GameStateEntity = { ...state, players, metadata };
     next = this.core.appendLog(next, `${current.username} défausse ${card.memberName} (${card.familyName}).`);
-    next = this.markTurnProgress(next, current.id, { discarded: true });
+    // Option 1 : invariant serveur => ne jamais finir une action avec < 4 cartes si possible.
+    // Après une défausse, on repioche automatiquement pour revenir à 4.
+    const refill = this.actions.refillHandToFourWithCount(next, current as any, next.metadata as DameNatureMetadata);
+    next = refill.state;
+    next = this.markTurnProgress(next, current.id, { discarded: true, drew: progressBefore.drew || refill.drew > 0 });
     return this.advanceTurn(next);
   }
 
@@ -382,6 +387,12 @@ export class DameNatureService implements GameRulesAdapter, OnModuleInit {
       offerMemberId: validOffer ? validOffer.memberId : null,
     };
     const hasCard = target.hand.some((c) => c.memberId === pending.memberId);
+    if (!hasCard) {
+      return this.appendAction(
+        this.core.appendLog(state, `${target.username} n'a pas cette carte.`),
+        { actorId: actorId ?? currentId ?? null, type: 'ask_card_invalid', payload: action.payload },
+      );
+    }
     // Si la cible est un bot : résolution immédiate (accept si carte dispo).
     if (target.isBot) {
       const accept = hasCard;
@@ -685,13 +696,13 @@ export class DameNatureService implements GameRulesAdapter, OnModuleInit {
     const clearedMeta: DameNatureMetadata = { ...meta, pendingQuiz: null };
     let next: GameStateEntity = { ...state, metadata: clearedMeta, players: this.ensurePlayers(state), pending: null };
     if (correct) {
-      next = this.actions.applyPollutionTick(next, 'Quiz réussi', -1);
+      next = this.actions.applyPollutionTick(next, { id: pending.playerId, username: target?.username ?? 'Un joueur' }, 'Quiz réussi', -1);
       next = this.core.appendLog(
         next,
         `${target?.username ?? 'Un joueur'} réussit le quiz (${pending.card.memberName ?? pending.card.question ?? ''}).`,
       );
     } else {
-      next = this.actions.applyPollutionTick(next, 'Quiz raté', 1);
+      next = this.actions.applyPollutionTick(next, { id: pending.playerId, username: target?.username ?? 'Un joueur' }, 'Quiz raté', 1);
       next = this.core.appendLog(
         next,
         `${target?.username ?? 'Un joueur'} rate le quiz (${pending.card.memberName ?? pending.card.question ?? ''}).`,
@@ -719,8 +730,10 @@ export class DameNatureService implements GameRulesAdapter, OnModuleInit {
   }
 
   exposeState(state: GameStateEntity): GameStateWithActions {
+    const started = String(state.status ?? '').toLowerCase() === 'started';
     const currentId = state.turn?.currentPlayerId ?? null;
     const meta = state.metadata as DameNatureMetadata;
+    const pollution = (meta?.pollutionByPlayer ?? {})[String(currentId ?? '')] ?? 0;
     const pendingAsk = meta?.pendingAsk ?? null;
     const pendingQuiz = meta?.pendingQuiz ?? null;
     const actionPlayerId =
@@ -735,8 +748,8 @@ export class DameNatureService implements GameRulesAdapter, OnModuleInit {
       return {
         id: p.id,
         username: p.username,
-        hand: isCurrent ? (p.hand ?? []).map(handLabel) : [],
-        books: isCurrent ? (p.books ?? []).map(familyLabel) : [],
+        hand: started && isCurrent ? (p.hand ?? []).map(handLabel) : [],
+        books: started && isCurrent ? (p.books ?? []).map(familyLabel) : [],
         handCount: p.handCount ?? (p.hand ?? []).length,
         booksCount: (p.books ?? []).length,
       };
@@ -745,6 +758,22 @@ export class DameNatureService implements GameRulesAdapter, OnModuleInit {
     const baseExtras =
       extrasFromState && typeof extrasFromState === 'object' ? (extrasFromState as Record<string, unknown>) : {};
     const currentPlayerView = typeof currentId === 'number' ? playerViews.find((v) => v.id === currentId) ?? null : null;
+    const askTargetHands =
+      started && typeof currentId === 'number'
+        ? players
+            .filter((p) => p.id !== currentId)
+            .reduce(
+              (acc, p) => ({
+                ...acc,
+                [String(p.id)]: (p.hand ?? []).map((c) => ({
+                  familyId: c.familyId,
+                  memberId: c.memberId,
+                  label: handLabel(c),
+                })),
+              }),
+              {} as Record<string, { familyId: string; memberId: string; label: string }[]>,
+            )
+        : {};
     const shortcuts: any[] = [
       { key: 'pressed D', type: 'action', actionType: 'ask_card' },
       { key: 'pressed C', type: 'interface', id: 'hand' },
@@ -771,6 +800,7 @@ export class DameNatureService implements GameRulesAdapter, OnModuleInit {
       : null;
     return {
       ...(state as any),
+      metadata: { ...(state.metadata as any), pollution, pollutionByPlayer: undefined },
       catalog: {
         phases: DAME_NATURE_PHASES.map((p) => p.id),
         victory: DAME_NATURE_VICTORY,
@@ -784,15 +814,16 @@ export class DameNatureService implements GameRulesAdapter, OnModuleInit {
           .reduce((acc, f) => ({ ...acc, [f.id]: f.members.map((m) => ({ id: m.id, name: m.name })) }), {} as Record<string, { id: string; name: string }[]>),
         playerViews,
         currentPlayerView,
-        hand: currentPlayerView?.hand ?? [],
-        handCards: currentPlayerView && currentId != null
+        hand: started ? (currentPlayerView?.hand ?? []) : [],
+        askTargetHands,
+        handCards: started && currentPlayerView && currentId != null
           ? players.find((p) => p.id === currentId)?.hand?.map((c) => ({
               familyId: c.familyId,
               memberId: c.memberId,
               label: handLabel(c),
             })) ?? []
           : [],
-        books: currentPlayerView?.books ?? [],
+        books: started ? (currentPlayerView?.books ?? []) : [],
         shortcuts,
         pendingAsk: (state.metadata as DameNatureMetadata)?.pendingAsk ?? null,
         pendingQuiz,
@@ -801,8 +832,10 @@ export class DameNatureService implements GameRulesAdapter, OnModuleInit {
   }
 
   exposeStateForUser(state: GameStateEntity, userId: number): GameStateWithActions {
+    const started = String(state.status ?? '').toLowerCase() === 'started';
     const currentId = state.turn?.currentPlayerId ?? null;
     const meta = state.metadata as DameNatureMetadata;
+    const pollution = (meta?.pollutionByPlayer ?? {})[String(userId ?? '')] ?? 0;
     const pendingAsk = meta?.pendingAsk ?? null;
     const pendingQuiz = meta?.pendingQuiz ?? null;
     const actionPlayerId =
@@ -819,8 +852,8 @@ export class DameNatureService implements GameRulesAdapter, OnModuleInit {
       return {
         id: p.id,
         username: p.username,
-        hand: isViewer ? (p.hand ?? []).map(handLabel) : [],
-        books: isViewer ? (p.books ?? []).map(familyLabel) : [],
+        hand: started && isViewer ? (p.hand ?? []).map(handLabel) : [],
+        books: started && isViewer ? (p.books ?? []).map(familyLabel) : [],
         handCount: p.handCount ?? (p.hand ?? []).length,
         booksCount: (p.books ?? []).length,
       };
@@ -832,16 +865,17 @@ export class DameNatureService implements GameRulesAdapter, OnModuleInit {
 
     const viewerView = typeof userId === 'number' ? playerViews.find((v) => v.id === userId) ?? null : null;
     const viewerPlayer = typeof userId === 'number' ? players.find((p) => p.id === userId) ?? null : null;
-    const handCards =
-      viewerPlayer?.hand?.map((c) => ({
-        familyId: c.familyId,
-        memberId: c.memberId,
-        label: handLabel(c),
-      })) ?? [];
+    const handCards = started
+      ? viewerPlayer?.hand?.map((c) => ({
+          familyId: c.familyId,
+          memberId: c.memberId,
+          label: handLabel(c),
+        })) ?? []
+      : [];
     // Pour la demande de carte (touche D), exposer la main des autres joueurs au demandeur
     // afin que la liste "cartes à demander" reflète réellement la main de la cible sélectionnée.
     const askTargetHands =
-      typeof userId === 'number'
+      started && typeof userId === 'number'
         ? players
             .filter((p) => p.id !== userId)
             .reduce(
@@ -885,6 +919,7 @@ export class DameNatureService implements GameRulesAdapter, OnModuleInit {
 
     return {
       ...(state as any),
+      metadata: { ...(state.metadata as any), pollution, pollutionByPlayer: undefined },
       catalog: {
         phases: DAME_NATURE_PHASES.map((p) => p.id),
         victory: DAME_NATURE_VICTORY,
@@ -898,10 +933,10 @@ export class DameNatureService implements GameRulesAdapter, OnModuleInit {
           .reduce((acc, f) => ({ ...acc, [f.id]: f.members.map((m) => ({ id: m.id, name: m.name })) }), {} as Record<string, { id: string; name: string }[]>),
         playerViews,
         currentPlayerView: viewerView,
-        hand: viewerView?.hand ?? [],
+        hand: started ? (viewerView?.hand ?? []) : [],
         handCards,
         askTargetHands,
-        books: viewerView?.books ?? [],
+        books: started ? (viewerView?.books ?? []) : [],
         shortcuts,
         pendingAsk: (state.metadata as DameNatureMetadata)?.pendingAsk ?? null,
         pendingQuiz,
@@ -945,8 +980,8 @@ export class DameNatureService implements GameRulesAdapter, OnModuleInit {
     return this.core.appendLog(next, message);
   }
 
-  private applyPollutionTick(state: GameStateEntity, reason: string, amount = 1): GameStateEntity {
+  private applyPollutionTick(state: GameStateEntity, player: { id: number; username: string }, reason: string, amount = 1): GameStateEntity {
     // Compat : délégation vers le service d'actions
-    return this.actions.applyPollutionTick(state, reason, amount);
+    return this.actions.applyPollutionTick(state, player, reason, amount);
   }
 }
