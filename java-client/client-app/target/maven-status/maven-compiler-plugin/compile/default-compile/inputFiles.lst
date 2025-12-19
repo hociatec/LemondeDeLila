@@ -150,7 +150,6 @@ C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\game\room\event\RoomInviteReceived.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\game\core\viewmodel\BotTurnGate.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\security\EncryptedCredentialsVault.java
-C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\game\core\contract\ContractGameState.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\chat\model\ChatConnection.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\messaging\service\MessagingService.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\user\controller\UserControllerSupport.java
@@ -172,7 +171,6 @@ C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\user\service\RememberedCredentialsService.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\home\controller\HomeScreenLifecycle.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\messaging\dto\MessagesResponseDto.java
-C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\game\core\contract\ContractActionLogEntry.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\admin\view\AdminUserDialog.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\game\room\view\RoomDetailsScreen.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\game\core\viewmodel\GameExchangeNavigator.java
@@ -246,7 +244,6 @@ C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\user\UserModule.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\game\room\service\GameTableLauncher.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\settings\service\AppSettingsService.java
-C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\game\core\contract\ContractPending.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\game\quiz\model\QuizState.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\chat\events\ChatOpened.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\social\view\SocialView.java
@@ -267,7 +264,6 @@ C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\settings\update\UpdateRemoteGateway.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\admin\dto\AdminUserCreateRequest.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\social\SocialModule.java
-C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\game\core\contract\ContractAction.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\game\core\viewmodel\AvailableActionMatcher.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\user\dto\RegistrationResponseDto.java
 C:\wamp64\www\lemondeDeLila\java-client\client-app\src\main\java\com\lemondelila\client\admin\service\AdminUserService.java

@@ -11,6 +11,7 @@ import com.lemondelila.client.game.core.controller.GenericGameInteractionControl
 import com.lemondelila.client.game.core.model.ActionRequest;
 import com.lemondelila.client.game.core.model.GenericGameState;
 import com.lemondelila.client.game.core.model.PrimaryActionDescriptor;
+import com.lemondelila.client.game.core.service.GameAnnouncementService;
 import com.lemondelila.client.game.core.viewmodel.AvailableActionMatcher;
 import com.lemondelila.client.game.history.controller.GameHistoryController;
 import com.lemondelila.client.game.history.service.GameActionEmitter;
@@ -20,22 +21,19 @@ import com.lemondelila.client.game.quiz.view.GameQuizPanel;
 import com.lemondelila.client.game.core.viewmodel.GameAnnouncementFormatter;
 import com.lemondelila.client.game.core.viewmodel.GameExchangeNavigator;
 import com.lemondelila.client.game.core.viewmodel.GameInfoLabelFormatter;
-import com.lemondelila.client.game.core.viewmodel.GameLogTracker;
 import com.lemondelila.client.game.core.viewmodel.GameShortcutBinder;
 import com.lemondelila.client.game.core.viewmodel.PendingActionSelector;
 import com.lemondelila.client.game.core.viewmodel.BotTurnGate;
+import com.lemondelila.client.game.core.viewmodel.BotTurnLockTracker;
+import com.lemondelila.client.game.core.viewmodel.DynamicShortcutResolver;
 import com.lemondelila.client.game.core.viewmodel.PendingViewModel;
 import com.lemondelila.client.game.core.viewmodel.PlayerCollectionsViewModel;
 import com.lemondelila.client.game.core.viewmodel.TurnAnnouncementTracker;
-import com.lemondelila.client.game.core.viewmodel.CollectionAnnouncementFormatter;
 import com.lemondelila.client.game.core.viewmodel.PositionAnnouncementFormatter;
-import com.lemondelila.client.game.core.viewmodel.ListAnnouncementFormatter;
-import com.lemondelila.client.game.core.viewmodel.StatsAnnouncementFormatter;
 import com.lemondelila.client.game.core.viewmodel.GameActionUtils;
 import com.lemondelila.client.game.room.model.TableState;
 import com.lemondelila.client.game.room.service.RoomParticipantsMapper;
 import com.lemondelila.client.game.turn.controller.TurnController;
-import com.lemondelila.client.game.turn.model.TurnState;
 import com.lemondelila.client.game.turn.view.GameStatusPanel;
 import com.lemondelila.client.security.EncryptedSessionVault;
 import org.slf4j.Logger;
@@ -86,18 +84,21 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
     private final TurnController turnController;
     private final ObjectMapper mapper = new ObjectMapper();
     private final GameAnnouncementFormatter announcementFormatter = new GameAnnouncementFormatter();
-    private final GameLogTracker logTracker = new GameLogTracker(announcementFormatter);
     private final GameInfoLabelFormatter infoLabelFormatter = new GameInfoLabelFormatter();
     private final GameExchangeNavigator exchangeNavigator = new GameExchangeNavigator();
     private final PendingActionSelector pendingActionSelector = new PendingActionSelector();
     private final BotTurnGate botTurnGate = new BotTurnGate();
+    private final BotTurnLockTracker botTurnLockTracker;
     private final PendingViewModel pendingViewModel = new PendingViewModel();
+    private final DynamicShortcutResolver shortcutResolver = new DynamicShortcutResolver(mapper);
+    private final GamePendingRenderer pendingRenderer = new GamePendingRenderer(mapper, pendingViewModel, exchangeNavigator);
     private final PlayerCollectionsViewModel playerCollectionsViewModel = new PlayerCollectionsViewModel();
     private final TurnAnnouncementTracker turnAnnouncementTracker = new TurnAnnouncementTracker();
-    private final CollectionAnnouncementFormatter collectionAnnouncementFormatter = new CollectionAnnouncementFormatter();
-    private final PositionAnnouncementFormatter positionAnnouncementFormatter = new PositionAnnouncementFormatter();
-    private final ListAnnouncementFormatter listAnnouncementFormatter = new ListAnnouncementFormatter();
-    private final StatsAnnouncementFormatter statsAnnouncementFormatter = new StatsAnnouncementFormatter();
+    private final GameAnnouncementService announcementService;
+    private final GameStatusRenderer statusRenderer;
+    private final GameTurnRenderer turnRenderer;
+    private final GameActionsRenderer actionsRenderer;
+    private final GameExchangeRenderer exchangeRenderer;
     private final JLabel infoLabel = new JLabel();
     private final JLabel pendingLabel = new JLabel();
     private final JLabel shoppingLabel = new JLabel();
@@ -106,6 +107,8 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
     private final String localUsername;
     private final Integer localUserId;
     private Integer localPlayerId;
+    private GameQuizHandler quizHandler;
+    private GameDialogManager dialogManager;
     private GenericGameState lastState;
     private java.util.List<String> lastSelfShopping = java.util.List.of();
     private java.util.List<String> lastSelfBasket = java.util.List.of();
@@ -119,33 +122,12 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
     private ActionMap actionMapRef;
     private final DefaultListModel<GenericGameState.GenericAction> actionsModel = new DefaultListModel<>();
     private final JList<GenericGameState.GenericAction> actionsList = new JList<>(actionsModel);
-    // Dialog ask_card
-    private boolean askDialogOpen = false;
-    private int askTargetIndex = 0;
-    private int askCardIndex = 0;
-    private int askGiveIndex = 0;
-    private int askFocusIndex = 0;
-    private int discardIndex = 0;
-    private List<PlayerOption> askTargets = List.of();
-    private List<AskCardOption> askCards = List.of();
-    private List<AskCardOption> giveCards = List.of();
-    private List<AskCardOption> discardOptions = List.of();
     private Integer lastRollSeen;
-    private int lastAnnouncedQuizChoice = -1;
-    private String lastQuizAnnouncementKey;
     private boolean exchangePending;
     private boolean gameStarted;
     private boolean startAnnounced;
     private boolean firstStateRendered;
-    private boolean pregameAnnounced;
     private boolean autoPrimaryDispatched;
-    private boolean botTurnLocked;
-    private boolean botLockNotified;
-    private boolean discardDialogOpen;
-    private Integer lastAnnouncedPlayerId;
-    private Integer lastTurnIndexSeen;
-    private GenericGameState.PendingQuiz activeQuiz;
-    private int quizChoiceIndex = -1;
     private static final String CARD_DEFAULT = "card.default";
     private static final String CARD_EXCHANGE = "card.exchange";
     private final JPanel cardContainer = new JPanel(new CardLayout());
@@ -168,6 +150,7 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         this.emitter = Objects.requireNonNull(emitter, "emitter");
         this.history = Objects.requireNonNull(history, "history");
         this.tableState = Objects.requireNonNull(tableState, "tableState");
+        this.announcementService = new GameAnnouncementService(this.tableState, msg -> this.emitter.announceEvent(msg));
         this.primaryAction = primaryAction;
         this.startHandler = startHandler;
         this.autoPrimaryAfterStart = autoPrimaryAfterStart;
@@ -176,15 +159,96 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         this.localUsername = session.map(EncryptedSessionVault.SessionRecord::username).orElse(null);
         this.localUserId = decodeUserIdFromToken(session.map(EncryptedSessionVault.SessionRecord::token).orElse(null));
         this.localPlayerId = null;
+        this.botTurnLockTracker = new BotTurnLockTracker(this.tableState);
         this.statusPanel = new GameStatusPanel(focusHighlighter);
+        this.statusRenderer = new GameStatusRenderer(
+                this.statusPanel,
+                this.tableState,
+                msg -> this.emitter.announceEvent(msg),
+                this.announcementFormatter
+        );
         if (quizFactory != null && quizFactory.isPresent()) {
             this.quizComponent = quizFactory.get().create(focusHighlighter);
         } else {
             // Fallback simple pour s'assurer que le quiz s'affiche mÃªme si aucune fabrique n'est injectÃ©e.
             this.quizComponent = new GameQuizPanel(focusHighlighter);
         }
+        this.quizHandler = new GameQuizHandler(
+            quizComponent,
+            localPlayerId,
+            announcementFormatter,
+            infoLabelFormatter,
+            msg -> emitter.announceEvent(msg),
+            text -> infoLabel.setText(text),
+            this::handleQuizAnswerSubmission
+        );
+        this.dialogManager = new GameDialogManager(
+            localPlayerId,
+            infoLabelFormatter,
+            text -> infoLabel.setText(text),
+            this::submitAction,
+            this::hasActionMatching
+        );
+        this.turnRenderer = new GameTurnRenderer(
+                this.tableState,
+                this.turnController,
+                this.turnAnnouncementTracker,
+                this.statusRenderer,
+                msg -> this.emitter.announceEvent(msg)
+        );
+        this.exchangeRenderer = new GameExchangeRenderer(
+                this.tableState,
+                this.exchangeNavigator,
+                this.actionsModel,
+                this.actionsList,
+                this::toPayload,
+                msg -> this.emitter.announceEvent(msg),
+                infoLabel::setText
+        );
+        this.actionsRenderer = new GameActionsRenderer(
+                this.mapper,
+                this.pendingActionSelector,
+                this.actionsModel,
+                this.actionsList,
+                this.dialogManager::refreshDiscardOptions,
+                this::refreshExchangeInfoLabel,
+                this::announceExchangeSelectionIfNeeded
+        );
         buildUi(focusHighlighter);
-        this.statusPanel.clear();
+        this.statusRenderer.clear();
+    }
+
+    private void handleQuizAnswerSubmission(String actionType, String answer) {
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("answer", answer);
+        if (localPlayerId != null) {
+            payload.put("playerId", localPlayerId);
+        }
+        var maybeAction = AvailableActionMatcher.findFirstMatching(
+                availableActionsSnapshot(),
+                actionType,
+                payload,
+                this::toPayload
+        );
+        if (maybeAction.isEmpty()) {
+            emitter.announceError("Action quiz indisponible (pas d'action serveur correspondante).");
+            return;
+        }
+        dispatchAction(maybeAction.get());
+    }
+
+    private void submitAction(String actionType, Map<String, Object> payload) {
+        var maybeAction = AvailableActionMatcher.findFirstMatching(
+                availableActionsSnapshot(),
+                actionType,
+                payload,
+                this::toPayload
+        );
+        if (maybeAction.isEmpty()) {
+            emitter.announceError("Action " + actionType + " indisponible (pas d'action serveur correspondante).");
+            return;
+        }
+        dispatchAction(maybeAction.get());
     }
 
     private void buildUi(FocusHighlighter focusHighlighter) {
@@ -257,15 +321,12 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         });
         javax.swing.InputMap listMap = actionsList.getInputMap(JComponent.WHEN_FOCUSED);
         javax.swing.ActionMap listActions = actionsList.getActionMap();
-        listMap.put(KeyStroke.getKeyStroke("ENTER"), "actions.trigger");
-        listActions.put("actions.trigger", new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (submitIfQuizActive()) {
-                    return;
-                }
-                dispatchSelectedAction();
+        KeyboardEventRouter listRouter = new KeyboardEventRouter(listMap, listActions);
+        listRouter.bind("ENTER", "actions.trigger", () -> {
+            if (quizHandler.submitIfActive()) {
+                return;
             }
+            dispatchSelectedAction();
         });
 
         javax.swing.InputMap windowMap = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
@@ -273,93 +334,46 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         this.windowMapRef = windowMap;
         this.actionMapRef = actions;
         this.shortcutBinder = new GameShortcutBinder(windowMap, actions);
-        windowMap.put(javax.swing.KeyStroke.getKeyStroke("ENTER"), "shortcut.roll-or-primary");
-        actions.put("shortcut.roll-or-primary", new javax.swing.AbstractAction() {
-            @Override
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                handleRollShortcut();
-            }
-        });
-        windowMap.put(javax.swing.KeyStroke.getKeyStroke("SPACE"), "shortcut.draw");
-        actions.put("shortcut.draw", new javax.swing.AbstractAction() {
-            @Override
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                if (submitIfQuizActive()) return;
-                handleDrawShortcut();
-            }
+        KeyboardEventRouter router = new KeyboardEventRouter(windowMap, actions);
+        router.bind("ENTER", "shortcut.roll-or-primary", this::handleRollShortcut);
+        router.bind("SPACE", "shortcut.draw", () -> {
+            if (quizHandler.submitIfActive()) return;
+            handleDrawShortcut();
         });
         // Demande de carte : navigation du mini-dialogue
-        windowMap.put(javax.swing.KeyStroke.getKeyStroke("TAB"), "ask.tab");
-        actions.put("ask.tab", new javax.swing.AbstractAction() {
-            @Override
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                if (askDialogOpen) {
-                    moveAskFocus(false);
-                }
+        router.bind("TAB", "ask.tab", () -> {
+            if (dialogManager.isAskDialogOpen()) {
+                dialogManager.moveAskFocus(false);
             }
         });
-        windowMap.put(javax.swing.KeyStroke.getKeyStroke("shift TAB"), "ask.tab.back");
-        actions.put("ask.tab.back", new javax.swing.AbstractAction() {
-            @Override
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                if (askDialogOpen) {
-                    moveAskFocus(true);
-                }
+        router.bind("shift TAB", "ask.tab.back", () -> {
+            if (dialogManager.isAskDialogOpen()) {
+                dialogManager.moveAskFocus(true);
             }
         });
-        windowMap.put(javax.swing.KeyStroke.getKeyStroke("LEFT"), "ask.prev");
-        windowMap.put(javax.swing.KeyStroke.getKeyStroke("RIGHT"), "ask.next");
-        actions.put("ask.prev", new javax.swing.AbstractAction() {
-            @Override
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                if (askDialogOpen) {
-                    moveAskSelection(-1);
-                }
+        router.bind("LEFT", "ask.prev", () -> {
+            if (dialogManager.isAskDialogOpen()) {
+                dialogManager.moveAskSelection(-1);
             }
         });
-        actions.put("ask.next", new javax.swing.AbstractAction() {
-            @Override
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                if (askDialogOpen) {
-                    moveAskSelection(1);
-                }
+        router.bind("RIGHT", "ask.next", () -> {
+            if (dialogManager.isAskDialogOpen()) {
+                dialogManager.moveAskSelection(1);
             }
         });
-        windowMap.put(javax.swing.KeyStroke.getKeyStroke("ESCAPE"), "ask.cancel");
-        actions.put("ask.cancel", new javax.swing.AbstractAction() {
-            @Override
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                if (askDialogOpen) {
-                    cancelAskDialog();
-                }
-                if (discardDialogOpen) {
-                    cancelDiscardDialog();
-                }
+        router.bind("ESCAPE", "ask.cancel", () -> {
+            if (dialogManager.isAskDialogOpen()) {
+                dialogManager.cancelAskDialog();
+            }
+            if (dialogManager.isDiscardDialogOpen()) {
+                dialogManager.cancelDiscardDialog();
             }
         });
 
         // Statistiques rapides : touche S
-        windowMap.put(javax.swing.KeyStroke.getKeyStroke("S"), "stats.show");
-        actions.put("stats.show", new javax.swing.AbstractAction() {
-            @Override
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                announceStats();
-            }
-        });
-        windowMap.put(javax.swing.KeyStroke.getKeyStroke("A"), "ask.answer.accept");
-        windowMap.put(javax.swing.KeyStroke.getKeyStroke("R"), "ask.answer.refuse");
-        actions.put("ask.answer.accept", new javax.swing.AbstractAction() {
-            @Override
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                sendAskAnswer(true);
-            }
-        });
-        actions.put("ask.answer.refuse", new javax.swing.AbstractAction() {
-            @Override
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                sendAskAnswer(false);
-            }
-        });
+        router.bind("S", "stats.show", () -> announcementService.announceStats(lastState));
+        router.bind("A", "ask.answer.accept", () -> sendAskAnswer(true));
+        router.bind("R", "ask.answer.refuse", () -> sendAskAnswer(false));
         configureQuizNavigation(windowMap, actions);
         actionsList.setCellRenderer((list, value, index, isSelected, cellHasFocus) -> {
             String label = (value.label() != null && !value.label().isBlank()) ? value.label() : value.type();
@@ -413,38 +427,20 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
     }
 
     private void handleQuizNavigation(int delta) {
-        if (discardDialogOpen) {
-            moveDiscardSelection(delta);
+        if (dialogManager.isDiscardDialogOpen()) {
+            dialogManager.moveDiscardSelection(delta);
             return;
         }
-        if ((activeQuiz == null || activeQuiz.choices().isEmpty() || quizComponent == null)) {
+        if (!quizHandler.isActive()) {
             // Pas de quiz actif : on recycle la navigation pour les échanges si besoin.
-            handleExchangeNavigation(delta);
+            exchangeRenderer.handleNavigation(delta, exchangePending);
             return;
         }
-        int size = activeQuiz.choices().size();
-        int next = quizChoiceIndex;
-        if (next < 0) {
-            next = 0;
-        } else {
-            next = (next + delta) % size;
-            if (next < 0) {
-                next += size;
-            }
-        }
-        quizChoiceIndex = next;
-        updateQuizHighlight();
+        quizHandler.handleNavigation(delta);
     }
 
     private void handleQuizAnswerShortcut(int index) {
-        if (activeQuiz == null || activeQuiz.choices().isEmpty()) {
-            return;
-        }
-        if (index < 0 || index >= activeQuiz.choices().size()) {
-            return;
-        }
-        quizChoiceIndex = index;
-        updateQuizHighlight();
+        quizHandler.handleAnswerShortcut(index);
     }
 
     @Override
@@ -458,16 +454,12 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
     }
 
     public void onAttach(int roomId) {
-        logTracker.reset();
+        statusRenderer.resetLogs();
+        turnAnnouncementTracker.reset();
+        botTurnLockTracker.reset();
         startAnnounced = false;
         firstStateRendered = false;
-        pregameAnnounced = false;
         autoPrimaryDispatched = false;
-        botTurnLocked = false;
-        botLockNotified = false;
-        discardDialogOpen = false;
-        discardIndex = 0;
-        lastAnnouncedPlayerId = null;
         requestFocusInWindow();
         controller.attach(roomId, this);
     }
@@ -495,30 +487,27 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
             emitter.announceError(message);
             // Ne pas réinitialiser l'état de démarrage sur une erreur d'action ponctuelle,
             // sinon chaque réponse serveur réaffiche "La partie vient de démarrer".
-            statusPanel.clear();
-            lastAnnouncedPlayerId = null;
-            logTracker.reset();
+            statusRenderer.clear();
+            turnAnnouncementTracker.clearLastSeen();
+            statusRenderer.resetLogs();
         });
     }
 
     private void renderState(GenericGameState state) {
-        statusPanel.update(state.status(), state.phase(), state.round(), state.turnIndex(), state.lastRoll());
+        statusRenderer.renderHeader(state);
         boolean startedFlag = "started".equalsIgnoreCase(state.status());
         boolean wasStarted = gameStarted;
         gameStarted = startedFlag;
-        tableState.updateStatus(state.status());
         // Synchroniser participants avant de traiter le tour pour disposer de l'ordre correct.
         syncTableState(state);
 
         if (!firstStateRendered) {
             firstStateRendered = true;
             startAnnounced = startedFlag;
-            pregameAnnounced = false;
         } else if (startedFlag && !wasStarted && !startAnnounced) {
             tableState.markStarted();
             emitter.announceEvent(Internationalization.text("game.game.started"));
             startAnnounced = true;
-            pregameAnnounced = false;
             if (autoPrimaryAfterStart && !autoPrimaryDispatched && primaryAction != null) {
                 autoPrimaryDispatched = true;
                 controller.triggerPrimaryAction();
@@ -528,10 +517,10 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
             // ne pas réinitialiser pregameAnnounced pour éviter les répétitions avant le démarrage
             autoPrimaryDispatched = false;
         }
-        renderLogs(state.logs());
-        renderTurn(state);
+        statusRenderer.renderLogs(state.logs());
+        turnRenderer.renderTurn(state);
         renderPlayerCollections(state);
-        updateBotTurnLock(state);
+        botTurnLockTracker.update(state, infoLabel::setText);
         if (state.pending() instanceof GenericGameState.PendingQuiz quiz) {
             renderQuiz(quiz);
         } else {
@@ -539,204 +528,46 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         }
         renderPending(state.pending());
         renderActions(state);
-        if (askDialogOpen) {
-            refreshAskDialogData(state);
+        if (dialogManager.isAskDialogOpen()) {
+            dialogManager.refreshAskDialogData(state);
         }
         renderShortcuts(state);
     }
 
-    private void renderLogs(List<String> logs) {
-        for (String announcement : logTracker.consumeNewAnnouncements(logs, tableState.started())) {
-            emitter.announceEvent(announcement);
-        }
-    }
-
     private void renderQuiz(GenericGameState.PendingQuiz quiz) {
-        if (quiz == null) {
-            activeQuiz = null;
-            quizChoiceIndex = -1;
-            lastAnnouncedQuizChoice = -1;
-            lastQuizAnnouncementKey = null;
-            exchangePending = false;
-            if (quizComponent != null) {
-                quizComponent.clearQuiz();
-            }
-            return;
-        }
-        if (!isLocalQuiz(quiz)) {
-            // Quiz pour un autre joueur ou un bot : on le montre dans les logs mais pas comme quiz interactif.
-            activeQuiz = null;
-            quizChoiceIndex = -1;
-            lastAnnouncedQuizChoice = -1;
-            lastQuizAnnouncementKey = null;
-            exchangePending = false;
-            if (quizComponent != null) {
-                quizComponent.clearQuiz();
-                updateQuizHighlight();
-            }
-            return;
-        }
-
-        if (quizComponent == null) {
-            return;
-        }
-        if (quiz == null || !isLocalQuiz(quiz)) {
-            activeQuiz = null;
-            quizChoiceIndex = -1;
-            lastAnnouncedQuizChoice = -1;
-            lastQuizAnnouncementKey = null;
-            exchangePending = false;
-            quizComponent.clearQuiz();
-            updateQuizHighlight();
-            return;
-        }
-        LOGGER.debug("[quiz] render question={} choices={}", quiz.question(), quiz.choices());
-        String quizKey = quiz.question() + "|" + String.join("||", quiz.choices());
-        boolean sameQuiz = quizKey.equals(lastQuizAnnouncementKey);
-        lastQuizAnnouncementKey = quizKey;
-        activeQuiz = quiz;
-        quizChoiceIndex = -1;
-        if (!sameQuiz) {
-            lastAnnouncedQuizChoice = -1;
-        }
-        exchangePending = false;
-        quizComponent.showQuiz(quiz.question(), quiz.choices());
-        if (!sameQuiz) {
-            // Annonce vocale compl?te pour les lecteurs d'?cran (question + options).
-            emitter.announceEvent(buildQuizAnnouncement(quiz.question(), quiz.choices()));
-            infoLabel.setText(buildQuizChoicesLabel(quiz.question(), quiz.choices()));
-        }
-        // Forcer le rafraichissement visuel du panneau quiz.
-        JComponent quizUi = quizComponent.getComponent();
-        quizUi.setVisible(true);
-        quizUi.revalidate();
-        quizUi.repaint();
-        updateQuizHighlight();
-    }
-
-    private void updateQuizHighlight() {
-        if (quizComponent == null) {
-            return;
-        }
-        if (activeQuiz == null || activeQuiz.choices().isEmpty()) {
-            quizChoiceIndex = -1;
-            quizComponent.highlightChoice(-1);
-            refreshInfoLabel();
-            return;
-        }
-        if (quizChoiceIndex < 0 || quizChoiceIndex >= activeQuiz.choices().size()) {
-            quizChoiceIndex = 0;
-        }
-        quizComponent.highlightChoice(quizChoiceIndex);
-        announceQuizSelectionIfNeeded();
-        refreshInfoLabel();
+        quizHandler.renderQuiz(quiz);
     }
 
     private void refreshInfoLabel() {
-        if (discardDialogOpen) {
-            infoLabel.setText(infoLabelFormatter.formatDiscardLabel(
-                    discardOptions.stream().map(AskCardOption::label).toList(),
-                    discardIndex
-            ));
+        if (dialogManager.isDiscardDialogOpen() || dialogManager.isAskDialogOpen()) {
+            dialogManager.refreshInfoLabelIfNeeded();
             return;
         }
-        if (askDialogOpen) {
-            infoLabel.setText(infoLabelFormatter.formatAskLabel(
-                    askDialogOpen,
-                    askTargets.stream().map(PlayerOption::name).toList(),
-                    askTargetIndex,
-                    askCards.stream().map(AskCardOption::label).toList(),
-                    askCardIndex,
-                    giveCards.stream().map(AskCardOption::label).toList(),
-                    askGiveIndex,
-                    askFocusIndex
-            ));
-            return;
-        }
-        if (activeQuiz == null) {
+        if (!quizHandler.isActive()) {
             if (exchangePending) {
-                refreshExchangeInfoLabel();
+                exchangeRenderer.refreshInfoLabel(exchangePending);
             } else {
                 infoLabel.setText("");
             }
             return;
         }
-        infoLabel.setText(infoLabelFormatter.formatQuizInfoLabel(activeQuiz.question(), activeQuiz.choices(), quizChoiceIndex));
+        quizHandler.refreshInfoLabel();
     }
-
-    private boolean submitIfQuizActive() {
-        if (activeQuiz == null) {
-            return false;
-        }
-        submitQuizAnswer();
-        return true;
-    }
-
-    private void submitQuizAnswer() {
-        if (activeQuiz == null || activeQuiz.choices().isEmpty()) {
-            return;
-        }
-        if (quizChoiceIndex < 0 || quizChoiceIndex >= activeQuiz.choices().size()) {
-            quizChoiceIndex = 0;
-        }
-        String answer = "";
-        if (activeQuiz != null && quizChoiceIndex >= 0 && quizChoiceIndex < activeQuiz.choices().size()) {
-            answer = activeQuiz.choices().get(quizChoiceIndex);
-        }
-        Map<String, Object> payload = new HashMap<>();
-        payload.put("answer", answer);
-        if (localPlayerId != null) {
-            payload.put("playerId", localPlayerId);
-        }
-        var maybeAction = AvailableActionMatcher.findFirstMatching(
-                availableActionsSnapshot(),
-                "answer_quiz",
-                payload,
-                this::toPayload
-        );
-        if (maybeAction.isEmpty()) {
-            emitter.announceError("Action quiz indisponible (pas d'action serveur correspondante).");
-            return;
-        }
-        if (dispatchAction(maybeAction.get())) {
-            activeQuiz = null;
-            quizChoiceIndex = -1;
-            if (quizComponent != null) {
-                quizComponent.highlightChoice(-1);
-            }
-            infoLabel.setText("");
-        }
-    }
-
-    /**
-     * Si une demande de carte est en attente pour le joueur local, envoie une réponse par défaut (refus)
-     * sauf si l'action sélectionnée est une acceptation explicite.
-     */
-    // (logique déplacée : répondre manuellement via actions/shortcuts)
 
     private void renderActions(GenericGameState state) {
-        actionsModel.clear();
-        if (state != null && state.actions() != null) {
-            state.actions().forEach(actionsModel::addElement);
-        }
-        refreshDiscardOptions(state);
-        if (!actionsModel.isEmpty()) {
-            selectActionForPending(state);
-            if (exchangePending) {
-                refreshExchangeInfoLabel();
-                announceExchangeSelectionIfNeeded(actionsList.getSelectedIndex() < 0 ? 0 : actionsList.getSelectedIndex());
-            }
-        }
+        actionsRenderer.render(state, exchangePending);
     }
 
     private void renderTurn(GenericGameState state) {
+        turnRenderer.renderTurn(state);
+        /*
         TurnState turn = state.turn();
 
         if (turn == null) {
             // Pas d'info de tour -> on évite d'annoncer un faux joueur.
             tableState.updateTurn(state.round(), -1, 1);
             tableState.updateCurrentPlayerId(null);
-            statusPanel.update(state.status(), state.phase(), state.round(), -1, state.lastRoll());
+            statusRenderer.renderTurnStatus(state, state.round(), -1);
             lastTurnIndexSeen = null;
             if (turnAnnouncementTracker.decide(tableState.started(), null, -1, state.round(), false, true).announce()) {
                 String message = turnController.formatTurn(new TurnState(state.round(), -1, 1, null, null), tableState);
@@ -747,7 +578,7 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
             return;
         }
 
-        statusPanel.update(state.status(), state.phase(), turn.round(), turn.index(), state.lastRoll());
+        statusRenderer.renderTurnStatus(state, turn.round(), turn.index());
         tableState.updateTurn(turn.round(), turn.index(), turn.direction());
         tableState.updateCurrentPlayerId(turn.currentPlayerId());
         // resynchronise l'ordre des participants avant d'annoncer le tour
@@ -777,30 +608,7 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
             String message = turnController.formatTurn(turn, tableState);
             emitter.announceEvent(message);
         }
-    }
-
-    private void updateBotTurnLock(GenericGameState state) {
-        boolean botFlag = state != null && state.botThinking();
-        if (!botFlag) {
-            botFlag = isCurrentPlayerBot();
-        }
-        botTurnLocked = botFlag;
-        if (!botTurnLocked) {
-            botLockNotified = false;
-            infoLabel.setText("");
-        }
-        if (botTurnLocked && !botLockNotified) {
-            infoLabel.setText("Tour du bot, merci de patienter...");
-            botLockNotified = true;
-        }
-    }
-
-    private boolean isCurrentPlayerBot() {
-        Integer currentId = tableState.currentPlayerId();
-        if (currentId == null) {
-            return false;
-        }
-        return tableState.bots().stream().anyMatch(b -> currentId.equals(b.id()));
+        */
     }
 
     private String buildRollMessage(Integer roll) {
@@ -872,65 +680,25 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         }
     }
 
-    private void selectActionForPending(GenericGameState state) {
-        String pendingType = extractPendingType(state);
-        int selected = pendingActionSelector.selectIndex(
-                availableActionsSnapshot(),
-                pendingType,
-                a -> a instanceof GenericGameState.GenericAction ga ? ga.type() : null
-        );
-        if (selected < 0) return;
-        actionsList.setSelectedIndex(selected);
-        actionsList.ensureIndexIsVisible(selected);
-    }
-
-    private String extractPendingType(GenericGameState state) {
-        if (state == null) return null;
-        Object pendingRaw = state.pending();
-        if (pendingRaw instanceof JsonNode node) {
-            return node.path("type").asText("");
-        }
-        if (pendingRaw != null) {
-            JsonNode node = mapper.valueToTree(pendingRaw);
-            return node.path("type").asText("");
-        }
-        return null;
-    }
-
     private void renderPending(Object pending) {
         if (pending instanceof GenericGameState.PendingQuiz quiz && !isLocalQuiz(quiz)) {
             pendingLabel.setText("");
             return;
         }
-        if (askDialogOpen) {
-            pendingLabel.setText(infoLabelFormatter.formatAskLabel(
-                    askDialogOpen,
-                    askTargets.stream().map(PlayerOption::name).toList(),
-                    askTargetIndex,
-                    askCards.stream().map(AskCardOption::label).toList(),
-                    askCardIndex,
-                    giveCards.stream().map(AskCardOption::label).toList(),
-                    askGiveIndex,
-                    askFocusIndex
-            ));
+        if (dialogManager.isAskDialogOpen()) {
+            pendingLabel.setText(dialogManager.buildAskAnnouncementText());
             return;
         }
-        boolean wasExchangePending = exchangePending;
-        JsonNode node = pending == null ? null : mapper.valueToTree(pending);
-        PendingViewModel.Result r = pendingViewModel.compute(
-                node,
-                wasExchangePending,
+        GamePendingRenderer.Outcome outcome = pendingRenderer.render(
+                pending,
                 exchangePending,
                 infoLabel.getText() != null && infoLabel.getText().startsWith("Quiz")
         );
-        exchangePending = r.exchangePending();
-        if (r.resetExchangeNavigator()) {
-            exchangeNavigator.reset();
-        }
-        if (r.clearInfoLabelIfNotQuiz()) {
+        exchangePending = outcome.exchangePending();
+        if (outcome.clearInfoLabelIfNotQuiz()) {
             infoLabel.setText("");
         }
-        pendingLabel.setText(r.pendingLabel());
+        pendingLabel.setText(outcome.pendingLabel());
     }
 
     private void renderPlayerCollections(GenericGameState state) {
@@ -956,28 +724,9 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
 
         // Ne pas écraser les raccourcis globaux de table (ex: b / Maj+b pour les bots) avant le démarrage.
         boolean allowDynamic = tableState != null && tableState.started();
-        JsonNode extras = state == null ? null : state.extras();
-        Object raw = allowDynamic && extras != null && extras.isObject() ? extras.get("shortcuts") : null;
-        if (raw instanceof JsonNode node && node.isArray()) {
-            // Les extras arrivent souvent en JsonNode : les convertir pour que le binding fonctionne.
-            raw = mapper.convertValue(node, java.util.List.class);
-        }
-        if (raw instanceof java.util.List<?> list) {
-            java.util.List<Map<String, Object>> parsed = new java.util.ArrayList<>();
-            for (Object item : list) {
-                try {
-                    Map<String, Object> m = mapper.convertValue(item, Map.class);
-                    parsed.add(m);
-                } catch (IllegalArgumentException ignored) {
-                }
-            }
-            dynamicShortcuts = parsed;
-            rebindDynamicShortcuts();
-            return;
-        }
-        // Pas de shortcuts fournis ou partie non démarrée : nettoyer les bindings dynamiques.
-        dynamicShortcuts = java.util.List.of();
+        dynamicShortcuts = shortcutResolver.resolve(state, allowDynamic);
         rebindDynamicShortcuts();
+        // Pas de shortcuts fournis ou partie non démarrée : nettoyer les bindings dynamiques.
     }
 
     private void rebindDynamicShortcuts() {
@@ -991,12 +740,12 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
     private void handleInterfaceShortcut(String id) {
         if (id == null || id.isBlank()) return;
         switch (id) {
-            case "shopping" -> announceCollection("shopping", shoppingView);
-            case "basket" -> announceCollection("basket", basketView);
-            case "inventory" -> announceCollection("inventory", inventoryView);
-            case "position" -> announcePosition();
-            case "hand" -> announceHand();
-            case "books" -> announceBooks();
+            case "shopping" -> announcementService.announceCollection("shopping", shoppingView);
+            case "basket" -> announcementService.announceCollection("basket", basketView);
+            case "inventory" -> announcementService.announceCollection("inventory", inventoryView);
+            case "position" -> announcementService.announcePosition(lastState);
+            case "hand" -> announcementService.announceHand(lastState);
+            case "books" -> announcementService.announceBooks(lastState);
             default -> {
                 // noop
             }
@@ -1010,34 +759,13 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
             if (act != null && targetType.equalsIgnoreCase(act.type())) {
                 actionsList.setSelectedIndex(i);
                 if ("ask_card".equalsIgnoreCase(targetType)) {
-                    openAskDialog();
+                    dialogManager.openAskDialog(lastState);
                     return;
                 }
                 dispatchAction(act);
                 return;
             }
         }
-    }
-
-    private java.util.List<String> toStringList(Object raw) {
-        if (raw == null) return java.util.List.of();
-        if (raw instanceof java.util.List<?> list) {
-            return list.stream()
-                    .map(v -> v == null ? "" : v.toString())
-                    .filter(s -> !s.isBlank())
-                    .toList();
-        }
-        if (raw instanceof JsonNode node && node.isArray()) {
-            java.util.List<String> vals = new java.util.ArrayList<>();
-            node.forEach(n -> {
-                if (n != null && !n.asText("").isBlank()) {
-                    vals.add(n.asText(""));
-                }
-            });
-            return vals;
-        }
-        String s = raw.toString();
-        return s.isBlank() ? java.util.List.of() : java.util.List.of(s);
     }
 
     private String formatList(Object raw) {
@@ -1059,10 +787,11 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
     }
 
     private void announceCollection(String id, java.util.List<String> values) {
-        emitter.announceEvent(collectionAnnouncementFormatter.formatCollectionAnnouncement(id, values));
+        announcementService.announceCollection(id, values);
     }
 
     private void announcePosition() {
+        PositionAnnouncementFormatter positionAnnouncementFormatter = new PositionAnnouncementFormatter();
         Integer currentId = tableState.currentPlayerId();
         int turn = tableState.turnRound();
         // Les positions par joueur sont dans extras.board.positions si exposé, sinon annoncer juste le tour.
@@ -1084,35 +813,11 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
     }
 
     private void announceHand() {
-        JsonNode extras = currentStateExtras();
-        Object handRaw = extras != null ? extras.get("hand") : null;
-        List<String> hand = toStringList(handRaw);
-        emitter.announceEvent(listAnnouncementFormatter.format(
-                Internationalization.text("game.hand.title"),
-                hand,
-                Internationalization.text("game.hand.empty")
-        ));
+        announcementService.announceHand(lastState);
     }
 
     private void announceBooks() {
-        JsonNode extras = currentStateExtras();
-        Object booksRaw = extras != null ? extras.get("books") : null;
-        List<String> books = toStringList(booksRaw);
-        if (books == null || books.isEmpty()) {
-            emitter.announceEvent(Internationalization.text("game.books.none"));
-            return;
-        }
-        emitter.announceEvent(listAnnouncementFormatter.format(
-                Internationalization.text("game.books.title"),
-                books,
-                Internationalization.text("game.books.none")
-        ));
-    }
-
-    private JsonNode currentStateExtras() {
-        GenericGameState state = lastState;
-        JsonNode extras = state == null ? null : state.extras();
-        return extras != null && extras.isObject() ? extras : null;
+        announcementService.announceBooks(lastState);
     }
 
     private void updateCollectionsFromLists(java.util.List<String> shopping, java.util.List<String> basket, java.util.List<String> inventory) {
@@ -1157,7 +862,7 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
     }
 
     private boolean blockIfBotTurn() {
-        return botTurnGate.shouldBlock(tableState.started(), botTurnLocked, activeQuiz != null, isPendingAskForMe());
+        return botTurnGate.shouldBlock(tableState.started(), botTurnLockTracker.locked(), quizHandler.isActive(), isPendingAskForMe());
     }
 
     private boolean isPendingAskForMe() {
@@ -1178,30 +883,8 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         return false;
     }
 
-    private record PlayerOption(int id, String name) {}
-    private record AskCardOption(String familyId, String memberId, String label) {}
-
     private void announceStats() {
-        if (lastState == null || lastState.metadata() == null) {
-            emitter.announceEvent(Internationalization.text("game.stats.none"));
-            return;
-        }
-        JsonNode node = lastState.metadata();
-        if (node == null || !node.isObject()) {
-            emitter.announceEvent(Internationalization.text("game.stats.unavailable"));
-            return;
-        }
-        int pollution = node.path("pollution").asInt(0);
-        int maxPollution = node.path("maxPollution").asInt(0);
-        int familyGoal = node.path("familyGoal").asInt(0);
-        int books = 0;
-        JsonNode pNode = lastState.players();
-        if (pNode != null && pNode.isArray()) {
-            for (JsonNode p : pNode) {
-                books += p.path("books").isArray() ? p.get("books").size() : 0;
-            }
-        }
-        emitter.announceEvent(statsAnnouncementFormatter.format(pollution, maxPollution, books, familyGoal));
+        announcementService.announceStats(lastState);
     }
 
     @Override
@@ -1213,7 +896,7 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
             emitter.announceError("Terminez l'échange en cours avant de relancer le dé.");
             return;
         }
-        if (submitIfQuizActive()) {
+        if (quizHandler.submitIfActive()) {
             return;
         }
         if (!tableState.started()) {
@@ -1250,7 +933,7 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
             return false;
         }
         if ("ask_card".equalsIgnoreCase(action.type())) {
-            openAskDialog();
+            dialogManager.openAskDialog(lastState);
             return true;
         }
         if (blockIfBotTurn()) {
@@ -1269,7 +952,7 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
 
     private void handleDrawShortcut() {
         LOGGER.debug("[shortcut] espace pressed actions={}", describeActions());
-        if (activeQuiz != null) {
+        if (quizHandler.isActive()) {
             // En mode quiz, on ignore Espace pour ne pas envoyer d'action parasite.
             return;
         }
@@ -1286,16 +969,16 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
 
     private void handleRollShortcut() {
         LOGGER.debug("[shortcut] entree pressed actions={}", describeActions());
-        if (submitIfQuizActive()) {
+        if (quizHandler.submitIfActive()) {
             return;
         }
         // Si un mini-dialogue est ouvert, Entrée valide la sélection.
-        if (askDialogOpen) {
-            sendAskDialog();
+        if (dialogManager.isAskDialogOpen()) {
+            dialogManager.sendAskDialog();
             return;
         }
-        if (discardDialogOpen) {
-            sendDiscardSelection();
+        if (dialogManager.isDiscardDialogOpen()) {
+            dialogManager.sendDiscardSelection();
             return;
         }
         if (blockIfBotTurn()) {
@@ -1317,7 +1000,8 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
             return;
         }
         // En partie : ouvrir la sélection de défausse si disponible, sinon lancer/défausser/actions.
-        if (handleDiscardFlow()) {
+        if (hasActionMatching(GameActionUtils::isDiscardAction)) {
+            dialogManager.handleDiscardShortcut();
             return;
         }
         if (dispatchActionMatching(GameActionUtils::isDiceAction)) {
@@ -1327,244 +1011,6 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
             return;
         }
         triggerSelectedAction();
-    }
-
-    private void openAskDialog() {
-        GenericGameState state = lastState;
-        if (state == null) return;
-        refreshAskDialogData(state);
-        if (askTargets.isEmpty() || askCards.isEmpty()) {
-            emitter.announceError("Aucune cible ou carte disponible pour demander.");
-            askDialogOpen = false;
-            return;
-        }
-        askDialogOpen = true;
-        askFocusIndex = 0;
-        refreshInfoLabel();
-        pendingLabel.setText(infoLabelFormatter.formatAskLabel(
-                askDialogOpen,
-                askTargets.stream().map(PlayerOption::name).toList(),
-                askTargetIndex,
-                askCards.stream().map(AskCardOption::label).toList(),
-                askCardIndex,
-                giveCards.stream().map(AskCardOption::label).toList(),
-                askGiveIndex,
-                askFocusIndex
-        ));
-    }
-
-    private void refreshAskDialogData(GenericGameState state) {
-        this.askTargets = extractAskTargets(state);
-        this.askCards = extractAskCards(state);
-        this.giveCards = extractGiveCards(state);
-        if (askTargetIndex >= askTargets.size()) askTargetIndex = askTargets.isEmpty() ? 0 : askTargets.size() - 1;
-        if (askCardIndex >= askCards.size()) askCardIndex = askCards.isEmpty() ? 0 : askCards.size() - 1;
-        if (askFocusIndex == 2 && giveCards.isEmpty()) askFocusIndex = 0;
-        if (askTargets.isEmpty() || askCards.isEmpty()) {
-            askDialogOpen = false;
-        }
-        refreshInfoLabel();
-    }
-
-    private List<PlayerOption> extractAskTargets(GenericGameState state) {
-        List<PlayerOption> res = new ArrayList<>();
-        JsonNode extras = state == null ? null : state.extras();
-        JsonNode node = extras != null && extras.isObject() ? extras.get("playerViews") : null;
-        if (node != null && node.isArray()) {
-            for (JsonNode v : node) {
-                if (!v.path("id").isInt()) continue;
-                int id = v.get("id").asInt();
-                if (localPlayerId != null && id == localPlayerId) continue;
-                String name = v.path("username").asText("Joueur " + id);
-                res.add(new PlayerOption(id, name));
-            }
-        }
-        return res;
-    }
-
-    private List<AskCardOption> extractAskCards(GenericGameState state) {
-        List<AskCardOption> res = new ArrayList<>();
-        JsonNode extras = state == null ? null : state.extras();
-        JsonNode node = extras != null && extras.isObject() ? extras.get("handCards") : null;
-        if (node != null && node.isArray()) {
-            for (JsonNode c : node) {
-                String familyId = c.path("familyId").asText("");
-                String memberId = c.path("memberId").asText("");
-                String label = c.path("label").asText(familyId + "-" + memberId);
-                if (!familyId.isBlank() && !memberId.isBlank()) {
-                    res.add(new AskCardOption(familyId, memberId, label));
-                }
-            }
-        }
-        return res;
-    }
-
-    private List<AskCardOption> extractGiveCards(GenericGameState state) {
-        List<AskCardOption> res = new ArrayList<>();
-        JsonNode extras = state == null ? null : state.extras();
-        JsonNode node = extras != null && extras.isObject() ? extras.get("handCards") : null;
-        if (node != null && node.isArray()) {
-            for (JsonNode c : node) {
-                String familyId = c.path("familyId").asText("");
-                String memberId = c.path("memberId").asText("");
-                String label = c.path("label").asText(familyId + "-" + memberId);
-                if (!familyId.isBlank() && !memberId.isBlank()) {
-                    res.add(new AskCardOption(familyId, memberId, label));
-                }
-            }
-        }
-        return res;
-    }
-
-    private void moveAskFocus(boolean backward) {
-        if (!askDialogOpen) return;
-        int step = backward ? -1 : 1;
-        askFocusIndex = (askFocusIndex + step + 5) % 5;
-        refreshInfoLabel();
-    }
-
-    private void moveAskSelection(int delta) {
-        if (!askDialogOpen) return;
-        if (askFocusIndex == 0 && !askTargets.isEmpty()) {
-            askTargetIndex = (askTargetIndex + delta + askTargets.size()) % askTargets.size();
-        } else if (askFocusIndex == 1 && !askCards.isEmpty()) {
-            askCardIndex = (askCardIndex + delta + askCards.size()) % askCards.size();
-        } else if (askFocusIndex == 2 && !giveCards.isEmpty()) {
-            askGiveIndex = (askGiveIndex + delta + giveCards.size()) % giveCards.size();
-        } else if (askFocusIndex == 3 && delta > 0) {
-            sendAskDialog();
-            return;
-        } else if (askFocusIndex == 4 && delta > 0) {
-            cancelAskDialog();
-            return;
-        }
-        refreshInfoLabel();
-    }
-
-    private void sendAskDialog() {
-        if (!askDialogOpen) return;
-        if (askTargets.isEmpty() || askCards.isEmpty() || localPlayerId == null) {
-            cancelAskDialog();
-            return;
-        }
-        PlayerOption target = askTargets.get(Math.max(0, Math.min(askTargetIndex, askTargets.size() - 1)));
-        AskCardOption card = askCards.get(Math.max(0, Math.min(askCardIndex, askCards.size() - 1)));
-        AskCardOption give = giveCards.isEmpty() ? null : giveCards.get(Math.max(0, Math.min(askGiveIndex, giveCards.size() - 1)));
-        Map<String, Object> payload = new HashMap<>();
-        payload.put("target", target.id());
-        payload.put("familyId", card.familyId());
-        payload.put("memberId", card.memberId());
-        payload.put("playerId", localPlayerId);
-        if (give != null) {
-            payload.put("offerMemberId", give.memberId());
-        }
-        var maybeAction = AvailableActionMatcher.findFirstMatching(
-                availableActionsSnapshot(),
-                "ask_card",
-                payload,
-                this::toPayload
-        );
-        if (maybeAction.isEmpty()) {
-            emitter.announceError("Action demande de carte indisponible (pas d'action serveur correspondante).");
-            return;
-        }
-        dispatchAction(maybeAction.get());
-        askDialogOpen = false;
-        refreshInfoLabel();
-    }
-
-    private void cancelAskDialog() {
-        askDialogOpen = false;
-        refreshInfoLabel();
-    }
-
-    private List<AskCardOption> extractDiscardOptions(GenericGameState state) {
-        return extractGiveCards(state);
-    }
-
-    private void refreshDiscardOptions(GenericGameState state) {
-        List<AskCardOption> options = state == null ? List.of() : extractDiscardOptions(state);
-        discardOptions = options;
-        if (discardIndex >= discardOptions.size()) {
-            discardIndex = discardOptions.isEmpty() ? 0 : discardOptions.size() - 1;
-        }
-        if (discardOptions.isEmpty() || !hasActionMatching(GameActionUtils::isDiscardAction)) {
-            discardDialogOpen = false;
-        }
-        if (discardDialogOpen) {
-            refreshInfoLabel();
-        }
-    }
-
-    private void openDiscardDialog() {
-        if (discardOptions.isEmpty()) {
-            // Fallback : envoyer la première action si aucune info d'option n'est disponible.
-            dispatchActionMatching(GameActionUtils::isDiscardAction);
-            return;
-        }
-        discardDialogOpen = true;
-        if (discardIndex < 0 || discardIndex >= discardOptions.size()) {
-            discardIndex = 0;
-        }
-        refreshInfoLabel();
-    }
-
-    private void moveDiscardSelection(int delta) {
-        if (!discardDialogOpen || discardOptions.isEmpty()) {
-            return;
-        }
-        int size = discardOptions.size();
-        int next = discardIndex + delta;
-        if (next < 0) {
-            next = size - 1;
-        } else if (next >= size) {
-            next = 0;
-        }
-        discardIndex = next;
-        refreshInfoLabel();
-    }
-
-    private void sendDiscardSelection() {
-        if (!discardDialogOpen) return;
-        discardDialogOpen = false;
-        if (discardOptions.isEmpty()) {
-            dispatchActionMatching(GameActionUtils::isDiscardAction);
-            return;
-        }
-        AskCardOption opt = discardOptions.get(Math.max(0, Math.min(discardIndex, discardOptions.size() - 1)));
-        for (int i = 0; i < actionsModel.size(); i++) {
-            GenericGameState.GenericAction act = actionsModel.get(i);
-            if (act == null || act.type() == null) continue;
-            if (!"discard_card".equalsIgnoreCase(act.type())) continue;
-            Map<String, Object> payload = toPayload(act.payload());
-            String actMember = String.valueOf(payload.getOrDefault("memberId", ""));
-            String actFamily = String.valueOf(payload.getOrDefault("familyId", ""));
-            if (opt.memberId().equals(actMember) || (actMember.isBlank() && opt.familyId().equals(actFamily))) {
-                dispatchAction(act);
-                refreshInfoLabel();
-                return;
-            }
-        }
-        emitter.announceError("Action défausse indisponible (pas d'action serveur correspondante).");
-        refreshInfoLabel();
-    }
-
-    private void cancelDiscardDialog() {
-        discardDialogOpen = false;
-        refreshInfoLabel();
-    }
-
-    private boolean handleDiscardFlow() {
-        if (!hasActionMatching(GameActionUtils::isDiscardAction)) {
-            discardDialogOpen = false;
-            return false;
-        }
-        if (discardDialogOpen) {
-            sendDiscardSelection();
-            return true;
-        }
-        openDiscardDialog();
-        return true;
     }
 
     private void sendAskAnswer(boolean accept) {
@@ -1593,34 +1039,6 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
             return;
         }
         dispatchAction(maybeAction.get());
-    }
-
-    private String buildAskLabel() {
-        if (!askDialogOpen || askTargets.isEmpty() || askCards.isEmpty()) {
-            return "";
-        }
-        PlayerOption target = askTargets.get(Math.max(0, Math.min(askTargetIndex, askTargets.size() - 1)));
-        AskCardOption card = askCards.get(Math.max(0, Math.min(askCardIndex, askCards.size() - 1)));
-        AskCardOption give = giveCards.isEmpty() ? null : giveCards.get(Math.max(0, Math.min(askGiveIndex, giveCards.size() - 1)));
-        String focus;
-        switch (askFocusIndex) {
-            case 0 -> focus = "[Cible]";
-            case 1 -> focus = "[Carte demandée]";
-            case 2 -> focus = "[Carte offerte]";
-            case 3 -> focus = "[Demander]";
-            case 4 -> focus = "[Annuler]";
-            default -> focus = "";
-        }
-        return String.format("%s Demander : cible=%s | carte=%s | offre=%s | Tab/Shift+Tab pour naviguer, ←/→ pour changer, Entrée pour valider, Échap pour annuler.",
-                focus, target.name(), card.label(), give != null ? give.label() : "(aucune)");
-    }
-
-    private String buildDiscardLabel() {
-        if (discardOptions.isEmpty()) {
-            return "Choisissez une carte à défausser (aucune carte disponible).";
-        }
-        AskCardOption opt = discardOptions.get(Math.max(0, Math.min(discardIndex, discardOptions.size() - 1)));
-        return "Défausser : " + opt.label() + " (" + (discardIndex + 1) + "/" + discardOptions.size() + ") - flèches pour naviguer, Entrée pour valider.";
     }
 
     private boolean dispatchActionMatching(java.util.function.Predicate<GenericGameState.GenericAction> matcher) {
@@ -1660,65 +1078,22 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         if (state == null) {
             return;
         }
-        tableState.updateStatus(state.status());
         if (state.players() == null || !state.players().isArray()) {
             return;
         }
         RoomParticipantsMapper.updateFromPlayers(tableState, state.players());
     }
 
-    private void announceQuizSelectionIfNeeded() {
-        if (activeQuiz == null || activeQuiz.choices().isEmpty()) {
-            lastAnnouncedQuizChoice = -1;
-            return;
-        }
-        if (quizChoiceIndex < 0 || quizChoiceIndex >= activeQuiz.choices().size()) {
-            return;
-        }
-        if (quizChoiceIndex == lastAnnouncedQuizChoice) {
-            return;
-        }
-        lastAnnouncedQuizChoice = quizChoiceIndex;
-        emitter.announceEvent(buildQuizSelectionAnnouncement(activeQuiz.choices(), quizChoiceIndex));
-    }
-
-    private String buildQuizSelectionAnnouncement(List<String> choices, int index) {
-        return GameActionUtils.buildQuizSelectionAnnouncement(choices, index);
-    }
-
     private void handleExchangeNavigation(int delta) {
-        if (!exchangePending || actionsModel.isEmpty()) {
-            return;
-        }
-        int size = actionsModel.size();
-        int current = exchangeNavigator.nextIndex(actionsList.getSelectedIndex(), size, delta);
-        if (current < 0) return;
-        actionsList.setSelectedIndex(current);
-        actionsList.ensureIndexIsVisible(current);
-        announceExchangeSelectionIfNeeded(current);
-        refreshExchangeInfoLabel();
+        exchangeRenderer.handleNavigation(delta, exchangePending);
     }
 
     private void refreshExchangeInfoLabel() {
-        if (!exchangePending || actionsModel.isEmpty()) {
-            exchangeNavigator.reset();
-            return;
-        }
-        int idx = actionsList.getSelectedIndex();
-        if (idx < 0 || idx >= actionsModel.size()) {
-            idx = 0;
-            actionsList.setSelectedIndex(idx);
-        }
-        GenericGameState.GenericAction act = actionsModel.get(idx);
-        infoLabel.setText(buildExchangeLabel(act, idx, actionsModel.size()));
+        exchangeRenderer.refreshInfoLabel(exchangePending);
     }
 
     private void announceExchangeSelectionIfNeeded(int index) {
-        if (!exchangeNavigator.shouldAnnounce(index, exchangePending, actionsModel.size())) {
-            return;
-        }
-        GenericGameState.GenericAction act = actionsModel.get(index);
-        emitter.announceEvent(buildExchangeLabel(act, index, actionsModel.size()));
+        exchangeRenderer.announceSelectionIfNeeded(index, exchangePending);
     }
 
     private String buildExchangeLabel(GenericGameState.GenericAction action, int index, int total) {
@@ -1760,14 +1135,6 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
 
     private String sanitizeLogLine(String line) {
         return announcementFormatter.sanitizeLogLine(line);
-    }
-
-    private String buildQuizAnnouncement(String question, List<String> choices) {
-        return announcementFormatter.buildQuizAnnouncement(question, choices);
-    }
-
-    private String buildQuizChoicesLabel(String question, List<String> choices) {
-        return infoLabelFormatter.formatQuizChoicesLabel(question, choices);
     }
 
     private boolean isLocalQuiz(GenericGameState.PendingQuiz quiz) {

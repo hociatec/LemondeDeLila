@@ -7,7 +7,6 @@ import com.lemondelila.client.game.room.model.TableState;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -37,72 +36,6 @@ public final class RoomParticipantsMapper {
             )));
         }
         return bots;
-    }
-
-    public static void updateFromExtras(TableState tableState, Map<String, Object> extras) {
-        if (tableState == null || extras == null || extras.isEmpty()) return;
-
-        List<PlayerState> players = null;
-        List<BotState> bots = new ArrayList<>();
-        List<Integer> order = new ArrayList<>();
-
-        Object playersNode = extras.get("players");
-        if (playersNode instanceof JsonNode) {
-            JsonNode node = (JsonNode) playersNode;
-            if (node.isArray()) {
-                players = new ArrayList<>();
-                for (JsonNode p : node) {
-                    Integer id = p.path("id").isInt() ? p.get("id").asInt() : null;
-                    String name = p.path("username").asText("Joueur");
-                    boolean isBot = p.path("isBot").asBoolean(false);
-                    if (isBot) {
-                        mergeBot(bots, new BotState(id, name));
-                    } else {
-                        players.add(new PlayerState(id, name));
-                    }
-                    if (id != null) {
-                        order.add(id);
-                    }
-                }
-            }
-        }
-
-        Object botsNode = extras.get("bots");
-        if (botsNode instanceof JsonNode) {
-            JsonNode node = (JsonNode) botsNode;
-            if (node.isArray()) {
-                mapBots(node).forEach(bot -> mergeBot(bots, bot));
-                node.forEach(b -> {
-                    if (b.path("id").isInt()) {
-                        Integer id = b.get("id").asInt();
-                        if (id != null && order.stream().noneMatch(existing -> Objects.equals(existing, id))) {
-                            order.add(id);
-                        }
-                    }
-                });
-            }
-        }
-
-        if (players != null) {
-            tableState.updatePlayers(deduplicatePlayers(players));
-        }
-        tableState.updateBots(deduplicateBots(bots));
-        if (order.isEmpty()) {
-            // Fallback : ordre joueurs puis bots connus
-            players = players == null ? tableState.players() : players;
-            for (PlayerState p : deduplicatePlayers(players)) {
-                if (p != null && p.id() != null && order.stream().noneMatch(id -> Objects.equals(id, p.id()))) {
-                    order.add(p.id());
-                }
-            }
-            List<BotState> botsSource = bots.isEmpty() ? tableState.bots() : bots;
-            for (BotState b : deduplicateBots(botsSource)) {
-                if (b != null && b.id() != null && order.stream().noneMatch(id -> Objects.equals(id, b.id()))) {
-                    order.add(b.id());
-                }
-            }
-        }
-        tableState.updateParticipantOrder(order);
     }
 
     public static void updateFromPlayers(TableState tableState, JsonNode playersNode) {

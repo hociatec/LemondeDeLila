@@ -2,8 +2,6 @@ package com.lemondelila.client.game.core.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.lemondelila.client.game.core.contract.ContractGameState;
-import com.lemondelila.client.game.core.contract.ContractPending;
 import com.lemondelila.client.game.core.model.GenericGameState;
 import org.junit.jupiter.api.Test;
 
@@ -37,10 +35,6 @@ class GenericGameStateMapperTest {
         assertEquals("answer_quiz", state.actions().getFirst().type());
         assertEquals(1, state.actionLog().size());
         assertEquals("quiz", state.actionLog().getFirst().type());
-
-        ContractGameState contract = stateMapper.mapContract(node);
-        assertNotNull(contract.pending());
-        assertTrue(contract.pending() instanceof ContractPending.Quiz);
     }
 
     @Test

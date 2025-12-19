@@ -68,8 +68,12 @@ public final class TurnAnnouncementTracker {
         pregameAnnounced = false;
     }
 
+    public void clearLastSeen() {
+        lastTurnIndexSeen = null;
+        lastAnnouncedPlayerId = null;
+    }
+
     public void markPregameAnnounced() {
         pregameAnnounced = true;
     }
 }
-

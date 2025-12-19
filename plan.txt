@@ -1,0 +1,58 @@
+================================================================================
+                 PLAN (RESTE A FAIRE) - CLIENT JAVA "LE MONDE DE LILA"
+================================================================================
+
+Date: 2025-12-18
+Statut: TODO
+
+================================================================================
+1) REFACTORING - GenericGameInteractionComponent (priorite moyenne)
+================================================================================
+
+Objectif: continuer a reduire la "god class" et isoler les responsabilites (UI / clavier / logique / annonces)
+
+[ ] Continuer a diviser `GenericGameInteractionComponent` (autres extractions a definir)
+
+================================================================================
+2) ALIGNEMENT CLIENT <-> BACKEND (priorite haute)
+================================================================================
+
+[ ] Verifier le payload reel du backend sur `/ws/game` (event `game.state`)
+[ ] Confirmer la presence / absence de:
+    [ ] `board`
+    [ ] `extras`
+    [ ] `actions[]` avec `label`
+    [ ] `metadata.actionLog[]` (ou emplacement exact)
+[ ] Si manquant, choisir une strategie:
+    [ ] Option A: ajouter les champs cote backend
+    [ ] Option B: supprimer/adapter les champs cote client si inutiles
+[ ] Verifier `TurnLabelService` (ou sont generes/ajoutes les `label` d'actions)
+
+================================================================================
+3) DOCUMENTATION CONTRAT (priorite haute)
+================================================================================
+
+[ ] Creer `backend/CONTRACT-GAME-STATE.md`
+[ ] Ajouter des exemples JSON par jeu:
+    [ ] PanierExpress
+    [ ] DameNature
+    [ ] JeuDesFamilles
+
+================================================================================
+4) WEBSOCKET - REFACTOR OPTIONNEL (priorite basse)
+================================================================================
+
+[ ] Creer `AbstractRealtimeService` (reconnexion/backoff, queue messages, etat)
+[ ] Migrer `RoomRealtimeService` et `PresenceRealtimeService` vers la base commune
+
+================================================================================
+5) NETTOYAGE (priorite basse)
+================================================================================
+
+[ ] Supprimer `GenericGameInteractionController.historyRef` si toujours inutile (set mais jamais lu)
+
+================================================================================
+6) TESTS (long terme)
+================================================================================
+
+[ ] Ajouter des tests unitaires pour les composants extraits (quiz/dialog/announcement, etc.)
