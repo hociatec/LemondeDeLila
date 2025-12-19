@@ -20,6 +20,8 @@ import { DameNatureBotService } from './dame-nature-bot.service';
 import { DameNatureBooksService } from './dame-nature-books.service';
 
 export type DameNatureMetadata = {
+  // Métadonnées génériques consommées côté client (ex: filtrage des raccourcis).
+  gameType?: string;
   decks: DeckPoolState<FamilyCard>;
   familyGoal: number;
   pollution: number;
@@ -27,6 +29,8 @@ export type DameNatureMetadata = {
   catalog: { families: { id: string; name: string }[] };
   actionLog: ActionLogEntry[];
   phaseId?: string;
+  // Un tour se termine uniquement après 1 pioche + 1 défausse (ordre libre).
+  turnProgress?: { playerId: number; drew: boolean; discarded: boolean } | null;
   botProfile?: import('../../../../../modules/bot/services/bot-strategy.service').BotProfile;
   victoryId?: string | null;
   winnerId?: string | number | null;
@@ -79,18 +83,24 @@ export class DameNatureService implements GameRulesAdapter, OnModuleInit {
   }
 
   hydrateInitialState(baseState: GameStateEntity): GameStateEntity {
-    const metadata = this.setup.buildMetadata();
+    // Conserver les métadonnées génériques du moteur (ex: gameType, generatedAt).
+    const metadata = { ...(baseState.metadata ?? {}), ...this.setup.buildMetadata() } as DameNatureMetadata & Record<string, unknown>;
     const players = this.setup.initializePlayers(baseState, metadata) as PlayerExt[];
+    const firstId = players[0]?.id ?? null;
     const initial: GameStateEntity = {
       ...baseState,
       players,
       status: baseState.status ?? 'open',
       turn: {
-        currentPlayerId: players[0]?.id ?? null,
+        currentPlayerId: firstId,
         direction: 1 as const,
       },
       turnIndex: players.length ? 0 : -1,
-      metadata,
+      metadata: {
+        ...metadata,
+        gameType: String((metadata as any)?.gameType ?? this.gameType),
+        turnProgress: typeof firstId === 'number' ? { playerId: firstId, drew: false, discarded: false } : null,
+      },
     };
     dameNatureLog('init', {
       status: initial.status,
@@ -215,6 +225,14 @@ export class DameNatureService implements GameRulesAdapter, OnModuleInit {
     const families = this.setup.families();
     if (meta.pendingAsk) {
       if (meta.pendingAsk.targetId === playerId) {
+        const me = players.find((p) => p.id === playerId);
+        const requestedMemberId = meta.pendingAsk.memberId ? String(meta.pendingAsk.memberId) : null;
+        const hasRequested =
+          requestedMemberId != null && me != null ? (me.hand ?? []).some((c) => c.memberId === requestedMemberId) : false;
+        // Le joueur ne doit pouvoir "accepter" que s'il possède réellement la carte demandée.
+        if (!hasRequested) {
+          return [{ type: 'answer_ask_card_refuse', payload: { accept: false, playerId } }];
+        }
         return [
           { type: 'answer_ask_card_accept', payload: { accept: true, playerId } },
           { type: 'answer_ask_card_refuse', payload: { accept: false, playerId } },
@@ -235,12 +253,16 @@ export class DameNatureService implements GameRulesAdapter, OnModuleInit {
 
     const actions: GameSingleActionDto[] = [];
     const me = players.find((p) => p.id === playerId);
-    const canDraw = deckAvailable && (me?.hand?.length ?? 0) < 4;
+    const progress =
+      typeof playerId === 'number' ? this.getTurnProgress(meta, playerId) : { playerId, drew: false, discarded: false };
+    // 1 pioche + 1 défausse par tour (ordre libre).
+    // On autorise la pioche même avec 4 cartes (main temporairement à 5), puis défausse.
+    const canDraw = deckAvailable && !progress.drew && (me?.hand?.length ?? 0) < 5;
     if (canDraw) {
       actions.push({ type: 'draw' });
     }
-    // Discard actions (obligatoire si main > 4 ou pour gérer l'espace pioche)
-    if ((me?.hand?.length ?? 0) > 0) {
+    const canDiscard = !progress.discarded || (me?.hand?.length ?? 0) > 4;
+    if (canDiscard && (me?.hand?.length ?? 0) > 0) {
       (me?.hand ?? []).forEach((card) => {
         actions.push({ type: 'discard_card', payload: { memberId: card.memberId, familyId: card.familyId } });
       });
@@ -262,11 +284,18 @@ export class DameNatureService implements GameRulesAdapter, OnModuleInit {
     }
     const normalizedState: GameStateEntity = { ...state, players };
     const result = this.actions.handleDraw(normalizedState, current, meta);
-    let next = result.state;
-    if (!result.skipAdvance) {
-      next = this.advanceTurn(next);
+    let next = this.appendAction(result.state, {
+      actorId: actorId ?? current.id,
+      type: 'draw',
+      payload: { cardId: result.card?.memberId ?? null },
+    });
+    if (result.performed) {
+      next = this.markTurnProgress(next, current.id, { drew: true });
     }
-    return this.appendAction(next, { actorId: actorId ?? current.id, type: 'draw', payload: { cardId: result.card?.memberId ?? null } });
+    if (result.skipAdvance) {
+      return next;
+    }
+    return this.advanceTurn(next);
   }
 
   private handleDiscard(state: GameStateEntity, action: GameSingleActionDto, actorId: number | null): GameStateEntity {
@@ -283,14 +312,20 @@ export class DameNatureService implements GameRulesAdapter, OnModuleInit {
     const metadata = this.setup.discardCard(meta, card);
     let next: GameStateEntity = { ...state, players, metadata };
     next = this.core.appendLog(next, `${current.username} défausse ${card.memberName} (${card.familyName}).`);
+    next = this.markTurnProgress(next, current.id, { discarded: true });
     return this.advanceTurn(next);
   }
 
   private handleAskCard(state: GameStateEntity, action: GameSingleActionDto, actorId: number | null): GameStateEntity {
     const familyId = action.payload?.familyId;
     const memberId = action.payload?.memberId;
-    const targetId = action.payload?.target;
-    const offerMemberId = action.payload?.offerMemberId ?? action.payload?.give ?? null;
+    const targetId = action.payload?.target ?? action.payload?.targetPlayerId ?? action.payload?.targetId;
+    const offerMemberId =
+      action.payload?.offerMemberId ??
+      action.payload?.giveMemberId ??
+      action.payload?.give ??
+      action.payload?.offer ??
+      null;
     const players = this.ensurePlayers(state);
     const currentId = state.turn?.currentPlayerId ?? null;
     const current = currentId != null ? players.find((p) => p.id === currentId) : null;
@@ -307,6 +342,12 @@ export class DameNatureService implements GameRulesAdapter, OnModuleInit {
       return state; // une demande est déjà en attente
     }
     // exiger un memberId précis
+    if (!offerMemberId) {
+      return this.appendAction(
+        this.core.appendLog(state, `Demande invalide (une carte offerte est requise).`),
+        { actorId: actorId ?? currentId ?? null, type: 'ask_card_invalid', payload: action.payload },
+      );
+    }
     if (!memberId) {
       return this.appendAction(
         this.core.appendLog(state, `Demande invalide (carte précise requise).`),
@@ -314,10 +355,12 @@ export class DameNatureService implements GameRulesAdapter, OnModuleInit {
       );
     }
     // vérifier que le demandeur possède la carte pour formuler la demande
-    const owns = current.hand.some((c) => c.memberId === String(memberId));
-    if (!owns) {
+    const families = this.setup.families();
+    const fam = families.find((f) => f.id === String(familyId));
+    const memberExists = fam?.members?.some((m) => m.id === String(memberId)) ?? false;
+    if (!memberExists) {
       return this.appendAction(
-        this.core.appendLog(state, `Demande invalide (vous devez posséder la carte à demander).`),
+        this.core.appendLog(state, `Demande invalide (carte inconnue).`),
         { actorId: actorId ?? currentId ?? null, type: 'ask_card_invalid', payload: action.payload },
       );
     }
@@ -371,7 +414,10 @@ export class DameNatureService implements GameRulesAdapter, OnModuleInit {
       next,
       { actorId: actorId ?? currentId ?? null, type: 'ask_card', payload: pending },
     );
-    next = this.core.appendLog(next, `${current.username} demande ${pending.familyId} à ${target.username}.`);
+    const familyLabel = (fid: string) => families.find((f) => f.id === fid)?.name ?? fid;
+    const requestedLabel = `${familyLabel(pending.familyId)} - ${pending.memberId}`;
+    const offerLabel = validOffer ? `${validOffer.memberName} (${validOffer.familyName})` : 'rien';
+    next = this.core.appendLog(next, `${current.username} demande ${requestedLabel} à ${target.username} et offre ${offerLabel}.`);
     dameNatureLog('ask.pending', {
       fromId: current.id,
       targetId: target.id,
@@ -391,12 +437,18 @@ export class DameNatureService implements GameRulesAdapter, OnModuleInit {
       // Tant qu'une demande ou un quiz est en attente, ne pas avancer.
       return state;
     }
-    // Si la main du joueur courant dépasse 4, forcer la défausse uniquement.
-    const currentPlayer = players.find((p) => p.id === state.turn?.currentPlayerId);
-    if (currentPlayer && (currentPlayer.hand?.length ?? 0) > 4) {
-      return state;
-    }
     const currentId = state.turn?.currentPlayerId ?? null;
+    const currentPlayer = typeof currentId === 'number' ? players.find((p) => p.id === currentId) : null;
+    if (currentPlayer) {
+      const progress = this.getTurnProgress(meta, currentPlayer.id);
+      if (!progress.drew || !progress.discarded) {
+        return state;
+      }
+      // Si la main du joueur courant dépasse 4, forcer la défausse uniquement.
+      if ((currentPlayer.hand?.length ?? 0) > 4) {
+        return state;
+      }
+    }
     const currentIndex = currentId != null ? players.findIndex((p) => p.id === currentId) : state.turnIndex;
     const next = this.turns.nextTurn(players as any, currentIndex >= 0 ? currentIndex : -1, {});
     const updated: GameStateEntity = {
@@ -405,6 +457,13 @@ export class DameNatureService implements GameRulesAdapter, OnModuleInit {
       turn: {
         currentPlayerId: next.currentPlayerId,
         direction: 1 as const,
+      },
+      metadata: {
+        ...(meta as any),
+        turnProgress:
+          typeof next.currentPlayerId === 'number'
+            ? { playerId: next.currentPlayerId, drew: false, discarded: false }
+            : null,
       },
     };
     dameNatureLog('turn', { turnIndex: next.turnIndex, current: next.currentPlayerId });
@@ -418,16 +477,26 @@ export class DameNatureService implements GameRulesAdapter, OnModuleInit {
 
   private ensureMetadata(state: GameStateEntity): GameStateEntity {
     const base = this.setup.buildMetadata();
+    // Conserver les clés "hors DameNatureMetadata" (ex: gameType) présentes dans state.metadata.
+    const raw = (state.metadata ?? {}) as Record<string, unknown>;
     const meta = (state.metadata as DameNatureMetadata | undefined) ?? base;
     return {
       ...state,
       metadata: {
+        ...raw,
         ...base,
         ...meta,
+        gameType: String((raw as any)?.gameType ?? (meta as any)?.gameType ?? this.gameType),
         actionLog: meta.actionLog ?? [],
         catalog: meta.catalog ?? base.catalog,
         decks: meta.decks ?? base.decks,
         phaseId: meta.phaseId ?? 'turn',
+        turnProgress:
+          meta.turnProgress != null
+            ? meta.turnProgress
+            : typeof state.turn?.currentPlayerId === 'number'
+            ? { playerId: state.turn.currentPlayerId, drew: false, discarded: false }
+            : null,
         botProfile: meta.botProfile ?? 'greedy',
         victoryId: meta.victoryId ?? null,
         winnerId: meta.winnerId ?? null,
@@ -448,6 +517,31 @@ export class DameNatureService implements GameRulesAdapter, OnModuleInit {
     return this.setup.ensurePlayers(state) as PlayerExt[];
   }
 
+  private getTurnProgress(meta: DameNatureMetadata, playerId: number) {
+    const current = meta.turnProgress;
+    if (current && current.playerId === playerId) {
+      return current;
+    }
+    return { playerId, drew: false, discarded: false };
+  }
+
+  private markTurnProgress(
+    state: GameStateEntity,
+    playerId: number,
+    patch: Partial<Pick<NonNullable<DameNatureMetadata['turnProgress']>, 'drew' | 'discarded'>>,
+  ): GameStateEntity {
+    const meta = (state.metadata as DameNatureMetadata) ?? this.setup.buildMetadata();
+    const base = this.getTurnProgress(meta, playerId);
+    const turnProgress = { ...base, ...patch };
+    return {
+      ...state,
+      metadata: {
+        ...(meta as any),
+        turnProgress,
+      },
+    };
+  }
+
   private isStarted(state: GameStateEntity): boolean {
     return state.status?.toLowerCase() === 'started';
   }
@@ -465,6 +559,12 @@ export class DameNatureService implements GameRulesAdapter, OnModuleInit {
       turn: {
         currentPlayerId: players[0]?.id ?? null,
         direction: 1 as const,
+      },
+      metadata: {
+        ...((state.metadata ?? {}) as any),
+        gameType: String(((state.metadata ?? {}) as any)?.gameType ?? this.gameType),
+        turnProgress:
+          typeof players[0]?.id === 'number' ? { playerId: players[0].id, drew: false, discarded: false } : null,
       },
     };
     dameNatureLog('start', { turnIndex: next.turnIndex, current: next.turn?.currentPlayerId ?? null });
@@ -505,7 +605,8 @@ export class DameNatureService implements GameRulesAdapter, OnModuleInit {
         turnIndex: requesterIndex >= 0 ? requesterIndex : next.turnIndex,
       };
       dameNatureLog('ask.refuse', { targetId: target.id, fromId: asker.id, family: pending.familyId, member: pending.memberId ?? null });
-      return this.advanceTurn(restored);
+      // Retour au demandeur : le tour ne se termine qu'après pioche + défausse (ordre libre).
+      return restored;
     }
     const match = target.hand.find((c) =>
       pending.memberId ? c.memberId === pending.memberId : c.familyId === pending.familyId,
@@ -540,6 +641,7 @@ export class DameNatureService implements GameRulesAdapter, OnModuleInit {
           this.appendAction(next, { actorId: asker.id, type: 'book', payload: { families: booked.booked } }),
           `${asker.username} complète ${booked.booked.length} famille(s): ${booked.booked.join(', ')}.`,
         );
+        next = this.actions.refillHandToFour(next, asker as any, next.metadata as DameNatureMetadata);
       }
     } else {
       next = this.core.appendLog(
@@ -547,7 +649,7 @@ export class DameNatureService implements GameRulesAdapter, OnModuleInit {
         `${target.username} n'a pas ${pending.familyId} à donner.`,
       );
     }
-    const cleared: DameNatureMetadata = { ...meta, pendingAsk: null };
+    const cleared: DameNatureMetadata = { ...(((next.metadata as DameNatureMetadata) ?? meta) as any), pendingAsk: null };
     const requesterIndex = players.findIndex((p) => p.id === asker.id);
     const restored: GameStateEntity = {
       ...next,
@@ -556,7 +658,8 @@ export class DameNatureService implements GameRulesAdapter, OnModuleInit {
       turn: { currentPlayerId: asker.id, direction: 1 as const },
       turnIndex: requesterIndex >= 0 ? requesterIndex : next.turnIndex,
     };
-    return this.advanceTurn(restored);
+    // Retour au demandeur : le tour ne se termine qu'après pioche + défausse (ordre libre).
+    return restored;
   }
 
   private handleQuizAnswer(state: GameStateEntity, action: GameSingleActionDto, actorId: number | null): GameStateEntity {
@@ -676,6 +779,9 @@ export class DameNatureService implements GameRulesAdapter, OnModuleInit {
       pending: pendingState,
       extras: {
         ...baseExtras,
+        catalog: this.setup
+          .families()
+          .reduce((acc, f) => ({ ...acc, [f.id]: f.members.map((m) => ({ id: m.id, name: m.name })) }), {} as Record<string, { id: string; name: string }[]>),
         playerViews,
         currentPlayerView,
         hand: currentPlayerView?.hand ?? [],
@@ -732,6 +838,24 @@ export class DameNatureService implements GameRulesAdapter, OnModuleInit {
         memberId: c.memberId,
         label: handLabel(c),
       })) ?? [];
+    // Pour la demande de carte (touche D), exposer la main des autres joueurs au demandeur
+    // afin que la liste "cartes à demander" reflète réellement la main de la cible sélectionnée.
+    const askTargetHands =
+      typeof userId === 'number'
+        ? players
+            .filter((p) => p.id !== userId)
+            .reduce(
+              (acc, p) => ({
+                ...acc,
+                [String(p.id)]: (p.hand ?? []).map((c) => ({
+                  familyId: c.familyId,
+                  memberId: c.memberId,
+                  label: handLabel(c),
+                })),
+              }),
+              {} as Record<string, { familyId: string; memberId: string; label: string }[]>,
+            )
+        : {};
 
     const shortcuts: any[] = [
       { key: 'pressed D', type: 'action', actionType: 'ask_card' },
@@ -769,10 +893,14 @@ export class DameNatureService implements GameRulesAdapter, OnModuleInit {
       pending: pendingState,
       extras: {
         ...baseExtras,
+        catalog: this.setup
+          .families()
+          .reduce((acc, f) => ({ ...acc, [f.id]: f.members.map((m) => ({ id: m.id, name: m.name })) }), {} as Record<string, { id: string; name: string }[]>),
         playerViews,
         currentPlayerView: viewerView,
         hand: viewerView?.hand ?? [],
         handCards,
+        askTargetHands,
         books: viewerView?.books ?? [],
         shortcuts,
         pendingAsk: (state.metadata as DameNatureMetadata)?.pendingAsk ?? null,

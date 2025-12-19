@@ -34,8 +34,11 @@ public final class GameDialogManager {
     private final BiConsumer<String, Map<String, Object>> submitAction;
     private final Predicate<Predicate<GenericGameState.GenericAction>> hasActionMatching;
 
+    private GenericGameState lastAskState;
+
     // État du dialogue Ask
     private boolean askDialogOpen = false;
+    private String lastAskBlockReason = "";
     private int askTargetIndex = 0;
     private int askCardIndex = 0;
     private int askGiveIndex = 0;
@@ -67,9 +70,23 @@ public final class GameDialogManager {
         return askDialogOpen;
     }
 
+    public String getLastAskBlockReason() {
+        return lastAskBlockReason == null ? "" : lastAskBlockReason;
+    }
+
     public void openAskDialog(GenericGameState state) {
+        openAskDialog(state, List.of());
+    }
+
+    public void openAskDialog(GenericGameState state, List<PlayerOption> fallbackTargets) {
+        this.lastAskState = state;
         refreshAskDialogData(state);
-        if (askTargets.isEmpty() || askCards.isEmpty()) {
+        if (askTargets.isEmpty() && fallbackTargets != null && !fallbackTargets.isEmpty()) {
+            askTargets = List.copyOf(fallbackTargets);
+            if (askTargetIndex >= askTargets.size()) askTargetIndex = 0;
+        }
+        // Dans Dame Nature, une demande doit toujours proposer une carte en échange.
+        if (askTargets.isEmpty() || askCards.isEmpty() || giveCards.isEmpty()) {
             LOGGER.debug("[ask] cannot open: no targets or cards");
             askDialogOpen = false;
             return;
@@ -97,9 +114,15 @@ public final class GameDialogManager {
         if (askCardIndex >= askCards.size()) askCardIndex = askCards.isEmpty() ? 0 : askCards.size() - 1;
         if (askFocusIndex == 2 && giveCards.isEmpty()) askFocusIndex = 0;
 
-        if (askTargets.isEmpty() || askCards.isEmpty()) {
+        if (askTargets.isEmpty() || askCards.isEmpty() || giveCards.isEmpty()) {
             askDialogOpen = false;
         }
+
+        StringBuilder reason = new StringBuilder();
+        if (askTargets.isEmpty()) reason.append("aucun joueur cible. ");
+        if (askCards.isEmpty()) reason.append("catalogue de cartes indisponible. ");
+        if (giveCards.isEmpty()) reason.append("aucune carte à offrir. ");
+        lastAskBlockReason = reason.toString().trim();
     }
 
     public void moveAskFocus(boolean backward) {
@@ -113,6 +136,11 @@ public final class GameDialogManager {
         if (!askDialogOpen) return;
         if (askFocusIndex == 0 && !askTargets.isEmpty()) {
             askTargetIndex = (askTargetIndex + delta + askTargets.size()) % askTargets.size();
+            // Mettre à jour la liste des cartes demandables selon la cible.
+            if (lastAskState != null) {
+                this.askCards = extractAskCards(lastAskState);
+                if (askCardIndex >= askCards.size()) askCardIndex = askCards.isEmpty() ? 0 : askCards.size() - 1;
+            }
         } else if (askFocusIndex == 1 && !askCards.isEmpty()) {
             askCardIndex = (askCardIndex + delta + askCards.size()) % askCards.size();
         } else if (askFocusIndex == 2 && !giveCards.isEmpty()) {
@@ -129,25 +157,26 @@ public final class GameDialogManager {
 
     public void sendAskDialog() {
         if (!askDialogOpen) return;
-        if (askTargets.isEmpty() || askCards.isEmpty() || localPlayerId == null) {
+        if (askTargets.isEmpty() || askCards.isEmpty() || giveCards.isEmpty() || localPlayerId == null) {
             cancelAskDialog();
             return;
         }
 
         PlayerOption target = askTargets.get(Math.max(0, Math.min(askTargetIndex, askTargets.size() - 1)));
         AskCardOption card = askCards.get(Math.max(0, Math.min(askCardIndex, askCards.size() - 1)));
-        AskCardOption give = giveCards.isEmpty() ? null : giveCards.get(Math.max(0, Math.min(askGiveIndex, giveCards.size() - 1)));
+        AskCardOption give = giveCards.get(Math.max(0, Math.min(askGiveIndex, giveCards.size() - 1)));
 
         Map<String, Object> payload = new java.util.HashMap<>();
         payload.put("playerId", localPlayerId);
         payload.put("targetPlayerId", target.id());
+        payload.put("target", target.id());
         payload.put("familyId", card.familyId());
         payload.put("memberId", card.memberId());
 
-        if (give != null) {
-            payload.put("giveFamilyId", give.familyId());
-            payload.put("giveMemberId", give.memberId());
-        }
+        payload.put("giveFamilyId", give.familyId());
+        payload.put("giveMemberId", give.memberId());
+        payload.put("offerMemberId", give.memberId());
+        payload.put("give", give.memberId());
 
         submitAction.accept("ask_card", payload);
         askDialogOpen = false;
@@ -192,7 +221,36 @@ public final class GameDialogManager {
 
     private List<PlayerOption> extractAskTargets(GenericGameState state) {
         List<PlayerOption> res = new ArrayList<>();
-        if (state == null || state.players() == null || !state.players().isArray()) {
+        if (state == null) {
+            return res;
+        }
+
+        // Préférence : extras.playerViews (toujours présent côté Dame Nature, même si state.players est incomplet).
+        JsonNode extras = state.extras();
+        if (extras != null && extras.isObject()) {
+            if (localPlayerId == null) {
+                JsonNode currentView = extras.path("currentPlayerView");
+                if (currentView != null && currentView.isObject() && currentView.path("id").isInt()) {
+                    localPlayerId = currentView.path("id").asInt();
+                }
+            }
+            JsonNode views = extras.path("playerViews");
+            if (views != null && views.isArray()) {
+                for (JsonNode v : views) {
+                    int id = v.path("id").asInt(-1);
+                    String username = v.path("username").asText("");
+                    if (id > 0 && !username.isBlank() && (localPlayerId == null || id != localPlayerId)) {
+                        res.add(new PlayerOption(id, username));
+                    }
+                }
+                if (!res.isEmpty()) {
+                    return res;
+                }
+            }
+        }
+
+        // Fallback : state.players
+        if (state.players() == null || !state.players().isArray()) {
             return res;
         }
         for (JsonNode p : state.players()) {
@@ -209,6 +267,27 @@ public final class GameDialogManager {
         List<AskCardOption> res = new ArrayList<>();
         JsonNode extras = state == null ? null : state.extras();
         if (extras == null || !extras.isObject()) return res;
+
+        // Si le serveur expose la main de la cible (Dame Nature), limiter la liste aux cartes réellement disponibles.
+        if (!askTargets.isEmpty() && askTargetIndex >= 0 && askTargetIndex < askTargets.size()) {
+            int targetId = askTargets.get(askTargetIndex).id();
+            JsonNode targetHands = extras.path("askTargetHands");
+            if (targetHands != null && targetHands.isObject()) {
+                JsonNode cards = targetHands.get(String.valueOf(targetId));
+                if (cards != null && cards.isArray()) {
+                    cards.forEach(c -> {
+                        String familyId = c.path("familyId").asText("");
+                        String memberId = c.path("memberId").asText("");
+                        String label = c.path("label").asText("");
+                        if (!familyId.isBlank() && !memberId.isBlank()) {
+                            res.add(new AskCardOption(familyId.trim(), memberId.trim(), (label == null || label.isBlank()) ? (familyId + ":" + memberId) : label));
+                        }
+                    });
+                    return res;
+                }
+            }
+        }
+
         JsonNode catalog = extras.path("catalog");
         if (catalog.isObject()) {
             catalog.fields().forEachRemaining(family -> {
@@ -216,8 +295,10 @@ public final class GameDialogManager {
                 JsonNode members = family.getValue();
                 if (members.isArray()) {
                     members.forEach(m -> {
-                        String memberId = m.asText("");
-                        String label = familyId + " : " + memberId;
+                        String memberId = m.isObject() ? m.path("id").asText("") : m.asText("");
+                        String memberName = m.isObject() ? m.path("name").asText("") : "";
+                        if (memberId.isBlank()) return;
+                        String label = !memberName.isBlank() ? (familyId + " - " + memberName) : (familyId + " : " + memberId);
                         res.add(new AskCardOption(familyId, memberId, label));
                     });
                 }
@@ -329,7 +410,7 @@ public final class GameDialogManager {
             payload.put("playerId", localPlayerId);
         }
 
-        submitAction.accept("discard", payload);
+        submitAction.accept("discard_card", payload);
         updateInfoLabel.accept("");
     }
 

@@ -48,6 +48,18 @@ describe('PanierExpressService', () => {
     expect(currentView).toBeTruthy();
     expect(currentView.id).toBe(1);
     expect(currentView.basket).toContain('pomme');
+
+    // Plateau exposé pour permettre l'annonce "case/total".
+    const board: any = (exposed as any).board;
+    expect(board).toBeTruthy();
+    expect(Array.isArray(board.tiles)).toBe(true);
+    expect(board.tiles.length).toBeGreaterThan(0);
+    expect(typeof board.positions).toBe('object');
+    expect(typeof board.laps).toBe('object');
+    expect(typeof board.turns).toBe('object');
+
+    // Le raccourci P devient générique côté client (pas spécifique Panier Express).
+    expect((extras.shortcuts ?? []).some((s: any) => String(s?.key ?? '') === 'pressed P')).toBe(false);
   });
 
   it('avancer sur un stand ajoute une carte cohérente', () => {
@@ -108,6 +120,63 @@ describe('PanierExpressService', () => {
     base.turnIndex = 0;
     const afterSkip = (service as any).handleSkipTurn(base as any, { type: 'skip_turn', payload: { playerId: 1 } });
     expect(afterSkip.turn?.currentPlayerId).toBe(2);
+  });
+
+  it("incrémente le tour de plateau quand un joueur repasse par la case départ", () => {
+    const base: any = service.hydrateInitialState({
+      players: [
+        { id: 1, username: 'A' },
+        { id: 2, username: 'B' },
+      ],
+      status: 'running',
+    } as any);
+    base.turn = { currentPlayerId: 1, direction: 1 };
+    base.turnIndex = 0;
+
+    const meta = base.metadata as any;
+    const tilesLen = Array.isArray(meta.tiles) && meta.tiles.length ? meta.tiles.length : 40;
+    meta.positions[1] = tilesLen - 1;
+    meta.laps[1] = 0;
+
+    // 39 -> 1 : le joueur repasse par la case départ pendant le déplacement.
+    const moved = (service as any).movePlayer(base as any, 1, 2);
+    expect((moved.metadata as any).laps[1]).toBe(1);
+  });
+
+  it("décrémente le tour de plateau quand un joueur recule en repassant par la case départ (tour 1 -> tour 0)", () => {
+    const base: any = service.hydrateInitialState({
+      players: [{ id: 1, username: 'A' }, { id: 2, username: 'B' }],
+      status: 'running',
+    } as any);
+    base.turn = { currentPlayerId: 1, direction: 1 };
+    base.turnIndex = 0;
+
+    const meta = base.metadata as any;
+    meta.positions[1] = 0;
+    meta.laps[1] = 0;
+
+    const moved = (service as any).movePlayer(base as any, 1, -1);
+    expect((moved.metadata as any).laps[1]).toBe(-1);
+  });
+
+  it("décrémente le tour de plateau lors d'un recul d'échange qui repasse la case départ", () => {
+    const state: any = service.hydrateInitialState({
+      players: [
+        { id: 1, username: 'A', inventory: [] },
+        { id: 2, username: 'B', inventory: [] },
+      ],
+      status: 'running',
+    } as any);
+    state.turn = { currentPlayerId: 1, direction: 1 };
+    state.turnIndex = 0;
+
+    const meta = state.metadata as any;
+    meta.positions[1] = 4;
+    meta.laps[1] = 0;
+
+    const after = exchangeSvc.applyExchange(state as any, 1);
+    expect((after.metadata as any).positions[1]).toBeGreaterThanOrEqual(0);
+    expect((after.metadata as any).laps[1]).toBe(-1);
   });
 
   it('déclare une victoire quand un joueur a complété sa liste sur la case start', () => {

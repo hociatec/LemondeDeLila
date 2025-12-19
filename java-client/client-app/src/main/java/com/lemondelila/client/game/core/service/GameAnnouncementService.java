@@ -32,12 +32,16 @@ public final class GameAnnouncementService {
     }
 
     public void announcePosition(GenericGameState state) {
-        Integer currentId = tableState == null ? null : tableState.currentPlayerId();
-        int turn = tableState == null ? 0 : tableState.turnRound();
+        Integer playerId = tableState == null ? null : tableState.currentPlayerId();
+        announcePosition(state, playerId);
+    }
+
+    public void announcePosition(GenericGameState state, Integer playerId) {
         JsonNode boardNode = state == null ? null : state.board();
+        int turn = resolveBoardLap(boardNode, playerId);
         String message = null;
-        if (boardNode != null && boardNode.has("positions") && boardNode.get("positions").isObject() && currentId != null) {
-            JsonNode pos = boardNode.get("positions").get(String.valueOf(currentId));
+        if (boardNode != null && boardNode.has("positions") && boardNode.get("positions").isObject() && playerId != null) {
+            JsonNode pos = boardNode.get("positions").get(String.valueOf(playerId));
             if (pos != null && pos.isInt() && boardNode.has("tiles") && boardNode.get("tiles").isArray()) {
                 int index = pos.asInt();
                 int total = boardNode.get("tiles").size();
@@ -104,6 +108,32 @@ public final class GameAnnouncementService {
         return extras != null && extras.isObject() ? extras : null;
     }
 
+    private static int resolveBoardLap(JsonNode boardNode, Integer currentId) {
+        // Préférence : valeur déjà prête côté serveur (tour affichable).
+        if (boardNode != null && boardNode.isObject() && currentId != null) {
+            JsonNode turnsNode = boardNode.get("turns");
+            if (turnsNode != null && turnsNode.isObject()) {
+                JsonNode turn = turnsNode.get(String.valueOf(currentId));
+                if (turn != null && turn.isInt()) {
+                    return Math.max(0, turn.asInt(0));
+                }
+            }
+        }
+
+        int lapCompleted = 0;
+        if (boardNode != null && boardNode.isObject() && currentId != null) {
+            JsonNode lapsNode = boardNode.get("laps");
+            if (lapsNode != null && lapsNode.isObject()) {
+                JsonNode lap = lapsNode.get(String.valueOf(currentId));
+                if (lap != null && lap.isInt()) {
+                    lapCompleted = lap.asInt(0);
+                }
+            }
+        }
+        // 0 laps complétés => tour de plateau 1 ; laps négatifs => tour 0 minimum.
+        return Math.max(0, lapCompleted + 1);
+    }
+
     private static List<String> toStringList(Object raw) {
         if (raw == null) return List.of();
         if (raw instanceof List<?> list) {
@@ -125,4 +155,3 @@ public final class GameAnnouncementService {
         return s.isBlank() ? List.of() : List.of(s);
     }
 }
-

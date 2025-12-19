@@ -55,6 +55,7 @@ import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -235,6 +236,23 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
     }
 
     private void submitAction(String actionType, Map<String, Object> payload) {
+        // Certaines actions ont un payload "template" côté serveur et doivent être envoyées
+        // avec le payload construit côté client (ask/discard).
+        if ("ask_card".equalsIgnoreCase(actionType) || "discard_card".equalsIgnoreCase(actionType)) {
+            // Vérifier que le serveur expose bien ce type d'action (garde-fou UX).
+            var availableByType = AvailableActionMatcher.findFirstMatching(
+                    availableActionsSnapshot(),
+                    actionType,
+                    Map.of(),
+                    this::toPayload
+            );
+            if (availableByType.isEmpty()) {
+                emitter.announceError("Action " + actionType + " indisponible (pas d'action serveur correspondante).");
+                return;
+            }
+            controller.sendActions(List.of(ActionRequest.of(actionType, payload)));
+            return;
+        }
         var maybeAction = AvailableActionMatcher.findFirstMatching(
                 availableActionsSnapshot(),
                 actionType,
@@ -368,7 +386,24 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         });
 
         // Statistiques rapides : touche S
-        router.bind("S", "stats.show", () -> announcementService.announceStats(lastState));
+        router.bind("S", "stats.show", this::announceStats);
+        // Demande de carte (Dame Nature) : touche D (fallback même si raccourci dynamique absent).
+        router.bind("D", "ask.open", () -> {
+            if (quizHandler.submitIfActive()) return;
+            if (blockIfBotTurn()) return;
+            if (!isTableStarted()) return;
+            // Si l'action est dispo, elle ouvrira le mini-dialogue côté client.
+            boolean sent = dispatchActionMatching(a -> "ask_card".equalsIgnoreCase(a.type()));
+            if (!sent) {
+                emitter.announceError("Demande de carte indisponible (pas d'action serveur : pas votre tour ?).");
+            }
+        });
+        // Familles constituées (Dame Nature) : touche F (fallback même si le serveur ne fournit pas de raccourci).
+        router.bind("F", "books.show", () -> {
+            if (quizHandler.submitIfActive()) return;
+            if (!isTableStarted()) return;
+            announcementService.announceBooks(lastState);
+        });
         router.bind("A", "ask.answer.accept", () -> sendAskAnswer(true));
         router.bind("R", "ask.answer.refuse", () -> sendAskAnswer(false));
         configureQuizNavigation(windowMap, actions);
@@ -426,10 +461,19 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
     private void handleQuizNavigation(int delta) {
         if (dialogManager.isDiscardDialogOpen()) {
             dialogManager.moveDiscardSelection(delta);
+            emitter.announceEvent(simplifyDiscardAnnouncement(lastState, dialogManager.buildDiscardAnnouncementText()));
             return;
         }
         if (!quizHandler.isActive()) {
             // Pas de quiz actif : on recycle la navigation pour les échanges si besoin.
+            if (hasActionMatching(GameActionUtils::isDiscardAction)) {
+                dialogManager.openDiscardDialog();
+                if (delta != 0) {
+                    dialogManager.moveDiscardSelection(delta);
+                }
+                emitter.announceEvent(simplifyDiscardAnnouncement(lastState, dialogManager.buildDiscardAnnouncementText()));
+                return;
+            }
             exchangeRenderer.handleNavigation(delta, exchangePending);
             return;
         }
@@ -663,13 +707,33 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
             case "shopping" -> announcementService.announceCollection("shopping", shoppingView);
             case "basket" -> announcementService.announceCollection("basket", basketView);
             case "inventory" -> announcementService.announceCollection("inventory", inventoryView);
-            case "position" -> announcementService.announcePosition(lastState);
+            case "position" -> announcementService.announcePosition(lastState, localPlayerId != null ? localPlayerId : tableState.currentPlayerId());
             case "hand" -> announcementService.announceHand(lastState);
             case "books" -> announcementService.announceBooks(lastState);
             default -> {
                 // noop
             }
         }
+    }
+
+    private java.util.List<GameDialogManager.PlayerOption> buildFallbackAskTargets() {
+        java.util.ArrayList<GameDialogManager.PlayerOption> res = new java.util.ArrayList<>();
+        Integer selfId = localPlayerId != null ? localPlayerId : localUserId;
+        if (tableState != null) {
+            for (var p : tableState.players()) {
+                if (p == null || p.id() == null) continue;
+                if (selfId != null && selfId.equals(p.id())) continue;
+                String name = p.username() == null ? "" : p.username().trim();
+                if (!name.isBlank()) res.add(new GameDialogManager.PlayerOption(p.id(), name));
+            }
+            for (var b : tableState.bots()) {
+                if (b == null || b.id() == null) continue;
+                if (selfId != null && selfId.equals(b.id())) continue;
+                String name = b.name() == null ? "" : b.name().trim();
+                if (!name.isBlank()) res.add(new GameDialogManager.PlayerOption(b.id(), name));
+            }
+        }
+        return res;
     }
 
     private void handleActionShortcut(String targetType) {
@@ -679,12 +743,24 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
             if (act != null && targetType.equalsIgnoreCase(act.type())) {
                 actionsList.setSelectedIndex(i);
                 if ("ask_card".equalsIgnoreCase(targetType)) {
-                    dialogManager.openAskDialog(lastState);
+                    dialogManager.openAskDialog(lastState, buildFallbackAskTargets());
+                    if (dialogManager.isAskDialogOpen()) {
+                        emitter.announceEvent(dialogManager.buildAskAnnouncementText());
+                    } else {
+                        String reason = dialogManager.getLastAskBlockReason();
+                        emitter.announceError("Impossible d'ouvrir la demande" + (reason.isBlank() ? "" : " : " + reason));
+                    }
                     return;
                 }
                 dispatchAction(act);
                 return;
             }
+        }
+        // Donne un retour immédiat si le raccourci est pressé mais que l'action n'est pas disponible (ex: pas ton tour).
+        if ("ask_card".equalsIgnoreCase(targetType)) {
+            emitter.announceError("Demande de carte indisponible (pas d'action serveur : pas votre tour ou partie non démarrée).");
+        } else if ("discard_card".equalsIgnoreCase(targetType)) {
+            emitter.announceError("Défausse indisponible (pas d'action serveur : pas votre tour ou rien à défausser).");
         }
     }
 
@@ -804,7 +880,70 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
     }
 
     private void announceStats() {
+        // Ne pas polluer l'UX avant le démarrage (les raccourcis dynamiques ne sont pas encore actifs).
+        if (!isTableStarted()) {
+            return;
+        }
+        // Les statistiques "pollution/familles" sont spécifiques à Dame Nature.
+        if (!isDameNature(lastState)) {
+            return;
+        }
         announcementService.announceStats(lastState);
+    }
+
+    private static boolean isDameNature(GenericGameState state) {
+        if (state == null || state.metadata() == null || !state.metadata().isObject()) {
+            return false;
+        }
+        String gameType = state.metadata().path("gameType").asText("");
+        return "dame-nature".equalsIgnoreCase(gameType);
+    }
+
+    private static String simplifyDiscardAnnouncement(GenericGameState state, String text) {
+        if (!isDameNature(state) || text == null || text.isBlank()) {
+            return text;
+        }
+        int colon = text.indexOf(':');
+        if (colon < 0 || colon + 1 >= text.length()) {
+            return text;
+        }
+        String rawLabel = text.substring(colon + 1).trim();
+        int paren = rawLabel.indexOf(" (");
+        if (paren > 0) {
+            rawLabel = rawLabel.substring(0, paren).trim();
+        }
+        String simplified = simplifyFamilyCardLabel(rawLabel);
+        return simplified.isBlank() ? text : simplified;
+    }
+
+    private static String simplifyFamilyCardLabel(String label) {
+        if (label == null || label.isBlank()) {
+            return "";
+        }
+        // Format attendu (Dame Nature) : "Famille des Poissons - Poisson-clown"
+        String[] parts = label.split("\\s+-\\s+", 2);
+        if (parts.length != 2) {
+            return label;
+        }
+        String left = parts[0].trim();
+        String right = parts[1].trim();
+        if (left.isBlank() || right.isBlank()) {
+            return label;
+        }
+        if (!left.toLowerCase(Locale.ROOT).startsWith("famille")) {
+            return label;
+        }
+        String family = left
+                .replaceFirst("(?i)^famille\\s+des\\s+", "")
+                .replaceFirst("(?i)^famille\\s+de\\s+la\\s+", "")
+                .replaceFirst("(?i)^famille\\s+du\\s+", "")
+                .replaceFirst("(?i)^famille\\s+de\\s+l['’]\\s*", "")
+                .replaceFirst("(?i)^famille\\s+de\\s+", "")
+                .trim();
+        if (family.isBlank()) {
+            return label;
+        }
+        return right + " (" + family.toLowerCase(Locale.ROOT) + ")";
     }
 
     @Override
@@ -857,7 +996,13 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
             return false;
         }
         if ("ask_card".equalsIgnoreCase(action.type())) {
-            dialogManager.openAskDialog(lastState);
+            dialogManager.openAskDialog(lastState, buildFallbackAskTargets());
+            if (dialogManager.isAskDialogOpen()) {
+                emitter.announceEvent(dialogManager.buildAskAnnouncementText());
+            } else {
+                String reason = dialogManager.getLastAskBlockReason();
+                emitter.announceError("Impossible d'ouvrir la demande" + (reason.isBlank() ? "" : " : " + reason));
+            }
             return true;
         }
         if (blockIfBotTurn()) {
@@ -886,9 +1031,11 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         if (!isTableStarted()) {
             return; // Pas de pioche avant le dンmarrage de la partie.
         }
-        if (hasActionMatching(GameActionUtils::isDrawAction)) {
-            dispatchActionMatching(GameActionUtils::isDrawAction);
+        if (!hasActionMatching(GameActionUtils::isDrawAction)) {
+            emitter.announceError("Aucune pioche possible pour le moment.");
+            return;
         }
+        dispatchActionMatching(GameActionUtils::isDrawAction);
     }
 
     private void handleRollShortcut() {
@@ -926,6 +1073,9 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         // En partie : ouvrir la sélection de défausse si disponible, sinon lancer/défausser/actions.
         if (hasActionMatching(GameActionUtils::isDiscardAction)) {
             dialogManager.handleDiscardShortcut();
+            if (dialogManager.isDiscardDialogOpen()) {
+                emitter.announceEvent(simplifyDiscardAnnouncement(lastState, dialogManager.buildDiscardAnnouncementText()));
+            }
             return;
         }
         if (dispatchActionMatching(GameActionUtils::isDiceAction)) {

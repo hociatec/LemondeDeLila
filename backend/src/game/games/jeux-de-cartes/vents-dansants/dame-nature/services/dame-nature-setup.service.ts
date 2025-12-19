@@ -207,7 +207,9 @@ export class DameNatureSetupService {
       if (draw.card.kind === 'family' || !draw.card.kind) {
         return { card: draw.card, metadata: currentMeta, skipped };
       }
+      // On retire les cartes spéciales des mains initiales, mais on les conserve en défausse pour qu'elles puissent être piochées plus tard.
       skipped.push(draw.card);
+      currentMeta = this.discardCard(currentMeta, draw.card);
     }
     return { card: null, metadata: currentMeta, skipped };
   }

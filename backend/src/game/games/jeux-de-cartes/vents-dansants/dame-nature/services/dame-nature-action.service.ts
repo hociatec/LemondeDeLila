@@ -23,8 +23,13 @@ export class DameNatureActionService {
     current: { id: number; username: string; hand: FamilyCard[]; handCount: number; books: string[] },
     meta: DameNatureMetadata,
   ) {
-    if ((current.hand?.length ?? 0) >= 4) {
-      return { state: this.core.appendLog(state, `${current.username} ne peut pas piocher (main pleine).`), card: null };
+    // On autorise une main temporaire à 5 cartes (pioche puis défausse).
+    if ((current.hand?.length ?? 0) >= 5) {
+      return {
+        state: this.core.appendLog(state, `${current.username} ne peut pas piocher (main pleine).`),
+        card: null,
+        performed: false,
+      };
     }
     const { card, metadata } = this.setup.drawCard(meta);
     dameNatureLog('turn.state', {
@@ -39,7 +44,7 @@ export class DameNatureActionService {
       let logged = this.core.appendLog(state, `Pioche vide : ${current.username} passe son tour.`);
       const polluted = this.applyPollutionTick({ ...logged, metadata }, 'Pioche vide');
       dameNatureLog('draw.empty', { playerId: current.id, username: current.username, pollution: (polluted.metadata as any)?.pollution ?? 0 });
-      return { state: polluted, card: null };
+      return { state: polluted, card: null, performed: true };
     }
     if (card.kind === 'danger') {
       let next = this.core.appendLog(
@@ -56,7 +61,7 @@ export class DameNatureActionService {
         delta: card.pollutionDelta ?? 1,
         pollution: metaAfter.pollution,
       });
-      return { state: next, card, skipAdvance: false };
+      return { state: next, card, skipAdvance: false, performed: true };
     }
     if (card.kind === 'quiz') {
       // Si un bot pioche un quiz, auto-répondre (réponse correcte par défaut) pour éviter de bloquer.
@@ -75,7 +80,7 @@ export class DameNatureActionService {
           auto: true,
           correct,
         });
-        return { state: answered, card, skipAdvance: false };
+        return { state: answered, card, skipAdvance: false, performed: true };
       }
       const pendingQuiz = { playerId: current.id, card };
       const withQuiz: GameStateEntity = {
@@ -99,7 +104,7 @@ export class DameNatureActionService {
         cardId: card.memberId,
         question: card.question ?? card.memberName,
       });
-      return { state: logged, card, skipAdvance: true };
+      return { state: logged, card, skipAdvance: true, performed: true };
     }
     current.hand.push(card);
     current.handCount = current.hand.length;
@@ -116,6 +121,7 @@ export class DameNatureActionService {
         this.appendAction(next, { actorId: current.id, type: 'book', payload: { families: booked.booked } }),
         `${current.username} complète ${booked.booked.length} famille(s): ${booked.booked.join(', ')}.`,
       );
+      next = this.refillHandToFour(next, current, next.metadata as DameNatureMetadata);
     }
     dameNatureLog('draw.family', {
       playerId: current.id,
@@ -125,7 +131,30 @@ export class DameNatureActionService {
       hand: current.handCount,
       books: current.books.length,
     });
-    return { state: next, card };
+    return { state: next, card, performed: true };
+  }
+
+  refillHandToFour(
+    state: GameStateEntity,
+    player: { id: number; username: string; hand: FamilyCard[]; handCount: number; books: string[] },
+    meta: DameNatureMetadata,
+  ): GameStateEntity {
+    let next = state;
+    let currentMeta = meta;
+    let drew = 0;
+    while ((player.hand?.length ?? 0) < 4) {
+      const draw = this.setup.drawFamilyCard(currentMeta);
+      currentMeta = draw.metadata;
+      if (!draw.card) break;
+      player.hand.push(draw.card);
+      player.handCount = player.hand.length;
+      drew += 1;
+    }
+    next = { ...next, metadata: currentMeta, players: next.players };
+    if (drew > 0) {
+      next = this.core.appendLog(next, `${player.username} pioche ${drew} carte(s) pour revenir à 4.`);
+    }
+    return next;
   }
 
   handleAskCard(
@@ -158,6 +187,7 @@ export class DameNatureActionService {
           this.appendAction(next, { actorId: current.id, type: 'book', payload: { families: booked.booked } }),
           `${current.username} complète ${booked.booked.length} famille(s): ${booked.booked.join(', ')}.`,
         );
+        next = this.refillHandToFour(next, current, next.metadata as DameNatureMetadata);
       }
       return { state: next, success: true };
     }

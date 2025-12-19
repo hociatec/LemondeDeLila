@@ -126,16 +126,32 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
       inventory,
     }));
     const extras = this.buildExtrasView(state, { currentId, playerViews, players });
+    const meta = this.getMetadata(state);
     return {
       ...state,
       catalog: {
         phases: PANIER_EXPRESS_PHASES.map((p) => p.id),
         victory: PANIER_EXPRESS_VICTORY,
       },
+      board: {
+        tiles: Array.isArray(meta.tiles) ? meta.tiles : [],
+        positions: meta.positions ?? {},
+        laps: meta.laps ?? {},
+        turns: this.buildBoardTurns(state, meta),
+      },
       actions: actions.map((a) => ({ type: a.type, label: a.type, payload: a.payload ?? {} })),
       pending,
       extras,
     } as GameStateWithActions;
+  }
+
+  private buildBoardTurns(state: GameStateEntity, meta: PanierExpressMetadata): Record<number, number> {
+    const turns: Record<number, number> = {};
+    (state.players ?? []).forEach((p) => {
+      const completed = typeof meta.laps?.[p.id] === 'number' ? meta.laps[p.id] : 0;
+      turns[p.id] = Math.max(0, completed + 1);
+    });
+    return turns;
   }
 
   private buildPendingView(params: {
@@ -210,7 +226,6 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
         { key: 'pressed S', type: 'interface', id: 'shopping' },
         { key: 'pressed B', type: 'interface', id: 'basket' },
         { key: 'pressed I', type: 'interface', id: 'inventory' },
-        { key: 'pressed P', type: 'interface', id: 'position' },
       ],
     };
   }
@@ -429,6 +444,7 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
       tiles: this.setup.buildTiles(),
       decks: this.setup.buildDeckPool(baseState),
       positions: {},
+      laps: {},
       winnerId: null,
       quiz: { pending: {} },
       actionLog: [],
@@ -469,6 +485,7 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
       ...existing,
       decks: this.mergeDecks(defaults.decks, existing.decks),
       positions: { ...defaults.positions, ...(existing.positions ?? {}) },
+      laps: { ...defaults.laps, ...(existing.laps ?? {}) },
       quiz: existing.quiz ?? defaults.quiz,
       actionLog: existing.actionLog ?? defaults.actionLog,
       botProfile: existing.botProfile ?? defaults.botProfile,
@@ -486,7 +503,21 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
     const statuses = this.mergeStatuses({ skipTurn: {} }, meta.statuses);
     const positions = this.ensurePlayerPositions(meta.positions, players);
     const actionLog = Array.isArray(meta.actionLog) ? meta.actionLog : [];
-    return { ...meta, decks, quiz, statuses, positions, actionLog };
+    const laps = this.ensurePlayerLaps(meta.laps, players);
+    return { ...meta, decks, quiz, statuses, positions, laps, actionLog };
+  }
+
+  private ensurePlayerLaps(laps: Record<number, number> | undefined, players: PanierExpressPlayer[]): Record<number, number> {
+    const ensured: Record<number, number> = { ...(laps ?? {}) };
+    players.forEach((p) => {
+      if (typeof ensured[p.id] !== 'number') {
+        ensured[p.id] = 0;
+      }
+      if (ensured[p.id] < -1) {
+        ensured[p.id] = -1;
+      }
+    });
+    return ensured;
   }
 
   private mergeDecks(
@@ -583,9 +614,25 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
     const currentPos = meta.positions[playerId] ?? 0;
     const nextPos = this.movement.moveCircular(tiles.length, currentPos, roll);
     const tile = this.movement.tileAt(tiles, nextPos);
+
+    // Tour de plateau : modifier quand le joueur "repasse" par la case départ.
+    // - Avancer et dépasser la case départ => +1 (ou plus si gros déplacement)
+    // - Reculer et repasser la case départ => -1 (ex: tour 1 -> tour 0)
+    const laps = { ...(meta.laps ?? {}) };
+    const currentLaps = typeof laps[playerId] === 'number' ? laps[playerId] : 0;
+    if (roll != null && roll !== 0 && tiles.length > 0) {
+      // Robuste même si |roll| > tiles.length (move_to_stand, effets, etc.).
+      // Math.floor gère correctement les valeurs négatives (ex: -1/40 => -1).
+      const wraps = Math.floor((currentPos + roll) / tiles.length);
+      laps[playerId] = Math.max(-1, currentLaps + wraps);
+    } else {
+      laps[playerId] = currentLaps;
+    }
+
     const nextMeta: PanierExpressMetadata = {
       ...meta,
       positions: { ...meta.positions, [playerId]: nextPos },
+      laps,
     };
     const nextState: GameStateEntity = { ...ensured, metadata: nextMeta };
     const plural = Math.abs(roll) > 1 ? 'cases' : 'case';
@@ -690,7 +737,7 @@ export class PanierExpressService implements GameRulesAdapter, OnModuleInit {
       const refilled = this.deckPool.set<string>(
         meta.decks as DeckPoolState<string>,
         'events',
-        ['rupture-de-stock', 'stand-ferme', 'promo-surprise', 'orage-au-marche'],
+        this.deckPool.shuffle(['rupture-de-stock', 'stand-ferme', 'promo-surprise', 'orage-au-marche']),
       );
       drawn = this.drawFromPool({ ...meta, decks: refilled as PanierExpressDeckPool }, 'events');
       metadata = drawn.metadata;

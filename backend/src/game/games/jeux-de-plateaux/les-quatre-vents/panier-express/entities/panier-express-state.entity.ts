@@ -63,6 +63,11 @@ export type PanierExpressMetadata = {
   tiles: PanierExpressTile[];
   decks: PanierExpressDeckPool;
   positions: Record<number, number>;
+  /**
+   * Nombre de tours de plateau complétés par joueur (passages sur la case départ).
+   * 0 => le joueur est sur son tour de plateau 1.
+   */
+  laps: Record<number, number>;
   winnerId: number | null;
   quiz: QuizState;
   actionLog: PanierExpressActionLogEntry[];

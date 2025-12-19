@@ -97,8 +97,16 @@ export class PanierExpressSetupService {
   buildDeckPool(baseState?: GameStateEntity): PanierExpressMetadata['decks'] {
     let pool: PanierExpressDeckPool = {};
     pool = this.setDeck(pool, 'courses', this.deckPool.shuffle(this.courseItems()));
-    pool = this.setDeck(pool, 'events', ['rupture-de-stock', 'stand-ferme', 'promo-surprise', 'orage-au-marche']);
-    pool = this.setDeck(pool, 'exchanges', ['echange-fruit-legume', 'donne-une-carte', 'prend-au-hasard']);
+    pool = this.setDeck(
+      pool,
+      'events',
+      this.deckPool.shuffle(['rupture-de-stock', 'stand-ferme', 'promo-surprise', 'orage-au-marche']),
+    );
+    pool = this.setDeck(
+      pool,
+      'exchanges',
+      this.deckPool.shuffle(['echange-fruit-legume', 'donne-une-carte', 'prend-au-hasard']),
+    );
     pool = this.setDeck(pool, 'quizzes', this.buildQuizDeck());
     pool = this.setDeck(pool, 'shoppingLists', this.buildShoppingListDeck());
 

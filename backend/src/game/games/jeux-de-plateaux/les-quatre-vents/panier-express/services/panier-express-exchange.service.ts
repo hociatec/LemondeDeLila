@@ -197,12 +197,18 @@ export class PanierExpressExchangeService {
   private movePlayer(state: GameStateEntity, playerId: number, delta: number, metadata: PanierExpressMetadata): GameStateEntity {
     if (!delta || delta === 0) return { ...state, metadata };
     const positions = { ...(metadata.positions ?? {}) };
+    const laps = { ...(metadata.laps ?? {}) };
     const tiles = Array.isArray(metadata.tiles) ? metadata.tiles : [];
     const total = tiles.length || 1;
     const currentPos = positions[playerId] ?? 0;
+    const wraps = Math.floor((currentPos + delta) / total);
     const nextPos = (currentPos + delta + total) % total;
     positions[playerId] = nextPos;
-    return { ...state, metadata: { ...metadata, positions } };
+
+    const currentLaps = typeof laps[playerId] === 'number' ? laps[playerId] : 0;
+    laps[playerId] = Math.max(-1, currentLaps + wraps);
+
+    return { ...state, metadata: { ...metadata, positions, laps } };
   }
 
   private defaultExchangeDeck(): string[] {

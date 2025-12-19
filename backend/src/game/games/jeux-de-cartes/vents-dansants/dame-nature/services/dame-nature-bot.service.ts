@@ -28,14 +28,20 @@ export class DameNatureBotService {
         .map((e) => {
           const fam = e.payload?.familyId ?? '';
           const member = e.payload?.memberId ?? '';
-          const target = e.payload?.target ?? e.payload?.targetId ?? '';
+          const target = e.payload?.target ?? e.payload?.targetPlayerId ?? e.payload?.targetId ?? '';
           return `${fam}:${member}:${target}`;
         }),
     );
 
-    // Si main vide ou personne en face : pioche
-    if (!me || !me.hand.length || !others.length) {
-      return this.botRunner.choose([{ type: 'draw' }], { state, playerId: botPlayerId }, profile, {
+    const progress =
+      meta.turnProgress?.playerId === botPlayerId
+        ? meta.turnProgress
+        : { playerId: botPlayerId, drew: false, discarded: false };
+    const familyDeck = meta.decks?.family ?? { deck: [], discards: [] };
+    const deckAvailable = (familyDeck.deck?.length ?? 0) + (familyDeck.discards?.length ?? 0) > 0;
+
+    if (!me || !others.length) {
+      return this.botRunner.choose([{ type: 'draw', payload: { playerId: botPlayerId } }], { state, playerId: botPlayerId }, profile, {
         preferTypes: ['draw'],
       });
     }
@@ -62,13 +68,49 @@ export class DameNatureBotService {
     const sortedOthers = [...others].sort((a, b) => (b.handCount ?? 0) - (a.handCount ?? 0));
     const target = sortedOthers[0] ?? null;
 
+    // Règle de tour : 1 pioche + 1 défausse. Si la main est à 5 ou si la pioche est déjà faite, on défausse.
+    const mustDiscard = (me.hand?.length ?? 0) > 4 || (progress.drew && !progress.discarded);
+    if (mustDiscard) {
+      const sorted = [...(me.hand ?? [])].sort((a, b) => {
+        const aBooked = (me.books ?? []).includes(a.familyId) ? 1 : 0;
+        const bBooked = (me.books ?? []).includes(b.familyId) ? 1 : 0;
+        if (aBooked !== bBooked) return bBooked - aBooked;
+        const ac = familyCounts[a.familyId]?.count ?? 0;
+        const bc = familyCounts[b.familyId]?.count ?? 0;
+        if (ac !== bc) return ac - bc;
+        return String(a.memberId).localeCompare(String(b.memberId));
+      });
+      const pickDiscard = sorted[0] ?? null;
+      if (pickDiscard) {
+        return [{ type: 'discard_card', payload: { playerId: botPlayerId, familyId: pickDiscard.familyId, memberId: pickDiscard.memberId } }];
+      }
+    }
+
     const actions: GameSingleActionDto[] = [];
     if (memberId != null && target != null) {
+      // Depuis que l'échange est obligatoire, on doit toujours proposer une carte en contrepartie.
+      const offer = me.hand.find((c) => c.memberId !== String(memberId)) ?? me.hand[0] ?? null;
+      if (!offer) {
+        return this.botRunner.choose([{ type: 'draw', payload: { playerId: botPlayerId } }], { state, playerId: botPlayerId }, profile, {
+          preferTypes: ['draw'],
+        });
+      }
       const key = `${picked?.[0] ?? ''}:${memberId}:${target.id}`;
       if (!recentRequests.has(key)) {
         actions.push({
           type: 'ask_card',
-          payload: { familyId: picked?.[0] ?? families[0].id, memberId, target: target.id, playerId: botPlayerId },
+          payload: {
+            playerId: botPlayerId,
+            familyId: picked?.[0] ?? families[0].id,
+            memberId,
+            target: target.id,
+            targetPlayerId: target.id,
+            // offre
+            giveFamilyId: offer.familyId,
+            giveMemberId: offer.memberId,
+            offerMemberId: offer.memberId,
+            give: offer.memberId,
+          },
         });
       }
     }
