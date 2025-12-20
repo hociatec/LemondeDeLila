@@ -44,7 +44,15 @@ import { NotificationModule } from './notification/notification.module';
             };
         return {
           type: 'mysql' as const,
-          entities: [User, ChatMessage, PrivateMessage, Room, RoomParticipant, RoomBot, BotName],
+          entities: [
+            User,
+            ChatMessage,
+            PrivateMessage,
+            Room,
+            RoomParticipant,
+            RoomBot,
+            BotName,
+          ],
           synchronize: false,
           logging: false,
           ...dbConfig,

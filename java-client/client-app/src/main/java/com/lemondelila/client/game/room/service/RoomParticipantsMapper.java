@@ -20,7 +20,7 @@ public final class RoomParticipantsMapper {
         List<PlayerState> players = new ArrayList<>();
         if (node != null && node.isArray()) {
             node.forEach(p -> players.add(new PlayerState(
-                    p.path("id").isInt() ? p.get("id").asInt() : null,
+                    readId(p),
                     p.path("username").asText("Joueur")
             )));
         }
@@ -31,7 +31,7 @@ public final class RoomParticipantsMapper {
         List<BotState> bots = new ArrayList<>();
         if (node != null && node.isArray()) {
             node.forEach(b -> bots.add(new BotState(
-                    b.path("id").isInt() ? b.get("id").asInt() : null,
+                    readId(b),
                     b.path("name").asText("Bot")
             )));
         }
@@ -46,15 +46,21 @@ public final class RoomParticipantsMapper {
         List<Integer> order = new ArrayList<>();
 
         for (JsonNode p : playersNode) {
-            Integer id = p.path("id").isInt() ? p.get("id").asInt() : null;
+            Integer id = readId(p);
             String name = p.path("username").asText("Joueur");
             boolean isBot = p.path("isBot").asBoolean(false);
             if (isBot) {
+                if (id == null || id <= 0) {
+                    Integer resolved = resolveExistingBotId(tableState, name);
+                    if (resolved != null) {
+                        id = resolved;
+                    }
+                }
                 mergeBot(bots, new BotState(id, name));
             } else {
                 players.add(new PlayerState(id, name));
             }
-            if (id != null && order.stream().noneMatch(existing -> Objects.equals(existing, id))) {
+            if (id != null && !order.contains(id)) {
                 order.add(id);
             }
         }
@@ -62,6 +68,51 @@ public final class RoomParticipantsMapper {
         tableState.updatePlayers(deduplicatePlayers(players));
         tableState.updateBots(deduplicateBots(bots));
         tableState.updateParticipantOrder(order);
+    }
+
+    private static Integer resolveExistingBotId(TableState tableState, String name) {
+        if (tableState == null) return null;
+        String key = normalize(name);
+        if (key.isEmpty()) return null;
+        for (BotState bot : tableState.bots()) {
+            if (bot == null) continue;
+            Integer id = bot.id();
+            if (id == null || id <= 0) continue;
+            if (normalize(bot.name()).equals(key)) {
+                return id;
+            }
+        }
+        return null;
+    }
+
+    private static Integer readId(JsonNode node) {
+        if (node == null) return null;
+        JsonNode id = node.path("id");
+        if (id == null || id.isMissingNode() || id.isNull()) {
+            return null;
+        }
+        if (id.canConvertToInt()) {
+            return id.intValue();
+        }
+        if (id.isNumber()) {
+            long value = id.longValue();
+            if (value >= Integer.MIN_VALUE && value <= Integer.MAX_VALUE) {
+                return (int) value;
+            }
+            return null;
+        }
+        if (id.isTextual()) {
+            String raw = id.asText(null);
+            if (raw == null) return null;
+            String trimmed = raw.trim();
+            if (trimmed.isEmpty()) return null;
+            try {
+                return Integer.parseInt(trimmed);
+            } catch (NumberFormatException ex) {
+                return null;
+            }
+        }
+        return null;
     }
 
     private static List<BotState> deduplicateBots(List<BotState> bots) {

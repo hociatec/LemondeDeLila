@@ -2,7 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { GameSingleActionDto } from '../../../engine/dto/game-action.dto';
 import { GameStateEntity } from '../../../core/entities/game-state.entity';
 import type { GameRulesAdapter } from '../../../engine/interfaces/game-rules-adapter.interface';
-import { BotStrategyService, BotDecisionOptions, BotProfile } from './bot-strategy.service';
+import {
+  BotStrategyService,
+  BotDecisionOptions,
+  BotProfile,
+} from './bot-strategy.service';
 
 @Injectable()
 export class BotRunnerService {

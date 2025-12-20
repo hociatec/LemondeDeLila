@@ -52,6 +52,7 @@ import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
+import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -75,6 +76,7 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
     private final GameHistoryController history;
     private final TableState tableState;
     private final Runnable startHandler;
+    private final Runnable resetHandler;
     private final GameStatusPanel statusPanel;
     private final GameQuizComponent quizComponent;
     private final PrimaryActionDescriptor primaryAction;
@@ -146,6 +148,7 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
                                            Optional<GameQuizComponentFactory> quizFactory,
                                            PrimaryActionDescriptor primaryAction,
                                            Runnable startHandler,
+                                           Runnable resetHandler,
                                            boolean autoPrimaryAfterStart) {
         super(new BorderLayout(8, 8));
         setFocusable(true);
@@ -157,6 +160,7 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         this.announcementService = new GameAnnouncementService(this.tableState, msg -> this.emitter.announceEvent(msg));
         this.primaryAction = primaryAction;
         this.startHandler = startHandler;
+        this.resetHandler = resetHandler;
         this.autoPrimaryAfterStart = autoPrimaryAfterStart;
         this.turnController = Objects.requireNonNull(turnController, "turnController");
         var session = EncryptedSessionVault.defaultVault().load();
@@ -319,7 +323,7 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         topInfo.add(basketLabel);
         topInfo.add(inventoryLabel);
         infoPanel.add(topInfo, BorderLayout.NORTH);
-        javax.swing.JLabel shortcutsLabel = new javax.swing.JLabel("Raccourcis : [Espace] piocher, [Entrée] lancer/valider");
+        javax.swing.JLabel shortcutsLabel = new javax.swing.JLabel("Raccourcis : [Espace] piocher, [Entrée] lancer/valider, [X] réinitialiser");
         AccessibleDecorator.apply(shortcutsLabel, AccessibleSpec.builder()
                 .name("Raccourcis clavier")
                 .description("Espace pour piocher, Entrée pour lancer/valider quand disponible")
@@ -365,6 +369,7 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
             if (quizHandler.submitIfActive()) return;
             handleDrawShortcut();
         });
+        // Le raccourci X est géré au niveau "table" (RoomTableScreen) pour fonctionner quel que soit le focus.
         // Demande de carte : navigation du mini-dialogue
         router.bind("TAB", "ask.tab", () -> {
             if (dialogManager.isAskDialogOpen()) {
@@ -728,6 +733,128 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
             shortcutBinder = new GameShortcutBinder(windowMapRef, actionMapRef);
         }
         shortcutBinder.rebind(dynamicShortcuts, this::handleInterfaceShortcut, this::handleActionShortcut);
+        // Raccourcis réservés au client : réappliquer après les bindings dynamiques.
+        KeyboardEventRouter router = new KeyboardEventRouter(windowMapRef, actionMapRef);
+        // Le raccourci X est géré au niveau "table" (RoomTableScreen) pour fonctionner quel que soit le focus.
+    }
+
+    private void handleResetShortcut() {
+        if (resetHandler == null) {
+            return;
+        }
+        if (!isTableStarted()) {
+            return;
+        }
+        if (dialogManager != null && (dialogManager.isAskDialogOpen() || dialogManager.isDiscardDialogOpen())) {
+            return;
+        }
+        boolean confirmed = GameResetDialog.confirm(this);
+        if (!confirmed) {
+            emitter.announceEvent("Réinitialisation annulée.");
+            return;
+        }
+        emitter.announceEvent("Réinitialisation de la partie demandée.");
+        resetHandler.run();
+    }
+
+    private boolean confirmResetGame() {
+        java.awt.Window owner = SwingUtilities.getWindowAncestor(this);
+        if (owner == null) {
+            owner = javax.swing.JOptionPane.getFrameForComponent(this);
+        }
+        final boolean[] confirmed = {false};
+
+        JDialog dialog = new JDialog(owner, "Réinitialiser la partie", java.awt.Dialog.ModalityType.APPLICATION_MODAL);
+        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        dialog.setResizable(false);
+        dialog.setFocusTraversalKeysEnabled(false);
+        dialog.getAccessibleContext().setAccessibleName("Réinitialiser la partie");
+        dialog.getAccessibleContext().setAccessibleDescription("Confirmation de réinitialisation. Utilisez les flèches haut/bas ou Tab pour choisir Oui ou Non, puis Entrée.");
+
+        JLabel label = new JLabel("<html>Réinitialiser la partie et revenir en préparation ?<br/><br/>Vous pourrez à nouveau ajouter/retirer des joueurs.</html>");
+        javax.swing.JButton yes = new javax.swing.JButton("Oui");
+        javax.swing.JButton no = new javax.swing.JButton("Non");
+        label.getAccessibleContext().setAccessibleName("Confirmation");
+        label.getAccessibleContext().setAccessibleDescription("Réinitialiser la partie et revenir en préparation. Vous pourrez à nouveau ajouter ou retirer des joueurs.");
+        yes.getAccessibleContext().setAccessibleName("Oui");
+        no.getAccessibleContext().setAccessibleName("Non");
+
+        yes.addActionListener(e -> {
+            confirmed[0] = true;
+            dialog.dispose();
+        });
+        no.addActionListener(e -> dialog.dispose());
+
+        javax.swing.JPanel buttons = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 8, 0));
+        buttons.add(no);
+        buttons.add(yes);
+
+        javax.swing.JPanel content = new javax.swing.JPanel(new BorderLayout(8, 12));
+        content.setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 12, 12));
+        content.add(label, BorderLayout.CENTER);
+        content.add(buttons, BorderLayout.SOUTH);
+        dialog.setContentPane(content);
+        dialog.getRootPane().setDefaultButton(yes);
+
+        InputMap im = dialog.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        ActionMap am = dialog.getRootPane().getActionMap();
+        Runnable focusYes = () -> {
+            dialog.getRootPane().setDefaultButton(yes);
+            yes.requestFocusInWindow();
+        };
+        Runnable focusNo = () -> {
+            dialog.getRootPane().setDefaultButton(no);
+            no.requestFocusInWindow();
+        };
+        am.put("reset.focus.next", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                KeyboardFocusManager.getCurrentKeyboardFocusManager().focusNextComponent();
+            }
+        });
+        am.put("reset.focus.prev", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                KeyboardFocusManager.getCurrentKeyboardFocusManager().focusPreviousComponent();
+            }
+        });
+        am.put("reset.choice.next", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (yes.isFocusOwner()) {
+                    focusNo.run();
+                } else {
+                    focusYes.run();
+                }
+            }
+        });
+        am.put("reset.choice.prev", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (no.isFocusOwner()) {
+                    focusYes.run();
+                } else {
+                    focusNo.run();
+                }
+            }
+        });
+        am.put("reset.cancel", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dialog.dispose();
+            }
+        });
+        im.put(KeyStroke.getKeyStroke("TAB"), "reset.focus.next");
+        im.put(KeyStroke.getKeyStroke("shift TAB"), "reset.focus.prev");
+        im.put(KeyStroke.getKeyStroke("UP"), "reset.choice.prev");
+        im.put(KeyStroke.getKeyStroke("DOWN"), "reset.choice.next");
+        im.put(KeyStroke.getKeyStroke("ESCAPE"), "reset.cancel");
+
+        SwingUtilities.invokeLater(focusNo);
+        dialog.pack();
+        dialog.setLocationRelativeTo(owner);
+        dialog.setVisible(true);
+        return confirmed[0];
     }
 
     private void handleInterfaceShortcut(String id) {
@@ -816,6 +943,13 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         router.bind("ESCAPE", "ask.modal.escape", () -> {
             dialogManager.cancelAskDialog();
             closeAskModal();
+        });
+        router.bind("X", "ask.modal.reset", () -> {
+            // Permettre la rÇ¸initialisation mÇ¦me quand la modale est ouverte (sinon l'utilisateur doit faire Echap puis X).
+            dialogManager.cancelAskDialog();
+            closeAskModal();
+            if (quizHandler.submitIfActive()) return;
+            handleResetShortcut();
         });
     }
 

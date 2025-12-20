@@ -68,6 +68,7 @@ public final class RoomLifecycleService implements AutoCloseable {
                 detailsState.setRoomId(null);
                 detailsState.setGameType(null);
                 detailsState.setRoomName(null);
+                detailsState.setSpectator(false);
                 realtimeService.resetTracking();
                 return;
             }
@@ -80,7 +81,7 @@ public final class RoomLifecycleService implements AutoCloseable {
                 detailsState.setGameType(gameType);
             }
             try {
-                realtimeSubscription = realtimeService.subscribe(roomId);
+                realtimeSubscription = realtimeService.subscribe(roomId, detailsState.spectator());
             } catch (Exception ex) {
                 String reason = "Impossible d'ouvrir la connexion temps réel";
                 LOGGER.warn(reason, ex);
@@ -129,6 +130,7 @@ public final class RoomLifecycleService implements AutoCloseable {
         detailsState.setRoomId(room.id());
         detailsState.setGameType(room.gameType());
         detailsState.setRoomName(room.name());
+        detailsState.setSpectator(false);
     }
 
     private void onBotAdded(BotAdded event) {

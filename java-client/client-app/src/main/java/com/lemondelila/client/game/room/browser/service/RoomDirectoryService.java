@@ -65,6 +65,15 @@ public final class RoomDirectoryService {
         return new JoinedRoom(id, gameType, roomName);
     }
 
+    public JoinedRoom spectatePublicRoom(int roomId) throws IOException, InterruptedException {
+        JsonNode response = apiClient.request("rooms.public.spectate", Map.of("roomId", roomId), JsonNode.class);
+        JsonNode room = response.path("room");
+        int id = response.path("roomId").asInt(roomId);
+        String gameType = room.path("gameType").asText("");
+        String roomName = extractRoomName(room, response);
+        return new JoinedRoom(id, gameType, roomName);
+    }
+
     public JoinedRoom respondInvite(String invitationId, boolean accept) throws IOException, InterruptedException {
         JsonNode response = apiClient.request("rooms.invite.respond", Map.of("invitationId", invitationId, "accept", accept), JsonNode.class);
         if (!accept) {

@@ -14,7 +14,9 @@ describe('DameNatureService', () => {
     const minMembers = opts?.minMembers ?? 1;
     const families = setup.families();
     return (
-      families.find((f) => f.id !== excludeId && (f.members?.length ?? 0) >= minMembers) ??
+      families.find(
+        (f) => f.id !== excludeId && (f.members?.length ?? 0) >= minMembers,
+      ) ??
       families.find((f) => (f.members?.length ?? 0) >= minMembers) ??
       families[0]
     );
@@ -51,15 +53,29 @@ describe('DameNatureService', () => {
     state.turnIndex = 0;
 
     state.metadata.decks.family.deck = [
-      { kind: 'family', familyId: fam.id, familyName: fam.name, memberId: 'x', memberName: 'X', role: 'Membre' },
+      {
+        kind: 'family',
+        familyId: fam.id,
+        familyName: fam.name,
+        memberId: 'x',
+        memberName: 'X',
+        role: 'Membre',
+      },
       ...(state.metadata.decks.family.deck ?? []),
     ];
 
     const me: any = state.players.find((p: any) => p.id === 1);
     const card = me.hand[0];
 
-    const afterDiscard: any = service.applyActions(state as any, [
-      { type: 'discard_card', payload: { playerId: 1, memberId: card.memberId, familyId: card.familyId } },
+    const afterDiscard: any = service.applyActions(state, [
+      {
+        type: 'discard_card',
+        payload: {
+          playerId: 1,
+          memberId: card.memberId,
+          familyId: card.familyId,
+        },
+      },
     ] as any);
 
     expect(afterDiscard.turn.currentPlayerId).toBe(2);
@@ -79,22 +95,48 @@ describe('DameNatureService', () => {
     state.turn = { currentPlayerId: 1, direction: 1 };
     state.turnIndex = 0;
 
-    state.metadata.decks.family.deck = [{ kind: 'family', familyId: fam.id, familyName: fam.name, memberId: 'x', memberName: 'X', role: 'Membre' }];
+    state.metadata.decks.family.deck = [
+      {
+        kind: 'family',
+        familyId: fam.id,
+        familyName: fam.name,
+        memberId: 'x',
+        memberName: 'X',
+        role: 'Membre',
+      },
+    ];
     state.metadata.decks.family.discards = [];
 
-    const afterDraw: any = service.applyActions(state as any, [{ type: 'draw', payload: { playerId: 1 } }] as any);
+    const afterDraw: any = service.applyActions(state, [
+      { type: 'draw', payload: { playerId: 1 } },
+    ] as any);
     expect(afterDraw.turn.currentPlayerId).toBe(1);
-    expect(afterDraw.metadata.turnProgress).toMatchObject({ playerId: 1, drew: true, discarded: false });
+    expect(afterDraw.metadata.turnProgress).toMatchObject({
+      playerId: 1,
+      drew: true,
+      discarded: false,
+    });
 
     const me: any = afterDraw.players.find((p: any) => p.id === 1);
     const discard = me.hand[0];
 
-    const afterDiscard: any = service.applyActions(afterDraw as any, [
-      { type: 'discard_card', payload: { playerId: 1, memberId: discard.memberId, familyId: discard.familyId } },
+    const afterDiscard: any = service.applyActions(afterDraw, [
+      {
+        type: 'discard_card',
+        payload: {
+          playerId: 1,
+          memberId: discard.memberId,
+          familyId: discard.familyId,
+        },
+      },
     ] as any);
 
     expect(afterDiscard.turn.currentPlayerId).toBe(2);
-    expect(afterDiscard.metadata.turnProgress).toMatchObject({ playerId: 2, drew: false, discarded: false });
+    expect(afterDiscard.metadata.turnProgress).toMatchObject({
+      playerId: 2,
+      drew: false,
+      discarded: false,
+    });
   });
 
   it('completes a family and refills hand to 4', () => {
@@ -130,7 +172,9 @@ describe('DameNatureService', () => {
     ];
     state.metadata.decks.family.discards = [];
 
-    const afterDraw: any = service.applyActions(state as any, [{ type: 'draw', payload: { playerId: 1 } }] as any);
+    const afterDraw: any = service.applyActions(state, [
+      { type: 'draw', payload: { playerId: 1 } },
+    ] as any);
     const afterMe: any = afterDraw.players.find((p: any) => p.id === 1);
 
     expect(afterMe.books).toContain(fam.id);
@@ -149,8 +193,16 @@ describe('DameNatureService', () => {
     state.turn = { currentPlayerId: 1, direction: 1 };
     state.turnIndex = 0;
 
-    const afterAsk: any = service.applyActions(state as any, [
-      { type: 'ask_card', payload: { playerId: 1, target: 2, familyId: fam.id, memberId: fam.members?.[0]?.id ?? 'x' } },
+    const afterAsk: any = service.applyActions(state, [
+      {
+        type: 'ask_card',
+        payload: {
+          playerId: 1,
+          target: 2,
+          familyId: fam.id,
+          memberId: fam.members?.[0]?.id ?? 'x',
+        },
+      },
     ] as any);
 
     expect(afterAsk.metadata.pendingAsk ?? null).toBeNull();
@@ -180,15 +232,87 @@ describe('DameNatureService', () => {
     a.hand = [asFamilyCard(fam, fam.members[1])];
     a.handCount = a.hand.length;
 
-    const afterAsk: any = service.applyActions(state as any, [
+    const afterAsk: any = service.applyActions(state, [
       {
         type: 'ask_card',
-        payload: { playerId: 1, target: 2, familyId: fam.id, memberId: want, offerMemberId: a.hand[0].memberId },
+        payload: {
+          playerId: 1,
+          target: 2,
+          familyId: fam.id,
+          memberId: want,
+          offerMemberId: a.hand[0].memberId,
+        },
       },
     ] as any);
 
     expect(afterAsk.metadata.pendingAsk ?? null).toBeNull();
     expect(afterAsk.turn.currentPlayerId).toBe(1);
+  });
+
+  it('allows only one ask_card per turn', () => {
+    const fam = pickFamily({ minMembers: 2 });
+    const want = fam.members[0];
+    const offer = fam.members[1];
+
+    const state: any = service.hydrateInitialState({
+      players: [
+        { id: 1, username: 'A' },
+        { id: 2, username: 'B' },
+      ],
+      status: 'started',
+    } as any);
+    state.turn = { currentPlayerId: 1, direction: 1 };
+    state.turnIndex = 0;
+
+    const a: any = state.players.find((p: any) => p.id === 1);
+    a.hand = [asFamilyCard(fam, offer)];
+    a.handCount = a.hand.length;
+
+    const b: any = state.players.find((p: any) => p.id === 2);
+    b.hand = [asFamilyCard(fam, want)];
+    b.handCount = b.hand.length;
+
+    const afterAsk: any = service.applyActions(state, [
+      {
+        type: 'ask_card',
+        payload: {
+          playerId: 1,
+          target: 2,
+          familyId: fam.id,
+          memberId: want.id,
+          offerMemberId: offer.id,
+        },
+      },
+    ] as any);
+    expect(afterAsk.metadata.pendingAsk).toBeTruthy();
+    expect(afterAsk.turn.currentPlayerId).toBe(2);
+
+    const afterRefuse: any = service.applyActions(afterAsk, [
+      {
+        type: 'answer_ask_card_refuse',
+        payload: { accept: false, playerId: 2 },
+      },
+    ] as any);
+    expect(afterRefuse.metadata.pendingAsk ?? null).toBeNull();
+    expect(afterRefuse.turn.currentPlayerId).toBe(1);
+
+    const available: any[] = service.getAvailableActions(afterRefuse, 1) as any;
+    expect(available.some((a: any) => a.type === 'ask_card')).toBe(false);
+
+    const afterSecondAsk: any = service.applyActions(afterRefuse, [
+      {
+        type: 'ask_card',
+        payload: {
+          playerId: 1,
+          target: 2,
+          familyId: fam.id,
+          memberId: want.id,
+          offerMemberId: offer.id,
+        },
+      },
+    ] as any);
+    expect(afterSecondAsk.metadata.pendingAsk ?? null).toBeNull();
+    expect(afterSecondAsk.turn.currentPlayerId).toBe(1);
   });
 
   it('bot: ask_card includes an offered card', () => {
@@ -206,13 +330,20 @@ describe('DameNatureService', () => {
     state.turnIndex = 1;
 
     const bot = state.players.find((p: any) => p.id === 2);
-    bot.hand = [asFamilyCard(fam1, fam1.members[0]), asFamilyCard(fam2, fam2.members[0])];
+    bot.hand = [
+      asFamilyCard(fam1, fam1.members[0]),
+      asFamilyCard(fam2, fam2.members[0]),
+    ];
     bot.handCount = bot.hand.length;
 
-    const actions = botService.getBotActions(state as any, 2);
+    const actions = botService.getBotActions(state, 2);
     const ask = actions.find((a: any) => a.type === 'ask_card');
     if (!ask) return;
-    expect(ask.payload.offerMemberId ?? ask.payload.giveMemberId ?? null).toBeTruthy();
+    expect(ask.payload).toBeDefined();
+    const payload: any = ask.payload ?? {};
+    expect(
+      payload.offerMemberId ?? payload.giveMemberId ?? null,
+    ).toBeTruthy();
   });
 
   it('bot: ask_card only requests a card that target actually has', () => {
@@ -238,11 +369,13 @@ describe('DameNatureService', () => {
     bot.handCount = bot.hand.length;
     bot.books = [];
 
-    const actions = botService.getBotActions(state as any, 2);
+    const actions = botService.getBotActions(state, 2);
     const ask = actions.find((a: any) => a.type === 'ask_card');
     if (!ask) return;
     const requestedMemberId = ask.payload?.memberId ?? null;
-    expect(target.hand.some((c: any) => c.memberId === requestedMemberId)).toBe(true);
+    expect(target.hand.some((c: any) => c.memberId === requestedMemberId)).toBe(
+      true,
+    );
   });
 
   it('bot: discards when it already drew', () => {
@@ -271,7 +404,7 @@ describe('DameNatureService', () => {
     ];
     bot.handCount = bot.hand.length;
 
-    const actions = botService.getBotActions(state as any, 2);
+    const actions = botService.getBotActions(state, 2);
     expect(actions[0]?.type).toBe('discard_card');
   });
 
@@ -298,12 +431,25 @@ describe('DameNatureService', () => {
     };
 
     const b = state.players.find((p: any) => p.id === 2);
-    b.hand = [{ kind: 'family', familyId: fam.id, familyName: fam.name, memberId: have, memberName: 'Have', role: 'Membre' }];
+    b.hand = [
+      {
+        kind: 'family',
+        familyId: fam.id,
+        familyName: fam.name,
+        memberId: have,
+        memberName: 'Have',
+        role: 'Membre',
+      },
+    ];
     b.handCount = b.hand.length;
 
-    const actions = service.getAvailableActions(state as any, 2);
-    expect(actions.some((a: any) => a.type === 'answer_ask_card_accept')).toBe(false);
-    expect(actions.some((a: any) => a.type === 'answer_ask_card_refuse')).toBe(true);
+    const actions = service.getAvailableActions(state, 2);
+    expect(actions.some((a: any) => a.type === 'answer_ask_card_accept')).toBe(
+      false,
+    );
+    expect(actions.some((a: any) => a.type === 'answer_ask_card_refuse')).toBe(
+      true,
+    );
   });
 
   it('exposeStateForUser exposes askTargetHands', () => {
@@ -317,7 +463,7 @@ describe('DameNatureService', () => {
     state.turn = { currentPlayerId: 1, direction: 1 };
     state.turnIndex = 0;
 
-    const exposed: any = service.exposeStateForUser(state as any, 1);
+    const exposed: any = service.exposeStateForUser(state, 1);
     expect(exposed.extras.askTargetHands).toBeTruthy();
     expect(Array.isArray(exposed.extras.askTargetHands['2'])).toBe(true);
   });
@@ -345,16 +491,22 @@ describe('DameNatureService', () => {
     b.handCount = b.hand.length;
     b.books = [fam.id];
 
-    const exposedForA: any = service.exposeStateForUser(state as any, 1);
+    const exposedForA: any = service.exposeStateForUser(state, 1);
     expect(exposedForA.extras.hand).toEqual([]);
     expect(exposedForA.extras.handCards).toEqual([]);
     expect(exposedForA.extras.books).toEqual([]);
     expect(exposedForA.extras.askTargetHands).toEqual({});
-    expect(exposedForA.extras.playerViews.find((v: any) => v.id === 1)?.hand).toEqual([]);
-    expect(exposedForA.extras.playerViews.find((v: any) => v.id === 1)?.books).toEqual([]);
-    expect(exposedForA.extras.playerViews.find((v: any) => v.id === 1)?.handCount).toBeGreaterThan(0);
+    expect(
+      exposedForA.extras.playerViews.find((v: any) => v.id === 1)?.hand,
+    ).toEqual([]);
+    expect(
+      exposedForA.extras.playerViews.find((v: any) => v.id === 1)?.books,
+    ).toEqual([]);
+    expect(
+      exposedForA.extras.playerViews.find((v: any) => v.id === 1)?.handCount,
+    ).toBeGreaterThan(0);
 
-    const exposedGeneric: any = service.exposeState(state as any);
+    const exposedGeneric: any = service.exposeState(state);
     expect(exposedGeneric.extras.hand).toEqual([]);
     expect(exposedGeneric.extras.handCards).toEqual([]);
     expect(exposedGeneric.extras.books).toEqual([]);
@@ -386,12 +538,14 @@ describe('DameNatureService', () => {
       },
     ];
 
-    const after: any = service.applyActions(state as any, [{ type: 'draw', payload: { playerId: 1 } }] as any);
+    const after: any = service.applyActions(state, [
+      { type: 'draw', payload: { playerId: 1 } },
+    ] as any);
     expect(after.metadata.pollutionByPlayer['1']).toBe(2);
     expect(after.metadata.pollutionByPlayer['2'] ?? 0).toBe(0);
 
-    const exposedA: any = service.exposeStateForUser(after as any, 1);
-    const exposedB: any = service.exposeStateForUser(after as any, 2);
+    const exposedA: any = service.exposeStateForUser(after, 1);
+    const exposedB: any = service.exposeStateForUser(after, 2);
     expect(exposedA.metadata.pollution).toBe(2);
     expect(exposedB.metadata.pollution).toBe(0);
   });

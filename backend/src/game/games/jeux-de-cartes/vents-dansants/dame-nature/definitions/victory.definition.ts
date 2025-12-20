@@ -7,14 +7,22 @@ import { DameNatureMetadata } from '../services/dame-nature.service';
 export const DAME_NATURE_VICTORY: VictoryCondition[] = [
   {
     id: 'books-goal',
-    description: "Atteindre l'objectif de familles complétées avant la pollution max.",
+    description:
+      "Atteindre l'objectif de familles complétées avant la pollution max.",
     check: (state: GameStateEntity) => {
       const meta = state.metadata as DameNatureMetadata | undefined;
       if (!meta) return false;
       const players = state.players ?? [];
-      const totalBooks = players.reduce((acc, p) => acc + ((p as any).books?.length ?? 0), 0);
+      const totalBooks = players.reduce(
+        (acc, p) => acc + ((p as any).books?.length ?? 0),
+        0,
+      );
       if (totalBooks >= meta.familyGoal) {
-        return { finished: true, winnerId: 'cooperative', details: { totalBooks } };
+        return {
+          finished: true,
+          winnerId: 'cooperative',
+          details: { totalBooks },
+        };
       }
       return false;
     },
@@ -25,10 +33,16 @@ export const DAME_NATURE_VICTORY: VictoryCondition[] = [
     check: (state: GameStateEntity) => {
       const meta = state.metadata as DameNatureMetadata | undefined;
       if (!meta) return false;
-      const pollutions = Object.values(meta.pollutionByPlayer ?? {}).filter((v) => typeof v === 'number') as number[];
+      const pollutions = Object.values(meta.pollutionByPlayer ?? {}).filter(
+        (v) => typeof v === 'number',
+      );
       const worst = pollutions.length ? Math.max(...pollutions) : 0;
       if (worst >= meta.maxPollution) {
-        return { finished: true, winnerId: null, details: { pollution: worst } };
+        return {
+          finished: true,
+          winnerId: null,
+          details: { pollution: worst },
+        };
       }
       return false;
     },

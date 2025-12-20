@@ -4,7 +4,7 @@ import { Injectable } from '@nestjs/common';
 export class BoardMovementService {
   moveCircular(length: number, current: number, steps: number): number {
     if (length <= 0) return current;
-    const next = ((current + steps) % length + length) % length;
+    const next = (((current + steps) % length) + length) % length;
     return next;
   }
 

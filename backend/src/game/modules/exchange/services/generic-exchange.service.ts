@@ -4,10 +4,14 @@ export type ExchangeOffer<TItem = any> = { give: TItem; take: TItem };
 
 @Injectable()
 export class GenericExchangeService {
-  buildActions<TItem>(state: { players: any[] }, playerId: number, inventoryKey = 'inventory'): ExchangeOffer<TItem>[] {
+  buildActions<TItem>(
+    state: { players: any[] },
+    playerId: number,
+    inventoryKey = 'inventory',
+  ): ExchangeOffer<TItem>[] {
     const players = state.players ?? [];
     const self = players.find((p) => p.id === playerId);
-    if (!self || !(self[inventoryKey]?.length)) return [];
+    if (!self || !self[inventoryKey]?.length) return [];
 
     const actions: ExchangeOffer<TItem>[] = [];
     players.forEach((p) => {

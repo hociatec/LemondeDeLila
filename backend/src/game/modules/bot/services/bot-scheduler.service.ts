@@ -55,7 +55,9 @@ export class BotSchedulerService {
   private isRoomNotFound(err: unknown): boolean {
     if (err instanceof NotFoundException) return true;
     const message = err instanceof Error ? err.message : String(err ?? '');
-    return message.includes('Room introuvable') || message.includes('Table introuvable');
+    return (
+      message.includes('Room introuvable') ||
+      message.includes('Table introuvable')
+    );
   }
 }
-

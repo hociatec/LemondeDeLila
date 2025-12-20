@@ -17,6 +17,7 @@ public final class TableState {
     private boolean isPrivate = false;
     private Integer ownerId;
     private String ownerUsername;
+    private int spectatorCount = 0;
     private final List<BotState> bots = new ArrayList<>();
     private final List<PlayerState> players = new ArrayList<>();
     private final List<Integer> participantOrder = new ArrayList<>();
@@ -43,6 +44,8 @@ public final class TableState {
     public Integer ownerId() { return ownerId; }
 
     public String ownerUsername() { return ownerUsername; }
+
+    public int spectatorCount() { return spectatorCount; }
 
     public boolean started() {
         return started;
@@ -99,6 +102,7 @@ public final class TableState {
         this.isPrivate = false;
         this.ownerId = null;
         this.ownerUsername = null;
+        this.spectatorCount = 0;
         bots.clear();
         players.clear();
         participantOrder.clear();
@@ -116,6 +120,7 @@ public final class TableState {
         this.isPrivate = false;
         this.ownerId = null;
         this.ownerUsername = null;
+        this.spectatorCount = 0;
         bots.clear();
         players.clear();
         participantOrder.clear();
@@ -170,6 +175,10 @@ public final class TableState {
     public void updateOwner(Integer ownerId, String ownerUsername) {
         this.ownerId = ownerId;
         this.ownerUsername = ownerUsername;
+    }
+
+    public void updateSpectatorCount(int spectatorCount) {
+        this.spectatorCount = Math.max(0, spectatorCount);
     }
 
     public void updateTurn(int round, int index, int direction) {

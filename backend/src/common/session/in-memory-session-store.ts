@@ -1,4 +1,7 @@
-import type { SessionState, SessionStateStore } from './session-store.interface';
+import type {
+  SessionState,
+  SessionStateStore,
+} from './session-store.interface';
 
 export class InMemorySessionStore implements SessionStateStore {
   private readonly sessions = new Map<string, SessionState>();
@@ -15,4 +18,3 @@ export class InMemorySessionStore implements SessionStateStore {
     this.sessions.delete(connectionId);
   }
 }
-

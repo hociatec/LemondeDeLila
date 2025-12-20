@@ -1,5 +1,8 @@
 import { GameStateEntity } from '../../core/entities/game-state.entity';
-import { GameSingleActionDto, GameStateWithActions } from '../dto/game-action.dto';
+import {
+  GameSingleActionDto,
+  GameStateWithActions,
+} from '../dto/game-action.dto';
 import type { BotStrategy } from '../../modules/bot/bot-strategy.interface';
 
 export interface GameRulesAdapter {
@@ -12,11 +15,17 @@ export interface GameRulesAdapter {
   readonly maxPlayers?: number;
 
   hydrateInitialState(baseState: GameStateEntity): GameStateEntity;
-  applyActions(state: GameStateEntity, actions: GameSingleActionDto[]): GameStateEntity;
+  applyActions(
+    state: GameStateEntity,
+    actions: GameSingleActionDto[],
+  ): GameStateEntity;
   /**
    * Optionnel : suggère des actions pour un bot donné dans l’état courant.
    */
-  getBotActions?(state: GameStateEntity, botPlayerId: number): GameSingleActionDto[] | null;
+  getBotActions?(
+    state: GameStateEntity,
+    botPlayerId: number,
+  ): GameSingleActionDto[] | null;
 
   /**
    * Optionnel : stratégie de bot plus riche (IA, heuristique).
@@ -26,20 +35,30 @@ export interface GameRulesAdapter {
   /**
    * Optionnel : liste des actions légales pour un joueur donné.
    */
-  getAvailableActions?(state: GameStateEntity, playerId: number): GameSingleActionDto[];
+  getAvailableActions?(
+    state: GameStateEntity,
+    playerId: number,
+  ): GameSingleActionDto[];
 
   /**
    * Optionnel : validation personnalisée des acteurs.
    * Si retourne true, le moteur ne bloque pas sur currentPlayerId.
    */
-  validateActor?(state: GameStateEntity, actions: GameSingleActionDto[], actorId: number | null): boolean;
+  validateActor?(
+    state: GameStateEntity,
+    actions: GameSingleActionDto[],
+    actorId: number | null,
+  ): boolean;
 
   /**
    * Optionnel : fournit un état enrichi avec actions/pending pour le client générique.
    */
   exposeState?(state: GameStateEntity): GameStateWithActions;
 
-  exposeStateForUser?(state: GameStateEntity, userId: number): GameStateWithActions;
+  exposeStateForUser?(
+    state: GameStateEntity,
+    userId: number,
+  ): GameStateWithActions;
 }
 
 export type GameDefinition = {

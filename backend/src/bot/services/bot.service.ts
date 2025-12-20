@@ -22,7 +22,11 @@ export class BotService {
     @InjectRepository(BotName) private readonly botNames: Repository<BotName>,
   ) {}
 
-  async addBot(roomId: number, userId: number, requestedName?: string | null): Promise<RoomBot> {
+  async addBot(
+    roomId: number,
+    userId: number,
+    requestedName?: string | null,
+  ): Promise<RoomBot> {
     const room = await this.requireRoomWithOwner(roomId);
     this.ensureOwner(room, userId);
     if (!this.isRoomOpen(room)) {
@@ -38,10 +42,16 @@ export class BotService {
     return this.bots.save(bot);
   }
 
-  async removeBot(roomId: number, userId: number, botId: number): Promise<RoomBot> {
+  async removeBot(
+    roomId: number,
+    userId: number,
+    botId: number,
+  ): Promise<RoomBot> {
     const room = await this.requireRoomWithOwner(roomId);
     this.ensureOwner(room, userId);
-    const bot = await this.bots.findOne({ where: { id: botId, room: { id: room.id } } });
+    const bot = await this.bots.findOne({
+      where: { id: botId, room: { id: room.id } },
+    });
     if (!bot) {
       throw new NotFoundException('Bot introuvable');
     }
@@ -54,7 +64,10 @@ export class BotService {
     return { roomId, total };
   }
 
-  private async pickName(roomId: number, requested?: string | null): Promise<string> {
+  private async pickName(
+    roomId: number,
+    requested?: string | null,
+  ): Promise<string> {
     const existing = await this.bots.find({ where: { room: { id: roomId } } });
     const names = existing.map((b) => b.name.toLowerCase());
     if (requested && requested.trim()) {
@@ -93,10 +106,16 @@ export class BotService {
   }
 
   private async getEnabledNames(): Promise<string[]> {
-    const rows = await this.botNames.find({ where: { enabled: true }, order: { name: 'ASC' } });
+    const rows = await this.botNames.find({
+      where: { enabled: true },
+      order: { name: 'ASC' },
+    });
     if (rows.length === 0) {
       await this.seedDefaultNames();
-      const seeded = await this.botNames.find({ where: { enabled: true }, order: { name: 'ASC' } });
+      const seeded = await this.botNames.find({
+        where: { enabled: true },
+        order: { name: 'ASC' },
+      });
       return this.shuffle(seeded.map((r) => r.name));
     }
     return this.shuffle(rows.map((r) => r.name));
@@ -106,7 +125,9 @@ export class BotService {
     const defaults = ['Lila', 'Cosmo', 'Nova', 'Pixel', 'Orion', 'Echo', 'Bot'];
     const count = await this.botNames.count();
     if (count > 0) return;
-    const rows = defaults.map((name) => this.botNames.create({ name, enabled: true }));
+    const rows = defaults.map((name) =>
+      this.botNames.create({ name, enabled: true }),
+    );
     await this.botNames.save(rows);
   }
 
@@ -150,12 +171,16 @@ export class BotService {
 
   private ensureOwner(room: Room, userId: number) {
     if (!room.owner || room.owner.id !== userId) {
-      throw new UnauthorizedException('Seul le propriétaire peut gérer les bots');
+      throw new UnauthorizedException(
+        'Seul le propriétaire peut gérer les bots',
+      );
     }
   }
 
   private isRoomOpen(room: Room): boolean {
     const status = (room.status || '').toLowerCase();
-    return OPEN_ROOM_STATUSES.includes(status as (typeof OPEN_ROOM_STATUSES)[number]);
+    return OPEN_ROOM_STATUSES.includes(
+      status as (typeof OPEN_ROOM_STATUSES)[number],
+    );
   }
 }

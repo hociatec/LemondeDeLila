@@ -1,4 +1,8 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Repository } from 'typeorm';
 import { requireUser } from '../../common/ws/ws-auth';
@@ -7,8 +11,14 @@ import { PayloadValidationService } from '../../common/validation/payload-valida
 import { NotificationService } from '../../notification/services/notification.service';
 import { Room } from '../entities/room.entity';
 import { RoomParticipant } from '../entities/room-participant.entity';
-import { RoomsPublicJoinDto, RoomsPublicListDto } from '../dto/rooms-public.dto';
-import { RoomInviteRespondDto, RoomInviteSendDto } from '../dto/room-invite.dto';
+import {
+  RoomsPublicJoinDto,
+  RoomsPublicListDto,
+} from '../dto/rooms-public.dto';
+import {
+  RoomInviteRespondDto,
+  RoomInviteSendDto,
+} from '../dto/room-invite.dto';
 import { RoomService } from '../services/room.service';
 import { RoomInviteService } from '../services/room-invite.service';
 import { OPEN_ROOM_STATUSES } from '../constants/room-status.constants';
@@ -21,7 +31,8 @@ export class RoomDirectoryWsHandler {
     private readonly invites: RoomInviteService,
     private readonly notifications: NotificationService,
     @InjectRepository(Room) private readonly roomRepo: Repository<Room>,
-    @InjectRepository(RoomParticipant) private readonly participantRepo: Repository<RoomParticipant>,
+    @InjectRepository(RoomParticipant)
+    private readonly participantRepo: Repository<RoomParticipant>,
   ) {}
 
   async listPublic(session: WsSession, payload: any) {
@@ -31,7 +42,11 @@ export class RoomDirectoryWsHandler {
     const qb = this.roomRepo
       .createQueryBuilder('room')
       .leftJoinAndSelect('room.owner', 'owner')
-      .leftJoinAndSelect('room.participants', 'participant', 'participant.leftAt IS NULL')
+      .leftJoinAndSelect(
+        'room.participants',
+        'participant',
+        'participant.leftAt IS NULL',
+      )
       .leftJoinAndSelect('participant.user', 'participantUser')
       .leftJoinAndSelect('room.bots', 'bot')
       .where('room.isPrivate = :isPrivate', { isPrivate: false })
@@ -63,7 +78,9 @@ export class RoomDirectoryWsHandler {
       }
     }
     const groups = Array.from(grouped.entries())
-      .sort(([a], [b]) => a.localeCompare(b, undefined, { sensitivity: 'base' }))
+      .sort(([a], [b]) =>
+        a.localeCompare(b, undefined, { sensitivity: 'base' }),
+      )
       .map(([gameType, rooms]) => ({ gameType, rooms }));
 
     return { type: 'rooms.public.listed', payload: { items, groups } };
@@ -74,13 +91,34 @@ export class RoomDirectoryWsHandler {
     const dto = this.validator.validate(RoomsPublicJoinDto, payload);
     await this.rooms.joinRoom(dto.roomId, user.id);
     const state = await this.rooms.getRoomPayload(dto.roomId);
-    return { type: 'rooms.public.joined', payload: { roomId: dto.roomId, room: state.room } };
+    return {
+      type: 'rooms.public.joined',
+      payload: { roomId: dto.roomId, room: state.room },
+    };
+  }
+
+  async spectatePublic(session: WsSession, payload: any) {
+    requireUser(session);
+    const dto = this.validator.validate(RoomsPublicJoinDto, payload);
+    const state = await this.rooms.getRoomPayload(dto.roomId);
+    if (state.room.isPrivate) {
+      throw new ForbiddenException(
+        'Spectateurs interdits sur les tables privÇ¸es',
+      );
+    }
+    return {
+      type: 'rooms.public.spectated',
+      payload: { roomId: dto.roomId, room: state.room },
+    };
   }
 
   async inviteSend(session: WsSession, payload: any) {
     const user = requireUser(session);
     const dto = this.validator.validate(RoomInviteSendDto, payload);
-    const room = await this.roomRepo.findOne({ where: { id: dto.roomId }, relations: ['owner'] });
+    const room = await this.roomRepo.findOne({
+      where: { id: dto.roomId },
+      relations: ['owner'],
+    });
     if (!room) {
       throw new NotFoundException('Table introuvable');
     }
@@ -91,20 +129,37 @@ export class RoomDirectoryWsHandler {
       throw new ForbiddenException('Invitation réservée aux tables privées');
     }
     const existingParticipant = await this.participantRepo.findOne({
-      where: { room: { id: room.id }, user: { id: dto.userId }, leftAt: IsNull() },
+      where: {
+        room: { id: room.id },
+        user: { id: dto.userId },
+        leftAt: IsNull(),
+      },
     });
     if (existingParticipant) {
-      return { type: 'rooms.invite.sent', payload: { roomId: room.id, userId: dto.userId, alreadyInRoom: true } };
+      return {
+        type: 'rooms.invite.sent',
+        payload: { roomId: room.id, userId: dto.userId, alreadyInRoom: true },
+      };
     }
     const existingInvite = this.invites.findActive(room.id, dto.userId);
-    const invite = existingInvite ?? this.invites.create(room.id, user.id, dto.userId);
+    const invite =
+      existingInvite ?? this.invites.create(room.id, user.id, dto.userId);
     this.notifications.notifyUser(dto.userId, 'rooms.invite.received', {
       invitationId: invite.id,
-      room: { id: room.id, name: room.name, gameType: room.gameType, status: room.status, maxPlayers: room.maxPlayers },
+      room: {
+        id: room.id,
+        name: room.name,
+        gameType: room.gameType,
+        status: room.status,
+        maxPlayers: room.maxPlayers,
+      },
       from: { id: user.id, username: user.username },
       expiresAt: invite.expiresAt,
     });
-    return { type: 'rooms.invite.sent', payload: { invitationId: invite.id, roomId: room.id, userId: dto.userId } };
+    return {
+      type: 'rooms.invite.sent',
+      payload: { invitationId: invite.id, roomId: room.id, userId: dto.userId },
+    };
   }
 
   async inviteRespond(session: WsSession, payload: any) {
@@ -112,20 +167,34 @@ export class RoomDirectoryWsHandler {
     const dto = this.validator.validate(RoomInviteRespondDto, payload);
     const invite = this.invites.get(dto.invitationId);
     if (!invite) {
-      return { type: 'rooms.invite.responded', payload: { invitationId: dto.invitationId, accepted: false, expired: true } };
+      return {
+        type: 'rooms.invite.responded',
+        payload: {
+          invitationId: dto.invitationId,
+          accepted: false,
+          expired: true,
+        },
+      };
     }
     if (invite.toUserId !== user.id) {
       throw new ForbiddenException('Invitation non destinée à cet utilisateur');
     }
     if (!dto.accept) {
       this.invites.delete(dto.invitationId);
-      this.notifications.notifyUser(invite.fromUserId, 'rooms.invite.responded', {
-        invitationId: dto.invitationId,
-        roomId: invite.roomId,
-        accepted: false,
-        by: { id: user.id, username: user.username },
-      });
-      return { type: 'rooms.invite.responded', payload: { invitationId: dto.invitationId, accepted: false } };
+      this.notifications.notifyUser(
+        invite.fromUserId,
+        'rooms.invite.responded',
+        {
+          invitationId: dto.invitationId,
+          roomId: invite.roomId,
+          accepted: false,
+          by: { id: user.id, username: user.username },
+        },
+      );
+      return {
+        type: 'rooms.invite.responded',
+        payload: { invitationId: dto.invitationId, accepted: false },
+      };
     }
     // accept: join first, then consume the invitation (one-shot) only on success
     await this.rooms.joinRoom(invite.roomId, user.id, { allowPrivate: true });
@@ -137,6 +206,9 @@ export class RoomDirectoryWsHandler {
       accepted: true,
       by: { id: user.id, username: user.username },
     });
-    return { type: 'rooms.invite.accepted', payload: { roomId: invite.roomId, room: state.room } };
+    return {
+      type: 'rooms.invite.accepted',
+      payload: { roomId: invite.roomId, room: state.room },
+    };
   }
 }

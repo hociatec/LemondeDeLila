@@ -16,7 +16,10 @@ export class TurnLabelService {
     const players = Array.isArray(state.players) ? state.players : [];
     if (currentPlayerId != null) {
       const found = players.find((p) => p?.id === currentPlayerId);
-      const name = found?.username && String(found.username).trim() ? String(found.username).trim() : `Joueur ${currentPlayerId}`;
+      const name =
+        found?.username && String(found.username).trim()
+          ? String(found.username).trim()
+          : `Joueur ${currentPlayerId}`;
       return `C'est à ${name} de jouer.`;
     }
 

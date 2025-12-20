@@ -1,4 +1,10 @@
-import { IsBoolean, IsInt, IsPositive, IsString, MinLength } from 'class-validator';
+import {
+  IsBoolean,
+  IsInt,
+  IsPositive,
+  IsString,
+  MinLength,
+} from 'class-validator';
 
 export class RoomInviteSendDto {
   @IsInt()
@@ -18,4 +24,3 @@ export class RoomInviteRespondDto {
   @IsBoolean()
   accept!: boolean;
 }
-

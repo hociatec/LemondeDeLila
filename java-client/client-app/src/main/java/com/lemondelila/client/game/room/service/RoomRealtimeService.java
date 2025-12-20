@@ -27,7 +27,7 @@ import java.util.Objects;
 /**
  * Pousse les mises à jour de room via WebSocket et publie les évènements de jeu.
  */
-public final class RoomRealtimeService extends AbstractRealtimeService<Integer, ChannelSubscription> {
+public final class RoomRealtimeService extends AbstractRealtimeService<RoomRealtimeService.RoomKey, ChannelSubscription> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RoomRealtimeService.class);
 
@@ -37,6 +37,9 @@ public final class RoomRealtimeService extends AbstractRealtimeService<Integer, 
 
     private final Object lock = new Object();
     private Integer lastRoomId;
+
+    record RoomKey(int roomId, boolean spectator) {
+    }
 
     @Inject
     public RoomRealtimeService(DomainEventBus eventBus,
@@ -48,10 +51,14 @@ public final class RoomRealtimeService extends AbstractRealtimeService<Integer, 
     }
 
     public AutoCloseable subscribe(int roomId) {
+        return subscribe(roomId, false);
+    }
+
+    public AutoCloseable subscribe(int roomId, boolean spectator) {
         synchronized (lock) {
             try {
                 lastRoomId = roomId;
-                return acquire(roomId);
+                return acquire(new RoomKey(roomId, spectator));
                 /*
                         roomId,
                         this::handleMessage,
@@ -84,7 +91,7 @@ public final class RoomRealtimeService extends AbstractRealtimeService<Integer, 
         if (targetRoom < 0) {
             return;
         }
-        ensureConnectedTo(targetRoom);
+        ensureConnectedTo(new RoomKey(targetRoom, false));
         enqueueOrRun(conn -> conn.send(type, payload));
         /*
             int payloadRoomId = extractRoomId(payload);
@@ -132,10 +139,12 @@ public final class RoomRealtimeService extends AbstractRealtimeService<Integer, 
     }
 
     @Override
-    protected ChannelSubscription openConnection(Integer roomId, ConnectionCallbacks callbacks) {
-        return realtimeManager.openRoomChannel(
-                roomId,
+    protected ChannelSubscription openConnection(RoomKey key, ConnectionCallbacks callbacks) {
+        Map<String, String> params = key.spectator() ? Map.of("spectator", "1") : Map.of();
+        return realtimeManager.openChannel(
+                key.roomId(),
                 this::handleMessage,
+                params,
                 state -> {
                     switch (state) {
                         case CONNECTED -> callbacks.onConnected();

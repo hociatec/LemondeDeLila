@@ -30,8 +30,12 @@ function expectArray(value: any): void {
 
 describe('Contract fixtures', () => {
   it('parses game.state fixtures and contains expected keys', () => {
-    const setup = readJson('contracts/fixtures/game.state.setup.json') as AnyRecord;
-    const started = readJson('contracts/fixtures/game.state.started.json') as AnyRecord;
+    const setup = readJson(
+      'contracts/fixtures/game.state.setup.json',
+    ) as AnyRecord;
+    const started = readJson(
+      'contracts/fixtures/game.state.started.json',
+    ) as AnyRecord;
 
     for (const state of [setup, started]) {
       expectString(state.status);
@@ -41,11 +45,18 @@ describe('Contract fixtures', () => {
       expectArray(state.log);
       expectBoolean(state.botThinking);
       expectArray(state.actions);
-      expect(state.pending === null || typeof state.pending === 'object').toBe(true);
+      expect(state.pending === null || typeof state.pending === 'object').toBe(
+        true,
+      );
 
       expect(state.turn && typeof state.turn === 'object').toBe(true);
-      expect(state.turn.direction === 1 || state.turn.direction === -1).toBe(true);
-      expect(state.turn.currentPlayerId === null || typeof state.turn.currentPlayerId === 'number').toBe(true);
+      expect(state.turn.direction === 1 || state.turn.direction === -1).toBe(
+        true,
+      );
+      expect(
+        state.turn.currentPlayerId === null ||
+          typeof state.turn.currentPlayerId === 'number',
+      ).toBe(true);
       expectString(state.turn.label);
 
       if (state.players != null) {
@@ -63,11 +74,12 @@ describe('Contract fixtures', () => {
   });
 
   it('parses room.payload fixture and contains expected keys', () => {
-    const payload = readJson('contracts/fixtures/room.payload.json') as AnyRecord;
+    const payload = readJson(
+      'contracts/fixtures/room.payload.json',
+    ) as AnyRecord;
     expect(payload.room && typeof payload.room === 'object').toBe(true);
     expectNumber(payload.room.id);
     expectString(payload.room.gameType);
     expectArray(payload.room.players);
   });
 });
-

@@ -3,7 +3,10 @@ import * as path from 'path';
 
 const LOG_PATH = resolveLogPath();
 
-export function playingLog(label: string, payload: Record<string, unknown>): void {
+export function playingLog(
+  label: string,
+  payload: Record<string, unknown>,
+): void {
   try {
     const line = JSON.stringify({
       ts: new Date().toISOString(),
@@ -21,7 +24,12 @@ function resolveLogPath(): string {
   // Priorité au dossier racine "log" (à côté de backend), sinon fallback sur backend/log.
   const rootLog = path.resolve(cwd, '..', 'log');
   const backendLog = path.resolve(cwd, 'log');
-  const targetDir = fs.existsSync(rootLog) || ensureDir(rootLog) ? rootLog : ensureDir(backendLog) ? backendLog : backendLog;
+  const targetDir =
+    fs.existsSync(rootLog) || ensureDir(rootLog)
+      ? rootLog
+      : ensureDir(backendLog)
+        ? backendLog
+        : backendLog;
   return path.join(targetDir, 'playing.log');
 }
 

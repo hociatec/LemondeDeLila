@@ -22,7 +22,11 @@ export class UserAuthService {
     this.jwtExpiresIn = process.env.JWT_EXPIRES_IN || '12h';
   }
 
-  async register(email: string, username: string, password: string): Promise<void> {
+  async register(
+    email: string,
+    username: string,
+    password: string,
+  ): Promise<void> {
     const normalizedEmail = email.toLowerCase();
     await this.ensureUsernameAvailable(username);
     await this.ensureEmailAvailable(normalizedEmail);
@@ -70,7 +74,9 @@ export class UserAuthService {
     if (user.bannedUntil && user.bannedUntil.getTime() > Date.now()) {
       const until = user.bannedUntil.toISOString();
       const reason = user.banReason ? ` (motif : ${user.banReason})` : '';
-      throw new UnauthorizedException(`Compte banni jusqu'au ${until}${reason}`);
+      throw new UnauthorizedException(
+        `Compte banni jusqu'au ${until}${reason}`,
+      );
     }
 
     const token = jwt.sign(

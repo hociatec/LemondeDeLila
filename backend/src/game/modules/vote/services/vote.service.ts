@@ -10,7 +10,10 @@ export type VoteResult = {
 
 @Injectable()
 export class VoteService {
-  resolveVotes(votes: Record<number, number | null | undefined>, tiePolicy: TiePolicy = 'no-kill'): VoteResult {
+  resolveVotes(
+    votes: Record<number, number | null | undefined>,
+    tiePolicy: TiePolicy = 'no-kill',
+  ): VoteResult {
     const tally = new Map<number, number>();
     Object.values(votes || {}).forEach((target) => {
       if (target == null || target < 0) return;
@@ -28,7 +31,9 @@ export class VoteService {
       return { winnerId: topId, tie: false, tally: tallyObj };
     }
     if (tiePolicy === 'random') {
-      const tied = sorted.filter(([, count]) => count === topCount).map(([id]) => id);
+      const tied = sorted
+        .filter(([, count]) => count === topCount)
+        .map(([id]) => id);
       const pick = tied[Math.floor(Math.random() * tied.length)] ?? null;
       return { winnerId: pick, tie: true, tally: tallyObj };
     }

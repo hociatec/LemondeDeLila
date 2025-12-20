@@ -21,7 +21,13 @@ import { RoomWsRegistrar } from './gateways/room-ws.registrar';
     forwardRef(() => PresenceModule),
     NotificationModule,
   ],
-  providers: [RoomService, RoomGateway, RoomInviteService, RoomDirectoryWsHandler, RoomWsRegistrar],
+  providers: [
+    RoomService,
+    RoomGateway,
+    RoomInviteService,
+    RoomDirectoryWsHandler,
+    RoomWsRegistrar,
+  ],
   exports: [RoomService],
 })
 export class RoomModule {}

@@ -10,7 +10,11 @@ export class GameWsRegistrar implements OnModuleInit {
   ) {}
 
   onModuleInit() {
-    this.registry.register('game.rules', (session, payload) => this.handler.rules(session, payload));
-    this.registry.register('game.modules', (session) => this.handler.modules(session));
+    this.registry.register('game.rules', (session, payload) =>
+      this.handler.rules(session, payload),
+    );
+    this.registry.register('game.modules', (session) =>
+      this.handler.modules(session),
+    );
   }
 }

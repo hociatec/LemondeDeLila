@@ -16,7 +16,11 @@ export class PanierExpressDrawService {
     private readonly deckHelper: PanierExpressDeckService,
   ) {}
 
-  drawCourse(state: GameStateEntity, playerId: number, standId?: string): GameStateEntity {
+  drawCourse(
+    state: GameStateEntity,
+    playerId: number,
+    standId?: string,
+  ): GameStateEntity {
     const meta = state.metadata as PanierExpressMetadata;
     const decks = meta.decks ?? this.setup.buildDeckPool(state);
     let metaAfter: PanierExpressMetadata = { ...meta, decks };
@@ -40,8 +44,12 @@ export class PanierExpressDrawService {
       const shoppingList = Array.isArray(player.shoppingList)
         ? player.shoppingList.map((value) => String(value))
         : [];
-      const basket = Array.isArray(player.basket) ? player.basket.map((value) => String(value)) : [];
-      const inventory = Array.isArray(player.inventory) ? player.inventory.map((value) => String(value)) : [];
+      const basket = Array.isArray(player.basket)
+        ? player.basket.map((value) => String(value))
+        : [];
+      const inventory = Array.isArray(player.inventory)
+        ? player.inventory.map((value) => String(value))
+        : [];
       if (shoppingList.includes(card) && !basket.includes(card)) {
         return { ...player, basket: [...basket, card], inventory };
       }
@@ -75,23 +83,42 @@ export class PanierExpressDrawService {
   ): { card: string | null; metadata: PanierExpressMetadata } {
     if (standId) {
       const replenish = () =>
-        this.setup.buildReplenishableDeck(this.setup.standCourseMap()[standId] ?? this.setup.courseItems());
-      const draw = this.deckHelper.drawWithReplenish<string>(meta, standKey, replenish);
+        this.setup.buildReplenishableDeck(
+          this.setup.standCourseMap()[standId] ?? this.setup.courseItems(),
+        );
+      const draw = this.deckHelper.drawWithReplenish<string>(
+        meta,
+        standKey,
+        replenish,
+      );
       if (draw.card) {
         return draw;
       }
-      return this.deckHelper.drawWithReplenish<string>(draw.metadata, 'courses', () => this.setup.buildReplenishableDeck());
+      return this.deckHelper.drawWithReplenish<string>(
+        draw.metadata,
+        'courses',
+        () => this.setup.buildReplenishableDeck(),
+      );
     }
-    return this.deckHelper.drawWithReplenish<string>(meta, 'courses', () => this.setup.buildReplenishableDeck());
+    return this.deckHelper.drawWithReplenish<string>(meta, 'courses', () =>
+      this.setup.buildReplenishableDeck(),
+    );
   }
 
-  private findStandAtPosition(meta: PanierExpressMetadata, playerId: number): string | undefined {
+  private findStandAtPosition(
+    meta: PanierExpressMetadata,
+    playerId: number,
+  ): string | undefined {
     const pos = meta.positions?.[playerId] ?? 0;
     const tile = meta.tiles?.[pos];
     return tile?.type === 'stand' ? tile.standId : undefined;
   }
 
-  private resolveStandLabel(meta: PanierExpressMetadata, playerId: number, explicitStand?: string): string {
+  private resolveStandLabel(
+    meta: PanierExpressMetadata,
+    playerId: number,
+    explicitStand?: string,
+  ): string {
     if (explicitStand) {
       return this.formatStandId(explicitStand);
     }

@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -160,25 +161,29 @@ public final class GameQuizHandler {
             return;
         }
 
-        LOGGER.debug("[quiz] render question={} choices={}", quiz.question(), quiz.choices());
+        String question = normalizeText(quiz.question());
+        List<String> choices = normalizeChoices(quiz.choices());
+        GenericGameState.PendingQuiz normalizedQuiz = new GenericGameState.PendingQuiz(question, choices, quiz.playerId());
 
-        String quizKey = quiz.question() + "|" + String.join("||", quiz.choices());
+        LOGGER.debug("[quiz] render question={} choices={}", normalizedQuiz.question(), normalizedQuiz.choices());
+
+        String quizKey = normalizedQuiz.question() + "|" + String.join("||", normalizedQuiz.choices());
         boolean sameQuiz = quizKey.equals(lastQuizAnnouncementKey);
         lastQuizAnnouncementKey = quizKey;
-        activeQuiz = quiz;
+        activeQuiz = normalizedQuiz;
         quizChoiceIndex = -1;
 
         if (!sameQuiz) {
             lastAnnouncedQuizChoice = -1;
         }
 
-        quizComponent.showQuiz(quiz.question(), quiz.choices());
+        quizComponent.showQuiz(normalizedQuiz.question(), normalizedQuiz.choices());
 
         if (!sameQuiz) {
             // Annonce vocale complète pour les lecteurs d'écran
-            String announcement = buildQuizAnnouncement(quiz.question(), quiz.choices());
+            String announcement = buildQuizAnnouncement(normalizedQuiz.question(), normalizedQuiz.choices());
             announceEvent.accept(announcement);
-            updateInfoLabel.accept(buildQuizChoicesLabel(quiz.question(), quiz.choices()));
+            updateInfoLabel.accept(buildQuizChoicesLabel(normalizedQuiz.question(), normalizedQuiz.choices()));
         }
 
         // Forcer le rafraîchissement visuel
@@ -323,5 +328,70 @@ public final class GameQuizHandler {
             return true;
         }
         return localPlayerId != null && localPlayerId.equals(quizPlayerId);
+    }
+
+    private static String normalizeText(String text) {
+        if (text == null) return "";
+        // Éviter les "lignes vides 1 sur 2" quand des chaînes contiennent \r\n (Windows) ou \r,
+        // et supprimer les caractères invisibles (ex: zero-width) qui peuvent créer des options vides.
+        String normalized = text.replace("\r\n", "\n").replace('\r', '\n');
+        normalized = stripInvisible(normalized, true);
+        return collapseWhitespace(normalized).trim();
+    }
+
+    private static List<String> normalizeChoices(List<String> rawChoices) {
+        if (rawChoices == null || rawChoices.isEmpty()) return List.of();
+        return rawChoices.stream()
+                .filter(Objects::nonNull)
+                .map(s -> {
+                    String normalized = s.replace("\r\n", "\n").replace('\r', '\n');
+                    normalized = stripInvisible(normalized, false);
+                    return collapseWhitespace(normalized).trim();
+                })
+                .filter(s -> !s.isBlank())
+                .toList();
+    }
+
+    private static String stripInvisible(String s, boolean allowNewlines) {
+        if (s == null || s.isEmpty()) return "";
+        StringBuilder sb = new StringBuilder(s.length());
+        for (int i = 0; i < s.length(); ) {
+            int cp = s.codePointAt(i);
+            i += Character.charCount(cp);
+            if (!allowNewlines && cp == '\n') {
+                sb.append(' ');
+                continue;
+            }
+            // Retirer: caractères de contrôle et caractères de format (ex: U+200B ZERO WIDTH SPACE).
+            int type = Character.getType(cp);
+            boolean isControl = Character.isISOControl(cp) && cp != '\n' && cp != '\t';
+            boolean isFormat = type == Character.FORMAT;
+            if (isControl || isFormat) {
+                continue;
+            }
+            sb.appendCodePoint(cp);
+        }
+        return sb.toString();
+    }
+
+    private static String collapseWhitespace(String s) {
+        if (s == null || s.isEmpty()) return "";
+        StringBuilder sb = new StringBuilder(s.length());
+        boolean inWs = false;
+        for (int i = 0; i < s.length(); ) {
+            int cp = s.codePointAt(i);
+            i += Character.charCount(cp);
+            boolean ws = Character.isWhitespace(cp);
+            if (ws) {
+                if (!inWs) {
+                    sb.append(' ');
+                    inWs = true;
+                }
+            } else {
+                sb.appendCodePoint(cp);
+                inWs = false;
+            }
+        }
+        return sb.toString();
     }
 }

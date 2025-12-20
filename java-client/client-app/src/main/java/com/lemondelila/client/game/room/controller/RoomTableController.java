@@ -10,7 +10,6 @@ import com.lemondelila.client.game.bot.service.BotTableService.BotActionResult;
 import com.lemondelila.client.game.history.service.GameAnnouncer;
 import com.lemondelila.client.game.history.view.GameHistorySidebar;
 import com.lemondelila.client.game.history.service.RoomNarrationService;
-import com.lemondelila.client.game.history.service.RoomNarrationService.RoomSummary;
 import com.lemondelila.client.game.room.event.RoomOperationFailed;
 import com.lemondelila.client.game.room.event.RoomPrivacyChanged;
 import com.lemondelila.client.game.room.event.RoomUpdated;
@@ -23,7 +22,9 @@ import com.lemondelila.client.game.room.service.RoomRealtimeService;
 import com.lemondelila.client.game.turn.controller.TurnController;
 import com.lemondelila.client.game.turn.model.TurnState;
 
+import java.util.Objects;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Centralise la logique metier et les annonces liees aux interactions sur une table.
@@ -109,8 +110,25 @@ public final class RoomTableController {
         if (!ensureRoomSelected(null)) {
             return;
         }
-        RoomSummary summary = narration.summarize(tableState);
-        announce(narration.summarySentence(summary));
+        String tableSentence = resolveTableLabel();
+        if (detailsState.spectator()) {
+            tableSentence = tableSentence + ". Spectateur";
+        }
+
+        int playerCount = tableState.players() == null ? 0 : tableState.players().size();
+        int botCount = tableState.bots() == null ? 0 : tableState.bots().size();
+        int spectatorCount = tableState.spectatorCount();
+
+        String playerNames = joinNames(
+                tableState.players().stream().map(p -> p == null ? null : p.username()).toList(),
+                "aucun"
+        );
+
+        announce(tableSentence
+                + ". "
+                + playerCount + " Joueurs : " + playerNames + ". "
+                + botCount + " bot. "
+                + spectatorCount + " spectateur.");
     }
 
     public void announceTurnInfo() {
@@ -139,6 +157,11 @@ public final class RoomTableController {
         tableState.updatePlayers(state.players());
         tableState.updateStatus(state.status());
         tableState.updatePrivacy(state.isPrivate());
+        if (state.counts() != null) {
+            tableState.updateSpectatorCount(state.counts().spectators());
+        } else {
+            tableState.updateSpectatorCount(0);
+        }
         RoomState.Owner owner = state.owner().orElse(null);
         tableState.updateOwner(owner != null ? owner.id() : null, owner != null ? owner.username() : null);
     }
@@ -183,6 +206,31 @@ public final class RoomTableController {
 
     private void announce(String message) {
         announcer.announce(historySidebar, message);
+    }
+
+    private String resolveTableLabel() {
+        Integer roomId = resolvedRoomId();
+        String name = detailsState.roomName();
+        if (name != null) {
+            name = name.trim();
+        }
+        if (name == null || name.isBlank()) {
+            return roomId == null ? "Table" : "Table " + roomId;
+        }
+        return name;
+    }
+
+    private static String joinNames(java.util.List<String> names, String fallback) {
+        if (names == null || names.isEmpty()) {
+            return fallback;
+        }
+        String joined = names.stream()
+                .filter(Objects::nonNull)
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .distinct()
+                .collect(Collectors.joining(", "));
+        return joined.isEmpty() ? fallback : joined;
     }
 
     private void announceIfPresent(BotActionResult result) {

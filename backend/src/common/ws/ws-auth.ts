@@ -9,4 +9,3 @@ export function requireUser(session: WsSession): WsAuthPayload {
   }
   return session.user;
 }
-

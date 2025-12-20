@@ -3,11 +3,11 @@ import { DameNatureMetadata } from '../services/dame-nature.service';
 
 export const DAME_NATURE_PHASES: Array<{
   id: string;
-  onEnter?: (state: GameStateEntity, meta: DameNatureMetadata) => GameStateEntity;
+  onEnter?: (state: GameStateEntity, _meta: DameNatureMetadata) => GameStateEntity;
 }> = [
   { id: 'turn' },
   {
     id: 'pollution-check',
-    onEnter: (s, meta) => s, // l’application pollution est gérée dans le service (applyPollution)
+    onEnter: (s, _meta) => s, // application gérée dans le service (applyPollution)
   },
 ];

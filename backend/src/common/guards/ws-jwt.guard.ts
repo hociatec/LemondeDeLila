@@ -11,14 +11,14 @@ import { WsAuthPayload } from '../interfaces/ws-auth-payload';
 export class WsJwtGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
     const client = context.switchToWs().getClient<any>();
-    const request = (client as any).req || (client as any).request;
-    const handshake = (client as any).handshake;
+    const request = client.req || client.request;
+    const handshake = client.handshake;
     const token =
-      this.extractBearer((client as any).handshakeHeaders) ||
+      this.extractBearer(client.handshakeHeaders) ||
       this.extractBearer(handshake?.headers) ||
       this.extractBearer(request?.headers) ||
       this.extractBearer(handshake?.auth) ||
-      this.extractQueryToken((client as any).url || request?.url) ||
+      this.extractQueryToken(client.url || request?.url) ||
       this.extractQueryToken(handshake?.url) ||
       this.extractQueryTokenFromAuth(handshake?.auth);
     const payload = this.verify(token);
@@ -33,7 +33,11 @@ export class WsJwtGuard implements CanActivate {
     const authHeader = headers.authorization || headers.Authorization;
     if (authHeader && typeof authHeader === 'string') {
       const parts = authHeader.split(' ');
-      if (parts.length === 2 && parts[0].toLowerCase() === 'bearer' && parts[1]) {
+      if (
+        parts.length === 2 &&
+        parts[0].toLowerCase() === 'bearer' &&
+        parts[1]
+      ) {
         return parts[1];
       }
     }

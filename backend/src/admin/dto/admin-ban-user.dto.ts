@@ -1,4 +1,10 @@
-import { IsDateString, IsInt, IsNotEmpty, IsOptional, Min } from 'class-validator';
+import {
+  IsDateString,
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  Min,
+} from 'class-validator';
 
 export class AdminBanUserDto {
   @IsNotEmpty()

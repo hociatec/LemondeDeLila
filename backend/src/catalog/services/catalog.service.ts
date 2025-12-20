@@ -15,8 +15,16 @@ export type CatalogGame = {
   rulesPath?: string;
 };
 
-export type CategoryNode = { id: string; name: string; children: CategoryNode[] };
-export type FlatCategory = { id: string; name: string; parentId: string | null };
+export type CategoryNode = {
+  id: string;
+  name: string;
+  children: CategoryNode[];
+};
+export type FlatCategory = {
+  id: string;
+  name: string;
+  parentId: string | null;
+};
 
 @Injectable()
 export class CatalogService {
@@ -92,11 +100,16 @@ export class CatalogService {
   private formatCategoryName(name: string): string {
     if (!name) return '';
     // Convertit PascalCase en mots séparés puis capitalise.
-    const spaced = name.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/[_-]+/g, ' ');
+    const spaced = name
+      .replace(/([a-z])([A-Z])/g, '$1 $2')
+      .replace(/[_-]+/g, ' ');
     return spaced
       .split(' ')
       .filter(Boolean)
-      .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1).toLowerCase())
+      .map(
+        (segment) =>
+          segment.charAt(0).toUpperCase() + segment.slice(1).toLowerCase(),
+      )
       .join(' ');
   }
 
@@ -106,12 +119,13 @@ export class CatalogService {
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
       .toLowerCase();
-    return noAccent
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '');
+    return noAccent.replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
   }
 
-  private buildCategoryRefs(categoryName: string, subcategoryName: string): string[] {
+  private buildCategoryRefs(
+    categoryName: string,
+    subcategoryName: string,
+  ): string[] {
     const refs: string[] = [];
     const categorySlug = this.slugify(categoryName);
     if (categorySlug) {

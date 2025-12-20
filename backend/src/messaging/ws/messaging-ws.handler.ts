@@ -4,7 +4,12 @@ import { SendMessageDto } from '../dto/send-message.dto';
 import { PayloadValidationService } from '../../common/validation/payload-validation.service';
 import { requireUser } from '../../common/ws/ws-auth';
 import type { WsSession } from '../../common/ws/ws-route-registry.service';
-import { MessagingConversationDto, MessagingListDto, MessagingSearchDto, MessagingSendDto } from './ws.dto';
+import {
+  MessagingConversationDto,
+  MessagingListDto,
+  MessagingSearchDto,
+  MessagingSendDto,
+} from './ws.dto';
 
 @Injectable()
 export class MessagingWsHandler {
@@ -16,14 +21,22 @@ export class MessagingWsHandler {
   async conversation(session: WsSession, payload: any) {
     const user = requireUser(session);
     const dto = this.validator.validate(MessagingConversationDto, payload);
-    const items = await this.messaging.conversation(user.id, dto.userId, dto.limit);
+    const items = await this.messaging.conversation(
+      user.id,
+      dto.userId,
+      dto.limit,
+    );
     return { type: 'messaging.conversation', payload: { items } };
   }
 
   async messages(session: WsSession, payload: any) {
     const user = requireUser(session);
     const dto = this.validator.validate(MessagingListDto, payload);
-    const { box, items } = await this.resolveBox(dto.box ?? 'inbox', user.id, dto.limit ?? 100);
+    const { box, items } = await this.resolveBox(
+      dto.box ?? 'inbox',
+      user.id,
+      dto.limit ?? 100,
+    );
     return { type: 'messaging.messages', payload: { box, items } };
   }
 
@@ -55,7 +68,11 @@ export class MessagingWsHandler {
     return { type: 'messaging.user', payload: { user } };
   }
 
-  private async resolveBox(box: string, userId: number, limit: number): Promise<{ box: string; items: any[] }> {
+  private async resolveBox(
+    box: string,
+    userId: number,
+    limit: number,
+  ): Promise<{ box: string; items: any[] }> {
     const normalized = (box || 'inbox').toLowerCase();
     const mapping: Record<string, 'inbox' | 'outbox' | 'deleted'> = {
       inbox: 'inbox',
@@ -76,8 +93,12 @@ export class MessagingWsHandler {
         : target === 'deleted'
           ? await this.messaging.deleted(userId, limit)
           : await this.messaging.inbox(userId, limit);
-    const finalBox = normalized === '' ? 'inbox' : normalized === 'sent' ? 'outbox' : normalized;
+    const finalBox =
+      normalized === ''
+        ? 'inbox'
+        : normalized === 'sent'
+          ? 'outbox'
+          : normalized;
     return { box: finalBox, items };
   }
 }
-

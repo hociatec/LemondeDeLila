@@ -2,9 +2,16 @@ import { Injectable } from '@nestjs/common';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { DeckManagerService } from '../../../../../modules/cards/services/deck-manager.service';
-import { DeckPoolService, DeckPoolState } from '../../../../../modules/cards/services/deck-pool.service';
+import {
+  DeckPoolService,
+  DeckPoolState,
+} from '../../../../../modules/cards/services/deck-pool.service';
 import { GameStateEntity } from '../../../../../core/entities/game-state.entity';
-import { PanierExpressDeckPool, PanierExpressMetadata, PanierExpressTile } from '../entities/panier-express-state.entity';
+import {
+  PanierExpressDeckPool,
+  PanierExpressMetadata,
+  PanierExpressTile,
+} from '../entities/panier-express-state.entity';
 import {
   PanierExpressBoardJsonV1,
   PanierExpressCoursesJsonV1,
@@ -17,7 +24,10 @@ import {
 
 @Injectable()
 export class PanierExpressSetupService {
-  constructor(private readonly decks: DeckManagerService, private readonly deckPool: DeckPoolService) {}
+  constructor(
+    private readonly decks: DeckManagerService,
+    private readonly deckPool: DeckPoolService,
+  ) {}
 
   private cache: {
     board?: PanierExpressBoardJsonV1;
@@ -30,14 +40,20 @@ export class PanierExpressSetupService {
   } = {};
 
   private static readJsonFile<T>(absPath: string): T {
-    const raw = fs.readFileSync(absPath, { encoding: 'utf8' }).replace(/^\uFEFF/, '');
+    const raw = fs
+      .readFileSync(absPath, { encoding: 'utf8' })
+      .replace(/^\uFEFF/, '');
     const parsed = JSON.parse(raw) as T;
     return PanierExpressSetupService.fixMojibakeDeep(parsed);
   }
 
   private static fixMojibakeString(value: string): string {
     const score = (s: string) => {
-      const suspicious = (s.match(/[\u00C2\u00C3\u00E2\u0153\u0178\u0160\u0161\u017D\u017E\u2030]/g) ?? []).length;
+      const suspicious = (
+        s.match(
+          /[\u00C2\u00C3\u00E2\u0153\u0178\u0160\u0161\u017D\u017E\u2030]/g,
+        ) ?? []
+      ).length;
       const replacement = (s.match(/\uFFFD/g) ?? []).length;
       return suspicious * 2 + replacement * 10;
     };
@@ -110,7 +126,9 @@ export class PanierExpressSetupService {
       return PanierExpressSetupService.fixMojibakeString(value) as unknown as T;
     }
     if (Array.isArray(value)) {
-      return value.map((v) => PanierExpressSetupService.fixMojibakeDeep(v)) as unknown as T;
+      return value.map((v) =>
+        PanierExpressSetupService.fixMojibakeDeep(v),
+      ) as unknown as T;
     }
     if (value && typeof value === 'object') {
       const obj = value as Record<string, unknown>;
@@ -126,8 +144,14 @@ export class PanierExpressSetupService {
   private loadBoard(): PanierExpressBoardJsonV1 {
     if (this.cache.board) return this.cache.board;
     const abs = path.join(__dirname, '..', 'entities', 'content', 'board.json');
-    const parsed = PanierExpressSetupService.readJsonFile<PanierExpressBoardJsonV1>(abs);
-    if (!parsed || (parsed as any).version !== 1 || !Array.isArray(parsed.tiles) || parsed.tiles.length === 0) {
+    const parsed =
+      PanierExpressSetupService.readJsonFile<PanierExpressBoardJsonV1>(abs);
+    if (
+      !parsed ||
+      (parsed as any).version !== 1 ||
+      !Array.isArray(parsed.tiles) ||
+      parsed.tiles.length === 0
+    ) {
       throw new Error('Panier Express: board.json invalide');
     }
     this.cache.board = parsed;
@@ -136,9 +160,21 @@ export class PanierExpressSetupService {
 
   private loadCourses(): PanierExpressCoursesJsonV1 {
     if (this.cache.courses) return this.cache.courses;
-    const abs = path.join(__dirname, '..', 'entities', 'content', 'courses.json');
-    const parsed = PanierExpressSetupService.readJsonFile<PanierExpressCoursesJsonV1>(abs);
-    if (!parsed || (parsed as any).version !== 1 || !Array.isArray(parsed.items) || parsed.items.length === 0) {
+    const abs = path.join(
+      __dirname,
+      '..',
+      'entities',
+      'content',
+      'courses.json',
+    );
+    const parsed =
+      PanierExpressSetupService.readJsonFile<PanierExpressCoursesJsonV1>(abs);
+    if (
+      !parsed ||
+      (parsed as any).version !== 1 ||
+      !Array.isArray(parsed.items) ||
+      parsed.items.length === 0
+    ) {
       throw new Error('Panier Express: courses.json invalide');
     }
     this.cache.courses = parsed;
@@ -147,9 +183,21 @@ export class PanierExpressSetupService {
 
   private loadStands(): PanierExpressStandsJsonV1 {
     if (this.cache.stands) return this.cache.stands;
-    const abs = path.join(__dirname, '..', 'entities', 'content', 'stands.json');
-    const parsed = PanierExpressSetupService.readJsonFile<PanierExpressStandsJsonV1>(abs);
-    if (!parsed || (parsed as any).version !== 1 || !Array.isArray(parsed.stands) || parsed.stands.length === 0) {
+    const abs = path.join(
+      __dirname,
+      '..',
+      'entities',
+      'content',
+      'stands.json',
+    );
+    const parsed =
+      PanierExpressSetupService.readJsonFile<PanierExpressStandsJsonV1>(abs);
+    if (
+      !parsed ||
+      (parsed as any).version !== 1 ||
+      !Array.isArray(parsed.stands) ||
+      parsed.stands.length === 0
+    ) {
       throw new Error('Panier Express: stands.json invalide');
     }
     this.cache.stands = parsed;
@@ -158,9 +206,21 @@ export class PanierExpressSetupService {
 
   private loadEvents(): PanierExpressEventsJsonV1 {
     if (this.cache.events) return this.cache.events;
-    const abs = path.join(__dirname, '..', 'entities', 'content', 'events.json');
-    const parsed = PanierExpressSetupService.readJsonFile<PanierExpressEventsJsonV1>(abs);
-    if (!parsed || (parsed as any).version !== 1 || !Array.isArray(parsed.events) || parsed.events.length === 0) {
+    const abs = path.join(
+      __dirname,
+      '..',
+      'entities',
+      'content',
+      'events.json',
+    );
+    const parsed =
+      PanierExpressSetupService.readJsonFile<PanierExpressEventsJsonV1>(abs);
+    if (
+      !parsed ||
+      (parsed as any).version !== 1 ||
+      !Array.isArray(parsed.events) ||
+      parsed.events.length === 0
+    ) {
       throw new Error('Panier Express: events.json invalide');
     }
     this.cache.events = parsed;
@@ -169,9 +229,21 @@ export class PanierExpressSetupService {
 
   private loadExchanges(): PanierExpressExchangesJsonV1 {
     if (this.cache.exchanges) return this.cache.exchanges;
-    const abs = path.join(__dirname, '..', 'entities', 'content', 'exchanges.json');
-    const parsed = PanierExpressSetupService.readJsonFile<PanierExpressExchangesJsonV1>(abs);
-    if (!parsed || (parsed as any).version !== 1 || !Array.isArray(parsed.exchanges) || parsed.exchanges.length === 0) {
+    const abs = path.join(
+      __dirname,
+      '..',
+      'entities',
+      'content',
+      'exchanges.json',
+    );
+    const parsed =
+      PanierExpressSetupService.readJsonFile<PanierExpressExchangesJsonV1>(abs);
+    if (
+      !parsed ||
+      (parsed as any).version !== 1 ||
+      !Array.isArray(parsed.exchanges) ||
+      parsed.exchanges.length === 0
+    ) {
       throw new Error('Panier Express: exchanges.json invalide');
     }
     this.cache.exchanges = parsed;
@@ -180,9 +252,20 @@ export class PanierExpressSetupService {
 
   private loadQuizzes(): PanierExpressQuizzesJsonV1 {
     if (this.cache.quizzes) return this.cache.quizzes;
-    const abs = path.join(__dirname, '..', 'entities', 'content', 'quizzes.json');
-    const parsed = PanierExpressSetupService.readJsonFile<PanierExpressQuizzesJsonV1>(abs);
-    if (!parsed || (parsed as any).version !== 1 || !Array.isArray(parsed.quizzes)) {
+    const abs = path.join(
+      __dirname,
+      '..',
+      'entities',
+      'content',
+      'quizzes.json',
+    );
+    const parsed =
+      PanierExpressSetupService.readJsonFile<PanierExpressQuizzesJsonV1>(abs);
+    if (
+      !parsed ||
+      (parsed as any).version !== 1 ||
+      !Array.isArray(parsed.quizzes)
+    ) {
       throw new Error('Panier Express: quizzes.json invalide');
     }
     this.cache.quizzes = parsed;
@@ -191,9 +274,23 @@ export class PanierExpressSetupService {
 
   private loadShoppingLists(): PanierExpressShoppingListsJsonV1 {
     if (this.cache.shoppingLists) return this.cache.shoppingLists;
-    const abs = path.join(__dirname, '..', 'entities', 'content', 'shopping-lists.json');
-    const parsed = PanierExpressSetupService.readJsonFile<PanierExpressShoppingListsJsonV1>(abs);
-    if (!parsed || (parsed as any).version !== 1 || !Array.isArray(parsed.lists) || parsed.lists.length === 0) {
+    const abs = path.join(
+      __dirname,
+      '..',
+      'entities',
+      'content',
+      'shopping-lists.json',
+    );
+    const parsed =
+      PanierExpressSetupService.readJsonFile<PanierExpressShoppingListsJsonV1>(
+        abs,
+      );
+    if (
+      !parsed ||
+      (parsed as any).version !== 1 ||
+      !Array.isArray(parsed.lists) ||
+      parsed.lists.length === 0
+    ) {
       throw new Error('Panier Express: shopping-lists.json invalide');
     }
     this.cache.shoppingLists = parsed;
@@ -213,28 +310,45 @@ export class PanierExpressSetupService {
       if (!s || typeof s.id !== 'string') return;
       const id = s.id.trim();
       if (!id) return;
-      const items = Array.isArray(s.items) ? s.items.map((v) => String(v)).map((v) => v.trim()).filter((v) => v.length > 0) : [];
+      const items = Array.isArray(s.items)
+        ? s.items
+            .map((v) => String(v))
+            .map((v) => v.trim())
+            .filter((v) => v.length > 0)
+        : [];
       out[id] = items;
     });
     return out;
   }
 
   buildTiles(): PanierExpressTile[] {
-    return this.loadBoard().tiles as PanierExpressTile[];
+    return this.loadBoard().tiles;
   }
 
-  buildDeckPool(baseState?: GameStateEntity): PanierExpressMetadata['decks'] {
+  buildDeckPool(_baseState?: GameStateEntity): PanierExpressMetadata['decks'] {
     let pool: PanierExpressDeckPool = {};
-    pool = this.setDeck(pool, 'courses', this.deckPool.shuffle(this.courseItems()));
+    pool = this.setDeck(
+      pool,
+      'courses',
+      this.deckPool.shuffle(this.courseItems()),
+    );
     pool = this.setDeck(
       pool,
       'events',
-      this.deckPool.shuffle(this.loadEvents().events.map((v) => String(v)).filter((v) => v.length > 0)),
+      this.deckPool.shuffle(
+        this.loadEvents()
+          .events.map((v) => String(v))
+          .filter((v) => v.length > 0),
+      ),
     );
     pool = this.setDeck(
       pool,
       'exchanges',
-      this.deckPool.shuffle(this.loadExchanges().exchanges.map((v) => String(v)).filter((v) => v.length > 0)),
+      this.deckPool.shuffle(
+        this.loadExchanges()
+          .exchanges.map((v) => String(v))
+          .filter((v) => v.length > 0),
+      ),
     );
     pool = this.setDeck(pool, 'quizzes', this.buildQuizDeck());
     pool = this.setDeck(pool, 'shoppingLists', this.buildShoppingListDeck());
@@ -248,7 +362,11 @@ export class PanierExpressSetupService {
     standIds.forEach((standId) => {
       const items = standMap[standId] ?? this.courseItems();
       const deck = this.buildReplenishableDeck(items);
-      pool = this.setDeck(pool, `courses-${standId}`, this.deckPool.shuffle(deck));
+      pool = this.setDeck(
+        pool,
+        `courses-${standId}`,
+        this.deckPool.shuffle(deck),
+      );
     });
 
     return pool;
@@ -257,19 +375,39 @@ export class PanierExpressSetupService {
   buildShoppingListDeck(): string[][] {
     const lists = this.loadShoppingLists().lists ?? [];
     const normalized = lists
-      .map((entry) => (Array.isArray(entry) ? entry.map((v) => String(v)).map((v) => v.trim()).filter((v) => v.length > 0) : []))
+      .map((entry) =>
+        Array.isArray(entry)
+          ? entry
+              .map((v) => String(v))
+              .map((v) => v.trim())
+              .filter((v) => v.length > 0)
+          : [],
+      )
       .filter((entry) => entry.length > 0);
     return this.decks.shuffle(normalized);
   }
 
-  buildQuizDeck(): Array<{ id?: string; question: string; answer: string; choices: string[] }> {
+  buildQuizDeck(): Array<{
+    id?: string;
+    question: string;
+    answer: string;
+    choices: string[];
+  }> {
     const quizzes = this.loadQuizzes().quizzes ?? [];
     const normalized = quizzes
       .map((q) => ({
-        id: typeof (q as any)?.id === 'string' ? String((q as any).id) : undefined,
+        id:
+          typeof (q as any)?.id === 'string'
+            ? String((q as any).id)
+            : undefined,
         question: String((q as any)?.question ?? '').trim(),
         answer: String((q as any)?.answer ?? '').trim(),
-        choices: Array.isArray((q as any)?.choices) ? (q as any).choices.map((v: any) => String(v)).map((v: string) => v.trim()).filter((v: string) => v.length > 0) : [],
+        choices: Array.isArray((q as any)?.choices)
+          ? (q as any).choices
+              .map((v: any) => String(v))
+              .map((v: string) => v.trim())
+              .filter((v: string) => v.length > 0)
+          : [],
       }))
       .filter((q) => q.question.length > 0 && q.answer.length > 0);
     return this.decks.shuffle(normalized);
@@ -284,7 +422,11 @@ export class PanierExpressSetupService {
     return [...source, ...source];
   }
 
-  private setDeck<T>(pool: PanierExpressDeckPool, key: string, deck: T[]): PanierExpressDeckPool {
+  private setDeck<T>(
+    pool: PanierExpressDeckPool,
+    key: string,
+    deck: T[],
+  ): PanierExpressDeckPool {
     const updated = this.deckPool.set<T>(pool as DeckPoolState<T>, key, deck);
     return updated as PanierExpressDeckPool;
   }

@@ -13,7 +13,9 @@ export class GamePluginsModule {
     if (imports.length === 0) {
       this.logger.warn('Aucun module de jeu détecté (dist/src).');
     } else {
-      this.logger.log(`Modules de jeu détectés : ${imports.map((m) => m.name).join(', ')}`);
+      this.logger.log(
+        `Modules de jeu détectés : ${imports.map((m) => m.name).join(', ')}`,
+      );
     }
     return {
       module: GamePluginsModule,
@@ -24,7 +26,9 @@ export class GamePluginsModule {
   private static discoverGameModules(): ModuleClass[] {
     const root = this.resolveGamesRoot();
     if (!root) {
-      this.logger.warn('Répertoire des jeux introuvable (dist/game/games ou src/game/games).');
+      this.logger.warn(
+        'Répertoire des jeux introuvable (dist/game/games ou src/game/games).',
+      );
       return [];
     }
     const moduleFiles = this.findModuleFiles(root);
@@ -67,7 +71,10 @@ export class GamePluginsModule {
         }
         if (!entry.isFile()) continue;
         if (entry.name.endsWith('.d.ts')) continue;
-        if (entry.name.endsWith('.module.js') || entry.name.endsWith('.module.ts')) {
+        if (
+          entry.name.endsWith('.module.js') ||
+          entry.name.endsWith('.module.ts')
+        ) {
           results.push(fullPath);
         }
       }
@@ -86,7 +93,9 @@ export class GamePluginsModule {
       }
       return candidates;
     } catch (error: any) {
-      this.logger.warn(`Impossible de charger ${filePath} : ${error?.message ?? error}`);
+      this.logger.warn(
+        `Impossible de charger ${filePath} : ${error?.message ?? error}`,
+      );
       return [];
     }
   }

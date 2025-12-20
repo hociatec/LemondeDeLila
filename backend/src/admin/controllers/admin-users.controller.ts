@@ -1,4 +1,15 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { AdminUsersService } from '../services/admin-users.service';
 import { AdminCreateUserDto } from '../dto/admin-create-user.dto';
 import { AdminUpdateUserDto } from '../dto/admin-update-user.dto';
@@ -28,7 +39,10 @@ export class AdminUsersController {
   }
 
   @Patch(':id')
-  async update(@Param('id', ParseIntPipe) id: number, @Body() body: AdminUpdateUserDto) {
+  async update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: AdminUpdateUserDto,
+  ) {
     return this.adminUsers.update(id, body);
   }
 
@@ -47,7 +61,12 @@ export class AdminUsersController {
     @Param('id', ParseIntPipe) id: number,
     @Body() body: AdminBanUserDto,
   ) {
-    return this.adminUsers.ban(id, body.reason, body.durationDays, body.bannedUntil);
+    return this.adminUsers.ban(
+      id,
+      body.reason,
+      body.durationDays,
+      body.bannedUntil,
+    );
   }
 
   @Post(':id/unban')

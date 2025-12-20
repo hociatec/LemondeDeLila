@@ -23,4 +23,3 @@ export class AuthWsHandler {
     return { type: 'auth.login.ok', payload: result };
   }
 }
-

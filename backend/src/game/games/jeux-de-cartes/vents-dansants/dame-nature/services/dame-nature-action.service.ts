@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { GameStateEntity } from '../../../../../core/entities/game-state.entity';
 import { ActionLogService } from '../../../../../modules/actionlog/services/action-log.service';
-import { DameNatureSetupService, FamilyCard } from './dame-nature-setup.service';
+import {
+  DameNatureSetupService,
+  FamilyCard,
+} from './dame-nature-setup.service';
 import { DameNatureBooksService } from './dame-nature-books.service';
 import { DameNaturePollutionService } from './dame-nature-pollution.service';
 import { DameNatureMetadata } from './dame-nature.service';
@@ -20,13 +23,22 @@ export class DameNatureActionService {
 
   handleDraw(
     state: GameStateEntity,
-    current: { id: number; username: string; hand: FamilyCard[]; handCount: number; books: string[] },
+    current: {
+      id: number;
+      username: string;
+      hand: FamilyCard[];
+      handCount: number;
+      books: string[];
+    },
     meta: DameNatureMetadata,
   ) {
     // On autorise une main temporaire à 5 cartes (pioche puis défausse).
     if ((current.hand?.length ?? 0) >= 5) {
       return {
-        state: this.core.appendLog(state, `${current.username} ne peut pas piocher (main pleine).`),
+        state: this.core.appendLog(
+          state,
+          `${current.username} ne peut pas piocher (main pleine).`,
+        ),
         card: null,
         performed: false,
       };
@@ -41,9 +53,20 @@ export class DameNatureActionService {
       maxPollution: meta.maxPollution,
     });
     if (!card) {
-      let logged = this.core.appendLog(state, `Pioche vide : ${current.username} passe son tour.`);
-      const polluted = this.applyPollutionTick({ ...logged, metadata }, current, 'Pioche vide');
-      dameNatureLog('draw.empty', { playerId: current.id, username: current.username, pollution: this.pollution.get(polluted.metadata as any, current.id) });
+      const logged = this.core.appendLog(
+        state,
+        `Pioche vide : ${current.username} passe son tour.`,
+      );
+      const polluted = this.applyPollutionTick(
+        { ...logged, metadata },
+        current,
+        'Pioche vide',
+      );
+      dameNatureLog('draw.empty', {
+        playerId: current.id,
+        username: current.username,
+        pollution: this.pollution.get(polluted.metadata as any, current.id),
+      });
       return { state: polluted, card: null, performed: true };
     }
     if (card.kind === 'danger') {
@@ -51,7 +74,12 @@ export class DameNatureActionService {
         { ...state, metadata },
         `${current.username} pioche une carte Nature en danger : ${card.memberName}.`,
       );
-      next = this.applyPollutionTick(next, current, card.memberName, card.pollutionDelta ?? 1);
+      next = this.applyPollutionTick(
+        next,
+        current,
+        card.memberName,
+        card.pollutionDelta ?? 1,
+      );
       const metaAfter = next.metadata as DameNatureMetadata;
       dameNatureLog('draw.danger', {
         playerId: current.id,
@@ -114,15 +142,26 @@ export class DameNatureActionService {
       players: state.players,
       metadata,
     };
-    next = this.core.appendLog(next, `${current.username} pioche ${card.familyName} - ${card.memberName}.`);
+    next = this.core.appendLog(
+      next,
+      `${current.username} pioche ${card.familyName} - ${card.memberName}.`,
+    );
     const booked = this.books.checkAndBook(next, current);
     next = booked.state;
     if (booked.booked.length) {
       next = this.core.appendLog(
-        this.appendAction(next, { actorId: current.id, type: 'book', payload: { families: booked.booked } }),
+        this.appendAction(next, {
+          actorId: current.id,
+          type: 'book',
+          payload: { families: booked.booked },
+        }),
         `${current.username} complète ${booked.booked.length} famille(s): ${booked.booked.join(', ')}.`,
       );
-      next = this.refillHandToFour(next, current, next.metadata as DameNatureMetadata);
+      next = this.refillHandToFour(
+        next,
+        current,
+        next.metadata as DameNatureMetadata,
+      );
     }
     dameNatureLog('draw.family', {
       playerId: current.id,
@@ -137,7 +176,13 @@ export class DameNatureActionService {
 
   refillHandToFour(
     state: GameStateEntity,
-    player: { id: number; username: string; hand: FamilyCard[]; handCount: number; books: string[] },
+    player: {
+      id: number;
+      username: string;
+      hand: FamilyCard[];
+      handCount: number;
+      books: string[];
+    },
     meta: DameNatureMetadata,
   ): GameStateEntity {
     return this.refillHandToFourWithCount(state, player, meta).state;
@@ -145,7 +190,13 @@ export class DameNatureActionService {
 
   refillHandToFourWithCount(
     state: GameStateEntity,
-    player: { id: number; username: string; hand: FamilyCard[]; handCount: number; books: string[] },
+    player: {
+      id: number;
+      username: string;
+      hand: FamilyCard[];
+      handCount: number;
+      books: string[];
+    },
     meta: DameNatureMetadata,
   ): { state: GameStateEntity; drew: number } {
     let next = state;
@@ -161,24 +212,41 @@ export class DameNatureActionService {
     }
     next = { ...next, metadata: currentMeta, players: next.players };
     if (drew > 0) {
-      next = this.core.appendLog(next, `${player.username} pioche ${drew} carte(s) pour revenir à 4.`);
+      next = this.core.appendLog(
+        next,
+        `${player.username} pioche ${drew} carte(s) pour revenir à 4.`,
+      );
     }
     return { state: next, drew };
   }
 
   handleAskCard(
     state: GameStateEntity,
-    params: { current: any; target: any; familyId: string; memberId?: string | null },
+    params: {
+      current: any;
+      target: any;
+      familyId: string;
+      memberId?: string | null;
+    },
   ): { state: GameStateEntity; success: boolean } {
     const { current, target, familyId, memberId } = params;
     if (!current || !target || !familyId) {
       const next = this.appendAction(
-        this.core.appendLog(state, `Demande invalide (adversaire ou famille manquants).`),
-        { actorId: current?.id ?? null, type: 'ask_card_invalid', payload: { familyId, memberId, target: target?.id } },
+        this.core.appendLog(
+          state,
+          `Demande invalide (adversaire ou famille manquants).`,
+        ),
+        {
+          actorId: current?.id ?? null,
+          type: 'ask_card_invalid',
+          payload: { familyId, memberId, target: target?.id },
+        },
       );
       return { state: next, success: false };
     }
-    const match = target.hand.find((c: FamilyCard) => (memberId ? c.memberId === memberId : c.familyId === familyId));
+    const match = target.hand.find((c: FamilyCard) =>
+      memberId ? c.memberId === memberId : c.familyId === familyId,
+    );
     if (match) {
       target.hand = target.hand.filter((c: FamilyCard) => c !== match);
       target.handCount = target.hand.length;
@@ -193,14 +261,22 @@ export class DameNatureActionService {
       next = booked.state;
       if (booked.booked.length) {
         next = this.core.appendLog(
-          this.appendAction(next, { actorId: current.id, type: 'book', payload: { families: booked.booked } }),
+          this.appendAction(next, {
+            actorId: current.id,
+            type: 'book',
+            payload: { families: booked.booked },
+          }),
           `${current.username} complète ${booked.booked.length} famille(s): ${booked.booked.join(', ')}.`,
         );
-        next = this.refillHandToFour(next, current, next.metadata as DameNatureMetadata);
+        next = this.refillHandToFour(
+          next,
+          current,
+          next.metadata as DameNatureMetadata,
+        );
       }
       return { state: next, success: true };
     }
-    let next = this.core.appendLog(
+    const next = this.core.appendLog(
       state,
       `${current.username} demande ${familyId} à ${target.username} : refus.`,
     );
@@ -213,8 +289,10 @@ export class DameNatureActionService {
     reason: string,
     amount = 1,
   ): GameStateEntity {
-    const meta = (state.metadata as DameNatureMetadata) ?? this.setup.buildMetadata();
-    const { metadata, reachedMax, delta, playerPollution } = this.pollution.tick(meta, player.id, amount);
+    const meta =
+      (state.metadata as DameNatureMetadata) ?? this.setup.buildMetadata();
+    const { metadata, reachedMax, delta, playerPollution } =
+      this.pollution.tick(meta, player.id, amount);
     let next: GameStateEntity = { ...state, metadata };
     if (reason && delta !== 0) {
       const sign = delta > 0 ? '+' : '-';
@@ -237,13 +315,20 @@ export class DameNatureActionService {
         status: 'finished',
         turn: { currentPlayerId: null, direction: 1 as const },
       };
-      next = this.core.appendLog(next, 'Pollution maximale atteinte. La partie est terminée.');
+      next = this.core.appendLog(
+        next,
+        'Pollution maximale atteinte. La partie est terminée.',
+      );
     }
     return next;
   }
 
-  private appendAction(state: GameStateEntity, entry: { actorId: number | null; type: string; payload?: any }): GameStateEntity {
-    const meta = (state.metadata as DameNatureMetadata) ?? this.setup.buildMetadata();
+  private appendAction(
+    state: GameStateEntity,
+    entry: { actorId: number | null; type: string; payload?: any },
+  ): GameStateEntity {
+    const meta =
+      (state.metadata as DameNatureMetadata) ?? this.setup.buildMetadata();
     const actionLog = this.actionLog.append(meta.actionLog, entry);
     return { ...state, metadata: { ...meta, actionLog } };
   }

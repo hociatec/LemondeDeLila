@@ -5,4 +5,3 @@ export class UserGetDto {
   @IsPositive()
   id!: number;
 }
-

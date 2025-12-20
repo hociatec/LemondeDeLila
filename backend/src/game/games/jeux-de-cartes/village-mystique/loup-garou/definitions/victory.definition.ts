@@ -16,7 +16,11 @@ export const LOUP_GAROU_VICTORY: VictoryCondition[] = [
         .filter((id) => typeof id === 'number');
       const aliveLovers = lovers.filter((id) => living.includes(id));
       if (aliveLovers.length === 2 && living.length === 2) {
-        return { finished: true, winnerId: 'lovers', details: { survivors: living } };
+        return {
+          finished: true,
+          winnerId: 'lovers',
+          details: { survivors: living },
+        };
       }
       return false;
     },

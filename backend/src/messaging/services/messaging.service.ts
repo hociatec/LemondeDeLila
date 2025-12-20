@@ -38,9 +38,13 @@ export class MessagingService {
   async send(senderId: number, payload: SendMessageDto): Promise<MessageDto> {
     const sender = await this.ensureUser(senderId);
     if (sender.id === payload.recipientId) {
-      throw new BadRequestException('Vous ne pouvez pas vous envoyer un message');
+      throw new BadRequestException(
+        'Vous ne pouvez pas vous envoyer un message',
+      );
     }
-    const recipient = await this.users.findOne({ where: { id: payload.recipientId } });
+    const recipient = await this.users.findOne({
+      where: { id: payload.recipientId },
+    });
     if (!recipient) {
       throw new NotFoundException('Destinataire introuvable');
     }
@@ -56,7 +60,11 @@ export class MessagingService {
     return this.toDto(message, sender.id);
   }
 
-  async conversation(currentId: number, otherUserId: number, limit = MessagingService.DEFAULT_HISTORY_LIMIT) {
+  async conversation(
+    currentId: number,
+    otherUserId: number,
+    limit = MessagingService.DEFAULT_HISTORY_LIMIT,
+  ) {
     if (currentId === otherUserId) {
       return [];
     }
@@ -85,7 +93,9 @@ export class MessagingService {
       .createQueryBuilder('m')
       .leftJoinAndSelect('m.sender', 'sender')
       .leftJoinAndSelect('m.recipient', 'recipient')
-      .where('m.recipient_id = :user AND m.deleted_by_recipient_at IS NULL', { user: userId })
+      .where('m.recipient_id = :user AND m.deleted_by_recipient_at IS NULL', {
+        user: userId,
+      })
       .orderBy('m.created_at', 'DESC')
       .limit(clamped)
       .getMany();
@@ -98,14 +108,19 @@ export class MessagingService {
       .createQueryBuilder('m')
       .leftJoinAndSelect('m.sender', 'sender')
       .leftJoinAndSelect('m.recipient', 'recipient')
-      .where('m.sender_id = :user AND m.deleted_by_sender_at IS NULL', { user: userId })
+      .where('m.sender_id = :user AND m.deleted_by_sender_at IS NULL', {
+        user: userId,
+      })
       .orderBy('m.created_at', 'DESC')
       .limit(clamped)
       .getMany();
     return items.map((m) => this.toDto(m, userId));
   }
 
-  async deleted(userId: number, limit = MessagingService.DEFAULT_HISTORY_LIMIT) {
+  async deleted(
+    userId: number,
+    limit = MessagingService.DEFAULT_HISTORY_LIMIT,
+  ) {
     const clamped = this.clampLimit(limit);
     const items = await this.messages
       .createQueryBuilder('m')
@@ -197,7 +212,10 @@ export class MessagingService {
   }
 
   private async ensureUser(id: number): Promise<User> {
-    const user = await this.users.findOne({ where: { id }, select: ['id', 'username'] });
+    const user = await this.users.findOne({
+      where: { id },
+      select: ['id', 'username'],
+    });
     if (!user) {
       throw new NotFoundException('Utilisateur introuvable');
     }
@@ -207,11 +225,16 @@ export class MessagingService {
   private toDto(message: PrivateMessage, viewerId: number): MessageDto {
     const direction = message.sender.id === viewerId ? 'sent' : 'received';
     const deletedAt =
-      direction === 'sent' ? message.deletedBySenderAt ?? null : message.deletedByRecipientAt ?? null;
+      direction === 'sent'
+        ? (message.deletedBySenderAt ?? null)
+        : (message.deletedByRecipientAt ?? null);
     return {
       id: message.messageId,
       sender: { id: message.sender.id, username: message.sender.username },
-      recipient: { id: message.recipient.id, username: message.recipient.username },
+      recipient: {
+        id: message.recipient.id,
+        username: message.recipient.username,
+      },
       text: message.message,
       createdAt: message.createdAt.toISOString(),
       direction,
@@ -220,7 +243,10 @@ export class MessagingService {
   }
 
   private clampLimit(limit: number): number {
-    return Math.max(1, Math.min(500, limit || MessagingService.DEFAULT_HISTORY_LIMIT));
+    return Math.max(
+      1,
+      Math.min(500, limit || MessagingService.DEFAULT_HISTORY_LIMIT),
+    );
   }
 
   private generateMessageId(): string {

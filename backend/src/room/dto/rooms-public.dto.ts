@@ -1,4 +1,10 @@
-import { IsInt, IsOptional, IsPositive, IsString, MinLength } from 'class-validator';
+import {
+  IsInt,
+  IsOptional,
+  IsPositive,
+  IsString,
+  MinLength,
+} from 'class-validator';
 
 export class RoomsPublicListDto {
   @IsOptional()
@@ -12,4 +18,3 @@ export class RoomsPublicJoinDto {
   @IsPositive()
   roomId!: number;
 }
-

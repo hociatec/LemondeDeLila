@@ -33,7 +33,15 @@ const base = DATABASE_URL
 
 export default new DataSource({
   ...base,
-  entities: [User, ChatMessage, PrivateMessage, Room, RoomParticipant, RoomBot, BotName],
+  entities: [
+    User,
+    ChatMessage,
+    PrivateMessage,
+    Room,
+    RoomParticipant,
+    RoomBot,
+    BotName,
+  ],
   migrations: ['dist/migrations/*.js'],
   synchronize: false,
   logging: false,

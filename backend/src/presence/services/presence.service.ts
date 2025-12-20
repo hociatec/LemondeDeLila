@@ -46,7 +46,13 @@ export class PresenceService {
     user: WsAuthPayload,
     context: PresenceConnectionContext = 'home',
   ) {
-    this.clients.set(socket, { socket, user, context, contextLocked: false, roomHint: null });
+    this.clients.set(socket, {
+      socket,
+      user,
+      context,
+      contextLocked: false,
+      roomHint: null,
+    });
     this.ensureHeartbeat();
   }
 
@@ -95,10 +101,14 @@ export class PresenceService {
     const text = typeof payload.text === 'string' ? payload.text : '';
     let sanitized: string;
     try {
-      this.logger.log(`Chat-send reçu de ${from.user.username} (#${from.user.id})`);
+      this.logger.log(
+        `Chat-send reçu de ${from.user.username} (#${from.user.id})`,
+      );
       sanitized = this.validator.validate(text);
     } catch (err) {
-      this.logger.warn(`Message chat invalide pour ${from.user.username}: ${(err as Error)?.message ?? 'inconnu'}`);
+      this.logger.warn(
+        `Message chat invalide pour ${from.user.username}: ${(err as Error)?.message ?? 'inconnu'}`,
+      );
       return;
     }
     const message = await this.chat.recordMessage(from.user.id, sanitized);
@@ -107,7 +117,8 @@ export class PresenceService {
   }
 
   private handlePresenceContext(client: PresenceClient, payload: any) {
-    const raw = typeof payload.context === 'string' ? payload.context.toLowerCase() : '';
+    const raw =
+      typeof payload.context === 'string' ? payload.context.toLowerCase() : '';
     let context: PresenceConnectionContext = 'home';
     if (raw === 'chat') {
       context = 'chat';
@@ -186,7 +197,8 @@ export class PresenceService {
         continue;
       }
       if (candidateScore === currentScore) {
-        existing.contextLocked = existing.contextLocked || candidate.contextLocked;
+        existing.contextLocked =
+          existing.contextLocked || candidate.contextLocked;
         if (!existing.currentRoom && candidate.currentRoom) {
           existing.currentRoom = candidate.currentRoom;
         }
@@ -196,14 +208,18 @@ export class PresenceService {
       .then(() => {
         const payload = {
           type: 'presence-update',
-          players: Array.from(playersByUser.values()).map(({ contextLocked, ...rest }) => rest),
+          players: Array.from(playersByUser.values()).map(
+            ({ contextLocked, ...rest }) => rest,
+          ),
         };
         this.broadcast(payload);
       })
       .catch(() => {
         const payload = {
           type: 'presence-update',
-          players: Array.from(playersByUser.values()).map(({ contextLocked, ...rest }) => rest),
+          players: Array.from(playersByUser.values()).map(
+            ({ contextLocked, ...rest }) => rest,
+          ),
         };
         this.broadcast(payload);
       });
@@ -279,7 +295,10 @@ export class PresenceService {
     if (this.heartbeatTimer) {
       return;
     }
-    this.heartbeatTimer = setInterval(() => this.runHeartbeat(), this.pingIntervalMs);
+    this.heartbeatTimer = setInterval(
+      () => this.runHeartbeat(),
+      this.pingIntervalMs,
+    );
   }
 
   private stopHeartbeat() {
@@ -290,7 +309,6 @@ export class PresenceService {
   }
 
   private runHeartbeat() {
-    const now = Date.now();
     for (const socket of Array.from(this.clients.keys())) {
       if (socket.readyState !== WebSocket.OPEN) {
         this.unregister(socket);

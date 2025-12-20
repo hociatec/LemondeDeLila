@@ -1,5 +1,10 @@
-import { Logger, UnauthorizedException } from '@nestjs/common';
-import { WebSocketGateway, WebSocketServer, OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
+import { Logger } from '@nestjs/common';
+import {
+  WebSocketGateway,
+  WebSocketServer,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
+} from '@nestjs/websockets';
 import { Server, WebSocket } from 'ws';
 import { GameEngineService } from '../services/game-engine.service';
 import { WsAuthPayload } from '../../../common/interfaces/ws-auth-payload';
@@ -8,10 +13,17 @@ import { playingLog } from '../../../common/utils/playing-logger';
 import { WsJwtAuthService } from '../../../common/ws/ws-jwt-auth.service';
 
 type IncomingPayload = { type?: string; payload?: any };
-type GameClient = { socket: WebSocket; userId: number; roomId: number | null; gameType: string | null };
+type GameClient = {
+  socket: WebSocket;
+  userId: number;
+  roomId: number | null;
+  gameType: string | null;
+};
 
 @WebSocketGateway({ path: '/ws/game' })
-export class GameGateway implements OnGatewayConnection<WebSocket>, OnGatewayDisconnect<WebSocket> {
+export class GameGateway
+  implements OnGatewayConnection<WebSocket>, OnGatewayDisconnect<WebSocket>
+{
   @WebSocketServer()
   server!: Server<WebSocket>;
 
@@ -22,10 +34,18 @@ export class GameGateway implements OnGatewayConnection<WebSocket>, OnGatewayDis
   private readonly pingIntervalMs = 25000;
   private readonly logger = new Logger(GameGateway.name);
 
-  constructor(private readonly engine: GameEngineService, private readonly auth: WsJwtAuthService) {
-    this.engine.setBroadcaster((gameType, roomId, state) => this.broadcastState(gameType, roomId, state));
+  constructor(
+    private readonly engine: GameEngineService,
+    private readonly auth: WsJwtAuthService,
+  ) {
+    this.engine.setBroadcaster((gameType, roomId, state) =>
+      this.broadcastState(gameType, roomId, state),
+    );
     // Log d'amorçage pour vérifier le chemin de log.
-    playingLog('ws.game.gateway.init', { logPath: 'log/playing.log (racine ou backend/log)', gateway: '/ws/game' });
+    playingLog('ws.game.gateway.init', {
+      logPath: 'log/playing.log (racine ou backend/log)',
+      gateway: '/ws/game',
+    });
   }
 
   async handleConnection(client: WebSocket, ...args: any[]) {
@@ -34,7 +54,12 @@ export class GameGateway implements OnGatewayConnection<WebSocket>, OnGatewayDis
       client.close(4001, 'auth required');
       return;
     }
-    this.clients.set(client, { socket: client, userId: auth.id, roomId: null, gameType: null });
+    this.clients.set(client, {
+      socket: client,
+      userId: auth.id,
+      roomId: null,
+      gameType: null,
+    });
     client.on('message', (raw) => this.handleMessage(client, raw));
     client.on('error', () => client.close());
     // Heartbeat : ping régulier pour maintenir la connexion et détecter les resets silencieux.
@@ -125,8 +150,12 @@ export class GameGateway implements OnGatewayConnection<WebSocket>, OnGatewayDis
   private async handleJoin(client: WebSocket, meta: GameClient, payload: any) {
     const roomId = Number(payload?.roomId ?? payload?.room ?? 0);
     const gameType = String(payload?.gameType ?? '');
-    await this.engine.checkAccess(roomId, meta.userId);
-    const state = await this.engine.getStateForUser(roomId, gameType, meta.userId);
+    await this.engine.checkReadAccess(roomId, meta.userId);
+    const state = await this.engine.getStateForUser(
+      roomId,
+      gameType,
+      meta.userId,
+    );
     this.setRoom(meta, roomId, gameType, client);
     playingLog('ws.game.join', { userId: meta.userId, roomId, gameType });
     this.safeSend(client, { type: 'game.state', payload: state });
@@ -139,9 +168,17 @@ export class GameGateway implements OnGatewayConnection<WebSocket>, OnGatewayDis
       this.sendError(client, 'Parametres jeu manquants', 'game.state');
       return;
     }
-    await this.engine.checkAccess(roomId, meta.userId);
-    const state = await this.engine.getStateForUser(roomId, gameType, meta.userId);
-    playingLog('ws.game.state.request', { userId: meta.userId, roomId, gameType });
+    await this.engine.checkReadAccess(roomId, meta.userId);
+    const state = await this.engine.getStateForUser(
+      roomId,
+      gameType,
+      meta.userId,
+    );
+    playingLog('ws.game.state.request', {
+      userId: meta.userId,
+      roomId,
+      gameType,
+    });
     this.safeSend(client, { type: 'game.state', payload: state });
   }
 
@@ -152,8 +189,15 @@ export class GameGateway implements OnGatewayConnection<WebSocket>, OnGatewayDis
       return;
     }
     await this.engine.checkAccess(roomId, meta.userId);
-    const actions: GameSingleActionDto[] = Array.isArray(payload?.actions) ? payload.actions : [];
-    playingLog('ws.game.actions', { userId: meta.userId, roomId, gameType, count: actions.length });
+    const actions: GameSingleActionDto[] = Array.isArray(payload?.actions)
+      ? payload.actions
+      : [];
+    playingLog('ws.game.actions', {
+      userId: meta.userId,
+      roomId,
+      gameType,
+      count: actions.length,
+    });
     // `GameEngineService` broadcast déjà via `setBroadcaster(...)` (pour inclure aussi `botThinking`).
     await this.engine.applyActions(roomId, gameType, actions, meta.userId);
   }
@@ -207,7 +251,12 @@ export class GameGateway implements OnGatewayConnection<WebSocket>, OnGatewayDis
     });
   }
 
-  private setRoom(meta: GameClient, roomId: number, gameType: string, client: WebSocket) {
+  private setRoom(
+    meta: GameClient,
+    roomId: number,
+    gameType: string,
+    client: WebSocket,
+  ) {
     if (meta.roomId && meta.gameType) {
       const oldKey = this.buildRoomKey(meta.gameType, meta.roomId);
       this.rooms.get(oldKey)?.delete(client);

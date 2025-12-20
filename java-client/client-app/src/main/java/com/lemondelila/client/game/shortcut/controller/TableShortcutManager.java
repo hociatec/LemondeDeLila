@@ -195,6 +195,25 @@ public final class TableShortcutManager {
     }
 
     /**
+     * Raccourci rÇ¸initialisation (X) sur un composant racine.
+     */
+    public void bindReset(JComponent root, Runnable onReset) {
+        Objects.requireNonNull(root, "root");
+        Objects.requireNonNull(onReset, "onReset");
+        KeyStroke reset = KeyStroke.getKeyStroke(KeyEvent.VK_X, 0);
+        registerShortcut(reset, "RÇ¸initialiser la partie");
+        InputMap windowMap = root.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        ActionMap actions = root.getActionMap();
+        windowMap.put(reset, "table.reset");
+        actions.put("table.reset", new javax.swing.AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                onReset.run();
+            }
+        });
+    }
+
+    /**
      * Binde en une fois les raccourcis d'info (w pour participants, t pour tour en cours).
      */
     public void bindInfoShortcuts(JComponent root, Runnable onSummary, Runnable onTurnInfo) {

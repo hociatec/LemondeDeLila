@@ -6,7 +6,19 @@ import { TurnStatusService } from './services/turn-status.service';
 import { TurnLabelService } from './services/turn-label.service';
 
 @Module({
-  providers: [TurnService, TurnActionsService, TurnManagerService, TurnStatusService, TurnLabelService],
-  exports: [TurnService, TurnActionsService, TurnManagerService, TurnStatusService, TurnLabelService],
+  providers: [
+    TurnService,
+    TurnActionsService,
+    TurnManagerService,
+    TurnStatusService,
+    TurnLabelService,
+  ],
+  exports: [
+    TurnService,
+    TurnActionsService,
+    TurnManagerService,
+    TurnStatusService,
+    TurnLabelService,
+  ],
 })
 export class TurnModule {}

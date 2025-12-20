@@ -11,6 +11,7 @@ import com.lemondelila.client.game.room.browser.model.PublicRoomSummary;
 import com.lemondelila.client.game.room.browser.event.JoinRoomFailed;
 import com.lemondelila.client.game.room.browser.event.JoinRoomRequested;
 import com.lemondelila.client.game.room.browser.event.JoinRoomSucceeded;
+import com.lemondelila.client.game.room.browser.event.SpectateRoomRequested;
 import com.lemondelila.client.game.room.browser.event.PublicRoomsFailed;
 import com.lemondelila.client.game.room.browser.event.PublicRoomsLoaded;
 import com.lemondelila.client.game.room.browser.event.PublicRoomsRequested;
@@ -20,6 +21,8 @@ import com.lemondelila.client.menu.view.MainMenuScreen;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +45,7 @@ public final class RoomBrowserScreen extends JPanel implements Screen, AutoClose
         add(view.component(), BorderLayout.CENTER);
 
         view.onJoin(roomId -> eventBus.publish(new JoinRoomRequested(roomId)));
+        view.onSpectate(roomId -> eventBus.publish(new SpectateRoomRequested(roomId)));
 
         // Échap = retour menu principal.
         getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("ESCAPE"), "go-back");
@@ -51,6 +55,19 @@ public final class RoomBrowserScreen extends JPanel implements Screen, AutoClose
                 if (screenManager != null) {
                     screenManager.show(MainMenuScreen.ID);
                 }
+            }
+        });
+
+        // Ctrl+C = ouvrir la table en spectateur (lecture seule), comme Ctrl+H sur une table.
+        // Fallback : selon l'environnement, le masque "Ctrl" peut varier.
+        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
+                .put(KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK), "spectate-selected");
+        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
+                .put(KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_MASK), "spectate-selected");
+        getActionMap().put("spectate-selected", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                view.spectateSelectedFromShortcut();
             }
         });
 

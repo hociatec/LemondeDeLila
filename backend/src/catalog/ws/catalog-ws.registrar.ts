@@ -11,9 +11,12 @@ export class CatalogWsRegistrar implements OnModuleInit {
 
   onModuleInit() {
     this.registry.register('catalog.all', () => this.handler.all());
-    this.registry.register('catalog.categories', () => this.handler.categories());
-    this.registry.register('catalog.categoryGames', (_, payload) => this.handler.categoryGames(payload));
+    this.registry.register('catalog.categories', () =>
+      this.handler.categories(),
+    );
+    this.registry.register('catalog.categoryGames', (_, payload) =>
+      this.handler.categoryGames(payload),
+    );
     this.registry.register('catalog.games', () => this.handler.games());
   }
 }
-

@@ -53,7 +53,8 @@ export class ChatService {
   }
 
   normalize(message: ChatMessage): Record<string, unknown> {
-    const created = message.createdAt instanceof Date ? message.createdAt : new Date();
+    const created =
+      message.createdAt instanceof Date ? message.createdAt : new Date();
     const createdIso = isFinite(created.getTime())
       ? created.toISOString()
       : new Date().toISOString();

@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 
-export type DeckPoolState<T = any> = Record<string, { deck: T[]; discards: T[] }>;
+export type DeckPoolState<T = any> = Record<
+  string,
+  { deck: T[]; discards: T[] }
+>;
 
 @Injectable()
 export class DeckPoolService {
@@ -13,7 +16,11 @@ export class DeckPoolService {
     return copy;
   }
 
-  draw<T>(pool: DeckPoolState<T>, key: string, rng: () => number = Math.random): { card: T | null; pool: DeckPoolState<T> } {
+  draw<T>(
+    pool: DeckPoolState<T>,
+    key: string,
+    rng: () => number = Math.random,
+  ): { card: T | null; pool: DeckPoolState<T> } {
     const state = pool[key] ?? { deck: [], discards: [] };
     let deck = [...state.deck];
     let discards = [...state.discards];
@@ -25,16 +32,27 @@ export class DeckPoolService {
       return { card: null, pool: pool };
     }
     const [card, ...rest] = deck;
-    const updated: DeckPoolState<T> = { ...pool, [key]: { deck: rest, discards } };
+    const updated: DeckPoolState<T> = {
+      ...pool,
+      [key]: { deck: rest, discards },
+    };
     return { card, pool: updated };
   }
 
   discard<T>(pool: DeckPoolState<T>, key: string, card: T): DeckPoolState<T> {
     const state = pool[key] ?? { deck: [], discards: [] };
-    return { ...pool, [key]: { deck: state.deck, discards: [...state.discards, card] } };
+    return {
+      ...pool,
+      [key]: { deck: state.deck, discards: [...state.discards, card] },
+    };
   }
 
-  set<T>(pool: DeckPoolState<T>, key: string, deck: T[], discards: T[] = []): DeckPoolState<T> {
+  set<T>(
+    pool: DeckPoolState<T>,
+    key: string,
+    deck: T[],
+    discards: T[] = [],
+  ): DeckPoolState<T> {
     return { ...pool, [key]: { deck, discards } };
   }
 }

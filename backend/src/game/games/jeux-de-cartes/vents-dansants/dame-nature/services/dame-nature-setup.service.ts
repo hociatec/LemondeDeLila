@@ -1,8 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import { DeckPoolService, DeckPoolState } from '../../../../../modules/cards/services/deck-pool.service';
-import { GameStateEntity, PlayerStateEntity } from '../../../../../core/entities/game-state.entity';
+import { DeckPoolService } from '../../../../../modules/cards/services/deck-pool.service';
+import {
+  GameStateEntity,
+  PlayerStateEntity,
+} from '../../../../../core/entities/game-state.entity';
 import { DameNatureMetadata } from './dame-nature.service';
 import { dameNatureLog } from '../../../../../../common/utils/damenature-logger';
 import {
@@ -43,28 +46,24 @@ export class DameNatureSetupService {
   private quizJsonCache: DameNatureQuizJsonV1 | null = null;
   private pollutionJsonCache: DameNaturePollutionJsonV1 | null = null;
 
-  private static findUp(startDir: string, filename: string, maxDepth = 10): string | null {
-    let current = startDir;
-    for (let depth = 0; depth < maxDepth; depth += 1) {
-      const candidate = path.join(current, filename);
-      if (fs.existsSync(candidate)) return candidate;
-      const parent = path.dirname(current);
-      if (parent === current) break;
-      current = parent;
-    }
-    return null;
-  }
-
   private static readTextFileWithFallback(filePath: string): string {
-    const utf8 = fs.readFileSync(filePath, { encoding: 'utf8' }).replace(/^\uFEFF/, '');
+    const utf8 = fs
+      .readFileSync(filePath, { encoding: 'utf8' })
+      .replace(/^\uFEFF/, '');
     const replacementCount = (utf8.match(/\uFFFD/g) ?? []).length;
     if (replacementCount <= 2) return utf8;
-    return fs.readFileSync(filePath, { encoding: 'latin1' }).replace(/^\uFEFF/, '');
+    return fs
+      .readFileSync(filePath, { encoding: 'latin1' })
+      .replace(/^\uFEFF/, '');
   }
 
   private static fixMojibakeString(value: string): string {
     const score = (s: string) => {
-      const suspicious = (s.match(/[\u00C2\u00C3\u00E2\u0153\u0178\u0160\u0161\u017D\u017E\u2030]/g) ?? []).length;
+      const suspicious = (
+        s.match(
+          /[\u00C2\u00C3\u00E2\u0153\u0178\u0160\u0161\u017D\u017E\u2030]/g,
+        ) ?? []
+      ).length;
       const replacement = (s.match(/\uFFFD/g) ?? []).length;
       return suspicious * 2 + replacement * 10;
     };
@@ -139,7 +138,9 @@ export class DameNatureSetupService {
       return DameNatureSetupService.fixMojibakeString(value) as unknown as T;
     }
     if (Array.isArray(value)) {
-      return value.map((v) => DameNatureSetupService.fixMojibakeDeep(v)) as unknown as T;
+      return value.map((v) =>
+        DameNatureSetupService.fixMojibakeDeep(v),
+      ) as unknown as T;
     }
     if (value && typeof value === 'object') {
       const obj = value as Record<string, unknown>;
@@ -159,7 +160,11 @@ export class DameNatureSetupService {
     this.familiesCache = familiesJson.families.map((f) => ({
       id: f.id,
       name: f.name,
-      members: (f.members ?? []).map((m) => ({ id: m.id, name: m.name, role: 'Membre' })),
+      members: (f.members ?? []).map((m) => ({
+        id: m.id,
+        name: m.name,
+        role: 'Membre',
+      })),
     }));
     return this.familiesCache;
   }
@@ -180,7 +185,9 @@ export class DameNatureSetupService {
 
   maxPollution(): number {
     const pollutionJson = this.pollutionJson();
-    return typeof pollutionJson.maxPollution === 'number' ? pollutionJson.maxPollution : 12;
+    return typeof pollutionJson.maxPollution === 'number'
+      ? pollutionJson.maxPollution
+      : 12;
   }
 
   private familiesJson(): DameNatureFamiliesJsonV1 {
@@ -188,14 +195,22 @@ export class DameNatureSetupService {
     const filePath = path.join(__dirname, '..', 'models', 'families.json');
     try {
       const raw = DameNatureSetupService.readTextFileWithFallback(filePath);
-      const parsed = DameNatureSetupService.fixMojibakeDeep(JSON.parse(raw)) as DameNatureFamiliesJsonV1;
+      const parsed = DameNatureSetupService.fixMojibakeDeep(
+        JSON.parse(raw),
+      ) as DameNatureFamiliesJsonV1;
       if (!parsed || (parsed as any).version !== 1) throw new Error('version');
-      if (!Array.isArray(parsed.families) || parsed.families.length === 0) throw new Error('families');
+      if (!Array.isArray(parsed.families) || parsed.families.length === 0)
+        throw new Error('families');
       this.familiesJsonCache = parsed;
-      dameNatureLog('setup.families_json.loaded', { source: filePath, families: parsed.families.length });
+      dameNatureLog('setup.families_json.loaded', {
+        source: filePath,
+        families: parsed.families.length,
+      });
       return parsed;
     } catch (e) {
-      throw new Error(`Catalogue Dame Nature introuvable/invalide: families.json (${String(e)})`);
+      throw new Error(
+        `Catalogue Dame Nature introuvable/invalide: families.json (${String(e)})`,
+      );
     }
   }
 
@@ -204,14 +219,21 @@ export class DameNatureSetupService {
     const filePath = path.join(__dirname, '..', 'models', 'quiz.json');
     try {
       const raw = DameNatureSetupService.readTextFileWithFallback(filePath);
-      const parsed = DameNatureSetupService.fixMojibakeDeep(JSON.parse(raw)) as DameNatureQuizJsonV1;
+      const parsed = DameNatureSetupService.fixMojibakeDeep(
+        JSON.parse(raw),
+      ) as DameNatureQuizJsonV1;
       if (!parsed || (parsed as any).version !== 1) throw new Error('version');
       if (!Array.isArray(parsed.quiz)) throw new Error('quiz');
       this.quizJsonCache = parsed;
-      dameNatureLog('setup.quiz_json.loaded', { source: filePath, quiz: parsed.quiz.length });
+      dameNatureLog('setup.quiz_json.loaded', {
+        source: filePath,
+        quiz: parsed.quiz.length,
+      });
       return parsed;
     } catch (e) {
-      throw new Error(`Catalogue Dame Nature introuvable/invalide: quiz.json (${String(e)})`);
+      throw new Error(
+        `Catalogue Dame Nature introuvable/invalide: quiz.json (${String(e)})`,
+      );
     }
   }
 
@@ -220,22 +242,33 @@ export class DameNatureSetupService {
     const filePath = path.join(__dirname, '..', 'models', 'pollution.json');
     try {
       const raw = DameNatureSetupService.readTextFileWithFallback(filePath);
-      const parsed = DameNatureSetupService.fixMojibakeDeep(JSON.parse(raw)) as DameNaturePollutionJsonV1;
+      const parsed = DameNatureSetupService.fixMojibakeDeep(
+        JSON.parse(raw),
+      ) as DameNaturePollutionJsonV1;
       if (!parsed || (parsed as any).version !== 1) throw new Error('version');
       if (!Array.isArray(parsed.cards)) throw new Error('cards');
-      if (typeof parsed.maxPollution !== 'number') throw new Error('maxPollution');
+      if (typeof parsed.maxPollution !== 'number')
+        throw new Error('maxPollution');
       this.pollutionJsonCache = parsed;
-      dameNatureLog('setup.pollution_json.loaded', { source: filePath, max: parsed.maxPollution, cards: parsed.cards.length });
+      dameNatureLog('setup.pollution_json.loaded', {
+        source: filePath,
+        max: parsed.maxPollution,
+        cards: parsed.cards.length,
+      });
       return parsed;
     } catch (e) {
-      throw new Error(`Catalogue Dame Nature introuvable/invalide: pollution.json (${String(e)})`);
+      throw new Error(
+        `Catalogue Dame Nature introuvable/invalide: pollution.json (${String(e)})`,
+      );
     }
   }
 
   buildMetadata(): DameNatureMetadata {
     const families = this.families();
     if (!families.length) {
-      throw new Error('Impossible de démarrer Dame Nature: aucune famille définie (catalogue vide).');
+      throw new Error(
+        'Impossible de démarrer Dame Nature: aucune famille définie (catalogue vide).',
+      );
     }
     const deck: FamilyCard[] = [];
     families.forEach((fam) => {
@@ -276,7 +309,11 @@ export class DameNatureSetupService {
 
     deck.push(...dangerCards, ...quizCards);
     return {
-      decks: this.deckPool.set<FamilyCard>({}, 'family', this.deckPool.shuffle(deck)),
+      decks: this.deckPool.set<FamilyCard>(
+        {},
+        'family',
+        this.deckPool.shuffle(deck),
+      ),
       familyGoal: 4,
       maxPollution: this.maxPollution(),
       pollutionByPlayer: {},
@@ -288,14 +325,17 @@ export class DameNatureSetupService {
     };
   }
 
-  drawCard(meta: DameNatureMetadata): { card: FamilyCard | null; metadata: DameNatureMetadata } {
-    const { card, pool } = this.deckPool.draw<FamilyCard>(meta.decks as DeckPoolState<FamilyCard>, 'family');
+  drawCard(meta: DameNatureMetadata): {
+    card: FamilyCard | null;
+    metadata: DameNatureMetadata;
+  } {
+    const { card, pool } = this.deckPool.draw<FamilyCard>(meta.decks, 'family');
     const metadata: DameNatureMetadata = { ...meta, decks: pool };
     return { card: card ?? null, metadata };
   }
 
   discardCard(meta: DameNatureMetadata, card: FamilyCard): DameNatureMetadata {
-    const decks = this.deckPool.discard(meta.decks as DeckPoolState<FamilyCard>, 'family', card);
+    const decks = this.deckPool.discard(meta.decks, 'family', card);
     return { ...meta, decks };
   }
 
@@ -303,7 +343,11 @@ export class DameNatureSetupService {
    * Pioche une carte de famille uniquement (ignore les quiz/danger) pour l'initialisation.
    * Les cartes non-famille sont retirées du paquet et ignorées pour ne pas polluer les mains.
    */
-  drawFamilyCard(meta: DameNatureMetadata): { card: FamilyCard | null; metadata: DameNatureMetadata; skipped: FamilyCard[] } {
+  drawFamilyCard(meta: DameNatureMetadata): {
+    card: FamilyCard | null;
+    metadata: DameNatureMetadata;
+    skipped: FamilyCard[];
+  } {
     let currentMeta = meta;
     const skipped: FamilyCard[] = [];
     for (let i = 0; i < 50; i += 1) {
@@ -323,8 +367,20 @@ export class DameNatureSetupService {
   initializePlayers(
     baseState: GameStateEntity,
     metadata: DameNatureMetadata,
-  ): Array<PlayerStateEntity & { hand: FamilyCard[]; handCount: number; books: string[] }> {
-    const allPlayers: Array<PlayerStateEntity & { hand: FamilyCard[]; handCount: number; books: string[] }> = [];
+  ): Array<
+    PlayerStateEntity & {
+      hand: FamilyCard[];
+      handCount: number;
+      books: string[];
+    }
+  > {
+    const allPlayers: Array<
+      PlayerStateEntity & {
+        hand: FamilyCard[];
+        handCount: number;
+        books: string[];
+      }
+    > = [];
     (baseState.players ?? []).forEach((p) => {
       allPlayers.push({
         id: p.id,
@@ -358,8 +414,12 @@ export class DameNatureSetupService {
     const players = state.players ?? [];
     return players.map((p) => {
       const anyPlayer = p as any;
-      const hand: FamilyCard[] = Array.isArray(anyPlayer.hand) ? anyPlayer.hand : [];
-      const books: string[] = Array.isArray(anyPlayer.books) ? anyPlayer.books : [];
+      const hand: FamilyCard[] = Array.isArray(anyPlayer.hand)
+        ? anyPlayer.hand
+        : [];
+      const books: string[] = Array.isArray(anyPlayer.books)
+        ? anyPlayer.books
+        : [];
       return {
         id: p.id,
         username: p.username,

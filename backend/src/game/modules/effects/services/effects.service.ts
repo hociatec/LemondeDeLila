@@ -11,7 +11,11 @@ export class EffectsService {
       capabilities: [
         { id: 'draw', description: 'Piocher des cartes dans un paquet donné.' },
         { id: 'skip', description: 'Perdre ou gagner un tour.' },
-        { id: 'move', description: 'Reculer/avancer de cases ou se déplacer vers une case cible.' },
+        {
+          id: 'move',
+          description:
+            'Reculer/avancer de cases ou se déplacer vers une case cible.',
+        },
       ],
     };
   }

@@ -7,11 +7,21 @@ export class InventoryService {
     return {
       id: 'inventory',
       label: 'Inventaire',
-      description: 'Suivi des possessions des joueurs (cartes, ressources, statuts).',
+      description:
+        'Suivi des possessions des joueurs (cartes, ressources, statuts).',
       capabilities: [
-        { id: 'items', description: 'Gestion des éléments détenus (ajout/retrait).' },
-        { id: 'lists', description: 'Listes d’objectifs ou collections à compléter.' },
-        { id: 'statuses', description: 'États temporaires (perte de tour, bonus).' },
+        {
+          id: 'items',
+          description: 'Gestion des éléments détenus (ajout/retrait).',
+        },
+        {
+          id: 'lists',
+          description: 'Listes d’objectifs ou collections à compléter.',
+        },
+        {
+          id: 'statuses',
+          description: 'États temporaires (perte de tour, bonus).',
+        },
       ],
     };
   }

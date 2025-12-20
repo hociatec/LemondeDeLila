@@ -1,5 +1,10 @@
 import { Logger } from '@nestjs/common';
-import { OnGatewayConnection, OnGatewayDisconnect, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import {
+  OnGatewayConnection,
+  OnGatewayDisconnect,
+  WebSocketGateway,
+  WebSocketServer,
+} from '@nestjs/websockets';
 import { Server, WebSocket } from 'ws';
 import { WsJwtAuthService } from '../../common/ws/ws-jwt-auth.service';
 import { NotificationService } from '../services/notification.service';
@@ -7,7 +12,9 @@ import { NotificationService } from '../services/notification.service';
 type ClientMeta = { userId: number; socket: WebSocket };
 
 @WebSocketGateway({ path: '/ws/notify' })
-export class NotificationGateway implements OnGatewayConnection<WebSocket>, OnGatewayDisconnect<WebSocket> {
+export class NotificationGateway
+  implements OnGatewayConnection<WebSocket>, OnGatewayDisconnect<WebSocket>
+{
   @WebSocketServer()
   server!: Server<WebSocket>;
 
@@ -29,7 +36,10 @@ export class NotificationGateway implements OnGatewayConnection<WebSocket>, OnGa
     this.clients.set(client, { userId: user.id, socket: client });
     this.notifications.register(user.id, client);
     client.on('error', () => client.close());
-    this.safeSend(client, { type: 'notify.connected', payload: { userId: user.id } });
+    this.safeSend(client, {
+      type: 'notify.connected',
+      payload: { userId: user.id },
+    });
   }
 
   handleDisconnect(client: WebSocket) {
@@ -54,4 +64,3 @@ export class NotificationGateway implements OnGatewayConnection<WebSocket>, OnGa
     }
   }
 }
-

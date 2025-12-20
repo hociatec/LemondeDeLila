@@ -16,8 +16,32 @@ import { DameNatureActionService } from './services/dame-nature-action.service';
 import { DameNatureBotService } from './services/dame-nature-bot.service';
 
 @Module({
-  imports: [GameCoreModule, CardsModule, TurnModule, GameRegistryModule, ActionResolverModule, ActionLogModule, StateModule, VictoryModule, BotModule],
-  providers: [DameNatureService, DameNaturePollutionService, DameNatureSetupService, DameNatureBooksService, DameNatureActionService, DameNatureBotService],
-  exports: [DameNatureService, DameNaturePollutionService, DameNatureSetupService, DameNatureBooksService, DameNatureActionService, DameNatureBotService],
+  imports: [
+    GameCoreModule,
+    CardsModule,
+    TurnModule,
+    GameRegistryModule,
+    ActionResolverModule,
+    ActionLogModule,
+    StateModule,
+    VictoryModule,
+    BotModule,
+  ],
+  providers: [
+    DameNatureService,
+    DameNaturePollutionService,
+    DameNatureSetupService,
+    DameNatureBooksService,
+    DameNatureActionService,
+    DameNatureBotService,
+  ],
+  exports: [
+    DameNatureService,
+    DameNaturePollutionService,
+    DameNatureSetupService,
+    DameNatureBooksService,
+    DameNatureActionService,
+    DameNatureBotService,
+  ],
 })
 export class DameNatureModule {}

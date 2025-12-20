@@ -16,16 +16,24 @@ export type VictoryCondition = {
 
 @Injectable()
 export class VictoryService {
-  checkCriteria(state: GameStateEntity, checks: Array<(s: GameStateEntity) => boolean>): boolean {
+  checkCriteria(
+    state: GameStateEntity,
+    checks: Array<(s: GameStateEntity) => boolean>,
+  ): boolean {
     return checks.some((fn) => fn(state));
   }
 
-  evaluate(state: GameStateEntity, conditions: VictoryCondition[]): (VictoryCheckResult & { conditionId: string }) | null {
+  evaluate(
+    state: GameStateEntity,
+    conditions: VictoryCondition[],
+  ): (VictoryCheckResult & { conditionId: string }) | null {
     for (const condition of conditions ?? []) {
       if (!condition?.check) continue;
       const raw = condition.check(state);
       const normalized: VictoryCheckResult =
-        typeof raw === 'boolean' ? { finished: raw, winnerId: null } : { winnerId: null, ...raw };
+        typeof raw === 'boolean'
+          ? { finished: raw, winnerId: null }
+          : { winnerId: null, ...raw };
       if (normalized.finished) {
         return { ...normalized, conditionId: condition.id };
       }
@@ -37,11 +45,21 @@ export class VictoryService {
     return {
       id: 'victory',
       label: 'Conditions de victoire',
-      description: 'Cadre pour définir et vérifier les conditions gagnantes ou de fin de partie.',
+      description:
+        'Cadre pour définir et vérifier les conditions gagnantes ou de fin de partie.',
       capabilities: [
-        { id: 'criteria', description: 'Définition de critères (objectifs, score, positions).' },
-        { id: 'checks', description: 'Évaluation des critères à chaque tour ou événement.' },
-        { id: 'resolution', description: 'Annonce du vainqueur et fin de partie.' },
+        {
+          id: 'criteria',
+          description: 'Définition de critères (objectifs, score, positions).',
+        },
+        {
+          id: 'checks',
+          description: 'Évaluation des critères à chaque tour ou événement.',
+        },
+        {
+          id: 'resolution',
+          description: 'Annonce du vainqueur et fin de partie.',
+        },
       ],
     };
   }

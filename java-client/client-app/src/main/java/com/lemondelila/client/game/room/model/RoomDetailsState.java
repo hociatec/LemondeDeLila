@@ -4,6 +4,7 @@ public final class RoomDetailsState {
     private Integer roomId;
     private String gameType;
     private String roomName;
+    private boolean spectator;
 
     public Integer roomId() {
         return roomId;
@@ -27,5 +28,13 @@ public final class RoomDetailsState {
 
     public void setRoomName(String roomName) {
         this.roomName = roomName;
+    }
+
+    public boolean spectator() {
+        return spectator;
+    }
+
+    public void setSpectator(boolean spectator) {
+        this.spectator = spectator;
     }
 }

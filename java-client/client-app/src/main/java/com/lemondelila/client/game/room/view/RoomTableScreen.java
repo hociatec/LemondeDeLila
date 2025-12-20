@@ -18,11 +18,13 @@ import com.lemondelila.client.game.core.view.PrimaryActionCapable;
 import com.lemondelila.client.game.history.controller.GameHistoryController;
 import com.lemondelila.client.game.history.service.GameAnnouncer;
 import com.lemondelila.client.game.history.view.GameHistorySidebar;
+import com.lemondelila.client.game.core.view.GameResetDialog;
 import com.lemondelila.client.game.room.controller.RoomTableController;
 import com.lemondelila.client.game.room.event.RoomCreated;
 import com.lemondelila.client.game.room.event.RoomOperationFailed;
 import com.lemondelila.client.game.room.event.RoomPrivacyChanged;
 import com.lemondelila.client.game.room.event.RoomUpdated;
+import com.lemondelila.client.game.room.event.ResetRoomRequested;
 import com.lemondelila.client.game.room.model.RoomDetailsState;
 import com.lemondelila.client.game.room.model.TableState;
 import com.lemondelila.client.game.room.service.RoomLifecycleService;
@@ -102,6 +104,7 @@ public final class RoomTableScreen extends BaseTableScreen {
                 this::handleTogglePrivacy,
                 this::handleLaunch,
                 this::handleQuit);
+        shortcutManager.bindReset(this, this::handleResetGameGlobal);
 
         subscriptions().subscribe(eventBus, BotAdded.class, controller::onBotAdded);
         subscriptions().subscribe(eventBus, BotRemoved.class, controller::onBotRemoved);
@@ -148,6 +151,9 @@ public final class RoomTableScreen extends BaseTableScreen {
             tableState.clear();
         } else if (tableState.roomId() == null || !roomId.equals(tableState.roomId())) {
             tableState.setRoom(roomId, gameName);
+        }
+        if (roomId != null && detailsState.spectator()) {
+            announcer().announce(view.historySidebar(), "Mode spectateur activé.");
         }
         refreshFromState();
         view.renderHistory(historyController);
@@ -237,6 +243,27 @@ public final class RoomTableScreen extends BaseTableScreen {
 
     private void handleTableSummary() {
         controller.announceTableSummary();
+    }
+
+    private void handleResetGameGlobal() {
+        if (detailsState.spectator()) {
+            announcer().announce(view.historySidebar(), "Impossible de rÇ¸initialiser en mode spectateur.");
+            return;
+        }
+        if (!tableState.started()) {
+            return;
+        }
+        Integer roomId = currentUiRoomId();
+        if (roomId == null) {
+            return;
+        }
+        boolean confirmed = GameResetDialog.confirm(this);
+        if (!confirmed) {
+            announcer().announce(view.historySidebar(), "RÇ¸initialisation annulÇ¸e.");
+            return;
+        }
+        announcer().announce(view.historySidebar(), "RÇ¸initialisation de la partie demandÇ¸e.");
+        eventBus.publish(new ResetRoomRequested(roomId));
     }
 
     private void handleTurnInfo() {

@@ -7,4 +7,3 @@ import { PayloadValidationService } from './payload-validation.service';
   exports: [PayloadValidationService],
 })
 export class ValidationModule {}
-

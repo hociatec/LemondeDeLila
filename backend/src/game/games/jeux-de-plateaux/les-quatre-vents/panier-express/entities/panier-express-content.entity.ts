@@ -41,4 +41,3 @@ export type PanierExpressShoppingListsJsonV1 = {
   version: 1;
   lists: string[][];
 };
-

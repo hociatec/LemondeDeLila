@@ -9,7 +9,11 @@ export type PendingRequirement = {
 @Injectable()
 export class TurnActionsService {
   buildAvailableActions(params: {
-    state: { status?: string; turn?: { currentPlayerId: number | null }; turnIndex: number };
+    state: {
+      status?: string;
+      turn?: { currentPlayerId: number | null };
+      turnIndex: number;
+    };
     playerId: number;
     pending?: PendingRequirement | null;
     base?: GameSingleActionDto[];

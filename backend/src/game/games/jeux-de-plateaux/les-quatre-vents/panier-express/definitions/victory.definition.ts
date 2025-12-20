@@ -10,11 +10,21 @@ export const PANIER_EXPRESS_VICTORY: VictoryCondition[] = [
     check: (state: GameStateEntity) => {
       const players = state.players ?? [];
       for (const player of players) {
-        const shoppingList = Array.isArray((player as any).shoppingList) ? (player as any).shoppingList : [];
-        const basket = Array.isArray((player as any).basket) ? (player as any).basket : [];
-        const completed = shoppingList.length > 0 && shoppingList.every((item) => basket.includes(item));
+        const shoppingList = Array.isArray((player as any).shoppingList)
+          ? (player as any).shoppingList
+          : [];
+        const basket = Array.isArray((player as any).basket)
+          ? (player as any).basket
+          : [];
+        const completed =
+          shoppingList.length > 0 &&
+          shoppingList.every((item) => basket.includes(item));
         if (completed) {
-          return { finished: true, winnerId: player.id, details: { basketSize: basket.length } };
+          return {
+            finished: true,
+            winnerId: player.id,
+            details: { basketSize: basket.length },
+          };
         }
       }
       return false;

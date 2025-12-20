@@ -1,16 +1,28 @@
 import { Injectable } from '@nestjs/common';
-import { DeckPoolService, DeckPoolState } from '../../../../../modules/cards/services/deck-pool.service';
-import { PanierExpressDeckPool, PanierExpressMetadata } from '../entities/panier-express-state.entity';
+import {
+  DeckPoolService,
+  DeckPoolState,
+} from '../../../../../modules/cards/services/deck-pool.service';
+import {
+  PanierExpressDeckPool,
+  PanierExpressMetadata,
+} from '../entities/panier-express-state.entity';
 
 @Injectable()
 export class PanierExpressDeckService {
   constructor(private readonly deckPool: DeckPoolService) {}
 
-  drawCard<T = string>(meta: PanierExpressMetadata, key: string): {
+  drawCard<T = string>(
+    meta: PanierExpressMetadata,
+    key: string,
+  ): {
     card: T | null;
     metadata: PanierExpressMetadata;
   } {
-    const { card, pool } = this.deckPool.draw<T>(meta.decks as DeckPoolState<T>, key);
+    const { card, pool } = this.deckPool.draw<T>(
+      meta.decks as DeckPoolState<T>,
+      key,
+    );
     return {
       card: card ?? null,
       metadata: { ...meta, decks: pool as PanierExpressDeckPool },
@@ -37,8 +49,16 @@ export class PanierExpressDeckService {
     return this.drawCard<T>(replenished, key);
   }
 
-  replenishDeck<T = string>(meta: PanierExpressMetadata, key: string, cards: T[]): PanierExpressMetadata {
-    const pool = this.deckPool.set<T>(meta.decks as DeckPoolState<T>, key, this.deckPool.shuffle([...cards]));
+  replenishDeck<T = string>(
+    meta: PanierExpressMetadata,
+    key: string,
+    cards: T[],
+  ): PanierExpressMetadata {
+    const pool = this.deckPool.set<T>(
+      meta.decks as DeckPoolState<T>,
+      key,
+      this.deckPool.shuffle([...cards]),
+    );
     return { ...meta, decks: pool as PanierExpressDeckPool };
   }
 }

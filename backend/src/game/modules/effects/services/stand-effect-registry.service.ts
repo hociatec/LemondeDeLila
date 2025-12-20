@@ -1,17 +1,33 @@
 import { Injectable } from '@nestjs/common';
 import { TileEffectRegistryService } from './tile-effect-registry.service';
 
-export type StandEffectContext<TState = any> = { state: TState; playerId: number; standId: string };
+export type StandEffectContext<TState = any> = {
+  state: TState;
+  playerId: number;
+  standId: string;
+};
 
 @Injectable()
 export class StandEffectRegistryService<TState = any> {
-  constructor(private readonly tiles: TileEffectRegistryService<TState, StandEffectContext<TState>>) {}
+  constructor(
+    private readonly tiles: TileEffectRegistryService<
+      TState,
+      StandEffectContext<TState>
+    >,
+  ) {}
 
-  registerStand(type: string, handler: (state: TState, ctx: StandEffectContext<TState>) => TState): void {
+  registerStand(
+    type: string,
+    handler: (state: TState, ctx: StandEffectContext<TState>) => TState,
+  ): void {
     this.tiles.register(type, (s, ctx) => handler(s, ctx));
   }
 
-  applyStand(type: string, state: TState, ctx: StandEffectContext<TState>): TState {
+  applyStand(
+    type: string,
+    state: TState,
+    ctx: StandEffectContext<TState>,
+  ): TState {
     return this.tiles.apply(type, state, ctx);
   }
 }

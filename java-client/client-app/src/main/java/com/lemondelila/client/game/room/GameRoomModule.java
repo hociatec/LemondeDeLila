@@ -23,6 +23,7 @@ public final class GameRoomModule implements LilaModule {
         builder.bindAuto(com.lemondelila.client.game.room.service.RoomLifecycleService.class);
         builder.bindAuto(com.lemondelila.client.game.room.service.GameLaunchCoordinator.class);
         builder.bindAuto(com.lemondelila.client.game.room.service.RoomStartService.class);
+        builder.bindAuto(com.lemondelila.client.game.room.service.RoomResetService.class);
         builder.bindAuto(com.lemondelila.client.notification.service.NotificationConnectionFactory.class);
         builder.bindAuto(com.lemondelila.client.game.room.service.RoomInviteNotificationService.class);
         builder.bindAuto(com.lemondelila.client.game.room.service.RoomInviteAcceptanceService.class);
@@ -38,6 +39,7 @@ public final class GameRoomModule implements LilaModule {
         // Warm services/controllers to subscribe immediately.
         context.get(com.lemondelila.client.game.room.service.RoomLifecycleService.class);
         context.get(com.lemondelila.client.game.room.service.RoomStartService.class);
+        context.get(com.lemondelila.client.game.room.service.RoomResetService.class);
         context.get(com.lemondelila.client.game.room.service.RoomInviteNotificationService.class);
     }
 

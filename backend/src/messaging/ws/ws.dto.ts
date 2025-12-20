@@ -1,4 +1,14 @@
-import { IsIn, IsInt, IsOptional, IsPositive, IsString, Max, MaxLength, Min, MinLength } from 'class-validator';
+import {
+  IsIn,
+  IsInt,
+  IsOptional,
+  IsPositive,
+  IsString,
+  Max,
+  MaxLength,
+  Min,
+  MinLength,
+} from 'class-validator';
 
 export class MessagingConversationDto {
   @IsInt()
@@ -46,4 +56,3 @@ export class MessagingSearchDto {
   @MaxLength(255)
   query?: string;
 }
-

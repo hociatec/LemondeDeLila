@@ -23,7 +23,6 @@ export class PresenceGateway
   @WebSocketServer()
   server!: Server<WebSocket>;
 
-  private readonly jwtSecret: string;
   private readonly logger = new Logger(PresenceGateway.name);
 
   constructor(
@@ -33,9 +32,10 @@ export class PresenceGateway
   ) {
     const secret = config.get<string>('JWT_SECRET');
     if (!secret) {
-      throw new Error('JWT_SECRET doit être défini pour le WebSocket de présence.');
+      throw new Error(
+        'JWT_SECRET doit être défini pour le WebSocket de présence.',
+      );
     }
-    this.jwtSecret = secret;
   }
 
   async handleConnection(client: WebSocket, ...args: any[]) {
@@ -64,7 +64,9 @@ export class PresenceGateway
       return;
     }
     // tracer la reception brute pour debug
-    this.logger.log(`WS message reçu (${typeof raw}) de ${session.user.username}`);
+    this.logger.log(
+      `WS message reçu (${typeof raw}) de ${session.user.username}`,
+    );
     await this.presence.handleClientPayload(session, raw);
   }
 

@@ -32,4 +32,3 @@ export class CatalogWsHandler {
     return { type: 'catalog.games', payload: games };
   }
 }
-

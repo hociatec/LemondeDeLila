@@ -7,6 +7,7 @@ import com.lemondelila.client.framework.core.task.TaskScheduler;
 import com.lemondelila.client.game.room.browser.event.JoinRoomFailed;
 import com.lemondelila.client.game.room.browser.event.JoinRoomRequested;
 import com.lemondelila.client.game.room.browser.event.JoinRoomSucceeded;
+import com.lemondelila.client.game.room.browser.event.SpectateRoomRequested;
 import com.lemondelila.client.game.room.browser.event.PublicRoomsFailed;
 import com.lemondelila.client.game.room.browser.event.PublicRoomsLoaded;
 import com.lemondelila.client.game.room.browser.event.PublicRoomsRequested;
@@ -47,6 +48,7 @@ public final class RoomBrowserController implements AutoCloseable {
 
         subscriptions.subscribe(eventBus, PublicRoomsRequested.class, ev -> fetchPublic(ev.gameType()));
         subscriptions.subscribe(eventBus, JoinRoomRequested.class, ev -> join(ev.roomId()));
+        subscriptions.subscribe(eventBus, SpectateRoomRequested.class, ev -> spectate(ev.roomId()));
     }
 
     public ControllerResult openBrowser() {
@@ -74,10 +76,40 @@ public final class RoomBrowserController implements AutoCloseable {
                 detailsState.setRoomId(joined.roomId());
                 detailsState.setGameType(joined.gameType());
                 detailsState.setRoomName(joined.roomName());
+                detailsState.setSpectator(false);
                 eventBus.publish(new JoinRoomSucceeded(joined.roomId(), joined.gameType()));
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 eventBus.publish(new JoinRoomFailed("Join interrompu"));
+            } catch (Exception e) {
+                String message = clean(e.getMessage());
+                // Fallback : si join impossible (table démarrée/pleine), tenter l'ouverture en spectateur (lecture seule).
+                try {
+                    var spectated = service.spectatePublicRoom(roomId);
+                    detailsState.setRoomId(spectated.roomId());
+                    detailsState.setGameType(spectated.gameType());
+                    detailsState.setRoomName(spectated.roomName());
+                    detailsState.setSpectator(true);
+                    eventBus.publish(new JoinRoomSucceeded(spectated.roomId(), spectated.gameType()));
+                } catch (Exception ex) {
+                    eventBus.publish(new JoinRoomFailed(message));
+                }
+            }
+        });
+    }
+
+    private void spectate(int roomId) {
+        scheduler.runAsync(() -> {
+            try {
+                var spectated = service.spectatePublicRoom(roomId);
+                detailsState.setRoomId(spectated.roomId());
+                detailsState.setGameType(spectated.gameType());
+                detailsState.setRoomName(spectated.roomName());
+                detailsState.setSpectator(true);
+                eventBus.publish(new JoinRoomSucceeded(spectated.roomId(), spectated.gameType()));
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                eventBus.publish(new JoinRoomFailed("Ouverture interrompue"));
             } catch (Exception e) {
                 eventBus.publish(new JoinRoomFailed(clean(e.getMessage())));
             }
@@ -100,6 +132,7 @@ public final class RoomBrowserController implements AutoCloseable {
             detailsState.setRoomId(joined.roomId());
             detailsState.setGameType(joined.gameType());
             detailsState.setRoomName(joined.roomName());
+            detailsState.setSpectator(false);
             return ControllerResult.navigate(RoomTableScreen.ID);
         } catch (Exception e) {
             return ControllerResult.status("Impossible d'accepter l'invitation : " + clean(e.getMessage()));

@@ -25,7 +25,8 @@ export class MessagingWsRegistrar implements OnModuleInit {
     this.registry.register('messaging.restore', (session, payload) =>
       this.handler.restore(session, payload),
     );
-    this.registry.register('messaging.search', (_, payload) => this.handler.search(payload));
+    this.registry.register('messaging.search', (_, payload) =>
+      this.handler.search(payload),
+    );
   }
 }
-

@@ -7,10 +7,17 @@ export class TurnService {
     return {
       id: 'turn',
       label: 'Tour de jeu',
-      description: 'Gestion de l’ordre des joueurs, sens de rotation et sauts de tour.',
+      description:
+        'Gestion de l’ordre des joueurs, sens de rotation et sauts de tour.',
       capabilities: [
-        { id: 'order', description: 'Suivi de l’ordre des joueurs et du joueur courant.' },
-        { id: 'direction', description: 'Sens horaire/anti-horaire et inversions.' },
+        {
+          id: 'order',
+          description: 'Suivi de l’ordre des joueurs et du joueur courant.',
+        },
+        {
+          id: 'direction',
+          description: 'Sens horaire/anti-horaire et inversions.',
+        },
         { id: 'skip', description: 'Perte de tour et pénalités temporelles.' },
       ],
     };
@@ -20,7 +27,11 @@ export class TurnService {
     players: Array<{ id: number }>,
     currentIndex: number,
     skipTurn: Record<number, number>,
-  ): { turnIndex: number; currentPlayerId: number; skipTurn: Record<number, number> } {
+  ): {
+    turnIndex: number;
+    currentPlayerId: number;
+    skipTurn: Record<number, number>;
+  } {
     if (!players.length) {
       return { turnIndex: currentIndex, currentPlayerId: -1, skipTurn };
     }

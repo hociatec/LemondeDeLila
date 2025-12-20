@@ -11,7 +11,9 @@ import { RedisSessionStore } from '../common/session/redis-session-store';
       provide: SESSION_STORE,
       inject: [ConfigService],
       useFactory: (config: ConfigService) => {
-        const redisUrl = config.get<string>('SESSION_STORE_REDIS_URL') || config.get<string>('REDIS_URL');
+        const redisUrl =
+          config.get<string>('SESSION_STORE_REDIS_URL') ||
+          config.get<string>('REDIS_URL');
         if (redisUrl) {
           return new RedisSessionStore(redisUrl);
         }
@@ -22,4 +24,3 @@ import { RedisSessionStore } from '../common/session/redis-session-store';
   ],
 })
 export class RealtimeModule {}
-

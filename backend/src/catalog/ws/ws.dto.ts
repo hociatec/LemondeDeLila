@@ -5,4 +5,3 @@ export class CatalogCategoryDto {
   @MinLength(1)
   id!: string;
 }
-

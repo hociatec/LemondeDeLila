@@ -12,10 +12,15 @@ export class UserWsRegistrar implements OnModuleInit {
   ) {}
 
   onModuleInit() {
-    this.registry.register('auth.register', (_, payload) => this.auth.register(payload));
-    this.registry.register('auth.login', (_, payload) => this.auth.login(payload));
+    this.registry.register('auth.register', (_, payload) =>
+      this.auth.register(payload),
+    );
+    this.registry.register('auth.login', (_, payload) =>
+      this.auth.login(payload),
+    );
     this.registry.register('users.list', () => this.users.list());
-    this.registry.register('users.get', (_, payload) => this.users.get(payload));
+    this.registry.register('users.get', (_, payload) =>
+      this.users.get(payload),
+    );
   }
 }
-

@@ -22,7 +22,7 @@ export class StateMachineService<TState = any> {
     const stepIndex = steps.findIndex((s) => s.id === currentStepId);
     let idx = stepIndex >= 0 ? stepIndex : 0;
     let iter = 0;
-    let nextState = state;
+    const nextState = state;
     while (iter++ < maxIterations) {
       const step = steps[idx] ?? steps[0];
       if (!step.canEnter || step.canEnter(nextState)) {
@@ -31,7 +31,9 @@ export class StateMachineService<TState = any> {
       }
       idx = (idx + 1) % steps.length;
     }
-    this.logger.warn(`StateMachine: boucle détectée après ${maxIterations} itérations (step=${currentStepId})`);
+    this.logger.warn(
+      `StateMachine: boucle détectée après ${maxIterations} itérations (step=${currentStepId})`,
+    );
     return { state: nextState, stepId: currentStepId };
   }
 }

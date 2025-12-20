@@ -26,7 +26,11 @@ export class HttpJwtGuard implements CanActivate {
       throw new UnauthorizedException('Authorization requise');
     }
     const parts = authHeader.split(' ');
-    if (parts.length !== 2 || parts[0].toLowerCase() !== 'bearer' || !parts[1]) {
+    if (
+      parts.length !== 2 ||
+      parts[0].toLowerCase() !== 'bearer' ||
+      !parts[1]
+    ) {
       throw new UnauthorizedException('Authorization Bearer invalide');
     }
     return parts[1];

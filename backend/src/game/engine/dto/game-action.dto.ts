@@ -1,6 +1,15 @@
 import { Type } from 'class-transformer';
-import { IsArray, IsObject, IsOptional, IsString, ValidateNested } from 'class-validator';
-import { GameStateEntity, PendingState } from '../../core/entities/game-state.entity';
+import {
+  IsArray,
+  IsObject,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
+import {
+  GameStateEntity,
+  PendingState,
+} from '../../core/entities/game-state.entity';
 
 export class GameSingleActionDto {
   @IsString()

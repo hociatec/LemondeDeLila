@@ -9,7 +9,12 @@ import { MessagingWsRegistrar } from './ws/messaging-ws.registrar';
 
 @Module({
   imports: [TypeOrmModule.forFeature([PrivateMessage, User])],
-  providers: [MessagingService, MessageValidatorService, MessagingWsHandler, MessagingWsRegistrar],
+  providers: [
+    MessagingService,
+    MessageValidatorService,
+    MessagingWsHandler,
+    MessagingWsRegistrar,
+  ],
   exports: [MessagingService],
 })
 export class MessagingModule {}

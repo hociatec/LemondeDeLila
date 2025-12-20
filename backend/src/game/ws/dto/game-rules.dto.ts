@@ -5,4 +5,3 @@ export class GameRulesDto {
   @MinLength(1)
   gameType!: string;
 }
-

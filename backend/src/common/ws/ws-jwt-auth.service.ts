@@ -9,10 +9,12 @@ export class WsJwtAuthService {
   constructor(private readonly config: ConfigService) {}
 
   extractToken(client: WebSocket, args: any[]): string | null {
-    const request: any = (args && args[0]) || (client as any).upgradeReq || (client as any).req;
+    const request: any =
+      (args && args[0]) || (client as any).upgradeReq || (client as any).req;
     const urlCandidate = (client as any).url || request?.url || '';
     const headerToken =
-      this.extractBearer((client as any).handshakeHeaders) || this.extractBearer(request?.headers);
+      this.extractBearer((client as any).handshakeHeaders) ||
+      this.extractBearer(request?.headers);
     if (headerToken) {
       return headerToken;
     }
@@ -62,11 +64,11 @@ export class WsJwtAuthService {
   }
 
   private requireSecret(): string {
-    const secret = this.config.get<string>('JWT_SECRET') || process.env.JWT_SECRET;
+    const secret =
+      this.config.get<string>('JWT_SECRET') || process.env.JWT_SECRET;
     if (!secret) {
       throw new UnauthorizedException('Configuration JWT manquante');
     }
     return secret;
   }
 }
-

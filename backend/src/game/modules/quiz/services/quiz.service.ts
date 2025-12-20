@@ -9,9 +9,15 @@ export class QuizService {
       label: 'Quiz',
       description: 'Gestion des questions/réponses et validation.',
       capabilities: [
-        { id: 'questions', description: 'Sélection et distribution de questions.' },
+        {
+          id: 'questions',
+          description: 'Sélection et distribution de questions.',
+        },
         { id: 'answers', description: 'Réception et validation des réponses.' },
-        { id: 'rewards', description: 'Application des effets (bonus/malus) selon la réponse.' },
+        {
+          id: 'rewards',
+          description: 'Application des effets (bonus/malus) selon la réponse.',
+        },
       ],
     };
   }

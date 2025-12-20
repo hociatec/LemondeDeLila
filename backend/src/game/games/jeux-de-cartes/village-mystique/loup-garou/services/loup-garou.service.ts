@@ -1,20 +1,35 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { GameCoreService } from '../../../../../core/services/game-core.service';
-import { GameStateEntity, PlayerStateEntity } from '../../../../../core/entities/game-state.entity';
-import { GameSingleActionDto, GameStateWithActions } from '../../../../../engine/dto/game-action.dto';
+import {
+  GameStateEntity,
+  PlayerStateEntity,
+} from '../../../../../core/entities/game-state.entity';
+import {
+  GameSingleActionDto,
+  GameStateWithActions,
+} from '../../../../../engine/dto/game-action.dto';
 import { GameRulesAdapter } from '../../../../../engine/interfaces/game-rules-adapter.interface';
 import { GameRegistryService } from '../../../../../engine/services/game-registry.service';
 import { RolesAssignmentService } from '../../../../../modules/roles/services/roles-assignment.service';
 import { VoteService } from '../../../../../modules/vote/services/vote.service';
 import { PlayerStateService } from '../../../../../modules/player/services/player-state.service';
 import { TurnManagerService } from '../../../../../modules/turn/services/turn-manager.service';
-import { ActionLogService, ActionLogEntry } from '../../../../../modules/actionlog/services/action-log.service';
+import {
+  ActionLogService,
+  ActionLogEntry,
+} from '../../../../../modules/actionlog/services/action-log.service';
 import { ActionResolverService } from '../../../../../modules/action-resolver/services/action-resolver.service';
-import { PhaseEngineService, PhaseDefinition } from '../../../../../modules/state/services/phase-engine.service';
+import {
+  PhaseEngineService,
+  PhaseDefinition,
+} from '../../../../../modules/state/services/phase-engine.service';
 import { BotRunnerService } from '../../../../../modules/bot/services/bot-runner.service';
 import { BotProfile } from '../../../../../modules/bot/services/bot-strategy.service';
 import { VictoryService } from '../../../../../modules/victory/services/victory.service';
-import { LOUP_GAROU_PHASES, LOUP_GAROU_ROLES } from '../definitions/rules.definition';
+import {
+  LOUP_GAROU_PHASES,
+  LOUP_GAROU_ROLES,
+} from '../definitions/rules.definition';
 import { LOUP_GAROU_VICTORY } from '../definitions/victory.definition';
 
 type GarouRole = 'werewolf' | 'seer' | 'witch' | 'cupid' | 'villager';
@@ -93,7 +108,12 @@ export class LoupGarouService implements GameRulesAdapter, OnModuleInit {
       step: 'seer',
       roles,
       lovers: null,
-      pending: { wolvesChoices: {}, wolvesTarget: null, poisonTarget: null, seerUsed: false },
+      pending: {
+        wolvesChoices: {},
+        wolvesTarget: null,
+        poisonTarget: null,
+        seerUsed: false,
+      },
       witchPotions: { healUsed: false, poisonUsed: false },
       votes: {},
       voteQueue: [],
@@ -107,10 +127,15 @@ export class LoupGarouService implements GameRulesAdapter, OnModuleInit {
     const canStart = players.length >= this.minPlayers && status === 'starting';
     let state: GameStateEntity = {
       ...baseState,
-      status: canStart ? 'started' : baseState.status ?? 'open',
+      status: canStart ? 'started' : (baseState.status ?? 'open'),
       players,
       metadata,
-      turn: { currentPlayerId: canStart ? this.findRolePlayer('seer', metadata) ?? null : null, direction: 1 },
+      turn: {
+        currentPlayerId: canStart
+          ? (this.findRolePlayer('seer', metadata) ?? null)
+          : null,
+        direction: 1,
+      },
       turnIndex: canStart ? 0 : -1,
     };
     if (canStart) {
@@ -119,26 +144,45 @@ export class LoupGarouService implements GameRulesAdapter, OnModuleInit {
     return state;
   }
 
-  applyActions(state: GameStateEntity, actions: GameSingleActionDto[]): GameStateEntity {
+  applyActions(
+    state: GameStateEntity,
+    actions: GameSingleActionDto[],
+  ): GameStateEntity {
     let next = this.ensureMetadata(state);
     const status = (next.status || '').toLowerCase();
-    const canStart = (next.players?.length ?? 0) >= this.minPlayers && status === 'starting';
+    const canStart =
+      (next.players?.length ?? 0) >= this.minPlayers && status === 'starting';
     if (status !== 'started' && canStart) {
-      next = { ...next, status: 'started', turn: { currentPlayerId: this.findRolePlayer('seer', this.metadataOf(next)) ?? null, direction: 1 }, turnIndex: 0 };
+      next = {
+        ...next,
+        status: 'started',
+        turn: {
+          currentPlayerId:
+            this.findRolePlayer('seer', this.metadataOf(next)) ?? null,
+          direction: 1,
+        },
+        turnIndex: 0,
+      };
       next = this.advanceState(next);
     }
     if ((next.status || '').toLowerCase() !== 'started') {
       return next;
     }
-    next = this.actionResolver.apply(next, actions, (s, a) => this.handleAction(s, a));
+    next = this.actionResolver.apply(next, actions, (s, a) =>
+      this.handleAction(s, a),
+    );
     next = this.advanceState(next);
     const current = next.turn?.currentPlayerId ?? null;
-    const isBot = (next.players ?? []).find((p) => p.id === current)?.isBot ?? false;
+    const isBot =
+      (next.players ?? []).find((p) => p.id === current)?.isBot ?? false;
     next = { ...next, botThinking: Boolean(isBot) };
     return next;
   }
 
-  getBotActions(state: GameStateEntity, botPlayerId: number): GameSingleActionDto[] {
+  getBotActions(
+    state: GameStateEntity,
+    botPlayerId: number,
+  ): GameSingleActionDto[] {
     const current = state.turn?.currentPlayerId ?? null;
     if (current !== botPlayerId) return [];
     const meta = this.metadataOf(state);
@@ -149,21 +193,29 @@ export class LoupGarouService implements GameRulesAdapter, OnModuleInit {
       step === 'seer'
         ? ['seer_peek']
         : step === 'cupid'
-        ? ['cupid_link']
-        : step === 'wolves'
-        ? ['wolves_choose']
-        : step === 'witch'
-        ? ['witch_decide']
-        : step === 'day-vote'
-        ? ['day_vote']
-        : [];
-    return this.botRunner.choose(actions, { state, playerId: botPlayerId }, profile, {
-      preferTypes: prefer,
-      fallbackTypes: ['day_vote', 'roll'],
-    });
+          ? ['cupid_link']
+          : step === 'wolves'
+            ? ['wolves_choose']
+            : step === 'witch'
+              ? ['witch_decide']
+              : step === 'day-vote'
+                ? ['day_vote']
+                : [];
+    return this.botRunner.choose(
+      actions,
+      { state, playerId: botPlayerId },
+      profile,
+      {
+        preferTypes: prefer,
+        fallbackTypes: ['day_vote', 'roll'],
+      },
+    );
   }
 
-  getAvailableActions(state: GameStateEntity, playerId: number): GameSingleActionDto[] {
+  getAvailableActions(
+    state: GameStateEntity,
+    playerId: number,
+  ): GameSingleActionDto[] {
     const meta = this.metadataOf(state);
     const alive = this.players.isAlive(state, playerId);
     if (!alive || meta.winner) return [];
@@ -206,7 +258,10 @@ export class LoupGarouService implements GameRulesAdapter, OnModuleInit {
     }
   }
 
-  private handleAction(state: GameStateEntity, action: GameSingleActionDto): GameStateEntity {
+  private handleAction(
+    state: GameStateEntity,
+    action: GameSingleActionDto,
+  ): GameStateEntity {
     const meta = this.metadataOf(state);
     const actorId = state.turn?.currentPlayerId ?? null;
     switch (meta.step) {
@@ -225,7 +280,11 @@ export class LoupGarouService implements GameRulesAdapter, OnModuleInit {
     }
   }
 
-  validateActor(state: GameStateEntity, actions: GameSingleActionDto[], actorId: number | null): boolean {
+  validateActor(
+    state: GameStateEntity,
+    _actions: GameSingleActionDto[],
+    actorId: number | null,
+  ): boolean {
     if (actorId == null) return false;
     const meta = this.metadataOf(state);
     if (!this.players.isAlive(state, actorId)) return false;
@@ -239,12 +298,21 @@ export class LoupGarouService implements GameRulesAdapter, OnModuleInit {
     }
   }
 
-  private handleSeer(state: GameStateEntity, action: GameSingleActionDto, actorId: number | null) {
+  private handleSeer(
+    state: GameStateEntity,
+    action: GameSingleActionDto,
+    actorId: number | null,
+  ) {
     if (action.type !== 'seer_peek') return state;
     const meta = this.metadataOf(state);
     if (meta.pending.seerUsed) return state;
     const seerId = this.findRolePlayer('seer', meta);
-    if (seerId == null || seerId !== actorId || !this.players.isAlive(state, seerId)) return state;
+    if (
+      seerId == null ||
+      seerId !== actorId ||
+      !this.players.isAlive(state, seerId)
+    )
+      return state;
     const targetId = Number(action.payload?.targetId);
     if (Number.isNaN(targetId)) return state;
     if (!this.players.isAlive(state, targetId)) return state;
@@ -253,39 +321,68 @@ export class LoupGarouService implements GameRulesAdapter, OnModuleInit {
       ...meta,
       lastPeek: { seerId, targetId, role: targetRole ?? 'villager' },
       pending: { ...meta.pending, seerUsed: true },
-      actionLog: this.actionLog.append(meta.actionLog as ActionLogEntry[], { step: meta.step, actorId: seerId, type: 'seer_peek', payload: { targetId } }),
+      actionLog: this.actionLog.append(meta.actionLog, {
+        step: meta.step,
+        actorId: seerId,
+        type: 'seer_peek',
+        payload: { targetId },
+      }),
     };
     return { ...state, metadata: updated };
   }
 
-  private handleCupid(state: GameStateEntity, action: GameSingleActionDto, actorId: number | null) {
+  private handleCupid(
+    state: GameStateEntity,
+    action: GameSingleActionDto,
+    actorId: number | null,
+  ) {
     if (action.type !== 'cupid_link') return state;
     const meta = this.metadataOf(state);
     const cupidId = this.findRolePlayer('cupid', meta);
-    if (meta.firstNight !== true || cupidId == null || cupidId !== actorId || !this.players.isAlive(state, cupidId)) {
+    if (
+      meta.firstNight !== true ||
+      cupidId == null ||
+      cupidId !== actorId ||
+      !this.players.isAlive(state, cupidId)
+    ) {
       return state;
     }
     const a = Number(action.payload?.a);
     const b = Number(action.payload?.b);
     if (Number.isNaN(a) || Number.isNaN(b)) return state;
-    if (!this.players.isAlive(state, a) || !this.players.isAlive(state, b) || a === b) return state;
+    if (
+      !this.players.isAlive(state, a) ||
+      !this.players.isAlive(state, b) ||
+      a === b
+    )
+      return state;
     const updated: GarouMetadata = { ...meta, lovers: [a, b] };
     return { ...state, metadata: updated };
   }
 
-  private handleWolves(state: GameStateEntity, action: GameSingleActionDto, actorId: number | null) {
+  private handleWolves(
+    state: GameStateEntity,
+    action: GameSingleActionDto,
+    actorId: number | null,
+  ) {
     if (action.type !== 'wolves_choose') return state;
     const meta = this.metadataOf(state);
-    if (!this.players.isAlive(state, actorId) || meta.roles[actorId!] !== 'werewolf') {
+    if (
+      !this.players.isAlive(state, actorId) ||
+      meta.roles[actorId!] !== 'werewolf'
+    ) {
       return state;
     }
     const targetId = Number(action.payload?.targetId);
-    if (Number.isNaN(targetId) || !this.players.isAlive(state, targetId)) return state;
+    if (Number.isNaN(targetId) || !this.players.isAlive(state, targetId))
+      return state;
 
     const choices = { ...(meta.pending.wolvesChoices ?? {}) };
     choices[actorId!] = targetId;
-    const wolvesAlive = this.players.livingIds(state).filter((id) => meta.roles[id] === 'werewolf');
-    const votes = wolvesAlive.map((id) => choices[id]).filter((v) => v != null) as number[];
+    const wolvesAlive = this.players
+      .livingIds(state)
+      .filter((id) => meta.roles[id] === 'werewolf');
+    const votes = wolvesAlive.map((id) => choices[id]).filter((v) => v != null);
     let wolvesTarget: number | null = null;
     if (votes.length) {
       const tally = new Map<number, number>();
@@ -297,16 +394,30 @@ export class LoupGarouService implements GameRulesAdapter, OnModuleInit {
     const updated: GarouMetadata = {
       ...meta,
       pending: { ...meta.pending, wolvesChoices: choices, wolvesTarget },
-      actionLog: this.actionLog.append(meta.actionLog as ActionLogEntry[], { step: meta.step, actorId, type: 'wolves_choose', payload: { targetId } }),
+      actionLog: this.actionLog.append(meta.actionLog, {
+        step: meta.step,
+        actorId,
+        type: 'wolves_choose',
+        payload: { targetId },
+      }),
     };
     return { ...state, metadata: updated };
   }
 
-  private handleWitch(state: GameStateEntity, action: GameSingleActionDto, actorId: number | null) {
+  private handleWitch(
+    state: GameStateEntity,
+    action: GameSingleActionDto,
+    actorId: number | null,
+  ) {
     if (action.type !== 'witch_decide') return state;
     const meta = this.metadataOf(state);
     const witch = this.findRolePlayer('witch', meta);
-    if (witch == null || witch !== actorId || !this.players.isAlive(state, witch) || this.witchLocked(meta)) {
+    if (
+      witch == null ||
+      witch !== actorId ||
+      !this.players.isAlive(state, witch) ||
+      this.witchLocked(meta)
+    ) {
       return state;
     }
     const save = Boolean(action.payload?.save);
@@ -323,7 +434,11 @@ export class LoupGarouService implements GameRulesAdapter, OnModuleInit {
       healUsed = true;
       wolvesTarget = null;
     }
-    if (poisonTarget !== null && !poisonUsed && this.players.isAlive(state, poisonTarget)) {
+    if (
+      poisonTarget !== null &&
+      !poisonUsed &&
+      this.players.isAlive(state, poisonTarget)
+    ) {
       poisonUsed = true;
       appliedPoison = poisonTarget;
     }
@@ -332,7 +447,7 @@ export class LoupGarouService implements GameRulesAdapter, OnModuleInit {
       ...meta,
       pending: { ...meta.pending, wolvesTarget, poisonTarget: appliedPoison },
       witchPotions: { healUsed, poisonUsed },
-      actionLog: this.actionLog.append(meta.actionLog as ActionLogEntry[], {
+      actionLog: this.actionLog.append(meta.actionLog, {
         step: meta.step,
         actorId: witch,
         type: 'witch_decide',
@@ -342,22 +457,42 @@ export class LoupGarouService implements GameRulesAdapter, OnModuleInit {
     return { ...state, metadata: updatedMeta };
   }
 
-  private handleDayVote(state: GameStateEntity, action: GameSingleActionDto, actorId: number | null) {
+  private handleDayVote(
+    state: GameStateEntity,
+    action: GameSingleActionDto,
+    actorId: number | null,
+  ) {
     if (action.type !== 'day_vote') return state;
     const meta = this.metadataOf(state);
     if (!this.players.isAlive(state, actorId)) return state;
     const targetVal = action.payload?.targetId;
-    const targetId = targetVal === null ? null : targetVal === undefined ? null : Number(targetVal);
+    const targetId =
+      targetVal === null
+        ? null
+        : targetVal === undefined
+          ? null
+          : Number(targetVal);
     if (targetId !== null && Number.isNaN(targetId)) return state;
-    if (targetId !== null && targetId >= 0 && !this.players.isAlive(state, targetId)) return state;
-    const normalized = targetId === null ? null : targetId >= 0 ? targetId : null;
+    if (
+      targetId !== null &&
+      targetId >= 0 &&
+      !this.players.isAlive(state, targetId)
+    )
+      return state;
+    const normalized =
+      targetId === null ? null : targetId >= 0 ? targetId : null;
     const updatedVotes = { ...meta.votes, [actorId!]: normalized };
     const living = this.players.livingIds(state);
     const allVoted = living.every((id) => updatedVotes[id] !== undefined);
     const nextState: GameStateEntity = {
       ...state,
       metadata: { ...meta, votes: updatedVotes },
-      turn: { currentPlayerId: allVoted ? null : state.turn?.currentPlayerId ?? null, direction: 1 },
+      turn: {
+        currentPlayerId: allVoted
+          ? null
+          : (state.turn?.currentPlayerId ?? null),
+        direction: 1,
+      },
     };
     return allVoted ? this.resolveDay(nextState) : nextState;
   }
@@ -384,7 +519,10 @@ export class LoupGarouService implements GameRulesAdapter, OnModuleInit {
       // Sinon, on boucle pour les phases automatiques (resolve/announce/check/transition)
       continue;
     }
-    this.core.appendLog?.(current, '[LoupGarou] Avertissement: boucle de progression interrompue.');
+    this.core.appendLog?.(
+      current,
+      '[LoupGarou] Avertissement: boucle de progression interrompue.',
+    );
     return current;
   }
 
@@ -392,12 +530,14 @@ export class LoupGarouService implements GameRulesAdapter, OnModuleInit {
     return [
       {
         id: 'seer',
-        canEnter: (_s, m) => Boolean(this.findRolePlayer('seer', m) && !m.pending.seerUsed),
+        canEnter: (_s, m) =>
+          Boolean(this.findRolePlayer('seer', m) && !m.pending.seerUsed),
         onEnter: (s, m) => this.withTurn(s, this.findRolePlayer('seer', m)),
       },
       {
         id: 'cupid',
-        canEnter: (_s, m) => m.firstNight && Boolean(this.findRolePlayer('cupid', m)),
+        canEnter: (_s, m) =>
+          m.firstNight && Boolean(this.findRolePlayer('cupid', m)),
         onEnter: (s, m) => this.withTurn(s, this.findRolePlayer('cupid', m)),
       },
       {
@@ -409,7 +549,9 @@ export class LoupGarouService implements GameRulesAdapter, OnModuleInit {
         id: 'witch',
         canEnter: (s, m) => {
           const w = this.findRolePlayer('witch', m);
-          return Boolean(w && this.players.isAlive(s, w) && !this.witchLocked(m));
+          return Boolean(
+            w && this.players.isAlive(s, w) && !this.witchLocked(m),
+          );
         },
         onEnter: (s, m) => this.withTurn(s, this.findRolePlayer('witch', m)),
       },
@@ -439,7 +581,11 @@ export class LoupGarouService implements GameRulesAdapter, OnModuleInit {
           const result = this.victory.evaluate(s, LOUP_GAROU_VICTORY);
           if (result?.finished) {
             const winner = (result.winnerId as GarouWinner | null) ?? null;
-            const metaWithWinner: GarouMetadata = { ...this.metadataOf(s), winner, victoryId: result.conditionId };
+            const metaWithWinner: GarouMetadata = {
+              ...this.metadataOf(s),
+              winner,
+              victoryId: result.conditionId,
+            };
             const finished = {
               ...s,
               metadata: metaWithWinner,
@@ -450,8 +596,8 @@ export class LoupGarouService implements GameRulesAdapter, OnModuleInit {
               winner === 'wolves'
                 ? 'Victoire des Loups.'
                 : winner === 'lovers'
-                ? 'Victoire des Amoureux.'
-                : 'Victoire du Village.';
+                  ? 'Victoire des Amoureux.'
+                  : 'Victoire du Village.';
             return this.core.appendLog(finished, `[LoupGarou] ${message}`);
           }
           return this.startNextNight(s);
@@ -469,7 +615,9 @@ export class LoupGarouService implements GameRulesAdapter, OnModuleInit {
     if (meta.pending.poisonTarget != null) {
       deaths.push(meta.pending.poisonTarget);
     }
-    const unique = [...new Set(deaths)].filter((id) => this.players.isAlive(state, id));
+    const unique = [...new Set(deaths)].filter((id) =>
+      this.players.isAlive(state, id),
+    );
     let next = state;
     unique.forEach((id) => {
       next = this.players.kill(next, id);
@@ -488,22 +636,28 @@ export class LoupGarouService implements GameRulesAdapter, OnModuleInit {
       ...this.metadataOf(next),
       nightDeaths: unique,
       lastAnnouncement: unique,
-      pending: { wolvesChoices: {}, wolvesTarget: null, poisonTarget: null, seerUsed: false },
-      actionLog: this.actionLog.append(this.metadataOf(next).actionLog as ActionLogEntry[], {
+      pending: {
+        wolvesChoices: {},
+        wolvesTarget: null,
+        poisonTarget: null,
+        seerUsed: false,
+      },
+      actionLog: this.actionLog.append(this.metadataOf(next).actionLog, {
         step: 'resolve-night',
         actorId: null,
         type: 'resolve_night',
-        payload: { wolvesTarget: meta.pending.wolvesTarget, poisonTarget: meta.pending.poisonTarget, deaths: unique },
+        payload: {
+          wolvesTarget: meta.pending.wolvesTarget,
+          poisonTarget: meta.pending.poisonTarget,
+          deaths: unique,
+        },
       }),
     };
-    return { ...next, metadata: updatedMeta, turn: { currentPlayerId: null, direction: 1 } };
-  }
-
-  private prepareDayVote(state: GameStateEntity): GameStateEntity {
-    const living = this.players.livingIds(state);
-    const meta = this.metadataOf(state);
-    const updated: GarouMetadata = { ...meta, voteQueue: living.slice(), votes: {} };
-    return { ...state, metadata: updated, turn: { currentPlayerId: living[0] ?? null, direction: 1 } };
+    return {
+      ...next,
+      metadata: updatedMeta,
+      turn: { currentPlayerId: null, direction: 1 },
+    };
   }
 
   private resolveDay(state: GameStateEntity): GameStateEntity {
@@ -527,14 +681,18 @@ export class LoupGarouService implements GameRulesAdapter, OnModuleInit {
       voteQueue: [],
       votes: {},
       lastAnnouncement: executed != null ? [executed] : [],
-      actionLog: this.actionLog.append(this.metadataOf(next).actionLog as ActionLogEntry[], {
+      actionLog: this.actionLog.append(this.metadataOf(next).actionLog, {
         step: 'day-vote',
         actorId: null,
         type: 'resolve_day',
         payload: { executed, votes, tally: result.tally, tie: result.tie },
       }),
     };
-    return { ...next, metadata: updatedMeta, turn: { currentPlayerId: null, direction: 1 } };
+    return {
+      ...next,
+      metadata: updatedMeta,
+      turn: { currentPlayerId: null, direction: 1 },
+    };
   }
 
   private startNextNight(state: GameStateEntity): GameStateEntity {
@@ -544,14 +702,22 @@ export class LoupGarouService implements GameRulesAdapter, OnModuleInit {
       day: meta.day + 1,
       firstNight: false,
       step: 'seer',
-      pending: { wolvesChoices: {}, wolvesTarget: null, poisonTarget: null, seerUsed: false },
+      pending: {
+        wolvesChoices: {},
+        wolvesTarget: null,
+        poisonTarget: null,
+        seerUsed: false,
+      },
       nightDeaths: [],
       lastAnnouncement: [],
     };
     const nextState: GameStateEntity = {
       ...state,
       metadata: nextMeta,
-      turn: { currentPlayerId: this.findRolePlayer('seer', nextMeta) ?? null, direction: 1 },
+      turn: {
+        currentPlayerId: this.findRolePlayer('seer', nextMeta) ?? null,
+        direction: 1,
+      },
     };
     return this.advanceState(nextState);
   }
@@ -571,19 +737,34 @@ export class LoupGarouService implements GameRulesAdapter, OnModuleInit {
     return entry ? parseInt(entry[0], 10) : null;
   }
 
-  private hasWerewolvesAlive(state: GameStateEntity, meta: GarouMetadata): boolean {
-    return this.players.livingIds(state).some((id) => meta.roles[id] === 'werewolf');
+  private hasWerewolvesAlive(
+    state: GameStateEntity,
+    meta: GarouMetadata,
+  ): boolean {
+    return this.players
+      .livingIds(state)
+      .some((id) => meta.roles[id] === 'werewolf');
   }
 
   private withStep(state: GameStateEntity, step: GarouStep): GameStateEntity {
     const meta = this.metadataOf(state);
     return {
       ...state,
-      metadata: { ...meta, step, pending: { ...meta.pending, seerUsed: step === 'seer' ? meta.pending.seerUsed : false } },
+      metadata: {
+        ...meta,
+        step,
+        pending: {
+          ...meta.pending,
+          seerUsed: step === 'seer' ? meta.pending.seerUsed : false,
+        },
+      },
     };
   }
 
-  private withTurn(state: GameStateEntity, playerId: number | null): GameStateEntity {
+  private withTurn(
+    state: GameStateEntity,
+    playerId: number | null,
+  ): GameStateEntity {
     return this.turns.setCurrent(state, playerId);
   }
 
@@ -619,7 +800,12 @@ export class LoupGarouService implements GameRulesAdapter, OnModuleInit {
       step: 'seer',
       roles: {},
       lovers: null,
-      pending: { wolvesChoices: {}, wolvesTarget: null, poisonTarget: null, seerUsed: false },
+      pending: {
+        wolvesChoices: {},
+        wolvesTarget: null,
+        poisonTarget: null,
+        seerUsed: false,
+      },
       witchPotions: { healUsed: false, poisonUsed: false },
       votes: {},
       voteQueue: [],
@@ -634,7 +820,10 @@ export class LoupGarouService implements GameRulesAdapter, OnModuleInit {
 
   exposeState(state: GameStateEntity): GameStateWithActions {
     const currentId = state.turn?.currentPlayerId ?? null;
-    const actions = typeof currentId === 'number' ? this.getAvailableActions(state, currentId) : [];
+    const actions =
+      typeof currentId === 'number'
+        ? this.getAvailableActions(state, currentId)
+        : [];
     const meta = this.metadataOf(state);
     const roleCatalog = LOUP_GAROU_ROLES;
     const phasesCatalog = LOUP_GAROU_PHASES.map((p) => p.id);
@@ -644,13 +833,25 @@ export class LoupGarouService implements GameRulesAdapter, OnModuleInit {
         : { type: 'phase', name: meta.step, day: meta.day };
     return {
       ...(state as any),
-      catalog: { roles: roleCatalog, phases: phasesCatalog, victory: LOUP_GAROU_VICTORY },
-      actions: actions.map((a) => ({ type: a.type, label: a.type, payload: a.payload ?? {} })),
+      catalog: {
+        roles: roleCatalog,
+        phases: phasesCatalog,
+        victory: LOUP_GAROU_VICTORY,
+      },
+      actions: actions.map((a) => ({
+        type: a.type,
+        label: a.type,
+        payload: a.payload ?? {},
+      })),
       pending,
     };
   }
 
-  private isRole(meta: GarouMetadata, playerId: number, role: GarouRole): boolean {
+  private isRole(
+    meta: GarouMetadata,
+    playerId: number,
+    role: GarouRole,
+  ): boolean {
     return meta.roles[playerId] === role;
   }
 
@@ -658,47 +859,95 @@ export class LoupGarouService implements GameRulesAdapter, OnModuleInit {
     return meta.witchPotions.healUsed && meta.witchPotions.poisonUsed;
   }
 
-  private buildPeekActions(state: GameStateEntity, playerId: number): GameSingleActionDto[] {
-    const targets = this.players.livingIds(state).filter((id) => id !== playerId);
-    return targets.map((id) => ({ type: 'seer_peek', payload: { targetId: id } }));
+  private buildPeekActions(
+    state: GameStateEntity,
+    playerId: number,
+  ): GameSingleActionDto[] {
+    const targets = this.players
+      .livingIds(state)
+      .filter((id) => id !== playerId);
+    return targets.map((id) => ({
+      type: 'seer_peek',
+      payload: { targetId: id },
+    }));
   }
 
-  private buildCupidActions(state: GameStateEntity, playerId: number): GameSingleActionDto[] {
-    const targets = this.players.livingIds(state).filter((id) => id !== playerId);
+  private buildCupidActions(
+    state: GameStateEntity,
+    playerId: number,
+  ): GameSingleActionDto[] {
+    const targets = this.players
+      .livingIds(state)
+      .filter((id) => id !== playerId);
     const actions: GameSingleActionDto[] = [];
     for (let i = 0; i < targets.length; i++) {
       for (let j = i + 1; j < targets.length; j++) {
-        actions.push({ type: 'cupid_link', payload: { a: targets[i], b: targets[j] } });
+        actions.push({
+          type: 'cupid_link',
+          payload: { a: targets[i], b: targets[j] },
+        });
       }
     }
     return actions;
   }
 
-  private buildWolfActions(state: GameStateEntity, playerId: number): GameSingleActionDto[] {
-    const targets = this.players.livingIds(state).filter((id) => id !== playerId);
-    return targets.map((id) => ({ type: 'wolves_choose', payload: { targetId: id } }));
+  private buildWolfActions(
+    state: GameStateEntity,
+    playerId: number,
+  ): GameSingleActionDto[] {
+    const targets = this.players
+      .livingIds(state)
+      .filter((id) => id !== playerId);
+    return targets.map((id) => ({
+      type: 'wolves_choose',
+      payload: { targetId: id },
+    }));
   }
 
-  private buildWitchActions(state: GameStateEntity, playerId: number): GameSingleActionDto[] {
+  private buildWitchActions(
+    state: GameStateEntity,
+    playerId: number,
+  ): GameSingleActionDto[] {
     const meta = this.metadataOf(state);
     const actions: GameSingleActionDto[] = [];
     const wolvesTarget = meta.pending.wolvesTarget;
     if (!meta.witchPotions.healUsed && wolvesTarget != null) {
-      actions.push({ type: 'witch_decide', payload: { save: true, killTargetId: null } });
+      actions.push({
+        type: 'witch_decide',
+        payload: { save: true, killTargetId: null },
+      });
     }
     if (!meta.witchPotions.poisonUsed) {
-      const targets = this.players.livingIds(state).filter((id) => id !== playerId);
-      targets.forEach((t) => actions.push({ type: 'witch_decide', payload: { save: false, killTargetId: t } }));
+      const targets = this.players
+        .livingIds(state)
+        .filter((id) => id !== playerId);
+      targets.forEach((t) =>
+        actions.push({
+          type: 'witch_decide',
+          payload: { save: false, killTargetId: t },
+        }),
+      );
     }
     if (actions.length === 0) {
-      actions.push({ type: 'witch_decide', payload: { save: false, killTargetId: null } });
+      actions.push({
+        type: 'witch_decide',
+        payload: { save: false, killTargetId: null },
+      });
     }
     return actions;
   }
 
-  private buildVoteActions(state: GameStateEntity, playerId: number): GameSingleActionDto[] {
-    const targets = this.players.livingIds(state).filter((id) => id !== playerId);
-    const actions = targets.map((id) => ({ type: 'day_vote', payload: { targetId: id } }));
+  private buildVoteActions(
+    state: GameStateEntity,
+    playerId: number,
+  ): GameSingleActionDto[] {
+    const targets = this.players
+      .livingIds(state)
+      .filter((id) => id !== playerId);
+    const actions = targets.map((id) => ({
+      type: 'day_vote',
+      payload: { targetId: id },
+    }));
     actions.push({ type: 'day_vote', payload: { targetId: -1 } }); // abstain (encoded as -1)
     return actions;
   }

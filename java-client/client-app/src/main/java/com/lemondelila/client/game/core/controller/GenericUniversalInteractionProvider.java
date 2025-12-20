@@ -11,6 +11,7 @@ import com.lemondelila.client.game.core.view.GenericGameInteractionComponent;
 import com.lemondelila.client.game.history.controller.GameHistoryController;
 import com.lemondelila.client.game.history.service.GameActionEmitter;
 import com.lemondelila.client.game.quiz.view.GameQuizComponentFactory;
+import com.lemondelila.client.game.room.event.ResetRoomRequested;
 import com.lemondelila.client.game.room.event.StartRoomRequested;
 import com.lemondelila.client.game.room.model.RoomDetailsState;
 import com.lemondelila.client.game.room.model.TableState;
@@ -90,6 +91,7 @@ public final class GenericUniversalInteractionProvider implements GameInteractio
                 quizFactory,
                 (PrimaryActionDescriptor) null,
                 this::requestStart,
+                this::requestReset,
                 false
         );
     }
@@ -107,6 +109,14 @@ public final class GenericUniversalInteractionProvider implements GameInteractio
         if (roomId != null) {
             LOGGER.info("[interaction-provider] request start room={}", roomId);
             eventBus.publish(new StartRoomRequested(roomId));
+        }
+    }
+
+    private void requestReset() {
+        Integer roomId = tableState.roomId();
+        if (roomId != null) {
+            LOGGER.info("[interaction-provider] request reset room={}", roomId);
+            eventBus.publish(new ResetRoomRequested(roomId));
         }
     }
 }

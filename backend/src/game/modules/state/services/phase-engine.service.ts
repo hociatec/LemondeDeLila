@@ -19,7 +19,10 @@ export class PhaseEngineService<TMeta = any> {
     maxIterations = 20,
   ): { state: GameStateEntity; phaseId: string } {
     if (!phases.length) return { state, phaseId: currentId };
-    const idxStart = Math.max(0, phases.findIndex((p) => p.id === currentId));
+    const idxStart = Math.max(
+      0,
+      phases.findIndex((p) => p.id === currentId),
+    );
     let idx = idxStart;
     let iter = 0;
     let next = state;
@@ -31,7 +34,9 @@ export class PhaseEngineService<TMeta = any> {
       }
       idx = (idx + 1) % phases.length;
     }
-    this.logger.warn(`PhaseEngine: boucle détectée après ${maxIterations} itérations (phase=${currentId})`);
+    this.logger.warn(
+      `PhaseEngine: boucle détectée après ${maxIterations} itérations (phase=${currentId})`,
+    );
     return { state: next, phaseId: currentId };
   }
 }

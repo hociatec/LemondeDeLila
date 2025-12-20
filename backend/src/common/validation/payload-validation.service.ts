@@ -5,7 +5,9 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 @Injectable()
 export class PayloadValidationService {
   validate<T>(cls: new () => T, payload: unknown): T {
-    const instance = plainToInstance(cls, payload ?? {}, { enableImplicitConversion: true });
+    const instance = plainToInstance(cls, payload ?? {}, {
+      enableImplicitConversion: true,
+    });
     const errors = validateSync(instance as object, {
       whitelist: true,
       forbidNonWhitelisted: true,
@@ -21,4 +23,3 @@ export class PayloadValidationService {
     return instance;
   }
 }
-

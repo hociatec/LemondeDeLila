@@ -17,11 +17,14 @@ type SafeUser = Omit<User, 'password'>;
 
 @Injectable()
 export class AdminUsersService {
-  constructor(@InjectRepository(User) private readonly users: Repository<User>) {}
+  constructor(
+    @InjectRepository(User) private readonly users: Repository<User>,
+  ) {}
 
   async list(query: AdminListUsersDto) {
     const page = query.page && query.page > 0 ? query.page : 1;
-    const limit = query.limit && query.limit > 0 ? Math.min(query.limit, 100) : 20;
+    const limit =
+      query.limit && query.limit > 0 ? Math.min(query.limit, 100) : 20;
     const qb = this.users
       .createQueryBuilder('user')
       .select([
@@ -44,7 +47,9 @@ export class AdminUsersService {
       qb.andWhere('(user.email LIKE :q OR user.username LIKE :q)', { q });
     }
     if (query.role) {
-      qb.andWhere('JSON_CONTAINS(user.roles, :role, "$") = 1', { role: `"${query.role}"` });
+      qb.andWhere('JSON_CONTAINS(user.roles, :role, "$") = 1', {
+        role: `"${query.role}"`,
+      });
     }
 
     const [items, total] = await qb.getManyAndCount();
@@ -91,7 +96,10 @@ export class AdminUsersService {
     });
     const saved = await this.users.save(user);
     const { password: _, ...safe } = saved;
-    return { user: safe, temporaryPassword: body.password ? undefined : password };
+    return {
+      user: safe,
+      temporaryPassword: body.password ? undefined : password,
+    };
   }
 
   async update(id: number, body: AdminUpdateUserDto): Promise<SafeUser> {
@@ -145,7 +153,12 @@ export class AdminUsersService {
     return { user: safe, temporaryPassword: password };
   }
 
-  async ban(id: number, reason: string, durationDays?: number, bannedUntil?: string | null) {
+  async ban(
+    id: number,
+    reason: string,
+    durationDays?: number,
+    bannedUntil?: string | null,
+  ) {
     const user = await this.users.findOne({ where: { id } });
     if (!user) {
       throw new NotFoundException('Utilisateur introuvable');
@@ -209,6 +222,9 @@ export class AdminUsersService {
   }
 
   private generatePassword(): string {
-    return randomBytes(6).toString('base64').replace(/[^a-zA-Z0-9]/g, '').slice(0, 10);
+    return randomBytes(6)
+      .toString('base64')
+      .replace(/[^a-zA-Z0-9]/g, '')
+      .slice(0, 10);
   }
 }

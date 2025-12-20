@@ -11,7 +11,10 @@ export class DeckManagerService {
     return copy;
   }
 
-  draw<T>(deck: T[], discards: T[]): { card: T; deck: T[]; discards: T[] } | null {
+  draw<T>(
+    deck: T[],
+    discards: T[],
+  ): { card: T; deck: T[]; discards: T[] } | null {
     let deckToUse = [...deck];
     let discardsToUse = [...discards];
 

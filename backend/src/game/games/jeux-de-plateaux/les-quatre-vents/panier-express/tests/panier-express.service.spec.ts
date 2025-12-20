@@ -17,14 +17,20 @@ describe('PanierExpressService', () => {
   });
 
   it('expose un état initial avec decks et tuiles', () => {
-    const state: any = { players: [{ id: 1, username: 'A' }, { id: 2, username: 'B' }], status: 'starting' };
-    const hydrated = service.hydrateInitialState(state as any);
+    const state: any = {
+      players: [
+        { id: 1, username: 'A' },
+        { id: 2, username: 'B' },
+      ],
+      status: 'starting',
+    };
+    const hydrated = service.hydrateInitialState(state);
     const meta = hydrated.metadata as any;
     expect(Array.isArray(meta.tiles)).toBe(true);
     expect(meta.decks?.courses?.deck?.length).toBeGreaterThan(0);
   });
 
-  it("expose correctement les pending non-quiz et les vues joueurs", () => {
+  it('expose correctement les pending non-quiz et les vues joueurs', () => {
     const base: any = service.hydrateInitialState({
       players: [
         { id: 1, username: 'A', basket: ['pomme'], inventory: [] },
@@ -36,12 +42,12 @@ describe('PanierExpressService', () => {
     base.turn = { currentPlayerId: 1, direction: 1 };
     base.turnIndex = 0;
 
-    const exposed = service.exposeState(base as any);
+    const exposed = service.exposeState(base);
 
     expect(exposed.pending?.type).toBe('exchange');
     expect((exposed.pending as any).foo).toBe('bar');
 
-    const extras: any = exposed.extras;
+    const extras: any = (exposed as any).extras;
     expect(Array.isArray(extras.playerViews)).toBe(true);
     expect(extras.playerViews.length).toBe(2);
     const currentView = extras.currentPlayerView;
@@ -59,19 +65,31 @@ describe('PanierExpressService', () => {
     expect(typeof board.turns).toBe('object');
 
     // Le raccourci P devient générique côté client (pas spécifique Panier Express).
-    expect((extras.shortcuts ?? []).some((s: any) => String(s?.key ?? '') === 'pressed P')).toBe(false);
+    expect(
+      (extras.shortcuts ?? []).some(
+        (s: any) => String(s?.key ?? '') === 'pressed P',
+      ),
+    ).toBe(false);
   });
 
   it('avancer sur un stand ajoute une carte cohérente', () => {
-    const base: any = service.hydrateInitialState({ players: [{ id: 1, username: 'A' }], status: 'starting' } as any);
+    const base: any = service.hydrateInitialState({
+      players: [{ id: 1, username: 'A' }],
+      status: 'starting',
+    } as any);
     base.metadata.positions[1] = 1; // stand fruitier
     const moved = (service as any)['drawSvc'].drawCourse(base, 1, 'fruitier');
     const p = (moved.players as any[])[0];
-    expect((p.basket?.length ?? 0) + (p.inventory?.length ?? 0)).toBeGreaterThan(0);
+    expect(
+      (p.basket?.length ?? 0) + (p.inventory?.length ?? 0),
+    ).toBeGreaterThan(0);
   });
 
   it('bloque le tour sur un quiz en pending', () => {
-    const base: any = service.hydrateInitialState({ players: [{ id: 1, username: 'A' }], status: 'running' } as any);
+    const base: any = service.hydrateInitialState({
+      players: [{ id: 1, username: 'A' }],
+      status: 'running',
+    } as any);
     base.turn = { currentPlayerId: 1, direction: 1 };
     base.turnIndex = 0;
     base.metadata.quiz = {
@@ -83,13 +101,16 @@ describe('PanierExpressService', () => {
         },
       },
     };
-    const exposed = service.exposeState(base as any);
+    const exposed = service.exposeState(base);
     expect(exposed.pending?.type).toBe('quiz');
     expect((exposed.pending as any)?.blocking).toBe(true);
   });
 
   it('sanitize et expose les quiz même sans question explicite', () => {
-    const base: any = service.hydrateInitialState({ players: [{ id: 1, username: 'A' }], status: 'running' } as any);
+    const base: any = service.hydrateInitialState({
+      players: [{ id: 1, username: 'A' }],
+      status: 'running',
+    } as any);
     base.turn = { currentPlayerId: 1, direction: 1 };
     base.turnIndex = 0;
     base.metadata.quiz = {
@@ -102,7 +123,7 @@ describe('PanierExpressService', () => {
       },
     };
 
-    const exposed = service.exposeState(base as any);
+    const exposed = service.exposeState(base);
     expect(exposed.pending?.type).toBe('quiz');
     expect(exposed.pending?.choices).toEqual(['poire']);
     expect(exposed.pending?.question).toBe('');
@@ -118,11 +139,14 @@ describe('PanierExpressService', () => {
     } as any);
     base.turn = { currentPlayerId: 1, direction: 1 };
     base.turnIndex = 0;
-    const afterSkip = (service as any).handleSkipTurn(base as any, { type: 'skip_turn', payload: { playerId: 1 } });
+    const afterSkip = (service as any).handleSkipTurn(base, {
+      type: 'skip_turn',
+      payload: { playerId: 1 },
+    });
     expect(afterSkip.turn?.currentPlayerId).toBe(2);
   });
 
-  it("incrémente le tour de plateau quand un joueur repasse par la case départ", () => {
+  it('incrémente le tour de plateau quand un joueur repasse par la case départ', () => {
     const base: any = service.hydrateInitialState({
       players: [
         { id: 1, username: 'A' },
@@ -133,30 +157,34 @@ describe('PanierExpressService', () => {
     base.turn = { currentPlayerId: 1, direction: 1 };
     base.turnIndex = 0;
 
-    const meta = base.metadata as any;
-    const tilesLen = Array.isArray(meta.tiles) && meta.tiles.length ? meta.tiles.length : 40;
+    const meta = base.metadata;
+    const tilesLen =
+      Array.isArray(meta.tiles) && meta.tiles.length ? meta.tiles.length : 40;
     meta.positions[1] = tilesLen - 1;
     meta.laps[1] = 0;
 
     // 39 -> 1 : le joueur repasse par la case départ pendant le déplacement.
-    const moved = (service as any).movePlayer(base as any, 1, 2);
-    expect((moved.metadata as any).laps[1]).toBe(1);
+    const moved = (service as any).movePlayer(base, 1, 2);
+    expect(moved.metadata.laps[1]).toBe(1);
   });
 
-  it("décrémente le tour de plateau quand un joueur recule en repassant par la case départ (tour 1 -> tour 0)", () => {
+  it('décrémente le tour de plateau quand un joueur recule en repassant par la case départ (tour 1 -> tour 0)', () => {
     const base: any = service.hydrateInitialState({
-      players: [{ id: 1, username: 'A' }, { id: 2, username: 'B' }],
+      players: [
+        { id: 1, username: 'A' },
+        { id: 2, username: 'B' },
+      ],
       status: 'running',
     } as any);
     base.turn = { currentPlayerId: 1, direction: 1 };
     base.turnIndex = 0;
 
-    const meta = base.metadata as any;
+    const meta = base.metadata;
     meta.positions[1] = 0;
     meta.laps[1] = 0;
 
-    const moved = (service as any).movePlayer(base as any, 1, -1);
-    expect((moved.metadata as any).laps[1]).toBe(-1);
+    const moved = (service as any).movePlayer(base, 1, -1);
+    expect(moved.metadata.laps[1]).toBe(-1);
   });
 
   it("décrémente le tour de plateau lors d'un recul d'échange qui repasse la case départ", () => {
@@ -170,24 +198,26 @@ describe('PanierExpressService', () => {
     state.turn = { currentPlayerId: 1, direction: 1 };
     state.turnIndex = 0;
 
-    const meta = state.metadata as any;
+    const meta = state.metadata;
     meta.positions[1] = 4;
     meta.laps[1] = 0;
 
-    const after = exchangeSvc.applyExchange(state as any, 1);
+    const after = exchangeSvc.applyExchange(state, 1);
     expect((after.metadata as any).positions[1]).toBeGreaterThanOrEqual(0);
     expect((after.metadata as any).laps[1]).toBe(-1);
   });
 
   it('déclare une victoire quand un joueur a complété sa liste sur la case start', () => {
     const base: any = service.hydrateInitialState({
-      players: [{ id: 1, username: 'A', shoppingList: ['pomme'], basket: ['pomme'] }],
+      players: [
+        { id: 1, username: 'A', shoppingList: ['pomme'], basket: ['pomme'] },
+      ],
       status: 'starting',
     } as any);
     base.metadata.positions[1] = 5; // pas start
-    const afterVictory = (service as any).applyVictory(base as any);
+    const afterVictory = (service as any).applyVictory(base);
     expect(afterVictory.status?.toLowerCase()).toBe('finished');
-    expect((afterVictory.metadata as any).winnerId).toBe(1);
+    expect(afterVictory.metadata.winnerId).toBe(1);
   });
 
   it('permet à un bot de choisir automatiquement une réponse de quiz parmi les choix proposés', () => {
@@ -195,7 +225,7 @@ describe('PanierExpressService', () => {
       players: [{ id: 1, username: 'Bot A', isBot: true }],
       status: 'running',
     } as any);
-    const meta = base.metadata as any;
+    const meta = base.metadata;
     const quizIndex = meta.tiles.findIndex((t: any) => t.type === 'quiz');
     meta.positions[1] = quizIndex >= 0 ? quizIndex : 0;
     meta.quiz = {
@@ -210,12 +240,13 @@ describe('PanierExpressService', () => {
     base.turn = { currentPlayerId: 1, direction: 1 };
     base.turnIndex = 0;
 
-    const actions = service.getBotActions(base as any, 1);
+    const actions = service.getBotActions(base, 1);
     const quizActions = actions.filter((a) => a.type === 'answer_quiz');
     expect(quizActions.length).toBeGreaterThan(0);
     quizActions.forEach((a) => {
-      expect(a.payload?.answer).toBeDefined();
-      expect(['1', '2', '3']).toContain(a.payload.answer);
+      const answer = a.payload?.answer;
+      expect(answer).toBeDefined();
+      expect(['1', '2', '3']).toContain(answer);
     });
   });
 
@@ -224,15 +255,17 @@ describe('PanierExpressService', () => {
       players: [{ id: 1, username: 'A' }],
       status: 'starting',
     } as any);
-    const meta = base.metadata as any;
+    const meta = base.metadata;
     if (meta.decks?.courses) {
       meta.decks.courses.deck = [];
       meta.decks.courses.discards = [];
     }
     meta.positions[1] = 1; // stand fruitier
-    const after = (service as any)['drawSvc'].drawCourse(base as any, 1, 'fruitier');
+    const after = (service as any)['drawSvc'].drawCourse(base, 1, 'fruitier');
     const p = (after.players as any[])[0];
-    expect((p.basket?.length ?? 0) + (p.inventory?.length ?? 0)).toBeGreaterThan(0);
+    expect(
+      (p.basket?.length ?? 0) + (p.inventory?.length ?? 0),
+    ).toBeGreaterThan(0);
   });
 
   it('propose des actions exchange_with via le service dédié', () => {
@@ -245,7 +278,7 @@ describe('PanierExpressService', () => {
     } as any);
     state.turn = { currentPlayerId: 1, direction: 1 };
     state.turnIndex = 0;
-    const actions = exchangeSvc.buildExchangeActions(state as any, 1);
+    const actions = exchangeSvc.buildExchangeActions(state, 1);
     expect(actions.some((a: any) => a.type === 'exchange_with')).toBe(true);
   });
 
@@ -262,12 +295,12 @@ describe('PanierExpressService', () => {
     state.turnIndex = 0;
     state.metadata.positions[1] = 4; // exchange-1
 
-    const actions = service.getAvailableActions(state as any, 1);
+    const actions = service.getAvailableActions(state, 1);
     expect(actions.some((a: any) => a.type === 'exchange_with')).toBe(false);
     expect(actions.some((a: any) => a.type === 'roll')).toBe(true);
   });
 
-  it("propose des echanges uniquement quand pending exchange correspond au joueur", () => {
+  it('propose des echanges uniquement quand pending exchange correspond au joueur', () => {
     const state: any = service.hydrateInitialState({
       players: [
         { id: 1, username: 'A', inventory: ['pomme'] },
@@ -280,7 +313,7 @@ describe('PanierExpressService', () => {
     state.turnIndex = 0;
     state.metadata.positions[1] = 4; // exchange-1
 
-    const actions = service.getAvailableActions(state as any, 1);
+    const actions = service.getAvailableActions(state, 1);
     expect(actions.some((a: any) => a.type === 'exchange_with')).toBe(true);
   });
 
@@ -293,13 +326,13 @@ describe('PanierExpressService', () => {
       status: 'running',
     } as any);
 
-    const after = exchangeSvc.applyExchange(state as any, 1);
+    const after = exchangeSvc.applyExchange(state, 1);
     expect(after.pending?.type).toBe('exchange');
     expect((after.pending as any)?.playerId).toBe(1);
     expect(typeof (after.pending as any)?.card).toBe('string');
   });
 
-  it("refuse un exchange_with sans pending exchange", () => {
+  it('refuse un exchange_with sans pending exchange', () => {
     const state: any = service.hydrateInitialState({
       players: [
         { id: 1, username: 'A', inventory: ['pomme'] },
@@ -312,8 +345,16 @@ describe('PanierExpressService', () => {
     state.turnIndex = 0;
     state.metadata.positions[1] = 4; // exchange-1
 
-    const after = service.applyActions(state as any, [
-      { type: 'exchange_with', payload: { playerId: 1, targetPlayerId: 2, give: 'pomme', take: 'poire' } },
+    const after = service.applyActions(state, [
+      {
+        type: 'exchange_with',
+        payload: {
+          playerId: 1,
+          targetPlayerId: 2,
+          give: 'pomme',
+          take: 'poire',
+        },
+      },
     ] as any);
 
     const a = (after.players as any[]).find((p) => p.id === 1);
@@ -332,13 +373,13 @@ describe('PanierExpressService', () => {
       ],
       status: 'running',
     } as any);
-    (state.metadata as any).positions[1] = 5;
-    const after = exchangeSvc.applyExchange(state as any, 1);
+    state.metadata.positions[1] = 5;
+    const after = exchangeSvc.applyExchange(state, 1);
     expect((after as any).pending ?? null).toBeNull();
     expect((after.metadata as any).positions[1]).not.toBe(5);
   });
 
-  it("résout un échange et met à jour les inventaires", () => {
+  it('résout un échange et met à jour les inventaires', () => {
     const state: any = service.hydrateInitialState({
       players: [
         { id: 1, username: 'A', inventory: ['pomme', 'banane'] },
@@ -346,8 +387,14 @@ describe('PanierExpressService', () => {
       ],
       status: 'running',
     } as any);
-    const pendingState = exchangeSvc.applyExchange(state as any, 1);
-    const after = exchangeSvc.resolveExchange(pendingState as any, 1, 2, 'pomme', 'poire');
+    const pendingState = exchangeSvc.applyExchange(state, 1);
+    const after = exchangeSvc.resolveExchange(
+      pendingState as any,
+      1,
+      2,
+      'pomme',
+      'poire',
+    );
     const a = (after.players as any[]).find((p) => p.id === 1);
     const b = (after.players as any[]).find((p) => p.id === 2);
     expect(a.inventory).toContain('poire');
@@ -365,7 +412,7 @@ describe('PanierExpressService', () => {
       ],
       status: 'running',
     } as any);
-    const first = exchangeSvc.applyExchange(base as any, 1);
+    const first = exchangeSvc.applyExchange(base, 1);
     const second = exchangeSvc.applyExchange(first as any, 2);
     expect(second.pending?.playerId).toBe(1);
   });
@@ -378,8 +425,14 @@ describe('PanierExpressService', () => {
       ],
       status: 'running',
     } as any);
-    const pending = exchangeSvc.applyExchange(base as any, 1);
-    const after = exchangeSvc.resolveExchange(pending as any, 2, 1, 'poire', 'pomme');
+    const pending = exchangeSvc.applyExchange(base, 1);
+    const after = exchangeSvc.resolveExchange(
+      pending as any,
+      2,
+      1,
+      'poire',
+      'pomme',
+    );
     expect(after.pending?.playerId).toBe(1);
   });
 });

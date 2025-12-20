@@ -1,4 +1,7 @@
-import type { SessionState, SessionStateStore } from './session-store.interface';
+import type {
+  SessionState,
+  SessionStateStore,
+} from './session-store.interface';
 
 export class RedisSessionStore implements SessionStateStore {
   private readonly redis: any;
@@ -6,13 +9,18 @@ export class RedisSessionStore implements SessionStateStore {
 
   constructor(redisUrl: string) {
     // Optional dependency: only required when Redis is enabled.
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
+
     const RedisCtor = require('ioredis');
     this.redis = new RedisCtor(redisUrl);
   }
 
   async save(connectionId: string, state: SessionState): Promise<void> {
-    await this.redis.set(this.prefix + connectionId, JSON.stringify(state), 'EX', 60 * 60 * 24);
+    await this.redis.set(
+      this.prefix + connectionId,
+      JSON.stringify(state),
+      'EX',
+      60 * 60 * 24,
+    );
   }
 
   async get(connectionId: string): Promise<SessionState | null> {

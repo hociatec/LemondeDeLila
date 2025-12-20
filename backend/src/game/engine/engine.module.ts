@@ -9,7 +9,13 @@ import { GameEngineStateStore } from './services/game-engine-state.store';
 import { GameGateway } from './gateways/game.gateway';
 
 @Module({
-  imports: [RoomModule, GameCoreModule, GameRegistryModule, BotModule, TurnModule],
+  imports: [
+    RoomModule,
+    GameCoreModule,
+    GameRegistryModule,
+    BotModule,
+    TurnModule,
+  ],
   providers: [GameEngineService, GameEngineStateStore, GameGateway],
   exports: [GameEngineService],
 })

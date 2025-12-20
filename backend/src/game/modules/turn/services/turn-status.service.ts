@@ -5,7 +5,12 @@ export type TurnStatusKey = 'skip' | 'stun' | string;
 
 @Injectable()
 export class TurnStatusService {
-  setStatus(state: GameStateEntity, playerId: number, key: TurnStatusKey, value: number): GameStateEntity {
+  setStatus(
+    state: GameStateEntity,
+    playerId: number,
+    key: TurnStatusKey,
+    value: number,
+  ): GameStateEntity {
     const metadata = state.metadata as any;
     const statuses = metadata?.statuses ?? {};
     const playerStatuses = statuses[key] ?? {};
@@ -16,7 +21,11 @@ export class TurnStatusService {
     return { ...state, metadata: { ...metadata, statuses: updatedStatuses } };
   }
 
-  getStatus(state: GameStateEntity, playerId: number, key: TurnStatusKey): number {
+  getStatus(
+    state: GameStateEntity,
+    playerId: number,
+    key: TurnStatusKey,
+  ): number {
     const metadata = state.metadata as any;
     return metadata?.statuses?.[key]?.[playerId] ?? 0;
   }

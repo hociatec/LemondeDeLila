@@ -11,4 +11,3 @@ export interface SessionStateStore {
   get(connectionId: string): Promise<SessionState | null>;
   delete(connectionId: string): Promise<void>;
 }
-

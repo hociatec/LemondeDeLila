@@ -7,11 +7,22 @@ export class ExchangeService {
     return {
       id: 'exchange',
       label: 'Échange',
-      description: 'Mécanismes d’échange entre joueurs (cartes, ressources, troc).',
+      description:
+        'Mécanismes d’échange entre joueurs (cartes, ressources, troc).',
       capabilities: [
-        { id: 'offers', description: 'Création et validation d’offres d’échange.' },
-        { id: 'constraints', description: 'Règles d’éligibilité et contraintes de jeu.' },
-        { id: 'resolution', description: 'Application des échanges et mise à jour des inventaires.' },
+        {
+          id: 'offers',
+          description: 'Création et validation d’offres d’échange.',
+        },
+        {
+          id: 'constraints',
+          description: 'Règles d’éligibilité et contraintes de jeu.',
+        },
+        {
+          id: 'resolution',
+          description:
+            'Application des échanges et mise à jour des inventaires.',
+        },
       ],
     };
   }

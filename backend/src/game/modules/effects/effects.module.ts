@@ -5,7 +5,17 @@ import { PendingRequirementService } from './services/pending-requirement.servic
 import { StandEffectRegistryService } from './services/stand-effect-registry.service';
 
 @Module({
-  providers: [EffectsService, TileEffectRegistryService, PendingRequirementService, StandEffectRegistryService],
-  exports: [EffectsService, TileEffectRegistryService, PendingRequirementService, StandEffectRegistryService],
+  providers: [
+    EffectsService,
+    TileEffectRegistryService,
+    PendingRequirementService,
+    StandEffectRegistryService,
+  ],
+  exports: [
+    EffectsService,
+    TileEffectRegistryService,
+    PendingRequirementService,
+    StandEffectRegistryService,
+  ],
 })
 export class EffectsModule {}

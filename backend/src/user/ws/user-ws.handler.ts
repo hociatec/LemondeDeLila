@@ -21,4 +21,3 @@ export class UserWsHandler {
     return { type: 'users.get', payload: { user } };
   }
 }
-

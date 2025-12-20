@@ -1,7 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
-import { GameDefinition, GameRulesAdapter } from '../interfaces/game-rules-adapter.interface';
+import {
+  GameDefinition,
+  GameRulesAdapter,
+} from '../interfaces/game-rules-adapter.interface';
 
 @Injectable()
 export class GameRegistryService {
@@ -9,6 +12,8 @@ export class GameRegistryService {
   private readonly gamesRoot: string;
   private readonly logger = new Logger(GameRegistryService.name);
   private cachedDefinitions: GameDefinition[] | null = null;
+  private cachedAtMs = 0;
+  private readonly devTtlMs = 3000;
 
   constructor() {
     this.gamesRoot =
@@ -22,12 +27,16 @@ export class GameRegistryService {
 
   register(handler: GameRulesAdapter): void {
     if (!handler?.gameType) {
-      this.logger.warn('Tentative de registre d’un handler sans gameType, ignoré.');
+      this.logger.warn(
+        'Tentative de registre d’un handler sans gameType, ignoré.',
+      );
       return;
     }
     const existing = this.handlers.get(handler.gameType);
     if (existing && existing !== handler) {
-      this.logger.log(`Remplacement du handler existant pour ${handler.gameType}`);
+      this.logger.log(
+        `Remplacement du handler existant pour ${handler.gameType}`,
+      );
     }
     this.handlers.set(handler.gameType, handler);
     this.logger.log(`Handler enregistré : ${handler.gameType}`);
@@ -35,11 +44,18 @@ export class GameRegistryService {
 
   async listGames(): Promise<GameDefinition[]> {
     if (this.cachedDefinitions) {
-      return this.cachedDefinitions;
+      const ttl =
+        process.env.NODE_ENV === 'development'
+          ? this.devTtlMs
+          : Number.POSITIVE_INFINITY;
+      if (Date.now() - this.cachedAtMs < ttl) {
+        return this.cachedDefinitions;
+      }
     }
     const definitions = await this.loadDefinitionsFromFs();
     const merged = definitions.map((def) => this.enrichWithHandler(def));
     this.cachedDefinitions = merged;
+    this.cachedAtMs = Date.now();
     return merged;
   }
 
@@ -84,7 +100,9 @@ export class GameRegistryService {
     const manifests: string[] = [];
     while (stack.length > 0) {
       const current = stack.pop() as string;
-      const entries = await fs.promises.readdir(current, { withFileTypes: true });
+      const entries = await fs.promises.readdir(current, {
+        withFileTypes: true,
+      });
       for (const entry of entries) {
         const fullPath = path.join(current, entry.name);
         if (entry.isDirectory()) {
@@ -97,14 +115,21 @@ export class GameRegistryService {
     return manifests;
   }
 
-  private async readDefinition(manifestPath: string, root: string): Promise<GameDefinition | null> {
+  private async readDefinition(
+    manifestPath: string,
+    root: string,
+  ): Promise<GameDefinition | null> {
     try {
       const raw = await fs.promises.readFile(manifestPath, 'utf-8');
       const data = JSON.parse(raw) as Record<string, any>;
       const relPath = path.relative(root, path.dirname(manifestPath));
       const segments = relPath.split(path.sep).filter(Boolean);
-      const category = this.formatName(segments[0] ?? data.category ?? 'Catalogue');
-      const subcategory = this.formatName(segments[1] ?? data.subcategory ?? '');
+      const category = this.formatName(
+        segments[0] ?? data.category ?? 'Catalogue',
+      );
+      const subcategory = this.formatName(
+        segments[1] ?? data.subcategory ?? '',
+      );
       const id = data.code ?? data.id ?? '';
       if (!id) {
         this.logger.warn(`Manifest sans code ignoré: ${manifestPath}`);
@@ -129,11 +154,16 @@ export class GameRegistryService {
 
   private formatName(value: string): string {
     if (!value) return '';
-    const spaced = value.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/[_-]+/g, ' ');
+    const spaced = value
+      .replace(/([a-z])([A-Z])/g, '$1 $2')
+      .replace(/[_-]+/g, ' ');
     return spaced
       .split(' ')
       .filter(Boolean)
-      .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1).toLowerCase())
+      .map(
+        (segment) =>
+          segment.charAt(0).toUpperCase() + segment.slice(1).toLowerCase(),
+      )
       .join(' ');
   }
 }

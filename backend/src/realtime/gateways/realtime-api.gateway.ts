@@ -1,9 +1,17 @@
 import { Inject, Logger } from '@nestjs/common';
-import { WebSocketGateway, WebSocketServer, OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
+import {
+  WebSocketGateway,
+  WebSocketServer,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
+} from '@nestjs/websockets';
 import { Server, WebSocket } from 'ws';
 import { randomUUID } from 'crypto';
 import { WsAuthPayload } from '../../common/interfaces/ws-auth-payload';
-import { SESSION_STORE, type SessionStateStore } from '../../common/session/session-store.interface';
+import {
+  SESSION_STORE,
+  type SessionStateStore,
+} from '../../common/session/session-store.interface';
 import { WsRouteRegistry } from '../../common/ws/ws-route-registry.service';
 import { WsJwtAuthService } from '../../common/ws/ws-jwt-auth.service';
 
@@ -45,7 +53,9 @@ export class RealtimeApiGateway
       try {
         session.user = this.auth.verify(token);
       } catch (err) {
-        this.logger.warn(`Connexion WS sans auth valide: ${(err as Error).message}`);
+        this.logger.warn(
+          `Connexion WS sans auth valide: ${(err as Error).message}`,
+        );
       }
     }
     this.clients.set(client, session);
@@ -127,7 +137,12 @@ export class RealtimeApiGateway
     }
   }
 
-  private sendError(client: WebSocket, message: string, context?: string, requestId?: string) {
+  private sendError(
+    client: WebSocket,
+    message: string,
+    context?: string,
+    requestId?: string,
+  ) {
     this.safeSend(client, {
       type: 'error',
       requestId,
@@ -137,7 +152,12 @@ export class RealtimeApiGateway
   }
 
   private formatError(err: unknown): string {
-    if (err && typeof err === 'object' && 'message' in err && typeof (err as any).message === 'string') {
+    if (
+      err &&
+      typeof err === 'object' &&
+      'message' in err &&
+      typeof (err as any).message === 'string'
+    ) {
       return (err as any).message;
     }
     return 'Erreur inconnue';

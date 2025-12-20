@@ -34,7 +34,10 @@ export class NotificationService {
       try {
         socket.send(message);
       } catch (err) {
-        this.logger.debug(`Echec envoi notification userId=${userId}`, err as Error);
+        this.logger.debug(
+          `Echec envoi notification userId=${userId}`,
+          err as Error,
+        );
         targets.delete(socket);
         try {
           socket.close();
@@ -48,4 +51,3 @@ export class NotificationService {
     }
   }
 }
-

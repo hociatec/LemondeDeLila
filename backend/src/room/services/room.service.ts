@@ -28,7 +28,13 @@ export class RoomService {
     private readonly presenceService: PresenceService,
   ) {}
 
-  async createRoom(userId: number, gameType: string, name?: string | null, maxPlayers?: number | null, isPrivate = false): Promise<Room> {
+  async createRoom(
+    userId: number,
+    gameType: string,
+    name?: string | null,
+    maxPlayers?: number | null,
+    isPrivate = false,
+  ): Promise<Room> {
     const owner = await this.requireUser(userId);
     if (!gameType || gameType.trim() === '') {
       throw new BadRequestException('Type de jeu requis');
@@ -52,7 +58,11 @@ export class RoomService {
     return room;
   }
 
-  async joinRoom(roomId: number, userId: number, opts?: { allowPrivate?: boolean }): Promise<Room> {
+  async joinRoom(
+    roomId: number,
+    userId: number,
+    opts?: { allowPrivate?: boolean },
+  ): Promise<Room> {
     const room = await this.requireRoom(roomId);
     if (room.isPrivate && !opts?.allowPrivate) {
       throw new BadRequestException('Table privée');
@@ -154,6 +164,15 @@ export class RoomService {
     return room;
   }
 
+  async resetRoom(roomId: number, userId: number): Promise<Room> {
+    const room = await this.requireRoom(roomId);
+    this.ensureOwner(room, userId);
+    room.status = 'setup';
+    room.startedAt = null;
+    await this.rooms.save(room);
+    return room;
+  }
+
   async getRoomPayload(roomId: number): Promise<RoomPayload> {
     const room = await this.rooms.findOne({
       where: { id: roomId },
@@ -211,13 +230,17 @@ export class RoomService {
 
   private ensureOwner(room: Room, userId: number) {
     if (!room.owner || room.owner.id !== userId) {
-      throw new ForbiddenException('Seul le propriétaire peut effectuer cette action');
+      throw new ForbiddenException(
+        'Seul le propriétaire peut effectuer cette action',
+      );
     }
   }
 
   private isRoomOpen(room: Room): boolean {
     const status = (room.status || '').toLowerCase();
-    return OPEN_ROOM_STATUSES.includes(status as (typeof OPEN_ROOM_STATUSES)[number]);
+    return OPEN_ROOM_STATUSES.includes(
+      status as (typeof OPEN_ROOM_STATUSES)[number],
+    );
   }
 
   private async countActiveHumans(roomId: number): Promise<number> {

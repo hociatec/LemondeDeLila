@@ -5,7 +5,10 @@ import { GameStateEntity } from '../../../core/entities/game-state.entity';
 export type BotDecisionOptions = {
   preferTypes?: string[];
   fallbackTypes?: string[];
-  score?: (action: GameSingleActionDto, ctx: { state: GameStateEntity; playerId: number }) => number;
+  score?: (
+    action: GameSingleActionDto,
+    ctx: { state: GameStateEntity; playerId: number },
+  ) => number;
 };
 
 export type BotProfile = 'random' | 'greedy' | 'cautious' | 'aggressive';
@@ -100,7 +103,11 @@ export class BotStrategyService {
         const type = (action.type ?? '').toLowerCase();
         const table = weights[profile] ?? {};
         const base = table[type] ?? 0;
-        const quizBonus = type.includes('quiz') && (action.payload?.correct === true || action.payload?.answer) ? 1 : 0;
+        const quizBonus =
+          type.includes('quiz') &&
+          (action.payload?.correct === true || action.payload?.answer)
+            ? 1
+            : 0;
         return base + quizBonus;
       });
     return this.choose(actions, ctx, { ...opts, score: scoreFn });

@@ -22,19 +22,27 @@ export class GameEngineStateStore {
     this.states.delete(this.buildKey(roomId, gameType));
   }
 
-  markBotThinking(state: GameStateEntity, botThinking: boolean): GameStateEntity {
+  markBotThinking(
+    state: GameStateEntity,
+    botThinking: boolean,
+  ): GameStateEntity {
     return { ...state, botThinking };
   }
 
-  syncRoomStatus(state: GameStateEntity, payload: RoomPayload): GameStateEntity {
+  syncRoomStatus(
+    state: GameStateEntity,
+    payload: RoomPayload,
+  ): GameStateEntity {
     const payloadStatus = payload?.room?.status;
     if (!payloadStatus || payloadStatus === state.status) {
       return state;
     }
-    if ((state.status || '').toLowerCase() === 'started' && payloadStatus !== 'finished') {
+    if (
+      (state.status || '').toLowerCase() === 'started' &&
+      payloadStatus !== 'finished'
+    ) {
       return state;
     }
     return { ...state, status: payloadStatus };
   }
 }
-

@@ -9,7 +9,13 @@ import { UserWsRegistrar } from './ws/user-ws.registrar';
 
 @Module({
   imports: [TypeOrmModule.forFeature([User])],
-  providers: [UserService, UserAuthService, AuthWsHandler, UserWsHandler, UserWsRegistrar],
+  providers: [
+    UserService,
+    UserAuthService,
+    AuthWsHandler,
+    UserWsHandler,
+    UserWsRegistrar,
+  ],
   exports: [UserService, UserAuthService],
 })
 export class UserModule {}

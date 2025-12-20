@@ -10,7 +10,9 @@ export class MessageValidatorService {
       throw new BadRequestException('Le message est requis');
     }
     if (trimmed.length > MessageValidatorService.MAX_LENGTH) {
-      throw new BadRequestException('Le message est trop long (max 1000 caracteres)');
+      throw new BadRequestException(
+        'Le message est trop long (max 1000 caracteres)',
+      );
     }
     const sanitized = this.sanitize(trimmed);
     if (!sanitized) {
@@ -21,7 +23,10 @@ export class MessageValidatorService {
 
   private sanitize(text: string): string {
     const noTags = text.replace(/<[^>]*>/g, '');
-    const encoded = noTags.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const encoded = noTags
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
     return encoded;
   }
 }

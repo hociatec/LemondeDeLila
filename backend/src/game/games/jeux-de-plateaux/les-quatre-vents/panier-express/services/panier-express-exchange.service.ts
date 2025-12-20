@@ -1,16 +1,29 @@
 import { Injectable } from '@nestjs/common';
 import { GameCoreService } from '../../../../../core/services/game-core.service';
-import { GameStateEntity, PendingState, PlayerStateEntity } from '../../../../../core/entities/game-state.entity';
+import {
+  GameStateEntity,
+  PendingState,
+  PlayerStateEntity,
+} from '../../../../../core/entities/game-state.entity';
 import { GameSingleActionDto } from '../../../../../engine/dto/game-action.dto';
 import { GenericExchangeService } from '../../../../../modules/exchange/services/generic-exchange.service';
-import { PanierExpressMetadata, PanierExpressPendingExchange } from '../entities/panier-express-state.entity';
+import {
+  PanierExpressMetadata,
+  PanierExpressPendingExchange,
+} from '../entities/panier-express-state.entity';
 import { playingLog } from '../../../../../../common/utils/playing-logger';
 import { PanierExpressUtils } from '../utils/panier-express-utils.service';
 import { PanierExpressDeckService } from './panier-express-deck.service';
 
 type ExchangeEvent =
   | { type: 'request'; playerId: number }
-  | { type: 'resolve'; playerId: number; targetPlayerId: number; give: string; take: string };
+  | {
+      type: 'resolve';
+      playerId: number;
+      targetPlayerId: number;
+      give: string;
+      take: string;
+    };
 
 type ExchangeState = 'idle' | 'pending' | 'resolved';
 
@@ -28,15 +41,27 @@ export class PanierExpressExchangeService {
     private readonly deckHelper: PanierExpressDeckService,
   ) {}
 
-  buildExchangeActions(state: GameStateEntity, playerId: number): GameSingleActionDto[] {
-    const actions = this.exchangeHelper.buildActions<string>({ players: state.players ?? [] }, playerId, 'inventory');
+  buildExchangeActions(
+    state: GameStateEntity,
+    playerId: number,
+  ): GameSingleActionDto[] {
+    const actions = this.exchangeHelper.buildActions<string>(
+      { players: state.players ?? [] },
+      playerId,
+      'inventory',
+    );
     if (!actions.length) return [{ type: 'roll' }];
     const offers = actions.flatMap((offer) =>
       (state.players ?? [])
         .filter((p) => p.id !== playerId)
         .map((target) => ({
           type: 'exchange_with',
-          payload: { playerId, targetPlayerId: target.id, give: offer.give, take: offer.take },
+          payload: {
+            playerId,
+            targetPlayerId: target.id,
+            give: offer.give,
+            take: offer.take,
+          },
         })),
     );
     return offers.length ? offers : [{ type: 'roll' }];
@@ -46,22 +71,45 @@ export class PanierExpressExchangeService {
     return this.transitionExchange(state, { type: 'request', playerId }).state;
   }
 
-  resolveExchange(state: GameStateEntity, playerId: number, targetPlayerId: number, give: string, take: string): GameStateEntity {
-    return this.transitionExchange(state, { type: 'resolve', playerId, targetPlayerId, give, take }).state;
+  resolveExchange(
+    state: GameStateEntity,
+    playerId: number,
+    targetPlayerId: number,
+    give: string,
+    take: string,
+  ): GameStateEntity {
+    return this.transitionExchange(state, {
+      type: 'resolve',
+      playerId,
+      targetPlayerId,
+      give,
+      take,
+    }).state;
   }
 
-  private transitionExchange(state: GameStateEntity, event: ExchangeEvent): ExchangeResult {
+  private transitionExchange(
+    state: GameStateEntity,
+    event: ExchangeEvent,
+  ): ExchangeResult {
     const pending = this.getPendingExchange(state.pending ?? null);
     if (!pending) {
       if (event.type === 'request') {
         return this.requestExchange(state, event.playerId);
       }
-      return this.rejectExchange(state, `[Panier Express] Échange invalide: aucun échange en attente.`, 'idle');
+      return this.rejectExchange(
+        state,
+        `[Panier Express] Échange invalide: aucun échange en attente.`,
+        'idle',
+      );
     }
 
     if (event.type === 'resolve') {
       if (pending.playerId !== event.playerId) {
-        return this.rejectExchange(state, `[Panier Express] Échange appartenant à un autre joueur.`, 'pending');
+        return this.rejectExchange(
+          state,
+          `[Panier Express] Échange appartenant à un autre joueur.`,
+          'pending',
+        );
       }
       return this.resolveExchangeInternal(state, event, pending);
     }
@@ -74,15 +122,29 @@ export class PanierExpressExchangeService {
       );
     }
 
-    return this.rejectExchange(state, `[Panier Express] Échange invalide: aucun échange en attente.`, 'pending');
+    return this.rejectExchange(
+      state,
+      `[Panier Express] Échange invalide: aucun échange en attente.`,
+      'pending',
+    );
   }
 
-  private requestExchange(state: GameStateEntity, playerId: number): ExchangeResult {
+  private requestExchange(
+    state: GameStateEntity,
+    playerId: number,
+  ): ExchangeResult {
     const meta = state.metadata as PanierExpressMetadata;
     if (!meta.decks) {
-      return this.rejectExchange(state, '[Panier Express] Decks indisponibles pour les échanges.');
+      return this.rejectExchange(
+        state,
+        '[Panier Express] Decks indisponibles pour les échanges.',
+      );
     }
-    const draw = this.deckHelper.drawWithReplenish<string>(meta, 'exchanges', () => this.defaultExchangeDeck());
+    const draw = this.deckHelper.drawWithReplenish<string>(
+      meta,
+      'exchanges',
+      () => this.defaultExchangeDeck(),
+    );
     const metadata = draw.metadata;
     const resolvedCard = draw.card ?? 'exchange';
 
@@ -94,7 +156,11 @@ export class PanierExpressExchangeService {
       );
     }
 
-    const offers = this.exchangeHelper.buildActions<string>({ players: state.players ?? [] }, playerId, 'inventory');
+    const offers = this.exchangeHelper.buildActions<string>(
+      { players: state.players ?? [] },
+      playerId,
+      'inventory',
+    );
     if (!offers.length) {
       const moved = this.movePlayer(state, playerId, -5, metadata);
       return this.rejectExchange(
@@ -103,8 +169,16 @@ export class PanierExpressExchangeService {
       );
     }
 
-    playingLog('panier.exchange.pending', { playerId, card: resolvedCard, offers: offers.length });
-    const pending: PanierExpressPendingExchange = { type: 'exchange', playerId, card: resolvedCard };
+    playingLog('panier.exchange.pending', {
+      playerId,
+      card: resolvedCard,
+      offers: offers.length,
+    });
+    const pending: PanierExpressPendingExchange = {
+      type: 'exchange',
+      playerId,
+      card: resolvedCard,
+    };
     return { state: { ...state, metadata, pending }, status: 'pending' };
   }
 
@@ -117,10 +191,22 @@ export class PanierExpressExchangeService {
     const current = players.find((p) => p.id === event.playerId);
     const target = players.find((p) => p.id === event.targetPlayerId);
     if (!current || !target) {
-      return { state: this.core.appendLog(state, `[Panier Express] Échange invalide: joueur introuvable.`), status: 'idle' };
+      return {
+        state: this.core.appendLog(
+          state,
+          `[Panier Express] Échange invalide: joueur introuvable.`,
+        ),
+        status: 'idle',
+      };
     }
     if (!this.hasCardsForExchange(current, target, event.give, event.take)) {
-      return { state: this.core.appendLog(state, `[Panier Express] Échange refusé: carte absente.`), status: 'idle' };
+      return {
+        state: this.core.appendLog(
+          state,
+          `[Panier Express] Échange refusé: carte absente.`,
+        ),
+        status: 'idle',
+      };
     }
 
     const updatedPlayers = players.map((p) => {
@@ -139,7 +225,11 @@ export class PanierExpressExchangeService {
       triggerCard: pending.card,
     });
 
-    const next: GameStateEntity = { ...state, players: updatedPlayers, pending: null };
+    const next: GameStateEntity = {
+      ...state,
+      players: updatedPlayers,
+      pending: null,
+    };
     const logged = this.core.appendLog(
       next,
       `[Panier Express] Échange validé: ${current.username} donne ${event.give} et reçoit ${event.take} de ${target.username}`,
@@ -147,17 +237,26 @@ export class PanierExpressExchangeService {
     return { state: logged, status: 'resolved' };
   }
 
-  private getPendingExchange(pending: PendingState | null): PanierExpressPendingExchange | null {
+  private getPendingExchange(
+    pending: PendingState | null,
+  ): PanierExpressPendingExchange | null {
     if (!pending || pending.type !== 'exchange') {
       return null;
     }
-    if (typeof pending.playerId !== 'number' || typeof (pending as PanierExpressPendingExchange).card !== 'string') {
+    if (
+      typeof pending.playerId !== 'number' ||
+      typeof (pending as PanierExpressPendingExchange).card !== 'string'
+    ) {
       return null;
     }
     return pending as PanierExpressPendingExchange;
   }
 
-  private rejectExchange(state: GameStateEntity, message: string, status: ExchangeState = 'idle'): ExchangeResult {
+  private rejectExchange(
+    state: GameStateEntity,
+    message: string,
+    status: ExchangeState = 'idle',
+  ): ExchangeResult {
     return { state: this.core.appendLog(state, message), status };
   }
 
@@ -166,21 +265,46 @@ export class PanierExpressExchangeService {
     return Array.isArray(player?.inventory) && player.inventory.length > 0;
   }
 
-  private hasCardsForExchange(current: PlayerStateEntity, target: PlayerStateEntity, give: string, take: string): boolean {
+  private hasCardsForExchange(
+    current: PlayerStateEntity,
+    target: PlayerStateEntity,
+    give: string,
+    take: string,
+  ): boolean {
     const currentInv = new Set(
-      Array.isArray(current.inventory) ? current.inventory.map((card) => String(card)) : [],
+      Array.isArray(current.inventory)
+        ? current.inventory.map((card) => String(card))
+        : [],
     );
-    const targetInv = new Set(Array.isArray(target.inventory) ? target.inventory.map((card) => String(card)) : []);
+    const targetInv = new Set(
+      Array.isArray(target.inventory)
+        ? target.inventory.map((card) => String(card))
+        : [],
+    );
     return currentInv.has(give) && targetInv.has(take);
   }
 
-  private transferInventory(player: PlayerStateEntity, removeCard: string, addCard: string): PlayerStateEntity {
-    const list = Array.isArray(player.shoppingList) ? player.shoppingList.map((card) => String(card)) : [];
-    const basket = Array.isArray(player.basket) ? player.basket.map((card) => String(card)) : [];
-    const inventory = Array.isArray(player.inventory) ? player.inventory.map((card) => String(card)) : [];
+  private transferInventory(
+    player: PlayerStateEntity,
+    removeCard: string,
+    addCard: string,
+  ): PlayerStateEntity {
+    const list = Array.isArray(player.shoppingList)
+      ? player.shoppingList.map((card) => String(card))
+      : [];
+    const basket = Array.isArray(player.basket)
+      ? player.basket.map((card) => String(card))
+      : [];
+    const inventory = Array.isArray(player.inventory)
+      ? player.inventory.map((card) => String(card))
+      : [];
     const cleanedInventory = this.removeOne(inventory, removeCard);
     if (list.includes(addCard) && !basket.includes(addCard)) {
-      return { ...player, basket: [addCard, ...basket], inventory: cleanedInventory };
+      return {
+        ...player,
+        basket: [addCard, ...basket],
+        inventory: cleanedInventory,
+      };
     }
     return { ...player, inventory: [addCard, ...cleanedInventory] };
   }
@@ -194,7 +318,12 @@ export class PanierExpressExchangeService {
     return copy;
   }
 
-  private movePlayer(state: GameStateEntity, playerId: number, delta: number, metadata: PanierExpressMetadata): GameStateEntity {
+  private movePlayer(
+    state: GameStateEntity,
+    playerId: number,
+    delta: number,
+    metadata: PanierExpressMetadata,
+  ): GameStateEntity {
     if (!delta || delta === 0) return { ...state, metadata };
     const positions = { ...(metadata.positions ?? {}) };
     const laps = { ...(metadata.laps ?? {}) };
@@ -214,5 +343,4 @@ export class PanierExpressExchangeService {
   private defaultExchangeDeck(): string[] {
     return ['echange-fruit-legume', 'donne-une-carte', 'prend-au-hasard'];
   }
-
 }

@@ -29,6 +29,7 @@ public final class RoomBrowserView {
     private final JButton join = new JButton("Rejoindre");
 
     private Consumer<Integer> onJoin;
+    private Consumer<Integer> onSpectate;
 
     public RoomBrowserView() {
         root.setBorder(new EmptyBorder(16, 16, 16, 16));
@@ -65,6 +66,22 @@ public final class RoomBrowserView {
             }
         });
 
+        // Maj+EntrǸe ouvre la table en spectateur (lecture seule).
+        // Maj+Entrée ouvre la table en spectateur : binding géré au niveau écran (RoomBrowserScreen).
+
+        // Ctrl+C ouvre la table en spectateur (lecture seule).
+        // Important : Ctrl+C peut être capturé par les actions "copier" Swing, donc on bind directement sur la liste.
+        list.getInputMap(JComponent.WHEN_FOCUSED)
+                .put(KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_C, java.awt.event.InputEvent.CTRL_DOWN_MASK), "spectate-selected");
+        list.getInputMap(JComponent.WHEN_FOCUSED)
+                .put(KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_C, java.awt.event.InputEvent.CTRL_MASK), "spectate-selected");
+        list.getActionMap().put("spectate-selected", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                spectateSelected();
+            }
+        });
+
         setStatus(" ");
     }
 
@@ -94,8 +111,16 @@ public final class RoomBrowserView {
         this.onJoin = handler;
     }
 
+    public void onSpectate(Consumer<Integer> handler) {
+        this.onSpectate = handler;
+    }
+
     public void focusList() {
         SwingUtilities.invokeLater(() -> list.requestFocusInWindow());
+    }
+
+    public void spectateSelectedFromShortcut() {
+        spectateSelected();
     }
 
     private Integer extractRoomId(Object value) {
@@ -112,7 +137,8 @@ public final class RoomBrowserView {
     }
 
     private void updateJoinEnabled() {
-        join.setEnabled(extractRoomId(list.getSelectedValue()) != null);
+        boolean enabled = extractRoomId(list.getSelectedValue()) != null;
+        join.setEnabled(enabled);
     }
 
     private void joinSelected() {
@@ -135,6 +161,33 @@ public final class RoomBrowserView {
             if (next != null) {
                 list.setSelectedIndex(i);
                 onJoin.accept(next);
+                return;
+            }
+        }
+    }
+
+    private void spectateSelected() {
+        if (onSpectate == null) {
+            return;
+        }
+        int index = list.getSelectedIndex();
+        if (index < 0) {
+            return;
+        }
+        Object value = model.get(index);
+        Integer roomId = extractRoomId(value);
+        if (roomId != null) {
+            setStatus("Ouverture en spectateur...");
+            onSpectate.accept(roomId);
+            return;
+        }
+        // Si on est sur un header (ex: "=== ... ==="), on tente la prochaine entrǸe rejoignable.
+        for (int i = index + 1; i < model.size(); i++) {
+            Integer next = extractRoomId(model.get(i));
+            if (next != null) {
+                list.setSelectedIndex(i);
+                setStatus("Ouverture en spectateur...");
+                onSpectate.accept(next);
                 return;
             }
         }

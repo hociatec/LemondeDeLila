@@ -1,7 +1,10 @@
 import { QuizState } from '../../../../../modules/quiz/services/quiz-runner.service';
 import { BotProfile } from '../../../../../modules/bot/services/bot-strategy.service';
 import { DeckPoolState } from '../../../../../modules/cards/services/deck-pool.service';
-import { PendingState, PlayerStateEntity } from '../../../../../core/entities/game-state.entity';
+import {
+  PendingState,
+  PlayerStateEntity,
+} from '../../../../../core/entities/game-state.entity';
 
 /**
  * Types des tuiles Panier Express
@@ -39,8 +42,10 @@ export type PanierExpressActionLogEntry = {
  * On supprime les champs mal typés hérités de PlayerStateEntity
  * et on les redéfinit correctement en string[]
  */
-export interface PanierExpressPlayer
-  extends Omit<PlayerStateEntity, 'shoppingList' | 'basket' | 'inventory'> {
+export interface PanierExpressPlayer extends Omit<
+  PlayerStateEntity,
+  'shoppingList' | 'basket' | 'inventory'
+> {
   shoppingList: string[];
   basket: string[];
   inventory: string[];
