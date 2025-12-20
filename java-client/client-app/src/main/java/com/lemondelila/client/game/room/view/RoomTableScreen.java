@@ -23,6 +23,7 @@ import com.lemondelila.client.game.room.controller.RoomTableController;
 import com.lemondelila.client.game.room.event.RoomCreated;
 import com.lemondelila.client.game.room.event.RoomOperationFailed;
 import com.lemondelila.client.game.room.event.RoomPrivacyChanged;
+import com.lemondelila.client.game.room.event.RoomRoleChanged;
 import com.lemondelila.client.game.room.event.RoomUpdated;
 import com.lemondelila.client.game.room.event.ResetRoomRequested;
 import com.lemondelila.client.game.room.model.RoomDetailsState;
@@ -105,6 +106,7 @@ public final class RoomTableScreen extends BaseTableScreen {
                 this::handleLaunch,
                 this::handleQuit);
         shortcutManager.bindReset(this, this::handleResetGameGlobal);
+        shortcutManager.bindSpectatorToggle(this, this::handleToggleSpectatorMode);
 
         subscriptions().subscribe(eventBus, BotAdded.class, controller::onBotAdded);
         subscriptions().subscribe(eventBus, BotRemoved.class, controller::onBotRemoved);
@@ -115,6 +117,7 @@ public final class RoomTableScreen extends BaseTableScreen {
         subscriptions().subscribe(eventBus, RoomCreated.class, event -> refreshFromState());
         subscriptions().subscribe(eventBus, RoomUpdated.class, event -> refreshFromState());
         subscriptions().subscribe(eventBus, RoomPrivacyChanged.class, event -> refreshFromState());
+        subscriptions().subscribe(eventBus, RoomRoleChanged.class, event -> SwingUtilities.invokeLater(() -> handleRoleChanged(event)));
         subscriptions().subscribe(eventBus, com.lemondelila.client.game.room.event.GameStateUpdated.class, this::handleGameStateUpdated);
     }
 
@@ -206,6 +209,25 @@ public final class RoomTableScreen extends BaseTableScreen {
         controller.togglePrivacy();
     }
 
+    private void handleToggleSpectatorMode() {
+        controller.toggleSpectatorMode();
+    }
+
+    private void handleRoleChanged(RoomRoleChanged event) {
+        if (event == null) {
+            return;
+        }
+        Integer current = resolvedRoomId();
+        if (current == null || current != event.roomId()) {
+            return;
+        }
+        String message = event.message();
+        if (message != null && !message.isBlank()) {
+            announcer().announce(view.historySidebar(), message);
+        }
+        refreshFromState();
+    }
+
     @Override
     protected void handleQuit() {
         Integer roomId = resolvedRoomId();
@@ -217,7 +239,6 @@ public final class RoomTableScreen extends BaseTableScreen {
             SwingUtilities.invokeLater(view::focusInteraction);
             return;
         }
-        announcer.announce(view.historySidebar(), "Demande de sortie de la table.");
         controller.stopTrackingRoom();
         if (roomId != null) {
             eventBus.publish(new com.lemondelila.client.game.room.event.LeaveRoomRequested(roomId));

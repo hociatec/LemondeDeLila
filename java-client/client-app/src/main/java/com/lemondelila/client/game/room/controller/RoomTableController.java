@@ -98,7 +98,27 @@ public final class RoomTableController {
             }
             realtimeService.sendCommand("room.toggle-privacy", Map.of("roomId", roomId));
         } catch (Exception ex) {
-            announce("Impossible de changer la confidentialite : " + ex.getMessage());
+            // Si l'envoi échoue, aucun message serveur n'arrivera : on reste silencieux.
+        }
+    }
+
+    public void toggleSpectatorMode() {
+        if (!ensureRoomSelected("changer le mode")) {
+            return;
+        }
+        Integer roomId = resolvedRoomId();
+        if (roomId == null) {
+            announce("Aucune table selectionnee.");
+            return;
+        }
+        boolean targetSpectator = !detailsState.spectator();
+        try {
+            realtimeService.sendCommand(
+                    "room.set-role",
+                    Map.of("roomId", roomId, "spectator", targetSpectator ? 1 : 0)
+            );
+        } catch (Exception e) {
+            // Si l'envoi échoue, aucun message serveur n'arrivera : on reste silencieux.
         }
     }
 
@@ -147,7 +167,7 @@ public final class RoomTableController {
     }
 
     public void onBotOperationFailed(BotOperationFailed event) {
-        announce("Action bot impossible : " + event.message());
+        announce(event.message());
     }
 
     public void onRoomUpdated(RoomUpdated event) {
@@ -172,7 +192,7 @@ public final class RoomTableController {
     }
 
     public void onRoomOperationFailed(RoomOperationFailed event) {
-        announce("Action table impossible : " + event.message());
+        announce(event.message());
     }
 
     public boolean matchesCurrentRoom(Integer roomId) {
@@ -237,6 +257,11 @@ public final class RoomTableController {
         if (result.message() != null && !result.message().isBlank()) {
             announcer.announce(historySidebar, result.message());
         }
+    }
+
+    private static String clean(String message) {
+        if (message == null) return "erreur";
+        return message.replaceAll("\\s+", " ").trim();
     }
 
 }

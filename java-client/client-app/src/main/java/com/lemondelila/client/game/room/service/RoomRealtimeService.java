@@ -12,6 +12,7 @@ import com.lemondelila.client.game.realtime.service.RealtimeManager;
 import com.lemondelila.client.game.realtime.service.RealtimeManager.ChannelSubscription;
 import com.lemondelila.client.game.room.event.RoomCreated;
 import com.lemondelila.client.game.room.event.RoomOperationFailed;
+import com.lemondelila.client.game.room.event.RoomRoleChanged;
 import com.lemondelila.client.game.room.event.RoomRealtimeEvent;
 import com.lemondelila.client.game.room.event.RoomRealtimeFailed;
 import com.lemondelila.client.game.room.event.RoomUpdated;
@@ -37,6 +38,7 @@ public final class RoomRealtimeService extends AbstractRealtimeService<RoomRealt
 
     private final Object lock = new Object();
     private Integer lastRoomId;
+    private Boolean lastSpectator;
 
     record RoomKey(int roomId, boolean spectator) {
     }
@@ -58,6 +60,7 @@ public final class RoomRealtimeService extends AbstractRealtimeService<RoomRealt
         synchronized (lock) {
             try {
                 lastRoomId = roomId;
+                lastSpectator = spectator;
                 return acquire(new RoomKey(roomId, spectator));
                 /*
                         roomId,
@@ -81,17 +84,19 @@ public final class RoomRealtimeService extends AbstractRealtimeService<RoomRealt
     public void sendCommand(String type, Map<String, ?> payload) {
         Objects.requireNonNull(type, "type");
         int targetRoom;
+        boolean spectator;
         synchronized (lock) {
             int payloadRoomId = extractRoomId(payload);
             targetRoom = payloadRoomId > 0 ? payloadRoomId : (lastRoomId != null ? lastRoomId : 0);
             if (targetRoom > 0) {
                 lastRoomId = targetRoom;
             }
+            spectator = Boolean.TRUE.equals(lastSpectator);
         }
         if (targetRoom < 0) {
             return;
         }
-        ensureConnectedTo(new RoomKey(targetRoom, false));
+        ensureConnectedTo(new RoomKey(targetRoom, spectator));
         enqueueOrRun(conn -> conn.send(type, payload));
         /*
             int payloadRoomId = extractRoomId(payload);
@@ -135,6 +140,7 @@ public final class RoomRealtimeService extends AbstractRealtimeService<RoomRealt
     public void resetTracking() {
         synchronized (lock) {
             lastRoomId = null;
+            lastSpectator = null;
         }
     }
 
@@ -193,6 +199,7 @@ public final class RoomRealtimeService extends AbstractRealtimeService<RoomRealt
             case "bot.added" -> publishBotAdded(roomId, payload.path("bot"));
             case "bot.removed" -> publishBotRemoved(roomId, payload);
             case "room.privacy" -> publishRoomPrivacyChanged(roomId, payload);
+            case "room.role" -> publishRoleChanged(roomId, payload);
             case "state-updated" -> publishStateUpdated(roomId, payload);
             case "error" -> publishOperationFailed(payload.path("message").asText("Erreur temps réel"));
             default -> { }
@@ -228,6 +235,12 @@ public final class RoomRealtimeService extends AbstractRealtimeService<RoomRealt
     private void publishRoomPrivacyChanged(int roomId, JsonNode payload) {
         boolean isPrivate = payload.path("isPrivate").asBoolean(true);
         eventBus.publish(new com.lemondelila.client.game.room.event.RoomPrivacyChanged(roomId, isPrivate));
+    }
+
+    private void publishRoleChanged(int roomId, JsonNode payload) {
+        boolean spectator = payload.path("spectator").asBoolean(false);
+        String message = payload.path("message").asText("");
+        eventBus.publish(new RoomRoleChanged(roomId, spectator, message == null || message.isBlank() ? null : message.trim()));
     }
 
     private void publishStateUpdated(int roomId, JsonNode payload) {

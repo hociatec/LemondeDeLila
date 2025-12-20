@@ -38,6 +38,32 @@ public final class PlayerCollectionsViewModel {
         return fromSingle;
     }
 
+    public Optional<ResolvedView> resolveForPlayerId(JsonNode extras, Integer playerId) {
+        if (playerId == null || extras == null || !extras.isObject()) {
+            return Optional.empty();
+        }
+        JsonNode playerViews = extras.get("playerViews");
+        Optional<ResolvedView> fromPlayerViews = resolveByIdFromArray(playerViews, playerId);
+        if (fromPlayerViews.isPresent()) {
+            return fromPlayerViews;
+        }
+
+        JsonNode players = extras.get("players");
+        Optional<ResolvedView> fromPlayers = resolveByIdFromArray(players, playerId);
+        if (fromPlayers.isPresent()) {
+            return fromPlayers;
+        }
+
+        JsonNode view = extras.get("currentPlayerView");
+        if (view == null || view.isNull()) {
+            view = extras.get("playerView");
+        }
+        if (view != null && view.isObject() && view.path("id").isInt() && view.get("id").asInt() == playerId) {
+            return resolveFromObject(view);
+        }
+        return Optional.empty();
+    }
+
     private Optional<ResolvedView> resolveFromArray(JsonNode array, Integer localUserId, String localNameKey) {
         if (array == null || !array.isArray() || array.isEmpty()) {
             return Optional.empty();
@@ -76,6 +102,18 @@ public final class PlayerCollectionsViewModel {
         return resolveFromObject(array.get(0));
     }
 
+    private Optional<ResolvedView> resolveByIdFromArray(JsonNode array, int playerId) {
+        if (array == null || !array.isArray() || array.isEmpty()) {
+            return Optional.empty();
+        }
+        for (JsonNode v : array) {
+            if (v != null && v.isObject() && v.path("id").isInt() && v.get("id").asInt() == playerId) {
+                return resolveFromObject(v);
+            }
+        }
+        return Optional.empty();
+    }
+
     private Optional<ResolvedView> resolveFromObject(JsonNode obj) {
         if (obj == null || !obj.isObject() || !obj.path("id").isInt()) {
             return Optional.empty();
@@ -111,4 +149,3 @@ public final class PlayerCollectionsViewModel {
         return noMarks.toLowerCase(Locale.ROOT);
     }
 }
-

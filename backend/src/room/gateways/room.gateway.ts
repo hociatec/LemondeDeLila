@@ -15,6 +15,7 @@ import { WsJwtAuthService } from '../../common/ws/ws-jwt-auth.service';
 type AuthedClient = { socket: WebSocket; userId: number; roomId: number };
 type IncomingPayload = { type?: string; payload?: any };
 type ClientRole = 'participant' | 'spectator';
+type ClientMeta = AuthedClient & { role: ClientRole };
 
 @WebSocketGateway({ path: '/ws' })
 export class RoomGateway
@@ -25,7 +26,7 @@ export class RoomGateway
 
   private readonly clients = new Map<
     WebSocket,
-    AuthedClient & { role: ClientRole }
+    ClientMeta
   >();
   private readonly rooms = new Map<number, Set<WebSocket>>();
 
@@ -36,6 +37,12 @@ export class RoomGateway
     config: ConfigService,
     private readonly auth: WsJwtAuthService,
   ) {
+    // Permet au backend (ex: moteur de jeu) de notifier les clients room sans dépendre du Gateway.
+    this.roomsService.setRealtimeNotifier(async (roomId: number) => {
+      await this.broadcast(roomId, 'state-updated', { roomId });
+      await this.sendRoomState(roomId);
+    });
+
     const secret = config.get<string>('JWT_SECRET');
     if (!secret) {
       throw new Error('JWT_SECRET doit être défini pour le WS room');
@@ -119,15 +126,23 @@ export class RoomGateway
     this.clients.delete(client);
     if (meta) {
       const set = this.rooms.get(meta.roomId);
+      let remainingConnections = 0;
       if (set) {
         set.delete(client);
         if (set.size === 0) {
           this.rooms.delete(meta.roomId);
+          remainingConnections = 0;
+        } else {
+          remainingConnections = set.size;
         }
       }
       // si plus aucune connexion pour cette room, on supprime la table côté service
-      if (!this.rooms.has(meta.roomId) && meta.role === 'participant') {
-        this.roomsService.leaveRoom(meta.roomId, meta.userId).catch(() => {});
+      if (meta.role === 'participant') {
+        this.roomsService
+          .leaveRoom(meta.roomId, meta.userId, {
+            preserveRoom: remainingConnections > 0,
+          })
+          .catch(() => {});
       }
       if (meta.roomId > 0) {
         this.sendRoomState(meta.roomId).catch(() => {});
@@ -239,7 +254,7 @@ export class RoomGateway
 
   private async handleCommand(
     client: WebSocket,
-    meta: AuthedClient,
+    meta: ClientMeta,
     payload: IncomingPayload,
   ) {
     const type = payload?.type;
@@ -250,6 +265,9 @@ export class RoomGateway
         break;
       case 'room.reset':
         await this.handleRoomReset(meta);
+        break;
+      case 'room.set-role':
+        await this.handleSetRole(client, meta, data);
         break;
       case 'room.toggle-privacy':
         await this.handleTogglePrivacy(meta);
@@ -311,6 +329,59 @@ export class RoomGateway
       bot: { id: bot.id, name: bot.name },
       botId,
     });
+    await this.sendRoomState(meta.roomId);
+  }
+
+  private async handleSetRole(client: WebSocket, meta: ClientMeta, payload: any) {
+    const roomIdRaw = payload?.roomId ?? meta.roomId;
+    const roomId = Number(roomIdRaw);
+    if (!Number.isFinite(roomId) || roomId <= 0) {
+      throw new Error('roomId invalide');
+    }
+    if (roomId !== meta.roomId) {
+      throw new Error('roomId ne correspond pas à la table courante');
+    }
+
+    const state = await this.roomsService.getRoomPayload(meta.roomId);
+    const status = (state?.room?.status || '').toLowerCase();
+    if (status === 'started') {
+      throw new Error('Partie déjà commencée');
+    }
+
+    const spectatorRaw = payload?.spectator;
+    const spectator =
+      spectatorRaw === true ||
+      spectatorRaw === 1 ||
+      spectatorRaw === '1' ||
+      spectatorRaw === 'true' ||
+      spectatorRaw === 'yes' ||
+      spectatorRaw === 'y';
+
+    if (spectator) {
+      // Public: on se retire des participants (sans fermer la connexion) pour ne pas être compté comme joueur.
+      if (!state.room.isPrivate) {
+        await this.roomsService.leaveRoom(meta.roomId, meta.userId, {
+          preserveRoom: true,
+        });
+      }
+      meta.role = 'spectator';
+    } else {
+      // Privé: autorisé uniquement si déjà owner/participant (canSpectate l'a déjà garanti).
+      if (!state.room.isPrivate) {
+        await this.roomsService.joinRoom(meta.roomId, meta.userId);
+      }
+      meta.role = 'participant';
+    }
+
+    this.safeSend(client, {
+      type: 'room.role',
+      roomId: meta.roomId,
+      payload: {
+        spectator,
+        message: spectator ? 'Mode spectateur activé.' : 'Mode spectateur désactivé.',
+      },
+    });
+
     await this.sendRoomState(meta.roomId);
   }
 

@@ -11,6 +11,7 @@ import com.lemondelila.client.game.room.event.RoomCreated;
 import com.lemondelila.client.game.room.event.RoomRealtimeEvent;
 import com.lemondelila.client.game.room.event.RoomRealtimeFailed;
 import com.lemondelila.client.game.room.event.RoomUpdated;
+import com.lemondelila.client.game.room.event.RoomRoleChanged;
 import com.lemondelila.client.game.room.model.RoomDetailsState;
 import com.lemondelila.client.game.room.model.RoomState;
 import com.lemondelila.client.game.room.model.TableState;
@@ -53,6 +54,7 @@ public final class RoomLifecycleService implements AutoCloseable {
         subscriptions.subscribe(eventBus, BotOperationFailed.class, e -> { });
         subscriptions.subscribe(eventBus, RoomOperationFailed.class, e -> { });
         subscriptions.subscribe(eventBus, RoomCreated.class, this::onRoomCreated);
+        subscriptions.subscribe(eventBus, RoomRoleChanged.class, this::onRoleChanged);
     }
 
     public void trackRoom(Integer roomId, String gameType) {
@@ -179,5 +181,16 @@ public final class RoomLifecycleService implements AutoCloseable {
             return "Erreur temps réel";
         }
         return message;
+    }
+
+    private void onRoleChanged(RoomRoleChanged event) {
+        if (event == null) {
+            return;
+        }
+        Integer current = detailsState.roomId();
+        if (current == null || current != event.roomId()) {
+            return;
+        }
+        detailsState.setSpectator(event.spectator());
     }
 }

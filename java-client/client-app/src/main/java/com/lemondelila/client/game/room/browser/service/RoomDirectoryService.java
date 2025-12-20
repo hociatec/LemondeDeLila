@@ -65,6 +65,10 @@ public final class RoomDirectoryService {
         return new JoinedRoom(id, gameType, roomName);
     }
 
+    public void leavePublicRoom(int roomId) throws IOException, InterruptedException {
+        apiClient.request("rooms.public.leave", Map.of("roomId", roomId), JsonNode.class);
+    }
+
     public JoinedRoom spectatePublicRoom(int roomId) throws IOException, InterruptedException {
         JsonNode response = apiClient.request("rooms.public.spectate", Map.of("roomId", roomId), JsonNode.class);
         JsonNode room = response.path("room");

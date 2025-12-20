@@ -130,6 +130,7 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
     private boolean startAnnounced;
     private boolean firstStateRendered;
     private boolean autoPrimaryDispatched;
+    private boolean handReceivedAnnounced;
     private static final String CARD_DEFAULT = "card.default";
     private static final String CARD_EXCHANGE = "card.exchange";
     private final JPanel cardContainer = new JPanel(new CardLayout());
@@ -521,6 +522,7 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         startAnnounced = false;
         firstStateRendered = false;
         autoPrimaryDispatched = false;
+        handReceivedAnnounced = false;
         requestFocusInWindow();
         controller.attach(roomId, this);
     }
@@ -591,6 +593,14 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
             startAnnounced = false;
             // ne pas réinitialiser pregameAnnounced pour éviter les répétitions avant le démarrage
             autoPrimaryDispatched = false;
+            handReceivedAnnounced = false;
+        }
+
+        if (startedFlag && isDameNature(state) && !handReceivedAnnounced) {
+            if (!announcementService.handLabels(state).isEmpty()) {
+                announcementService.announceHandReceived(state);
+                handReceivedAnnounced = true;
+            }
         }
         statusRenderer.renderLogs(state.logs());
         turnRenderer.renderTurn(state);
@@ -701,18 +711,60 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
     private void renderPlayerCollections(GenericGameState state) {
         if (state != null) {
             var resolved = playerCollectionsRenderer.resolve(state, localUserId, localUsername);
-            if (resolved.isPresent()) {
+            if (resolved.isPresent() && localUserId != null && resolved.get().playerId() == localUserId) {
                 localPlayerId = resolved.get().playerId();
                 quizHandler.setLocalPlayerId(localPlayerId);
                 dialogManager.setLocalPlayerId(localPlayerId);
                 updateCollectionsFromLists(resolved.get().shopping(), resolved.get().basket(), resolved.get().inventory());
                 return;
             }
+            localPlayerId = null;
+            quizHandler.setLocalPlayerId(null);
+            dialogManager.setLocalPlayerId(null);
+            clearCollectionsView();
+            return;
         }
         // Fallback: conserver la dernière vue connue (évite de vider si le serveur n'expose pas la vue joueur).
         shoppingLabel.setText("S : " + formatList(shoppingView));
         basketLabel.setText("B : " + formatList(basketView));
         inventoryLabel.setText("I : " + formatList(inventoryView));
+    }
+
+    private void announceResolvedCollection(String id) {
+        if (localPlayerId == null) {
+            return;
+        }
+        GenericGameState state = lastState;
+        if (state == null || state.extras() == null || !state.extras().isObject()) {
+            if ("shopping".equals(id)) announcementService.announceCollection("shopping", shoppingView);
+            else if ("basket".equals(id)) announcementService.announceCollection("basket", basketView);
+            else if ("inventory".equals(id)) announcementService.announceCollection("inventory", inventoryView);
+            return;
+        }
+        java.util.Optional<PlayerCollectionsViewModel.ResolvedView> resolved =
+                playerCollectionsViewModel.resolveForPlayerId(state.extras(), localPlayerId);
+        if (resolved.isPresent()) {
+            java.util.List<String> values = switch (id) {
+                case "shopping" -> resolved.get().shopping();
+                case "basket" -> resolved.get().basket();
+                case "inventory" -> resolved.get().inventory();
+                default -> java.util.List.of();
+            };
+            announcementService.announceCollection(id, values);
+            return;
+        }
+        if ("shopping".equals(id)) announcementService.announceCollection("shopping", shoppingView);
+        else if ("basket".equals(id)) announcementService.announceCollection("basket", basketView);
+        else if ("inventory".equals(id)) announcementService.announceCollection("inventory", inventoryView);
+    }
+
+    private void clearCollectionsView() {
+        shoppingView = java.util.List.of();
+        basketView = java.util.List.of();
+        inventoryView = java.util.List.of();
+        shoppingLabel.setText("S : ");
+        basketLabel.setText("B : ");
+        inventoryLabel.setText("I : ");
     }
 
     private void renderShortcuts(GenericGameState state) {
@@ -860,9 +912,9 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
     private void handleInterfaceShortcut(String id) {
         if (id == null || id.isBlank()) return;
         switch (id) {
-            case "shopping" -> announcementService.announceCollection("shopping", shoppingView);
-            case "basket" -> announcementService.announceCollection("basket", basketView);
-            case "inventory" -> announcementService.announceCollection("inventory", inventoryView);
+            case "shopping" -> announceResolvedCollection("shopping");
+            case "basket" -> announceResolvedCollection("basket");
+            case "inventory" -> announceResolvedCollection("inventory");
             case "position" -> announcementService.announcePosition(lastState, localPlayerId != null ? localPlayerId : tableState.currentPlayerId());
             case "hand" -> announcementService.announceHand(lastState);
             case "books" -> announcementService.announceBooks(lastState);

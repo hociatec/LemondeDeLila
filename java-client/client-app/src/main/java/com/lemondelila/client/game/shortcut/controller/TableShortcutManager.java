@@ -90,6 +90,26 @@ public final class TableShortcutManager {
     }
 
     /**
+     * Raccourci pour basculer entre joueur et spectateur (Ctrl+C).
+     */
+    public void bindSpectatorToggle(JComponent root, Runnable onToggle) {
+        Objects.requireNonNull(root, "root");
+        Objects.requireNonNull(onToggle, "onToggle");
+        KeyStroke toggle = KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK);
+        registerShortcut(toggle, "Basculer joueur/spectateur");
+        InputMap windowMap = root.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        ActionMap actions = root.getActionMap();
+        windowMap.put(toggle, "table.role.toggle");
+        windowMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_MASK), "table.role.toggle");
+        actions.put("table.role.toggle", new javax.swing.AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                onToggle.run();
+            }
+        });
+    }
+
+    /**
      * Raccourcis bots (b pour ajouter, shift+b pour retirer).
      */
     public void bindBotShortcuts(JComponent root, Runnable onAdd, Runnable onRemove) {

@@ -48705,3 +48705,688 @@ Native library (win32-x86-64/SAAPI32.dll) not found in resource path (C:\wamp64\
 [2025-12-20 02:33:04] NVDA spoke text successfully.
 [2025-12-20 02:33:04] NVDA spoke text successfully.
 [2025-12-20 02:33:13] NVDA spoke text successfully.
+[2025-12-20 02:36:57] Attempting to load NVDA library from C:\wamp64\www\lemondeDeLila\java-client\libs\windows\x64\nvdaHelperRemote.dll
+[2025-12-20 02:36:57] NVDA controller client API not available, trying controller API: Error looking up function 'nvdaControllerClient_testIfRunning': La procédure spécifiée est introuvable.
+
+[2025-12-20 02:36:57] Detected NVDA controller API.
+[2025-12-20 02:36:57] NVDA controller bridge initialised successfully (CONTROLLER).
+[2025-12-20 02:36:57] JAWS DLL load failed at C:\wamp64\www\lemondeDeLila\java-client\libs\windows\x64\saapi32.dll: Unable to load library 'C:\wamp64\www\lemondeDeLila\java-client\libs\windows\x64\saapi32.dll':
+%1 n’est pas une application Win32 valide.
+
+%1 n’est pas une application Win32 valide.
+
+Native library (win32-x86-64/C:\wamp64\www\lemondeDeLila\java-client\libs\windows\x64\saapi32.dll) not found in resource path (C:\wamp64\www\lemondeDeLila\java-client\client-app\target\client-app-1.0.9-all.jar)
+[2025-12-20 02:36:57] JAWS DLL load failed at C:\wamp64\www\lemondeDeLila\java-client\libs\windows\x64\SAAPI32.dll: Unable to load library 'C:\wamp64\www\lemondeDeLila\java-client\libs\windows\x64\SAAPI32.dll':
+%1 n’est pas une application Win32 valide.
+
+%1 n’est pas une application Win32 valide.
+
+Native library (win32-x86-64/C:\wamp64\www\lemondeDeLila\java-client\libs\windows\x64\SAAPI32.dll) not found in resource path (C:\wamp64\www\lemondeDeLila\java-client\client-app\target\client-app-1.0.9-all.jar)
+[2025-12-20 02:36:57] JAWS DLL load failed at fsapi32: Unable to load library 'fsapi32':
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Native library (win32-x86-64/fsapi32.dll) not found in resource path (C:\wamp64\www\lemondeDeLila\java-client\client-app\target\client-app-1.0.9-all.jar)
+[2025-12-20 02:36:57] JAWS DLL load failed at SAAPI32: Unable to load library 'SAAPI32':
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Native library (win32-x86-64/SAAPI32.dll) not found in resource path (C:\wamp64\www\lemondeDeLila\java-client\client-app\target\client-app-1.0.9-all.jar)
+[2025-12-20 02:36:57] FSAPI DLL not available on this system.
+[2025-12-20 02:36:58] NVDA spoke text successfully.
+[2025-12-20 02:38:04] NVDA spoke text successfully.
+[2025-12-20 02:38:05] NVDA spoke text successfully.
+[2025-12-20 02:38:05] NVDA spoke text successfully.
+[2025-12-20 02:38:12] NVDA spoke text successfully.
+[2025-12-20 02:38:15] NVDA spoke text successfully.
+[2025-12-20 02:38:17] NVDA spoke text successfully.
+[2025-12-20 02:38:30] NVDA spoke text successfully.
+[2025-12-20 02:38:32] NVDA spoke text successfully.
+[2025-12-20 02:38:34] NVDA spoke text successfully.
+[2025-12-20 02:38:35] NVDA spoke text successfully.
+[2025-12-20 02:38:36] NVDA spoke text successfully.
+[2025-12-20 02:38:36] NVDA spoke text successfully.
+[2025-12-20 02:38:40] NVDA spoke text successfully.
+[2025-12-20 02:38:40] NVDA spoke text successfully.
+[2025-12-20 02:38:40] NVDA spoke text successfully.
+[2025-12-20 02:38:40] NVDA spoke text successfully.
+[2025-12-20 02:38:41] NVDA spoke text successfully.
+[2025-12-20 02:38:41] NVDA spoke text successfully.
+[2025-12-20 02:38:42] NVDA spoke text successfully.
+[2025-12-20 02:38:43] NVDA spoke text successfully.
+[2025-12-20 02:38:43] NVDA spoke text successfully.
+[2025-12-20 02:38:44] NVDA spoke text successfully.
+[2025-12-20 02:38:44] NVDA spoke text successfully.
+[2025-12-20 02:38:44] NVDA spoke text successfully.
+[2025-12-20 02:38:46] NVDA spoke text successfully.
+[2025-12-20 02:38:48] NVDA spoke text successfully.
+[2025-12-20 02:38:48] NVDA spoke text successfully.
+[2025-12-20 02:38:49] NVDA spoke text successfully.
+[2025-12-20 02:38:51] NVDA spoke text successfully.
+[2025-12-20 02:38:52] NVDA spoke text successfully.
+[2025-12-20 02:38:56] NVDA spoke text successfully.
+[2025-12-20 02:38:59] NVDA spoke text successfully.
+[2025-12-20 02:39:00] NVDA spoke text successfully.
+[2025-12-20 02:39:01] NVDA spoke text successfully.
+[2025-12-20 02:39:02] NVDA spoke text successfully.
+[2025-12-20 02:39:03] NVDA spoke text successfully.
+[2025-12-20 02:39:03] NVDA spoke text successfully.
+[2025-12-20 02:39:07] NVDA spoke text successfully.
+[2025-12-20 02:39:07] NVDA spoke text successfully.
+[2025-12-20 02:39:09] NVDA spoke text successfully.
+[2025-12-20 02:39:17] NVDA spoke text successfully.
+[2025-12-20 02:39:18] NVDA spoke text successfully.
+[2025-12-20 02:39:21] NVDA spoke text successfully.
+[2025-12-20 15:22:54] Attempting to load NVDA library from C:\wamp64\www\lemondeDeLila\java-client\libs\windows\x64\nvdaHelperRemote.dll
+[2025-12-20 15:22:54] NVDA controller client API not available, trying controller API: Error looking up function 'nvdaControllerClient_testIfRunning': La procédure spécifiée est introuvable.
+
+[2025-12-20 15:22:54] Detected NVDA controller API.
+[2025-12-20 15:22:54] NVDA controller bridge initialised successfully (CONTROLLER).
+[2025-12-20 15:22:54] JAWS DLL load failed at C:\wamp64\www\lemondeDeLila\java-client\libs\windows\x64\saapi32.dll: Unable to load library 'C:\wamp64\www\lemondeDeLila\java-client\libs\windows\x64\saapi32.dll':
+%1 n’est pas une application Win32 valide.
+
+%1 n’est pas une application Win32 valide.
+
+Native library (win32-x86-64/C:\wamp64\www\lemondeDeLila\java-client\libs\windows\x64\saapi32.dll) not found in resource path (C:\wamp64\www\lemondeDeLila\java-client\client-app\target\client-app-1.0.9-all.jar)
+[2025-12-20 15:22:54] JAWS DLL load failed at C:\wamp64\www\lemondeDeLila\java-client\libs\windows\x64\SAAPI32.dll: Unable to load library 'C:\wamp64\www\lemondeDeLila\java-client\libs\windows\x64\SAAPI32.dll':
+%1 n’est pas une application Win32 valide.
+
+%1 n’est pas une application Win32 valide.
+
+Native library (win32-x86-64/C:\wamp64\www\lemondeDeLila\java-client\libs\windows\x64\SAAPI32.dll) not found in resource path (C:\wamp64\www\lemondeDeLila\java-client\client-app\target\client-app-1.0.9-all.jar)
+[2025-12-20 15:22:54] JAWS DLL load failed at fsapi32: Unable to load library 'fsapi32':
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Native library (win32-x86-64/fsapi32.dll) not found in resource path (C:\wamp64\www\lemondeDeLila\java-client\client-app\target\client-app-1.0.9-all.jar)
+[2025-12-20 15:22:54] JAWS DLL load failed at SAAPI32: Unable to load library 'SAAPI32':
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Native library (win32-x86-64/SAAPI32.dll) not found in resource path (C:\wamp64\www\lemondeDeLila\java-client\client-app\target\client-app-1.0.9-all.jar)
+[2025-12-20 15:22:54] FSAPI DLL not available on this system.
+[2025-12-20 15:22:55] NVDA spoke text successfully.
+[2025-12-20 15:23:40] NVDA spoke text successfully.
+[2025-12-20 15:23:40] NVDA spoke text successfully.
+[2025-12-20 15:23:41] NVDA spoke text successfully.
+[2025-12-20 15:23:43] NVDA spoke text successfully.
+[2025-12-20 15:23:44] NVDA spoke text successfully.
+[2025-12-20 15:23:49] NVDA spoke text successfully.
+[2025-12-20 15:23:51] NVDA spoke text successfully.
+[2025-12-20 15:23:55] NVDA spoke text successfully.
+[2025-12-20 15:23:57] NVDA spoke text successfully.
+[2025-12-20 15:24:02] NVDA spoke text successfully.
+[2025-12-20 15:24:02] NVDA spoke text successfully.
+[2025-12-20 15:24:03] NVDA spoke text successfully.
+[2025-12-20 15:24:05] NVDA spoke text successfully.
+[2025-12-20 15:24:08] NVDA spoke text successfully.
+[2025-12-20 15:24:08] NVDA spoke text successfully.
+[2025-12-20 15:24:10] NVDA spoke text successfully.
+[2025-12-20 15:24:13] NVDA spoke text successfully.
+[2025-12-20 15:24:14] NVDA spoke text successfully.
+[2025-12-20 15:24:15] NVDA spoke text successfully.
+[2025-12-20 15:24:16] NVDA spoke text successfully.
+[2025-12-20 15:24:19] NVDA spoke text successfully.
+[2025-12-20 15:24:21] NVDA spoke text successfully.
+[2025-12-20 15:24:22] NVDA spoke text successfully.
+[2025-12-20 15:24:23] NVDA spoke text successfully.
+[2025-12-20 15:24:26] NVDA spoke text successfully.
+[2025-12-20 15:24:27] NVDA spoke text successfully.
+[2025-12-20 15:24:28] NVDA spoke text successfully.
+[2025-12-20 15:24:28] NVDA spoke text successfully.
+[2025-12-20 15:24:28] NVDA spoke text successfully.
+[2025-12-20 15:24:28] NVDA spoke text successfully.
+[2025-12-20 15:24:28] NVDA spoke text successfully.
+[2025-12-20 15:24:29] NVDA spoke text successfully.
+[2025-12-20 15:24:31] NVDA spoke text successfully.
+[2025-12-20 15:24:32] NVDA spoke text successfully.
+[2025-12-20 15:24:34] NVDA spoke text successfully.
+[2025-12-20 15:24:38] NVDA spoke text successfully.
+[2025-12-20 15:24:39] NVDA spoke text successfully.
+[2025-12-20 15:24:39] NVDA spoke text successfully.
+[2025-12-20 15:24:42] NVDA spoke text successfully.
+[2025-12-20 15:24:42] NVDA spoke text successfully.
+[2025-12-20 15:24:43] NVDA spoke text successfully.
+[2025-12-20 15:24:45] NVDA spoke text successfully.
+[2025-12-20 15:24:46] NVDA spoke text successfully.
+[2025-12-20 15:24:46] NVDA spoke text successfully.
+[2025-12-20 15:24:47] NVDA spoke text successfully.
+[2025-12-20 15:24:47] NVDA spoke text successfully.
+[2025-12-20 15:24:47] NVDA spoke text successfully.
+[2025-12-20 15:24:48] NVDA spoke text successfully.
+[2025-12-20 15:24:48] NVDA spoke text successfully.
+[2025-12-20 15:24:48] NVDA spoke text successfully.
+[2025-12-20 15:24:48] NVDA spoke text successfully.
+[2025-12-20 15:24:49] NVDA spoke text successfully.
+[2025-12-20 15:24:49] NVDA spoke text successfully.
+[2025-12-20 15:24:52] NVDA spoke text successfully.
+[2025-12-20 15:24:52] NVDA spoke text successfully.
+[2025-12-20 15:24:52] NVDA spoke text successfully.
+[2025-12-20 15:24:53] NVDA spoke text successfully.
+[2025-12-20 15:24:55] NVDA spoke text successfully.
+[2025-12-20 15:24:56] NVDA spoke text successfully.
+[2025-12-20 15:24:56] NVDA spoke text successfully.
+[2025-12-20 15:24:57] NVDA spoke text successfully.
+[2025-12-20 15:24:57] NVDA spoke text successfully.
+[2025-12-20 15:25:00] NVDA spoke text successfully.
+[2025-12-20 15:25:00] NVDA spoke text successfully.
+[2025-12-20 15:25:01] NVDA spoke text successfully.
+[2025-12-20 15:25:01] NVDA spoke text successfully.
+[2025-12-20 15:25:02] NVDA spoke text successfully.
+[2025-12-20 15:25:04] NVDA spoke text successfully.
+[2025-12-20 15:25:07] NVDA spoke text successfully.
+[2025-12-20 15:46:37] Attempting to load NVDA library from C:\wamp64\www\lemondeDeLila\java-client\libs\windows\x64\nvdaHelperRemote.dll
+[2025-12-20 15:46:37] NVDA controller client API not available, trying controller API: Error looking up function 'nvdaControllerClient_testIfRunning': La procédure spécifiée est introuvable.
+
+[2025-12-20 15:46:37] Detected NVDA controller API.
+[2025-12-20 15:46:37] NVDA controller bridge initialised successfully (CONTROLLER).
+[2025-12-20 15:46:37] JAWS DLL load failed at C:\wamp64\www\lemondeDeLila\java-client\libs\windows\x64\saapi32.dll: Unable to load library 'C:\wamp64\www\lemondeDeLila\java-client\libs\windows\x64\saapi32.dll':
+%1 n’est pas une application Win32 valide.
+
+%1 n’est pas une application Win32 valide.
+
+Native library (win32-x86-64/C:\wamp64\www\lemondeDeLila\java-client\libs\windows\x64\saapi32.dll) not found in resource path (C:\wamp64\www\lemondeDeLila\java-client\client-app\target\client-app-1.0.9-all.jar)
+[2025-12-20 15:46:37] JAWS DLL load failed at C:\wamp64\www\lemondeDeLila\java-client\libs\windows\x64\SAAPI32.dll: Unable to load library 'C:\wamp64\www\lemondeDeLila\java-client\libs\windows\x64\SAAPI32.dll':
+%1 n’est pas une application Win32 valide.
+
+%1 n’est pas une application Win32 valide.
+
+Native library (win32-x86-64/C:\wamp64\www\lemondeDeLila\java-client\libs\windows\x64\SAAPI32.dll) not found in resource path (C:\wamp64\www\lemondeDeLila\java-client\client-app\target\client-app-1.0.9-all.jar)
+[2025-12-20 15:46:37] JAWS DLL load failed at fsapi32: Unable to load library 'fsapi32':
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Native library (win32-x86-64/fsapi32.dll) not found in resource path (C:\wamp64\www\lemondeDeLila\java-client\client-app\target\client-app-1.0.9-all.jar)
+[2025-12-20 15:46:37] JAWS DLL load failed at SAAPI32: Unable to load library 'SAAPI32':
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Native library (win32-x86-64/SAAPI32.dll) not found in resource path (C:\wamp64\www\lemondeDeLila\java-client\client-app\target\client-app-1.0.9-all.jar)
+[2025-12-20 15:46:37] FSAPI DLL not available on this system.
+[2025-12-20 15:46:38] NVDA spoke text successfully.
+[2025-12-20 15:47:04] NVDA spoke text successfully.
+[2025-12-20 15:47:05] NVDA spoke text successfully.
+[2025-12-20 15:47:05] NVDA spoke text successfully.
+[2025-12-20 15:47:08] NVDA spoke text successfully.
+[2025-12-20 15:47:10] NVDA spoke text successfully.
+[2025-12-20 15:47:10] NVDA spoke text successfully.
+[2025-12-20 15:47:12] NVDA spoke text successfully.
+[2025-12-20 15:47:12] NVDA spoke text successfully.
+[2025-12-20 15:47:15] NVDA spoke text successfully.
+[2025-12-20 15:47:16] NVDA spoke text successfully.
+[2025-12-20 15:47:17] NVDA spoke text successfully.
+[2025-12-20 15:47:17] NVDA spoke text successfully.
+[2025-12-20 15:47:18] NVDA spoke text successfully.
+[2025-12-20 15:47:19] NVDA spoke text successfully.
+[2025-12-20 15:47:19] NVDA spoke text successfully.
+[2025-12-20 15:47:19] NVDA spoke text successfully.
+[2025-12-20 15:47:20] NVDA spoke text successfully.
+[2025-12-20 15:47:20] NVDA spoke text successfully.
+[2025-12-20 15:47:20] NVDA spoke text successfully.
+[2025-12-20 15:47:20] NVDA spoke text successfully.
+[2025-12-20 15:47:20] NVDA spoke text successfully.
+[2025-12-20 15:47:21] NVDA spoke text successfully.
+[2025-12-20 15:47:21] NVDA spoke text successfully.
+[2025-12-20 15:47:21] NVDA spoke text successfully.
+[2025-12-20 15:47:26] NVDA spoke text successfully.
+[2025-12-20 15:47:26] NVDA spoke text successfully.
+[2025-12-20 15:47:30] NVDA spoke text successfully.
+[2025-12-20 15:47:34] NVDA spoke text successfully.
+[2025-12-20 15:47:34] NVDA spoke text successfully.
+[2025-12-20 15:47:36] NVDA spoke text successfully.
+[2025-12-20 15:47:38] NVDA spoke text successfully.
+[2025-12-20 15:47:39] NVDA spoke text successfully.
+[2025-12-20 15:47:41] NVDA spoke text successfully.
+[2025-12-20 15:47:42] NVDA spoke text successfully.
+[2025-12-20 15:47:42] NVDA spoke text successfully.
+[2025-12-20 15:47:44] NVDA spoke text successfully.
+[2025-12-20 15:47:44] NVDA spoke text successfully.
+[2025-12-20 15:47:46] NVDA spoke text successfully.
+[2025-12-20 15:47:47] NVDA spoke text successfully.
+[2025-12-20 15:47:54] NVDA spoke text successfully.
+[2025-12-20 15:47:55] NVDA spoke text successfully.
+[2025-12-20 15:49:17] NVDA spoke text successfully.
+[2025-12-20 15:49:19] NVDA spoke text successfully.
+[2025-12-20 15:49:19] NVDA spoke text successfully.
+[2025-12-20 15:49:20] NVDA spoke text successfully.
+[2025-12-20 15:49:22] NVDA spoke text successfully.
+[2025-12-20 15:49:22] NVDA spoke text successfully.
+[2025-12-20 15:49:23] NVDA spoke text successfully.
+[2025-12-20 15:49:28] NVDA spoke text successfully.
+[2025-12-20 15:49:30] NVDA spoke text successfully.
+[2025-12-20 15:49:31] NVDA spoke text successfully.
+[2025-12-20 15:49:42] NVDA spoke text successfully.
+[2025-12-20 15:49:44] NVDA spoke text successfully.
+[2025-12-20 15:49:45] NVDA spoke text successfully.
+[2025-12-20 15:49:48] NVDA spoke text successfully.
+[2025-12-20 15:49:48] NVDA spoke text successfully.
+[2025-12-20 15:52:29] NVDA spoke text successfully.
+[2025-12-20 15:52:31] NVDA spoke text successfully.
+[2025-12-20 15:52:31] NVDA spoke text successfully.
+[2025-12-20 15:52:35] NVDA spoke text successfully.
+[2025-12-20 15:55:08] NVDA spoke text successfully.
+[2025-12-20 15:55:08] NVDA spoke text successfully.
+[2025-12-20 15:55:10] NVDA spoke text successfully.
+[2025-12-20 15:55:10] NVDA spoke text successfully.
+[2025-12-20 15:58:39] Attempting to load NVDA library from C:\wamp64\www\lemondeDeLila\java-client\libs\windows\x64\nvdaHelperRemote.dll
+[2025-12-20 15:58:39] NVDA controller client API not available, trying controller API: Error looking up function 'nvdaControllerClient_testIfRunning': La procédure spécifiée est introuvable.
+
+[2025-12-20 15:58:39] Detected NVDA controller API.
+[2025-12-20 15:58:39] NVDA controller bridge initialised successfully (CONTROLLER).
+[2025-12-20 15:58:39] JAWS DLL load failed at C:\wamp64\www\lemondeDeLila\java-client\libs\windows\x64\saapi32.dll: Unable to load library 'C:\wamp64\www\lemondeDeLila\java-client\libs\windows\x64\saapi32.dll':
+%1 n’est pas une application Win32 valide.
+
+%1 n’est pas une application Win32 valide.
+
+Native library (win32-x86-64/C:\wamp64\www\lemondeDeLila\java-client\libs\windows\x64\saapi32.dll) not found in resource path (C:\wamp64\www\lemondeDeLila\java-client\client-app\target\client-app-1.0.9-all.jar)
+[2025-12-20 15:58:39] JAWS DLL load failed at C:\wamp64\www\lemondeDeLila\java-client\libs\windows\x64\SAAPI32.dll: Unable to load library 'C:\wamp64\www\lemondeDeLila\java-client\libs\windows\x64\SAAPI32.dll':
+%1 n’est pas une application Win32 valide.
+
+%1 n’est pas une application Win32 valide.
+
+Native library (win32-x86-64/C:\wamp64\www\lemondeDeLila\java-client\libs\windows\x64\SAAPI32.dll) not found in resource path (C:\wamp64\www\lemondeDeLila\java-client\client-app\target\client-app-1.0.9-all.jar)
+[2025-12-20 15:58:39] JAWS DLL load failed at fsapi32: Unable to load library 'fsapi32':
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Native library (win32-x86-64/fsapi32.dll) not found in resource path (C:\wamp64\www\lemondeDeLila\java-client\client-app\target\client-app-1.0.9-all.jar)
+[2025-12-20 15:58:39] JAWS DLL load failed at SAAPI32: Unable to load library 'SAAPI32':
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Native library (win32-x86-64/SAAPI32.dll) not found in resource path (C:\wamp64\www\lemondeDeLila\java-client\client-app\target\client-app-1.0.9-all.jar)
+[2025-12-20 15:58:39] FSAPI DLL not available on this system.
+[2025-12-20 15:58:40] NVDA spoke text successfully.
+[2025-12-20 15:59:24] NVDA spoke text successfully.
+[2025-12-20 15:59:24] NVDA spoke text successfully.
+[2025-12-20 15:59:24] NVDA spoke text successfully.
+[2025-12-20 15:59:28] NVDA spoke text successfully.
+[2025-12-20 15:59:30] NVDA spoke text successfully.
+[2025-12-20 15:59:32] NVDA spoke text successfully.
+[2025-12-20 15:59:32] NVDA spoke text successfully.
+[2025-12-20 15:59:33] NVDA spoke text successfully.
+[2025-12-20 15:59:34] NVDA spoke text successfully.
+[2025-12-20 15:59:35] NVDA spoke text successfully.
+[2025-12-20 15:59:35] NVDA spoke text successfully.
+[2025-12-20 15:59:37] NVDA spoke text successfully.
+[2025-12-20 15:59:37] NVDA spoke text successfully.
+[2025-12-20 15:59:38] NVDA spoke text successfully.
+[2025-12-20 15:59:38] NVDA spoke text successfully.
+[2025-12-20 15:59:40] NVDA spoke text successfully.
+[2025-12-20 15:59:43] NVDA spoke text successfully.
+[2025-12-20 15:59:43] NVDA spoke text successfully.
+[2025-12-20 15:59:46] NVDA spoke text successfully.
+[2025-12-20 15:59:49] NVDA spoke text successfully.
+[2025-12-20 15:59:51] NVDA spoke text successfully.
+[2025-12-20 15:59:52] NVDA spoke text successfully.
+[2025-12-20 15:59:57] NVDA spoke text successfully.
+[2025-12-20 15:59:59] NVDA spoke text successfully.
+[2025-12-20 15:59:59] NVDA spoke text successfully.
+[2025-12-20 16:00:00] NVDA spoke text successfully.
+[2025-12-20 16:00:00] NVDA spoke text successfully.
+[2025-12-20 16:00:04] NVDA spoke text successfully.
+[2025-12-20 16:00:07] NVDA spoke text successfully.
+[2025-12-20 16:00:07] NVDA spoke text successfully.
+[2025-12-20 16:05:25] Attempting to load NVDA library from C:\wamp64\www\lemondeDeLila\java-client\libs\windows\x64\nvdaHelperRemote.dll
+[2025-12-20 16:05:25] NVDA controller client API not available, trying controller API: Error looking up function 'nvdaControllerClient_testIfRunning': La procédure spécifiée est introuvable.
+
+[2025-12-20 16:05:25] Detected NVDA controller API.
+[2025-12-20 16:05:25] NVDA controller bridge initialised successfully (CONTROLLER).
+[2025-12-20 16:05:25] JAWS DLL load failed at C:\wamp64\www\lemondeDeLila\java-client\libs\windows\x64\saapi32.dll: Unable to load library 'C:\wamp64\www\lemondeDeLila\java-client\libs\windows\x64\saapi32.dll':
+%1 n’est pas une application Win32 valide.
+
+%1 n’est pas une application Win32 valide.
+
+Native library (win32-x86-64/C:\wamp64\www\lemondeDeLila\java-client\libs\windows\x64\saapi32.dll) not found in resource path (C:\wamp64\www\lemondeDeLila\java-client\client-app\target\client-app-1.0.9-all.jar)
+[2025-12-20 16:05:25] JAWS DLL load failed at C:\wamp64\www\lemondeDeLila\java-client\libs\windows\x64\SAAPI32.dll: Unable to load library 'C:\wamp64\www\lemondeDeLila\java-client\libs\windows\x64\SAAPI32.dll':
+%1 n’est pas une application Win32 valide.
+
+%1 n’est pas une application Win32 valide.
+
+Native library (win32-x86-64/C:\wamp64\www\lemondeDeLila\java-client\libs\windows\x64\SAAPI32.dll) not found in resource path (C:\wamp64\www\lemondeDeLila\java-client\client-app\target\client-app-1.0.9-all.jar)
+[2025-12-20 16:05:25] JAWS DLL load failed at fsapi32: Unable to load library 'fsapi32':
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Native library (win32-x86-64/fsapi32.dll) not found in resource path (C:\wamp64\www\lemondeDeLila\java-client\client-app\target\client-app-1.0.9-all.jar)
+[2025-12-20 16:05:25] JAWS DLL load failed at SAAPI32: Unable to load library 'SAAPI32':
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Native library (win32-x86-64/SAAPI32.dll) not found in resource path (C:\wamp64\www\lemondeDeLila\java-client\client-app\target\client-app-1.0.9-all.jar)
+[2025-12-20 16:05:25] FSAPI DLL not available on this system.
+[2025-12-20 16:05:26] NVDA spoke text successfully.
+[2025-12-20 16:05:28] NVDA spoke text successfully.
+[2025-12-20 16:05:29] NVDA spoke text successfully.
+[2025-12-20 16:05:29] NVDA spoke text successfully.
+[2025-12-20 16:05:32] NVDA spoke text successfully.
+[2025-12-20 16:05:32] NVDA spoke text successfully.
+[2025-12-20 16:05:33] NVDA spoke text successfully.
+[2025-12-20 16:05:34] NVDA spoke text successfully.
+[2025-12-20 16:05:34] NVDA spoke text successfully.
+[2025-12-20 16:05:36] NVDA spoke text successfully.
+[2025-12-20 16:05:37] NVDA spoke text successfully.
+[2025-12-20 16:05:38] NVDA spoke text successfully.
+[2025-12-20 16:05:38] NVDA spoke text successfully.
+[2025-12-20 16:05:39] NVDA spoke text successfully.
+[2025-12-20 16:05:40] NVDA spoke text successfully.
+[2025-12-20 16:05:40] NVDA spoke text successfully.
+[2025-12-20 16:05:40] NVDA spoke text successfully.
+[2025-12-20 16:05:41] NVDA spoke text successfully.
+[2025-12-20 16:05:44] NVDA spoke text successfully.
+[2025-12-20 16:05:44] NVDA spoke text successfully.
+[2025-12-20 16:05:44] NVDA spoke text successfully.
+[2025-12-20 16:05:45] NVDA spoke text successfully.
+[2025-12-20 16:05:52] NVDA spoke text successfully.
+[2025-12-20 16:05:55] NVDA spoke text successfully.
+[2025-12-20 16:05:57] NVDA spoke text successfully.
+[2025-12-20 16:06:00] NVDA spoke text successfully.
+[2025-12-20 16:06:02] NVDA spoke text successfully.
+[2025-12-20 16:06:04] NVDA spoke text successfully.
+[2025-12-20 16:06:07] NVDA spoke text successfully.
+[2025-12-20 16:06:10] NVDA spoke text successfully.
+[2025-12-20 16:06:10] NVDA spoke text successfully.
+[2025-12-20 16:06:13] NVDA spoke text successfully.
+[2025-12-20 16:06:16] NVDA spoke text successfully.
+[2025-12-20 16:06:18] NVDA spoke text successfully.
+[2025-12-20 16:06:18] NVDA spoke text successfully.
+[2025-12-20 16:06:24] NVDA spoke text successfully.
+[2025-12-20 16:06:33] NVDA spoke text successfully.
+[2025-12-20 16:06:37] NVDA spoke text successfully.
+[2025-12-20 16:06:37] NVDA spoke text successfully.
+[2025-12-20 16:06:43] NVDA spoke text successfully.
+[2025-12-20 16:07:23] NVDA spoke text successfully.
+[2025-12-20 16:07:24] NVDA spoke text successfully.
+[2025-12-20 16:07:27] NVDA spoke text successfully.
+[2025-12-20 16:07:29] NVDA spoke text successfully.
+[2025-12-20 16:07:31] NVDA spoke text successfully.
+[2025-12-20 16:07:32] NVDA spoke text successfully.
+[2025-12-20 16:07:34] NVDA spoke text successfully.
+[2025-12-20 16:07:37] NVDA spoke text successfully.
+[2025-12-20 16:17:58] Attempting to load NVDA library from C:\wamp64\www\lemondeDeLila\java-client\libs\windows\x64\nvdaHelperRemote.dll
+[2025-12-20 16:17:58] NVDA controller client API not available, trying controller API: Error looking up function 'nvdaControllerClient_testIfRunning': La procédure spécifiée est introuvable.
+
+[2025-12-20 16:17:58] Detected NVDA controller API.
+[2025-12-20 16:17:58] NVDA controller bridge initialised successfully (CONTROLLER).
+[2025-12-20 16:17:58] JAWS DLL load failed at C:\wamp64\www\lemondeDeLila\java-client\libs\windows\x64\saapi32.dll: Unable to load library 'C:\wamp64\www\lemondeDeLila\java-client\libs\windows\x64\saapi32.dll':
+%1 n’est pas une application Win32 valide.
+
+%1 n’est pas une application Win32 valide.
+
+Native library (win32-x86-64/C:\wamp64\www\lemondeDeLila\java-client\libs\windows\x64\saapi32.dll) not found in resource path (C:\wamp64\www\lemondeDeLila\java-client\client-app\target\client-app-1.0.9-all.jar)
+[2025-12-20 16:17:58] JAWS DLL load failed at C:\wamp64\www\lemondeDeLila\java-client\libs\windows\x64\SAAPI32.dll: Unable to load library 'C:\wamp64\www\lemondeDeLila\java-client\libs\windows\x64\SAAPI32.dll':
+%1 n’est pas une application Win32 valide.
+
+%1 n’est pas une application Win32 valide.
+
+Native library (win32-x86-64/C:\wamp64\www\lemondeDeLila\java-client\libs\windows\x64\SAAPI32.dll) not found in resource path (C:\wamp64\www\lemondeDeLila\java-client\client-app\target\client-app-1.0.9-all.jar)
+[2025-12-20 16:17:58] JAWS DLL load failed at fsapi32: Unable to load library 'fsapi32':
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Native library (win32-x86-64/fsapi32.dll) not found in resource path (C:\wamp64\www\lemondeDeLila\java-client\client-app\target\client-app-1.0.9-all.jar)
+[2025-12-20 16:17:58] JAWS DLL load failed at SAAPI32: Unable to load library 'SAAPI32':
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Native library (win32-x86-64/SAAPI32.dll) not found in resource path (C:\wamp64\www\lemondeDeLila\java-client\client-app\target\client-app-1.0.9-all.jar)
+[2025-12-20 16:17:58] FSAPI DLL not available on this system.
+[2025-12-20 16:17:59] NVDA spoke text successfully.
+[2025-12-20 16:18:12] NVDA spoke text successfully.
+[2025-12-20 16:18:12] NVDA spoke text successfully.
+[2025-12-20 16:18:13] NVDA spoke text successfully.
+[2025-12-20 16:18:15] NVDA spoke text successfully.
+[2025-12-20 16:18:16] NVDA spoke text successfully.
+[2025-12-20 16:18:17] NVDA spoke text successfully.
+[2025-12-20 16:18:18] NVDA spoke text successfully.
+[2025-12-20 16:18:19] NVDA spoke text successfully.
+[2025-12-20 16:18:19] NVDA spoke text successfully.
+[2025-12-20 16:18:20] NVDA spoke text successfully.
+[2025-12-20 16:18:20] NVDA spoke text successfully.
+[2025-12-20 16:18:20] NVDA spoke text successfully.
+[2025-12-20 16:18:20] NVDA spoke text successfully.
+[2025-12-20 16:18:21] NVDA spoke text successfully.
+[2025-12-20 16:18:24] NVDA spoke text successfully.
+[2025-12-20 16:18:24] NVDA spoke text successfully.
+[2025-12-20 16:18:24] NVDA spoke text successfully.
+[2025-12-20 16:18:24] NVDA spoke text successfully.
+[2025-12-20 16:18:25] NVDA spoke text successfully.
+[2025-12-20 16:19:49] NVDA spoke text successfully.
+[2025-12-20 16:19:51] NVDA spoke text successfully.
+[2025-12-20 16:19:53] NVDA spoke text successfully.
+[2025-12-20 16:19:55] NVDA spoke text successfully.
+[2025-12-20 16:20:00] NVDA spoke text successfully.
+[2025-12-20 16:20:03] NVDA spoke text successfully.
+[2025-12-20 16:20:03] NVDA spoke text successfully.
+[2025-12-20 16:20:06] NVDA spoke text successfully.
+[2025-12-20 16:20:08] NVDA spoke text successfully.
+[2025-12-20 16:20:09] NVDA spoke text successfully.
+[2025-12-20 16:20:10] NVDA spoke text successfully.
+[2025-12-20 16:20:12] NVDA spoke text successfully.
+[2025-12-20 16:20:13] NVDA spoke text successfully.
+[2025-12-20 16:23:25] NVDA spoke text successfully.
+[2025-12-20 16:23:26] NVDA spoke text successfully.
+[2025-12-20 16:41:05] Attempting to load NVDA library from C:\wamp64\www\lemondeDeLila\java-client\libs\windows\x64\nvdaHelperRemote.dll
+[2025-12-20 16:41:05] NVDA controller client API not available, trying controller API: Error looking up function 'nvdaControllerClient_testIfRunning': La procédure spécifiée est introuvable.
+
+[2025-12-20 16:41:05] Detected NVDA controller API.
+[2025-12-20 16:41:05] NVDA controller bridge initialised successfully (CONTROLLER).
+[2025-12-20 16:41:05] JAWS DLL load failed at C:\wamp64\www\lemondeDeLila\java-client\libs\windows\x64\saapi32.dll: Unable to load library 'C:\wamp64\www\lemondeDeLila\java-client\libs\windows\x64\saapi32.dll':
+%1 n’est pas une application Win32 valide.
+
+%1 n’est pas une application Win32 valide.
+
+Native library (win32-x86-64/C:\wamp64\www\lemondeDeLila\java-client\libs\windows\x64\saapi32.dll) not found in resource path (C:\wamp64\www\lemondeDeLila\java-client\client-app\target\client-app-1.0.9-all.jar)
+[2025-12-20 16:41:05] JAWS DLL load failed at C:\wamp64\www\lemondeDeLila\java-client\libs\windows\x64\SAAPI32.dll: Unable to load library 'C:\wamp64\www\lemondeDeLila\java-client\libs\windows\x64\SAAPI32.dll':
+%1 n’est pas une application Win32 valide.
+
+%1 n’est pas une application Win32 valide.
+
+Native library (win32-x86-64/C:\wamp64\www\lemondeDeLila\java-client\libs\windows\x64\SAAPI32.dll) not found in resource path (C:\wamp64\www\lemondeDeLila\java-client\client-app\target\client-app-1.0.9-all.jar)
+[2025-12-20 16:41:05] JAWS DLL load failed at fsapi32: Unable to load library 'fsapi32':
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Native library (win32-x86-64/fsapi32.dll) not found in resource path (C:\wamp64\www\lemondeDeLila\java-client\client-app\target\client-app-1.0.9-all.jar)
+[2025-12-20 16:41:05] JAWS DLL load failed at SAAPI32: Unable to load library 'SAAPI32':
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Le module spécifié est introuvable.
+
+Native library (win32-x86-64/SAAPI32.dll) not found in resource path (C:\wamp64\www\lemondeDeLila\java-client\client-app\target\client-app-1.0.9-all.jar)
+[2025-12-20 16:41:05] FSAPI DLL not available on this system.
+[2025-12-20 16:41:06] NVDA spoke text successfully.
+[2025-12-20 16:41:15] NVDA spoke text successfully.
+[2025-12-20 16:41:16] NVDA spoke text successfully.
+[2025-12-20 16:41:16] NVDA spoke text successfully.
+[2025-12-20 16:41:19] NVDA spoke text successfully.
+[2025-12-20 16:41:21] NVDA spoke text successfully.
+[2025-12-20 16:41:22] NVDA spoke text successfully.
+[2025-12-20 16:41:22] NVDA spoke text successfully.
+[2025-12-20 16:41:25] NVDA spoke text successfully.
+[2025-12-20 16:41:28] NVDA spoke text successfully.
+[2025-12-20 16:41:29] NVDA spoke text successfully.
+[2025-12-20 16:41:29] NVDA spoke text successfully.
+[2025-12-20 16:41:30] NVDA spoke text successfully.
+[2025-12-20 16:41:30] NVDA spoke text successfully.
+[2025-12-20 16:41:30] NVDA spoke text successfully.
+[2025-12-20 16:41:30] NVDA spoke text successfully.
+[2025-12-20 16:41:30] NVDA spoke text successfully.
+[2025-12-20 16:41:32] NVDA spoke text successfully.
+[2025-12-20 16:41:33] NVDA spoke text successfully.
+[2025-12-20 16:41:34] NVDA spoke text successfully.
+[2025-12-20 16:41:34] NVDA spoke text successfully.
+[2025-12-20 16:41:34] NVDA spoke text successfully.
+[2025-12-20 16:41:35] NVDA spoke text successfully.
+[2025-12-20 16:41:36] NVDA spoke text successfully.
+[2025-12-20 16:41:38] NVDA spoke text successfully.
+[2025-12-20 16:41:39] NVDA spoke text successfully.
+[2025-12-20 16:41:41] NVDA spoke text successfully.
+[2025-12-20 16:41:44] NVDA spoke text successfully.
+[2025-12-20 16:41:46] NVDA spoke text successfully.
+[2025-12-20 16:41:46] NVDA spoke text successfully.
+[2025-12-20 16:41:46] NVDA spoke text successfully.
+[2025-12-20 16:41:46] NVDA spoke text successfully.
+[2025-12-20 16:41:49] NVDA spoke text successfully.
+[2025-12-20 16:41:51] NVDA spoke text successfully.
+[2025-12-20 16:41:52] NVDA spoke text successfully.
+[2025-12-20 16:41:53] NVDA spoke text successfully.
+[2025-12-20 16:41:53] NVDA spoke text successfully.
+[2025-12-20 16:41:56] NVDA spoke text successfully.
+[2025-12-20 16:41:56] NVDA spoke text successfully.
+[2025-12-20 16:41:56] NVDA spoke text successfully.
+[2025-12-20 16:41:57] NVDA spoke text successfully.
+[2025-12-20 16:42:00] NVDA spoke text successfully.
+[2025-12-20 16:42:00] NVDA spoke text successfully.
+[2025-12-20 16:42:00] NVDA spoke text successfully.
+[2025-12-20 16:42:01] NVDA spoke text successfully.
+[2025-12-20 16:42:01] NVDA spoke text successfully.
+[2025-12-20 16:42:02] NVDA spoke text successfully.
+[2025-12-20 16:42:04] NVDA spoke text successfully.
+[2025-12-20 16:42:04] NVDA spoke text successfully.
+[2025-12-20 16:42:04] NVDA spoke text successfully.
+[2025-12-20 16:42:05] NVDA spoke text successfully.
+[2025-12-20 16:42:08] NVDA spoke text successfully.
+[2025-12-20 16:42:08] NVDA spoke text successfully.
+[2025-12-20 16:42:08] NVDA spoke text successfully.
+[2025-12-20 16:42:09] NVDA spoke text successfully.
+[2025-12-20 16:42:12] NVDA spoke text successfully.
+[2025-12-20 16:42:12] NVDA spoke text successfully.
+[2025-12-20 16:42:12] NVDA spoke text successfully.
+[2025-12-20 16:42:13] NVDA spoke text successfully.
+[2025-12-20 16:42:16] NVDA spoke text successfully.
+[2025-12-20 16:42:16] NVDA spoke text successfully.
+[2025-12-20 16:42:16] NVDA spoke text successfully.
+[2025-12-20 16:42:17] NVDA spoke text successfully.
+[2025-12-20 16:42:20] NVDA spoke text successfully.
+[2025-12-20 16:42:20] NVDA spoke text successfully.
+[2025-12-20 16:42:20] NVDA spoke text successfully.
+[2025-12-20 16:42:21] NVDA spoke text successfully.
+[2025-12-20 16:42:24] NVDA spoke text successfully.
+[2025-12-20 16:42:24] NVDA spoke text successfully.
+[2025-12-20 16:42:25] NVDA spoke text successfully.
+[2025-12-20 16:42:25] NVDA spoke text successfully.
+[2025-12-20 16:42:28] NVDA spoke text successfully.
+[2025-12-20 16:42:28] NVDA spoke text successfully.
+[2025-12-20 16:42:29] NVDA spoke text successfully.
+[2025-12-20 16:42:29] NVDA spoke text successfully.
+[2025-12-20 16:42:32] NVDA spoke text successfully.
+[2025-12-20 16:42:32] NVDA spoke text successfully.
+[2025-12-20 16:42:33] NVDA spoke text successfully.
+[2025-12-20 16:42:33] NVDA spoke text successfully.
+[2025-12-20 16:42:36] NVDA spoke text successfully.
+[2025-12-20 16:42:36] NVDA spoke text successfully.
+[2025-12-20 16:42:37] NVDA spoke text successfully.
+[2025-12-20 16:42:40] NVDA spoke text successfully.
+[2025-12-20 16:42:40] NVDA spoke text successfully.
+[2025-12-20 16:42:44] NVDA spoke text successfully.
+[2025-12-20 16:42:44] NVDA spoke text successfully.
+[2025-12-20 16:42:45] NVDA spoke text successfully.
+[2025-12-20 16:42:45] NVDA spoke text successfully.
+[2025-12-20 16:42:45] NVDA spoke text successfully.
+[2025-12-20 16:42:45] NVDA spoke text successfully.
+[2025-12-20 16:42:48] NVDA spoke text successfully.
+[2025-12-20 16:42:48] NVDA spoke text successfully.
+[2025-12-20 16:42:52] NVDA spoke text successfully.
+[2025-12-20 16:42:52] NVDA spoke text successfully.
+[2025-12-20 16:42:56] NVDA spoke text successfully.
+[2025-12-20 16:42:56] NVDA spoke text successfully.
+[2025-12-20 16:42:57] NVDA spoke text successfully.
+[2025-12-20 16:42:57] NVDA spoke text successfully.
+[2025-12-20 16:43:00] NVDA spoke text successfully.
+[2025-12-20 16:43:00] NVDA spoke text successfully.
+[2025-12-20 16:43:01] NVDA spoke text successfully.
+[2025-12-20 16:43:01] NVDA spoke text successfully.
+[2025-12-20 16:43:04] NVDA spoke text successfully.
+[2025-12-20 16:43:05] NVDA spoke text successfully.
+[2025-12-20 16:43:08] NVDA spoke text successfully.
+[2025-12-20 16:43:12] NVDA spoke text successfully.
+[2025-12-20 16:43:13] NVDA spoke text successfully.
+[2025-12-20 16:43:13] NVDA spoke text successfully.
+[2025-12-20 16:43:13] NVDA spoke text successfully.
+[2025-12-20 16:43:16] NVDA spoke text successfully.
+[2025-12-20 16:43:17] NVDA spoke text successfully.
+[2025-12-20 16:43:17] NVDA spoke text successfully.
+[2025-12-20 16:43:20] NVDA spoke text successfully.
+[2025-12-20 16:43:21] NVDA spoke text successfully.
+[2025-12-20 16:43:21] NVDA spoke text successfully.
+[2025-12-20 16:43:21] NVDA spoke text successfully.
+[2025-12-20 16:43:21] NVDA spoke text successfully.
+[2025-12-20 16:43:24] NVDA spoke text successfully.
+[2025-12-20 16:43:25] NVDA spoke text successfully.
+[2025-12-20 16:43:25] NVDA spoke text successfully.
+[2025-12-20 16:43:25] NVDA spoke text successfully.
+[2025-12-20 16:43:28] NVDA spoke text successfully.
+[2025-12-20 16:43:29] NVDA spoke text successfully.
+[2025-12-20 16:43:29] NVDA spoke text successfully.
+[2025-12-20 16:43:29] NVDA spoke text successfully.
+[2025-12-20 16:43:32] NVDA spoke text successfully.
+[2025-12-20 16:43:33] NVDA spoke text successfully.
+[2025-12-20 16:43:33] NVDA spoke text successfully.
+[2025-12-20 16:43:33] NVDA spoke text successfully.
+[2025-12-20 16:43:36] NVDA spoke text successfully.
+[2025-12-20 16:43:37] NVDA spoke text successfully.
+[2025-12-20 16:43:40] NVDA spoke text successfully.
+[2025-12-20 16:43:41] NVDA spoke text successfully.
+[2025-12-20 16:43:41] NVDA spoke text successfully.
+[2025-12-20 16:43:45] NVDA spoke text successfully.
+[2025-12-20 16:43:45] NVDA spoke text successfully.
+[2025-12-20 16:43:45] NVDA spoke text successfully.
+[2025-12-20 16:43:49] NVDA spoke text successfully.
+[2025-12-20 16:43:49] NVDA spoke text successfully.
+[2025-12-20 16:43:49] NVDA spoke text successfully.
+[2025-12-20 16:43:49] NVDA spoke text successfully.
+[2025-12-20 16:43:53] NVDA spoke text successfully.
+[2025-12-20 16:43:53] NVDA spoke text successfully.
+[2025-12-20 16:43:53] NVDA spoke text successfully.
+[2025-12-20 16:43:53] NVDA spoke text successfully.
+[2025-12-20 16:43:53] NVDA spoke text successfully.
+[2025-12-20 16:43:57] NVDA spoke text successfully.
+[2025-12-20 16:43:57] NVDA spoke text successfully.
+[2025-12-20 16:44:01] NVDA spoke text successfully.
+[2025-12-20 16:44:01] NVDA spoke text successfully.
+[2025-12-20 16:44:01] NVDA spoke text successfully.
+[2025-12-20 16:45:28] NVDA spoke text successfully.
+[2025-12-20 16:45:31] NVDA spoke text successfully.
+[2025-12-20 16:45:34] NVDA spoke text successfully.

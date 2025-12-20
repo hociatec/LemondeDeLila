@@ -97,7 +97,6 @@ public abstract class BaseTableScreen extends JPanel implements Screen, GameTabl
         if (!confirmed) {
             return;
         }
-        announcer.announce(historySidebar, "Demande de sortie de la table.");
         if (roomId != null) {
             eventBus.publish(new LeaveRoomRequested(roomId));
         }

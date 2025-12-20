@@ -110,7 +110,7 @@ export class GameEngineService {
       // Réinitialisation explicite (room repasse en "setup/open/...") :
       // on repart d'un état neuf pour permettre d'ajouter/retirer des joueurs et relancer une partie.
       if (
-        previousStatus === 'started' &&
+        (previousStatus === 'started' || previousStatus === 'finished') &&
         roomStatus &&
         roomStatus !== 'started' &&
         roomStatus !== 'finished'
@@ -221,6 +221,12 @@ export class GameEngineService {
       gameType,
       await this.getInternalState(roomId, gameType),
     );
+    // `getInternalState()` peut programmer un timer bot pour l'état courant.
+    // Quand on exécute une action bot immédiatement, ce timer devient obsolète et empêche
+    // la programmation du tour suivant (même clé). On le supprime donc ici.
+    if (allowBotTurn) {
+      this.botScheduler.clear(this.buildKey(roomId, gameType));
+    }
     if ((current.status || '').toLowerCase() === 'finished') {
       return this.exposeState(current, gameType);
     }
@@ -292,6 +298,28 @@ export class GameEngineService {
     const marked = this.markBotThinking(roomId, gameType, next, botTurn);
     this.scheduleBotTurn(roomId, gameType, marked);
     this.broadcaster?.(gameType, roomId, marked);
+
+    // Fin de partie : remettre la room en "setup" (comme le raccourci X) et rÇ¸initialiser l'Ç¸tat du jeu
+    // pour permettre de relancer immÇ¸diatement.
+    if ((marked.status || '').toLowerCase() === 'finished') {
+      try {
+        await this.rooms.resetRoomSystem(roomId);
+        await this.rooms.notifyRoomStateUpdated(roomId);
+
+        // Rebuild sans toucher à la mutationQueue (on est déjà dans la file).
+        const payload = await this.rooms.getRoomPayload(roomId);
+        const rebuilt = await this.buildInitialState(payload, gameType);
+        const cleared = this.markBotThinking(roomId, gameType, rebuilt, false);
+        this.botScheduler.clear(this.buildKey(roomId, gameType));
+        this.broadcaster?.(gameType, roomId, cleared);
+      } catch (err) {
+        playingLog('engine.autoReset.failed', {
+          roomId,
+          gameType,
+          message: err instanceof Error ? err.message : String(err ?? ''),
+        });
+      }
+    }
 
     playingLog('engine.applyActions.after', {
       roomId,

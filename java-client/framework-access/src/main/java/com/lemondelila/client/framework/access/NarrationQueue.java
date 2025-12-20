@@ -3,6 +3,9 @@ package com.lemondelila.client.framework.access;
 import com.lemondelila.client.framework.core.di.Inject;
 
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
+import java.awt.KeyboardFocusManager;
+import java.awt.Window;
 import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -38,6 +41,10 @@ public final class NarrationQueue implements AutoCloseable {
             return;
         }
 
+        if (!shouldAnnounceInCurrentWindow(component)) {
+            return;
+        }
+
         long now = System.currentTimeMillis();
         String prev = lastEnqueuedMessage;
         long prevAt = lastEnqueuedAtMs;
@@ -54,6 +61,32 @@ public final class NarrationQueue implements AutoCloseable {
         lastEnqueuedMessage = normalized;
         lastEnqueuedAtMs = now;
         queue.offer(new NarrationTask(component, normalized));
+    }
+
+    private boolean shouldAnnounceInCurrentWindow(JComponent component) {
+        if (component == null || !component.isShowing()) {
+            return false;
+        }
+
+        Window active = KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow();
+        if (active == null) {
+            return false;
+        }
+
+        Window componentWindow = SwingUtilities.getWindowAncestor(component);
+        if (componentWindow == null) {
+            return false;
+        }
+
+        // Autoriser si la fenêtre active est la même, ou une boîte de dialogue appartenant à cette fenêtre.
+        Window w = active;
+        while (w != null) {
+            if (w == componentWindow) {
+                return true;
+            }
+            w = w.getOwner();
+        }
+        return false;
     }
 
     private void loop() {

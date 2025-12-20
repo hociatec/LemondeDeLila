@@ -55,14 +55,49 @@ public final class GameAnnouncementService {
     }
 
     public void announceHand(GenericGameState state) {
-        JsonNode extras = extrasOf(state);
-        Object handRaw = extras != null ? extras.get("hand") : null;
-        List<String> hand = toStringList(handRaw);
+        List<String> hand = handLabels(state);
         announcer.accept(listAnnouncementFormatter.format(
                 Internationalization.text("game.hand.title"),
                 hand,
-                Internationalization.text("game.hand.empty")
+                resolveHandEmptyText(state)
         ));
+    }
+
+    public void announceHandReceived(GenericGameState state) {
+        List<String> hand = handLabels(state);
+        announcer.accept(listAnnouncementFormatter.format(
+                Internationalization.text(resolveHandReceivedKey(state)),
+                hand,
+                resolveHandEmptyText(state)
+        ));
+    }
+
+    public List<String> handLabels(GenericGameState state) {
+        JsonNode extras = extrasOf(state);
+        if (extras == null) {
+            return List.of();
+        }
+        JsonNode handCards = extras.path("handCards");
+        if (handCards != null && handCards.isArray()) {
+            List<String> labels = new ArrayList<>();
+            for (JsonNode card : handCards) {
+                if (card == null || !card.isObject()) continue;
+                String label = card.path("label").asText("");
+                if (label == null || label.isBlank()) {
+                    String familyId = card.path("familyId").asText("");
+                    String memberId = card.path("memberId").asText("");
+                    String left = familyId == null ? "" : familyId.trim();
+                    String right = memberId == null ? "" : memberId.trim();
+                    label = left.isBlank() && right.isBlank() ? "" : (left + ":" + right);
+                }
+                if (label != null && !label.isBlank()) {
+                    labels.add(label.trim());
+                }
+            }
+            return List.copyOf(labels);
+        }
+        Object handRaw = extras.get("hand");
+        return toStringList(handRaw);
     }
 
     public void announceBooks(GenericGameState state) {
@@ -132,6 +167,29 @@ public final class GameAnnouncementService {
         }
         // 0 laps complétés => tour de plateau 1 ; laps négatifs => tour 0 minimum.
         return Math.max(0, lapCompleted + 1);
+    }
+
+    private static String resolveHandEmptyText(GenericGameState state) {
+        String key = "game.hand.empty";
+        if ("dame-nature".equalsIgnoreCase(resolveGameType(state))) {
+            key = "damenature.game.hand.empty";
+        }
+        return Internationalization.text(key);
+    }
+
+    private static String resolveHandReceivedKey(GenericGameState state) {
+        if ("dame-nature".equalsIgnoreCase(resolveGameType(state))) {
+            return "damenature.game.hand.received";
+        }
+        return "game.hand.title";
+    }
+
+    private static String resolveGameType(GenericGameState state) {
+        JsonNode metadata = state == null ? null : state.metadata();
+        if (metadata == null || !metadata.isObject()) {
+            return "";
+        }
+        return metadata.path("gameType").asText("");
     }
 
     private static List<String> toStringList(Object raw) {

@@ -17,6 +17,22 @@ import { OPEN_ROOM_STATUSES } from '../constants/room-status.constants';
 
 @Injectable()
 export class RoomService {
+  private realtimeNotifier?: (roomId: number) => Promise<void> | void;
+
+  /**
+   * Hook optionnel pour notifier les clients WS room (set par RoomGateway).
+   */
+  setRealtimeNotifier(fn: (roomId: number) => Promise<void> | void): void {
+    this.realtimeNotifier = fn;
+  }
+
+  async notifyRoomStateUpdated(roomId: number): Promise<void> {
+    try {
+      await this.realtimeNotifier?.(roomId);
+    } catch {
+      // best effort
+    }
+  }
   constructor(
     @InjectRepository(Room) private readonly rooms: Repository<Room>,
     @InjectRepository(RoomParticipant)
@@ -97,7 +113,17 @@ export class RoomService {
     return room;
   }
 
-  async leaveRoom(roomId: number, userId: number): Promise<Room | null> {
+  async leaveRoom(roomId: number, userId: number): Promise<Room | null>;
+  async leaveRoom(
+    roomId: number,
+    userId: number,
+    opts?: { preserveRoom?: boolean },
+  ): Promise<Room | null>;
+  async leaveRoom(
+    roomId: number,
+    userId: number,
+    opts?: { preserveRoom?: boolean },
+  ): Promise<Room | null> {
     const room = await this.requireRoom(roomId);
     const user = await this.requireUser(userId);
     const participant = await this.participants.findOne({
@@ -107,6 +133,11 @@ export class RoomService {
       participant.leftAt = new Date();
       await this.participants.save(participant);
     }
+    if (opts?.preserveRoom) {
+      this.presenceService.broadcastPresence();
+      return room;
+    }
+
     let activeHumans = await this.countActiveHumans(room.id);
     if (activeHumans === 0) {
       // si aucun humain, on supprime les bots restants pour libérer la table
@@ -167,6 +198,18 @@ export class RoomService {
   async resetRoom(roomId: number, userId: number): Promise<Room> {
     const room = await this.requireRoom(roomId);
     this.ensureOwner(room, userId);
+    room.status = 'setup';
+    room.startedAt = null;
+    await this.rooms.save(room);
+    return room;
+  }
+
+  /**
+   * Reset système : utilisé par le moteur quand une partie se termine.
+   * Ne dépend pas du propriétaire (l'objectif est de pouvoir relancer immédiatement).
+   */
+  async resetRoomSystem(roomId: number): Promise<Room> {
+    const room = await this.requireRoom(roomId);
     room.status = 'setup';
     room.startedAt = null;
     await this.rooms.save(room);

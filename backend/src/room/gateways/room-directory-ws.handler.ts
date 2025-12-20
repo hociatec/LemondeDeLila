@@ -97,6 +97,23 @@ export class RoomDirectoryWsHandler {
     };
   }
 
+  async leavePublic(session: WsSession, payload: any) {
+    const user = requireUser(session);
+    const dto = this.validator.validate(RoomsPublicJoinDto, payload);
+    const room = await this.rooms.leaveRoom(dto.roomId, user.id);
+    if (!room) {
+      return {
+        type: 'rooms.public.left',
+        payload: { roomId: dto.roomId, deleted: true },
+      };
+    }
+    const state = await this.rooms.getRoomPayload(dto.roomId);
+    return {
+      type: 'rooms.public.left',
+      payload: { roomId: dto.roomId, room: state.room },
+    };
+  }
+
   async spectatePublic(session: WsSession, payload: any) {
     requireUser(session);
     const dto = this.validator.validate(RoomsPublicJoinDto, payload);

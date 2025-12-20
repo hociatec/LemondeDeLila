@@ -16,6 +16,9 @@ export class RoomWsRegistrar implements OnModuleInit {
     this.registry.register('rooms.public.join', (session, payload) =>
       this.handler.joinPublic(session, payload),
     );
+    this.registry.register('rooms.public.leave', (session, payload) =>
+      this.handler.leavePublic(session, payload),
+    );
     this.registry.register('rooms.public.spectate', (session, payload) =>
       this.handler.spectatePublic(session, payload),
     );
