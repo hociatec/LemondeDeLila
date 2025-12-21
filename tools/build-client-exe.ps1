@@ -388,5 +388,3 @@ if ($installer) {
     Write-Warning "jpackage a termine sans generer d'executable ?"
 }
 
-}
-
