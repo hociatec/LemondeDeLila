@@ -109,10 +109,11 @@ export class GameEngineStateStore {
     try {
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       const RedisCtor = require('ioredis');
-      this.redis = new RedisCtor(url);
-      this.redis.on('error', (error: Error) => {
+      const redisInstance = new RedisCtor(url);
+      redisInstance.on('error', (error: Error) => {
         this.logger.error('Erreur Redis (state store)', error);
       });
+      this.redis = redisInstance;
       this.logger.log(`GameEngineStateStore connecté à Redis (${url}).`);
     } catch (error) {
       this.logger.error(

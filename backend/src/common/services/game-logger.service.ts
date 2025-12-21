@@ -32,7 +32,7 @@ export class GameLoggerService {
           this.config.get<string>('LOG_DIR', 'logs') || 'logs',
         )
       : null;
-    const transports = [
+    const transports: winston.transport[] = [
       new winston.transports.Console({
         format: winston.format.combine(
           winston.format.colorize(),
