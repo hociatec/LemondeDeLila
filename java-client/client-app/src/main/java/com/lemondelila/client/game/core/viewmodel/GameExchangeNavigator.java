@@ -8,15 +8,15 @@ public final class GameExchangeNavigator {
         if (size <= 0) {
             return -1;
         }
-        int current = currentIndex;
-        if (current < 0 || current >= size) {
-            current = 0;
-        } else {
-            current = current + delta;
-            if (current < 0) current = 0;
-            if (current >= size) current = size - 1;
+        if (currentIndex < 0 || currentIndex >= size) {
+            return delta < 0 ? size - 1 : 0;
         }
-        return current;
+        if (delta == 0) {
+            return currentIndex;
+        }
+        int candidate = currentIndex + delta;
+        int normalized = Math.floorMod(candidate, size);
+        return normalized;
     }
 
     public boolean shouldAnnounce(int index, boolean exchangePending, int size) {

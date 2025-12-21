@@ -11,6 +11,7 @@ import { RoomService } from '../services/room.service';
 import { BotService } from '../../bot/services/bot.service';
 import { Inject, forwardRef } from '@nestjs/common';
 import { WsJwtAuthService } from '../../common/ws/ws-jwt-auth.service';
+import { WsSignatureService } from '../../common/ws/ws-signature.service';
 
 type AuthedClient = { socket: WebSocket; userId: number; roomId: number };
 type IncomingPayload = { type?: string; payload?: any };
@@ -33,6 +34,7 @@ export class RoomGateway
     private readonly botService: BotService,
     config: ConfigService,
     private readonly auth: WsJwtAuthService,
+    private readonly signature: WsSignatureService,
   ) {
     // Permet au backend (ex: moteur de jeu) de notifier les clients room sans dépendre du Gateway.
     this.roomsService.setRealtimeNotifier(async (roomId: number) => {
@@ -47,6 +49,10 @@ export class RoomGateway
   }
 
   async handleConnection(client: WebSocket, ...args: any[]) {
+    if (!this.signature.validate(client, args)) {
+      client.close(4403, 'signature temps reel requise');
+      return;
+    }
     const { token, roomId, spectator } = this.extractParams(client, args);
     const payload = this.auth.tryVerify(token);
     if (!payload?.id) {
