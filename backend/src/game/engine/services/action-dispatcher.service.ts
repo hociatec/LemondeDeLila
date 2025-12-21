@@ -24,7 +24,7 @@ export interface ActionHandler<TMetadata = any, TPayload = any> {
    */
   handle(
     state: GameStateEntity,
-    action: GameSingleActionDto<TPayload>,
+    action: GameSingleActionDto,
     actorId: number | null,
   ): GameStateEntity;
 }
