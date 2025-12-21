@@ -14,6 +14,7 @@ import { RoomPayload } from '../dto/room-response.dto';
 import { BotService } from '../../bot/services/bot.service';
 import { PresenceService } from '../../presence/services/presence.service';
 import { OPEN_ROOM_STATUSES } from '../constants/room-status.constants';
+import { CatalogService } from '../../catalog/services/catalog.service';
 
 @Injectable()
 export class RoomService {
@@ -42,6 +43,7 @@ export class RoomService {
     private readonly botService: BotService,
     @Inject(forwardRef(() => PresenceService))
     private readonly presenceService: PresenceService,
+    private readonly catalog: CatalogService,
   ) {}
 
   async createRoom(
@@ -55,9 +57,14 @@ export class RoomService {
     if (!gameType || gameType.trim() === '') {
       throw new BadRequestException('Type de jeu requis');
     }
+    const gameId = gameType.trim();
+    const known = await this.catalog.getGame(gameId);
+    if (!known) {
+      throw new BadRequestException('Type de jeu invalide');
+    }
     const room = this.rooms.create({
       name: name && name.trim() ? name.trim() : `Table ${gameType}`,
-      gameType: gameType.trim(),
+      gameType: gameId,
       maxPlayers: maxPlayers && maxPlayers > 0 ? maxPlayers : 4,
       isPrivate: isPrivate === true,
       status: 'setup',
@@ -197,6 +204,10 @@ export class RoomService {
 
   async resetRoom(roomId: number, userId: number): Promise<Room> {
     const room = await this.requireRoom(roomId);
+    const known = await this.catalog.getGame(room.gameType);
+    if (!known) {
+      throw new BadRequestException('Type de jeu invalide');
+    }
     this.ensureOwner(room, userId);
     room.status = 'setup';
     room.startedAt = null;
@@ -280,6 +291,10 @@ export class RoomService {
   }
 
   private isRoomOpen(room: Room): boolean {
+    // Robustness: some datasets may have `status` not updated even though `startedAt` is set.
+    if (room.startedAt) {
+      return false;
+    }
     const status = (room.status || '').toLowerCase();
     return OPEN_ROOM_STATUSES.includes(
       status as (typeof OPEN_ROOM_STATUSES)[number],

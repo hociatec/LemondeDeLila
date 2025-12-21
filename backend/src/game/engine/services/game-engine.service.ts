@@ -15,11 +15,20 @@ import {
 import { GameRegistryService } from './game-registry.service';
 import { GameStateEntity } from '../../core/entities/game-state.entity';
 import type { GameRulesAdapter } from '../interfaces/game-rules-adapter.interface';
-import { playingLog } from '../../../common/utils/playing-logger';
 import { TurnLabelService } from '../../modules/turn/services/turn-label.service';
 import { BotRunnerService } from '../../modules/bot/services/bot-runner.service';
 import { BotSchedulerService } from '../../modules/bot/services/bot-scheduler.service';
 import { GameEngineStateStore } from './game-engine-state.store';
+import {
+  validateActions as validateActionDtos,
+  sanitizeAction,
+} from '../dto/validated-action.dto';
+import {
+  PayloadValidationError,
+  GameValidationError,
+  GameError,
+} from '../../../common/errors/game-errors';
+import { GameLoggerService } from '../../../common/services/game-logger.service';
 
 @Injectable()
 export class GameEngineService {
@@ -48,14 +57,40 @@ export class GameEngineService {
     private readonly botRunner: BotRunnerService,
     private readonly botScheduler: BotSchedulerService,
     private readonly store: GameEngineStateStore,
+    private readonly gameLogger: GameLoggerService,
   ) {}
 
+  /**
+   * Configure la fonction de broadcast pour notifier les clients des changements d'état.
+   *
+   * @param fn - Fonction appelée lors des changements d'état
+   * @internal
+   */
   setBroadcaster(
     fn: (gameType: string, roomId: number, state: GameStateEntity) => void,
   ): void {
     this.broadcaster = fn;
   }
 
+  /**
+   * Récupère l'état complet du jeu pour une room donnée.
+   *
+   * Retourne l'état enrichi avec les actions disponibles et les informations
+   * visibles par tous les joueurs. Utilise le cache pour optimiser les performances.
+   *
+   * @param roomId - ID de la room
+   * @param gameType - Type de jeu
+   * @returns État du jeu enrichi avec les actions disponibles
+   *
+   * @throws {GameStateError} Si l'état est introuvable ou invalide
+   *
+   * @example
+   * ```typescript
+   * const state = await gameEngine.getState(123, 'dame-nature');
+   * console.log(state.status); // 'started'
+   * console.log(state.availableActions); // Liste des actions disponibles
+   * ```
+   */
   async getState(
     roomId: number,
     gameType: string,
@@ -64,6 +99,26 @@ export class GameEngineService {
     return this.exposeState(internal, gameType);
   }
 
+  /**
+   * Récupère l'état du jeu personnalisé pour un utilisateur spécifique.
+   *
+   * Retourne l'état avec les informations visibles uniquement par cet utilisateur
+   * (masquage de la main des adversaires, cartes cachées, etc.).
+   *
+   * @param roomId - ID de la room
+   * @param gameType - Type de jeu
+   * @param userId - ID de l'utilisateur
+   * @returns État personnalisé pour cet utilisateur
+   *
+   * @throws {GameStateError} Si l'état est introuvable ou invalide
+   *
+   * @example
+   * ```typescript
+   * const state = await gameEngine.getStateForUser(123, 'dame-nature', 456);
+   * // state.players[0].hand contient les cartes si userId === players[0].id
+   * // state.players[1].hand est vide si userId !== players[1].id
+   * ```
+   */
   async getStateForUser(
     roomId: number,
     gameType: string,
@@ -102,6 +157,13 @@ export class GameEngineService {
       }
       throw err;
     }
+    const actualGameType = String(payload?.room?.gameType ?? '').trim();
+    if (actualGameType && actualGameType !== gameType) {
+      // Empêche la création d'un état "fantôme" quand le client passe le mauvais gameType
+      // (ex: "generic" alors que la room est en "loup-garou").
+      this.cleanupRoom(roomId, gameType);
+      throw new BadRequestException('Type de jeu invalide pour cette table');
+    }
     const existing = this.store.get(roomId, gameType);
     if (existing) {
       const previousStatus = String(existing.status ?? '').toLowerCase();
@@ -115,7 +177,7 @@ export class GameEngineService {
         roomStatus !== 'started' &&
         roomStatus !== 'finished'
       ) {
-        playingLog('engine.reset.detected', {
+        this.gameLogger.info('Game state reset detected', {
           roomId,
           gameType,
           previousStatus,
@@ -138,7 +200,7 @@ export class GameEngineService {
       const incomingPlayers =
         (payload.room.players?.length ?? 0) + (payload.room.bots?.length ?? 0);
       const gameStarted = (existing.status || '').toLowerCase() === 'started';
-      playingLog('engine.getState', {
+      this.gameLogger.debug('Retrieved game state', {
         roomId,
         gameType,
         status: synced.status,
@@ -191,6 +253,41 @@ export class GameEngineService {
     return marked;
   }
 
+  /**
+   * Applique une liste d'actions au jeu et retourne le nouvel état.
+   *
+   * Cette méthode est le point d'entrée principal pour toutes les actions de jeu.
+   * Elle gère :
+   * - La validation des actions
+   * - La vérification des permissions
+   * - L'application via l'adaptateur de jeu
+   * - Le déclenchement des tours de bot
+   * - La sauvegarde de l'état
+   * - Le broadcast aux clients
+   *
+   * @param roomId - ID de la room
+   * @param gameType - Type de jeu
+   * @param actions - Liste des actions à appliquer
+   * @param actorId - ID du joueur effectuant l'action (null pour les actions système)
+   * @param allowBotTurn - Si true, déclenche automatiquement les tours de bot après l'action
+   * @returns Réponse contenant le nouvel état et des métadonnées
+   *
+   * @throws {GameValidationError} Si les actions sont invalides
+   * @throws {PlayerActionError} Si l'acteur n'a pas les permissions
+   * @throws {GameStateError} Si l'état devient invalide
+   *
+   * @example
+   * ```typescript
+   * const response = await gameEngine.applyActions(
+   *   123,                    // roomId
+   *   'dame-nature',          // gameType
+   *   [{ type: 'draw', payload: {} }],  // actions
+   *   456,                    // actorId
+   *   true                    // allowBotTurn
+   * );
+   * console.log(response.state.turnIndex); // Nouveau numéro de tour
+   * ```
+   */
   async applyActions(
     roomId: number,
     gameType: string,
@@ -257,7 +354,7 @@ export class GameEngineService {
     }
 
     const actorLabel = allowBotTurn ? 'bot' : 'human';
-    const validatedActions = this.validateActions(
+    const validatedActions = await this.validateActions(
       current,
       handler,
       actions,
@@ -265,22 +362,35 @@ export class GameEngineService {
     );
     const sanitizedActions = validatedActions.map((action) => ({
       ...action,
-      meta: { ...(action?.meta ?? {}), actor: actorLabel },
+      meta: {
+        ...(action?.meta ?? {}),
+        actor: actorLabel,
+        actorId: allowBotTurn ? currentPlayerId : actorId,
+      },
     }));
 
-    playingLog('engine.applyActions.before', {
-      roomId,
-      gameType,
-      actorId,
-      allowBotTurn,
-      status: current.status,
-      turnIndex: current.turnIndex,
-      currentPlayerId,
-      actions: sanitizedActions.map((a) => ({
-        type: a.type,
-        hasPayload: Boolean(a.payload),
-      })),
-    });
+    this.gameLogger.logPlayerAction(
+      {
+        type: 'apply_actions',
+        payload: {
+          actions: sanitizedActions.map((a) => ({
+            type: a.type,
+            hasPayload: Boolean(a.payload),
+          })),
+          allowBotTurn,
+        },
+      },
+      {
+        roomId,
+        gameType,
+        playerId: actorId ?? currentPlayerId ?? undefined,
+        turnIndex: current.turnIndex,
+        action: {
+          status: current.status,
+          currentPlayerId,
+        },
+      },
+    );
 
     if (!handler) {
       const next = this.core.appendLog(
@@ -313,28 +423,55 @@ export class GameEngineService {
         this.botScheduler.clear(this.buildKey(roomId, gameType));
         this.broadcaster?.(gameType, roomId, cleared);
       } catch (err) {
-        playingLog('engine.autoReset.failed', {
-          roomId,
-          gameType,
-          message: err instanceof Error ? err.message : String(err ?? ''),
-        });
+        this.gameLogger.error(
+          'Auto-reset after game finished failed',
+          err instanceof Error ? err : undefined,
+          {
+            roomId,
+            gameType,
+          },
+        );
       }
     }
 
-    playingLog('engine.applyActions.after', {
+    this.gameLogger.debug('Actions applied successfully', {
       roomId,
       gameType,
-      actorId,
-      status: marked.status,
+      playerId: actorId ?? undefined,
       turnIndex: marked.turnIndex,
-      currentPlayerId: marked.turn?.currentPlayerId ?? null,
-      isBotTurn: botTurn,
-      botThinking: marked.botThinking ?? false,
+      action: {
+        status: marked.status,
+        currentPlayerId: marked.turn?.currentPlayerId ?? null,
+        isBotTurn: botTurn,
+        botThinking: marked.botThinking ?? false,
+      },
     });
 
     return this.exposeState(marked, gameType);
   }
 
+  /**
+   * Déclenche le tour d'un bot dans la partie.
+   *
+   * Cette méthode :
+   * - Vérifie que le joueur actuel est un bot
+   * - Récupère les actions suggérées par la stratégie du bot
+   * - Applique automatiquement ces actions
+   * - Peut déclencher récursivement d'autres tours de bot
+   *
+   * @param roomId - ID de la room
+   * @param gameType - Type de jeu
+   * @returns État mis à jour après le tour du bot
+   *
+   * @throws {GameStateError} Si aucun bot n'est actif
+   *
+   * @example
+   * ```typescript
+   * // Déclencher manuellement un tour de bot
+   * const state = await gameEngine.playBotTurn(123, 'dame-nature');
+   * console.log(state.turn.currentPlayerId); // Nouveau joueur actif
+   * ```
+   */
   async playBotTurn(
     roomId: number,
     gameType: string,
@@ -348,7 +485,7 @@ export class GameEngineService {
     roomId: number,
     gameType: string,
   ): Promise<GameStateWithActions> {
-    playingLog('engine.bot.tick', { roomId, gameType });
+    this.gameLogger.debug('Bot turn tick', { roomId, gameType });
     const state = this.normalizeBotThinking(
       roomId,
       gameType,
@@ -386,25 +523,36 @@ export class GameEngineService {
       }
     }
     if (!botActions || botActions.length === 0) {
-      playingLog('engine.bot.noaction', {
+      this.gameLogger.warn('Bot has no available actions', {
         roomId,
         gameType,
-        currentPlayerId,
-        status: state.status,
+        playerId: currentPlayerId ?? undefined,
+        action: {
+          status: state.status,
+        },
       });
       const marked = this.markBotThinking(roomId, gameType, state, false);
       this.broadcaster?.(gameType, roomId, marked);
       return this.exposeState(marked, gameType);
     }
 
-    playingLog('engine.bot.play', {
-      roomId,
-      gameType,
-      currentPlayerId,
-      isBot: currentPlayer.isBot,
-      actions: botActions.map((a) => a.type),
-      status: state.status,
-    });
+    this.gameLogger.logPlayerAction(
+      {
+        type: 'bot_play',
+        payload: {
+          actions: botActions.map((a) => a.type),
+        },
+      },
+      {
+        roomId,
+        gameType,
+        playerId: currentPlayerId ?? undefined,
+        action: {
+          isBot: currentPlayer.isBot,
+          status: state.status,
+        },
+      },
+    );
 
     await this.applyActionsInternal(roomId, gameType, botActions, null, true);
     const updated = this.store.get(roomId, gameType) ?? state;
@@ -463,13 +611,15 @@ export class GameEngineService {
     const delayMs = 4000;
     const thinking = this.markBotThinking(roomId, gameType, state, true);
     this.broadcaster?.(gameType, roomId, thinking);
-    playingLog('engine.bot.schedule', {
+    this.gameLogger.debug('Bot turn scheduled', {
       roomId,
       gameType,
-      status: thinking.status,
       turnIndex: thinking.turnIndex,
-      currentPlayerId: thinking.turn?.currentPlayerId ?? null,
-      delayMs,
+      playerId: thinking.turn?.currentPlayerId ?? undefined,
+      action: {
+        status: thinking.status,
+        delayMs,
+      },
     });
     const expectedTurnIndex = thinking.turnIndex ?? null;
     const expectedPlayerId = thinking.turn?.currentPlayerId ?? null;
@@ -493,13 +643,15 @@ export class GameEngineService {
           latestTurnIndex !== expectedTurnIndex ||
           latestPlayerId !== expectedPlayerId
         ) {
-          playingLog('engine.bot.stale.skip', {
+          this.gameLogger.debug('Bot turn skipped (stale)', {
             roomId,
             gameType,
-            expectedTurnIndex,
-            latestTurnIndex,
-            expectedPlayerId,
-            latestPlayerId,
+            action: {
+              expectedTurnIndex,
+              latestTurnIndex,
+              expectedPlayerId,
+              latestPlayerId,
+            },
           });
           return;
         }
@@ -618,11 +770,13 @@ export class GameEngineService {
     if (age <= GameEngineService.BOT_THINKING_TTL_MS) {
       return state;
     }
-    playingLog('engine.botThinking.expired', {
+    this.gameLogger.warn('Bot thinking state expired', {
       roomId,
       gameType,
-      ageMs: age,
-      turnIndex: state.turnIndex ?? null,
+      turnIndex: state.turnIndex,
+      action: {
+        ageMs: age,
+      },
     });
     const cleared = {
       ...(state as any),
@@ -633,51 +787,84 @@ export class GameEngineService {
     return cleared;
   }
 
-  private validateActions(
+  private async validateActions(
     state: GameStateEntity,
     handler: GameRulesAdapter | undefined,
     actions: GameSingleActionDto[],
     actorId: number | null,
-  ): GameSingleActionDto[] {
+  ): Promise<GameSingleActionDto[]> {
+    const ctx = (state?.metadata ?? {}) as any;
+    const ctxGameType = ctx?.gameType ?? null;
+    const ctxRoomId = ctx?.roomId ?? null;
     const list = Array.isArray(actions) ? actions : [];
     if (list.length === 0) {
       return [];
     }
     if (list.length > GameEngineService.MAX_ACTIONS_PER_MESSAGE) {
-      throw new BadRequestException('Trop d’actions dans un seul message');
+      throw new BadRequestException("Trop d'actions dans un seul message");
     }
 
+    // Step 1: Validate DTOs with class-validator
+    let validatedDtos;
+    try {
+      validatedDtos = await validateActionDtos(list, {
+        gameType: ctxGameType,
+        roomId: ctxRoomId,
+        actorId,
+      });
+    } catch (error) {
+      if (error instanceof PayloadValidationError) {
+        this.gameLogger.logValidationFailure(
+          error.message,
+          error.validationErrors,
+          {
+            gameType: ctxGameType ?? undefined,
+            roomId: ctxRoomId ?? undefined,
+            playerId: actorId ?? undefined,
+          },
+        );
+        throw new BadRequestException(error.message);
+      }
+      throw error;
+    }
+
+    // Step 2: Sanitize actions
+    const sanitized = validatedDtos.map((dto) => sanitizeAction(dto));
+
+    // Step 3: Check available actions
     let allowedTypes: Set<string> | null = null;
     if (handler?.getAvailableActions && actorId != null) {
       try {
         const available = handler.getAvailableActions(state, actorId) ?? [];
         allowedTypes = new Set(
           (Array.isArray(available) ? available : []).map((a: any) =>
-            String(a?.type ?? ''),
+            String(a?.type ?? '').toLowerCase(),
           ),
         );
-      } catch {
+      } catch (err) {
+        this.gameLogger.error(
+          'Error getting available actions',
+          err instanceof Error ? err : undefined,
+          {
+            gameType: ctxGameType ?? undefined,
+            roomId: ctxRoomId ?? undefined,
+            playerId: actorId ?? undefined,
+          },
+        );
         allowedTypes = null;
       }
     }
 
+    // Step 4: Validate size limits and available actions
     let totalBytes = 0;
     const out: GameSingleActionDto[] = [];
-    for (const action of list) {
-      const rawType =
-        typeof (action as any)?.type === 'string'
-          ? String((action as any).type)
-          : '';
-      const type = rawType.trim();
-      if (!type) {
-        throw new BadRequestException('Action invalide : type manquant');
-      }
+    for (const action of sanitized) {
+      const type = action.type.toLowerCase();
+
       if (type.length > GameEngineService.MAX_ACTION_TYPE_LENGTH) {
         throw new BadRequestException('Action invalide : type trop long');
       }
-      if (!/^[a-z0-9_\\-]+$/i.test(type)) {
-        throw new BadRequestException('Action invalide : type non autorisé');
-      }
+
       if (allowedTypes && !allowedTypes.has(type)) {
         throw new BadRequestException(
           `Action inconnue ou indisponible: ${type}`,
@@ -685,7 +872,7 @@ export class GameEngineService {
       }
 
       let payloadBytes = 0;
-      const payload = (action as any)?.payload ?? null;
+      const payload = action.payload ?? null;
       if (payload != null) {
         try {
           payloadBytes = Buffer.byteLength(JSON.stringify(payload), 'utf8');
@@ -706,7 +893,33 @@ export class GameEngineService {
           'Message invalide : payload total trop volumineux',
         );
       }
-      out.push({ ...(action as any), type });
+
+      // Step 5: Game-specific validation
+      let normalized: GameSingleActionDto = { ...action, type };
+      if (handler?.validateAction) {
+        try {
+          normalized = handler.validateAction(
+            state,
+            normalized,
+            actorId ?? null,
+          );
+        } catch (err) {
+          const message =
+            err instanceof Error ? err.message : String(err ?? '');
+          this.gameLogger.logValidationFailure(
+            `Game-specific validation failed for action: ${type}`,
+            [{ actionType: type, error: message }],
+            {
+              gameType: ctxGameType ?? undefined,
+              roomId: ctxRoomId ?? undefined,
+              playerId: actorId ?? undefined,
+              action: { type },
+            },
+          );
+          throw new BadRequestException(message || `Action invalide: ${type}`);
+        }
+      }
+      out.push(normalized);
     }
 
     return out;

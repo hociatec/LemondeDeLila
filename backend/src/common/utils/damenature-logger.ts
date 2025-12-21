@@ -13,6 +13,11 @@ export function dameNatureLog(
     const line = JSON.stringify({
       ts: new Date().toISOString(),
       label,
+      event: label,
+      roomId: null,
+      gameType: null,
+      userId: null,
+      type: null,
       ...payload,
     });
     fs.appendFileSync(LOG_PATH, line + '\n', { encoding: 'utf-8' });

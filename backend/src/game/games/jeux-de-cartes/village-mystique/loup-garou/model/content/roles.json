@@ -1,0 +1,8 @@
+[
+  { "id": "seer", "name": "Voyante", "unique": true },
+  { "id": "cupid", "name": "Cupidon", "unique": true },
+  { "id": "witch", "name": "Sorcière", "unique": true },
+  { "id": "werewolf", "name": "Loup", "unique": false },
+  { "id": "villager", "name": "Villageois", "unique": false }
+]
+

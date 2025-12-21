@@ -7,6 +7,7 @@ import { GameRegistryModule } from './game-registry.module';
 import { GameEngineService } from './services/game-engine.service';
 import { GameEngineStateStore } from './services/game-engine-state.store';
 import { GameGateway } from './gateways/game.gateway';
+import { EngineServicesModule } from './services/engine-services.module';
 
 @Module({
   imports: [
@@ -15,8 +16,9 @@ import { GameGateway } from './gateways/game.gateway';
     GameRegistryModule,
     BotModule,
     TurnModule,
+    EngineServicesModule,
   ],
   providers: [GameEngineService, GameEngineStateStore, GameGateway],
-  exports: [GameEngineService],
+  exports: [GameEngineService, EngineServicesModule],
 })
 export class EngineModule {}

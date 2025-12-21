@@ -22,9 +22,11 @@ import { ValidationModule } from './common/validation/validation.module';
 import { GameWsModule } from './game/ws/game-ws.module';
 import { RealtimeModule } from './realtime/realtime.module';
 import { NotificationModule } from './notification/notification.module';
+import { GameLoggerModule } from './common/services/game-logger.module';
 
 @Module({
   imports: [
+    GameLoggerModule,
     ConfigModule.forRoot({
       isGlobal: true,
     }),

@@ -1,0 +1,21 @@
+Plan d'action pour la mise en production du backend
+
+Configuration & secrets
+- Quitter immédiatement au démarrage si des variables d'environnement manquent. `ConfigModule.forRoot` ne transmet que `isGlobal`, donc les valeurs manquantes s'appuient sur les valeurs par défaut quand `TypeOrmModule` lit `DB_*` et `DATABASE_URL`. Ajoutez un `validationSchema` (Joi) pour que `npm start` refuse de démarrer sans les variables requises et documentez le schéma pour les opérateurs (voir `src/app.module.ts:24-58`).
+- Centralisez la configuration JWT ; `UserAuthService` lit encore `process.env.JWT_SECRET/JWT_EXPIRES_IN` avec un fallback codé en dur `dev-secret-change-me`, et `HttpJwtGuard` lit aussi `process.env` (voir `src/user/services/user.auth.service.ts:18-74` et `src/common/guards/http-jwt.guard.ts:10-46`). Injectez `ConfigService`, échouez tôt si le secret est absent et retirez les valeurs par défaut non sécurisées de `.env`/`.env.example`.
+
+Sécurité & résilience
+- `main.ts` ne configure qu'un `ValidationPipe` et l'adaptateur WebSocket (voir `src/main.ts:1-12`). En production il faut ajouter helmet, compression, des origines CORS explicites et un garde global throttler pour éviter que les endpoints de login/inscription (et l'auth WS) soient attaqués par force brute ; le service d'authentification devrait aussi limiter les tentatives avant de compter sur `bannedUntil` ou d'ajouter une 2FA.
+- La vérification d'email est actuellement sautée : `register` force `emailVerified: true` et le login ne vérifie que ce flag, donc un token compromis est immédiatement utilisable. Ajoutez une étape de confirmation ou un token d'activation court avant d'accorder l'accès complet (voir `src/user/services/user.auth.service.ts:35-56`).
+
+Résilience & observabilité
+- `GameLoggerService` écrit dans `logs/error.log` et `logs/combined.log` avec une unique variable d'env `LOG_LEVEL`, mais il n'y a pas d'options pour dériver les chemins, ajouter des IDs de corrélation ou gérer l'absence de permissions sur le dossier (voir `src/common/services/game-logger.service.ts:22-78`). Paramétrez les destinations de logs, intégrez le logger Nest pour les exceptions non capturées et prévoyez un export vers un agrégateur en production.
+- Il manque un endpoint de santé ou de métriques alors que MySQL, Redis et la couche WebSocket doivent être surveillés. Ajoutez Nest Terminus pour exposer des checks readiness/liveness afin que l'orchestrateur redémarre les nœuds déficients (`RealtimeModule` configure déjà le store Redis dans `src/realtime/realtime.module.ts:6-20`).
+
+Base de données & déploiement
+- `src/data-source.ts` pointe vers `dist/migrations/*.js`, mais le dépôt n'a pas de migrations `src/`, donc `npm run migration:run` ne fait rien et le schéma dérive quand une migration est manquante (voir `src/data-source.ts:35-47` et `package.json:13-15`). Générez et commitez des migrations TypeORM pour chaque changement de schéma et gardez `dist/migrations` synchronisé avec les builds CI.
+- Les specs Jest existantes ciblent uniquement le moteur de jeu (par exemple `src/game/engine/tests/game-engine.service.spec.ts:1-60` et les tests `jeu-de-cartes` / `jeu-de-plateaux`). Il n'existe pas de tests d'intégration HTTP ou WebSocket pour l'auth, l'admin, la présence ou le `WsJwtGuard`. Ajoutez une couverture pour ces flux et conditionnez les mises en production à `npm test`.
+
+Documentation & automatisation
+- `README.md` contient encore le texte de démarrage Nest et mentionne Mau. Réécrivez-le pour documenter le démarrage de ce backend, le lancement de `deploy-prod.sh`/`start-lila.ps1` et lister les variables d'environnement réellement utilisées (`JWT_SECRET`, `SESSION_STORE_REDIS_URL`, `REDIS_URL`, `DATABASE_*`, etc.).
+- Renforcez `deploy-prod.sh` avec une pipeline CI ou une checklist pour que chaque release exécute `npm run build`, `npm run migration:run` et `npm run start:prod` dans un ordre reproductible.

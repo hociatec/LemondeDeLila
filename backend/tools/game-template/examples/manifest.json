@@ -1,0 +1,9 @@
+{
+  "code": "mon-jeu",
+  "name": "Mon Jeu",
+  "minPlayers": 2,
+  "maxPlayers": 4,
+  "engine": "mon-jeu",
+  "summary": "Résumé court (1 phrase)."
+}
+

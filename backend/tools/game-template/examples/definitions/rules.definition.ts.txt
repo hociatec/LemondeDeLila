@@ -1,0 +1,8 @@
+import { GameStateEntity } from '../../../../core/entities/game-state.entity';
+import { MON_JEU_GAME } from './game.definition';
+
+export const MON_JEU_PHASES: Array<{
+  id: string;
+  onEnter?: (state: GameStateEntity) => GameStateEntity;
+}> = [{ id: MON_JEU_GAME.phaseOrder[0].id }];
+

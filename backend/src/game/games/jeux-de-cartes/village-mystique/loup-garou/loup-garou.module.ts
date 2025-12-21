@@ -10,7 +10,12 @@ import { ActionResolverModule } from '../../../../modules/action-resolver/action
 import { StateModule } from '../../../../modules/state/state.module';
 import { BotModule } from '../../../../modules/bot/bot.module';
 import { VictoryModule } from '../../../../modules/victory/victory.module';
-import { LoupGarouService } from './services/loup-garou.service';
+import { LoupGarouService } from './loup-garou.service';
+import { LoupGarouSetupService } from './setup/loup-garou-setup.service';
+import { LoupGarouPhaseService } from './phases/loup-garou-phase.service';
+import { LoupGarouActionService } from './actions/loup-garou-action.service';
+import { LoupGarouBotService } from './bots/loup-garou-bot.service';
+import { LoupGarouPresenterService } from './presenter/loup-garou-presenter.service';
 
 @Module({
   imports: [
@@ -21,12 +26,18 @@ import { LoupGarouService } from './services/loup-garou.service';
     PlayerModule,
     TurnModule,
     ActionLogModule,
-    ActionResolverModule,
     StateModule,
     VictoryModule,
     BotModule,
   ],
-  providers: [LoupGarouService],
+  providers: [
+    LoupGarouService,
+    LoupGarouSetupService,
+    LoupGarouPhaseService,
+    LoupGarouActionService,
+    LoupGarouBotService,
+    LoupGarouPresenterService,
+  ],
   exports: [LoupGarouService],
 })
 export class LoupGarouModule {}

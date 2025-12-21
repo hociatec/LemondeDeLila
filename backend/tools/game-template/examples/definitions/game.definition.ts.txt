@@ -1,0 +1,24 @@
+import type { GameDefinition } from '../../../../engine/model/game-definition.model';
+import { MON_JEU_VICTORY } from './victory.definition';
+
+export type MonJeuId = 'mon-jeu';
+export type MonJeuPhaseId = 'turn';
+export type MonJeuActionType = 'do_something';
+
+export const MON_JEU_GAME: GameDefinition<
+  MonJeuId,
+  never,
+  MonJeuActionType,
+  MonJeuPhaseId,
+  typeof MON_JEU_VICTORY
+> = {
+  id: 'mon-jeu',
+  displayName: 'Mon Jeu',
+  minPlayers: 2,
+  maxPlayers: 4,
+  roles: [],
+  actions: ['do_something'],
+  phaseOrder: [{ id: 'turn', kind: 'player-action' }],
+  victory: MON_JEU_VICTORY,
+} as const;
+

@@ -5,14 +5,25 @@ import {
   GameStateEntity,
   PlayerStateEntity,
 } from '../entities/game-state.entity';
+import { ensureSeededRng } from '../../../common/utils/seeded-rng';
+import { seededShuffle } from '../../../common/utils/seeded-shuffle';
 
 @Injectable()
 export class GameCoreService {
   buildBaseState(payload: RoomPayload, gameType: string): GameStateEntity {
     const status = payload.room.status || 'setup';
+    const metadata: Record<string, unknown> = {
+      roomId: payload?.room?.id ?? null,
+      gameType,
+      generatedAt: new Date().toISOString(),
+    };
+    const rng = ensureSeededRng(metadata as any);
+    metadata.rng = rng;
+
+    const playersBase = this.buildPlayers(payload);
     const players = this.shouldRandomizeStarter(status)
-      ? this.shufflePlayers(this.buildPlayers(payload))
-      : this.buildPlayers(payload);
+      ? this.shufflePlayers(playersBase, rng.seed)
+      : playersBase;
     return {
       status,
       phase: 'playing',
@@ -25,10 +36,7 @@ export class GameCoreService {
         currentPlayerId: players[0]?.id ?? null,
         direction: 1,
       },
-      metadata: {
-        gameType,
-        generatedAt: new Date().toISOString(),
-      },
+      metadata,
       botThinking: false,
     };
   }
@@ -83,14 +91,10 @@ export class GameCoreService {
     return String(status ?? '').toLowerCase() === 'started';
   }
 
-  private shufflePlayers(players: PlayerStateEntity[]): PlayerStateEntity[] {
-    const arr = [...players];
-    for (let i = arr.length - 1; i > 0; i -= 1) {
-      const j = Math.floor(Math.random() * (i + 1));
-      const tmp = arr[i];
-      arr[i] = arr[j];
-      arr[j] = tmp;
-    }
-    return arr;
+  private shufflePlayers(
+    players: PlayerStateEntity[],
+    seed: number,
+  ): PlayerStateEntity[] {
+    return seededShuffle(players, seed, 'game-core:starter');
   }
 }

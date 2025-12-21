@@ -1,6 +1,6 @@
 import { GameStateEntity } from '../../../../../core/entities/game-state.entity';
 import { VictoryCondition } from '../../../../../modules/victory/services/victory.service';
-import { DameNatureMetadata } from '../services/dame-nature.service';
+import type { DameNatureMetadata } from '../model/dame-nature.model';
 
 // Conditions de victoire déclaratives pour Dame Nature.
 // Variante simple : atteindre le seuil de livres terminés ou éviter la pollution max.

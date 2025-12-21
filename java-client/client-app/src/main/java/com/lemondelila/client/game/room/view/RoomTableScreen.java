@@ -255,11 +255,13 @@ public final class RoomTableScreen extends BaseTableScreen {
     }
 
     private Integer resolvedRoomId() {
-        Integer id = tableState.roomId();
+        // Prioritise the navigation state (detailsState) over the live cached tableState.
+        // tableState can temporarily contain a stale roomId when coming back from another screen.
+        Integer id = detailsState.roomId();
         if (id != null) {
             return id;
         }
-        return detailsState.roomId();
+        return tableState.roomId();
     }
 
     private void handleTableSummary() {
@@ -461,11 +463,11 @@ public final class RoomTableScreen extends BaseTableScreen {
     }
 
     private Integer currentUiRoomId() {
-        Integer id = tableState.roomId();
+        Integer id = detailsState.roomId();
         if (id != null) {
             return id;
         }
-        return detailsState.roomId();
+        return tableState.roomId();
     }
 
     private String resolveRoomName() {
@@ -478,11 +480,12 @@ public final class RoomTableScreen extends BaseTableScreen {
     }
 
     private String resolvedGameType() {
-        String type = tableState.gameType();
+        // Same rationale as resolvedRoomId(): detailsState drives which game we just joined.
+        String type = detailsState.gameType();
         if (type != null && !type.isBlank()) {
             return type;
         }
-        type = detailsState.gameType();
+        type = tableState.gameType();
         return type == null ? "" : type;
     }
 

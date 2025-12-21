@@ -1,7 +1,8 @@
 import { Test } from '@nestjs/testing';
-import { PanierExpressService } from '../services/panier-express.service';
+import { PanierExpressService } from '../panier-express.service';
 import { PanierExpressModule } from '../panier-express.module';
-import { PanierExpressExchangeService } from '../services/panier-express-exchange.service';
+import { PanierExpressExchangeService } from '../actions/panier-express-exchange.service';
+import { nextRngInt } from '../../../../../../common/utils/seeded-rng';
 
 // Tests unitaires ciblés Panier Express (pioche stand/bonus, échange, quiz, flux de tour, bot, presenter).
 describe('PanierExpressService', () => {
@@ -248,6 +249,57 @@ describe('PanierExpressService', () => {
       expect(answer).toBeDefined();
       expect(['1', '2', '3']).toContain(answer);
     });
+  });
+
+  it('ignore un roll fourni par le client (anti-triche)', () => {
+    const base: any = service.hydrateInitialState({
+      players: [
+        { id: 1, username: 'A' },
+        { id: 2, username: 'B' },
+      ],
+      status: 'running',
+    } as any);
+    base.turn = { currentPlayerId: 1, direction: 1 };
+    base.turnIndex = 0;
+    base.metadata = {
+      ...(base.metadata ?? {}),
+      rng: { seed: 123, counter: 0 },
+    };
+
+    const expected = nextRngInt(base.metadata, 6).value + 1;
+
+    const after = service.applyActions(base, [
+      { type: 'roll', payload: { roll: 999 } },
+    ] as any);
+
+    expect(typeof after.lastRoll).toBe('number');
+    expect(after.lastRoll).toBe(expected);
+    expect((after.metadata as any)?.rng?.seed).toBe(123);
+    expect((after.metadata as any)?.rng?.counter).toBe(1);
+  });
+
+  it('requiert une réponse pour answer_quiz (ignore correct côté client)', () => {
+    const base: any = service.hydrateInitialState({
+      players: [{ id: 1, username: 'A' }],
+      status: 'running',
+    } as any);
+    base.turn = { currentPlayerId: 1, direction: 1 };
+    base.turnIndex = 0;
+    base.metadata.quiz = {
+      pending: {
+        1: {
+          question: 'Q?',
+          choices: ['a', 'b'],
+          answer: 'a',
+        },
+      },
+    };
+
+    const after = service.applyActions(base, [
+      { type: 'answer_quiz', payload: { correct: true } },
+    ] as any);
+
+    expect((after.metadata as any)?.quiz?.pending?.[1]).toBeTruthy();
   });
 
   it('refill le deck de courses lorsqu’il est vide et permet toujours de piocher', () => {

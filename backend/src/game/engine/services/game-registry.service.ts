@@ -16,9 +16,18 @@ export class GameRegistryService {
   private readonly devTtlMs = 3000;
 
   constructor() {
+    const envRoot = process.env.GAME_CATALOG_PATH;
+    const cwd = process.cwd();
+    const candidates = [
+      envRoot ? path.resolve(envRoot) : null,
+      path.resolve(cwd, 'dist', 'game', 'games'),
+      path.resolve(cwd, 'src', 'game', 'games'),
+    ].filter((p): p is string => Boolean(p));
+
     this.gamesRoot =
-      process.env.GAME_CATALOG_PATH ??
-      path.resolve(process.cwd(), 'src', 'game', 'games');
+      candidates.find(
+        (p) => fs.existsSync(p) && fs.statSync(p).isDirectory(),
+      ) ?? path.resolve(cwd, 'src', 'game', 'games');
   }
 
   getHandler(gameType: string): GameRulesAdapter | undefined {

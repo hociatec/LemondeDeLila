@@ -22,6 +22,8 @@ import {
 import { RoomService } from '../services/room.service';
 import { RoomInviteService } from '../services/room-invite.service';
 import { OPEN_ROOM_STATUSES } from '../constants/room-status.constants';
+import { buildPublicRoomList } from '../utils/room-directory.utils';
+import { CatalogService } from '../../catalog/services/catalog.service';
 
 @Injectable()
 export class RoomDirectoryWsHandler {
@@ -30,6 +32,7 @@ export class RoomDirectoryWsHandler {
     private readonly rooms: RoomService,
     private readonly invites: RoomInviteService,
     private readonly notifications: NotificationService,
+    private readonly catalog: CatalogService,
     @InjectRepository(Room) private readonly roomRepo: Repository<Room>,
     @InjectRepository(RoomParticipant)
     private readonly participantRepo: Repository<RoomParticipant>,
@@ -38,6 +41,15 @@ export class RoomDirectoryWsHandler {
   async listPublic(session: WsSession, payload: any) {
     requireUser(session);
     const dto = this.validator.validate(RoomsPublicListDto, payload);
+    const allowed = new Set(
+      (await this.catalog.getAllGames()).map((g) => g.id),
+    );
+    if (dto.gameType && !allowed.has(dto.gameType)) {
+      return {
+        type: 'rooms.public.listed',
+        payload: { items: [], groups: [] },
+      };
+    }
     const statuses = OPEN_ROOM_STATUSES.map((s) => s.toLowerCase());
     const qb = this.roomRepo
       .createQueryBuilder('room')
@@ -50,39 +62,15 @@ export class RoomDirectoryWsHandler {
       .leftJoinAndSelect('participant.user', 'participantUser')
       .leftJoinAndSelect('room.bots', 'bot')
       .where('room.isPrivate = :isPrivate', { isPrivate: false })
+      .andWhere('room.startedAt IS NULL')
       .andWhere('LOWER(room.status) IN (:...statuses)', { statuses });
     if (dto.gameType) {
       qb.andWhere('room.gameType = :gameType', { gameType: dto.gameType });
     }
     const rooms = await qb.getMany();
-    const items = rooms.map((r) => ({
-      id: r.id,
-      name: r.name,
-      gameType: r.gameType,
-      status: r.status,
-      maxPlayers: r.maxPlayers,
-      playersCount: (r.participants || []).filter((p) => !p.leftAt).length,
-      botsCount: (r.bots || []).length,
-      owner: r.owner ? { id: r.owner.id, username: r.owner.username } : null,
-    }));
-
-    // Group server-side by gameType to match the expected plan, while keeping `items` for compatibility.
-    const grouped = new Map<string, typeof items>();
-    for (const item of items) {
-      const key = item.gameType || '';
-      const existing = grouped.get(key);
-      if (existing) {
-        existing.push(item);
-      } else {
-        grouped.set(key, [item]);
-      }
-    }
-    const groups = Array.from(grouped.entries())
-      .sort(([a], [b]) =>
-        a.localeCompare(b, undefined, { sensitivity: 'base' }),
-      )
-      .map(([gameType, rooms]) => ({ gameType, rooms }));
-
+    const { items, groups } = buildPublicRoomList(rooms, {
+      allowedGameTypes: allowed,
+    });
     return { type: 'rooms.public.listed', payload: { items, groups } };
   }
 

@@ -8,12 +8,15 @@ import { ActionLogModule } from '../../../../modules/actionlog/actionlog.module'
 import { StateModule } from '../../../../modules/state/state.module';
 import { VictoryModule } from '../../../../modules/victory/victory.module';
 import { BotModule } from '../../../../modules/bot/bot.module';
-import { DameNatureService } from './services/dame-nature.service';
-import { DameNaturePollutionService } from './services/dame-nature-pollution.service';
-import { DameNatureSetupService } from './services/dame-nature-setup.service';
-import { DameNatureBooksService } from './services/dame-nature-books.service';
-import { DameNatureActionService } from './services/dame-nature-action.service';
-import { DameNatureBotService } from './services/dame-nature-bot.service';
+import { EngineServicesModule } from '../../../../engine/services/engine-services.module';
+import { DameNatureService } from './dame-nature.service';
+import { DameNaturePollutionService } from './actions/dame-nature-pollution.service';
+import { DameNatureSetupService } from './setup/dame-nature-setup.service';
+import { DameNatureBooksService } from './actions/dame-nature-books.service';
+import { DameNatureActionService } from './actions/dame-nature-action.service';
+import { DameNatureBotService } from './bots/dame-nature-bot.service';
+import { DameNaturePhaseService } from './phases/dame-nature-phase.service';
+import { DameNaturePresenterService } from './presenter/dame-nature-presenter.service';
 
 @Module({
   imports: [
@@ -26,6 +29,7 @@ import { DameNatureBotService } from './services/dame-nature-bot.service';
     StateModule,
     VictoryModule,
     BotModule,
+    EngineServicesModule,
   ],
   providers: [
     DameNatureService,
@@ -34,6 +38,8 @@ import { DameNatureBotService } from './services/dame-nature-bot.service';
     DameNatureBooksService,
     DameNatureActionService,
     DameNatureBotService,
+    DameNaturePhaseService,
+    DameNaturePresenterService,
   ],
   exports: [
     DameNatureService,
@@ -42,6 +48,8 @@ import { DameNatureBotService } from './services/dame-nature-bot.service';
     DameNatureBooksService,
     DameNatureActionService,
     DameNatureBotService,
+    DameNaturePhaseService,
+    DameNaturePresenterService,
   ],
 })
 export class DameNatureModule {}

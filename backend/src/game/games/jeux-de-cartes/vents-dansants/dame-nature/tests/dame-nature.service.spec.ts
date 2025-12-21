@@ -1,8 +1,8 @@
 import { Test } from '@nestjs/testing';
 import { DameNatureModule } from '../dame-nature.module';
-import { DameNatureService } from '../services/dame-nature.service';
-import { DameNatureBotService } from '../services/dame-nature-bot.service';
-import { DameNatureSetupService } from '../services/dame-nature-setup.service';
+import { DameNatureService } from '../dame-nature.service';
+import { DameNatureBotService } from '../bots/dame-nature-bot.service';
+import { DameNatureSetupService } from '../setup/dame-nature-setup.service';
 
 describe('DameNatureService', () => {
   let service: DameNatureService;
@@ -341,9 +341,7 @@ describe('DameNatureService', () => {
     if (!ask) return;
     expect(ask.payload).toBeDefined();
     const payload: any = ask.payload ?? {};
-    expect(
-      payload.offerMemberId ?? payload.giveMemberId ?? null,
-    ).toBeTruthy();
+    expect(payload.offerMemberId ?? payload.giveMemberId ?? null).toBeTruthy();
   });
 
   it('bot: ask_card only requests a card that target actually has', () => {
@@ -452,7 +450,7 @@ describe('DameNatureService', () => {
     );
   });
 
-  it('exposeStateForUser exposes askTargetHands', () => {
+  it('exposeStateForUser does not expose askTargetHands', () => {
     const state: any = service.hydrateInitialState({
       players: [
         { id: 1, username: 'A' },
@@ -464,8 +462,7 @@ describe('DameNatureService', () => {
     state.turnIndex = 0;
 
     const exposed: any = service.exposeStateForUser(state, 1);
-    expect(exposed.extras.askTargetHands).toBeTruthy();
-    expect(Array.isArray(exposed.extras.askTargetHands['2'])).toBe(true);
+    expect(exposed.extras.askTargetHands).toBeUndefined();
   });
 
   it('does not expose hands before the game is started', () => {
@@ -495,7 +492,7 @@ describe('DameNatureService', () => {
     expect(exposedForA.extras.hand).toEqual([]);
     expect(exposedForA.extras.handCards).toEqual([]);
     expect(exposedForA.extras.books).toEqual([]);
-    expect(exposedForA.extras.askTargetHands).toEqual({});
+    expect(exposedForA.extras.askTargetHands).toBeUndefined();
     expect(
       exposedForA.extras.playerViews.find((v: any) => v.id === 1)?.hand,
     ).toEqual([]);
@@ -510,7 +507,7 @@ describe('DameNatureService', () => {
     expect(exposedGeneric.extras.hand).toEqual([]);
     expect(exposedGeneric.extras.handCards).toEqual([]);
     expect(exposedGeneric.extras.books).toEqual([]);
-    expect(exposedGeneric.extras.askTargetHands).toEqual({});
+    expect(exposedGeneric.extras.askTargetHands).toBeUndefined();
   });
 
   it('pollution is tracked per player (not shared)', () => {

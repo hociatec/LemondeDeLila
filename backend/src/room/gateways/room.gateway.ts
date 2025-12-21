@@ -24,10 +24,7 @@ export class RoomGateway
   @WebSocketServer()
   server!: Server<WebSocket>;
 
-  private readonly clients = new Map<
-    WebSocket,
-    ClientMeta
-  >();
+  private readonly clients = new Map<WebSocket, ClientMeta>();
   private readonly rooms = new Map<number, Set<WebSocket>>();
 
   constructor(
@@ -332,7 +329,11 @@ export class RoomGateway
     await this.sendRoomState(meta.roomId);
   }
 
-  private async handleSetRole(client: WebSocket, meta: ClientMeta, payload: any) {
+  private async handleSetRole(
+    client: WebSocket,
+    meta: ClientMeta,
+    payload: any,
+  ) {
     const roomIdRaw = payload?.roomId ?? meta.roomId;
     const roomId = Number(roomIdRaw);
     if (!Number.isFinite(roomId) || roomId <= 0) {
@@ -378,7 +379,9 @@ export class RoomGateway
       roomId: meta.roomId,
       payload: {
         spectator,
-        message: spectator ? 'Mode spectateur activé.' : 'Mode spectateur désactivé.',
+        message: spectator
+          ? 'Mode spectateur activé.'
+          : 'Mode spectateur désactivé.',
       },
     });
 

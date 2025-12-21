@@ -1,0 +1,2 @@
+export const MON_JEU_VICTORY = null as const;
+

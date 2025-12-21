@@ -5,8 +5,9 @@
   "compilerOptions": {
     "deleteOutDir": true,
     "assets": [
-      "game/games/jeux-de-cartes/vents-dansants/dame-nature/models/*.json",
-      "game/games/jeux-de-plateaux/les-quatre-vents/panier-express/entities/content/*.json"
+      "game/games/**/model/content/**/*.json",
+      "game/games/**/manifest.json",
+      "game/games/**/rules.md"
     ]
   }
 }

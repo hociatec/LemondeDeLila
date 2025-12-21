@@ -1,13 +1,17 @@
 import { GameStateEntity } from '../../../../../core/entities/game-state.entity';
-import { DameNatureMetadata } from '../services/dame-nature.service';
+import type { DameNatureMetadata } from '../model/dame-nature.model';
+import { DAME_NATURE_GAME } from './game.definition';
 
 export const DAME_NATURE_PHASES: Array<{
   id: string;
-  onEnter?: (state: GameStateEntity, _meta: DameNatureMetadata) => GameStateEntity;
+  onEnter?: (
+    state: GameStateEntity,
+    _meta: DameNatureMetadata,
+  ) => GameStateEntity;
 }> = [
-  { id: 'turn' },
+  { id: DAME_NATURE_GAME.phaseOrder[0].id },
   {
-    id: 'pollution-check',
-    onEnter: (s, _meta) => s, // application gérée dans le service (applyPollution)
+    id: DAME_NATURE_GAME.phaseOrder[1].id,
+    onEnter: (s, _meta) => s,
   },
 ];
