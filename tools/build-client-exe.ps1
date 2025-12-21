@@ -13,7 +13,8 @@ param(
     [string]$CertificatePath,
     [string]$CertificatePassword,
     [string]$TimestampUrl = 'http://timestamp.digicert.com',
-    [switch]$AllowUnsigned
+    [switch]$AllowUnsigned,
+    [switch]$AllowUnobfuscated
 )
 
 Set-StrictMode -Version Latest
@@ -252,6 +253,33 @@ function Invoke-Step {
     & $Action
 }
 
+function Invoke-MavenReleaseBuild {
+    param(
+        [string]$MavenCmd,
+        [string]$JavaRoot
+    )
+
+    Invoke-Step "Compilation Maven (client-app - profil release)" {
+        Push-Location $JavaRoot
+        try {
+            & $MavenCmd -pl client-app -am clean package -DskipTests -Prelease
+            if ($LASTEXITCODE -ne 0) {
+                throw "La compilation Maven a échoué (code $LASTEXITCODE)."
+            }
+        }
+        finally {
+            Pop-Location
+        }
+    }
+}
+
+function Get-ObfuscatedJar {
+    param(
+        [string]$TargetDir
+    )
+    return Get-ChildItem -Path $TargetDir -Filter 'client-app-*-obf.jar' -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+}
+
 $repoRoot    = Split-Path -Parent $PSScriptRoot
 $javaRoot    = Join-Path $repoRoot 'java-client'
 $clientDir   = Join-Path $javaRoot 'client-app'
@@ -274,26 +302,24 @@ if (-not (Get-Command jpackage -ErrorAction SilentlyContinue)) {
 $mavenCmd = Get-MavenCommand
 
 if (-not $SkipBuild) {
-    Invoke-Step "Compilation Maven (client-app)" {
-        Push-Location $javaRoot
-        try {
-            & $mavenCmd -pl client-app -am clean package -DskipTests -Prelease
-            if ($LASTEXITCODE -ne 0) {
-                throw "La compilation Maven a Ã©chouÃ© (code $LASTEXITCODE)."
-            }
-        }
-        finally {
-            Pop-Location
-        }
-    }
+    Invoke-MavenReleaseBuild -MavenCmd $mavenCmd -JavaRoot $javaRoot
 }
 elseif (!(Test-Path $targetDir)) {
     throw "-SkipBuild a Ã©tÃ© demandÃ© mais aucun dossier target n'existe : $targetDir"
 }
 
-$shadedJar = Get-ChildItem -Path $targetDir -Filter 'client-app-*-obf.jar' -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+$shadedJar = Get-ObfuscatedJar -TargetDir $targetDir
+if (-not $shadedJar -and $SkipBuild) {
+    Write-Warning "Jar obfusquÃ© introuvable. Lancement automatique du build release..."
+    Invoke-MavenReleaseBuild -MavenCmd $mavenCmd -JavaRoot $javaRoot
+    $shadedJar = Get-ObfuscatedJar -TargetDir $targetDir
+}
+if (-not $shadedJar -and $AllowUnobfuscated) {
+    Write-Warning "Jar obfusquÃ© absent mais -AllowUnobfuscated est actif : utilisation du jar 'all'."
+    $shadedJar = Get-ChildItem -Path $targetDir -Filter 'client-app-*-all.jar' -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+}
 if (-not $shadedJar) {
-    throw "Jar obfusque introuvable (client-app-*-obf.jar). Recompilez avec le profil release pour eviter de livrer un -all.jar non protege."
+    throw "Jar obfusque introuvable (client-app-*-obf.jar). Recompilez avec le profil release ou utilisez -AllowUnobfuscated pour livrer un -all.jar non protege."
 }
 
 [xml]$pom = Get-Content (Join-Path $javaRoot 'pom.xml')
