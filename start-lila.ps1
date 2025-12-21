@@ -83,6 +83,10 @@ function Start-Backend {
         npm install
         Pop-Location
     }
+    $gamesPath = Join-Path $backendDir 'src\game\games'
+    if (Test-Path $gamesPath) {
+        $env:GAME_CATALOG_PATH = $gamesPath
+    }
     # Stopper un éventuel processus déjà sur le port (par défaut 3000)
     $portToUse = if ($env:PORT) { $env:PORT } else { "$Port" }
     Stop-Port -Port $portToUse
