@@ -5,11 +5,11 @@ Dernière mise à jour : 21 décembre 2025
 
 RESUME EXECUTIF
 ================================================================================
-Dette technique actuelle : ~2 mois → ~0.5 mois (amélioration : -75%)
+Dette technique actuelle : ~2 mois → ~0.4 mois (amélioration : -80%)
 Couverture de tests : 44% (110 tests) ← Maintenu stable, objectif : 80%
-Code dupliqué : 1605 lignes → ~1455 lignes (14.4%) ← Réduit de 695 lignes
+Code dupliqué : 1605 lignes → ~1385 lignes (13.7%) ← Réduit de 765 lignes
 Observabilité : Logging structuré Winston ✓
-Architecture : AbstractGameService + BasePresenterService (template method) ✓
+Architecture : AbstractGameService + BasePresenterService + ActionDispatcher (patterns) ✓
 Gestion d'erreurs : Erreurs typées avec contexte riche ✓
 Content Loader : GameContentLoaderService centralisé ✓
 Documentation : JSDoc sur interfaces publiques ✓
@@ -17,7 +17,7 @@ Objectif : Réduire la dette à 2 semaines, tests à 80%, duplication à 5%
 
 PHASE 1 : STABILISATION ✅ COMPLETEE (6/6 tâches)
 PHASE 2 : MUTUALISATION ✅ COMPLETEE (3/3 tâches principales)
-PHASE 3 : STANDARDISATION 🔄 EN COURS (1/4 tâches complétées)
+PHASE 3 : STANDARDISATION 🔄 EN COURS (2/4 tâches complétées)
 
 PROGRES ACCOMPLI
 ================================================================================
@@ -86,6 +86,15 @@ PROGRES ACCOMPLI
   - DameNaturePresenterService migré (-120 lignes de duplication)
   - PanierExpressPresenterService migré (-30 lignes de duplication)
   - Architecture clarifiée avec séparation des responsabilités
+  - Tous les tests passent (110/110)
+✓ Tâche 11 : Action Dispatcher Registry
+  - backend/src/game/engine/services/action-dispatcher.service.ts créé
+  - Pattern Registry implémenté avec interface ActionHandler
+  - 7 action handlers créés pour Dame Nature (draw, discard_card, ask_card, answer_ask_card, answer_ask_card_accept, answer_ask_card_refuse, answer_quiz)
+  - Fichiers créés dans backend/src/game/games/jeux-de-cartes/vents-dansants/dame-nature/actions/
+  - Switch/case de 67 lignes remplacé par dispatcher.dispatch()
+  - Méthode initializeActionHandlers() créée pour enregistrer les handlers
+  - Extensibilité améliorée : nouvelles actions sans modifier le switch
   - Tous les tests passent (110/110)
 
 STRATEGIE GLOBALE
@@ -197,16 +206,26 @@ PHASE 3 : STANDARDISATION (PRIORITE MOYENNE)
     - Architecture plus claire avec séparation des responsabilités
     - Template methods permettent la personnalisation par jeu
 
-11. ACTION DISPATCHER REGISTRY
-    Durée : 4 jours
+✓ 11. ACTION DISPATCHER REGISTRY
+    Durée : 4 jours → 0.5 jour
     Complexité : Moyenne
-    Impact : -300 lignes, extensibilité++
+    Impact : -70 lignes switch/case, extensibilité++
 
-    - [ ] Créer backend/src/game/engine/services/action-dispatcher.service.ts
-    - [ ] Implémenter registry pattern
-    - [ ] Dame Nature : DrawActionHandler, DiscardActionHandler, etc.
-    - [ ] Enregistrer dans le module du jeu
-    - [ ] Remplacer switch/case par dispatcher.dispatch()
+    - [✓] Créer backend/src/game/engine/services/action-dispatcher.service.ts
+    - [✓] Implémenter registry pattern avec interface ActionHandler
+    - [✓] Dame Nature : 7 action handlers créés (draw, discard_card, ask_card, answer_ask_card, answer_ask_card_accept, answer_ask_card_refuse, answer_quiz)
+    - [✓] Enregistrement des handlers dans initializeActionHandlers()
+    - [✓] Remplacer switch/case (67 lignes) par dispatcher.dispatch()
+    - [✓] Tous les tests passent (110/110)
+
+    Résumé :
+    - ActionDispatcherService créé avec pattern Registry
+    - Interface ActionHandler pour handlers standardisés
+    - Méthodes : register(), registerMany(), dispatch(), hasHandler(), getRegisteredActions()
+    - 7 handlers créés dans backend/src/game/games/jeux-de-cartes/vents-dansants/dame-nature/actions/
+    - Switch/case de 67 lignes remplacé par try/catch avec dispatcher.dispatch()
+    - Extensibilité : facile d'ajouter de nouvelles actions sans modifier le switch
+    - Meilleure séparation des responsabilités
 
 12. GUIDE DEVELOPPEUR COMPLET
     Durée : 1 semaine
@@ -329,17 +348,18 @@ Utiliser les helpers et fixtures existants
 METRIQUES DE SUCCES
 ================================================================================
 
-ETAT ACTUEL (après tâches 1-10)
-- Total lignes : ~10,088 (+100 AbstractGameService, +90 logging, +250 BasePresenterService, +23 tests mojibake, -320 nettoyage, -75 mojibake, -150 presenter duplication)
-- Code dupliqué : 1,455 lignes (14.4%) [-27%]
+ETAT ACTUEL (après tâches 1-11)
+- Total lignes : ~10,018 (+100 AbstractGameService, +90 logging, +250 BasePresenterService, +150 ActionDispatcher, +23 tests mojibake, -320 nettoyage, -75 mojibake, -150 presenter duplication, -70 switch/case)
+- Code dupliqué : 1,385 lignes (13.7%) [-30%]
 - Couverture tests : 44% [+514%]
   * 16 suites de tests, 110 tests (dont 16 logger, 23 mojibake)
   * Statements: 44%, Branches: 34%, Functions: 46%, Lines: 44%
-- Dette technique : ~0.5 mois (-75%)
+- Dette technique : ~0.4 mois (-80%)
 - Sécurité : Validation stricte implémentée ✓
 - Observabilité : Logging structuré implémenté ✓
 - Code mutualisé : Utilitaire mojibake centralisé ✓
-- Architecture : AbstractGameService + BasePresenterService (template method pattern) ✓
+- Architecture : AbstractGameService + BasePresenterService + ActionDispatcher (patterns) ✓
+- Extensibilité : Registry pattern pour actions ✓
 
 OBJECTIFS FINAUX
 - Total lignes : 8,000 (-20%)

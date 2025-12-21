@@ -35,6 +35,12 @@ import { DameNaturePhaseService } from './phases/dame-nature-phase.service';
 import { DameNaturePresenterService } from './presenter/dame-nature-presenter.service';
 import * as DameNatureRulebook from './rulebook/rulebook';
 import type { BotProfile } from '../../../../modules/bot/services/bot-strategy.service';
+import { ActionDispatcherService } from '../../../../engine/services/action-dispatcher.service';
+import { DrawActionHandler } from './actions/draw.action-handler';
+import { DiscardCardActionHandler } from './actions/discard.action-handler';
+import { AskCardActionHandler } from './actions/ask-card.action-handler';
+import { AnswerAskCardActionHandler } from './actions/answer-ask-card.action-handler';
+import { AnswerQuizActionHandler } from './actions/answer-quiz.action-handler';
 
 export type DameNatureMetadata = {
   // Métadonnées génériques consommées côté client (ex: filtrage des raccourcis).
@@ -86,6 +92,8 @@ export class DameNatureService extends AbstractGameService {
   readonly maxPlayers = 6;
   private readonly phaseOrder: PhaseDefinition<DameNatureMetadata>[] =
     DAME_NATURE_PHASES;
+  private readonly dispatcher: ActionDispatcherService =
+    new ActionDispatcherService();
 
   constructor(
     registry: GameRegistryService,
@@ -103,6 +111,124 @@ export class DameNatureService extends AbstractGameService {
     private readonly presenter: DameNaturePresenterService,
   ) {
     super(registry);
+    this.initializeActionHandlers();
+  }
+
+  /**
+   * Initialise les handlers d'actions pour ce jeu.
+   */
+  private initializeActionHandlers(): void {
+    // Wrapper functions pour les handlers qui conservent le contexte 'this'
+    const wrapperDraw = (
+      state: GameStateEntity,
+      action: GameSingleActionDto,
+      actorId: number | null,
+    ) => {
+      this.log('action.draw', state, {
+        type: action.type,
+        userId: actorId,
+        actorId,
+        current: state.turn?.currentPlayerId ?? null,
+      });
+      return this.handleDraw(state, actorId);
+    };
+
+    const wrapperDiscard = (
+      state: GameStateEntity,
+      action: GameSingleActionDto,
+      actorId: number | null,
+    ) => this.handleDiscard(state, action, actorId);
+
+    const wrapperAskCard = (
+      state: GameStateEntity,
+      action: GameSingleActionDto,
+      actorId: number | null,
+    ) => {
+      this.log('action.ask_card', state, {
+        type: action.type,
+        userId: actorId,
+        actorId,
+        current: state.turn?.currentPlayerId ?? null,
+      });
+      return this.handleAskCard(state, action, actorId);
+    };
+
+    const wrapperAnswerAskCard = (
+      state: GameStateEntity,
+      action: GameSingleActionDto,
+      actorId: number | null,
+    ) => {
+      this.log('action.answer_ask', state, {
+        type: action.type,
+        userId: actorId,
+        actorId,
+        pending: (state.metadata as DameNatureMetadata)?.pendingAsk ?? null,
+      });
+      return this.handleAnswerAskCard(state, action, actorId);
+    };
+
+    const wrapperAnswerAskCardAccept = (
+      state: GameStateEntity,
+      action: GameSingleActionDto,
+      actorId: number | null,
+    ) => {
+      const payload = { ...(action.payload ?? {}), accept: true };
+      return this.handleAnswerAskCard(
+        state,
+        { ...action, type: 'answer_ask_card', payload },
+        actorId,
+      );
+    };
+
+    const wrapperAnswerAskCardRefuse = (
+      state: GameStateEntity,
+      action: GameSingleActionDto,
+      actorId: number | null,
+    ) => {
+      const payload = { ...(action.payload ?? {}), accept: false };
+      this.log('action.answer_ask', state, {
+        type: action.type,
+        userId: actorId,
+        actorId,
+        pending: (state.metadata as DameNatureMetadata)?.pendingAsk ?? null,
+      });
+      return this.handleAnswerAskCard(
+        state,
+        { ...action, type: 'answer_ask_card', payload },
+        actorId,
+      );
+    };
+
+    const wrapperAnswerQuiz = (
+      state: GameStateEntity,
+      action: GameSingleActionDto,
+      actorId: number | null,
+    ) => {
+      this.log('action.answer_quiz', state, {
+        type: action.type,
+        userId: actorId,
+        actorId,
+        pending: (state.metadata as DameNatureMetadata)?.pendingQuiz ?? null,
+      });
+      return this.handleQuizAnswer(state, action, actorId);
+    };
+
+    // Enregistrement des handlers
+    this.dispatcher.registerMany([
+      new DrawActionHandler(wrapperDraw),
+      new DiscardCardActionHandler(wrapperDiscard),
+      new AskCardActionHandler(wrapperAskCard),
+      new AnswerAskCardActionHandler('answer_ask_card', wrapperAnswerAskCard),
+      new AnswerAskCardActionHandler(
+        'answer_ask_card_accept',
+        wrapperAnswerAskCardAccept,
+      ),
+      new AnswerAskCardActionHandler(
+        'answer_ask_card_refuse',
+        wrapperAnswerAskCardRefuse,
+      ),
+      new AnswerQuizActionHandler(wrapperAnswerQuiz),
+    ]);
   }
 
   private log(
@@ -283,72 +409,12 @@ export class DameNatureService extends AbstractGameService {
       }
     }
 
-    switch (action.type.toLowerCase()) {
-      case 'draw':
-        this.log('action.draw', next, {
-          type: action.type,
-          userId: actorId,
-          actorId,
-          current: next.turn?.currentPlayerId ?? null,
-        });
-        next = this.handleDraw(next, actorId);
-        break;
-      case 'discard_card':
-        next = this.handleDiscard(next, action, actorId);
-        break;
-      case 'ask_card':
-        this.log('action.ask_card', next, {
-          type: action.type,
-          userId: actorId,
-          actorId,
-          current: next.turn?.currentPlayerId ?? null,
-        });
-        next = this.handleAskCard(next, action, actorId);
-        break;
-      case 'answer_ask_card':
-        this.log('action.answer_ask', next, {
-          type: action.type,
-          userId: actorId,
-          actorId,
-          pending: (next.metadata as DameNatureMetadata)?.pendingAsk ?? null,
-        });
-        next = this.handleAnswerAskCard(next, action, actorId);
-        break;
-      case 'answer_ask_card_accept': {
-        const payload = { ...(action.payload ?? {}), accept: true };
-        next = this.handleAnswerAskCard(
-          next,
-          { ...action, type: 'answer_ask_card', payload },
-          actorId,
-        );
-        break;
-      }
-      case 'answer_ask_card_refuse': {
-        const payload = { ...(action.payload ?? {}), accept: false };
-        this.log('action.answer_ask', next, {
-          type: action.type,
-          userId: actorId,
-          actorId,
-          pending: (next.metadata as DameNatureMetadata)?.pendingAsk ?? null,
-        });
-        next = this.handleAnswerAskCard(
-          next,
-          { ...action, type: 'answer_ask_card', payload },
-          actorId,
-        );
-        break;
-      }
-      case 'answer_quiz':
-        this.log('action.answer_quiz', next, {
-          type: action.type,
-          userId: actorId,
-          actorId,
-          pending: (next.metadata as DameNatureMetadata)?.pendingQuiz ?? null,
-        });
-        next = this.handleQuizAnswer(next, action, actorId);
-        break;
-      default:
-        next = this.core.appendLog(next, `Action non gérée: ${action.type}`);
+    // Dispatcher l'action vers le handler approprié
+    try {
+      next = this.dispatcher.dispatch(next, action, actorId);
+    } catch (error) {
+      // Si aucun handler n'est trouvé, logger l'erreur
+      next = this.core.appendLog(next, `Action non gérée: ${action.type}`);
     }
     return this.phaseFlow.advance(next);
   }
