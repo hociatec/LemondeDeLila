@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { GameCoreModule } from '../../../../core/core.module';
 import { GameRegistryModule } from '../../../../engine/game-registry.module';
 import { MissionNemesisService } from './mission-nemesis.service';
@@ -8,7 +9,7 @@ import { MissionNemesisPhaseService } from './phases/mission-nemesis-phase.servi
 import { MissionNemesisPresenterService } from './presenter/mission-nemesis-presenter.service';
 
 @Module({
-  imports: [GameCoreModule, GameRegistryModule],
+  imports: [ConfigModule, GameCoreModule, GameRegistryModule],
   providers: [
     MissionNemesisService,
     MissionNemesisSetupService,

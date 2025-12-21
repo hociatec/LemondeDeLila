@@ -1,4 +1,5 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type {
   GameSingleActionDto,
@@ -21,6 +22,8 @@ export class MissionNemesisService implements GameRulesAdapter, OnModuleInit {
   readonly description = 'Prototype (WIP).';
   readonly minPlayers = 2;
   readonly maxPlayers = 6;
+  private readonly logger = new Logger(MissionNemesisService.name);
+  private readonly enabled: boolean;
 
   constructor(
     private readonly registry: GameRegistryService,
@@ -28,9 +31,18 @@ export class MissionNemesisService implements GameRulesAdapter, OnModuleInit {
     private readonly actions: MissionNemesisActionService,
     private readonly phases: MissionNemesisPhaseService,
     private readonly presenter: MissionNemesisPresenterService,
-  ) {}
+    config: ConfigService,
+  ) {
+    this.enabled = config.get<string>('ENABLE_PROTOTYPE_GAMES') === 'true';
+  }
 
   onModuleInit(): void {
+    if (!this.enabled) {
+      this.logger.warn(
+        'Mission Nemesis désactivé (prototype). Définissez ENABLE_PROTOTYPE_GAMES=true pour l’activer.',
+      );
+      return;
+    }
     this.registry.register(this);
   }
 

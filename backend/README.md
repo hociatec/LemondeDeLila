@@ -1,98 +1,68 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Backend – Le Monde de Lila
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Plateforme NestJS qui gère les salons, le moteur de jeux, la messagerie et la présence temps réel.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Prérequis
 
-## Description
+- Node.js 20+
+- npm 10+
+- MySQL 8 (ou MariaDB 10.6+, via `DATABASE_URL`)
+- Redis (obligatoire en production pour les états de jeu et les sessions WS)
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Project setup
+## Installation locale
 
 ```bash
-$ npm install
+cp .env.example .env          # renseigner JWT_SECRET + URLs Redis
+npm ci
+npm run migration:run:dev     # crée/maj le schéma MySQL local
+npm run start:dev             # API + gateways en mode watch
 ```
 
-## Compile and run the project
+### Variables d’environnement clés
+
+| Variable | Description |
+| --- | --- |
+| `JWT_SECRET` | Clé de signature des JWT. Obligatoire, aucune valeur par défaut en dehors du `.env.example`. |
+| `GAME_ENGINE_STATE_REDIS_URL` | Redis utilisé pour persister l’état des parties (requis pour la reprise après crash). |
+| `SESSION_STORE_REDIS_URL` | Redis pour les sessions WS/API, notifications et présence (peuvent avoir leurs URL dédiées). |
+| `NOTIFICATION_REDIS_URL`, `PRESENCE_REDIS_URL` | (Optionnel) Redis distincts pour partager les flux de notifications/presence entre plusieurs instances. |
+| `DATABASE_URL` | Optionnel : connexion MySQL complète (`mysql://user:pwd@host:3306/db`). Sinon utiliser `DB_HOST`, `DB_USER`, etc. |
+| `CORS_ORIGINS` | Liste d’origines autorisées (séparées par des virgules). Laisser vide pour autoriser tout en dev. |
+| `RATE_LIMIT_TTL` / `RATE_LIMIT_COUNT` | Fenêtre (s) et nombre de requêtes maximum pour le throttling global. |
+| `LOG_DIR`, `LOG_FILES_ENABLED`, `LOG_LEVEL` | Contrôlent l’écriture des logs Winston (dossier, activation fichiers, niveau). |
+
+## Tests
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+npm test          # toutes les suites unitaires
+npm run test:cov  # + rapport de couverture
 ```
 
-## Run tests
+Le seuil global reste fixé à 80 % ; ajoutez des tests avant d’augmenter le périmètre du moteur.
+
+## Build & Production
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npm ci
+npm run build
+npm run migration:run         # exécute les migrations sur la base distante
+NODE_ENV=production node dist/main
 ```
 
-## Deployment
+### Script helper
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+`deploy-prod.sh` (à la racine du dépôt) automatise les étapes suivantes :
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+1. `git pull --ff-only`
+2. `npm ci && npm run build`
+3. `npm run migration:run`
+4. `sudo systemctl restart lila-backend.service` (adapter le nom du service)
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
+Personnalisez ce script selon votre stack (pm2, Docker, etc.) en conservant les étapes build+migrations.
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+## Notes moteur de jeu
 
-## Resources
+- Le moteur conserve désormais les états des parties dans Redis (`GAME_ENGINE_STATE_REDIS_URL`). Sans cette variable, un message d’avertissement est émis et la persistance retombe en mémoire (à n’utiliser qu’en dev).
+- Les jeux prototypes (ex. *Mission Nemesis*) sont désactivés tant que `ENABLE_PROTOTYPE_GAMES=true` n’est pas défini. Ils n’apparaissent plus dans le catalogue tant que leur manifest contient `"enabled": false`.
 
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+Pour une vue détaillée de l’architecture (AbstractGameService, BasePresenterService, ActionDispatcher, etc.), consultez `DEVELOPER_GUIDE.md`.

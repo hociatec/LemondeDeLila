@@ -1,21 +1,18 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from './user/entities/user.entity';
-import { ChatMessage } from './chat/entities/chat-message.entity';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import * as Joi from 'joi';
+import { ORM_ENTITIES } from './database/entities';
 import { UserModule } from './user/user.module';
 import { ChatModule } from './chat/chat.module';
 import { CatalogModule } from './catalog/catalog.module';
 import { MessagingModule } from './messaging/messaging.module';
-import { PrivateMessage } from './messaging/entities/private-message.entity';
 import { PresenceModule } from './presence/presence.module';
-import { Room } from './room/entities/room.entity';
-import { RoomParticipant } from './room/entities/room-participant.entity';
-import { RoomBot } from './room/entities/room-bot.entity';
 import { RoomModule } from './room/room.module';
 import { GameModule } from './game/game.module';
 import { BotModule } from './bot/bot.module';
-import { BotName } from './bot/entities/bot-name.entity';
 import { AdminModule } from './admin/admin.module';
 import { WsRoutingModule } from './common/ws/ws-routing.module';
 import { ValidationModule } from './common/validation/validation.module';
@@ -23,12 +20,45 @@ import { GameWsModule } from './game/ws/game-ws.module';
 import { RealtimeModule } from './realtime/realtime.module';
 import { NotificationModule } from './notification/notification.module';
 import { GameLoggerModule } from './common/services/game-logger.module';
+import { HealthModule } from './health/health.module';
 
 @Module({
   imports: [
     GameLoggerModule,
     ConfigModule.forRoot({
       isGlobal: true,
+      validationSchema: Joi.object({
+        NODE_ENV: Joi.string()
+          .valid('development', 'production', 'test')
+          .default('development'),
+        PORT: Joi.number().default(3000),
+        DATABASE_URL: Joi.string().uri().optional(),
+        DB_HOST: Joi.string().default('127.0.0.1'),
+        DB_PORT: Joi.number().default(3306),
+        DB_USER: Joi.string().default('root'),
+        DB_PASSWORD: Joi.string().allow('', null).default(''),
+        DB_NAME: Joi.string().default('le_monde_de_lila'),
+        JWT_SECRET: Joi.string().min(12).required(),
+        JWT_EXPIRES_IN: Joi.string().default('12h'),
+        SESSION_STORE_REDIS_URL: Joi.string().uri().optional(),
+        GAME_ENGINE_STATE_REDIS_URL: Joi.string().uri().optional(),
+        CORS_ORIGINS: Joi.string().optional(),
+        RATE_LIMIT_TTL: Joi.number().default(60),
+        RATE_LIMIT_COUNT: Joi.number().default(120),
+        LOG_LEVEL: Joi.string().default('info'),
+        LOG_DIR: Joi.string().default('logs'),
+        LOG_FILES_ENABLED: Joi.boolean().truthy('true').falsy('false').default(true),
+        ENABLE_PROTOTYPE_GAMES: Joi.string().optional(),
+      }),
+    }),
+    ThrottlerModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => [
+        {
+          ttl: config.get<number>('RATE_LIMIT_TTL', 60),
+          limit: config.get<number>('RATE_LIMIT_COUNT', 120),
+        },
+      ],
     }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
@@ -46,15 +76,7 @@ import { GameLoggerModule } from './common/services/game-logger.module';
             };
         return {
           type: 'mysql' as const,
-          entities: [
-            User,
-            ChatMessage,
-            PrivateMessage,
-            Room,
-            RoomParticipant,
-            RoomBot,
-            BotName,
-          ],
+          entities: ORM_ENTITIES,
           synchronize: false,
           logging: false,
           ...dbConfig,
@@ -75,6 +97,13 @@ import { GameLoggerModule } from './common/services/game-logger.module';
     RealtimeModule,
     NotificationModule,
     AdminModule,
+    HealthModule,
+  ],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
   ],
 })
 export class AppModule {}

@@ -1,6 +1,7 @@
-﻿{
+{
   "code": "mission-nemesis",
   "name": "Mission Nemesis",
+  "enabled": false,
   "minPlayers": 2,
   "maxPlayers": 6,
   "engine": "mission-nemesis",

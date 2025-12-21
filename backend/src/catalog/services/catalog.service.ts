@@ -29,15 +29,28 @@ export type FlatCategory = {
 @Injectable()
 export class CatalogService {
   private cachedGames: CatalogGame[] | null = null;
+  private cacheExpiresAt = 0;
+  private readonly cacheTtlMs: number;
 
-  constructor(private readonly registry: GameRegistryService) {}
+  constructor(private readonly registry: GameRegistryService) {
+    const ttlCandidate = Number(process.env.GAME_CATALOG_CACHE_TTL_MS ?? 30000);
+    this.cacheTtlMs =
+      Number.isFinite(ttlCandidate) && ttlCandidate >= 0 ? ttlCandidate : 30000;
+  }
 
   async getAllGames(): Promise<CatalogGame[]> {
-    if (this.cachedGames) {
+    if (
+      this.cachedGames &&
+      (this.cacheTtlMs === 0 || Date.now() < this.cacheExpiresAt)
+    ) {
       return this.cachedGames;
     }
     const games = await this.loadFromRegistry();
     this.cachedGames = games.filter((game) => !!game.id);
+    this.cacheExpiresAt =
+      this.cacheTtlMs === 0
+        ? Number.MAX_SAFE_INTEGER
+        : Date.now() + this.cacheTtlMs;
     return this.cachedGames;
   }
 
@@ -75,6 +88,7 @@ export class CatalogService {
 
   async clearCache(): Promise<void> {
     this.cachedGames = null;
+    this.cacheExpiresAt = 0;
   }
 
   private async loadFromRegistry(): Promise<CatalogGame[]> {

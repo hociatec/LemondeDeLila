@@ -1,19 +1,22 @@
 import { Injectable } from '@nestjs/common';
+import {
+  DEFAULT_MESSAGE_MAX_LENGTH,
+  sanitizeMessage,
+} from '../../common/utils/message-sanitizer';
 
 @Injectable()
 export class ChatValidator {
-  private static readonly MAX_LENGTH = 1000;
-
   validate(text: string): string {
-    let sanitized = (text ?? '').trim();
+    const sanitized = sanitizeMessage(text, {
+      encodeHtml: false,
+      collapseNewLines: true,
+    });
     if (sanitized === '') {
       throw new Error('MESSAGE_REQUIRED');
     }
-    if (sanitized.length > ChatValidator.MAX_LENGTH) {
+    if (sanitized.length > DEFAULT_MESSAGE_MAX_LENGTH) {
       throw new Error('MESSAGE_TOO_LONG');
     }
-    sanitized = sanitized.replace(/<[^>]*>?/gm, '');
-    sanitized = sanitized.replace(/[\r\n]+/g, ' ').trim();
     return sanitized;
   }
 }

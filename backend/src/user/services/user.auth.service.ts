@@ -8,6 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
+import { ConfigService } from '@nestjs/config';
 import { User } from '../entities/user.entity';
 
 @Injectable()
@@ -17,9 +18,16 @@ export class UserAuthService {
 
   constructor(
     @InjectRepository(User) private readonly users: Repository<User>,
+    private readonly config: ConfigService,
   ) {
-    this.jwtSecret = process.env.JWT_SECRET || 'dev-secret-change-me';
-    this.jwtExpiresIn = process.env.JWT_EXPIRES_IN || '12h';
+    const secret = this.config.get<string>('JWT_SECRET');
+    if (!secret || !secret.trim()) {
+      throw new Error(
+        'JWT_SECRET doit être défini pour signer les tokens (voir .env).',
+      );
+    }
+    this.jwtSecret = secret;
+    this.jwtExpiresIn = this.config.get<string>('JWT_EXPIRES_IN', '12h');
   }
 
   async register(

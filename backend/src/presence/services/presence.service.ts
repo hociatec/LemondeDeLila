@@ -1,11 +1,16 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { WebSocket } from 'ws';
+import { randomUUID } from 'crypto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ChatService } from '../../chat/services/chat.service';
 import { ChatValidator } from '../../chat/services/chat.validator';
 import { WsAuthPayload } from '../../common/interfaces/ws-auth-payload';
 import { RoomParticipant } from '../../room/entities/room-participant.entity';
 import { In, IsNull, Repository } from 'typeorm';
+import {
+  PresenceEvent,
+  PresenceTransport,
+} from './presence-transport';
 
 export type PresenceConnectionContext = 'home' | 'chat' | 'table';
 type PresenceActivity = 'home' | 'chat' | 'table';
@@ -18,28 +23,41 @@ type PresenceClient = {
   roomHint: { id: number; name?: string | null } | null;
 };
 
-type PresenceBroadcastPlayer = {
+export type PresenceBroadcastPlayer = {
   id: number;
   username: string;
   currentRoom: { id: number; name: string } | null;
   activity: PresenceActivity;
   contextLocked: boolean;
 };
+type PresencePublicPlayer = Omit<PresenceBroadcastPlayer, 'contextLocked'>;
 
 @Injectable()
-export class PresenceService {
+export class PresenceService implements OnModuleDestroy {
   private readonly logger = new Logger(PresenceService.name);
   private readonly clients = new Map<WebSocket, PresenceClient>();
   private heartbeatTimer: ReturnType<typeof setInterval> | null = null;
   private readonly pingIntervalMs = 30_000;
   private readonly pingTimeoutMs = 10_000;
+  private readonly instanceId = randomUUID();
 
   constructor(
     private readonly chat: ChatService,
     private readonly validator: ChatValidator,
     @InjectRepository(RoomParticipant)
     private readonly participants: Repository<RoomParticipant>,
-  ) {}
+    private readonly transport: PresenceTransport,
+  ) {
+    this.transport
+      .subscribe((event) => this.handleExternalPresence(event))
+      .catch((err) =>
+        this.logger.error('Impossible de souscrire aux updates presence', err),
+      );
+  }
+
+  async onModuleDestroy(): Promise<void> {
+    await this.transport.disconnect();
+  }
 
   register(
     socket: WebSocket,
@@ -172,6 +190,19 @@ export class PresenceService {
   }
 
   broadcastPresence() {
+    const playersByUser = this.collectPlayers();
+    this.attachRooms(playersByUser)
+      .then(() => this.emitPresence(playersByUser))
+      .catch((err) => {
+        this.logger.warn(
+          'attachRooms a échoué, diffusion présence sans room enrichie',
+          err as Error,
+        );
+        this.emitPresence(playersByUser);
+      });
+  }
+
+  private collectPlayers(): Map<number, PresenceBroadcastPlayer> {
     const playersByUser = new Map<number, PresenceBroadcastPlayer>();
     for (const client of this.clients.values()) {
       const { user, context, roomHint, contextLocked } = client;
@@ -204,25 +235,7 @@ export class PresenceService {
         }
       }
     }
-    this.attachRooms(playersByUser)
-      .then(() => {
-        const payload = {
-          type: 'presence-update',
-          players: Array.from(playersByUser.values()).map(
-            ({ contextLocked, ...rest }) => rest,
-          ),
-        };
-        this.broadcast(payload);
-      })
-      .catch(() => {
-        const payload = {
-          type: 'presence-update',
-          players: Array.from(playersByUser.values()).map(
-            ({ contextLocked, ...rest }) => rest,
-          ),
-        };
-        this.broadcast(payload);
-      });
+    return playersByUser;
   }
 
   private async attachRooms(
@@ -285,6 +298,33 @@ export class PresenceService {
         }
       }
     }
+  }
+
+  private emitPresence(
+    playersByUser: Map<number, PresenceBroadcastPlayer>,
+  ): void {
+    const players = this.toPublicPlayers(playersByUser);
+    this.broadcast({ type: 'presence-update', players });
+    this.transport
+      .publish({ players, origin: this.instanceId })
+      .catch((err) =>
+        this.logger.error('Publication presence redis échouée', err),
+      );
+  }
+
+  private toPublicPlayers(
+    playersByUser: Map<number, PresenceBroadcastPlayer>,
+  ): PresencePublicPlayer[] {
+    return Array.from(playersByUser.values()).map(
+      ({ contextLocked, ...rest }) => rest,
+    );
+  }
+
+  private handleExternalPresence(event: PresenceEvent): void {
+    if (event.origin === this.instanceId) {
+      return;
+    }
+    this.broadcast({ type: 'presence-update', players: event.players });
   }
 
   findClient(socket: WebSocket): PresenceClient | undefined {

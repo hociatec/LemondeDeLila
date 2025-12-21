@@ -131,6 +131,12 @@ export class GameRegistryService {
     try {
       const raw = await fs.promises.readFile(manifestPath, 'utf-8');
       const data = JSON.parse(raw) as Record<string, any>;
+      if (data.enabled === false) {
+        this.logger.warn(
+          `Jeu désactivé ignoré (manifest): ${manifestPath} (${data.code ?? data.id ?? 'unknown'})`,
+        );
+        return null;
+      }
       const relPath = path.relative(root, path.dirname(manifestPath));
       const segments = relPath.split(path.sep).filter(Boolean);
       const category = this.formatName(

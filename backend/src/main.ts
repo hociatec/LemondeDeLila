@@ -1,10 +1,27 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { WsAdapter } from '@nestjs/platform-ws';
+import helmet from 'helmet';
+import compression from 'compression';
+import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const config = app.get(ConfigService);
+  app.use(helmet());
+  app.use(compression());
+  const corsOrigins = config.get<string>('CORS_ORIGINS');
+  const origins = corsOrigins
+    ? corsOrigins
+        .split(',')
+        .map((origin) => origin.trim())
+        .filter(Boolean)
+    : null;
+  app.enableCors({
+    origin: origins && origins.length > 0 ? origins : true,
+    credentials: true,
+  });
   app.useWebSocketAdapter(new WsAdapter(app));
   app.useGlobalPipes(
     new ValidationPipe({
@@ -13,6 +30,7 @@ async function bootstrap() {
       transform: true,
     }),
   );
-  await app.listen(process.env.PORT ?? 3000);
+  const port = config.get<number>('PORT', 3000);
+  await app.listen(port);
 }
 bootstrap();

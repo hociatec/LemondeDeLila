@@ -202,29 +202,6 @@ export class GameContentLoaderService {
   }
 
   /**
-   * Clear cache for a specific game or all games.
-   *
-   * @param gameType - Optional game type to clear cache for (clears all if not provided)
-   *
-   * @example
-   * loader.clearCache('dame-nature'); // Clear only dame-nature cache
-   * loader.clearCache(); // Clear all cache
-   */
-  clearCache(gameType?: string): void {
-    if (gameType) {
-      // Clear only entries for the specified game
-      for (const key of this.cache.keys()) {
-        if (key.startsWith(`${gameType}:`)) {
-          this.cache.delete(key);
-        }
-      }
-    } else {
-      // Clear all cache
-      this.cache.clear();
-    }
-  }
-
-  /**
    * Check if a specific content file is cached.
    *
    * @param gameType - Game identifier

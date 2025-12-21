@@ -1,14 +1,29 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { ConfigService } from '@nestjs/config';
 import { GameLoggerService } from './game-logger.service';
 import { GameError, GameValidationError } from '../errors/game-errors';
 
 describe('GameLoggerService', () => {
   let service: GameLoggerService;
   let mockLogger: any;
+  const configMock = {
+    get: jest.fn((key: string, defaultValue?: any) => {
+      if (key === 'LOG_FILES_ENABLED') return false;
+      if (key === 'LOG_LEVEL') return 'info';
+      return defaultValue;
+    }),
+  };
 
   beforeEach(async () => {
+    configMock.get.mockClear();
     const module: TestingModule = await Test.createTestingModule({
-      providers: [GameLoggerService],
+      providers: [
+        GameLoggerService,
+        {
+          provide: ConfigService,
+          useValue: configMock,
+        },
+      ],
     }).compile();
 
     service = module.get<GameLoggerService>(GameLoggerService);

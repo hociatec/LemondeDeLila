@@ -164,7 +164,7 @@ export class GameEngineService {
       this.cleanupRoom(roomId, gameType);
       throw new BadRequestException('Type de jeu invalide pour cette table');
     }
-    const existing = this.store.get(roomId, gameType);
+    const existing = await this.store.get(roomId, gameType);
     if (existing) {
       const previousStatus = String(existing.status ?? '').toLowerCase();
       const roomStatus = String(payload?.room?.status ?? '').toLowerCase();
@@ -185,12 +185,12 @@ export class GameEngineService {
         });
         this.cleanupRoom(roomId, gameType);
         const rebuilt = await this.buildInitialState(payload, gameType);
-        const marked = this.normalizeBotThinking(
+        const marked = await this.normalizeBotThinking(
           roomId,
           gameType,
-          this.markBotThinking(roomId, gameType, rebuilt),
+          await this.markBotThinking(roomId, gameType, rebuilt),
         );
-        this.scheduleBotTurn(roomId, gameType, marked);
+        await this.scheduleBotTurn(roomId, gameType, marked);
         return marked;
       }
 
@@ -216,40 +216,40 @@ export class GameEngineService {
       // (permet d'avoir un premier joueur aléatoire via le GameCoreService).
       if (previousStatus !== 'started' && nextStatus === 'started') {
         const rebuilt = await this.buildInitialState(payload, gameType);
-        const marked = this.normalizeBotThinking(
+        const marked = await this.normalizeBotThinking(
           roomId,
           gameType,
-          this.markBotThinking(roomId, gameType, rebuilt),
+          await this.markBotThinking(roomId, gameType, rebuilt),
         );
-        this.scheduleBotTurn(roomId, gameType, marked);
+        await this.scheduleBotTurn(roomId, gameType, marked);
         return marked;
       }
       if (!gameStarted && incomingPlayers !== currentPlayers) {
         const rebuilt = await this.buildInitialState(payload, gameType);
-        const marked = this.normalizeBotThinking(
+        const marked = await this.normalizeBotThinking(
           roomId,
           gameType,
-          this.markBotThinking(roomId, gameType, rebuilt),
+          await this.markBotThinking(roomId, gameType, rebuilt),
         );
-        this.scheduleBotTurn(roomId, gameType, marked);
+        await this.scheduleBotTurn(roomId, gameType, marked);
         return marked;
       }
-      const marked = this.normalizeBotThinking(
+      const marked = await this.normalizeBotThinking(
         roomId,
         gameType,
-        this.markBotThinking(roomId, gameType, synced),
+        await this.markBotThinking(roomId, gameType, synced),
       );
-      this.scheduleBotTurn(roomId, gameType, marked);
+      await this.scheduleBotTurn(roomId, gameType, marked);
       return marked;
     }
 
     const state = await this.buildInitialState(payload, gameType);
-    const marked = this.normalizeBotThinking(
+    const marked = await this.normalizeBotThinking(
       roomId,
       gameType,
-      this.markBotThinking(roomId, gameType, state),
+      await this.markBotThinking(roomId, gameType, state),
     );
-    this.scheduleBotTurn(roomId, gameType, marked);
+    await this.scheduleBotTurn(roomId, gameType, marked);
     return marked;
   }
 
@@ -313,7 +313,7 @@ export class GameEngineService {
     actorId: number | null,
     allowBotTurn = false,
   ): Promise<GameStateResponse> {
-    const current = this.normalizeBotThinking(
+    const current = await this.normalizeBotThinking(
       roomId,
       gameType,
       await this.getInternalState(roomId, gameType),
@@ -397,16 +397,16 @@ export class GameEngineService {
         current,
         `Type de jeu non spécialisé: ${gameType}`,
       );
-      const marked = this.markBotThinking(roomId, gameType, next);
-      this.scheduleBotTurn(roomId, gameType, marked);
+      const marked = await this.markBotThinking(roomId, gameType, next);
+      await this.scheduleBotTurn(roomId, gameType, marked);
       this.broadcaster?.(gameType, roomId, marked);
       return this.exposeState(marked, gameType);
     }
 
     const next = await handler.applyActions(current, sanitizedActions);
     const botTurn = this.isBotTurn(next);
-    const marked = this.markBotThinking(roomId, gameType, next, botTurn);
-    this.scheduleBotTurn(roomId, gameType, marked);
+    const marked = await this.markBotThinking(roomId, gameType, next, botTurn);
+    await this.scheduleBotTurn(roomId, gameType, marked);
     this.broadcaster?.(gameType, roomId, marked);
 
     // Fin de partie : remettre la room en "setup" (comme le raccourci X) et rÇ¸initialiser l'Ç¸tat du jeu
@@ -419,7 +419,12 @@ export class GameEngineService {
         // Rebuild sans toucher à la mutationQueue (on est déjà dans la file).
         const payload = await this.rooms.getRoomPayload(roomId);
         const rebuilt = await this.buildInitialState(payload, gameType);
-        const cleared = this.markBotThinking(roomId, gameType, rebuilt, false);
+        const cleared = await this.markBotThinking(
+          roomId,
+          gameType,
+          rebuilt,
+          false,
+        );
         this.botScheduler.clear(this.buildKey(roomId, gameType));
         this.broadcaster?.(gameType, roomId, cleared);
       } catch (err) {
@@ -486,7 +491,7 @@ export class GameEngineService {
     gameType: string,
   ): Promise<GameStateWithActions> {
     this.gameLogger.debug('Bot turn tick', { roomId, gameType });
-    const state = this.normalizeBotThinking(
+    const state = await this.normalizeBotThinking(
       roomId,
       gameType,
       await this.getInternalState(roomId, gameType),
@@ -531,7 +536,7 @@ export class GameEngineService {
           status: state.status,
         },
       });
-      const marked = this.markBotThinking(roomId, gameType, state, false);
+      const marked = await this.markBotThinking(roomId, gameType, state, false);
       this.broadcaster?.(gameType, roomId, marked);
       return this.exposeState(marked, gameType);
     }
@@ -555,7 +560,7 @@ export class GameEngineService {
     );
 
     await this.applyActionsInternal(roomId, gameType, botActions, null, true);
-    const updated = this.store.get(roomId, gameType) ?? state;
+    const updated = (await this.store.get(roomId, gameType)) ?? state;
     return this.exposeState(updated, gameType);
   }
 
@@ -578,11 +583,11 @@ export class GameEngineService {
     return Boolean(currentPlayer?.isBot);
   }
 
-  private scheduleBotTurn(
+  private async scheduleBotTurn(
     roomId: number,
     gameType: string,
     state: GameStateEntity,
-  ): void {
+  ): Promise<void> {
     const key = this.buildKey(roomId, gameType);
     const status = (state.status || '').toLowerCase();
     if (
@@ -609,7 +614,7 @@ export class GameEngineService {
     if (this.botScheduler.has(key)) return;
 
     const delayMs = 4000;
-    const thinking = this.markBotThinking(roomId, gameType, state, true);
+    const thinking = await this.markBotThinking(roomId, gameType, state, true);
     this.broadcaster?.(gameType, roomId, thinking);
     this.gameLogger.debug('Bot turn scheduled', {
       roomId,
@@ -630,7 +635,7 @@ export class GameEngineService {
       roomId,
       gameType,
       run: async () => {
-        const latest = this.store.get(roomId, gameType) ?? null;
+        const latest = (await this.store.get(roomId, gameType)) ?? null;
         if (!latest) {
           return;
         }
@@ -729,27 +734,27 @@ export class GameEngineService {
     return this.store.buildKey(roomId, gameType);
   }
 
-  private markBotThinking(
+  private async markBotThinking(
     roomId: number,
     gameType: string,
     state: GameStateEntity,
     botTurn?: boolean,
-  ): GameStateEntity {
+  ): Promise<GameStateEntity> {
     const isBot = botTurn !== undefined ? botTurn : this.isBotTurn(state);
     const now = GameEngineService.nowMs();
     const marked = {
       ...(this.store.markBotThinking(state, isBot) as any),
       botThinkingSince: isBot ? now : null,
     } as GameStateEntity;
-    this.store.set(roomId, gameType, marked);
+    await this.store.set(roomId, gameType, marked);
     return marked;
   }
 
-  private normalizeBotThinking(
+  private async normalizeBotThinking(
     roomId: number,
     gameType: string,
     state: GameStateEntity,
-  ): GameStateEntity {
+  ): Promise<GameStateEntity> {
     const s: any = state as any;
     const since =
       typeof s.botThinkingSince === 'number'
@@ -763,7 +768,7 @@ export class GameEngineService {
         ...(state as any),
         botThinkingSince: GameEngineService.nowMs(),
       } as GameStateEntity;
-      this.store.set(roomId, gameType, patched);
+      await this.store.set(roomId, gameType, patched);
       return patched;
     }
     const age = GameEngineService.nowMs() - since;
@@ -783,7 +788,7 @@ export class GameEngineService {
       botThinking: false,
       botThinkingSince: null,
     } as GameStateEntity;
-    this.store.set(roomId, gameType, cleared);
+    await this.store.set(roomId, gameType, cleared);
     return cleared;
   }
 
@@ -967,7 +972,7 @@ export class GameEngineService {
     } catch {
       // best effort
     }
-    this.store.delete(roomId, gameType);
+    void this.store.delete(roomId, gameType);
     this.mutationQueue.delete(key);
   }
 }

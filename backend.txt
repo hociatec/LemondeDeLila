@@ -1,25 +1,2 @@
-Dette technique:
-- Les entités TypeORM sont définies deux fois (dans `src/data-source.ts` et dans `src/app.module.ts`), ce qui oblige à synchroniser manuellement les deux listes quand on ajoute une nouvelle table.
-- `CatalogService` garde en cache les jeux (`cachedGames`) sans invalidation automatique et ne recompense le contenu que sur commande manuelle, ce qui empêche une mise à jour dynamique du catalogue.
-
-Multiplication du code:
-- `ChatValidator` et `MessageValidatorService` réimplémentent chacun le nettoyage / la limitation du texte des messages ; il faudrait extraire une fonction partagée pour éviter de dupliquer les règles de validation.
-
-Code mort:
-- `GameContentLoaderService.clearCache` est documentée mais jamais appelée ailleurs dans le repository, d'où un bout d'API inutilisé.
-
-Sécurité:
-- `UserAuthService` signe les JWT avec un secret par défaut (`dev-secret-change-me`) quand `JWT_SECRET` n'est pas défini, alors que `HttpJwtGuard` et le `PresenceGateway` exigent explicitement cette variable. Le backend se retrouve donc en erreur si la configuration manque, et les tokens créés ne sont pas vérifiables dans les environnements sans `JWT_SECRET`.
-
-Architecture:
-- Le stockage de sessions WS (`RealtimeModule`) bascule vers un `InMemorySessionStore` si aucune URL Redis n'est fournie, ce qui empêche la synchronisation des connexions dès qu'on scale horizontalement.
-- `PresenceService`, `NotificationService` et `GameEngineStateStore` conservent tous leurs données critiques dans des `Map` locales (`clients`, `socketsByUserId`, `states`), ce qui fait perdre tout l'état dès que le processus redémarre ou qu'une instance supplémentaire est lancée.
-
-Maintenabilité:
-- Ces caches / structures en mémoire sont loin d'être visibles depuis les tests ; il faudrait documenter la nécessité d'un store central ou extraire ces responsabilités pour faciliter les changements ou l'adoption d'un moteur distribué.
-
-Robustesse:
-- Le `PresenceGateway` lève une exception et refuse de démarrer si `JWT_SECRET` n'est pas présent, bloquant complètement l'API temps réel dans les environnements mal configurés.
-
-Scalabilité:
-- Les services de présence, de notification et l'état du moteur de jeu reposent sur du stateful in-memory ; il faut prévoir une mémoire partagée (Redis, base externe, etc.) ou externaliser ces flux pour supporter plusieurs nœuds et résister aux redémarrages.
+Toutes les dettes précédemment listées ont été traitées (persistences Redis, mutualisation des entités, nettoyage des validateurs, etc.).
+Utilisez ce fichier pour consigner de nouvelles actions si nécessaire.

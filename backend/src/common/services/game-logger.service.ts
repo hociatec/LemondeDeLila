@@ -1,4 +1,7 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import * as fs from 'fs';
+import * as path from 'path';
 import * as winston from 'winston';
 import { GameError } from '../errors/game-errors';
 
@@ -21,44 +24,67 @@ export interface GameLogContext {
 export class GameLoggerService {
   private logger: winston.Logger;
 
-  constructor() {
+  constructor(private readonly config: ConfigService) {
+    const logLevel = this.config.get<string>('LOG_LEVEL', 'info');
+    const enableFiles = this.config.get<boolean>('LOG_FILES_ENABLED', true);
+    const logDir = enableFiles
+      ? this.ensureDirectory(
+          this.config.get<string>('LOG_DIR', 'logs') || 'logs',
+        )
+      : null;
+    const transports = [
+      new winston.transports.Console({
+        format: winston.format.combine(
+          winston.format.colorize(),
+          winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+          winston.format.printf(({ timestamp, level, message, ...meta }) => {
+            const metaStr = Object.keys(meta).length
+              ? `\n${JSON.stringify(meta, null, 2)}`
+              : '';
+            return `${timestamp} [${level}]: ${message}${metaStr}`;
+          }),
+        ),
+      }),
+    ];
+
+    if (logDir) {
+      transports.push(
+        new winston.transports.File({
+          filename: path.join(logDir, 'error.log'),
+          level: 'error',
+          maxsize: 5242880,
+          maxFiles: 5,
+        }),
+        new winston.transports.File({
+          filename: path.join(logDir, 'combined.log'),
+          maxsize: 5242880,
+          maxFiles: 5,
+        }),
+      );
+    }
+
     this.logger = winston.createLogger({
-      level: process.env.LOG_LEVEL || 'info',
+      level: logLevel,
       format: winston.format.combine(
         winston.format.timestamp(),
         winston.format.errors({ stack: true }),
         winston.format.json(),
       ),
       defaultMeta: { service: 'game-engine' },
-      transports: [
-        // Console transport for development
-        new winston.transports.Console({
-          format: winston.format.combine(
-            winston.format.colorize(),
-            winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-            winston.format.printf(({ timestamp, level, message, ...meta }) => {
-              const metaStr = Object.keys(meta).length
-                ? `\n${JSON.stringify(meta, null, 2)}`
-                : '';
-              return `${timestamp} [${level}]: ${message}${metaStr}`;
-            }),
-          ),
-        }),
-        // File transport for errors
-        new winston.transports.File({
-          filename: 'logs/error.log',
-          level: 'error',
-          maxsize: 5242880, // 5MB
-          maxFiles: 5,
-        }),
-        // File transport for all logs
-        new winston.transports.File({
-          filename: 'logs/combined.log',
-          maxsize: 5242880, // 5MB
-          maxFiles: 5,
-        }),
-      ],
+      transports,
     });
+  }
+
+  private ensureDirectory(dir: string): string | null {
+    try {
+      fs.mkdirSync(dir, { recursive: true });
+      return dir;
+    } catch (error) {
+      console.warn(
+        `[GameLogger] Impossible de créer le dossier ${dir}: ${error}`,
+      );
+      return null;
+    }
   }
 
   /**

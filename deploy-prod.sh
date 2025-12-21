@@ -12,20 +12,20 @@ log() {
 log "Pull latest code (fast-forward only)"
 git pull --ff-only
 
-log "Install PHP dependencies (no-dev, optimized autoloader)"
+log "Install backend dependencies"
 cd backend
-composer install --no-dev --optimize-autoloader
+npm ci
+
+log "Build backend (NestJS)"
+npm run build
 
 log "Run database migrations (prod)"
-php8.2 bin/console doctrine:migrations:migrate --no-interaction --env=prod
+npm run migration:run
 
-log "Clear and warm Symfony cache (prod)"
-php8.2 bin/console cache:clear --env=prod
-php8.2 bin/console cache:warmup --env=prod
-
-log "Restart realtime and PHP-FPM, reload nginx"
+log "Restart backend services"
+# Adapter ces services à votre stack (pm2, docker, systemd…)
+cd "$ROOT_DIR"
+sudo systemctl restart lila-backend.service
 sudo systemctl restart lila-realtime.service
-sudo systemctl restart php8.2-fpm
-sudo systemctl reload nginx
 
 log "Deployment completed"

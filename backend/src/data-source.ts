@@ -1,12 +1,6 @@
 import 'dotenv/config';
 import { DataSource } from 'typeorm';
-import { User } from './user/entities/user.entity';
-import { ChatMessage } from './chat/entities/chat-message.entity';
-import { PrivateMessage } from './messaging/entities/private-message.entity';
-import { Room } from './room/entities/room.entity';
-import { RoomParticipant } from './room/entities/room-participant.entity';
-import { RoomBot } from './room/entities/room-bot.entity';
-import { BotName } from './bot/entities/bot-name.entity';
+import { ORM_ENTITIES } from './database/entities';
 
 const {
   DATABASE_URL,
@@ -33,15 +27,7 @@ const base = DATABASE_URL
 
 export default new DataSource({
   ...base,
-  entities: [
-    User,
-    ChatMessage,
-    PrivateMessage,
-    Room,
-    RoomParticipant,
-    RoomBot,
-    BotName,
-  ],
+  entities: ORM_ENTITIES,
   migrations: ['dist/migrations/*.js'],
   synchronize: false,
   logging: false,

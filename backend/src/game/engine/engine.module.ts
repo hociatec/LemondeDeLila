@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { RoomModule } from '../../room/room.module';
 import { GameCoreModule } from '../core/core.module';
 import { BotModule } from '../modules/bot/bot.module';
@@ -11,6 +12,7 @@ import { EngineServicesModule } from './services/engine-services.module';
 
 @Module({
   imports: [
+    ConfigModule,
     RoomModule,
     GameCoreModule,
     GameRegistryModule,
