@@ -936,7 +936,10 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
             case "shopping" -> announceResolvedCollection("shopping");
             case "basket" -> announceResolvedCollection("basket");
             case "inventory" -> announceResolvedCollection("inventory");
-            case "position" -> announcementService.announcePosition(lastState, localPlayerId != null ? localPlayerId : tableState.currentPlayerId());
+            case "position" -> {
+                Integer playerId = localPlayerId != null ? localPlayerId : tableState.currentPlayerId();
+                emitter.announceEventForce(announcementService.formatPositionAnnouncement(lastState, playerId));
+            }
             case "hand" -> announcementService.announceHand(lastState);
             case "books" -> announcementService.announceBooks(lastState);
             default -> {

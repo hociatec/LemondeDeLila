@@ -24,6 +24,10 @@ public final class GameActionEmitter {
         announcer.announce(sidebar, message);
     }
 
+    public void announceEventForce(String message) {
+        announcer.announceForce(sidebar, message);
+    }
+
     public void announceError(String message) {
         announcer.announce(sidebar, message);
     }

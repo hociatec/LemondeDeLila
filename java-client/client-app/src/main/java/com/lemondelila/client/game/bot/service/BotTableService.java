@@ -28,7 +28,7 @@ public final class BotTableService {
         if (gameStarted) {
             return BotActionResult.failure("La partie a commençé : impossible d'ajouter un bot.");
         }
-        eventBus.publish(new AddBotRequested(roomId, null));
+        eventBus.publish(new AddBotRequested(roomId));
         return BotActionResult.success(null);
     }
 

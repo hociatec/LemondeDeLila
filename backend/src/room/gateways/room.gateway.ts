@@ -131,7 +131,11 @@ export class RoomGateway
   async handleDisconnect(client: WebSocket) {
     const meta = this.clients.get(client);
     this.clients.delete(client);
-    let roomStarted = false;
+    // Sur déconnexion on ne veut jamais "supprimer" une table par erreur.
+    // Si l'état de la table est indéterminé (ex: DB temporairement indisponible),
+    // on traite la déconnexion comme un simple disconnect (disconnectOnly=true),
+    // ce qui évite de marquer le joueur comme parti et de déclencher une suppression.
+    let roomStarted: boolean | null = false;
     if (meta && meta.roomId > 0) {
       try {
         const state = await this.roomsService.getRoomPayload(meta.roomId);
@@ -139,7 +143,7 @@ export class RoomGateway
           (state?.room?.status || '').toLowerCase() === 'started' ||
           Boolean(state?.room?.startedAt);
       } catch {
-        roomStarted = false;
+        roomStarted = null;
       }
     }
     if (meta) {
@@ -156,10 +160,11 @@ export class RoomGateway
       }
       // si plus aucune connexion pour cette room, on supprime la table côté service
       if (meta.role === 'participant') {
+        const disconnectOnly = roomStarted === true || roomStarted === null;
         this.roomsService
           .leaveRoom(meta.roomId, meta.userId, {
-            preserveRoom: roomStarted || remainingConnections > 0,
-            disconnectOnly: roomStarted,
+            preserveRoom: disconnectOnly || remainingConnections > 0,
+            disconnectOnly,
           })
           .catch(() => {});
       }
@@ -327,8 +332,7 @@ export class RoomGateway
   }
 
   private async handleBotAdd(meta: AuthedClient, payload: any) {
-    const name = typeof payload?.name === 'string' ? payload.name : '';
-    const bot = await this.botService.addBot(meta.roomId, meta.userId, name);
+    const bot = await this.botService.addBot(meta.roomId, meta.userId);
     await this.broadcast(meta.roomId, 'bot.added', {
       roomId: meta.roomId,
       bot: { id: bot.id, name: bot.name },

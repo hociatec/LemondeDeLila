@@ -37,6 +37,10 @@ public final class GameAnnouncementService {
     }
 
     public void announcePosition(GenericGameState state, Integer playerId) {
+        announcer.accept(formatPositionAnnouncement(state, playerId));
+    }
+
+    public String formatPositionAnnouncement(GenericGameState state, Integer playerId) {
         JsonNode boardNode = state == null ? null : state.board();
         int turn = resolveBoardLap(boardNode, playerId);
         String message = null;
@@ -51,7 +55,7 @@ public final class GameAnnouncementService {
         if (message == null) {
             message = positionAnnouncementFormatter.formatPosition(-1, 0, turn);
         }
-        announcer.accept(message);
+        return message;
     }
 
     public void announceHand(GenericGameState state) {

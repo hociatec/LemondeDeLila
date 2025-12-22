@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
   ForbiddenException,
+  Logger,
 } from '@nestjs/common';
 import { Inject, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -19,6 +20,7 @@ import { CatalogService } from '../../catalog/services/catalog.service';
 @Injectable()
 export class RoomService {
   private realtimeNotifier?: (roomId: number) => Promise<void> | void;
+  private readonly logger = new Logger(RoomService.name);
 
   /**
    * Hook optionnel pour notifier les clients WS room (set par RoomGateway).
@@ -152,6 +154,14 @@ export class RoomService {
     const bots = await this.countBots(room.id);
     const remaining = activeHumans + bots;
     if (remaining === 0) {
+      this.logger.log('Room deleted (empty)', {
+        roomId: room.id,
+        userId,
+        disconnectOnly: opts?.disconnectOnly === true,
+        preserveRoom: opts?.preserveRoom === true,
+        activeHumans,
+        bots,
+      });
       await this.rooms.delete(room.id);
       // Broadcast la mise à jour de présence en temps réel
       this.presenceService.broadcastPresence();

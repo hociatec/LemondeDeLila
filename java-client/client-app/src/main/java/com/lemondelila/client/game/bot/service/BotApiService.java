@@ -15,14 +15,14 @@ public final class BotApiService {
         this.apiClient = apiClient;
     }
 
-    public BotState addBot(int roomId, String name) throws IOException, InterruptedException {
-        JsonNode json = apiClient.request("bot.add", Map.of("roomId", roomId, "name", name == null ? "" : name), JsonNode.class);
+    public BotState addBot(int roomId) throws IOException, InterruptedException {
+        JsonNode json = apiClient.request("bot.add", Map.of("roomId", roomId), JsonNode.class);
         JsonNode botNode = json.path("bot");
         if (!botNode.isObject()) {
             return null;
         }
         Integer id = botNode.path("id").isInt() ? botNode.get("id").asInt() : null;
-        String botName = botNode.path("name").asText(name == null ? "" : name);
+        String botName = botNode.path("name").asText("");
         return new BotState(id, botName);
     }
 

@@ -40,10 +40,7 @@ public final class BotController implements AutoCloseable {
         }
         scheduler.runAsync(() -> {
             try {
-                realtime.sendCommand("bot.add", Map.of(
-                        "roomId", req.roomId(),
-                        "name", req.name() == null ? "" : req.name()
-                ));
+                realtime.sendCommand("bot.add", Map.of("roomId", req.roomId()));
             } catch (Exception e) {
                 eventBus.publish(new BotOperationFailed("Ajout bot impossible : " + clean(e.getMessage())));
             }

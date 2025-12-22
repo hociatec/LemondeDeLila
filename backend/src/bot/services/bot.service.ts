@@ -25,7 +25,6 @@ export class BotService {
   async addBot(
     roomId: number,
     userId: number,
-    requestedName?: string | null,
   ): Promise<RoomBot> {
     const room = await this.requireRoomWithOwner(roomId);
     this.ensureOwner(room, userId);
@@ -37,7 +36,7 @@ export class BotService {
     if (humans + botsCount >= room.maxPlayers) {
       throw new BadRequestException('Table pleine');
     }
-    const name = await this.pickName(room.id, requestedName);
+    const name = await this.pickName(room.id);
     const bot = this.bots.create({ room, name });
     return this.bots.save(bot);
   }
@@ -64,18 +63,9 @@ export class BotService {
     return { roomId, total };
   }
 
-  private async pickName(
-    roomId: number,
-    requested?: string | null,
-  ): Promise<string> {
+  private async pickName(roomId: number): Promise<string> {
     const existing = await this.bots.find({ where: { room: { id: roomId } } });
     const names = existing.map((b) => b.name.toLowerCase());
-    if (requested && requested.trim()) {
-      const base = this.sanitizeName(requested.trim());
-      if (!names.includes(base.toLowerCase())) {
-        return base;
-      }
-    }
     return this.findAvailableName(names);
   }
 
@@ -93,16 +83,7 @@ export class BotService {
         return sanitized;
       }
     }
-    const base = names[0] ?? 'Bot';
-    let suffix = 2;
-    while (suffix < 1000) {
-      const candidate = this.sanitizeName(`${base} #${suffix}`);
-      if (!exclude.has(candidate.toLowerCase())) {
-        return candidate;
-      }
-      suffix++;
-    }
-    return this.sanitizeName(base);
+    throw new BadRequestException('Plus de noms de bots disponibles');
   }
 
   private async getEnabledNames(): Promise<string[]> {
