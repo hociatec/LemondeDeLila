@@ -10,7 +10,6 @@ import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
-import java.awt.GridLayout;
 import java.util.Objects;
 
 /**
@@ -18,7 +17,7 @@ import java.util.Objects;
  */
 public final class RoomTableView extends JPanel {
 
-    private final JPanel interactionPanel = new JPanel(new GridLayout(3, 1, 8, 8));
+    private final JPanel interactionPanel = new JPanel(new BorderLayout(8, 8));
     private final JLabel header = new JLabel();
     private final JLabel interactionTitle = new JLabel();
     private final GameHistorySidebar historySidebar;
@@ -42,7 +41,7 @@ public final class RoomTableView extends JPanel {
 
         JPanel left = new JPanel(new BorderLayout());
         left.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
-        JPanel titles = new JPanel(new GridLayout(2, 1));
+        JPanel titles = new JPanel(new java.awt.GridLayout(2, 1));
         titles.add(header);
         titles.add(interactionTitle);
         left.add(titles, BorderLayout.NORTH);

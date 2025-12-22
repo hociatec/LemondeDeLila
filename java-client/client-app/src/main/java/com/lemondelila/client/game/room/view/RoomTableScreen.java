@@ -66,6 +66,8 @@ public final class RoomTableScreen extends BaseTableScreen {
     private String activeGameType;
     private Integer attachedRoomId;
     private AutoCloseable presenceHandle;
+    private Integer presenceRoomId;
+    private String presenceRoomName;
 
     @Inject
     public RoomTableScreen(RoomDetailsState detailsState,
@@ -309,11 +311,20 @@ public final class RoomTableScreen extends BaseTableScreen {
     }
 
     private void updatePresenceActivity(Integer roomId) {
-        releasePresenceActivity();
+        String roomName = resolveRoomName();
         if (roomId == null) {
+            releasePresenceActivity();
             return;
         }
-        presenceHandle = presenceReporter.enterTable(roomId, resolveRoomName());
+        if (presenceHandle != null
+                && Objects.equals(presenceRoomId, roomId)
+                && Objects.equals(presenceRoomName, roomName)) {
+            return;
+        }
+        releasePresenceActivity();
+        presenceHandle = presenceReporter.enterTable(roomId, roomName);
+        presenceRoomId = roomId;
+        presenceRoomName = roomName;
     }
 
     private void releasePresenceActivity() {
@@ -325,6 +336,8 @@ public final class RoomTableScreen extends BaseTableScreen {
         } catch (Exception ignored) {
         } finally {
             presenceHandle = null;
+            presenceRoomId = null;
+            presenceRoomName = null;
         }
     }
 
@@ -349,9 +362,9 @@ public final class RoomTableScreen extends BaseTableScreen {
         activeGameType = gameType;
         attachedRoomId = null;
         if (component != null) {
-            view.interactionPanel().add(component.getComponent());
+            view.interactionPanel().add(component.getComponent(), BorderLayout.CENTER);
         } else {
-            view.interactionPanel().add(new javax.swing.JLabel("Interface de jeu indisponible pour l'instant."));
+            view.interactionPanel().add(new javax.swing.JLabel("Interface de jeu indisponible pour l'instant."), BorderLayout.CENTER);
         }
         view.interactionPanel().revalidate();
         view.interactionPanel().repaint();

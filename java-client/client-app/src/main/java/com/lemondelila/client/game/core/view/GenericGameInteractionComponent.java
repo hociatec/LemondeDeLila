@@ -405,6 +405,9 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
         router.bind("S", "stats.show", this::announceStats);
         // Demande de carte (Dame Nature) : touche D (fallback même si raccourci dynamique absent).
         router.bind("D", "ask.open", () -> {
+            // Sur Panier Express (et la plupart des jeux), "D" ne doit rien faire.
+            // Cette touche est un fallback spécifique à Dame Nature.
+            if (!isDameNatureContext()) return;
             if (quizHandler.submitIfActive()) return;
             if (blockIfBotTurn()) return;
             if (!isTableStarted()) return;
@@ -1246,6 +1249,17 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
             return;
         }
         announcementService.announceStats(lastState);
+    }
+
+    private boolean isDameNatureContext() {
+        if (isDameNature(lastState)) {
+            return true;
+        }
+        String gameType = tableState != null ? tableState.gameType() : null;
+        if (gameType == null || gameType.isBlank()) {
+            return false;
+        }
+        return "dame-nature".equalsIgnoreCase(gameType.trim());
     }
 
     private static boolean isDameNature(GenericGameState state) {

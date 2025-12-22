@@ -144,11 +144,20 @@ public final class RoomTableController {
                 "aucun"
         );
 
-        announce(tableSentence
-                + ". "
-                + playerCount + " Joueurs : " + playerNames + ". "
-                + botCount + " bot. "
-                + spectatorCount + " spectateur.");
+        String botNames = joinNames(
+                tableState.bots().stream().map(b -> b == null ? null : b.name()).toList(),
+                "aucun"
+        );
+
+        // "W" doit annoncer à chaque appui (sans dédoublonnage) et inclure le nom des bots.
+        announcer.announceForce(
+                historySidebar,
+                tableSentence
+                        + ". "
+                        + playerCount + " joueur" + (playerCount > 1 ? "s" : "") + " : " + playerNames + ". "
+                        + botCount + " bot" + (botCount > 1 ? "s" : "") + " : " + botNames + ". "
+                        + spectatorCount + " spectateur" + (spectatorCount > 1 ? "s" : "") + "."
+        );
     }
 
   public void announceTurnInfo() {
