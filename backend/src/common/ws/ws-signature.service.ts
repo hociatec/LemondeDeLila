@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { WebSocket } from 'ws';
 import { timingSafeEqual } from 'crypto';
@@ -11,6 +11,7 @@ import { timingSafeEqual } from 'crypto';
 @Injectable()
 export class WsSignatureService {
   private readonly secret: string | null;
+  private readonly logger = new Logger(WsSignatureService.name);
 
   constructor(private readonly config: ConfigService) {
     this.secret = this.normalize(
@@ -31,6 +32,7 @@ export class WsSignatureService {
     }
     const provided = this.extractSignature(client, args);
     if (!provided) {
+      this.logger.warn('Connexion WS refusée: signature absente.');
       return false;
     }
     return this.compare(this.secret, provided);
@@ -52,7 +54,11 @@ export class WsSignatureService {
       }
     }
     const headers = (client as any).handshakeHeaders || request?.headers;
-    return this.extractHeaderSignature(headers);
+    const headerSignature = this.extractHeaderSignature(headers);
+    if (!headerSignature) {
+      this.logger.warn('Connexion WS refusée: signature absente (query/header).');
+    }
+    return headerSignature;
   }
 
   private extractHeaderSignature(headers: any): string | null {
@@ -95,4 +101,3 @@ export class WsSignatureService {
     return trimmed.length > 0 ? trimmed : null;
   }
 }
-

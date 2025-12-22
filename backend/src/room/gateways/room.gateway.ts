@@ -9,7 +9,7 @@ import { Server, WebSocket } from 'ws';
 import { ConfigService } from '@nestjs/config';
 import { RoomService } from '../services/room.service';
 import { BotService } from '../../bot/services/bot.service';
-import { Inject, forwardRef } from '@nestjs/common';
+import { Inject, Logger, forwardRef } from '@nestjs/common';
 import { WsJwtAuthService } from '../../common/ws/ws-jwt-auth.service';
 import { WsSignatureService } from '../../common/ws/ws-signature.service';
 
@@ -27,6 +27,7 @@ export class RoomGateway
 
   private readonly clients = new Map<WebSocket, ClientMeta>();
   private readonly rooms = new Map<number, Set<WebSocket>>();
+  private readonly logger = new Logger(RoomGateway.name);
 
   constructor(
     private readonly roomsService: RoomService,
@@ -50,6 +51,9 @@ export class RoomGateway
 
   async handleConnection(client: WebSocket, ...args: any[]) {
     if (!this.signature.validate(client, args)) {
+      this.logger.warn(
+        'Connexion WS refusée: signature manquante ou invalide.',
+      );
       client.close(4403, 'signature temps reel requise');
       return;
     }
