@@ -9,6 +9,7 @@ export type RoomPayload = {
     maxPlayers: number;
     status: string;
     gameType: string;
+    startedAt?: Date | string | null;
     counts: {
       players: number;
       spectators: number;

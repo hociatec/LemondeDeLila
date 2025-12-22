@@ -1,8 +1,8 @@
-com/lemondelila/client/framework/media/sound/SoundPreferences.class
-com/lemondelila/client/framework/media/sound/SoundEffectManager.class
-com/lemondelila/client/framework/media/audio/AudioTheme.class
-com/lemondelila/client/framework/media/module/MediaModule.class
-com/lemondelila/client/framework/media/sound/SoundPreferences$1.class
-com/lemondelila/client/framework/media/sound/SoundClip.class
-META-INF/services/com.lemondelila.client.framework.core.module.LilaModule
-com/lemondelila/client/framework/media/audio/AudioService.class
+com\lemondelila\client\framework\media\audio\AudioService.class
+com\lemondelila\client\framework\media\sound\SoundPreferences$1.class
+com\lemondelila\client\framework\media\module\MediaModule.class
+com\lemondelila\client\framework\media\sound\SoundPreferences.class
+META-INF\services\com.lemondelila.client.framework.core.module.LilaModule
+com\lemondelila\client\framework\media\sound\SoundClip.class
+com\lemondelila\client\framework\media\sound\SoundEffectManager.class
+com\lemondelila\client\framework\media\audio\AudioTheme.class

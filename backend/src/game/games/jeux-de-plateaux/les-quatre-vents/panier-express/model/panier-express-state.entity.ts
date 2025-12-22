@@ -58,6 +58,19 @@ export type PanierExpressPendingExchange = PendingState & {
   type: 'exchange';
   playerId: number;
   card: string;
+  currentOffer?: {
+    targetPlayerId: number;
+    targetUsername: string;
+    give: string;
+    take: string;
+  };
+  allOffers?: Array<{
+    targetPlayerId: number;
+    targetUsername: string;
+    give: string;
+    take: string;
+  }>;
+  offerIndex?: number;
 };
 
 /**

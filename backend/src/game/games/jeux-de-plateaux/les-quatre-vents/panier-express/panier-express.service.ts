@@ -244,6 +244,10 @@ export class PanierExpressService extends AbstractGameService {
         return this.handleAnswerQuiz(state, action);
       case 'exchange_with':
         return this.handleExchangeWith(state, action);
+      case 'exchange_accept':
+        return this.handleExchangeAccept(state, action);
+      case 'exchange_refuse':
+        return this.handleExchangeRefuse(state, action);
       case 'skip_turn':
         return this.handleSkipTurn(state, action);
       // Compat actions depuis le client Java
@@ -786,6 +790,61 @@ export class PanierExpressService extends AbstractGameService {
       give,
       take,
     );
+    return this.phaseFlow.advanceTurn(resolved);
+  }
+
+  private handleExchangeAccept(
+    state: GameStateEntity,
+    action: GameSingleActionDto,
+  ): GameStateEntity {
+    const actorId =
+      typeof (action.meta as any)?.actorId === 'number'
+        ? (action.meta as any).actorId
+        : null;
+    const playerId =
+      actorId ??
+      action.payload?.playerId ??
+      state.turn?.currentPlayerId ??
+      null;
+
+    if (typeof playerId !== 'number') {
+      return this.core.appendLog(
+        state,
+        '[Panier Express] Accepter échange: joueur invalide.',
+      );
+    }
+
+    const resolved = this.exchangeSvc.acceptCurrentExchange(state, playerId);
+    return this.phaseFlow.advanceTurn(resolved);
+  }
+
+  private handleExchangeRefuse(
+    state: GameStateEntity,
+    action: GameSingleActionDto,
+  ): GameStateEntity {
+    const actorId =
+      typeof (action.meta as any)?.actorId === 'number'
+        ? (action.meta as any).actorId
+        : null;
+    const playerId =
+      actorId ??
+      action.payload?.playerId ??
+      state.turn?.currentPlayerId ??
+      null;
+
+    if (typeof playerId !== 'number') {
+      return this.core.appendLog(
+        state,
+        '[Panier Express] Refuser échange: joueur invalide.',
+      );
+    }
+
+    const resolved = this.exchangeSvc.refuseCurrentExchange(state, playerId);
+    // Si on a juste changé l'offre courante (pas fini), on ne passe pas le tour
+    if (resolved.pending) {
+      return resolved;
+    }
+    // Si on a refusé toutes les offres, on passe le tour
     return this.phaseFlow.advanceTurn(resolved);
   }
 

@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">86.53% </span>
+                <span class="strong">88.46% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>45/52</span>
+                <span class='fraction'>46/52</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">54.54% </span>
+                <span class="strong">60% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>6/11</span>
+                <span class='fraction'>6/10</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">85.71% </span>
+                <span class="strong">87.75% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>42/49</span>
+                <span class='fraction'>43/49</span>
             </div>
         
             
@@ -194,15 +194,13 @@
 <a name='L129'></a><a href='#L129'>129</a>
 <a name='L130'></a><a href='#L130'>130</a>
 <a name='L131'></a><a href='#L131'>131</a>
-<a name='L132'></a><a href='#L132'>132</a>
-<a name='L133'></a><a href='#L133'>133</a>
-<a name='L134'></a><a href='#L134'>134</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">3x</span>
+<a name='L132'></a><a href='#L132'>132</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">3x</span>
@@ -226,16 +224,14 @@
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -329,14 +325,14 @@
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { Injectable, OnModuleInit } from '@nestjs/common';
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { Injectable } from '@nestjs/common';
 import { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import {
   GameSingleActionDto,
   GameStateWithActions,
 } from '../../../../engine/dto/game-action.dto';
-import { GameRulesAdapter } from '../../../../engine/interfaces/game-rules-adapter.interface';
 import { GameRegistryService } from '../../../../engine/services/game-registry.service';
+import { AbstractGameService } from '../../../../engine/abstract/abstract-game.service';
 import { BotProfile } from '../../../../modules/bot/services/bot-strategy.service';
 import { LoupGarouActionService } from './actions/loup-garou-action.service';
 import { LoupGarouBotService } from './bots/loup-garou-bot.service';
@@ -349,7 +345,7 @@ import { LOUP_GAROU_RULEBOOK } from './rulebook/rulebook';
 const DEFAULT_BOT_PROFILE: BotProfile = 'greedy';
 &nbsp;
 @Injectable()
-export class LoupGarouService implements GameRulesAdapter, OnModuleInit {
+export class LoupGarouService extends AbstractGameService {
   readonly gameType = 'loup-garou';
   readonly category = 'JeuxDeCartes';
   readonly subcategory = 'VillageMystique';
@@ -359,16 +355,14 @@ export class LoupGarouService implements GameRulesAdapter, OnModuleInit {
   readonly maxPlayers = LOUP_GAROU_GAME.maxPlayers;
 &nbsp;
   constructor(
-    private readonly registry: GameRegistryService<span class="branch-1 cbranch-no" title="branch not covered" >,</span>
+    registry: GameRegistryService<span class="branch-1 cbranch-no" title="branch not covered" >,</span>
     private readonly setup: LoupGarouSetupService<span class="branch-1 cbranch-no" title="branch not covered" >,</span>
     private readonly phases: LoupGarouPhaseService<span class="branch-1 cbranch-no" title="branch not covered" >,</span>
     private readonly actions: LoupGarouActionService<span class="branch-1 cbranch-no" title="branch not covered" >,</span>
     private readonly bots: LoupGarouBotService<span class="branch-1 cbranch-no" title="branch not covered" >,</span>
     private readonly presenter: LoupGarouPresenterService<span class="branch-1 cbranch-no" title="branch not covered" >,</span>
-  ) {}
-&nbsp;
-<span class="fstat-no" title="function not covered" >  onModuleInit(</span>): void {
-<span class="cstat-no" title="statement not covered" >    this.registry.register(this);</span>
+  ) {
+    super(registry);
   }
 &nbsp;
   hydrateInitialState(baseState: GameStateEntity): GameStateEntity {
@@ -469,7 +463,7 @@ export class LoupGarouService implements GameRulesAdapter, OnModuleInit {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-12-21T02:26:27.925Z
+                at 2025-12-21T22:43:50.730Z
             </div>
         <script src="../../../../../../prettify.js"></script>
         <script>

@@ -711,12 +711,25 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
     private void renderPlayerCollections(GenericGameState state) {
         if (state != null) {
             var resolved = playerCollectionsRenderer.resolve(state, localUserId, localUsername);
-            if (resolved.isPresent() && localUserId != null && resolved.get().playerId() == localUserId) {
+            if (resolved.isPresent()) {
+                LOGGER.debug("Player collections resolved: playerId={}, localUserId={}, shopping={}, basket={}, inventory={}",
+                        resolved.get().playerId(), localUserId, resolved.get().shopping().size(),
+                        resolved.get().basket().size(), resolved.get().inventory().size());
+
+                // Accepter la résolution même si le playerId ne correspond pas exactement
+                // (le resolver a plusieurs stratégies: par ID, par username, premier non-bot)
                 localPlayerId = resolved.get().playerId();
                 quizHandler.setLocalPlayerId(localPlayerId);
                 dialogManager.setLocalPlayerId(localPlayerId);
                 updateCollectionsFromLists(resolved.get().shopping(), resolved.get().basket(), resolved.get().inventory());
+
+                if (localUserId != null && resolved.get().playerId() != localUserId) {
+                    LOGGER.info("Player ID resolved differently: resolved={}, expected localUserId={} (this is normal for some games)",
+                            resolved.get().playerId(), localUserId);
+                }
                 return;
+            } else {
+                LOGGER.warn("Failed to resolve player collections for localUserId={}, localUsername={}", localUserId, localUsername);
             }
             localPlayerId = null;
             quizHandler.setLocalPlayerId(null);
@@ -732,10 +745,13 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
 
     private void announceResolvedCollection(String id) {
         if (localPlayerId == null) {
+            LOGGER.warn("Cannot announce collection '{}': localPlayerId is null", id);
             return;
         }
+        LOGGER.debug("Announcing collection '{}' for localPlayerId={}", id, localPlayerId);
         GenericGameState state = lastState;
         if (state == null || state.extras() == null || !state.extras().isObject()) {
+            LOGGER.debug("Using fallback views for collection '{}'", id);
             if ("shopping".equals(id)) announcementService.announceCollection("shopping", shoppingView);
             else if ("basket".equals(id)) announcementService.announceCollection("basket", basketView);
             else if ("inventory".equals(id)) announcementService.announceCollection("inventory", inventoryView);
@@ -750,9 +766,11 @@ public final class GenericGameInteractionComponent extends JPanel implements Gam
                 case "inventory" -> resolved.get().inventory();
                 default -> java.util.List.of();
             };
+            LOGGER.debug("Announcing collection '{}' with {} items", id, values.size());
             announcementService.announceCollection(id, values);
             return;
         }
+        LOGGER.warn("Failed to resolve collection '{}' from state extras, using fallback", id);
         if ("shopping".equals(id)) announcementService.announceCollection("shopping", shoppingView);
         else if ("basket".equals(id)) announcementService.announceCollection("basket", basketView);
         else if ("inventory".equals(id)) announcementService.announceCollection("inventory", inventoryView);

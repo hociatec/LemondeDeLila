@@ -175,6 +175,10 @@ export class DameNaturePresenterService extends BasePresenterService {
       typeof userId === 'number'
         ? (playerViews.find((v) => v.id === userId) ?? null)
         : null;
+    const currentPlayerView =
+      currentPlayerId !== null
+        ? (playerViews.find((v) => v.id === currentPlayerId) ?? null)
+        : null;
     const viewerPlayer =
       typeof userId === 'number'
         ? (players.find((p) => p.id === userId) ?? null)
@@ -189,7 +193,7 @@ export class DameNaturePresenterService extends BasePresenterService {
       ...baseExtras,
       catalog: this.buildFamiliesCatalog(),
       playerViews,
-      currentPlayerView: viewerView,
+      currentPlayerView,
       hand: started ? (viewerView?.hand ?? []) : [],
       handCards,
       books: started ? (viewerView?.books ?? []) : [],

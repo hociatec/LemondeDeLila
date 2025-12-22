@@ -36,13 +36,15 @@ public final class GameTurnRenderer {
 
         if (turn == null) {
             // Pas d'info de tour -> on évite d'annoncer un faux joueur.
+            TurnState emptyTurn = new TurnState(state.round(), -1, 1, null, null);
             tableState.updateTurn(state.round(), -1, 1);
             tableState.updateCurrentPlayerId(null);
+            tableState.updateLastTurn(emptyTurn);
             statusRenderer.renderTurnStatus(state, state.round(), -1);
             TurnAnnouncementTracker.Decision decision =
                     turnAnnouncementTracker.decide(tableState.started(), null, -1, state.round(), false, true);
             if (decision.announce()) {
-                announcer.accept(turnController.formatTurn(new TurnState(state.round(), -1, 1, null, null), tableState));
+                announcer.accept(turnController.formatTurn(emptyTurn, tableState));
             }
             return;
         }
@@ -50,6 +52,7 @@ public final class GameTurnRenderer {
         statusRenderer.renderTurnStatus(state, turn.round(), turn.index());
         tableState.updateTurn(turn.round(), turn.index(), turn.direction());
         tableState.updateCurrentPlayerId(turn.currentPlayerId());
+        tableState.updateLastTurn(turn);
 
         // resynchronise l'ordre des participants avant d'annoncer le tour
         JsonNode players = state.players();

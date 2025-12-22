@@ -150,6 +150,23 @@ export class PanierExpressPresenterService extends BasePresenterService {
     }
     if (
       params.rawPending &&
+      params.rawPending.type === 'exchange'
+    ) {
+      const exchangePending = params.rawPending as any;
+      if (exchangePending.currentOffer) {
+        // Formater le pending exchange avec un message descriptif
+        const offer = exchangePending.currentOffer;
+        const offerIndex = exchangePending.offerIndex ?? 0;
+        const totalOffers = exchangePending.allOffers?.length ?? 1;
+        const message = `Échanger ${offer.give} contre ${offer.take} avec ${offer.targetUsername}? (${offerIndex + 1}/${totalOffers})`;
+        return {
+          ...params.rawPending,
+          message,
+        } as any;
+      }
+    }
+    if (
+      params.rawPending &&
       params.rawPending.type &&
       params.rawPending.type !== 'quiz'
     ) {
@@ -219,16 +236,28 @@ export class PanierExpressPresenterService extends BasePresenterService {
         ? (params.playerViews.find((view) => view.id === params.currentId) ??
           null)
         : null;
+
+    const shortcuts: Array<{ key: string; type: string; id?: string; actionType?: string }> = [
+      { key: 'pressed S', type: 'interface', id: 'shopping' },
+      { key: 'pressed B', type: 'interface', id: 'basket' },
+      { key: 'pressed I', type: 'interface', id: 'inventory' },
+    ];
+
+    // Ajouter shortcuts A/R si échange en cours
+    const pending = state.pending;
+    if (pending && pending.type === 'exchange' && pending.playerId === params.currentId) {
+      shortcuts.push(
+        { key: 'pressed A', type: 'action', actionType: 'exchange_accept' },
+        { key: 'pressed R', type: 'action', actionType: 'exchange_refuse' },
+      );
+    }
+
     return {
       ...baseExtras,
       currentPlayerView,
       playerViews: params.playerViews,
       players: params.players,
-      shortcuts: [
-        { key: 'pressed S', type: 'interface', id: 'shopping' },
-        { key: 'pressed B', type: 'interface', id: 'basket' },
-        { key: 'pressed I', type: 'interface', id: 'inventory' },
-      ],
+      shortcuts,
     };
   }
 

@@ -1,2 +1,0 @@
-Toutes les dettes précédemment listées ont été traitées (persistences Redis, mutualisation des entités, nettoyage des validateurs, etc.).
-Utilisez ce fichier pour consigner de nouvelles actions si nécessaire.

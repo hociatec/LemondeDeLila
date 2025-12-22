@@ -87,6 +87,59 @@ export class PanierExpressExchangeService {
     }).state;
   }
 
+  acceptCurrentExchange(state: GameStateEntity, playerId: number): GameStateEntity {
+    const pending = this.getPendingExchange(state.pending ?? null);
+    if (!pending || pending.playerId !== playerId) {
+      return this.core.appendLog(
+        state,
+        '[Panier Express] Aucun échange en attente ou mauvais joueur.',
+      );
+    }
+
+    if (!pending.currentOffer) {
+      return this.core.appendLog(
+        state,
+        '[Panier Express] Aucune proposition d\'échange disponible.',
+      );
+    }
+
+    const { targetPlayerId, give, take } = pending.currentOffer;
+    return this.resolveExchange(state, playerId, targetPlayerId, give, take);
+  }
+
+  refuseCurrentExchange(state: GameStateEntity, playerId: number): GameStateEntity {
+    const pending = this.getPendingExchange(state.pending ?? null);
+    if (!pending || pending.playerId !== playerId) {
+      return this.core.appendLog(
+        state,
+        '[Panier Express] Aucun échange en attente ou mauvais joueur.',
+      );
+    }
+
+    const allOffers = pending.allOffers ?? [];
+    const currentIndex = pending.offerIndex ?? 0;
+    const nextIndex = currentIndex + 1;
+
+    // Si c'était la dernière offre, on annule l'échange
+    if (nextIndex >= allOffers.length) {
+      const logged = this.core.appendLog(
+        state,
+        `[Panier Express] ${this.utils.playerName(state, playerId)} refuse tous les échanges.`,
+      );
+      return { ...logged, pending: null };
+    }
+
+    // Sinon, on passe à l'offre suivante
+    const nextOffer = allOffers[nextIndex];
+    const updatedPending: PanierExpressPendingExchange = {
+      ...pending,
+      currentOffer: nextOffer,
+      offerIndex: nextIndex,
+    };
+
+    return { ...state, pending: updatedPending };
+  }
+
   private transitionExchange(
     state: GameStateEntity,
     event: ExchangeEvent,
@@ -169,6 +222,18 @@ export class PanierExpressExchangeService {
       );
     }
 
+    // Build all offers with player names
+    const allOffers = offers.flatMap((offer) =>
+      (state.players ?? [])
+        .filter((p) => p.id !== playerId)
+        .map((target) => ({
+          targetPlayerId: target.id,
+          targetUsername: target.username ?? `Joueur ${target.id}`,
+          give: offer.give,
+          take: offer.take,
+        })),
+    );
+
     playingLog('panier.exchange.pending', {
       roomId: (state.metadata as any)?.roomId ?? null,
       gameType: (state.metadata as any)?.gameType ?? null,
@@ -176,12 +241,16 @@ export class PanierExpressExchangeService {
       type: 'exchange_pending',
       playerId,
       card: resolvedCard,
-      offers: offers.length,
+      offers: allOffers.length,
     });
+
     const pending: PanierExpressPendingExchange = {
       type: 'exchange',
       playerId,
       card: resolvedCard,
+      currentOffer: allOffers[0],
+      allOffers,
+      offerIndex: 0,
     };
     return { state: { ...state, metadata, pending }, status: 'pending' };
   }

@@ -201,6 +201,11 @@ public final class RoomTableController {
     }
 
     public TurnState currentTurn() {
+        TurnState lastTurn = tableState.lastTurn();
+        if (lastTurn != null) {
+            return lastTurn;
+        }
+        // Fallback si lastTurn n'a pas encore été défini
         return new TurnState(tableState.turnRound(), tableState.turnIndex(), tableState.turnDirection(), tableState.currentPlayerId(), null);
     }
 

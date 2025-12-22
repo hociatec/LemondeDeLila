@@ -95,7 +95,10 @@ export class GameEngineService {
     roomId: number,
     gameType: string,
   ): Promise<GameStateWithActions> {
-    const internal = await this.getInternalState(roomId, gameType);
+    const internal = await this.enqueueMutation(
+      this.buildKey(roomId, gameType),
+      () => this.getInternalState(roomId, gameType),
+    );
     return this.exposeState(internal, gameType);
   }
 
@@ -124,7 +127,10 @@ export class GameEngineService {
     gameType: string,
     userId: number,
   ): Promise<GameStateWithActions> {
-    const internal = await this.getInternalState(roomId, gameType);
+    const internal = await this.enqueueMutation(
+      this.buildKey(roomId, gameType),
+      () => this.getInternalState(roomId, gameType),
+    );
     return this.exposeStateForUser(internal, gameType, userId);
   }
 
@@ -140,7 +146,8 @@ export class GameEngineService {
       : handler?.exposeState
         ? handler.exposeState(state)
         : (state as GameStateWithActions);
-    return this.attachTurnLabel(exposed, label);
+    const withLabel = this.attachTurnLabel(exposed, label);
+    return this.attachCurrentPlayerView(withLabel);
   }
 
   private async getInternalState(
@@ -234,13 +241,13 @@ export class GameEngineService {
         await this.scheduleBotTurn(roomId, gameType, marked);
         return marked;
       }
-      const marked = await this.normalizeBotThinking(
+      const normalized = await this.normalizeBotThinking(
         roomId,
         gameType,
-        await this.markBotThinking(roomId, gameType, synced),
+        synced,
       );
-      await this.scheduleBotTurn(roomId, gameType, marked);
-      return marked;
+      await this.scheduleBotTurn(roomId, gameType, normalized);
+      return normalized;
     }
 
     const state = await this.buildInitialState(payload, gameType);
@@ -941,7 +948,8 @@ export class GameEngineService {
     const exposed = handler?.exposeState
       ? handler.exposeState(state)
       : (state as GameStateWithActions);
-    return this.attachTurnLabel(exposed, label);
+    const withLabel = this.attachTurnLabel(exposed, label);
+    return this.attachCurrentPlayerView(withLabel);
   }
 
   private attachTurnLabel(
@@ -954,6 +962,37 @@ export class GameEngineService {
       return { ...state, turn: { currentPlayerId: null, direction: 1, label } };
     }
     return { ...state, turn: { ...current, label } };
+  }
+
+  private attachCurrentPlayerView(
+    state: GameStateWithActions,
+  ): GameStateWithActions {
+    const currentPlayerId = state.turn?.currentPlayerId ?? null;
+    if (currentPlayerId === null) return state;
+
+    const extras = state.extras && typeof state.extras === 'object'
+      ? (state.extras as Record<string, unknown>)
+      : {};
+
+    // Si le jeu a déjà défini currentPlayerView, on ne l'écrase pas
+    if (extras.currentPlayerView !== undefined) return state;
+
+    const players = Array.isArray(state.players) ? state.players : [];
+    const currentPlayer = players.find((p) => p?.id === currentPlayerId);
+    if (!currentPlayer) return state;
+
+    const currentPlayerView = {
+      id: currentPlayer.id,
+      username: currentPlayer.username ?? `Joueur ${currentPlayer.id}`,
+    };
+
+    return {
+      ...state,
+      extras: {
+        ...extras,
+        currentPlayerView,
+      },
+    };
   }
 
   private isRoomNotFound(err: unknown): boolean {

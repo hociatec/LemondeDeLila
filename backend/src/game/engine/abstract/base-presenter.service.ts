@@ -251,6 +251,28 @@ export abstract class BasePresenterService {
   ): Record<string, unknown>;
 
   /**
+   * Construit la vue du joueur actuel pour les extras.
+   * Cette méthode générique trouve le joueur dont c'est le tour.
+   *
+   * @param state - État actuel du jeu
+   * @param currentPlayerId - ID du joueur courant
+   * @returns Vue du joueur courant ou null
+   */
+  protected buildCurrentPlayerView(
+    state: GameStateEntity,
+    currentPlayerId: number | null,
+  ): { id: number; username: string } | null {
+    if (currentPlayerId === null) return null;
+    const players = Array.isArray(state.players) ? state.players : [];
+    const player = players.find((p) => p?.id === currentPlayerId);
+    if (!player) return null;
+    return {
+      id: player.id,
+      username: player.username ?? `Joueur ${player.id}`,
+    };
+  }
+
+  /**
    * Construit les extras pour un utilisateur spécifique.
    *
    * Par défaut, retourne les mêmes extras que buildExtras.

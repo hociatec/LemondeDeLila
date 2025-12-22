@@ -99,22 +99,11 @@ export function getAvailableActions(
         return [{ type: 'roll' }, { type: 'ROLL_DICE' }];
       case 'exchange':
         if (hasPendingExchange) {
-          const offers = buildExchangeOffers(
-            state.players ?? [],
-            playerId,
-            'inventory',
-          );
-          if (offers.length === 0)
-            return [{ type: 'roll' }, { type: 'ROLL_DICE' }];
-          return offers.map((offer) => ({
-            type: 'exchange_with',
-            payload: {
-              playerId,
-              targetPlayerId: offer.targetPlayerId,
-              give: offer.give,
-              take: offer.take,
-            },
-          }));
+          // Avec le nouveau système, on expose juste accept/refuse pour l'offre courante
+          return [
+            { type: 'exchange_accept' },
+            { type: 'exchange_refuse' },
+          ];
         }
         return [{ type: 'roll' }, { type: 'ROLL_DICE' }];
       default:

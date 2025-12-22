@@ -1,5 +1,7 @@
 package com.lemondelila.client.game.room.model;
 
+import com.lemondelila.client.game.turn.model.TurnState;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -26,6 +28,7 @@ public final class TableState {
     private int turnRound = 1;
     private int turnDirection = 1;
     private Integer currentPlayerId = null;
+    private TurnState lastTurn = null;
 
     public Integer roomId() {
         return roomId;
@@ -91,6 +94,10 @@ public final class TableState {
         return currentPlayerId;
     }
 
+    public TurnState lastTurn() {
+        return lastTurn;
+    }
+
     public void setRoom(Integer id, String gameType) {
         if (Objects.equals(this.roomId, id) && Objects.equals(this.gameType, gameType)) {
             return;
@@ -110,6 +117,7 @@ public final class TableState {
         this.turnRound = 1;
         this.turnDirection = 1;
         this.currentPlayerId = null;
+        this.lastTurn = null;
     }
 
     public void clear() {
@@ -128,6 +136,7 @@ public final class TableState {
         this.turnRound = 1;
         this.turnDirection = 1;
         this.currentPlayerId = null;
+        this.lastTurn = null;
     }
 
     public void updateBots(List<BotState> list) {
@@ -190,6 +199,10 @@ public final class TableState {
 
     public void updateCurrentPlayerId(Integer currentPlayerId) {
         this.currentPlayerId = currentPlayerId;
+    }
+
+    public void updateLastTurn(TurnState turn) {
+        this.lastTurn = turn;
     }
 
     public void markStarted() {

@@ -37,4 +37,5 @@ export type GameStateResponse = GameStateWithActions;
 export interface GameStateWithActions extends GameStateEntity {
   actions?: Array<{ type: string; label?: string; payload?: any }>;
   pending?: PendingState | null;
+  extras?: Record<string, unknown>;
 }

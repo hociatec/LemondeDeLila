@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">5.1% </span>
+                <span class="strong">4.85% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>5/98</span>
+                <span class='fraction'>5/103</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">5.17% </span>
+                <span class="strong">4.34% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>3/58</span>
+                <span class='fraction'>3/69</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">3.33% </span>
+                <span class="strong">3.15% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>3/90</span>
+                <span class='fraction'>3/95</span>
             </div>
         
             
@@ -304,7 +304,21 @@
 <a name='L239'></a><a href='#L239'>239</a>
 <a name='L240'></a><a href='#L240'>240</a>
 <a name='L241'></a><a href='#L241'>241</a>
-<a name='L242'></a><a href='#L242'>242</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<a name='L242'></a><a href='#L242'>242</a>
+<a name='L243'></a><a href='#L243'>243</a>
+<a name='L244'></a><a href='#L244'>244</a>
+<a name='L245'></a><a href='#L245'>245</a>
+<a name='L246'></a><a href='#L246'>246</a>
+<a name='L247'></a><a href='#L247'>247</a>
+<a name='L248'></a><a href='#L248'>248</a>
+<a name='L249'></a><a href='#L249'>249</a>
+<a name='L250'></a><a href='#L250'>250</a>
+<a name='L251'></a><a href='#L251'>251</a>
+<a name='L252'></a><a href='#L252'>252</a>
+<a name='L253'></a><a href='#L253'>253</a>
+<a name='L254'></a><a href='#L254'>254</a>
+<a name='L255'></a><a href='#L255'>255</a>
+<a name='L256'></a><a href='#L256'>256</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -335,12 +349,8 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -348,6 +358,23 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -380,6 +407,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -576,15 +604,28 @@ export type FlatCategory = {
 @Injectable()
 export class CatalogService {
   private cachedGames: CatalogGame[] | null = <span class="cstat-no" title="statement not covered" >null;</span>
+  private cacheExpiresAt = <span class="cstat-no" title="statement not covered" >0;</span>
+  private readonly cacheTtlMs: number;
 &nbsp;
-<span class="fstat-no" title="function not covered" >  constructor(private readonly <span class="cstat-no" title="statement not covered" >r</span>egistry: G</span>ameRegistryService<span class="branch-1 cbranch-no" title="branch not covered" >) {}</span>
+<span class="fstat-no" title="function not covered" >  constructor(private readonly <span class="cstat-no" title="statement not covered" >r</span>egistry: G</span>ameRegistryService<span class="branch-1 cbranch-no" title="branch not covered" >) {</span>
+    const ttlCandidate = <span class="cstat-no" title="statement not covered" >Number(process.env.GAME_CATALOG_CACHE_TTL_MS ?? 30000);</span>
+<span class="cstat-no" title="statement not covered" >    this.cacheTtlMs =</span>
+      Number.isFinite(ttlCandidate) &amp;&amp; ttlCandidate &gt;= 0 ? ttlCandidate : 30000;
+  }
 &nbsp;
 <span class="fstat-no" title="function not covered" >  async </span>getAllGames(): Promise&lt;CatalogGame[]&gt; {
-<span class="cstat-no" title="statement not covered" >    if (this.cachedGames) {</span>
+<span class="cstat-no" title="statement not covered" >    if (</span>
+      this.cachedGames &amp;&amp;
+      (this.cacheTtlMs === 0 || Date.now() &lt; this.cacheExpiresAt)
+    ) {
 <span class="cstat-no" title="statement not covered" >      return this.cachedGames;</span>
     }
     const games = <span class="cstat-no" title="statement not covered" >await this.loadFromRegistry();</span>
 <span class="cstat-no" title="statement not covered" >    this.cachedGames = games.filter(<span class="fstat-no" title="function not covered" >(g</span>ame) =&gt; <span class="cstat-no" title="statement not covered" >!!game.id)</span>;</span>
+<span class="cstat-no" title="statement not covered" >    this.cacheExpiresAt =</span>
+      this.cacheTtlMs === 0
+        ? Number.MAX_SAFE_INTEGER
+        : Date.now() + this.cacheTtlMs;
 <span class="cstat-no" title="statement not covered" >    return this.cachedGames;</span>
   }
 &nbsp;
@@ -622,6 +663,7 @@ export class CatalogService {
 &nbsp;
 <span class="fstat-no" title="function not covered" >  async </span>clearCache(): Promise&lt;void&gt; {
 <span class="cstat-no" title="statement not covered" >    this.cachedGames = null;</span>
+<span class="cstat-no" title="statement not covered" >    this.cacheExpiresAt = 0;</span>
   }
 &nbsp;
   private <span class="fstat-no" title="function not covered" >async </span>loadFromRegistry(): Promise&lt;CatalogGame[]&gt; {
@@ -793,7 +835,7 @@ export class CatalogService {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-12-21T02:26:27.925Z
+                at 2025-12-21T22:43:50.730Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

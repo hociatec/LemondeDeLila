@@ -132,7 +132,7 @@ export class RoomGateway
     const meta = this.clients.get(client);
     this.clients.delete(client);
     let roomStarted = false;
-    if (meta?.roomId > 0) {
+    if (meta && meta.roomId > 0) {
       try {
         const state = await this.roomsService.getRoomPayload(meta.roomId);
         roomStarted =
