@@ -151,10 +151,10 @@ public final class RoomTableController {
                 + spectatorCount + " spectateur.");
     }
 
-    public void announceTurnInfo() {
-        String message = turnController.formatTurn(currentTurn(), tableState);
-        announce(message);
-    }
+  public void announceTurnInfo() {
+    String message = turnController.formatTurn(currentTurn(), tableState);
+    announcer.announceForce(historySidebar, message);
+  }
 
     public void onBotAdded(BotAdded event) {
         if (!matchesCurrentRoom(event.roomId())) return;

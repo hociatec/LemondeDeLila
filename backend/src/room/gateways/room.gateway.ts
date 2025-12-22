@@ -128,9 +128,20 @@ export class RoomGateway
     }
   }
 
-  handleDisconnect(client: WebSocket) {
+  async handleDisconnect(client: WebSocket) {
     const meta = this.clients.get(client);
     this.clients.delete(client);
+    let roomStarted = false;
+    if (meta?.roomId > 0) {
+      try {
+        const state = await this.roomsService.getRoomPayload(meta.roomId);
+        roomStarted =
+          (state?.room?.status || '').toLowerCase() === 'started' ||
+          Boolean(state?.room?.startedAt);
+      } catch {
+        roomStarted = false;
+      }
+    }
     if (meta) {
       const set = this.rooms.get(meta.roomId);
       let remainingConnections = 0;
@@ -147,7 +158,8 @@ export class RoomGateway
       if (meta.role === 'participant') {
         this.roomsService
           .leaveRoom(meta.roomId, meta.userId, {
-            preserveRoom: remainingConnections > 0,
+            preserveRoom: roomStarted || remainingConnections > 0,
+            disconnectOnly: roomStarted,
           })
           .catch(() => {});
       }

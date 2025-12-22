@@ -22,14 +22,11 @@ public final class GameAnnouncer {
     }
 
     public void announce(GameHistorySidebar sidebar, String message) {
-        if (message == null || message.isBlank()) {
-            return;
-        }
-        history.addEntry(message);
-        if (sidebar != null) {
-            sidebar.render(history.tracker(), "Pas encore d'evenement.");
-            narrationQueue.enqueue(sidebar.historyComponent(), message);
-        }
+        announceInternal(sidebar, message, false);
+    }
+
+    public void announceForce(GameHistorySidebar sidebar, String message) {
+        announceInternal(sidebar, message, true);
     }
 
     public void announce(String message) {
@@ -37,5 +34,20 @@ public final class GameAnnouncer {
             return;
         }
         history.addEntry(message);
+    }
+
+    private void announceInternal(GameHistorySidebar sidebar, String message, boolean forceRepeat) {
+        if (message == null || message.isBlank()) {
+            return;
+        }
+        history.addEntry(message);
+        if (sidebar != null) {
+            sidebar.render(history.tracker(), "Pas encore d'evenement.");
+            if (forceRepeat) {
+                narrationQueue.enqueueForce(sidebar.historyComponent(), message);
+            } else {
+                narrationQueue.enqueue(sidebar.historyComponent(), message);
+            }
+        }
     }
 }

@@ -120,22 +120,20 @@ export class RoomService {
     return room;
   }
 
-  async leaveRoom(roomId: number, userId: number): Promise<Room | null>;
   async leaveRoom(
     roomId: number,
     userId: number,
-    opts?: { preserveRoom?: boolean },
-  ): Promise<Room | null>;
-  async leaveRoom(
-    roomId: number,
-    userId: number,
-    opts?: { preserveRoom?: boolean },
+    opts?: { preserveRoom?: boolean; disconnectOnly?: boolean },
   ): Promise<Room | null> {
     const room = await this.requireRoom(roomId);
     const user = await this.requireUser(userId);
     const participant = await this.participants.findOne({
       where: { room: { id: room.id }, user: { id: user.id }, leftAt: IsNull() },
     });
+    if (opts?.disconnectOnly) {
+      this.presenceService.broadcastPresence();
+      return room;
+    }
     if (participant) {
       participant.leftAt = new Date();
       await this.participants.save(participant);

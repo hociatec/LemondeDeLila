@@ -33,6 +33,14 @@ public final class NarrationQueue implements AutoCloseable {
     }
 
     public void enqueue(JComponent component, String message) {
+        enqueue(component, message, false);
+    }
+
+    public void enqueueForce(JComponent component, String message) {
+        enqueue(component, message, true);
+    }
+
+    private void enqueue(JComponent component, String message, boolean forceRepeat) {
         Objects.requireNonNull(component, "component");
         Objects.requireNonNull(message, "message");
 
@@ -46,10 +54,12 @@ public final class NarrationQueue implements AutoCloseable {
         }
 
         long now = System.currentTimeMillis();
-        String prev = lastEnqueuedMessage;
-        long prevAt = lastEnqueuedAtMs;
-        if (prev != null && prev.equals(normalized) && (now - prevAt) < DEDUPE_WINDOW_MS) {
-            return;
+        if (!forceRepeat) {
+            String prev = lastEnqueuedMessage;
+            long prevAt = lastEnqueuedAtMs;
+            if (prev != null && prev.equals(normalized) && (now - prevAt) < DEDUPE_WINDOW_MS) {
+                return;
+            }
         }
 
         // Si la file est trop remplie, on garde uniquement la dernière annonce
@@ -58,8 +68,10 @@ public final class NarrationQueue implements AutoCloseable {
             queue.clear();
         }
 
-        lastEnqueuedMessage = normalized;
-        lastEnqueuedAtMs = now;
+        if (!forceRepeat) {
+            lastEnqueuedMessage = normalized;
+            lastEnqueuedAtMs = now;
+        }
         queue.offer(new NarrationTask(component, normalized));
     }
 
