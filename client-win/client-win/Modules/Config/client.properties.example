@@ -1,0 +1,9 @@
+app.name=Le Monde de Lila
+network.http.base=http://127.0.0.1:3001/api/
+network.ws.url=ws://127.0.0.1:3001/ws
+network.ws.api=ws://127.0.0.1:3001/ws/api
+network.ws.game=ws://127.0.0.1:3001/ws/game
+network.ws.notify=ws://127.0.0.1:3001/ws/notify
+# Secrets à fournir via l'environnement:
+#   NETWORK_WS_SECRET ou WS_SHARED_SECRET
+#   JWT_SECRET

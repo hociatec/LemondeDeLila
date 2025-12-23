@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "client-win": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "NETWORK_WS_SECRET": "remote-ws-shared-secret-2025",
+        "WS_SHARED_SECRET": "remote-ws-shared-secret-2025",
+        "JWT_SECRET": "change-me-in-prod"
+      }
+    }
+  }
+}

@@ -1,0 +1,87 @@
+<Window x:Class="client_win.Modules.Settings.Views.OptionsDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Options" Height="600" Width="800"
+        WindowStartupLocation="CenterOwner"
+        Background="#0B1523">
+    <Window.Resources>
+        <SolidColorBrush x:Key="PanelBrush" Color="#12263C" />
+        <SolidColorBrush x:Key="HighlightBrush" Color="#F2C14E" />
+        <Style TargetType="CheckBox">
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Margin" Value="0 6 0 6" />
+        </Style>
+        <Style TargetType="Button">
+            <Setter Property="Padding" Value="12 8" />
+            <Setter Property="Margin" Value="8 0 0 0" />
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Orientation="Vertical" Margin="0 0 0 12">
+            <TextBlock Text="Options" FontSize="22" Foreground="White" />
+            <TextBlock Text="Volume, chat, général, mises à jour" Foreground="#9CB2D1" />
+        </StackPanel>
+
+        <Border Grid.Row="1" Background="{StaticResource PanelBrush}" CornerRadius="8" Padding="12">
+        <TabControl>
+            <TabItem Header="Volume">
+                <StackPanel Margin="8">
+                    <CheckBox Content="Désactiver tous les sons" IsChecked="{Binding MuteAll}" />
+                    <CheckBox Content="Demander confirmation à la fermeture" IsChecked="{Binding ConfirmExit}" />
+                    <TextBlock Text="Musique" Foreground="White" Margin="0 6 0 2" />
+                    <Slider Minimum="0" Maximum="100" Value="{Binding MusicVolume}" IsEnabled="{Binding IsVolumeEnabled}" />
+                    <CheckBox Content="Son d'entrée dans la taverne" IsChecked="{Binding SoundAppLaunch}" />
+                    <Slider Minimum="0" Maximum="100" Value="{Binding SoundAppLaunchVolume}" IsEnabled="{Binding IsAppLaunchVolumeEnabled}" />
+                    <CheckBox Content="Ambiance de taverne en fond" IsChecked="{Binding SoundBackground}" />
+                    <Slider Minimum="0" Maximum="100" Value="{Binding SoundBackgroundVolume}" IsEnabled="{Binding IsBackgroundVolumeEnabled}" />
+                    <CheckBox Content="Son lors de la navigation" IsChecked="{Binding SoundNavigate}" />
+                    <Slider Minimum="0" Maximum="100" Value="{Binding SoundNavigateVolume}" IsEnabled="{Binding IsNavigateVolumeEnabled}" />
+                    <CheckBox Content="Son lors de la sélection" IsChecked="{Binding SoundSelect}" />
+                    <Slider Minimum="0" Maximum="100" Value="{Binding SoundSelectVolume}" IsEnabled="{Binding IsSelectVolumeEnabled}" />
+                </StackPanel>
+            </TabItem>
+                <TabItem Header="Chat">
+                    <StackPanel Margin="8">
+                        <CheckBox Content="Activer le tchat global" IsChecked="{Binding ChatEnabled}" />
+                        <CheckBox Content="Demander confirmation avant de fermer le tchat" IsChecked="{Binding ConfirmChatExit}" />
+                    </StackPanel>
+                </TabItem>
+                <TabItem Header="Général">
+                    <StackPanel Margin="8">
+                        <CheckBox Content="Rester connecté automatiquement" IsChecked="{Binding StayConnected}" />
+                        <CheckBox Content="Descriptions complémentaires (accessibilité)" IsChecked="{Binding ExtraDescriptions}" />
+                    </StackPanel>
+                </TabItem>
+                <TabItem Header="Mises à jour">
+                    <StackPanel Margin="8">
+                        <TextBlock Text="{Binding CurrentVersion, StringFormat=Version actuelle : {0}}" Foreground="White" />
+                        <TextBlock Text="{Binding UpdateStatus}" Foreground="{StaticResource HighlightBrush}" TextWrapping="Wrap" Margin="0 6 0 6" />
+                        <StackPanel Orientation="Horizontal">
+                            <Button Content="Vérifier les mises à jour" Command="{Binding CheckUpdateCommand}" IsEnabled="{Binding CanCheckUpdates}" />
+                            <Button Content="Installer la mise à jour" Command="{Binding InstallUpdateCommand}" IsEnabled="{Binding CanInstallUpdates}" />
+                        </StackPanel>
+                    </StackPanel>
+                </TabItem>
+            </TabControl>
+        </Border>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0 12 0 0">
+            <Button x:Name="CancelButton"
+                    Content="Annuler"
+                    IsCancel="True"
+                    Click="OnCancelClicked" />
+            <Button x:Name="SaveButton"
+                    Content="Enregistrer"
+                    IsDefault="True"
+                    Background="#2E8B57"
+                    Click="OnSaveClicked" />
+        </StackPanel>
+    </Grid>
+</Window>

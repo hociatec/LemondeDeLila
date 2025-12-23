@@ -1,0 +1,72 @@
+<UserControl x:Class="client_win.Modules.MainMenu.Views.MainMenuView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignHeight="720" d:DesignWidth="1280">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <LinearGradientBrush x:Key="ShellBackground" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#0F1D2D" Offset="0" />
+            <GradientStop Color="#1C3B5E" Offset="0.55" />
+            <GradientStop Color="#0E1724" Offset="1" />
+        </LinearGradientBrush>
+        <SolidColorBrush x:Key="PanelBrush" Color="#12263C" />
+        <SolidColorBrush x:Key="HighlightBrush" Color="#F2C14E" />
+        <Style TargetType="Button">
+            <Setter Property="Height" Value="48" />
+            <Setter Property="Margin" Value="0 6 0 0" />
+            <Setter Property="Padding" Value="12 10" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Background" Value="#1E3A5C" />
+            <Setter Property="BorderBrush" Value="#284C75" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Background="{StaticResource ShellBackground}" Focusable="False">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="80" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <TextBlock Text="Menu principal" FontSize="28" FontWeight="SemiBold" Foreground="White"
+                       TextOptions.TextFormattingMode="Ideal" />
+            <TextBlock Text="{Binding Welcome}" Foreground="#9CB2D1" FontSize="14"
+                       HorizontalAlignment="Center" Margin="0,4,0,0" />
+        </StackPanel>
+
+        <Border Grid.Row="1" Background="{StaticResource PanelBrush}" CornerRadius="12"
+                Margin="24" Padding="32">
+            <StackPanel KeyboardNavigation.TabNavigation="None"
+                        KeyboardNavigation.ControlTabNavigation="None">
+                <TextBlock Text="Navigation" Foreground="White" FontSize="18" Margin="0 0 0 12" />
+                <Button x:Name="CatalogButton" Content="Étagères" Command="{Binding OpenCatalogCommand}" KeyDown="OnMenuButtonKeyDown" />
+                <Button x:Name="JoinButton" Content="Rejoindre une partie" Command="{Binding JoinGameCommand}" KeyDown="OnMenuButtonKeyDown" />
+                <Button x:Name="MessagingButton" Content="Messagerie" Background="#2A5C86" Command="{Binding MessagingCommand}" KeyDown="OnMenuButtonKeyDown" />
+                <Button x:Name="ChatButton" Content="Chat" Command="{Binding ChatCommand}" KeyDown="OnMenuButtonKeyDown" />
+                <Button x:Name="SocialButton" Content="Social" Command="{Binding SocialCommand}" KeyDown="OnMenuButtonKeyDown" />
+                <Button x:Name="AdminButton" Content="Administration" Command="{Binding AdminCommand}"
+                        Visibility="{Binding IsAdminVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                        Background="#7A2A2A"
+                        KeyDown="OnMenuButtonKeyDown" />
+                <Button x:Name="OptionsButton" Content="Options" Command="{Binding OptionsCommand}" Background="#234A7A" KeyDown="OnMenuButtonKeyDown" />
+                <Button x:Name="LogoutButton" Content="Déconnexion" Command="{Binding LogoutCommand}" Background="#742A2A" KeyDown="OnMenuButtonKeyDown" />
+            </StackPanel>
+        </Border>
+
+        <Border Grid.Row="2" Background="#0C1523" Padding="12 8" Focusable="False"
+                AutomationProperties.LiveSetting="Polite">
+            <TextBlock Text="{Binding StatusMessage}"
+                       Foreground="{StaticResource HighlightBrush}" FontSize="14"
+                       TextWrapping="Wrap" HorizontalAlignment="Center" Focusable="False"
+                       AutomationProperties.Name="Message de statut"
+                       AutomationProperties.LiveSetting="Polite" />
+        </Border>
+    </Grid>
+</UserControl>

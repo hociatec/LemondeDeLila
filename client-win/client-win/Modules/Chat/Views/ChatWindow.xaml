@@ -1,0 +1,74 @@
+<Window x:Class="client_win.Modules.Chat.Views.ChatWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Tchat" Height="500" Width="420"
+        WindowStartupLocation="CenterOwner"
+        Background="#0B1523">
+    <Window.Resources>
+        <SolidColorBrush x:Key="PanelBrush" Color="#12263C" />
+        <SolidColorBrush x:Key="HighlightBrush" Color="#F2C14E" />
+        <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+    </Window.Resources>
+    <Grid Margin="8">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Text="{Binding Status}" Foreground="{StaticResource HighlightBrush}" Margin="4" TextWrapping="Wrap" />
+
+        <Border Grid.Row="1" Background="{StaticResource PanelBrush}" CornerRadius="6" Padding="8">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Label Content="Historique"
+                           Foreground="White"
+                           FontSize="14"
+                           FontWeight="SemiBold"
+                           Margin="0 0 12 0"
+                           Target="{Binding ElementName=HistoryBox}" />
+                    <TextBlock Text="Aucun message pour le moment"
+                               Foreground="#9CB2D1"
+                               VerticalAlignment="Center"
+                               Visibility="{Binding Messages.Count, Converter={StaticResource BoolToVisibility}, ConverterParameter=False}" />
+                </StackPanel>
+                <TextBox Grid.Row="1"
+                         x:Name="HistoryBox"
+                         Text="{Binding HistoryText, Mode=OneWay}"
+                         IsReadOnly="True"
+                         AcceptsReturn="True"
+                         TextWrapping="Wrap"
+                         VerticalScrollBarVisibility="Auto"
+                         HorizontalScrollBarVisibility="Disabled"
+                         BorderThickness="0"
+                         Background="Transparent"
+                         Foreground="White"
+                         IsTabStop="True"
+                         TabIndex="0"
+                         PreviewKeyDown="OnHistoryPreviewKeyDown"
+                         AutomationProperties.Name="Historique des messages" />
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="2" Margin="0 6 0 0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Label Grid.Column="0" Content="Message" Target="{Binding ElementName=InputBox}" Foreground="#9CB2D1" VerticalAlignment="Center" />
+            <TextBox Grid.Column="1"
+                     x:Name="InputBox"
+                     Text="{Binding Input, UpdateSourceTrigger=PropertyChanged}"
+                     MinWidth="200"
+                     VerticalContentAlignment="Center"
+                     KeyDown="OnInputKeyDown"
+                     AutomationProperties.Name="Message à envoyer" />
+            <Button Grid.Column="2" Content="Envoyer" Command="{Binding SendCommand}" Margin="6 0 0 0" />
+        </Grid>
+    </Grid>
+</Window>
