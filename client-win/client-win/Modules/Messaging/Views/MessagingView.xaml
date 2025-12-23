@@ -173,6 +173,22 @@
                 </DataTrigger>
             </Style.Triggers>
         </Style>
+
+        <Style x:Key="FieldLabel" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#9CB2D1" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Margin" Value="0 0 0 6" />
+        </Style>
+
+        <Style x:Key="PlaceholderText" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#6F8FB6" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Margin" Value="12 0 0 0" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="IsHitTestVisible" Value="False" />
+            <Setter Property="Visibility" Value="Collapsed" />
+        </Style>
     </UserControl.Resources>
 
     <Grid Background="{StaticResource ShellBackground}" KeyboardNavigation.TabNavigation="Continue">
@@ -373,39 +389,83 @@
                     </Grid.RowDefinitions>
 
                     <StackPanel Grid.Row="0" Margin="0 0 0 12">
-                        <TextBlock Text="Destinataire"
-                                   Foreground="#9CB2D1"
-                                   FontSize="12"
-                                   Margin="0 0 0 6" />
-                        <TextBox x:Name="ComposeRecipientBox"
-                                 Text="{Binding ComposeRecipient, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{StaticResource InputTextBox}"
-                                 TabIndex="0" />
+                        <TextBlock Text="Destinataire" Style="{StaticResource FieldLabel}" />
+                        <Grid>
+                            <TextBox x:Name="ComposeRecipientBox"
+                                     Text="{Binding ComposeRecipient, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource InputTextBox}"
+                                     TabIndex="0" />
+                            <TextBlock Text="Nom d'utilisateur"
+                                       Style="{StaticResource PlaceholderText}">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource PlaceholderText}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Text, ElementName=ComposeRecipientBox}" Value="">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Text, ElementName=ComposeRecipientBox}" Value="{x:Null}">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Grid>
                     </StackPanel>
 
                     <StackPanel Grid.Row="1" Margin="0 0 0 12">
-                        <TextBlock Text="Sujet"
-                                   Foreground="#9CB2D1"
-                                   FontSize="12"
-                                   Margin="0 0 0 6" />
-                        <TextBox x:Name="ComposeSubjectBox"
-                                 Text="{Binding ComposeSubject, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{StaticResource InputTextBox}"
-                                 TabIndex="1" />
+                        <TextBlock Text="Sujet" Style="{StaticResource FieldLabel}" />
+                        <Grid>
+                            <TextBox x:Name="ComposeSubjectBox"
+                                     Text="{Binding ComposeSubject, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource InputTextBox}"
+                                     TabIndex="1" />
+                            <TextBlock Text="Objet du message"
+                                       Style="{StaticResource PlaceholderText}">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource PlaceholderText}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Text, ElementName=ComposeSubjectBox}" Value="">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Text, ElementName=ComposeSubjectBox}" Value="{x:Null}">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Grid>
                     </StackPanel>
 
                     <StackPanel Grid.Row="2" Margin="0 0 0 12">
-                        <TextBlock Text="Message"
-                                   Foreground="#9CB2D1"
-                                   FontSize="12"
-                                   Margin="0 0 0 6" />
-                        <TextBox x:Name="ComposeBodyBox"
-                                 Text="{Binding ComposeBody, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{StaticResource InputTextBox}"
-                                 AcceptsReturn="True"
-                                 TextWrapping="Wrap"
-                                 MinHeight="160"
-                                 TabIndex="2" />
+                        <TextBlock Text="Message" Style="{StaticResource FieldLabel}" />
+                        <Grid>
+                            <TextBox x:Name="ComposeBodyBox"
+                                     Text="{Binding ComposeBody, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource InputTextBox}"
+                                     AcceptsReturn="True"
+                                     TextWrapping="Wrap"
+                                     MinHeight="200"
+                                     TabIndex="2" />
+                            <TextBlock Text="Ecrivez votre message ici"
+                                       Style="{StaticResource PlaceholderText}"
+                                       VerticalAlignment="Top"
+                                       Margin="12 8 0 0">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource PlaceholderText}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Text, ElementName=ComposeBodyBox}" Value="">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Text, ElementName=ComposeBodyBox}" Value="{x:Null}">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Grid>
                     </StackPanel>
 
                     <Button x:Name="ComposeSendButton"
@@ -504,13 +564,37 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
-                    <TextBox x:Name="InputBox"
-                             Text="{Binding InputText, UpdateSourceTrigger=PropertyChanged}"
-                             MinHeight="44"
-                             VerticalContentAlignment="Center"
-                             KeyDown="OnInputKeyDown"
-                             Style="{StaticResource InputTextBox}"
-                             IsTabStop="False" />
+                    <StackPanel>
+                        <TextBlock Text="Message" Style="{StaticResource FieldLabel}" />
+                        <Grid>
+                            <TextBox x:Name="InputBox"
+                                     Text="{Binding InputText, UpdateSourceTrigger=PropertyChanged}"
+                                     MinHeight="80"
+                                     AcceptsReturn="True"
+                                     TextWrapping="Wrap"
+                                     VerticalContentAlignment="Top"
+                                     KeyDown="OnInputKeyDown"
+                                     Style="{StaticResource InputTextBox}"
+                                     IsTabStop="False" />
+                            <TextBlock Text="Ecrire ici puis Entrer pour envoyer"
+                                       Style="{StaticResource PlaceholderText}"
+                                       VerticalAlignment="Top"
+                                       Margin="12 8 0 0">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource PlaceholderText}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Text, ElementName=InputBox}" Value="">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Text, ElementName=InputBox}" Value="{x:Null}">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Grid>
+                    </StackPanel>
 
                     <Button Grid.Column="1"
                             Content="Envoyer"
