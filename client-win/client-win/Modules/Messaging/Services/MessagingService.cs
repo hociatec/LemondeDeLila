@@ -76,7 +76,7 @@ public sealed class MessagingService : IMessagingService
         return MapMessages(response.Payload.Items);
     }
 
-    public async Task<MessagingMessage?> SendAsync(int recipientId, string text, CancellationToken cancellationToken = default)
+    public async Task<MessagingMessage?> SendAsync(int recipientId, string text, string? subject = null, CancellationToken cancellationToken = default)
     {
         if (recipientId <= 0 || string.IsNullOrWhiteSpace(text))
         {
@@ -91,12 +91,21 @@ public sealed class MessagingService : IMessagingService
             return null;
         }
 
+        const int maxSubjectLength = 200;
+        if (!string.IsNullOrWhiteSpace(subject) && subject.Length > maxSubjectLength)
+        {
+            PublishError($"Le sujet ne peut pas dépasser {maxSubjectLength} caractères.");
+            return null;
+        }
+
         var user = _session.CurrentUser;
         string? token = user?.Token;
 
+        var subjectPayload = string.IsNullOrWhiteSpace(subject) ? null : subject.Trim();
+
         var response = await _ws.RequestAsync<MessagePayload>(
             WsMessageTypes.Messaging.Send,
-            new { recipientId, text },
+            new { recipientId, text, subject = subjectPayload },
             token,
             cancellationToken).ConfigureAwait(false);
 
@@ -207,6 +216,7 @@ public sealed class MessagingService : IMessagingService
             Id = dto.Id ?? string.Empty,
             Sender = new MessagingUser { Id = dto.Sender?.Id ?? 0, Username = dto.Sender?.Username ?? string.Empty },
             Recipient = new MessagingUser { Id = dto.Recipient?.Id ?? 0, Username = dto.Recipient?.Username ?? string.Empty },
+            Subject = dto.Subject ?? string.Empty,
             Text = dto.Text ?? string.Empty,
             CreatedAt = created,
             IsSent = string.Equals(dto.Direction, "sent", StringComparison.OrdinalIgnoreCase),
@@ -260,6 +270,7 @@ public sealed class MessagingService : IMessagingService
         public string? Id { get; set; }
         public MessagingUserDto? Sender { get; set; }
         public MessagingUserDto? Recipient { get; set; }
+        public string? Subject { get; set; }
         public string? Text { get; set; }
         public string? CreatedAt { get; set; }
         public string? Direction { get; set; }

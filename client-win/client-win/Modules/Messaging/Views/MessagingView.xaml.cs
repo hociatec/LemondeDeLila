@@ -1,6 +1,7 @@
 using System;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
@@ -13,6 +14,7 @@ public partial class MessagingView : UserControl
 {
     // Suivi de la section active (0=Boîtes, 1=Messages, 2=Conversation)
     private int _currentSection = 0;
+    private const int SectionCount = 3;
 
     public MessagingView()
     {
@@ -29,6 +31,10 @@ public partial class MessagingView : UserControl
         // Focus initial sur la section Boîtes
         await Dispatcher.InvokeAsync(() =>
         {
+            if (MenuList.Items.Count > 0)
+            {
+                MenuList.SelectedIndex = 0;
+            }
             FocusSection(0);
         }, DispatcherPriority.Input);
     }
@@ -46,16 +52,21 @@ public partial class MessagingView : UserControl
             return;
         }
 
-        // FLÈCHE BAS : Passer à la section suivante
-        if (e.Key == Key.Down && (Keyboard.Modifiers & ModifierKeys.Control) != 0)
+        if (Keyboard.FocusedElement is TextBoxBase)
+        {
+            return;
+        }
+
+        // FLÈCHE DROITE : Passer à la section suivante
+        if (e.Key == Key.Right)
         {
             NavigateToNextSection();
             e.Handled = true;
             return;
         }
 
-        // FLÈCHE HAUT : Passer à la section précédente
-        if (e.Key == Key.Up && (Keyboard.Modifiers & ModifierKeys.Control) != 0)
+        // FLÈCHE GAUCHE : Passer à la section précédente
+        if (e.Key == Key.Left)
         {
             NavigateToPreviousSection();
             e.Handled = true;
@@ -68,7 +79,7 @@ public partial class MessagingView : UserControl
     /// </summary>
     private void NavigateToNextSection()
     {
-        _currentSection = (_currentSection + 1) % 3; // 0->1->2->0
+        _currentSection = (_currentSection + 1) % SectionCount; // 0->1->2->0
         FocusSection(_currentSection);
     }
 
@@ -77,7 +88,7 @@ public partial class MessagingView : UserControl
     /// </summary>
     private void NavigateToPreviousSection()
     {
-        _currentSection = (_currentSection - 1 + 3) % 3; // 2->1->0->2
+        _currentSection = (_currentSection - 1 + SectionCount) % SectionCount; // 2->1->0->2
         FocusSection(_currentSection);
     }
 
@@ -93,7 +104,7 @@ public partial class MessagingView : UserControl
         {
             case 0: // Section Boîtes
                 HighlightPanel(BoxesPanel);
-                BtnInbox.Focus();
+                MenuList.Focus();
                 break;
 
             case 1: // Section Messages
@@ -107,6 +118,11 @@ public partial class MessagingView : UserControl
 
             case 2: // Section Conversation
                 HighlightPanel(ConversationPanel);
+                if (DataContext is MessagingViewModel { IsComposeMode: true })
+                {
+                    ComposeRecipientBox.Focus();
+                    break;
+                }
                 ConversationList.Focus();
                 if (ConversationList.Items.Count > 0 && ConversationList.SelectedIndex < 0)
                 {
@@ -136,24 +152,57 @@ public partial class MessagingView : UserControl
         panel.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFD966"));
     }
 
-    /// <summary>
-    /// Gestion des touches dans la section Boîtes
-    /// </summary>
-    private void OnBoxesPanelKeyDown(object sender, KeyEventArgs e)
+    private void OnMenuPanelKeyDown(object sender, KeyEventArgs e)
     {
-        if (e.Key == Key.Down && (Keyboard.Modifiers & ModifierKeys.Control) == 0)
+        if (e.Key is Key.Up or Key.Down)
         {
-            // Navigation interne avec flèches (sans Ctrl)
-            e.Handled = false; // Laisse WPF gérer la navigation interne
+            e.Handled = false;
         }
-        else if (e.Key == Key.Up && (Keyboard.Modifiers & ModifierKeys.Control) == 0)
+    }
+
+    private void OnMenuKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Enter)
         {
-            e.Handled = false; // Laisse WPF gérer la navigation interne
-        }
-        else if (e.Key == Key.Enter)
-        {
-            // Enter : ouvrir la boîte sélectionnée ou lancer la recherche
+            ActivateMenuSelection();
             e.Handled = true;
+        }
+    }
+
+    private void OnMenuClick(object sender, MouseButtonEventArgs e)
+    {
+        ActivateMenuSelection();
+    }
+
+    private void ActivateMenuSelection()
+    {
+        if (DataContext is not MessagingViewModel vm || MenuList.SelectedItem is not ListBoxItem item)
+        {
+            return;
+        }
+
+        var tag = item.Tag as string ?? string.Empty;
+        switch (tag)
+        {
+            case "compose":
+                vm.IsComposeMode = true;
+                FocusSection(2);
+                break;
+            case "inbox":
+                vm.IsComposeMode = false;
+                vm.SelectedBox = MessagingBox.Inbox;
+                FocusSection(1);
+                break;
+            case "outbox":
+                vm.IsComposeMode = false;
+                vm.SelectedBox = MessagingBox.Outbox;
+                FocusSection(1);
+                break;
+            case "deleted":
+                vm.IsComposeMode = false;
+                vm.SelectedBox = MessagingBox.Deleted;
+                FocusSection(1);
+                break;
         }
     }
 
@@ -164,6 +213,7 @@ public partial class MessagingView : UserControl
     {
         if (e.Key == Key.Enter && DataContext is MessagingViewModel vm)
         {
+            vm.IsComposeMode = false;
             vm.OpenConversationCommand.Execute(null);
             e.Handled = true;
             FocusSection(2); // Passer à la conversation
@@ -205,38 +255,9 @@ public partial class MessagingView : UserControl
     {
         if (DataContext is MessagingViewModel vm)
         {
+            vm.IsComposeMode = false;
             vm.OpenConversationCommand.Execute(null);
             FocusSection(2); // Passer à la conversation
-        }
-    }
-
-    /// <summary>
-    /// Clic sur un bouton de boîte
-    /// </summary>
-    private void OnBoxClick(object sender, RoutedEventArgs e)
-    {
-        if (DataContext is not MessagingViewModel vm || sender is not FrameworkElement fe || fe.Tag is not MessagingBox box)
-        {
-            return;
-        }
-        vm.SelectedBox = box;
-        FocusSection(1); // Passer aux messages après sélection de boîte
-    }
-
-    /// <summary>
-    /// Touche Enter dans la zone de recherche
-    /// </summary>
-    private void OnSearchKeyDown(object sender, KeyEventArgs e)
-    {
-        if (e.Key == Key.Enter && DataContext is MessagingViewModel vm)
-        {
-            vm.SearchUserCommand.Execute(null);
-            e.Handled = true;
-            FocusSection(2); // Passer à la conversation après recherche
-        }
-        else if (e.Key == Key.Down || e.Key == Key.Up)
-        {
-            e.Handled = false; // Permettre la navigation normale dans la TextBox
         }
     }
 

@@ -18,8 +18,12 @@ public sealed class MessagingViewModel : ObservableObject
     private MessagingUser? _conversationUser;
     private string _inputText = string.Empty;
     private string _searchQuery = string.Empty;
+    private string _composeRecipient = string.Empty;
+    private string _composeSubject = string.Empty;
+    private string _composeBody = string.Empty;
     private string _status = "Chargement...";
     private bool _isBusy;
+    private bool _isComposeMode;
 
     public MessagingViewModel(IMessagingService service, Action onClose)
     {
@@ -32,6 +36,7 @@ public sealed class MessagingViewModel : ObservableObject
         OpenConversationCommand = new AsyncRelayCommand(OpenConversationAsync);
         SendCommand = new AsyncRelayCommand(SendAsync);
         SearchUserCommand = new AsyncRelayCommand(SearchUserAsync);
+        SendComposeCommand = new AsyncRelayCommand(SendComposeAsync);
         DeleteCommand = new AsyncRelayCommand(DeleteAsync);
         RestoreCommand = new AsyncRelayCommand(RestoreAsync);
         CloseCommand = new RelayCommand(_onClose);
@@ -87,6 +92,24 @@ public sealed class MessagingViewModel : ObservableObject
         set => SetProperty(ref _searchQuery, value);
     }
 
+    public string ComposeRecipient
+    {
+        get => _composeRecipient;
+        set => SetProperty(ref _composeRecipient, value);
+    }
+
+    public string ComposeSubject
+    {
+        get => _composeSubject;
+        set => SetProperty(ref _composeSubject, value);
+    }
+
+    public string ComposeBody
+    {
+        get => _composeBody;
+        set => SetProperty(ref _composeBody, value);
+    }
+
     public string Status
     {
         get => _status;
@@ -99,9 +122,16 @@ public sealed class MessagingViewModel : ObservableObject
         private set => SetProperty(ref _isBusy, value);
     }
 
+    public bool IsComposeMode
+    {
+        get => _isComposeMode;
+        set => SetProperty(ref _isComposeMode, value);
+    }
+
     public ICommand OpenConversationCommand { get; }
     public ICommand SendCommand { get; }
     public ICommand SearchUserCommand { get; }
+    public ICommand SendComposeCommand { get; }
     public ICommand DeleteCommand { get; }
     public ICommand RestoreCommand { get; }
     public ICommand CloseCommand { get; }
@@ -201,6 +231,55 @@ public sealed class MessagingViewModel : ObservableObject
                 BoxMessages.Insert(0, message);
                 SelectedMessage = message;
                 InputText = string.Empty;
+                Status = "Message envoyé.";
+            }
+            else
+            {
+                Status = "Échec de l'envoi du message.";
+            }
+        }
+        catch (Exception ex)
+        {
+            Status = $"Erreur lors de l'envoi : {ex.Message}";
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private async Task SendComposeAsync()
+    {
+        if (IsBusy || string.IsNullOrWhiteSpace(ComposeRecipient) || string.IsNullOrWhiteSpace(ComposeBody))
+        {
+            return;
+        }
+
+        IsBusy = true;
+        try
+        {
+            var recipient = await _service.SearchUserAsync(ComposeRecipient.Trim()).ConfigureAwait(true);
+            if (recipient == null)
+            {
+                Status = "Utilisateur introuvable.";
+                return;
+            }
+
+            var messageText = ComposeBody.Trim();
+            var subject = string.IsNullOrWhiteSpace(ComposeSubject) ? null : ComposeSubject.Trim();
+
+            var message = await _service.SendAsync(recipient.Id, messageText, subject).ConfigureAwait(true);
+            if (message != null)
+            {
+                ConversationUser = recipient;
+                ConversationMessages.Clear();
+                ConversationMessages.Add(message);
+                BoxMessages.Insert(0, message);
+                SelectedMessage = message;
+                ComposeRecipient = string.Empty;
+                ComposeSubject = string.Empty;
+                ComposeBody = string.Empty;
+                IsComposeMode = false;
                 Status = "Message envoyé.";
             }
             else

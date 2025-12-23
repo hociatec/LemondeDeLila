@@ -1,4 +1,11 @@
-import { IsInt, IsNotEmpty, MaxLength, Min } from 'class-validator';
+import {
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  MaxLength,
+  Min,
+} from 'class-validator';
 
 export class SendMessageDto {
   @IsInt()
@@ -8,4 +15,9 @@ export class SendMessageDto {
   @IsNotEmpty()
   @MaxLength(1000)
   text!: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  subject?: string;
 }

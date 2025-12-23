@@ -18,6 +18,7 @@ export type MessageDto = {
   sender: MessageUserDto;
   recipient: MessageUserDto;
   text: string;
+  subject: string | null;
   createdAt: string;
   direction: 'sent' | 'received';
   deletedAt: string | null;
@@ -50,11 +51,13 @@ export class MessagingService {
     }
 
     const sanitized = this.validator.validate(payload.text);
+    const subject = this.validator.validateSubject(payload.subject);
     const message = this.messages.create({
       sender,
       recipient,
       messageId: this.generateMessageId(),
       message: sanitized,
+      subject,
     });
     await this.messages.save(message);
     return this.toDto(message, sender.id);
@@ -236,6 +239,7 @@ export class MessagingService {
         username: message.recipient.username,
       },
       text: message.message,
+      subject: message.subject ?? null,
       createdAt: message.createdAt.toISOString(),
       direction,
       deletedAt: deletedAt ? deletedAt.toISOString() : null,

@@ -33,6 +33,9 @@ export class PrivateMessage {
   @Column({ type: 'text' })
   message!: string;
 
+  @Column({ type: 'varchar', length: 200, nullable: true })
+  subject?: string | null;
+
   @CreateDateColumn({ name: 'created_at', type: 'datetime' })
   createdAt!: Date;
 

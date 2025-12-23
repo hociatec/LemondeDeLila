@@ -8,7 +8,7 @@
              d:DesignHeight="720" d:DesignWidth="1280"
              Loaded="OnLoaded"
              KeyDown="OnRootKeyDown"
-             KeyboardNavigation.TabNavigation="None">
+             KeyboardNavigation.TabNavigation="Continue">
 
     <UserControl.Resources>
         <!-- Backgrounds -->
@@ -27,6 +27,8 @@
         <SolidColorBrush x:Key="FocusBorderBrush" Color="#FFD966" />
         <SolidColorBrush x:Key="SentBrush" Color="#1F3F62" />
         <SolidColorBrush x:Key="ReceivedBrush" Color="#193047" />
+
+        <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
 
         <!-- Drop Shadow pour isolation visuelle -->
         <DropShadowEffect x:Key="PanelShadow"
@@ -70,6 +72,81 @@
             <Setter Property="FocusVisualStyle" Value="{x:Null}" />
         </Style>
 
+        <Style x:Key="MenuListBox" TargetType="ListBox">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Disabled" />
+            <Setter Property="IsTabStop" Value="False" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        </Style>
+
+        <Style x:Key="MenuListItem" TargetType="ListBoxItem">
+            <Setter Property="Margin" Value="0 8 0 0" />
+            <Setter Property="Padding" Value="16 12" />
+            <Setter Property="Background" Value="#1E3A5C" />
+            <Setter Property="BorderBrush" Value="#284C75" />
+            <Setter Property="BorderThickness" Value="2" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="FontWeight" Value="Medium" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6">
+                            <ContentPresenter />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="#26456F" />
+                    <Setter Property="BorderBrush" Value="#FFD966" />
+                </Trigger>
+                <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                    <Setter Property="BorderBrush" Value="#FFD966" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="ListButtonItem" TargetType="ListBoxItem">
+            <Setter Property="Margin" Value="0 6 0 8" />
+            <Setter Property="Padding" Value="12" />
+            <Setter Property="Background" Value="#0D1F34" />
+            <Setter Property="BorderBrush" Value="#2A4A6A" />
+            <Setter Property="BorderThickness" Value="2" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8">
+                            <ContentPresenter />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="#1E3A5C" />
+                    <Setter Property="BorderBrush" Value="#FFD966" />
+                </Trigger>
+                <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                    <Setter Property="BorderBrush" Value="#FFD966" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
         <!-- Style pour les TextBox -->
         <Style x:Key="InputTextBox" TargetType="TextBox">
             <Setter Property="Background" Value="#0A1827" />
@@ -78,12 +155,27 @@
             <Setter Property="BorderThickness" Value="2" />
             <Setter Property="Padding" Value="10" />
             <Setter Property="FontSize" Value="14" />
-            <Setter Property="IsTabStop" Value="False" />
             <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        </Style>
+
+        <Style x:Key="SubjectText" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#9CB2D1" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Margin" Value="0 0 0 4" />
+            <Setter Property="Visibility" Value="Visible" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Subject}" Value="">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Subject}" Value="{x:Null}">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                </DataTrigger>
+            </Style.Triggers>
         </Style>
     </UserControl.Resources>
 
-    <Grid Background="{StaticResource ShellBackground}" KeyboardNavigation.TabNavigation="None">
+    <Grid Background="{StaticResource ShellBackground}" KeyboardNavigation.TabNavigation="Continue">
         <Grid.RowDefinitions>
             <RowDefinition Height="80" />
             <RowDefinition Height="*" />
@@ -102,7 +194,7 @@
                 BorderThickness="0 0 0 2"
                 IsHitTestVisible="False">
             <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
-                <TextBlock Text="💬 MESSAGERIE PRIVÉE"
+                <TextBlock Text="MESSAGERIE PRIVEE"
                            FontSize="28"
                            FontWeight="Bold"
                            Foreground="White"
@@ -115,7 +207,7 @@
             </StackPanel>
         </Border>
 
-        <!-- ============ SECTION 1 : BOÎTES ET RECHERCHE ============ -->
+        <!-- ============ SECTION 1 : MENU ============ -->
         <Border x:Name="BoxesPanel"
                 Grid.Row="1" Grid.Column="0"
                 Background="{StaticResource BoxesPanelBrush}"
@@ -125,7 +217,7 @@
                 BorderBrush="#1E3C5B"
                 BorderThickness="3"
                 Effect="{StaticResource PanelShadow}"
-                KeyDown="OnBoxesPanelKeyDown">
+                KeyDown="OnMenuPanelKeyDown">
 
             <StackPanel KeyboardNavigation.TabNavigation="None">
                 <!-- Titre de section -->
@@ -135,60 +227,31 @@
                         Margin="0 0 0 16"
                         BorderBrush="#2A4A6A"
                         BorderThickness="2">
-                    <TextBlock Text="📁 BOÎTES DE MESSAGES"
+                    <TextBlock Text="MENU MESSAGERIE"
                                Foreground="#FFD966"
                                FontSize="16"
                                FontWeight="Bold"
                                HorizontalAlignment="Center" />
                 </Border>
 
-                <!-- Boutons de boîtes -->
-                <Button x:Name="BtnInbox"
-                        Content="📥 Réception"
-                        Tag="{x:Static messaging:MessagingBox.Inbox}"
-                        Click="OnBoxClick"
-                        Style="{StaticResource BoxButton}" />
-
-                <Button x:Name="BtnOutbox"
-                        Content="📤 Envoyés"
-                        Tag="{x:Static messaging:MessagingBox.Outbox}"
-                        Click="OnBoxClick"
-                        Style="{StaticResource BoxButton}" />
-
-                <Button x:Name="BtnDeleted"
-                        Content="🗑️ Corbeille"
-                        Tag="{x:Static messaging:MessagingBox.Deleted}"
-                        Click="OnBoxClick"
-                        Style="{StaticResource BoxButton}" />
-
-                <!-- Séparateur -->
-                <Rectangle Height="2"
-                           Fill="#2A4A6A"
-                           Margin="0 20 0 16" />
-
-                <!-- Recherche utilisateur -->
-                <Border Background="#0A1A2D"
-                        CornerRadius="8"
-                        Padding="12 8"
-                        Margin="0 0 0 12"
-                        BorderBrush="#2A4A6A"
-                        BorderThickness="2">
-                    <TextBlock Text="🔍 RECHERCHE UTILISATEUR"
-                               Foreground="#9CB2D1"
-                               FontSize="14"
-                               FontWeight="SemiBold"
-                               HorizontalAlignment="Center" />
-                </Border>
-
-                <TextBox x:Name="SearchBox"
-                         Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}"
-                         KeyDown="OnSearchKeyDown"
-                         Style="{StaticResource InputTextBox}"
-                         Margin="0 0 0 8" />
-
-                <Button Content="💬 Ouvrir conversation"
-                        Command="{Binding SearchUserCommand}"
-                        Style="{StaticResource BoxButton}" />
+                <ListBox x:Name="MenuList"
+                         Style="{StaticResource MenuListBox}"
+                         ItemContainerStyle="{StaticResource MenuListItem}"
+                         KeyDown="OnMenuKeyDown"
+                         PreviewMouseLeftButtonUp="OnMenuClick">
+                    <ListBoxItem x:Name="MenuCompose" Tag="compose">
+                        <TextBlock Text="Rediger un message" />
+                    </ListBoxItem>
+                    <ListBoxItem x:Name="MenuInbox" Tag="inbox">
+                        <TextBlock Text="Boite de reception" />
+                    </ListBoxItem>
+                    <ListBoxItem x:Name="MenuOutbox" Tag="outbox">
+                        <TextBlock Text="Messages envoyes" />
+                    </ListBoxItem>
+                    <ListBoxItem x:Name="MenuDeleted" Tag="deleted">
+                        <TextBlock Text="Corbeille" />
+                    </ListBoxItem>
+                </ListBox>
             </StackPanel>
         </Border>
 
@@ -217,7 +280,7 @@
                         Margin="0 0 0 16"
                         BorderBrush="#3A5A7A"
                         BorderThickness="2">
-                    <TextBlock Text="📬 MESSAGES"
+                    <TextBlock Text="MESSAGES"
                                Foreground="#FFD966"
                                FontSize="16"
                                FontWeight="Bold"
@@ -230,56 +293,32 @@
                          ItemsSource="{Binding BoxMessages}"
                          SelectedItem="{Binding SelectedMessage, Mode=TwoWay}"
                          MouseDoubleClick="OnMessagesDoubleClick"
+                         ItemContainerStyle="{StaticResource ListButtonItem}"
                          Style="{StaticResource MessageListBox}">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
-                            <Border Background="#0D1F34"
-                                    CornerRadius="8"
-                                    Padding="12"
-                                    Margin="0 4 0 8"
-                                    BorderBrush="#2A4A6A"
-                                    BorderThickness="2">
-                                <StackPanel>
-                                    <TextBlock Text="{Binding Sender.Username}"
-                                               FontWeight="Bold"
-                                               FontSize="14"
-                                               Foreground="#FFD966" />
-                                    <TextBlock Text="{Binding Text}"
-                                               TextWrapping="Wrap"
-                                               Foreground="#E0E8F0"
-                                               Margin="0 4 0 4" />
-                                    <TextBlock Text="{Binding CreatedAt, StringFormat='{}{0:dd/MM/yyyy HH:mm}'}"
-                                               FontSize="11"
-                                               Foreground="#7CA3D6" />
-                                </StackPanel>
-                            </Border>
+                            <StackPanel>
+                                <TextBlock Text="{Binding Sender.Username}"
+                                           FontWeight="Bold"
+                                           FontSize="14"
+                                           Foreground="#FFD966" />
+                                <TextBlock Text="{Binding Subject, StringFormat=Sujet: {0}}"
+                                           Style="{StaticResource SubjectText}" />
+                                <TextBlock Text="{Binding Text}"
+                                           TextWrapping="Wrap"
+                                           Foreground="#E0E8F0"
+                                           Margin="0 4 0 4" />
+                                <TextBlock Text="{Binding CreatedAt, StringFormat='{}{0:dd/MM/yyyy HH:mm}'}"
+                                           FontSize="11"
+                                           Foreground="#7CA3D6" />
+                            </StackPanel>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
-                    <ListBox.ItemContainerStyle>
-                        <Style TargetType="ListBoxItem">
-                            <Setter Property="Template">
-                                <Setter.Value>
-                                    <ControlTemplate TargetType="ListBoxItem">
-                                        <Border Background="{TemplateBinding Background}">
-                                            <ContentPresenter />
-                                        </Border>
-                                    </ControlTemplate>
-                                </Setter.Value>
-                            </Setter>
-                            <Setter Property="IsTabStop" Value="False" />
-                            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
-                            <Style.Triggers>
-                                <Trigger Property="IsSelected" Value="True">
-                                    <Setter Property="Background" Value="#1E3A5C" />
-                                </Trigger>
-                            </Style.Triggers>
-                        </Style>
-                    </ListBox.ItemContainerStyle>
                 </ListBox>
             </Grid>
         </Border>
 
-        <!-- ============ SECTION 3 : CONVERSATION ============ -->
+        <!-- ============ SECTION 3 : CONVERSATION / COMPOSITION ============ -->
         <Border x:Name="ConversationPanel"
                 Grid.Row="1" Grid.Column="2"
                 Background="{StaticResource ConversationPanelBrush}"
@@ -305,70 +344,161 @@
                         Margin="0 0 0 16"
                         BorderBrush="#4A6E9C"
                         BorderThickness="2">
-                    <TextBlock Text="{Binding ConversationUser.Username, TargetNullValue='💬 CONVERSATION'}"
+                    <TextBlock Text="{Binding ConversationUser.Username, TargetNullValue='CONVERSATION'}"
                                Foreground="#FFD966"
                                FontSize="16"
                                FontWeight="Bold"
                                HorizontalAlignment="Center" />
                 </Border>
 
+                <!-- Composition -->
+                <Grid x:Name="ComposePanel"
+                      Grid.Row="1"
+                      KeyboardNavigation.TabNavigation="Cycle">
+                    <Grid.Style>
+                        <Style TargetType="Grid">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsComposeMode}" Value="True">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Grid.Style>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0" Margin="0 0 0 12">
+                        <TextBlock Text="Destinataire"
+                                   Foreground="#9CB2D1"
+                                   FontSize="12"
+                                   Margin="0 0 0 6" />
+                        <TextBox x:Name="ComposeRecipientBox"
+                                 Text="{Binding ComposeRecipient, UpdateSourceTrigger=PropertyChanged}"
+                                 Style="{StaticResource InputTextBox}"
+                                 TabIndex="0" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="1" Margin="0 0 0 12">
+                        <TextBlock Text="Sujet"
+                                   Foreground="#9CB2D1"
+                                   FontSize="12"
+                                   Margin="0 0 0 6" />
+                        <TextBox x:Name="ComposeSubjectBox"
+                                 Text="{Binding ComposeSubject, UpdateSourceTrigger=PropertyChanged}"
+                                 Style="{StaticResource InputTextBox}"
+                                 TabIndex="1" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="2" Margin="0 0 0 12">
+                        <TextBlock Text="Message"
+                                   Foreground="#9CB2D1"
+                                   FontSize="12"
+                                   Margin="0 0 0 6" />
+                        <TextBox x:Name="ComposeBodyBox"
+                                 Text="{Binding ComposeBody, UpdateSourceTrigger=PropertyChanged}"
+                                 Style="{StaticResource InputTextBox}"
+                                 AcceptsReturn="True"
+                                 TextWrapping="Wrap"
+                                 MinHeight="160"
+                                 TabIndex="2" />
+                    </StackPanel>
+
+                    <Button x:Name="ComposeSendButton"
+                            Grid.Row="3"
+                            Content="Envoyer"
+                            Command="{Binding SendComposeCommand}"
+                            Height="44"
+                            Width="140"
+                            HorizontalAlignment="Right"
+                            Style="{StaticResource BoxButton}"
+                            TabIndex="3" />
+                </Grid>
+
                 <!-- Messages de conversation -->
-                <ListBox x:Name="ConversationList"
-                         Grid.Row="1"
-                         ItemsSource="{Binding ConversationMessages}"
-                         SelectedItem="{Binding SelectedMessage, Mode=TwoWay}"
-                         Style="{StaticResource MessageListBox}">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
+                <Grid x:Name="ConversationContent" Grid.Row="1">
+                    <Grid.Style>
+                        <Style TargetType="Grid">
+                            <Setter Property="Visibility" Value="Visible" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsComposeMode}" Value="True">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Grid.Style>
+                    <ListBox x:Name="ConversationList"
+                             ItemsSource="{Binding ConversationMessages}"
+                             SelectedItem="{Binding SelectedMessage, Mode=TwoWay}"
+                             Style="{StaticResource MessageListBox}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
                             <Border Padding="12"
                                     CornerRadius="10"
                                     Margin="0 6 0 6"
                                     BorderThickness="2">
                                 <Border.Style>
                                     <Style TargetType="Border">
-                                        <Setter Property="Background" Value="{StaticResource ReceivedBrush}" />
-                                        <Setter Property="BorderBrush" Value="#2A4A6A" />
-                                        <Setter Property="HorizontalAlignment" Value="Left" />
-                                        <Setter Property="MaxWidth" Value="500" />
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsSent}" Value="True">
-                                                <Setter Property="Background" Value="{StaticResource SentBrush}" />
-                                                <Setter Property="BorderBrush" Value="#3A5E8C" />
-                                                <Setter Property="HorizontalAlignment" Value="Right" />
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
+                                            <Setter Property="Background" Value="{StaticResource ReceivedBrush}" />
+                                            <Setter Property="BorderBrush" Value="#2A4A6A" />
+                                            <Setter Property="HorizontalAlignment" Value="Left" />
+                                            <Setter Property="MaxWidth" Value="500" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsSent}" Value="True">
+                                                    <Setter Property="Background" Value="{StaticResource SentBrush}" />
+                                                    <Setter Property="BorderBrush" Value="#3A5E8C" />
+                                                    <Setter Property="HorizontalAlignment" Value="Right" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
                                 </Border.Style>
                                 <StackPanel>
+                                    <TextBlock Text="{Binding Subject, StringFormat=Sujet: {0}}"
+                                               Style="{StaticResource SubjectText}" />
                                     <TextBlock Text="{Binding Text}"
                                                TextWrapping="Wrap"
                                                Foreground="White"
                                                FontSize="14" />
-                                    <TextBlock Text="{Binding CreatedAt, StringFormat='{}{0:HH:mm:ss}'}"
-                                               FontSize="11"
-                                               Foreground="#7CA3D6"
-                                               Margin="0 4 0 0" />
-                                </StackPanel>
-                            </Border>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                    <ListBox.ItemContainerStyle>
-                        <Style TargetType="ListBoxItem">
-                            <Setter Property="Template">
-                                <Setter.Value>
-                                    <ControlTemplate TargetType="ListBoxItem">
-                                        <ContentPresenter />
-                                    </ControlTemplate>
-                                </Setter.Value>
-                            </Setter>
-                            <Setter Property="IsTabStop" Value="False" />
-                            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
-                        </Style>
-                    </ListBox.ItemContainerStyle>
-                </ListBox>
+                                        <TextBlock Text="{Binding CreatedAt, StringFormat='{}{0:HH:mm:ss}'}"
+                                                   FontSize="11"
+                                                   Foreground="#7CA3D6"
+                                                   Margin="0 4 0 0" />
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="ListBoxItem">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="ListBoxItem">
+                                            <ContentPresenter />
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Setter Property="IsTabStop" Value="False" />
+                                <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                            </Style>
+                        </ListBox.ItemContainerStyle>
+                    </ListBox>
+                </Grid>
 
-                <!-- Zone d'input -->
+                <!-- Zone d'input conversation -->
                 <Grid Grid.Row="2" Margin="0 16 0 0">
+                    <Grid.Style>
+                        <Style TargetType="Grid">
+                            <Setter Property="Visibility" Value="Visible" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsComposeMode}" Value="True">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Grid.Style>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
@@ -379,15 +509,17 @@
                              MinHeight="44"
                              VerticalContentAlignment="Center"
                              KeyDown="OnInputKeyDown"
-                             Style="{StaticResource InputTextBox}" />
+                             Style="{StaticResource InputTextBox}"
+                             IsTabStop="False" />
 
                     <Button Grid.Column="1"
-                            Content="📤 Envoyer"
+                            Content="Envoyer"
                             Command="{Binding SendCommand}"
                             Margin="12 0 0 0"
                             Width="120"
                             Height="44"
-                            Style="{StaticResource BoxButton}" />
+                            Style="{StaticResource BoxButton}"
+                            IsTabStop="False" />
                 </Grid>
             </Grid>
         </Border>
@@ -400,7 +532,7 @@
                 Padding="16 12"
                 IsHitTestVisible="False">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <TextBlock Text="ℹ️ "
+                <TextBlock Text="i "
                            FontSize="16"
                            Foreground="{StaticResource HighlightBrush}"
                            VerticalAlignment="Center"
@@ -411,7 +543,7 @@
                            FontWeight="Medium"
                            TextWrapping="Wrap"
                            VerticalAlignment="Center" />
-                <TextBlock Text=" | ⬆️⬇️ Navigation | ↵ Entrée | Echap Fermer"
+                <TextBlock Text=" | Fleches menu | Fleches gauche/droite sections | Tab pour la composition"
                            Foreground="#7CA3D6"
                            FontSize="12"
                            Margin="20 0 0 0"

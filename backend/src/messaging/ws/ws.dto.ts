@@ -43,6 +43,11 @@ export class MessagingSendDto {
   @MinLength(1)
   @MaxLength(1000)
   text!: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  subject?: string;
 }
 
 export class MessagingSearchDto {

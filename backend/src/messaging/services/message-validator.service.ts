@@ -6,6 +6,8 @@ import {
 
 @Injectable()
 export class MessageValidatorService {
+  private static readonly SUBJECT_MAX_LENGTH = 200;
+
   validate(text: string): string {
     const sanitized = sanitizeMessage(text, {
       encodeHtml: true,
@@ -17,6 +19,25 @@ export class MessageValidatorService {
     if (sanitized.length > DEFAULT_MESSAGE_MAX_LENGTH) {
       throw new BadRequestException(
         'Le message est trop long (max 1000 caracteres)',
+      );
+    }
+    return sanitized;
+  }
+
+  validateSubject(subject?: string | null): string | null {
+    if (!subject) {
+      return null;
+    }
+    const sanitized = sanitizeMessage(subject, {
+      encodeHtml: true,
+      collapseNewLines: true,
+    }).trim();
+    if (!sanitized) {
+      return null;
+    }
+    if (sanitized.length > MessageValidatorService.SUBJECT_MAX_LENGTH) {
+      throw new BadRequestException(
+        `Le sujet est trop long (max ${MessageValidatorService.SUBJECT_MAX_LENGTH} caracteres)`,
       );
     }
     return sanitized;
