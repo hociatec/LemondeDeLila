@@ -140,7 +140,6 @@
                                    HorizontalAlignment="Center"
                                    VerticalAlignment="Center"
                                    Focusable="True"
-                                   IsTabStop="False"
                                    AutomationProperties.Name="Aucun message dans cette boîte">
                             <TextBlock.Style>
                                 <Style TargetType="TextBlock">
