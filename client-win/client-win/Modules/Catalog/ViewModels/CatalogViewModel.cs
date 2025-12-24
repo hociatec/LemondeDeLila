@@ -4,6 +4,8 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using System.Windows;
+using System.Windows.Threading;
 using client_win.Core;
 using client_win.Modules.Catalog.Models;
 using client_win.Modules.Catalog.Services;
@@ -28,12 +30,14 @@ public sealed class CatalogViewModel : ObservableObject
     private readonly IRoomRealtimeService _roomRealtime;
     private readonly IRoomTableNavigator _roomNavigator;
     private readonly Action _close;
+    private readonly Dispatcher _dispatcher;
     private List<CatalogGame> _allGames = new();
     private CatalogCategory? _selectedCategory;
     private CatalogCategory? _selectedSubcategory;
     private CatalogGame? _selectedGame;
     private string _status = string.Empty;
     private bool _isBusy;
+    private int _selectionRevision;
 
     public CatalogViewModel(ICatalogService service, IRoomRealtimeService roomRealtime, IRoomTableNavigator roomNavigator, Action onClose)
     {
@@ -41,6 +45,7 @@ public sealed class CatalogViewModel : ObservableObject
         _roomRealtime = roomRealtime ?? throw new ArgumentNullException(nameof(roomRealtime));
         _roomNavigator = roomNavigator ?? throw new ArgumentNullException(nameof(roomNavigator));
         _close = onClose ?? (() => { });
+        _dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
         CloseCommand = new RelayCommand(_close);
         RefreshCommand = new AsyncRelayCommand(LoadAsync);
         Status = "Chargement du catalogue...";
@@ -58,7 +63,8 @@ public sealed class CatalogViewModel : ObservableObject
         {
             if (SetProperty(ref _selectedCategory, value))
             {
-                UpdateSubShelves();
+                _selectionRevision++;
+                ScheduleUpdateSubShelves(_selectionRevision);
                 Status = "Sélectionnez une sous-catégorie ou un jeu.";
             }
         }
@@ -71,7 +77,8 @@ public sealed class CatalogViewModel : ObservableObject
         {
             if (SetProperty(ref _selectedSubcategory, value))
             {
-                UpdateGames();
+                _selectionRevision++;
+                ScheduleUpdateGames(_selectionRevision);
                 Status = "Choisissez un jeu pour voir les détails.";
             }
         }
@@ -156,14 +163,17 @@ public sealed class CatalogViewModel : ObservableObject
         IsBusy = true;
         Status = "Chargement du catalogue...";
 
-        // Nettoyer l'état en cas d'erreur précédente
-        Shelves.Clear();
-        SubShelves.Clear();
-        Games.Clear();
-        _allGames = new List<CatalogGame>();
-        SelectedGame = null;
-        SelectedSubShelf = null;
-        SelectedShelf = null;
+        // Nettoyer l'état en cas d'erreur précédente (sur le thread UI)
+        await _dispatcher.InvokeAsync(() =>
+        {
+            Shelves.Clear();
+            SubShelves.Clear();
+            Games.Clear();
+            _allGames = new List<CatalogGame>();
+            SelectedGame = null;
+            SelectedSubShelf = null;
+            SelectedShelf = null;
+        }, DispatcherPriority.Background);
 
         CatalogPayload payload;
         try
@@ -194,13 +204,39 @@ public sealed class CatalogViewModel : ObservableObject
             return;
         }
 
+        // Déférer la sélection initiale pour éviter une réentrance pendant la génération des items WPF
         SelectedShelf = Shelves.Count > 0 ? Shelves[0] : null;
         Status = "Choisissez une catégorie.";
     }
 
+    private void ScheduleUpdateSubShelves(int revision)
+    {
+        _dispatcher.InvokeAsync(() =>
+        {
+            if (revision != _selectionRevision)
+            {
+                return;
+            }
+            UpdateSubShelves();
+        }, DispatcherPriority.Background);
+    }
+
+    private void ScheduleUpdateGames(int revision)
+    {
+        _dispatcher.InvokeAsync(() =>
+        {
+            if (revision != _selectionRevision)
+            {
+                return;
+            }
+            UpdateGames();
+        }, DispatcherPriority.Background);
+    }
+
     public void ReloadGamesForCurrentSelection()
     {
-        UpdateGames();
+        _selectionRevision++;
+        ScheduleUpdateGames(_selectionRevision);
     }
 
     private void UpdateSubShelves()
@@ -225,7 +261,8 @@ public sealed class CatalogViewModel : ObservableObject
         {
             // Pas de sous-catégories, afficher directement les jeux de la catégorie.
             SelectedSubShelf = null;
-            UpdateGames();
+            _selectionRevision++;
+            ScheduleUpdateGames(_selectionRevision);
         }
         else
         {
