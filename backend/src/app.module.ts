@@ -14,6 +14,7 @@ import { RoomModule } from './room/room.module';
 import { GameModule } from './game/game.module';
 import { BotModule } from './bot/bot.module';
 import { AdminModule } from './admin/admin.module';
+import { SocialModule } from './social/social.module';
 import { WsRoutingModule } from './common/ws/ws-routing.module';
 import { ValidationModule } from './common/validation/validation.module';
 import { GameWsModule } from './game/ws/game-ws.module';
@@ -87,6 +88,7 @@ import { HealthModule } from './health/health.module';
     ChatModule,
     CatalogModule,
     MessagingModule,
+    SocialModule,
     PresenceModule,
     RoomModule,
     GameModule,

@@ -9,6 +9,7 @@ using client_win.Modules.Game.ViewModels;
 using client_win.Modules.Game.Views;
 using client_win.Modules.Social.ViewModels;
 using client_win.Modules.Social.Views;
+using client_win.Modules.Social.Services;
 using client_win.Modules.Admin.ViewModels;
 using client_win.Modules.Admin.Views;
 using client_win.Modules.Shell.Services;
@@ -31,6 +32,7 @@ public sealed class MenuRouter : IMenuRouter
     private readonly ICatalogService _catalog;
     private readonly INavigationService _navigation;
     private readonly IMessagingService _messaging;
+    private readonly ISocialService _social;
 
     public MenuRouter(
         ILogger<MenuRouter> logger,
@@ -38,7 +40,8 @@ public sealed class MenuRouter : IMenuRouter
         IChatLauncher chat,
         ICatalogService catalog,
         INavigationService navigation,
-        IMessagingService messaging)
+        IMessagingService messaging,
+        ISocialService social)
     {
         _logger = logger;
         _options = options;
@@ -46,6 +49,7 @@ public sealed class MenuRouter : IMenuRouter
         _catalog = catalog;
         _navigation = navigation;
         _messaging = messaging;
+        _social = social;
     }
 
     public Task<string> OpenCatalog()
@@ -125,7 +129,7 @@ public sealed class MenuRouter : IMenuRouter
 
         var previous = _navigation.CurrentView;
         var view = new SocialView();
-        var vm = new SocialViewModel(onClose: () =>
+        var vm = new SocialViewModel(_social, onClose: () =>
         {
             if (previous != null)
             {

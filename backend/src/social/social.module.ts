@@ -1,0 +1,19 @@
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { NotificationModule } from '../notification/notification.module';
+import { User } from '../user/entities/user.entity';
+import { SocialProfile } from './entities/social-profile.entity';
+import { SocialRelationship } from './entities/social-relationship.entity';
+import { SocialService } from './services/social.service';
+import { SocialWsHandler } from './ws/social-ws.handler';
+import { SocialWsRegistrar } from './ws/social-ws.registrar';
+
+@Module({
+  imports: [
+    TypeOrmModule.forFeature([SocialRelationship, SocialProfile, User]),
+    NotificationModule,
+  ],
+  providers: [SocialService, SocialWsHandler, SocialWsRegistrar],
+  exports: [SocialService],
+})
+export class SocialModule {}

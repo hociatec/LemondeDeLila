@@ -417,6 +417,7 @@ public sealed class MessagingViewModel : ObservableObject
             return;
         }
 
+        var reload = false;
         IsBusy = true;
         try
         {
@@ -425,6 +426,7 @@ public sealed class MessagingViewModel : ObservableObject
             {
                 ReplaceMessage(deleted);
                 Status = "Message supprimé.";
+                reload = true;
             }
             else
             {
@@ -438,6 +440,11 @@ public sealed class MessagingViewModel : ObservableObject
         finally
         {
             IsBusy = false;
+        }
+
+        if (reload)
+        {
+            await LoadBoxAsync(SelectedBox).ConfigureAwait(true);
         }
     }
 
@@ -459,6 +466,7 @@ public sealed class MessagingViewModel : ObservableObject
             return;
         }
 
+        var reload = false;
         IsBusy = true;
         try
         {
@@ -467,6 +475,7 @@ public sealed class MessagingViewModel : ObservableObject
             {
                 ReplaceMessage(restored);
                 Status = "Message restauré.";
+                reload = true;
             }
             else
             {
@@ -480,6 +489,11 @@ public sealed class MessagingViewModel : ObservableObject
         finally
         {
             IsBusy = false;
+        }
+
+        if (reload)
+        {
+            await LoadBoxAsync(SelectedBox).ConfigureAwait(true);
         }
     }
 

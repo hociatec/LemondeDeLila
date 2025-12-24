@@ -67,6 +67,26 @@ public static class WsMessageTypes
     }
 
     /// <summary>
+    /// Types de messages du module social
+    /// </summary>
+    public static class Social
+    {
+        public const string FriendsList = "social.friends.list";
+        public const string FriendsRequests = "social.friends.requests";
+        public const string FriendsBlocked = "social.friends.blocked";
+        public const string FriendsRequest = "social.friends.request";
+        public const string FriendsAccept = "social.friends.accept";
+        public const string FriendsReject = "social.friends.reject";
+        public const string FriendsCancel = "social.friends.cancel";
+        public const string FriendsRemove = "social.friends.remove";
+        public const string FriendsBlock = "social.friends.block";
+        public const string FriendsUnblock = "social.friends.unblock";
+        public const string ProfileGet = "social.profile.get";
+        public const string ProfileUpdate = "social.profile.update";
+        public const string UserSearch = "social.user.search";
+    }
+
+    /// <summary>
     /// Contextes d'erreur pour ErrorBus (identification de la source de l'erreur)
     /// </summary>
     public static class ErrorContext
@@ -80,5 +100,6 @@ public static class WsMessageTypes
         public const string CatalogAll = "catalog.all";
         public const string ChatSend = "chat.send";
         public const string Messaging = "messaging";
+        public const string Social = "social";
     }
 }

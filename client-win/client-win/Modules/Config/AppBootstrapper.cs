@@ -19,6 +19,7 @@ using client_win.Modules.Chat.Views;
 using client_win.Core;
 using client_win.Modules.Catalog.Services;
 using client_win.Modules.Messaging.Services;
+using client_win.Modules.Social.Services;
 
 namespace client_win.Modules.Config;
 
@@ -89,6 +90,11 @@ public static class AppBootstrapper
         services.AddSingleton<IChatLauncher, ChatLauncher>();
         services.AddSingleton<IMessagingService>(sp =>
             new MessagingService(
+                sp.GetRequiredService<WsRequestClient>(),
+                sp.GetRequiredService<ISessionService>(),
+                errors));
+        services.AddSingleton<ISocialService>(sp =>
+            new SocialService(
                 sp.GetRequiredService<WsRequestClient>(),
                 sp.GetRequiredService<ISessionService>(),
                 errors));
