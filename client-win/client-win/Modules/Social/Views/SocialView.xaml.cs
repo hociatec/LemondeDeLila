@@ -84,6 +84,7 @@ public partial class SocialView : UserControl
             return;
         }
 
+        _lastMenuIndex = MenuList.SelectedIndex >= 0 ? MenuList.SelectedIndex : _lastMenuIndex;
         var tag = item.Tag as string ?? string.Empty;
         switch (tag)
         {
