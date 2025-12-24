@@ -7,6 +7,7 @@ namespace client_win.Modules.Game.Views;
 public partial class RoomTableView : UserControl
 {
     private RoomTableViewModel? _vm;
+    private bool _historyVisible;
 
     public RoomTableView()
     {
@@ -43,8 +44,8 @@ public partial class RoomTableView : UserControl
 
         if (e.Key == Key.Tab)
         {
-            // Navigation circulaire entre fenêtre de jeu et historique.
-            if (HistoryList?.IsKeyboardFocusWithin == true)
+            // Bascule entre fenêtre de jeu et panneau historique (comme dans le client Java).
+            if (_historyVisible)
             {
                 FocusGame();
             }
@@ -94,12 +95,22 @@ public partial class RoomTableView : UserControl
         {
             return;
         }
+        if (HistoryPanel != null && HistoryPanel.Visibility != System.Windows.Visibility.Visible)
+        {
+            return;
+        }
         var last = HistoryList.Items[HistoryList.Items.Count - 1];
         HistoryList.ScrollIntoView(last);
     }
 
     private void FocusHistory()
     {
+        if (HistoryPanel != null)
+        {
+            HistoryPanel.Visibility = System.Windows.Visibility.Visible;
+        }
+        _historyVisible = true;
+
         if (HistoryList == null)
         {
             return;
@@ -117,6 +128,11 @@ public partial class RoomTableView : UserControl
 
     private void FocusGame()
     {
+        if (HistoryPanel != null)
+        {
+            HistoryPanel.Visibility = System.Windows.Visibility.Collapsed;
+        }
+        _historyVisible = false;
         GamePanel?.Focus();
     }
 }
