@@ -101,6 +101,7 @@
                          ItemsSource="{Binding Shelves}"
                          SelectedItem="{Binding SelectedShelf, Mode=TwoWay}"
                          SelectionMode="Single"
+                         VirtualizingStackPanel.IsVirtualizing="False"
                          KeyboardNavigation.TabNavigation="None"
                          IsTabStop="False"
                          KeyDown="OnCategoriesKeyDown">
@@ -121,6 +122,7 @@
                          ItemsSource="{Binding SubShelves}"
                          SelectedItem="{Binding SelectedSubShelf, Mode=TwoWay}"
                          SelectionMode="Single"
+                         VirtualizingStackPanel.IsVirtualizing="False"
                          KeyboardNavigation.TabNavigation="None"
                          IsTabStop="False"
                          KeyDown="OnSubCategoriesKeyDown">
@@ -140,6 +142,7 @@
                          ItemsSource="{Binding Games}"
                          SelectedItem="{Binding SelectedGame, Mode=TwoWay}"
                          SelectionMode="Single"
+                         VirtualizingStackPanel.IsVirtualizing="False"
                          KeyboardNavigation.TabNavigation="None"
                          IsTabStop="False"
                          KeyDown="OnGamesKeyDown"

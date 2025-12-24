@@ -49,7 +49,9 @@ public sealed class CatalogViewModel : ObservableObject
         CloseCommand = new RelayCommand(_close);
         RefreshCommand = new AsyncRelayCommand(LoadAsync);
         Status = "Chargement du catalogue...";
-        RefreshCommand.Execute(null);
+        // IMPORTANT: ne pas muter les collections pendant que WPF est en train de mesurer/générer les conteneurs
+        // (sinon ItemsControl peut lever ItemContainerGenerator.Verify()).
+        _dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() => RefreshCommand.Execute(null)));
     }
 
     public ObservableCollection<CatalogCategory> Shelves { get; } = new();
@@ -190,23 +192,26 @@ public sealed class CatalogViewModel : ObservableObject
             IsBusy = false;
         }
 
-        _allGames = payload.Games?.ToList() ?? new List<CatalogGame>();
-        var categories = payload.Categories ?? new List<CatalogCategory>();
-
-        foreach (var cat in categories)
+        // Appliquer le résultat sur le UI thread, déféré pour ne pas perturber un pass de layout en cours.
+        await _dispatcher.InvokeAsync(() =>
         {
-            Shelves.Add(cat);
-        }
+            _allGames = payload.Games?.ToList() ?? new List<CatalogGame>();
+            var categories = payload.Categories ?? new List<CatalogCategory>();
 
-        if (Shelves.Count == 0)
-        {
-            Status = "Aucune catégorie disponible.";
-            return;
-        }
+            foreach (var cat in categories)
+            {
+                Shelves.Add(cat);
+            }
 
-        // Déférer la sélection initiale pour éviter une réentrance pendant la génération des items WPF
-        SelectedShelf = Shelves.Count > 0 ? Shelves[0] : null;
-        Status = "Choisissez une catégorie.";
+            if (Shelves.Count == 0)
+            {
+                Status = "Aucune catégorie disponible.";
+                return;
+            }
+
+            SelectedShelf = Shelves[0];
+            Status = "Choisissez une catégorie.";
+        }, DispatcherPriority.Background);
     }
 
     private void ScheduleUpdateSubShelves(int revision)
