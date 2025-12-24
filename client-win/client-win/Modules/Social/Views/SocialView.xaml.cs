@@ -1,3 +1,4 @@
+using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -15,7 +16,7 @@ public partial class SocialView : UserControl
     }
 
     private SocialScreen _currentScreen = SocialScreen.Menu;
-    private int _lastMenuIndex = 0;
+    private int _lastMenuIndex = -1;
 
     public SocialView()
     {
@@ -31,10 +32,6 @@ public partial class SocialView : UserControl
 
         await Dispatcher.InvokeAsync(() =>
         {
-            if (MenuList.Items.Count > 0)
-            {
-                MenuList.SelectedIndex = 0;
-            }
             SetScreen(SocialScreen.Menu);
         }, DispatcherPriority.Input);
     }
@@ -126,9 +123,21 @@ public partial class SocialView : UserControl
         _currentScreen = screen;
         if (screen == SocialScreen.Menu)
         {
-            if (MenuList.Items.Count > 0)
+            if (_lastMenuIndex >= 0 && _lastMenuIndex < MenuList.Items.Count)
             {
-                MenuList.SelectedIndex = _lastMenuIndex < MenuList.Items.Count ? _lastMenuIndex : 0;
+                MenuList.SelectedIndex = _lastMenuIndex;
+            }
+            else if (DataContext is SocialViewModel vm)
+            {
+                var tag = GetMenuTagForSection(vm.SelectedSection);
+                if (!SelectMenuItemByTag(tag) && MenuList.Items.Count > 0)
+                {
+                    MenuList.SelectedIndex = 0;
+                }
+            }
+            else if (MenuList.Items.Count > 0)
+            {
+                MenuList.SelectedIndex = 0;
             }
             FocusMenu();
         }
@@ -188,6 +197,40 @@ public partial class SocialView : UserControl
         {
             _lastMenuIndex = MenuList.SelectedIndex;
         }
+    }
+
+    private static string GetMenuTagForSection(SocialSection section)
+    {
+        return section switch
+        {
+            SocialSection.Friends => "friends",
+            SocialSection.IncomingRequests => "incoming",
+            SocialSection.OutgoingRequests => "outgoing",
+            SocialSection.Blocked => "blocked",
+            SocialSection.Search => "search",
+            SocialSection.Profile => "profile",
+            _ => "friends"
+        };
+    }
+
+    private bool SelectMenuItemByTag(string tag)
+    {
+        if (string.IsNullOrWhiteSpace(tag))
+        {
+            return false;
+        }
+
+        for (int i = 0; i < MenuList.Items.Count; i++)
+        {
+            if (MenuList.Items[i] is ListBoxItem item
+                && string.Equals(item.Tag as string ?? string.Empty, tag, StringComparison.OrdinalIgnoreCase))
+            {
+                MenuList.SelectedIndex = i;
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static void FocusListOrEmpty(ListBox listBox, TextBlock emptyText)
