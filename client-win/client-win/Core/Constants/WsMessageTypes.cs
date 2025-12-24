@@ -53,6 +53,8 @@ public static class WsMessageTypes
         public const string Restore = "messaging.restore";
         public const string Deleted = "messaging.deleted";
         public const string Restored = "messaging.restored";
+        public const string Purge = "messaging.purge";
+        public const string Purged = "messaging.purged";
         public const string SearchUser = "messaging.search";
     }
 

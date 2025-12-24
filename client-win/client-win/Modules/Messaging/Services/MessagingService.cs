@@ -158,6 +158,26 @@ public sealed class MessagingService : IMessagingService
         return MapMessage(response.Payload.Message);
     }
 
+    public async Task<MessagingMessage?> PurgeAsync(string messageId, CancellationToken cancellationToken = default)
+    {
+        var user = _session.CurrentUser;
+        string? token = user?.Token;
+
+        var response = await _ws.RequestAsync<MessagePayload>(
+            WsMessageTypes.Messaging.Purge,
+            new { messageId },
+            token,
+            cancellationToken).ConfigureAwait(false);
+
+        if (!response.Success || response.Payload?.Message == null)
+        {
+            PublishError(response.Error ?? "Suppression definitive impossible.");
+            return null;
+        }
+
+        return MapMessage(response.Payload.Message);
+    }
+
     public async Task<MessagingUser?> SearchUserAsync(string query, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(query))

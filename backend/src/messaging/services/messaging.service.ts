@@ -200,6 +200,30 @@ export class MessagingService {
     return this.toDto(message, userId);
   }
 
+  async purge(userId: number, messageId: string): Promise<MessageDto> {
+    const message = await this.messages.findOne({
+      where: { messageId },
+      relations: ['sender', 'recipient'],
+    });
+    if (!message) {
+      throw new NotFoundException('Message introuvable');
+    }
+    const isSender = message.sender.id === userId;
+    const isRecipient = message.recipient.id === userId;
+    if (!isSender && !isRecipient) {
+      throw new ForbiddenException('Non autorise');
+    }
+    if (isSender && !message.deletedBySenderAt) {
+      throw new BadRequestException('Message pas dans la corbeille');
+    }
+    if (isRecipient && !message.deletedByRecipientAt) {
+      throw new BadRequestException('Message pas dans la corbeille');
+    }
+    const dto = this.toDto(message, userId);
+    await this.messages.remove(message);
+    return dto;
+  }
+
   async lookupUser(username: string): Promise<MessageUserDto | null> {
     const normalized = (username ?? '').trim();
     if (!normalized) {

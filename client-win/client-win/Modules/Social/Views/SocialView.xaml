@@ -35,6 +35,7 @@
                 <Setter Property="FontSize" Value="14" />
                 <Setter Property="FontWeight" Value="Medium" />
                 <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                <Setter Property="IsTabStop" Value="False" />
                 <Setter Property="FocusVisualStyle" Value="{x:Null}" />
                 <Setter Property="Template">
                     <Setter.Value>
@@ -172,7 +173,8 @@
                     CornerRadius="16"
                     Padding="20"
                     BorderBrush="{StaticResource PanelBorder}"
-                    BorderThickness="3">
+                    BorderThickness="3"
+                    KeyboardNavigation.TabNavigation="None">
                 <StackPanel>
                     <Border Background="#0A1A2D"
                             CornerRadius="8"

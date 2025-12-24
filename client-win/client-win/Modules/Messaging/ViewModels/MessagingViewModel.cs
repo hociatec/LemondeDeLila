@@ -407,6 +407,12 @@ public sealed class MessagingViewModel : ObservableObject
             return;
         }
 
+        if (SelectedBox == MessagingBox.Deleted)
+        {
+            await PurgeAsync(message).ConfigureAwait(true);
+            return;
+        }
+
         var confirm = MessageBox.Show(
             "Voulez-vous vraiment supprimer ce message ?",
             "Confirmer la suppression",
@@ -436,6 +442,49 @@ public sealed class MessagingViewModel : ObservableObject
         catch (Exception ex)
         {
             Status = $"Erreur lors de la suppression : {ex.Message}";
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+
+        if (reload)
+        {
+            await LoadBoxAsync(SelectedBox).ConfigureAwait(true);
+        }
+    }
+
+    private async Task PurgeAsync(MessagingMessage message)
+    {
+        var confirm = MessageBox.Show(
+            "Cette action supprime définitivement le message. Continuer ?",
+            "Suppression definitive",
+            MessageBoxButton.OKCancel,
+            MessageBoxImage.Warning);
+        if (confirm != MessageBoxResult.OK)
+        {
+            return;
+        }
+
+        var reload = false;
+        IsBusy = true;
+        try
+        {
+            var purged = await _service.PurgeAsync(message.Id).ConfigureAwait(true);
+            if (purged != null)
+            {
+                RemoveMessage(purged.Id);
+                Status = "Message supprimé définitivement.";
+                reload = true;
+            }
+            else
+            {
+                Status = "Échec de la suppression définitive.";
+            }
+        }
+        catch (Exception ex)
+        {
+            Status = $"Erreur lors de la suppression définitive : {ex.Message}";
         }
         finally
         {
@@ -525,6 +574,16 @@ public sealed class MessagingViewModel : ObservableObject
         SelectedMessage = updated;
     }
 
+    private void RemoveMessage(string messageId)
+    {
+        RemoveInCollection(BoxMessages, messageId);
+        RemoveInCollection(ConversationMessages, messageId);
+        if (SelectedMessage != null && string.Equals(SelectedMessage.Id, messageId, StringComparison.OrdinalIgnoreCase))
+        {
+            SelectedMessage = null;
+        }
+    }
+
     private static void ReplaceInCollection(ObservableCollection<MessagingMessage> collection, MessagingMessage updated)
     {
         for (int i = 0; i < collection.Count; i++)
@@ -532,6 +591,18 @@ public sealed class MessagingViewModel : ObservableObject
             if (string.Equals(collection[i].Id, updated.Id, StringComparison.OrdinalIgnoreCase))
             {
                 collection[i] = updated;
+                return;
+            }
+        }
+    }
+
+    private static void RemoveInCollection(ObservableCollection<MessagingMessage> collection, string messageId)
+    {
+        for (int i = 0; i < collection.Count; i++)
+        {
+            if (string.Equals(collection[i].Id, messageId, StringComparison.OrdinalIgnoreCase))
+            {
+                collection.RemoveAt(i);
                 return;
             }
         }

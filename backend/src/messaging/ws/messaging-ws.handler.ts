@@ -61,6 +61,13 @@ export class MessagingWsHandler {
     return { type: 'messaging.restored', payload: { message } };
   }
 
+  async purge(session: WsSession, payload: any) {
+    const user = requireUser(session);
+    const messageId = String(payload?.messageId ?? payload?.id ?? '');
+    const message = await this.messaging.purge(user.id, messageId);
+    return { type: 'messaging.purged', payload: { message } };
+  }
+
   async search(payload: any) {
     const dto = this.validator.validate(MessagingSearchDto, payload);
     const username = dto.username ?? dto.query ?? '';

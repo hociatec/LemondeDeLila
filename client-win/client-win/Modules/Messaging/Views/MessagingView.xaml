@@ -311,12 +311,13 @@
                                 <Button.Style>
                                     <Style TargetType="Button" BasedOn="{StaticResource BoxButton}">
                                         <Setter Property="Visibility" Value="Visible" />
+                                        <Setter Property="Content" Value="Supprimer" />
                                         <Style.Triggers>
                                             <DataTrigger Binding="{Binding SelectedMessage}" Value="{x:Null}">
                                                 <Setter Property="Visibility" Value="Collapsed" />
                                             </DataTrigger>
                                             <DataTrigger Binding="{Binding SelectedBox}" Value="Deleted">
-                                                <Setter Property="Visibility" Value="Collapsed" />
+                                                <Setter Property="Content" Value="Supprimer definitivement" />
                                             </DataTrigger>
                                         </Style.Triggers>
                                     </Style>
