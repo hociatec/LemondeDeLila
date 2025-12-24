@@ -11,18 +11,20 @@ public sealed class RoomTableNavigator : IRoomTableNavigator
 {
     private readonly INavigationService _navigation;
     private readonly IRoomSessionFactory _sessionFactory;
+    private readonly IDialogService _dialogs;
 
-    public RoomTableNavigator(INavigationService navigation, IRoomSessionFactory sessionFactory)
+    public RoomTableNavigator(INavigationService navigation, IRoomSessionFactory sessionFactory, IDialogService dialogs)
     {
         _navigation = navigation ?? throw new ArgumentNullException(nameof(navigation));
         _sessionFactory = sessionFactory ?? throw new ArgumentNullException(nameof(sessionFactory));
+        _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
     }
 
     public void OpenRoom(RoomLaunchRequest request)
     {
         var previous = _navigation.CurrentView;
         var view = new RoomTableView();
-        var vm = new RoomTableViewModel(request, _sessionFactory, onClose: () =>
+        var vm = new RoomTableViewModel(request, _sessionFactory, _dialogs, onClose: () =>
         {
             if (previous != null)
             {

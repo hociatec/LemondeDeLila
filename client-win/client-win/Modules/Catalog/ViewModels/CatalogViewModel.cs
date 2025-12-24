@@ -33,9 +33,6 @@ public sealed class CatalogViewModel : ObservableObject
     private CatalogCategory? _selectedSubcategory;
     private CatalogGame? _selectedGame;
     private string _status = string.Empty;
-    private string _newRoomName = string.Empty;
-    private int _newMaxPlayers = 4;
-    private bool _newIsPrivate;
     private bool _isBusy;
 
     public CatalogViewModel(ICatalogService service, IRoomRealtimeService roomRealtime, IRoomTableNavigator roomNavigator, Action onClose)
@@ -46,7 +43,6 @@ public sealed class CatalogViewModel : ObservableObject
         _close = onClose ?? (() => { });
         CloseCommand = new RelayCommand(_close);
         RefreshCommand = new AsyncRelayCommand(LoadAsync);
-        CreateTableCommand = new AsyncRelayCommand(CreateTableAsync, CanCreateTable);
         Status = "Chargement du catalogue...";
         RefreshCommand.Execute(null);
     }
@@ -88,18 +84,7 @@ public sealed class CatalogViewModel : ObservableObject
         {
             if (SetProperty(ref _selectedGame, value))
             {
-                if (_selectedGame != null)
-                {
-                    if (string.IsNullOrWhiteSpace(NewRoomName))
-                    {
-                        NewRoomName = _selectedGame.Name;
-                    }
-                    if (_selectedGame.MaxPlayers > 0)
-                    {
-                        NewMaxPlayers = _selectedGame.MaxPlayers;
-                    }
-                }
-                UpdateCommands();
+                // Selection only, activation is handled by Enter/double-click.
             }
         }
     }
@@ -112,35 +97,13 @@ public sealed class CatalogViewModel : ObservableObject
 
     public ICommand CloseCommand { get; }
     public ICommand RefreshCommand { get; }
-    public ICommand CreateTableCommand { get; }
-
-    public string NewRoomName
-    {
-        get => _newRoomName;
-        set => SetProperty(ref _newRoomName, value);
-    }
-
-    public int NewMaxPlayers
-    {
-        get => _newMaxPlayers;
-        set => SetProperty(ref _newMaxPlayers, value);
-    }
-
-    public bool NewIsPrivate
-    {
-        get => _newIsPrivate;
-        set => SetProperty(ref _newIsPrivate, value);
-    }
 
     public bool IsBusy
     {
         get => _isBusy;
         private set
         {
-            if (SetProperty(ref _isBusy, value))
-            {
-                UpdateCommands();
-            }
+            SetProperty(ref _isBusy, value);
         }
     }
 
@@ -305,7 +268,7 @@ public sealed class CatalogViewModel : ObservableObject
         }
     }
 
-    private async Task CreateTableAsync()
+    public async Task ActivateSelectedGameAsync()
     {
         if (SelectedGame == null)
         {
@@ -313,18 +276,15 @@ public sealed class CatalogViewModel : ObservableObject
             return;
         }
 
-        int maxPlayers = NewMaxPlayers < 1 ? SelectedGame.MaxPlayers : NewMaxPlayers;
-        if (maxPlayers < 1)
-        {
-            maxPlayers = 2;
-        }
+        int maxPlayers = SelectedGame.MaxPlayers > 0 ? SelectedGame.MaxPlayers : 4;
+        string name = $"Table {SelectedGame.Name}";
 
         IsBusy = true;
         try
         {
             Status = "Creation de la table...";
             var created = await _roomRealtime.CreateRoomAsync(
-                new CreateRoomRequest(SelectedGame.Code, NewRoomName, maxPlayers, NewIsPrivate)).ConfigureAwait(true);
+                new CreateRoomRequest(SelectedGame.Code, name, maxPlayers, false)).ConfigureAwait(true);
 
             if (created == null)
             {
@@ -343,15 +303,5 @@ public sealed class CatalogViewModel : ObservableObject
         {
             IsBusy = false;
         }
-    }
-
-    private bool CanCreateTable()
-    {
-        return !IsBusy && SelectedGame != null;
-    }
-
-    private void UpdateCommands()
-    {
-        (CreateTableCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
     }
 }

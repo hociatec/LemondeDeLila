@@ -8,6 +8,7 @@ using client_win.Core;
 using client_win.Modules.Game.Models;
 using client_win.Modules.Game.Services;
 using client_win.Modules.Game.Sessions;
+using client_win.Modules.Shell.Services;
 
 namespace client_win.Modules.Game.ViewModels;
 
@@ -16,10 +17,12 @@ public sealed class RoomTableViewModel : ObservableObject
     private readonly RoomLaunchRequest _request;
     private readonly IRoomSessionFactory _sessionFactory;
     private readonly Action? _onClose;
+    private readonly IDialogService _dialogs;
     private RoomSession? _session;
     private readonly Action<string> _errorHandler;
     private readonly Action<string> _historyHandler;
     private bool _isSpectator;
+    private RoomSnapshot _snapshot = new();
 
     private string _status = string.Empty;
     private string _roomName = string.Empty;
@@ -30,13 +33,14 @@ public sealed class RoomTableViewModel : ObservableObject
     private bool _isBusy;
     private IReadOnlyList<int> _botIds = Array.Empty<int>();
 
-    public RoomTableViewModel(RoomLaunchRequest request, IRoomSessionFactory sessionFactory, Action? onClose = null)
+    public RoomTableViewModel(RoomLaunchRequest request, IRoomSessionFactory sessionFactory, IDialogService dialogs, Action? onClose = null)
     {
         _request = request ?? throw new ArgumentNullException(nameof(request));
         _sessionFactory = sessionFactory ?? throw new ArgumentNullException(nameof(sessionFactory));
+        _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
         _onClose = onClose;
 
-        CloseCommand = new RelayCommand(() => _onClose?.Invoke());
+        CloseCommand = new AsyncRelayCommand(RequestCloseAsync, () => !IsBusy);
         TogglePrivacyCommand = new AsyncRelayCommand(TogglePrivacyAsync, () => !IsBusy);
         ToggleRoleCommand = new AsyncRelayCommand(ToggleRoleAsync, () => !IsBusy);
         AddBotCommand = new AsyncRelayCommand(AddBotAsync, () => !IsBusy);
@@ -163,6 +167,7 @@ public sealed class RoomTableViewModel : ObservableObject
 
     private void ApplySnapshot(RoomSnapshot snapshot)
     {
+        _snapshot = snapshot;
         RoomName = string.IsNullOrWhiteSpace(snapshot.RoomName) ? $"Table #{snapshot.RoomId}" : snapshot.RoomName;
         GameType = string.IsNullOrWhiteSpace(snapshot.GameType) ? _request.GameType : snapshot.GameType;
         PrivacyLabel = snapshot.IsPrivate ? "Privee" : "Publique";
@@ -175,6 +180,41 @@ public sealed class RoomTableViewModel : ObservableObject
             snapshot.BotsCount,
             snapshot.SpectatorsCount);
         _botIds = snapshot.BotIds;
+    }
+
+    public void AnnounceTableSummary()
+    {
+        string label = string.IsNullOrWhiteSpace(RoomName)
+            ? (_snapshot.RoomId > 0 ? $"Table {_snapshot.RoomId}" : "Table")
+            : RoomName.Trim();
+        if (_snapshot.IsSpectator)
+        {
+            label = $"{label}. Spectateur";
+        }
+
+        int playerCount = _snapshot.PlayersCount > 0 ? _snapshot.PlayersCount : (_snapshot.PlayerNames?.Count ?? 0);
+        int botCount = _snapshot.BotsCount > 0 ? _snapshot.BotsCount : (_snapshot.BotNames?.Count ?? 0);
+        int spectatorCount = _snapshot.SpectatorsCount;
+        string playerNames = JoinNames(_snapshot.PlayerNames, playerCount > 0 ? "inconnus" : "aucun");
+        string botNames = JoinNames(_snapshot.BotNames, botCount > 0 ? "inconnus" : "aucun");
+
+        AddHistory($"{label}. {playerCount} joueur{(playerCount > 1 ? "s" : "")} : {playerNames}. " +
+                   $"{botCount} bot{(botCount > 1 ? "s" : "")} : {botNames}. " +
+                   $"{spectatorCount} spectateur{(spectatorCount > 1 ? "s" : "")}.");
+    }
+
+    public void AnnounceTurnInfo()
+    {
+        AddHistory("Information de tour indisponible.");
+    }
+
+    private async Task RequestCloseAsync()
+    {
+        bool? confirmed = await _dialogs.Confirm("Quitter la table", "Etes-vous sur de quitter la table ?").ConfigureAwait(true);
+        if (confirmed == true)
+        {
+            _onClose?.Invoke();
+        }
     }
 
     private async Task TogglePrivacyAsync()
@@ -352,8 +392,32 @@ public sealed class RoomTableViewModel : ObservableObject
         History.Add(entry);
     }
 
+    private static string JoinNames(IReadOnlyList<string>? names, string fallback)
+    {
+        if (names == null || names.Count == 0)
+        {
+            return fallback;
+        }
+        var set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var list = new List<string>();
+        foreach (var name in names)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                continue;
+            }
+            var trimmed = name.Trim();
+            if (set.Add(trimmed))
+            {
+                list.Add(trimmed);
+            }
+        }
+        return list.Count == 0 ? fallback : string.Join(", ", list);
+    }
+
     private void UpdateCommands()
     {
+        (CloseCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
         (TogglePrivacyCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
         (ToggleRoleCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
         (AddBotCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();

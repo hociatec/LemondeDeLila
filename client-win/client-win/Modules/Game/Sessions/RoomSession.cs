@@ -230,6 +230,13 @@ public sealed class RoomSession : IAsyncDisposable
         {
             snapshot.Status = statusNode.GetString() ?? snapshot.Status;
         }
+        if (room.TryGetProperty("owner", out var ownerNode) && ownerNode.ValueKind == JsonValueKind.Object)
+        {
+            if (ownerNode.TryGetProperty("username", out var ownerName))
+            {
+                snapshot.OwnerUsername = ownerName.GetString() ?? snapshot.OwnerUsername;
+            }
+        }
         if (room.TryGetProperty("isPrivate", out var privateNode) && privateNode.ValueKind != JsonValueKind.Null)
         {
             snapshot.IsPrivate = privateNode.ValueKind == JsonValueKind.True;
@@ -247,10 +254,12 @@ public sealed class RoomSession : IAsyncDisposable
         {
             snapshot.BotsCount = roomBots.GetArrayLength();
             snapshot.BotIds = ExtractBotIds(roomBots);
+            snapshot.BotNames = ExtractBotNames(roomBots);
         }
         if (room.TryGetProperty("players", out var players) && players.ValueKind == JsonValueKind.Array)
         {
             snapshot.PlayersCount = players.GetArrayLength();
+            snapshot.PlayerNames = ExtractPlayerNames(players);
         }
         return snapshot;
     }
@@ -272,11 +281,14 @@ public sealed class RoomSession : IAsyncDisposable
                before.GameType != after.GameType ||
                before.RoomName != after.RoomName ||
                before.Status != after.Status ||
+               before.OwnerUsername != after.OwnerUsername ||
                before.IsPrivate != after.IsPrivate ||
                before.IsSpectator != after.IsSpectator ||
                before.PlayersCount != after.PlayersCount ||
                before.BotsCount != after.BotsCount ||
-               before.SpectatorsCount != after.SpectatorsCount;
+               before.SpectatorsCount != after.SpectatorsCount ||
+               !SameList(before.PlayerNames, after.PlayerNames) ||
+               !SameList(before.BotNames, after.BotNames);
     }
 
     private RoomSnapshot CloneSnapshot()
@@ -287,12 +299,15 @@ public sealed class RoomSession : IAsyncDisposable
             GameType = _snapshot.GameType,
             RoomName = _snapshot.RoomName,
             Status = _snapshot.Status,
+            OwnerUsername = _snapshot.OwnerUsername,
             IsPrivate = _snapshot.IsPrivate,
             IsSpectator = _snapshot.IsSpectator,
             PlayersCount = _snapshot.PlayersCount,
             BotsCount = _snapshot.BotsCount,
             SpectatorsCount = _snapshot.SpectatorsCount,
-            BotIds = new List<int>(_snapshot.BotIds)
+            BotIds = new List<int>(_snapshot.BotIds),
+            PlayerNames = new List<string>(_snapshot.PlayerNames),
+            BotNames = new List<string>(_snapshot.BotNames)
         };
     }
 
@@ -344,6 +359,72 @@ public sealed class RoomSession : IAsyncDisposable
             }
         }
         return list;
+    }
+
+    private static List<string> ExtractBotNames(JsonElement botsNode)
+    {
+        var list = new List<string>();
+        foreach (var bot in botsNode.EnumerateArray())
+        {
+            if (bot.ValueKind != JsonValueKind.Object)
+            {
+                continue;
+            }
+            if (bot.TryGetProperty("name", out var nameNode))
+            {
+                var name = nameNode.GetString();
+                if (!string.IsNullOrWhiteSpace(name))
+                {
+                    list.Add(name);
+                }
+            }
+        }
+        return list;
+    }
+
+    private static List<string> ExtractPlayerNames(JsonElement playersNode)
+    {
+        var list = new List<string>();
+        foreach (var player in playersNode.EnumerateArray())
+        {
+            if (player.ValueKind != JsonValueKind.Object)
+            {
+                continue;
+            }
+            if (player.TryGetProperty("username", out var nameNode))
+            {
+                var name = nameNode.GetString();
+                if (!string.IsNullOrWhiteSpace(name))
+                {
+                    list.Add(name);
+                }
+            }
+        }
+        return list;
+    }
+
+    private static bool SameList(IReadOnlyList<string> left, IReadOnlyList<string> right)
+    {
+        if (ReferenceEquals(left, right))
+        {
+            return true;
+        }
+        if (left == null || right == null)
+        {
+            return false;
+        }
+        if (left.Count != right.Count)
+        {
+            return false;
+        }
+        for (int i = 0; i < left.Count; i++)
+        {
+            if (!string.Equals(left[i], right[i], StringComparison.Ordinal))
+            {
+                return false;
+            }
+        }
+        return true;
     }
 
     public async ValueTask DisposeAsync()

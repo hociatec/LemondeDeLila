@@ -87,7 +87,7 @@ public sealed class MenuRouter : IMenuRouter
 
         var previous = _navigation.CurrentView;
         var view = new JoinGameView();
-        var vm = new JoinGameViewModel(_roomDirectory, _roomRealtime, _roomNavigator, onClose: () =>
+        var vm = new JoinGameViewModel(_roomDirectory, _roomNavigator, onClose: () =>
         {
             if (previous != null)
             {

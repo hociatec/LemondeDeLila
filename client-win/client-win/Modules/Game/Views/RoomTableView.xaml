@@ -34,11 +34,11 @@
             <Border Grid.Column="0" Background="#101C2B" CornerRadius="10" Padding="12" Margin="0,0,12,0">
                 <StackPanel>
                     <TextBlock Text="Historique de la table" Foreground="White" FontWeight="SemiBold" Margin="0,0,0,8"/>
-                    <ListBox ItemsSource="{Binding History}" Background="#0B1523" Foreground="White" />
+                    <ListBox x:Name="HistoryList" ItemsSource="{Binding History}" Background="#0B1523" Foreground="White" />
                 </StackPanel>
             </Border>
             <Border Grid.Column="1" Background="#101C2B" CornerRadius="10" Padding="12">
-                <StackPanel>
+                <StackPanel x:Name="ActionsPanel">
                     <TextBlock Text="Actions" Foreground="White" FontWeight="SemiBold" Margin="0,0,0,8"/>
                     <Button Content="Basculer public/prive (Ctrl+H)" Command="{Binding TogglePrivacyCommand}" Height="36" Margin="0,0,0,8"/>
                     <Button Content="Basculer joueur/spectateur (Ctrl+C)" Command="{Binding ToggleRoleCommand}" Height="36" Margin="0,0,0,8"/>

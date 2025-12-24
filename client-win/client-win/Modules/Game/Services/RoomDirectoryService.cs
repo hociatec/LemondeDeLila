@@ -96,6 +96,36 @@ public sealed class RoomDirectoryService : IRoomDirectoryService
         return new JoinedRoom(id, gameType, name);
     }
 
+    public async Task<JoinedRoom?> SpectatePublicRoomAsync(int roomId, CancellationToken cancellationToken = default)
+    {
+        if (roomId <= 0)
+        {
+            return null;
+        }
+
+        string? token = _session.CurrentUser?.Token;
+        var response = await _ws.RequestAsync<RoomsPublicJoinedPayload>(
+            "rooms.public.spectate",
+            new { roomId },
+            token,
+            cancellationToken).ConfigureAwait(false);
+
+        if (!response.Success || response.Payload == null)
+        {
+            _errors?.Publish(new AppError(
+                response.Error ?? "Impossible d'ouvrir la table en spectateur.",
+                ErrorSeverity.Warning,
+                context: "rooms.public.spectate"));
+            return null;
+        }
+
+        var room = response.Payload.Room;
+        string gameType = room?.GameType ?? string.Empty;
+        string name = room?.Name ?? string.Empty;
+        int id = response.Payload.RoomId > 0 ? response.Payload.RoomId : room?.Id ?? roomId;
+        return new JoinedRoom(id, gameType, name);
+    }
+
     private static PublicRoomSummary? MapSummary(PublicRoomSummaryDto? dto)
     {
         if (dto == null || dto.Id <= 0)

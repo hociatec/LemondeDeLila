@@ -14,28 +14,21 @@ namespace client_win.Modules.Game.ViewModels;
 public sealed class JoinGameViewModel : ObservableObject
 {
     private readonly IRoomDirectoryService _directory;
-    private readonly IRoomRealtimeService _realtime;
     private readonly IRoomTableNavigator _navigator;
     private readonly Action? _onClose;
-    private string _status = "Chargement des parties disponibles...";
-    private string _gameTypeFilter = string.Empty;
-    private string _newGameType = string.Empty;
-    private string _newRoomName = string.Empty;
-    private int _newMaxPlayers = 4;
-    private bool _newIsPrivate;
+    private string _status = "Chargement...";
     private PublicRoomSummary? _selectedRoom;
     private bool _isBusy;
 
-    public JoinGameViewModel(IRoomDirectoryService directory, IRoomRealtimeService realtime, IRoomTableNavigator navigator, Action? onClose = null)
+    public JoinGameViewModel(IRoomDirectoryService directory, IRoomTableNavigator navigator, Action? onClose = null)
     {
         _directory = directory ?? throw new ArgumentNullException(nameof(directory));
-        _realtime = realtime ?? throw new ArgumentNullException(nameof(realtime));
         _navigator = navigator ?? throw new ArgumentNullException(nameof(navigator));
         _onClose = onClose;
         CloseCommand = new RelayCommand(HandleClose);
         RefreshCommand = new AsyncRelayCommand(RefreshRoomsAsync, () => !IsBusy);
         JoinCommand = new AsyncRelayCommand(JoinSelectedRoomAsync, () => SelectedRoom != null && !IsBusy);
-        CreateCommand = new AsyncRelayCommand(CreateRoomAsync, CanCreateRoom);
+        SpectateCommand = new AsyncRelayCommand(SpectateSelectedRoomAsync, () => SelectedRoom != null && !IsBusy);
 
         Rooms = new ObservableCollection<PublicRoomSummary>();
         _ = RefreshRoomsAsync();
@@ -44,21 +37,9 @@ public sealed class JoinGameViewModel : ObservableObject
     public ICommand CloseCommand { get; }
     public ICommand RefreshCommand { get; }
     public ICommand JoinCommand { get; }
-    public ICommand CreateCommand { get; }
+    public ICommand SpectateCommand { get; }
 
     public ObservableCollection<PublicRoomSummary> Rooms { get; }
-
-    public string GameTypeFilter
-    {
-        get => _gameTypeFilter;
-        set
-        {
-            if (SetProperty(ref _gameTypeFilter, value))
-            {
-                UpdateCommands();
-            }
-        }
-    }
 
     public PublicRoomSummary? SelectedRoom
     {
@@ -70,36 +51,6 @@ public sealed class JoinGameViewModel : ObservableObject
                 UpdateCommands();
             }
         }
-    }
-
-    public string NewGameType
-    {
-        get => _newGameType;
-        set
-        {
-            if (SetProperty(ref _newGameType, value))
-            {
-                UpdateCommands();
-            }
-        }
-    }
-
-    public string NewRoomName
-    {
-        get => _newRoomName;
-        set => SetProperty(ref _newRoomName, value);
-    }
-
-    public int NewMaxPlayers
-    {
-        get => _newMaxPlayers;
-        set => SetProperty(ref _newMaxPlayers, value);
-    }
-
-    public bool NewIsPrivate
-    {
-        get => _newIsPrivate;
-        set => SetProperty(ref _newIsPrivate, value);
     }
 
     public bool IsBusy
@@ -125,16 +76,21 @@ public sealed class JoinGameViewModel : ObservableObject
         IsBusy = true;
         try
         {
-            Status = "Chargement des tables publiques...";
-            var rooms = await _directory.ListPublicRoomsAsync(GameTypeFilter).ConfigureAwait(true);
+            Status = "Chargement...";
+            var rooms = await _directory.ListPublicRoomsAsync(null).ConfigureAwait(true);
             Rooms.Clear();
+            SelectedRoom = null;
             foreach (var room in rooms)
             {
                 Rooms.Add(room);
             }
+            if (Rooms.Count > 0)
+            {
+                SelectedRoom ??= Rooms[0];
+            }
             Status = Rooms.Count == 0
-                ? "Aucune table publique disponible."
-                : $"Tables publiques disponibles: {Rooms.Count}.";
+                ? "Aucune table publique en cours."
+                : "Tables publiques chargées.";
         }
         catch (Exception ex)
         {
@@ -177,35 +133,26 @@ public sealed class JoinGameViewModel : ObservableObject
         }
     }
 
-    private async Task CreateRoomAsync()
+    private async Task SpectateSelectedRoomAsync()
     {
-        string gameType = NewGameType?.Trim() ?? string.Empty;
-        if (string.IsNullOrWhiteSpace(gameType))
+        if (SelectedRoom == null)
         {
-            Status = "Code de jeu requis.";
+            Status = "Aucune table sélectionnée.";
             return;
         }
 
-        int maxPlayers = NewMaxPlayers < 1 ? 1 : NewMaxPlayers;
         IsBusy = true;
         try
         {
-            Status = "Creation de la table...";
-            var created = await _realtime.CreateRoomAsync(
-                new CreateRoomRequest(gameType, NewRoomName, maxPlayers, NewIsPrivate)).ConfigureAwait(true);
-
-            if (created == null)
+            Status = $"Ouverture en spectateur de {SelectedRoom.Name}...";
+            var joined = await _directory.SpectatePublicRoomAsync(SelectedRoom.Id).ConfigureAwait(true);
+            if (joined == null)
             {
-                Status = "Creation impossible.";
+                Status = "Ouverture impossible.";
                 return;
             }
-
-            Status = $"Table creee: #{created.RoomId} ({created.GameType}).";
-            _navigator.OpenRoom(new RoomLaunchRequest(created.RoomId, created.GameType, created.RoomName, spectator: false));
-            if (!NewIsPrivate)
-            {
-                await RefreshRoomsAsync().ConfigureAwait(true);
-            }
+            Status = $"Table ouverte en spectateur: #{joined.RoomId} ({joined.GameType}).";
+            _navigator.OpenRoom(new RoomLaunchRequest(joined.RoomId, joined.GameType, joined.RoomName, spectator: true));
         }
         catch (Exception ex)
         {
@@ -217,16 +164,11 @@ public sealed class JoinGameViewModel : ObservableObject
         }
     }
 
-    private bool CanCreateRoom()
-    {
-        return !IsBusy && !string.IsNullOrWhiteSpace(NewGameType);
-    }
-
     private void UpdateCommands()
     {
         (RefreshCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
         (JoinCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
-        (CreateCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
+        (SpectateCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
     }
 
     private void HandleClose()

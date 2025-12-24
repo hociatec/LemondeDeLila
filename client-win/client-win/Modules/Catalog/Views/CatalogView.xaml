@@ -141,7 +141,9 @@
                          SelectedItem="{Binding SelectedGame, Mode=TwoWay}"
                          SelectionMode="Single"
                          KeyboardNavigation.TabNavigation="None"
-                         IsTabStop="False">
+                         IsTabStop="False"
+                         KeyDown="OnGamesKeyDown"
+                         MouseDoubleClick="OnGamesDoubleClick">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
                             <StackPanel Margin="0 4 0 4">
@@ -175,28 +177,7 @@
         </Border>
 
         <Grid Grid.Row="2" Grid.ColumnSpan="3" Margin="16 0 16 16">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-            <Border Grid.Column="0" Background="#0E1B2C" CornerRadius="10" Padding="12">
-                <StackPanel>
-                    <TextBlock Text="Creer une table" Foreground="White" FontSize="14" FontWeight="SemiBold" Margin="0 0 0 6" />
-                    <StackPanel Orientation="Horizontal">
-                        <StackPanel Margin="0 0 12 0">
-                            <TextBlock Text="Nom" Foreground="#9CB2D1" FontSize="11" />
-                            <TextBox Width="200" Text="{Binding NewRoomName, UpdateSourceTrigger=PropertyChanged}" />
-                        </StackPanel>
-                        <StackPanel Margin="0 0 12 0">
-                            <TextBlock Text="Max joueurs" Foreground="#9CB2D1" FontSize="11" />
-                            <TextBox Width="80" Text="{Binding NewMaxPlayers, UpdateSourceTrigger=PropertyChanged}" />
-                        </StackPanel>
-                        <CheckBox Content="Table privee" IsChecked="{Binding NewIsPrivate}" Foreground="White" VerticalAlignment="Center" Margin="0 16 12 0" />
-                        <Button Content="Creer la table" Command="{Binding CreateTableCommand}" Width="160" />
-                    </StackPanel>
-                </StackPanel>
-            </Border>
-            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="12 0 0 0">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
                 <TextBlock Text="{Binding Status}" Foreground="{StaticResource HighlightBrush}" VerticalAlignment="Center" Margin="0 0 12 0" />
             </StackPanel>
         </Grid>

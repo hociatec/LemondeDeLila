@@ -87,6 +87,27 @@ public partial class CatalogView : UserControl
         }
     }
 
+    private async void OnGamesKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key != Key.Enter || DataContext is not CatalogViewModel vm)
+        {
+            return;
+        }
+
+        e.Handled = true;
+        await vm.ActivateSelectedGameAsync().ConfigureAwait(true);
+    }
+
+    private async void OnGamesDoubleClick(object sender, MouseButtonEventArgs e)
+    {
+        if (DataContext is not CatalogViewModel vm)
+        {
+            return;
+        }
+
+        await vm.ActivateSelectedGameAsync().ConfigureAwait(true);
+    }
+
     private void FocusAfterEscape(CatalogEscapeResult result)
     {
         switch (result)

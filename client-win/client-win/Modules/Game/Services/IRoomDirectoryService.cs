@@ -9,4 +9,5 @@ public interface IRoomDirectoryService
 {
     Task<IReadOnlyList<PublicRoomSummary>> ListPublicRoomsAsync(string? gameType, CancellationToken cancellationToken = default);
     Task<JoinedRoom?> JoinPublicRoomAsync(int roomId, CancellationToken cancellationToken = default);
+    Task<JoinedRoom?> SpectatePublicRoomAsync(int roomId, CancellationToken cancellationToken = default);
 }

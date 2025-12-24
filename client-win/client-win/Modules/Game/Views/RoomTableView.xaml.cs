@@ -6,6 +6,8 @@ namespace client_win.Modules.Game.Views;
 
 public partial class RoomTableView : UserControl
 {
+    private RoomTableViewModel? _vm;
+
     public RoomTableView()
     {
         InitializeComponent();
@@ -15,15 +17,19 @@ public partial class RoomTableView : UserControl
     {
         if (DataContext is RoomTableViewModel vm)
         {
+            _vm = vm;
+            vm.History.CollectionChanged += OnHistoryChanged;
             await vm.InitializeAsync().ConfigureAwait(true);
         }
     }
 
     private async void OnUnloaded(object sender, System.Windows.RoutedEventArgs e)
     {
-        if (DataContext is RoomTableViewModel vm)
+        if (_vm != null)
         {
-            await vm.ShutdownAsync().ConfigureAwait(true);
+            _vm.History.CollectionChanged -= OnHistoryChanged;
+            await _vm.ShutdownAsync().ConfigureAwait(true);
+            _vm = null;
         }
     }
 
@@ -32,6 +38,30 @@ public partial class RoomTableView : UserControl
         if (DataContext is not RoomTableViewModel vm)
         {
             return;
+        }
+
+        if (e.Key == Key.Tab)
+        {
+            if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
+            {
+                if (ActionsPanel?.IsKeyboardFocusWithin == true)
+                {
+                    HistoryList?.Focus();
+                    e.Handled = true;
+                }
+            }
+            else
+            {
+                if (HistoryList?.IsKeyboardFocusWithin == true)
+                {
+                    FocusFirstAction();
+                    e.Handled = true;
+                }
+            }
+            if (e.Handled)
+            {
+                return;
+            }
         }
 
         if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
@@ -75,6 +105,30 @@ public partial class RoomTableView : UserControl
             return;
         }
 
+        if (e.Key == Key.W)
+        {
+            vm.AnnounceTableSummary();
+            e.Handled = true;
+            return;
+        }
+
+        if (e.Key == Key.T)
+        {
+            vm.AnnounceTurnInfo();
+            e.Handled = true;
+            return;
+        }
+
+        if (e.Key == Key.Q)
+        {
+            if (vm.CloseCommand.CanExecute(null))
+            {
+                vm.CloseCommand.Execute(null);
+                e.Handled = true;
+            }
+            return;
+        }
+
         if (e.Key == Key.B)
         {
             if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
@@ -94,5 +148,32 @@ public partial class RoomTableView : UserControl
                 }
             }
         }
+    }
+
+    private void OnHistoryChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+    {
+        if (HistoryList == null || HistoryList.Items.Count == 0)
+        {
+            return;
+        }
+        var last = HistoryList.Items[HistoryList.Items.Count - 1];
+        HistoryList.ScrollIntoView(last);
+    }
+
+    private void FocusFirstAction()
+    {
+        if (ActionsPanel == null)
+        {
+            return;
+        }
+        foreach (var child in ActionsPanel.Children)
+        {
+            if (child is Button button && button.IsEnabled)
+            {
+                button.Focus();
+                return;
+            }
+        }
+        ActionsPanel.Focus();
     }
 }

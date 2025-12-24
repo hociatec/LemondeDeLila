@@ -11,5 +11,12 @@ public sealed class PublicRoomSummary
     public int BotsCount { get; set; }
     public string OwnerUsername { get; set; } = string.Empty;
 
-    public override string ToString() => $"{Name} ({PlayersCount}/{MaxPlayers})";
+    public string GameGroup => string.IsNullOrWhiteSpace(GameType) ? "Autres" : GameType;
+
+    public override string ToString()
+    {
+        string owner = string.IsNullOrWhiteSpace(OwnerUsername) ? "?" : OwnerUsername;
+        int current = PlayersCount + BotsCount;
+        return $"#{Id} {Name} ({GameType}) {current}/{MaxPlayers} - {Status} - {owner}";
+    }
 }
