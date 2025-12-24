@@ -1,7 +1,6 @@
 using System;
 using System.Threading.Tasks;
 using System.Windows;
-using client_win.Core;
 using client_win.Modules.Chat.ViewModels;
 using client_win.Modules.Chat.Views;
 using client_win.Modules.Settings.Services;
@@ -10,24 +9,24 @@ using client_win.Modules.Shell.Services;
 namespace client_win.Modules.Chat.Services;
 
 /// <summary>
-/// Ouvre la fenêtre de tchat en MVVM, sans logique réseau dans la couche UI.
+/// Ouvre le tchat dans le shell principal, sans logique réseau dans la couche UI.
 /// </summary>
 public sealed class ChatLauncher : IChatLauncher
 {
     private readonly IChatService _chat;
     private readonly IDialogService _dialogs;
     private readonly IOptionsService _options;
-    private readonly IViewFactory<ChatWindow> _windowFactory;
-    private ChatWindow? _window;
-    private Window? _owner;
+    private readonly INavigationService _navigation;
+    private ChatView? _view;
+    private System.Windows.Controls.UserControl? _previousView;
     private bool _isCleaningUp;
 
-    public ChatLauncher(IChatService chat, IDialogService dialogs, IOptionsService options, IViewFactory<ChatWindow> windowFactory)
+    public ChatLauncher(IChatService chat, IDialogService dialogs, IOptionsService options, INavigationService navigation)
     {
         _chat = chat ?? throw new ArgumentNullException(nameof(chat));
         _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
         _options = options ?? throw new ArgumentNullException(nameof(options));
-        _windowFactory = windowFactory ?? throw new ArgumentNullException(nameof(windowFactory));
+        _navigation = navigation ?? throw new ArgumentNullException(nameof(navigation));
     }
 
     public async Task<string> OpenAsync(Window owner)
@@ -46,24 +45,14 @@ public sealed class ChatLauncher : IChatLauncher
 
         await Application.Current.Dispatcher.InvokeAsync(() =>
         {
-            if (_window == null || !_window.IsLoaded)
+            if (_view == null)
             {
-                _owner = owner;
-                _window = _windowFactory.Create();
-                _window.DataContext = new ChatViewModel(_chat, () => _window?.Close());
-                _window.Owner = owner;
-                _window.Closed += async (_, _) => await CleanupAfterCloseAsync();
+                _previousView = _navigation.CurrentView;
+                _view = new ChatView();
+                _view.DataContext = new ChatViewModel(_chat, () => _ = CloseAsync());
             }
-            if (_owner == null)
-            {
-                _owner = owner;
-            }
-            if (_owner != null)
-            {
-                _owner.IsEnabled = false;
-            }
-            _window.Show();
-            _window.Activate();
+            _navigation.Show(_view);
+            _view.Focus();
         });
 
         return "Tchat ouvert.";
@@ -71,17 +60,14 @@ public sealed class ChatLauncher : IChatLauncher
 
     public async Task CloseAsync()
     {
-        if (_window != null)
+        await Application.Current.Dispatcher.InvokeAsync(() =>
         {
-            await Application.Current.Dispatcher.InvokeAsync(() => _window.Close());
-            return;
-        }
-        if (_owner != null)
-        {
-            _owner.IsEnabled = true;
-            _owner = null;
-        }
-        await _chat.CloseAsync();
+            if (_previousView != null)
+            {
+                _navigation.Show(_previousView);
+            }
+        });
+        await CleanupAfterCloseAsync();
     }
 
     private async Task CleanupAfterCloseAsync()
@@ -92,12 +78,8 @@ public sealed class ChatLauncher : IChatLauncher
         }
         _isCleaningUp = true;
 
-        if (_owner != null)
-        {
-            _owner.IsEnabled = true;
-            _owner = null;
-        }
-        _window = null;
+        _view = null;
+        _previousView = null;
         await _chat.CloseAsync();
         _isCleaningUp = false;
     }
