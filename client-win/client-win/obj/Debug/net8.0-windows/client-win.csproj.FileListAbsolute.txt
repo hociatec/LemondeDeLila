@@ -74,3 +74,7 @@ C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Debug\net8.0-windows\Modul
 C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Debug\net8.0-windows\Modules\Messaging\Views\ConversationInputPanel.baml
 C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Debug\net8.0-windows\Modules\Messaging\Views\MessageReadOnlyPanel.baml
 C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Debug\net8.0-windows\Modules\Messaging\Views\MessageReadOnlyPanel.g.cs
+C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Debug\net8.0-windows\Modules\Chat\Views\ChatView.baml
+C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Debug\net8.0-windows\Modules\Chat\Views\ChatView.g.cs
+C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Debug\net8.0-windows\Modules\Game\Views\RoomTableView.baml
+C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Debug\net8.0-windows\Modules\Game\Views\RoomTableView.g.cs

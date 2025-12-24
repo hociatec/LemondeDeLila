@@ -10,6 +10,7 @@ using System.Windows;
 using client_win.Modules.Messaging.Services;
 using client_win.Modules.Messaging.ViewModels;
 using client_win.Modules.Messaging.Views;
+using client_win.Modules.Game.Services;
 
 namespace client_win.Modules.MainMenu.Services;
 
@@ -24,6 +25,8 @@ public sealed class MenuRouterStub : IMenuRouter
     private readonly ICatalogService _catalog;
     private readonly INavigationService _navigation;
     private readonly IMessagingService _messaging;
+    private readonly IRoomRealtimeService _roomRealtime;
+    private readonly IRoomTableNavigator _roomNavigator;
 
     public MenuRouterStub(
         ILogger<MenuRouterStub> logger,
@@ -31,7 +34,9 @@ public sealed class MenuRouterStub : IMenuRouter
         IChatLauncher chat,
         ICatalogService catalog,
         INavigationService navigation,
-        IMessagingService messaging)
+        IMessagingService messaging,
+        IRoomRealtimeService roomRealtime,
+        IRoomTableNavigator roomNavigator)
     {
         _logger = logger;
         _options = options;
@@ -39,13 +44,15 @@ public sealed class MenuRouterStub : IMenuRouter
         _catalog = catalog;
         _navigation = navigation;
         _messaging = messaging;
+        _roomRealtime = roomRealtime;
+        _roomNavigator = roomNavigator;
     }
 
     public Task<string> OpenCatalog()
     {
         var previous = _navigation.CurrentView;
         var view = new CatalogView();
-        var vm = new CatalogViewModel(_catalog, onClose: () =>
+        var vm = new CatalogViewModel(_catalog, _roomRealtime, _roomNavigator, onClose: () =>
         {
             if (previous != null)
             {
