@@ -41,7 +41,7 @@
                     <GroupStyle>
                         <GroupStyle.HeaderTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding Name, StringFormat=== {0} ===}"
+                                <TextBlock Text="{Binding Name, StringFormat='=== {0} ==='}"
                                            FontWeight="SemiBold"
                                            Margin="0,8,0,2"
                                            Foreground="#0B1523"/>
