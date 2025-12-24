@@ -131,48 +131,52 @@
                         </TextBlock>
                     </Border>
 
-                    <ListBox x:Name="MessagesList"
-                             Grid.Row="1"
+                    <Grid Grid.Row="1">
+                        <TextBlock x:Name="EmptyMessagesText"
+                                   Text="Aucun message"
+                                   Foreground="#7CA3D6"
+                                   FontSize="16"
+                                   FontStyle="Italic"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   Focusable="True"
+                                   IsTabStop="False"
+                                   AutomationProperties.Name="Aucun message dans cette boîte">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding HasItems, ElementName=MessagesList}" Value="False">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+
+                        <ListBox x:Name="MessagesList"
                              ItemsSource="{Binding BoxMessages}"
                              SelectedItem="{Binding SelectedMessage, Mode=TwoWay}"
                              MouseDoubleClick="OnMessagesDoubleClick"
                              KeyDown="OnMessagesKeyDown"
                              ItemContainerStyle="{StaticResource ListButtonItem}"
                              AutomationProperties.Name="Liste des messages">
-                        <ListBox.Style>
-                            <Style TargetType="ListBox" BasedOn="{StaticResource MessageListBox}">
-                                <Setter Property="AutomationProperties.LiveSetting" Value="Polite" />
-                                <Style.Triggers>
-                                    <Trigger Property="HasItems" Value="False">
-                                        <Setter Property="AutomationProperties.Name" Value="Aucun message" />
-                                        <Setter Property="Template">
-                                            <Setter.Value>
-                                                <ControlTemplate TargetType="ListBox">
-                                                    <TextBlock Text="Aucun message"
-                                                               Foreground="#7CA3D6"
-                                                               FontSize="16"
-                                                               FontStyle="Italic"
-                                                               HorizontalAlignment="Center"
-                                                               VerticalAlignment="Center"
-                                                               AutomationProperties.Name="Aucun message dans cette boîte"
-                                                               AutomationProperties.LiveSetting="Assertive" />
-                                                </ControlTemplate>
-                                            </Setter.Value>
-                                        </Setter>
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </ListBox.Style>
-                        <ListBox.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock Style="{StaticResource MessageSubjectText}">
-                                    <TextBlock.Text>
-                                        <Binding Path="Subject" TargetNullValue="Sans sujet" />
-                                    </TextBlock.Text>
-                                </TextBlock>
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
+                            <ListBox.Style>
+                                <Style TargetType="ListBox" BasedOn="{StaticResource MessageListBox}">
+                                    <Setter Property="AutomationProperties.LiveSetting" Value="Polite" />
+                                </Style>
+                            </ListBox.Style>
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Style="{StaticResource MessageSubjectText}">
+                                        <TextBlock.Text>
+                                            <Binding Path="Subject" TargetNullValue="Sans sujet" />
+                                        </TextBlock.Text>
+                                    </TextBlock>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </Grid>
                 </Grid>
             </Border>
 
@@ -242,24 +246,33 @@
                                 </Style>
                             </StackPanel.Style>
 
-                            <TextBlock Style="{StaticResource MessageSubjectText}">
+                            <TextBlock Text="Sujet:"
+                                       Foreground="#9CB2D1"
+                                       FontSize="12"
+                                       FontWeight="SemiBold"
+                                       Margin="0 0 0 4" />
+                            <TextBlock Style="{StaticResource MessageSubjectText}"
+                                       Margin="0 0 0 8">
                                 <TextBlock.Text>
                                     <Binding Path="SelectedMessage.Subject" TargetNullValue="Sans sujet" />
                                 </TextBlock.Text>
                             </TextBlock>
-                            <TextBlock Text="{Binding SelectedMessage.Sender.Username, StringFormat=De: {0}}"
+                            <TextBlock Text="{Binding SelectedMessage.Sender.Username, StringFormat=D: {0}}"
                                        Foreground="#C9D7E8"
-                                       FontSize="13"
-                                       Margin="0 8 0 0" />
+                                       FontSize="13" />
                             <TextBlock Text="{Binding SelectedMessage.Recipient.Username, StringFormat=A: {0}}"
                                        Foreground="#C9D7E8"
                                        FontSize="13"
                                        Margin="0 2 0 0" />
-                            <TextBlock Text="{Binding SelectedMessage.CreatedAt, StringFormat='{}{0:dd/MM/yyyy HH:mm}'}"
+                            <TextBlock Text="{Binding SelectedMessage.CreatedAt, StringFormat='Date: {0:dd/MM/yyyy HH:mm}'}"
                                        Foreground="#7CA3D6"
                                        FontSize="12"
                                        Margin="0 2 0 12" />
-
+                            <TextBlock Text="Contenu:"
+                                       Foreground="#9CB2D1"
+                                       FontSize="12"
+                                       FontWeight="SemiBold"
+                                       Margin="0 0 0 6" />
                             <TextBox x:Name="DetailBody"
                                      Text="{Binding SelectedMessage.Text}"
                                      IsReadOnly="True"

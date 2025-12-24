@@ -49,11 +49,15 @@ public partial class MessagingView : UserControl
             return;
         }
 
-        if (_currentScreen == MessagingScreen.Detail && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
+        if (_currentScreen is MessagingScreen.Detail or MessagingScreen.List
+            && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
         {
             if (e.Key == Key.R)
             {
-                vm.RestoreCommand.Execute(null);
+                if (vm.SelectedBox == MessagingBox.Deleted)
+                {
+                    vm.RestoreCommand.Execute(null);
+                }
                 e.Handled = true;
                 return;
             }
@@ -120,7 +124,7 @@ public partial class MessagingView : UserControl
                     {
                         MessagesList.SelectedIndex = 0;
                     }
-                    FocusListItem(MessagesList);
+                    FocusMessageList();
                     break;
                 case MessagingScreen.Detail:
                     DetailBody.Focus();
@@ -151,6 +155,17 @@ public partial class MessagingView : UserControl
         }
 
         listBox.Focus();
+    }
+
+    private void FocusMessageList()
+    {
+        if (MessagesList.Items.Count == 0)
+        {
+            EmptyMessagesText.Focus();
+            return;
+        }
+
+        FocusListItem(MessagesList);
     }
 
     private void OnMenuKeyDown(object sender, KeyEventArgs e)
