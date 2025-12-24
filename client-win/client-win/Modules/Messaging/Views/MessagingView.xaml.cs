@@ -44,7 +44,29 @@ public partial class MessagingView : UserControl
 
     private void OnRootKeyDown(object sender, KeyEventArgs e)
     {
-        if (e.Key != Key.Escape || DataContext is not MessagingViewModel vm)
+        if (DataContext is not MessagingViewModel vm)
+        {
+            return;
+        }
+
+        if (_currentScreen == MessagingScreen.Detail && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
+        {
+            if (e.Key == Key.R)
+            {
+                vm.RestoreCommand.Execute(null);
+                e.Handled = true;
+                return;
+            }
+
+            if (e.Key == Key.D)
+            {
+                vm.DeleteCommand.Execute(null);
+                e.Handled = true;
+                return;
+            }
+        }
+
+        if (e.Key != Key.Escape)
         {
             return;
         }
@@ -91,14 +113,14 @@ public partial class MessagingView : UserControl
                     {
                         MenuList.SelectedIndex = 0;
                     }
-                    MenuList.Focus();
+                    FocusListItem(MenuList);
                     break;
                 case MessagingScreen.List:
                     if (MessagesList.Items.Count > 0 && MessagesList.SelectedIndex < 0)
                     {
                         MessagesList.SelectedIndex = 0;
                     }
-                    MessagesList.Focus();
+                    FocusListItem(MessagesList);
                     break;
                 case MessagingScreen.Detail:
                     DetailBody.Focus();
@@ -108,6 +130,27 @@ public partial class MessagingView : UserControl
                     break;
             }
         }, DispatcherPriority.Input);
+    }
+
+    private static void FocusListItem(ListBox listBox)
+    {
+        listBox.UpdateLayout();
+        if (listBox.Items.Count == 0)
+        {
+            listBox.Focus();
+            return;
+        }
+
+        var index = listBox.SelectedIndex >= 0 ? listBox.SelectedIndex : 0;
+        listBox.ScrollIntoView(listBox.Items[index]);
+        var container = listBox.ItemContainerGenerator.ContainerFromIndex(index) as ListBoxItem;
+        if (container != null)
+        {
+            container.Focus();
+            return;
+        }
+
+        listBox.Focus();
     }
 
     private void OnMenuKeyDown(object sender, KeyEventArgs e)

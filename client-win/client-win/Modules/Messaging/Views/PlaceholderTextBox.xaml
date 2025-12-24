@@ -18,7 +18,9 @@
                  AcceptsTab="{Binding AcceptsTab, ElementName=Root}"
                  MinHeight="{Binding MinHeight, ElementName=Root}"
                  VerticalContentAlignment="{Binding VerticalContentAlignment, ElementName=Root}"
-                 TextWrapping="Wrap" />
+                 TextWrapping="Wrap"
+                 AutomationProperties.Name="{Binding (AutomationProperties.Name), ElementName=Root}"
+                 AutomationProperties.LabeledBy="{Binding (AutomationProperties.LabeledBy), ElementName=Root}" />
 
         <TextBlock Text="{Binding Placeholder, ElementName=Root}">
             <TextBlock.Style>

@@ -202,12 +202,19 @@
                     </Border>
 
                     <Grid Grid.Row="1">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
                         <TextBlock Text="Aucun message"
                                    Foreground="#7CA3D6"
                                    FontSize="16"
                                    FontStyle="Italic"
                                    HorizontalAlignment="Center"
-                                   VerticalAlignment="Center">
+                                   VerticalAlignment="Center"
+                                   Grid.RowSpan="3">
                             <TextBlock.Style>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="Visibility" Value="Collapsed" />
@@ -220,7 +227,7 @@
                             </TextBlock.Style>
                         </TextBlock>
 
-                        <StackPanel>
+                        <StackPanel Grid.Row="1">
                             <StackPanel.Style>
                                 <Style TargetType="StackPanel">
                                     <Setter Property="Visibility" Value="Visible" />
@@ -261,6 +268,67 @@
                                      Focusable="True"
                                      IsTabStop="True"
                                      AutomationProperties.Name="Contenu du message" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
+                            <Button Content="Repondre"
+                                    Command="{Binding ReplyCommand}"
+                                    Style="{StaticResource BoxButton}"
+                                    Width="120"
+                                    AutomationProperties.Name="Bouton repondre au message">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource BoxButton}">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding SelectedMessage}" Value="{x:Null}">
+                                                <Setter Property="Visibility" Value="Collapsed" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+
+                            <Button Content="Supprimer"
+                                    Command="{Binding DeleteCommand}"
+                                    Style="{StaticResource BoxButton}"
+                                    Width="120"
+                                    Margin="12 0 0 0"
+                                    AutomationProperties.Name="Bouton supprimer le message">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource BoxButton}">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding SelectedMessage}" Value="{x:Null}">
+                                                <Setter Property="Visibility" Value="Collapsed" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding SelectedBox}" Value="Deleted">
+                                                <Setter Property="Visibility" Value="Collapsed" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+
+                            <Button Content="Restaurer"
+                                    Command="{Binding RestoreCommand}"
+                                    Style="{StaticResource BoxButton}"
+                                    Width="120"
+                                    Margin="12 0 0 0"
+                                    AutomationProperties.Name="Bouton restaurer le message">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource BoxButton}">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding SelectedBox}" Value="Deleted">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding SelectedMessage}" Value="{x:Null}">
+                                                <Setter Property="Visibility" Value="Collapsed" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
                         </StackPanel>
                     </Grid>
                 </Grid>

@@ -408,6 +408,16 @@ public sealed class MessagingViewModel : ObservableObject
             return;
         }
 
+        var confirm = MessageBox.Show(
+            "Voulez-vous vraiment supprimer ce message ?",
+            "Confirmer la suppression",
+            MessageBoxButton.OKCancel,
+            MessageBoxImage.Warning);
+        if (confirm != MessageBoxResult.OK)
+        {
+            return;
+        }
+
         IsBusy = true;
         try
         {
@@ -436,6 +446,16 @@ public sealed class MessagingViewModel : ObservableObject
     {
         var message = SelectedMessage;
         if (message == null || IsBusy)
+        {
+            return;
+        }
+
+        var confirm = MessageBox.Show(
+            "Voulez-vous vraiment restaurer ce message ?",
+            "Confirmer la restauration",
+            MessageBoxButton.OKCancel,
+            MessageBoxImage.Question);
+        if (confirm != MessageBoxResult.OK)
         {
             return;
         }
