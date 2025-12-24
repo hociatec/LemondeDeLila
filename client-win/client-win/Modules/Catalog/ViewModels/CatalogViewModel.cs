@@ -7,6 +7,8 @@ using System.Windows.Input;
 using client_win.Core;
 using client_win.Modules.Catalog.Models;
 using client_win.Modules.Catalog.Services;
+using client_win.Modules.Game.Models;
+using client_win.Modules.Game.Services;
 
 namespace client_win.Modules.Catalog.ViewModels;
 
@@ -23,19 +25,28 @@ public enum CatalogEscapeResult
 public sealed class CatalogViewModel : ObservableObject
 {
     private readonly ICatalogService _service;
+    private readonly IRoomRealtimeService _roomRealtime;
+    private readonly IRoomTableNavigator _roomNavigator;
     private readonly Action _close;
     private List<CatalogGame> _allGames = new();
     private CatalogCategory? _selectedCategory;
     private CatalogCategory? _selectedSubcategory;
     private CatalogGame? _selectedGame;
     private string _status = string.Empty;
+    private string _newRoomName = string.Empty;
+    private int _newMaxPlayers = 4;
+    private bool _newIsPrivate;
+    private bool _isBusy;
 
-    public CatalogViewModel(ICatalogService service, Action onClose)
+    public CatalogViewModel(ICatalogService service, IRoomRealtimeService roomRealtime, IRoomTableNavigator roomNavigator, Action onClose)
     {
         _service = service ?? throw new ArgumentNullException(nameof(service));
+        _roomRealtime = roomRealtime ?? throw new ArgumentNullException(nameof(roomRealtime));
+        _roomNavigator = roomNavigator ?? throw new ArgumentNullException(nameof(roomNavigator));
         _close = onClose ?? (() => { });
         CloseCommand = new RelayCommand(_close);
         RefreshCommand = new AsyncRelayCommand(LoadAsync);
+        CreateTableCommand = new AsyncRelayCommand(CreateTableAsync, CanCreateTable);
         Status = "Chargement du catalogue...";
         RefreshCommand.Execute(null);
     }
@@ -73,7 +84,24 @@ public sealed class CatalogViewModel : ObservableObject
     public CatalogGame? SelectedGame
     {
         get => _selectedGame;
-        set => SetProperty(ref _selectedGame, value);
+        set
+        {
+            if (SetProperty(ref _selectedGame, value))
+            {
+                if (_selectedGame != null)
+                {
+                    if (string.IsNullOrWhiteSpace(NewRoomName))
+                    {
+                        NewRoomName = _selectedGame.Name;
+                    }
+                    if (_selectedGame.MaxPlayers > 0)
+                    {
+                        NewMaxPlayers = _selectedGame.MaxPlayers;
+                    }
+                }
+                UpdateCommands();
+            }
+        }
     }
 
     public string Status
@@ -84,6 +112,37 @@ public sealed class CatalogViewModel : ObservableObject
 
     public ICommand CloseCommand { get; }
     public ICommand RefreshCommand { get; }
+    public ICommand CreateTableCommand { get; }
+
+    public string NewRoomName
+    {
+        get => _newRoomName;
+        set => SetProperty(ref _newRoomName, value);
+    }
+
+    public int NewMaxPlayers
+    {
+        get => _newMaxPlayers;
+        set => SetProperty(ref _newMaxPlayers, value);
+    }
+
+    public bool NewIsPrivate
+    {
+        get => _newIsPrivate;
+        set => SetProperty(ref _newIsPrivate, value);
+    }
+
+    public bool IsBusy
+    {
+        get => _isBusy;
+        private set
+        {
+            if (SetProperty(ref _isBusy, value))
+            {
+                UpdateCommands();
+            }
+        }
+    }
 
     public CatalogEscapeResult HandleEscape(bool closeFromCategoryColumn = false, bool fromSubCategoryColumn = false)
     {
@@ -131,6 +190,7 @@ public sealed class CatalogViewModel : ObservableObject
 
     private async Task LoadAsync()
     {
+        IsBusy = true;
         Status = "Chargement du catalogue...";
 
         // Nettoyer l'état en cas d'erreur précédente
@@ -150,8 +210,11 @@ public sealed class CatalogViewModel : ObservableObject
         catch (Exception ex)
         {
             Status = $"Erreur de chargement du catalogue : {ex.Message}";
-            // L'état a déjà été nettoyé, on peut retourner en toute sécurité
             return;
+        }
+        finally
+        {
+            IsBusy = false;
         }
 
         _allGames = payload.Games?.ToList() ?? new List<CatalogGame>();
@@ -240,5 +303,55 @@ public sealed class CatalogViewModel : ObservableObject
             Status = $"Jeux disponibles : {Games.Count}.";
             SelectedGame = Games.Count > 0 ? Games[0] : null;
         }
+    }
+
+    private async Task CreateTableAsync()
+    {
+        if (SelectedGame == null)
+        {
+            Status = "Selectionnez un jeu.";
+            return;
+        }
+
+        int maxPlayers = NewMaxPlayers < 1 ? SelectedGame.MaxPlayers : NewMaxPlayers;
+        if (maxPlayers < 1)
+        {
+            maxPlayers = 2;
+        }
+
+        IsBusy = true;
+        try
+        {
+            Status = "Creation de la table...";
+            var created = await _roomRealtime.CreateRoomAsync(
+                new CreateRoomRequest(SelectedGame.Code, NewRoomName, maxPlayers, NewIsPrivate)).ConfigureAwait(true);
+
+            if (created == null)
+            {
+                Status = "Creation impossible.";
+                return;
+            }
+
+            Status = $"Table creee: #{created.RoomId} ({created.GameType}).";
+            _roomNavigator.OpenRoom(new RoomLaunchRequest(created.RoomId, created.GameType, created.RoomName, spectator: false));
+        }
+        catch (Exception ex)
+        {
+            Status = $"Erreur: {ex.Message}";
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private bool CanCreateTable()
+    {
+        return !IsBusy && SelectedGame != null;
+    }
+
+    private void UpdateCommands()
+    {
+        (CreateTableCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
     }
 }

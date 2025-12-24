@@ -9,43 +9,86 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- En-tête -->
         <Border Grid.Row="0" Background="#0B1523" Padding="20">
-            <TextBlock Text="Rejoindre une Partie"
-                       FontSize="24"
-                       FontWeight="Bold"
-                       Foreground="White"/>
-        </Border>
-
-        <!-- Contenu principal -->
-        <Border Grid.Row="1" Padding="20">
-            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock Text="Rejoindre une Partie"
+                           FontSize="24"
+                           FontWeight="Bold"
+                           Foreground="White"/>
                 <TextBlock Text="{Binding Status}"
-                           FontSize="16"
-                           Foreground="#555"
-                           TextAlignment="Center"
-                           TextWrapping="Wrap"
-                           Margin="0,0,0,20"/>
-
-                <!-- TODO: Ajouter une liste de parties disponibles ici -->
-                <TextBlock Text="Les fonctionnalités suivantes seront ajoutées :"
+                           Margin="20,6,0,0"
                            FontSize="14"
-                           Foreground="#888"
-                           TextAlignment="Center"
-                           Margin="0,10,0,5"/>
-                <TextBlock FontSize="13" Foreground="#888" TextAlignment="Center" Margin="5">
-                    <Run Text="• Liste des parties publiques"/>
-                    <LineBreak/>
-                    <Run Text="• Recherche de parties par code"/>
-                    <LineBreak/>
-                    <Run Text="• Création de nouvelle partie"/>
-                    <LineBreak/>
-                    <Run Text="• Historique des parties jouées"/>
-                </TextBlock>
+                           Foreground="#C8D4E8"
+                           TextWrapping="Wrap"/>
             </StackPanel>
         </Border>
 
-        <!-- Pied avec bouton Fermer -->
+        <Grid Grid.Row="1" Padding="20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="20"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0">
+                <TextBlock Text="Tables publiques"
+                           FontSize="16"
+                           FontWeight="SemiBold"
+                           Foreground="#0B1523"
+                           Margin="0,0,0,8"/>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                    <TextBox Width="200"
+                             Text="{Binding GameTypeFilter, UpdateSourceTrigger=PropertyChanged}"
+                             Margin="0,0,8,0"/>
+                    <Button Content="Rafraichir"
+                            Command="{Binding RefreshCommand}"
+                            Width="110"/>
+                </StackPanel>
+                <ListView ItemsSource="{Binding Rooms}"
+                          SelectedItem="{Binding SelectedRoom}"
+                          Height="340">
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Header="Nom" DisplayMemberBinding="{Binding Name}" Width="160"/>
+                            <GridViewColumn Header="Jeu" DisplayMemberBinding="{Binding GameType}" Width="90"/>
+                            <GridViewColumn Header="Joueurs" Width="90">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding PlayersCount}"/>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Header="Max" DisplayMemberBinding="{Binding MaxPlayers}" Width="60"/>
+                            <GridViewColumn Header="Owner" DisplayMemberBinding="{Binding OwnerUsername}" Width="120"/>
+                            <GridViewColumn Header="Statut" DisplayMemberBinding="{Binding Status}" Width="90"/>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+                <Button Content="Rejoindre la table selectionnee"
+                        Command="{Binding JoinCommand}"
+                        Height="36"
+                        Margin="0,10,0,0"/>
+            </StackPanel>
+
+            <StackPanel Grid.Column="2">
+                <TextBlock Text="Creer une table"
+                           FontSize="16"
+                           FontWeight="SemiBold"
+                           Foreground="#0B1523"
+                           Margin="0,0,0,8"/>
+                <TextBlock Text="Code du jeu" FontSize="12" Foreground="#555"/>
+                <TextBox Text="{Binding NewGameType, UpdateSourceTrigger=PropertyChanged}" Margin="0,2,0,8"/>
+                <TextBlock Text="Nom de la table" FontSize="12" Foreground="#555"/>
+                <TextBox Text="{Binding NewRoomName, UpdateSourceTrigger=PropertyChanged}" Margin="0,2,0,8"/>
+                <TextBlock Text="Nombre max de joueurs" FontSize="12" Foreground="#555"/>
+                <TextBox Text="{Binding NewMaxPlayers, UpdateSourceTrigger=PropertyChanged}" Margin="0,2,0,8"/>
+                <CheckBox Content="Table privee" IsChecked="{Binding NewIsPrivate}" Margin="0,6,0,10"/>
+                <Button Content="Creer la table"
+                        Command="{Binding CreateCommand}"
+                        Height="36"/>
+            </StackPanel>
+        </Grid>
+
         <Border Grid.Row="2" Background="#F5F5F5" Padding="20" BorderBrush="#DDD" BorderThickness="0,1,0,0">
             <Button Content="Fermer"
                     Command="{Binding CloseCommand}"

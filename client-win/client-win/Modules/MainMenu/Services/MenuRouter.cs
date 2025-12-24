@@ -7,6 +7,7 @@ using client_win.Modules.Catalog.ViewModels;
 using client_win.Modules.Catalog.Views;
 using client_win.Modules.Game.ViewModels;
 using client_win.Modules.Game.Views;
+using client_win.Modules.Game.Services;
 using client_win.Modules.Social.ViewModels;
 using client_win.Modules.Social.Views;
 using client_win.Modules.Social.Services;
@@ -33,6 +34,9 @@ public sealed class MenuRouter : IMenuRouter
     private readonly INavigationService _navigation;
     private readonly IMessagingService _messaging;
     private readonly ISocialService _social;
+    private readonly IRoomDirectoryService _roomDirectory;
+    private readonly IRoomRealtimeService _roomRealtime;
+    private readonly IRoomTableNavigator _roomNavigator;
 
     public MenuRouter(
         ILogger<MenuRouter> logger,
@@ -41,7 +45,10 @@ public sealed class MenuRouter : IMenuRouter
         ICatalogService catalog,
         INavigationService navigation,
         IMessagingService messaging,
-        ISocialService social)
+        ISocialService social,
+        IRoomDirectoryService roomDirectory,
+        IRoomRealtimeService roomRealtime,
+        IRoomTableNavigator roomNavigator)
     {
         _logger = logger;
         _options = options;
@@ -50,6 +57,9 @@ public sealed class MenuRouter : IMenuRouter
         _navigation = navigation;
         _messaging = messaging;
         _social = social;
+        _roomDirectory = roomDirectory;
+        _roomRealtime = roomRealtime;
+        _roomNavigator = roomNavigator;
     }
 
     public Task<string> OpenCatalog()
@@ -58,7 +68,7 @@ public sealed class MenuRouter : IMenuRouter
 
         var previous = _navigation.CurrentView;
         var view = new CatalogView();
-        var vm = new CatalogViewModel(_catalog, onClose: () =>
+        var vm = new CatalogViewModel(_catalog, _roomRealtime, _roomNavigator, onClose: () =>
         {
             if (previous != null)
             {
@@ -77,7 +87,7 @@ public sealed class MenuRouter : IMenuRouter
 
         var previous = _navigation.CurrentView;
         var view = new JoinGameView();
-        var vm = new JoinGameViewModel(onClose: () =>
+        var vm = new JoinGameViewModel(_roomDirectory, _roomRealtime, _roomNavigator, onClose: () =>
         {
             if (previous != null)
             {

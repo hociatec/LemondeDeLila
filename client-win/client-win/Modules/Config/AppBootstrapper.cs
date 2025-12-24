@@ -20,6 +20,7 @@ using client_win.Core;
 using client_win.Modules.Catalog.Services;
 using client_win.Modules.Messaging.Services;
 using client_win.Modules.Social.Services;
+using client_win.Modules.Game.Services;
 
 namespace client_win.Modules.Config;
 
@@ -98,6 +99,19 @@ public static class AppBootstrapper
                 sp.GetRequiredService<WsRequestClient>(),
                 sp.GetRequiredService<ISessionService>(),
                 errors));
+        services.AddSingleton<IRoomDirectoryService>(sp =>
+            new RoomDirectoryService(
+                sp.GetRequiredService<WsRequestClient>(),
+                sp.GetRequiredService<ISessionService>(),
+                errors));
+        services.AddSingleton<IRoomRealtimeService>(sp =>
+            new RoomRealtimeService(
+                sp.GetRequiredService<IWebSocketConnection>(),
+                sp.GetRequiredService<ClientConfiguration>(),
+                sp.GetRequiredService<ISessionService>(),
+                errors));
+        services.AddSingleton<IRoomSessionFactory, RoomSessionFactory>();
+        services.AddSingleton<IRoomTableNavigator, RoomTableNavigator>();
         services.AddTransient<IMenuRouter, MenuRouter>();
 
         var provider = services.BuildServiceProvider();
