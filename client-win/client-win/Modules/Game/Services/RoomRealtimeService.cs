@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Text;
 using client_win.Modules.Config;
 using client_win.Modules.Error;
 using client_win.Modules.Game.Models;
@@ -50,6 +51,7 @@ public sealed class RoomRealtimeService : IRoomRealtimeService
             {
                 headers["x-lila-ws-signature"] = _config.SharedSecret!;
             }
+            var endpoint = BuildRealtimeEndpoint(_config.RealtimeGatewayWs, token, _config.SharedSecret);
 
             using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             timeoutCts.CancelAfter(TimeSpan.FromSeconds(10));
@@ -105,7 +107,7 @@ public sealed class RoomRealtimeService : IRoomRealtimeService
 
             try
             {
-                await _connection.ConnectAsync(_config.RealtimeGatewayWs, token, headers, timeoutCts.Token).ConfigureAwait(false);
+                await _connection.ConnectAsync(endpoint, token, headers, timeoutCts.Token).ConfigureAwait(false);
                 var payload = new
                 {
                     gameType = request.GameType,
@@ -160,5 +162,23 @@ public sealed class RoomRealtimeService : IRoomRealtimeService
         }
 
         return 0;
+    }
+
+    private static Uri BuildRealtimeEndpoint(Uri baseUri, string token, string? signature)
+    {
+        var builder = new UriBuilder(baseUri);
+        var sb = new StringBuilder();
+        if (!string.IsNullOrWhiteSpace(builder.Query))
+        {
+            sb.Append(builder.Query.TrimStart('?'));
+            sb.Append('&');
+        }
+        sb.Append("token=").Append(Uri.EscapeDataString(token));
+        if (!string.IsNullOrWhiteSpace(signature))
+        {
+            sb.Append('&').Append("signature=").Append(Uri.EscapeDataString(signature));
+        }
+        builder.Query = sb.ToString();
+        return builder.Uri;
     }
 }

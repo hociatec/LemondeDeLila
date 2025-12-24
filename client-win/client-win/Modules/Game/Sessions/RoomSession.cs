@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using client_win.Modules.Config;
@@ -63,9 +64,7 @@ public sealed class RoomSession : IAsyncDisposable
             }
 
             var builder = new UriBuilder(_config.RealtimeGatewayWs);
-            builder.Query = spectator
-                ? $"room={roomId}&spectator=1"
-                : $"room={roomId}";
+            builder.Query = BuildQuery(roomId, spectator, token, _config.SharedSecret);
 
             _snapshot = new RoomSnapshot
             {
@@ -83,6 +82,22 @@ public sealed class RoomSession : IAsyncDisposable
         {
             _mutex.Release();
         }
+    }
+
+    private static string BuildQuery(int roomId, bool spectator, string token, string? signature)
+    {
+        var sb = new StringBuilder();
+        sb.Append("room=").Append(Uri.EscapeDataString(roomId.ToString()));
+        if (spectator)
+        {
+            sb.Append("&spectator=1");
+        }
+        sb.Append("&token=").Append(Uri.EscapeDataString(token));
+        if (!string.IsNullOrWhiteSpace(signature))
+        {
+            sb.Append("&signature=").Append(Uri.EscapeDataString(signature));
+        }
+        return sb.ToString();
     }
 
     public async Task SendCommandAsync(string type, object payload, CancellationToken cancellationToken = default)
