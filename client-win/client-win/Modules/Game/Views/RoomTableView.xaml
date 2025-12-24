@@ -28,26 +28,55 @@
 
         <Grid Grid.Row="1" Margin="16">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="280"/>
+                <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <Border Grid.Column="0" Background="#101C2B" CornerRadius="10" Padding="12" Margin="0,0,12,0">
                 <StackPanel>
                     <TextBlock Text="Historique de la table" Foreground="White" FontWeight="SemiBold" Margin="0,0,0,8"/>
-                    <ListBox x:Name="HistoryList" ItemsSource="{Binding History}" Background="#0B1523" Foreground="White" />
+                    <ListBox x:Name="HistoryList"
+                             ItemsSource="{Binding History}"
+                             Background="#0B1523"
+                             Foreground="White"
+                             VirtualizingStackPanel.IsVirtualizing="False"
+                             KeyboardNavigation.TabNavigation="None"
+                             IsTabStop="True" />
                 </StackPanel>
             </Border>
-            <Border Grid.Column="1" Background="#101C2B" CornerRadius="10" Padding="12">
-                <StackPanel x:Name="ActionsPanel">
-                    <TextBlock Text="Actions" Foreground="White" FontWeight="SemiBold" Margin="0,0,0,8"/>
-                    <Button Content="Basculer public/prive (Ctrl+H)" Command="{Binding TogglePrivacyCommand}" Height="36" Margin="0,0,0,8"/>
-                    <Button Content="Basculer joueur/spectateur (Ctrl+C)" Command="{Binding ToggleRoleCommand}" Height="36" Margin="0,0,0,8"/>
-                    <Button Content="Ajouter un bot (B)" Command="{Binding AddBotCommand}" Height="36" Margin="0,0,0,8"/>
-                    <Button Content="Retirer un bot (Shift+B)" Command="{Binding RemoveBotCommand}" Height="36" Margin="0,0,0,8"/>
-                    <Button Content="Lancer la partie (Enter)" Command="{Binding StartGameCommand}" Height="36" Margin="0,0,0,8"/>
-                    <Button Content="Reinitialiser la partie (X)" Command="{Binding ResetGameCommand}" Height="36" Margin="0,0,0,8"/>
-                    <Button Content="Quitter la table" Command="{Binding CloseCommand}" Height="36"/>
-                </StackPanel>
+            <Border x:Name="GamePanel"
+                    Grid.Column="1"
+                    Background="#101C2B"
+                    CornerRadius="10"
+                    Padding="16"
+                    Focusable="True"
+                    KeyboardNavigation.TabNavigation="None"
+                    IsTabStop="True">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <Border Background="#0B1523" CornerRadius="10" Padding="14">
+                        <StackPanel>
+                            <TextBlock Text="Panneau de table" Foreground="White" FontSize="18" FontWeight="SemiBold" />
+                            <TextBlock Text="Tab : historique • Shift+Tab : retour (navigation circulaire)"
+                                       Foreground="#9CB2D1" Margin="0,6,0,0"/>
+                            <TextBlock Text="Q : quitter • Ctrl+H : public/privé • Ctrl+C : joueur/spectateur"
+                                       Foreground="#9CB2D1" Margin="0,2,0,0"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Row="1" Background="#0E1724" CornerRadius="10" Margin="0,12,0,0">
+                        <Grid>
+                            <TextBlock Text="Fenêtre de jeu (WIP)"
+                                       Foreground="#9CB2D1"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       FontSize="16"/>
+                        </Grid>
+                    </Border>
+                </Grid>
             </Border>
         </Grid>
 

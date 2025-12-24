@@ -20,6 +20,7 @@ public partial class RoomTableView : UserControl
             _vm = vm;
             vm.History.CollectionChanged += OnHistoryChanged;
             await vm.InitializeAsync().ConfigureAwait(true);
+            FocusGame();
         }
     }
 
@@ -42,26 +43,17 @@ public partial class RoomTableView : UserControl
 
         if (e.Key == Key.Tab)
         {
-            if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
+            // Navigation circulaire entre fenêtre de jeu et historique.
+            if (HistoryList?.IsKeyboardFocusWithin == true)
             {
-                if (ActionsPanel?.IsKeyboardFocusWithin == true)
-                {
-                    HistoryList?.Focus();
-                    e.Handled = true;
-                }
+                FocusGame();
             }
             else
             {
-                if (HistoryList?.IsKeyboardFocusWithin == true)
-                {
-                    FocusFirstAction();
-                    e.Handled = true;
-                }
+                FocusHistory();
             }
-            if (e.Handled)
-            {
-                return;
-            }
+            e.Handled = true;
+            return;
         }
 
         if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
@@ -85,40 +77,6 @@ public partial class RoomTableView : UserControl
             return;
         }
 
-        if (e.Key == Key.Enter)
-        {
-            if (vm.StartGameCommand.CanExecute(null))
-            {
-                vm.StartGameCommand.Execute(null);
-                e.Handled = true;
-            }
-            return;
-        }
-
-        if (e.Key == Key.X)
-        {
-            if (vm.ResetGameCommand.CanExecute(null))
-            {
-                vm.ResetGameCommand.Execute(null);
-                e.Handled = true;
-            }
-            return;
-        }
-
-        if (e.Key == Key.W)
-        {
-            vm.AnnounceTableSummary();
-            e.Handled = true;
-            return;
-        }
-
-        if (e.Key == Key.T)
-        {
-            vm.AnnounceTurnInfo();
-            e.Handled = true;
-            return;
-        }
-
         if (e.Key == Key.Q)
         {
             if (vm.CloseCommand.CanExecute(null))
@@ -127,26 +85,6 @@ public partial class RoomTableView : UserControl
                 e.Handled = true;
             }
             return;
-        }
-
-        if (e.Key == Key.B)
-        {
-            if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
-            {
-                if (vm.RemoveBotCommand.CanExecute(null))
-                {
-                    vm.RemoveBotCommand.Execute(null);
-                    e.Handled = true;
-                }
-            }
-            else
-            {
-                if (vm.AddBotCommand.CanExecute(null))
-                {
-                    vm.AddBotCommand.Execute(null);
-                    e.Handled = true;
-                }
-            }
         }
     }
 
@@ -160,20 +98,25 @@ public partial class RoomTableView : UserControl
         HistoryList.ScrollIntoView(last);
     }
 
-    private void FocusFirstAction()
+    private void FocusHistory()
     {
-        if (ActionsPanel == null)
+        if (HistoryList == null)
         {
             return;
         }
-        foreach (var child in ActionsPanel.Children)
+        if (HistoryList.Items.Count > 0)
         {
-            if (child is Button button && button.IsEnabled)
+            if (HistoryList.SelectedIndex < 0)
             {
-                button.Focus();
-                return;
+                HistoryList.SelectedIndex = HistoryList.Items.Count - 1;
             }
+            HistoryList.ScrollIntoView(HistoryList.SelectedItem);
         }
-        ActionsPanel.Focus();
+        HistoryList.Focus();
+    }
+
+    private void FocusGame()
+    {
+        GamePanel?.Focus();
     }
 }
