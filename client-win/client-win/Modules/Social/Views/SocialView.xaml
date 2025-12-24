@@ -192,6 +192,7 @@
                              ItemContainerStyle="{StaticResource MenuListItem}"
                              KeyDown="OnMenuKeyDown"
                              PreviewMouseLeftButtonUp="OnMenuClick"
+                             IsTabStop="False"
                              AutomationProperties.Name="Menu social">
                         <ListBoxItem Tag="friends">
                             <TextBlock Text="Amis" />
@@ -519,6 +520,7 @@
                                      SelectedItem="{Binding SelectedBlockedUser, Mode=TwoWay}"
                                      ItemContainerStyle="{StaticResource ListItem}"
                                      Style="{StaticResource ListBoxBase}"
+                                     IsTabStop="False"
                                      AutomationProperties.Name="Liste des utilisateurs bloqués">
                                 <ListBox.ItemTemplate>
                                     <DataTemplate>
@@ -534,8 +536,20 @@
                         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0 12 0 0">
                             <Button Content="Débloquer"
                                     Command="{Binding UnblockUserCommand}"
-                                    Style="{StaticResource PrimaryButton}"
-                                    AutomationProperties.Name="Débloquer l'utilisateur" />
+                                    AutomationProperties.Name="Débloquer l'utilisateur">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+                                        <Setter Property="IsEnabled" Value="True" />
+                                        <Setter Property="IsTabStop" Value="True" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding SelectedBlockedUser}" Value="{x:Null}">
+                                                <Setter Property="IsEnabled" Value="False" />
+                                                <Setter Property="IsTabStop" Value="False" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
                         </StackPanel>
                     </Grid>
                 </Border>
@@ -577,10 +591,12 @@
                                      Height="34"
                                      Margin="0 0 12 0"
                                      Style="{StaticResource InputTextBox}"
+                                     TabIndex="0"
                                      AutomationProperties.Name="Champ de recherche joueur" />
                             <Button Content="Rechercher"
                                     Command="{Binding SearchCommand}"
                                     Style="{StaticResource PrimaryButton}"
+                                    TabIndex="1"
                                     AutomationProperties.Name="Rechercher un joueur" />
                         </StackPanel>
 
@@ -612,6 +628,7 @@
                                      DisplayMemberPath="Username"
                                      ItemContainerStyle="{StaticResource ListItem}"
                                      Style="{StaticResource ListBoxBase}"
+                                     TabIndex="2"
                                      AutomationProperties.Name="Résultats de recherche">
                             </ListBox>
                         </Grid>

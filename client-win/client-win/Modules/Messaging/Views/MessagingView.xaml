@@ -72,6 +72,7 @@
                              ItemContainerStyle="{StaticResource MenuListItem}"
                              KeyDown="OnMenuKeyDown"
                              PreviewMouseLeftButtonUp="OnMenuClick"
+                             IsTabStop="False"
                              AutomationProperties.Name="Menu de navigation de la messagerie">
                         <ListBoxItem x:Name="MenuCompose" Tag="compose" AutomationProperties.Name="Rédiger un nouveau message">
                             <TextBlock Text="Rediger un message" />

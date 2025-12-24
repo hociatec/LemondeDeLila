@@ -10,4 +10,9 @@ public sealed class SocialUser
     public DateTime? Since { get; set; }
     public DateTime? CreatedAt { get; set; }
     public DateTime? BlockedAt { get; set; }
+
+    public override string ToString()
+    {
+        return Username;
+    }
 }
