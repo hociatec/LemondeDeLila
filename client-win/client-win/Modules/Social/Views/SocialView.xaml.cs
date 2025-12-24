@@ -8,6 +8,14 @@ namespace client_win.Modules.Social.Views;
 
 public partial class SocialView : UserControl
 {
+    private enum SocialScreen
+    {
+        Menu,
+        Section
+    }
+
+    private SocialScreen _currentScreen = SocialScreen.Menu;
+
     public SocialView()
     {
         InitializeComponent();
@@ -26,17 +34,32 @@ public partial class SocialView : UserControl
             {
                 MenuList.SelectedIndex = 0;
             }
-            FocusMenu();
+            SetScreen(SocialScreen.Menu);
         }, DispatcherPriority.Input);
     }
 
     private void OnRootKeyDown(object sender, KeyEventArgs e)
     {
-        if (e.Key == Key.Escape && DataContext is SocialViewModel vm)
+        if (e.Key == Key.Tab)
         {
-            vm.CloseCommand.Execute(null);
             e.Handled = true;
+            return;
         }
+
+        if (e.Key != Key.Escape || DataContext is not SocialViewModel vm)
+        {
+            return;
+        }
+
+        if (_currentScreen == SocialScreen.Section)
+        {
+            SetScreen(SocialScreen.Menu);
+            e.Handled = true;
+            return;
+        }
+
+        vm.CloseCommand.Execute(null);
+        e.Handled = true;
     }
 
     private void OnMenuKeyDown(object sender, KeyEventArgs e)
@@ -65,28 +88,43 @@ public partial class SocialView : UserControl
         {
             case "friends":
                 vm.SelectedSection = SocialSection.Friends;
+                SetScreen(SocialScreen.Section);
                 FocusSection(vm.SelectedSection);
                 break;
             case "incoming":
                 vm.SelectedSection = SocialSection.IncomingRequests;
+                SetScreen(SocialScreen.Section);
                 FocusSection(vm.SelectedSection);
                 break;
             case "outgoing":
                 vm.SelectedSection = SocialSection.OutgoingRequests;
+                SetScreen(SocialScreen.Section);
                 FocusSection(vm.SelectedSection);
                 break;
             case "blocked":
                 vm.SelectedSection = SocialSection.Blocked;
+                SetScreen(SocialScreen.Section);
                 FocusSection(vm.SelectedSection);
                 break;
             case "search":
                 vm.SelectedSection = SocialSection.Search;
+                SetScreen(SocialScreen.Section);
                 FocusSection(vm.SelectedSection);
                 break;
             case "profile":
                 vm.SelectedSection = SocialSection.Profile;
+                SetScreen(SocialScreen.Section);
                 FocusSection(vm.SelectedSection);
                 break;
+        }
+    }
+
+    private void SetScreen(SocialScreen screen)
+    {
+        _currentScreen = screen;
+        if (screen == SocialScreen.Menu)
+        {
+            FocusMenu();
         }
     }
 
@@ -147,6 +185,10 @@ public partial class SocialView : UserControl
             return;
         }
 
+        if (listBox.SelectedIndex < 0)
+        {
+            listBox.SelectedIndex = 0;
+        }
         var index = listBox.SelectedIndex >= 0 ? listBox.SelectedIndex : 0;
         listBox.ScrollIntoView(listBox.Items[index]);
         if (listBox.ItemContainerGenerator.ContainerFromIndex(index) is ListBoxItem item)

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 using client_win.Core;
 using client_win.Modules.Social.Models;
@@ -260,7 +261,7 @@ public sealed class SocialViewModel : ObservableObject
         {
             IncomingRequests.Add(request);
         }
-        Status = $"Demandes recues: {IncomingRequests.Count}.";
+        Status = $"Demandes reçues: {IncomingRequests.Count}.";
     }
 
     private async Task LoadOutgoingRequestsAsync()
@@ -270,7 +271,7 @@ public sealed class SocialViewModel : ObservableObject
         {
             OutgoingRequests.Add(request);
         }
-        Status = $"Demandes envoyees: {OutgoingRequests.Count}.";
+        Status = $"Demandes envoyées: {OutgoingRequests.Count}.";
     }
 
     private async Task LoadBlockedAsync()
@@ -290,7 +291,7 @@ public sealed class SocialViewModel : ObservableObject
         {
             ProfileBio = Profile.Bio;
             ProfileVisibility = Profile.Visibility;
-            Status = "Profil charge.";
+            Status = "Profil chargé.";
         }
         else
         {
@@ -307,9 +308,8 @@ public sealed class SocialViewModel : ObservableObject
 
         if (await _service.AcceptFriendAsync(SelectedIncomingRequest.Requester.Id).ConfigureAwait(true))
         {
-            await LoadIncomingRequestsAsync().ConfigureAwait(true);
-            await LoadFriendsAsync().ConfigureAwait(true);
-            Status = "Demande acceptee.";
+            await RefreshAllAsync().ConfigureAwait(true);
+            Status = "Demande acceptée.";
         }
     }
 
@@ -322,8 +322,8 @@ public sealed class SocialViewModel : ObservableObject
 
         if (await _service.RejectFriendAsync(SelectedIncomingRequest.Requester.Id).ConfigureAwait(true))
         {
-            await LoadIncomingRequestsAsync().ConfigureAwait(true);
-            Status = "Demande refusee.";
+            await RefreshAllAsync().ConfigureAwait(true);
+            Status = "Demande refusée.";
         }
     }
 
@@ -336,8 +336,8 @@ public sealed class SocialViewModel : ObservableObject
 
         if (await _service.CancelRequestAsync(SelectedOutgoingRequest.Addressee.Id).ConfigureAwait(true))
         {
-            await LoadOutgoingRequestsAsync().ConfigureAwait(true);
-            Status = "Demande annulee.";
+            await RefreshAllAsync().ConfigureAwait(true);
+            Status = "Demande annulée.";
         }
     }
 
@@ -350,8 +350,8 @@ public sealed class SocialViewModel : ObservableObject
 
         if (await _service.RemoveFriendAsync(SelectedFriend.Id).ConfigureAwait(true))
         {
-            await LoadFriendsAsync().ConfigureAwait(true);
-            Status = "Ami retire.";
+            await RefreshAllAsync().ConfigureAwait(true);
+            Status = "Ami retiré.";
         }
     }
 
@@ -365,24 +365,8 @@ public sealed class SocialViewModel : ObservableObject
 
         if (await _service.BlockUserAsync(targetId).ConfigureAwait(true))
         {
-            await LoadBlockedAsync().ConfigureAwait(true);
-            if (SelectedSection == SocialSection.Friends)
-            {
-                await LoadFriendsAsync().ConfigureAwait(true);
-            }
-            if (SelectedSection == SocialSection.IncomingRequests)
-            {
-                await LoadIncomingRequestsAsync().ConfigureAwait(true);
-            }
-            if (SelectedSection == SocialSection.OutgoingRequests)
-            {
-                await LoadOutgoingRequestsAsync().ConfigureAwait(true);
-            }
-            if (SelectedSection == SocialSection.Search)
-            {
-                await SearchAsync().ConfigureAwait(true);
-            }
-            Status = "Utilisateur bloque.";
+            await RefreshAllAsync().ConfigureAwait(true);
+            Status = "Utilisateur bloqué.";
         }
     }
 
@@ -395,8 +379,8 @@ public sealed class SocialViewModel : ObservableObject
 
         if (await _service.UnblockUserAsync(SelectedBlockedUser.Id).ConfigureAwait(true))
         {
-            await LoadBlockedAsync().ConfigureAwait(true);
-            Status = "Utilisateur debloque.";
+            await RefreshAllAsync().ConfigureAwait(true);
+            Status = "Utilisateur débloqué.";
         }
     }
 
@@ -409,7 +393,8 @@ public sealed class SocialViewModel : ObservableObject
 
         if (await _service.RequestFriendAsync(SelectedSearchUser.Id).ConfigureAwait(true))
         {
-            Status = "Demande envoyee.";
+            await RefreshAllAsync().ConfigureAwait(true);
+            Status = "Demande envoyée.";
         }
     }
 
@@ -426,7 +411,7 @@ public sealed class SocialViewModel : ObservableObject
         {
             SearchResults.Add(user);
         }
-        Status = $"Resultats: {SearchResults.Count}.";
+        Status = $"Résultats: {SearchResults.Count}.";
     }
 
     private async Task UpdateProfileAsync()
@@ -435,13 +420,34 @@ public sealed class SocialViewModel : ObservableObject
         if (updated != null)
         {
             Profile = updated;
-            Status = "Profil mis a jour.";
+            Status = "Profil mis à jour.";
+            MessageBox.Show(
+                "Votre profil a été mis à jour.",
+                "Profil enregistré",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
         }
     }
 
     private async Task RefreshAsync()
     {
-        await LoadSectionAsync(SelectedSection).ConfigureAwait(true);
+        await RefreshAllAsync().ConfigureAwait(true);
+    }
+
+    private async Task RefreshAllAsync()
+    {
+        await LoadFriendsAsync().ConfigureAwait(true);
+        await LoadIncomingRequestsAsync().ConfigureAwait(true);
+        await LoadOutgoingRequestsAsync().ConfigureAwait(true);
+        await LoadBlockedAsync().ConfigureAwait(true);
+        if (SelectedSection == SocialSection.Search)
+        {
+            await SearchAsync().ConfigureAwait(true);
+        }
+        if (SelectedSection == SocialSection.Profile)
+        {
+            await LoadProfileAsync().ConfigureAwait(true);
+        }
     }
 
     private int GetSelectedUserId()

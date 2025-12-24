@@ -8,7 +8,7 @@
              d:DesignHeight="720" d:DesignWidth="1280"
              Loaded="OnLoaded"
              KeyDown="OnRootKeyDown"
-             KeyboardNavigation.TabNavigation="Continue">
+             KeyboardNavigation.TabNavigation="None">
     <UserControl.Resources>
         <ResourceDictionary>
             <SolidColorBrush x:Key="ShellBackground" Color="#0F1D2D" />
@@ -111,7 +111,7 @@
                 <Setter Property="BorderThickness" Value="2" />
                 <Setter Property="FontSize" Value="13" />
                 <Setter Property="Cursor" Value="Hand" />
-                <Setter Property="IsTabStop" Value="True" />
+                <Setter Property="IsTabStop" Value="False" />
                 <Setter Property="FocusVisualStyle" Value="{x:Null}" />
                 <Style.Triggers>
                     <Trigger Property="IsMouseOver" Value="True">
@@ -141,7 +141,7 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <Grid Background="{StaticResource ShellBackground}">
+    <Grid Background="{StaticResource ShellBackground}" KeyboardNavigation.TabNavigation="None">
         <Grid.RowDefinitions>
             <RowDefinition Height="80" />
             <RowDefinition Height="*" />
@@ -153,7 +153,7 @@
                 BorderBrush="#1A2F47"
                 BorderThickness="0 0 0 2">
             <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
-                <TextBlock Text="RESEAU SOCIAL"
+                <TextBlock Text="RÉSEAU SOCIAL"
                            FontSize="26"
                            FontWeight="Bold"
                            Foreground="White" />
@@ -200,13 +200,13 @@
                             <TextBlock Text="Amis" />
                         </ListBoxItem>
                         <ListBoxItem Tag="incoming">
-                            <TextBlock Text="Demandes recues" />
+                            <TextBlock Text="Demandes reçues" />
                         </ListBoxItem>
                         <ListBoxItem Tag="outgoing">
-                            <TextBlock Text="Demandes envoyees" />
+                            <TextBlock Text="Demandes envoyées" />
                         </ListBoxItem>
                         <ListBoxItem Tag="blocked">
-                            <TextBlock Text="Bloques" />
+                            <TextBlock Text="Bloqués" />
                         </ListBoxItem>
                         <ListBoxItem Tag="search">
                             <TextBlock Text="Rechercher" />
@@ -323,7 +323,7 @@
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
-                        <TextBlock Text="Demandes recues"
+                        <TextBlock Text="Demandes reçues"
                                    Foreground="{StaticResource HighlightBrush}"
                                    FontSize="16"
                                    FontWeight="Bold"
@@ -338,7 +338,7 @@
                                        HorizontalAlignment="Center"
                                        VerticalAlignment="Center"
                                        Focusable="True"
-                                       AutomationProperties.Name="Aucune demande recu">
+                                       AutomationProperties.Name="Aucune demande reçue">
                                 <TextBlock.Style>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="Visibility" Value="Collapsed" />
@@ -356,7 +356,7 @@
                                      SelectedItem="{Binding SelectedIncomingRequest, Mode=TwoWay}"
                                      ItemContainerStyle="{StaticResource ListItem}"
                                      Style="{StaticResource ListBoxBase}"
-                                     AutomationProperties.Name="Demandes recues">
+                                     AutomationProperties.Name="Demandes reçues">
                                 <ListBox.ItemTemplate>
                                     <DataTemplate>
                                         <StackPanel>
@@ -408,7 +408,7 @@
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
-                        <TextBlock Text="Demandes envoyees"
+                        <TextBlock Text="Demandes envoyées"
                                    Foreground="{StaticResource HighlightBrush}"
                                    FontSize="16"
                                    FontWeight="Bold"
@@ -423,7 +423,7 @@
                                        HorizontalAlignment="Center"
                                        VerticalAlignment="Center"
                                        Focusable="True"
-                                       AutomationProperties.Name="Aucune demande envoyee">
+                                       AutomationProperties.Name="Aucune demande envoyée">
                                 <TextBlock.Style>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="Visibility" Value="Collapsed" />
@@ -441,7 +441,7 @@
                                      SelectedItem="{Binding SelectedOutgoingRequest, Mode=TwoWay}"
                                      ItemContainerStyle="{StaticResource ListItem}"
                                      Style="{StaticResource ListBoxBase}"
-                                     AutomationProperties.Name="Demandes envoyees">
+                                     AutomationProperties.Name="Demandes envoyées">
                                 <ListBox.ItemTemplate>
                                     <DataTemplate>
                                         <StackPanel>
@@ -489,7 +489,7 @@
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
-                        <TextBlock Text="Utilisateurs bloques"
+                        <TextBlock Text="Utilisateurs bloqués"
                                    Foreground="{StaticResource HighlightBrush}"
                                    FontSize="16"
                                    FontWeight="Bold"
@@ -497,14 +497,14 @@
 
                         <Grid Grid.Row="1">
                             <TextBlock x:Name="EmptyBlockedText"
-                                       Text="Aucun utilisateur bloque"
+                                       Text="Aucun utilisateur bloqué"
                                        Foreground="{StaticResource TextMuted}"
                                        FontSize="14"
                                        FontStyle="Italic"
                                        HorizontalAlignment="Center"
                                        VerticalAlignment="Center"
                                        Focusable="True"
-                                       AutomationProperties.Name="Aucun utilisateur bloque">
+                                       AutomationProperties.Name="Aucun utilisateur bloqué">
                                 <TextBlock.Style>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="Visibility" Value="Collapsed" />
@@ -522,12 +522,12 @@
                                      SelectedItem="{Binding SelectedBlockedUser, Mode=TwoWay}"
                                      ItemContainerStyle="{StaticResource ListItem}"
                                      Style="{StaticResource ListBoxBase}"
-                                     AutomationProperties.Name="Liste des utilisateurs bloques">
+                                     AutomationProperties.Name="Liste des utilisateurs bloqués">
                                 <ListBox.ItemTemplate>
                                     <DataTemplate>
                                         <StackPanel>
                                             <TextBlock Text="{Binding Username}" FontSize="14" FontWeight="SemiBold" />
-                                            <TextBlock Text="{Binding BlockedAt, StringFormat=Bloque le: {0:dd/MM/yyyy}}" Foreground="{StaticResource TextMuted}" FontSize="12" />
+                                            <TextBlock Text="{Binding BlockedAt, StringFormat=Bloqué le: {0:dd/MM/yyyy}}" Foreground="{StaticResource TextMuted}" FontSize="12" />
                                         </StackPanel>
                                     </DataTemplate>
                                 </ListBox.ItemTemplate>
@@ -535,10 +535,10 @@
                         </Grid>
 
                         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0 12 0 0">
-                            <Button Content="Debloquer"
+                            <Button Content="Débloquer"
                                     Command="{Binding UnblockUserCommand}"
                                     Style="{StaticResource PrimaryButton}"
-                                    AutomationProperties.Name="Debloquer l'utilisateur" />
+                                    AutomationProperties.Name="Débloquer l'utilisateur" />
                         </StackPanel>
                     </Grid>
                 </Border>
@@ -588,15 +588,15 @@
                         </StackPanel>
 
                         <Grid Grid.Row="2">
-                            <TextBlock x:Name="EmptySearchText"
-                                       Text="Aucun resultat"
+                        <TextBlock x:Name="EmptySearchText"
+                                   Text="Aucun résultat"
                                        Foreground="{StaticResource TextMuted}"
                                        FontSize="14"
                                        FontStyle="Italic"
                                        HorizontalAlignment="Center"
                                        VerticalAlignment="Center"
                                        Focusable="True"
-                                       AutomationProperties.Name="Aucun resultat">
+                                   AutomationProperties.Name="Aucun résultat">
                                 <TextBlock.Style>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="Visibility" Value="Collapsed" />
@@ -612,14 +612,10 @@
                             <ListBox x:Name="SearchResultsList"
                                      ItemsSource="{Binding SearchResults}"
                                      SelectedItem="{Binding SelectedSearchUser, Mode=TwoWay}"
+                                     DisplayMemberPath="Username"
                                      ItemContainerStyle="{StaticResource ListItem}"
                                      Style="{StaticResource ListBoxBase}"
-                                     AutomationProperties.Name="Resultats de recherche">
-                                <ListBox.ItemTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding Username}" FontSize="14" FontWeight="SemiBold" />
-                                    </DataTemplate>
-                                </ListBox.ItemTemplate>
+                                     AutomationProperties.Name="Résultats de recherche">
                             </ListBox>
                         </Grid>
 
@@ -687,13 +683,13 @@
 
                         <StackPanel Grid.Row="4" Orientation="Horizontal" VerticalAlignment="Center">
                             <StackPanel Orientation="Vertical" Margin="0 0 16 0">
-                                <TextBlock Text="Visibilite" Foreground="{StaticResource TextMuted}" FontSize="12" />
+                                <TextBlock Text="Visibilité" Foreground="{StaticResource TextMuted}" FontSize="12" />
                                 <ComboBox x:Name="VisibilityBox"
                                           Width="160"
                                           ItemsSource="{Binding VisibilityOptions}"
                                           SelectedItem="{Binding ProfileVisibility, Mode=TwoWay}"
                                           Style="{StaticResource InputComboBox}"
-                                          AutomationProperties.Name="Visibilite du profil" />
+                                          AutomationProperties.Name="Visibilité du profil" />
                             </StackPanel>
                             <Button Content="Enregistrer"
                                     Command="{Binding UpdateProfileCommand}"
@@ -720,7 +716,7 @@
                            Foreground="{StaticResource HighlightBrush}"
                            FontSize="14"
                            FontWeight="Medium" />
-                <TextBlock Text=" | Fleches menu | Entree pour choisir | Echap pour fermer"
+                <TextBlock Text=" | Flèches menu | Entrée pour choisir | Échap pour fermer"
                            Foreground="#7CA3D6"
                            FontSize="12"
                            Margin="20 0 0 0"
