@@ -50,7 +50,7 @@
                     Padding="16"
                     Focusable="True"
                     KeyboardNavigation.TabNavigation="None"
-                    IsTabStop="True">
+                    KeyboardNavigation.IsTabStop="True">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
