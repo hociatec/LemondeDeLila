@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using System.Windows;
+using System.Windows.Threading;
 using client_win.Core;
 using client_win.Modules.Game.Models;
 using client_win.Modules.Game.Services;
@@ -18,6 +20,7 @@ public sealed class RoomTableViewModel : ObservableObject
     private readonly IRoomSessionFactory _sessionFactory;
     private readonly Action? _onClose;
     private readonly IDialogService _dialogs;
+    private readonly Dispatcher _dispatcher;
     private RoomSession? _session;
     private readonly Action<string> _errorHandler;
     private readonly Action<string> _historyHandler;
@@ -39,6 +42,7 @@ public sealed class RoomTableViewModel : ObservableObject
         _sessionFactory = sessionFactory ?? throw new ArgumentNullException(nameof(sessionFactory));
         _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
         _onClose = onClose;
+        _dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
 
         CloseCommand = new AsyncRelayCommand(RequestCloseAsync, () => !IsBusy);
         TogglePrivacyCommand = new AsyncRelayCommand(TogglePrivacyAsync, () => !IsBusy);
@@ -47,7 +51,7 @@ public sealed class RoomTableViewModel : ObservableObject
         RemoveBotCommand = new AsyncRelayCommand(RemoveBotAsync, () => !IsBusy);
         StartGameCommand = new AsyncRelayCommand(StartGameAsync, () => !IsBusy);
         ResetGameCommand = new AsyncRelayCommand(ResetGameAsync, () => !IsBusy);
-        _errorHandler = message => Status = message;
+        _errorHandler = message => RunOnUi(() => Status = message);
         _historyHandler = AddHistory;
 
         History = new ObservableCollection<string>();
@@ -167,6 +171,11 @@ public sealed class RoomTableViewModel : ObservableObject
 
     private void ApplySnapshot(RoomSnapshot snapshot)
     {
+        if (!CheckUiAccess())
+        {
+            _dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() => ApplySnapshot(snapshot)));
+            return;
+        }
         _snapshot = snapshot;
         RoomName = string.IsNullOrWhiteSpace(snapshot.RoomName) ? $"Table #{snapshot.RoomId}" : snapshot.RoomName;
         GameType = string.IsNullOrWhiteSpace(snapshot.GameType) ? _request.GameType : snapshot.GameType;
@@ -384,12 +393,29 @@ public sealed class RoomTableViewModel : ObservableObject
 
     private void AddHistory(string message)
     {
+        if (!CheckUiAccess())
+        {
+            _dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() => AddHistory(message)));
+            return;
+        }
         if (string.IsNullOrWhiteSpace(message))
         {
             return;
         }
         string entry = $"[{DateTime.Now:HH:mm:ss}] {message}";
         History.Add(entry);
+    }
+
+    private bool CheckUiAccess() => _dispatcher.CheckAccess();
+
+    private void RunOnUi(Action action)
+    {
+        if (CheckUiAccess())
+        {
+            action();
+            return;
+        }
+        _dispatcher.BeginInvoke(DispatcherPriority.Background, action);
     }
 
     private static string JoinNames(IReadOnlyList<string>? names, string fallback)
