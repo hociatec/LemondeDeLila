@@ -3,7 +3,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:messaging="clr-namespace:client_win.Modules.Messaging.Models"
              xmlns:local="clr-namespace:client_win.Modules.Messaging.Views"
              mc:Ignorable="d"
              d:DesignHeight="720" d:DesignWidth="1280"
@@ -19,282 +18,127 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <Grid Background="{StaticResource ShellBackground}" KeyboardNavigation.TabNavigation="Continue">
+    <Grid Background="{StaticResource ShellBackground}">
         <Grid.RowDefinitions>
             <RowDefinition Height="80" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="280" />
-            <ColumnDefinition Width="400" />
-            <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>
 
-        <!-- ============ EN-TÊTE ============ -->
-        <Border Grid.Row="0" Grid.ColumnSpan="3"
+        <!-- ============ EN-TETE ============ -->
+        <Border Grid.Row="0"
                 Background="#0C1523"
                 BorderBrush="#1A2F47"
                 BorderThickness="0 0 0 2"
                 IsHitTestVisible="False">
             <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
-                <TextBlock Text="MESSAGERIE PRIVEE"
+                <TextBlock Text="MESSAGERIE"
                            FontSize="28"
                            FontWeight="Bold"
-                           Foreground="White"
-                           IsHitTestVisible="False" />
+                           Foreground="White" />
                 <TextBlock Text="{Binding Status}"
                            Foreground="{StaticResource HighlightBrush}"
                            FontSize="14"
-                           Margin="0,6,0,0"
-                           IsHitTestVisible="False" />
+                           Margin="0,6,0,0" />
             </StackPanel>
         </Border>
 
-        <!-- ============ SECTION 1 : MENU ============ -->
-        <Border x:Name="BoxesPanel"
-                Grid.Row="1" Grid.Column="0"
-                Background="{StaticResource BoxesPanelBrush}"
-                CornerRadius="16"
-                Margin="20,20,10,20"
-                Padding="16"
-                BorderBrush="#1E3C5B"
-                BorderThickness="3"
-                Effect="{StaticResource PanelShadow}"
-                KeyDown="OnMenuPanelKeyDown">
+        <!-- ============ CONTENU PRINCIPAL ============ -->
+        <Grid Grid.Row="1" Margin="24">
+            <!-- ============ MENU ============ -->
+            <Border x:Name="MenuPanel"
+                    Background="{StaticResource BoxesPanelBrush}"
+                    CornerRadius="16"
+                    Padding="20"
+                    BorderBrush="#1E3C5B"
+                    BorderThickness="3"
+                    Effect="{StaticResource PanelShadow}">
+                <StackPanel KeyboardNavigation.TabNavigation="None">
+                    <Border Background="#0A1A2D"
+                            CornerRadius="8"
+                            Padding="12 8"
+                            Margin="0 0 0 16"
+                            BorderBrush="#2A4A6A"
+                            BorderThickness="2">
+                        <TextBlock Text="MENU MESSAGERIE"
+                                   Foreground="#FFD966"
+                                   FontSize="16"
+                                   FontWeight="Bold"
+                                   HorizontalAlignment="Center" />
+                    </Border>
 
-            <StackPanel KeyboardNavigation.TabNavigation="None">
-                <!-- Titre de section -->
-                <Border Background="#0A1A2D"
-                        CornerRadius="8"
-                        Padding="12 8"
-                        Margin="0 0 0 16"
-                        BorderBrush="#2A4A6A"
-                        BorderThickness="2">
-                    <TextBlock Text="MENU MESSAGERIE"
-                               Foreground="#FFD966"
-                               FontSize="16"
-                               FontWeight="Bold"
-                               HorizontalAlignment="Center" />
-                </Border>
+                    <ListBox x:Name="MenuList"
+                             Style="{StaticResource MenuListBox}"
+                             ItemContainerStyle="{StaticResource MenuListItem}"
+                             KeyDown="OnMenuKeyDown"
+                             PreviewMouseLeftButtonUp="OnMenuClick"
+                             AutomationProperties.Name="Menu de navigation de la messagerie">
+                        <ListBoxItem x:Name="MenuCompose" Tag="compose" AutomationProperties.Name="Rédiger un nouveau message">
+                            <TextBlock Text="Rediger un message" />
+                        </ListBoxItem>
+                        <ListBoxItem x:Name="MenuInbox" Tag="inbox" AutomationProperties.Name="Boîte de réception">
+                            <TextBlock Text="Boite de reception" />
+                        </ListBoxItem>
+                        <ListBoxItem x:Name="MenuOutbox" Tag="outbox" AutomationProperties.Name="Messages envoyés">
+                            <TextBlock Text="Messages envoyes" />
+                        </ListBoxItem>
+                        <ListBoxItem x:Name="MenuDeleted" Tag="deleted" AutomationProperties.Name="Corbeille, messages supprimés">
+                            <TextBlock Text="Corbeille" />
+                        </ListBoxItem>
+                    </ListBox>
+                </StackPanel>
+            </Border>
 
-                <ListBox x:Name="MenuList"
-                         Style="{StaticResource MenuListBox}"
-                         ItemContainerStyle="{StaticResource MenuListItem}"
-                         KeyDown="OnMenuKeyDown"
-                         PreviewMouseLeftButtonUp="OnMenuClick"
-                         AutomationProperties.Name="Menu de navigation de la messagerie">
-                    <ListBoxItem x:Name="MenuCompose" Tag="compose" AutomationProperties.Name="Rédiger un nouveau message">
-                        <TextBlock Text="Rediger un message" />
-                    </ListBoxItem>
-                    <ListBoxItem x:Name="MenuInbox" Tag="inbox" AutomationProperties.Name="Boîte de réception">
-                        <TextBlock Text="Boite de reception" />
-                    </ListBoxItem>
-                    <ListBoxItem x:Name="MenuOutbox" Tag="outbox" AutomationProperties.Name="Messages envoyés">
-                        <TextBlock Text="Messages envoyes" />
-                    </ListBoxItem>
-                    <ListBoxItem x:Name="MenuDeleted" Tag="deleted" AutomationProperties.Name="Corbeille, messages supprimés">
-                        <TextBlock Text="Corbeille" />
-                    </ListBoxItem>
-                </ListBox>
-            </StackPanel>
-        </Border>
-
-        <!-- ============ SECTION 2 : LISTE DES MESSAGES ============ -->
-        <Border x:Name="MessagesPanel"
-                Grid.Row="1" Grid.Column="1"
-                Background="{StaticResource MessagesPanelBrush}"
-                CornerRadius="16"
-                Margin="10,20,10,20"
-                Padding="16"
-                BorderBrush="#2A4A6A"
-                BorderThickness="3"
-                Effect="{StaticResource PanelShadow}"
-                KeyDown="OnMessagesPanelKeyDown">
-
-            <Grid KeyboardNavigation.TabNavigation="None">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
-
-                <!-- Titre de section -->
-                <Border Background="#0D1F34"
-                        CornerRadius="8"
-                        Padding="12 8"
-                        Margin="0 0 0 16"
-                        BorderBrush="#3A5A7A"
-                        BorderThickness="2">
-                    <TextBlock Text="MESSAGES"
-                               Foreground="#FFD966"
-                               FontSize="16"
-                               FontWeight="Bold"
-                               HorizontalAlignment="Center" />
-                </Border>
-
-                <!-- Liste des messages -->
-                <ListBox x:Name="MessagesList"
-                         Grid.Row="1"
-                         ItemsSource="{Binding BoxMessages}"
-                         SelectedItem="{Binding SelectedMessage, Mode=TwoWay}"
-                         MouseDoubleClick="OnMessagesDoubleClick"
-                         ItemContainerStyle="{StaticResource ListButtonItem}"
-                         AutomationProperties.Name="Liste des messages">
-                    <ListBox.Style>
-                        <Style TargetType="ListBox" BasedOn="{StaticResource MessageListBox}">
-                            <Style.Triggers>
-                                <Trigger Property="HasItems" Value="False">
-                                    <Setter Property="Template">
-                                        <Setter.Value>
-                                            <ControlTemplate TargetType="ListBox">
-                                                <TextBlock Text="Aucun message"
-                                                           Foreground="#7CA3D6"
-                                                           FontSize="16"
-                                                           FontStyle="Italic"
-                                                           HorizontalAlignment="Center"
-                                                           VerticalAlignment="Center"
-                                                           AutomationProperties.Name="Aucun message dans cette boîte" />
-                                            </ControlTemplate>
-                                        </Setter.Value>
-                                    </Setter>
-                                </Trigger>
-                            </Style.Triggers>
-                        </Style>
-                    </ListBox.Style>
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <local:MessagePreviewItem Message="{Binding}" />
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
-            </Grid>
-        </Border>
-
-        <!-- ============ SECTION 3 : CONVERSATION / COMPOSITION ============ -->
-        <Border x:Name="ConversationPanel"
-                Grid.Row="1" Grid.Column="2"
-                Background="{StaticResource ConversationPanelBrush}"
-                CornerRadius="16"
-                Margin="10,20,20,20"
-                Padding="16"
-                BorderBrush="#3A5E8C"
-                BorderThickness="3"
-                Effect="{StaticResource PanelShadow}"
-                KeyDown="OnConversationPanelKeyDown">
-
-            <Grid KeyboardNavigation.TabNavigation="None">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-
-                <!-- Titre de section -->
-                <Border Background="#0F2540"
-                        CornerRadius="8"
-                        Padding="12 8"
-                        Margin="0 0 0 16"
-                        BorderBrush="#4A6E9C"
-                        BorderThickness="2">
-                    <TextBlock Text="{Binding ConversationUser.Username, TargetNullValue='CONVERSATION'}"
-                               Foreground="#FFD966"
-                               FontSize="16"
-                               FontWeight="Bold"
-                               HorizontalAlignment="Center" />
-                </Border>
-
-                <!-- Composition -->
-                <local:ComposeMessagePanel x:Name="ComposePanel"
-                                           Grid.Row="1"
-                                           Recipient="{Binding ComposeRecipient, Mode=TwoWay}"
-                                           Subject="{Binding ComposeSubject, Mode=TwoWay}"
-                                           MessageBody="{Binding ComposeBody, Mode=TwoWay}"
-                                           SendCommand="{Binding SendComposeCommand}"
-                                           KeyboardNavigation.TabNavigation="Cycle">
-                    <local:ComposeMessagePanel.Style>
-                        <Style TargetType="local:ComposeMessagePanel">
-                            <Setter Property="Visibility" Value="Collapsed" />
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding IsComposeMode}" Value="True">
-                                    <Setter Property="Visibility" Value="Visible" />
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </local:ComposeMessagePanel.Style>
-                </local:ComposeMessagePanel>
-
-                <!-- Messages de conversation -->
-                <Grid x:Name="ConversationContent" Grid.Row="1">
-                    <Grid.Style>
-                        <Style TargetType="Grid">
-                            <Setter Property="Visibility" Value="Visible" />
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding IsComposeMode}" Value="True">
-                                    <Setter Property="Visibility" Value="Collapsed" />
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Grid.Style>
-
+            <!-- ============ LISTE DES MESSAGES ============ -->
+            <Border x:Name="ListPanel"
+                    Background="{StaticResource MessagesPanelBrush}"
+                    CornerRadius="16"
+                    Padding="20"
+                    BorderBrush="#2A4A6A"
+                    BorderThickness="3"
+                    Effect="{StaticResource PanelShadow}"
+                    Visibility="Collapsed">
+                <Grid KeyboardNavigation.TabNavigation="None">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
-                    <!-- Message sélectionné en lecture seule -->
-                    <local:MessageReadOnlyPanel Grid.Row="0"
-                                                Message="{Binding SelectedMessage}">
-                        <local:MessageReadOnlyPanel.Style>
-                            <Style TargetType="local:MessageReadOnlyPanel">
-                                <Setter Property="Visibility" Value="Collapsed" />
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding SelectedMessage}" Value="{x:Null}">
-                                        <Setter Property="Visibility" Value="Collapsed" />
-                                    </DataTrigger>
-                                    <MultiDataTrigger>
-                                        <MultiDataTrigger.Conditions>
-                                            <Condition Binding="{Binding SelectedMessage, Converter={x:Static local:NullToBoolConverter.Instance}}" Value="False" />
-                                            <Condition Binding="{Binding IsComposeMode}" Value="False" />
-                                        </MultiDataTrigger.Conditions>
-                                        <Setter Property="Visibility" Value="Visible" />
-                                    </MultiDataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </local:MessageReadOnlyPanel.Style>
-                    </local:MessageReadOnlyPanel>
+                    <Border Background="#0D1F34"
+                            CornerRadius="8"
+                            Padding="12 8"
+                            Margin="0 0 0 16"
+                            BorderBrush="#3A5A7A"
+                            BorderThickness="2">
+                        <TextBlock x:Name="ListTitle"
+                                   Foreground="#FFD966"
+                                   FontSize="16"
+                                   FontWeight="Bold"
+                                   HorizontalAlignment="Center">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Text" Value="Boite de reception" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SelectedBox}" Value="Outbox">
+                                            <Setter Property="Text" Value="Messages envoyes" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding SelectedBox}" Value="Deleted">
+                                            <Setter Property="Text" Value="Corbeille" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </Border>
 
-                    <!-- Bouton Répondre -->
-                    <Button x:Name="ReplyButton"
-                            Grid.Row="1"
-                            Content="Répondre"
-                            Command="{Binding ReplyCommand}"
-                            HorizontalAlignment="Right"
-                            Margin="0 0 0 12"
-                            TabIndex="0"
-                            IsTabStop="True"
-                            AutomationProperties.Name="Bouton répondre au message">
-                        <Button.Style>
-                            <Style TargetType="Button" BasedOn="{StaticResource BoxButton}">
-                                <Setter Property="Visibility" Value="Collapsed" />
-                                <Style.Triggers>
-                                    <MultiDataTrigger>
-                                        <MultiDataTrigger.Conditions>
-                                            <Condition Binding="{Binding SelectedMessage, Converter={x:Static local:NullToBoolConverter.Instance}}" Value="False" />
-                                            <Condition Binding="{Binding IsComposeMode}" Value="False" />
-                                        </MultiDataTrigger.Conditions>
-                                        <Setter Property="Visibility" Value="Visible" />
-                                    </MultiDataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Button.Style>
-                    </Button>
-
-                    <ListBox x:Name="ConversationList"
-                             Grid.Row="2"
-                             ItemsSource="{Binding ConversationMessages}"
+                    <ListBox x:Name="MessagesList"
+                             Grid.Row="1"
+                             ItemsSource="{Binding BoxMessages}"
                              SelectedItem="{Binding SelectedMessage, Mode=TwoWay}"
-                             AutomationProperties.Name="Conversation, historique des messages">
+                             MouseDoubleClick="OnMessagesDoubleClick"
+                             KeyDown="OnMessagesKeyDown"
+                             ItemContainerStyle="{StaticResource ListButtonItem}"
+                             AutomationProperties.Name="Liste des messages">
                         <ListBox.Style>
                             <Style TargetType="ListBox" BasedOn="{StaticResource MessageListBox}">
                                 <Style.Triggers>
@@ -308,7 +152,7 @@
                                                                FontStyle="Italic"
                                                                HorizontalAlignment="Center"
                                                                VerticalAlignment="Center"
-                                                               AutomationProperties.Name="Aucun message dans cette conversation" />
+                                                               AutomationProperties.Name="Aucun message dans cette boîte" />
                                                 </ControlTemplate>
                                             </Setter.Value>
                                         </Setter>
@@ -318,47 +162,151 @@
                         </ListBox.Style>
                         <ListBox.ItemTemplate>
                             <DataTemplate>
-                                <local:MessageBubble Message="{Binding}" />
+                                <TextBlock Style="{StaticResource MessageSubjectText}">
+                                    <TextBlock.Text>
+                                        <Binding Path="Subject" TargetNullValue="Sans sujet" />
+                                    </TextBlock.Text>
+                                </TextBlock>
                             </DataTemplate>
                         </ListBox.ItemTemplate>
-                        <ListBox.ItemContainerStyle>
-                            <Style TargetType="ListBoxItem">
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="ListBoxItem">
-                                            <ContentPresenter />
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                                <Setter Property="IsTabStop" Value="False" />
-                                <Setter Property="FocusVisualStyle" Value="{x:Null}" />
-                            </Style>
-                        </ListBox.ItemContainerStyle>
                     </ListBox>
                 </Grid>
+            </Border>
 
-                <!-- Zone d'input conversation -->
-                <local:ConversationInputPanel x:Name="ConversationInputPanel"
-                                              Grid.Row="2" Margin="0 16 0 0"
-                                              InputText="{Binding InputText, Mode=TwoWay}"
-                                              SendCommand="{Binding SendCommand}"
-                                              InputKeyDown="OnInputKeyDown">
-                    <local:ConversationInputPanel.Style>
-                        <Style TargetType="local:ConversationInputPanel">
-                            <Setter Property="Visibility" Value="Visible" />
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding IsComposeMode}" Value="True">
+            <!-- ============ DETAIL DU MESSAGE ============ -->
+            <Border x:Name="DetailPanel"
+                    Background="{StaticResource ConversationPanelBrush}"
+                    CornerRadius="16"
+                    Padding="20"
+                    BorderBrush="#3A5E8C"
+                    BorderThickness="3"
+                    Effect="{StaticResource PanelShadow}"
+                    Visibility="Collapsed">
+                <Grid KeyboardNavigation.TabNavigation="None">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <Border Background="#0F2540"
+                            CornerRadius="8"
+                            Padding="12 8"
+                            Margin="0 0 0 16"
+                            BorderBrush="#4A6E9C"
+                            BorderThickness="2">
+                        <TextBlock Text="DETAIL DU MESSAGE"
+                                   Foreground="#FFD966"
+                                   FontSize="16"
+                                   FontWeight="Bold"
+                                   HorizontalAlignment="Center" />
+                    </Border>
+
+                    <Grid Grid.Row="1">
+                        <TextBlock Text="Aucun message"
+                                   Foreground="#7CA3D6"
+                                   FontSize="16"
+                                   FontStyle="Italic"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
                                     <Setter Property="Visibility" Value="Collapsed" />
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </local:ConversationInputPanel.Style>
-                </local:ConversationInputPanel>
-            </Grid>
-        </Border>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SelectedMessage}" Value="{x:Null}">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+
+                        <StackPanel>
+                            <StackPanel.Style>
+                                <Style TargetType="StackPanel">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SelectedMessage}" Value="{x:Null}">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </StackPanel.Style>
+
+                            <TextBlock Style="{StaticResource MessageSubjectText}">
+                                <TextBlock.Text>
+                                    <Binding Path="SelectedMessage.Subject" TargetNullValue="Sans sujet" />
+                                </TextBlock.Text>
+                            </TextBlock>
+                            <TextBlock Text="{Binding SelectedMessage.Sender.Username, StringFormat=De: {0}}"
+                                       Foreground="#C9D7E8"
+                                       FontSize="13"
+                                       Margin="0 8 0 0" />
+                            <TextBlock Text="{Binding SelectedMessage.Recipient.Username, StringFormat=A: {0}}"
+                                       Foreground="#C9D7E8"
+                                       FontSize="13"
+                                       Margin="0 2 0 0" />
+                            <TextBlock Text="{Binding SelectedMessage.CreatedAt, StringFormat='{}{0:dd/MM/yyyy HH:mm}'}"
+                                       Foreground="#7CA3D6"
+                                       FontSize="12"
+                                       Margin="0 2 0 12" />
+
+                            <TextBox x:Name="DetailBody"
+                                     Text="{Binding SelectedMessage.Text}"
+                                     IsReadOnly="True"
+                                     TextWrapping="Wrap"
+                                     AcceptsReturn="True"
+                                     VerticalScrollBarVisibility="Auto"
+                                     Style="{StaticResource InputTextBox}"
+                                     MinHeight="240"
+                                     Focusable="True"
+                                     IsTabStop="True"
+                                     AutomationProperties.Name="Contenu du message" />
+                        </StackPanel>
+                    </Grid>
+                </Grid>
+            </Border>
+
+            <!-- ============ REDACTION ============ -->
+            <Border x:Name="ComposePanelContainer"
+                    Background="{StaticResource ConversationPanelBrush}"
+                    CornerRadius="16"
+                    Padding="20"
+                    BorderBrush="#3A5E8C"
+                    BorderThickness="3"
+                    Effect="{StaticResource PanelShadow}"
+                    Visibility="Collapsed">
+                <Grid KeyboardNavigation.TabNavigation="None">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <Border Background="#0F2540"
+                            CornerRadius="8"
+                            Padding="12 8"
+                            Margin="0 0 0 16"
+                            BorderBrush="#4A6E9C"
+                            BorderThickness="2">
+                        <TextBlock Text="REDIGER UN MESSAGE"
+                                   Foreground="#FFD966"
+                                   FontSize="16"
+                                   FontWeight="Bold"
+                                   HorizontalAlignment="Center" />
+                    </Border>
+
+                    <local:ComposeMessagePanel x:Name="ComposePanel"
+                                               Grid.Row="1"
+                                               Recipient="{Binding ComposeRecipient, Mode=TwoWay}"
+                                               Subject="{Binding ComposeSubject, Mode=TwoWay}"
+                                               MessageBody="{Binding ComposeBody, Mode=TwoWay}"
+                                               SendCommand="{Binding SendComposeCommand}"
+                                               KeyboardNavigation.TabNavigation="Cycle" />
+                </Grid>
+            </Border>
+        </Grid>
 
         <!-- ============ BARRE DE STATUT ============ -->
-        <Border Grid.Row="2" Grid.ColumnSpan="3"
+        <Border Grid.Row="2"
                 Background="#0A1523"
                 BorderBrush="#1A2F47"
                 BorderThickness="0 2 0 0"
@@ -376,7 +324,7 @@
                            FontWeight="Medium"
                            TextWrapping="Wrap"
                            VerticalAlignment="Center" />
-                <TextBlock Text=" | Fleches menu | Fleches gauche/droite sections | Tab pour la composition"
+                <TextBlock Text=" | Fleches haut/bas pour naviguer | Entree pour ouvrir | Echap pour revenir"
                            Foreground="#7CA3D6"
                            FontSize="12"
                            Margin="20 0 0 0"
