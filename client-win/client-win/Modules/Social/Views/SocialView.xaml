@@ -8,7 +8,7 @@
              d:DesignHeight="720" d:DesignWidth="1280"
              Loaded="OnLoaded"
              KeyDown="OnRootKeyDown"
-             KeyboardNavigation.TabNavigation="None">
+             KeyboardNavigation.TabNavigation="Continue">
     <UserControl.Resources>
         <ResourceDictionary>
             <SolidColorBrush x:Key="ShellBackground" Color="#0F1D2D" />
@@ -22,7 +22,6 @@
                 <Setter Property="BorderThickness" Value="0" />
                 <Setter Property="Foreground" Value="White" />
                 <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Disabled" />
-                <Setter Property="IsTabStop" Value="False" />
                 <Setter Property="FocusVisualStyle" Value="{x:Null}" />
             </Style>
 
@@ -65,7 +64,6 @@
                 <Setter Property="BorderThickness" Value="0" />
                 <Setter Property="Foreground" Value="White" />
                 <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
-                <Setter Property="IsTabStop" Value="False" />
                 <Setter Property="FocusVisualStyle" Value="{x:Null}" />
             </Style>
 
@@ -111,7 +109,6 @@
                 <Setter Property="BorderThickness" Value="2" />
                 <Setter Property="FontSize" Value="13" />
                 <Setter Property="Cursor" Value="Hand" />
-                <Setter Property="IsTabStop" Value="False" />
                 <Setter Property="FocusVisualStyle" Value="{x:Null}" />
                 <Style.Triggers>
                     <Trigger Property="IsMouseOver" Value="True">
@@ -141,7 +138,7 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <Grid Background="{StaticResource ShellBackground}" KeyboardNavigation.TabNavigation="None">
+    <Grid Background="{StaticResource ShellBackground}" KeyboardNavigation.TabNavigation="Continue">
         <Grid.RowDefinitions>
             <RowDefinition Height="80" />
             <RowDefinition Height="*" />

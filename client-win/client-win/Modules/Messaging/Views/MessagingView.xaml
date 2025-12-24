@@ -53,7 +53,7 @@
                     BorderBrush="#1E3C5B"
                     BorderThickness="3"
                     Effect="{StaticResource PanelShadow}">
-                <StackPanel KeyboardNavigation.TabNavigation="None">
+                <StackPanel KeyboardNavigation.TabNavigation="Continue">
                     <Border Background="#0A1A2D"
                             CornerRadius="8"
                             Padding="12 8"
@@ -98,7 +98,7 @@
                     BorderThickness="3"
                     Effect="{StaticResource PanelShadow}"
                     Visibility="Collapsed">
-                <Grid KeyboardNavigation.TabNavigation="None">
+                <Grid KeyboardNavigation.TabNavigation="Continue">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
@@ -188,7 +188,7 @@
                     BorderThickness="3"
                     Effect="{StaticResource PanelShadow}"
                     Visibility="Collapsed">
-                <Grid KeyboardNavigation.TabNavigation="None">
+                <Grid KeyboardNavigation.TabNavigation="Continue">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
@@ -355,7 +355,7 @@
                     BorderThickness="3"
                     Effect="{StaticResource PanelShadow}"
                     Visibility="Collapsed">
-                <Grid KeyboardNavigation.TabNavigation="None">
+                <Grid KeyboardNavigation.TabNavigation="Continue">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />

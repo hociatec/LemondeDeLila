@@ -40,12 +40,6 @@ public partial class SocialView : UserControl
 
     private void OnRootKeyDown(object sender, KeyEventArgs e)
     {
-        if (e.Key == Key.Tab)
-        {
-            e.Handled = true;
-            return;
-        }
-
         if (e.Key != Key.Escape || DataContext is not SocialViewModel vm)
         {
             return;
