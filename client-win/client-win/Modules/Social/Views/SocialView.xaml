@@ -191,6 +191,7 @@
                     <ListBox x:Name="MenuList"
                              Style="{StaticResource MenuListBox}"
                              ItemContainerStyle="{StaticResource MenuListItem}"
+                             SelectionChanged="OnMenuSelectionChanged"
                              KeyDown="OnMenuKeyDown"
                              PreviewMouseLeftButtonUp="OnMenuClick"
                              AutomationProperties.Name="Menu social">

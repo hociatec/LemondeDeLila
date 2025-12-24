@@ -15,6 +15,7 @@ public partial class SocialView : UserControl
     }
 
     private SocialScreen _currentScreen = SocialScreen.Menu;
+    private int _lastMenuIndex = 0;
 
     public SocialView()
     {
@@ -124,6 +125,10 @@ public partial class SocialView : UserControl
         _currentScreen = screen;
         if (screen == SocialScreen.Menu)
         {
+            if (MenuList.Items.Count > 0)
+            {
+                MenuList.SelectedIndex = _lastMenuIndex < MenuList.Items.Count ? _lastMenuIndex : 0;
+            }
             FocusMenu();
         }
     }
@@ -174,6 +179,14 @@ public partial class SocialView : UserControl
         }
 
         MenuList.Focus();
+    }
+
+    private void OnMenuSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (MenuList.SelectedIndex >= 0)
+        {
+            _lastMenuIndex = MenuList.SelectedIndex;
+        }
     }
 
     private static void FocusListOrEmpty(ListBox listBox, TextBlock emptyText)
