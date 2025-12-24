@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace client_win.Modules.Catalog.Models;
 
@@ -17,7 +18,24 @@ public sealed class CatalogGame
         Categories = new List<string>(categories ?? new List<string>());
     }
 
+    [JsonIgnore]
     public string Code { get; set; } = string.Empty;
+
+    // Backend WS `catalog.*` renvoie `id` (le client Java accepte aussi `code`).
+    // On mappe `id`/`code` -> Code pour que la création de table (`room.create`) envoie un gameType valide.
+    [JsonPropertyName("id")]
+    public string Id
+    {
+        get => Code;
+        set => Code = value ?? string.Empty;
+    }
+
+    [JsonPropertyName("code")]
+    public string LegacyCode
+    {
+        get => Code;
+        set => Code = value ?? string.Empty;
+    }
     public string Name { get; set; } = string.Empty;
     public string Summary { get; set; } = string.Empty;
     public int MinPlayers { get; set; }
