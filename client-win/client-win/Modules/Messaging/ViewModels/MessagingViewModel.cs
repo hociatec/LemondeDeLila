@@ -54,18 +54,7 @@ public sealed class MessagingViewModel : ObservableObject
         {
             if (SetProperty(ref _selectedBox, value))
             {
-                // CORRECTION: Utilise Task.Run pour éviter de bloquer le thread UI et gère les exceptions
-                Task.Run(async () =>
-                {
-                    try
-                    {
-                        await LoadBoxAsync(value).ConfigureAwait(false);
-                    }
-                    catch (Exception ex)
-                    {
-                        Status = $"Erreur lors du chargement de la boîte : {ex.Message}";
-                    }
-                });
+                _ = LoadBoxAsync(value);
             }
         }
     }
@@ -144,6 +133,11 @@ public sealed class MessagingViewModel : ObservableObject
         await LoadBoxAsync(SelectedBox).ConfigureAwait(true);
     }
 
+    public Task ReloadSelectedBoxAsync()
+    {
+        return LoadBoxAsync(SelectedBox);
+    }
+
     private async Task LoadBoxAsync(MessagingBox box)
     {
         if (IsBusy)
@@ -171,6 +165,11 @@ public sealed class MessagingViewModel : ObservableObject
         catch (Exception ex)
         {
             Status = $"Erreur lors du chargement : {ex.Message}";
+            MessageBox.Show(
+                $"Erreur lors du chargement de la messagerie :\n\n{ex.Message}",
+                "Erreur de chargement",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
         }
         finally
         {

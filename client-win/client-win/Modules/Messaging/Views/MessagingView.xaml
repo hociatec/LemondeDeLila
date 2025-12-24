@@ -141,8 +141,10 @@
                              AutomationProperties.Name="Liste des messages">
                         <ListBox.Style>
                             <Style TargetType="ListBox" BasedOn="{StaticResource MessageListBox}">
+                                <Setter Property="AutomationProperties.LiveSetting" Value="Polite" />
                                 <Style.Triggers>
                                     <Trigger Property="HasItems" Value="False">
+                                        <Setter Property="AutomationProperties.Name" Value="Aucun message" />
                                         <Setter Property="Template">
                                             <Setter.Value>
                                                 <ControlTemplate TargetType="ListBox">
@@ -152,7 +154,8 @@
                                                                FontStyle="Italic"
                                                                HorizontalAlignment="Center"
                                                                VerticalAlignment="Center"
-                                                               AutomationProperties.Name="Aucun message dans cette boîte" />
+                                                               AutomationProperties.Name="Aucun message dans cette boîte"
+                                                               AutomationProperties.LiveSetting="Assertive" />
                                                 </ControlTemplate>
                                             </Setter.Value>
                                         </Setter>

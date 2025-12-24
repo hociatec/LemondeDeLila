@@ -183,17 +183,38 @@ public partial class MessagingView : UserControl
                 break;
             case "inbox":
                 vm.IsComposeMode = false;
-                vm.SelectedBox = MessagingBox.Inbox;
+                if (vm.SelectedBox != MessagingBox.Inbox)
+                {
+                    vm.SelectedBox = MessagingBox.Inbox;
+                }
+                else
+                {
+                    _ = vm.ReloadSelectedBoxAsync();
+                }
                 ShowScreen(MessagingScreen.List);
                 break;
             case "outbox":
                 vm.IsComposeMode = false;
-                vm.SelectedBox = MessagingBox.Outbox;
+                if (vm.SelectedBox != MessagingBox.Outbox)
+                {
+                    vm.SelectedBox = MessagingBox.Outbox;
+                }
+                else
+                {
+                    _ = vm.ReloadSelectedBoxAsync();
+                }
                 ShowScreen(MessagingScreen.List);
                 break;
             case "deleted":
                 vm.IsComposeMode = false;
-                vm.SelectedBox = MessagingBox.Deleted;
+                if (vm.SelectedBox != MessagingBox.Deleted)
+                {
+                    vm.SelectedBox = MessagingBox.Deleted;
+                }
+                else
+                {
+                    _ = vm.ReloadSelectedBoxAsync();
+                }
                 ShowScreen(MessagingScreen.List);
                 break;
         }
