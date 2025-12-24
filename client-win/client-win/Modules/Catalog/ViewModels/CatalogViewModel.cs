@@ -304,4 +304,5 @@ public sealed class CatalogViewModel : ObservableObject
             IsBusy = false;
         }
     }
+
 }
