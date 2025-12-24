@@ -273,7 +273,6 @@
                         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
                             <Button Content="Repondre"
                                     Command="{Binding ReplyCommand}"
-                                    Style="{StaticResource BoxButton}"
                                     Width="120"
                                     AutomationProperties.Name="Bouton repondre au message">
                                 <Button.Style>
@@ -290,7 +289,6 @@
 
                             <Button Content="Supprimer"
                                     Command="{Binding DeleteCommand}"
-                                    Style="{StaticResource BoxButton}"
                                     Width="120"
                                     Margin="12 0 0 0"
                                     AutomationProperties.Name="Bouton supprimer le message">
@@ -311,7 +309,6 @@
 
                             <Button Content="Restaurer"
                                     Command="{Binding RestoreCommand}"
-                                    Style="{StaticResource BoxButton}"
                                     Width="120"
                                     Margin="12 0 0 0"
                                     AutomationProperties.Name="Bouton restaurer le message">
