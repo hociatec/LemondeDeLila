@@ -10,11 +10,11 @@ none
 false
 TRACE;DEBUG;NET;NET8_0;NETCOREAPP;WINDOWS;WINDOWS7_0;NET5_0_OR_GREATER;NET6_0_OR_GREATER;NET7_0_OR_GREATER;NET8_0_OR_GREATER;NETCOREAPP3_0_OR_GREATER;NETCOREAPP3_1_OR_GREATER;WINDOWS7_0_OR_GREATER
 C:\wamp64\www\lemondeDeLila\client-win\client-win\App.xaml
-10-946625572
+181628265723
 
-86-982502768
+94-179014205
 216-1300574196
-MainWindow.xaml;Modules\Admin\Views\AdminView.xaml;Modules\Catalog\Views\CatalogView.xaml;Modules\Chat\Views\ChatWindow.xaml;Modules\Game\Views\JoinGameView.xaml;Modules\Home\Views\HomeView.xaml;Modules\MainMenu\Views\MainMenuView.xaml;Modules\Messaging\Views\MessagingView.xaml;Modules\Settings\Views\OptionsDialog.xaml;Modules\Social\Views\SocialView.xaml;
+MainWindow.xaml;Modules\Admin\Views\AdminView.xaml;Modules\Catalog\Views\CatalogView.xaml;Modules\Chat\Views\ChatWindow.xaml;Modules\Game\Views\JoinGameView.xaml;Modules\Home\Views\HomeView.xaml;Modules\MainMenu\Views\MainMenuView.xaml;Modules\Messaging\Views\ComposeMessagePanel.xaml;Modules\Messaging\Views\ConversationInputPanel.xaml;Modules\Messaging\Views\MessageBubble.xaml;Modules\Messaging\Views\MessagePreviewItem.xaml;Modules\Messaging\Views\MessageReadOnlyPanel.xaml;Modules\Messaging\Views\MessagingStyles.xaml;Modules\Messaging\Views\MessagingView.xaml;Modules\Messaging\Views\PlaceholderTextBox.xaml;Modules\Messaging\Views\SectionHeaderBorder.xaml;Modules\Settings\Views\OptionsDialog.xaml;Modules\Social\Views\SocialView.xaml;
 
 False
 

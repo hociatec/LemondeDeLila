@@ -4,6 +4,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:messaging="clr-namespace:client_win.Modules.Messaging.Models"
+             xmlns:local="clr-namespace:client_win.Modules.Messaging.Views"
              mc:Ignorable="d"
              d:DesignHeight="720" d:DesignWidth="1280"
              Loaded="OnLoaded"
@@ -11,184 +12,11 @@
              KeyboardNavigation.TabNavigation="Continue">
 
     <UserControl.Resources>
-        <!-- Backgrounds -->
-        <LinearGradientBrush x:Key="ShellBackground" StartPoint="0,0" EndPoint="1,1">
-            <GradientStop Color="#0F1D2D" Offset="0" />
-            <GradientStop Color="#1C3B5E" Offset="0.55" />
-            <GradientStop Color="#0E1724" Offset="1" />
-        </LinearGradientBrush>
-
-        <!-- Couleurs distinctes pour chaque section -->
-        <SolidColorBrush x:Key="BoxesPanelBrush" Color="#0D2236" />
-        <SolidColorBrush x:Key="MessagesPanelBrush" Color="#142B44" />
-        <SolidColorBrush x:Key="ConversationPanelBrush" Color="#1A3352" />
-
-        <SolidColorBrush x:Key="HighlightBrush" Color="#F2C14E" />
-        <SolidColorBrush x:Key="FocusBorderBrush" Color="#FFD966" />
-        <SolidColorBrush x:Key="SentBrush" Color="#1F3F62" />
-        <SolidColorBrush x:Key="ReceivedBrush" Color="#193047" />
-
-        <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
-
-        <!-- Drop Shadow pour isolation visuelle -->
-        <DropShadowEffect x:Key="PanelShadow"
-                          Color="Black"
-                          Opacity="0.6"
-                          BlurRadius="20"
-                          ShadowDepth="4"
-                          Direction="315" />
-
-        <!-- Style pour les boutons -->
-        <Style x:Key="BoxButton" TargetType="Button">
-            <Setter Property="Height" Value="45" />
-            <Setter Property="Margin" Value="0 8 0 0" />
-            <Setter Property="Padding" Value="16 12" />
-            <Setter Property="Foreground" Value="White" />
-            <Setter Property="Background" Value="#1E3A5C" />
-            <Setter Property="BorderBrush" Value="#284C75" />
-            <Setter Property="BorderThickness" Value="2" />
-            <Setter Property="HorizontalAlignment" Value="Stretch" />
-            <Setter Property="FontSize" Value="14" />
-            <Setter Property="FontWeight" Value="Medium" />
-            <Setter Property="Cursor" Value="Hand" />
-            <Setter Property="IsTabStop" Value="False" />
-            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#26456F" />
-                    <Setter Property="BorderBrush" Value="#3A5E8C" />
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-
-        <!-- Style pour les ListBox -->
-        <Style x:Key="MessageListBox" TargetType="ListBox">
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="Foreground" Value="White" />
-            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
-            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
-            <Setter Property="IsTabStop" Value="False" />
-            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
-        </Style>
-
-        <Style x:Key="MenuListBox" TargetType="ListBox">
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="Foreground" Value="White" />
-            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Disabled" />
-            <Setter Property="IsTabStop" Value="False" />
-            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
-        </Style>
-
-        <Style x:Key="MenuListItem" TargetType="ListBoxItem">
-            <Setter Property="Margin" Value="0 8 0 0" />
-            <Setter Property="Padding" Value="16 12" />
-            <Setter Property="Background" Value="#1E3A5C" />
-            <Setter Property="BorderBrush" Value="#284C75" />
-            <Setter Property="BorderThickness" Value="2" />
-            <Setter Property="Foreground" Value="White" />
-            <Setter Property="FontSize" Value="14" />
-            <Setter Property="FontWeight" Value="Medium" />
-            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="ListBoxItem">
-                        <Border Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="6">
-                            <ContentPresenter />
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-            <Style.Triggers>
-                <Trigger Property="IsSelected" Value="True">
-                    <Setter Property="Background" Value="#26456F" />
-                    <Setter Property="BorderBrush" Value="#FFD966" />
-                </Trigger>
-                <Trigger Property="IsKeyboardFocusWithin" Value="True">
-                    <Setter Property="BorderBrush" Value="#FFD966" />
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-
-        <Style x:Key="ListButtonItem" TargetType="ListBoxItem">
-            <Setter Property="Margin" Value="0 6 0 8" />
-            <Setter Property="Padding" Value="12" />
-            <Setter Property="Background" Value="#0D1F34" />
-            <Setter Property="BorderBrush" Value="#2A4A6A" />
-            <Setter Property="BorderThickness" Value="2" />
-            <Setter Property="Foreground" Value="White" />
-            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="ListBoxItem">
-                        <Border Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="8">
-                            <ContentPresenter />
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-            <Style.Triggers>
-                <Trigger Property="IsSelected" Value="True">
-                    <Setter Property="Background" Value="#1E3A5C" />
-                    <Setter Property="BorderBrush" Value="#FFD966" />
-                </Trigger>
-                <Trigger Property="IsKeyboardFocusWithin" Value="True">
-                    <Setter Property="BorderBrush" Value="#FFD966" />
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-
-        <!-- Style pour les TextBox -->
-        <Style x:Key="InputTextBox" TargetType="TextBox">
-            <Setter Property="Background" Value="#0A1827" />
-            <Setter Property="Foreground" Value="White" />
-            <Setter Property="BorderBrush" Value="#284C75" />
-            <Setter Property="BorderThickness" Value="2" />
-            <Setter Property="Padding" Value="10" />
-            <Setter Property="FontSize" Value="14" />
-            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
-        </Style>
-
-        <Style x:Key="SubjectText" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="#9CB2D1" />
-            <Setter Property="FontSize" Value="12" />
-            <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Margin" Value="0 0 0 4" />
-            <Setter Property="Visibility" Value="Visible" />
-            <Style.Triggers>
-                <DataTrigger Binding="{Binding Subject}" Value="">
-                    <Setter Property="Visibility" Value="Collapsed" />
-                </DataTrigger>
-                <DataTrigger Binding="{Binding Subject}" Value="{x:Null}">
-                    <Setter Property="Visibility" Value="Collapsed" />
-                </DataTrigger>
-            </Style.Triggers>
-        </Style>
-
-        <Style x:Key="FieldLabel" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="#9CB2D1" />
-            <Setter Property="FontSize" Value="12" />
-            <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Margin" Value="0 0 0 6" />
-        </Style>
-
-        <Style x:Key="PlaceholderText" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="#6F8FB6" />
-            <Setter Property="FontSize" Value="12" />
-            <Setter Property="Margin" Value="12 0 0 0" />
-            <Setter Property="VerticalAlignment" Value="Center" />
-            <Setter Property="IsHitTestVisible" Value="False" />
-            <Setter Property="Visibility" Value="Collapsed" />
-        </Style>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="MessagingStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
     </UserControl.Resources>
 
     <Grid Background="{StaticResource ShellBackground}" KeyboardNavigation.TabNavigation="Continue">
@@ -254,17 +82,18 @@
                          Style="{StaticResource MenuListBox}"
                          ItemContainerStyle="{StaticResource MenuListItem}"
                          KeyDown="OnMenuKeyDown"
-                         PreviewMouseLeftButtonUp="OnMenuClick">
-                    <ListBoxItem x:Name="MenuCompose" Tag="compose">
+                         PreviewMouseLeftButtonUp="OnMenuClick"
+                         AutomationProperties.Name="Menu de navigation de la messagerie">
+                    <ListBoxItem x:Name="MenuCompose" Tag="compose" AutomationProperties.Name="Rédiger un nouveau message">
                         <TextBlock Text="Rediger un message" />
                     </ListBoxItem>
-                    <ListBoxItem x:Name="MenuInbox" Tag="inbox">
+                    <ListBoxItem x:Name="MenuInbox" Tag="inbox" AutomationProperties.Name="Boîte de réception">
                         <TextBlock Text="Boite de reception" />
                     </ListBoxItem>
-                    <ListBoxItem x:Name="MenuOutbox" Tag="outbox">
+                    <ListBoxItem x:Name="MenuOutbox" Tag="outbox" AutomationProperties.Name="Messages envoyés">
                         <TextBlock Text="Messages envoyes" />
                     </ListBoxItem>
-                    <ListBoxItem x:Name="MenuDeleted" Tag="deleted">
+                    <ListBoxItem x:Name="MenuDeleted" Tag="deleted" AutomationProperties.Name="Corbeille, messages supprimés">
                         <TextBlock Text="Corbeille" />
                     </ListBoxItem>
                 </ListBox>
@@ -310,24 +139,31 @@
                          SelectedItem="{Binding SelectedMessage, Mode=TwoWay}"
                          MouseDoubleClick="OnMessagesDoubleClick"
                          ItemContainerStyle="{StaticResource ListButtonItem}"
-                         Style="{StaticResource MessageListBox}">
+                         AutomationProperties.Name="Liste des messages">
+                    <ListBox.Style>
+                        <Style TargetType="ListBox" BasedOn="{StaticResource MessageListBox}">
+                            <Style.Triggers>
+                                <Trigger Property="HasItems" Value="False">
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="ListBox">
+                                                <TextBlock Text="Aucun message"
+                                                           Foreground="#7CA3D6"
+                                                           FontSize="16"
+                                                           FontStyle="Italic"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center"
+                                                           AutomationProperties.Name="Aucun message dans cette boîte" />
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ListBox.Style>
                     <ListBox.ItemTemplate>
                         <DataTemplate>
-                            <StackPanel>
-                                <TextBlock Text="{Binding Sender.Username}"
-                                           FontWeight="Bold"
-                                           FontSize="14"
-                                           Foreground="#FFD966" />
-                                <TextBlock Text="{Binding Subject, StringFormat=Sujet: {0}}"
-                                           Style="{StaticResource SubjectText}" />
-                                <TextBlock Text="{Binding Text}"
-                                           TextWrapping="Wrap"
-                                           Foreground="#E0E8F0"
-                                           Margin="0 4 0 4" />
-                                <TextBlock Text="{Binding CreatedAt, StringFormat='{}{0:dd/MM/yyyy HH:mm}'}"
-                                           FontSize="11"
-                                           Foreground="#7CA3D6" />
-                            </StackPanel>
+                            <local:MessagePreviewItem Message="{Binding}" />
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>
@@ -368,11 +204,15 @@
                 </Border>
 
                 <!-- Composition -->
-                <Grid x:Name="ComposePanel"
-                      Grid.Row="1"
-                      KeyboardNavigation.TabNavigation="Cycle">
-                    <Grid.Style>
-                        <Style TargetType="Grid">
+                <local:ComposeMessagePanel x:Name="ComposePanel"
+                                           Grid.Row="1"
+                                           Recipient="{Binding ComposeRecipient, Mode=TwoWay}"
+                                           Subject="{Binding ComposeSubject, Mode=TwoWay}"
+                                           MessageBody="{Binding ComposeBody, Mode=TwoWay}"
+                                           SendCommand="{Binding SendComposeCommand}"
+                                           KeyboardNavigation.TabNavigation="Cycle">
+                    <local:ComposeMessagePanel.Style>
+                        <Style TargetType="local:ComposeMessagePanel">
                             <Setter Property="Visibility" Value="Collapsed" />
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding IsComposeMode}" Value="True">
@@ -380,104 +220,8 @@
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>
-                    </Grid.Style>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-
-                    <StackPanel Grid.Row="0" Margin="0 0 0 12">
-                        <TextBlock Text="Destinataire" Style="{StaticResource FieldLabel}" />
-                        <Grid>
-                            <TextBox x:Name="ComposeRecipientBox"
-                                     Text="{Binding ComposeRecipient, UpdateSourceTrigger=PropertyChanged}"
-                                     Style="{StaticResource InputTextBox}"
-                                     TabIndex="0" />
-                            <TextBlock Text="Nom d'utilisateur"
-                                       Style="{StaticResource PlaceholderText}">
-                                <TextBlock.Style>
-                                    <Style TargetType="TextBlock" BasedOn="{StaticResource PlaceholderText}">
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding Text, ElementName=ComposeRecipientBox}" Value="">
-                                                <Setter Property="Visibility" Value="Visible" />
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding Text, ElementName=ComposeRecipientBox}" Value="{x:Null}">
-                                                <Setter Property="Visibility" Value="Visible" />
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </TextBlock.Style>
-                            </TextBlock>
-                        </Grid>
-                    </StackPanel>
-
-                    <StackPanel Grid.Row="1" Margin="0 0 0 12">
-                        <TextBlock Text="Sujet" Style="{StaticResource FieldLabel}" />
-                        <Grid>
-                            <TextBox x:Name="ComposeSubjectBox"
-                                     Text="{Binding ComposeSubject, UpdateSourceTrigger=PropertyChanged}"
-                                     Style="{StaticResource InputTextBox}"
-                                     TabIndex="1" />
-                            <TextBlock Text="Objet du message"
-                                       Style="{StaticResource PlaceholderText}">
-                                <TextBlock.Style>
-                                    <Style TargetType="TextBlock" BasedOn="{StaticResource PlaceholderText}">
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding Text, ElementName=ComposeSubjectBox}" Value="">
-                                                <Setter Property="Visibility" Value="Visible" />
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding Text, ElementName=ComposeSubjectBox}" Value="{x:Null}">
-                                                <Setter Property="Visibility" Value="Visible" />
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </TextBlock.Style>
-                            </TextBlock>
-                        </Grid>
-                    </StackPanel>
-
-                    <StackPanel Grid.Row="2" Margin="0 0 0 12">
-                        <TextBlock Text="Message" Style="{StaticResource FieldLabel}" />
-                        <Grid>
-                            <TextBox x:Name="ComposeBodyBox"
-                                     Text="{Binding ComposeBody, UpdateSourceTrigger=PropertyChanged}"
-                                     Style="{StaticResource InputTextBox}"
-                                     AcceptsReturn="True"
-                                     TextWrapping="Wrap"
-                                     MinHeight="200"
-                                     TabIndex="2" />
-                            <TextBlock Text="Ecrivez votre message ici"
-                                       Style="{StaticResource PlaceholderText}"
-                                       VerticalAlignment="Top"
-                                       Margin="12 8 0 0">
-                                <TextBlock.Style>
-                                    <Style TargetType="TextBlock" BasedOn="{StaticResource PlaceholderText}">
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding Text, ElementName=ComposeBodyBox}" Value="">
-                                                <Setter Property="Visibility" Value="Visible" />
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding Text, ElementName=ComposeBodyBox}" Value="{x:Null}">
-                                                <Setter Property="Visibility" Value="Visible" />
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </TextBlock.Style>
-                            </TextBlock>
-                        </Grid>
-                    </StackPanel>
-
-                    <Button x:Name="ComposeSendButton"
-                            Grid.Row="3"
-                            Content="Envoyer"
-                            Command="{Binding SendComposeCommand}"
-                            Height="44"
-                            Width="140"
-                            HorizontalAlignment="Right"
-                            Style="{StaticResource BoxButton}"
-                            TabIndex="3" />
-                </Grid>
+                    </local:ComposeMessagePanel.Style>
+                </local:ComposeMessagePanel>
 
                 <!-- Messages de conversation -->
                 <Grid x:Name="ConversationContent" Grid.Row="1">
@@ -491,44 +235,90 @@
                             </Style.Triggers>
                         </Style>
                     </Grid.Style>
+
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <!-- Message sélectionné en lecture seule -->
+                    <local:MessageReadOnlyPanel Grid.Row="0"
+                                                Message="{Binding SelectedMessage}">
+                        <local:MessageReadOnlyPanel.Style>
+                            <Style TargetType="local:MessageReadOnlyPanel">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SelectedMessage}" Value="{x:Null}">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                    <MultiDataTrigger>
+                                        <MultiDataTrigger.Conditions>
+                                            <Condition Binding="{Binding SelectedMessage, Converter={x:Static local:NullToBoolConverter.Instance}}" Value="False" />
+                                            <Condition Binding="{Binding IsComposeMode}" Value="False" />
+                                        </MultiDataTrigger.Conditions>
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </MultiDataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </local:MessageReadOnlyPanel.Style>
+                    </local:MessageReadOnlyPanel>
+
+                    <!-- Bouton Répondre -->
+                    <Button x:Name="ReplyButton"
+                            Grid.Row="1"
+                            Content="Répondre"
+                            Command="{Binding ReplyCommand}"
+                            HorizontalAlignment="Right"
+                            Margin="0 0 0 12"
+                            TabIndex="0"
+                            IsTabStop="True"
+                            AutomationProperties.Name="Bouton répondre au message">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource BoxButton}">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <MultiDataTrigger>
+                                        <MultiDataTrigger.Conditions>
+                                            <Condition Binding="{Binding SelectedMessage, Converter={x:Static local:NullToBoolConverter.Instance}}" Value="False" />
+                                            <Condition Binding="{Binding IsComposeMode}" Value="False" />
+                                        </MultiDataTrigger.Conditions>
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </MultiDataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+
                     <ListBox x:Name="ConversationList"
+                             Grid.Row="2"
                              ItemsSource="{Binding ConversationMessages}"
                              SelectedItem="{Binding SelectedMessage, Mode=TwoWay}"
-                             Style="{StaticResource MessageListBox}">
+                             AutomationProperties.Name="Conversation, historique des messages">
+                        <ListBox.Style>
+                            <Style TargetType="ListBox" BasedOn="{StaticResource MessageListBox}">
+                                <Style.Triggers>
+                                    <Trigger Property="HasItems" Value="False">
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="ListBox">
+                                                    <TextBlock Text="Aucun message"
+                                                               Foreground="#7CA3D6"
+                                                               FontSize="16"
+                                                               FontStyle="Italic"
+                                                               HorizontalAlignment="Center"
+                                                               VerticalAlignment="Center"
+                                                               AutomationProperties.Name="Aucun message dans cette conversation" />
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ListBox.Style>
                         <ListBox.ItemTemplate>
                             <DataTemplate>
-                            <Border Padding="12"
-                                    CornerRadius="10"
-                                    Margin="0 6 0 6"
-                                    BorderThickness="2">
-                                <Border.Style>
-                                    <Style TargetType="Border">
-                                            <Setter Property="Background" Value="{StaticResource ReceivedBrush}" />
-                                            <Setter Property="BorderBrush" Value="#2A4A6A" />
-                                            <Setter Property="HorizontalAlignment" Value="Left" />
-                                            <Setter Property="MaxWidth" Value="500" />
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding IsSent}" Value="True">
-                                                    <Setter Property="Background" Value="{StaticResource SentBrush}" />
-                                                    <Setter Property="BorderBrush" Value="#3A5E8C" />
-                                                    <Setter Property="HorizontalAlignment" Value="Right" />
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                </Border.Style>
-                                <StackPanel>
-                                    <TextBlock Text="{Binding Subject, StringFormat=Sujet: {0}}"
-                                               Style="{StaticResource SubjectText}" />
-                                    <TextBlock Text="{Binding Text}"
-                                               TextWrapping="Wrap"
-                                               Foreground="White"
-                                               FontSize="14" />
-                                        <TextBlock Text="{Binding CreatedAt, StringFormat='{}{0:HH:mm:ss}'}"
-                                                   FontSize="11"
-                                                   Foreground="#7CA3D6"
-                                                   Margin="0 4 0 0" />
-                                    </StackPanel>
-                                </Border>
+                                <local:MessageBubble Message="{Binding}" />
                             </DataTemplate>
                         </ListBox.ItemTemplate>
                         <ListBox.ItemContainerStyle>
@@ -548,9 +338,13 @@
                 </Grid>
 
                 <!-- Zone d'input conversation -->
-                <Grid Grid.Row="2" Margin="0 16 0 0">
-                    <Grid.Style>
-                        <Style TargetType="Grid">
+                <local:ConversationInputPanel x:Name="ConversationInputPanel"
+                                              Grid.Row="2" Margin="0 16 0 0"
+                                              InputText="{Binding InputText, Mode=TwoWay}"
+                                              SendCommand="{Binding SendCommand}"
+                                              InputKeyDown="OnInputKeyDown">
+                    <local:ConversationInputPanel.Style>
+                        <Style TargetType="local:ConversationInputPanel">
                             <Setter Property="Visibility" Value="Visible" />
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding IsComposeMode}" Value="True">
@@ -558,53 +352,8 @@
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>
-                    </Grid.Style>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-
-                    <StackPanel>
-                        <TextBlock Text="Message" Style="{StaticResource FieldLabel}" />
-                        <Grid>
-                            <TextBox x:Name="InputBox"
-                                     Text="{Binding InputText, UpdateSourceTrigger=PropertyChanged}"
-                                     MinHeight="80"
-                                     AcceptsReturn="True"
-                                     TextWrapping="Wrap"
-                                     VerticalContentAlignment="Top"
-                                     KeyDown="OnInputKeyDown"
-                                     Style="{StaticResource InputTextBox}"
-                                     IsTabStop="False" />
-                            <TextBlock Text="Ecrire ici puis Entrer pour envoyer"
-                                       Style="{StaticResource PlaceholderText}"
-                                       VerticalAlignment="Top"
-                                       Margin="12 8 0 0">
-                                <TextBlock.Style>
-                                    <Style TargetType="TextBlock" BasedOn="{StaticResource PlaceholderText}">
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding Text, ElementName=InputBox}" Value="">
-                                                <Setter Property="Visibility" Value="Visible" />
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding Text, ElementName=InputBox}" Value="{x:Null}">
-                                                <Setter Property="Visibility" Value="Visible" />
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </TextBlock.Style>
-                            </TextBlock>
-                        </Grid>
-                    </StackPanel>
-
-                    <Button Grid.Column="1"
-                            Content="Envoyer"
-                            Command="{Binding SendCommand}"
-                            Margin="12 0 0 0"
-                            Width="120"
-                            Height="44"
-                            Style="{StaticResource BoxButton}"
-                            IsTabStop="False" />
-                </Grid>
+                    </local:ConversationInputPanel.Style>
+                </local:ConversationInputPanel>
             </Grid>
         </Border>
 

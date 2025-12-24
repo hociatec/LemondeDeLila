@@ -1,0 +1,38 @@
+<UserControl x:Class="client_win.Modules.Messaging.Views.PlaceholderTextBox"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Name="Root">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="MessagingStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Grid>
+        <TextBox x:Name="InnerTextBox"
+                 Text="{Binding Text, ElementName=Root, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                 Style="{StaticResource InputTextBox}"
+                 AcceptsReturn="{Binding AcceptsReturn, ElementName=Root}"
+                 AcceptsTab="{Binding AcceptsTab, ElementName=Root}"
+                 MinHeight="{Binding MinHeight, ElementName=Root}"
+                 VerticalContentAlignment="{Binding VerticalContentAlignment, ElementName=Root}"
+                 TextWrapping="Wrap" />
+
+        <TextBlock Text="{Binding Placeholder, ElementName=Root}">
+            <TextBlock.Style>
+                <Style TargetType="TextBlock" BasedOn="{StaticResource PlaceholderText}">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Text, ElementName=Root}" Value="">
+                            <Setter Property="Visibility" Value="Visible" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Text, ElementName=Root}" Value="{x:Null}">
+                            <Setter Property="Visibility" Value="Visible" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBlock.Style>
+        </TextBlock>
+    </Grid>
+</UserControl>

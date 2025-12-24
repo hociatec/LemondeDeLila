@@ -105,6 +105,10 @@ public partial class MessagingView : UserControl
             case 0: // Section Boîtes
                 HighlightPanel(BoxesPanel);
                 MenuList.Focus();
+                if (MenuList.Items.Count > 0 && MenuList.SelectedIndex < 0)
+                {
+                    MenuList.SelectedIndex = 0;
+                }
                 break;
 
             case 1: // Section Messages
@@ -120,7 +124,7 @@ public partial class MessagingView : UserControl
                 HighlightPanel(ConversationPanel);
                 if (DataContext is MessagingViewModel { IsComposeMode: true })
                 {
-                    ComposeRecipientBox.Focus();
+                    ComposePanel.FocusFirstField();
                     break;
                 }
                 ConversationList.Focus();

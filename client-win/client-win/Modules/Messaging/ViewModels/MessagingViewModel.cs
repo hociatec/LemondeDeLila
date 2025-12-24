@@ -2,6 +2,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 using client_win.Core;
 using client_win.Modules.Messaging.Models;
@@ -39,6 +40,7 @@ public sealed class MessagingViewModel : ObservableObject
         SendComposeCommand = new AsyncRelayCommand(SendComposeAsync);
         DeleteCommand = new AsyncRelayCommand(DeleteAsync);
         RestoreCommand = new AsyncRelayCommand(RestoreAsync);
+        ReplyCommand = new RelayCommand(Reply);
         CloseCommand = new RelayCommand(_onClose);
     }
 
@@ -134,6 +136,7 @@ public sealed class MessagingViewModel : ObservableObject
     public ICommand SendComposeCommand { get; }
     public ICommand DeleteCommand { get; }
     public ICommand RestoreCommand { get; }
+    public ICommand ReplyCommand { get; }
     public ICommand CloseCommand { get; }
 
     public async Task InitializeAsync()
@@ -218,6 +221,22 @@ public sealed class MessagingViewModel : ObservableObject
     {
         if (ConversationUser == null || string.IsNullOrWhiteSpace(InputText) || IsBusy)
         {
+            if (ConversationUser == null)
+            {
+                MessageBox.Show(
+                    "Aucun destinataire sélectionné. Veuillez d'abord ouvrir une conversation.",
+                    "Erreur d'envoi",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+            }
+            else if (string.IsNullOrWhiteSpace(InputText))
+            {
+                MessageBox.Show(
+                    "Le message ne peut pas être vide. Veuillez saisir du texte avant d'envoyer.",
+                    "Erreur d'envoi",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+            }
             return;
         }
 
@@ -231,16 +250,31 @@ public sealed class MessagingViewModel : ObservableObject
                 BoxMessages.Insert(0, message);
                 SelectedMessage = message;
                 InputText = string.Empty;
-                Status = "Message envoyé.";
+                Status = "Message envoyé avec succès.";
+                MessageBox.Show(
+                    $"Votre message a été envoyé avec succès à {ConversationUser.Username}.",
+                    "Message envoyé",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
             }
             else
             {
                 Status = "Échec de l'envoi du message.";
+                MessageBox.Show(
+                    "L'envoi du message a échoué. Le serveur n'a pas pu traiter votre demande. Veuillez réessayer.",
+                    "Erreur d'envoi",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
             }
         }
         catch (Exception ex)
         {
             Status = $"Erreur lors de l'envoi : {ex.Message}";
+            MessageBox.Show(
+                $"Une erreur est survenue lors de l'envoi du message :\n\n{ex.Message}\n\nVeuillez vérifier votre connexion et réessayer.",
+                "Erreur d'envoi",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
         }
         finally
         {
@@ -252,6 +286,22 @@ public sealed class MessagingViewModel : ObservableObject
     {
         if (IsBusy || string.IsNullOrWhiteSpace(ComposeRecipient) || string.IsNullOrWhiteSpace(ComposeBody))
         {
+            if (string.IsNullOrWhiteSpace(ComposeRecipient))
+            {
+                MessageBox.Show(
+                    "Le champ destinataire est vide. Veuillez saisir le nom d'utilisateur du destinataire.",
+                    "Erreur d'envoi",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+            }
+            else if (string.IsNullOrWhiteSpace(ComposeBody))
+            {
+                MessageBox.Show(
+                    "Le message ne peut pas être vide. Veuillez saisir le contenu de votre message.",
+                    "Erreur d'envoi",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+            }
             return;
         }
 
@@ -262,6 +312,12 @@ public sealed class MessagingViewModel : ObservableObject
             if (recipient == null)
             {
                 Status = "Utilisateur introuvable.";
+                MessageBox.Show(
+                    $"L'utilisateur '{ComposeRecipient}' est introuvable. Veuillez vérifier le nom d'utilisateur et réessayer.",
+                    "Destinataire introuvable",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+                IsBusy = false;
                 return;
             }
 
@@ -280,16 +336,31 @@ public sealed class MessagingViewModel : ObservableObject
                 ComposeSubject = string.Empty;
                 ComposeBody = string.Empty;
                 IsComposeMode = false;
-                Status = "Message envoyé.";
+                Status = "Message envoyé avec succès.";
+                MessageBox.Show(
+                    $"Votre message a été envoyé avec succès à {recipient.Username}.",
+                    "Message envoyé",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
             }
             else
             {
                 Status = "Échec de l'envoi du message.";
+                MessageBox.Show(
+                    "L'envoi du message a échoué. Le serveur n'a pas pu traiter votre demande. Veuillez réessayer.",
+                    "Erreur d'envoi",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
             }
         }
         catch (Exception ex)
         {
             Status = $"Erreur lors de l'envoi : {ex.Message}";
+            MessageBox.Show(
+                $"Une erreur est survenue lors de l'envoi du message :\n\n{ex.Message}\n\nVeuillez vérifier votre connexion et réessayer.",
+                "Erreur d'envoi",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
         }
         finally
         {
@@ -391,6 +462,27 @@ public sealed class MessagingViewModel : ObservableObject
         {
             IsBusy = false;
         }
+    }
+
+    private void Reply()
+    {
+        if (SelectedMessage == null)
+        {
+            return;
+        }
+
+        // Déterminer l'expéditeur du message original (pour pré-remplir le destinataire)
+        var replyTo = SelectedMessage.IsSent ? SelectedMessage.Recipient : SelectedMessage.Sender;
+
+        // Pré-remplir les champs de composition
+        ComposeRecipient = replyTo.Username;
+        ComposeSubject = SelectedMessage.Subject.StartsWith("Re: ")
+            ? SelectedMessage.Subject
+            : $"Re: {SelectedMessage.Subject}";
+        ComposeBody = string.Empty;
+
+        // Passer en mode composition
+        IsComposeMode = true;
     }
 
     private void ReplaceMessage(MessagingMessage updated)

@@ -12,4 +12,9 @@ public sealed class MessagingMessage
     public DateTime CreatedAt { get; init; }
     public bool IsSent { get; init; }
     public bool IsDeleted { get; init; }
+
+    public override string ToString()
+    {
+        return $"De: {Sender.Username} - Sujet: {Subject} - {Text}";
+    }
 }
