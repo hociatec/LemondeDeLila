@@ -1,0 +1,53 @@
+﻿<UserControl x:Class="client_win.Modules.Game.History.Views.GameHistoryView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignHeight="400" d:DesignWidth="360"
+             Focusable="False"
+             IsTabStop="False">
+    <Border Background="#12263C"
+            CornerRadius="12"
+            Padding="20"
+            Focusable="False"
+            KeyboardNavigation.IsTabStop="False"
+            AutomationProperties.LabeledBy="{Binding ElementName=HistoryTitle}"
+            AutomationProperties.Name="Historique de la partie"
+            AutomationProperties.HelpText="Panneau Historique. Contient la trace des événements de la partie.">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <TextBlock x:Name="HistoryTitle"
+                       Text="Historique"
+                       Foreground="White"
+                       FontSize="18"
+                       Margin="0 0 0 12" />
+
+            <TextBox x:Name="HistoryEditor"
+                     Grid.Row="1"
+                     Text="{Binding DisplayText, Mode=OneWay}"
+                     Background="#0D1625"
+                     BorderThickness="0"
+                     Foreground="#C3D2EA"
+                     FontFamily="Consolas"
+                     FontSize="12"
+                     AcceptsReturn="True"
+                     AcceptsTab="False"
+                     IsReadOnly="True"
+                     TextWrapping="Wrap"
+                     VerticalScrollBarVisibility="Auto"
+                     HorizontalScrollBarVisibility="Disabled"
+                     PreviewKeyDown="OnHistoryEditorPreviewKeyDown"
+                     Focusable="True"
+                     KeyboardNavigation.TabIndex="1"
+                     AutomationProperties.LabeledBy="{Binding ElementName=HistoryTitle}"
+                     AutomationProperties.Name="Historique"
+                     AutomationProperties.HelpText="Historique en lecture seule. Utilisez les flèches et Page précédente/suivante pour parcourir."
+                     MinHeight="200" />
+        </Grid>
+    </Border>
+</UserControl>

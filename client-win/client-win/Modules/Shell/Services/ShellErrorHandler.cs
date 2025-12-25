@@ -2,11 +2,15 @@ using System;
 using System.Threading.Tasks;
 using System.Windows;
 using client_win.Modules.Error;
+using client_win.Core.Diagnostics;
+using client_win.Core.Constants;
+using Serilog;
 
 namespace client_win.Modules.Shell.Services;
 
 /// <summary>
 /// Gère les erreurs globales (ErrorBus + exceptions non gérées) et affiche des dialogs sans boucles.
+/// Génère également des rapports de crash pour les exceptions non gérées.
 /// </summary>
 public sealed class ShellErrorHandler : IDisposable
 {
@@ -14,6 +18,7 @@ public sealed class ShellErrorHandler : IDisposable
     private readonly INavigationService _navigation;
     private readonly IDialogService _dialogs;
     private readonly Func<System.Windows.Controls.UserControl> _homeViewProvider;
+    private readonly CrashReporter? _crashReporter;
     private readonly IDisposable _subscription;
     private int _isShowingErrorDialog; // CORRECTION: Utilise int pour Interlocked (thread-safe)
     private string? _lastErrorMessage;
@@ -21,15 +26,23 @@ public sealed class ShellErrorHandler : IDisposable
     private Exception? _lastUnhandledException;
     private bool _disposed;
 
-    public ShellErrorHandler(ErrorBus errors, INavigationService navigation, IDialogService dialogs, Func<System.Windows.Controls.UserControl> homeViewProvider)
+    public ShellErrorHandler(
+        ErrorBus errors,
+        INavigationService navigation,
+        IDialogService dialogs,
+        Func<System.Windows.Controls.UserControl> homeViewProvider,
+        CrashReporter? crashReporter = null)
     {
         _errors = errors ?? throw new ArgumentNullException(nameof(errors));
         _navigation = navigation ?? throw new ArgumentNullException(nameof(navigation));
         _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
         _homeViewProvider = homeViewProvider ?? throw new ArgumentNullException(nameof(homeViewProvider));
+        _crashReporter = crashReporter;
 
         _subscription = _errors.Subscribe(ShowErrorDialog);
         RegisterUnhandledExceptions();
+
+        Log.Information("ShellErrorHandler initialisé avec CrashReporter: {HasCrashReporter}", _crashReporter != null);
     }
 
     private void RegisterUnhandledExceptions()
@@ -50,9 +63,21 @@ public sealed class ShellErrorHandler : IDisposable
         }
 
         _lastUnhandledException = e.Exception;
-        _errors.Publish(new AppError(e.Exception.Message, ErrorSeverity.Error, context: "unhandled.dispatcher", detail: e.Exception.StackTrace));
+
+        var appError = new AppError(
+            e.Exception.Message,
+            ErrorSeverity.Error,
+            context: "unhandled.dispatcher",
+            detail: e.Exception.StackTrace);
+
+        // Générer rapport de crash
+        _crashReporter?.ReportCrash(e.Exception, appError);
+
+        _errors.Publish(appError);
         e.Handled = true;
         EnsureHomeVisible();
+
+        Log.Fatal(e.Exception, "Exception non gérée dans Dispatcher");
     }
 
     private void OnAppDomainUnhandledException(object? sender, UnhandledExceptionEventArgs e)
@@ -68,8 +93,20 @@ public sealed class ShellErrorHandler : IDisposable
         }
 
         _lastUnhandledException = ex;
-        _errors.Publish(new AppError(ex.Message, ErrorSeverity.Error, context: "unhandled.appdomain", detail: ex.StackTrace));
+
+        var appError = new AppError(
+            ex.Message,
+            ErrorSeverity.Error,
+            context: "unhandled.appdomain",
+            detail: ex.StackTrace);
+
+        // Générer rapport de crash
+        _crashReporter?.ReportCrash(ex, appError);
+
+        _errors.Publish(appError);
         EnsureHomeVisible();
+
+        Log.Fatal(ex, "Exception non gérée dans AppDomain (terminaison: {IsTerminating})", e.IsTerminating);
     }
 
     private void ShowErrorDialog(AppError err)
@@ -94,10 +131,11 @@ public sealed class ShellErrorHandler : IDisposable
 
             try
             {
-                // Anti-flood: ignore les messages identiques dans un délai de 5 secondes
+                // Anti-flood: ignore les messages identiques dans un délai configuré
                 if (string.Equals(_lastErrorMessage, message, StringComparison.Ordinal) &&
-                    now - _lastErrorShownAt < TimeSpan.FromSeconds(5))
+                    now - _lastErrorShownAt < TimeSpan.FromSeconds(AppConstants.ErrorDialogAntiFloodSeconds))
                 {
+                    Log.Debug("Message d'erreur en double ignoré (anti-flood)");
                     return;
                 }
 

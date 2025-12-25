@@ -4,18 +4,43 @@ using System.Windows;
 using client_win.Modules.Settings.Models;
 using client_win.Modules.Settings.ViewModels;
 using client_win.Modules.Settings.Views;
+using client_win.Core.Settings;
 
 namespace client_win.Modules.Settings.Services;
 
 public sealed class OptionsService : IOptionsService
 {
-    private OptionsState _state = new();
+    private readonly SettingsManager<OptionsState>? _settingsManager;
+    private OptionsState _state;
+
+    /// <summary>
+    /// Constructeur sans SettingsManager (legacy, pour tests).
+    /// </summary>
+    public OptionsService()
+    {
+        _state = new OptionsState();
+    }
+
+    /// <summary>
+    /// Constructeur avec SettingsManager pour persistance automatique.
+    /// </summary>
+    public OptionsService(SettingsManager<OptionsState> settingsManager)
+    {
+        _settingsManager = settingsManager ?? throw new ArgumentNullException(nameof(settingsManager));
+        _state = _settingsManager.Current;
+    }
 
     public OptionsState Current => _state;
 
     public void Update(OptionsState state)
     {
         _state = state ?? throw new ArgumentNullException(nameof(state));
+
+        // Sauvegarder automatiquement si SettingsManager est disponible
+        if (_settingsManager != null)
+        {
+            _settingsManager.UpdateAndSave(state);
+        }
     }
 
     public Task<string> OpenAsync()
@@ -30,7 +55,7 @@ public sealed class OptionsService : IOptionsService
                 {
                     if (vm != null)
                     {
-                        _state = vm.ToState();
+                        Update(vm.ToState()); // Utilise Update pour déclencher la sauvegarde
                         tcs.TrySetResult("Options mises à jour.");
                     }
                     dialog.DialogResult = true;

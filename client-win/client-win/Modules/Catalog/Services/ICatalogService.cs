@@ -7,4 +7,5 @@ namespace client_win.Modules.Catalog.Services;
 public interface ICatalogService
 {
     Task<CatalogPayload> GetCatalogAsync(CancellationToken cancellationToken = default);
+    Task PreloadAsync(CancellationToken cancellationToken = default);
 }

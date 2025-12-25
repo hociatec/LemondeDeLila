@@ -8,26 +8,34 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using client_win.Core.Constants;
+using client_win.Core.Network;
+using Serilog;
 
 namespace client_win.Modules.Network;
 
 /// <summary>
 /// Maintient une connexion WebSocket persistante et route les réponses par requestId.
+/// Implémente exponential backoff, keep-alive, auto-reconnect et circuit breaker.
 /// </summary>
 public sealed class PersistentWsClient : IAsyncDisposable
 {
     private const int DefaultSendTimeoutSeconds = 10;
     private const int DefaultReceiveTimeoutSeconds = 20;
-    private const int MaxReconnectAttempts = 3;
-    private const int ReconnectDelayMilliseconds = 1000;
+    private static readonly TimeSpan DefaultConnectTimeout = TimeSpan.FromSeconds(10);
 
     private readonly Uri _endpoint;
     private readonly Modules.Error.ErrorBus? _errorBus;
     private readonly JsonSerializerOptions _serializerOptions = new(JsonSerializerDefaults.Web);
     private readonly TimeSpan _sendTimeout;
     private readonly TimeSpan _receiveTimeout;
+    private readonly NetworkConfiguration _networkConfig;
+    private readonly NetworkStateMonitor? _networkMonitor;
     private readonly ConcurrentDictionary<string, TaskCompletionSource<string>> _pending = new();
     private readonly object _sync = new();
+
+    // Circuit breaker
+    private int _consecutiveFailures;
+    private DateTime _firstFailureTime = DateTime.MinValue;
 
     private ClientWebSocket? _socket;
     private string? _currentToken;
@@ -35,13 +43,67 @@ public sealed class PersistentWsClient : IAsyncDisposable
     private CancellationTokenSource? _receiveCts;
     private Task? _receiveLoop;
     private bool _isDisposed;
+    private bool _isPausedByNetwork;
 
-    public PersistentWsClient(Uri endpoint, Modules.Error.ErrorBus? errorBus = null, int? sendTimeoutSeconds = null, int? receiveTimeoutSeconds = null)
+    // Surcharge explicite pour DI (évite les erreurs d'appariement d'arguments nommés/optionnels)
+    public PersistentWsClient(
+        Uri endpoint,
+        Modules.Error.ErrorBus errorBus,
+        int sendTimeoutSeconds,
+        int receiveTimeoutSeconds,
+        NetworkConfiguration networkConfig,
+        NetworkStateMonitor networkMonitor)
+        : this(endpoint, errorBus, (int?)sendTimeoutSeconds, (int?)receiveTimeoutSeconds, networkConfig, networkMonitor)
+    {
+    }
+
+    public PersistentWsClient(
+        Uri endpoint,
+        Modules.Error.ErrorBus? errorBus = null,
+        int? sendTimeoutSeconds = null,
+        int? receiveTimeoutSeconds = null,
+        NetworkConfiguration? networkConfig = null,
+        NetworkStateMonitor? networkMonitor = null)
     {
         _endpoint = endpoint ?? throw new ArgumentNullException(nameof(endpoint));
         _errorBus = errorBus;
         _sendTimeout = TimeSpan.FromSeconds(sendTimeoutSeconds ?? DefaultSendTimeoutSeconds);
         _receiveTimeout = TimeSpan.FromSeconds(receiveTimeoutSeconds ?? DefaultReceiveTimeoutSeconds);
+        _networkConfig = networkConfig ?? NetworkConfiguration.Load();
+        _networkMonitor = networkMonitor;
+
+        // S'abonner aux événements réseau si disponible
+        if (_networkMonitor != null)
+        {
+            _networkMonitor.NetworkAvailable += OnNetworkAvailable;
+            _networkMonitor.NetworkUnavailable += OnNetworkUnavailable;
+            _isPausedByNetwork = !_networkMonitor.IsNetworkAvailable;
+        }
+
+        Log.Debug("PersistentWsClient créé pour {Endpoint}", endpoint);
+    }
+
+    private void OnNetworkAvailable()
+    {
+        lock (_sync)
+        {
+            if (_isPausedByNetwork)
+            {
+                _isPausedByNetwork = false;
+                Log.Information("Réseau disponible, reconnexion WebSocket débloquée");
+                // Reset circuit breaker quand le réseau revient
+                _consecutiveFailures = 0;
+            }
+        }
+    }
+
+    private void OnNetworkUnavailable()
+    {
+        lock (_sync)
+        {
+            _isPausedByNetwork = true;
+            Log.Warning("Réseau indisponible, pause des tentatives de reconnexion WebSocket");
+        }
     }
 
     public async Task<string> SendAsync(string type, object payload, string? token, string? signature, CancellationToken cancellationToken = default)
@@ -63,6 +125,7 @@ public sealed class PersistentWsClient : IAsyncDisposable
             payload
         };
 
+        Log.Debug("WS -> {Type} ({RequestId})", type, requestId);
         byte[] buffer = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message, _serializerOptions));
         using var sendCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         sendCts.CancelAfter(_sendTimeout);
@@ -84,6 +147,9 @@ public sealed class PersistentWsClient : IAsyncDisposable
 
     private async Task<ClientWebSocket> EnsureConnectedAsync(string? token, string? signature, CancellationToken cancellationToken)
     {
+        // Vérifier circuit breaker
+        CheckCircuitBreaker();
+
         lock (_sync)
         {
             if (_socket != null &&
@@ -98,11 +164,27 @@ public sealed class PersistentWsClient : IAsyncDisposable
         await ResetSocketAsync().ConfigureAwait(false);
 
         Exception? lastException = null;
-        for (int attempt = 1; attempt <= MaxReconnectAttempts; attempt++)
+        int maxAttempts = _networkConfig.MaxReconnectAttempts;
+
+        for (int attempt = 1; attempt <= maxAttempts; attempt++)
         {
+            // Si réseau indisponible, attendre avant de réessayer
+            if (_isPausedByNetwork)
+            {
+                Log.Debug("Tentative {Attempt}/{Max} ignorée - réseau indisponible", attempt, maxAttempts);
+                await Task.Delay(1000, cancellationToken).ConfigureAwait(false);
+                continue;
+            }
+
             try
             {
                 var socket = new ClientWebSocket();
+
+                // Keep-alive configuration
+                socket.Options.KeepAliveInterval = TimeSpan.FromSeconds(_networkConfig.KeepAliveIntervalSeconds);
+                Log.Debug("Keep-alive WebSocket configuré: {Interval}s", _networkConfig.KeepAliveIntervalSeconds);
+
+                // Headers d'authentification
                 if (!string.IsNullOrWhiteSpace(token))
                 {
                     socket.Options.SetRequestHeader("Authorization", $"Bearer {token}");
@@ -112,7 +194,10 @@ public sealed class PersistentWsClient : IAsyncDisposable
                     socket.Options.SetRequestHeader("x-lila-ws-signature", signature);
                 }
 
-                await socket.ConnectAsync(_endpoint, cancellationToken).ConfigureAwait(false);
+                Log.Debug("Tentative de connexion WebSocket {Attempt}/{Max} vers {Endpoint}", attempt, maxAttempts, _endpoint);
+                using var connectCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                connectCts.CancelAfter(_sendTimeout > TimeSpan.Zero ? _sendTimeout : DefaultConnectTimeout);
+                await socket.ConnectAsync(_endpoint, connectCts.Token).ConfigureAwait(false);
 
                 lock (_sync)
                 {
@@ -121,13 +206,13 @@ public sealed class PersistentWsClient : IAsyncDisposable
                     _currentSignature = signature;
                     _receiveCts = new CancellationTokenSource();
 
-                    // CORRECTION: Observe la tâche pour éviter UnobservedTaskException
+                    // Observe la tâche pour éviter UnobservedTaskException
                     _receiveLoop = Task.Run(() => ReceiveLoopAsync(socket, _receiveCts.Token));
                     _receiveLoop.ContinueWith(task =>
                     {
                         if (task.IsFaulted && task.Exception != null)
                         {
-                            // Log l'exception pour éviter UnobservedTaskException
+                            Log.Error(task.Exception, "Erreur critique dans la boucle de réception WebSocket");
                             _errorBus?.Publish(new Modules.Error.AppError(
                                 "Erreur critique dans la boucle de réception WebSocket.",
                                 Modules.Error.ErrorSeverity.Error,
@@ -137,14 +222,23 @@ public sealed class PersistentWsClient : IAsyncDisposable
                     }, TaskContinuationOptions.OnlyOnFaulted);
                 }
 
+                // Connexion réussie - reset circuit breaker
+                ResetCircuitBreaker();
+                Log.Information("✓ Connexion WebSocket établie avec succès (tentative {Attempt})", attempt);
                 return socket;
             }
             catch (Exception ex)
             {
                 lastException = ex;
-                if (attempt < MaxReconnectAttempts)
+                RecordFailure();
+
+                Log.Warning(ex, "Échec connexion WebSocket (tentative {Attempt}/{Max})", attempt, maxAttempts);
+
+                if (attempt < maxAttempts)
                 {
-                    await Task.Delay(ReconnectDelayMilliseconds * attempt, cancellationToken).ConfigureAwait(false);
+                    var delay = RetryStrategy.CalculateDelay(attempt, _networkConfig);
+                    Log.Debug("Attente de {Delay}ms avant prochaine tentative...", delay.TotalMilliseconds);
+                    await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
                 }
             }
         }
@@ -154,12 +248,65 @@ public sealed class PersistentWsClient : IAsyncDisposable
             Modules.Error.ErrorSeverity.Error,
             context: WsMessageTypes.ErrorContext.WsConnect,
             detail: lastException?.Message));
+
+        Log.Error(lastException, "✗ Impossible de se connecter au serveur WebSocket après {Attempts} tentatives", maxAttempts);
         throw new InvalidOperationException("Impossible de se connecter au serveur WebSocket.", lastException);
+    }
+
+    private void CheckCircuitBreaker()
+    {
+        lock (_sync)
+        {
+            if (_consecutiveFailures >= _networkConfig.CircuitBreakerThreshold)
+            {
+                var elapsed = DateTime.UtcNow - _firstFailureTime;
+                if (elapsed < TimeSpan.FromMinutes(_networkConfig.CircuitBreakerWindowMinutes))
+                {
+                    var message = $"Circuit breaker ouvert: {_consecutiveFailures} échecs consécutifs en {elapsed.TotalMinutes:F1} minutes";
+                    Log.Error(message);
+                    throw new InvalidOperationException(message);
+                }
+                else
+                {
+                    // Fenêtre expirée, reset
+                    Log.Information("Circuit breaker: Fenêtre de {Minutes} minutes expirée, réinitialisation", _networkConfig.CircuitBreakerWindowMinutes);
+                    _consecutiveFailures = 0;
+                }
+            }
+        }
+    }
+
+    private void RecordFailure()
+    {
+        lock (_sync)
+        {
+            if (_consecutiveFailures == 0)
+            {
+                _firstFailureTime = DateTime.UtcNow;
+            }
+            _consecutiveFailures++;
+            Log.Debug("Circuit breaker: {Failures} échecs consécutifs", _consecutiveFailures);
+        }
+    }
+
+    private void ResetCircuitBreaker()
+    {
+        lock (_sync)
+        {
+            if (_consecutiveFailures > 0)
+            {
+                Log.Debug("Circuit breaker réinitialisé (était à {Failures} échecs)", _consecutiveFailures);
+                _consecutiveFailures = 0;
+                _firstFailureTime = DateTime.MinValue;
+            }
+        }
     }
 
     private async Task ReceiveLoopAsync(ClientWebSocket socket, CancellationToken cancellationToken)
     {
-        var buffer = new byte[4096];
+        var buffer = new byte[_networkConfig.ReceiveBufferSize];
+        Log.Debug("Receive loop démarrée avec buffer de {Size} bytes", buffer.Length);
+
         while (!cancellationToken.IsCancellationRequested && socket.State == WebSocketState.Open)
         {
             try
@@ -172,6 +319,9 @@ public sealed class PersistentWsClient : IAsyncDisposable
                     result = await socket.ReceiveAsync(builder, cancellationToken).ConfigureAwait(false);
                     if (result.MessageType == WebSocketMessageType.Close)
                     {
+                        Log.Information("WebSocket fermé par le serveur: {Status} - {Description}",
+                            socket.CloseStatus, socket.CloseStatusDescription);
+                        FailAllPending($"Connexion WS fermée par le serveur ({socket.CloseStatus} - {socket.CloseStatusDescription}).");
                         await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "closing", cancellationToken).ConfigureAwait(false);
                         return;
                     }
@@ -187,8 +337,29 @@ public sealed class PersistentWsClient : IAsyncDisposable
                 using var doc = JsonDocument.Parse(payload);
                 var root = doc.RootElement;
                 string requestId = root.TryGetProperty("requestId", out var idNode) ? idNode.GetString() ?? string.Empty : string.Empty;
+                string msgType = root.TryGetProperty("type", out var typeNode) ? typeNode.GetString() ?? string.Empty : string.Empty;
+
+                Log.Debug("WS <- {Type} ({RequestId})", string.IsNullOrWhiteSpace(msgType) ? "?" : msgType, string.IsNullOrWhiteSpace(requestId) ? "?" : requestId);
+
                 if (string.IsNullOrWhiteSpace(requestId))
                 {
+                    // Certains backends ne renvoient pas de requestId : on route vers la première requête en attente
+                    if (_pending.Count == 0)
+                    {
+                        Log.Debug("Message WebSocket sans requestId ignoré (aucune requête en attente)");
+                        continue;
+                    }
+
+                    var firstPendingKey = _pending.Keys.FirstOrDefault();
+                    if (!string.IsNullOrEmpty(firstPendingKey) && _pending.TryRemove(firstPendingKey, out var tcsNoId))
+                    {
+                        Log.Warning("Message WebSocket sans requestId: routage vers la requête {RequestId}", firstPendingKey);
+                        tcsNoId.TrySetResult(doc.RootElement.GetRawText());
+                    }
+                    else
+                    {
+                        Log.Debug("Message WebSocket sans requestId reçu mais aucun pending trouvé");
+                    }
                     continue;
                 }
 
@@ -196,16 +367,51 @@ public sealed class PersistentWsClient : IAsyncDisposable
                 {
                     tcs.TrySetResult(doc.RootElement.GetRawText());
                 }
+                else
+                {
+                    Log.Debug("Réponse pour requestId {RequestId} reçue mais pas de pending task trouvée", requestId);
+                }
             }
             catch (OperationCanceledException)
             {
+                Log.Debug("Receive loop annulée");
                 return;
             }
             catch (Exception ex)
             {
-                _errorBus?.Publish(new Modules.Error.AppError("Connexion WS interrompue.", Modules.Error.ErrorSeverity.Warning, context: WsMessageTypes.ErrorContext.WsReceive, detail: ex.Message));
+                Log.Warning(ex, "Erreur dans receive loop WebSocket");
+                _errorBus?.Publish(new Modules.Error.AppError(
+                    "Connexion WS interrompue.",
+                    Modules.Error.ErrorSeverity.Warning,
+                    context: WsMessageTypes.ErrorContext.WsReceive,
+                    detail: ex.Message));
+
                 await ResetSocketAsync().ConfigureAwait(false);
+
+                // NOTE: Au lieu de return (qui terminait définitivement la loop),
+                // on pourrait implémenter une auto-reconnexion ici.
+                // Pour l'instant, on laisse la logique existante : la loop se termine
+                // et une nouvelle connexion sera créée au prochain SendAsync.
                 return;
+            }
+        }
+
+        Log.Debug("Receive loop terminée (cancelled: {Cancelled}, state: {State})",
+            cancellationToken.IsCancellationRequested, socket.State);
+    }
+
+    private void FailAllPending(string message)
+    {
+        if (string.IsNullOrWhiteSpace(message))
+        {
+            message = "Connexion WS interrompue.";
+        }
+
+        foreach (var key in _pending.Keys)
+        {
+            if (_pending.TryRemove(key, out var tcs))
+            {
+                tcs.TrySetException(new InvalidOperationException(message));
             }
         }
     }
@@ -252,8 +458,10 @@ public sealed class PersistentWsClient : IAsyncDisposable
         {
             try
             {
-                // Attendre maximum 5 secondes pour éviter de bloquer indéfiniment
-                await Task.WhenAny(receiveLoopToWait, Task.Delay(5000)).ConfigureAwait(false);
+                // Attendre maximum timeout configuré pour éviter de bloquer indéfiniment
+                int timeout = _networkConfig?.CleanupTimeoutMs ?? AppConstants.SocketCleanupTimeoutMs;
+                await Task.WhenAny(receiveLoopToWait, Task.Delay(timeout)).ConfigureAwait(false);
+                Log.Debug("Receive loop attendue pendant cleanup (timeout: {Timeout}ms)", timeout);
             }
             catch
             {
@@ -293,7 +501,17 @@ public sealed class PersistentWsClient : IAsyncDisposable
         {
             return;
         }
+
+        Log.Debug("Dispose PersistentWsClient");
         _isDisposed = true;
+
+        // Unsubscribe des événements réseau
+        if (_networkMonitor != null)
+        {
+            _networkMonitor.NetworkAvailable -= OnNetworkAvailable;
+            _networkMonitor.NetworkUnavailable -= OnNetworkUnavailable;
+        }
+
         await ResetSocketAsync().ConfigureAwait(false);
     }
 }

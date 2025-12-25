@@ -5,9 +5,12 @@ import helmet from 'helmet';
 import compression from 'compression';
 import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app.module';
+import { ServLoggerService } from './common/services/serv-logger.service';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    logger: new ServLoggerService(),
+  });
   const config = app.get(ConfigService);
   app.use(helmet());
   app.use(compression());

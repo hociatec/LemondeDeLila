@@ -1,0 +1,172 @@
+using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Windows;
+using System.Windows.Input;
+using client_win.Core.Input;
+
+namespace client_win.Behaviors;
+
+public static class ShortcutBindingsBehavior
+{
+    public static readonly DependencyProperty ShortcutsProperty = DependencyProperty.RegisterAttached(
+        "Shortcuts",
+        typeof(IEnumerable<ShortcutDefinition>),
+        typeof(ShortcutBindingsBehavior),
+        new PropertyMetadata(null, OnShortcutsChanged));
+
+    public static void SetShortcuts(DependencyObject element, IEnumerable<ShortcutDefinition> value) =>
+        element.SetValue(ShortcutsProperty, value);
+
+    public static IEnumerable<ShortcutDefinition>? GetShortcuts(DependencyObject element) =>
+        element.GetValue(ShortcutsProperty) as IEnumerable<ShortcutDefinition>;
+
+    private sealed class Subscription
+    {
+        public List<InputBinding> AddedBindings { get; } = new();
+        public INotifyCollectionChanged? Collection { get; set; }
+        public NotifyCollectionChangedEventHandler? Handler { get; set; }
+        public KeyEventHandler? PreviewKeyDownHandler { get; set; }
+    }
+
+    private static readonly ConditionalWeakTable<UIElement, Subscription> _subscriptions = new();
+
+    private static void OnShortcutsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is not UIElement element)
+        {
+            return;
+        }
+
+        if (_subscriptions.TryGetValue(element, out var previous))
+        {
+            Unsubscribe(element, previous);
+        }
+
+        var next = new Subscription();
+        _subscriptions.Remove(element);
+        _subscriptions.Add(element, next);
+
+        Apply(element, next, e.NewValue as IEnumerable<ShortcutDefinition>);
+    }
+
+    private static void Unsubscribe(UIElement element, Subscription subscription)
+    {
+        foreach (var binding in subscription.AddedBindings)
+        {
+            element.InputBindings.Remove(binding);
+        }
+        subscription.AddedBindings.Clear();
+
+        if (subscription.Collection != null && subscription.Handler != null)
+        {
+            subscription.Collection.CollectionChanged -= subscription.Handler;
+        }
+        subscription.Collection = null;
+        subscription.Handler = null;
+
+        if (subscription.PreviewKeyDownHandler != null)
+        {
+            element.PreviewKeyDown -= subscription.PreviewKeyDownHandler;
+            subscription.PreviewKeyDownHandler = null;
+        }
+    }
+
+    private static void Apply(UIElement element, Subscription subscription, IEnumerable<ShortcutDefinition>? shortcuts)
+    {
+        Unsubscribe(element, subscription);
+
+        if (shortcuts == null)
+        {
+            return;
+        }
+
+        foreach (var shortcut in shortcuts)
+        {
+            if (shortcut.Gesture != null)
+            {
+                var binding = new KeyBinding(shortcut.Command, shortcut.Gesture)
+                {
+                    CommandParameter = shortcut.CommandParameter
+                };
+                element.InputBindings.Add(binding);
+                subscription.AddedBindings.Add(binding);
+            }
+        }
+
+        var charShortcuts = shortcuts.Where(s => s.Key != null).ToList();
+        if (charShortcuts.Count > 0)
+        {
+            subscription.PreviewKeyDownHandler = (_, e) =>
+            {
+                if (e.Handled)
+                {
+                    return;
+                }
+
+                if (Keyboard.Modifiers != ModifierKeys.None)
+                {
+                    return;
+                }
+
+                var key = e.Key == Key.System ? e.SystemKey : e.Key;
+                char? typed = KeyToChar(key);
+                if (typed == null)
+                {
+                    return;
+                }
+
+                foreach (var shortcut in charShortcuts)
+                {
+                    if (shortcut.Key == null) continue;
+                    if (char.ToLowerInvariant(shortcut.Key.Value) != char.ToLowerInvariant(typed.Value)) continue;
+
+                    if (shortcut.Command.CanExecute(shortcut.CommandParameter))
+                    {
+                        e.Handled = true;
+                        shortcut.Command.Execute(shortcut.CommandParameter);
+                    }
+                    return;
+                }
+            };
+            element.PreviewKeyDown += subscription.PreviewKeyDownHandler;
+        }
+
+        if (shortcuts is INotifyCollectionChanged notify)
+        {
+            var weakElement = new WeakReference<UIElement>(element);
+            NotifyCollectionChangedEventHandler? handler = null;
+            handler = (_, __) =>
+            {
+                if (!weakElement.TryGetTarget(out var target))
+                {
+                    if (handler != null)
+                    {
+                        notify.CollectionChanged -= handler;
+                    }
+                    return;
+                }
+
+                if (_subscriptions.TryGetValue(target, out var current))
+                {
+                    Apply(target, current, GetShortcuts(target));
+                }
+            };
+            subscription.Collection = notify;
+            subscription.Handler = handler;
+            notify.CollectionChanged += handler;
+        }
+    }
+
+    private static char? KeyToChar(Key key)
+    {
+        if (key >= Key.A && key <= Key.Z)
+        {
+            int offset = key - Key.A;
+            return (char)('a' + offset);
+        }
+        return null;
+    }
+}

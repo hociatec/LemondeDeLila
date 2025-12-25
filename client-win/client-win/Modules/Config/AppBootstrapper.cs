@@ -1,9 +1,11 @@
 using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Serilog;
 using client_win.Modules.Error;
 using client_win.Modules.Network;
 using client_win.Modules.Home.ViewModels;
@@ -13,14 +15,19 @@ using client_win.Modules.User.Models;
 using client_win.Modules.Shell.Services;
 using client_win.Modules.MainMenu.Services;
 using client_win.Modules.Settings.Services;
+using client_win.Modules.Settings.Models;
 using client_win.Modules.Network.WebSockets;
 using client_win.Modules.Chat.Services;
 using client_win.Modules.Chat.Views;
 using client_win.Core;
+using client_win.Core.Logging;
+using client_win.Core.Diagnostics;
+using client_win.Core.Network;
+using client_win.Core.Settings;
+using client_win.Core.Constants;
 using client_win.Modules.Catalog.Services;
 using client_win.Modules.Messaging.Services;
 using client_win.Modules.Social.Services;
-using client_win.Modules.Game.Services;
 
 namespace client_win.Modules.Config;
 
@@ -34,87 +41,142 @@ public static class AppBootstrapper
     {
         if (rootHost == null) throw new ArgumentNullException(nameof(rootHost));
 
-        var config = ClientConfiguration.Load();
-        var errors = new ErrorBus();
+        // 1. Initialiser AppData et logging en premier
+        var baseDir = AppContext.BaseDirectory;
+        var environment = EnvironmentDetector.GetEnvironment();
+        var logsPath = Environment.GetEnvironmentVariable("LOG_PATH");
+        if (string.IsNullOrWhiteSpace(logsPath))
+        {
+            // En dev (dotnet run / scripts), on logge dans le dossier de travail pour faciliter le debug.
+            // En prod, on logge à côté de l'exécutable.
+            logsPath = environment == EnvironmentDetector.AppEnvironment.Development
+                ? Path.Combine(Directory.GetCurrentDirectory(), "client", "log")
+                : Path.Combine(baseDir, "client", "log");
+        }
+        var appDataPath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            AppConstants.AppDataFolderName);
+        Directory.CreateDirectory(appDataPath);
 
+        LoggingConfiguration.ConfigureLogger(logsPath);
+
+        // 2. Détecter environnement et valider exigences de production
+        Log.Information("Environnement détecté: {Environment}", environment);
+
+        ProductionValidator.ValidateProductionRequirements(environment);
+        ProductionValidator.LogConfiguration();
+
+        // 3. Charger configuration réseau et applicative
+        var config = ClientConfiguration.Load();
+        var networkConfig = NetworkConfiguration.Load();
+        Log.Information("Configuration réseau: {NetworkConfig}", networkConfig);
+
+        // 4. Créer services d'infrastructure
+        var errors = new ErrorBus();
+        var crashReporter = new CrashReporter(appDataPath);
+        var networkMonitor = new NetworkStateMonitor();
+        var settingsManager = new SettingsManager<OptionsState>(appDataPath);
+        // 5. Test de connectivité optionnel
         if (testConnectivity && ShouldTestConnectivity())
         {
             TryTestConnectivity(config, errors);
         }
 
+        // 6. Configuration DI avec Serilog
         var services = new ServiceCollection();
         services.AddLogging(builder =>
         {
-            builder.SetMinimumLevel(LogLevel.Information);
-
-            // Ajoute la sortie console pour le débogage et la production
-            builder.AddConsole();
-
-            // Ajoute la sortie debug pour Visual Studio
-            builder.AddDebug();
-
-            // Filtre les logs verbeux des bibliothèques Microsoft et System
-            builder.AddFilter("Microsoft", LogLevel.Warning);
-            builder.AddFilter("System", LogLevel.Warning);
+            builder.ClearProviders();
+            builder.AddSerilog(dispose: false); // Serilog géré manuellement
         });
+
+        // Enregistrement des configurations et services d'infrastructure
         services.AddSingleton(config);
+        services.AddSingleton(networkConfig);
         services.AddSingleton(errors);
+        services.AddSingleton(crashReporter);
+        services.AddSingleton(networkMonitor);
+        services.AddSingleton(settingsManager);
+
+        // Enregistrement des services UI
         services.AddSingleton(rootHost);
         services.AddSingleton<INavigationService>(_ => new NavigationService(rootHost));
         services.AddSingleton<IDialogService, WpfDialogService>();
-        services.AddSingleton<PersistentWsClient>(_ => new PersistentWsClient(config.ApiGatewayWs, errors));
-        services.AddSingleton<WsRequestClient>(sp => new WsRequestClient(sp.GetRequiredService<PersistentWsClient>(), config.SharedSecret, errors));
-        // Active le mode strict JWT si la variable d'environnement JWT_STRICT_MODE=true
-        // Recommandé pour la production pour empêcher le bypass de validation
+
+        // Enregistrement des services réseau avec NetworkConfiguration
+        services.AddSingleton<PersistentWsClient>(sp => new PersistentWsClient(
+            config.ApiGatewayWs,
+            errors,
+            sp.GetRequiredService<NetworkConfiguration>().SendTimeoutSeconds,
+            sp.GetRequiredService<NetworkConfiguration>().ReceiveTimeoutSeconds,
+            sp.GetRequiredService<NetworkConfiguration>(),
+            sp.GetRequiredService<NetworkStateMonitor>()));
+
+        services.AddSingleton<WsRequestClient>(sp => new WsRequestClient(
+            sp.GetRequiredService<PersistentWsClient>(),
+            config.SharedSecret,
+            errors));
+
+        // JWT avec strict mode
         bool jwtStrictMode = string.Equals(
             Environment.GetEnvironmentVariable("JWT_STRICT_MODE"),
             "true",
             StringComparison.OrdinalIgnoreCase);
         services.AddSingleton<JwtTokenValidator>(_ => new JwtTokenValidator(config.JwtSecret, jwtStrictMode));
+
+        // Services d'authentification
         services.AddSingleton<WsAuthenticationService>(sp => new WsAuthenticationService(
             sp.GetRequiredService<WsRequestClient>(),
             sp.GetRequiredService<ILogger<WsAuthenticationService>>(),
             errors,
             sp.GetRequiredService<JwtTokenValidator>()));
-        services.AddSingleton<ICredentialStore>(_ => new ErrorAwareCredentialStore(new ProtectedCredentialStore(), errors));
+
+        services.AddSingleton<ICredentialStore>(_ => new ErrorAwareCredentialStore(
+            new ProtectedCredentialStore(),
+            errors));
+
         services.AddSingleton<ISessionService, SessionService>();
-        services.AddSingleton<IOptionsService, OptionsService>();
+
+        // OptionsService avec SettingsManager
+        services.AddSingleton<IOptionsService>(sp => new OptionsService(
+            sp.GetRequiredService<SettingsManager<OptionsState>>()));
+
+        // Services métier
         services.AddSingleton<ICatalogService>(sp =>
             new CatalogService(
                 sp.GetRequiredService<WsRequestClient>(),
                 sp.GetRequiredService<ISessionService>(),
                 errors));
+
         services.AddTransient<IWebSocketConnection, WebSocketConnection>();
+
         services.AddSingleton<IChatService>(sp =>
-            new ChatService(BuildPresenceEndpoint(config), sp.GetRequiredService<IWebSocketConnection>(), sp.GetRequiredService<IOptionsService>(), sp.GetRequiredService<ISessionService>()));
+            new ChatService(
+                BuildPresenceEndpoint(config),
+                sp.GetRequiredService<IWebSocketConnection>(),
+                sp.GetRequiredService<IOptionsService>(),
+                sp.GetRequiredService<ISessionService>()));
+
         services.AddSingleton<IViewFactory<ChatWindow>, ChatWindowFactory>();
         services.AddSingleton<IChatLauncher, ChatLauncher>();
+
         services.AddSingleton<IMessagingService>(sp =>
             new MessagingService(
                 sp.GetRequiredService<WsRequestClient>(),
                 sp.GetRequiredService<ISessionService>(),
                 errors));
+
         services.AddSingleton<ISocialService>(sp =>
             new SocialService(
                 sp.GetRequiredService<WsRequestClient>(),
                 sp.GetRequiredService<ISessionService>(),
                 errors));
-        services.AddSingleton<IRoomDirectoryService>(sp =>
-            new RoomDirectoryService(
-                sp.GetRequiredService<WsRequestClient>(),
-                sp.GetRequiredService<ISessionService>(),
-                errors));
-        services.AddSingleton<IRoomRealtimeService>(sp =>
-            new RoomRealtimeService(
-                sp.GetRequiredService<IWebSocketConnection>(),
-                sp.GetRequiredService<ClientConfiguration>(),
-                sp.GetRequiredService<ISessionService>(),
-                errors));
-        services.AddSingleton<IRoomSessionFactory, RoomSessionFactory>();
-        services.AddSingleton<IRoomTableNavigator, RoomTableNavigator>();
+
         services.AddTransient<IMenuRouter, MenuRouter>();
 
         var provider = services.BuildServiceProvider();
+
+        Log.Information("AppHost créé avec succès. Version: {Version}", AppInfo.GetDisplayVersion());
 
         return new AppHost(
             config,
@@ -125,6 +187,9 @@ public static class AppBootstrapper
             provider.GetRequiredService<WsAuthenticationService>(),
             provider.GetRequiredService<IDialogService>(),
             provider.GetRequiredService<ISessionService>(),
+            provider.GetRequiredService<CrashReporter>(),
+            provider.GetRequiredService<NetworkStateMonitor>(),
+            provider.GetRequiredService<SettingsManager<OptionsState>>(),
             provider);
     }
 
@@ -170,6 +235,9 @@ public sealed class AppHost : IAsyncDisposable
         WsAuthenticationService authentication,
         IDialogService dialogs,
         ISessionService session,
+        CrashReporter crashReporter,
+        NetworkStateMonitor networkMonitor,
+        SettingsManager<OptionsState> settingsManager,
         IServiceProvider provider)
     {
         Configuration = config;
@@ -180,6 +248,9 @@ public sealed class AppHost : IAsyncDisposable
         AuthenticationService = authentication;
         Dialogs = dialogs;
         Session = session;
+        CrashReporter = crashReporter;
+        NetworkMonitor = networkMonitor;
+        SettingsManager = settingsManager;
         Services = provider;
     }
 
@@ -191,20 +262,40 @@ public sealed class AppHost : IAsyncDisposable
     public WsAuthenticationService AuthenticationService { get; }
     public IDialogService Dialogs { get; }
     public ISessionService Session { get; }
+    public CrashReporter CrashReporter { get; }
+    public NetworkStateMonitor NetworkMonitor { get; }
+    public SettingsManager<OptionsState> SettingsManager { get; }
     public IServiceProvider Services { get; }
 
     public HomeViewModel CreateHomeViewModel(Action<AuthenticatedUser> navigateToMenu, Action? requestExit) =>
         new(Configuration.ApplicationName, AuthenticationService, CredentialStore, navigateToMenu, requestExit, Errors);
 
     public MainMenuViewModel CreateMainMenuViewModel(AuthenticatedUser user, Action logout) =>
-        new(user, Services.GetRequiredService<Modules.MainMenu.Services.IMenuRouter>(), logout);
+        new(user,
+            Services.GetRequiredService<Modules.MainMenu.Services.IMenuRouter>(),
+            Services.GetRequiredService<Modules.Catalog.Services.ICatalogService>(),
+            logout);
 
     public async ValueTask DisposeAsync()
     {
+        Log.Information("Arrêt de l'application...");
+
+        // Flush les settings avant de fermer
+        if (SettingsManager != null)
+        {
+            await SettingsManager.FlushAsync().ConfigureAwait(false);
+        }
+
+        if (NetworkMonitor != null)
+        {
+            NetworkMonitor.Dispose();
+        }
+
         if (WsClient != null)
         {
             await WsClient.DisposeAsync().ConfigureAwait(false);
         }
+
         if (Services is IAsyncDisposable asyncDisposable)
         {
             await asyncDisposable.DisposeAsync().ConfigureAwait(false);
@@ -213,5 +304,7 @@ public sealed class AppHost : IAsyncDisposable
         {
             disposable.Dispose();
         }
+
+        LoggingConfiguration.CloseLogger();
     }
 }

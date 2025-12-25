@@ -2,6 +2,7 @@ using System;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Serilog;
 
 namespace client_win.Modules.Network;
 
@@ -27,11 +28,20 @@ public sealed class WsRequestClient
         string raw;
         try
         {
+            Log.Debug("WS request: {Type}", type);
             raw = await _client.SendAsync(type, payload, token, _sharedSecret, cancellationToken).ConfigureAwait(false);
+        }
+        catch (TaskCanceledException tex)
+        {
+            var message = $"La requête temps réel '{type}' a expiré.";
+            _errorBus?.Publish(new Modules.Error.AppError(message, Modules.Error.ErrorSeverity.Error, context: type, detail: tex.Message));
+            Log.Warning(tex, "WS timeout: {Type}", type);
+            return WsResponse<TPayload>.Fail(type, message);
         }
         catch (Exception ex)
         {
             _errorBus?.Publish(new Modules.Error.AppError("Requête temps réel échouée.", Modules.Error.ErrorSeverity.Error, context: type, detail: ex.Message));
+            Log.Warning(ex, "WS error: {Type}", type);
             return WsResponse<TPayload>.Fail(type, ex.Message);
         }
 
@@ -39,14 +49,17 @@ public sealed class WsRequestClient
         var root = doc.RootElement;
         string responseType = root.TryGetProperty("type", out var t) ? t.GetString() ?? type : type;
         string? reqId = root.TryGetProperty("requestId", out var id) ? id.GetString() : null;
+        Log.Debug("WS response: {Type} ({RequestId})", responseType, reqId ?? "?");
         if (string.Equals(responseType, "error", StringComparison.OrdinalIgnoreCase))
         {
+            string? context = root.TryGetProperty("context", out var c) ? c.GetString() : null;
             string message = root.TryGetProperty("payload", out var p) &&
                              p.TryGetProperty("message", out var msg)
                 ? msg.GetString() ?? "Erreur temps réel"
                 : "Erreur temps réel";
-            _errorBus?.Publish(new Modules.Error.AppError(message, Modules.Error.ErrorSeverity.Error, context: type));
-            return WsResponse<TPayload>.Fail(responseType, message);
+            _errorBus?.Publish(new Modules.Error.AppError(message, Modules.Error.ErrorSeverity.Error, context: type, detail: context));
+            // On conserve le type demandé pour faciliter le diagnostic côté appelant.
+            return WsResponse<TPayload>.Fail(type, message);
         }
 
         TPayload? data = default;

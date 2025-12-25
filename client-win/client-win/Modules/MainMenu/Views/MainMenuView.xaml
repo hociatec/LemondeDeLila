@@ -27,7 +27,9 @@
         </Style>
     </UserControl.Resources>
 
-    <Grid Background="{StaticResource ShellBackground}" Focusable="False">
+    <Grid Background="{StaticResource ShellBackground}"
+          FocusManager.IsFocusScope="True"
+          FocusManager.FocusedElement="{Binding ElementName=CatalogButton}">
         <Grid.RowDefinitions>
             <RowDefinition Height="80" />
             <RowDefinition Height="*" />
@@ -46,7 +48,9 @@
             <StackPanel KeyboardNavigation.TabNavigation="None"
                         KeyboardNavigation.ControlTabNavigation="None">
                 <TextBlock Text="Navigation" Foreground="White" FontSize="18" Margin="0 0 0 12" />
-                <Button x:Name="CatalogButton" Content="Étagères" Command="{Binding OpenCatalogCommand}" KeyDown="OnMenuButtonKeyDown" />
+                <Button x:Name="CatalogButton" Content="Étagères" Command="{Binding OpenCatalogCommand}"
+                        IsDefault="True"
+                        KeyDown="OnMenuButtonKeyDown" />
                 <Button x:Name="JoinButton" Content="Rejoindre une partie" Command="{Binding JoinGameCommand}" KeyDown="OnMenuButtonKeyDown" />
                 <Button x:Name="MessagingButton" Content="Messagerie" Background="#2A5C86" Command="{Binding MessagingCommand}" KeyDown="OnMenuButtonKeyDown" />
                 <Button x:Name="ChatButton" Content="Chat" Command="{Binding ChatCommand}" KeyDown="OnMenuButtonKeyDown" />
@@ -62,11 +66,17 @@
 
         <Border Grid.Row="2" Background="#0C1523" Padding="12 8" Focusable="False"
                 AutomationProperties.LiveSetting="Polite">
-            <TextBlock Text="{Binding StatusMessage}"
-                       Foreground="{StaticResource HighlightBrush}" FontSize="14"
-                       TextWrapping="Wrap" HorizontalAlignment="Center" Focusable="False"
-                       AutomationProperties.Name="Message de statut"
-                       AutomationProperties.LiveSetting="Polite" />
+            <Grid>
+                <TextBlock Text="{Binding StatusMessage}"
+                           Foreground="{StaticResource HighlightBrush}" FontSize="14"
+                           TextWrapping="Wrap" HorizontalAlignment="Center" Focusable="False"
+                           AutomationProperties.Name="Message de statut"
+                           AutomationProperties.LiveSetting="Polite" />
+                <TextBlock Text="{Binding Version}"
+                           Foreground="#5A7896" FontSize="12"
+                           HorizontalAlignment="Right" VerticalAlignment="Center"
+                           Margin="0,0,8,0" Focusable="False" />
+            </Grid>
         </Border>
     </Grid>
 </UserControl>

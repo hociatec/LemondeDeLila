@@ -5,12 +5,14 @@ using client_win.Modules.Chat.Services;
 using client_win.Modules.Catalog.Services;
 using client_win.Modules.Catalog.ViewModels;
 using client_win.Modules.Catalog.Views;
+using client_win.Modules.Catalog.Models;
 using client_win.Modules.Shell.Services;
 using System.Windows;
 using client_win.Modules.Messaging.Services;
 using client_win.Modules.Messaging.ViewModels;
 using client_win.Modules.Messaging.Views;
-using client_win.Modules.Game.Services;
+using client_win.Modules.Game.Room.ViewModels;
+using client_win.Modules.Game.Room.Views;
 
 namespace client_win.Modules.MainMenu.Services;
 
@@ -24,9 +26,8 @@ public sealed class MenuRouterStub : IMenuRouter
     private readonly IChatLauncher _chat;
     private readonly ICatalogService _catalog;
     private readonly INavigationService _navigation;
+    private readonly IDialogService _dialogs;
     private readonly IMessagingService _messaging;
-    private readonly IRoomRealtimeService _roomRealtime;
-    private readonly IRoomTableNavigator _roomNavigator;
 
     public MenuRouterStub(
         ILogger<MenuRouterStub> logger,
@@ -34,33 +35,36 @@ public sealed class MenuRouterStub : IMenuRouter
         IChatLauncher chat,
         ICatalogService catalog,
         INavigationService navigation,
-        IMessagingService messaging,
-        IRoomRealtimeService roomRealtime,
-        IRoomTableNavigator roomNavigator)
+        IDialogService dialogs,
+        IMessagingService messaging)
     {
         _logger = logger;
         _options = options;
         _chat = chat;
         _catalog = catalog;
         _navigation = navigation;
+        _dialogs = dialogs;
         _messaging = messaging;
-        _roomRealtime = roomRealtime;
-        _roomNavigator = roomNavigator;
     }
 
     public Task<string> OpenCatalog()
     {
         var previous = _navigation.CurrentView;
-        var view = new CatalogView();
-        var vm = new CatalogViewModel(_catalog, _roomRealtime, _roomNavigator, onClose: () =>
+        var catalogView = new CatalogView();
+        var vm = new CatalogViewModel(_catalog, onClose: () =>
         {
             if (previous != null)
             {
                 _navigation.Show(previous);
             }
+        },
+        openGame: game =>
+        {
+            OpenGameTable(game, catalogView);
+            return Task.CompletedTask;
         });
-        view.DataContext = vm;
-        _navigation.Show(view);
+        catalogView.DataContext = vm;
+        _navigation.Show(catalogView);
         return Task.FromResult("Catalogue ouvert.");
     }
 
@@ -101,5 +105,17 @@ public sealed class MenuRouterStub : IMenuRouter
     {
         _logger.LogInformation(message);
         return Task.FromResult(message);
+    }
+
+    private void OpenGameTable(CatalogGame game, System.Windows.Controls.UserControl returnView)
+    {
+        var tableView = new GameRoomView();
+        var tableVm = new GameRoomViewModel(game, onQuit: () =>
+        {
+            _navigation.Show(returnView);
+            return Task.CompletedTask;
+        }, dialogs: _dialogs);
+        tableView.DataContext = tableVm;
+        _navigation.Show(tableView);
     }
 }

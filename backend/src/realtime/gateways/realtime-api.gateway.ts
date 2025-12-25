@@ -59,13 +59,25 @@ export class RealtimeApiGateway
       }
     }
     this.clients.set(client, session);
-    await this.sessionStore.save(connectionId, {
-      userId: session.user?.id ?? null,
-      username: session.user?.username,
-      roles: session.user?.roles ?? null,
-    });
+
+    // IMPORTANT: attacher les handlers AVANT tout `await`.
+    // Sinon, un client qui envoie un message immédiatement après le handshake (cas fréquent)
+    // peut se faire "perdre" le premier message car aucun listener n'est encore abonné.
     client.on('message', (raw) => this.handleIncoming(client, raw));
     client.on('error', () => client.close());
+
+    try {
+      await this.sessionStore.save(connectionId, {
+        userId: session.user?.id ?? null,
+        username: session.user?.username,
+        roles: session.user?.roles ?? null,
+      });
+    } catch (err) {
+      // Ne pas bloquer la connexion WS si Redis est lent/indisponible : le client peut tout de même utiliser l'API WS.
+      this.logger.warn(
+        `Impossible de persister la session WS (connectionId=${connectionId}): ${(err as Error).message}`,
+      );
+    }
   }
 
   handleDisconnect(client: WebSocket) {
@@ -84,16 +96,37 @@ export class RealtimeApiGateway
     }
     const decoded = this.decode(raw);
     if (!decoded?.type) {
+      this.logger.debug(
+        `Message WS ignoré (invalide ou sans type) connectionId=${session.connectionId}`,
+      );
       return;
     }
     const { type, payload, requestId } = decoded;
     try {
       const handler = this.registry.get(type);
       if (!handler) {
+        this.logger.warn(
+          `Type WS inconnu: ${type} (requestId=${requestId ?? 'n/a'})`,
+        );
         this.sendError(client, 'Type de message inconnu', type, requestId);
         return;
       }
+
+      const start = Date.now();
+      this.logger.debug(
+        `WS -> backend type=${type} requestId=${requestId ?? 'n/a'} userId=${session.user?.id ?? 'anon'} connectionId=${session.connectionId}`,
+      );
       const response = await handler(session, payload);
+      const elapsedMs = Date.now() - start;
+      if (elapsedMs >= 2000) {
+        this.logger.warn(
+          `WS handler lent: ${type} (${elapsedMs}ms) requestId=${requestId ?? 'n/a'}`,
+        );
+      } else {
+        this.logger.debug(
+          `WS handler ok: ${type} (${elapsedMs}ms) requestId=${requestId ?? 'n/a'}`,
+        );
+      }
       if (response) {
         this.safeSend(client, { requestId, ...response });
       }

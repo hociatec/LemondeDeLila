@@ -13,6 +13,7 @@ using client_win.Modules.MainMenu.Views;
 using client_win.Modules.MainMenu.Services;
 using client_win.Modules.Shell.Services;
 using Microsoft.Extensions.DependencyInjection;
+using System.Threading;
 
 namespace client_win
 {
@@ -41,7 +42,7 @@ namespace client_win
 
             _homeView = new HomeView { DataContext = _homeViewModel };
             _navigation = _host.Navigation;
-            _errorHandler = new ShellErrorHandler(_errorBus, _navigation, _dialogs, () => _homeView);
+            _errorHandler = new ShellErrorHandler(_errorBus, _navigation, _dialogs, () => _homeView, _host.CrashReporter);
 
             Loaded += OnLoaded;
         }
@@ -70,6 +71,10 @@ namespace client_win
             Title = $"Le Monde de Lila - Connecté en tant que {user.Username}";
             _navigation.SetUser(new UserContext(user.Username, user.Token));
             _host.Session.SetUser(user);
+            // Précharge le catalogue dès la connexion (best-effort) pour éviter un blocage
+            // si l'utilisateur ouvre le catalogue immédiatement.
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(8));
+            _ = _host.Services.GetRequiredService<Modules.Catalog.Services.ICatalogService>().PreloadAsync(cts.Token);
             var menuVm = _host.CreateMainMenuViewModel(user, OnLogoutRequested);
             var menuView = new MainMenuView { DataContext = menuVm };
             _navigation.Show(menuView);

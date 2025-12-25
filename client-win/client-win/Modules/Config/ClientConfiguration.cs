@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using client_win.Core.Constants;
+using Serilog;
 
 namespace client_win.Modules.Config;
 
@@ -13,6 +15,7 @@ public sealed class ClientConfiguration
     private const string DefaultWs = "ws://127.0.0.1:3001/ws";
     private const string DefaultWsNotify = "ws://127.0.0.1:3001/ws/notify";
     private const string DefaultWsGame = "ws://127.0.0.1:3001/ws/game";
+    private const string DefaultWsSharedSecret = "remote-ws-shared-secret-2025";
 
     public string ApplicationName { get; }
     public string? JwtSecret { get; }
@@ -44,20 +47,62 @@ public sealed class ClientConfiguration
 
     public static ClientConfiguration Load(string? pathOverride = null)
     {
-        var properties = LoadProperties(pathOverride);
+        Dictionary<string, string> properties;
+        try
+        {
+            properties = LoadProperties(pathOverride);
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Erreur de lecture de la configuration. Utilisation des valeurs par défaut.");
+            properties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        }
         string appName = properties.TryGetValue("app.name", out var n) && !string.IsNullOrWhiteSpace(n)
             ? n
             : "Le Monde de Lila";
 
-        Uri httpBase = ToHttpUri(Get(properties, "network.http.base", DefaultHttp));
-        Uri apiGateway = ToWsUri(Get(properties, "network.ws.api", DefaultWsApi), "/ws/api");
-        Uri realtimeGateway = ToWsUri(Get(properties, "network.ws.url", DefaultWs), "/ws");
-        Uri notifyGateway = ToWsUri(Get(properties, "network.ws.notify", DefaultWsNotify), "/ws/notify");
-        Uri gameGateway = ToWsUri(Get(properties, "network.ws.game", DefaultWsGame), "/ws/game");
+        Uri httpBase;
+        Uri apiGateway;
+        Uri realtimeGateway;
+        Uri notifyGateway;
+        Uri gameGateway;
         string? sharedSecret = Normalize(Environment.GetEnvironmentVariable("NETWORK_WS_SECRET") ??
                                          Environment.GetEnvironmentVariable("WS_SHARED_SECRET") ??
                                          (properties.TryGetValue("network.ws.secret", out var s) ? s : null));
         string? jwtSecret = Normalize(Environment.GetEnvironmentVariable("JWT_SECRET"));
+        var environment = EnvironmentDetector.GetEnvironment();
+
+        try
+        {
+            httpBase = ToHttpUri(Get(properties, "network.http.base", DefaultHttp));
+            apiGateway = ToWsUri(Get(properties, "network.ws.api", DefaultWsApi), "/ws/api");
+            realtimeGateway = ToWsUri(Get(properties, "network.ws.url", DefaultWs), "/ws");
+            notifyGateway = ToWsUri(Get(properties, "network.ws.notify", DefaultWsNotify), "/ws/notify");
+            gameGateway = ToWsUri(Get(properties, "network.ws.game", DefaultWsGame), "/ws/game");
+        }
+        catch (ConfigValidationException ex)
+        {
+            if (environment == EnvironmentDetector.AppEnvironment.Development)
+            {
+                Log.Warning(ex, "Configuration réseau invalide. Fallback sur la configuration par défaut (dev).");
+                properties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                httpBase = ToHttpUri(DefaultHttp);
+                apiGateway = ToWsUri(DefaultWsApi, "/ws/api");
+                realtimeGateway = ToWsUri(DefaultWs, "/ws");
+                notifyGateway = ToWsUri(DefaultWsNotify, "/ws/notify");
+                gameGateway = ToWsUri(DefaultWsGame, "/ws/game");
+            }
+            else
+            {
+                throw;
+            }
+        }
+
+        if (string.IsNullOrWhiteSpace(sharedSecret) && environment == EnvironmentDetector.AppEnvironment.Development)
+        {
+            Log.Warning("Aucun secret WebSocket détecté - utilisation du secret par défaut ({Secret}).", DefaultWsSharedSecret);
+            sharedSecret = DefaultWsSharedSecret;
+        }
 
         apiGateway = UpgradeToSecureWs(apiGateway, httpBase);
         realtimeGateway = UpgradeToSecureWs(realtimeGateway, httpBase);
@@ -66,7 +111,20 @@ public sealed class ClientConfiguration
 
         Validate(new[] { apiGateway, realtimeGateway, notifyGateway, gameGateway }, httpBase, sharedSecret);
 
-        return new ClientConfiguration(appName, jwtSecret, httpBase, apiGateway, realtimeGateway, notifyGateway, gameGateway, sharedSecret);
+        var config = new ClientConfiguration(appName, jwtSecret, httpBase, apiGateway, realtimeGateway, notifyGateway, gameGateway, sharedSecret);
+
+        // Log de la configuration finale (masquer les secrets)
+        Log.Information("Configuration réseau chargée:");
+        Log.Information("  - Application: {AppName}", appName);
+        Log.Information("  - HTTP Base: {HttpBase}", httpBase);
+        Log.Information("  - WebSocket API: {ApiGateway}", apiGateway);
+        Log.Information("  - WebSocket Realtime: {RealtimeGateway}", realtimeGateway);
+        Log.Information("  - WebSocket Notify: {NotifyGateway}", notifyGateway);
+        Log.Information("  - WebSocket Game: {GameGateway}", gameGateway);
+        Log.Information("  - Shared Secret: {HasSecret}", string.IsNullOrWhiteSpace(sharedSecret) ? "non défini" : "*****");
+        Log.Information("  - JWT Secret: {HasJwtSecret}", string.IsNullOrWhiteSpace(jwtSecret) ? "non défini" : "*****");
+
+        return config;
     }
 
     private static Dictionary<string, string> LoadProperties(string? pathOverride)
@@ -101,30 +159,86 @@ public sealed class ClientConfiguration
 
     private static string? ResolvePath(string? overridePath)
     {
-        if (!string.IsNullOrWhiteSpace(overridePath) && File.Exists(overridePath!))
+        var environment = EnvironmentDetector.GetEnvironment();
+        string baseDir = AppContext.BaseDirectory;
+        string appConfigPath = Path.Combine(baseDir, "config", "client.properties");
+        string appConfigExamplePath = Path.Combine(baseDir, "config", "client.properties.example");
+
+        // 1. Override explicite (si fourni)
+        if (!string.IsNullOrWhiteSpace(overridePath))
         {
-            return overridePath;
+            if (File.Exists(overridePath!))
+            {
+                Log.Information("Configuration chargée depuis le chemin fourni: {Path}", overridePath);
+                return overridePath;
+            }
+            Log.Warning("Chemin de configuration fourni introuvable: {Path}", overridePath);
         }
 
-        string baseDir = AppContext.BaseDirectory;
-        string[] candidates =
+        // En Staging/Production: on évite AppData (modifiable par l'utilisateur) et on lit uniquement
+        // la configuration packagée dans le dossier de l'application (config/).
+        if (environment != EnvironmentDetector.AppEnvironment.Development)
         {
-            Path.Combine(baseDir, "config", "client.properties"),
-            Path.Combine(baseDir, "..", "..", "..", "config", "client.properties"),
-            Path.Combine(baseDir, "..", "..", "..", "..", "config", "client.properties"),
-            Path.Combine(baseDir, "Modules", "Config", "client.properties"),
-            Path.Combine(baseDir, "..", "..", "..", "Modules", "Config", "client.properties"),
-            Path.Combine(baseDir, "..", "..", "..", "..", "..", "java-client", "config", "client.properties"),
-            Path.Combine(baseDir, "..", "..", "..", "..", "..", "..", "java-client", "config", "client.properties"),
-        };
-
-        foreach (string candidate in candidates)
-        {
-            if (File.Exists(candidate))
+            if (File.Exists(appConfigPath))
             {
-                return candidate;
+                Log.Information("Configuration (prod) chargée depuis le dossier de l'application: {Path}", appConfigPath);
+                return appConfigPath;
+            }
+
+            if (File.Exists(appConfigExamplePath))
+            {
+                Log.Warning("Configuration (prod) manquante, fallback sur client.properties.example: {Path}", appConfigExamplePath);
+                return appConfigExamplePath;
+            }
+
+            return null;
+        }
+
+        // 2. Dossier utilisateur dans AppData (prioritaire pour ne pas écraser la config de l'utilisateur)
+        string appDataPath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            AppConstants.AppDataFolderName,
+            "config",
+            "client.properties");
+        if (File.Exists(appDataPath))
+        {
+            Log.Information("Configuration chargée depuis AppData: {Path}", appDataPath);
+            return appDataPath;
+        }
+
+        // 3. Dossier de l'application (fallback / configuration packagée)
+        // OPTIM: si aucun fichier AppData, on copie un template packagé vers AppData pour éviter les confusions
+        // entre "config côté exécutable" et "config utilisateur".
+        string? template = File.Exists(appConfigPath)
+            ? appConfigPath
+            : (File.Exists(appConfigExamplePath) ? appConfigExamplePath : null);
+        if (template != null)
+        {
+            try
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(appDataPath) ?? Path.Combine(baseDir, "config"));
+                File.Copy(template, appDataPath, overwrite: false);
+                Log.Information("Configuration initialisée dans AppData depuis {Template}: {Path}", template, appDataPath);
+                return appDataPath;
+            }
+            catch (IOException)
+            {
+                // Déjà créé en parallèle ou verrouillé: on reteste l'existence.
+                if (File.Exists(appDataPath))
+                {
+                    Log.Information("Configuration chargée depuis AppData: {Path}", appDataPath);
+                    return appDataPath;
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "Impossible d'initialiser la configuration AppData depuis {Template}", template);
             }
         }
+
+        // Aucun fichier trouvé - créer configuration par défaut dans AppData
+        Log.Warning("Aucun fichier de configuration trouvé. Utilisation des valeurs par défaut.");
+        Log.Information("Vous pouvez créer un fichier de configuration dans: {Path}", appDataPath);
 
         return null;
     }
@@ -210,6 +324,8 @@ public sealed class ClientConfiguration
 
     private static void Validate(IEnumerable<Uri> wsUris, Uri httpBase, string? sharedSecret)
     {
+        var environment = EnvironmentDetector.GetEnvironment();
+
         if (httpBase.Scheme != Uri.UriSchemeHttp && httpBase.Scheme != Uri.UriSchemeHttps)
         {
             throw new ConfigValidationException("Le schéma HTTP doit être http ou https.");
@@ -228,6 +344,14 @@ public sealed class ClientConfiguration
 
         if (string.IsNullOrWhiteSpace(sharedSecret))
         {
+            if (environment == EnvironmentDetector.AppEnvironment.Development)
+            {
+                // En dev, on autorise le secret par défaut pour coller à la configuration backend
+                Log.Warning("Aucun secret WebSocket défini. Utilisation du secret par défaut ({Secret}).", DefaultWsSharedSecret);
+                sharedSecret = DefaultWsSharedSecret;
+                return;
+            }
+
             throw new ConfigValidationException("Le secret partagé (NETWORK_WS_SECRET ou WS_SHARED_SECRET) est requis pour la sécurité de la connexion WebSocket. Veuillez le définir dans les variables d'environnement ou dans le fichier client.properties.");
         }
     }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -9,6 +10,8 @@ namespace client_win.Modules.MainMenu.Views;
 public partial class MainMenuView : UserControl
 {
     private List<Button> _orderedButtons = new();
+    private string? _lastFocusedButtonName;
+    private bool _subscriptionsAttached;
 
     public MainMenuView()
     {
@@ -30,9 +33,25 @@ public partial class MainMenuView : UserControl
             LogoutButton
         }.Where(b => b != null).ToList();
 
-        // Focus le premier bouton visible.
-        var first = _orderedButtons.FirstOrDefault(b => b.Visibility == Visibility.Visible && b.IsEnabled);
-        first?.Focus();
+        if (!_subscriptionsAttached)
+        {
+            foreach (var button in _orderedButtons)
+            {
+                button.GotKeyboardFocus += OnButtonGotKeyboardFocus;
+            }
+            _subscriptionsAttached = true;
+        }
+
+        // UX: le menu s'ouvre toujours sur le catalogue, pour que "Entrée" fonctionne immédiatement.
+        if (CatalogButton != null && CatalogButton.Visibility == Visibility.Visible && CatalogButton.IsEnabled)
+        {
+            CatalogButton.Focus();
+            _lastFocusedButtonName = CatalogButton.Name;
+        }
+        else
+        {
+            FocusLastOrFirstVisibleButton();
+        }
     }
 
     private void OnMenuButtonKeyDown(object sender, KeyEventArgs e)
@@ -92,5 +111,29 @@ public partial class MainMenuView : UserControl
             }
         }
         return null;
+    }
+
+    private void OnButtonGotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
+    {
+        if (sender is Button b && !string.IsNullOrWhiteSpace(b.Name))
+        {
+            _lastFocusedButtonName = b.Name;
+        }
+    }
+
+    private void FocusLastOrFirstVisibleButton()
+    {
+        var target = _orderedButtons.FirstOrDefault(b =>
+            !string.IsNullOrWhiteSpace(_lastFocusedButtonName) &&
+            string.Equals(b.Name, _lastFocusedButtonName, StringComparison.Ordinal) &&
+            b.Visibility == Visibility.Visible &&
+            b.IsEnabled);
+
+        if (target == null)
+        {
+            target = _orderedButtons.FirstOrDefault(b => b.Visibility == Visibility.Visible && b.IsEnabled);
+        }
+
+        target?.Focus();
     }
 }

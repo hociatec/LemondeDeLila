@@ -13,7 +13,7 @@ export class GameRegistryService {
   private readonly logger = new Logger(GameRegistryService.name);
   private cachedDefinitions: GameDefinition[] | null = null;
   private cachedAtMs = 0;
-  private readonly devTtlMs = 3000;
+  private readonly devTtlMs = 30000;
 
   constructor() {
     const envRoot = process.env.GAME_CATALOG_PATH;

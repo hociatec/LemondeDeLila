@@ -5,9 +5,7 @@ using client_win.Modules.Chat.Services;
 using client_win.Modules.Catalog.Services;
 using client_win.Modules.Catalog.ViewModels;
 using client_win.Modules.Catalog.Views;
-using client_win.Modules.Game.ViewModels;
-using client_win.Modules.Game.Views;
-using client_win.Modules.Game.Services;
+using client_win.Modules.Catalog.Models;
 using client_win.Modules.Social.ViewModels;
 using client_win.Modules.Social.Views;
 using client_win.Modules.Social.Services;
@@ -18,6 +16,8 @@ using System.Windows;
 using client_win.Modules.Messaging.Services;
 using client_win.Modules.Messaging.ViewModels;
 using client_win.Modules.Messaging.Views;
+using client_win.Modules.Game.Room.ViewModels;
+using client_win.Modules.Game.Room.Views;
 
 namespace client_win.Modules.MainMenu.Services;
 
@@ -32,11 +32,9 @@ public sealed class MenuRouter : IMenuRouter
     private readonly IChatLauncher _chat;
     private readonly ICatalogService _catalog;
     private readonly INavigationService _navigation;
+    private readonly IDialogService _dialogs;
     private readonly IMessagingService _messaging;
     private readonly ISocialService _social;
-    private readonly IRoomDirectoryService _roomDirectory;
-    private readonly IRoomRealtimeService _roomRealtime;
-    private readonly IRoomTableNavigator _roomNavigator;
 
     public MenuRouter(
         ILogger<MenuRouter> logger,
@@ -44,22 +42,18 @@ public sealed class MenuRouter : IMenuRouter
         IChatLauncher chat,
         ICatalogService catalog,
         INavigationService navigation,
+        IDialogService dialogs,
         IMessagingService messaging,
-        ISocialService social,
-        IRoomDirectoryService roomDirectory,
-        IRoomRealtimeService roomRealtime,
-        IRoomTableNavigator roomNavigator)
+        ISocialService social)
     {
         _logger = logger;
         _options = options;
         _chat = chat;
         _catalog = catalog;
         _navigation = navigation;
+        _dialogs = dialogs;
         _messaging = messaging;
         _social = social;
-        _roomDirectory = roomDirectory;
-        _roomRealtime = roomRealtime;
-        _roomNavigator = roomNavigator;
     }
 
     public Task<string> OpenCatalog()
@@ -67,37 +61,29 @@ public sealed class MenuRouter : IMenuRouter
         _logger.LogInformation("Ouverture du catalogue de jeux");
 
         var previous = _navigation.CurrentView;
-        var view = new CatalogView();
-        var vm = new CatalogViewModel(_catalog, _roomRealtime, _roomNavigator, onClose: () =>
+        var catalogView = new CatalogView();
+        var vm = new CatalogViewModel(_catalog, onClose: () =>
         {
             if (previous != null)
             {
                 _navigation.Show(previous);
             }
+        },
+        openGame: game =>
+        {
+            OpenGameTable(game, catalogView);
+            return Task.CompletedTask;
         });
-        view.DataContext = vm;
-        _navigation.Show(view);
+        catalogView.DataContext = vm;
+        _navigation.Show(catalogView);
 
         return Task.FromResult("Catalogue ouvert.");
     }
 
     public Task<string> JoinGame()
     {
-        _logger.LogInformation("Ouverture de la sélection de partie");
-
-        var previous = _navigation.CurrentView;
-        var view = new JoinGameView();
-        var vm = new JoinGameViewModel(_roomDirectory, _roomNavigator, onClose: () =>
-        {
-            if (previous != null)
-            {
-                _navigation.Show(previous);
-            }
-        });
-        view.DataContext = vm;
-        _navigation.Show(view);
-
-        return Task.FromResult("Sélection de partie ouverte.");
+        _logger.LogInformation("Fonction JoinGame non disponible (module Game retiré)");
+        return Task.FromResult("Fonction JoinGame non disponible.");
     }
 
     public async Task<string> OpenChat()
@@ -182,5 +168,17 @@ public sealed class MenuRouter : IMenuRouter
         _logger.LogInformation("Déconnexion demandée par l'utilisateur");
         // La déconnexion est gérée par le MainMenuViewModel
         return Task.FromResult("Déconnexion en cours...");
+    }
+
+    private void OpenGameTable(CatalogGame game, System.Windows.Controls.UserControl returnView)
+    {
+        var tableView = new GameRoomView();
+        var tableVm = new GameRoomViewModel(game, onQuit: () =>
+        {
+            _navigation.Show(returnView);
+            return Task.CompletedTask;
+        }, dialogs: _dialogs);
+        tableView.DataContext = tableVm;
+        _navigation.Show(tableView);
     }
 }

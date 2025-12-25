@@ -7,10 +7,9 @@ using System.Windows.Input;
 using System.Windows;
 using System.Windows.Threading;
 using client_win.Core;
+using client_win.Core.Network;
 using client_win.Modules.Catalog.Models;
 using client_win.Modules.Catalog.Services;
-using client_win.Modules.Game.Models;
-using client_win.Modules.Game.Services;
 
 namespace client_win.Modules.Catalog.ViewModels;
 
@@ -27,8 +26,7 @@ public enum CatalogEscapeResult
 public sealed class CatalogViewModel : ObservableObject
 {
     private readonly ICatalogService _service;
-    private readonly IRoomRealtimeService _roomRealtime;
-    private readonly IRoomTableNavigator _roomNavigator;
+    private readonly Func<CatalogGame, Task> _openGame;
     private readonly Action _close;
     private readonly Dispatcher _dispatcher;
     private List<CatalogGame> _allGames = new();
@@ -39,11 +37,10 @@ public sealed class CatalogViewModel : ObservableObject
     private bool _isBusy;
     private int _selectionRevision;
 
-    public CatalogViewModel(ICatalogService service, IRoomRealtimeService roomRealtime, IRoomTableNavigator roomNavigator, Action onClose)
+    public CatalogViewModel(ICatalogService service, Action onClose, Func<CatalogGame, Task> openGame)
     {
         _service = service ?? throw new ArgumentNullException(nameof(service));
-        _roomRealtime = roomRealtime ?? throw new ArgumentNullException(nameof(roomRealtime));
-        _roomNavigator = roomNavigator ?? throw new ArgumentNullException(nameof(roomNavigator));
+        _openGame = openGame ?? throw new ArgumentNullException(nameof(openGame));
         _close = onClose ?? (() => { });
         _dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
         CloseCommand = new RelayCommand(_close);
@@ -180,7 +177,15 @@ public sealed class CatalogViewModel : ObservableObject
         CatalogPayload payload;
         try
         {
-            payload = await _service.GetCatalogAsync().ConfigureAwait(true);
+            var network = NetworkConfiguration.Load();
+            using var cts = new CancellationTokenSource(
+                TimeSpan.FromSeconds(Math.Max(30, network.ReceiveTimeoutSeconds + 5)));
+            payload = await _service.GetCatalogAsync(cts.Token).ConfigureAwait(true);
+        }
+        catch (OperationCanceledException)
+        {
+            Status = "Catalogue indisponible (timeout).";
+            return;
         }
         catch (Exception ex)
         {
@@ -312,30 +317,23 @@ public sealed class CatalogViewModel : ObservableObject
 
     public async Task ActivateSelectedGameAsync()
     {
+        if (SelectedGame == null && Games.Count > 0)
+        {
+            SelectedGame = Games[0];
+        }
+
         if (SelectedGame == null)
         {
             Status = "Selectionnez un jeu.";
             return;
         }
 
-        int maxPlayers = SelectedGame.MaxPlayers > 0 ? SelectedGame.MaxPlayers : 4;
-        string name = $"Table {SelectedGame.Name}";
-
         IsBusy = true;
         try
         {
-            Status = "Creation de la table...";
-            var created = await _roomRealtime.CreateRoomAsync(
-                new CreateRoomRequest(SelectedGame.Code, name, maxPlayers, false)).ConfigureAwait(true);
-
-            if (created == null)
-            {
-                Status = "Creation impossible.";
-                return;
-            }
-
-            Status = $"Table creee: #{created.RoomId} ({created.GameType}).";
-            _roomNavigator.OpenRoom(new RoomLaunchRequest(created.RoomId, created.GameType, created.RoomName, spectator: false));
+            Status = $"Ouverture de {SelectedGame.Name}...";
+            await _openGame(SelectedGame).ConfigureAwait(true);
+            Status = $"Jeu ouvert : {SelectedGame.Name}";
         }
         catch (Exception ex)
         {

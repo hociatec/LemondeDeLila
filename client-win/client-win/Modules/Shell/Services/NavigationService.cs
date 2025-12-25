@@ -1,5 +1,7 @@
 using System;
 using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Threading;
 
 namespace client_win.Modules.Shell.Services;
 
@@ -33,6 +35,20 @@ public sealed class NavigationService : INavigationService
     {
         _host.Content = view ?? throw new ArgumentNullException(nameof(view));
         CurrentView = view;
+
+        // Accessibilité : donner une opportunité au focus clavier d'atterrir dans la nouvelle vue.
+        _host.Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
+        {
+            try
+            {
+                // MoveFocus fonctionne même si le UserControl lui-même n'est pas Focusable.
+                view.MoveFocus(new TraversalRequest(FocusNavigationDirection.First));
+            }
+            catch
+            {
+                // Best-effort : ne pas empêcher la navigation si la vue ne supporte pas le focus.
+            }
+        }));
     }
 }
 

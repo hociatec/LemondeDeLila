@@ -3,8 +3,10 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Windows.Input;
 using client_win.Core;
+using client_win.Modules.Catalog.Services;
 using client_win.Modules.MainMenu.Services;
 using client_win.Modules.User.Models;
+using Serilog;
 
 namespace client_win.Modules.MainMenu.ViewModels;
 
@@ -12,18 +14,31 @@ public sealed class MainMenuViewModel : ObservableObject
 {
     private readonly AuthenticatedUser _user;
     private readonly IMenuRouter _router;
+    private readonly ICatalogService _catalog;
     private readonly Action? _logout;
     private string _statusMessage = "Prêt.";
     private bool _isAdminVisible;
 
-    public MainMenuViewModel(AuthenticatedUser user, IMenuRouter router, Action? logout = null)
+    public MainMenuViewModel(AuthenticatedUser user, IMenuRouter router, ICatalogService catalog, Action? logout = null)
     {
         _user = user ?? throw new ArgumentNullException(nameof(user));
         _router = router ?? throw new ArgumentNullException(nameof(router));
+        _catalog = catalog ?? throw new ArgumentNullException(nameof(catalog));
         _logout = logout;
         _isAdminVisible = HasAdminRole(user.Token);
 
-        OpenCatalogCommand = new AsyncRelayCommand(async () => SetStatus(await _router.OpenCatalog()));
+        OpenCatalogCommand = new AsyncRelayCommand(
+            async () =>
+            {
+                // Ne pas bloquer l'ouverture sur le préchargement (qui peut prendre du temps si le WS est lent).
+                StatusMessage = "Ouverture du catalogue...";
+                SetStatus(await _router.OpenCatalog());
+            },
+            onException: ex =>
+            {
+                Log.Error(ex, "Erreur lors de l'ouverture du catalogue");
+                StatusMessage = $"Erreur ouverture catalogue : {ex.Message}";
+            });
         JoinGameCommand = new AsyncRelayCommand(async () => SetStatus(await _router.JoinGame()));
         ChatCommand = new AsyncRelayCommand(async () => SetStatus(await _router.OpenChat()));
         MessagingCommand = new AsyncRelayCommand(async () => SetStatus(await _router.OpenMessaging()));
@@ -46,6 +61,8 @@ public sealed class MainMenuViewModel : ObservableObject
     }
 
     public string Welcome => $"Bienvenue, {_user.Username}";
+
+    public string Version => $"Version {AppInfo.GetDisplayVersion()}";
 
     public string StatusMessage
     {

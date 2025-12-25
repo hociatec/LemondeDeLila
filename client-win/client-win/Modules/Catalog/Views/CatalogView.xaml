@@ -145,6 +145,7 @@
                          VirtualizingStackPanel.IsVirtualizing="False"
                          KeyboardNavigation.TabNavigation="None"
                          IsTabStop="False"
+                         PreviewKeyDown="OnGamesPreviewKeyDown"
                          KeyDown="OnGamesKeyDown"
                          MouseDoubleClick="OnGamesDoubleClick">
                     <ListBox.ItemTemplate>

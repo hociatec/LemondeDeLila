@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows.Threading;
+using Serilog;
 
 namespace client_win.Core;
 
@@ -36,7 +37,14 @@ public sealed class AsyncRelayCommand : ICommand
         }
         catch (Exception ex)
         {
-            _onException?.Invoke(ex);
+            if (_onException != null)
+            {
+                _onException(ex);
+            }
+            else
+            {
+                Log.Error(ex, "Erreur AsyncRelayCommand (non gérée)");
+            }
         }
         finally
         {

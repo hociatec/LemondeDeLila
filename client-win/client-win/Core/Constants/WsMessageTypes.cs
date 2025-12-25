@@ -63,9 +63,28 @@ public static class WsMessageTypes
     /// </summary>
     public static class Catalog
     {
-        public const string GetAll = "catalog.all";
-        public const string GetCategory = "catalog.category";
-        public const string GetGame = "catalog.game";
+        /// <summary>
+        /// Charge tout le catalogue (catégories + jeux).
+        /// </summary>
+        public const string All = "catalog.all";
+
+        /// <summary>
+        /// Charge uniquement la liste à plat des catégories.
+        /// </summary>
+        public const string Categories = "catalog.categories";
+
+        /// <summary>
+        /// Charge les jeux d'une catégorie spécifique.
+        /// </summary>
+        public const string CategoryGames = "catalog.categoryGames";
+
+        /// <summary>
+        /// Charge uniquement les jeux.
+        /// </summary>
+        public const string Games = "catalog.games";
+
+        // Alias pour compatibilité avec l'ancien nommage
+        public const string GetAll = All;
     }
 
     /// <summary>

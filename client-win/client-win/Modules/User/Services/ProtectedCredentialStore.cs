@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using System.Text.Json;
 using System.Threading.Tasks;
 using client_win.Modules.User.Models;
+using Serilog;
 
 namespace client_win.Modules.User.Services;
 
@@ -42,12 +43,13 @@ public sealed class ProtectedCredentialStore : ICredentialStore
             byte[] data = ProtectedData.Unprotect(protectedBytes, null, DataProtectionScope.CurrentUser);
             return JsonSerializer.Deserialize<StoredCredentials>(data);
         }
-        catch
+        catch (Exception ex)
         {
             // JUSTIFICATION: Erreurs attendues lors du chargement des credentials
             // Causes possibles: fichier corrompu, changement de profil utilisateur, modifications DPAPI
             // RECOVERY: Retourner null force une nouvelle authentification (comportement souhaité)
             // L'utilisateur devra simplement se reconnecter, ce qui est acceptable
+            Log.Warning(ex, "Échec du chargement des credentials sauvegardées (le fichier sera ignoré)");
             return null;
         }
     }
@@ -60,12 +62,13 @@ public sealed class ProtectedCredentialStore : ICredentialStore
             {
                 File.Delete(_filePath);
             }
-            catch
+            catch (Exception ex)
             {
                 // JUSTIFICATION: Échec de suppression non-critique
                 // Causes possibles: fichier verrouillé, permissions changées
                 // RECOVERY: Le fichier sera écrasé lors du prochain SaveAsync
                 // Aucune action utilisateur requise
+                Log.Warning(ex, "Échec de suppression du fichier credentials (sera écrasé au prochain SaveAsync)");
             }
         }
         return Task.CompletedTask;

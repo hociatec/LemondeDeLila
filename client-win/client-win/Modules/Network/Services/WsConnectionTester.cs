@@ -3,6 +3,7 @@ using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 using client_win.Core.Constants;
+using Serilog;
 
 namespace client_win.Modules.Network.Services;
 
@@ -36,7 +37,17 @@ public static class WsConnectionTester
         {
             if (socket.State == WebSocketState.Open || socket.State == WebSocketState.CloseReceived)
             {
-                try { await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "test-done", CancellationToken.None); } catch { }
+                try
+                {
+                    await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "test-done", CancellationToken.None);
+                }
+                catch (Exception ex)
+                {
+                    // JUSTIFICATION: Erreur de fermeture non-critique lors du cleanup
+                    // Causes possibles: connexion déjà fermée, timeout
+                    // RECOVERY: Socket sera disposé automatiquement par le using
+                    Log.Debug(ex, "Échec de fermeture du socket de test (non-critique, sera disposé)");
+                }
             }
         }
     }

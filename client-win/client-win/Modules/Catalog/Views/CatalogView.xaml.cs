@@ -3,6 +3,8 @@ using System.Windows.Controls;
 using client_win.Modules.Catalog.ViewModels;
 using System.Windows.Threading;
 using System.Windows.Input;
+using System;
+using client_win.Modules.Catalog.Models;
 
 namespace client_win.Modules.Catalog.Views;
 
@@ -45,7 +47,7 @@ public partial class CatalogView : UserControl
 
     private void OnCategoriesKeyDown(object sender, KeyEventArgs e)
     {
-        if (e.Key != Key.Enter || DataContext is not CatalogViewModel vm)
+        if ((e.Key != Key.Enter && e.Key != Key.Return) || DataContext is not CatalogViewModel vm)
         {
             return;
         }
@@ -68,14 +70,18 @@ public partial class CatalogView : UserControl
 
     private void OnSubCategoriesKeyDown(object sender, KeyEventArgs e)
     {
-        if (e.Key != Key.Enter || DataContext is not CatalogViewModel vm)
+        if ((e.Key != Key.Enter && e.Key != Key.Return) || DataContext is not CatalogViewModel vm)
         {
             return;
         }
 
+        // Si la liste est vide (souvent après Esc), recharger puis attendre que WPF matérialise les conteneurs.
         if (GamesList?.HasItems != true && vm.SelectedSubShelf != null)
         {
+            e.Handled = true;
             vm.ReloadGamesForCurrentSelection();
+            FocusWhenContainersGenerated(GamesList);
+            return;
         }
 
         if (GamesList?.HasItems == true)
@@ -89,12 +95,45 @@ public partial class CatalogView : UserControl
 
     private async void OnGamesKeyDown(object sender, KeyEventArgs e)
     {
-        if (e.Key != Key.Enter || DataContext is not CatalogViewModel vm)
+        if ((e.Key != Key.Enter && e.Key != Key.Return) || DataContext is not CatalogViewModel vm)
         {
             return;
         }
 
         e.Handled = true;
+
+        // Garantit que la sélection VM est à jour avant activation (évite un "Enter" qui ne fait rien).
+        if (GamesList?.HasItems == true)
+        {
+            GamesList.SelectedIndex = GamesList.SelectedIndex >= 0 ? GamesList.SelectedIndex : 0;
+            vm.SelectedGame = GamesList.SelectedItem as CatalogGame;
+        }
+        await vm.ActivateSelectedGameAsync().ConfigureAwait(true);
+    }
+
+    private async void OnGamesPreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key != Key.Enter && e.Key != Key.Return)
+        {
+            return;
+        }
+
+        if (DataContext is not CatalogViewModel vm)
+        {
+            return;
+        }
+
+        e.Handled = true;
+
+        if (GamesList?.HasItems == true)
+        {
+            if (GamesList.SelectedIndex < 0)
+            {
+                GamesList.SelectedIndex = 0;
+            }
+            vm.SelectedGame = GamesList.SelectedItem as CatalogGame;
+        }
+
         await vm.ActivateSelectedGameAsync().ConfigureAwait(true);
     }
 
@@ -103,6 +142,17 @@ public partial class CatalogView : UserControl
         if (DataContext is not CatalogViewModel vm)
         {
             return;
+        }
+
+        // S'assure que l'item double-cliqué est bien sélectionné avant activation.
+        if (GamesList != null && e.OriginalSource is DependencyObject source)
+        {
+            var container = ItemsControl.ContainerFromElement(GamesList, source) as ListBoxItem;
+            if (container?.DataContext is CatalogGame clicked)
+            {
+                GamesList.SelectedItem = clicked;
+                vm.SelectedGame = clicked;
+            }
         }
 
         await vm.ActivateSelectedGameAsync().ConfigureAwait(true);
@@ -156,5 +206,40 @@ public partial class CatalogView : UserControl
             FocusFirstItem(CategoriesList);
             CategoriesList.ItemContainerGenerator.StatusChanged -= OnCategoriesContainersStatusChanged;
         }
+    }
+
+    private void FocusWhenContainersGenerated(ListBox? listBox)
+    {
+        if (listBox == null)
+        {
+            return;
+        }
+
+        if (listBox.HasItems && listBox.ItemContainerGenerator.Status == System.Windows.Controls.Primitives.GeneratorStatus.ContainersGenerated)
+        {
+            FocusFirstItem(listBox);
+            return;
+        }
+
+        EventHandler? handler = null;
+        handler = (_, __) =>
+        {
+            if (listBox.ItemContainerGenerator.Status != System.Windows.Controls.Primitives.GeneratorStatus.ContainersGenerated)
+            {
+                return;
+            }
+
+            listBox.ItemContainerGenerator.StatusChanged -= handler;
+
+            // Execute après la mise à jour de layout pour garantir ContainerFromIndex.
+            Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() =>
+            {
+                if (listBox.HasItems)
+                {
+                    FocusFirstItem(listBox);
+                }
+            }));
+        };
+        listBox.ItemContainerGenerator.StatusChanged += handler;
     }
 }
