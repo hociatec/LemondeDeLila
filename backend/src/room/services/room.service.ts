@@ -64,10 +64,16 @@ export class RoomService {
     if (!known) {
       throw new BadRequestException('Type de jeu invalide');
     }
+    const resolvedMaxPlayers =
+      maxPlayers && maxPlayers > 0
+        ? maxPlayers
+        : known.maxPlayers && known.maxPlayers > 0
+          ? known.maxPlayers
+          : 4;
     const room = this.rooms.create({
       name: name && name.trim() ? name.trim() : `Table ${gameType}`,
       gameType: gameId,
-      maxPlayers: maxPlayers && maxPlayers > 0 ? maxPlayers : 4,
+      maxPlayers: resolvedMaxPlayers,
       isPrivate: isPrivate === true,
       status: 'setup',
       owner,

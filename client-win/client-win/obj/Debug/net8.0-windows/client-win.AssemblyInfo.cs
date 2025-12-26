@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Le Monde de Lila")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+483d8626052e406d49c241768b64fae332c887e4")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d286364e8c470446c98b2398af82f0873d061a95")]
 [assembly: System.Reflection.AssemblyProductAttribute("Le Monde de Lila - Client Windows")]
 [assembly: System.Reflection.AssemblyTitleAttribute("client-win")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
