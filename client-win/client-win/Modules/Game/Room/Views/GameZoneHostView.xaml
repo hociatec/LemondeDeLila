@@ -14,8 +14,8 @@
             Margin="0 0 0 12"
             Focusable="False"
             KeyboardNavigation.DirectionalNavigation="Contained"
-            AutomationProperties.Name="{Binding Title}"
-            AutomationProperties.HelpText="{Binding Title, StringFormat={}{0}. Surface UI dynamique chargée selon le jeu.}">
+            AutomationProperties.Name="Zone de jeu"
+            AutomationProperties.HelpText="Surface UI dynamique chargee selon le jeu.">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
@@ -37,8 +37,7 @@
                         BorderThickness="0"
                         Padding="0"
                         PreviewKeyDown="OnAnchorPreviewKeyDown"
-                        AutomationProperties.Name="{Binding Title}"
-                        AutomationProperties.HelpText="{Binding Title, StringFormat={}{0}. Zone vide, en attente de l'interface active.}">
+                        AutomationProperties.Name="{Binding Title}">
                     <Button.Style>
                         <Style TargetType="Button">
                             <Setter Property="Visibility" Value="Collapsed" />
@@ -63,24 +62,7 @@
                                 VerticalContentAlignment="Stretch"
                                 AutomationProperties.Name="{Binding Title}" />
 
-                <TextBlock Text="{Binding Title, StringFormat={}{0} : en attente de l'interface active.}"
-                           Foreground="#7FA4D9"
-                           FontSize="13"
-                           TextWrapping="Wrap"
-                           VerticalAlignment="Center"
-                           HorizontalAlignment="Center"
-                           IsHitTestVisible="False">
-                    <TextBlock.Style>
-                        <Style TargetType="TextBlock">
-                            <Setter Property="Visibility" Value="Collapsed" />
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding Content}" Value="{x:Null}">
-                                    <Setter Property="Visibility" Value="Visible" />
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </TextBlock.Style>
-                </TextBlock>
+                <!-- Placeholder visuel volontairement supprimé (lecture d'écran: ne pas polluer le focus). -->
             </Grid>
         </Grid>
     </Border>

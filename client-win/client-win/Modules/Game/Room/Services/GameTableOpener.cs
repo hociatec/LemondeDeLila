@@ -129,8 +129,7 @@ public sealed class GameTableOpener : IGameTableOpener
             if (string.IsNullOrWhiteSpace(announcement.Message)) return;
             dispatcher.InvokeAsync(() =>
             {
-                var prefix = announcement.Kind == RoomAnnouncementKind.Assertive ? "Annonce (important)" : "Annonce";
-                tableVm.History.Entries.Add($"{prefix} : {announcement.Message}");
+                tableVm.History.Entries.Add(announcement.Message);
             }, DispatcherPriority.Background);
         };
         _announcements.Announced += onAnnounced;
