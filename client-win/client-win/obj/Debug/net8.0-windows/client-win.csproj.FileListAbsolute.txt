@@ -91,3 +91,11 @@ C:\wamp64\www\lemondeDeLila\client-win\client-win\bin\Debug\net8.0-windows\Syste
 C:\wamp64\www\lemondeDeLila\client-win\client-win\bin\Debug\net8.0-windows\config\client.properties.example
 C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Debug\net8.0-windows\client-win_Content.g.cs
 C:\wamp64\www\lemondeDeLila\client-win\client-win\bin\Debug\net8.0-windows\config\client.properties
+C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Debug\net8.0-windows\Modules\Settings\Views\OptionsView.baml
+C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Debug\net8.0-windows\Modules\Settings\Views\OptionsView.g.cs
+C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Debug\net8.0-windows\Modules\Game\Room\Views\GameRoomHeaderView.baml
+C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Debug\net8.0-windows\Modules\Game\Room\Views\GameRoomStatusBarView.baml
+C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Debug\net8.0-windows\Modules\Game\Room\Views\GameZoneHostView.baml
+C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Debug\net8.0-windows\Modules\Game\Room\Views\GameRoomHeaderView.g.cs
+C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Debug\net8.0-windows\Modules\Game\Room\Views\GameRoomStatusBarView.g.cs
+C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Debug\net8.0-windows\Modules\Game\Room\Views\GameZoneHostView.g.cs

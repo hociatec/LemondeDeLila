@@ -28,8 +28,7 @@
     </UserControl.Resources>
 
     <Grid Background="{StaticResource ShellBackground}"
-          FocusManager.IsFocusScope="True"
-          FocusManager.FocusedElement="{Binding ElementName=CatalogButton}">
+          FocusManager.IsFocusScope="True">
         <Grid.RowDefinitions>
             <RowDefinition Height="80" />
             <RowDefinition Height="*" />

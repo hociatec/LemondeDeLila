@@ -28,6 +28,7 @@ using client_win.Core.Constants;
 using client_win.Modules.Catalog.Services;
 using client_win.Modules.Messaging.Services;
 using client_win.Modules.Social.Services;
+using client_win.Modules.Game.Room.Services;
 
 namespace client_win.Modules.Config;
 
@@ -137,9 +138,10 @@ public static class AppBootstrapper
 
         services.AddSingleton<ISessionService, SessionService>();
 
-        // OptionsService avec SettingsManager
+        // OptionsService (dans le shell) avec SettingsManager + Navigation
         services.AddSingleton<IOptionsService>(sp => new OptionsService(
-            sp.GetRequiredService<SettingsManager<OptionsState>>()));
+            sp.GetRequiredService<SettingsManager<OptionsState>>(),
+            sp.GetRequiredService<INavigationService>()));
 
         // Services métier
         services.AddSingleton<ICatalogService>(sp =>
@@ -149,6 +151,14 @@ public static class AppBootstrapper
                 errors));
 
         services.AddTransient<IWebSocketConnection, WebSocketConnection>();
+
+        services.AddSingleton<IRoomGatewayClient>(sp =>
+            new RoomGatewayClient(
+                sp.GetRequiredService<ClientConfiguration>(),
+                sp.GetRequiredService<ISessionService>(),
+                () => sp.GetRequiredService<IWebSocketConnection>()));
+
+        services.AddTransient<IGameTableOpener, GameTableOpener>();
 
         services.AddSingleton<IChatService>(sp =>
             new ChatService(

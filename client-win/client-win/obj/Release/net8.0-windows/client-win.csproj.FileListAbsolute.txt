@@ -91,3 +91,5 @@ C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Release\net8.0-windows\ref
 C:\wamp64\www\lemondeDeLila\client-win\client-win\bin\Release\net8.0-windows\config\client.properties.example
 C:\wamp64\www\lemondeDeLila\client-win\client-win\bin\Release\net8.0-windows\config\client.properties
 C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Release\net8.0-windows\client-win_Content.g.cs
+C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Release\net8.0-windows\Modules\Settings\Views\OptionsView.baml
+C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Release\net8.0-windows\Modules\Settings\Views\OptionsView.g.cs

@@ -12,11 +12,13 @@ public partial class GameRoomView : UserControl
     {
         InitializeComponent();
         HookHistoryTabDelegation();
+        HookGameZoneTabDelegation();
     }
 
     private void OnLoaded(object sender, System.Windows.RoutedEventArgs e)
     {
         HookHistoryTabDelegation();
+        HookGameZoneTabDelegation();
 
         Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
         {
@@ -35,6 +37,22 @@ public partial class GameRoomView : UserControl
         HistoryHost.TabNavigationRequested += OnHistoryTabNavigationRequested;
     }
 
+    private void HookGameZoneTabDelegation()
+    {
+        if (GameZoneHost is not GameZoneHostView zone)
+        {
+            return;
+        }
+
+        zone.TabToHistoryRequested -= OnGameZoneTabToHistoryRequested;
+        zone.TabToHistoryRequested += OnGameZoneTabToHistoryRequested;
+    }
+
+    private void OnGameZoneTabToHistoryRequested(object? sender, EventArgs e)
+    {
+        Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusHistory));
+    }
+
     private void OnPreviewKeyDown(object sender, KeyEventArgs e)
     {
         if (e.Key != Key.Tab)
@@ -46,21 +64,14 @@ public partial class GameRoomView : UserControl
         // WPF peut "absorber" la navigation quand le focus est dans un TextBox (historique) ou sur un ContentControl vide.
         // Ici on force explicitement le basculement Zone de jeu <-> Historique pour garantir l'accessibilité.
         // On laisse WPF gérer la navigation interne aux contrôles (futurs contrôles de jeu).
-        // On n'intercepte Tab que dans deux cas :
-        // - focus sur l'ancre "Zone de jeu vide" (GameZoneEmptyAnchor)
-        // - focus sur le conteneur (fallback)
-        var focused = Keyboard.FocusedElement;
         var shift = (Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift;
 
-        if (ReferenceEquals(focused, GameZoneEmptyAnchor))
-        {
-            e.Handled = true;
-            FocusHistory();
-            return;
-        }
-
-        // Si le focus n'est nulle part de clair, s'assurer que Tab atterrit sur la zone de jeu.
-        if (!shift && Root?.IsKeyboardFocusWithin == true && HistoryHost?.IsKeyboardFocusWithin != true && GameZoneEmptyAnchor?.IsKeyboardFocusWithin != true)
+        // Ne pas intercepter Tab quand le focus est déjà dans la zone de jeu : elle délègue (Tab -> Historique).
+        // Ici on ne force Tab vers la zone de jeu que si l'utilisateur n'est ni dans l'historique ni dans la zone de jeu.
+        if (!shift &&
+            Root?.IsKeyboardFocusWithin == true &&
+            HistoryHost?.IsKeyboardFocusWithin != true &&
+            GameZoneHost?.IsKeyboardFocusWithin != true)
         {
             e.Handled = true;
             FocusGameZone();
@@ -76,21 +87,10 @@ public partial class GameRoomView : UserControl
 
     private void FocusGameZone()
     {
-        if (GameZoneHost?.Content is System.Windows.FrameworkElement contentRoot)
+        if (GameZoneHost is GameZoneHostView zone)
         {
-            if (contentRoot.MoveFocus(new TraversalRequest(FocusNavigationDirection.First)))
-            {
-                return;
-            }
-
-            if (contentRoot.Focusable && contentRoot.Focus())
-            {
-                return;
-            }
+            zone.FocusGameZone();
         }
-
-        GameZoneEmptyAnchor?.Focus();
-        Keyboard.Focus(GameZoneEmptyAnchor);
     }
 
     private void FocusHistory()

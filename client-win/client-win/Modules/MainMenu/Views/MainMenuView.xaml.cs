@@ -43,15 +43,20 @@ public partial class MainMenuView : UserControl
         }
 
         // UX: le menu s'ouvre toujours sur le catalogue, pour que "Entrée" fonctionne immédiatement.
+        if (!string.IsNullOrWhiteSpace(_lastFocusedButtonName))
+        {
+            FocusLastOrFirstVisibleButton();
+            return;
+        }
+
         if (CatalogButton != null && CatalogButton.Visibility == Visibility.Visible && CatalogButton.IsEnabled)
         {
             CatalogButton.Focus();
             _lastFocusedButtonName = CatalogButton.Name;
+            return;
         }
-        else
-        {
-            FocusLastOrFirstVisibleButton();
-        }
+
+        FocusLastOrFirstVisibleButton();
     }
 
     private void OnMenuButtonKeyDown(object sender, KeyEventArgs e)

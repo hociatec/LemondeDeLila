@@ -37,10 +37,15 @@ public sealed class NavigationService : INavigationService
         CurrentView = view;
 
         // Accessibilité : donner une opportunité au focus clavier d'atterrir dans la nouvelle vue.
-        _host.Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
+        _host.Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() =>
         {
             try
             {
+                if (view.IsKeyboardFocusWithin)
+                {
+                    return;
+                }
+
                 // MoveFocus fonctionne même si le UserControl lui-même n'est pas Focusable.
                 view.MoveFocus(new TraversalRequest(FocusNavigationDirection.First));
             }

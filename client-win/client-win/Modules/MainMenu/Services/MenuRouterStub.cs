@@ -1,23 +1,21 @@
 using System.Threading.Tasks;
+using System.Windows;
 using Microsoft.Extensions.Logging;
-using client_win.Modules.Settings.Services;
 using client_win.Modules.Chat.Services;
 using client_win.Modules.Catalog.Services;
 using client_win.Modules.Catalog.ViewModels;
 using client_win.Modules.Catalog.Views;
-using client_win.Modules.Catalog.Models;
-using client_win.Modules.Shell.Services;
-using System.Windows;
+using client_win.Modules.Game.Room.Services;
 using client_win.Modules.Messaging.Services;
 using client_win.Modules.Messaging.ViewModels;
 using client_win.Modules.Messaging.Views;
-using client_win.Modules.Game.Room.ViewModels;
-using client_win.Modules.Game.Room.Views;
+using client_win.Modules.Settings.Services;
+using client_win.Modules.Shell.Services;
 
 namespace client_win.Modules.MainMenu.Services;
 
 /// <summary>
-/// Router stub qui enregistre les intentions et renvoie un statut. À remplacer par des implémentations réelles.
+/// Router stub qui enregistre les intentions et renvoie un statut.
 /// </summary>
 public sealed class MenuRouterStub : IMenuRouter
 {
@@ -26,8 +24,8 @@ public sealed class MenuRouterStub : IMenuRouter
     private readonly IChatLauncher _chat;
     private readonly ICatalogService _catalog;
     private readonly INavigationService _navigation;
-    private readonly IDialogService _dialogs;
     private readonly IMessagingService _messaging;
+    private readonly IGameTableOpener _tables;
 
     public MenuRouterStub(
         ILogger<MenuRouterStub> logger,
@@ -35,16 +33,16 @@ public sealed class MenuRouterStub : IMenuRouter
         IChatLauncher chat,
         ICatalogService catalog,
         INavigationService navigation,
-        IDialogService dialogs,
-        IMessagingService messaging)
+        IMessagingService messaging,
+        IGameTableOpener tables)
     {
         _logger = logger;
         _options = options;
         _chat = chat;
         _catalog = catalog;
         _navigation = navigation;
-        _dialogs = dialogs;
         _messaging = messaging;
+        _tables = tables;
     }
 
     public Task<string> OpenCatalog()
@@ -58,11 +56,7 @@ public sealed class MenuRouterStub : IMenuRouter
                 _navigation.Show(previous);
             }
         },
-        openGame: game =>
-        {
-            OpenGameTable(game, catalogView);
-            return Task.CompletedTask;
-        });
+        openGame: game => _tables.OpenAsync(game, previous ?? catalogView));
         catalogView.DataContext = vm;
         _navigation.Show(catalogView);
         return Task.FromResult("Catalogue ouvert.");
@@ -106,16 +100,5 @@ public sealed class MenuRouterStub : IMenuRouter
         _logger.LogInformation(message);
         return Task.FromResult(message);
     }
-
-    private void OpenGameTable(CatalogGame game, System.Windows.Controls.UserControl returnView)
-    {
-        var tableView = new GameRoomView();
-        var tableVm = new GameRoomViewModel(game, onQuit: () =>
-        {
-            _navigation.Show(returnView);
-            return Task.CompletedTask;
-        }, dialogs: _dialogs);
-        tableView.DataContext = tableVm;
-        _navigation.Show(tableView);
-    }
 }
+
