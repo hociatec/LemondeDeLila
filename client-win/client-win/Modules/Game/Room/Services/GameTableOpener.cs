@@ -133,12 +133,20 @@ public sealed class GameTableOpener : IGameTableOpener
 
             if (started)
             {
-                // En partie: le jeu définit ses propres raccourcis.
-                // On garde uniquement `x` (reset) pour revenir à l'état room.
-                tableVm.GameZone.Shortcuts.Add(new ShortcutDefinition(
-                    'x',
-                    tableVm.GameZone.ResetCommand,
-                    description: "Réinitialiser la table"));
+                // En partie: le jeu definit ses propres raccourcis.
+                // Par défaut, seuls certains raccourcis "table" restent actifs (RoomShortcuts.availableInGame).
+                foreach (var shortcut in RoomShortcuts.Create(
+                             resetCommand: tableVm.GameZone.ResetCommand,
+                             addBotCommand: tableVm.GameZone.AddBotCommand,
+                             removeBotCommand: tableVm.GameZone.RemoveBotCommand,
+                             announcePlayersCommand: tableVm.GameZone.AnnouncePlayersCommand,
+                             announceInfoCommand: tableVm.GameZone.AnnounceInfoCommand,
+                             togglePrivacyCommand: tableVm.GameZone.TogglePrivacyCommand,
+                             toggleRoleCommand: tableVm.GameZone.ToggleRoleCommand,
+                             quitCommand: tableVm.GameZone.QuitCommand).Where(s => s.AvailableInGame))
+                {
+                    tableVm.GameZone.Shortcuts.Add(shortcut);
+                }
                 return;
             }
 
@@ -340,4 +348,3 @@ public sealed class GameTableOpener : IGameTableOpener
         return Task.CompletedTask;
     }
 }
-
