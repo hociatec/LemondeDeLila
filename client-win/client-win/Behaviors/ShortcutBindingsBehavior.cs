@@ -142,8 +142,10 @@ public static class ShortcutBindingsBehavior
                     if (shortcut.Command.CanExecute(shortcut.CommandParameter))
                     {
                         shortcut.Command.Execute(shortcut.CommandParameter);
-                        // Laisser passer la touche pour permettre l'annonce (key echo) du lecteur d'écran.
-                        e.Handled = false;
+                        // Par défaut, on laisse passer la touche pour permettre l'annonce (key echo) du lecteur d'écran.
+                        // Exception: certains raccourcis doivent annoncer un message immédiatement après, et l'écho clavier
+                        // arrive souvent après (ordre inversé). Pour ces cas, on consomme la touche et on annonce via NVDA.
+                        e.Handled = typed.Value is 'w' or 'W';
                     }
                     return;
                 }

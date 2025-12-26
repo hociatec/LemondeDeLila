@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -17,20 +19,20 @@ public sealed class GameTableOpener : IGameTableOpener
     private readonly IRoomGatewayClient _rooms;
     private readonly INavigationService _navigation;
     private readonly IDialogService _dialogs;
-    private readonly IScreenReaderAnnouncer _announcer;
+    private readonly IRoomAnnouncements _announcements;
 
     public GameTableOpener(
         ILogger<GameTableOpener> logger,
         IRoomGatewayClient rooms,
         INavigationService navigation,
         IDialogService dialogs,
-        IScreenReaderAnnouncer announcer)
+        IRoomAnnouncements announcements)
     {
         _logger = logger;
         _rooms = rooms;
         _navigation = navigation;
         _dialogs = dialogs;
-        _announcer = announcer;
+        _announcements = announcements;
     }
 
     public async Task OpenAsync(CatalogGame game, UserControl returnView)
@@ -54,8 +56,13 @@ public sealed class GameTableOpener : IGameTableOpener
         var tableView = new GameRoomView();
 
         var bots = new RoomBotCommands(session);
+        var privacy = new RoomPrivacyCommands(session);
+        var role = new RoomRoleCommands(session);
         Task AddBot() => bots.AddBotAsync();
         Task RemoveBot() => bots.RemoveLastBotAsync();
+        Task AnnouncePlayers() => AnnouncePlayersAsync(session);
+        Task TogglePrivacy() => privacy.TogglePrivacyAsync();
+        Task ToggleRole() => role.ToggleRoleAsync();
 
         var tableVm = new GameRoomViewModel(
             game,
@@ -64,6 +71,8 @@ public sealed class GameTableOpener : IGameTableOpener
             try
             {
                 bots.Dispose();
+                privacy.Dispose();
+                role.Dispose();
                 await session.LeaveAsync().ConfigureAwait(true);
                 await session.DisposeAsync().ConfigureAwait(true);
             }
@@ -76,8 +85,10 @@ public sealed class GameTableOpener : IGameTableOpener
         },
             onAddBot: AddBot,
             onRemoveBot: RemoveBot,
-            dialogs: _dialogs,
-            announcer: _announcer);
+            onAnnouncePlayers: AnnouncePlayers,
+            onTogglePrivacy: TogglePrivacy,
+            onToggleRole: ToggleRole,
+            dialogs: _dialogs);
 
         tableVm.Status = $"Table créée (id {session.RoomId}).";
 
@@ -89,7 +100,7 @@ public sealed class GameTableOpener : IGameTableOpener
             {
                 tableVm.History.Entries.Add($"Serveur : bot ajouté ({name})");
                 tableVm.Status = $"Bot ajouté : {name}.";
-                _announcer.AnnouncePolite($"Bot ajouté : {name}");
+                _announcements.BotJoined(name);
             }, DispatcherPriority.Background);
         };
         bots.BotRemoved += name =>
@@ -98,7 +109,7 @@ public sealed class GameTableOpener : IGameTableOpener
             {
                 tableVm.History.Entries.Add($"Serveur : bot retiré ({name})");
                 tableVm.Status = $"Bot retiré : {name}.";
-                _announcer.AnnouncePolite($"Bot retiré : {name}");
+                _announcements.BotLeft(name);
             }, DispatcherPriority.Background);
         };
         bots.ErrorReceived += message =>
@@ -107,7 +118,47 @@ public sealed class GameTableOpener : IGameTableOpener
             {
                 tableVm.History.Entries.Add($"Serveur : erreur ({message})");
                 tableVm.Status = $"Erreur : {message}";
-                _announcer.AnnounceAssertive(message);
+                _announcements.Error(message);
+            }, DispatcherPriority.Background);
+        };
+
+        privacy.PrivacyChanged += isPrivate =>
+        {
+            dispatcher.InvokeAsync(() =>
+            {
+                var label = isPrivate ? "privée" : "publique";
+                tableVm.History.Entries.Add($"Serveur : table {label}");
+                tableVm.Status = $"Visibilité : {label}.";
+                _announcements.VisibilityChanged(isPrivate);
+            }, DispatcherPriority.Background);
+        };
+        privacy.ErrorReceived += message =>
+        {
+            dispatcher.InvokeAsync(() =>
+            {
+                tableVm.History.Entries.Add($"Serveur : erreur ({message})");
+                tableVm.Status = $"Erreur : {message}";
+                _announcements.Error(message);
+            }, DispatcherPriority.Background);
+        };
+
+        role.RoleChanged += isSpectator =>
+        {
+            dispatcher.InvokeAsync(() =>
+            {
+                var label = isSpectator ? "spectateur" : "joueur";
+                tableVm.History.Entries.Add($"Serveur : mode {label}");
+                tableVm.Status = $"Mode : {label}.";
+                _announcements.RoleChanged(isSpectator);
+            }, DispatcherPriority.Background);
+        };
+        role.ErrorReceived += message =>
+        {
+            dispatcher.InvokeAsync(() =>
+            {
+                tableVm.History.Entries.Add($"Serveur : erreur ({message})");
+                tableVm.Status = $"Erreur : {message}";
+                _announcements.Error(message);
             }, DispatcherPriority.Background);
         };
 
@@ -132,5 +183,55 @@ public sealed class GameTableOpener : IGameTableOpener
 
         tableView.DataContext = tableVm;
         _navigation.Show(tableView);
+    }
+
+    private Task AnnouncePlayersAsync(RoomSession session)
+    {
+        _announcements.ShortcutKey("w");
+
+        var room = session.LastRoomState?.Room;
+        if (room == null)
+        {
+            _announcements.PlayersList("Table: informations indisponibles.");
+            return Task.CompletedTask;
+        }
+
+        var humans = new List<string>();
+        if (!string.IsNullOrWhiteSpace(room.Owner?.Username))
+        {
+            humans.Add(room.Owner.Username);
+        }
+        foreach (var p in room.Players ?? new List<RoomUserDto>())
+        {
+            if (!string.IsNullOrWhiteSpace(p.Username))
+            {
+                humans.Add(p.Username);
+            }
+        }
+        humans = humans.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+
+        var bots = (room.Bots ?? new List<RoomBotDto>())
+            .Select(b => b?.Name)
+            .Where(n => !string.IsNullOrWhiteSpace(n))
+            .Cast<string>()
+            .ToList();
+
+        if (humans.Count == 0 && bots.Count == 0)
+        {
+            _announcements.PlayersList("Aucun joueur dans la table.");
+            return Task.CompletedTask;
+        }
+
+        var parts = new List<string>();
+        if (humans.Count > 0)
+        {
+            parts.Add($"Joueurs: {string.Join(", ", humans)}");
+        }
+        if (bots.Count > 0)
+        {
+            parts.Add($"Bots: {string.Join(", ", bots)}");
+        }
+        _announcements.PlayersList(string.Join(". ", parts) + ".");
+        return Task.CompletedTask;
     }
 }

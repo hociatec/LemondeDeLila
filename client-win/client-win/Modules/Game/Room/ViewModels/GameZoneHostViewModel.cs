@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using client_win.Core;
 using client_win.Core.Input;
+using client_win.Modules.Game.Room.Input;
 using client_win.Modules.Shell.Services;
 
 namespace client_win.Modules.Game.Room.ViewModels;
@@ -13,39 +14,40 @@ public sealed class GameZoneHostViewModel : ObservableObject
     private readonly Func<Task> _onQuit;
     private readonly Func<Task> _onAddBot;
     private readonly Func<Task> _onRemoveBot;
+    private readonly Func<Task> _onAnnouncePlayers;
+    private readonly Func<Task> _onTogglePrivacy;
+    private readonly Func<Task> _onToggleRole;
     private readonly IDialogService _dialogs;
-    private readonly IScreenReaderAnnouncer? _announcer;
     private object? _content;
 
     public GameZoneHostViewModel(
         Func<Task> onQuit,
         Func<Task> onAddBot,
         Func<Task> onRemoveBot,
-        IDialogService dialogs,
-        IScreenReaderAnnouncer? announcer = null)
+        Func<Task> onAnnouncePlayers,
+        Func<Task> onTogglePrivacy,
+        Func<Task> onToggleRole,
+        IDialogService dialogs)
     {
         _onQuit = onQuit ?? throw new ArgumentNullException(nameof(onQuit));
         _onAddBot = onAddBot ?? throw new ArgumentNullException(nameof(onAddBot));
         _onRemoveBot = onRemoveBot ?? throw new ArgumentNullException(nameof(onRemoveBot));
+        _onAnnouncePlayers = onAnnouncePlayers ?? throw new ArgumentNullException(nameof(onAnnouncePlayers));
+        _onTogglePrivacy = onTogglePrivacy ?? throw new ArgumentNullException(nameof(onTogglePrivacy));
+        _onToggleRole = onToggleRole ?? throw new ArgumentNullException(nameof(onToggleRole));
         _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
-        _announcer = announcer;
 
         AddBotCommand = new AsyncRelayCommand(AddBotAsync);
         RemoveBotCommand = new AsyncRelayCommand(RemoveBotAsync);
+        AnnouncePlayersCommand = new AsyncRelayCommand(AnnouncePlayersAsync);
+        TogglePrivacyCommand = new AsyncRelayCommand(TogglePrivacyAsync);
+        ToggleRoleCommand = new AsyncRelayCommand(ToggleRoleAsync);
         QuitCommand = new AsyncRelayCommand(QuitAsync);
 
-        Shortcuts.Add(new ShortcutDefinition(
-            'b',
-            AddBotCommand,
-            description: "Ajouter un bot"));
-        Shortcuts.Add(new ShortcutDefinition(
-            'B',
-            RemoveBotCommand,
-            description: "Retirer un bot"));
-        Shortcuts.Add(new ShortcutDefinition(
-            'q',
-            QuitCommand,
-            description: "Quitter la table"));
+        foreach (var shortcut in RoomShortcuts.Create(AddBotCommand, RemoveBotCommand, AnnouncePlayersCommand, TogglePrivacyCommand, ToggleRoleCommand, QuitCommand))
+        {
+            Shortcuts.Add(shortcut);
+        }
     }
 
     public ObservableCollection<ShortcutDefinition> Shortcuts { get; } = new();
@@ -53,6 +55,12 @@ public sealed class GameZoneHostViewModel : ObservableObject
     public ICommand AddBotCommand { get; }
 
     public ICommand RemoveBotCommand { get; }
+
+    public ICommand AnnouncePlayersCommand { get; }
+
+    public ICommand TogglePrivacyCommand { get; }
+
+    public ICommand ToggleRoleCommand { get; }
 
     public ICommand QuitCommand { get; }
 
@@ -74,6 +82,24 @@ public sealed class GameZoneHostViewModel : ObservableObject
     {
         StatusRequested?.Invoke("Retrait d'un bot...");
         await _onRemoveBot().ConfigureAwait(true);
+    }
+
+    private async Task AnnouncePlayersAsync()
+    {
+        StatusRequested?.Invoke("Liste des joueurs...");
+        await _onAnnouncePlayers().ConfigureAwait(true);
+    }
+
+    private async Task TogglePrivacyAsync()
+    {
+        StatusRequested?.Invoke("Changement de visibilité...");
+        await _onTogglePrivacy().ConfigureAwait(true);
+    }
+
+    private async Task ToggleRoleAsync()
+    {
+        StatusRequested?.Invoke("Changement de mode...");
+        await _onToggleRole().ConfigureAwait(true);
     }
 
     private async Task QuitAsync()
