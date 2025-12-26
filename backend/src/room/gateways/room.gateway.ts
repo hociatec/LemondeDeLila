@@ -34,6 +34,9 @@ export class RoomGateway
   private readonly clients = new Map<WebSocket, ClientMeta>();
   private readonly rooms = new Map<number, Set<WebSocket>>();
   private readonly logger = new Logger(RoomGateway.name);
+  private readonly heartbeats = new Map<WebSocket, NodeJS.Timeout>();
+  private readonly lastPong = new WeakMap<WebSocket, number>();
+  private readonly pingIntervalMs = 25_000;
 
   constructor(
     private readonly roomsService: RoomService,
@@ -128,6 +131,38 @@ export class RoomGateway
     }
     this.rooms.get(targetRoomId)!.add(client);
 
+    // Heartbeat : ping régulier pour maintenir la connexion et détecter les resets silencieux.
+    this.lastPong.set(client, Date.now());
+    client.on('pong', () => this.lastPong.set(client, Date.now()));
+    const hb = setInterval(() => {
+      try {
+        if (client.readyState !== WebSocket.OPEN) {
+          clearInterval(hb);
+          this.heartbeats.delete(client);
+          return;
+        }
+        const last = this.lastPong.get(client) ?? Date.now();
+        if (Date.now() - last > this.pingIntervalMs * 2) {
+          clearInterval(hb);
+          this.heartbeats.delete(client);
+          try {
+            (client as any).terminate?.();
+          } catch {
+            try {
+              client.close();
+            } catch {
+              /* ignore */
+            }
+          }
+          return;
+        }
+        (client as any).ping?.();
+      } catch {
+        // ignore
+      }
+    }, this.pingIntervalMs);
+    this.heartbeats.set(client, hb);
+
     client.on('message', (raw) => this.handleMessage(client, raw));
     client.on('error', () => client.close());
 
@@ -139,6 +174,11 @@ export class RoomGateway
   async handleDisconnect(client: WebSocket) {
     const meta = this.clients.get(client);
     this.clients.delete(client);
+    const hb = this.heartbeats.get(client);
+    if (hb) {
+      clearInterval(hb);
+      this.heartbeats.delete(client);
+    }
     // Sur déconnexion on ne veut jamais "supprimer" une table par erreur.
     // Si l'état de la table est indéterminé (ex: DB temporairement indisponible),
     // on traite la déconnexion comme un simple disconnect (disconnectOnly=true),
@@ -308,6 +348,9 @@ export class RoomGateway
       case 'room.toggle-privacy':
         await this.handleTogglePrivacy(meta);
         break;
+      case 'room.info':
+        await this.handleRoomInfo(client, meta);
+        break;
       case 'bot.add':
         await this.handleBotAdd(meta, data);
         break;
@@ -320,6 +363,35 @@ export class RoomGateway
       default:
         break;
     }
+  }
+
+  private async handleRoomInfo(client: WebSocket, meta: ClientMeta) {
+    const roomId = meta.roomId;
+    if (!Number.isFinite(roomId) || roomId <= 0) {
+      return;
+    }
+
+    const state = await this.roomsService.getRoomPayload(roomId);
+    state.room.spectators = this.listSpectators(roomId);
+    state.room.counts.spectators = state.room.spectators.length;
+
+    const gameName = state.manifest?.name || state.room.gameType || 'Jeu';
+    const visibility = state.room.isPrivate ? 'privée' : 'publique';
+    const mode = meta.role === 'spectator' ? 'spectateur' : 'joueur';
+
+    const players = state.room.counts.players || state.room.players?.length || 0;
+    const spectators = state.room.counts.spectators || state.room.spectators?.length || 0;
+    const bots = state.room.bots?.length || 0;
+    const total = players + spectators + bots;
+    const peopleLabel = total === 1 ? 'personne' : 'personnes';
+
+    const message = `${gameName}. Table ${visibility}. Mode ${mode}. ${total} ${peopleLabel} sur la table.`;
+
+    this.safeSend(client, {
+      type: 'room.info',
+      roomId,
+      payload: { message },
+    });
   }
 
   private async handleRoomLeave(client: WebSocket, meta: ClientMeta) {

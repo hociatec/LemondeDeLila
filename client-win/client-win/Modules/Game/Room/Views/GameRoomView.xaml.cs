@@ -46,11 +46,27 @@ public partial class GameRoomView : UserControl
 
         zone.TabToHistoryRequested -= OnGameZoneTabToHistoryRequested;
         zone.TabToHistoryRequested += OnGameZoneTabToHistoryRequested;
+
+        zone.StartRequested -= OnGameZoneStartRequested;
+        zone.StartRequested += OnGameZoneStartRequested;
     }
 
     private void OnGameZoneTabToHistoryRequested(object? sender, EventArgs e)
     {
         Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusHistory));
+    }
+
+    private void OnGameZoneStartRequested(object? sender, EventArgs e)
+    {
+        if (DataContext is not ViewModels.GameRoomViewModel vm)
+        {
+            return;
+        }
+
+        if (vm.GameZone.StartCommand.CanExecute(null))
+        {
+            vm.GameZone.StartCommand.Execute(null);
+        }
     }
 
     private void OnPreviewKeyDown(object sender, KeyEventArgs e)

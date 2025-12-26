@@ -29,6 +29,7 @@ public sealed class RoomSession : IAsyncDisposable
 
     public event Action<RoomPayloadDto>? RoomUpdated;
     public event Action<string>? RawMessageReceived;
+    public event Action<string>? ErrorReceived;
 
     public Task CloseAsync() => _socket.CloseAsync();
 
@@ -63,7 +64,48 @@ public sealed class RoomSession : IAsyncDisposable
     private void OnRawMessage(string raw)
     {
         RawMessageReceived?.Invoke(raw);
+        ParseError(raw);
         ParseRoomState(raw);
+    }
+
+    private void ParseError(string raw)
+    {
+        try
+        {
+            using var doc = JsonDocument.Parse(raw);
+            var root = doc.RootElement;
+            if (root.ValueKind != JsonValueKind.Object) return;
+
+            if (!root.TryGetProperty("type", out var typeProp)) return;
+            var type = typeProp.GetString() ?? string.Empty;
+            if (!string.Equals(type, "error", StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            if (!root.TryGetProperty("payload", out var payload) ||
+                payload.ValueKind != JsonValueKind.Object)
+            {
+                return;
+            }
+
+            if (!payload.TryGetProperty("message", out var messageProp))
+            {
+                return;
+            }
+
+            var message = messageProp.GetString();
+            if (string.IsNullOrWhiteSpace(message))
+            {
+                return;
+            }
+
+            ErrorReceived?.Invoke(message.Trim());
+        }
+        catch
+        {
+            // ignore
+        }
     }
 
     private void ParseRoomState(string raw)

@@ -16,6 +16,8 @@ public sealed class GameRoomViewModel : ObservableObject
 
     public GameRoomViewModel(
         CatalogGame game,
+        Func<Task> onStart,
+        Func<Task> onReset,
         Func<Task> onQuit,
         Func<Task> onAddBot,
         Func<Task> onRemoveBot,
@@ -28,7 +30,7 @@ public sealed class GameRoomViewModel : ObservableObject
         Game = game ?? throw new ArgumentNullException(nameof(game));
         History = new GameHistoryViewModel(game);
 
-        GameZone = new GameZoneHostViewModel(game.Name, onQuit, onAddBot, onRemoveBot, onAnnouncePlayers, onAnnounceInfo, onTogglePrivacy, onToggleRole, dialogs);
+        GameZone = new GameZoneHostViewModel(game.Name, onStart, onReset, onQuit, onAddBot, onRemoveBot, onAnnouncePlayers, onAnnounceInfo, onTogglePrivacy, onToggleRole, dialogs);
         GameZone.StatusRequested += s => Status = s;
     }
 

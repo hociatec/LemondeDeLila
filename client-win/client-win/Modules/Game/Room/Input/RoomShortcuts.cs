@@ -7,6 +7,7 @@ namespace client_win.Modules.Game.Room.Input;
 public static class RoomShortcuts
 {
     public static IEnumerable<ShortcutDefinition> Create(
+        ICommand resetCommand,
         ICommand addBotCommand,
         ICommand removeBotCommand,
         ICommand announcePlayersCommand,
@@ -15,6 +16,11 @@ public static class RoomShortcuts
         ICommand toggleRoleCommand,
         ICommand quitCommand)
     {
+        yield return new ShortcutDefinition(
+            'x',
+            resetCommand,
+            description: "Reinitialiser la table");
+
         yield return new ShortcutDefinition(
             'i',
             announceInfoCommand,
@@ -28,7 +34,7 @@ public static class RoomShortcuts
         yield return new ShortcutDefinition(
             new KeyGesture(Key.H, ModifierKeys.Control),
             togglePrivacyCommand,
-            description: "Changer la visibilité de la table");
+            description: "Changer la visibilite de la table");
 
         yield return new ShortcutDefinition(
             'w',

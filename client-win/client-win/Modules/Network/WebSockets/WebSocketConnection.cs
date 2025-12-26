@@ -15,6 +15,8 @@ public sealed class WebSocketConnection : IWebSocketConnection
     private ClientWebSocket? _socket;
     private CancellationTokenSource? _cts;
     private Task? _receiveLoop;
+    private static readonly TimeSpan DefaultConnectTimeout = TimeSpan.FromSeconds(30);
+    private static readonly TimeSpan DefaultKeepAliveInterval = TimeSpan.FromSeconds(25);
 
     public event Action<WebSocketState>? StateChanged;
     public event Action<string>? MessageReceived;
@@ -25,6 +27,7 @@ public sealed class WebSocketConnection : IWebSocketConnection
         await CloseAsync().ConfigureAwait(false);
 
         _socket = new ClientWebSocket();
+        _socket.Options.KeepAliveInterval = DefaultKeepAliveInterval;
         if (!string.IsNullOrWhiteSpace(token))
         {
             _socket.Options.SetRequestHeader("Authorization", $"Bearer {token}");
@@ -37,13 +40,18 @@ public sealed class WebSocketConnection : IWebSocketConnection
             }
         }
 
+        // IMPORTANT:
+        // - connect timeout: uniquement pour l'appel ConnectAsync (sinon on coupe la room après X secondes d'inactivité)
+        // - lifetime token: pour le loop de réception et la fermeture contrôlée
         _cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        _cts.CancelAfter(TimeSpan.FromSeconds(30));
         SetState(WebSocketState.Connecting);
 
         try
         {
-            await _socket.ConnectAsync(endpoint, _cts.Token).ConfigureAwait(false);
+            using var connectCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            connectCts.CancelAfter(DefaultConnectTimeout);
+
+            await _socket.ConnectAsync(endpoint, connectCts.Token).ConfigureAwait(false);
             _receiveLoop = Task.Run(() => ReceiveLoopAsync(_cts.Token));
             SetState(WebSocketState.Connected);
         }

@@ -12,6 +12,7 @@ public partial class GameZoneHostView : UserControl
     }
 
     public event EventHandler? TabToHistoryRequested;
+    public event EventHandler? StartRequested;
 
     public void FocusGameZone()
     {
@@ -34,6 +35,13 @@ public partial class GameZoneHostView : UserControl
 
     private void OnAnchorPreviewKeyDown(object sender, KeyEventArgs e)
     {
+        if (e.Key == Key.Enter)
+        {
+            e.Handled = true;
+            StartRequested?.Invoke(this, EventArgs.Empty);
+            return;
+        }
+
         if (e.Key != Key.Tab)
         {
             return;

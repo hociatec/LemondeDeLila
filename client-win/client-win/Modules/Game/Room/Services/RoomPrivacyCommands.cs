@@ -37,21 +37,6 @@ public sealed class RoomPrivacyCommands : IRoomPrivacyCommands
             if (!root.TryGetProperty("type", out var typeProp)) return;
             var type = typeProp.GetString() ?? string.Empty;
 
-            if (string.Equals(type, "error", StringComparison.OrdinalIgnoreCase))
-            {
-                if (root.TryGetProperty("payload", out var p) &&
-                    p.ValueKind == JsonValueKind.Object &&
-                    p.TryGetProperty("message", out var m))
-                {
-                    var msg = m.GetString();
-                    if (!string.IsNullOrWhiteSpace(msg))
-                    {
-                        ErrorReceived?.Invoke(msg);
-                    }
-                }
-                return;
-            }
-
             if (!string.Equals(type, "room.privacy", StringComparison.OrdinalIgnoreCase))
             {
                 return;
@@ -80,4 +65,3 @@ public sealed class RoomPrivacyCommands : IRoomPrivacyCommands
         }
     }
 }
-

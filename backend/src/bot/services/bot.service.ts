@@ -6,10 +6,10 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Repository } from 'typeorm';
+import { OPEN_ROOM_STATUSES } from '../../room/constants/room-status.constants';
 import { RoomBot } from '../../room/entities/room-bot.entity';
 import { Room } from '../../room/entities/room.entity';
 import { RoomParticipant } from '../../room/entities/room-participant.entity';
-import { OPEN_ROOM_STATUSES } from '../../room/constants/room-status.constants';
 import { BotName } from '../entities/bot-name.entity';
 
 @Injectable()
@@ -22,14 +22,11 @@ export class BotService {
     @InjectRepository(BotName) private readonly botNames: Repository<BotName>,
   ) {}
 
-  async addBot(
-    roomId: number,
-    userId: number,
-  ): Promise<RoomBot> {
+  async addBot(roomId: number, userId: number): Promise<RoomBot> {
     const room = await this.requireRoomWithOwner(roomId);
     this.ensureOwner(room, userId);
     if (!this.isRoomOpen(room)) {
-      throw new BadRequestException('Table déjà démarrée');
+      throw new BadRequestException('Table deja demarree');
     }
     const humans = await this.countActiveHumans(room.id);
     const botsCount = await this.countBots(room.id);
@@ -41,13 +38,12 @@ export class BotService {
     return this.bots.save(bot);
   }
 
-  async removeBot(
-    roomId: number,
-    userId: number,
-    botId: number,
-  ): Promise<RoomBot> {
+  async removeBot(roomId: number, userId: number, botId: number): Promise<RoomBot> {
     const room = await this.requireRoomWithOwner(roomId);
     this.ensureOwner(room, userId);
+    if (!this.isRoomOpen(room)) {
+      throw new BadRequestException('Table deja demarree');
+    }
     const bot = await this.bots.findOne({
       where: { id: botId, room: { id: room.id } },
     });
@@ -153,7 +149,7 @@ export class BotService {
   private ensureOwner(room: Room, userId: number) {
     if (!room.owner || room.owner.id !== userId) {
       throw new UnauthorizedException(
-        'Seul le propriétaire peut gérer les bots',
+        'Seul le proprietaire peut gerer les bots',
       );
     }
   }

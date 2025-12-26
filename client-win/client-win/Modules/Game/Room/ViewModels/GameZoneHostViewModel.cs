@@ -11,6 +11,8 @@ namespace client_win.Modules.Game.Room.ViewModels;
 
 public sealed class GameZoneHostViewModel : ObservableObject
 {
+    private readonly Func<Task> _onStart;
+    private readonly Func<Task> _onReset;
     private readonly Func<Task> _onQuit;
     private readonly Func<Task> _onAddBot;
     private readonly Func<Task> _onRemoveBot;
@@ -21,9 +23,12 @@ public sealed class GameZoneHostViewModel : ObservableObject
     private readonly IDialogService _dialogs;
     private object? _content;
     private string _title = "Zone de jeu";
+    private bool _isStarted;
 
     public GameZoneHostViewModel(
         string title,
+        Func<Task> onStart,
+        Func<Task> onReset,
         Func<Task> onQuit,
         Func<Task> onAddBot,
         Func<Task> onRemoveBot,
@@ -34,6 +39,8 @@ public sealed class GameZoneHostViewModel : ObservableObject
         IDialogService dialogs)
     {
         Title = string.IsNullOrWhiteSpace(title) ? "Zone de jeu" : title;
+        _onStart = onStart ?? throw new ArgumentNullException(nameof(onStart));
+        _onReset = onReset ?? throw new ArgumentNullException(nameof(onReset));
         _onQuit = onQuit ?? throw new ArgumentNullException(nameof(onQuit));
         _onAddBot = onAddBot ?? throw new ArgumentNullException(nameof(onAddBot));
         _onRemoveBot = onRemoveBot ?? throw new ArgumentNullException(nameof(onRemoveBot));
@@ -43,6 +50,8 @@ public sealed class GameZoneHostViewModel : ObservableObject
         _onToggleRole = onToggleRole ?? throw new ArgumentNullException(nameof(onToggleRole));
         _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
 
+        StartCommand = new AsyncRelayCommand(StartAsync, () => !_isStarted);
+        ResetCommand = new AsyncRelayCommand(ResetAsync);
         AddBotCommand = new AsyncRelayCommand(AddBotAsync);
         RemoveBotCommand = new AsyncRelayCommand(RemoveBotAsync);
         AnnouncePlayersCommand = new AsyncRelayCommand(AnnouncePlayersAsync);
@@ -51,7 +60,15 @@ public sealed class GameZoneHostViewModel : ObservableObject
         ToggleRoleCommand = new AsyncRelayCommand(ToggleRoleAsync);
         QuitCommand = new AsyncRelayCommand(QuitAsync);
 
-        foreach (var shortcut in RoomShortcuts.Create(AddBotCommand, RemoveBotCommand, AnnouncePlayersCommand, AnnounceInfoCommand, TogglePrivacyCommand, ToggleRoleCommand, QuitCommand))
+        foreach (var shortcut in RoomShortcuts.Create(
+                     resetCommand: ResetCommand,
+                     addBotCommand: AddBotCommand,
+                     removeBotCommand: RemoveBotCommand,
+                     announcePlayersCommand: AnnouncePlayersCommand,
+                     announceInfoCommand: AnnounceInfoCommand,
+                     togglePrivacyCommand: TogglePrivacyCommand,
+                     toggleRoleCommand: ToggleRoleCommand,
+                     quitCommand: QuitCommand))
         {
             Shortcuts.Add(shortcut);
         }
@@ -59,18 +76,14 @@ public sealed class GameZoneHostViewModel : ObservableObject
 
     public ObservableCollection<ShortcutDefinition> Shortcuts { get; } = new();
 
+    public ICommand StartCommand { get; }
+    public ICommand ResetCommand { get; }
     public ICommand AddBotCommand { get; }
-
     public ICommand RemoveBotCommand { get; }
-
     public ICommand AnnouncePlayersCommand { get; }
-
     public ICommand AnnounceInfoCommand { get; }
-
     public ICommand TogglePrivacyCommand { get; }
-
     public ICommand ToggleRoleCommand { get; }
-
     public ICommand QuitCommand { get; }
 
     public object? Content
@@ -85,7 +98,45 @@ public sealed class GameZoneHostViewModel : ObservableObject
         set => SetProperty(ref _title, value);
     }
 
+    public bool IsStarted
+    {
+        get => _isStarted;
+        set
+        {
+            if (SetProperty(ref _isStarted, value))
+            {
+                if (StartCommand is AsyncRelayCommand asyncCmd)
+                {
+                    asyncCmd.RaiseCanExecuteChanged();
+                }
+            }
+        }
+    }
+
     public event Action<string>? StatusRequested;
+
+    private async Task StartAsync()
+    {
+        StatusRequested?.Invoke("Demarrage de la table...");
+        await _onStart().ConfigureAwait(true);
+    }
+
+    private async Task ResetAsync()
+    {
+        var confirm = await _dialogs.Confirm(
+                "Reinitialiser la table",
+                "Etes-vous sur d'arrêter la partie en cours ?")
+            .ConfigureAwait(true);
+
+        if (confirm != true)
+        {
+            StatusRequested?.Invoke("Reinitialisation annulee.");
+            return;
+        }
+
+        StatusRequested?.Invoke("Reinitialisation de la table...");
+        await _onReset().ConfigureAwait(true);
+    }
 
     private async Task AddBotAsync()
     {
@@ -113,7 +164,7 @@ public sealed class GameZoneHostViewModel : ObservableObject
 
     private async Task TogglePrivacyAsync()
     {
-        StatusRequested?.Invoke("Changement de visibilité...");
+        StatusRequested?.Invoke("Changement de visibilite...");
         await _onTogglePrivacy().ConfigureAwait(true);
     }
 
@@ -126,12 +177,13 @@ public sealed class GameZoneHostViewModel : ObservableObject
     private async Task QuitAsync()
     {
         var confirm = await _dialogs.Confirm(
-            "Quitter la table",
-            "Voulez-vous quitter la table et revenir au menu principal ?").ConfigureAwait(true);
+                "Quitter la table",
+                "Voulez-vous quitter la table et revenir au menu principal ?")
+            .ConfigureAwait(true);
 
         if (confirm != true)
         {
-            StatusRequested?.Invoke("Retour annulé.");
+            StatusRequested?.Invoke("Retour annule.");
             return;
         }
 

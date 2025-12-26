@@ -6,7 +6,9 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
 using Microsoft.Extensions.Logging;
+using client_win.Core.Input;
 using client_win.Modules.Catalog.Models;
+using client_win.Modules.Game.Room.Input;
 using client_win.Modules.Game.Room.ViewModels;
 using client_win.Modules.Game.Room.Views;
 using client_win.Modules.Shell.Services;
@@ -60,19 +62,29 @@ public sealed class GameTableOpener : IGameTableOpener
         var bots = new RoomBotCommands(session);
         var privacy = new RoomPrivacyCommands(session);
         var role = new RoomRoleCommands(session);
+        var info = new RoomInfoCommands(session);
 
         Task AddBot() => bots.AddBotAsync();
         Task RemoveBot() => bots.RemoveLastBotAsync();
         Task AnnouncePlayers() => AnnouncePlayersAsync(session);
-        Task AnnounceInfo() => AnnounceInfoAsync(game.Name, session, role);
+        Task AnnounceInfo()
+        {
+            _announcements.ShortcutKey("i");
+            return info.RequestInfoAsync();
+        }
+        Task Start() => session.SendCommandAsync("room.start", payload: null);
+        Task Reset() => session.SendCommandAsync("room.reset", payload: null);
         Task TogglePrivacy() => privacy.TogglePrivacyAsync();
         Task ToggleRole() => role.ToggleRoleAsync();
 
         Action<RoomAnnouncement>? onAnnounced = null;
         Action<RoomPayloadDto>? onRoomUpdated = null;
+        Action<string>? onSessionError = null;
 
         var tableVm = new GameRoomViewModel(
             game,
+            onStart: Start,
+            onReset: Reset,
             onQuit: async () =>
             {
                 try
@@ -85,10 +97,15 @@ public sealed class GameTableOpener : IGameTableOpener
                     {
                         session.RoomUpdated -= onRoomUpdated;
                     }
+                    if (onSessionError != null)
+                    {
+                        session.ErrorReceived -= onSessionError;
+                    }
 
                     bots.Dispose();
                     privacy.Dispose();
                     role.Dispose();
+                    info.Dispose();
                     await session.LeaveAsync().ConfigureAwait(true);
                     await session.DisposeAsync().ConfigureAwait(true);
                 }
@@ -109,6 +126,36 @@ public sealed class GameTableOpener : IGameTableOpener
 
         tableVm.Status = $"Table créée (id {session.RoomId}).";
 
+        void SetRoomShortcutsForStarted(bool started)
+        {
+            tableVm.GameZone.IsStarted = started;
+            tableVm.GameZone.Shortcuts.Clear();
+
+            if (started)
+            {
+                // En partie: le jeu définit ses propres raccourcis.
+                // On garde uniquement `x` (reset) pour revenir à l'état room.
+                tableVm.GameZone.Shortcuts.Add(new ShortcutDefinition(
+                    'x',
+                    tableVm.GameZone.ResetCommand,
+                    description: "Réinitialiser la table"));
+                return;
+            }
+
+            foreach (var shortcut in RoomShortcuts.Create(
+                         resetCommand: tableVm.GameZone.ResetCommand,
+                         addBotCommand: tableVm.GameZone.AddBotCommand,
+                         removeBotCommand: tableVm.GameZone.RemoveBotCommand,
+                         announcePlayersCommand: tableVm.GameZone.AnnouncePlayersCommand,
+                         announceInfoCommand: tableVm.GameZone.AnnounceInfoCommand,
+                         togglePrivacyCommand: tableVm.GameZone.TogglePrivacyCommand,
+                         toggleRoleCommand: tableVm.GameZone.ToggleRoleCommand,
+                         quitCommand: tableVm.GameZone.QuitCommand))
+            {
+                tableVm.GameZone.Shortcuts.Add(shortcut);
+            }
+        }
+
         void UpdateGameTitle(RoomPayloadDto payload)
         {
             var name = payload.Manifest?.Name;
@@ -116,23 +163,80 @@ public sealed class GameTableOpener : IGameTableOpener
             dispatcher.InvokeAsync(() => tableVm.GameZone.Title = name.Trim(), DispatcherPriority.Background);
         }
 
+        var lastStatus = session.LastRoomState?.Room?.Status;
+        var isStarted = string.Equals(lastStatus, "started", StringComparison.OrdinalIgnoreCase);
+
         if (session.LastRoomState != null)
         {
             UpdateGameTitle(session.LastRoomState);
         }
 
-        onRoomUpdated = payload => UpdateGameTitle(payload);
+        if (isStarted)
+        {
+            SetRoomShortcutsForStarted(started: true);
+        }
+
+        onRoomUpdated = payload =>
+        {
+            UpdateGameTitle(payload);
+
+            var nextStatus = payload.Room?.Status;
+            var wasStarted = string.Equals(lastStatus, "started", StringComparison.OrdinalIgnoreCase);
+            var nowStarted = string.Equals(nextStatus, "started", StringComparison.OrdinalIgnoreCase);
+            lastStatus = nextStatus;
+
+            if (!wasStarted && nowStarted)
+            {
+                dispatcher.InvokeAsync(() =>
+                {
+                    SetRoomShortcutsForStarted(started: true);
+                    tableVm.History.Entries.Add("Serveur : table démarrée.");
+                    tableVm.Status = "Table démarrée.";
+                    _announcements.TableInfo("Table démarrée.");
+                }, DispatcherPriority.Background);
+                return;
+            }
+
+            if (wasStarted && !nowStarted)
+            {
+                dispatcher.InvokeAsync(() =>
+                {
+                    SetRoomShortcutsForStarted(started: false);
+                    tableVm.History.Entries.Add("Serveur : table réinitialisée.");
+                    tableVm.Status = "Table réinitialisée.";
+                    _announcements.TableInfo("Table réinitialisée.");
+                }, DispatcherPriority.Background);
+            }
+        };
         session.RoomUpdated += onRoomUpdated;
 
         onAnnounced = announcement =>
         {
             if (string.IsNullOrWhiteSpace(announcement.Message)) return;
-            dispatcher.InvokeAsync(() =>
-            {
-                tableVm.History.Entries.Add(announcement.Message);
-            }, DispatcherPriority.Background);
+            dispatcher.InvokeAsync(() => tableVm.History.Entries.Add(announcement.Message), DispatcherPriority.Background);
         };
         _announcements.Announced += onAnnounced;
+
+        info.InfoReceived += message =>
+        {
+            dispatcher.InvokeAsync(() =>
+            {
+                tableVm.Status = "Informations table.";
+                _announcements.TableInfo(message);
+            }, DispatcherPriority.Background);
+        };
+
+        // IMPORTANT: un seul handler pour les erreurs serveur.
+        onSessionError = message =>
+        {
+            dispatcher.InvokeAsync(() =>
+            {
+                tableVm.History.Entries.Add($"Serveur : erreur ({message})");
+                tableVm.Status = $"Erreur : {message}";
+                _announcements.Error(message);
+            }, DispatcherPriority.Background);
+        };
+        session.ErrorReceived += onSessionError;
 
         bots.BotAdded += name =>
         {
@@ -154,16 +258,6 @@ public sealed class GameTableOpener : IGameTableOpener
             }, DispatcherPriority.Background);
         };
 
-        bots.ErrorReceived += message =>
-        {
-            dispatcher.InvokeAsync(() =>
-            {
-                tableVm.History.Entries.Add($"Serveur : erreur ({message})");
-                tableVm.Status = $"Erreur : {message}";
-                _announcements.Error(message);
-            }, DispatcherPriority.Background);
-        };
-
         privacy.PrivacyChanged += isPrivate =>
         {
             dispatcher.InvokeAsync(() =>
@@ -175,16 +269,6 @@ public sealed class GameTableOpener : IGameTableOpener
             }, DispatcherPriority.Background);
         };
 
-        privacy.ErrorReceived += message =>
-        {
-            dispatcher.InvokeAsync(() =>
-            {
-                tableVm.History.Entries.Add($"Serveur : erreur ({message})");
-                tableVm.Status = $"Erreur : {message}";
-                _announcements.Error(message);
-            }, DispatcherPriority.Background);
-        };
-
         role.RoleChanged += isSpectator =>
         {
             dispatcher.InvokeAsync(() =>
@@ -193,16 +277,6 @@ public sealed class GameTableOpener : IGameTableOpener
                 tableVm.History.Entries.Add($"Serveur : mode {label}");
                 tableVm.Status = $"Mode : {label}.";
                 _announcements.RoleChanged(isSpectator);
-            }, DispatcherPriority.Background);
-        };
-
-        role.ErrorReceived += message =>
-        {
-            dispatcher.InvokeAsync(() =>
-            {
-                tableVm.History.Entries.Add($"Serveur : erreur ({message})");
-                tableVm.Status = $"Erreur : {message}";
-                _announcements.Error(message);
             }, DispatcherPriority.Background);
         };
 
@@ -265,27 +339,5 @@ public sealed class GameTableOpener : IGameTableOpener
             $"{FormatList("Joueurs", players)}. {FormatList("Spectateurs", spectators)}. {FormatList("Bots", bots)}.");
         return Task.CompletedTask;
     }
-
-    private Task AnnounceInfoAsync(string gameName, RoomSession session, IRoomRoleCommands role)
-    {
-        _announcements.ShortcutKey("i");
-
-        var room = session.LastRoomState?.Room;
-        if (room == null)
-        {
-            _announcements.TableInfo("Table : informations indisponibles.");
-            return Task.CompletedTask;
-        }
-
-        var mode = role.IsSpectator ? "spectateur" : "joueur";
-        var playersCount = room.Players?.Count ?? room.Counts?.Players ?? 0;
-        var spectatorsCount = room.Spectators?.Count ?? room.Counts?.Spectators ?? 0;
-        var botsCount = room.Bots?.Count ?? 0;
-        var total = playersCount + spectatorsCount + botsCount;
-
-        var peopleLabel = total == 1 ? "personne" : "personnes";
-        var safeGameName = string.IsNullOrWhiteSpace(gameName) ? "Jeu" : gameName.Trim();
-        _announcements.TableInfo($"{safeGameName}. Mode {mode}. {total} {peopleLabel} sur la table.");
-        return Task.CompletedTask;
-    }
 }
+
