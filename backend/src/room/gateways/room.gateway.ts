@@ -12,8 +12,14 @@ import { BotService } from '../../bot/services/bot.service';
 import { Inject, Logger, forwardRef } from '@nestjs/common';
 import { WsJwtAuthService } from '../../common/ws/ws-jwt-auth.service';
 import { WsSignatureService } from '../../common/ws/ws-signature.service';
+import type { RoomPlayer } from '../dto/room-response.dto';
 
-type AuthedClient = { socket: WebSocket; userId: number; roomId: number };
+type AuthedClient = {
+  socket: WebSocket;
+  userId: number;
+  username: string;
+  roomId: number;
+};
 type IncomingPayload = { type?: string; payload?: any };
 type ClientRole = 'participant' | 'spectator';
 type ClientMeta = AuthedClient & { role: ClientRole };
@@ -102,6 +108,7 @@ export class RoomGateway
       this.clients.set(client, {
         socket: client,
         userId: payload.id,
+        username: payload.username,
         roomId: targetRoomId,
         role,
       });
@@ -111,6 +118,7 @@ export class RoomGateway
       this.clients.set(client, {
         socket: client,
         userId: payload.id,
+        username: payload.username,
         roomId: targetRoomId,
         role: 'participant',
       });
@@ -196,7 +204,8 @@ export class RoomGateway
   private async sendRoomState(roomId: number) {
     try {
       const payload = await this.roomsService.getRoomPayload(roomId);
-      payload.room.counts.spectators = this.countSpectators(roomId);
+      payload.room.spectators = this.listSpectators(roomId);
+      payload.room.counts.spectators = payload.room.spectators.length;
       await this.broadcast(roomId, 'room.updated', payload);
     } catch {
       /* la table a peut-être été supprimée, on ignore */
@@ -354,7 +363,8 @@ export class RoomGateway
 
     try {
       const payload = await this.roomsService.getRoomPayload(roomId);
-      payload.room.counts.spectators = this.countSpectators(roomId);
+      payload.room.spectators = this.listSpectators(roomId);
+      payload.room.counts.spectators = payload.room.spectators.length;
       this.safeSend(client, { type: 'room.left', roomId, payload });
     } catch {
       this.safeSend(client, { type: 'room.deleted', roomId });
@@ -563,14 +573,21 @@ export class RoomGateway
     return null;
   }
 
-  private countSpectators(roomId: number): number {
-    const unique = new Set<number>();
+  private listSpectators(roomId: number): RoomPlayer[] {
+    const unique = new Map<number, string>();
     for (const meta of this.clients.values()) {
       if (meta.roomId !== roomId) continue;
       if (meta.role !== 'spectator') continue;
-      unique.add(meta.userId);
+      unique.set(meta.userId, meta.username || `User ${meta.userId}`);
     }
-    return unique.size;
+    return Array.from(unique.entries()).map(([id, username]) => ({
+      id,
+      username,
+    }));
+  }
+
+  private countSpectators(roomId: number): number {
+    return this.listSpectators(roomId).length;
   }
 
   private async canSpectate(roomId: number, userId: number): Promise<boolean> {

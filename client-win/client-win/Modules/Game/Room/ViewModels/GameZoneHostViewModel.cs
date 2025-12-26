@@ -15,24 +15,30 @@ public sealed class GameZoneHostViewModel : ObservableObject
     private readonly Func<Task> _onAddBot;
     private readonly Func<Task> _onRemoveBot;
     private readonly Func<Task> _onAnnouncePlayers;
+    private readonly Func<Task> _onAnnounceInfo;
     private readonly Func<Task> _onTogglePrivacy;
     private readonly Func<Task> _onToggleRole;
     private readonly IDialogService _dialogs;
     private object? _content;
+    private string _title = "Zone de jeu";
 
     public GameZoneHostViewModel(
+        string title,
         Func<Task> onQuit,
         Func<Task> onAddBot,
         Func<Task> onRemoveBot,
         Func<Task> onAnnouncePlayers,
+        Func<Task> onAnnounceInfo,
         Func<Task> onTogglePrivacy,
         Func<Task> onToggleRole,
         IDialogService dialogs)
     {
+        Title = string.IsNullOrWhiteSpace(title) ? "Zone de jeu" : title;
         _onQuit = onQuit ?? throw new ArgumentNullException(nameof(onQuit));
         _onAddBot = onAddBot ?? throw new ArgumentNullException(nameof(onAddBot));
         _onRemoveBot = onRemoveBot ?? throw new ArgumentNullException(nameof(onRemoveBot));
         _onAnnouncePlayers = onAnnouncePlayers ?? throw new ArgumentNullException(nameof(onAnnouncePlayers));
+        _onAnnounceInfo = onAnnounceInfo ?? throw new ArgumentNullException(nameof(onAnnounceInfo));
         _onTogglePrivacy = onTogglePrivacy ?? throw new ArgumentNullException(nameof(onTogglePrivacy));
         _onToggleRole = onToggleRole ?? throw new ArgumentNullException(nameof(onToggleRole));
         _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
@@ -40,11 +46,12 @@ public sealed class GameZoneHostViewModel : ObservableObject
         AddBotCommand = new AsyncRelayCommand(AddBotAsync);
         RemoveBotCommand = new AsyncRelayCommand(RemoveBotAsync);
         AnnouncePlayersCommand = new AsyncRelayCommand(AnnouncePlayersAsync);
+        AnnounceInfoCommand = new AsyncRelayCommand(AnnounceInfoAsync);
         TogglePrivacyCommand = new AsyncRelayCommand(TogglePrivacyAsync);
         ToggleRoleCommand = new AsyncRelayCommand(ToggleRoleAsync);
         QuitCommand = new AsyncRelayCommand(QuitAsync);
 
-        foreach (var shortcut in RoomShortcuts.Create(AddBotCommand, RemoveBotCommand, AnnouncePlayersCommand, TogglePrivacyCommand, ToggleRoleCommand, QuitCommand))
+        foreach (var shortcut in RoomShortcuts.Create(AddBotCommand, RemoveBotCommand, AnnouncePlayersCommand, AnnounceInfoCommand, TogglePrivacyCommand, ToggleRoleCommand, QuitCommand))
         {
             Shortcuts.Add(shortcut);
         }
@@ -58,6 +65,8 @@ public sealed class GameZoneHostViewModel : ObservableObject
 
     public ICommand AnnouncePlayersCommand { get; }
 
+    public ICommand AnnounceInfoCommand { get; }
+
     public ICommand TogglePrivacyCommand { get; }
 
     public ICommand ToggleRoleCommand { get; }
@@ -68,6 +77,12 @@ public sealed class GameZoneHostViewModel : ObservableObject
     {
         get => _content;
         set => SetProperty(ref _content, value);
+    }
+
+    public string Title
+    {
+        get => _title;
+        set => SetProperty(ref _title, value);
     }
 
     public event Action<string>? StatusRequested;
@@ -88,6 +103,12 @@ public sealed class GameZoneHostViewModel : ObservableObject
     {
         StatusRequested?.Invoke("Liste des joueurs...");
         await _onAnnouncePlayers().ConfigureAwait(true);
+    }
+
+    private async Task AnnounceInfoAsync()
+    {
+        StatusRequested?.Invoke("Informations...");
+        await _onAnnounceInfo().ConfigureAwait(true);
     }
 
     private async Task TogglePrivacyAsync()

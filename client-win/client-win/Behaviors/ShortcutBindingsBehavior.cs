@@ -145,7 +145,7 @@ public static class ShortcutBindingsBehavior
                         // Par défaut, on laisse passer la touche pour permettre l'annonce (key echo) du lecteur d'écran.
                         // Exception: certains raccourcis doivent annoncer un message immédiatement après, et l'écho clavier
                         // arrive souvent après (ordre inversé). Pour ces cas, on consomme la touche et on annonce via NVDA.
-                        e.Handled = typed.Value is 'w' or 'W';
+                        e.Handled = typed.Value is 'w' or 'W' or 'i' or 'I';
                     }
                     return;
                 }

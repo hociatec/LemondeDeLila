@@ -1,7 +1,14 @@
 export type RoomPlayer = { id: number; username: string };
 export type RoomBotState = { id: number; name: string };
+export type GameManifest = {
+  id: string;
+  name: string;
+  minPlayers: number;
+  maxPlayers: number;
+};
 
 export type RoomPayload = {
+  manifest: GameManifest | null;
   room: {
     id: number;
     name: string;
@@ -16,6 +23,7 @@ export type RoomPayload = {
     };
     owner: { id: number; username: string } | null;
     players: RoomPlayer[];
+    spectators: RoomPlayer[];
     bots: RoomBotState[];
   };
   generatedAt: string;

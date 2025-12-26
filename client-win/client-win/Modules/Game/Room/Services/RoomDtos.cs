@@ -6,11 +6,29 @@ namespace client_win.Modules.Game.Room.Services;
 
 public sealed class RoomPayloadDto
 {
+    [JsonPropertyName("manifest")]
+    public GameManifestDto? Manifest { get; set; }
+
     [JsonPropertyName("room")]
     public RoomDto Room { get; set; } = new();
 
     [JsonPropertyName("generatedAt")]
     public string GeneratedAt { get; set; } = string.Empty;
+}
+
+public sealed class GameManifestDto
+{
+    [JsonPropertyName("id")]
+    public string Id { get; set; } = string.Empty;
+
+    [JsonPropertyName("name")]
+    public string Name { get; set; } = string.Empty;
+
+    [JsonPropertyName("minPlayers")]
+    public int MinPlayers { get; set; }
+
+    [JsonPropertyName("maxPlayers")]
+    public int MaxPlayers { get; set; }
 }
 
 public sealed class RoomDto
@@ -44,6 +62,9 @@ public sealed class RoomDto
 
     [JsonPropertyName("players")]
     public List<RoomUserDto> Players { get; set; } = new();
+
+    [JsonPropertyName("spectators")]
+    public List<RoomUserDto> Spectators { get; set; } = new();
 
     [JsonPropertyName("bots")]
     public List<RoomBotDto> Bots { get; set; } = new();

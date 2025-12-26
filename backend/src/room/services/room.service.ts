@@ -249,11 +249,20 @@ export class RoomService {
     if (!room) {
       throw new NotFoundException('Room introuvable');
     }
-    return this.toPayload(room);
+    return await this.toPayload(room);
   }
 
-  toPayload(room: Room): RoomPayload {
+  private async toPayload(room: Room): Promise<RoomPayload> {
+    const manifest = await this.catalog.getGame(room.gameType);
     return {
+      manifest: manifest
+        ? {
+            id: manifest.id,
+            name: manifest.name,
+            minPlayers: manifest.minPlayers ?? 2,
+            maxPlayers: manifest.maxPlayers ?? room.maxPlayers,
+          }
+        : null,
       room: {
         id: room.id,
         name: room.name,
@@ -272,6 +281,7 @@ export class RoomService {
         players: (room.participants || [])
           .filter((p) => !p.leftAt)
           .map((p) => ({ id: p.user.id, username: p.user.username })),
+        spectators: [],
         bots: (room.bots || []).map((b) => ({ id: b.id, name: b.name })),
       },
       generatedAt: new Date().toISOString(),

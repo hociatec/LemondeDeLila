@@ -12,16 +12,22 @@ public sealed class RoomAnnouncements : IRoomAnnouncements
         _announcer = announcer ?? throw new ArgumentNullException(nameof(announcer));
     }
 
+    public event Action<RoomAnnouncement>? Announced;
+
     public void BotJoined(string botName)
     {
         if (string.IsNullOrWhiteSpace(botName)) return;
-        _announcer.AnnouncePolite($"{botName} a rejoint la table.");
+        var message = $"{botName} a rejoint la table.";
+        Announced?.Invoke(new(RoomAnnouncementKind.Polite, message));
+        _announcer.AnnouncePolite(message);
     }
 
     public void BotLeft(string botName)
     {
         if (string.IsNullOrWhiteSpace(botName)) return;
-        _announcer.AnnouncePolite($"{botName} a quitté la table.");
+        var message = $"{botName} a quitté la table.";
+        Announced?.Invoke(new(RoomAnnouncementKind.Polite, message));
+        _announcer.AnnouncePolite(message);
     }
 
     public void ShortcutKey(string key)
@@ -33,22 +39,35 @@ public sealed class RoomAnnouncements : IRoomAnnouncements
     public void PlayersList(string message)
     {
         if (string.IsNullOrWhiteSpace(message)) return;
+        Announced?.Invoke(new(RoomAnnouncementKind.Polite, message));
+        _announcer.AnnouncePolite(message);
+    }
+
+    public void TableInfo(string message)
+    {
+        if (string.IsNullOrWhiteSpace(message)) return;
+        Announced?.Invoke(new(RoomAnnouncementKind.Polite, message));
         _announcer.AnnouncePolite(message);
     }
 
     public void VisibilityChanged(bool isPrivate)
     {
-        _announcer.AnnouncePolite(isPrivate ? "Table privée." : "Table publique.");
+        var message = isPrivate ? "Table privée." : "Table publique.";
+        Announced?.Invoke(new(RoomAnnouncementKind.Polite, message));
+        _announcer.AnnouncePolite(message);
     }
 
     public void RoleChanged(bool isSpectator)
     {
-        _announcer.AnnouncePolite(isSpectator ? "Mode spectateur." : "Mode joueur.");
+        var message = isSpectator ? "Mode spectateur." : "Mode joueur.";
+        Announced?.Invoke(new(RoomAnnouncementKind.Polite, message));
+        _announcer.AnnouncePolite(message);
     }
 
     public void Error(string message)
     {
         if (string.IsNullOrWhiteSpace(message)) return;
+        Announced?.Invoke(new(RoomAnnouncementKind.Assertive, message));
         _announcer.AnnounceAssertive(message);
     }
 }

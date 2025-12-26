@@ -10,10 +10,16 @@ public static class RoomShortcuts
         ICommand addBotCommand,
         ICommand removeBotCommand,
         ICommand announcePlayersCommand,
+        ICommand announceInfoCommand,
         ICommand togglePrivacyCommand,
         ICommand toggleRoleCommand,
         ICommand quitCommand)
     {
+        yield return new ShortcutDefinition(
+            'i',
+            announceInfoCommand,
+            description: "Informations table");
+
         yield return new ShortcutDefinition(
             new KeyGesture(Key.M, ModifierKeys.Control),
             toggleRoleCommand,

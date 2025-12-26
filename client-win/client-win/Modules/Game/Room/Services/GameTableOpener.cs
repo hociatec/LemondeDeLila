@@ -49,50 +49,91 @@ public sealed class GameTableOpener : IGameTableOpener
         catch (Exception ex)
         {
             _logger.LogError(ex, "Erreur création table: gameType={GameType}", game.Id);
-            await _dialogs.ShowError("Création de table", $"Impossible de créer la table : {ex.Message}").ConfigureAwait(true);
+            await _dialogs.ShowError("Création de table", $"Impossible de créer la table : {ex.Message}")
+                .ConfigureAwait(true);
             return;
         }
 
+        var dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
         var tableView = new GameRoomView();
 
         var bots = new RoomBotCommands(session);
         var privacy = new RoomPrivacyCommands(session);
         var role = new RoomRoleCommands(session);
+
         Task AddBot() => bots.AddBotAsync();
         Task RemoveBot() => bots.RemoveLastBotAsync();
         Task AnnouncePlayers() => AnnouncePlayersAsync(session);
+        Task AnnounceInfo() => AnnounceInfoAsync(game.Name, session, role);
         Task TogglePrivacy() => privacy.TogglePrivacyAsync();
         Task ToggleRole() => role.ToggleRoleAsync();
+
+        Action<RoomAnnouncement>? onAnnounced = null;
+        Action<RoomPayloadDto>? onRoomUpdated = null;
 
         var tableVm = new GameRoomViewModel(
             game,
             onQuit: async () =>
-        {
-            try
             {
-                bots.Dispose();
-                privacy.Dispose();
-                role.Dispose();
-                await session.LeaveAsync().ConfigureAwait(true);
-                await session.DisposeAsync().ConfigureAwait(true);
-            }
-            catch
-            {
-                // Best-effort; le backend ferme la table quand la dernière connexion sort.
-            }
+                try
+                {
+                    if (onAnnounced != null)
+                    {
+                        _announcements.Announced -= onAnnounced;
+                    }
+                    if (onRoomUpdated != null)
+                    {
+                        session.RoomUpdated -= onRoomUpdated;
+                    }
 
-            _navigation.Show(returnView);
-        },
+                    bots.Dispose();
+                    privacy.Dispose();
+                    role.Dispose();
+                    await session.LeaveAsync().ConfigureAwait(true);
+                    await session.DisposeAsync().ConfigureAwait(true);
+                }
+                catch
+                {
+                    // Best-effort; le backend ferme la table quand la dernière connexion sort.
+                }
+
+                _navigation.Show(returnView);
+            },
             onAddBot: AddBot,
             onRemoveBot: RemoveBot,
             onAnnouncePlayers: AnnouncePlayers,
+            onAnnounceInfo: AnnounceInfo,
             onTogglePrivacy: TogglePrivacy,
             onToggleRole: ToggleRole,
             dialogs: _dialogs);
 
         tableVm.Status = $"Table créée (id {session.RoomId}).";
 
-        var dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
+        void UpdateGameTitle(RoomPayloadDto payload)
+        {
+            var name = payload.Manifest?.Name;
+            if (string.IsNullOrWhiteSpace(name)) return;
+            dispatcher.InvokeAsync(() => tableVm.GameZone.Title = name.Trim(), DispatcherPriority.Background);
+        }
+
+        if (session.LastRoomState != null)
+        {
+            UpdateGameTitle(session.LastRoomState);
+        }
+
+        onRoomUpdated = payload => UpdateGameTitle(payload);
+        session.RoomUpdated += onRoomUpdated;
+
+        onAnnounced = announcement =>
+        {
+            if (string.IsNullOrWhiteSpace(announcement.Message)) return;
+            dispatcher.InvokeAsync(() =>
+            {
+                var prefix = announcement.Kind == RoomAnnouncementKind.Assertive ? "Annonce (important)" : "Annonce";
+                tableVm.History.Entries.Add($"{prefix} : {announcement.Message}");
+            }, DispatcherPriority.Background);
+        };
+        _announcements.Announced += onAnnounced;
 
         bots.BotAdded += name =>
         {
@@ -103,6 +144,7 @@ public sealed class GameTableOpener : IGameTableOpener
                 _announcements.BotJoined(name);
             }, DispatcherPriority.Background);
         };
+
         bots.BotRemoved += name =>
         {
             dispatcher.InvokeAsync(() =>
@@ -112,6 +154,7 @@ public sealed class GameTableOpener : IGameTableOpener
                 _announcements.BotLeft(name);
             }, DispatcherPriority.Background);
         };
+
         bots.ErrorReceived += message =>
         {
             dispatcher.InvokeAsync(() =>
@@ -132,6 +175,7 @@ public sealed class GameTableOpener : IGameTableOpener
                 _announcements.VisibilityChanged(isPrivate);
             }, DispatcherPriority.Background);
         };
+
         privacy.ErrorReceived += message =>
         {
             dispatcher.InvokeAsync(() =>
@@ -152,6 +196,7 @@ public sealed class GameTableOpener : IGameTableOpener
                 _announcements.RoleChanged(isSpectator);
             }, DispatcherPriority.Background);
         };
+
         role.ErrorReceived += message =>
         {
             dispatcher.InvokeAsync(() =>
@@ -192,23 +237,21 @@ public sealed class GameTableOpener : IGameTableOpener
         var room = session.LastRoomState?.Room;
         if (room == null)
         {
-            _announcements.PlayersList("Table: informations indisponibles.");
+            _announcements.PlayersList("Table : informations indisponibles.");
             return Task.CompletedTask;
         }
 
-        var humans = new List<string>();
-        if (!string.IsNullOrWhiteSpace(room.Owner?.Username))
-        {
-            humans.Add(room.Owner.Username);
-        }
-        foreach (var p in room.Players ?? new List<RoomUserDto>())
-        {
-            if (!string.IsNullOrWhiteSpace(p.Username))
-            {
-                humans.Add(p.Username);
-            }
-        }
-        humans = humans.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+        var players = (room.Players ?? new List<RoomUserDto>())
+            .Select(p => p?.Username)
+            .Where(u => !string.IsNullOrWhiteSpace(u))
+            .Cast<string>()
+            .ToList();
+
+        var spectators = (room.Spectators ?? new List<RoomUserDto>())
+            .Select(p => p?.Username)
+            .Where(u => !string.IsNullOrWhiteSpace(u))
+            .Cast<string>()
+            .ToList();
 
         var bots = (room.Bots ?? new List<RoomBotDto>())
             .Select(b => b?.Name)
@@ -216,22 +259,34 @@ public sealed class GameTableOpener : IGameTableOpener
             .Cast<string>()
             .ToList();
 
-        if (humans.Count == 0 && bots.Count == 0)
+        static string FormatList(string label, IReadOnlyCollection<string> items) =>
+            $"{label} : {(items.Count > 0 ? string.Join(", ", items) : "aucun")}";
+
+        _announcements.PlayersList(
+            $"{FormatList("Joueurs", players)}. {FormatList("Spectateurs", spectators)}. {FormatList("Bots", bots)}.");
+        return Task.CompletedTask;
+    }
+
+    private Task AnnounceInfoAsync(string gameName, RoomSession session, IRoomRoleCommands role)
+    {
+        _announcements.ShortcutKey("i");
+
+        var room = session.LastRoomState?.Room;
+        if (room == null)
         {
-            _announcements.PlayersList("Aucun joueur dans la table.");
+            _announcements.TableInfo("Table : informations indisponibles.");
             return Task.CompletedTask;
         }
 
-        var parts = new List<string>();
-        if (humans.Count > 0)
-        {
-            parts.Add($"Joueurs: {string.Join(", ", humans)}");
-        }
-        if (bots.Count > 0)
-        {
-            parts.Add($"Bots: {string.Join(", ", bots)}");
-        }
-        _announcements.PlayersList(string.Join(". ", parts) + ".");
+        var mode = role.IsSpectator ? "spectateur" : "joueur";
+        var playersCount = room.Players?.Count ?? room.Counts?.Players ?? 0;
+        var spectatorsCount = room.Spectators?.Count ?? room.Counts?.Spectators ?? 0;
+        var botsCount = room.Bots?.Count ?? 0;
+        var total = playersCount + spectatorsCount + botsCount;
+
+        var peopleLabel = total == 1 ? "personne" : "personnes";
+        var safeGameName = string.IsNullOrWhiteSpace(gameName) ? "Jeu" : gameName.Trim();
+        _announcements.TableInfo($"{safeGameName}. Mode {mode}. {total} {peopleLabel} sur la table.");
         return Task.CompletedTask;
     }
 }
