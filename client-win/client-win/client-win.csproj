@@ -37,4 +37,15 @@
     </Content>
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="libs\x64\*.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>libs\x64\%(Filename)%(Extension)</Link>
+    </None>
+    <None Include="libs\x86\*.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>libs\x86\%(Filename)%(Extension)</Link>
+    </None>
+  </ItemGroup>
+
 </Project>

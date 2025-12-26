@@ -103,6 +103,7 @@ public static class AppBootstrapper
         services.AddSingleton(rootHost);
         services.AddSingleton<INavigationService>(_ => new NavigationService(rootHost));
         services.AddSingleton<IDialogService, WpfDialogService>();
+        services.AddSingleton<IScreenReaderAnnouncer, ScreenReaderAnnouncer>();
 
         // Enregistrement des services réseau avec NetworkConfiguration
         services.AddSingleton<PersistentWsClient>(sp => new PersistentWsClient(

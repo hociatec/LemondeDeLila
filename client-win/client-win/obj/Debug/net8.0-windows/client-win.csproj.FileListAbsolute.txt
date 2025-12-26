@@ -99,3 +99,11 @@ C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Debug\net8.0-windows\Modul
 C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Debug\net8.0-windows\Modules\Game\Room\Views\GameRoomStatusBarView.g.cs
 C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Debug\net8.0-windows\Modules\Game\Room\Views\GameZoneHostView.g.cs
 C:\wamp64\www\lemondeDeLila\client-win\client-win\bin\Debug\net8.0-windows\client-win.exe
+C:\wamp64\www\lemondeDeLila\client-win\client-win\bin\Debug\net8.0-windows\libs\x64\nvdaControllerClient.dll
+C:\wamp64\www\lemondeDeLila\client-win\client-win\bin\Debug\net8.0-windows\libs\x64\nvdaControllerClient64.dll
+C:\wamp64\www\lemondeDeLila\client-win\client-win\bin\Debug\net8.0-windows\libs\x64\nvdaHelperRemote.dll
+C:\wamp64\www\lemondeDeLila\client-win\client-win\bin\Debug\net8.0-windows\libs\x64\SAAPI32.dll
+C:\wamp64\www\lemondeDeLila\client-win\client-win\bin\Debug\net8.0-windows\libs\x86\nvdaControllerClient.dll
+C:\wamp64\www\lemondeDeLila\client-win\client-win\bin\Debug\net8.0-windows\libs\x86\nvdaControllerClient32.dll
+C:\wamp64\www\lemondeDeLila\client-win\client-win\bin\Debug\net8.0-windows\libs\x86\nvdaHelperRemote.dll
+C:\wamp64\www\lemondeDeLila\client-win\client-win\bin\Debug\net8.0-windows\libs\x86\SAAPI32.dll

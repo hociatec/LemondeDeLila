@@ -19,6 +19,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
             <TextBlock x:Name="HistoryTitle"
@@ -50,6 +51,18 @@
                      AutomationProperties.Name="Historique"
                      AutomationProperties.HelpText="Historique en lecture seule. Utilisez flèche haut/bas pour lire ligne par ligne."
                      MinHeight="200" />
+
+            <!-- Live region (UIA) : annonce les nouvelles lignes sans déplacer le focus -->
+            <TextBlock Grid.Row="2"
+                       Text="{Binding LastAnnouncement}"
+                       AutomationProperties.Name="{Binding LastAnnouncement}"
+                       AutomationProperties.AutomationId="HistoryLiveRegion"
+                       AutomationProperties.LiveSetting="Polite"
+                       IsHitTestVisible="False"
+                       Focusable="False"
+                       Height="1"
+                       Opacity="0.01" />
         </Grid>
     </Border>
 </UserControl>
+

@@ -15,7 +15,7 @@
                    FontSize="14"
                    TextWrapping="Wrap"
                    HorizontalAlignment="Center"
-                   AutomationProperties.Name="Statut"
+                   AutomationProperties.Name="{Binding Status}"
                    AutomationProperties.LiveSetting="Polite" />
     </Border>
 </UserControl>

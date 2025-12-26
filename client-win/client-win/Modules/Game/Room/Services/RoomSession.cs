@@ -18,7 +18,7 @@ public sealed class RoomSession : IAsyncDisposable
         RoomId = roomId;
         GameType = gameType ?? string.Empty;
         _socket = socket ?? throw new ArgumentNullException(nameof(socket));
-        _socket.MessageReceived += OnMessage;
+        _socket.MessageReceived += OnRawMessage;
         _socket.Error += _ => { };
     }
 
@@ -28,34 +28,69 @@ public sealed class RoomSession : IAsyncDisposable
     public RoomPayloadDto? LastRoomState { get; internal set; }
 
     public event Action<RoomPayloadDto>? RoomUpdated;
+    public event Action<string>? RawMessageReceived;
 
     public Task CloseAsync() => _socket.CloseAsync();
 
-    public async ValueTask DisposeAsync()
+    public async Task SendCommandAsync(string type, object? payload = null, CancellationToken cancellationToken = default)
     {
-        _socket.MessageReceived -= OnMessage;
-        await _socket.DisposeAsync().ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(type)) throw new ArgumentException("type requis", nameof(type));
+        var msg = JsonSerializer.Serialize(new { type, payload = payload ?? new { } }, _json);
+        await _socket.SendAsync(msg, cancellationToken).ConfigureAwait(false);
     }
 
-    private void OnMessage(string raw)
+    public async Task LeaveAsync(CancellationToken cancellationToken = default)
     {
         try
         {
-            var envelope = JsonSerializer.Deserialize<RoomEnvelope<JsonElement>>(raw, _json);
-            if (envelope == null) return;
+            var leave = JsonSerializer.Serialize(new { type = "room.leave", payload = new { } }, _json);
+            await _socket.SendAsync(leave, cancellationToken).ConfigureAwait(false);
+        }
+        catch
+        {
+            // Best-effort (si l'envoi échoue, on ferme quand même).
+        }
 
-            if (!string.Equals(envelope.Type, "room.updated", StringComparison.OrdinalIgnoreCase) &&
-                !string.Equals(envelope.Type, "room.created", StringComparison.OrdinalIgnoreCase))
+        await _socket.CloseAsync().ConfigureAwait(false);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        _socket.MessageReceived -= OnRawMessage;
+        await _socket.DisposeAsync().ConfigureAwait(false);
+    }
+
+    private void OnRawMessage(string raw)
+    {
+        RawMessageReceived?.Invoke(raw);
+        ParseRoomState(raw);
+    }
+
+    private void ParseRoomState(string raw)
+    {
+        try
+        {
+            using var doc = JsonDocument.Parse(raw);
+            var root = doc.RootElement;
+            if (root.ValueKind != JsonValueKind.Object) return;
+
+            if (!root.TryGetProperty("type", out var typeProp)) return;
+            var type = typeProp.GetString() ?? string.Empty;
+
+            if (!string.Equals(type, "room.updated", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(type, "room.created", StringComparison.OrdinalIgnoreCase))
             {
                 return;
             }
 
-            if (envelope.Payload.ValueKind == JsonValueKind.Undefined || envelope.Payload.ValueKind == JsonValueKind.Null)
+            if (!root.TryGetProperty("payload", out var payloadProp) ||
+                payloadProp.ValueKind == JsonValueKind.Undefined ||
+                payloadProp.ValueKind == JsonValueKind.Null)
             {
                 return;
             }
 
-            var payload = envelope.Payload.Deserialize<RoomPayloadDto>(_json);
+            var payload = payloadProp.Deserialize<RoomPayloadDto>(_json);
             if (payload == null) return;
 
             LastRoomState = payload;

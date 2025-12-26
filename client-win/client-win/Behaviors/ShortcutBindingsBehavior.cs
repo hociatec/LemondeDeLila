@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using client_win.Core.Input;
 
@@ -106,13 +107,28 @@ public static class ShortcutBindingsBehavior
                     return;
                 }
 
-                if (Keyboard.Modifiers != ModifierKeys.None)
+                // Ne pas interpréter les lettres comme raccourcis quand le focus est dans un contrôle de texte
+                // (ex: historique en lecture seule). On laisse le contrôle/lecteur d'écran gérer l'écho clavier.
+                if (IsTextInputFocused())
+                {
+                    return;
+                }
+
+                // Les raccourcis "char" supportent:
+                // - aucune touche modificatrice (ex: q)
+                // - Maj seule, pour distinguer b / B sans passer par KeyGesture (qui ne supporte pas Shift+Lettre)
+                var modifiers = Keyboard.Modifiers;
+                var hasCtrlAltWin = (modifiers & (ModifierKeys.Control | ModifierKeys.Alt | ModifierKeys.Windows)) != ModifierKeys.None;
+                if (hasCtrlAltWin)
                 {
                     return;
                 }
 
                 var key = e.Key == Key.System ? e.SystemKey : e.Key;
-                char? typed = KeyToChar(key);
+                var shift = (modifiers & ModifierKeys.Shift) == ModifierKeys.Shift;
+                var capsLock = Keyboard.IsKeyToggled(Key.CapsLock);
+                var upper = shift ^ capsLock;
+                char? typed = KeyToChar(key, upper);
                 if (typed == null)
                 {
                     return;
@@ -121,12 +137,13 @@ public static class ShortcutBindingsBehavior
                 foreach (var shortcut in charShortcuts)
                 {
                     if (shortcut.Key == null) continue;
-                    if (char.ToLowerInvariant(shortcut.Key.Value) != char.ToLowerInvariant(typed.Value)) continue;
+                    if (shortcut.Key.Value != typed.Value) continue;
 
                     if (shortcut.Command.CanExecute(shortcut.CommandParameter))
                     {
-                        e.Handled = true;
                         shortcut.Command.Execute(shortcut.CommandParameter);
+                        // Laisser passer la touche pour permettre l'annonce (key echo) du lecteur d'écran.
+                        e.Handled = false;
                     }
                     return;
                 }
@@ -160,13 +177,44 @@ public static class ShortcutBindingsBehavior
         }
     }
 
-    private static char? KeyToChar(Key key)
+    private static char? KeyToChar(Key key, bool upper)
     {
         if (key >= Key.A && key <= Key.Z)
         {
             int offset = key - Key.A;
-            return (char)('a' + offset);
+            return (char)((upper ? 'A' : 'a') + offset);
         }
         return null;
+    }
+
+    private static bool IsTextInputFocused()
+    {
+        var focused = Keyboard.FocusedElement;
+        if (focused is null)
+        {
+            return false;
+        }
+
+        if (focused is TextBox textBox)
+        {
+            return true;
+        }
+
+        if (focused is PasswordBox)
+        {
+            return true;
+        }
+
+        if (focused is RichTextBox)
+        {
+            return true;
+        }
+
+        if (focused is ComboBox combo && combo.IsEditable)
+        {
+            return true;
+        }
+
+        return false;
     }
 }

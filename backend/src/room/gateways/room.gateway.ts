@@ -284,6 +284,9 @@ export class RoomGateway
     const type = payload?.type;
     const data = payload?.payload ?? {};
     switch (type) {
+      case 'room.leave':
+        await this.handleRoomLeave(client, meta);
+        break;
       case 'room.start':
         await this.handleRoomStart(meta);
         break;
@@ -307,6 +310,64 @@ export class RoomGateway
         break;
       default:
         break;
+    }
+  }
+
+  private async handleRoomLeave(client: WebSocket, meta: ClientMeta) {
+    const roomId = meta.roomId;
+    if (!Number.isFinite(roomId) || roomId <= 0) {
+      return;
+    }
+
+    const set = this.rooms.get(roomId);
+    let remainingConnections = 0;
+    if (set) {
+      set.delete(client);
+      if (set.size === 0) {
+        this.rooms.delete(roomId);
+        remainingConnections = 0;
+      } else {
+        remainingConnections = set.size;
+      }
+    }
+
+    if (meta.role === 'participant') {
+      let roomStarted = false;
+      try {
+        const state = await this.roomsService.getRoomPayload(roomId);
+        roomStarted =
+          (state?.room?.status || '').toLowerCase() === 'started' ||
+          Boolean(state?.room?.startedAt);
+      } catch {
+        roomStarted = false;
+      }
+
+      await this.roomsService.leaveRoom(roomId, meta.userId, {
+        preserveRoom: roomStarted || remainingConnections > 0,
+        disconnectOnly: false,
+      });
+    }
+
+    // Empêche handleDisconnect de rappeler leaveRoom quand on ferme le socket après un leave explicite.
+    meta.role = 'spectator';
+    meta.roomId = 0;
+
+    try {
+      const payload = await this.roomsService.getRoomPayload(roomId);
+      payload.room.counts.spectators = this.countSpectators(roomId);
+      this.safeSend(client, { type: 'room.left', roomId, payload });
+    } catch {
+      this.safeSend(client, { type: 'room.deleted', roomId });
+    }
+
+    if (remainingConnections > 0) {
+      await this.sendRoomState(roomId);
+    }
+
+    try {
+      client.close();
+    } catch {
+      /* ignore */
     }
   }
 
@@ -341,7 +402,16 @@ export class RoomGateway
   }
 
   private async handleBotRemove(meta: AuthedClient, payload: any) {
-    const botId = Number(payload?.botId ?? payload?.id ?? -1);
+    let botId = Number(payload?.botId ?? payload?.id ?? -1);
+    if (!Number.isFinite(botId) || botId <= 0) {
+      const state = await this.roomsService.getRoomPayload(meta.roomId);
+      const bots = state?.room?.bots ?? [];
+      const last = bots.length > 0 ? bots[bots.length - 1] : null;
+      if (!last?.id) {
+        throw new Error('Aucun bot à retirer');
+      }
+      botId = Number(last.id);
+    }
     const bot = await this.botService.removeBot(
       meta.roomId,
       meta.userId,

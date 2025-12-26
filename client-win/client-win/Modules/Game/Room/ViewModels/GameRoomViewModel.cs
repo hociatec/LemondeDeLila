@@ -14,12 +14,18 @@ public sealed class GameRoomViewModel : ObservableObject
 {
     private string _status = "Table prête.";
 
-    public GameRoomViewModel(CatalogGame game, Func<Task> onQuit, IDialogService dialogs)
+    public GameRoomViewModel(
+        CatalogGame game,
+        Func<Task> onQuit,
+        Func<Task> onAddBot,
+        Func<Task> onRemoveBot,
+        IDialogService dialogs,
+        IScreenReaderAnnouncer? announcer = null)
     {
         Game = game ?? throw new ArgumentNullException(nameof(game));
         History = new GameHistoryViewModel(game);
 
-        GameZone = new GameZoneHostViewModel(onQuit, dialogs);
+        GameZone = new GameZoneHostViewModel(onQuit, onAddBot, onRemoveBot, dialogs, announcer);
         GameZone.StatusRequested += s => Status = s;
     }
 
@@ -35,4 +41,3 @@ public sealed class GameRoomViewModel : ObservableObject
         set => SetProperty(ref _status, value);
     }
 }
-
