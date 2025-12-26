@@ -1,4 +1,3 @@
-C:\wamp64\www\lemondeDeLila\client-win\client-win\bin\Debug\net8.0-windows\client-win.exe
 C:\wamp64\www\lemondeDeLila\client-win\client-win\bin\Debug\net8.0-windows\client-win.deps.json
 C:\wamp64\www\lemondeDeLila\client-win\client-win\bin\Debug\net8.0-windows\client-win.runtimeconfig.json
 C:\wamp64\www\lemondeDeLila\client-win\client-win\bin\Debug\net8.0-windows\client-win.dll
@@ -99,3 +98,4 @@ C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Debug\net8.0-windows\Modul
 C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Debug\net8.0-windows\Modules\Game\Room\Views\GameRoomHeaderView.g.cs
 C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Debug\net8.0-windows\Modules\Game\Room\Views\GameRoomStatusBarView.g.cs
 C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Debug\net8.0-windows\Modules\Game\Room\Views\GameZoneHostView.g.cs
+C:\wamp64\www\lemondeDeLila\client-win\client-win\bin\Debug\net8.0-windows\client-win.exe
