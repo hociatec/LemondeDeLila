@@ -17,7 +17,6 @@ public sealed class RoomRoleCommands : IRoomRoleCommands
     }
 
     public event Action<bool>? RoleChanged;
-    public event Action<string>? ErrorReceived;
 
     public bool IsSpectator => _isSpectator;
 

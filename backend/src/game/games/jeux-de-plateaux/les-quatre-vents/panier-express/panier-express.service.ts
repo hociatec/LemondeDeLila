@@ -118,6 +118,33 @@ export class PanierExpressService extends AbstractGameService {
     });
   }
 
+  exposeStateForUser(state: GameStateEntity, userId: number): GameStateWithActions {
+    const ensured = this.ensureMetadata(state);
+
+    const viewerId =
+      typeof userId === 'number' &&
+      (ensured.players ?? []).some((p) => p && p.id === userId)
+        ? userId
+        : null;
+
+    const actions =
+      typeof viewerId === 'number' ? this.getAvailableActions(ensured, viewerId) : [];
+    const meta = this.getMetadata(ensured);
+    const rawPending: PendingState | null = ensured.pending ?? null;
+    const pendingQuiz: QuizQuestion | undefined =
+      typeof viewerId === 'number'
+        ? (meta.quiz.pending[viewerId] ?? undefined)
+        : undefined;
+
+    return this.presenter.exposeState({
+      state: ensured,
+      actions,
+      rawPending,
+      pendingQuiz,
+      currentId: viewerId,
+    });
+  }
+
   hydrateInitialState(baseState: GameStateEntity): GameStateEntity {
     const status = (baseState.status || '').toLowerCase();
     const players = baseState.players ?? [];

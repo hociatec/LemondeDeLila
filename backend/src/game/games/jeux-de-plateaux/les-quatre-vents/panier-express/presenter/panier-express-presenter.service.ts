@@ -55,11 +55,24 @@ export class PanierExpressPresenterService extends BasePresenterService {
     this.pendingQuizRef = pendingQuiz;
     this.rawPendingRef = rawPending;
 
-    const exposed = this.buildExposedState(state, actions);
     const meta = this.getMetadata(state) as PanierExpressMetadata;
+    const currentId = params.currentId ?? null;
+
+    // IMPORTANT:
+    // `BasePresenterService.buildExposedState(...)` utilise toujours `turn.currentPlayerId`
+    // pour calculer pending/extras. Pour Panier Express, les vues `shoppingList/basket/inventory`
+    // doivent refléter l'utilisateur connecté (pas forcément le joueur dont c'est le tour,
+    // par exemple quand un bot joue).
+    const pending = this.buildPendingState(state, meta, currentId);
+    const extras = this.buildExtras(state, meta, currentId);
+    const catalog = this.buildCatalog();
 
     return {
-      ...exposed,
+      ...state,
+      catalog,
+      actions: this.formatActions(Array.isArray(actions) ? actions : []),
+      pending,
+      extras,
       board: {
         tiles: Array.isArray(meta.tiles) ? meta.tiles : [],
         positions: meta.positions ?? {},
@@ -98,7 +111,18 @@ export class PanierExpressPresenterService extends BasePresenterService {
     currentPlayerId: number | null,
   ): Record<string, unknown> {
     const playerViews = this.buildPlayerViews(state);
-    const players = playerViews.map(
+
+    // Ne jamais exposer les listes/panier/inventaire des autres joueurs.
+    const sanitizedViews: PanierExpressPlayerView[] =
+      typeof currentPlayerId === 'number'
+        ? playerViews.map((v) =>
+            v.id === currentPlayerId
+              ? v
+              : { ...v, shoppingList: [], basket: [], inventory: [] },
+          )
+        : playerViews.map((v) => ({ ...v, shoppingList: [], basket: [], inventory: [] }));
+
+    const players = sanitizedViews.map(
       ({ id, username, isBot, shoppingList, basket, inventory }) => ({
         id,
         username,
@@ -111,7 +135,7 @@ export class PanierExpressPresenterService extends BasePresenterService {
 
     return this.buildExtrasView(state, {
       currentId: currentPlayerId,
-      playerViews,
+      playerViews: sanitizedViews,
       players,
     });
   }
@@ -213,12 +237,8 @@ export class PanierExpressPresenterService extends BasePresenterService {
       username: typeof player.username === 'string' ? player.username : null,
       isBot: player?.isBot === true,
       shoppingList: this.toStringArray(player.shoppingList),
-      basket: Array.isArray(player.basket)
-        ? player.basket.map((card: any) => String(card))
-        : [],
-      inventory: Array.isArray(player.inventory)
-        ? player.inventory.map((card: any) => String(card))
-        : [],
+      basket: this.toStringArray(player.basket),
+      inventory: this.toStringArray(player.inventory),
     };
   }
 

@@ -8,9 +8,7 @@ public interface IRoomBotCommands : IDisposable
 {
     event Action<string>? BotAdded;
     event Action<string>? BotRemoved;
-    event Action<string>? ErrorReceived;
 
     Task AddBotAsync(CancellationToken cancellationToken = default);
     Task RemoveLastBotAsync(CancellationToken cancellationToken = default);
 }
-

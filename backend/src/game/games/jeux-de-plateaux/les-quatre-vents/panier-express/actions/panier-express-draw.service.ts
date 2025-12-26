@@ -41,15 +41,9 @@ export class PanierExpressDrawService {
     const { card, metadata } = draw;
     const players = (state.players ?? []).map((player) => {
       if (player.id !== playerId) return player;
-      const shoppingList = Array.isArray(player.shoppingList)
-        ? player.shoppingList.map((value) => String(value))
-        : [];
-      const basket = Array.isArray(player.basket)
-        ? player.basket.map((value) => String(value))
-        : [];
-      const inventory = Array.isArray(player.inventory)
-        ? player.inventory.map((value) => String(value))
-        : [];
+      const shoppingList = this.utils.toStringArray(player.shoppingList);
+      const basket = this.utils.toStringArray(player.basket);
+      const inventory = this.utils.toStringArray(player.inventory);
       if (shoppingList.includes(card) && !basket.includes(card)) {
         return { ...player, basket: [...basket, card], inventory };
       }

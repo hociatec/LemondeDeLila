@@ -278,6 +278,23 @@ describe('PanierExpressService', () => {
     expect((after.metadata as any)?.rng?.counter).toBe(1);
   });
 
+  it("expose currentPlayerView pour l'utilisateur connecté (même si c'est le tour d'un bot)", () => {
+    const state: any = service.hydrateInitialState({
+      players: [
+        { id: 1, username: 'admin', shoppingList: ['ananas'], basket: [], inventory: [] },
+        { id: -1, username: 'GnoleGear', isBot: true, shoppingList: ['melon'], basket: [], inventory: [] },
+      ],
+      status: 'running',
+    } as any);
+
+    // Le bot a un id négatif dans le state du moteur.
+    state.turn = { currentPlayerId: -1, direction: 1 };
+    state.turnIndex = 0;
+
+    const exposed: any = service.exposeStateForUser(state, 1);
+    expect(exposed.extras?.currentPlayerView?.shoppingList).toEqual(['ananas']);
+  });
+
   it('requiert une réponse pour answer_quiz (ignore correct côté client)', () => {
     const base: any = service.hydrateInitialState({
       players: [{ id: 1, username: 'A' }],

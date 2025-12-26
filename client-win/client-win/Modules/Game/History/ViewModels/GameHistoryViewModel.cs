@@ -9,8 +9,10 @@ namespace client_win.Modules.Game.History.ViewModels;
 
 public sealed class GameHistoryViewModel : ObservableObject
 {
+    private const int MaxEntries = 400;
     private string _displayText = string.Empty;
     private string _lastAnnouncement = string.Empty;
+    private bool _isPruning;
 
     public GameHistoryViewModel(CatalogGame game)
     {
@@ -39,6 +41,22 @@ public sealed class GameHistoryViewModel : ObservableObject
 
     private void OnEntriesChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
+        if (!_isPruning && Entries.Count > MaxEntries)
+        {
+            try
+            {
+                _isPruning = true;
+                while (Entries.Count > MaxEntries)
+                {
+                    Entries.RemoveAt(0);
+                }
+            }
+            finally
+            {
+                _isPruning = false;
+            }
+        }
+
         RebuildDisplayText();
         UpdateLastAnnouncement(e);
     }
@@ -82,4 +100,3 @@ public sealed class GameHistoryViewModel : ObservableObject
         LastAnnouncement = next;
     }
 }
-

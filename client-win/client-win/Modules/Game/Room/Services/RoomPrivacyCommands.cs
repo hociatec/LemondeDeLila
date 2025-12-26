@@ -16,7 +16,6 @@ public sealed class RoomPrivacyCommands : IRoomPrivacyCommands
     }
 
     public event Action<bool>? PrivacyChanged;
-    public event Action<string>? ErrorReceived;
 
     public Task TogglePrivacyAsync(CancellationToken cancellationToken = default) =>
         _session.SendCommandAsync("room.toggle-privacy", payload: null, cancellationToken);

@@ -7,4 +7,3 @@ public enum RoomAnnouncementKind
 }
 
 public sealed record RoomAnnouncement(RoomAnnouncementKind Kind, string Message);
-

@@ -65,9 +65,7 @@ export function getAvailableActions(
   if (current !== playerId) return [];
 
   const meta = getMeta(state);
-  const tiles: PanierExpressTile[] = Array.isArray(meta.tiles)
-    ? meta.tiles
-    : [];
+  const tiles: PanierExpressTile[] = Array.isArray(meta.tiles) ? meta.tiles : [];
   const pos = meta.positions?.[playerId] ?? 0;
   const tile = tiles[pos] ?? null;
 
@@ -97,15 +95,29 @@ export function getAvailableActions(
           }));
         }
         return [{ type: 'roll' }, { type: 'ROLL_DICE' }];
+
       case 'exchange':
         if (hasPendingExchange) {
-          // Avec le nouveau système, on expose juste accept/refuse pour l'offre courante
-          return [
-            { type: 'exchange_accept' },
-            { type: 'exchange_refuse' },
-          ];
+          const exchangePending = pending as any;
+
+          // New system: server maintains a current offer (A/R).
+          if (exchangePending?.currentOffer) {
+            return [{ type: 'exchange_accept' }, { type: 'exchange_refuse' }];
+          }
+
+          // Compat: pending exchange without currentOffer => expose exchange_with.
+          const offers = buildExchangeOffers(state.players ?? [], playerId);
+          if (offers.length) {
+            return offers.map(({ targetPlayerId, give, take }) => ({
+              type: 'exchange_with',
+              payload: { playerId, targetPlayerId, give, take },
+            }));
+          }
+
+          return [{ type: 'roll' }, { type: 'ROLL_DICE' }];
         }
         return [{ type: 'roll' }, { type: 'ROLL_DICE' }];
+
       default:
         return [{ type: 'roll' }, { type: 'ROLL_DICE' }];
     }
@@ -148,8 +160,7 @@ export function validateAction(
   }
 
   if (type === 'answer_quiz') {
-    const answer =
-      typeof payload.answer === 'string' ? payload.answer.trim() : '';
+    const answer = typeof payload.answer === 'string' ? payload.answer.trim() : '';
     if (!answer) {
       throw new GameValidationError('Payload invalide: answer', {
         gameType: 'panier-express',

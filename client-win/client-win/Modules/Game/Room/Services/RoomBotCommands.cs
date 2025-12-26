@@ -18,7 +18,6 @@ public sealed class RoomBotCommands : IRoomBotCommands
 
     public event Action<string>? BotAdded;
     public event Action<string>? BotRemoved;
-    public event Action<string>? ErrorReceived;
 
     public Task AddBotAsync(CancellationToken cancellationToken = default) =>
         _session.SendCommandAsync("bot.add", payload: null, cancellationToken);

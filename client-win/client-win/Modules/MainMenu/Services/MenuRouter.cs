@@ -7,7 +7,7 @@ using client_win.Modules.Catalog.Services;
 using client_win.Modules.Catalog.ViewModels;
 using client_win.Modules.Catalog.Views;
 using client_win.Modules.Chat.Services;
-using client_win.Modules.Game.Room.Services;
+using client_win.Modules.Game.Shell.Services;
 using client_win.Modules.Messaging.Services;
 using client_win.Modules.Messaging.ViewModels;
 using client_win.Modules.Messaging.Views;
@@ -165,4 +165,3 @@ public sealed class MenuRouter : IMenuRouter
         return Task.FromResult("Déconnexion en cours...");
     }
 }
-

@@ -75,8 +75,6 @@ C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Debug\net8.0-windows\Modul
 C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Debug\net8.0-windows\Modules\Chat\Views\ChatView.g.cs
 C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Debug\net8.0-windows\Modules\Game\History\Views\GameHistoryView.baml
 C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Debug\net8.0-windows\Modules\Game\History\Views\GameHistoryView.g.cs
-C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Debug\net8.0-windows\Modules\Game\Room\Views\GameRoomView.g.cs
-C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Debug\net8.0-windows\Modules\Game\Room\Views\GameRoomView.baml
 C:\wamp64\www\lemondeDeLila\client-win\client-win\bin\Debug\net8.0-windows\Microsoft.Extensions.Diagnostics.Abstractions.dll
 C:\wamp64\www\lemondeDeLila\client-win\client-win\bin\Debug\net8.0-windows\Microsoft.Extensions.FileProviders.Abstractions.dll
 C:\wamp64\www\lemondeDeLila\client-win\client-win\bin\Debug\net8.0-windows\Microsoft.Extensions.Hosting.Abstractions.dll
@@ -92,12 +90,6 @@ C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Debug\net8.0-windows\clien
 C:\wamp64\www\lemondeDeLila\client-win\client-win\bin\Debug\net8.0-windows\config\client.properties
 C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Debug\net8.0-windows\Modules\Settings\Views\OptionsView.baml
 C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Debug\net8.0-windows\Modules\Settings\Views\OptionsView.g.cs
-C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Debug\net8.0-windows\Modules\Game\Room\Views\GameRoomHeaderView.baml
-C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Debug\net8.0-windows\Modules\Game\Room\Views\GameRoomStatusBarView.baml
-C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Debug\net8.0-windows\Modules\Game\Room\Views\GameZoneHostView.baml
-C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Debug\net8.0-windows\Modules\Game\Room\Views\GameRoomHeaderView.g.cs
-C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Debug\net8.0-windows\Modules\Game\Room\Views\GameRoomStatusBarView.g.cs
-C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Debug\net8.0-windows\Modules\Game\Room\Views\GameZoneHostView.g.cs
 C:\wamp64\www\lemondeDeLila\client-win\client-win\bin\Debug\net8.0-windows\client-win.exe
 C:\wamp64\www\lemondeDeLila\client-win\client-win\bin\Debug\net8.0-windows\libs\x64\nvdaControllerClient.dll
 C:\wamp64\www\lemondeDeLila\client-win\client-win\bin\Debug\net8.0-windows\libs\x64\nvdaControllerClient64.dll
@@ -107,3 +99,13 @@ C:\wamp64\www\lemondeDeLila\client-win\client-win\bin\Debug\net8.0-windows\libs\
 C:\wamp64\www\lemondeDeLila\client-win\client-win\bin\Debug\net8.0-windows\libs\x86\nvdaControllerClient32.dll
 C:\wamp64\www\lemondeDeLila\client-win\client-win\bin\Debug\net8.0-windows\libs\x86\nvdaHelperRemote.dll
 C:\wamp64\www\lemondeDeLila\client-win\client-win\bin\Debug\net8.0-windows\libs\x86\SAAPI32.dll
+C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Debug\net8.0-windows\Modules\Game\Shell\Views\GameRoomHeaderView.baml
+C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Debug\net8.0-windows\Modules\Game\Shell\Views\GameRoomStatusBarView.baml
+C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Debug\net8.0-windows\Modules\Game\Play\Views\GamePlayView.g.cs
+C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Debug\net8.0-windows\Modules\Game\Shell\Views\GameRoomHeaderView.g.cs
+C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Debug\net8.0-windows\Modules\Game\Shell\Views\GameRoomStatusBarView.g.cs
+C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Debug\net8.0-windows\Modules\Game\Shell\Views\GameRoomView.g.cs
+C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Debug\net8.0-windows\Modules\Game\Shell\Views\GameZoneHostView.g.cs
+C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Debug\net8.0-windows\Modules\Game\Play\Views\GamePlayView.baml
+C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Debug\net8.0-windows\Modules\Game\Shell\Views\GameRoomView.baml
+C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Debug\net8.0-windows\Modules\Game\Shell\Views\GameZoneHostView.baml

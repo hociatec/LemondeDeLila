@@ -84,6 +84,6 @@ public static class RoomShortcuts
             quitCommand,
             description: "Quitter la table",
             code: RoomShortcutCodes.Quit,
-            availableInGame: false);
+            availableInGame: true);
     }
 }

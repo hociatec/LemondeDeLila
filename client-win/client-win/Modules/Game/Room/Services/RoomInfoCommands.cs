@@ -68,4 +68,3 @@ public sealed class RoomInfoCommands : IDisposable
         public string? Message { get; set; }
     }
 }
-

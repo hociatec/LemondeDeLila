@@ -349,14 +349,10 @@ export class PanierExpressExchangeService {
     take: string,
   ): boolean {
     const currentInv = new Set(
-      Array.isArray(current.inventory)
-        ? current.inventory.map((card) => String(card))
-        : [],
+      this.utils.toStringArray((current as any).inventory),
     );
     const targetInv = new Set(
-      Array.isArray(target.inventory)
-        ? target.inventory.map((card) => String(card))
-        : [],
+      this.utils.toStringArray((target as any).inventory),
     );
     return currentInv.has(give) && targetInv.has(take);
   }
@@ -366,15 +362,9 @@ export class PanierExpressExchangeService {
     removeCard: string,
     addCard: string,
   ): PlayerStateEntity {
-    const list = Array.isArray(player.shoppingList)
-      ? player.shoppingList.map((card) => String(card))
-      : [];
-    const basket = Array.isArray(player.basket)
-      ? player.basket.map((card) => String(card))
-      : [];
-    const inventory = Array.isArray(player.inventory)
-      ? player.inventory.map((card) => String(card))
-      : [];
+    const list = this.utils.toStringArray((player as any).shoppingList);
+    const basket = this.utils.toStringArray((player as any).basket);
+    const inventory = this.utils.toStringArray((player as any).inventory);
     const cleanedInventory = this.removeOne(inventory, removeCard);
     if (list.includes(addCard) && !basket.includes(addCard)) {
       return {

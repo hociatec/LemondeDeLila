@@ -28,7 +28,9 @@ using client_win.Core.Constants;
 using client_win.Modules.Catalog.Services;
 using client_win.Modules.Messaging.Services;
 using client_win.Modules.Social.Services;
+using client_win.Modules.Game.Play.Services;
 using client_win.Modules.Game.Room.Services;
+using client_win.Modules.Game.Shell.Services;
 
 namespace client_win.Modules.Config;
 
@@ -77,6 +79,10 @@ public static class AppBootstrapper
         var crashReporter = new CrashReporter(appDataPath);
         var networkMonitor = new NetworkStateMonitor();
         var settingsManager = new SettingsManager<OptionsState>(appDataPath);
+        var screenReaderAnnouncer = new ScreenReaderAnnouncer();
+
+        // Pare-chocs global: évite les fermetures WPF sur exception non gérée.
+        GlobalExceptionShield.Initialize(errors, crashReporter, screenReaderAnnouncer);
         // 5. Test de connectivité optionnel
         if (testConnectivity && ShouldTestConnectivity())
         {
@@ -103,8 +109,9 @@ public static class AppBootstrapper
         services.AddSingleton(rootHost);
         services.AddSingleton<INavigationService>(_ => new NavigationService(rootHost));
         services.AddSingleton<IDialogService, WpfDialogService>();
-        services.AddSingleton<IScreenReaderAnnouncer, ScreenReaderAnnouncer>();
+        services.AddSingleton<IScreenReaderAnnouncer>(screenReaderAnnouncer);
         services.AddTransient<IRoomAnnouncements, RoomAnnouncements>();
+        services.AddTransient<IGameAnnouncements, GameAnnouncements>();
 
         // Enregistrement des services réseau avec NetworkConfiguration
         services.AddSingleton<PersistentWsClient>(sp => new PersistentWsClient(
@@ -156,6 +163,12 @@ public static class AppBootstrapper
 
         services.AddSingleton<IRoomGatewayClient>(sp =>
             new RoomGatewayClient(
+                sp.GetRequiredService<ClientConfiguration>(),
+                sp.GetRequiredService<ISessionService>(),
+                () => sp.GetRequiredService<IWebSocketConnection>()));
+
+        services.AddSingleton<IGameGatewayClient>(sp =>
+            new GameGatewayClient(
                 sp.GetRequiredService<ClientConfiguration>(),
                 sp.GetRequiredService<ISessionService>(),
                 () => sp.GetRequiredService<IWebSocketConnection>()));
