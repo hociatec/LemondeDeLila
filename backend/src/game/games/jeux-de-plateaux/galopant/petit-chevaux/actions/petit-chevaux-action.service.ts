@@ -79,7 +79,7 @@ export class PetitChevauxActionService {
     }
 
     if (moves.length === 1) {
-      next = this.applyMove(next, currentId, moves[0]);
+      next = this.applyMove(next, currentId, moves[0], roll);
       next = this.setup.recomputeBoardView(next);
       if ((next.metadata as any)?.winnerId) {
         return next;
@@ -87,8 +87,17 @@ export class PetitChevauxActionService {
       return this.endTurn(next, roll === 6);
     }
 
+    const hasStableExit =
+      roll === 6 && moves.some((m) => typeof m?.targetProgress === 'number' && m.targetProgress === 0);
+    const label = hasStableExit && moves.every((m) => m.targetProgress === 0)
+      ? 'Choisissez un cheval à sortir dans la liste, puis Entrée.'
+      : hasStableExit
+        ? 'Choisissez un cheval à sortir ou à jouer dans la liste, puis Entrée.'
+        : 'Choisissez un cheval à jouer dans la liste, puis Entrée.';
+
     const pending: PendingState = {
       type: 'choose_pawn',
+      label,
       playerId: currentId,
       blocking: true,
       choices: moves.map((m) => m.label),
@@ -143,7 +152,7 @@ export class PetitChevauxActionService {
     }
 
     let next: GameStateEntity = { ...state, pending: null };
-    next = this.applyMove(next, currentId, { pawnIndex, targetProgress });
+    next = this.applyMove(next, currentId, { pawnIndex, targetProgress }, roll);
     next = this.setup.recomputeBoardView(next);
     if ((next.metadata as any)?.winnerId) {
       return next;
@@ -214,6 +223,7 @@ export class PetitChevauxActionService {
     state: GameStateEntity,
     playerId: number,
     move: { pawnIndex: number; targetProgress: number },
+    roll: number,
   ): GameStateEntity {
     const meta = (state.metadata ?? {}) as any as PetitChevauxMetadata;
     const pawns = Array.isArray(meta.pawnsByPlayer?.[playerId])
@@ -243,18 +253,40 @@ export class PetitChevauxActionService {
       },
     };
 
-    next = this.core.appendLog(
-      next,
-      `${this.playerName(state, playerId)} avance le cheval ${move.pawnIndex + 1} : ${this.describeProgress(
-        meta,
-        playerId,
-        prevProg,
-      )} → ${this.describeProgress(meta, playerId, nextProg)}.`,
-    );
+    const rollInt = Number.isFinite(roll) ? Math.trunc(roll) : 0;
+    if (prevProg < 0 && nextProg === 0) {
+      next = this.core.appendLog(
+        next,
+        `${this.playerName(state, playerId)} sort le cheval ${move.pawnIndex + 1}.`,
+      );
+    } else {
+      const casesWord = rollInt == 1 ? 'case' : 'cases';
+      next = this.core.appendLog(
+        next,
+        `${this.playerName(state, playerId)} avance de ${rollInt} ${casesWord}.`,
+      );
+    }
+
+    // Messages clairs pour l'entrée dans la maison / arrivée (sans coordonnées "case x/52").
+    if (prevProg >= 0 && prevProg < meta.trackLength && nextProg >= meta.trackLength) {
+      const homeIndex = nextProg - meta.trackLength + 1;
+      if (homeIndex >= 1 && homeIndex <= meta.homeLength) {
+        next = this.core.appendLog(
+          next,
+          `${this.playerName(state, playerId)} entre dans la maison (${homeIndex}/${meta.homeLength}).`,
+        );
+      }
+    }
+    const pathLen = meta.trackLength + meta.homeLength;
+    if (prevProg < pathLen && nextProg >= pathLen) {
+      next = this.core.appendLog(
+        next,
+        `${this.playerName(state, playerId)} met le cheval ${move.pawnIndex + 1} à l'arrivée.`,
+      );
+    }
 
     next = this.applyCapture(next, playerId, move.pawnIndex, nextProg);
 
-    const pathLen = meta.trackLength + meta.homeLength;
     if (this.isWinner(next, playerId, pathLen)) {
       next = this.core.appendLog(next, `${this.playerName(state, playerId)} a gagné !`);
       return {
@@ -320,7 +352,9 @@ export class PetitChevauxActionService {
 
   private endTurn(state: GameStateEntity, extraTurn: boolean): GameStateEntity {
     if (extraTurn) {
-      return this.core.appendLog(state, '6 : vous rejouez.');
+      const currentId = state.turn?.currentPlayerId ?? null;
+      const who = currentId != null ? this.playerName(state, currentId) : 'Le joueur';
+      return this.core.appendLog(state, `6 : ${who} rejoue.`);
     }
     return this.turns.advanceTurn(state);
   }

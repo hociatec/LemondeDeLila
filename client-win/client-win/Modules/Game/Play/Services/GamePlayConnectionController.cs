@@ -186,7 +186,26 @@ internal sealed class GamePlayConnectionController : IAsyncDisposable
             }
             catch (Exception ex)
             {
-                Log.Warning(ex, "Reconnexion game WS échouée (tentative {Attempt})", attempt);
+                var msg = ex.Message ?? string.Empty;
+                if (ex is OperationCanceledException or TaskCanceledException)
+                {
+                    Log.Debug("Reconnexion game WS annulée (tentative {Attempt})", attempt);
+                }
+                else if (msg.Contains("refusée", StringComparison.OrdinalIgnoreCase) ||
+                         msg.Contains("refused", StringComparison.OrdinalIgnoreCase))
+                {
+                    Log.Information("Reconnexion game WS impossible (serveur indisponible) (tentative {Attempt}): {Message}", attempt, msg);
+                }
+                else
+                {
+                    Log.Warning("Reconnexion game WS échouée (tentative {Attempt}): {Message}", attempt, msg);
+                }
+
+                await _dispatcher.InvokeAsync(() =>
+                {
+                    _setConnectionStatus($"Connexion jeu perdue. Reconnexion... (tentative {attempt})");
+                    _refreshCanExecute();
+                }, DispatcherPriority.Background);
             }
 
             var delayMs = Math.Min(15000, 500 + attempt * 750);
@@ -201,4 +220,3 @@ internal sealed class GamePlayConnectionController : IAsyncDisposable
         }
     }
 }
-

@@ -8,9 +8,14 @@ namespace client_win.Modules.Game.Shell.Views;
 
 public partial class GameRoomView : UserControl
 {
+    private ViewModels.GameRoomViewModel? _vm;
+    private Action? _focusRequestedHandler;
+
     public GameRoomView()
     {
         InitializeComponent();
+        DataContextChanged += OnDataContextChanged;
+        Unloaded += OnUnloaded;
         HookHistoryTabDelegation();
         HookGameZoneTabDelegation();
     }
@@ -21,11 +26,45 @@ public partial class GameRoomView : UserControl
     {
         HookHistoryTabDelegation();
         HookGameZoneTabDelegation();
+        HookFocusRequests(DataContext as ViewModels.GameRoomViewModel);
 
         Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
         {
             FocusGameZone();
         }));
+    }
+
+    private void OnDataContextChanged(object sender, System.Windows.DependencyPropertyChangedEventArgs e)
+    {
+        HookFocusRequests(DataContext as ViewModels.GameRoomViewModel);
+    }
+
+    private void OnUnloaded(object sender, System.Windows.RoutedEventArgs e)
+    {
+        HookFocusRequests(null);
+    }
+
+    private void HookFocusRequests(ViewModels.GameRoomViewModel? vm)
+    {
+        if (_vm != null && _focusRequestedHandler != null)
+        {
+            _vm.GameZone.FocusRequested -= _focusRequestedHandler;
+        }
+
+        _vm = vm;
+        _focusRequestedHandler = null;
+
+        if (_vm == null)
+        {
+            return;
+        }
+
+        _focusRequestedHandler = () =>
+        {
+            Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusGameZone));
+        };
+
+        _vm.GameZone.FocusRequested += _focusRequestedHandler;
     }
 
     private void HookHistoryTabDelegation()

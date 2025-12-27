@@ -22,6 +22,10 @@ export type PlayerStateEntity = {
 
 export type PendingState = {
   type: string;
+  /**
+   * Libellé prêt à afficher pour la liste de choix (serveur source de vérité).
+   */
+  label?: string | null;
   playerId?: number | null;
   targetPlayerId?: number | null;
   blocking?: boolean;

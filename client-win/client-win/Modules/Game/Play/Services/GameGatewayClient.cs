@@ -43,12 +43,15 @@ public sealed class GameGatewayClient : IGameGatewayClient
         var socket = _socketFactory();
         var headers = BuildHeaders(_config.SharedSecret);
 
-        Log.Information("Connexion au game WS roomId={RoomId} gameType={GameType}", roomId, gameType);
+        Log.Debug("Connexion au game WS roomId={RoomId} gameType={GameType}", roomId, gameType);
+
         await socket.ConnectAsync(_config.GameGatewayWs, token: token, headers: headers, cancellationToken: cancellationToken)
             .ConfigureAwait(false);
 
         var session = new GameSession(roomId, gameType, socket);
         await session.JoinAsync(cancellationToken).ConfigureAwait(false);
+
+        Log.Information("Connecté au game WS roomId={RoomId} gameType={GameType}", roomId, gameType);
         return session;
     }
 

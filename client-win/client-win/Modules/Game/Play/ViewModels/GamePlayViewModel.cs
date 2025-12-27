@@ -1,6 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -28,6 +29,7 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
     private readonly GamePlayStatePresenter _presenter;
     private readonly GamePlayGameShortcutsController _gameShortcuts;
     private readonly GamePlayChoicesViewModel _choices;
+    private readonly PropertyChangedEventHandler _choicesPropertyChangedHandler;
     private readonly GamePlayShortcutsViewModel _shortcuts;
     private readonly GamePlayConnectionController _connection;
 
@@ -70,6 +72,14 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
         _announcements = announcements;
         _dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
         _choices = new GamePlayChoicesViewModel(_actions);
+        _choicesPropertyChangedHandler = (_, e) =>
+        {
+            if (string.Equals(e.PropertyName, nameof(GamePlayChoicesViewModel.ChoicesLabel), StringComparison.Ordinal))
+            {
+                OnPropertyChanged(nameof(ChoicesLabel));
+            }
+        };
+        _choices.PropertyChanged += _choicesPropertyChangedHandler;
         _presenter = new GamePlayStatePresenter(_projector);
 
         _rollCommand = new AsyncRelayCommand(
@@ -248,6 +258,8 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
     }
 
     public ObservableCollection<string> PendingChoices => _choices.PendingChoices;
+
+    public string ChoicesLabel => _choices.ChoicesLabel;
 
     public ObservableCollection<ShortcutDefinition> Shortcuts => _shortcuts.Shortcuts;
 
@@ -620,17 +632,25 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
                 GameZoneFocusRequested?.Invoke();
             }
 
-            _viewerPlayerId = GamePlayExtrasParser.ExtractCurrentPlayerId(state);
-            _choices.UpdateFromState(state, CanStartAskCardSelection);
+            _viewerPlayerId = state == null ? null : GamePlayExtrasParser.ExtractCurrentPlayerId(state);
+            if (state != null)
+            {
+                _choices.UpdateFromState(state, CanStartAskCardSelection);
+            }
 
-            var presented = _presenter.Present(state);
+            var presented = _presenter.Present(state!);
+
             IsBotThinking = presented.isBotThinking;
             StateSummary = presented.stateSummary;
             PendingText = presented.pendingText;
             ActionsText = presented.actionsText;
 
-            _gameShortcuts.Sync(state, CanStartAskCardSelection);
-            SyncInterfaceShortcuts(state);
+            if (state != null)
+            {
+                _gameShortcuts.Sync(state, CanStartAskCardSelection);
+                SyncInterfaceShortcuts(state);
+            }
+
             RefreshCanExecute();
 
             foreach (var msg in presented.newLogMessages)
@@ -642,42 +662,9 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
 
     private bool CanSendActionNow(GameSession session)
     {
-        try
-        {
-            var turn = session.LastTurnInfo;
-            if (turn == null)
-            {
-                return true;
-            }
-
-            var viewerId = _viewerPlayerId;
-            if (viewerId == null)
-            {
-                return true;
-            }
-
-            var currentId = turn.CurrentPlayerId;
-            if (currentId == null)
-            {
-                return true;
-            }
-
-            if (currentId.Value == viewerId.Value)
-            {
-                return true;
-            }
-
-            var who = string.IsNullOrWhiteSpace(turn.CurrentPlayerUsername) ? "un autre joueur" : turn.CurrentPlayerUsername.Trim();
-            var message = $"Ce n'est pas votre tour (tour de {who}).";
-            ConnectionStatus = $"Erreur: {message}";
-            _announcements?.Error(message);
-            MessageReceived?.Invoke($"Erreur: {message}");
-            return false;
-        }
-        catch
-        {
-            return true;
-        }
+        // Le client ne décide pas: il envoie, le serveur tranche (actions disponibles + validation).
+        // Ici on évite uniquement d'envoyer si la session est inexistante/déconnectée.
+        return session.IsConnected;
     }
 
     private void RefreshCanExecute()
@@ -701,6 +688,7 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
+        _choices.PropertyChanged -= _choicesPropertyChangedHandler;
         await _connection.DisposeAsync().ConfigureAwait(false);
     }
 }

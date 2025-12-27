@@ -379,7 +379,7 @@ public sealed class PersistentWsClient : IAsyncDisposable
             }
             catch (Exception ex)
             {
-                Log.Warning(ex, "Erreur dans receive loop WebSocket");
+                Log.Warning("Erreur dans receive loop WebSocket: {Message}", ex.Message);
                 _errorBus?.Publish(new Modules.Error.AppError(
                     "Connexion WS interrompue.",
                     Modules.Error.ErrorSeverity.Warning,

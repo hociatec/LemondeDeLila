@@ -61,6 +61,7 @@ export class InteractiveExchangeService {
       playerId,
       card,
       step: 'choose_target',
+      label: "Choisissez un joueur pour l'échange dans la liste, puis Entrée.",
       targets,
     };
 
@@ -99,6 +100,7 @@ export class InteractiveExchangeService {
       targetPlayerId: chosen.targetPlayerId,
       targetUsername: chosen.targetUsername,
       giveChoices,
+      label: 'Choisissez la carte à donner dans la liste, puis Entrée.',
     };
 
     return {
@@ -152,6 +154,7 @@ export class InteractiveExchangeService {
     const offer: Extract<InteractiveExchangePending, { step: 'confirm' }> = {
       type: 'exchange',
       step: 'confirm',
+      label: 'Échange proposé : A = accepter, R = refuser.',
       playerId: targetPlayerId,
       initiatorPlayerId: playerId,
       initiatorUsername:

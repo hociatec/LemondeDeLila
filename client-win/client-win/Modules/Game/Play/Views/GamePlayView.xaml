@@ -79,8 +79,8 @@
                          Foreground="White"
                          FontSize="12"
                          MaxHeight="160"
-                         AutomationProperties.Name="Choix"
-                         AutomationProperties.HelpText="Liste de choix (quiz, échange, etc.). Utilisez flèches haut/bas pour naviguer, puis Entrée pour valider.">
+                         AutomationProperties.Name="{Binding ChoicesLabel}"
+                         AutomationProperties.HelpText="Utilisez flèches haut/bas pour naviguer, puis Entrée pour valider.">
                     <ListBox.Style>
                         <Style TargetType="ListBox">
                             <Setter Property="Visibility" Value="Visible"/>

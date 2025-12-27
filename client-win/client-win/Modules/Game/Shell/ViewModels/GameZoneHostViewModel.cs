@@ -114,6 +114,7 @@ public sealed class GameZoneHostViewModel : ObservableObject
     }
 
     public event Action<string>? StatusRequested;
+    public event Action? FocusRequested;
 
     private async Task StartAsync()
     {
@@ -131,6 +132,7 @@ public sealed class GameZoneHostViewModel : ObservableObject
         if (confirm != true)
         {
             StatusRequested?.Invoke("Reinitialisation annulee.");
+            FocusRequested?.Invoke();
             return;
         }
 

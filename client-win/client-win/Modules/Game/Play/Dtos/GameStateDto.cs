@@ -111,6 +111,9 @@ public sealed class GamePendingDto
     [JsonPropertyName("type")]
     public string Type { get; set; } = string.Empty;
 
+    [JsonPropertyName("label")]
+    public string? Label { get; set; }
+
     [JsonPropertyName("playerId")]
     public int? PlayerId { get; set; }
 

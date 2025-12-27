@@ -199,6 +199,11 @@ internal sealed class GameTableBindings : IAsyncDisposable
                     _tableVm.History.Entries.Add("Serveur : table réinitialisée.");
                     _tableVm.Status = "Table réinitialisée.";
                     _announcements.TableInfo("Table réinitialisée.");
+
+                    // Forcer le focus sur la zone de jeu (le contenu a été déchargé).
+                    _ = _tableView.Dispatcher.BeginInvoke(
+                        DispatcherPriority.Input,
+                        new Action(_tableView.RequestFocusGameZone));
                 }, DispatcherPriority.Background);
             }
         };

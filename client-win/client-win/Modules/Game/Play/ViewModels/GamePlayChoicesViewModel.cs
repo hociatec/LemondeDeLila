@@ -18,6 +18,7 @@ internal sealed class GamePlayChoicesViewModel : ObservableObject
 
     private readonly Dictionary<string, GameClientAction> _localChoiceActions = new(StringComparer.Ordinal);
     private string _localChoiceMode = string.Empty;
+    private string _choicesLabel = string.Empty;
 
     public GamePlayChoicesViewModel(GamePlayActionDispatcher actions)
     {
@@ -25,6 +26,12 @@ internal sealed class GamePlayChoicesViewModel : ObservableObject
     }
 
     public ObservableCollection<string> PendingChoices { get; } = new();
+
+    public string ChoicesLabel
+    {
+        get => _choicesLabel;
+        private set => SetProperty(ref _choicesLabel, value);
+    }
 
     public string? SelectedChoice
     {
@@ -101,6 +108,7 @@ internal sealed class GamePlayChoicesViewModel : ObservableObject
             _localChoiceActions.Clear();
             _localChoiceMode = string.Empty;
 
+            ChoicesLabel = BuildServerChoicesLabel(state.Pending);
             ApplyChoices(serverChoices);
             return;
         }
@@ -121,6 +129,7 @@ internal sealed class GamePlayChoicesViewModel : ObservableObject
 
         _localChoiceActions.Clear();
         _localChoiceMode = string.Empty;
+        ChoicesLabel = string.Empty;
         if (PendingChoices.Count > 0)
         {
             PendingChoices.Clear();
@@ -137,7 +146,8 @@ internal sealed class GamePlayChoicesViewModel : ObservableObject
         }
 
         ApplyLocalChoices("discard", choices);
-        announce("Choisissez une carte à défausser dans la liste, puis Entrée.");
+        ChoicesLabel = "Choisissez une carte à défausser dans la liste, puis Entrée.";
+        announce(ChoicesLabel);
         return true;
     }
 
@@ -150,7 +160,8 @@ internal sealed class GamePlayChoicesViewModel : ObservableObject
         }
 
         ApplyLocalChoices("ask", choices);
-        announce("Choisissez une demande dans la liste, puis Entrée.");
+        ChoicesLabel = "Choisissez une demande dans la liste, puis Entrée.";
+        announce(ChoicesLabel);
         return true;
     }
 
@@ -161,6 +172,7 @@ internal sealed class GamePlayChoicesViewModel : ObservableObject
         if (session == null) return;
         _localChoiceActions.Clear();
         _localChoiceMode = string.Empty;
+        ChoicesLabel = string.Empty;
 
         if (onlyWhenNoServerPending)
         {
@@ -173,6 +185,27 @@ internal sealed class GamePlayChoicesViewModel : ObservableObject
 
         PendingChoices.Clear();
         SelectedChoice = null;
+    }
+
+    private static string BuildServerChoicesLabel(GamePendingDto? pending)
+    {
+        if (pending == null)
+        {
+            return string.Empty;
+        }
+
+        if (!string.IsNullOrWhiteSpace(pending.Label))
+        {
+            return pending.Label.Trim();
+        }
+
+        if (!string.IsNullOrWhiteSpace(pending.Question))
+        {
+            return pending.Question.Trim();
+        }
+
+        var type = (pending.Type ?? string.Empty).Trim();
+        return string.IsNullOrWhiteSpace(type) ? string.Empty : $"En attente: {type}";
     }
 
     private static List<string> ExtractServerPendingChoices(GameStateDto state)

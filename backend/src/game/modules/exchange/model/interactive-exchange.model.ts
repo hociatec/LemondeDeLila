@@ -9,6 +9,7 @@ export type InteractiveExchangePending =
   | {
       type: 'exchange';
       step: 'choose_target';
+      label?: string | null;
       playerId: number;
       card: string;
       targets: ExchangeTarget[];
@@ -16,6 +17,7 @@ export type InteractiveExchangePending =
   | {
       type: 'exchange';
       step: 'choose_give';
+      label?: string | null;
       playerId: number;
       card: string;
       targetPlayerId: number;
@@ -25,6 +27,7 @@ export type InteractiveExchangePending =
   | {
       type: 'exchange';
       step: 'confirm';
+      label?: string | null;
       // Le joueur qui doit répondre (cible).
       playerId: number;
       // Initiateur (celui qui a lancé l'échange).

@@ -13,19 +13,18 @@ internal static class GamePlayPendingTextBuilder
             return string.Empty;
         }
 
-        var question = string.IsNullOrWhiteSpace(pending.Question) ? null : pending.Question.Trim();
-        if (pending.Choices != null && pending.Choices.Count > 0)
+        var label = string.IsNullOrWhiteSpace(pending.Label) ? null : pending.Label.Trim();
+        if (!string.IsNullOrWhiteSpace(label))
         {
-            var choices = string.Join(", ", pending.Choices.Where(c => !string.IsNullOrWhiteSpace(c)).Select(c => c.Trim()));
-            if (!string.IsNullOrWhiteSpace(question))
-            {
-                return $"{question} (choix: {choices})";
-            }
-            return $"En attente: {pending.Type} (choix: {choices})";
+            return label;
         }
 
-        return !string.IsNullOrWhiteSpace(question)
-            ? question
-            : $"En attente: {pending.Type}";
+        var question = string.IsNullOrWhiteSpace(pending.Question) ? null : pending.Question.Trim();
+        if (!string.IsNullOrWhiteSpace(question))
+        {
+            return question;
+        }
+
+        return $"En attente: {pending.Type}";
     }
 }
