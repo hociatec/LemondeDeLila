@@ -327,6 +327,7 @@ export class PanierExpressPresenterService extends BasePresenterService {
       { key: 'pressed S', type: 'interface', id: 'shopping' },
       { key: 'pressed B', type: 'interface', id: 'basket' },
       { key: 'pressed I', type: 'interface', id: 'inventory' },
+      { key: 'pressed P', type: 'interface', id: 'position' },
     ];
 
     return {

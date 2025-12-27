@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Threading;
@@ -30,6 +31,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
 
     private readonly Func<GamePlayViewModel> _createGamePlayVm;
     private GamePlayViewModel? _gamePlayVm;
+    private NotifyCollectionChangedEventHandler? _onGameplayShortcutsChanged;
 
     private Action<RoomPayloadDto>? _onRoomUpdated;
     private Action<RoomAnnouncement>? _onAnnounced;
@@ -184,6 +186,12 @@ internal sealed class GameTableBindings : IAsyncDisposable
                             _gamePlayVm.MessageReceived -= _onGameMessage;
                             _onGameMessage = null;
                         }
+                        if (_onGameplayShortcutsChanged != null &&
+                            _gamePlayVm.Shortcuts is INotifyCollectionChanged notify)
+                        {
+                            notify.CollectionChanged -= _onGameplayShortcutsChanged;
+                            _onGameplayShortcutsChanged = null;
+                        }
                         await _gamePlayVm.DisposeAsync().ConfigureAwait(true);
                         _gamePlayVm = null;
                     }
@@ -285,6 +293,14 @@ internal sealed class GameTableBindings : IAsyncDisposable
         _onGameMessage = msg =>
             _dispatcher.InvokeAsync(() => _announcements.TableInfo(msg), DispatcherPriority.Background);
         _gamePlayVm.MessageReceived += _onGameMessage;
+
+        if (_gamePlayVm.Shortcuts is System.Collections.Specialized.INotifyCollectionChanged notify)
+        {
+            _onGameplayShortcutsChanged = (_, __) =>
+                _dispatcher.InvokeAsync(SyncGameplayShortcuts, DispatcherPriority.Background);
+            notify.CollectionChanged += _onGameplayShortcutsChanged;
+        }
+
         _tableVm.GameZone.Content = new GamePlayView { DataContext = _gamePlayVm };
     }
 
@@ -323,6 +339,12 @@ internal sealed class GameTableBindings : IAsyncDisposable
                 {
                     _gamePlayVm.MessageReceived -= _onGameMessage;
                     _onGameMessage = null;
+                }
+                if (_onGameplayShortcutsChanged != null &&
+                    _gamePlayVm.Shortcuts is INotifyCollectionChanged notify)
+                {
+                    notify.CollectionChanged -= _onGameplayShortcutsChanged;
+                    _onGameplayShortcutsChanged = null;
                 }
                 await _gamePlayVm.DisposeAsync().ConfigureAwait(true);
                 _gamePlayVm = null;

@@ -110,7 +110,7 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
                 StartPositionRequest();
                 return Task.CompletedTask;
             },
-            canExecute: () => _session != null);
+            canExecute: () => _projector.HasInterfaceShortcut(_session?.LastState, "position"));
 
         BuildStaticShortcuts();
     }
@@ -336,38 +336,86 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
             availableInGame: true));
 
         Shortcuts.Add(new ShortcutDefinition(
-            's',
-            _toggleShoppingCommand,
-            description: "Annoncer shopping list",
-            code: "ui.shopping",
-            availableInGame: true));
-
-        Shortcuts.Add(new ShortcutDefinition(
-            'b',
-            _toggleBasketCommand,
-            description: "Annoncer panier",
-            code: "ui.basket",
-            availableInGame: true));
-
-        Shortcuts.Add(new ShortcutDefinition(
-            'i',
-            _toggleInventoryCommand,
-            description: "Annoncer inventaire",
-            code: "ui.inventory",
-            availableInGame: true));
-
-        Shortcuts.Add(new ShortcutDefinition(
             't',
             _turnInfoCommand,
             description: "A qui est le tour ?",
             code: "ui.turn",
             availableInGame: true));
+    }
+
+    private void SyncInterfaceShortcuts(GameStateDto state)
+    {
+        SyncInterfaceShortcut(
+            state,
+            id: "shopping",
+            key: 's',
+            command: _toggleShoppingCommand,
+            description: "Annoncer shopping list",
+            code: "ui.shopping");
+
+        SyncInterfaceShortcut(
+            state,
+            id: "basket",
+            key: 'b',
+            command: _toggleBasketCommand,
+            description: "Annoncer panier",
+            code: "ui.basket");
+
+        SyncInterfaceShortcut(
+            state,
+            id: "inventory",
+            key: 'i',
+            command: _toggleInventoryCommand,
+            description: "Annoncer inventaire",
+            code: "ui.inventory");
+
+        SyncInterfaceShortcut(
+            state,
+            id: "position",
+            key: 'p',
+            command: _positionCommand,
+            description: "Position plateau",
+            code: "ui.position");
+    }
+
+    private void SyncInterfaceShortcut(
+        GameStateDto state,
+        string id,
+        char key,
+        ICommand command,
+        string description,
+        string code)
+    {
+        ShortcutDefinition? existing = null;
+        foreach (var shortcut in Shortcuts)
+        {
+            if (string.Equals(shortcut.Code, code, StringComparison.OrdinalIgnoreCase))
+            {
+                existing = shortcut;
+                break;
+            }
+        }
+
+        var supported = _projector.HasInterfaceShortcut(state, id);
+        if (!supported)
+        {
+            if (existing != null)
+            {
+                Shortcuts.Remove(existing);
+            }
+            return;
+        }
+
+        if (existing != null)
+        {
+            return;
+        }
 
         Shortcuts.Add(new ShortcutDefinition(
-            'p',
-            _positionCommand,
-            description: "Position + tour",
-            code: "ui.position",
+            key,
+            command,
+            description: description,
+            code: code,
             availableInGame: true));
     }
 
@@ -422,6 +470,7 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
         {
             UpdateComputedFields(state);
             UpdatePendingChoices(state);
+            SyncInterfaceShortcuts(state);
             RefreshCanExecute();
             EmitNewLogEntries(state);
         }, DispatcherPriority.Background);
