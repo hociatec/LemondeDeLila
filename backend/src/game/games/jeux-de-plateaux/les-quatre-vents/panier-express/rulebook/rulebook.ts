@@ -135,8 +135,12 @@ export function validateAction(
   actorId: number | null,
 ): GameSingleActionDto {
   const rawType = String(action?.type ?? '').trim();
+  const normalizedType = rawType.toLowerCase();
   const type = rawType as PanierExpressActionType;
-  if (!PANIER_EXPRESS_GAME.actions.includes(type)) {
+  if (
+    !PANIER_EXPRESS_GAME.actions.includes(type) &&
+    !PANIER_EXPRESS_GAME.actions.includes(normalizedType as any)
+  ) {
     throw new GameValidationError(`Action inconnue: ${rawType}`, {
       gameType: 'panier-express',
       action: rawType,
@@ -157,7 +161,7 @@ export function validateAction(
 
   const payload = action.payload ?? {};
 
-  if (type === 'ROLL_DICE') {
+  if (type === 'ROLL_DICE' || normalizedType === 'roll_dice') {
     return { ...action, type: 'roll', payload: {} };
   }
 

@@ -43,6 +43,8 @@ internal static class GamePlayExtrasParser
         public string[] ShoppingList { get; init; } = Array.Empty<string>();
         public string[] Basket { get; init; } = Array.Empty<string>();
         public string[] Inventory { get; init; } = Array.Empty<string>();
+        public string[] Stable { get; init; } = Array.Empty<string>();
+        public string[] Position { get; init; } = Array.Empty<string>();
     }
 
     internal static List<ShortcutHint> ExtractShortcutHints(GameStateDto state)
@@ -112,6 +114,8 @@ internal static class GamePlayExtrasParser
                 ShoppingList = ExtractStringArray(view, "shoppingList"),
                 Basket = ExtractStringArray(view, "basket"),
                 Inventory = ExtractStringArray(view, "inventory"),
+                Stable = ExtractStringArray(view, "stable"),
+                Position = ExtractStringArray(view, "position"),
             };
         }
         catch

@@ -15,6 +15,7 @@ export class GameCoreService {
     const metadata: Record<string, unknown> = {
       roomId: payload?.room?.id ?? null,
       gameType,
+      roomStartedAt: payload?.room?.startedAt ?? null,
       generatedAt: new Date().toISOString(),
     };
     const rng = ensureSeededRng(metadata as any);

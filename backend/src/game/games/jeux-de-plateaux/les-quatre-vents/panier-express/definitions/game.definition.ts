@@ -8,6 +8,7 @@ export type PanierExpressPhaseId = 'turn' | 'check_victory';
 export type PanierExpressActionType =
   | 'roll'
   | 'ROLL_DICE'
+  | 'roll_dice'
   | 'answer_quiz'
   | 'exchange_choose_target'
   | 'exchange_choose_give'
@@ -30,6 +31,7 @@ export const PANIER_EXPRESS_GAME: GameDefinition<
   actions: [
     'roll',
     'ROLL_DICE',
+    'roll_dice',
     'answer_quiz',
     'exchange_choose_target',
     'exchange_choose_give',

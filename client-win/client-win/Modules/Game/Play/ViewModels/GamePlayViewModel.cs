@@ -1,5 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -23,25 +25,38 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
     private readonly GamePlayActionDispatcher _actions = new();
     private readonly GamePlayStateProjector _projector = new();
     private readonly GamePlayPanelRequester _panels = new();
+    private readonly GamePlayStatePresenter _presenter;
+    private readonly GamePlayGameShortcutsController _gameShortcuts;
+    private readonly GamePlayChoicesViewModel _choices;
+    private readonly GamePlayShortcutsViewModel _shortcuts;
+    private readonly GamePlayConnectionController _connection;
 
     private GameSession? _session;
-    private CancellationTokenSource? _reconnectCts;
-    private Task? _reconnectLoop;
 
     private string _connectionStatus = "Connexion au moteur de jeu...";
     private string _stateSummary = "En attente d'un état de jeu (game.state)...";
     private string _pendingText = string.Empty;
     private string _actionsText = string.Empty;
     private bool _isBotThinking;
-    private string? _selectedChoice;
-    private int _choiceSubmitInProgress;
+    private string? _lastTurnAnnouncement;
+    private DateTime _lastTurnAnnouncementAtUtc;
+    private int? _viewerPlayerId;
+    private string? _lastGameStatus;
 
     private readonly AsyncRelayCommand _rollCommand;
     private readonly AsyncRelayCommand _exchangeAcceptCommand;
     private readonly AsyncRelayCommand _exchangeRefuseCommand;
+    private readonly AsyncRelayCommand _drawCommand;
+    private readonly AsyncRelayCommand _discardSelectCommand;
+    private readonly AsyncRelayCommand _askCardSelectCommand;
+    private readonly AsyncRelayCommand _pollutionCommand;
     private readonly AsyncRelayCommand _toggleShoppingCommand;
+    private readonly AsyncRelayCommand _toggleStableCommand;
+    private readonly AsyncRelayCommand _toggleScoreCommand;
     private readonly AsyncRelayCommand _toggleBasketCommand;
     private readonly AsyncRelayCommand _toggleInventoryCommand;
+    private readonly AsyncRelayCommand _toggleHandCommand;
+    private readonly AsyncRelayCommand _toggleBooksCommand;
     private readonly AsyncRelayCommand _turnInfoCommand;
     private readonly AsyncRelayCommand _positionCommand;
 
@@ -54,6 +69,8 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
         _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
         _announcements = announcements;
         _dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
+        _choices = new GamePlayChoicesViewModel(_actions);
+        _presenter = new GamePlayStatePresenter(_projector);
 
         _rollCommand = new AsyncRelayCommand(
             async () =>
@@ -65,16 +82,61 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
         _exchangeAcceptCommand = new AsyncRelayCommand(
             async () =>
             {
-                await TrySendSimpleActionAsync("exchange_accept").ConfigureAwait(true);
+                await TrySendFirstAvailableSimpleActionAsync("answer_ask_card_accept", "exchange_accept")
+                    .ConfigureAwait(true);
             },
-            canExecute: () => _actions.CanSendSimpleAction(_session, "exchange_accept"));
+            canExecute: () =>
+                _actions.CanSendSimpleAction(_session, "answer_ask_card_accept") ||
+                _actions.CanSendSimpleAction(_session, "exchange_accept"));
 
         _exchangeRefuseCommand = new AsyncRelayCommand(
             async () =>
             {
-                await TrySendSimpleActionAsync("exchange_refuse").ConfigureAwait(true);
+                await TrySendFirstAvailableSimpleActionAsync("answer_ask_card_refuse", "exchange_refuse")
+                    .ConfigureAwait(true);
             },
-            canExecute: () => _actions.CanSendSimpleAction(_session, "exchange_refuse"));
+            canExecute: () =>
+                _actions.CanSendSimpleAction(_session, "answer_ask_card_refuse") ||
+                _actions.CanSendSimpleAction(_session, "exchange_refuse"));
+
+        _drawCommand = new AsyncRelayCommand(
+            async () =>
+            {
+                await TrySendSimpleActionAsync("draw").ConfigureAwait(true);
+            },
+            canExecute: () => _actions.CanSendSimpleAction(_session, "draw"));
+
+        _discardSelectCommand = new AsyncRelayCommand(
+            () =>
+            {
+                var state = _session?.LastState;
+                if (state != null)
+                {
+                    _choices.TryStartDiscardSelection(state, msg => MessageReceived?.Invoke(msg));
+                }
+                return Task.CompletedTask;
+            },
+            canExecute: () => _choices.HasDiscardChoices(_session?.LastState));
+
+        _askCardSelectCommand = new AsyncRelayCommand(
+            () =>
+            {
+                var state = _session?.LastState;
+                if (state != null)
+                {
+                    _choices.TryStartAskSelection(state, msg => MessageReceived?.Invoke(msg));
+                }
+                return Task.CompletedTask;
+            },
+            canExecute: () => CanStartAskCardSelection(_session?.LastState));
+
+        _pollutionCommand = new AsyncRelayCommand(
+            () =>
+            {
+                StartPanelRequest(PanelMode.Pollution);
+                return Task.CompletedTask;
+            },
+            canExecute: () => HasPollution(_session?.LastState));
 
         _toggleShoppingCommand = new AsyncRelayCommand(
             () =>
@@ -83,6 +145,22 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
                 return Task.CompletedTask;
             },
             canExecute: () => _projector.HasInterfaceShortcut(_session?.LastState, "shopping"));
+
+        _toggleStableCommand = new AsyncRelayCommand(
+            () =>
+            {
+                StartPanelRequest(PanelMode.Stable);
+                return Task.CompletedTask;
+            },
+            canExecute: () => _projector.HasInterfaceShortcut(_session?.LastState, "stable"));
+
+        _toggleScoreCommand = new AsyncRelayCommand(
+            () =>
+            {
+                StartPanelRequest(PanelMode.Score);
+                return Task.CompletedTask;
+            },
+            canExecute: () => _projector.HasInterfaceShortcut(_session?.LastState, "score"));
 
         _toggleBasketCommand = new AsyncRelayCommand(
             () =>
@@ -100,6 +178,22 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
             },
             canExecute: () => _projector.HasInterfaceShortcut(_session?.LastState, "inventory"));
 
+        _toggleHandCommand = new AsyncRelayCommand(
+            () =>
+            {
+                StartPanelRequest(PanelMode.Hand);
+                return Task.CompletedTask;
+            },
+            canExecute: () => _projector.HasInterfaceShortcut(_session?.LastState, "hand"));
+
+        _toggleBooksCommand = new AsyncRelayCommand(
+            () =>
+            {
+                StartPanelRequest(PanelMode.Books);
+                return Task.CompletedTask;
+            },
+            canExecute: () => _projector.HasInterfaceShortcut(_session?.LastState, "books"));
+
         _turnInfoCommand = new AsyncRelayCommand(
             RequestTurnAsync,
             canExecute: () => _session != null);
@@ -112,14 +206,53 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
             },
             canExecute: () => _projector.HasInterfaceShortcut(_session?.LastState, "position"));
 
+        _shortcuts = new GamePlayShortcutsViewModel(
+            _projector,
+            toggleShopping: _toggleShoppingCommand,
+            toggleStable: _toggleStableCommand,
+            toggleScore: _toggleScoreCommand,
+            toggleBasket: _toggleBasketCommand,
+            toggleInventory: _toggleInventoryCommand,
+            toggleHand: _toggleHandCommand,
+            toggleBooks: _toggleBooksCommand,
+            position: _positionCommand);
+
+        _gameShortcuts = new GamePlayGameShortcutsController(
+            _shortcuts.Shortcuts,
+            drawCommand: _drawCommand,
+            discardSelectCommand: _discardSelectCommand,
+            askCardSelectCommand: _askCardSelectCommand,
+            pollutionCommand: _pollutionCommand);
+
+        _connection = new GamePlayConnectionController(
+            _dispatcher,
+            _connect,
+            getSession: () => _session,
+            setSession: s => _session = s,
+            bindSession: s =>
+            {
+                s.StateUpdated += OnStateUpdated;
+                s.TurnUpdated += OnTurnUpdated;
+                s.ErrorReceived += OnServerError;
+            },
+            unbindSession: s =>
+            {
+                s.StateUpdated -= OnStateUpdated;
+                s.TurnUpdated -= OnTurnUpdated;
+                s.ErrorReceived -= OnServerError;
+            },
+            setConnectionStatus: status => ConnectionStatus = status,
+            refreshCanExecute: RefreshCanExecute);
+
         BuildStaticShortcuts();
     }
 
-    public ObservableCollection<string> PendingChoices { get; } = new();
+    public ObservableCollection<string> PendingChoices => _choices.PendingChoices;
 
-    public ObservableCollection<ShortcutDefinition> Shortcuts { get; } = new();
+    public ObservableCollection<ShortcutDefinition> Shortcuts => _shortcuts.Shortcuts;
 
     public event Action<string>? MessageReceived;
+    public event Action? GameZoneFocusRequested;
 
     public string ConnectionStatus
     {
@@ -153,28 +286,24 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
 
     public string? SelectedChoice
     {
-        get => _selectedChoice;
-        set => SetProperty(ref _selectedChoice, value);
+        get => _choices.SelectedChoice;
+        set
+        {
+            if (string.Equals(_choices.SelectedChoice, value, StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            _choices.SelectedChoice = value;
+            OnPropertyChanged();
+        }
     }
 
     public async Task InitializeAsync(CancellationToken cancellationToken = default)
     {
-        ConnectionStatus = "Connexion au moteur de jeu...";
-        try
-        {
-            _projector.ResetLogCursor();
-            _session = await _connect(cancellationToken).ConfigureAwait(false);
-            _session.StateUpdated += OnStateUpdated;
-            _session.TurnUpdated += OnTurnUpdated;
-            _session.ErrorReceived += OnServerError;
-            _turnInfoCommand.RaiseCanExecuteChanged();
-            ConnectionStatus = "Connecté au moteur de jeu.";
-            await _session.RequestStateAsync(cancellationToken).ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-            ConnectionStatus = $"Connexion jeu échouée: {ex.Message}";
-        }
+        _projector.ResetLogCursor();
+
+        await _connection.InitializeAsync(cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<bool> SubmitSelectedChoiceAsync(CancellationToken cancellationToken = default)
@@ -182,26 +311,18 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
         var session = _session;
         if (session == null) return false;
 
-        if (Interlocked.Exchange(ref _choiceSubmitInProgress, 1) == 1)
-        {
-            return false;
-        }
-
         try
         {
-            var choice = SelectedChoice;
-            if (string.IsNullOrWhiteSpace(choice))
-            {
-                return false;
-            }
-
-            if (!_actions.TryBuildPendingChoiceAction(session, choice, out var action) || action == null)
-            {
-                return false;
-            }
-
-            await session.SendActionsAsync(new[] { action }, cancellationToken).ConfigureAwait(false);
-            return true;
+            return await _choices.SubmitSelectedChoiceAsync(
+                    session,
+                    emitError: message =>
+                    {
+                        ConnectionStatus = $"Erreur pending: {message}";
+                        _announcements?.Error(message);
+                        MessageReceived?.Invoke($"Erreur pending: {message}");
+                    },
+                    cancellationToken)
+                .ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -210,10 +331,6 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
             _announcements?.Error(ex.Message);
             MessageReceived?.Invoke($"Erreur pending: {ex.Message}");
             return false;
-        }
-        finally
-        {
-            Interlocked.Exchange(ref _choiceSubmitInProgress, 0);
         }
     }
 
@@ -224,6 +341,11 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
     {
         if (_session == null) return;
         if (string.IsNullOrWhiteSpace(actionType)) return;
+
+        if (!CanSendActionNow(_session))
+        {
+            return;
+        }
 
         if (!_actions.CanSendSimpleAction(_session, actionType))
         {
@@ -240,6 +362,7 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
     {
         var session = _session;
         if (session == null) return;
+        if (!CanSendActionNow(session)) return;
         await _actions.SendRollAsync(session, cancellationToken).ConfigureAwait(false);
     }
 
@@ -247,7 +370,28 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
     {
         var session = _session;
         if (session == null) return;
+        if (!CanSendActionNow(session)) return;
         await _actions.SendSimpleActionAsync(session, actionType, cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task TrySendFirstAvailableSimpleActionAsync(params string[] actionTypes)
+    {
+        var session = _session;
+        if (session == null) return;
+
+        foreach (var actionType in actionTypes)
+        {
+            if (string.IsNullOrWhiteSpace(actionType))
+            {
+                continue;
+            }
+
+            if (_actions.CanSendSimpleAction(session, actionType))
+            {
+                await _actions.SendSimpleActionAsync(session, actionType).ConfigureAwait(false);
+                return;
+            }
+        }
     }
 
     private async Task RequestAndEmitPanelAsync(PanelMode mode)
@@ -272,7 +416,7 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
             {
                 if (t.Exception != null)
                 {
-                    Log.Error(t.Exception, "Erreur lors de la demande de panel (Shopping/Basket/Inventory)");
+                    Log.Error(t.Exception, "Erreur lors de la demande de panel (Shopping/Stable/Score/Basket/Inventory/Hand/Books)");
                 }
             },
             CancellationToken.None,
@@ -345,78 +489,71 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
 
     private void SyncInterfaceShortcuts(GameStateDto state)
     {
-        SyncInterfaceShortcut(
-            state,
-            id: "shopping",
-            key: 's',
-            command: _toggleShoppingCommand,
-            description: "Annoncer shopping list",
-            code: "ui.shopping");
-
-        SyncInterfaceShortcut(
-            state,
-            id: "basket",
-            key: 'b',
-            command: _toggleBasketCommand,
-            description: "Annoncer panier",
-            code: "ui.basket");
-
-        SyncInterfaceShortcut(
-            state,
-            id: "inventory",
-            key: 'i',
-            command: _toggleInventoryCommand,
-            description: "Annoncer inventaire",
-            code: "ui.inventory");
-
-        SyncInterfaceShortcut(
-            state,
-            id: "position",
-            key: 'p',
-            command: _positionCommand,
-            description: "Position plateau",
-            code: "ui.position");
+        _shortcuts.SyncInterfaceShortcuts(state);
     }
 
-    private void SyncInterfaceShortcut(
-        GameStateDto state,
-        string id,
-        char key,
-        ICommand command,
-        string description,
-        string code)
+    private static bool HasAction(GameStateDto state, string actionType)
     {
-        ShortcutDefinition? existing = null;
-        foreach (var shortcut in Shortcuts)
+        if (string.IsNullOrWhiteSpace(actionType))
         {
-            if (string.Equals(shortcut.Code, code, StringComparison.OrdinalIgnoreCase))
+            return false;
+        }
+
+        var actions = state.Actions;
+        if (actions == null || actions.Count == 0)
+        {
+            return false;
+        }
+
+        return actions.Any(a => string.Equals(a.Type, actionType, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static bool HasPollution(GameStateDto? state)
+    {
+        try
+        {
+            if (state == null)
             {
-                existing = shortcut;
-                break;
+                return false;
             }
-        }
 
-        var supported = _projector.HasInterfaceShortcut(state, id);
-        if (!supported)
-        {
-            if (existing != null)
+            if (state.Metadata.ValueKind != System.Text.Json.JsonValueKind.Object)
             {
-                Shortcuts.Remove(existing);
+                return false;
             }
-            return;
-        }
 
-        if (existing != null)
+            if (state.Metadata.TryGetProperty("pollution", out _))
+            {
+                return true;
+            }
+
+            return state.Metadata.TryGetProperty("maxPollution", out _);
+        }
+        catch
         {
-            return;
+            return false;
+        }
+    }
+
+    private bool CanStartAskCardSelection(GameStateDto? state)
+    {
+        if (state == null)
+        {
+            return false;
         }
 
-        Shortcuts.Add(new ShortcutDefinition(
-            key,
-            command,
-            description: description,
-            code: code,
-            availableInGame: true));
+        if (state.Pending != null)
+        {
+            return false;
+        }
+
+        if (!HasAction(state, "ask_card"))
+        {
+            return false;
+        }
+
+        // Exigences: catalog + playerViews + handCards (exposés par le presenter Dame Nature).
+        return GamePlayChoiceBuilder.TryBuildAskCardChoices(state, out _);
     }
 
     private void OnServerError(string message)
@@ -429,10 +566,7 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
             RefreshCanExecute();
         }, DispatcherPriority.Background);
 
-        if (LooksLikeDisconnect(message))
-        {
-            StartReconnectLoop();
-        }
+        _connection.HandleServerError(message);
     }
 
     private async Task RequestTurnAsync()
@@ -458,6 +592,15 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
                 ? "Tour actuel: inconnu."
                 : $"C'est au tour de {who}.";
 
+            var now = DateTime.UtcNow;
+            if (string.Equals(_lastTurnAnnouncement, msg, StringComparison.Ordinal) &&
+                (now - _lastTurnAnnouncementAtUtc) < TimeSpan.FromSeconds(1))
+            {
+                return;
+            }
+
+            _lastTurnAnnouncement = msg;
+            _lastTurnAnnouncementAtUtc = now;
             MessageReceived?.Invoke(msg);
         }, DispatcherPriority.Background);
     }
@@ -468,212 +611,96 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
 
         _dispatcher.InvokeAsync(() =>
         {
-            UpdateComputedFields(state);
-            UpdatePendingChoices(state);
+            var nextStatus = state?.Status ?? string.Empty;
+            var previousStatus = _lastGameStatus ?? string.Empty;
+            _lastGameStatus = nextStatus;
+            if (string.Equals(previousStatus, "started", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(nextStatus, "started", StringComparison.OrdinalIgnoreCase))
+            {
+                GameZoneFocusRequested?.Invoke();
+            }
+
+            _viewerPlayerId = GamePlayExtrasParser.ExtractCurrentPlayerId(state);
+            _choices.UpdateFromState(state, CanStartAskCardSelection);
+
+            var presented = _presenter.Present(state);
+            IsBotThinking = presented.isBotThinking;
+            StateSummary = presented.stateSummary;
+            PendingText = presented.pendingText;
+            ActionsText = presented.actionsText;
+
+            _gameShortcuts.Sync(state, CanStartAskCardSelection);
             SyncInterfaceShortcuts(state);
             RefreshCanExecute();
-            EmitNewLogEntries(state);
+
+            foreach (var msg in presented.newLogMessages)
+            {
+                MessageReceived?.Invoke(msg);
+            }
         }, DispatcherPriority.Background);
     }
 
-    private void UpdateComputedFields(GameStateDto state)
+    private bool CanSendActionNow(GameSession session)
     {
-        IsBotThinking = state.BotThinking;
-        StateSummary = GamePlayStateSummaryBuilder.Build(state);
-        PendingText = GamePlayPendingTextBuilder.Build(state.Pending);
-        ActionsText = GamePlayActionsTextBuilder.Build(state);
-    }
-
-    private void UpdatePendingChoices(GameStateDto state)
-    {
-        var extracted = _projector.ExtractPendingChoices(state);
-        if (AreSameChoices(PendingChoices, extracted.choices))
+        try
         {
-            if (PendingChoices.Count > 0 && string.IsNullOrWhiteSpace(SelectedChoice))
+            var turn = session.LastTurnInfo;
+            if (turn == null)
             {
-                SelectedChoice = extracted.selected;
+                return true;
             }
-            return;
-        }
 
-        PendingChoices.Clear();
-        foreach (var choice in extracted.choices)
-        {
-            PendingChoices.Add(choice);
-        }
+            var viewerId = _viewerPlayerId;
+            if (viewerId == null)
+            {
+                return true;
+            }
 
-        SelectedChoice = PendingChoices.Count > 0 ? extracted.selected : null;
-    }
+            var currentId = turn.CurrentPlayerId;
+            if (currentId == null)
+            {
+                return true;
+            }
 
-    private static bool AreSameChoices(ObservableCollection<string> existing, System.Collections.Generic.IReadOnlyList<string> next)
-    {
-        if (existing.Count != next.Count)
-        {
+            if (currentId.Value == viewerId.Value)
+            {
+                return true;
+            }
+
+            var who = string.IsNullOrWhiteSpace(turn.CurrentPlayerUsername) ? "un autre joueur" : turn.CurrentPlayerUsername.Trim();
+            var message = $"Ce n'est pas votre tour (tour de {who}).";
+            ConnectionStatus = $"Erreur: {message}";
+            _announcements?.Error(message);
+            MessageReceived?.Invoke($"Erreur: {message}");
             return false;
         }
-
-        for (var i = 0; i < existing.Count; i++)
+        catch
         {
-            if (!string.Equals(existing[i], next[i], StringComparison.Ordinal))
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    private void EmitNewLogEntries(GameStateDto state)
-    {
-        foreach (var msg in _projector.ExtractNewLogMessages(state))
-        {
-            MessageReceived?.Invoke(msg);
+            return true;
         }
     }
-
 
     private void RefreshCanExecute()
     {
         _rollCommand.RaiseCanExecuteChanged();
         _exchangeAcceptCommand.RaiseCanExecuteChanged();
         _exchangeRefuseCommand.RaiseCanExecuteChanged();
+        _drawCommand.RaiseCanExecuteChanged();
+        _discardSelectCommand.RaiseCanExecuteChanged();
+        _askCardSelectCommand.RaiseCanExecuteChanged();
+        _pollutionCommand.RaiseCanExecuteChanged();
         _toggleShoppingCommand.RaiseCanExecuteChanged();
+        _toggleScoreCommand.RaiseCanExecuteChanged();
         _toggleBasketCommand.RaiseCanExecuteChanged();
         _toggleInventoryCommand.RaiseCanExecuteChanged();
+        _toggleHandCommand.RaiseCanExecuteChanged();
+        _toggleBooksCommand.RaiseCanExecuteChanged();
         _turnInfoCommand.RaiseCanExecuteChanged();
         _positionCommand.RaiseCanExecuteChanged();
     }
 
     public async ValueTask DisposeAsync()
     {
-        try
-        {
-            _reconnectCts?.Cancel();
-        }
-        catch
-        {
-            // ignore
-        }
-
-        var session = _session;
-        _session = null;
-        if (session != null)
-        {
-            session.StateUpdated -= OnStateUpdated;
-            session.TurnUpdated -= OnTurnUpdated;
-            session.ErrorReceived -= OnServerError;
-            try
-            {
-                await session.CloseAsync().ConfigureAwait(false);
-            }
-            catch
-            {
-                // ignore
-            }
-            await session.DisposeAsync().ConfigureAwait(false);
-        }
-
-        if (_reconnectCts != null)
-        {
-            _reconnectCts.Dispose();
-            _reconnectCts = null;
-        }
-    }
-
-    private static bool LooksLikeDisconnect(string message)
-    {
-        if (string.IsNullOrWhiteSpace(message))
-        {
-            return false;
-        }
-
-        var m = message.Trim();
-        return m.Contains("Connexion jeu perdue", StringComparison.OrdinalIgnoreCase) ||
-               m.Contains("WebSocket", StringComparison.OrdinalIgnoreCase) ||
-               m.Contains("closed the WebSocket connection", StringComparison.OrdinalIgnoreCase);
-    }
-
-    private void StartReconnectLoop()
-    {
-        if (_reconnectLoop != null && !_reconnectLoop.IsCompleted)
-        {
-            return;
-        }
-
-        _reconnectCts?.Cancel();
-        _reconnectCts?.Dispose();
-        _reconnectCts = new CancellationTokenSource();
-
-        _reconnectLoop = Task.Run(() => ReconnectLoopAsync(_reconnectCts.Token));
-    }
-
-    private async Task ReconnectLoopAsync(CancellationToken cancellationToken)
-    {
-        var attempt = 0;
-        while (!cancellationToken.IsCancellationRequested)
-        {
-            attempt++;
-
-            await _dispatcher.InvokeAsync(() =>
-            {
-                ConnectionStatus = $"Reconnexion au moteur de jeu... (tentative {attempt})";
-                RefreshCanExecute();
-            }, DispatcherPriority.Background);
-
-            try
-            {
-                var old = _session;
-                _session = null;
-                if (old != null)
-                {
-                    old.StateUpdated -= OnStateUpdated;
-                    old.TurnUpdated -= OnTurnUpdated;
-                    old.ErrorReceived -= OnServerError;
-                    try
-                    {
-                        await old.CloseAsync().ConfigureAwait(false);
-                    }
-                    catch
-                    {
-                        // ignore
-                    }
-                    await old.DisposeAsync().ConfigureAwait(false);
-                }
-
-                using var connectCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-                connectCts.CancelAfter(TimeSpan.FromSeconds(10));
-
-                var session = await _connect(connectCts.Token).ConfigureAwait(false);
-                session.StateUpdated += OnStateUpdated;
-                session.TurnUpdated += OnTurnUpdated;
-                session.ErrorReceived += OnServerError;
-                _session = session;
-
-                await session.JoinAsync(connectCts.Token).ConfigureAwait(false);
-                await session.RequestStateAsync(connectCts.Token).ConfigureAwait(false);
-
-                await _dispatcher.InvokeAsync(() =>
-                {
-                    ConnectionStatus = "Reconnecté au moteur de jeu.";
-                    RefreshCanExecute();
-                }, DispatcherPriority.Background);
-
-                return;
-            }
-            catch (Exception ex)
-            {
-                Log.Warning(ex, "Reconnexion game WS échouée (tentative {Attempt})", attempt);
-            }
-
-            var delayMs = Math.Min(15000, 500 + attempt * 750);
-            try
-            {
-                await Task.Delay(delayMs, cancellationToken).ConfigureAwait(false);
-            }
-            catch
-            {
-                return;
-            }
-        }
+        await _connection.DisposeAsync().ConfigureAwait(false);
     }
 }

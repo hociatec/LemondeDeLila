@@ -175,6 +175,10 @@ export class GameEngineService {
     if (existing) {
       const previousStatus = String(existing.status ?? '').toLowerCase();
       const roomStatus = String(payload?.room?.status ?? '').toLowerCase();
+      const storedStartedAt = String(
+        (existing.metadata as any)?.roomStartedAt ?? '',
+      ).trim();
+      const roomStartedAt = String(payload?.room?.startedAt ?? '').trim();
 
       // Réinitialisation explicite (room repasse en "setup/open/...") :
       // on repart d'un état neuf pour permettre d'ajouter/retirer des joueurs et relancer une partie.
@@ -222,6 +226,33 @@ export class GameEngineService {
       // Démarrage : à la transition vers "started", reconstruire l'état initial à partir de la room
       // (permet d'avoir un premier joueur aléatoire via le GameCoreService).
       if (previousStatus !== 'started' && nextStatus === 'started') {
+        const rebuilt = await this.buildInitialState(payload, gameType);
+        const marked = await this.normalizeBotThinking(
+          roomId,
+          gameType,
+          await this.markBotThinking(roomId, gameType, rebuilt),
+        );
+        await this.scheduleBotTurn(roomId, gameType, marked);
+        return marked;
+      }
+
+      // Cas spÃ©cial : la room a Ã©tÃ© reset (startedAt remis Ã  null) puis relancÃ©e,
+      // mais le moteur n'a pas "vu" la transition setup->started (ex: aucun WS game connectÃ©).
+      // On force la reconstruction si startedAt a changÃ©.
+      if (
+        previousStatus === 'started' &&
+        nextStatus === 'started' &&
+        roomStartedAt &&
+        storedStartedAt &&
+        roomStartedAt !== storedStartedAt
+      ) {
+        this.gameLogger.info('Game state rebuild (startedAt changed)', {
+          roomId,
+          gameType,
+          storedStartedAt,
+          roomStartedAt,
+        });
+        this.cleanupRoom(roomId, gameType);
         const rebuilt = await this.buildInitialState(payload, gameType);
         const marked = await this.normalizeBotThinking(
           roomId,

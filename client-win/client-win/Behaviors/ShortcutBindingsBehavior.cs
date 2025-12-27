@@ -101,6 +101,13 @@ public static class ShortcutBindingsBehavior
                     return;
                 }
 
+                // Évite les doublons (touches maintenues / auto-repeat) qui peuvent déclencher plusieurs fois
+                // une même action (ex: annonces, requêtes game.state, etc.).
+                if (e.IsRepeat)
+                {
+                    return;
+                }
+
                 // Ne pas interpréter les raccourcis quand le focus est dans un contrôle de texte
                 // (ex: historique en lecture seule). On laisse le contrôle/lecteur d'écran gérer l'écho clavier.
                 if (IsTextInputFocused())
@@ -185,6 +192,37 @@ public static class ShortcutBindingsBehavior
                         e.Handled = isGameShortcut || typed.Value is 'w' or 'W' or 'i' or 'I';
                     }
                     return;
+                }
+
+                // Fallback: si aucune touche n'a matché exactement (ex: serveur "pressed D", user en CapsLock),
+                // on autorise un match insensible à la casse, tant qu'il n'existe pas deux raccourcis explicites
+                // (ex: b/B) qui nécessitent une distinction.
+                if (char.IsLetter(typed.Value))
+                {
+                    var lower = char.ToLowerInvariant(typed.Value);
+                    var upperExactExists = charShortcuts.Any(s => s.Key == char.ToUpperInvariant(lower));
+                    var lowerExactExists = charShortcuts.Any(s => s.Key == lower);
+
+                    // Si les 2 variantes existent, l'utilisateur doit utiliser la bonne casse (b vs B).
+                    if (!(upperExactExists && lowerExactExists))
+                    {
+                        foreach (var shortcut in charShortcuts)
+                        {
+                            if (shortcut.Key == null) continue;
+                            if (!char.IsLetter(shortcut.Key.Value)) continue;
+                            if (char.ToLowerInvariant(shortcut.Key.Value) != lower) continue;
+
+                            if (shortcut.Command.CanExecute(shortcut.CommandParameter))
+                            {
+                                shortcut.Command.Execute(shortcut.CommandParameter);
+                                var code = shortcut.Code ?? string.Empty;
+                                var isGameShortcut = code.StartsWith("ui.", StringComparison.OrdinalIgnoreCase) ||
+                                                     code.StartsWith("game.", StringComparison.OrdinalIgnoreCase);
+                                e.Handled = isGameShortcut || typed.Value is 'w' or 'W' or 'i' or 'I';
+                            }
+                            return;
+                        }
+                    }
                 }
             };
             element.PreviewKeyDown += subscription.PreviewKeyDownHandler;
@@ -325,4 +363,3 @@ public static class ShortcutBindingsBehavior
         return LogicalTreeHelper.GetParent(current);
     }
 }
-

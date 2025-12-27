@@ -12,6 +12,7 @@ import { PetitChevauxPhaseService } from './phases/petit-chevaux-phase.service';
 import { PetitChevauxPresenterService } from './presenter/petit-chevaux-presenter.service';
 import { PetitChevauxSetupService } from './setup/petit-chevaux-setup.service';
 import { PETIT_CHEVAUX_GAME } from './definitions/game.definition';
+import { PetitChevauxBotService } from './bots/petit-chevaux-bot.service';
 
 @Injectable()
 export class PetitChevauxService implements GameRulesAdapter, OnModuleInit {
@@ -29,6 +30,7 @@ export class PetitChevauxService implements GameRulesAdapter, OnModuleInit {
     private readonly actions: PetitChevauxActionService,
     private readonly phases: PetitChevauxPhaseService,
     private readonly presenter: PetitChevauxPresenterService,
+    private readonly bots: PetitChevauxBotService,
   ) {}
 
   onModuleInit(): void {
@@ -62,7 +64,16 @@ export class PetitChevauxService implements GameRulesAdapter, OnModuleInit {
     return PetitChevauxRulebook.validateAction(state, action, actorId);
   }
 
+  getBotActions(state: GameStateEntity, botPlayerId: number): GameSingleActionDto[] {
+    return this.bots.getBotActions(state, botPlayerId);
+  }
+
   exposeState(state: GameStateEntity): GameStateWithActions {
-    return this.presenter.exposeState(state);
+    // Fallback (non personnalisé) : aucune action.
+    return { ...state, actions: [] };
+  }
+
+  exposeStateForUser(state: GameStateEntity, userId: number): GameStateWithActions {
+    return this.presenter.exposeStateForUser(state, userId);
   }
 }

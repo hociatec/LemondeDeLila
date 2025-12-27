@@ -77,7 +77,6 @@ internal sealed class GamePlayPanelRequester
 
     internal static string BuildPanelHistoryMessage(GameStateDto state, PanelMode mode)
     {
-        var view = GamePlayExtrasParser.ExtractCurrentPlayerView(state);
         string[] items;
         string title;
 
@@ -85,15 +84,31 @@ internal sealed class GamePlayPanelRequester
         {
             case PanelMode.Shopping:
                 title = "Shopping list";
-                items = view.ShoppingList;
+                items = GamePlayExtrasParser.ExtractCurrentPlayerView(state).ShoppingList;
+                break;
+            case PanelMode.Pollution:
+                return BuildPollutionHistoryMessage(state);
+            case PanelMode.Stable:
+                return BuildStableHistoryMessage(state);
+            case PanelMode.Score:
+                title = "Score";
+                items = ExtractExtrasStringArray(state, "score");
                 break;
             case PanelMode.Basket:
                 title = "Panier";
-                items = view.Basket;
+                items = GamePlayExtrasParser.ExtractCurrentPlayerView(state).Basket;
                 break;
             case PanelMode.Inventory:
                 title = "Inventaire";
-                items = view.Inventory;
+                items = GamePlayExtrasParser.ExtractCurrentPlayerView(state).Inventory;
+                break;
+            case PanelMode.Hand:
+                title = "Main";
+                items = ExtractExtrasStringArray(state, "hand");
+                break;
+            case PanelMode.Books:
+                title = "Familles";
+                items = ExtractExtrasStringArray(state, "books");
                 break;
             default:
                 return string.Empty;
@@ -115,8 +130,104 @@ internal sealed class GamePlayPanelRequester
         return $"{title}: {body}";
     }
 
+    private static string BuildStableHistoryMessage(GameStateDto state)
+    {
+        var lines = GamePlayExtrasParser.ExtractCurrentPlayerView(state).Stable;
+        if (lines.Length == 0)
+        {
+            return "Écurie: inconnue.";
+        }
+
+        static string Normalize(string text)
+        {
+            var t = (text ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(t))
+            {
+                return string.Empty;
+            }
+            return t.EndsWith(".", StringComparison.Ordinal) ? t : $"{t}.";
+        }
+
+        var normalized = lines.Select(Normalize).Where(s => !string.IsNullOrWhiteSpace(s)).ToArray();
+        if (normalized.Length == 0)
+        {
+            return "Écurie: inconnue.";
+        }
+
+        return string.Join(" ", normalized);
+    }
+
+    private static string BuildPollutionHistoryMessage(GameStateDto state)
+    {
+        try
+        {
+            if (state.Metadata.ValueKind != System.Text.Json.JsonValueKind.Object)
+            {
+                return "Pollution: inconnue.";
+            }
+
+            int? pollution = null;
+            int? max = null;
+
+            if (state.Metadata.TryGetProperty("pollution", out var p) &&
+                p.ValueKind == System.Text.Json.JsonValueKind.Number &&
+                p.TryGetInt32(out var pInt))
+            {
+                pollution = pInt;
+            }
+
+            if (state.Metadata.TryGetProperty("maxPollution", out var m) &&
+                m.ValueKind == System.Text.Json.JsonValueKind.Number &&
+                m.TryGetInt32(out var mInt))
+            {
+                max = mInt;
+            }
+
+            if (pollution == null && max == null)
+            {
+                return "Pollution: inconnue.";
+            }
+
+            if (pollution != null && max != null)
+            {
+                return $"Pollution: {pollution.Value}/{max.Value}.";
+            }
+
+            if (pollution != null)
+            {
+                return $"Pollution: {pollution.Value}.";
+            }
+
+            return $"Pollution max: {max}.";
+        }
+        catch
+        {
+            return "Pollution: inconnue.";
+        }
+    }
+
     internal static string BuildPositionHistoryMessage(GameStateDto state)
     {
+        var positionLines = GamePlayExtrasParser.ExtractCurrentPlayerView(state).Position;
+        if (positionLines.Length > 0)
+        {
+            static string Normalize(string text)
+            {
+                var t = (text ?? string.Empty).Trim();
+                if (string.IsNullOrWhiteSpace(t))
+                {
+                    return string.Empty;
+                }
+                return t.EndsWith(".", StringComparison.Ordinal) ? t : $"{t}.";
+            }
+
+            var normalized = positionLines.Select(Normalize).Where(s => !string.IsNullOrWhiteSpace(s)).ToArray();
+            if (normalized.Length > 0)
+            {
+                return string.Join(" ", normalized);
+            }
+        }
+
         var playerId = GamePlayExtrasParser.ExtractCurrentPlayerId(state);
         var board = state.Board;
         var position = TryGetFromMap(board?.Positions, playerId);
@@ -217,11 +328,43 @@ internal sealed class GamePlayPanelRequester
 
         return null;
     }
+
+    private static string[] ExtractExtrasStringArray(GameStateDto state, string key)
+    {
+        try
+        {
+            if (state.Extras.ValueKind != System.Text.Json.JsonValueKind.Object)
+            {
+                return Array.Empty<string>();
+            }
+
+            if (!state.Extras.TryGetProperty(key, out var node) ||
+                node.ValueKind != System.Text.Json.JsonValueKind.Array)
+            {
+                return Array.Empty<string>();
+            }
+
+            return node.EnumerateArray()
+                .Where(e => e.ValueKind == System.Text.Json.JsonValueKind.String)
+                .Select(e => (e.GetString() ?? string.Empty).Trim())
+                .Where(s => !string.IsNullOrWhiteSpace(s))
+                .ToArray();
+        }
+        catch
+        {
+            return Array.Empty<string>();
+        }
+    }
 }
 
 internal enum PanelMode
 {
     Shopping,
+    Pollution,
+    Stable,
+    Score,
     Basket,
-    Inventory
+    Inventory,
+    Hand,
+    Books
 }

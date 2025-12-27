@@ -1,8 +1,8 @@
 {
   "code": "petit-chevaux",
-  "name": "petit chevaux",
+  "name": "Petits chevaux",
   "minPlayers": 2,
-  "maxPlayers": 10,
+  "maxPlayers": 4,
   "engine": "petit-chevaux",
   "summary": "le jeu classique des petits chevaux"
 }
