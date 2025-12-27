@@ -18,6 +18,8 @@ public sealed class GameSession : IAsyncDisposable
     // via l'événement StateChanged pour les transitions ultérieures.
     private WebSocketState _state = WebSocketState.Connected;
     private bool _everConnected = true;
+    private CancellationTokenSource? _keepAliveCts;
+    private Task? _keepAliveLoop;
 
     public GameSession(int roomId, string gameType, IWebSocketConnection socket)
     {
@@ -28,6 +30,9 @@ public sealed class GameSession : IAsyncDisposable
         _socket.StateChanged += OnSocketStateChanged;
         _socket.MessageReceived += OnRawMessage;
         _socket.Error += OnSocketError;
+
+        // Keep-alive côté client : évite les déconnexions en cas d'inactivité.
+        StartKeepAlive();
     }
 
     public int RoomId { get; }
@@ -44,6 +49,38 @@ public sealed class GameSession : IAsyncDisposable
     public event Action<string>? ErrorReceived;
 
     public Task CloseAsync() => _socket.CloseAsync();
+
+    public void StartKeepAlive(TimeSpan? interval = null)
+    {
+        var tick = interval ?? TimeSpan.FromSeconds(20);
+        if (tick < TimeSpan.FromSeconds(5))
+        {
+            tick = TimeSpan.FromSeconds(5);
+        }
+
+        if (_keepAliveLoop != null && !_keepAliveLoop.IsCompleted)
+        {
+            return;
+        }
+
+        _keepAliveCts?.Cancel();
+        _keepAliveCts?.Dispose();
+        _keepAliveCts = new CancellationTokenSource();
+
+        _keepAliveLoop = Task.Run(() => KeepAliveLoopAsync(tick, _keepAliveCts.Token));
+    }
+
+    public void StopKeepAlive()
+    {
+        try
+        {
+            _keepAliveCts?.Cancel();
+        }
+        catch
+        {
+            // ignore
+        }
+    }
 
     public async Task JoinAsync(CancellationToken cancellationToken = default)
     {
@@ -113,6 +150,13 @@ public sealed class GameSession : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
+        StopKeepAlive();
+        if (_keepAliveCts != null)
+        {
+            _keepAliveCts.Dispose();
+            _keepAliveCts = null;
+        }
+
         _socket.StateChanged -= OnSocketStateChanged;
         _socket.MessageReceived -= OnRawMessage;
         _socket.Error -= OnSocketError;
@@ -170,6 +214,45 @@ public sealed class GameSession : IAsyncDisposable
         {
             Log.Debug(ex, "GameSession: send ignored");
             ErrorReceived?.Invoke(ex.Message);
+        }
+    }
+
+    private async Task KeepAliveLoopAsync(TimeSpan interval, CancellationToken cancellationToken)
+    {
+        // On utilise une requête légère qui garde la connexion "active" côté serveur.
+        // Le serveur doit compter cette activité comme un signe de vie (voir gateway ws/game).
+        using var timer = new PeriodicTimer(interval);
+
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            try
+            {
+                var ok = await timer.WaitForNextTickAsync(cancellationToken).ConfigureAwait(false);
+                if (!ok)
+                {
+                    return;
+                }
+            }
+            catch
+            {
+                return;
+            }
+
+            if (!IsConnected)
+            {
+                continue;
+            }
+
+            try
+            {
+                using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                cts.CancelAfter(TimeSpan.FromSeconds(5));
+                await RequestStateAsync(cts.Token).ConfigureAwait(false);
+            }
+            catch
+            {
+                // Best-effort: l'auto-reconnect est gérée plus haut (ViewModel).
+            }
         }
     }
 

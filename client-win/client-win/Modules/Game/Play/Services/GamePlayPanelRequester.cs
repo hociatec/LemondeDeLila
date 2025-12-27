@@ -114,6 +114,109 @@ internal sealed class GamePlayPanelRequester
 
         return $"{title}: {body}";
     }
+
+    internal static string BuildPositionHistoryMessage(GameStateDto state)
+    {
+        var playerId = GamePlayExtrasParser.ExtractCurrentPlayerId(state);
+        var board = state.Board;
+        var position = TryGetFromMap(board?.Positions, playerId);
+        var lap = TryGetFromMap(board?.Laps, playerId);
+
+        var totalTiles = TryGetTilesCount(board?.Tiles);
+
+        if (position == null || totalTiles == null || totalTiles.Value <= 0)
+        {
+            return "Case: inconnue.";
+        }
+
+        var caseNumber = position.Value + 1; // user-friendly 1-based
+        var tourPlateau = lap != null ? lap.Value.ToString() : "?";
+        return $"Tour plateau {tourPlateau}, case {caseNumber}/{totalTiles.Value}.";
+    }
+
+    private static int? TryGetTilesCount(System.Text.Json.JsonElement? tiles)
+    {
+        if (tiles == null)
+        {
+            return null;
+        }
+
+        var t = tiles.Value;
+        return t.ValueKind == System.Text.Json.JsonValueKind.Array ? t.GetArrayLength() : null;
+    }
+
+    private static int? TryGetFromMap(System.Collections.Generic.Dictionary<string, int>? map, int? playerId)
+    {
+        if (map == null || playerId == null)
+        {
+            return null;
+        }
+
+        var key = playerId.Value.ToString();
+        if (map.TryGetValue(key, out var v))
+        {
+            return v;
+        }
+
+        var alt = map.Keys.FirstOrDefault(k => string.Equals(k, key, StringComparison.OrdinalIgnoreCase));
+        if (alt != null && map.TryGetValue(alt, out var v2))
+        {
+            return v2;
+        }
+
+        return null;
+    }
+
+    private static string? ExtractTileLabel(System.Text.Json.JsonElement? tiles, int? position)
+    {
+        if (tiles == null || position == null)
+        {
+            return null;
+        }
+
+        var t = tiles.Value;
+        if (t.ValueKind != System.Text.Json.JsonValueKind.Array)
+        {
+            return null;
+        }
+
+        var idx = position.Value;
+        if (idx < 0)
+        {
+            return null;
+        }
+
+        var i = 0;
+        foreach (var tile in t.EnumerateArray())
+        {
+            if (i == idx)
+            {
+                if (tile.ValueKind != System.Text.Json.JsonValueKind.Object)
+                {
+                    return null;
+                }
+
+                if (tile.TryGetProperty("label", out var label) &&
+                    label.ValueKind == System.Text.Json.JsonValueKind.String)
+                {
+                    var s = label.GetString();
+                    return string.IsNullOrWhiteSpace(s) ? null : s.Trim();
+                }
+
+                if (tile.TryGetProperty("type", out var type) &&
+                    type.ValueKind == System.Text.Json.JsonValueKind.String)
+                {
+                    var s = type.GetString();
+                    return string.IsNullOrWhiteSpace(s) ? null : s.Trim();
+                }
+
+                return null;
+            }
+            i++;
+        }
+
+        return null;
+    }
 }
 
 internal enum PanelMode

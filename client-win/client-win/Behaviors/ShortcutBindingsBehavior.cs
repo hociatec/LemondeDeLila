@@ -39,7 +39,6 @@ public static class ShortcutBindingsBehavior
 
     private sealed class Subscription
     {
-        public List<InputBinding> AddedBindings { get; } = new();
         public INotifyCollectionChanged? Collection { get; set; }
         public NotifyCollectionChangedEventHandler? Handler { get; set; }
         public KeyEventHandler? PreviewKeyDownHandler { get; set; }
@@ -68,12 +67,6 @@ public static class ShortcutBindingsBehavior
 
     private static void Unsubscribe(UIElement element, Subscription subscription)
     {
-        foreach (var binding in subscription.AddedBindings)
-        {
-            element.InputBindings.Remove(binding);
-        }
-        subscription.AddedBindings.Clear();
-
         if (subscription.Collection != null && subscription.Handler != null)
         {
             subscription.Collection.CollectionChanged -= subscription.Handler;
@@ -97,21 +90,9 @@ public static class ShortcutBindingsBehavior
             return;
         }
 
-        foreach (var shortcut in shortcuts)
-        {
-            if (shortcut.Gesture != null)
-            {
-                var binding = new KeyBinding(shortcut.Command, shortcut.Gesture)
-                {
-                    CommandParameter = shortcut.CommandParameter
-                };
-                element.InputBindings.Add(binding);
-                subscription.AddedBindings.Add(binding);
-            }
-        }
-
+        var gestureShortcuts = shortcuts.Where(s => s.Gesture != null).ToList();
         var charShortcuts = shortcuts.Where(s => s.Key != null).ToList();
-        if (charShortcuts.Count > 0)
+        if (gestureShortcuts.Count > 0 || charShortcuts.Count > 0)
         {
             subscription.PreviewKeyDownHandler = (_, e) =>
             {
@@ -120,7 +101,7 @@ public static class ShortcutBindingsBehavior
                     return;
                 }
 
-                // Ne pas interpréter les lettres comme raccourcis quand le focus est dans un contrôle de texte
+                // Ne pas interpréter les raccourcis quand le focus est dans un contrôle de texte
                 // (ex: historique en lecture seule). On laisse le contrôle/lecteur d'écran gérer l'écho clavier.
                 if (IsTextInputFocused())
                 {
@@ -132,17 +113,52 @@ public static class ShortcutBindingsBehavior
                     return;
                 }
 
+                var key = e.Key == Key.System ? e.SystemKey : e.Key;
+                var modifiers = Keyboard.Modifiers;
+
+                // 1) Gestures (ex: Enter) : gérées ici pour respecter DisableWhenFocusWithin / text inputs.
+                if (gestureShortcuts.Count > 0)
+                {
+                    // Ne pas intercepter Enter quand l'utilisateur est dans une liste de choix (quiz/échange),
+                    // afin de laisser le contrôle consommer Enter pour "valider" la sélection.
+                    if (!(key == Key.Enter && IsSelectorFocused()))
+                    {
+                        foreach (var shortcut in gestureShortcuts)
+                        {
+                            var gesture = shortcut.Gesture;
+                            if (gesture == null) continue;
+                            if (gesture.Key != key) continue;
+                            if (gesture.Modifiers != modifiers) continue;
+
+                            if (shortcut.Command.CanExecute(shortcut.CommandParameter))
+                            {
+                                shortcut.Command.Execute(shortcut.CommandParameter);
+                                var code = shortcut.Code ?? string.Empty;
+                                var isGameShortcut =
+                                    code.StartsWith("ui.", StringComparison.OrdinalIgnoreCase) ||
+                                    code.StartsWith("game.", StringComparison.OrdinalIgnoreCase);
+                                e.Handled = isGameShortcut;
+                            }
+                            return;
+                        }
+                    }
+                }
+
+                // 2) Char shortcuts
+                if (charShortcuts.Count == 0)
+                {
+                    return;
+                }
+
                 // Les raccourcis "char" supportent:
                 // - aucune touche modificatrice (ex: q)
                 // - Maj seule, pour distinguer b / B sans passer par KeyGesture (qui ne supporte pas Shift+Lettre)
-                var modifiers = Keyboard.Modifiers;
                 var hasCtrlAltWin = (modifiers & (ModifierKeys.Control | ModifierKeys.Alt | ModifierKeys.Windows)) != ModifierKeys.None;
                 if (hasCtrlAltWin)
                 {
                     return;
                 }
 
-                var key = e.Key == Key.System ? e.SystemKey : e.Key;
                 var shift = (modifiers & ModifierKeys.Shift) == ModifierKeys.Shift;
                 var capsLock = Keyboard.IsKeyToggled(Key.CapsLock);
                 var upper = shift ^ capsLock;
@@ -218,7 +234,7 @@ public static class ShortcutBindingsBehavior
             return false;
         }
 
-        if (focused is TextBox textBox)
+        if (focused is TextBox)
         {
             return true;
         }
@@ -228,7 +244,7 @@ public static class ShortcutBindingsBehavior
             return true;
         }
 
-        if (focused is RichTextBox richTextBox)
+        if (focused is RichTextBox)
         {
             return true;
         }
@@ -236,6 +252,33 @@ public static class ShortcutBindingsBehavior
         if (focused is ComboBox combo && combo.IsEditable)
         {
             return true;
+        }
+
+        return false;
+    }
+
+    private static bool IsSelectorFocused()
+    {
+        var focused = Keyboard.FocusedElement;
+        if (focused is null)
+        {
+            return false;
+        }
+
+        if (focused is System.Windows.Controls.Primitives.Selector)
+        {
+            return true;
+        }
+
+        if (focused is DependencyObject dep)
+        {
+            for (DependencyObject? current = dep; current != null; current = GetParent(current))
+            {
+                if (current is System.Windows.Controls.Primitives.Selector)
+                {
+                    return true;
+                }
+            }
         }
 
         return false;
@@ -282,3 +325,4 @@ public static class ShortcutBindingsBehavior
         return LogicalTreeHelper.GetParent(current);
     }
 }
+

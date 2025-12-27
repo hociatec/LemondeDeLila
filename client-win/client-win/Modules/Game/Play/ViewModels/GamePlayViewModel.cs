@@ -25,6 +25,8 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
     private readonly GamePlayPanelRequester _panels = new();
 
     private GameSession? _session;
+    private CancellationTokenSource? _reconnectCts;
+    private Task? _reconnectLoop;
 
     private string _connectionStatus = "Connexion au moteur de jeu...";
     private string _stateSummary = "En attente d'un état de jeu (game.state)...";
@@ -41,6 +43,7 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
     private readonly AsyncRelayCommand _toggleBasketCommand;
     private readonly AsyncRelayCommand _toggleInventoryCommand;
     private readonly AsyncRelayCommand _turnInfoCommand;
+    private readonly AsyncRelayCommand _positionCommand;
 
     public GamePlayViewModel(
         Func<CancellationToken, Task<GameSession>> connect,
@@ -99,6 +102,14 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
 
         _turnInfoCommand = new AsyncRelayCommand(
             RequestTurnAsync,
+            canExecute: () => _session != null);
+
+        _positionCommand = new AsyncRelayCommand(
+            () =>
+            {
+                StartPositionRequest();
+                return Task.CompletedTask;
+            },
             canExecute: () => _session != null);
 
         BuildStaticShortcuts();
@@ -269,6 +280,36 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
             TaskScheduler.Default);
     }
 
+    private void StartPositionRequest()
+    {
+        _ = RequestAndEmitPositionAsync().ContinueWith(
+            t =>
+            {
+                if (t.Exception != null)
+                {
+                    Log.Error(t.Exception, "Erreur lors de la demande de position (P)");
+                }
+            },
+            CancellationToken.None,
+            TaskContinuationOptions.OnlyOnFaulted,
+            TaskScheduler.Default);
+    }
+
+    private async Task RequestAndEmitPositionAsync()
+    {
+        var state = await _panels.RequestFreshStateAsync(_session).ConfigureAwait(true);
+        if (state == null)
+        {
+            return;
+        }
+
+        var message = GamePlayPanelRequester.BuildPositionHistoryMessage(state);
+        if (!string.IsNullOrWhiteSpace(message))
+        {
+            MessageReceived?.Invoke(message);
+        }
+    }
+
     private void BuildStaticShortcuts()
     {
         Shortcuts.Clear();
@@ -321,6 +362,13 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
             description: "A qui est le tour ?",
             code: "ui.turn",
             availableInGame: true));
+
+        Shortcuts.Add(new ShortcutDefinition(
+            'p',
+            _positionCommand,
+            description: "Position + tour",
+            code: "ui.position",
+            availableInGame: true));
     }
 
     private void OnServerError(string message)
@@ -332,6 +380,11 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
             MessageReceived?.Invoke($"Erreur: {message}");
             RefreshCanExecute();
         }, DispatcherPriority.Background);
+
+        if (LooksLikeDisconnect(message))
+        {
+            StartReconnectLoop();
+        }
     }
 
     private async Task RequestTurnAsync()
@@ -439,10 +492,20 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
         _toggleBasketCommand.RaiseCanExecuteChanged();
         _toggleInventoryCommand.RaiseCanExecuteChanged();
         _turnInfoCommand.RaiseCanExecuteChanged();
+        _positionCommand.RaiseCanExecuteChanged();
     }
 
     public async ValueTask DisposeAsync()
     {
+        try
+        {
+            _reconnectCts?.Cancel();
+        }
+        catch
+        {
+            // ignore
+        }
+
         var session = _session;
         _session = null;
         if (session != null)
@@ -459,6 +522,109 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
                 // ignore
             }
             await session.DisposeAsync().ConfigureAwait(false);
+        }
+
+        if (_reconnectCts != null)
+        {
+            _reconnectCts.Dispose();
+            _reconnectCts = null;
+        }
+    }
+
+    private static bool LooksLikeDisconnect(string message)
+    {
+        if (string.IsNullOrWhiteSpace(message))
+        {
+            return false;
+        }
+
+        var m = message.Trim();
+        return m.Contains("Connexion jeu perdue", StringComparison.OrdinalIgnoreCase) ||
+               m.Contains("WebSocket", StringComparison.OrdinalIgnoreCase) ||
+               m.Contains("closed the WebSocket connection", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private void StartReconnectLoop()
+    {
+        if (_reconnectLoop != null && !_reconnectLoop.IsCompleted)
+        {
+            return;
+        }
+
+        _reconnectCts?.Cancel();
+        _reconnectCts?.Dispose();
+        _reconnectCts = new CancellationTokenSource();
+
+        _reconnectLoop = Task.Run(() => ReconnectLoopAsync(_reconnectCts.Token));
+    }
+
+    private async Task ReconnectLoopAsync(CancellationToken cancellationToken)
+    {
+        var attempt = 0;
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            attempt++;
+
+            await _dispatcher.InvokeAsync(() =>
+            {
+                ConnectionStatus = $"Reconnexion au moteur de jeu... (tentative {attempt})";
+                RefreshCanExecute();
+            }, DispatcherPriority.Background);
+
+            try
+            {
+                var old = _session;
+                _session = null;
+                if (old != null)
+                {
+                    old.StateUpdated -= OnStateUpdated;
+                    old.TurnUpdated -= OnTurnUpdated;
+                    old.ErrorReceived -= OnServerError;
+                    try
+                    {
+                        await old.CloseAsync().ConfigureAwait(false);
+                    }
+                    catch
+                    {
+                        // ignore
+                    }
+                    await old.DisposeAsync().ConfigureAwait(false);
+                }
+
+                using var connectCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                connectCts.CancelAfter(TimeSpan.FromSeconds(10));
+
+                var session = await _connect(connectCts.Token).ConfigureAwait(false);
+                session.StateUpdated += OnStateUpdated;
+                session.TurnUpdated += OnTurnUpdated;
+                session.ErrorReceived += OnServerError;
+                _session = session;
+
+                await session.JoinAsync(connectCts.Token).ConfigureAwait(false);
+                await session.RequestStateAsync(connectCts.Token).ConfigureAwait(false);
+
+                await _dispatcher.InvokeAsync(() =>
+                {
+                    ConnectionStatus = "Reconnecté au moteur de jeu.";
+                    RefreshCanExecute();
+                }, DispatcherPriority.Background);
+
+                return;
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "Reconnexion game WS échouée (tentative {Attempt})", attempt);
+            }
+
+            var delayMs = Math.Min(15000, 500 + attempt * 750);
+            try
+            {
+                await Task.Delay(delayMs, cancellationToken).ConfigureAwait(false);
+            }
+            catch
+            {
+                return;
+            }
         }
     }
 }

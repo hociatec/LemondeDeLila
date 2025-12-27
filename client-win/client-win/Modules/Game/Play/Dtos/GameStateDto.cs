@@ -44,6 +44,21 @@ public sealed class GameStateDto
 
     [JsonPropertyName("extras")]
     public JsonElement Extras { get; set; }
+
+    [JsonPropertyName("board")]
+    public GameBoardDto? Board { get; set; }
+}
+
+public sealed class GameBoardDto
+{
+    [JsonPropertyName("tiles")]
+    public JsonElement Tiles { get; set; }
+
+    [JsonPropertyName("positions")]
+    public Dictionary<string, int>? Positions { get; set; }
+
+    [JsonPropertyName("laps")]
+    public Dictionary<string, int>? Laps { get; set; }
 }
 
 public sealed class GameLogEntryDto

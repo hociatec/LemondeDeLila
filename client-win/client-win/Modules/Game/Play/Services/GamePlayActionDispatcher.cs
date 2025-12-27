@@ -36,6 +36,27 @@ internal sealed class GamePlayActionDispatcher
         if (available.Count == 0) return false;
 
         var pendingType = (state.Pending.Type ?? string.Empty).Trim();
+
+        // Cas spécial: confirmation d'échange (Accepter/Refuser).
+        // Le backend expose généralement 2 choix texte, et 2 actions correspondantes (exchange_accept/exchange_refuse).
+        if (string.Equals(pendingType, "exchange", StringComparison.OrdinalIgnoreCase))
+        {
+            var normalizedChoice = selectedChoice.Trim().ToLowerInvariant();
+            if (normalizedChoice is "accepter" or "refuser")
+            {
+                var targetType = normalizedChoice == "accepter"
+                    ? "exchange_accept"
+                    : "exchange_refuse";
+                var matched = available.FirstOrDefault(a =>
+                    string.Equals(a.Type, targetType, StringComparison.OrdinalIgnoreCase));
+                if (!string.IsNullOrWhiteSpace(matched?.Type))
+                {
+                    action = new GameClientAction(type: matched!.Type, payload: matched.Payload);
+                    return true;
+                }
+            }
+        }
+
         var candidates = FilterChoiceActions(available, pendingType);
         if (candidates.Count != state.Pending.Choices.Count)
         {

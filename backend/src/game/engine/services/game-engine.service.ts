@@ -339,16 +339,47 @@ export class GameEngineService {
     if (!allowBotTurn && (!actorId || Number.isNaN(actorId))) {
       throw new UnauthorizedException('Authentification requise pour jouer.');
     }
-    if (!allowBotTurn && current.botThinking) {
-      throw new UnauthorizedException(
-        'Un bot joue actuellement, merci de patienter.',
-      );
-    }
     const currentPlayerId = current.turn?.currentPlayerId ?? null;
     const currentPlayer = current.players?.find(
       (p) => p.id === currentPlayerId,
     );
+
+    const allowOutOfTurnActions = (() => {
+      if (allowBotTurn) return false;
+      if (!handler?.getAvailableActions) return false;
+      if (actorId == null || Number.isNaN(actorId)) return false;
+      if (currentPlayerId == null || actorId === currentPlayerId) return false;
+
+      const available = handler.getAvailableActions(current, actorId) ?? [];
+      if (!Array.isArray(available) || available.length === 0) return false;
+
+      const allowedTypes = new Set(
+        available
+          .map((a) => String((a as any)?.type ?? '').toLowerCase().trim())
+          .filter((t) => t.length > 0),
+      );
+      if (allowedTypes.size === 0) return false;
+
+      const requestedTypes = (Array.isArray(actions) ? actions : [])
+        .map((a) => String((a as any)?.type ?? '').toLowerCase().trim())
+        .filter((t) => t.length > 0);
+      if (requestedTypes.length === 0) return false;
+
+      // Autorise uniquement si toutes les actions demandées sont explicitement disponibles
+      // pour l'acteur (ex: confirm exchange pendant le tour d'un bot).
+      return requestedTypes.every((t) => allowedTypes.has(t));
+    })();
+
+    // Un bot peut être en "thinking" (timer) pendant qu'un humain doit confirmer un pending
+    // (ex: échange). On n'interdit pas ces actions explicitement autorisées.
+    if (!allowBotTurn && current.botThinking && !allowOutOfTurnActions) {
+      throw new UnauthorizedException(
+        'Un bot joue actuellement, merci de patienter.',
+      );
+    }
+
     const actorOverride =
+      allowOutOfTurnActions ||
       handler?.validateActor?.(current, actions, actorId ?? null) === true;
     if (!allowBotTurn && !actorOverride) {
       if (currentPlayer?.isBot) {

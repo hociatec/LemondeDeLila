@@ -38,6 +38,8 @@ internal static class GamePlayExtrasParser
 
     internal sealed class PlayerView
     {
+        public int? Id { get; init; }
+        public string? Username { get; init; }
         public string[] ShoppingList { get; init; } = Array.Empty<string>();
         public string[] Basket { get; init; } = Array.Empty<string>();
         public string[] Inventory { get; init; } = Array.Empty<string>();
@@ -103,6 +105,10 @@ internal static class GamePlayExtrasParser
 
             return new PlayerView
             {
+                Id = ExtractInt(view, "id"),
+                Username = view.TryGetProperty("username", out var u) && u.ValueKind == JsonValueKind.String
+                    ? u.GetString()?.Trim()
+                    : null,
                 ShoppingList = ExtractStringArray(view, "shoppingList"),
                 Basket = ExtractStringArray(view, "basket"),
                 Inventory = ExtractStringArray(view, "inventory"),
@@ -112,6 +118,32 @@ internal static class GamePlayExtrasParser
         {
             return new PlayerView();
         }
+    }
+
+    internal static int? ExtractCurrentPlayerId(GameStateDto state)
+    {
+        return ExtractCurrentPlayerView(state).Id;
+    }
+
+    private static int? ExtractInt(JsonElement obj, string key)
+    {
+        if (!obj.TryGetProperty(key, out var node))
+        {
+            return null;
+        }
+
+        if (node.ValueKind == JsonValueKind.Number && node.TryGetInt32(out var asInt))
+        {
+            return asInt;
+        }
+
+        if (node.ValueKind == JsonValueKind.String &&
+            int.TryParse(node.GetString(), out var parsed))
+        {
+            return parsed;
+        }
+
+        return null;
     }
 
     private static string[] ExtractStringArray(JsonElement obj, string key)

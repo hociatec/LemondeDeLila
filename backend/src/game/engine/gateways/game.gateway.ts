@@ -42,6 +42,7 @@ export class GameGateway
   private readonly heartbeats = new Map<WebSocket, NodeJS.Timeout>();
   private readonly lastPong = new WeakMap<WebSocket, number>();
   private readonly pingIntervalMs = 25000;
+  private readonly pongGraceMs = 4000;
   private readonly logger = new Logger(GameGateway.name);
 
   constructor(
@@ -70,7 +71,12 @@ export class GameGateway
       roomId: null,
       gameType: null,
     });
-    client.on('message', (raw) => this.handleMessage(client, raw));
+    client.on('message', (raw) => {
+      // Considère aussi l'activité applicative comme un signe de vie, pas uniquement les pongs.
+      // Cela évite les déconnexions quand le client est "idle" mais envoie un keep-alive.
+      this.lastPong.set(client, Date.now());
+      this.handleMessage(client, raw);
+    });
     client.on('error', () => client.close());
     // Heartbeat : ping régulier pour maintenir la connexion et détecter les resets silencieux.
     client.on('pong', () => this.lastPong.set(client, Date.now()));
@@ -78,7 +84,31 @@ export class GameGateway
       if (client.readyState !== WebSocket.OPEN) return;
       const last = this.lastPong.get(client) ?? Date.now();
       if (Date.now() - last > this.pingIntervalMs * 2) {
-        client.terminate();
+        const metaNow = this.clients.get(client) ?? null;
+        playingLog('ws.game.heartbeat.timeout', {
+          userId: metaNow?.userId ?? null,
+          roomId: metaNow?.roomId ?? null,
+          gameType: metaNow?.gameType ?? null,
+          lastPongAgeMs: Date.now() - last,
+        });
+
+        // Essayer une fermeture propre (close frame) avant terminate(), pour éviter
+        // le "remote party closed without completing the close handshake" côté client.
+        try {
+          client.close(4000, 'heartbeat timeout');
+        } catch {
+          /* ignore */
+        }
+
+        setTimeout(() => {
+          try {
+            if (client.readyState === WebSocket.OPEN) {
+              client.terminate();
+            }
+          } catch {
+            /* ignore */
+          }
+        }, this.pongGraceMs);
         return;
       }
       try {
@@ -93,6 +123,13 @@ export class GameGateway
 
   handleDisconnect(client: WebSocket) {
     const meta = this.clients.get(client);
+    if (meta) {
+      playingLog('ws.game.disconnect', {
+        userId: meta.userId,
+        roomId: meta.roomId ?? null,
+        gameType: meta.gameType ?? null,
+      });
+    }
     if (meta?.roomId && meta.gameType) {
       const key = this.buildRoomKey(meta.gameType, meta.roomId);
       const set = this.rooms.get(key);
