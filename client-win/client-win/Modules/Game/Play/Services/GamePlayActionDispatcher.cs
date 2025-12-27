@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,9 +9,82 @@ namespace client_win.Modules.Game.Play.Services;
 
 internal sealed class GamePlayActionDispatcher
 {
+    internal bool TryBuildPendingChoiceAction(
+        GameSession session,
+        string selectedChoice,
+        out GameClientAction? action)
+    {
+        action = null;
+        if (session == null) return false;
+        if (!session.IsConnected) return false;
+        if (string.IsNullOrWhiteSpace(selectedChoice)) return false;
+
+        var state = session.LastState;
+        if (state?.Pending?.Choices == null || state.Pending.Choices.Count == 0)
+        {
+            return false;
+        }
+
+        var index = state.Pending.Choices.FindIndex(c =>
+            string.Equals(c?.Trim(), selectedChoice.Trim(), StringComparison.Ordinal));
+        if (index < 0)
+        {
+            return false;
+        }
+
+        var available = state.Actions ?? new List<GameAvailableActionDto>();
+        if (available.Count == 0) return false;
+
+        var pendingType = (state.Pending.Type ?? string.Empty).Trim();
+        var candidates = FilterChoiceActions(available, pendingType);
+        if (candidates.Count != state.Pending.Choices.Count)
+        {
+            candidates = FilterChoiceActions(available, string.Empty);
+        }
+
+        if (index >= candidates.Count) return false;
+
+        var chosen = candidates[index];
+        if (string.IsNullOrWhiteSpace(chosen.Type)) return false;
+
+        action = new GameClientAction(type: chosen.Type, payload: chosen.Payload);
+        return true;
+    }
+
+    private static List<GameAvailableActionDto> FilterChoiceActions(
+        List<GameAvailableActionDto> actions,
+        string pendingType)
+    {
+        if (actions.Count == 0) return new List<GameAvailableActionDto>();
+
+        var normalized = pendingType?.Trim().ToLowerInvariant() ?? string.Empty;
+        if (normalized == "quiz")
+        {
+            return actions
+                .Where(a => string.Equals(a.Type, "answer_quiz", StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+
+        if (normalized == "exchange")
+        {
+            return actions
+                .Where(a =>
+                    string.Equals(a.Type, "exchange_choose_target", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(a.Type, "exchange_choose_give", StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+
+        return actions
+            .Where(a =>
+                !string.Equals(a.Type, "roll", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(a.Type, "ROLL_DICE", StringComparison.OrdinalIgnoreCase))
+            .ToList();
+    }
+
     internal bool CanSendSimpleAction(GameSession? session, string actionType)
     {
         if (session == null) return false;
+        if (!session.IsConnected) return false;
         if (string.IsNullOrWhiteSpace(actionType)) return false;
         var actions = session.LastState?.Actions;
         if (actions == null || actions.Count == 0) return false;
@@ -20,6 +94,7 @@ internal sealed class GamePlayActionDispatcher
     internal bool CanSendRoll(GameSession? session)
     {
         if (session == null) return false;
+        if (!session.IsConnected) return false;
         var actions = session.LastState?.Actions;
         if (actions == null || actions.Count == 0) return false;
         return actions.Any(a =>
@@ -30,6 +105,7 @@ internal sealed class GamePlayActionDispatcher
     internal bool CanSendAnswer(GameSession? session, string answer)
     {
         if (session == null) return false;
+        if (!session.IsConnected) return false;
         if (string.IsNullOrWhiteSpace(answer)) return false;
 
         var actions = session.LastState?.Actions;
@@ -105,4 +181,3 @@ internal sealed class GamePlayActionDispatcher
             .ConfigureAwait(false);
     }
 }
-

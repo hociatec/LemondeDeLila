@@ -10,6 +10,7 @@ import {
   DeckPoolService,
   DeckPoolState,
 } from '../../../../../modules/cards/services/deck-pool.service';
+import { RandomService } from '../../../../../modules/random/services/random.service';
 import { sanitizeText } from '../../../../../../common/utils/sanitize-text';
 import {
   PanierExpressMetadata,
@@ -24,6 +25,7 @@ export class PanierExpressQuizService {
     private readonly quizRunner: QuizRunnerService,
     private readonly core: GameCoreService,
     private readonly utils: PanierExpressUtils,
+    private readonly random: RandomService,
   ) {}
 
   applyQuiz(state: GameStateEntity, playerId: number): GameStateEntity {
@@ -34,11 +36,16 @@ export class PanierExpressQuizService {
         '[Panier Express] Quiz : deck indisponible.',
       );
     }
+    const metaRng = this.random.createMetaRng(meta as any);
     const { card, pool } = this.deckPool.draw<QuizQuestion>(
       meta.decks as DeckPoolState<QuizQuestion>,
       'quizzes',
+      metaRng.rng,
     );
-    const metadata = { ...meta, decks: pool as PanierExpressDeckPool };
+    const metadata = {
+      ...metaRng.getMeta(),
+      decks: pool as PanierExpressDeckPool,
+    };
     const quiz = card;
     if (!quiz) {
       return this.core.appendLog(

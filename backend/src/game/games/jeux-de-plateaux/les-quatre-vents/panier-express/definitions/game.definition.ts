@@ -9,7 +9,8 @@ export type PanierExpressActionType =
   | 'roll'
   | 'ROLL_DICE'
   | 'answer_quiz'
-  | 'exchange_with'
+  | 'exchange_choose_target'
+  | 'exchange_choose_give'
   | 'exchange_accept'
   | 'exchange_refuse'
   | 'skip_turn';
@@ -26,7 +27,23 @@ export const PANIER_EXPRESS_GAME: GameDefinition<
   minPlayers: 2,
   maxPlayers: 10,
   roles: [],
-  actions: ['roll', 'ROLL_DICE', 'answer_quiz', 'exchange_with', 'exchange_accept', 'exchange_refuse', 'skip_turn'],
+  actions: [
+    'roll',
+    'ROLL_DICE',
+    'answer_quiz',
+    'exchange_choose_target',
+    'exchange_choose_give',
+    'exchange_accept',
+    'exchange_refuse',
+    'skip_turn',
+  ],
+  actionsMeta: {
+    exchange_choose_target: { blocking: true },
+    exchange_choose_give: { blocking: true },
+    exchange_accept: { blocking: true },
+    exchange_refuse: { blocking: true },
+    answer_quiz: { blocking: true },
+  },
   phaseOrder: [
     { id: 'turn', kind: 'player-action' },
     { id: 'check_victory', kind: 'system' },

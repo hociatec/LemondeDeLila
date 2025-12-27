@@ -1,10 +1,8 @@
 import { QuizState } from '../../../../../modules/quiz/services/quiz-runner.service';
 import { BotProfile } from '../../../../../modules/bot/services/bot-strategy.service';
 import { DeckPoolState } from '../../../../../modules/cards/services/deck-pool.service';
-import {
-  PendingState,
-  PlayerStateEntity,
-} from '../../../../../core/entities/game-state.entity';
+import { PlayerStateEntity } from '../../../../../core/entities/game-state.entity';
+import type { InteractiveExchangePending } from '../../../../../modules/exchange/model/interactive-exchange.model';
 
 /**
  * Types des tuiles Panier Express
@@ -54,24 +52,7 @@ export interface PanierExpressPlayer extends Omit<
 /**
  * Échange en attente
  */
-export type PanierExpressPendingExchange = PendingState & {
-  type: 'exchange';
-  playerId: number;
-  card: string;
-  currentOffer?: {
-    targetPlayerId: number;
-    targetUsername: string;
-    give: string;
-    take: string;
-  };
-  allOffers?: Array<{
-    targetPlayerId: number;
-    targetUsername: string;
-    give: string;
-    take: string;
-  }>;
-  offerIndex?: number;
-};
+export type PanierExpressPendingExchange = InteractiveExchangePending;
 
 /**
  * Métadonnées Panier Express

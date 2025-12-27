@@ -1,10 +1,10 @@
-import { Test } from '@nestjs/testing';
+﻿import { Test } from '@nestjs/testing';
 import { PanierExpressService } from '../panier-express.service';
 import { PanierExpressModule } from '../panier-express.module';
 import { PanierExpressExchangeService } from '../actions/panier-express-exchange.service';
 import { nextRngInt } from '../../../../../../common/utils/seeded-rng';
 
-// Tests unitaires ciblés Panier Express (pioche stand/bonus, échange, quiz, flux de tour, bot, presenter).
+// Tests unitaires ciblÃ©s Panier Express (pioche stand/bonus, Ã©change, quiz, flux de tour, bot, presenter).
 describe('PanierExpressService', () => {
   let service: PanierExpressService;
   let exchangeSvc: PanierExpressExchangeService;
@@ -17,7 +17,7 @@ describe('PanierExpressService', () => {
     exchangeSvc = moduleRef.get(PanierExpressExchangeService);
   });
 
-  it('expose un état initial avec decks et tuiles', () => {
+  it('expose un Ã©tat initial avec decks et tuiles', () => {
     const state: any = {
       players: [
         { id: 1, username: 'A' },
@@ -56,7 +56,7 @@ describe('PanierExpressService', () => {
     expect(currentView.id).toBe(1);
     expect(currentView.basket).toContain('pomme');
 
-    // Plateau exposé pour permettre l'annonce "case/total".
+    // Plateau exposÃ© pour permettre l'annonce "case/total".
     const board: any = (exposed as any).board;
     expect(board).toBeTruthy();
     expect(Array.isArray(board.tiles)).toBe(true);
@@ -65,7 +65,7 @@ describe('PanierExpressService', () => {
     expect(typeof board.laps).toBe('object');
     expect(typeof board.turns).toBe('object');
 
-    // Le raccourci P devient générique côté client (pas spécifique Panier Express).
+    // Le raccourci P devient gÃ©nÃ©rique cÃ´tÃ© client (pas spÃ©cifique Panier Express).
     expect(
       (extras.shortcuts ?? []).some(
         (s: any) => String(s?.key ?? '') === 'pressed P',
@@ -73,7 +73,7 @@ describe('PanierExpressService', () => {
     ).toBe(false);
   });
 
-  it('avancer sur un stand ajoute une carte cohérente', () => {
+  it('avancer sur un stand ajoute une carte cohÃ©rente', () => {
     const base: any = service.hydrateInitialState({
       players: [{ id: 1, username: 'A' }],
       status: 'starting',
@@ -107,7 +107,7 @@ describe('PanierExpressService', () => {
     expect((exposed.pending as any)?.blocking).toBe(true);
   });
 
-  it('sanitize et expose les quiz même sans question explicite', () => {
+  it('sanitize et expose les quiz mÃªme sans question explicite', () => {
     const base: any = service.hydrateInitialState({
       players: [{ id: 1, username: 'A' }],
       status: 'running',
@@ -147,7 +147,7 @@ describe('PanierExpressService', () => {
     expect(afterSkip.turn?.currentPlayerId).toBe(2);
   });
 
-  it('incrémente le tour de plateau quand un joueur repasse par la case départ', () => {
+  it('incrÃ©mente le tour de plateau quand un joueur repasse par la case dÃ©part', () => {
     const base: any = service.hydrateInitialState({
       players: [
         { id: 1, username: 'A' },
@@ -164,12 +164,12 @@ describe('PanierExpressService', () => {
     meta.positions[1] = tilesLen - 1;
     meta.laps[1] = 0;
 
-    // 39 -> 1 : le joueur repasse par la case départ pendant le déplacement.
+    // 39 -> 1 : le joueur repasse par la case dÃ©part pendant le dÃ©placement.
     const moved = (service as any).movePlayer(base, 1, 2);
     expect(moved.metadata.laps[1]).toBe(1);
   });
 
-  it('décrémente le tour de plateau quand un joueur recule en repassant par la case départ (tour 1 -> tour 0)', () => {
+  it('dÃ©crÃ©mente le tour de plateau quand un joueur recule en repassant par la case dÃ©part (tour 1 -> tour 0)', () => {
     const base: any = service.hydrateInitialState({
       players: [
         { id: 1, username: 'A' },
@@ -188,7 +188,7 @@ describe('PanierExpressService', () => {
     expect(moved.metadata.laps[1]).toBe(-1);
   });
 
-  it("décrémente le tour de plateau lors d'un recul d'échange qui repasse la case départ", () => {
+  it("dÃ©crÃ©mente le tour de plateau lors d'un recul d'Ã©change qui repasse la case dÃ©part", () => {
     const state: any = service.hydrateInitialState({
       players: [
         { id: 1, username: 'A', inventory: [] },
@@ -208,7 +208,7 @@ describe('PanierExpressService', () => {
     expect((after.metadata as any).laps[1]).toBe(-1);
   });
 
-  it('déclare une victoire quand un joueur a complété sa liste sur la case start', () => {
+  it('dÃ©clare une victoire quand un joueur a complÃ©tÃ© sa liste sur la case start', () => {
     const base: any = service.hydrateInitialState({
       players: [
         { id: 1, username: 'A', shoppingList: ['pomme'], basket: ['pomme'] },
@@ -221,7 +221,7 @@ describe('PanierExpressService', () => {
     expect(afterVictory.metadata.winnerId).toBe(1);
   });
 
-  it('permet à un bot de choisir automatiquement une réponse de quiz parmi les choix proposés', () => {
+  it('permet Ã  un bot de choisir automatiquement une rÃ©ponse de quiz parmi les choix proposÃ©s', () => {
     const base: any = service.hydrateInitialState({
       players: [{ id: 1, username: 'Bot A', isBot: true }],
       status: 'running',
@@ -278,7 +278,7 @@ describe('PanierExpressService', () => {
     expect((after.metadata as any)?.rng?.counter).toBe(1);
   });
 
-  it("expose currentPlayerView pour l'utilisateur connecté (même si c'est le tour d'un bot)", () => {
+  it("expose currentPlayerView pour l'utilisateur connectÃ© (mÃªme si c'est le tour d'un bot)", () => {
     const state: any = service.hydrateInitialState({
       players: [
         { id: 1, username: 'admin', shoppingList: ['ananas'], basket: [], inventory: [] },
@@ -287,7 +287,7 @@ describe('PanierExpressService', () => {
       status: 'running',
     } as any);
 
-    // Le bot a un id négatif dans le state du moteur.
+    // Le bot a un id nÃ©gatif dans le state du moteur.
     state.turn = { currentPlayerId: -1, direction: 1 };
     state.turnIndex = 0;
 
@@ -295,7 +295,7 @@ describe('PanierExpressService', () => {
     expect(exposed.extras?.currentPlayerView?.shoppingList).toEqual(['ananas']);
   });
 
-  it('requiert une réponse pour answer_quiz (ignore correct côté client)', () => {
+  it('requiert une rÃ©ponse pour answer_quiz (ignore correct cÃ´tÃ© client)', () => {
     const base: any = service.hydrateInitialState({
       players: [{ id: 1, username: 'A' }],
       status: 'running',
@@ -319,7 +319,7 @@ describe('PanierExpressService', () => {
     expect((after.metadata as any)?.quiz?.pending?.[1]).toBeTruthy();
   });
 
-  it('refill le deck de courses lorsqu’il est vide et permet toujours de piocher', () => {
+  it('refill le deck de courses lorsquâ€™il est vide et permet toujours de piocher', () => {
     const base: any = service.hydrateInitialState({
       players: [{ id: 1, username: 'A' }],
       status: 'starting',
@@ -337,20 +337,6 @@ describe('PanierExpressService', () => {
     ).toBeGreaterThan(0);
   });
 
-  it('propose des actions exchange_with via le service dédié', () => {
-    const state: any = service.hydrateInitialState({
-      players: [
-        { id: 1, username: 'A', inventory: ['pomme'] },
-        { id: 2, username: 'B', inventory: ['poire'] },
-      ],
-      status: 'running',
-    } as any);
-    state.turn = { currentPlayerId: 1, direction: 1 };
-    state.turnIndex = 0;
-    const actions = exchangeSvc.buildExchangeActions(state, 1);
-    expect(actions.some((a: any) => a.type === 'exchange_with')).toBe(true);
-  });
-
   it("ne propose pas d'echange si aucun pending exchange", () => {
     const state: any = service.hydrateInitialState({
       players: [
@@ -365,7 +351,7 @@ describe('PanierExpressService', () => {
     state.metadata.positions[1] = 4; // exchange-1
 
     const actions = service.getAvailableActions(state, 1);
-    expect(actions.some((a: any) => a.type === 'exchange_with')).toBe(false);
+    expect(actions.some((a: any) => a.type === 'exchange_choose_target')).toBe(false);
     expect(actions.some((a: any) => a.type === 'roll')).toBe(true);
   });
 
@@ -376,17 +362,17 @@ describe('PanierExpressService', () => {
         { id: 2, username: 'B', inventory: ['poire'] },
       ],
       status: 'running',
-      pending: { type: 'exchange', playerId: 1 },
+      pending: {\n        type: 'exchange',\n        playerId: 1,\n        card: 'exchange',\n        step: 'choose_target',\n        targets: [{ targetPlayerId: 2, targetUsername: 'B' }],\n      },
     } as any);
     state.turn = { currentPlayerId: 1, direction: 1 };
     state.turnIndex = 0;
     state.metadata.positions[1] = 4; // exchange-1
 
     const actions = service.getAvailableActions(state, 1);
-    expect(actions.some((a: any) => a.type === 'exchange_with')).toBe(true);
+    expect(actions.some((a: any) => a.type === 'exchange_choose_target')).toBe(true);
   });
 
-  it('met en pending un échange lorsqu’une offre est possible', () => {
+  it('met en pending un Ã©change lorsquâ€™une offre est possible', () => {
     const state: any = service.hydrateInitialState({
       players: [
         { id: 1, username: 'A', inventory: ['pomme'] },
@@ -401,40 +387,7 @@ describe('PanierExpressService', () => {
     expect(typeof (after.pending as any)?.card).toBe('string');
   });
 
-  it('refuse un exchange_with sans pending exchange', () => {
-    const state: any = service.hydrateInitialState({
-      players: [
-        { id: 1, username: 'A', inventory: ['pomme'] },
-        { id: 2, username: 'B', inventory: ['poire'] },
-      ],
-      status: 'running',
-      pending: null,
-    } as any);
-    state.turn = { currentPlayerId: 1, direction: 1 };
-    state.turnIndex = 0;
-    state.metadata.positions[1] = 4; // exchange-1
-
-    const after = service.applyActions(state, [
-      {
-        type: 'exchange_with',
-        payload: {
-          playerId: 1,
-          targetPlayerId: 2,
-          give: 'pomme',
-          take: 'poire',
-        },
-      },
-    ] as any);
-
-    const a = (after.players as any[]).find((p) => p.id === 1);
-    const b = (after.players as any[]).find((p) => p.id === 2);
-    expect(a.inventory).toContain('pomme');
-    expect(a.inventory).not.toContain('poire');
-    expect(b.inventory).toContain('poire');
-    expect(b.inventory).not.toContain('pomme');
-  });
-
-  it("gère l'échange impossible en reculant le joueur sans pending", () => {
+  it("gÃ¨re l'Ã©change impossible en reculant le joueur sans pending", () => {
     const state: any = service.hydrateInitialState({
       players: [
         { id: 1, username: 'A', inventory: [] },
@@ -448,22 +401,14 @@ describe('PanierExpressService', () => {
     expect((after.metadata as any).positions[1]).not.toBe(5);
   });
 
-  it('résout un échange et met à jour les inventaires', () => {
+  it('rÃ©sout un Ã©change et met Ã  jour les inventaires', () => {
     const state: any = service.hydrateInitialState({
       players: [
         { id: 1, username: 'A', inventory: ['pomme', 'banane'] },
         { id: 2, username: 'B', inventory: ['poire'] },
       ],
       status: 'running',
-    } as any);
-    const pendingState = exchangeSvc.applyExchange(state, 1);
-    const after = exchangeSvc.resolveExchange(
-      pendingState as any,
-      1,
-      2,
-      'pomme',
-      'poire',
-    );
+    } as any);\n    state.metadata = {\n      ...(state.metadata ?? {}),\n      rng: { seed: 123, counter: 0 },\n    };\n\n    const pendingState = exchangeSvc.applyExchange(state, 1);\n    const chosenTarget = exchangeSvc.chooseTarget(pendingState as any, 1, 2);\n    const after = exchangeSvc.chooseGive(chosenTarget as any, 1, 'pomme');
     const a = (after.players as any[]).find((p) => p.id === 1);
     const b = (after.players as any[]).find((p) => p.id === 2);
     expect(a.inventory).toContain('poire');
@@ -473,7 +418,7 @@ describe('PanierExpressService', () => {
     expect(after.pending).toBeNull();
   });
 
-  it('refuse de lancer un second échange tant que le premier est en attente', () => {
+  it('refuse de lancer un second Ã©change tant que le premier est en attente', () => {
     const base: any = service.hydrateInitialState({
       players: [
         { id: 1, username: 'A', inventory: ['pomme'] },
@@ -486,7 +431,7 @@ describe('PanierExpressService', () => {
     expect(second.pending?.playerId).toBe(1);
   });
 
-  it("rejette la résolution d'un autre joueur que celui concerné", () => {
+  it("rejette l'action d'un autre joueur que celui concerné", () => {
     const base: any = service.hydrateInitialState({
       players: [
         { id: 1, username: 'A', inventory: ['pomme'] },
@@ -494,14 +439,9 @@ describe('PanierExpressService', () => {
       ],
       status: 'running',
     } as any);
-    const pending = exchangeSvc.applyExchange(base, 1);
-    const after = exchangeSvc.resolveExchange(
-      pending as any,
-      2,
-      1,
-      'poire',
-      'pomme',
-    );
+    const pending = exchangeSvc.applyExchange(base, 1);\n    const after = exchangeSvc.chooseTarget(pending as any, 2, 1);
     expect(after.pending?.playerId).toBe(1);
   });
 });
+
+

@@ -13,6 +13,7 @@ import { QuizModule } from '../../../../modules/quiz/quiz.module';
 import { ExchangeModule } from '../../../../modules/exchange/exchange.module';
 import { VictoryModule } from '../../../../modules/victory/victory.module';
 import { BotModule } from '../../../../modules/bot/bot.module';
+import { RandomModule } from '../../../../modules/random/random.module';
 import { PanierExpressService } from './panier-express.service';
 import { PanierExpressSetupService } from './setup/panier-express-setup.service';
 import { PanierExpressDrawService } from './actions/panier-express-draw.service';
@@ -40,6 +41,7 @@ import { PanierExpressPresenterService } from './presenter/panier-express-presen
     ExchangeModule,
     VictoryModule,
     BotModule,
+    RandomModule,
   ],
   providers: [
     PanierExpressService,

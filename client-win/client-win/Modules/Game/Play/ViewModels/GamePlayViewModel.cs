@@ -32,6 +32,7 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
     private string _actionsText = string.Empty;
     private bool _isBotThinking;
     private string? _selectedChoice;
+    private int _choiceSubmitInProgress;
 
     private readonly AsyncRelayCommand _rollCommand;
     private readonly AsyncRelayCommand _exchangeAcceptCommand;
@@ -39,6 +40,7 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
     private readonly AsyncRelayCommand _toggleShoppingCommand;
     private readonly AsyncRelayCommand _toggleBasketCommand;
     private readonly AsyncRelayCommand _toggleInventoryCommand;
+    private readonly AsyncRelayCommand _turnInfoCommand;
 
     public GamePlayViewModel(
         Func<CancellationToken, Task<GameSession>> connect,
@@ -53,7 +55,6 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
         _rollCommand = new AsyncRelayCommand(
             async () =>
             {
-                _announcements?.ShortcutKey("Entrée");
                 await TrySendRollAsync().ConfigureAwait(true);
             },
             canExecute: () => _actions.CanSendRoll(_session));
@@ -61,7 +62,6 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
         _exchangeAcceptCommand = new AsyncRelayCommand(
             async () =>
             {
-                _announcements?.ShortcutKey("a");
                 await TrySendSimpleActionAsync("exchange_accept").ConfigureAwait(true);
             },
             canExecute: () => _actions.CanSendSimpleAction(_session, "exchange_accept"));
@@ -69,7 +69,6 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
         _exchangeRefuseCommand = new AsyncRelayCommand(
             async () =>
             {
-                _announcements?.ShortcutKey("r");
                 await TrySendSimpleActionAsync("exchange_refuse").ConfigureAwait(true);
             },
             canExecute: () => _actions.CanSendSimpleAction(_session, "exchange_refuse"));
@@ -97,6 +96,10 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
                 return Task.CompletedTask;
             },
             canExecute: () => _projector.HasInterfaceShortcut(_session?.LastState, "inventory"));
+
+        _turnInfoCommand = new AsyncRelayCommand(
+            RequestTurnAsync,
+            canExecute: () => _session != null);
 
         BuildStaticShortcuts();
     }
@@ -151,7 +154,9 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
             _projector.ResetLogCursor();
             _session = await _connect(cancellationToken).ConfigureAwait(false);
             _session.StateUpdated += OnStateUpdated;
+            _session.TurnUpdated += OnTurnUpdated;
             _session.ErrorReceived += OnServerError;
+            _turnInfoCommand.RaiseCanExecuteChanged();
             ConnectionStatus = "Connecté au moteur de jeu.";
             await _session.RequestStateAsync(cancellationToken).ConfigureAwait(false);
         }
@@ -166,6 +171,11 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
         var session = _session;
         if (session == null) return false;
 
+        if (Interlocked.Exchange(ref _choiceSubmitInProgress, 1) == 1)
+        {
+            return false;
+        }
+
         try
         {
             var choice = SelectedChoice;
@@ -174,22 +184,25 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
                 return false;
             }
 
-            if (!_actions.CanSendAnswer(session, choice))
+            if (!_actions.TryBuildPendingChoiceAction(session, choice, out var action) || action == null)
             {
                 return false;
             }
 
-            _announcements?.ShortcutKey("Entrée");
-            await _actions.SendAnswerQuizAsync(session, choice, cancellationToken).ConfigureAwait(false);
+            await session.SendActionsAsync(new[] { action }, cancellationToken).ConfigureAwait(false);
             return true;
         }
         catch (Exception ex)
         {
-            Log.Error(ex, "Erreur lors de l'envoi de answer_quiz");
-            ConnectionStatus = $"Erreur quiz: {ex.Message}";
+            Log.Error(ex, "Erreur lors de l'envoi d'une action de pending");
+            ConnectionStatus = $"Erreur pending: {ex.Message}";
             _announcements?.Error(ex.Message);
-            MessageReceived?.Invoke($"Erreur quiz: {ex.Message}");
+            MessageReceived?.Invoke($"Erreur pending: {ex.Message}");
             return false;
+        }
+        finally
+        {
+            Interlocked.Exchange(ref _choiceSubmitInProgress, 0);
         }
     }
 
@@ -253,7 +266,7 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
             },
             CancellationToken.None,
             TaskContinuationOptions.OnlyOnFaulted,
-            TaskScheduler.FromCurrentSynchronizationContext());
+            TaskScheduler.Default);
     }
 
     private void BuildStaticShortcuts()
@@ -301,6 +314,13 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
             description: "Annoncer inventaire",
             code: "ui.inventory",
             availableInGame: true));
+
+        Shortcuts.Add(new ShortcutDefinition(
+            't',
+            _turnInfoCommand,
+            description: "A qui est le tour ?",
+            code: "ui.turn",
+            availableInGame: true));
     }
 
     private void OnServerError(string message)
@@ -310,6 +330,34 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
             ConnectionStatus = $"Erreur serveur: {message}";
             _announcements?.Error(message);
             MessageReceived?.Invoke($"Erreur: {message}");
+            RefreshCanExecute();
+        }, DispatcherPriority.Background);
+    }
+
+    private async Task RequestTurnAsync()
+    {
+        var session = _session;
+        if (session == null) return;
+        try
+        {
+            await session.RequestTurnAsync().ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Erreur lors de la demande de game.turn");
+        }
+    }
+
+    private void OnTurnUpdated(TurnInfoDto info)
+    {
+        _dispatcher.InvokeAsync(() =>
+        {
+            var who = string.IsNullOrWhiteSpace(info.CurrentPlayerUsername) ? null : info.CurrentPlayerUsername.Trim();
+            var msg = who == null
+                ? "Tour actuel: inconnu."
+                : $"C'est au tour de {who}.";
+
+            MessageReceived?.Invoke(msg);
         }, DispatcherPriority.Background);
     }
 
@@ -336,18 +384,41 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
 
     private void UpdatePendingChoices(GameStateDto state)
     {
-        PendingChoices.Clear();
-        SelectedChoice = null;
-
         var extracted = _projector.ExtractPendingChoices(state);
+        if (AreSameChoices(PendingChoices, extracted.choices))
+        {
+            if (PendingChoices.Count > 0 && string.IsNullOrWhiteSpace(SelectedChoice))
+            {
+                SelectedChoice = extracted.selected;
+            }
+            return;
+        }
+
+        PendingChoices.Clear();
         foreach (var choice in extracted.choices)
         {
             PendingChoices.Add(choice);
         }
-        if (!string.IsNullOrWhiteSpace(extracted.selected) && PendingChoices.Count > 0)
+
+        SelectedChoice = PendingChoices.Count > 0 ? extracted.selected : null;
+    }
+
+    private static bool AreSameChoices(ObservableCollection<string> existing, System.Collections.Generic.IReadOnlyList<string> next)
+    {
+        if (existing.Count != next.Count)
         {
-            SelectedChoice = extracted.selected;
+            return false;
         }
+
+        for (var i = 0; i < existing.Count; i++)
+        {
+            if (!string.Equals(existing[i], next[i], StringComparison.Ordinal))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private void EmitNewLogEntries(GameStateDto state)
@@ -358,6 +429,7 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
         }
     }
 
+
     private void RefreshCanExecute()
     {
         _rollCommand.RaiseCanExecuteChanged();
@@ -366,6 +438,7 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
         _toggleShoppingCommand.RaiseCanExecuteChanged();
         _toggleBasketCommand.RaiseCanExecuteChanged();
         _toggleInventoryCommand.RaiseCanExecuteChanged();
+        _turnInfoCommand.RaiseCanExecuteChanged();
     }
 
     public async ValueTask DisposeAsync()
@@ -375,6 +448,7 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
         if (session != null)
         {
             session.StateUpdated -= OnStateUpdated;
+            session.TurnUpdated -= OnTurnUpdated;
             session.ErrorReceived -= OnServerError;
             try
             {
@@ -388,4 +462,3 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
         }
     }
 }
-

@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using client_win.Core.Input;
 
 namespace client_win.Behaviors;
@@ -23,6 +24,18 @@ public static class ShortcutBindingsBehavior
 
     public static IEnumerable<ShortcutDefinition>? GetShortcuts(DependencyObject element) =>
         element.GetValue(ShortcutsProperty) as IEnumerable<ShortcutDefinition>;
+
+    public static readonly DependencyProperty DisableWhenFocusWithinProperty = DependencyProperty.RegisterAttached(
+        "DisableWhenFocusWithin",
+        typeof(bool),
+        typeof(ShortcutBindingsBehavior),
+        new PropertyMetadata(false));
+
+    public static void SetDisableWhenFocusWithin(DependencyObject element, bool value) =>
+        element.SetValue(DisableWhenFocusWithinProperty, value);
+
+    public static bool GetDisableWhenFocusWithin(DependencyObject element) =>
+        (bool)element.GetValue(DisableWhenFocusWithinProperty);
 
     private sealed class Subscription
     {
@@ -110,6 +123,11 @@ public static class ShortcutBindingsBehavior
                 // Ne pas interpréter les lettres comme raccourcis quand le focus est dans un contrôle de texte
                 // (ex: historique en lecture seule). On laisse le contrôle/lecteur d'écran gérer l'écho clavier.
                 if (IsTextInputFocused())
+                {
+                    return;
+                }
+
+                if (IsDisabledForFocusedElement())
                 {
                     return;
                 }
@@ -221,5 +239,46 @@ public static class ShortcutBindingsBehavior
         }
 
         return false;
+    }
+
+    private static bool IsDisabledForFocusedElement()
+    {
+        var focused = Keyboard.FocusedElement as DependencyObject;
+        if (focused == null)
+        {
+            return false;
+        }
+
+        for (DependencyObject? current = focused; current != null; current = GetParent(current))
+        {
+            if (GetDisableWhenFocusWithin(current))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static DependencyObject? GetParent(DependencyObject current)
+    {
+        try
+        {
+            if (current is Visual || current is System.Windows.Media.Media3D.Visual3D)
+            {
+                return VisualTreeHelper.GetParent(current);
+            }
+        }
+        catch
+        {
+            // ignore
+        }
+
+        if (current is FrameworkElement fe)
+        {
+            return fe.Parent ?? fe.TemplatedParent;
+        }
+
+        return LogicalTreeHelper.GetParent(current);
     }
 }

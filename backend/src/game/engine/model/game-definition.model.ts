@@ -11,6 +11,11 @@ export type PhaseDefinition<TPhaseId extends string = string> = {
   kind: PhaseKind;
 };
 
+export type ActionDefinition = {
+  blocking?: boolean;
+  autoResolve?: boolean;
+};
+
 export interface GameDefinition<
   TGameId extends string = string,
   TRoleId extends string = string,
@@ -24,6 +29,7 @@ export interface GameDefinition<
   maxPlayers: number;
   roles: readonly RoleDefinition<TRoleId>[];
   actions: readonly TActionType[];
+  actionsMeta?: Partial<Record<TActionType, ActionDefinition>>;
   phaseOrder: readonly PhaseDefinition<TPhaseId>[];
   victory: TVictory;
 }

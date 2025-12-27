@@ -26,7 +26,8 @@ export class ValidatedGameActionDto {
   @IsString()
   @IsNotEmpty({ message: 'Action type cannot be empty' })
   @Matches(/^[a-z0-9_-]+$/i, {
-    message: 'Action type must contain only alphanumeric characters, underscores, and hyphens',
+    message:
+      'Action type must contain only alphanumeric characters, underscores, and hyphens',
   })
   type!: string;
 

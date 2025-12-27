@@ -1,5 +1,9 @@
 import 'reflect-metadata';
-import { validateAction, validateActions, sanitizeAction } from './validated-action.dto';
+import {
+  validateAction,
+  validateActions,
+  sanitizeAction,
+} from './validated-action.dto';
 import { PayloadValidationError } from '../../../common/errors/game-errors';
 
 describe('ValidatedActionDto', () => {
@@ -22,7 +26,9 @@ describe('ValidatedActionDto', () => {
         payload: {},
       };
 
-      await expect(validateAction(action)).rejects.toThrow(PayloadValidationError);
+      await expect(validateAction(action)).rejects.toThrow(
+        PayloadValidationError,
+      );
     });
 
     it('should reject action with invalid type characters', async () => {
@@ -31,7 +37,9 @@ describe('ValidatedActionDto', () => {
         payload: {},
       };
 
-      await expect(validateAction(action)).rejects.toThrow(PayloadValidationError);
+      await expect(validateAction(action)).rejects.toThrow(
+        PayloadValidationError,
+      );
     });
 
     it('should reject action without type', async () => {
@@ -39,7 +47,9 @@ describe('ValidatedActionDto', () => {
         payload: {},
       };
 
-      await expect(validateAction(action)).rejects.toThrow(PayloadValidationError);
+      await expect(validateAction(action)).rejects.toThrow(
+        PayloadValidationError,
+      );
     });
 
     it('should accept action with valid type containing underscores and hyphens', async () => {
@@ -90,7 +100,9 @@ describe('ValidatedActionDto', () => {
     it('should reject non-array input', async () => {
       const actions = { type: 'draw' };
 
-      await expect(validateActions(actions)).rejects.toThrow(PayloadValidationError);
+      await expect(validateActions(actions)).rejects.toThrow(
+        PayloadValidationError,
+      );
     });
 
     it('should reject if any action is invalid', async () => {
@@ -99,7 +111,9 @@ describe('ValidatedActionDto', () => {
         { type: '', payload: {} }, // Invalid
       ];
 
-      await expect(validateActions(actions)).rejects.toThrow(PayloadValidationError);
+      await expect(validateActions(actions)).rejects.toThrow(
+        PayloadValidationError,
+      );
     });
   });
 

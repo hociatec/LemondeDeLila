@@ -44,4 +44,3 @@ describe('WsSignatureService', () => {
     expect(service.validate(socket, [])).toBe(false);
   });
 });
-

@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
@@ -9,8 +10,8 @@ using Serilog;
 namespace client_win.Core.Diagnostics;
 
 /// <summary>
-/// Pare-chocs global: empêche l'application de se fermer sur exception non gérée,
-/// journalise, génère un rapport, et publie sur ErrorBus + annonce NVDA.
+/// Pare-chocs global: évite la fermeture WPF sur exception non gérée,
+/// journalise, génère un crash report, publie sur ErrorBus et annonce au lecteur d'écran.
 /// </summary>
 public static class GlobalExceptionShield
 {
@@ -52,18 +53,14 @@ public static class GlobalExceptionShield
     {
         try
         {
-            HandleException(
-                e.Exception,
-                context: "unhandled.dispatcher",
-                mayTerminate: false);
+            HandleException(e.Exception, context: "unhandled.dispatcher", mayTerminate: false);
         }
         catch
         {
-            // ne rien relancer
+            // ignore
         }
         finally
         {
-            // IMPORTANT: empêche la fermeture WPF
             e.Handled = true;
         }
     }
@@ -72,18 +69,14 @@ public static class GlobalExceptionShield
     {
         try
         {
-            HandleException(
-                e.Exception,
-                context: "unhandled.task",
-                mayTerminate: false);
+            HandleException(e.Exception, context: "unhandled.task", mayTerminate: false);
         }
         catch
         {
-            // ne rien relancer
+            // ignore
         }
         finally
         {
-            // IMPORTANT: empêche le process de terminer à cause d'une Task non observée
             e.SetObserved();
         }
     }
@@ -94,32 +87,26 @@ public static class GlobalExceptionShield
         {
             if (e.ExceptionObject is Exception ex)
             {
-                HandleException(
-                    ex,
-                    context: "unhandled.appdomain",
-                    mayTerminate: e.IsTerminating);
+                HandleException(ex, context: "unhandled.appdomain", mayTerminate: e.IsTerminating);
             }
             else
             {
-                HandleException(
-                    new Exception("Exception non gérée (objet non Exception)"),
-                    context: "unhandled.appdomain",
-                    mayTerminate: e.IsTerminating);
+                HandleException(new Exception("Exception non gérée (objet non-Exception)"), context: "unhandled.appdomain", mayTerminate: e.IsTerminating);
             }
         }
         catch
         {
-            // ne rien relancer
+            // ignore
         }
     }
 
     private static void HandleException(Exception exception, string context, bool mayTerminate)
     {
-        if (exception == null) return;
-
         var message = string.IsNullOrWhiteSpace(exception.Message)
             ? "Erreur inattendue"
             : exception.Message;
+
+        TryWriteCrashTextFiles(exception, context);
 
         try
         {
@@ -159,6 +146,41 @@ public static class GlobalExceptionShield
         try
         {
             _announcer?.AnnounceAssertive($"Erreur: {message}");
+        }
+        catch
+        {
+            // ignore
+        }
+    }
+
+    private static void TryWriteCrashTextFiles(Exception exception, string context)
+    {
+        try
+        {
+            var timestamp = DateTime.UtcNow.ToString("yyyyMMdd-HHmmss");
+            var content =
+                $"[{timestamp}] {context}{Environment.NewLine}{exception}{Environment.NewLine}{Environment.NewLine}";
+
+            TryAppend(Path.Combine(Directory.GetCurrentDirectory(), "client", "log", "crash-latest.txt"), content);
+            TryAppend(Path.Combine(AppContext.BaseDirectory, "client", "log", "crash-latest.txt"), content);
+        }
+        catch
+        {
+            // ignore
+        }
+    }
+
+    private static void TryAppend(string filePath, string content)
+    {
+        try
+        {
+            var dir = Path.GetDirectoryName(filePath);
+            if (!string.IsNullOrWhiteSpace(dir))
+            {
+                Directory.CreateDirectory(dir);
+            }
+
+            File.AppendAllText(filePath, content);
         }
         catch
         {

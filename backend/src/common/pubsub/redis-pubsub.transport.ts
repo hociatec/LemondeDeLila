@@ -4,7 +4,10 @@ export class RedisPubSubTransport<TEvent> {
   private readonly publisher: RedisClientType;
   private readonly subscriber: RedisClientType;
 
-  constructor(private readonly url: string, private readonly channel: string) {
+  constructor(
+    private readonly url: string,
+    private readonly channel: string,
+  ) {
     this.publisher = createClient({ url: this.url });
     this.subscriber = createClient({ url: this.url });
   }

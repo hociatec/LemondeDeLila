@@ -103,9 +103,7 @@ export class DameNaturePresenterService extends BasePresenterService {
       return {
         type: 'quiz',
         question:
-          pendingQuiz.card?.question ??
-          pendingQuiz.card?.memberName ??
-          'Quiz',
+          pendingQuiz.card?.question ?? pendingQuiz.card?.memberName ?? 'Quiz',
         choices: pendingQuiz.card?.choices ?? [
           'Bonne réponse',
           'Mauvaise réponse',
@@ -134,7 +132,12 @@ export class DameNaturePresenterService extends BasePresenterService {
     const baseExtras = this.getBaseExtras(state);
     const started = this.isStarted(state);
     const players = this.setup.ensurePlayers(state) as any[];
-    const playerViews = this.buildPlayerViews(state, players, currentPlayerId, started);
+    const playerViews = this.buildPlayerViews(
+      state,
+      players,
+      currentPlayerId,
+      started,
+    );
     const currentPlayerView =
       typeof currentPlayerId === 'number'
         ? (playerViews.find((v) => v.id === currentPlayerId) ?? null)
@@ -170,7 +173,12 @@ export class DameNaturePresenterService extends BasePresenterService {
     const baseExtras = this.getBaseExtras(state);
     const started = this.isStarted(state);
     const players = this.setup.ensurePlayers(state) as any[];
-    const playerViews = this.buildPlayerViewsForUser(state, players, userId, started);
+    const playerViews = this.buildPlayerViewsForUser(
+      state,
+      players,
+      userId,
+      started,
+    );
     const viewerView =
       typeof userId === 'number'
         ? (playerViews.find((v) => v.id === userId) ?? null)
@@ -183,10 +191,7 @@ export class DameNaturePresenterService extends BasePresenterService {
       typeof userId === 'number'
         ? (players.find((p) => p.id === userId) ?? null)
         : null;
-    const handCards = this.buildHandCardsForUser(
-      viewerPlayer,
-      started,
-    );
+    const handCards = this.buildHandCardsForUser(viewerPlayer, started);
     const shortcuts = this.buildShortcuts(metadata, currentPlayerId);
 
     return {
@@ -284,10 +289,7 @@ export class DameNaturePresenterService extends BasePresenterService {
     );
   }
 
-  private buildHandCardsForUser(
-    viewerPlayer: any,
-    started: boolean,
-  ): any[] {
+  private buildHandCardsForUser(viewerPlayer: any, started: boolean): any[] {
     if (!started || !viewerPlayer) {
       return [];
     }
@@ -307,7 +309,10 @@ export class DameNaturePresenterService extends BasePresenterService {
     );
   }
 
-  private buildFamiliesCatalog(): Record<string, { id: string; name: string }[]> {
+  private buildFamiliesCatalog(): Record<
+    string,
+    { id: string; name: string }[]
+  > {
     return this.setup.families().reduce(
       (acc, f) => ({
         ...acc,

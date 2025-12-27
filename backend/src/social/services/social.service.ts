@@ -3,7 +3,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { NotificationService } from '../../notification/services/notification.service';
 import { User } from '../../user/entities/user.entity';
-import { SocialProfile, SocialProfileVisibility } from '../entities/social-profile.entity';
+import {
+  SocialProfile,
+  SocialProfileVisibility,
+} from '../entities/social-profile.entity';
 import {
   SocialRelationship,
   SocialRelationshipStatus,
@@ -49,7 +52,10 @@ export class SocialService {
     });
   }
 
-  async listRequests(userId: number, direction: 'incoming' | 'outgoing' | 'all') {
+  async listRequests(
+    userId: number,
+    direction: 'incoming' | 'outgoing' | 'all',
+  ) {
     const where =
       direction === 'incoming'
         ? { addressee: { id: userId }, status: 'pending' }
@@ -125,9 +131,13 @@ export class SocialService {
     });
     const saved = await this.relationships.save(relation);
 
-    await this.notifications.notifyUser(addresseeId, 'social.friend.requested', {
-      requesterId,
-    });
+    await this.notifications.notifyUser(
+      addresseeId,
+      'social.friend.requested',
+      {
+        requesterId,
+      },
+    );
 
     return {
       id: saved.id,
@@ -257,7 +267,7 @@ export class SocialService {
         username: profile.user.username,
         avatar: profile.user.avatar ?? null,
       },
-      bio: canView ? profile.bio ?? '' : '',
+      bio: canView ? (profile.bio ?? '') : '',
       visibility: profile.visibility,
       createdAt: profile.createdAt,
       updatedAt: profile.updatedAt,
@@ -271,7 +281,9 @@ export class SocialService {
       profile.bio = bio.trim();
     }
     if (typeof visibility === 'string') {
-      const normalized = visibility.trim().toLowerCase() as SocialProfileVisibility;
+      const normalized = visibility
+        .trim()
+        .toLowerCase() as SocialProfileVisibility;
       if (!PROFILE_VISIBILITY.includes(normalized)) {
         throw new HttpException('Visibilite invalide.', 400);
       }

@@ -23,26 +23,39 @@ export class BotStrategyService {
    */
   choose(
     actions: GameSingleActionDto[],
-    _ctx: { state: GameStateEntity; playerId: number },
+    ctx: { state: GameStateEntity; playerId: number },
     opts: BotDecisionOptions = {},
   ): GameSingleActionDto[] {
     if (!Array.isArray(actions) || actions.length === 0) return [];
+
     const { score } = opts;
     const prefer = (opts.preferTypes ?? []).map((t) => t.toLowerCase());
     const fallbacks = (opts.fallbackTypes ?? []).map((t) => t.toLowerCase());
 
-    // 1) Score éventuel : garde la meilleure action si une fonction de score est fournie
+    // 1) Score éventuel : garde la meilleure action si une fonction de score est fournie.
+    // IMPORTANT : en cas d'égalité (même score), on choisit au hasard.
+    // Sinon certains bots deviennent déterministes (ex: toujours "exchange_accept").
     if (score) {
-      let best: GameSingleActionDto | null = null;
       let bestScore = -Infinity;
+      const best: GameSingleActionDto[] = [];
+
       for (const action of actions) {
-        const s = score(action, _ctx);
-        if (s > bestScore) {
+        const s = score(action, ctx);
+        if (s > bestScore + Number.EPSILON) {
           bestScore = s;
-          best = action;
+          best.length = 0;
+          best.push(action);
+          continue;
+        }
+        if (Math.abs(s - bestScore) <= Number.EPSILON) {
+          best.push(action);
         }
       }
-      if (best) return [best];
+
+      if (best.length === 0) return [];
+      if (best.length === 1) return [best[0]];
+      const pick = best[Math.floor(Math.random() * best.length)];
+      return pick ? [pick] : [];
     }
 
     // 2) Priorités explicites
@@ -73,6 +86,7 @@ export class BotStrategyService {
       opts.score ??
       ((action: GameSingleActionDto) => {
         if (profile === 'random') return Math.random();
+
         const weights: Record<BotProfile, Record<string, number>> = {
           greedy: {
             ask_card: 6,
@@ -100,16 +114,20 @@ export class BotStrategyService {
           },
           random: {},
         };
+
         const type = (action.type ?? '').toLowerCase();
         const table = weights[profile] ?? {};
         const base = table[type] ?? 0;
+
         const quizBonus =
           type.includes('quiz') &&
           (action.payload?.correct === true || action.payload?.answer)
             ? 1
             : 0;
+
         return base + quizBonus;
       });
+
     return this.choose(actions, ctx, { ...opts, score: scoreFn });
   }
 }

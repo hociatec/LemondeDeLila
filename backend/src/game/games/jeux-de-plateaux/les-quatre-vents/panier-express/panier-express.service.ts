@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import {
   GameStateEntity,
@@ -40,11 +40,11 @@ import { PanierExpressDrawService } from './actions/panier-express-draw.service'
 import { PanierExpressQuizService } from './actions/panier-express-quiz.service';
 import { PanierExpressExchangeService } from './actions/panier-express-exchange.service';
 import { PanierExpressUtils } from './model/panier-express-utils.service';
-import { nextRngInt } from '../../../../../common/utils/seeded-rng';
 import * as PanierExpressRulebook from './rulebook/rulebook';
 import { PanierExpressBotService } from './bots/panier-express-bot.service';
 import { PanierExpressPhaseService } from './phases/panier-express-phase.service';
 import { PanierExpressPresenterService } from './presenter/panier-express-presenter.service';
+import { RandomService } from '../../../../modules/random/services/random.service';
 
 @Injectable()
 export class PanierExpressService extends AbstractGameService {
@@ -84,6 +84,7 @@ export class PanierExpressService extends AbstractGameService {
     private readonly bots: PanierExpressBotService,
     private readonly phaseFlow: PanierExpressPhaseService,
     private readonly presenter: PanierExpressPresenterService,
+    private readonly random: RandomService,
   ) {
     super(registry);
   }
@@ -118,7 +119,10 @@ export class PanierExpressService extends AbstractGameService {
     });
   }
 
-  exposeStateForUser(state: GameStateEntity, userId: number): GameStateWithActions {
+  exposeStateForUser(
+    state: GameStateEntity,
+    userId: number,
+  ): GameStateWithActions {
     const ensured = this.ensureMetadata(state);
 
     const viewerId =
@@ -128,7 +132,9 @@ export class PanierExpressService extends AbstractGameService {
         : null;
 
     const actions =
-      typeof viewerId === 'number' ? this.getAvailableActions(ensured, viewerId) : [];
+      typeof viewerId === 'number'
+        ? this.getAvailableActions(ensured, viewerId)
+        : [];
     const meta = this.getMetadata(ensured);
     const rawPending: PendingState | null = ensured.pending ?? null;
     const pendingQuiz: QuizQuestion | undefined =
@@ -269,8 +275,10 @@ export class PanierExpressService extends AbstractGameService {
         return this.handleRoll(state, action);
       case 'answer_quiz':
         return this.handleAnswerQuiz(state, action);
-      case 'exchange_with':
-        return this.handleExchangeWith(state, action);
+      case 'exchange_choose_target':
+        return this.handleExchangeChooseTarget(state, action);
+      case 'exchange_choose_give':
+        return this.handleExchangeChooseGive(state, action);
       case 'exchange_accept':
         return this.handleExchangeAccept(state, action);
       case 'exchange_refuse':
@@ -280,8 +288,6 @@ export class PanierExpressService extends AbstractGameService {
       // Compat actions depuis le client Java
       case 'ROLL_DICE':
         return this.handleRoll(state, { ...action, type: 'roll' });
-      case 'apply_exchange':
-        return this.handleLegacyExchange(state, action);
       default:
         return this.core.appendLog(
           state,
@@ -322,13 +328,6 @@ export class PanierExpressService extends AbstractGameService {
       action,
       actorId,
     );
-  }
-
-  private buildExchangeActions(
-    state: GameStateEntity,
-    playerId: number,
-  ): GameSingleActionDto[] {
-    return this.exchangeSvc.buildExchangeActions(state, playerId);
   }
 
   private buildMetadata(baseState: GameStateEntity): PanierExpressMetadata {
@@ -485,8 +484,8 @@ export class PanierExpressService extends AbstractGameService {
     // Anti-triche: le serveur est la source de vérité pour l'aléatoire (dés).
     // Bonus: RNG seedé dans metadata pour rendre le dé déterministe en debug/tests (si besoin).
     const meta = this.getMetadata(state) as any;
-    const rng = nextRngInt(meta, 6);
-    const roll = rng.value + 1;
+    const rng = this.random.rollDice(meta, 6);
+    const roll = rng.roll;
 
     playingLog('panier.roll', {
       roomId: (state.metadata as any)?.roomId ?? null,
@@ -500,7 +499,7 @@ export class PanierExpressService extends AbstractGameService {
     });
 
     let next = this.core.cloneState(state);
-    next.metadata = rng.meta as any;
+    next.metadata = rng.meta;
     next.lastRoll = roll;
     next = this.core.appendLog(
       next,
@@ -515,8 +514,10 @@ export class PanierExpressService extends AbstractGameService {
     const metaAfter = this.getMetadata(next);
     const postActions = this.getAvailableActions(next, currentId);
     const hasBlockingQuiz = Boolean(metaAfter.quiz.pending[currentId]);
-    const hasBlockingExchange = postActions.some(
-      (a) => (a.type || '').toLowerCase() === 'exchange_with',
+    const hasBlockingExchange = postActions.some((a) =>
+      ['exchange_choose_target', 'exchange_choose_give'].includes(
+        (a.type || '').toLowerCase(),
+      ),
     );
     if (!hasBlockingQuiz && !hasBlockingExchange) {
       next = this.phaseFlow.advanceTurn(next);
@@ -771,7 +772,7 @@ export class PanierExpressService extends AbstractGameService {
     return this.exchangeSvc.applyExchange(state, playerId);
   }
 
-  private handleExchangeWith(
+  private handleExchangeChooseTarget(
     state: GameStateEntity,
     action: GameSingleActionDto,
   ): GameStateEntity {
@@ -779,45 +780,36 @@ export class PanierExpressService extends AbstractGameService {
       typeof (action.meta as any)?.actorId === 'number'
         ? (action.meta as any).actorId
         : null;
-    const playerId =
-      actorId ??
-      action.payload?.playerId ??
-      state.turn?.currentPlayerId ??
-      null;
-    const targetPlayerId = action.payload?.targetPlayerId;
-    const give = action.payload?.give;
-    const take = action.payload?.take;
+    const playerId = actorId ?? state.turn?.currentPlayerId ?? null;
+    const targetPlayerId = action.payload?.targetPlayerId ?? null;
     if (typeof playerId !== 'number' || typeof targetPlayerId !== 'number') {
       return this.core.appendLog(
         state,
-        `[Panier Express] Échange invalide: identifiants manquants.`,
+        "[Panier Express] Choix cible d'échange invalide.",
       );
     }
-    if (typeof give !== 'string' || typeof take !== 'string') {
+    return this.exchangeSvc.chooseTarget(state, playerId, targetPlayerId);
+  }
+
+  private handleExchangeChooseGive(
+    state: GameStateEntity,
+    action: GameSingleActionDto,
+  ): GameStateEntity {
+    const actorId =
+      typeof (action.meta as any)?.actorId === 'number'
+        ? (action.meta as any).actorId
+        : null;
+    const playerId = actorId ?? state.turn?.currentPlayerId ?? null;
+    const give = action.payload?.give ?? null;
+    if (typeof playerId !== 'number' || typeof give !== 'string') {
       return this.core.appendLog(
         state,
-        `[Panier Express] Échange invalide: cartes manquantes.`,
+        "[Panier Express] Choix carte d'échange invalide.",
       );
     }
-    const pending = state.pending ?? null;
-    if (
-      !pending ||
-      pending.type !== 'exchange' ||
-      pending.playerId !== playerId
-    ) {
-      return this.core.appendLog(
-        state,
-        `[Panier Express] Échange invalide: aucun échange en attente.`,
-      );
-    }
-    const resolved = this.exchangeSvc.resolveExchange(
-      state,
-      playerId,
-      targetPlayerId,
-      give,
-      take,
-    );
-    return this.phaseFlow.advanceTurn(resolved);
+    // À ce stade, on crée une offre d'échange à confirmer par la cible (A/R).
+    // On n'avance pas le tour tant que la cible n'a pas répondu.
+    return this.exchangeSvc.chooseGive(state, playerId, give);
   }
 
   private handleExchangeAccept(
@@ -828,20 +820,13 @@ export class PanierExpressService extends AbstractGameService {
       typeof (action.meta as any)?.actorId === 'number'
         ? (action.meta as any).actorId
         : null;
-    const playerId =
-      actorId ??
-      action.payload?.playerId ??
-      state.turn?.currentPlayerId ??
-      null;
-
-    if (typeof playerId !== 'number') {
+    if (typeof actorId !== 'number') {
       return this.core.appendLog(
         state,
-        '[Panier Express] Accepter échange: joueur invalide.',
+        "[Panier Express] Acceptation d'échange invalide.",
       );
     }
-
-    const resolved = this.exchangeSvc.acceptCurrentExchange(state, playerId);
+    const resolved = this.exchangeSvc.acceptOffer(state, actorId);
     return this.phaseFlow.advanceTurn(resolved);
   }
 
@@ -853,28 +838,15 @@ export class PanierExpressService extends AbstractGameService {
       typeof (action.meta as any)?.actorId === 'number'
         ? (action.meta as any).actorId
         : null;
-    const playerId =
-      actorId ??
-      action.payload?.playerId ??
-      state.turn?.currentPlayerId ??
-      null;
-
-    if (typeof playerId !== 'number') {
+    if (typeof actorId !== 'number') {
       return this.core.appendLog(
         state,
-        '[Panier Express] Refuser échange: joueur invalide.',
+        "[Panier Express] Refus d'échange invalide.",
       );
     }
-
-    const resolved = this.exchangeSvc.refuseCurrentExchange(state, playerId);
-    // Si on a juste changé l'offre courante (pas fini), on ne passe pas le tour
-    if (resolved.pending) {
-      return resolved;
-    }
-    // Si on a refusé toutes les offres, on passe le tour
+    const resolved = this.exchangeSvc.refuseOffer(state, actorId);
     return this.phaseFlow.advanceTurn(resolved);
   }
-
   private handleSkipTurn(
     state: GameStateEntity,
     action: GameSingleActionDto,
@@ -904,74 +876,6 @@ export class PanierExpressService extends AbstractGameService {
       `[Panier Express] ${this.utils.playerName(state, playerId)} passe son tour.`,
     );
     return this.phaseFlow.advanceTurn(logged);
-  }
-
-  private handleLegacyExchange(
-    state: GameStateEntity,
-    action: GameSingleActionDto,
-  ): GameStateEntity {
-    const playerId =
-      (typeof (action.meta as any)?.actorId === 'number'
-        ? (action.meta as any).actorId
-        : action.payload?.playerId) ??
-      state.turn?.currentPlayerId ??
-      null;
-    const targetPlayerId = action.payload?.targetId;
-    const give = action.payload?.card;
-    if (
-      typeof playerId !== 'number' ||
-      typeof targetPlayerId !== 'number' ||
-      typeof give !== 'string'
-    ) {
-      return this.core.appendLog(
-        state,
-        `[Panier Express] Échange legacy invalide.`,
-      );
-    }
-    const players = state.players ?? [];
-    const current = players.find((p) => p.id === playerId);
-    const target = players.find((p) => p.id === targetPlayerId);
-    if (!current || !target) {
-      return this.core.appendLog(
-        state,
-        `[Panier Express] Échange legacy: joueur introuvable.`,
-      );
-    }
-    const currentInv = Array.isArray(current.inventory)
-      ? [...current.inventory]
-      : [];
-    const targetInv = Array.isArray(target.inventory)
-      ? [...target.inventory]
-      : [];
-    if (!currentInv.includes(give) || targetInv.length === 0) {
-      return this.core.appendLog(
-        state,
-        `[Panier Express] Échange legacy refusé (cartes insuffisantes).`,
-      );
-    }
-    const take = targetInv[0];
-    const updatedPlayers = players.map((p) => {
-      if (p.id === current.id) {
-        return {
-          ...p,
-          inventory: [take, ...currentInv.filter((c) => c !== give)],
-        };
-      }
-      if (p.id === target.id) {
-        return { ...p, inventory: [give, ...targetInv.slice(1)] };
-      }
-      return p;
-    });
-    const next: GameStateEntity = { ...state, players: updatedPlayers };
-    const logged = this.core.appendLog(
-      next,
-      `[Panier Express] Échange legacy: ${current.username} donne ${give} et reçoit ${take} de ${target.username}`,
-    );
-    return this.appendActionLog(logged, playerId, 'apply_exchange', {
-      targetPlayerId,
-      give,
-      take,
-    });
   }
 
   private applyQuiz(state: GameStateEntity, playerId: number): GameStateEntity {

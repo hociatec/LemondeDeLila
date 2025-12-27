@@ -38,7 +38,11 @@ export class BotService {
     return this.bots.save(bot);
   }
 
-  async removeBot(roomId: number, userId: number, botId: number): Promise<RoomBot> {
+  async removeBot(
+    roomId: number,
+    userId: number,
+    botId: number,
+  ): Promise<RoomBot> {
     const room = await this.requireRoomWithOwner(roomId);
     this.ensureOwner(room, userId);
     if (!this.isRoomOpen(room)) {

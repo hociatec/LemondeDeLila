@@ -232,7 +232,11 @@ export class InitSchema1734800000000 implements MigrationInterface {
           { name: 'is_private', type: 'boolean', default: false },
           { name: 'status', type: 'varchar', length: '50', default: `'setup'` },
           { name: 'owner_id', type: 'int', isNullable: true },
-          { name: 'created_at', type: 'datetime', default: 'CURRENT_TIMESTAMP' },
+          {
+            name: 'created_at',
+            type: 'datetime',
+            default: 'CURRENT_TIMESTAMP',
+          },
           { name: 'started_at', type: 'datetime', isNullable: true },
         ],
         foreignKeys: [
@@ -295,7 +299,11 @@ export class InitSchema1734800000000 implements MigrationInterface {
           },
           { name: 'room_id', type: 'int' },
           { name: 'name', type: 'varchar', length: '100' },
-          { name: 'created_at', type: 'datetime', default: 'CURRENT_TIMESTAMP' },
+          {
+            name: 'created_at',
+            type: 'datetime',
+            default: 'CURRENT_TIMESTAMP',
+          },
         ],
         foreignKeys: [
           new TableForeignKey({
@@ -322,7 +330,11 @@ export class InitSchema1734800000000 implements MigrationInterface {
           },
           { name: 'name', type: 'varchar', length: '150', isUnique: true },
           { name: 'enabled', type: 'boolean', default: true },
-          { name: 'created_at', type: 'datetime', default: 'CURRENT_TIMESTAMP' },
+          {
+            name: 'created_at',
+            type: 'datetime',
+            default: 'CURRENT_TIMESTAMP',
+          },
         ],
       }),
       true,

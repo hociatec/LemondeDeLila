@@ -30,16 +30,17 @@
 
             <TextBox x:Name="HistoryEditor"
                      Grid.Row="1"
-                     Text="{Binding DisplayText, Mode=OneWay}"
                      Background="#0D1625"
                      BorderThickness="0"
                      Foreground="#C3D2EA"
-                     FontFamily="Consolas"
-                     FontSize="12"
+                     FontFamily="Segoe UI"
+                     FontSize="13"
                      AcceptsReturn="True"
                      AcceptsTab="False"
                      IsReadOnly="True"
                      IsReadOnlyCaretVisible="True"
+                     SpellCheck.IsEnabled="False"
+                     TextBoxBase.IsUndoEnabled="False"
                      TextWrapping="Wrap"
                      VerticalScrollBarVisibility="Auto"
                      HorizontalScrollBarVisibility="Disabled"
@@ -49,7 +50,7 @@
                      KeyboardNavigation.TabIndex="1"
                      AutomationProperties.LabeledBy="{Binding ElementName=HistoryTitle}"
                      AutomationProperties.Name="Historique"
-                     AutomationProperties.HelpText="Historique en lecture seule. Utilisez flèche haut/bas pour lire ligne par ligne."
+                     AutomationProperties.HelpText="Historique en lecture seule. Naviguez comme dans un document (flèches, PageUp/PageDown, sélection, etc.)."
                      MinHeight="200" />
 
             <!-- Live region (UIA) : annonce les nouvelles lignes sans déplacer le focus -->

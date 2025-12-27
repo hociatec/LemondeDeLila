@@ -90,7 +90,11 @@ export class GameLoggerService {
   /**
    * Log an error with full context
    */
-  error(message: string, error?: Error | GameError, context?: GameLogContext): void {
+  error(
+    message: string,
+    error?: Error | GameError,
+    context?: GameLogContext,
+  ): void {
     const logData: any = {
       message,
       context: context || {},
@@ -205,9 +209,10 @@ export class GameLoggerService {
     severity: 'low' | 'medium' | 'high' | 'critical',
     context: GameLogContext,
   ): void {
-    const logFn = severity === 'critical' || severity === 'high'
-      ? this.error.bind(this)
-      : this.warn.bind(this);
+    const logFn =
+      severity === 'critical' || severity === 'high'
+        ? this.error.bind(this)
+        : this.warn.bind(this);
 
     logFn(`Security event: ${event}`, undefined, {
       ...context,

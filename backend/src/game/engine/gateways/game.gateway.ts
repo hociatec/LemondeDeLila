@@ -20,6 +20,16 @@ type GameClient = {
   gameType: string | null;
 };
 
+type TurnInfoPayload = {
+  roomId: number;
+  gameType: string;
+  turnIndex: number | null;
+  currentPlayerId: number | null;
+  currentPlayerUsername: string | null;
+  status: string | null;
+  phase: string | null;
+};
+
 @WebSocketGateway({ path: '/ws/game' })
 export class GameGateway
   implements OnGatewayConnection<WebSocket>, OnGatewayDisconnect<WebSocket>
@@ -123,6 +133,9 @@ export class GameGateway
         case 'game.state':
           await this.handleState(client, meta, payload);
           break;
+        case 'game.turn':
+          await this.handleTurn(client, meta, payload);
+          break;
         case 'game.actions':
           await this.handleActions(meta, payload);
           break;
@@ -180,6 +193,49 @@ export class GameGateway
       gameType,
     });
     this.safeSend(client, { type: 'game.state', payload: state });
+  }
+
+  private async handleTurn(client: WebSocket, meta: GameClient, payload: any) {
+    const roomId = Number(payload?.roomId ?? meta.roomId ?? 0);
+    const gameType = String(payload?.gameType ?? meta.gameType ?? '');
+    if (!roomId || !gameType) {
+      this.sendError(client, 'Parametres jeu manquants', 'game.turn');
+      return;
+    }
+
+    await this.engine.checkReadAccess(roomId, meta.userId);
+    const state = await this.engine.getStateForUser(
+      roomId,
+      gameType,
+      meta.userId,
+    );
+
+    const currentPlayerId = state?.turn?.currentPlayerId ?? null;
+    const players = Array.isArray(state?.players) ? state.players : [];
+    const current = players.find((p: any) => p?.id === currentPlayerId) ?? null;
+
+    const payloadOut: TurnInfoPayload = {
+      roomId,
+      gameType,
+      turnIndex: typeof state?.turnIndex === 'number' ? state.turnIndex : null,
+      currentPlayerId:
+        typeof currentPlayerId === 'number' ? currentPlayerId : null,
+      currentPlayerUsername:
+        typeof current?.username === 'string' ? current.username : null,
+      status: typeof state?.status === 'string' ? state.status : null,
+      phase: typeof state?.phase === 'string' ? state.phase : null,
+    };
+
+    playingLog('ws.game.turn.request', {
+      userId: meta.userId,
+      roomId,
+      gameType,
+      currentPlayerId: payloadOut.currentPlayerId,
+      currentPlayerUsername: payloadOut.currentPlayerUsername,
+      turnIndex: payloadOut.turnIndex,
+    });
+
+    this.safeSend(client, { type: 'game.turn', payload: payloadOut });
   }
 
   private async handleActions(meta: GameClient, payload: any) {

@@ -39,6 +39,37 @@ export class DeckPoolService {
     return { card, pool: updated };
   }
 
+  drawMany<T>(
+    pool: DeckPoolState<T>,
+    key: string,
+    count: number,
+    rng: () => number = Math.random,
+  ): { cards: T[]; pool: DeckPoolState<T> } {
+    const target = Math.max(0, Math.floor(count));
+    let nextPool = pool;
+    const cards: T[] = [];
+    for (let i = 0; i < target; i += 1) {
+      const { card, pool: updated } = this.draw(nextPool, key, rng);
+      nextPool = updated;
+      if (card == null) break;
+      cards.push(card);
+    }
+    return { cards, pool: nextPool };
+  }
+
+  discardMany<T>(
+    pool: DeckPoolState<T>,
+    key: string,
+    cards: readonly T[],
+  ): DeckPoolState<T> {
+    const safe = Array.isArray(cards) ? cards : [];
+    let next = pool;
+    for (const card of safe) {
+      next = this.discard(next, key, card);
+    }
+    return next;
+  }
+
   discard<T>(pool: DeckPoolState<T>, key: string, card: T): DeckPoolState<T> {
     const state = pool[key] ?? { deck: [], discards: [] };
     return {

@@ -61,16 +61,25 @@ export class PanierExpressBotService {
     const missing = new Set(
       shoppingList.filter((item) => !basket.includes(item)),
     );
+    const players = state.players ?? [];
+    const playerById = new Map<number, any>(players.map((p) => [p.id, p]));
 
     const score = (action: GameSingleActionDto) => {
       const type = action.type?.toLowerCase() ?? '';
       if (type === 'answer_quiz') return 6;
-      if (type === 'exchange_with') {
-        const take = action.payload?.take;
+      if (type === 'exchange_choose_target') {
+        const targetId = action.payload?.targetPlayerId;
+        if (typeof targetId !== 'number') return 2;
+        const target = playerById.get(targetId);
+        const inv = Array.isArray(target?.inventory) ? target.inventory : [];
+        const useful = inv.filter((c: any) => missing.has(String(c))).length;
+        return 4 + useful * 2 + Math.min(2, inv.length / 3);
+      }
+      if (type === 'exchange_choose_give') {
         const give = action.payload?.give;
-        const gain = missing.has(take) ? 3 : 0;
-        const cost = missing.has(give) ? -2 : 0;
-        return 4 + gain + cost;
+        if (typeof give !== 'string') return 2;
+        const cost = missing.has(give) ? -2 : 1;
+        return 4 + cost;
       }
       if (type === 'roll') return 1;
       return 0;
@@ -81,7 +90,12 @@ export class PanierExpressBotService {
       { state, playerId: botPlayerId },
       profile,
       {
-        preferTypes: ['answer_quiz', 'exchange_with', 'roll'],
+        preferTypes: [
+          'answer_quiz',
+          'exchange_choose_give',
+          'exchange_choose_target',
+          'roll',
+        ],
         fallbackTypes: ['roll'],
         score,
       },

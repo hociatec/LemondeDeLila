@@ -1,8 +1,6 @@
 import { MigrationInterface, QueryRunner, TableIndex } from 'typeorm';
 
-export class UniqueRoomBotNamePerRoom1734900000000
-  implements MigrationInterface
-{
+export class UniqueRoomBotNamePerRoom1734900000000 implements MigrationInterface {
   name = 'UniqueRoomBotNamePerRoom1734900000000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -20,4 +18,3 @@ export class UniqueRoomBotNamePerRoom1734900000000
     await queryRunner.dropIndex('room_bots', 'uniq_room_bots_room_name');
   }
 }
-

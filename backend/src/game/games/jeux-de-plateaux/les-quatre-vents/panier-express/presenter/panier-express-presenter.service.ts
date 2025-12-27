@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import type {
   GameStateEntity,
   PendingState,
@@ -38,7 +38,7 @@ type PendingQuizPayload = {
 
 @Injectable()
 export class PanierExpressPresenterService extends BasePresenterService {
-  // Référence au pending quiz pour le partager entre les méthodes
+  // RÃ©fÃ©rence au pending quiz pour le partager entre les mÃ©thodes
   private pendingQuizRef: QuizQuestion | undefined;
   private rawPendingRef: PendingState | null = null;
 
@@ -51,7 +51,7 @@ export class PanierExpressPresenterService extends BasePresenterService {
   }): GameStateWithActions {
     const { state, actions, rawPending, pendingQuiz } = params;
 
-    // Stocker les références pour buildPendingState
+    // Stocker les rÃ©fÃ©rences pour buildPendingState
     this.pendingQuizRef = pendingQuiz;
     this.rawPendingRef = rawPending;
 
@@ -61,7 +61,7 @@ export class PanierExpressPresenterService extends BasePresenterService {
     // IMPORTANT:
     // `BasePresenterService.buildExposedState(...)` utilise toujours `turn.currentPlayerId`
     // pour calculer pending/extras. Pour Panier Express, les vues `shoppingList/basket/inventory`
-    // doivent refléter l'utilisateur connecté (pas forcément le joueur dont c'est le tour,
+    // doivent reflÃ©ter l'utilisateur connectÃ© (pas forcÃ©ment le joueur dont c'est le tour,
     // par exemple quand un bot joue).
     const pending = this.buildPendingState(state, meta, currentId);
     const extras = this.buildExtras(state, meta, currentId);
@@ -83,7 +83,7 @@ export class PanierExpressPresenterService extends BasePresenterService {
   }
 
   // ============================================================================
-  // Méthodes de template (implémentation de BasePresenterService)
+  // MÃ©thodes de template (implÃ©mentation de BasePresenterService)
   // ============================================================================
 
   protected buildCatalog(): { phases: string[]; victory: any } {
@@ -120,7 +120,12 @@ export class PanierExpressPresenterService extends BasePresenterService {
               ? v
               : { ...v, shoppingList: [], basket: [], inventory: [] },
           )
-        : playerViews.map((v) => ({ ...v, shoppingList: [], basket: [], inventory: [] }));
+        : playerViews.map((v) => ({
+            ...v,
+            shoppingList: [],
+            basket: [],
+            inventory: [],
+          }));
 
     const players = sanitizedViews.map(
       ({ id, username, isBot, shoppingList, basket, inventory }) => ({
@@ -141,7 +146,7 @@ export class PanierExpressPresenterService extends BasePresenterService {
   }
 
   // ============================================================================
-  // Méthodes utilitaires privées
+  // MÃ©thodes utilitaires privÃ©es
   // ============================================================================
 
   private buildBoardTurns(
@@ -172,20 +177,76 @@ export class PanierExpressPresenterService extends BasePresenterService {
         blocking: true,
       };
     }
-    if (
-      params.rawPending &&
-      params.rawPending.type === 'exchange'
-    ) {
+    if (params.rawPending && params.rawPending.type === 'exchange') {
       const exchangePending = params.rawPending as any;
-      if (exchangePending.currentOffer) {
-        // Formater le pending exchange avec un message descriptif
-        const offer = exchangePending.currentOffer;
-        const offerIndex = exchangePending.offerIndex ?? 0;
-        const totalOffers = exchangePending.allOffers?.length ?? 1;
-        const message = `Échanger ${offer.give} contre ${offer.take} avec ${offer.targetUsername}? (${offerIndex + 1}/${totalOffers})`;
+      if (
+        typeof params.currentId === 'number' &&
+        typeof exchangePending.playerId === 'number' &&
+        exchangePending.playerId !== params.currentId
+      ) {
+        return null;
+      }
+      if (exchangePending.step === 'choose_target') {
+        const targets = Array.isArray(exchangePending.targets)
+          ? exchangePending.targets
+          : [];
+        const choices = targets
+          .map((t: any) => sanitizeText(String(t?.targetUsername ?? '')))
+          .filter((c: string) => c.length > 0);
         return {
-          ...params.rawPending,
-          message,
+          type: 'exchange',
+          playerId: exchangePending.playerId,
+          blocking: true,
+          question: "Choisir un joueur pour l'échange.",
+          choices,
+          data: { step: 'choose_target', targets },
+        } as any;
+      }
+      if (exchangePending.step === 'choose_give') {
+        const giveChoices = Array.isArray(exchangePending.giveChoices)
+          ? exchangePending.giveChoices
+          : [];
+        const choices = giveChoices
+          .map((c: any) => sanitizeText(String(c)))
+          .filter((c: string) => c.length > 0);
+        const targetUsername = sanitizeText(
+          String(exchangePending.targetUsername ?? ''),
+        );
+        return {
+          type: 'exchange',
+          playerId: exchangePending.playerId,
+          targetPlayerId: exchangePending.targetPlayerId,
+          blocking: true,
+          question: targetUsername
+            ? `Choisir une carte à donner à ${targetUsername}.`
+            : 'Choisir une carte à donner.',
+          choices,
+          data: {
+            step: 'choose_give',
+            targetPlayerId: exchangePending.targetPlayerId ?? null,
+            targetUsername: exchangePending.targetUsername ?? null,
+          },
+        } as any;
+      }
+      if (exchangePending.step === 'confirm') {
+        const initiator = sanitizeText(
+          String(exchangePending.initiatorUsername ?? ''),
+        );
+        const give = sanitizeText(String(exchangePending.give ?? ''));
+        const take =
+          exchangePending.take != null
+            ? sanitizeText(String(exchangePending.take))
+            : '';
+        const question = take
+          ? `${initiator} vous propose un échange : il vous donne "${give}" et vous lui donnez "${take}". (A = accepter, R = refuser)`
+          : `${initiator} vous propose un échange : il vous donne "${give}". (A = accepter, R = refuser)`;
+        return {
+          type: 'exchange',
+          playerId: exchangePending.playerId,
+          blocking: true,
+          question,
+          choices: ['Accepter', 'Refuser'],
+          data: { step: 'confirm' },
         } as any;
       }
     }
@@ -257,20 +318,16 @@ export class PanierExpressPresenterService extends BasePresenterService {
           null)
         : null;
 
-    const shortcuts: Array<{ key: string; type: string; id?: string; actionType?: string }> = [
+    const shortcuts: Array<{
+      key: string;
+      type: string;
+      id?: string;
+      actionType?: string;
+    }> = [
       { key: 'pressed S', type: 'interface', id: 'shopping' },
       { key: 'pressed B', type: 'interface', id: 'basket' },
       { key: 'pressed I', type: 'interface', id: 'inventory' },
     ];
-
-    // Ajouter shortcuts A/R si échange en cours
-    const pending = state.pending;
-    if (pending && pending.type === 'exchange' && pending.playerId === params.currentId) {
-      shortcuts.push(
-        { key: 'pressed A', type: 'action', actionType: 'exchange_accept' },
-        { key: 'pressed R', type: 'action', actionType: 'exchange_refuse' },
-      );
-    }
 
     return {
       ...baseExtras,

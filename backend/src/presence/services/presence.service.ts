@@ -7,10 +7,7 @@ import { ChatValidator } from '../../chat/services/chat.validator';
 import { WsAuthPayload } from '../../common/interfaces/ws-auth-payload';
 import { RoomParticipant } from '../../room/entities/room-participant.entity';
 import { In, IsNull, Repository } from 'typeorm';
-import {
-  PresenceEvent,
-  PresenceTransport,
-} from './presence-transport';
+import { PresenceEvent, PresenceTransport } from './presence-transport';
 
 export type PresenceConnectionContext = 'home' | 'chat' | 'table';
 type PresenceActivity = 'home' | 'chat' | 'table';

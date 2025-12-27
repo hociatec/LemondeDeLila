@@ -26,7 +26,11 @@ export class HasVersionValidator implements ContentValidator {
     if (typeof version !== 'number') {
       throw new GameContentError(
         `Missing or invalid version field${filePath ? ` in ${filePath}` : ''}`,
-        { filePath, expectedVersion: this.expectedVersion, timestamp: new Date() },
+        {
+          filePath,
+          expectedVersion: this.expectedVersion,
+          timestamp: new Date(),
+        },
       );
     }
 
@@ -91,7 +95,12 @@ export class HasArrayValidator implements ContentValidator {
 export class HasFieldValidator implements ContentValidator {
   constructor(
     private readonly fieldName: string,
-    private readonly fieldType?: 'string' | 'number' | 'boolean' | 'object' | 'array',
+    private readonly fieldType?:
+      | 'string'
+      | 'number'
+      | 'boolean'
+      | 'object'
+      | 'array',
   ) {}
 
   validate(content: unknown, filePath?: string): void {

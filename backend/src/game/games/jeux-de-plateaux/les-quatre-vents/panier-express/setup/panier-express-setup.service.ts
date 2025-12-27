@@ -182,7 +182,11 @@ export class PanierExpressSetupService {
       ),
     );
     pool = this.setDeck(pool, 'quizzes', this.buildQuizDeck(seed));
-    pool = this.setDeck(pool, 'shoppingLists', this.buildShoppingListDeck(seed));
+    pool = this.setDeck(
+      pool,
+      'shoppingLists',
+      this.buildShoppingListDeck(seed),
+    );
 
     const standMap = this.standCourseMap();
     const standIds = new Set<string>();

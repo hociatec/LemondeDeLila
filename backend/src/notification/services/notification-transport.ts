@@ -10,7 +10,9 @@ export type NotificationEvent = {
 export abstract class NotificationTransport {
   abstract connect(): Promise<void>;
   abstract publish(event: NotificationEvent): Promise<void>;
-  abstract subscribe(handler: (event: NotificationEvent) => void): Promise<void>;
+  abstract subscribe(
+    handler: (event: NotificationEvent) => void,
+  ): Promise<void>;
   abstract disconnect(): Promise<void>;
 }
 

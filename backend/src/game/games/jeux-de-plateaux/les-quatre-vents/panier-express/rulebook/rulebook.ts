@@ -23,49 +23,34 @@ function getMeta(state: GameStateEntity): PanierExpressMetadata {
   return (state.metadata ?? {}) as PanierExpressMetadata;
 }
 
-function buildExchangeOffers(
-  players: any[],
-  playerId: number,
-  inventoryKey = 'inventory',
-): Array<{ targetPlayerId: number; give: string; take: string }> {
-  const self = players.find((p) => p && p.id === playerId);
-  if (
-    !self ||
-    !Array.isArray(self[inventoryKey]) ||
-    self[inventoryKey].length === 0
-  ) {
-    return [];
-  }
-
-  const offers: Array<{ targetPlayerId: number; give: string; take: string }> =
-    [];
-  for (const target of players) {
-    if (!target || target.id === playerId) continue;
-    const targetInv = target[inventoryKey];
-    if (!Array.isArray(targetInv) || targetInv.length === 0) continue;
-    for (const give of self[inventoryKey]) {
-      for (const take of targetInv) {
-        offers.push({
-          targetPlayerId: target.id,
-          give: String(give),
-          take: String(take),
-        });
-      }
-    }
-  }
-  return offers;
-}
-
 export function getAvailableActions(
   state: GameStateEntity,
   playerId: number,
 ): GameSingleActionDto[] {
   if ((state.status || '').toLowerCase() === 'finished') return [];
+  const rawPending = state.pending as any;
+  if (
+    rawPending &&
+    rawPending.type === 'exchange' &&
+    rawPending.step === 'confirm' &&
+    rawPending.playerId === playerId
+  ) {
+    return [{ type: 'exchange_accept' }, { type: 'exchange_refuse' }];
+  }
+  if (
+    rawPending &&
+    rawPending.type === 'exchange' &&
+    rawPending.step === 'confirm'
+  ) {
+    return [];
+  }
   const current = state.turn?.currentPlayerId ?? null;
   if (current !== playerId) return [];
 
   const meta = getMeta(state);
-  const tiles: PanierExpressTile[] = Array.isArray(meta.tiles) ? meta.tiles : [];
+  const tiles: PanierExpressTile[] = Array.isArray(meta.tiles)
+    ? meta.tiles
+    : [];
   const pos = meta.positions?.[playerId] ?? 0;
   const tile = tiles[pos] ?? null;
 
@@ -73,7 +58,10 @@ export function getAvailableActions(
   const hasPendingQuiz = Boolean(pendingQuiz);
   const pending = state.pending ?? null;
   const hasPendingExchange = Boolean(
-    pending && pending.type === 'exchange' && pending.playerId === playerId,
+    pending &&
+    pending.type === 'exchange' &&
+    pending.playerId === playerId &&
+    (pending as any).step !== 'confirm',
   );
 
   const base: GameSingleActionDto[] = (() => {
@@ -100,18 +88,30 @@ export function getAvailableActions(
         if (hasPendingExchange) {
           const exchangePending = pending as any;
 
-          // New system: server maintains a current offer (A/R).
-          if (exchangePending?.currentOffer) {
-            return [{ type: 'exchange_accept' }, { type: 'exchange_refuse' }];
+          if (exchangePending?.step === 'choose_target') {
+            const targets = Array.isArray(exchangePending.targets)
+              ? exchangePending.targets
+              : [];
+            return targets
+              .filter((t: any) => t && typeof t.targetPlayerId === 'number')
+              .map((t: any) => ({
+                type: 'exchange_choose_target',
+                payload: { targetPlayerId: t.targetPlayerId },
+              }));
           }
 
-          // Compat: pending exchange without currentOffer => expose exchange_with.
-          const offers = buildExchangeOffers(state.players ?? [], playerId);
-          if (offers.length) {
-            return offers.map(({ targetPlayerId, give, take }) => ({
-              type: 'exchange_with',
-              payload: { playerId, targetPlayerId, give, take },
-            }));
+          if (exchangePending?.step === 'choose_give') {
+            const choices = Array.isArray(exchangePending.giveChoices)
+              ? exchangePending.giveChoices
+              : [];
+            return choices
+              .map((c: any) => String(c))
+              .map((c: string) => c.trim())
+              .filter((c: string) => c.length > 0)
+              .map((give: string) => ({
+                type: 'exchange_choose_give',
+                payload: { give },
+              }));
           }
 
           return [{ type: 'roll' }, { type: 'ROLL_DICE' }];
@@ -145,12 +145,14 @@ export function validateAction(
   }
 
   const current = state.turn?.currentPlayerId ?? null;
-  if (current != null && actorId != null && actorId !== current) {
-    throw new PlayerActionError("Ce n'est pas votre tour.", {
-      gameType: 'panier-express',
-      playerId: actorId,
-      currentPlayerId: current,
-    });
+  if (type !== 'exchange_accept' && type !== 'exchange_refuse') {
+    if (current != null && actorId != null && actorId !== current) {
+      throw new PlayerActionError("Ce n'est pas votre tour.", {
+        gameType: 'panier-express',
+        playerId: actorId,
+        currentPlayerId: current,
+      });
+    }
   }
 
   const payload = action.payload ?? {};
@@ -160,7 +162,8 @@ export function validateAction(
   }
 
   if (type === 'answer_quiz') {
-    const answer = typeof payload.answer === 'string' ? payload.answer.trim() : '';
+    const answer =
+      typeof payload.answer === 'string' ? payload.answer.trim() : '';
     if (!answer) {
       throw new GameValidationError('Payload invalide: answer', {
         gameType: 'panier-express',
@@ -171,36 +174,44 @@ export function validateAction(
     return { ...action, type, payload: { answer } };
   }
 
-  if (type === 'exchange_with') {
-    const playerId = actorId ?? normalizeNumber(payload.playerId);
-    if (playerId == null) {
-      throw new GameValidationError('Payload invalide: playerId', {
-        gameType: 'panier-express',
-        payload,
-      });
-    }
+  if (type === 'exchange_choose_target') {
     const targetPlayerId = normalizeNumber(payload.targetPlayerId);
     if (targetPlayerId == null) {
       throw new GameValidationError('Payload invalide: targetPlayerId', {
         gameType: 'panier-express',
-        playerId,
+        playerId: actorId ?? undefined,
         payload,
       });
     }
-    const give = payload.give != null ? String(payload.give) : '';
-    const take = payload.take != null ? String(payload.take) : '';
-    if (!give || !take) {
-      throw new GameValidationError('Payload invalide: give/take', {
+    return { ...action, type, payload: { targetPlayerId } };
+  }
+
+  if (type === 'exchange_choose_give') {
+    const give = payload.give != null ? String(payload.give).trim() : '';
+    if (!give) {
+      throw new GameValidationError('Payload invalide: give', {
         gameType: 'panier-express',
-        playerId,
+        playerId: actorId ?? undefined,
         payload,
       });
     }
-    return {
-      ...action,
-      type,
-      payload: { playerId, targetPlayerId, give, take },
-    };
+    return { ...action, type, payload: { give } };
+  }
+
+  if (type === 'exchange_accept' || type === 'exchange_refuse') {
+    const pending = state.pending as any;
+    if (
+      !pending ||
+      pending.type !== 'exchange' ||
+      pending.step !== 'confirm' ||
+      pending.playerId !== actorId
+    ) {
+      throw new PlayerActionError('Aucun échange à confirmer.', {
+        gameType: 'panier-express',
+        playerId: actorId ?? undefined,
+      });
+    }
+    return { ...action, type, payload: {} };
   }
 
   if (type === 'skip_turn') {
@@ -216,6 +227,23 @@ export function validateAction(
 
   if (type === 'roll') {
     // Anti-triche: ignorer tout payload côté client (ex: roll forcé).
+    if (actorId != null) {
+      const meta = getMeta(state);
+      const pendingQuiz = meta.quiz?.pending?.[actorId];
+      if (pendingQuiz) {
+        throw new PlayerActionError('Vous devez répondre au quiz.', {
+          gameType: 'panier-express',
+          playerId: actorId,
+        });
+      }
+      const pending = state.pending as any;
+      if (pending && pending.type === 'exchange') {
+        throw new PlayerActionError("Vous devez terminer l'échange en cours.", {
+          gameType: 'panier-express',
+          playerId: actorId,
+        });
+      }
+    }
     return { ...action, type, payload: {} };
   }
 

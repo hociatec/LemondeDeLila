@@ -56,7 +56,9 @@ export class WsSignatureService {
     const headers = (client as any).handshakeHeaders || request?.headers;
     const headerSignature = this.extractHeaderSignature(headers);
     if (!headerSignature) {
-      this.logger.warn('Connexion WS refusée: signature absente (query/header).');
+      this.logger.warn(
+        'Connexion WS refusée: signature absente (query/header).',
+      );
     }
     return headerSignature;
   }

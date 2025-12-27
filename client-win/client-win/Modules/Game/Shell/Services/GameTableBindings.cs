@@ -93,7 +93,6 @@ internal sealed class GameTableBindings : IAsyncDisposable
         {
             _dispatcher.InvokeAsync(() =>
             {
-                _tableVm.History.Entries.Add($"Serveur : erreur ({message})");
                 _tableVm.Status = $"Erreur : {message}";
                 _announcements.Error(message);
             }, DispatcherPriority.Background);
@@ -343,4 +342,3 @@ internal sealed class GameTableBindings : IAsyncDisposable
         }
     }
 }
-

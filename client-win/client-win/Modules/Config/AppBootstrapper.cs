@@ -50,11 +50,22 @@ public static class AppBootstrapper
         var logsPath = Environment.GetEnvironmentVariable("LOG_PATH");
         if (string.IsNullOrWhiteSpace(logsPath))
         {
+            if (environment == EnvironmentDetector.AppEnvironment.Development)
+            {
+                var repoRoot = TryFindRepoRoot();
+                if (!string.IsNullOrWhiteSpace(repoRoot))
+                {
+                    logsPath = Path.Combine(repoRoot, "client-win", "client", "log");
+                }
+            }
             // En dev (dotnet run / scripts), on logge dans le dossier de travail pour faciliter le debug.
             // En prod, on logge à côté de l'exécutable.
-            logsPath = environment == EnvironmentDetector.AppEnvironment.Development
-                ? Path.Combine(Directory.GetCurrentDirectory(), "client", "log")
-                : Path.Combine(baseDir, "client", "log");
+            if (string.IsNullOrWhiteSpace(logsPath))
+            {
+                logsPath = environment == EnvironmentDetector.AppEnvironment.Development
+                    ? Path.Combine(Directory.GetCurrentDirectory(), "client", "log")
+                    : Path.Combine(baseDir, "client", "log");
+            }
         }
         var appDataPath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
@@ -216,6 +227,34 @@ public static class AppBootstrapper
             provider.GetRequiredService<NetworkStateMonitor>(),
             provider.GetRequiredService<SettingsManager<OptionsState>>(),
             provider);
+    }
+
+    private static string? TryFindRepoRoot()
+    {
+        static string? FindFrom(string start)
+        {
+            try
+            {
+                var dir = new DirectoryInfo(start);
+                while (dir != null)
+                {
+                    if (Directory.Exists(Path.Combine(dir.FullName, ".git")) ||
+                        File.Exists(Path.Combine(dir.FullName, "start-lila.ps1")))
+                    {
+                        return dir.FullName;
+                    }
+                    dir = dir.Parent;
+                }
+            }
+            catch
+            {
+                // ignore
+            }
+
+            return null;
+        }
+
+        return FindFrom(Directory.GetCurrentDirectory()) ?? FindFrom(AppContext.BaseDirectory);
     }
 
     private static bool ShouldTestConnectivity()

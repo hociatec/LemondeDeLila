@@ -22,7 +22,7 @@ const base = DATABASE_URL
       port: parseInt(DB_PORT, 10),
       username: DB_USER,
       password: DB_PASSWORD,
-  database: DB_NAME,
+      database: DB_NAME,
     };
 
 const isProd = process.env.NODE_ENV === 'production';

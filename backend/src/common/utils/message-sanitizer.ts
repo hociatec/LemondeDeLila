@@ -10,8 +10,11 @@ export function sanitizeMessage(
   raw: string,
   options: SanitizeOptions = {},
 ): string {
-  const { encodeHtml = false, collapseNewLines = true, stripHtml = true } =
-    options;
+  const {
+    encodeHtml = false,
+    collapseNewLines = true,
+    stripHtml = true,
+  } = options;
   let sanitized = (raw ?? '').trim();
   if (stripHtml) {
     sanitized = sanitized.replace(/<[^>]*>?/gm, '');

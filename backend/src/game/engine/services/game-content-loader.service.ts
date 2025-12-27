@@ -70,39 +70,55 @@ export class GameContentLoaderService {
    */
   readonly validators: ContentValidators = {
     version: (expectedVersion: number) => (data: any) => {
-      if (!data || (data as any).version !== expectedVersion) {
-        throw new GameContentError(`Invalid version. Expected ${expectedVersion}`, {
-          expectedVersion,
-          actualVersion: (data as any)?.version,
-        });
+      if (!data || data.version !== expectedVersion) {
+        throw new GameContentError(
+          `Invalid version. Expected ${expectedVersion}`,
+          {
+            expectedVersion,
+            actualVersion: data?.version,
+          },
+        );
       }
     },
 
-    arrayField: (field: string, minLength = 0) => (data: any) => {
-      if (!Array.isArray(data[field])) {
-        throw new GameContentError(`Missing or invalid array field: ${field}`, {
-          field,
-          actualType: typeof data[field],
-        });
-      }
-      if (minLength > 0 && data[field].length < minLength) {
-        throw new GameContentError(`${field} must have at least ${minLength} item(s)`, {
-          field,
-          minLength,
-          actualLength: data[field].length,
-        });
-      }
-    },
+    arrayField:
+      (field: string, minLength = 0) =>
+      (data: any) => {
+        if (!Array.isArray(data[field])) {
+          throw new GameContentError(
+            `Missing or invalid array field: ${field}`,
+            {
+              field,
+              actualType: typeof data[field],
+            },
+          );
+        }
+        if (minLength > 0 && data[field].length < minLength) {
+          throw new GameContentError(
+            `${field} must have at least ${minLength} item(s)`,
+            {
+              field,
+              minLength,
+              actualLength: data[field].length,
+            },
+          );
+        }
+      },
 
-    requiredFields: (...fields: string[]) => (data: any) => {
-      const missing = fields.filter((f) => !(f in data));
-      if (missing.length > 0) {
-        throw new GameContentError(`Missing required fields: ${missing.join(', ')}`, {
-          missingFields: missing,
-          requiredFields: fields,
-        });
-      }
-    },
+    requiredFields:
+      (...fields: string[]) =>
+      (data: any) => {
+        const missing = fields.filter((f) => !(f in data));
+        if (missing.length > 0) {
+          throw new GameContentError(
+            `Missing required fields: ${missing.join(', ')}`,
+            {
+              missingFields: missing,
+              requiredFields: fields,
+            },
+          );
+        }
+      },
 
     typeCheck: (field: string, expectedType: string) => (data: any) => {
       if (typeof data[field] !== expectedType) {
@@ -119,11 +135,14 @@ export class GameContentLoaderService {
 
     nonEmptyString: (field: string) => (data: any) => {
       if (typeof data[field] !== 'string' || data[field].trim() === '') {
-        throw new GameContentError(`Field ${field} must be a non-empty string`, {
-          field,
-          actualType: typeof data[field],
-          actualValue: data[field],
-        });
+        throw new GameContentError(
+          `Field ${field} must be a non-empty string`,
+          {
+            field,
+            actualType: typeof data[field],
+            actualValue: data[field],
+          },
+        );
       }
     },
 

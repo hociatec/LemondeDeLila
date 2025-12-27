@@ -69,6 +69,7 @@
             <history:GameHistoryView x:Name="HistoryHost"
                                      Grid.Column="1"
                                      DataContext="{Binding History}"
+                                     behaviors:ShortcutBindingsBehavior.DisableWhenFocusWithin="True"
                                      IsTabStop="False"
                                      Margin="16 0 0 0" />
         </Grid>

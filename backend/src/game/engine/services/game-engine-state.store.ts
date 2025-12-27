@@ -107,7 +107,6 @@ export class GameEngineStateStore {
 
   private initializeRedis(url: string): void {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
       const RedisCtor = require('ioredis');
       const redisInstance = new RedisCtor(url);
       redisInstance.on('error', (error: Error) => {

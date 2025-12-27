@@ -319,6 +319,7 @@ export class GameEngineService {
     actions: GameSingleActionDto[],
     actorId: number | null,
     allowBotTurn = false,
+    botActorIdOverride: number | null = null,
   ): Promise<GameStateResponse> {
     const current = await this.normalizeBotThinking(
       roomId,
@@ -360,19 +361,34 @@ export class GameEngineService {
       }
     }
 
+    const botActorId = allowBotTurn
+      ? (botActorIdOverride ?? currentPlayerId)
+      : null;
+    if (allowBotTurn && botActorId == null) {
+      throw new BadRequestException(
+        'Action bot invalide : acteur introuvable.',
+      );
+    }
+    if (allowBotTurn && typeof botActorId === 'number') {
+      const bot = current.players?.find((p) => p.id === botActorId) ?? null;
+      if (!bot?.isBot) {
+        throw new BadRequestException('Action bot invalide.');
+      }
+    }
+
     const actorLabel = allowBotTurn ? 'bot' : 'human';
     const validatedActions = await this.validateActions(
       current,
       handler,
       actions,
-      allowBotTurn ? currentPlayerId : actorId,
+      allowBotTurn ? botActorId : actorId,
     );
     const sanitizedActions = validatedActions.map((action) => ({
       ...action,
       meta: {
         ...(action?.meta ?? {}),
         actor: actorLabel,
-        actorId: allowBotTurn ? currentPlayerId : actorId,
+        actorId: allowBotTurn ? botActorId : actorId,
       },
     }));
 
@@ -390,7 +406,9 @@ export class GameEngineService {
       {
         roomId,
         gameType,
-        playerId: actorId ?? currentPlayerId ?? undefined,
+        playerId: allowBotTurn
+          ? (botActorId ?? undefined)
+          : (actorId ?? undefined),
         turnIndex: current.turnIndex,
         action: {
           status: current.status,
@@ -412,7 +430,24 @@ export class GameEngineService {
 
     const next = await handler.applyActions(current, sanitizedActions);
     const botTurn = this.isBotTurn(next);
-    const marked = await this.markBotThinking(roomId, gameType, next, botTurn);
+    let marked = await this.markBotThinking(roomId, gameType, next, botTurn);
+
+    // Log générique: le serveur annonce le joueur suivant au moment où le tour change.
+    // Le client reste "bête": il ne décide pas quand annoncer, il lit l'historique.
+    const previousPlayerId = current.turn?.currentPlayerId ?? null;
+    const nextPlayerId = marked.turn?.currentPlayerId ?? null;
+    if (
+      previousPlayerId != null &&
+      nextPlayerId != null &&
+      previousPlayerId !== nextPlayerId &&
+      String(marked.status ?? '').toLowerCase() === 'started'
+    ) {
+      const nextPlayer =
+        marked.players?.find((p) => p.id === nextPlayerId) ?? null;
+      const name = String(nextPlayer?.username ?? '').trim();
+      const who = name ? name : `joueur ${nextPlayerId}`;
+      marked = this.core.appendLog(marked, `C'est au tour de ${who}.`);
+    }
     await this.scheduleBotTurn(roomId, gameType, marked);
     this.broadcaster?.(gameType, roomId, marked);
 
@@ -507,30 +542,33 @@ export class GameEngineService {
     this.botScheduler.clear(key);
 
     const handler = this.registry.getHandler(gameType);
-    const currentPlayerId = state.turn?.currentPlayerId ?? null;
-    const currentPlayer = state.players?.find((p) => p.id === currentPlayerId);
+    const botActorId = this.getBotActorIdForState(state, handler);
+    const botPlayer =
+      botActorId != null
+        ? state.players?.find((p) => p.id === botActorId)
+        : null;
 
-    if (!currentPlayer || !currentPlayer.isBot) {
+    if (!botPlayer || !botPlayer.isBot || botActorId == null) {
       return this.exposeState(state, gameType);
     }
 
-    let botActions =
-      currentPlayerId != null
-        ? this.botRunner.suggestForHandler(handler, state, currentPlayerId)
-        : null;
+    let botActions = this.botRunner.suggestForHandler(
+      handler,
+      state,
+      botActorId,
+    );
     if (!botActions || botActions.length === 0) {
-      const fallback =
-        handler?.getAvailableActions && currentPlayerId != null
-          ? handler.getAvailableActions(state, currentPlayerId)
-          : [];
+      const fallback = handler?.getAvailableActions
+        ? handler.getAvailableActions(state, botActorId)
+        : [];
       if (
         Array.isArray(fallback) &&
         fallback.length > 0 &&
-        currentPlayerId != null
+        botActorId != null
       ) {
         botActions = this.botRunner.choose(fallback, {
           state,
-          playerId: currentPlayerId,
+          playerId: botActorId,
         });
       }
     }
@@ -538,7 +576,7 @@ export class GameEngineService {
       this.gameLogger.warn('Bot has no available actions', {
         roomId,
         gameType,
-        playerId: currentPlayerId ?? undefined,
+        playerId: botActorId ?? undefined,
         action: {
           status: state.status,
         },
@@ -558,15 +596,22 @@ export class GameEngineService {
       {
         roomId,
         gameType,
-        playerId: currentPlayerId ?? undefined,
+        playerId: botActorId ?? undefined,
         action: {
-          isBot: currentPlayer.isBot,
+          isBot: botPlayer.isBot,
           status: state.status,
         },
       },
     );
 
-    await this.applyActionsInternal(roomId, gameType, botActions, null, true);
+    await this.applyActionsInternal(
+      roomId,
+      gameType,
+      botActions,
+      null,
+      true,
+      botActorId,
+    );
     const updated = (await this.store.get(roomId, gameType)) ?? state;
     return this.exposeState(updated, gameType);
   }
@@ -590,6 +635,51 @@ export class GameEngineService {
     return Boolean(currentPlayer?.isBot);
   }
 
+  private getBotActorIdForState(
+    state: GameStateEntity,
+    handler: GameRulesAdapter | undefined,
+  ): number | null {
+    if ((state.status || '').toLowerCase() === 'finished') return null;
+
+    const currentId = state.turn?.currentPlayerId ?? null;
+    const currentPlayer =
+      state.players?.find((p) => p.id === currentId) ?? null;
+    if (currentPlayer?.isBot && typeof currentId === 'number') {
+      return currentId;
+    }
+
+    const pending = state.pending as any;
+    const pendingPlayerId =
+      pending && typeof pending.playerId === 'number' ? pending.playerId : null;
+    if (typeof pendingPlayerId !== 'number') return null;
+
+    const pendingPlayer =
+      state.players?.find((p) => p.id === pendingPlayerId) ?? null;
+    if (!pendingPlayer?.isBot) return null;
+
+    const available =
+      handler?.getAvailableActions?.(state, pendingPlayerId) ?? [];
+    if (!Array.isArray(available) || available.length === 0) {
+      return null;
+    }
+
+    return pendingPlayerId;
+  }
+
+  private pendingSignature(pending: unknown): string | null {
+    if (!pending || typeof pending !== 'object') return null;
+    const p = pending as any;
+    return JSON.stringify({
+      type: typeof p.type === 'string' ? p.type : null,
+      step: typeof p.step === 'string' ? p.step : null,
+      playerId: typeof p.playerId === 'number' ? p.playerId : null,
+      initiatorPlayerId:
+        typeof p.initiatorPlayerId === 'number' ? p.initiatorPlayerId : null,
+      targetPlayerId:
+        typeof p.targetPlayerId === 'number' ? p.targetPlayerId : null,
+    });
+  }
+
   private async scheduleBotTurn(
     roomId: number,
     gameType: string,
@@ -607,14 +697,14 @@ export class GameEngineService {
       this.botScheduler.clear(key);
       return;
     }
-    const blockingPending = (state as any).pending?.blocking === true;
-    const currentId = state.turn?.currentPlayerId ?? null;
-    const currentPlayer = state.players?.find((p) => p.id === currentId);
-    if (blockingPending && !currentPlayer?.isBot) {
-      this.botScheduler.clear(key);
-      return;
-    }
-    if (!currentPlayer || !currentPlayer.isBot) {
+
+    const handler = this.registry.getHandler(gameType);
+    const botActorId = this.getBotActorIdForState(state, handler);
+    const botPlayer =
+      botActorId != null
+        ? (state.players?.find((p) => p.id === botActorId) ?? null)
+        : null;
+    if (!botPlayer?.isBot) {
       this.botScheduler.clear(key);
       return;
     }
@@ -627,14 +717,16 @@ export class GameEngineService {
       roomId,
       gameType,
       turnIndex: thinking.turnIndex,
-      playerId: thinking.turn?.currentPlayerId ?? undefined,
+      playerId: botActorId ?? undefined,
       action: {
         status: thinking.status,
         delayMs,
       },
     });
     const expectedTurnIndex = thinking.turnIndex ?? null;
-    const expectedPlayerId = thinking.turn?.currentPlayerId ?? null;
+    const expectedCurrentPlayerId = thinking.turn?.currentPlayerId ?? null;
+    const expectedBotActorId = botActorId ?? null;
+    const expectedPendingSig = this.pendingSignature(thinking.pending);
 
     this.botScheduler.schedule({
       key,
@@ -649,11 +741,15 @@ export class GameEngineService {
         if ((latest.status || '').toLowerCase() === 'finished') {
           return;
         }
-        const latestPlayerId = latest.turn?.currentPlayerId ?? null;
         const latestTurnIndex = latest.turnIndex ?? null;
+        const latestCurrentPlayerId = latest.turn?.currentPlayerId ?? null;
+        const latestBotActorId = this.getBotActorIdForState(latest, handler);
+        const latestPendingSig = this.pendingSignature(latest.pending);
         if (
           latestTurnIndex !== expectedTurnIndex ||
-          latestPlayerId !== expectedPlayerId
+          latestCurrentPlayerId !== expectedCurrentPlayerId ||
+          latestBotActorId !== expectedBotActorId ||
+          latestPendingSig !== expectedPendingSig
         ) {
           this.gameLogger.debug('Bot turn skipped (stale)', {
             roomId,
@@ -661,8 +757,10 @@ export class GameEngineService {
             action: {
               expectedTurnIndex,
               latestTurnIndex,
-              expectedPlayerId,
-              latestPlayerId,
+              expectedCurrentPlayerId,
+              latestCurrentPlayerId,
+              expectedBotActorId,
+              latestBotActorId,
             },
           });
           return;
@@ -970,9 +1068,8 @@ export class GameEngineService {
     const currentPlayerId = state.turn?.currentPlayerId ?? null;
     if (currentPlayerId === null) return state;
 
-    const extras = state.extras && typeof state.extras === 'object'
-      ? (state.extras as Record<string, unknown>)
-      : {};
+    const extras =
+      state.extras && typeof state.extras === 'object' ? state.extras : {};
 
     // Si le jeu a déjà défini currentPlayerView, on ne l'écrase pas
     if (extras.currentPlayerView !== undefined) return state;

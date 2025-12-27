@@ -48,7 +48,10 @@ import { HealthModule } from './health/health.module';
         RATE_LIMIT_COUNT: Joi.number().default(120),
         LOG_LEVEL: Joi.string().default('info'),
         LOG_DIR: Joi.string().default('logs'),
-        LOG_FILES_ENABLED: Joi.boolean().truthy('true').falsy('false').default(true),
+        LOG_FILES_ENABLED: Joi.boolean()
+          .truthy('true')
+          .falsy('false')
+          .default(true),
         ENABLE_PROTOTYPE_GAMES: Joi.string().optional(),
       }),
     }),

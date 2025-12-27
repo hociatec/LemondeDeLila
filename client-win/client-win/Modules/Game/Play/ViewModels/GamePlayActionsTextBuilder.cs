@@ -18,6 +18,7 @@ internal static class GamePlayActionsTextBuilder
             Environment.NewLine,
             actions
                 .Where(a => !string.IsNullOrWhiteSpace(a.Type))
+                .Where(a => !string.Equals(a.Type.Trim(), "interface", StringComparison.OrdinalIgnoreCase))
                 .Select(a =>
                 {
                     var label = string.IsNullOrWhiteSpace(a.Label) ? null : a.Label.Trim();

@@ -43,10 +43,7 @@ export class GameError extends Error {
  * Error thrown when action validation fails
  */
 export class GameValidationError extends GameError {
-  constructor(
-    message: string,
-    context: Partial<GameErrorContext> = {},
-  ) {
+  constructor(message: string, context: Partial<GameErrorContext> = {}) {
     super(message, { timestamp: new Date(), ...context }, 'high');
   }
 }
@@ -55,10 +52,7 @@ export class GameValidationError extends GameError {
  * Error thrown when game state is invalid or inconsistent
  */
 export class GameStateError extends GameError {
-  constructor(
-    message: string,
-    context: Partial<GameErrorContext> = {},
-  ) {
+  constructor(message: string, context: Partial<GameErrorContext> = {}) {
     super(message, { timestamp: new Date(), ...context }, 'critical');
   }
 }
@@ -67,10 +61,7 @@ export class GameStateError extends GameError {
  * Error thrown when player action is not allowed
  */
 export class PlayerActionError extends GameError {
-  constructor(
-    message: string,
-    context: Partial<GameErrorContext> = {},
-  ) {
+  constructor(message: string, context: Partial<GameErrorContext> = {}) {
     super(message, { timestamp: new Date(), ...context }, 'medium');
   }
 }
@@ -79,10 +70,7 @@ export class PlayerActionError extends GameError {
  * Error thrown when game content (JSON files, assets) is invalid
  */
 export class GameContentError extends GameError {
-  constructor(
-    message: string,
-    context: Partial<GameErrorContext> = {},
-  ) {
+  constructor(message: string, context: Partial<GameErrorContext> = {}) {
     super(message, { timestamp: new Date(), ...context }, 'critical');
   }
 }

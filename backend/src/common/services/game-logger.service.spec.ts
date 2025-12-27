@@ -46,7 +46,10 @@ describe('GameLoggerService', () => {
 
   describe('error', () => {
     it('should log an error message with context', () => {
-      service.error('Test error message', undefined, { roomId: 123, gameType: 'test-game' });
+      service.error('Test error message', undefined, {
+        roomId: 123,
+        gameType: 'test-game',
+      });
 
       expect(mockLogger.error).toHaveBeenCalledWith({
         message: 'Test error message',
@@ -58,7 +61,7 @@ describe('GameLoggerService', () => {
       const gameError = new GameError(
         'Game error occurred',
         { roomId: 123, gameType: 'test-game' },
-        'high'
+        'high',
       );
 
       service.error('Error logging test', gameError);
@@ -74,7 +77,7 @@ describe('GameLoggerService', () => {
             context: { roomId: 123, gameType: 'test-game' },
             stack: expect.any(String),
           }),
-        })
+        }),
       );
     });
 
@@ -92,7 +95,7 @@ describe('GameLoggerService', () => {
             message: 'Standard error',
             stack: expect.any(String),
           }),
-        })
+        }),
       );
     });
   });
@@ -168,7 +171,7 @@ describe('GameLoggerService', () => {
               timestamp: expect.any(String),
             }),
           }),
-        })
+        }),
       );
     });
   });
@@ -197,7 +200,7 @@ describe('GameLoggerService', () => {
               currentPlayerId: 42,
             },
           }),
-        })
+        }),
       );
     });
   });
@@ -212,7 +215,7 @@ describe('GameLoggerService', () => {
       service.logValidationFailure(
         'Action validation failed',
         validationErrors,
-        { roomId: 123, playerId: 5 }
+        { roomId: 123, playerId: 5 },
       );
 
       expect(mockLogger.warn).toHaveBeenCalledWith(
@@ -224,7 +227,7 @@ describe('GameLoggerService', () => {
             validationErrors,
             message: 'Action validation failed',
           }),
-        })
+        }),
       );
     });
   });
@@ -276,7 +279,7 @@ describe('GameLoggerService', () => {
             operation: 'applyActions',
             durationMs: 123.45,
           }),
-        })
+        }),
       );
     });
   });

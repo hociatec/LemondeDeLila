@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../../core/entities/game-state.entity';
 import { GameCoreService } from '../../../../../core/services/game-core.service';
 import { VictoryService } from '../../../../../modules/victory/services/victory.service';
-import { TurnService } from '../../../../../modules/turn/services/turn.service';
+import { TurnFlowService } from '../../../../../modules/turn/services/turn-flow.service';
 import { ActionLogService } from '../../../../../modules/actionlog/services/action-log.service';
 import { playingLog } from '../../../../../../common/utils/playing-logger';
 import { PANIER_EXPRESS_PHASES } from '../definitions/rules.definition';
@@ -16,7 +16,7 @@ export class PanierExpressPhaseService {
 
   constructor(
     private readonly core: GameCoreService,
-    private readonly turns: TurnService,
+    private readonly turns: TurnFlowService,
     private readonly victory: VictoryService,
     private readonly actionLogSvc: ActionLogService,
     private readonly utils: PanierExpressUtils,
@@ -36,19 +36,12 @@ export class PanierExpressPhaseService {
   }
 
   advanceTurn(state: GameStateEntity): GameStateEntity {
-    const players = state.players ?? [];
-    if (players.length === 0) return state;
-    const meta = this.getMetadata(state);
     const currentId = state.turn?.currentPlayerId ?? null;
     const currentIndex =
       currentId != null
-        ? players.findIndex((p) => p.id === currentId)
+        ? (state.players ?? []).findIndex((p) => p.id === currentId)
         : state.turnIndex;
-    const next = this.turns.nextTurn(
-      players,
-      currentIndex >= 0 ? currentIndex : state.turnIndex,
-      meta.statuses.skipTurn,
-    );
+    const next = this.turns.advanceTurn(state);
     playingLog('panier.advanceTurn', {
       roomId: (state.metadata as any)?.roomId ?? null,
       gameType: (state.metadata as any)?.gameType ?? null,
@@ -57,22 +50,10 @@ export class PanierExpressPhaseService {
       currentId,
       currentIndex,
       nextTurnIndex: next.turnIndex,
-      nextCurrentPlayerId: next.currentPlayerId,
-      skipTurn: next.skipTurn,
+      nextCurrentPlayerId: next.turn?.currentPlayerId ?? null,
+      skipTurn: (next.metadata as any)?.statuses?.skipTurn ?? {},
     });
-    const nextMeta: PanierExpressMetadata = {
-      ...meta,
-      statuses: { ...meta.statuses, skipTurn: next.skipTurn },
-    };
-    return {
-      ...state,
-      metadata: nextMeta,
-      turnIndex: next.turnIndex,
-      turn: {
-        currentPlayerId: next.currentPlayerId,
-        direction: 1,
-      },
-    };
+    return next;
   }
 
   private applyVictory(state: GameStateEntity): GameStateEntity {

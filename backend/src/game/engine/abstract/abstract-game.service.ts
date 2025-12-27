@@ -93,10 +93,7 @@ export abstract class AbstractGameService
    * Finds a player by ID in the current state.
    * Returns null if not found.
    */
-  protected findPlayer(
-    playerId: number,
-    state: GameStateEntity,
-  ): any | null {
+  protected findPlayer(playerId: number, state: GameStateEntity): any | null {
     const players = state.players ?? [];
     return players.find((p) => p.id === playerId) ?? null;
   }

@@ -55,6 +55,8 @@ public partial class GamePlayView : UserControl
             if (sent)
             {
                 e.Handled = true;
+                Focus();
+                Keyboard.Focus(this);
             }
         }
         catch

@@ -102,7 +102,10 @@ export class ServLoggerService implements LoggerService {
     return env === 'production' ? 'info' : 'debug';
   }
 
-  private resolveFileTarget(): { enabled: boolean; logFilePath: string | null } {
+  private resolveFileTarget(): {
+    enabled: boolean;
+    logFilePath: string | null;
+  } {
     // Le backend tourne généralement depuis `backend/`, donc `../log/serv.log` pointe sur la racine du repo.
     const logDir = path.resolve(process.cwd(), '..', 'log');
     const logFilePath = path.join(logDir, 'serv.log');
@@ -114,4 +117,3 @@ export class ServLoggerService implements LoggerService {
     }
   }
 }
-

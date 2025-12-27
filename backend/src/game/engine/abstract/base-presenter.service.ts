@@ -31,7 +31,8 @@ export abstract class BasePresenterService {
     const currentId = this.getCurrentPlayerId(state);
     const metadata = this.getMetadata(state);
 
-    const availableActions = actions ?? this.getAvailableActions(state, currentId);
+    const availableActions =
+      actions ?? this.getAvailableActions(state, currentId);
     const pending = this.buildPendingState(state, metadata, currentId);
     const extras = this.buildExtras(state, metadata, currentId);
     const catalog = this.buildCatalog();
@@ -65,8 +66,14 @@ export abstract class BasePresenterService {
     const currentId = this.getCurrentPlayerId(state);
     const metadata = this.getMetadata(state);
 
-    const availableActions = actions ?? this.getAvailableActionsForUser(state, userId);
-    const pending = this.buildPendingStateForUser(state, metadata, userId, currentId);
+    const availableActions =
+      actions ?? this.getAvailableActionsForUser(state, userId);
+    const pending = this.buildPendingStateForUser(
+      state,
+      metadata,
+      userId,
+      currentId,
+    );
     const extras = this.buildExtrasForUser(state, metadata, userId, currentId);
     const catalog = this.buildCatalog();
 
@@ -146,7 +153,8 @@ export abstract class BasePresenterService {
    * @returns Extras existants
    */
   protected getBaseExtras(state: GameStateEntity): Record<string, unknown> {
-    const extrasFromState = (state as GameStateEntity & { extras?: unknown }).extras;
+    const extrasFromState = (state as GameStateEntity & { extras?: unknown })
+      .extras;
     return extrasFromState && typeof extrasFromState === 'object'
       ? (extrasFromState as Record<string, unknown>)
       : {};
