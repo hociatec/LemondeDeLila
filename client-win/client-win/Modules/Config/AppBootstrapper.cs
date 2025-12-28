@@ -29,6 +29,8 @@ using client_win.Modules.Catalog.Services;
 using client_win.Modules.Messaging.Services;
 using client_win.Modules.Social.Services;
 using client_win.Modules.Stats.Services;
+using client_win.Modules.Admin.Services;
+using client_win.Modules.Network.Services;
 using client_win.Modules.Leaderboard.Services;
 using client_win.Modules.Game.Play.Services;
 using client_win.Modules.Game.Room.Services;
@@ -219,6 +221,19 @@ public static class AppBootstrapper
             new LeaderboardService(
                 sp.GetRequiredService<WsRequestClient>(),
                 sp.GetRequiredService<ISessionService>()));
+
+        services.AddSingleton<IAdminService>(sp =>
+            new AdminService(
+                sp.GetRequiredService<WsRequestClient>(),
+                sp.GetRequiredService<ISessionService>()));
+
+        services.AddSingleton<INotifyListener>(sp =>
+            new NotifyListener(
+                sp.GetRequiredService<ClientConfiguration>(),
+                sp.GetRequiredService<ISessionService>(),
+                () => sp.GetRequiredService<IWebSocketConnection>(),
+                sp.GetRequiredService<IScreenReaderAnnouncer>(),
+                sp.GetRequiredService<Modules.Catalog.Services.ICatalogService>()));
 
         services.AddTransient<IMenuRouter, MenuRouter>();
 

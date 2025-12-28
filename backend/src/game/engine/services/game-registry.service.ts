@@ -5,6 +5,7 @@ import {
   GameDefinition,
   GameRulesAdapter,
 } from '../interfaces/game-rules-adapter.interface';
+import { GameCatalogOverridesService } from './game-catalog-overrides.service';
 
 @Injectable()
 export class GameRegistryService {
@@ -15,7 +16,7 @@ export class GameRegistryService {
   private cachedAtMs = 0;
   private readonly devTtlMs = 30000;
 
-  constructor() {
+  constructor(private readonly overrides: GameCatalogOverridesService) {
     const envRoot = process.env.GAME_CATALOG_PATH;
     const cwd = process.cwd();
     const candidates = [
@@ -28,6 +29,11 @@ export class GameRegistryService {
       candidates.find(
         (p) => fs.existsSync(p) && fs.statSync(p).isDirectory(),
       ) ?? path.resolve(cwd, 'src', 'game', 'games');
+  }
+
+  invalidateCache(): void {
+    this.cachedDefinitions = null;
+    this.cachedAtMs = 0;
   }
 
   getHandler(gameType: string): GameRulesAdapter | undefined {
@@ -51,21 +57,42 @@ export class GameRegistryService {
     this.logger.log(`Handler enregistré : ${handler.gameType}`);
   }
 
-  async listGames(): Promise<GameDefinition[]> {
+  async listGames(options?: {
+    includeDisabledOverrides?: boolean;
+  }): Promise<GameDefinition[]> {
     if (this.cachedDefinitions) {
       const ttl =
         process.env.NODE_ENV === 'development'
           ? this.devTtlMs
           : Number.POSITIVE_INFINITY;
       if (Date.now() - this.cachedAtMs < ttl) {
-        return this.cachedDefinitions;
+        const withOverrides = this.cachedDefinitions.map((d) =>
+          this.overrides.apply(d),
+        ) as any[];
+        const filtered = options?.includeDisabledOverrides
+          ? withOverrides
+          : withOverrides.filter((d) => d.enabled !== false);
+        return filtered.map((d: any) => {
+          const { enabled, ...rest } = d;
+          return rest as GameDefinition;
+        });
       }
     }
     const definitions = await this.loadDefinitionsFromFs();
     const merged = definitions.map((def) => this.enrichWithHandler(def));
+
+    const withOverrides = merged.map((d) => this.overrides.apply(d) as any);
+    const filtered = options?.includeDisabledOverrides
+      ? withOverrides
+      : withOverrides.filter((d: any) => d.enabled !== false);
+
+    // Cache: on conserve la liste brute (handler + FS), les overrides sont appliquÃ©s Ã  la volÃ©e.
     this.cachedDefinitions = merged;
     this.cachedAtMs = Date.now();
-    return merged;
+    return filtered.map((d: any) => {
+      const { enabled, ...rest } = d;
+      return rest as GameDefinition;
+    });
   }
 
   private enrichWithHandler(def: GameDefinition): GameDefinition {

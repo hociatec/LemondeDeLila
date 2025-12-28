@@ -1,5 +1,13 @@
 import { Type } from 'class-transformer';
-import { IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
+import {
+  IsDateString,
+  IsIn,
+  IsInt,
+  IsOptional,
+  IsString,
+  Max,
+  Min,
+} from 'class-validator';
 
 export class AdminListUsersDto {
   @IsOptional()
@@ -9,6 +17,18 @@ export class AdminListUsersDto {
   @IsOptional()
   @IsString()
   role?: string;
+
+  @IsOptional()
+  @IsIn(['all', 'active', 'banned'])
+  status: 'all' | 'active' | 'banned' = 'all';
+
+  @IsOptional()
+  @IsDateString()
+  createdAfter?: string;
+
+  @IsOptional()
+  @IsDateString()
+  createdBefore?: string;
 
   @Type(() => Number)
   @IsInt()

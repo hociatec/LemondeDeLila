@@ -8,4 +8,5 @@ public interface ICatalogService
 {
     Task<CatalogPayload> GetCatalogAsync(CancellationToken cancellationToken = default);
     Task PreloadAsync(CancellationToken cancellationToken = default);
+    void InvalidateCache();
 }

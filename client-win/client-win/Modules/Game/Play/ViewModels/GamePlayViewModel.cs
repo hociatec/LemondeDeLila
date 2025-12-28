@@ -32,6 +32,7 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
     private readonly PropertyChangedEventHandler _choicesPropertyChangedHandler;
     private readonly GamePlayShortcutsViewModel _shortcuts;
     private readonly GamePlayConnectionController _connection;
+    private readonly GamePlayAnnouncementRouter _announcementRouter;
 
     private GameSession? _session;
 
@@ -40,10 +41,6 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
     private string _pendingText = string.Empty;
     private string _actionsText = string.Empty;
     private bool _isBotThinking;
-    private string? _lastTurnAnnouncement;
-    private DateTime _lastTurnAnnouncementAtUtc;
-    private string? _lastInfoAnnouncement;
-    private DateTime _lastInfoAnnouncementAtUtc;
     private int? _viewerPlayerId;
     private string? _lastGameStatus;
 
@@ -83,6 +80,7 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
         };
         _choices.PropertyChanged += _choicesPropertyChangedHandler;
         _presenter = new GamePlayStatePresenter(_projector);
+        _announcementRouter = new GamePlayAnnouncementRouter(_announcements);
 
         _rollCommand = new AsyncRelayCommand(
             async () =>
@@ -605,22 +603,7 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
     {
         _dispatcher.InvokeAsync(() =>
         {
-            var who = string.IsNullOrWhiteSpace(info.CurrentPlayerUsername) ? null : info.CurrentPlayerUsername.Trim();
-            var msg = who == null
-                ? "Tour actuel: inconnu."
-                : $"C'est au tour de {who}.";
-
-            var now = DateTime.UtcNow;
-            if (string.Equals(_lastTurnAnnouncement, msg, StringComparison.Ordinal) &&
-                (now - _lastTurnAnnouncementAtUtc) < TimeSpan.FromSeconds(1))
-            {
-                return;
-            }
-
-            _lastTurnAnnouncement = msg;
-            _lastTurnAnnouncementAtUtc = now;
-            MessageReceived?.Invoke(msg);
-            _announcements?.Info(msg);
+            _announcementRouter.TryHandleTurnUpdate(info, msg => MessageReceived?.Invoke(msg));
         }, DispatcherPriority.Background);
     }
 
@@ -663,38 +646,9 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
             foreach (var msg in presented.newLogMessages)
             {
                 MessageReceived?.Invoke(msg);
-
-                if (_announcements != null && ShouldAnnounceGameMessage(msg))
-                {
-                    var now = DateTime.UtcNow;
-                    if (!string.Equals(_lastInfoAnnouncement, msg, StringComparison.Ordinal) ||
-                        (now - _lastInfoAnnouncementAtUtc) >= TimeSpan.FromSeconds(1))
-                    {
-                        _lastInfoAnnouncement = msg;
-                        _lastInfoAnnouncementAtUtc = now;
-                        _announcements.Info(msg);
-                    }
-                }
+                _announcementRouter.TryAnnounceLogMessage(msg);
             }
         }, DispatcherPriority.Background);
-    }
-
-    private bool ShouldAnnounceGameMessage(string? message)
-    {
-        if (string.IsNullOrWhiteSpace(message))
-        {
-            return false;
-        }
-
-        // Tour + rejouer : annonces importantes en lecture d'écran.
-        // Le reste reste dans l'historique.
-        // Le tour est déjà annoncé par `game.turn` (OnTurnUpdated) : éviter le doublon.
-        if (message.Contains("rejoue", StringComparison.OrdinalIgnoreCase))
-        {
-            return true;
-        }
-
-        return false;
     }
 
     private bool CanSendActionNow(GameSession session)

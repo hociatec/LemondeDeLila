@@ -4,6 +4,8 @@ import { GameStateWithActions } from '../../../../engine/dto/game-action.dto';
 import { LOUP_GAROU_GAME } from '../definitions/game.definition';
 import { LoupGarouActionService } from '../actions/loup-garou-action.service';
 import { LoupGarouSetupService } from '../setup/loup-garou-setup.service';
+import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+import type { GarouMetadata } from '../model/loup-garou.types';
 
 @Injectable()
 export class LoupGarouPresenterService {
@@ -11,6 +13,85 @@ export class LoupGarouPresenterService {
     private readonly actions: LoupGarouActionService,
     private readonly setup: LoupGarouSetupService,
   ) {}
+
+  private usernameOf(state: GameStateEntity, playerId: number): string {
+    const player: any = (state.players ?? []).find((p: any) => p?.id === playerId);
+    return String(player?.username ?? `Joueur ${playerId}`);
+  }
+
+  private buildPending(
+    state: GameStateEntity,
+    meta: GarouMetadata,
+    currentPlayerId: number | null,
+    actions: GameSingleActionDto[],
+  ): any {
+    const step = meta.step;
+    const data = { step, day: meta.day };
+
+    const requiresChoice = ['seer', 'cupid', 'wolves', 'witch', 'day-vote'].includes(step);
+    if (!requiresChoice) {
+      return { type: 'phase', label: step, playerId: null, blocking: false, data };
+    }
+
+    const label =
+      step === 'seer'
+        ? 'Voyante : choisissez un joueur à observer.'
+        : step === 'cupid'
+          ? 'Cupidon : choisissez deux amoureux.'
+          : step === 'wolves'
+            ? 'Loups : choisissez une victime.'
+            : step === 'witch'
+              ? 'Sorcière : choisissez une action.'
+              : 'Vote : choisissez un joueur (ou abstention).';
+
+    const choices = (actions ?? []).map((a) => {
+      if (step === 'seer' && a.type === 'seer_peek') {
+        const targetId = Number((a.payload as any)?.targetId);
+        return this.usernameOf(state, targetId);
+      }
+      if (step === 'cupid' && a.type === 'cupid_link') {
+        const aId = Number((a.payload as any)?.a);
+        const bId = Number((a.payload as any)?.b);
+        return `${this.usernameOf(state, aId)} + ${this.usernameOf(state, bId)}`;
+      }
+      if (step === 'wolves' && a.type === 'wolves_choose') {
+        const targetId = Number((a.payload as any)?.targetId);
+        return this.usernameOf(state, targetId);
+      }
+      if (step === 'witch' && a.type === 'witch_decide') {
+        const save = Boolean((a.payload as any)?.save);
+        const killTargetIdRaw = (a.payload as any)?.killTargetId;
+        const killTargetId = killTargetIdRaw == null ? null : Number(killTargetIdRaw);
+        if (save) {
+          const wolvesTarget = meta.pending?.wolvesTarget;
+          const who = typeof wolvesTarget === 'number' ? ` (${this.usernameOf(state, wolvesTarget)})` : '';
+          return `Sauver la victime${who}`;
+        }
+        if (killTargetId != null && Number.isFinite(killTargetId)) {
+          return `Empoisonner ${this.usernameOf(state, killTargetId)}`;
+        }
+        return 'Ne rien faire';
+      }
+      if (step === 'day-vote' && a.type === 'day_vote') {
+        const targetIdRaw = (a.payload as any)?.targetId;
+        const targetId = targetIdRaw == null ? null : Number(targetIdRaw);
+        if (targetId == null || !Number.isFinite(targetId) || targetId < 0) {
+          return 'Abstention';
+        }
+        return this.usernameOf(state, targetId);
+      }
+      return a.type;
+    });
+
+    return {
+      type: step,
+      label,
+      playerId: currentPlayerId,
+      blocking: true,
+      choices,
+      data,
+    };
+  }
 
   exposeState(state: GameStateEntity): GameStateWithActions {
     const currentId = state.turn?.currentPlayerId ?? null;
@@ -25,10 +106,7 @@ export class LoupGarouPresenterService {
     if (sanitizedMeta.lastPeek) {
       delete sanitizedMeta.lastPeek;
     }
-    const pending =
-      meta.step === 'day-vote'
-        ? { type: 'vote', name: meta.step, day: meta.day }
-        : { type: 'phase', name: meta.step, day: meta.day };
+    const pending = this.buildPending(state, meta, currentId, actions);
     return {
       ...(state as any),
       catalog: {

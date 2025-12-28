@@ -64,6 +64,16 @@ public sealed class CatalogService : ICatalogService
         return fresh;
     }
 
+    public void InvalidateCache()
+    {
+        lock (_sync)
+        {
+            _cached = null;
+            _cachedAtUtc = default;
+            _inflight = null;
+        }
+    }
+
     public async Task PreloadAsync(CancellationToken cancellationToken = default)
     {
         try

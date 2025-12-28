@@ -46,10 +46,30 @@ export class AdminUsersService {
       const q = `%${query.search.trim()}%`;
       qb.andWhere('(user.email LIKE :q OR user.username LIKE :q)', { q });
     }
+    const now = new Date();
     if (query.role) {
       qb.andWhere('JSON_CONTAINS(user.roles, :role, "$") = 1', {
         role: `"${query.role}"`,
       });
+    }
+    if (query.status === 'active') {
+      qb.andWhere('(user.banned_until IS NULL OR user.banned_until <= :now)', {
+        now,
+      });
+    } else if (query.status === 'banned') {
+      qb.andWhere('user.banned_until > :now', { now });
+    }
+    if (query.createdAfter) {
+      const after = new Date(query.createdAfter);
+      if (!Number.isNaN(after.getTime())) {
+        qb.andWhere('user.created_at >= :after', { after });
+      }
+    }
+    if (query.createdBefore) {
+      const before = new Date(query.createdBefore);
+      if (!Number.isNaN(before.getTime())) {
+        qb.andWhere('user.created_at <= :before', { before });
+      }
     }
 
     const [items, total] = await qb.getManyAndCount();

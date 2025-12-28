@@ -125,7 +125,16 @@ export class LoupGarouActionService {
         payload: { targetId },
       }),
     };
-    return { ...state, metadata: updated };
+    const nextTurnOwner = LOUP_GAROU_RULEBOOK.phaseTurnOwner(
+      state,
+      updated,
+      'wolves',
+    );
+    return {
+      ...state,
+      metadata: updated,
+      turn: { currentPlayerId: nextTurnOwner, direction: 1 as const },
+    };
   }
 
   private handleWitch(
@@ -195,16 +204,14 @@ export class LoupGarouActionService {
     const updatedVotes = { ...meta.votes, [actorId!]: normalized };
     const living = this.players.livingIds(state);
     const allVoted = living.every((id) => updatedVotes[id] !== undefined);
-    const nextState: GameStateEntity = {
+    const updatedMeta: GarouMetadata = { ...meta, votes: updatedVotes };
+    const nextTurnOwner = allVoted
+      ? null
+      : LOUP_GAROU_RULEBOOK.phaseTurnOwner(state, updatedMeta, 'day-vote');
+    return {
       ...state,
-      metadata: { ...meta, votes: updatedVotes },
-      turn: {
-        currentPlayerId: allVoted
-          ? null
-          : (state.turn?.currentPlayerId ?? null),
-        direction: 1,
-      },
+      metadata: updatedMeta,
+      turn: { currentPlayerId: nextTurnOwner, direction: 1 as const },
     };
-    return nextState;
   }
 }

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Windows.Threading;
 using client_win.Core.Input;
 using client_win.Modules.Catalog.Models;
+using client_win.Modules.Game.History.Services;
 using client_win.Modules.Game.Play.ViewModels;
 using client_win.Modules.Game.Play.Views;
 using client_win.Modules.Game.Room.Input;
@@ -23,6 +24,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
     private readonly GameRoomView _tableView;
     private readonly GameRoomViewModel _tableVm;
     private readonly IRoomAnnouncements _announcements;
+    private readonly IGameHistorySink _history;
 
     private readonly RoomBotCommands _bots;
     private readonly RoomPrivacyCommands _privacy;
@@ -56,6 +58,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
         _tableVm = tableVm ?? throw new ArgumentNullException(nameof(tableVm));
         _announcements = announcements ?? throw new ArgumentNullException(nameof(announcements));
         _createGamePlayVm = createGamePlayVm ?? throw new ArgumentNullException(nameof(createGamePlayVm));
+        _history = new GameHistorySink(_dispatcher, _tableVm.History);
 
         _bots = new RoomBotCommands(_session);
         _privacy = new RoomPrivacyCommands(_session);
@@ -76,9 +79,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
         _onAnnounced = announcement =>
         {
             if (string.IsNullOrWhiteSpace(announcement.Message)) return;
-            _dispatcher.InvokeAsync(
-                () => _tableVm.History.Entries.Add(announcement.Message),
-                DispatcherPriority.Background);
+            _history.Add(announcement.Message);
         };
         _announcements.Announced += _onAnnounced;
 
@@ -105,7 +106,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
         {
             _dispatcher.InvokeAsync(() =>
             {
-                _tableVm.History.Entries.Add($"Serveur : bot ajouté ({name})");
+                _history.Add($"Bot ajouté ({name})");
                 _tableVm.Status = $"Bot ajouté : {name}.";
                 _announcements.BotJoined(name);
             }, DispatcherPriority.Background);
@@ -115,7 +116,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
         {
             _dispatcher.InvokeAsync(() =>
             {
-                _tableVm.History.Entries.Add($"Serveur : bot retiré ({name})");
+                _history.Add($"Bot retiré ({name})");
                 _tableVm.Status = $"Bot retiré : {name}.";
                 _announcements.BotLeft(name);
             }, DispatcherPriority.Background);
@@ -126,7 +127,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
             _dispatcher.InvokeAsync(() =>
             {
                 var label = isPrivate ? "privée" : "publique";
-                _tableVm.History.Entries.Add($"Serveur : table {label}");
+                _history.Add($"Table {label}");
                 _tableVm.Status = $"Visibilité : {label}.";
                 _announcements.VisibilityChanged(isPrivate);
             }, DispatcherPriority.Background);
@@ -137,7 +138,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
             _dispatcher.InvokeAsync(() =>
             {
                 var label = isSpectator ? "spectateur" : "joueur";
-                _tableVm.History.Entries.Add($"Serveur : mode {label}");
+                _history.Add($"Mode {label}");
                 _tableVm.Status = $"Mode : {label}.";
                 _announcements.RoleChanged(isSpectator);
             }, DispatcherPriority.Background);
@@ -160,7 +161,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
                     EnsureGamePlayLoaded();
                     SyncGameplayShortcuts();
 
-                    _tableVm.History.Entries.Add("Table démarrée.");
+                    _history.Add("Table démarrée.");
                     _tableVm.Status = "Table démarrée.";
                     _announcements.TableInfo("Table démarrée.");
 
@@ -196,7 +197,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
                         _gamePlayVm = null;
                     }
 
-                    _tableVm.History.Entries.Add("Table réinitialisée.");
+                    _history.Add("Table réinitialisée.");
                     _tableVm.Status = "Table réinitialisée.";
                     _announcements.TableInfo("Table réinitialisée.");
 
@@ -296,7 +297,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
 
         _gamePlayVm = _createGamePlayVm();
         _onGameMessage = msg =>
-            _dispatcher.InvokeAsync(() => _tableVm.History.Entries.Add(msg), DispatcherPriority.Background);
+            _history.Add(msg);
         _gamePlayVm.MessageReceived += _onGameMessage;
 
         if (_gamePlayVm.Shortcuts is System.Collections.Specialized.INotifyCollectionChanged notify)

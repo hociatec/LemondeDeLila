@@ -12,9 +12,9 @@ TRACE;DEBUG;NET;NET8_0;NETCOREAPP;WINDOWS;WINDOWS7_0;NET5_0_OR_GREATER;NET6_0_OR
 C:\wamp64\www\lemondeDeLila\client-win\client-win\App.xaml
 27-301886952
 2-1953240737
-177-1214822682
+1861295145659
 225486785305
 MainWindow.xaml;Modules\Admin\Views\AdminView.xaml;Modules\Catalog\Views\CatalogView.xaml;Modules\Chat\Views\ChatView.xaml;Modules\Chat\Views\ChatWindow.xaml;Modules\Game\History\Views\GameHistoryView.xaml;Modules\Game\Play\Views\GamePlayView.xaml;Modules\Game\Shell\Views\GameRoomHeaderView.xaml;Modules\Game\Shell\Views\GameRoomStatusBarView.xaml;Modules\Game\Shell\Views\GameRoomView.xaml;Modules\Game\Shell\Views\GameZoneHostView.xaml;Modules\Home\Views\HomeView.xaml;Modules\Leaderboard\Views\LeaderboardView.xaml;Modules\MainMenu\Views\MainMenuView.xaml;Modules\Messaging\Views\ComposeMessagePanel.xaml;Modules\Messaging\Views\ConversationInputPanel.xaml;Modules\Messaging\Views\MessageBubble.xaml;Modules\Messaging\Views\MessagePreviewItem.xaml;Modules\Messaging\Views\MessageReadOnlyPanel.xaml;Modules\Messaging\Views\MessagingStyles.xaml;Modules\Messaging\Views\MessagingView.xaml;Modules\Messaging\Views\PlaceholderTextBox.xaml;Modules\Messaging\Views\SectionHeaderBorder.xaml;Modules\Settings\Views\OptionsDialog.xaml;Modules\Settings\Views\OptionsView.xaml;Modules\Social\Views\SocialView.xaml;Modules\Stats\Views\StatsView.xaml;
 
-False
+True
 

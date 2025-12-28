@@ -14,6 +14,7 @@ using client_win.Modules.MainMenu.Services;
 using client_win.Modules.Shell.Services;
 using Microsoft.Extensions.DependencyInjection;
 using System.Threading;
+using client_win.Modules.Network.Services;
 
 namespace client_win
 {
@@ -27,6 +28,7 @@ namespace client_win
         private readonly ErrorBus _errorBus;
         private readonly PersistentWsClient _wsConnection;
         private readonly ShellErrorHandler _errorHandler;
+        private readonly INotifyListener _notify;
 
         public INavigationService Navigation => _navigation;
 
@@ -37,6 +39,7 @@ namespace client_win
             _errorBus = _host.Errors;
             _wsConnection = _host.WsClient;
             _dialogs = _host.Dialogs;
+            _notify = _host.Services.GetRequiredService<INotifyListener>();
 
             _homeViewModel = _host.CreateHomeViewModel(OnNavigateToMainMenu, Close);
 
@@ -75,6 +78,7 @@ namespace client_win
             // si l'utilisateur ouvre le catalogue immédiatement.
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(8));
             _ = _host.Services.GetRequiredService<Modules.Catalog.Services.ICatalogService>().PreloadAsync(cts.Token);
+            _ = _notify.StartAsync();
             var menuVm = _host.CreateMainMenuViewModel(user, OnLogoutRequested);
             var menuView = new MainMenuView { DataContext = menuVm };
             _navigation.Show(menuView);
@@ -82,6 +86,7 @@ namespace client_win
 
         private void OnLogoutRequested()
         {
+            _ = _notify.StopAsync();
             _host.Session.Clear();
             _navigation.ClearUser();
             Title = "Le Monde de Lila";

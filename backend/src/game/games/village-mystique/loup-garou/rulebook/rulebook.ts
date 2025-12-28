@@ -124,7 +124,9 @@ export function phaseTurnOwner(
       const wolves = roleHolders(meta, 'werewolf').filter((id) =>
         isAlive(state, id),
       );
-      return wolves[0] ?? null;
+      const choices = meta.pending.wolvesChoices ?? {};
+      const pending = wolves.filter((id) => choices[id] == null);
+      return pending[0] ?? null;
     }
     case 'witch':
       return uniqueRoleHolder(state, meta, 'witch');

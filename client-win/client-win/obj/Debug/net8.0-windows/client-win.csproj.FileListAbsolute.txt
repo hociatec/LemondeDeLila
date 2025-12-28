@@ -90,7 +90,6 @@ C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Debug\net8.0-windows\clien
 C:\wamp64\www\lemondeDeLila\client-win\client-win\bin\Debug\net8.0-windows\config\client.properties
 C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Debug\net8.0-windows\Modules\Settings\Views\OptionsView.baml
 C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Debug\net8.0-windows\Modules\Settings\Views\OptionsView.g.cs
-C:\wamp64\www\lemondeDeLila\client-win\client-win\bin\Debug\net8.0-windows\client-win.exe
 C:\wamp64\www\lemondeDeLila\client-win\client-win\bin\Debug\net8.0-windows\libs\x64\nvdaControllerClient.dll
 C:\wamp64\www\lemondeDeLila\client-win\client-win\bin\Debug\net8.0-windows\libs\x64\nvdaControllerClient64.dll
 C:\wamp64\www\lemondeDeLila\client-win\client-win\bin\Debug\net8.0-windows\libs\x64\nvdaHelperRemote.dll
@@ -156,3 +155,4 @@ C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Debug\net8.0-windows\Modul
 C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Debug\net8.0-windows\Modules\Stats\Views\StatsView.baml
 C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Debug\net8.0-windows\Modules\Leaderboard\Views\LeaderboardView.g.cs
 C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Debug\net8.0-windows\Modules\Stats\Views\StatsView.g.cs
+C:\wamp64\www\lemondeDeLila\client-win\client-win\bin\Debug\net8.0-windows\client-win.exe

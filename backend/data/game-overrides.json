@@ -1,0 +1,17 @@
+{
+  "games": {
+    "a-fond-les-ballons": {
+      "enabled": true
+    },
+    "panier-express": {
+      "enabled": null,
+      "minPlayers": null,
+      "maxPlayers": null,
+      "name": "Panier express",
+      "description": null
+    },
+    "aventure-sauvage": {
+      "enabled": true
+    }
+  }
+}

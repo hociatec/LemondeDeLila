@@ -118,6 +118,29 @@ public static class WsMessageTypes
         public const string Top = "leaderboard.top";
     }
 
+    public static class Admin
+    {
+        public const string UsersList = "admin.users.list";
+        public const string UsersGet = "admin.users.get";
+        public const string UsersBan = "admin.users.ban";
+        public const string UsersUnban = "admin.users.unban";
+        public const string UsersDelete = "admin.users.delete";
+        public const string UsersRoles = "admin.users.roles";
+
+        public const string GamesList = "admin.games.list";
+        public const string GamesSetEnabled = "admin.games.setEnabled";
+        public const string GamesUpdate = "admin.games.update";
+        public const string GamesReset = "admin.games.reset";
+        public const string RolesList = "admin.roles.list";
+        public const string LogsDownload = "admin.logs.download";
+        public const string RolesDefinitionsList = "admin.roles.definitions";
+        public const string RoleDefinitionCreate = "admin.roles.create";
+        public const string RoleDefinitionUpdate = "admin.roles.update";
+        public const string RoleDefinitionDelete = "admin.roles.delete";
+
+        public const string Broadcast = "admin.broadcast";
+    }
+
     /// <summary>
     /// Contextes d'erreur pour ErrorBus (identification de la source de l'erreur)
     /// </summary>
@@ -135,5 +158,6 @@ public static class WsMessageTypes
         public const string Social = "social";
         public const string Stats = "stats";
         public const string Leaderboard = "leaderboard";
+        public const string Admin = "admin";
     }
 }
