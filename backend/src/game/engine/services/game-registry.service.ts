@@ -130,26 +130,38 @@ export class GameRegistryService {
   ): Promise<GameDefinition | null> {
     try {
       const raw = await fs.promises.readFile(manifestPath, 'utf-8');
-      const data = JSON.parse(raw) as Record<string, any>;
+      // Certains fichiers JSON peuvent contenir un BOM UTF-8 (U+FEFF) au début.
+      // JSON.parse ne le tolère pas -> on le supprime.
+      const data = JSON.parse(raw.replace(/^\uFEFF/, '')) as Record<string, any>;
       if (data.enabled === false) {
         this.logger.warn(
           `Jeu désactivé ignoré (manifest): ${manifestPath} (${data.code ?? data.id ?? 'unknown'})`,
         );
         return null;
       }
-      const relPath = path.relative(root, path.dirname(manifestPath));
-      const segments = relPath.split(path.sep).filter(Boolean);
-      const category = this.formatName(
-        segments[0] ?? data.category ?? 'Catalogue',
-      );
-      const subcategory = this.formatName(
-        segments[1] ?? data.subcategory ?? '',
-      );
+
       const id = data.code ?? data.id ?? '';
       if (!id) {
         this.logger.warn(`Manifest sans code ignoré: ${manifestPath}`);
         return null;
       }
+
+      const relPath = path.relative(root, path.dirname(manifestPath));
+      const segments = relPath.split(path.sep).filter(Boolean);
+
+      const hasHandler = this.handlers.has(id);
+      const rawCategory = typeof data.category === 'string' ? data.category : '';
+      const rawSubcategory =
+        typeof data.subcategory === 'string' ? data.subcategory : '';
+
+      // IMPORTANT:
+      // - On ne déduit pas la sous-catégorie depuis l'arborescence FS (ça créait une sous-catégorie par jeu côté client).
+      // - Si un handler est enregistré, on laisse category/subcategory vides pour que enrichWithHandler applique les valeurs
+      //   de l'adaptateur (ex: JeuxDePlateaux / LesQuatreVents), sauf si manifest précise explicitement ces champs.
+      const category = this.formatName(
+        rawCategory || (hasHandler ? '' : segments[0] ?? 'Catalogue'),
+      );
+      const subcategory = this.formatName(rawSubcategory || '');
       return {
         id,
         name: data.name ?? this.formatName(segments[segments.length - 1] ?? id),

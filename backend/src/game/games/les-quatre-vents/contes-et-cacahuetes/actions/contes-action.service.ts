@@ -142,6 +142,10 @@ export class ContesActionService {
       return this.takeOneBonusToken(next, targetPlayerId, playerId);
     }
 
+    if (ctx === 'steal_bonus_or_surprise') {
+      return this.startStealTokenChoice(next, playerId, targetPlayerId);
+    }
+
     if (ctx === 'wish_swap') {
       return this.swapPositions(next, playerId, targetPlayerId);
     }
@@ -267,6 +271,18 @@ export class ContesActionService {
       return this.transferBonusToken(next, playerId, targetId, cardId);
     }
 
+    if (ctx.startsWith('steal_token_from:')) {
+      const parts = ctx.split(':');
+      const fromId = Number(parts[1]);
+      const toId = Number(parts[2]);
+      if (!Number.isFinite(fromId) || !Number.isFinite(toId)) return next;
+      if (toId !== playerId) return next;
+
+      if (cardType === 'bonus') return this.transferBonusToken(next, fromId, toId, cardId);
+      if (cardType === 'surprise') return this.transferSurpriseToken(next, fromId, toId, cardId);
+      return next;
+    }
+
     return next;
   }
 
@@ -290,7 +306,7 @@ export class ContesActionService {
 
   private moveBy(state: GameStateEntity, playerId: number, delta: number, depth: number): GameStateEntity {
     if (!delta) return state;
-    if (depth > 10) return this.core.appendLog(state, 'Effet en chaîne interrompu.');
+    if (depth > 10) return this.core.appendLog(state, 'Effet en chaҮne interrompu.');
 
     const meta = this.getMeta(state);
     const tilesLen = Array.isArray(meta.tiles) ? meta.tiles.length : 60;
@@ -354,7 +370,7 @@ export class ContesActionService {
     if (type === 'malus') {
       const protectedOut = this.maybeProtectFromMalus(state, playerId);
       if (protectedOut.protected) {
-        return this.core.appendLog(protectedOut.state, `${this.playerName(state, playerId)} est protégé du Malus.`);
+        return this.core.appendLog(protectedOut.state, `${this.playerName(state, playerId)} est protҩgҩ du Malus.`);
       }
     }
 
@@ -535,14 +551,19 @@ export class ContesActionService {
       case 13:
         return this.setPending(next, {
           type: 'choose_option',
-          label: 'Souhait éphémère : choisissez une option.',
+           label: 'Souhait éphémère : choisissez une option.',
           playerId,
           blocking: true,
-          choices: ['Avancer de 2', 'Échanger', 'Tirer une carte Bonus'],
+           choices: ['Avancer de 2', 'Échanger', 'Tirer une carte Bonus'],
           data: { context: 'wish_ephemere' },
         });
       case 14:
-        return this.startChooseTarget(next, playerId, 'steal_bonus', 'Filet magique : choisissez un joueur pour lui prendre une carte Bonus.');
+        return this.startChooseTarget(
+          next,
+          playerId,
+          'steal_bonus_or_surprise',
+          'Filet magique : choisissez un joueur pour lui prendre une carte Bonus ou Surprise.',
+        );
       case 15:
         return this.startChooseTarget(next, playerId, 'grimoire_voyageur', 'Grimoire voyageur : choisissez un joueur.');
       default:
@@ -654,11 +675,30 @@ export class ContesActionService {
   }
 
   private startChooseTarget(state: GameStateEntity, playerId: number, context: string, label: string): GameStateEntity {
+    const meta = this.getMeta(state);
     const players = Array.isArray(state.players) ? state.players : [];
     const targets = players
-      .filter((p) => p?.id !== playerId)
+      .filter((p) => {
+        const targetId = p?.id;
+        if (targetId === playerId) return false;
+
+        if (context === 'song_take_bonus' || context === 'steal_bonus') {
+          return this.listBonusTokens(meta, targetId).length > 0;
+        }
+
+        if (context === 'steal_bonus_or_surprise') {
+          return this.listBonusTokens(meta, targetId).length > 0 || this.listSurpriseTokens(meta, targetId).length > 0;
+        }
+
+        return true;
+      })
       .map((p: any) => ({ targetPlayerId: p.id, targetUsername: p.username ?? `Joueur ${p.id}` }));
-    if (!targets.length) return this.core.appendLog(state, 'Aucun autre joueur disponible.');
+    if (!targets.length) {
+      if (context === 'song_take_bonus' || context === 'steal_bonus' || context === 'steal_bonus_or_surprise') {
+        return this.core.appendLog(state, 'Aucune carte à voler chez les autres joueurs.');
+      }
+      return this.core.appendLog(state, 'Aucun autre joueur disponible.');
+    }
     return this.setPending(state, {
       type: 'choose_target',
       label,
@@ -672,7 +712,7 @@ export class ContesActionService {
   private startGiveBonusChoice(state: GameStateEntity, giverId: number, targetId: number): GameStateEntity {
     const tokens = this.listBonusTokens(this.getMeta(state), giverId);
     if (!tokens.length) {
-      return this.core.appendLog(state, `${this.playerName(state, giverId)} n’a aucune carte Bonus à donner.`);
+      return this.core.appendLog(state, `${this.playerName(state, giverId)} n'a aucune carte Bonus à donner.`);
     }
     return this.setPending(state, {
       type: 'choose_card',
@@ -697,6 +737,44 @@ export class ContesActionService {
     const reroll = Number(meta.statuses.rerollToken?.[playerId] ?? 0);
     if (reroll > 0) out.push({ cardId: 2, title: `Parchemin enchanté (${reroll})` });
     return out;
+  }
+
+  private listSurpriseTokens(meta: ContesCacahuetesMetadata, playerId: number): Array<{ cardId: number; title: string }> {
+    const out: Array<{ cardId: number; title: string }> = [];
+    if (Boolean(meta.statuses.reverseNextTurn?.[playerId])) out.push({ cardId: 8, title: 'Livre à l’envers' });
+    if (Boolean(meta.statuses.protectNextMalus?.[playerId])) out.push({ cardId: 10, title: 'Dragon de papier' });
+    return out;
+  }
+
+  private startStealTokenChoice(state: GameStateEntity, thiefId: number, fromId: number): GameStateEntity {
+    const meta = this.getMeta(state);
+    const bonus = this.listBonusTokens(meta, fromId).map((t) => ({ cardType: 'bonus' as const, cardId: t.cardId, title: t.title }));
+    const surprise = this.listSurpriseTokens(meta, fromId).map((t) => ({ cardType: 'surprise' as const, cardId: t.cardId, title: t.title }));
+    const cards = [...bonus, ...surprise];
+
+    if (!cards.length) {
+      return this.core.appendLog(state, `${this.playerName(state, fromId)} n’a aucune carte Bonus ou Surprise à voler.`);
+    }
+
+    if (cards.length === 1) {
+      const only = cards[0];
+      let next = this.core.appendLog(state, `Vol : ${this.playerName(state, thiefId)} prend "${only.title}" à ${this.playerName(state, fromId)}.`);
+      return only.cardType === 'bonus'
+        ? this.transferBonusToken(next, fromId, thiefId, only.cardId)
+        : this.transferSurpriseToken(next, fromId, thiefId, only.cardId);
+    }
+
+    return this.setPending(state, {
+      type: 'choose_card',
+      label: `Filet magique : choisissez la carte à voler à ${this.playerName(state, fromId)}, puis Entrée.`,
+      playerId: thiefId,
+      blocking: true,
+      choices: cards.map((c) => c.title),
+      data: {
+        context: `steal_token_from:${fromId}:${thiefId}`,
+        cards: cards.map((c) => ({ cardType: c.cardType, cardId: c.cardId, title: c.title })),
+      },
+    });
   }
 
   private transferBonusToken(state: GameStateEntity, fromId: number, toId: number, bonusId: number): GameStateEntity {
@@ -737,11 +815,32 @@ export class ContesActionService {
     return next;
   }
 
+  private transferSurpriseToken(state: GameStateEntity, fromId: number, toId: number, surpriseId: number): GameStateEntity {
+    let next = state;
+    const meta = this.getMeta(next);
+
+    if (surpriseId === 8) {
+      if (!Boolean(meta.statuses.reverseNextTurn?.[fromId])) return next;
+      next = this.setStatusBool(next, 'reverseNextTurn', fromId, false);
+      next = this.setStatusBool(next, 'reverseNextTurn', toId, true);
+      return this.core.appendLog(next, `${this.playerName(next, fromId)} donne Livre à l’envers à ${this.playerName(next, toId)}.`);
+    }
+
+    if (surpriseId === 10) {
+      if (!Boolean(meta.statuses.protectNextMalus?.[fromId])) return next;
+      next = this.setStatusBool(next, 'protectNextMalus', fromId, false);
+      next = this.setStatusBool(next, 'protectNextMalus', toId, true);
+      return this.core.appendLog(next, `${this.playerName(next, fromId)} donne Dragon de papier à ${this.playerName(next, toId)}.`);
+    }
+
+    return next;
+  }
+
   private takeOneBonusToken(state: GameStateEntity, fromId: number, toId: number): GameStateEntity {
     const meta = this.getMeta(state);
     const tokens = this.listBonusTokens(meta, fromId);
     if (!tokens.length) {
-      return this.core.appendLog(state, `${this.playerName(state, fromId)} n’a aucune carte Bonus à donner.`);
+      return this.core.appendLog(state, `${this.playerName(state, fromId)} n'a aucune carte Bonus à donner.`);
     }
     return this.transferBonusToken(state, fromId, toId, tokens[0].cardId);
   }
@@ -764,7 +863,7 @@ export class ContesActionService {
     next = this.setStatusCount(next, 'turnSwapWith', bId, aId);
     next = this.setStatusCount(next, 'turnSwapRemaining', aId, 1);
     next = this.setStatusCount(next, 'turnSwapRemaining', bId, 1);
-    return this.core.appendLog(next, `Formule magique : prochains tours échangés entre ${this.playerName(next, aId)} et ${this.playerName(next, bId)}.`);
+    return this.core.appendLog(next, `Formule magique : prochains tours ҩchangҩs entre ${this.playerName(next, aId)} et ${this.playerName(next, bId)}.`);
   }
 
   private onAnyPlayerPassedBlocked(state: GameStateEntity, moverId: number, moverPos: number): GameStateEntity {

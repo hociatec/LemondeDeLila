@@ -96,9 +96,39 @@ internal sealed class GamePlayChoicesViewModel : ObservableObject
         }
     }
 
-    public void UpdateFromState(GameStateDto state, Func<GameStateDto, bool> canStartAskCardSelection)
+    public void UpdateFromState(GameStateDto state, int? viewerPlayerId, Func<GameStateDto, bool> canStartAskCardSelection)
     {
         if (state == null) return;
+
+        // Les choix pending sont globaux dans l'état, mais ne concernent qu'un seul joueur.
+        // Si ce n'est pas le joueur courant (viewer), on ne doit pas afficher la liste.
+        var pendingPlayerId = state.Pending?.PlayerId;
+        if (pendingPlayerId != null &&
+            viewerPlayerId != null &&
+            pendingPlayerId.Value != viewerPlayerId.Value)
+        {
+            _localChoiceActions.Clear();
+            _localChoiceMode = string.Empty;
+            ChoicesLabel = string.Empty;
+            if (PendingChoices.Count > 0)
+            {
+                PendingChoices.Clear();
+                SelectedChoice = null;
+            }
+            return;
+        }
+        if (pendingPlayerId != null && viewerPlayerId == null)
+        {
+            _localChoiceActions.Clear();
+            _localChoiceMode = string.Empty;
+            ChoicesLabel = string.Empty;
+            if (PendingChoices.Count > 0)
+            {
+                PendingChoices.Clear();
+                SelectedChoice = null;
+            }
+            return;
+        }
 
         var serverChoices = ExtractServerPendingChoices(state);
         var hasServerPendingChoices = serverChoices.Count > 0;

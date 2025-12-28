@@ -24,9 +24,6 @@ public sealed class GameHistoryViewModel : ObservableObject
 
         _dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
         Entries.CollectionChanged += OnEntriesChanged;
-        Entries.Add($"Ouverture de la table pour {game.Name}");
-        Entries.Add($"Moteur : {game.Engine}");
-        Entries.Add($"Joueurs : {game.MinPlayers}-{game.MaxPlayers}");
         RebuildDisplayText();
     }
 

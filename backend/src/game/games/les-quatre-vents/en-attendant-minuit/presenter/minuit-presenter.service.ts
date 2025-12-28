@@ -1,0 +1,42 @@
+﻿import { Injectable } from '@nestjs/common';
+import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
+import type { GameStateWithActions } from '../../../../engine/dto/game-action.dto';
+import { MINUIT_GAME } from '../definitions/minuit.definition';
+import * as Rulebook from '../rulebook/rulebook';
+import type { MinuitMetadata } from '../model/minuit.types';
+
+@Injectable()
+export class MinuitPresenterService {
+  exposeStateForUser(state: GameStateEntity, userId: number): GameStateWithActions {
+    const actions = Rulebook.getAvailableActions(state, userId);
+    const meta = (state.metadata ?? {}) as any as MinuitMetadata;
+    const players = Array.isArray(state.players) ? state.players : [];
+    const me = players.find((p) => p?.id === userId);
+
+    const pending = meta.pendingQuiz
+      ? {
+          type: 'quiz',
+          question: meta.pendingQuiz.question,
+          choices: meta.pendingQuiz.choices,
+          playerId: meta.pendingQuiz.playerId,
+          blocking: true,
+        }
+      : (state.pending ?? null);
+
+    return {
+      ...state,
+      catalog: { phases: MINUIT_GAME.phaseOrder.map((p) => p.id), victory: null },
+      actions: actions.map((a) => ({ type: a.type, label: a.type, payload: a.payload ?? {} })),
+      pending,
+      extras: {
+        ...(state as any).extras,
+        currentPlayerView: { id: userId, username: me?.username ?? `Joueur ${userId}` },
+        shortcuts: [{ key: 'pressed P', type: 'interface', id: 'position' }],
+      },
+      board: {
+        tiles: Array.isArray(meta.tiles) ? meta.tiles : [],
+        positions: meta.positions ?? {},
+      },
+    } as any;
+  }
+}

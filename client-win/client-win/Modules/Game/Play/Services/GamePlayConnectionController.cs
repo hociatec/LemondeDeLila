@@ -57,6 +57,7 @@ internal sealed class GamePlayConnectionController : IAsyncDisposable
             }, DispatcherPriority.Background);
 
             await session.RequestStateAsync(cancellationToken).ConfigureAwait(false);
+            await session.RequestTurnAsync(cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -175,6 +176,7 @@ internal sealed class GamePlayConnectionController : IAsyncDisposable
 
                 await session.JoinAsync(connectCts.Token).ConfigureAwait(false);
                 await session.RequestStateAsync(connectCts.Token).ConfigureAwait(false);
+                await session.RequestTurnAsync(connectCts.Token).ConfigureAwait(false);
 
                 await _dispatcher.InvokeAsync(() =>
                 {

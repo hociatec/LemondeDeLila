@@ -160,7 +160,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
                     EnsureGamePlayLoaded();
                     SyncGameplayShortcuts();
 
-                    _tableVm.History.Entries.Add("Serveur : table démarrée.");
+                    _tableVm.History.Entries.Add("Table démarrée.");
                     _tableVm.Status = "Table démarrée.";
                     _announcements.TableInfo("Table démarrée.");
 
@@ -196,7 +196,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
                         _gamePlayVm = null;
                     }
 
-                    _tableVm.History.Entries.Add("Serveur : table réinitialisée.");
+                    _tableVm.History.Entries.Add("Table réinitialisée.");
                     _tableVm.Status = "Table réinitialisée.";
                     _announcements.TableInfo("Table réinitialisée.");
 
@@ -296,7 +296,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
 
         _gamePlayVm = _createGamePlayVm();
         _onGameMessage = msg =>
-            _dispatcher.InvokeAsync(() => _announcements.TableInfo(msg), DispatcherPriority.Background);
+            _dispatcher.InvokeAsync(() => _tableVm.History.Entries.Add(msg), DispatcherPriority.Background);
         _gamePlayVm.MessageReceived += _onGameMessage;
 
         if (_gamePlayVm.Shortcuts is System.Collections.Specialized.INotifyCollectionChanged notify)

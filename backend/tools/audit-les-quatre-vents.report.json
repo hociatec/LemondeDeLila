@@ -1,0 +1,72 @@
+[
+  {
+    "game": "en-attendant-minuit",
+    "tilesTotal": 56,
+    "tilesUnknownType": [],
+    "tilesMissingFields": []
+  },
+  {
+    "game": "en-attendant-minuit",
+    "cardsTotal": 60,
+    "cardsUnhandled": []
+  },
+  {
+    "game": "frousse-party",
+    "tilesTotal": 50,
+    "tilesUnknownType": [],
+    "tilesMissingFields": []
+  },
+  {
+    "game": "frousse-party",
+    "cardsTotal": 59,
+    "cardsUnhandled": []
+  },
+  {
+    "game": "galopons-ensemble",
+    "tilesTotal": 40,
+    "tilesUnknownType": [],
+    "tilesMissingFields": []
+  },
+  {
+    "game": "galopons-ensemble",
+    "cardsTotal": 30,
+    "cardsUnhandled": []
+  },
+  {
+    "game": "ca-derape",
+    "cardsTotal": 80,
+    "cardsExpected": 80,
+    "breakdown": {
+      "simple": 12,
+      "spectacular": 8,
+      "losses": 12,
+      "special": 8,
+      "chaos": 10,
+      "conditional": 10,
+      "rules": 10,
+      "ambience": 10
+    },
+    "referencedIds": [
+      33,
+      34,
+      35,
+      36,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50
+    ],
+    "referencedMissingInDeck": []
+  },
+  {
+    "game": "odyssee-quatre-cieux",
+    "trackLength": 56,
+    "homeLength": 6
+  }
+]

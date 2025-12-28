@@ -42,6 +42,8 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
     private bool _isBotThinking;
     private string? _lastTurnAnnouncement;
     private DateTime _lastTurnAnnouncementAtUtc;
+    private string? _lastInfoAnnouncement;
+    private DateTime _lastInfoAnnouncementAtUtc;
     private int? _viewerPlayerId;
     private string? _lastGameStatus;
 
@@ -595,6 +597,10 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
         }
     }
 
+    // (public) utilisé uniquement par des intégrations externes éventuelles; sinon le Turn est demandé automatiquement
+    // à la connexion (GamePlayConnectionController).
+    public Task RequestTurnInfoAsync() => RequestTurnAsync();
+
     private void OnTurnUpdated(TurnInfoDto info)
     {
         _dispatcher.InvokeAsync(() =>
@@ -614,6 +620,7 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
             _lastTurnAnnouncement = msg;
             _lastTurnAnnouncementAtUtc = now;
             MessageReceived?.Invoke(msg);
+            _announcements?.Info(msg);
         }, DispatcherPriority.Background);
     }
 
@@ -635,7 +642,7 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
             _viewerPlayerId = state == null ? null : GamePlayExtrasParser.ExtractCurrentPlayerId(state);
             if (state != null)
             {
-                _choices.UpdateFromState(state, CanStartAskCardSelection);
+                _choices.UpdateFromState(state, _viewerPlayerId, CanStartAskCardSelection);
             }
 
             var presented = _presenter.Present(state!);
@@ -656,8 +663,38 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
             foreach (var msg in presented.newLogMessages)
             {
                 MessageReceived?.Invoke(msg);
+
+                if (_announcements != null && ShouldAnnounceGameMessage(msg))
+                {
+                    var now = DateTime.UtcNow;
+                    if (!string.Equals(_lastInfoAnnouncement, msg, StringComparison.Ordinal) ||
+                        (now - _lastInfoAnnouncementAtUtc) >= TimeSpan.FromSeconds(1))
+                    {
+                        _lastInfoAnnouncement = msg;
+                        _lastInfoAnnouncementAtUtc = now;
+                        _announcements.Info(msg);
+                    }
+                }
             }
         }, DispatcherPriority.Background);
+    }
+
+    private bool ShouldAnnounceGameMessage(string? message)
+    {
+        if (string.IsNullOrWhiteSpace(message))
+        {
+            return false;
+        }
+
+        // Tour + rejouer : annonces importantes en lecture d'écran.
+        // Le reste reste dans l'historique.
+        // Le tour est déjà annoncé par `game.turn` (OnTurnUpdated) : éviter le doublon.
+        if (message.Contains("rejoue", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     private bool CanSendActionNow(GameSession session)

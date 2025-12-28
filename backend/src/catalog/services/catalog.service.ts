@@ -94,8 +94,18 @@ export class CatalogService {
   private async loadFromRegistry(): Promise<CatalogGame[]> {
     const definitions = await this.registry.listGames();
     return definitions.map((def) => {
-      const category = this.formatCategoryName(def.category || 'Catalogue');
-      const subcategory = this.formatCategoryName(def.subcategory || '');
+      // UX catalogue:
+      // On préfère afficher directement les sous-catégories (ex: "Les Quatre Vents")
+      // plutôt que des catégories techniques ("JeuxDePlateaux", "JeuxDeCartes").
+      //
+      // Règle:
+      // - si une sous-catégorie existe, elle devient la catégorie affichée (1 seul niveau)
+      // - sinon on garde la catégorie.
+      const rawCategory = this.formatCategoryName(def.category || 'Catalogue');
+      const rawSubcategory = this.formatCategoryName(def.subcategory || '');
+
+      const category = rawSubcategory || rawCategory;
+      const subcategory = '';
       const categories = this.buildCategoryRefs(category, subcategory);
       return {
         id: def.id,

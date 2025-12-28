@@ -110,7 +110,10 @@ public sealed class GameTableOpener : IGameTableOpener
             onToggleRole: ToggleRole,
             dialogs: _dialogs);
 
-        tableVm.Status = $"Table créée (id {session.RoomId}).";
+        tableVm.Status = "Table créée.";
+        var createdMessage = $"Table de {game.Name} créée. Ajoutez des bots et commencez à jouer.";
+        tableVm.History.Entries.Add(createdMessage);
+        _gameAnnouncements.Info(createdMessage);
 
         bindings = new GameTableBindings(
             dispatcher: dispatcher,
@@ -123,24 +126,7 @@ public sealed class GameTableOpener : IGameTableOpener
         bindings.Attach();
         bindings.InitializeFromLastState();
 
-        var serverRoom = session.LastRoomState?.Room;
-        if (serverRoom != null)
-        {
-            tableVm.History.Entries.Add($"Serveur : table créée (id {serverRoom.Id})");
-            if (!string.IsNullOrWhiteSpace(serverRoom.Status))
-            {
-                tableVm.History.Entries.Add($"Statut serveur : {serverRoom.Status}");
-            }
-            if (!string.IsNullOrWhiteSpace(serverRoom.GameType))
-            {
-                tableVm.History.Entries.Add($"GameType : {serverRoom.GameType}");
-            }
-            tableVm.History.Entries.Add($"Privée : {(serverRoom.IsPrivate ? "oui" : "non")}");
-            if (serverRoom.MaxPlayers > 0)
-            {
-                tableVm.History.Entries.Add($"Max joueurs : {serverRoom.MaxPlayers}");
-            }
-        }
+        // Les détails techniques (status/gameType/privacy/max) ne vont pas dans l'historique : trop verbeux.
 
         tableView.DataContext = tableVm;
         _navigation.Show(tableView);

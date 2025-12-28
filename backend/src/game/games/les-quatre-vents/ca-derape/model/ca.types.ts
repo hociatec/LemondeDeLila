@@ -43,6 +43,7 @@ export type CaCard = {
 export type CaMetadata = {
   tiles: CaTile[];
   positions: Record<number, number>;
+  lastRollByPlayer?: Record<number, number>;
   lastMoveDelta: Record<number, number>;
   turnsSinceMoved: Record<number, number>;
   statuses: {
@@ -50,6 +51,8 @@ export type CaMetadata = {
     ignoreNextPenalty: Record<number, boolean>;
     doubleNextMove: Record<number, boolean>;
     doubleNextRoll: Record<number, boolean>;
+    mirrorNextRollFrom?: Record<number, number | null>;
+    nextPlayerDelta?: number | null;
   };
   decks: {
     cards: CaCard[];
@@ -58,4 +61,3 @@ export type CaMetadata = {
   pendingContext?: any;
   winnerId: number | null;
 };
-

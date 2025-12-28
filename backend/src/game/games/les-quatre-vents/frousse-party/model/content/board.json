@@ -1,0 +1,255 @@
+﻿{
+    "version":  1,
+    "tiles":  [
+                  {
+                      "n":  1,
+                      "title":  "Entrée principale",
+                      "type":  "neutral"
+                  },
+                  {
+                      "n":  2,
+                      "title":  "Hall du manoir",
+                      "type":  "card"
+                  },
+                  {
+                      "n":  3,
+                      "title":  "Couloir des portraits",
+                      "type":  "neutral"
+                  },
+                  {
+                      "n":  4,
+                      "title":  "Escalier branlant",
+                      "type":  "card"
+                  },
+                  {
+                      "n":  5,
+                      "title":  "Salle des chandelles vacillantes",
+                      "type":  "card"
+                  },
+                  {
+                      "n":  6,
+                      "title":  "Petit vestibule humide",
+                      "type":  "neutral"
+                  },
+                  {
+                      "n":  7,
+                      "title":  "Bibliothèque ancienne",
+                      "type":  "card"
+                  },
+                  {
+                      "n":  8,
+                      "title":  "Galerie des échos",
+                      "type":  "neutral"
+                  },
+                  {
+                      "n":  9,
+                      "title":  "Salle des horloges anciennes",
+                      "type":  "card"
+                  },
+                  {
+                      "n":  10,
+                      "title":  "Couloir du vent glacial",
+                      "type":  "card"
+                  },
+                  {
+                      "n":  11,
+                      "title":  "Pièce aux tentures noires",
+                      "type":  "neutral"
+                  },
+                  {
+                      "n":  12,
+                      "title":  "Escalier suspendu",
+                      "type":  "card"
+                  },
+                  {
+                      "n":  13,
+                      "title":  "Salon abandonné",
+                      "type":  "neutral"
+                  },
+                  {
+                      "n":  14,
+                      "title":  "Couloir des murmures",
+                      "type":  "card"
+                  },
+                  {
+                      "n":  15,
+                      "title":  "Galerie des statues",
+                      "type":  "card"
+                  },
+                  {
+                      "n":  16,
+                      "title":  "Salle des tapisseries anciennes",
+                      "type":  "neutral"
+                  },
+                  {
+                      "n":  17,
+                      "title":  "Salle de musique oubliée",
+                      "type":  "card"
+                  },
+                  {
+                      "n":  18,
+                      "title":  "Petit grenier",
+                      "type":  "neutral"
+                  },
+                  {
+                      "n":  19,
+                      "title":  "Couloir gelé",
+                      "type":  "card"
+                  },
+                  {
+                      "n":  20,
+                      "title":  "Cuisine du manoir",
+                      "type":  "card"
+                  },
+                  {
+                      "n":  21,
+                      "title":  "Salle aux miroirs brisés",
+                      "type":  "card"
+                  },
+                  {
+                      "n":  22,
+                      "title":  "Couloir étroit et sombre",
+                      "type":  "neutral"
+                  },
+                  {
+                      "n":  23,
+                      "title":  "Salle des lanternes vacillantes",
+                      "type":  "neutral"
+                  },
+                  {
+                      "n":  24,
+                      "title":  "Passage des toiles mouvantes",
+                      "type":  "card"
+                  },
+                  {
+                      "n":  25,
+                      "title":  "Couloir des escaliers perdus",
+                      "type":  "card"
+                  },
+                  {
+                      "n":  26,
+                      "title":  "Salle du miroir ancien",
+                      "type":  "neutral"
+                  },
+                  {
+                      "n":  27,
+                      "title":  "Bibliothèque interdite",
+                      "type":  "card"
+                  },
+                  {
+                      "n":  28,
+                      "title":  "Petit salon au plafond bas",
+                      "type":  "neutral"
+                  },
+                  {
+                      "n":  29,
+                      "title":  "Couloir des ombres mouvantes",
+                      "type":  "card"
+                  },
+                  {
+                      "n":  30,
+                      "title":  "Chambre de la comtesse",
+                      "type":  "card"
+                  },
+                  {
+                      "n":  31,
+                      "title":  "Salle du vent hurlant",
+                      "type":  "card"
+                  },
+                  {
+                      "n":  32,
+                      "title":  "Couloir du miroir brumeux",
+                      "type":  "neutral"
+                  },
+                  {
+                      "n":  33,
+                      "title":  "Salle des cordes suspendues",
+                      "type":  "card"
+                  },
+                  {
+                      "n":  34,
+                      "title":  "Chambre du chat noir",
+                      "type":  "neutral"
+                  },
+                  {
+                      "n":  35,
+                      "title":  "Salle aux bruits de chaînes",
+                      "type":  "card"
+                  },
+                  {
+                      "n":  36,
+                      "title":  "Couloir des silhouettes furtives",
+                      "type":  "card"
+                  },
+                  {
+                      "n":  37,
+                      "title":  "Cave humide",
+                      "type":  "neutral"
+                  },
+                  {
+                      "n":  38,
+                      "title":  "Escaliers instables",
+                      "type":  "card"
+                  },
+                  {
+                      "n":  39,
+                      "title":  "Salle des vieux coffres",
+                      "type":  "neutral"
+                  },
+                  {
+                      "n":  40,
+                      "title":  "Galerie des voiles fantomatiques",
+                      "type":  "card"
+                  },
+                  {
+                      "n":  41,
+                      "title":  "Chambre de la poupée",
+                      "type":  "neutral"
+                  },
+                  {
+                      "n":  42,
+                      "title":  "Couloir des fenêtres brisées",
+                      "type":  "card"
+                  },
+                  {
+                      "n":  43,
+                      "title":  "Salle des murmures persistants",
+                      "type":  "neutral"
+                  },
+                  {
+                      "n":  44,
+                      "title":  "Débarras des reliques oubliées",
+                      "type":  "neutral"
+                  },
+                  {
+                      "n":  45,
+                      "title":  "Petit escalier tournant",
+                      "type":  "card"
+                  },
+                  {
+                      "n":  46,
+                      "title":  "Chambre des miroirs déformants",
+                      "type":  "neutral"
+                  },
+                  {
+                      "n":  47,
+                      "title":  "Salle des tonneaux instables",
+                      "type":  "card"
+                  },
+                  {
+                      "n":  48,
+                      "title":  "Galerie des silhouettes mouvantes",
+                      "type":  "card"
+                  },
+                  {
+                      "n":  49,
+                      "title":  "Dernier couloir avant la sortie",
+                      "type":  "neutral"
+                  },
+                  {
+                      "n":  50,
+                      "title":  "Sortie secrète",
+                      "type":  "finish"
+                  }
+              ]
+}
