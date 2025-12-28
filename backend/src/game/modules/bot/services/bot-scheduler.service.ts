@@ -29,6 +29,10 @@ export class BotSchedulerService {
     if (this.timers.has(key)) return;
 
     const timer = setTimeout(() => {
+      // IMPORTANT: libère le verrou dès que le timer se déclenche.
+      // Sinon, si `run()` détecte un état "stale" et retourne sans jouer,
+      // aucun nouveau timer ne pourra être planifié et le tour bot restera bloqué.
+      this.timers.delete(key);
       playingLog('engine.bot.timer', { roomId, gameType });
       run().catch((err) => {
         if (this.isRoomNotFound(err)) {

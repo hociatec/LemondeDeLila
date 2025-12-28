@@ -28,6 +28,8 @@ using client_win.Core.Constants;
 using client_win.Modules.Catalog.Services;
 using client_win.Modules.Messaging.Services;
 using client_win.Modules.Social.Services;
+using client_win.Modules.Stats.Services;
+using client_win.Modules.Leaderboard.Services;
 using client_win.Modules.Game.Play.Services;
 using client_win.Modules.Game.Room.Services;
 using client_win.Modules.Game.Shell.Services;
@@ -207,6 +209,16 @@ public static class AppBootstrapper
                 sp.GetRequiredService<WsRequestClient>(),
                 sp.GetRequiredService<ISessionService>(),
                 errors));
+
+        services.AddSingleton<IStatsService>(sp =>
+            new StatsService(
+                sp.GetRequiredService<WsRequestClient>(),
+                sp.GetRequiredService<ISessionService>()));
+
+        services.AddSingleton<ILeaderboardService>(sp =>
+            new LeaderboardService(
+                sp.GetRequiredService<WsRequestClient>(),
+                sp.GetRequiredService<ISessionService>()));
 
         services.AddTransient<IMenuRouter, MenuRouter>();
 

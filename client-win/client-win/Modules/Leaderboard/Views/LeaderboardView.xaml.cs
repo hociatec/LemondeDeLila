@@ -1,0 +1,139 @@
+using System;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Threading;
+using client_win.Modules.Leaderboard.ViewModels;
+
+namespace client_win.Modules.Leaderboard.Views;
+
+public partial class LeaderboardView : UserControl
+{
+    private bool _containersHooked;
+
+    public LeaderboardView()
+    {
+        InitializeComponent();
+    }
+
+    private void OnLoaded(object sender, RoutedEventArgs e)
+    {
+        if (!_containersHooked && ItemsList != null)
+        {
+            _containersHooked = true;
+            ItemsList.ItemContainerGenerator.StatusChanged += OnContainersStatusChanged;
+        }
+        FocusWhenContainersGenerated();
+    }
+
+    private void OnKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Tab)
+        {
+            e.Handled = true;
+            return;
+        }
+
+        if (e.Key == Key.Escape && DataContext is LeaderboardViewModel vm)
+        {
+            e.Handled = true;
+            var result = vm.HandleEscape();
+            if (result != LeaderboardNavResult.Closed)
+            {
+                ItemsList?.Focus();
+                FocusWhenContainersGenerated();
+            }
+        }
+    }
+
+    private async void OnListPreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key != Key.Enter && e.Key != Key.Return)
+        {
+            return;
+        }
+        if (DataContext is not LeaderboardViewModel vm)
+        {
+            return;
+        }
+        e.Handled = true;
+        await vm.ActivateCommand.ExecuteAsync(null).ConfigureAwait(true);
+        FocusWhenContainersGenerated();
+    }
+
+    private void OnListKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Tab)
+        {
+            e.Handled = true;
+        }
+    }
+
+    private void FocusFirstItem()
+    {
+        if (ItemsList == null || ItemsList.Items.Count == 0)
+        {
+            ItemsList?.Focus();
+            return;
+        }
+
+        if (ItemsList.SelectedIndex < 0)
+        {
+            ItemsList.SelectedIndex = 0;
+        }
+
+        ItemsList.UpdateLayout();
+        if (ItemsList.ItemContainerGenerator.ContainerFromIndex(ItemsList.SelectedIndex) is ListBoxItem item)
+        {
+            item.Focus();
+        }
+        else
+        {
+            ItemsList.Focus();
+        }
+    }
+
+    private void OnContainersStatusChanged(object? sender, EventArgs e)
+    {
+        if (ItemsList == null)
+        {
+            return;
+        }
+
+        if (ItemsList.ItemContainerGenerator.Status != System.Windows.Controls.Primitives.GeneratorStatus.ContainersGenerated)
+        {
+            return;
+        }
+
+        // Force le focus sur le premier élément après un rechargement (ex: Échap depuis le top 10).
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusFirstItem));
+    }
+
+    private void FocusWhenContainersGenerated()
+    {
+        if (ItemsList == null)
+        {
+            return;
+        }
+
+        if (ItemsList.HasItems &&
+            ItemsList.ItemContainerGenerator.Status == System.Windows.Controls.Primitives.GeneratorStatus.ContainersGenerated)
+        {
+            _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusFirstItem));
+            return;
+        }
+
+        EventHandler? handler = null;
+        handler = (_, __) =>
+        {
+            if (ItemsList.ItemContainerGenerator.Status != System.Windows.Controls.Primitives.GeneratorStatus.ContainersGenerated)
+            {
+                return;
+            }
+
+            ItemsList.ItemContainerGenerator.StatusChanged -= handler;
+            _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusFirstItem));
+        };
+        ItemsList.ItemContainerGenerator.StatusChanged += handler;
+    }
+}

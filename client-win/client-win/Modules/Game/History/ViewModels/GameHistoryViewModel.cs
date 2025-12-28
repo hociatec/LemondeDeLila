@@ -2,6 +2,8 @@ using System;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Windows;
+using System.Windows.Threading;
 using client_win.Core;
 using client_win.Modules.Catalog.Models;
 
@@ -13,11 +15,14 @@ public sealed class GameHistoryViewModel : ObservableObject
     private string _displayText = string.Empty;
     private string _lastAnnouncement = string.Empty;
     private bool _isPruning;
+    private bool _pruneScheduled;
+    private readonly Dispatcher _dispatcher;
 
     public GameHistoryViewModel(CatalogGame game)
     {
         if (game == null) throw new ArgumentNullException(nameof(game));
 
+        _dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
         Entries.CollectionChanged += OnEntriesChanged;
         Entries.Add($"Ouverture de la table pour {game.Name}");
         Entries.Add($"Moteur : {game.Engine}");
@@ -41,8 +46,35 @@ public sealed class GameHistoryViewModel : ObservableObject
 
     private void OnEntriesChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
+        // IMPORTANT: on ne peut pas modifier une ObservableCollection pendant son événement CollectionChanged
+        // (sinon InvalidOperationException: "Cannot change ObservableCollection during a CollectionChanged event.").
+        // On planifie donc l'élagage après coup sur le Dispatcher UI.
         if (!_isPruning && Entries.Count > MaxEntries)
         {
+            SchedulePrune();
+        }
+
+        RebuildDisplayText();
+        UpdateLastAnnouncement(e);
+    }
+
+    private void SchedulePrune()
+    {
+        if (_pruneScheduled)
+        {
+            return;
+        }
+
+        _pruneScheduled = true;
+        _dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
+        {
+            _pruneScheduled = false;
+
+            if (_isPruning)
+            {
+                return;
+            }
+
             try
             {
                 _isPruning = true;
@@ -55,10 +87,7 @@ public sealed class GameHistoryViewModel : ObservableObject
             {
                 _isPruning = false;
             }
-        }
-
-        RebuildDisplayText();
-        UpdateLastAnnouncement(e);
+        }));
     }
 
     private void RebuildDisplayText()

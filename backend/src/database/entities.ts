@@ -7,6 +7,8 @@ import { Room } from '../room/entities/room.entity';
 import { RoomParticipant } from '../room/entities/room-participant.entity';
 import { RoomBot } from '../room/entities/room-bot.entity';
 import { BotName } from '../bot/entities/bot-name.entity';
+import { GameMatch } from '../stats/entities/game-match.entity';
+import { GameMatchPlayer } from '../stats/entities/game-match-player.entity';
 
 export const ORM_ENTITIES = [
   User,
@@ -18,4 +20,6 @@ export const ORM_ENTITIES = [
   RoomParticipant,
   RoomBot,
   BotName,
+  GameMatch,
+  GameMatchPlayer,
 ];

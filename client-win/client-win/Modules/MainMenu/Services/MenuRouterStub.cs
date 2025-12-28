@@ -62,6 +62,10 @@ public sealed class MenuRouterStub : IMenuRouter
         return Task.FromResult("Catalogue ouvert.");
     }
 
+    public Task<string> OpenStats() => LogAndReturn("Statistiques (stub)");
+
+    public Task<string> OpenLeaderboard() => LogAndReturn("Classement (stub)");
+
     public Task<string> JoinGame() => LogAndReturn("Rejoindre une partie (stub)");
 
     public async Task<string> OpenChat()

@@ -16,6 +16,7 @@ import { BotService } from '../../bot/services/bot.service';
 import { PresenceService } from '../../presence/services/presence.service';
 import { OPEN_ROOM_STATUSES } from '../constants/room-status.constants';
 import { CatalogService } from '../../catalog/services/catalog.service';
+import { GameStatsService } from '../../stats/services/game-stats.service';
 
 @Injectable()
 export class RoomService {
@@ -46,6 +47,7 @@ export class RoomService {
     @Inject(forwardRef(() => PresenceService))
     private readonly presenceService: PresenceService,
     private readonly catalog: CatalogService,
+    private readonly stats: GameStatsService,
   ) {}
 
   async createRoom(
@@ -120,6 +122,14 @@ export class RoomService {
         role: 'player',
       });
       await this.participants.save(participant);
+    }
+
+    if (String(room.status ?? '').toLowerCase() === 'started') {
+      try {
+        await this.stats.markQuit(room.id, user.id);
+      } catch {
+        // best effort
+      }
     }
 
     // Broadcast la mise à jour de présence en temps réel
@@ -213,6 +223,24 @@ export class RoomService {
     room.status = 'started';
     room.startedAt = room.startedAt ?? new Date();
     await this.rooms.save(room);
+
+    try {
+      const activeParticipants = await this.participants.find({
+        where: { room: { id: room.id }, leftAt: IsNull() },
+        relations: ['user'],
+      });
+      await this.stats.startMatch({
+        roomId: room.id,
+        gameType: room.gameType,
+        humans: activeParticipants.map((p) => ({
+          id: p.user.id,
+          username: p.user.username,
+        })),
+        botsCount: bots,
+      });
+    } catch {
+      // best effort
+    }
     return room;
   }
 
@@ -223,6 +251,13 @@ export class RoomService {
       throw new BadRequestException('Type de jeu invalide');
     }
     this.ensureOwner(room, userId);
+    if (String(room.status ?? '').toLowerCase() === 'started') {
+      try {
+        await this.stats.endMatchOnReset(room.id);
+      } catch {
+        // best effort
+      }
+    }
     room.status = 'setup';
     room.startedAt = null;
     await this.rooms.save(room);

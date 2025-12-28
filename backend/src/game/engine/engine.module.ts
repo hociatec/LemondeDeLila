@@ -9,6 +9,7 @@ import { GameEngineService } from './services/game-engine.service';
 import { GameEngineStateStore } from './services/game-engine-state.store';
 import { GameGateway } from './gateways/game.gateway';
 import { EngineServicesModule } from './services/engine-services.module';
+import { StatsModule } from '../../stats/stats.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { EngineServicesModule } from './services/engine-services.module';
     BotModule,
     TurnModule,
     EngineServicesModule,
+    StatsModule,
   ],
   providers: [GameEngineService, GameEngineStateStore, GameGateway],
   exports: [GameEngineService, EngineServicesModule],

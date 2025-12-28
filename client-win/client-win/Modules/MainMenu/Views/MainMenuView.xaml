@@ -54,6 +54,7 @@
                 <Button x:Name="MessagingButton" Content="Messagerie" Background="#2A5C86" Command="{Binding MessagingCommand}" KeyDown="OnMenuButtonKeyDown" />
                 <Button x:Name="ChatButton" Content="Chat" Command="{Binding ChatCommand}" KeyDown="OnMenuButtonKeyDown" />
                 <Button x:Name="SocialButton" Content="Social" Command="{Binding SocialCommand}" KeyDown="OnMenuButtonKeyDown" />
+                <Button x:Name="StatsButton" Content="Statistiques" Command="{Binding StatsCommand}" KeyDown="OnMenuButtonKeyDown" />
                 <Button x:Name="AdminButton" Content="Administration" Command="{Binding AdminCommand}"
                         Visibility="{Binding IsAdminVisible, Converter={StaticResource BoolToVisibilityConverter}}"
                         Background="#7A2A2A"

@@ -1,6 +1,17 @@
-$hasNetwork = [string]::IsNullOrWhiteSpace($env:NETWORK_WS_SECRET) -eq $false
-$hasWs = [string]::IsNullOrWhiteSpace($env:WS_SHARED_SECRET) -eq $false
-$hasJwt = [string]::IsNullOrWhiteSpace($env:JWT_SECRET) -eq $false
+param(
+    [ValidateSet("Debug", "Release")]
+    [string]$Configuration = "Debug",
+
+    [switch]$Watch = $true,
+
+    # Hot reload WPF peut planter (Roslyn DeltaMetadataWriter duplicate key).
+    # Par défaut, on le désactive pour un "watch" stable.
+    [switch]$HotReload = $false
+)
+
+$hasNetwork = -not [string]::IsNullOrWhiteSpace($env:NETWORK_WS_SECRET)
+$hasWs = -not [string]::IsNullOrWhiteSpace($env:WS_SHARED_SECRET)
+$hasJwt = -not [string]::IsNullOrWhiteSpace($env:JWT_SECRET)
 
 # Par défaut, on force un environnement de dev pour les lancements locaux.
 # (En prod, définir explicitement DOTNET_ENVIRONMENT=Production + JWT_STRICT_MODE=true + secrets robustes.)
@@ -27,4 +38,22 @@ if (-not $hasJwt) {
     $env:JWT_SECRET = "change-me-in-prod"
 }
 
-dotnet run --project client-win/client-win.csproj
+New-Item -ItemType Directory -Force -Path $env:LOG_PATH | Out-Null
+
+Push-Location $PSScriptRoot
+try {
+    if ($Watch) {
+        if ($HotReload) {
+            dotnet watch --project ".\\client-win\\client-win.csproj" run -c $Configuration
+        }
+        else {
+            dotnet watch --no-hot-reload --project ".\\client-win\\client-win.csproj" run -c $Configuration
+        }
+    }
+    else {
+        dotnet run -c $Configuration --project ".\\client-win\\client-win.csproj"
+    }
+}
+finally {
+    Pop-Location
+}

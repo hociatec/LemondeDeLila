@@ -152,3 +152,7 @@ C:\wamp64\www\lemondeDeLila\client-win\client-win\bin\_build\Debug\net8.0-window
 C:\wamp64\www\lemondeDeLila\client-win\client-win\bin\_build\Debug\net8.0-windows\Serilog.Sinks.File.dll
 C:\wamp64\www\lemondeDeLila\client-win\client-win\bin\_build\Debug\net8.0-windows\System.Diagnostics.DiagnosticSource.dll
 C:\wamp64\www\lemondeDeLila\client-win\client-win\bin\_build\Debug\net8.0-windows\System.IdentityModel.Tokens.Jwt.dll
+C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Debug\net8.0-windows\Modules\Leaderboard\Views\LeaderboardView.baml
+C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Debug\net8.0-windows\Modules\Stats\Views\StatsView.baml
+C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Debug\net8.0-windows\Modules\Leaderboard\Views\LeaderboardView.g.cs
+C:\wamp64\www\lemondeDeLila\client-win\client-win\obj\Debug\net8.0-windows\Modules\Stats\Views\StatsView.g.cs

@@ -107,6 +107,17 @@ public static class WsMessageTypes
         public const string UserSearch = "social.user.search";
     }
 
+    public static class Stats
+    {
+        public const string My = "stats.my";
+    }
+
+    public static class Leaderboard
+    {
+        public const string Games = "leaderboard.games";
+        public const string Top = "leaderboard.top";
+    }
+
     /// <summary>
     /// Contextes d'erreur pour ErrorBus (identification de la source de l'erreur)
     /// </summary>
@@ -122,5 +133,7 @@ public static class WsMessageTypes
         public const string ChatSend = "chat.send";
         public const string Messaging = "messaging";
         public const string Social = "social";
+        public const string Stats = "stats";
+        public const string Leaderboard = "leaderboard";
     }
 }

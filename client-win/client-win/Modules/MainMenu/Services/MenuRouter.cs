@@ -16,6 +16,12 @@ using client_win.Modules.Shell.Services;
 using client_win.Modules.Social.Services;
 using client_win.Modules.Social.ViewModels;
 using client_win.Modules.Social.Views;
+using client_win.Modules.Stats.Services;
+using client_win.Modules.Stats.ViewModels;
+using client_win.Modules.Stats.Views;
+using client_win.Modules.Leaderboard.Services;
+using client_win.Modules.Leaderboard.ViewModels;
+using client_win.Modules.Leaderboard.Views;
 
 namespace client_win.Modules.MainMenu.Services;
 
@@ -33,6 +39,8 @@ public sealed class MenuRouter : IMenuRouter
     private readonly IMessagingService _messaging;
     private readonly ISocialService _social;
     private readonly IGameTableOpener _tables;
+    private readonly IStatsService _stats;
+    private readonly ILeaderboardService _leaderboard;
 
     public MenuRouter(
         ILogger<MenuRouter> logger,
@@ -42,7 +50,9 @@ public sealed class MenuRouter : IMenuRouter
         INavigationService navigation,
         IMessagingService messaging,
         ISocialService social,
-        IGameTableOpener tables)
+        IGameTableOpener tables,
+        IStatsService stats,
+        ILeaderboardService leaderboard)
     {
         _logger = logger;
         _options = options;
@@ -52,6 +62,8 @@ public sealed class MenuRouter : IMenuRouter
         _messaging = messaging;
         _social = social;
         _tables = tables;
+        _stats = stats;
+        _leaderboard = leaderboard;
     }
 
     public Task<string> OpenCatalog()
@@ -73,6 +85,44 @@ public sealed class MenuRouter : IMenuRouter
         _navigation.Show(catalogView);
 
         return Task.FromResult("Catalogue ouvert.");
+    }
+
+    public Task<string> OpenStats()
+    {
+        _logger.LogInformation("Ouverture des statistiques");
+
+        var previous = _navigation.CurrentView;
+        var view = new StatsView();
+        var vm = new StatsViewModel(_stats, onClose: () =>
+        {
+            if (previous != null)
+            {
+                _navigation.Show(previous);
+            }
+        }, openLeaderboard: async () => { await OpenLeaderboard().ConfigureAwait(true); });
+        view.DataContext = vm;
+        _navigation.Show(view);
+
+        return Task.FromResult("Statistiques ouvertes.");
+    }
+
+    public Task<string> OpenLeaderboard()
+    {
+        _logger.LogInformation("Ouverture du classement");
+
+        var previous = _navigation.CurrentView;
+        var view = new LeaderboardView();
+        var vm = new LeaderboardViewModel(_leaderboard, onClose: () =>
+        {
+            if (previous != null)
+            {
+                _navigation.Show(previous);
+            }
+        });
+        view.DataContext = vm;
+        _navigation.Show(view);
+
+        return Task.FromResult("Classement ouvert.");
     }
 
     public Task<string> JoinGame()

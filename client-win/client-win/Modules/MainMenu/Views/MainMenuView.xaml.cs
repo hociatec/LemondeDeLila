@@ -28,6 +28,7 @@ public partial class MainMenuView : UserControl
             MessagingButton,
             ChatButton,
             SocialButton,
+            StatsButton,
             AdminButton,
             OptionsButton,
             LogoutButton

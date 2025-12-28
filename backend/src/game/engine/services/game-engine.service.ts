@@ -29,6 +29,7 @@ import {
   GameError,
 } from '../../../common/errors/game-errors';
 import { GameLoggerService } from '../../../common/services/game-logger.service';
+import { GameStatsService } from '../../../stats/services/game-stats.service';
 
 @Injectable()
 export class GameEngineService {
@@ -58,6 +59,7 @@ export class GameEngineService {
     private readonly botScheduler: BotSchedulerService,
     private readonly store: GameEngineStateStore,
     private readonly gameLogger: GameLoggerService,
+    private readonly stats: GameStatsService,
   ) {}
 
   /**
@@ -517,6 +519,7 @@ export class GameEngineService {
     // pour permettre de relancer immÇ¸diatement.
     if ((marked.status || '').toLowerCase() === 'finished') {
       try {
+        await this.stats.finalizeFinished(roomId, marked);
         await this.rooms.resetRoomSystem(roomId);
         await this.rooms.notifyRoomStateUpdated(roomId);
 

@@ -5,6 +5,8 @@ namespace client_win.Modules.MainMenu.Services;
 public interface IMenuRouter
 {
     Task<string> OpenCatalog();
+    Task<string> OpenStats();
+    Task<string> OpenLeaderboard();
     Task<string> JoinGame();
     Task<string> OpenChat();
     Task<string> OpenMessaging();

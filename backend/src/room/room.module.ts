@@ -14,6 +14,7 @@ import { RoomInviteService } from './services/room-invite.service';
 import { RoomDirectoryWsHandler } from './gateways/room-directory-ws.handler';
 import { RoomWsRegistrar } from './gateways/room-ws.registrar';
 import { CatalogModule } from '../catalog/catalog.module';
+import { StatsModule } from '../stats/stats.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { CatalogModule } from '../catalog/catalog.module';
     forwardRef(() => PresenceModule),
     NotificationModule,
     CatalogModule,
+    StatsModule,
   ],
   providers: [
     RoomService,
