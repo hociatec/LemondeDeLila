@@ -23,6 +23,12 @@ export class PetitChevauxPresenterService {
     const myColor = meta.colorsByPlayer?.[userId];
 
     const inStable = myPawns.filter((p: any) => (p?.progress ?? -1) < 0).length;
+    const inHome = myPawns.filter(
+      (p: any) =>
+        typeof p?.progress === 'number' &&
+        p.progress >= meta.trackLength &&
+        p.progress < pathLen,
+    ).length;
     const finished = myPawns.filter((p: any) => (p?.progress ?? -1) >= pathLen).length;
     const out = myPawns.filter(
       (p: any) => typeof p?.progress === 'number' && p.progress >= 0 && p.progress < meta.trackLength,
@@ -31,6 +37,7 @@ export class PetitChevauxPresenterService {
     const stableLines: string[] = [];
     if (myColor) stableLines.push(`Couleur: ${myColor}.`);
     stableLines.push(`Écurie: ${inStable}/4.`);
+    stableLines.push(`Maison: ${inHome}/4.`);
     stableLines.push(`Arrivés: ${finished}/4.`);
 
     if (out.length) {

@@ -1,0 +1,138 @@
+[20251228-001744] unhandled.dispatcher
+System.ArgumentException: '' n'est pas une valeur valide pour la propriété 'HelpText'.
+   at System.Windows.DependencyObject.SetValueCommon(DependencyProperty dp, Object value, PropertyMetadata metadata, Boolean coerceWithDeferredReference, Boolean coerceWithCurrentValue, OperationType operationType, Boolean isInternal)
+   at System.Windows.DependencyObject.SetValue(DependencyProperty dp, Object value)
+   at client_win.Modules.Game.Play.Views.GamePlayView.UpdateChoicesAccessibility() in C:\wamp64\www\lemondeDeLila\client-win\client-win\Modules\Game\Play\Views\GamePlayView.xaml.cs:line 144
+   at client_win.Modules.Game.Play.Views.GamePlayView.OnLoaded(Object sender, RoutedEventArgs e) in C:\wamp64\www\lemondeDeLila\client-win\client-win\Modules\Game\Play\Views\GamePlayView.xaml.cs:line 49
+   at System.Threading.Tasks.Task.<>c.<ThrowAsync>b__128_0(Object state)
+   at System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   at System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+
+[20251228-001751] unhandled.dispatcher
+System.ArgumentException: '' n'est pas une valeur valide pour la propriété 'HelpText'.
+   at System.Windows.DependencyObject.SetValueCommon(DependencyProperty dp, Object value, PropertyMetadata metadata, Boolean coerceWithDeferredReference, Boolean coerceWithCurrentValue, OperationType operationType, Boolean isInternal)
+   at System.Windows.DependencyObject.SetValue(DependencyProperty dp, Object value)
+   at client_win.Modules.Game.Play.Views.GamePlayView.UpdateChoicesAccessibility() in C:\wamp64\www\lemondeDeLila\client-win\client-win\Modules\Game\Play\Views\GamePlayView.xaml.cs:line 144
+   at client_win.Modules.Game.Play.Views.GamePlayView.OnLoaded(Object sender, RoutedEventArgs e) in C:\wamp64\www\lemondeDeLila\client-win\client-win\Modules\Game\Play\Views\GamePlayView.xaml.cs:line 49
+   at System.Threading.Tasks.Task.<>c.<ThrowAsync>b__128_0(Object state)
+   at System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   at System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+
+[20251228-001828] unhandled.dispatcher
+System.ArgumentException: '' n'est pas une valeur valide pour la propriété 'HelpText'.
+   at System.Windows.DependencyObject.SetValueCommon(DependencyProperty dp, Object value, PropertyMetadata metadata, Boolean coerceWithDeferredReference, Boolean coerceWithCurrentValue, OperationType operationType, Boolean isInternal)
+   at System.Windows.DependencyObject.SetValue(DependencyProperty dp, Object value)
+   at client_win.Modules.Game.Play.Views.GamePlayView.UpdateChoicesAccessibility() in C:\wamp64\www\lemondeDeLila\client-win\client-win\Modules\Game\Play\Views\GamePlayView.xaml.cs:line 144
+   at client_win.Modules.Game.Play.Views.GamePlayView.OnLoaded(Object sender, RoutedEventArgs e) in C:\wamp64\www\lemondeDeLila\client-win\client-win\Modules\Game\Play\Views\GamePlayView.xaml.cs:line 49
+   at System.Threading.Tasks.Task.<>c.<ThrowAsync>b__128_0(Object state)
+   at System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Int32 numArgs)
+   at System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Int32 numArgs, Delegate catchHandler)
+
+[20251228-004533] unhandled.task
+System.AggregateException: A Task's exception(s) were not observed either by Waiting on the Task or accessing its Exception property. As a result, the unobserved exception was rethrown by the finalizer thread. (Cannot change ObservableCollection during a CollectionChanged event.)
+ ---> System.InvalidOperationException: Cannot change ObservableCollection during a CollectionChanged event.
+   at System.Collections.ObjectModel.ObservableCollection`1.CheckReentrancy()
+   at System.Collections.ObjectModel.ObservableCollection`1.RemoveItem(Int32 index)
+   at client_win.Modules.Game.History.ViewModels.GameHistoryViewModel.OnEntriesChanged(Object sender, NotifyCollectionChangedEventArgs e) in C:\wamp64\www\lemondeDeLila\client-win\client-win\Modules\Game\History\ViewModels\GameHistoryViewModel.cs:line 51
+   at System.Collections.ObjectModel.ObservableCollection`1.OnCollectionChanged(NotifyCollectionChangedEventArgs e)
+   at client_win.Modules.Game.Shell.Services.GameTableBindings.<>c__DisplayClass24_0.<Attach>b__8() in C:\wamp64\www\lemondeDeLila\client-win\client-win\Modules\Game\Shell\Services\GameTableBindings.cs:line 80
+   at System.Windows.Threading.DispatcherOperation.InvokeDelegateCore()
+   at System.Windows.Threading.DispatcherOperation.InvokeImpl()
+   --- End of inner exception stack trace ---
+
+[20251228-004533] unhandled.task
+System.AggregateException: A Task's exception(s) were not observed either by Waiting on the Task or accessing its Exception property. As a result, the unobserved exception was rethrown by the finalizer thread. (Cannot change ObservableCollection during a CollectionChanged event.)
+ ---> System.InvalidOperationException: Cannot change ObservableCollection during a CollectionChanged event.
+   at System.Collections.ObjectModel.ObservableCollection`1.CheckReentrancy()
+   at System.Collections.ObjectModel.ObservableCollection`1.RemoveItem(Int32 index)
+   at client_win.Modules.Game.History.ViewModels.GameHistoryViewModel.OnEntriesChanged(Object sender, NotifyCollectionChangedEventArgs e) in C:\wamp64\www\lemondeDeLila\client-win\client-win\Modules\Game\History\ViewModels\GameHistoryViewModel.cs:line 51
+   at System.Collections.ObjectModel.ObservableCollection`1.OnCollectionChanged(NotifyCollectionChangedEventArgs e)
+   at client_win.Modules.Game.Shell.Services.GameTableBindings.<>c__DisplayClass24_0.<Attach>b__8() in C:\wamp64\www\lemondeDeLila\client-win\client-win\Modules\Game\Shell\Services\GameTableBindings.cs:line 80
+   at System.Windows.Threading.DispatcherOperation.InvokeDelegateCore()
+   at System.Windows.Threading.DispatcherOperation.InvokeImpl()
+   --- End of inner exception stack trace ---
+
+[20251228-004533] unhandled.task
+System.AggregateException: A Task's exception(s) were not observed either by Waiting on the Task or accessing its Exception property. As a result, the unobserved exception was rethrown by the finalizer thread. (Cannot change ObservableCollection during a CollectionChanged event.)
+ ---> System.InvalidOperationException: Cannot change ObservableCollection during a CollectionChanged event.
+   at System.Collections.ObjectModel.ObservableCollection`1.CheckReentrancy()
+   at System.Collections.ObjectModel.ObservableCollection`1.RemoveItem(Int32 index)
+   at client_win.Modules.Game.History.ViewModels.GameHistoryViewModel.OnEntriesChanged(Object sender, NotifyCollectionChangedEventArgs e) in C:\wamp64\www\lemondeDeLila\client-win\client-win\Modules\Game\History\ViewModels\GameHistoryViewModel.cs:line 51
+   at System.Collections.ObjectModel.ObservableCollection`1.OnCollectionChanged(NotifyCollectionChangedEventArgs e)
+   at client_win.Modules.Game.Shell.Services.GameTableBindings.<>c__DisplayClass24_0.<Attach>b__8() in C:\wamp64\www\lemondeDeLila\client-win\client-win\Modules\Game\Shell\Services\GameTableBindings.cs:line 80
+   at System.Windows.Threading.DispatcherOperation.InvokeDelegateCore()
+   at System.Windows.Threading.DispatcherOperation.InvokeImpl()
+   --- End of inner exception stack trace ---
+
+[20251228-004537] unhandled.task
+System.AggregateException: A Task's exception(s) were not observed either by Waiting on the Task or accessing its Exception property. As a result, the unobserved exception was rethrown by the finalizer thread. (Cannot change ObservableCollection during a CollectionChanged event.)
+ ---> System.InvalidOperationException: Cannot change ObservableCollection during a CollectionChanged event.
+   at System.Collections.ObjectModel.ObservableCollection`1.CheckReentrancy()
+   at System.Collections.ObjectModel.ObservableCollection`1.RemoveItem(Int32 index)
+   at client_win.Modules.Game.History.ViewModels.GameHistoryViewModel.OnEntriesChanged(Object sender, NotifyCollectionChangedEventArgs e) in C:\wamp64\www\lemondeDeLila\client-win\client-win\Modules\Game\History\ViewModels\GameHistoryViewModel.cs:line 51
+   at System.Collections.ObjectModel.ObservableCollection`1.OnCollectionChanged(NotifyCollectionChangedEventArgs e)
+   at client_win.Modules.Game.Shell.Services.GameTableBindings.<>c__DisplayClass24_0.<Attach>b__8() in C:\wamp64\www\lemondeDeLila\client-win\client-win\Modules\Game\Shell\Services\GameTableBindings.cs:line 80
+   at System.Windows.Threading.DispatcherOperation.InvokeDelegateCore()
+   at System.Windows.Threading.DispatcherOperation.InvokeImpl()
+   --- End of inner exception stack trace ---
+
+[20251228-004537] unhandled.task
+System.AggregateException: A Task's exception(s) were not observed either by Waiting on the Task or accessing its Exception property. As a result, the unobserved exception was rethrown by the finalizer thread. (Cannot change ObservableCollection during a CollectionChanged event.)
+ ---> System.InvalidOperationException: Cannot change ObservableCollection during a CollectionChanged event.
+   at System.Collections.ObjectModel.ObservableCollection`1.CheckReentrancy()
+   at System.Collections.ObjectModel.ObservableCollection`1.RemoveItem(Int32 index)
+   at client_win.Modules.Game.History.ViewModels.GameHistoryViewModel.OnEntriesChanged(Object sender, NotifyCollectionChangedEventArgs e) in C:\wamp64\www\lemondeDeLila\client-win\client-win\Modules\Game\History\ViewModels\GameHistoryViewModel.cs:line 51
+   at System.Collections.ObjectModel.ObservableCollection`1.OnCollectionChanged(NotifyCollectionChangedEventArgs e)
+   at client_win.Modules.Game.Shell.Services.GameTableBindings.<>c__DisplayClass24_0.<Attach>b__8() in C:\wamp64\www\lemondeDeLila\client-win\client-win\Modules\Game\Shell\Services\GameTableBindings.cs:line 80
+   at System.Windows.Threading.DispatcherOperation.InvokeDelegateCore()
+   at System.Windows.Threading.DispatcherOperation.InvokeImpl()
+   --- End of inner exception stack trace ---
+
+[20251228-004537] unhandled.task
+System.AggregateException: A Task's exception(s) were not observed either by Waiting on the Task or accessing its Exception property. As a result, the unobserved exception was rethrown by the finalizer thread. (Cannot change ObservableCollection during a CollectionChanged event.)
+ ---> System.InvalidOperationException: Cannot change ObservableCollection during a CollectionChanged event.
+   at System.Collections.ObjectModel.ObservableCollection`1.CheckReentrancy()
+   at System.Collections.ObjectModel.ObservableCollection`1.RemoveItem(Int32 index)
+   at client_win.Modules.Game.History.ViewModels.GameHistoryViewModel.OnEntriesChanged(Object sender, NotifyCollectionChangedEventArgs e) in C:\wamp64\www\lemondeDeLila\client-win\client-win\Modules\Game\History\ViewModels\GameHistoryViewModel.cs:line 51
+   at System.Collections.ObjectModel.ObservableCollection`1.OnCollectionChanged(NotifyCollectionChangedEventArgs e)
+   at client_win.Modules.Game.Shell.Services.GameTableBindings.<>c__DisplayClass24_0.<Attach>b__8() in C:\wamp64\www\lemondeDeLila\client-win\client-win\Modules\Game\Shell\Services\GameTableBindings.cs:line 80
+   at System.Windows.Threading.DispatcherOperation.InvokeDelegateCore()
+   at System.Windows.Threading.DispatcherOperation.InvokeImpl()
+   --- End of inner exception stack trace ---
+
+[20251228-004547] unhandled.task
+System.AggregateException: A Task's exception(s) were not observed either by Waiting on the Task or accessing its Exception property. As a result, the unobserved exception was rethrown by the finalizer thread. (Cannot change ObservableCollection during a CollectionChanged event.)
+ ---> System.InvalidOperationException: Cannot change ObservableCollection during a CollectionChanged event.
+   at System.Collections.ObjectModel.ObservableCollection`1.CheckReentrancy()
+   at System.Collections.ObjectModel.ObservableCollection`1.RemoveItem(Int32 index)
+   at client_win.Modules.Game.History.ViewModels.GameHistoryViewModel.OnEntriesChanged(Object sender, NotifyCollectionChangedEventArgs e) in C:\wamp64\www\lemondeDeLila\client-win\client-win\Modules\Game\History\ViewModels\GameHistoryViewModel.cs:line 51
+   at System.Collections.ObjectModel.ObservableCollection`1.OnCollectionChanged(NotifyCollectionChangedEventArgs e)
+   at client_win.Modules.Game.Shell.Services.GameTableBindings.<>c__DisplayClass24_0.<Attach>b__8() in C:\wamp64\www\lemondeDeLila\client-win\client-win\Modules\Game\Shell\Services\GameTableBindings.cs:line 80
+   at System.Windows.Threading.DispatcherOperation.InvokeDelegateCore()
+   at System.Windows.Threading.DispatcherOperation.InvokeImpl()
+   --- End of inner exception stack trace ---
+
+[20251228-004547] unhandled.task
+System.AggregateException: A Task's exception(s) were not observed either by Waiting on the Task or accessing its Exception property. As a result, the unobserved exception was rethrown by the finalizer thread. (Cannot change ObservableCollection during a CollectionChanged event.)
+ ---> System.InvalidOperationException: Cannot change ObservableCollection during a CollectionChanged event.
+   at System.Collections.ObjectModel.ObservableCollection`1.CheckReentrancy()
+   at System.Collections.ObjectModel.ObservableCollection`1.RemoveItem(Int32 index)
+   at client_win.Modules.Game.History.ViewModels.GameHistoryViewModel.OnEntriesChanged(Object sender, NotifyCollectionChangedEventArgs e) in C:\wamp64\www\lemondeDeLila\client-win\client-win\Modules\Game\History\ViewModels\GameHistoryViewModel.cs:line 51
+   at System.Collections.ObjectModel.ObservableCollection`1.OnCollectionChanged(NotifyCollectionChangedEventArgs e)
+   at client_win.Modules.Game.Shell.Services.GameTableBindings.<>c__DisplayClass24_0.<Attach>b__8() in C:\wamp64\www\lemondeDeLila\client-win\client-win\Modules\Game\Shell\Services\GameTableBindings.cs:line 80
+   at System.Windows.Threading.DispatcherOperation.InvokeDelegateCore()
+   at System.Windows.Threading.DispatcherOperation.InvokeImpl()
+   --- End of inner exception stack trace ---
+
+[20251228-004547] unhandled.task
+System.AggregateException: A Task's exception(s) were not observed either by Waiting on the Task or accessing its Exception property. As a result, the unobserved exception was rethrown by the finalizer thread. (Cannot change ObservableCollection during a CollectionChanged event.)
+ ---> System.InvalidOperationException: Cannot change ObservableCollection during a CollectionChanged event.
+   at System.Collections.ObjectModel.ObservableCollection`1.CheckReentrancy()
+   at System.Collections.ObjectModel.ObservableCollection`1.RemoveItem(Int32 index)
+   at client_win.Modules.Game.History.ViewModels.GameHistoryViewModel.OnEntriesChanged(Object sender, NotifyCollectionChangedEventArgs e) in C:\wamp64\www\lemondeDeLila\client-win\client-win\Modules\Game\History\ViewModels\GameHistoryViewModel.cs:line 51
+   at System.Collections.ObjectModel.ObservableCollection`1.OnCollectionChanged(NotifyCollectionChangedEventArgs e)
+   at client_win.Modules.Game.Shell.Services.GameTableBindings.<>c__DisplayClass24_0.<Attach>b__8() in C:\wamp64\www\lemondeDeLila\client-win\client-win\Modules\Game\Shell\Services\GameTableBindings.cs:line 80
+   at System.Windows.Threading.DispatcherOperation.InvokeDelegateCore()
+   at System.Windows.Threading.DispatcherOperation.InvokeImpl()
+   --- End of inner exception stack trace ---
+

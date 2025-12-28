@@ -71,9 +71,11 @@ export class PetitChevauxActionService {
 
     const moves = this.computeMoves(next, currentId, roll);
     if (moves.length === 0) {
+      const blockInfo = this.findBlockingOpponent(next, currentId, roll);
       next = this.core.appendLog(
         next,
-        `${this.playerName(state, currentId)} ne peut jouer aucun pion.`,
+        blockInfo ??
+          `${this.playerName(state, currentId)} ne peut jouer aucun pion.`,
       );
       return this.endTurn(next, false);
     }
@@ -172,6 +174,8 @@ export class PetitChevauxActionService {
     const offset = meta.offsets?.[playerId] ?? 0;
     const pathLen = meta.trackLength + meta.homeLength;
 
+    const opponentsOnTrack = this.buildOpponentTrackIndex(state, playerId);
+
     const occupiedBySelf = new Set<number>();
     for (const pawn of pawns) {
       const prog = typeof pawn?.progress === 'number' ? pawn.progress : -1;
@@ -194,16 +198,47 @@ export class PetitChevauxActionService {
       } else {
         const nextProg = prog + roll;
         if (nextProg <= pathLen) {
-          targetProgress = nextProg;
+          // Règle : l'entrée dans la maison doit être "pile".
+          // On ne peut pas dépasser l'entrée de maison dans le même lancer : il faut arriver exactement à trackLength.
+          if (prog < meta.trackLength && nextProg > meta.trackLength) {
+            targetProgress = nextProg === meta.trackLength ? nextProg : null;
+          } else {
+            targetProgress = nextProg;
+          }
         }
       }
 
       if (targetProgress == null) continue;
 
+      // Nouvelle règle : un pion adverse sur le chemin bloque.
+      // Pour avancer, il faut tomber exactement dessus (capture), donc "pile-poil" la distance manquante.
+      if (prog >= 0) {
+        const blocked = this.isBlockedByOpponentOnPath(
+          meta,
+          offset,
+          prog,
+          targetProgress,
+          roll,
+          opponentsOnTrack,
+        );
+        if (blocked) {
+          continue;
+        }
+      }
+
       if (targetProgress >= 0 && targetProgress < meta.trackLength) {
         const destPos = (offset + targetProgress) % meta.trackLength;
         if (occupiedBySelf.has(destPos)) {
           continue; // blocage : 2 pions du même joueur sur la même case
+        }
+
+        // Interdit de finir sur une case safe occupée par un adversaire (on ne peut pas capturer en safe).
+        if (opponentsOnTrack.has(destPos)) {
+          const isSafe =
+            Array.isArray(meta.safeTiles) && meta.safeTiles.includes(destPos);
+          if (isSafe) {
+            continue;
+          }
         }
       }
 
@@ -217,6 +252,102 @@ export class PetitChevauxActionService {
     }
 
     return moves;
+  }
+
+  private buildOpponentTrackIndex(
+    state: GameStateEntity,
+    viewerPlayerId: number,
+  ): Set<number> {
+    const meta = (state.metadata ?? {}) as any as PetitChevauxMetadata;
+    const players = Array.isArray(state.players) ? state.players : [];
+    const occupied = new Set<number>();
+
+    for (const p of players) {
+      if (!p || p.id === viewerPlayerId) continue;
+      const offset = meta.offsets?.[p.id] ?? 0;
+      const pawns = Array.isArray(meta.pawnsByPlayer?.[p.id])
+        ? meta.pawnsByPlayer[p.id]
+        : [];
+      for (const pawn of pawns) {
+        const prog = typeof pawn?.progress === 'number' ? pawn.progress : -1;
+        if (prog < 0 || prog >= meta.trackLength) continue;
+        occupied.add((offset + prog) % meta.trackLength);
+      }
+    }
+
+    return occupied;
+  }
+
+  private isBlockedByOpponentOnPath(
+    meta: PetitChevauxMetadata,
+    myOffset: number,
+    fromProgress: number,
+    toProgress: number,
+    roll: number,
+    opponentsOnTrack: Set<number>,
+  ): boolean {
+    if (!Number.isFinite(roll) || roll <= 1) return false;
+    if (fromProgress < 0) return false;
+
+    const steps = Math.max(0, Math.trunc(roll));
+    for (let step = 1; step <= steps; step++) {
+      const intermediateProgress = fromProgress + step;
+      if (intermediateProgress < 0) continue;
+      if (intermediateProgress >= meta.trackLength) {
+        // Dès qu'on quitte la piste, il n'y a plus d'adversaires à "dépasser" (maison/arrivée).
+        break;
+      }
+
+      const pos = (myOffset + intermediateProgress) % meta.trackLength;
+      if (!opponentsOnTrack.has(pos)) {
+        continue;
+      }
+
+      // On a un pion adverse sur le chemin.
+      // Autorisé seulement si on tombe exactement dessus (capture => étape finale).
+      if (intermediateProgress !== toProgress) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  private findBlockingOpponent(
+    state: GameStateEntity,
+    playerId: number,
+    roll: number,
+  ): string | null {
+    const meta = (state.metadata ?? {}) as any as PetitChevauxMetadata;
+    if (!meta || meta.trackLength == null) return null;
+    if (!Number.isFinite(roll) || roll <= 1) return null;
+
+    const myPawns = Array.isArray(meta.pawnsByPlayer?.[playerId])
+      ? meta.pawnsByPlayer[playerId]
+      : [];
+    const myOffset = meta.offsets?.[playerId] ?? 0;
+    const opponentsOnTrack = this.buildOpponentTrackIndex(state, playerId);
+    if (opponentsOnTrack.size === 0) return null;
+
+    let bestDistance: number | null = null;
+    for (const pawn of myPawns) {
+      const prog = typeof pawn?.progress === 'number' ? pawn.progress : -1;
+      if (prog < 0 || prog >= meta.trackLength) continue;
+      for (let step = 1; step < Math.trunc(roll); step++) {
+        const intermediateProgress = prog + step;
+        if (intermediateProgress >= meta.trackLength) break;
+        const pos = (myOffset + intermediateProgress) % meta.trackLength;
+        if (opponentsOnTrack.has(pos)) {
+          bestDistance = bestDistance == null ? step : Math.min(bestDistance, step);
+          break;
+        }
+      }
+    }
+
+    if (bestDistance == null) return null;
+
+    const who = this.playerName(state, playerId);
+    return `${who} est bloqué : un joueur se trouve devant vous. Pour avancer, vous devez le capturer (faire ${bestDistance} au dé).`;
   }
 
   private applyMove(
@@ -263,7 +394,7 @@ export class PetitChevauxActionService {
       const casesWord = rollInt == 1 ? 'case' : 'cases';
       next = this.core.appendLog(
         next,
-        `${this.playerName(state, playerId)} avance de ${rollInt} ${casesWord}.`,
+        `${this.playerName(state, playerId)} avance le cheval ${move.pawnIndex + 1} de ${rollInt} ${casesWord}.`,
       );
     }
 
@@ -273,7 +404,7 @@ export class PetitChevauxActionService {
       if (homeIndex >= 1 && homeIndex <= meta.homeLength) {
         next = this.core.appendLog(
           next,
-          `${this.playerName(state, playerId)} entre dans la maison (${homeIndex}/${meta.homeLength}).`,
+          `${this.playerName(state, playerId)} entre le cheval ${move.pawnIndex + 1} dans la maison (${homeIndex}/${meta.homeLength}).`,
         );
       }
     }

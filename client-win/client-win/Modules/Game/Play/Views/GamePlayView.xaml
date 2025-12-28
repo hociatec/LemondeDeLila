@@ -68,6 +68,13 @@
                         </Style>
                     </TextBlock.Style>
                 </TextBlock>
+                <!--
+                    Label d'accessibilité pour la liste de choix : NVDA utilise parfois LabeledBy (plus fiable que Name).
+                    Le texte vient du serveur (pending.label) et change selon la situation.
+                -->
+                <TextBlock x:Name="ChoicesLabelText"
+                           Text="{Binding ChoicesLabel}"
+                           Visibility="Collapsed" />
                 <ListBox x:Name="ChoicesList"
                          ItemsSource="{Binding PendingChoices}"
                          SelectedItem="{Binding SelectedChoice, Mode=TwoWay}"
@@ -80,7 +87,7 @@
                          FontSize="12"
                          MaxHeight="160"
                          AutomationProperties.Name="{Binding ChoicesLabel}"
-                         AutomationProperties.HelpText="Utilisez flèches haut/bas pour naviguer, puis Entrée pour valider.">
+                         AutomationProperties.LabeledBy="{Binding ElementName=ChoicesLabelText}">
                     <ListBox.Style>
                         <Style TargetType="ListBox">
                             <Setter Property="Visibility" Value="Visible"/>

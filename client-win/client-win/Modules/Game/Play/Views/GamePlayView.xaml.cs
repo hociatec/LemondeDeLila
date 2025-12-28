@@ -2,6 +2,7 @@ using System;
 using System.Collections.Specialized;
 using System.Threading;
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
@@ -44,6 +45,8 @@ public partial class GamePlayView : UserControl
                 // Best-effort: l'état de connexion est déjà exposé dans le ViewModel.
             }
         }
+
+        UpdateChoicesAccessibility();
     }
 
     private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
@@ -98,6 +101,8 @@ public partial class GamePlayView : UserControl
                 return;
             }
 
+            UpdateChoicesAccessibility();
+
             if (_vm.PendingChoices.Count <= 0)
             {
                 if (ChoicesList.IsKeyboardFocusWithin)
@@ -123,6 +128,37 @@ public partial class GamePlayView : UserControl
         };
 
         notify.CollectionChanged += _choicesChanged;
+    }
+
+    private void UpdateChoicesAccessibility()
+    {
+        if (_vm == null)
+        {
+            return;
+        }
+
+        var label = string.IsNullOrWhiteSpace(_vm.ChoicesLabel) ? string.Empty : _vm.ChoicesLabel.Trim();
+
+        // NVDA utilise parfois LabeledBy plutôt que Name.
+        // On force un libellé serveur (pending.label) et on évite HelpText (valeurs vides/null peuvent provoquer une erreur WPF).
+        // On efface aussi tout HelpText défini via XAML/BAML (anciennes versions) pour éviter les annonces génériques.
+        ChoicesList.ClearValue(AutomationProperties.HelpTextProperty);
+        if (string.IsNullOrWhiteSpace(label))
+        {
+            ChoicesList.ClearValue(AutomationProperties.NameProperty);
+        }
+        else
+        {
+            AutomationProperties.SetName(ChoicesList, label);
+        }
+
+        // NOTE: On récupère le label via FindName pour éviter une dépendance au champ généré par le XAML,
+        // qui peut ne pas être régénéré dans certains scénarios (build incrémentale / cache).
+        if (FindName("ChoicesLabelText") is FrameworkElement labelElement)
+        {
+            AutomationProperties.SetName(labelElement, label);
+            AutomationProperties.SetLabeledBy(ChoicesList, labelElement);
+        }
     }
 
     private bool IsTextInputFocused()
