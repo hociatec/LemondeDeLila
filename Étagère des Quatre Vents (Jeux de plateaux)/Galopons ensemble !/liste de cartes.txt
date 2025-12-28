@@ -1,0 +1,62 @@
+Cartes
+
+
+1. Vous découvrez un raccourci à travers la prairie. Avancez de 2 cases.
+
+2. Votre cheval réalise une belle cabriole. Rejouez.
+
+3. Vous trouvez un fruit tombé d’un arbre. Recevez un jeton pomme.
+
+4. Votre cheval s’arrête pour boire à la rivière. Passez votre tour.
+
+5. Vous aidez un autre cavalier à franchir une souche. Donnez-lui une pomme. Il vous en rendra une plus tard.
+
+6. Votre cheval perd un fer en chemin. Reculez de 2 cases.
+
+7. Un oiseau chante près de vous, tout semble plus léger. Avancez d’1 case.
+
+8. Votre cheval veut brouter tranquillement. Passez votre tour.
+
+9. Vous découvrez un chemin secret. Avancez jusqu’à la prochaine case forêt.
+
+10. Votre cheval glisse légèrement dans la boue. Reculez d’1 case.
+
+11. Un papillon se pose sur votre nez, tout le monde rit. Rejouez immédiatement.
+
+12. Vous rencontrez une amie jument sur le chemin. Avancez de 3 cases.
+
+13. Votre cheval saute un tronc d’arbre avec élégance. Gagnez 1 jeton Pomme.
+
+14. Un bruit soudain effraie votre cheval. Reculez d’une case.
+
+15. Vous aidez un poulain perdu à retrouver son chemin. Donnez-lui une pomme et rejouez immédiatement.
+
+16. Vous découvrez une cachette remplie de fruits. Recevez 2 jetons Pomme.
+
+17. Une fine pluie commence à tomber. Passez votre tour.
+
+18. Votre cheval s’élance dans un grand galop. Avancez de 4 cases.
+
+19. Vous perdez votre chapeau en route. Reculez d’une case pour le récupérer.
+
+20. Vous aidez un autre joueur en le faisant avancer de 2 cases. En remerciement, il vous donne une pomme.
+
+21. Votre cheval hennit de joie. Rejouez immédiatement.
+
+22. Une grosse branche bloque votre passage. Passez votre tour.
+
+23. Vous entendez le vent souffler dans les arbres. Avancez jusqu’à la prochaine case montagne.
+
+24. Votre cheval est fatigué. Défaussez-vous d''une pomme pour pouvoir avancer normalement.
+
+25. Vous remportez le concours du plus beau sabot. Recevez 2 jetons Pomme.
+
+26. Une flaque d’eau vous ralentit. Reculez d’1 case.
+
+27. Votre cheval bondit au-dessus d’un ruisseau. Avancez de 2 cases.
+
+28. Vous trouvez un trèfle à quatre feuilles. Choisissez un joueur et avancez tout les deux d'une case.
+
+29. Votre cheval fait une pause câlin. Tous les joueurs restent sur place pendant un tour.
+
+30. Un nuage de  mouches attaquent votre cheval. Reculez de deux cases.

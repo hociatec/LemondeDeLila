@@ -1,0 +1,15 @@
+Faces du dé
+
+
+1. Herbivore 
+Ajoute un herbivore à ta tribu.
+2. Carnivore 
+Ajoute un carnivore à ta tribu.
+3. Œuf 
+Duplique un dinosaure que tu possèdes déjà (herbivore ou carnivore, tu choisis).
+4. Feuille 
+Ajoute une nourriture.
+5. Danger 
+La comète avance d’un cran.
+6. Relance 
+Tu peux relancer le dé (ou conserver le résultat).

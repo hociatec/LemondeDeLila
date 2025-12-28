@@ -1,0 +1,103 @@
+Cases du plateau
+
+
+1. Entrée principale (case neutre)
+La porte claque derrière vous, laissant un frisson glacé parcourir votre dos. Vos pas résonnent sur le parquet ancien tandis que les ombres des murs semblent se tendre pour vous observer.
+2. Hall du manoir (case symbole)
+Des lustres vacillants projettent des ombres mouvantes sur le parquet. Le vent s’engouffre par les vitres, faisant trembler chaque chandelle en fredonnant d’étranges sons.
+3. Couloir des portraits (case neutre)
+Les yeux des tableaux semblent suivre chacun de vos mouvements. Une odeur de bois ancien flotte dans l’air tandis que chaque respiration vous donne l’impression d’avancer dans un labyrinthe vivant.
+4. Escalier branlant (case symbole)
+Chaque marche grince et menace de céder sous votre poids. L’air froid qui s’engouffre par les fissures vous fait frissonner et chaque pas semble jouer avec votre équilibre.
+5. Salle des chandelles vacillantes (case symbole)
+Les flammes dansent et projettent des ombres fantomatiques sur les murs décrépis. Un murmure traverse la pièce comme si quelqu’un respirait derrière vous.
+6. Petit vestibule humide (case neutre)
+Une odeur de moisissure et des toiles d’araignée vous chatouillent. Vos pas résonnent doucement et le silence pesant fait battre votre cœur plus vite.
+7. Bibliothèque ancienne (case symbole)
+Des grimoires instables menacent de tomber à chaque souffle. Le vent fait danser les pages comme des ailes invisibles, et vous sursautez à chaque frôlement.
+8. Galerie des échos (case neutre)
+Vos pas résonnent étrangement, comme si quelqu’un imitait chacun de vos mouvements. Le silence pesant vous oblige à tendre l’oreille à chaque craquement du bois.
+9. Salle des horloges anciennes (case symbole)
+Le tic-tac irrégulier vous met mal à l’aise et certaines horloges semblent battre à leur propre rythme. Des battements fantomatiques s’ajoutent aux vôtres, vous donnant l’impression d’être observé.
+10. Couloir du vent glacial (case symbole)
+Un souffle puissant fouette votre visage et fait voler vos cheveux dans tous les sens. Chaque pas devient un effort, comme si l’air voulait vous repousser en arrière.
+11. Pièce aux tentures noires (case neutre)
+Les rideaux bougent sans raison apparente et frôlent vos épaules. Une sensation étrange vous parcourt, comme si quelque chose d’invisible vous attendait.
+12. Escalier suspendu (case symbole)
+Certaines marches semblent flotter dans le vide et craquer sous vos pieds. Le vertige vous saisit, vous obligeant à avancer lentement et avec précaution.
+13. Salon abandonné (case neutre)
+Un parfum de bois humide et de chandelles éteintes flotte dans l’air. Les vieux meubles grincent sous un souffle invisible et semblent vous encerclés peut à peut dans votre dos.
+14. Couloir des murmures (case symbole)
+Des voix lointaines chuchotent et vous font sursauter. Parfois, vous jurez entendre votre prénom murmuré à travers les murs.
+15. Galerie des statues (case symbole)
+Certaines sculptures pivotent lors de votre passage. Leurs visages figés semblent sourire d’une manière inquiétante, comme pour vous narguer.
+16. Salle des tapisseries anciennes (case neutre)
+Les figures se déplacent subtilement dans les motifs, semblant vous observer. Le froissement du tissu fait frissonner votre peau et vous ralentit dans votre progression.
+17. Salle de musique oubliée (case symbole)
+Un piano joue parfois tout seul des notes discordantes. La mélodie irrégulière semble suivre vos pas et accentue l’impression de solitude et de peur.
+18. Petit grenier (case neutre)
+Des bruits étouffés résonnent de tous les coins et le bois craque sous vos pieds. Les ombres semblent bouger avant même que vous ne les voyiez.
+19. Couloir gelé (case symbole)
+Le vent glacial vous repousse légèrement et gèle vos doigts. Vos pas s’alourdissent, comme si le froid voulait vous ralentir pour mieux vous surprendre.
+20. Cuisine du manoir (case symbole)
+La vieille cuisinière fume encore et des odeurs de potions flottent dans l’air. Les casseroles tremblent sur les étagères comme si quelqu’un les manipulait à votre insu.
+21. Salle aux miroirs brisés (case symbole)
+Votre reflet est fragmenté et certaines silhouettes semblent différentes. Les éclats de verre scintillent comme des yeux brillants dans l’obscurité.
+22. Couloir étroit et sombre (case neutre)
+Chaque pas résonne et vous désoriente. Les murs humides semblent se rapprocher, comme pour vous emprisonner.
+23. Salle des lanternes vacillantes (case neutre)
+La lumière tremblante projette des ombres inquiétantes sur chaque mur. Vous avancez doucement, craignant de faire un bruit trop fort.
+24. Passage des toiles mouvantes (case symbole)
+Des fils blancs et soyeux ondulent dans l’air comme des bras fantomatiques. À chaque pas, vous sentez qu’ils cherchent à s’accrocher à vous et un frisson glacé parcourt votre dos à l’idée de ce qui pourrait surgir de l’ombre.
+25. Couloir des escaliers perdus (case symbole)
+Certaines marches apparaissent et disparaissent sous vos pieds. Vous avancez avec prudence, craignant que le sol vous engloutisse.
+26. Salle du miroir ancien (case neutre)
+Votre reflet semble vous observer de travers. Les vitres ternies reflètent une silhouette qui bouge indépendamment de vous.
+27. Bibliothèque interdite (case symbole)
+Un grimoire tombe soudainement d’une étagère. Les pages s’ouvrent seules et des mots brillants flottent dans l’air comme un avertissement.
+28. Petit salon au plafond bas (case neutre)
+Vous devez vous pencher pour ne pas heurter le plafond. Une chandelle oubliée clignote au fond de la pièce et crée des ombres mouvantes sur les murs.
+29. Couloir des ombres mouvantes (case symbole)
+Des silhouettes se déplacent sur les murs, vous faisant reculer instinctivement. Chaque pas semble alourdi par la peur qui monte en vous.
+30. Chambre de la comtesse (case symbole)
+Un lit à baldaquin poussiéreux occupe la pièce. Les rideaux bougent comme s’ils avaient une volonté propre, et un parfum ancien flotte dans l’air.
+31. Salle du vent hurlant (case symbole)
+Un courant violent vous repousse et vous fait chanceler. Le hurlement du vent semble parler et glacer votre sang.
+32. Couloir du miroir brumeux (case neutre)
+Votre reflet se tord et se brouille dans la brume épaisse flottant à hauteur d'épaules. Chaque pas semble vous échapper, et les ombres mouvantes dans les miroirs donnent l’impression qu’une présence invisible vous précède, prête à vous surprendre à tout instant.
+33. Salle des cordes suspendues (case symbole)
+Des cordes épaisses pendent du plafond, certaines frottant le sol comme si elles cherchaient à s’enrouler autour de vos chevilles. L’air est chargé d’une odeur de bois ancien, et le craquement des cordes à chaque mouvement résonne dans la pièce, donnant l’impression qu’un piège invisible pourrait se refermer sur vous à tout instant.
+ 34. Chambre du chat noir (case neutre)
+Des yeux brillants vous fixent depuis l’ombre. Un léger miaulement résonne et vous fait reculer instinctivement.
+35. Salle aux bruits de chaînes (case symbole)
+Des cliquetis résonnent autour de vous et font battre votre cœur à toute vitesse. Vous avancez avec prudence, redoutant un piège invisible.
+36. Couloir des silhouettes furtives (case symbole)
+Des ombres fantomatiques semblent vouloir vous attraper. Chaque pas est un effort pour ne pas attirer leur attention.
+37. Cave humide (case neutre)
+L’odeur de terre et de moisissure vous saisit. Des gouttes d’eau tombent du plafond, créant un rythme inquiétant.
+38. Escaliers instables (case symbole)
+Chaque marche grinçante menace de céder sous votre poids. Le bois fragile vibre à chaque pas et un souffle glacial monte du vide en contrebas, vous faisant avancer avec prudence.
+39. Salle des vieux coffres (case neutre)
+Des coffres antiques sont empilés le long des murs, certains entrouverts laissant échapper des murmures étouffés. L’air est chargé de l’odeur de cuir et de bois ancien, et chaque pas résonne comme un avertissement dans cette pièce silencieuse mais pleine de mystères.
+40. Galerie des voiles fantomatiques (case symbole)
+Des voiles translucides flottent dans l’air comme des mains fantomatiques, frôlant votre visage et vos bras. Une brise glaciale les fait onduler et s’enrouler autour de vous, donnant l’impression que la pièce essaie de vous retenir dans ses ombres mouvantes.
+41. Chambre de la poupée (case neutre)
+Une vieille poupée aux yeux vitreux est assise sur une chaise. Ses cheveux emmêlés bougent comme si un souffle invisible les agitait.
+42. Couloir des fenêtres brisées (case symbole)
+Les fenêtres fissurées laissent passer des rafales glaciales qui vous fouettent le visage. Les reflets mouvants du verre brisé semblent danser autour de vous, et un frisson permanent parcourt votre dos.
+43. Salle des murmures persistants (case neutre)
+Des sons étouffés vous suivent dans chacun de vos pas. La tension monte à mesure que vous avancez, et votre cœur bat plus vite.
+44. Débarras des reliques oubliées (case neutre)
+Des étagères branlantes débordent de bibelots et vieux grimoires. La pénombre compacte vous oblige à tendre vos mains devant vous pour avancer, et le moindre froissement de tissu ou de papier sec vous fait sursauter dans le silence étouffant de la salle.
+45. Petit escalier tournant (case symbole)
+Les marches étroites et usées grincent sous chacun de vos pas, et la rampe branlante semble prête à céder. Le vide au centre de l’escalier vous fait frissonner, et chaque tour vous donne l’impression que le sol pourrait disparaître sous vos pieds, vous obligeant à avancer lentement, le cœur battant.
+46. Chambre des miroirs déformants (case neutre)
+Chaque reflet vous montre légèrement différent. L’air est chaud et humide, et vous sentez une présence derrière vous.
+47. Salle des tonneaux instables (case symbole)
+De vieux tonneaux empilés bordent la pièce et le sol est irrégulier, glissant et instable. À chaque pas, un craquement inquiétant résonne, comme si quelque chose pouvait surgir de l’intérieur des fûts. Vous avancez avec prudence, le cœur battant, redoutant que le moindre faux mouvement ne déclenche un désastre dans cette pièce périlleuse.
+48. Galerie des silhouettes mouvantes (case symbole)
+Des ombres s’approchent et semblent vouloir vous attraper. Vous avancez avec prudence, votre cœur battant la chamade.
+49. Dernier couloir avant la sortie (case neutre)
+L’air devient lourd et chaque souffle vous oppresse. Votre cœur bat à tout rompre alors que vous approchez de la liberté.
+50. Sortie secrète (case neutre)
+La porte grinçante s’écarte enfin, laissant entrer un rayon de lumière éclatante. Vous sentez le poids du manoir se dissiper et vos épaules se détendre. Chaque pas vers la sortie est une délivrance, et un frisson de victoire vous parcourt le corps. 

@@ -1,0 +1,23 @@
+import type { GameDefinition } from '../../../../engine/model/game-definition.model';
+
+export type AFondLesBallonsGameId = 'a-fond-les-ballons';
+export type AFondLesBallonsPhaseId = 'turn';
+export type AFondLesBallonsActionType = 'roll' | 'ROLL_DICE' | 'swap_choose_target';
+
+export const A_FOND_LES_BALLONS_GAME: GameDefinition<
+  AFondLesBallonsGameId,
+  never,
+  AFondLesBallonsActionType,
+  AFondLesBallonsPhaseId,
+  null
+> = {
+  id: 'a-fond-les-ballons',
+  displayName: 'A fond les ballons !',
+  minPlayers: 2,
+  maxPlayers: 6,
+  roles: [],
+  actions: ['roll', 'ROLL_DICE', 'swap_choose_target'],
+  phaseOrder: [{ id: 'turn', kind: 'player-action' }],
+  victory: null,
+} as const;
+

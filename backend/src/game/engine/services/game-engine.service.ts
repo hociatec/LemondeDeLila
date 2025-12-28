@@ -185,7 +185,7 @@ export class GameEngineService {
       // Réinitialisation explicite (room repasse en "setup/open/...") :
       // on repart d'un état neuf pour permettre d'ajouter/retirer des joueurs et relancer une partie.
       if (
-        (previousStatus === 'started' || previousStatus === 'finished') &&
+        previousStatus === 'started' &&
         roomStatus &&
         roomStatus !== 'started' &&
         roomStatus !== 'finished'
@@ -523,17 +523,8 @@ export class GameEngineService {
         await this.rooms.resetRoomSystem(roomId);
         await this.rooms.notifyRoomStateUpdated(roomId);
 
-        // Rebuild sans toucher à la mutationQueue (on est déjà dans la file).
-        const payload = await this.rooms.getRoomPayload(roomId);
-        const rebuilt = await this.buildInitialState(payload, gameType);
-        const cleared = await this.markBotThinking(
-          roomId,
-          gameType,
-          rebuilt,
-          false,
-        );
+        // Attente : pas de rebuild tant que la table n'est pas redémarrée.
         this.botScheduler.clear(this.buildKey(roomId, gameType));
-        this.broadcaster?.(gameType, roomId, cleared);
       } catch (err) {
         this.gameLogger.error(
           'Auto-reset after game finished failed',

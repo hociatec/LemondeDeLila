@@ -1,0 +1,138 @@
+Cartes défis cosmiques
+
+
+1. Chiffres stellaires
+Vous enregistrez mentalement une séquence de nombres projetés devant vous : 3, 5, 2. Quelle est leur somme ?
+*a) 10 ?
+b) 8 ?
+c) 9 ?
+Effet :
+a) Correct – avancez de 2 cases.
+b) Mauvais – reculez d’1 case.
+ 
+2. Calcul orbital
+Votre vaisseau avance de 4 cases, puis encore de 3 cases. Quelle distance totale avez-vous parcourue ?
+*a) 7 ?
+b) 6 ?
+c) 8 ?
+Effet :
+a) Correct – avancez de 2 cases.
+b) Mauvais – reculez d’1 case.
+ 
+3. Ordre cosmique
+Vous traversez successivement une zone planétaire, puis une zone galactique. Quelle zone vient ensuite ?
+*a) Cosmique ?
+b) Planétaire ?
+c) Stellaire ?
+Effet :
+a) Correct – avancez d’1 case.
+b) Mauvais – reculez d’1 case.
+ 
+4. Logique des astres
+Dans l’espace, certains objets brillent par eux-mêmes, tandis que d’autres ne font que renvoyer la lumière qu’ils reçoivent. Quel type d’astre ne produit pas sa propre lumière ?
+*a) Une planète ?
+b) Une étoile ?
+c) Une galaxie ?
+Effet :
+a) Correct – avancez d’1 case.
+b) Mauvais – reculez d’1 case. 
+
+5. Mémoire spatiale
+Souvenez-vous de cette suite : étoile, planète, satellite. Quel élément était en deuxième position ?
+*a) Planète ?
+b) Étoile ?
+c) Satellite ?
+Effet :
+a) Correct – avancez d’1 case.
+b) Mauvais – reculez d’1 case.
+ 
+6. Distance interstellaire
+Un signal parcourt 300 unités par seconde. Combien parcourt-il en 2 secondes ?
+*a) 600 ?
+b) 500 ?
+c) 900 ?
+Effet :
+a) Correct – avancez de 2 cases.
+b) Mauvais – reculez d’1 case.
+ 
+7. Devinette gravitationnelle
+Quel objet spatial possède une gravité si forte que même la lumière ne peut s’en échapper ?
+*a) Un trou noir ?
+b) Une comète ?
+c) Une planète ?
+Effet :
+a) Correct – avancez de 2 cases.
+b) Mauvais – reculez d’1 case.
+ 
+8. Suite logique planétaire
+Mercure, Vénus, Terre… quelle planète vient ensuite ?
+*a) Mars ?
+b) Jupiter ?
+c) Saturne ?
+Effet :
+a) Correct – avancez d’1 case.
+b) Mauvais – reculez d’1 case.
+ 
+9. Déplacement net
+Vous avancez de 5 cases puis reculez de 2 cases. Quel est votre déplacement final ?
+*a) 3 ?
+b) 7 ?
+c) 2 ?
+Effet :
+a) Correct – avancez d’1 case.
+b) Mauvais – reculez d’1 case.
+ 
+10. Observation céleste
+Quel type d’astre produit lui-même lumière et chaleur ?
+*a) Une étoile ?
+b) Une planète ?
+c) Un satellite ?
+Effet :
+a) Correct – avancez d’1 case.
+b) Mauvais – reculez d’1 case.
+ 
+11. Comparaison cosmique
+Laquelle de ces planètes est la plus grande ?
+*a) Jupiter ?
+b) Mars ?
+c) Mercure ?
+Effet :
+a) Correct – avancez de 2 cases.
+b) Mauvais – reculez d’1 case.
+ 
+12. Logique temporelle
+Un événement se produit avant le décollage, puis pendant le voyage. Que vient-il ensuite ?
+*a) L’atterrissage ?
+b) Le décollage ?
+c) L’observation ?
+Effet :
+a) Correct – avancez d’1 case.
+b) Mauvais – reculez d’1 case.
+ 
+13. Raisonnement spatial
+Quel objet traverse l’atmosphère en produisant un trait lumineux ?
+*a) Une étoile filante ?
+b) Une planète ?
+c) Une galaxie ?
+Effet :
+a) Correct – avancez de 2 cases.
+b) Mauvais – reculez d’1 case.
+ 
+14. Mémoire courte
+Souvenez-vous : comète, astéroïde, planète. Quel élément était le premier ?
+*a) Comète ?
+b) Astéroïde ?
+c) Planète ?
+Effet :
+a) Correct – avancez d’1 case.
+b) Mauvais – reculez d’1 case.
+ 
+15. Calcul final
+Vous lancez un dé et obtenez 6, puis 1. Quel est le total ?
+*a) 7 ?
+b) 6 ?
+c) 8 ?
+Effet :
+a) Correct – avancez de 2 cases.
+b) Mauvais – reculez d’1 case.
+ 

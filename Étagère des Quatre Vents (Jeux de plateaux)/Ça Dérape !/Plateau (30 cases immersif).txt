@@ -1,0 +1,66 @@
+Plateau (30 cases immersif)
+
+
+1. Départ
+Les coureurs se tiennent prêts, le souffle chargé d’excitation.
+2. Petit Bosquet
+Les feuilles frémissent, et un écureuil curieux t’observe.
+3. Case Neutre
+Un moment pour respirer, admirer le ciel bleu.
+4. Petit Pont
+Le bois craque doucement sous tes pas.
+5. Collines Dansantes
+Les ondulations du terrain te font sourire.
+6. Rivière Chantante
+L’eau clapote et semble t’encourager.
+7. Prairie Colorée
+Des fleurs folles se balancent au rythme du vent.
+8. Case Neutre
+Rien à signaler, juste un souffle tranquille.
+9. Monticule Rigolo
+Tu dois escalader ce mini-tas sans glisser dans la boue.
+10. Forêt des Chuchotis
+Les arbres semblent murmurer des secrets.
+11. Case Neutre
+Le temps s’arrête un instant, profites-en !
+12. Racine Taquine
+Elle tente de te faire trébucher, mais tu t’en sors.
+13. Colline du Hérisson
+Il roucoule... ou c’est juste ton imagination ?
+14. Case Neutre
+Silence… sauf le vent dans les branches.
+15. Tourbillon de Feuilles
+Quelques feuilles tournoient autour de toi.
+16. Pont Suspendu
+Tu avances avec précaution, chaque pas compte.
+17. Petite Mare Mystérieuse
+On dirait qu’elle cache quelque chose.
+18. Case Neutre
+Pause contemplative, le temps d’un souffle.
+19. 
+Chemin des Fougères
+Les frondes te chatouillent les jambes.
+20. Colline de l’Élan
+Tu sens l’énergie te pousser vers l’avant.
+21. Case Neutre
+Juste un souffle d’air frais.
+22. Racine Souriante
+Elle s’incline comme pour te saluer.
+23. Forêt des Murmures
+Les oiseaux te suivent du regard, curieux.
+24. 
+Case Neutre
+Rien ne se passe, profite du moment.
+25. Prairie des Papillons
+Ils virevoltent autour de toi, légers et colorés.
+26. Monticule Secret
+On dirait un passage oublié… à explorer.
+27. Case Neutre
+Respire, le parcours continue calmement.
+28. Pont des Échos
+Chaque pas résonne, drôle et surprenant.
+29. Case Neutre
+La ligne d’arrivée se rapproche, le cœur s’emballe.
+30. Arrivée
+Bravo ! Tu franchis la ligne, acclamé par l’univers entier !
+ 

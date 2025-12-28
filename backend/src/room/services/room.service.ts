@@ -156,6 +156,16 @@ export class RoomService {
       participant.leftAt = new Date();
       await this.participants.save(participant);
     }
+
+    // Quit explicite d'une partie démarrée = "partie quittée" dans les stats.
+    // (Ne pas le faire en mode disconnectOnly, déjà géré plus haut.)
+    if (participant && String(room.status ?? '').toLowerCase() === 'started') {
+      try {
+        await this.stats.markQuit(room.id, user.id);
+      } catch {
+        // best effort
+      }
+    }
     if (opts?.preserveRoom) {
       this.presenceService.broadcastPresence();
       return room;

@@ -1,0 +1,114 @@
+Fiches groupes
+
+
+Groupe Beige
+Propriétés : Rue du Taur, Rue des Filatiers.
+Prix d’achat : 60 €
+Hypothèque : 30 €
+Coût pour lever l’hypothèque : 33 €
+Loyer de base : 2 €
+Loyer avec 1 toulousaine : 10 €
+Loyer avec 2 toulousaines : 30 €
+Loyer avec 3 toulousaines : 90 €
+Loyer avec 4 toulousaines : 160 €
+Loyer avec hôtel toulousain : 250 €
+Prix d’une toulousaine : 50 €
+Prix d’un hôtel toulousain : 100 €
+ 
+Groupe Bleu
+Propriétés : Rue Saint-Rome, Rue Alsace-Lorraine, Rue du Languedoc.
+Prix d’achat : 100 €
+Hypothèque : 50 €
+Coût pour lever l’hypothèque : 55 €
+Loyer de base : 6 €
+Loyer avec 1 toulousaine : 30 €
+Loyer avec 2 toulousaines : 90 €
+Loyer avec 3 toulousaines : 270 €
+Loyer avec 4 toulousaines : 400 €
+Loyer avec hôtel toulousain : 550 €
+Prix d’une toulousaine : 50 €
+Prix d’un hôtel toulousain : 100 €
+ 
+Groupe Rose
+Propriétés : Place du Capitole, Place Saint-Georges, Place Esquirol.
+Prix d’achat : 140 €
+Hypothèque : 70 €
+Coût pour lever l’hypothèque : 77 €
+Loyer de base : 10 €
+Loyer avec 1 toulousaine : 50 €
+Loyer avec 2 toulousaines : 150 €
+Loyer avec 3 toulousaines : 450 €
+Loyer avec 4 toulousaines : 625 €
+Loyer avec hôtel toulousain : 750 €
+Prix d’une toulousaine : 100 €
+Prix d’un hôtel toulousain : 200 €
+ 
+Groupe Orange
+Propriétés : Boulevard Carnot, Boulevard Lazare Carnot, Boulevard des Récollets.
+Prix d’achat : 180 €
+Hypothèque : 90 €
+Coût pour lever l’hypothèque : 99 €
+Loyer de base : 14 €
+Loyer avec 1 toulousaine : 70 €
+Loyer avec 2 toulousaines : 200 €
+Loyer avec 3 toulousaines : 550 €
+Loyer avec 4 toulousaines : 750 €
+Loyer avec hôtel toulousain : 950 €
+Prix d’une toulousaine : 100 €
+Prix d’un hôtel toulousain : 200 €
+ 
+Groupe Rouge
+Propriétés : Basilique Saint-Sernin, Couvent des Jacobins.
+Prix d’achat : 220 €
+Hypothèque : 110 €
+Coût pour lever l’hypothèque : 121 €
+Loyer de base : 18 €
+Loyer avec 1 toulousaine : 90 €
+Loyer avec 2 toulousaines : 250 €
+Loyer avec 3 toulousaines : 700 €
+Loyer avec 4 toulousaines : 875 €
+Loyer avec hôtel toulousain : 1050 €
+Prix d’une toulousaine : 150 €
+Prix d’un hôtel toulousain : 300 €
+ 
+Groupe Jaune
+Propriétés : Prairie des Filtres, Jardin des Compans-Caffarelli, Rue Saint-Antoine du T.
+Prix d’achat : 260 €
+Hypothèque : 130 €
+Coût pour lever l’hypothèque : 143 €
+Loyer de base : 22 €
+Loyer avec 1 toulousaine : 110 €
+Loyer avec 2 toulousaines : 330 €
+Loyer avec 3 toulousaines : 800 €
+Loyer avec 4 toulousaines : 975 €
+Loyer avec hôtel toulousain : 1150 €
+Prix d’une toulousaine : 150 €
+Prix d’un hôtel toulousain : 300 €
+ 
+Groupe Vert
+Propriétés : Place Saint-Pierre, Ruelles du Vieux Toulouse, Quartier Carmes.
+Prix d’achat : 300 €
+Hypothèque : 150 €
+Coût pour lever l’hypothèque : 165 €
+Loyer de base : 26 €
+Loyer avec 1 toulousaine : 130 €
+Loyer avec 2 toulousaines : 390 €
+Loyer avec 3 toulousaines : 900 €
+Loyer avec 4 toulousaines : 1100 €
+Loyer avec hôtel toulousain : 1275 €
+Prix d’une toulousaine : 200 €
+Prix d’un hôtel toulousain : 400 €
+ 
+Groupe Violet
+Propriétés : Quartier Saint-Cyprien, Musée des Augustins, Quai de la Daurade.
+Prix d’achat : 350 €
+Hypothèque : 175 €
+Coût pour lever l’hypothèque : 193 €
+Loyer de base : 35 €
+Loyer avec 1 toulousaine : 175 €
+Loyer avec 2 toulousaines : 500 €
+Loyer avec 3 toulousaines : 1100 €
+Loyer avec 4 toulousaines : 1300 €
+Loyer avec hôtel toulousain : 1500 €
+Prix d’une toulousaine : 200 €
+Prix d’un hôtel toulousain : 400 €

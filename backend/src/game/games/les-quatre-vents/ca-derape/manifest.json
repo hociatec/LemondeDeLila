@@ -1,0 +1,9 @@
+{
+  "code": "ca-derape",
+  "name": "Ça Dérape !",
+  "minPlayers": 2,
+  "maxPlayers": 10,
+  "engine": "ca-derape",
+  "summary": "Course chaotique sur 30 cases avec cartes Situation."
+}
+

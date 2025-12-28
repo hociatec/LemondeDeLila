@@ -1,0 +1,78 @@
+Règles du jeu - Cosmos & Crédit 
+
+
+Introduction
+Bienvenue dans Cosmos & Crédit ! Votre mission est d'explorer la galaxie, d'acheter des planètes, de développer vos colonies et de devenir le maître de l'univers. Gérez vos crédits cosmiques avec prudence, évitez les dangers de l'espace et construisez des infrastructures pour accroître vos revenus. Le dernier joueur encore solvable remporte la partie.
+ 
+Mise en place
+- Chaque joueur commence avec 1500 crédits cosmiques.
+- Les cartes Événement Spatial et Anomalie Spatiale sont automatiquement mélangées par le système.
+- L'ordre de jeu est défini selon l'arrivée des joueurs à la table, (possibilité de remplacer les joueurs par des bots si vous avez envie de jouer seul(e)).
+ 
+But du jeu
+Votre objectif est de devenir le joueur le plus riche en développant vos propriétés spatiales.
+La partie se termine lorsqu'il ne reste qu'un seul joueur non failli.
+ 
+Déroulement d’un tour
+- Lancez les dés pour déplacer votre pion.
+- L'action correspondant à la case où vous atterrissez s'applique automatiquement (loyer, carte, taxe, prison, etc.). Consernant les achat, vous pourrez choisir d'accepter ou non manuellement.
+- En cas de double, vous rejouez immédiatement. Attention : trois doubles consécutifs vous envoient dans le Trou Noir (prison).
+- Le système passe automatiquement au joueur suivant.
+ 
+Les cases du plateau
+- Propriétés : planètes, stations et phénomènes spatiaux que vous pouvez acheter. Si elles appartiennent déjà à un joueur, vous devez lui verser un loyer.
+- Événement Spatial : vous piochez une carte et appliquez son effet.
+- Anomalie Spatiale : vous piochez une carte et appliquez son effet.
+- Taxe : le montant indiqué est automatiquement prélevé.
+- Décollage (Départ) : recevez 200 crédits cosmiques à chaque passage.
+- Trou Noir (Prison) : vous êtes bloqué jusqu'à votre libération.
+- Zone de Gravité Nulle (Parking Gratuit) : case neutre, aucun effet.
+- Aller en prison : vous êtes immédiatement envoyé dans le Trou Noir.
+- Gares spatiales : stations spéciales générant des loyers spécifiques.
+ 
+Acheter des propriétés
+- Si vous atterrissez sur une propriété libre, vous pouvez l'acheter au prix indiqué.
+- Si vous refusez, elle est remise en vente.
+- Pour construire des infrastructures, vous devez posséder toutes les propriétés d'un même groupe spatial.
+ 
+Construire des infrastructures spatiales
+Vos propriétés peuvent évoluer selon 4 niveaux :
+- Module d'habitation spatial : coût 100 crédits, +30 au loyer.
+- Satellites de communication : coût 200 crédits, +60 au loyer.
+- Centrale énergétique solaire : coût 300 crédits, +90 au loyer.
+- Colonie orbitale complète : coût 400 crédits, +120 au loyer.
+
+Règles de construction :
+- Vous pouvez bâtir jusqu'à 4 infrastructures par propriété, en respectant l'ordre.
+- Les bonus de loyers s'additionnent)
+- Vous devez posséder toutes les propriétés d'un groupe pour construire.
+- Vous pouvez revendre vos infrastructures à moitié prix, en commençant par la dernière construite.
+ 
+Payer les loyers
+Lorsque vous atterrissez sur une propriété d'un adversaire, le système prélève automatiquement le loyer de base ainsi que les bonus liés aux infrastructures.
+ 
+Cartes spéciales
+- Événement Spatial : applique immédiatement l'effet (gain/perte de crédits, déplacements, réparations, etc.).
+- Anomalie Spatiale : applique immédiatement l'effet (souvent plus imprévisible).
+
+Prison — Le Trou Noir
+- Si vous êtes envoyé en prison, votre pion est placé sur la case correspondante.
+- Vous ne pouvez pas payer pour sortir.
+- Vous devez attendre trois tours maximum.
+- Si, pendant l'un de vos lancers, vous obtenez un double, vous sortez immédiatement et reprenez le jeu.
+- Pendant que vous êtes emprisonné, vous ne pouvez pas avancer, mais vous continuez à percevoir vos loyers.
+ 
+Faillite
+Si vous n'avez pas assez de crédits pour régler une dette (loyer, taxe, réparation, carte spéciale, etc.), vous devez d'abord tenter de réunir la somme nécessaire. Pour cela, vous pouvez :
+- Vendre vos infrastructures, en commençant par les dernières construites.
+- Hypothéquer vos propriétés afin de libérer des crédits cosmiques.
+- Si, après avoir vendu toutes vos infrastructures et hypothéqué l'ensemble de vos acquisitions, votre solde reste insuffisant, vous êtes déclaré en faillite. Dans ce cas, vous êtes éliminé de la partie et vos biens sont automatiquement restitués à la banque.
+ 
+Bonus galactique
+- Si vous avez construit au moins 2 infrastructures sur toutes les propriétés d'un même groupe, vous recevez automatiquement un bonus de 150 crédits cosmiques à chaque tour de plateau.
+ 
+Conseils stratégiques
+- Diversifiez vos acquisitions, mais cherchez à compléter vos groupes pour débloquer la construction.
+- Gardez une réserve de crédits pour faire face aux imprévus.
+- Anticipez les déplacements et exploitez vos cartes au moment opportun.
+ 
