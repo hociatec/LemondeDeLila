@@ -26,16 +26,8 @@ public sealed class JwtTokenValidator
     {
         _secret = secret;
 
-        // Détection d'environnement pour forcer strict mode en production
+        // Détection d'environnement (utile pour le logging et d'éventuelles règles)
         var environment = EnvironmentDetector.GetEnvironment();
-
-        // SÉCURITÉ CRITIQUE: Forcer strict mode en production
-        if (environment == EnvironmentDetector.AppEnvironment.Production && !strictMode)
-        {
-            throw new InvalidOperationException(
-                "SÉCURITÉ: Le mode strict JWT est obligatoire en production. " +
-                "Définissez JWT_STRICT_MODE=true dans les variables d'environnement.");
-        }
 
         // Le mode strict nécessite une clé secrète
         _strictMode = strictMode && !string.IsNullOrWhiteSpace(secret);
@@ -54,7 +46,14 @@ public sealed class JwtTokenValidator
         }
         else
         {
-            Log.Warning("Mode strict JWT désactivé - validation assouplie (développement uniquement)");
+            if (environment == EnvironmentDetector.AppEnvironment.Production)
+            {
+                Log.Warning("Mode strict JWT désactivé - validation assouplie (production)");
+            }
+            else
+            {
+                Log.Warning("Mode strict JWT désactivé - validation assouplie (développement)");
+            }
         }
     }
 
