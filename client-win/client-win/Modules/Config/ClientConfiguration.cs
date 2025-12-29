@@ -10,12 +10,14 @@ namespace client_win.Modules.Config;
 
 public sealed class ClientConfiguration
 {
-    private const string DefaultHttp = "http://127.0.0.1:3001/api/";
-    private const string DefaultWsApi = "ws://127.0.0.1:3001/ws/api";
-    private const string DefaultWs = "ws://127.0.0.1:3001/ws";
-    private const string DefaultWsPresence = "ws://127.0.0.1:3001/presence";
-    private const string DefaultWsNotify = "ws://127.0.0.1:3001/ws/notify";
-    private const string DefaultWsGame = "ws://127.0.0.1:3001/ws/game";
+    // Defaults: environnement serveur (client distant).
+    // Pour un usage local, surcharger via AppData\\...\\config\\client.properties ou variables d'env NETWORK_*.
+    private const string DefaultHttp = "https://api.lilas.hociatec.fr/api/";
+    private const string DefaultWsApi = "wss://ws.lilas.hociatec.fr/ws/api";
+    private const string DefaultWs = "wss://ws.lilas.hociatec.fr/ws";
+    private const string DefaultWsPresence = "wss://ws.lilas.hociatec.fr/presence";
+    private const string DefaultWsNotify = "wss://ws.lilas.hociatec.fr/ws/notify";
+    private const string DefaultWsGame = "wss://ws.lilas.hociatec.fr/ws/game";
     private const string DefaultWsSharedSecret = "remote-ws-shared-secret-2025";
 
     public string ApplicationName { get; }
