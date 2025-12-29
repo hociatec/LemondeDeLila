@@ -308,8 +308,7 @@ public static class AppBootstrapper
 
     private static Uri BuildPresenceEndpoint(ClientConfiguration config)
     {
-        var builder = new UriBuilder(config.RealtimeGatewayWs);
-        builder.Path = "/presence";
+        var builder = new UriBuilder(config.PresenceGatewayWs);
         builder.Query = "context=chat";
         return builder.Uri;
     }

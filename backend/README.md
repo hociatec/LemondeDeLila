@@ -18,6 +18,14 @@ npm run migration:run:dev     # crée/maj le schéma MySQL local
 npm run start:dev             # API + gateways en mode watch
 ```
 
+### Mise en place MySQL (dev)
+
+Sur Ubuntu, le user `root` est souvent en `auth_socket` (pas de mot de passe), donc la connexion applicative doit utiliser un user dédié.
+
+```bash
+sudo mysql < backend/tools/sql/create-db-user.mysql.sql
+```
+
 ### Sécurisation WS
 
 Définissez un secret partagé (`WS_SHARED_SECRET`) dans votre `.env` et fournissez la même valeur au client (`config/client.properties` → `network.ws.secret` ou variable `NETWORK_WS_SECRET`). Lorsque ce secret est configuré, les connexions `/ws` non signées sont fermées immédiatement.

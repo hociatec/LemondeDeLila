@@ -13,6 +13,7 @@ public sealed class ClientConfiguration
     private const string DefaultHttp = "http://127.0.0.1:3001/api/";
     private const string DefaultWsApi = "ws://127.0.0.1:3001/ws/api";
     private const string DefaultWs = "ws://127.0.0.1:3001/ws";
+    private const string DefaultWsPresence = "ws://127.0.0.1:3001/presence";
     private const string DefaultWsNotify = "ws://127.0.0.1:3001/ws/notify";
     private const string DefaultWsGame = "ws://127.0.0.1:3001/ws/game";
     private const string DefaultWsSharedSecret = "remote-ws-shared-secret-2025";
@@ -22,6 +23,7 @@ public sealed class ClientConfiguration
     public Uri HttpBase { get; }
     public Uri ApiGatewayWs { get; }
     public Uri RealtimeGatewayWs { get; }
+    public Uri PresenceGatewayWs { get; }
     public Uri NotifyGatewayWs { get; }
     public Uri GameGatewayWs { get; }
     public string? SharedSecret { get; }
@@ -31,6 +33,7 @@ public sealed class ClientConfiguration
         Uri httpBase,
         Uri apiGatewayWs,
         Uri realtimeGatewayWs,
+        Uri presenceGatewayWs,
         Uri notifyGatewayWs,
         Uri gameGatewayWs,
         string? sharedSecret)
@@ -40,6 +43,7 @@ public sealed class ClientConfiguration
         HttpBase = httpBase;
         ApiGatewayWs = apiGatewayWs;
         RealtimeGatewayWs = realtimeGatewayWs;
+        PresenceGatewayWs = presenceGatewayWs;
         NotifyGatewayWs = notifyGatewayWs;
         GameGatewayWs = gameGatewayWs;
         SharedSecret = sharedSecret;
@@ -64,6 +68,7 @@ public sealed class ClientConfiguration
         Uri httpBase;
         Uri apiGateway;
         Uri realtimeGateway;
+        Uri presenceGateway;
         Uri notifyGateway;
         Uri gameGateway;
         string? sharedSecret = Normalize(Environment.GetEnvironmentVariable("NETWORK_WS_SECRET") ??
@@ -77,6 +82,7 @@ public sealed class ClientConfiguration
             httpBase = ToHttpUri(Get(properties, "network.http.base", DefaultHttp));
             apiGateway = ToWsUri(Get(properties, "network.ws.api", DefaultWsApi), "/ws/api");
             realtimeGateway = ToWsUri(Get(properties, "network.ws.url", DefaultWs), "/ws");
+            presenceGateway = ToWsUri(Get(properties, "network.ws.presence", DefaultWsPresence), "/presence");
             notifyGateway = ToWsUri(Get(properties, "network.ws.notify", DefaultWsNotify), "/ws/notify");
             gameGateway = ToWsUri(Get(properties, "network.ws.game", DefaultWsGame), "/ws/game");
         }
@@ -89,6 +95,7 @@ public sealed class ClientConfiguration
                 httpBase = ToHttpUri(DefaultHttp);
                 apiGateway = ToWsUri(DefaultWsApi, "/ws/api");
                 realtimeGateway = ToWsUri(DefaultWs, "/ws");
+                presenceGateway = ToWsUri(DefaultWsPresence, "/presence");
                 notifyGateway = ToWsUri(DefaultWsNotify, "/ws/notify");
                 gameGateway = ToWsUri(DefaultWsGame, "/ws/game");
             }
@@ -106,12 +113,13 @@ public sealed class ClientConfiguration
 
         apiGateway = UpgradeToSecureWs(apiGateway, httpBase);
         realtimeGateway = UpgradeToSecureWs(realtimeGateway, httpBase);
+        presenceGateway = UpgradeToSecureWs(presenceGateway, httpBase);
         notifyGateway = UpgradeToSecureWs(notifyGateway, httpBase);
         gameGateway = UpgradeToSecureWs(gameGateway, httpBase);
 
-        Validate(new[] { apiGateway, realtimeGateway, notifyGateway, gameGateway }, httpBase, sharedSecret);
+        Validate(new[] { apiGateway, realtimeGateway, presenceGateway, notifyGateway, gameGateway }, httpBase, sharedSecret);
 
-        var config = new ClientConfiguration(appName, jwtSecret, httpBase, apiGateway, realtimeGateway, notifyGateway, gameGateway, sharedSecret);
+        var config = new ClientConfiguration(appName, jwtSecret, httpBase, apiGateway, realtimeGateway, presenceGateway, notifyGateway, gameGateway, sharedSecret);
 
         // Log de la configuration finale (masquer les secrets)
         Log.Information("Configuration réseau chargée:");
@@ -119,6 +127,7 @@ public sealed class ClientConfiguration
         Log.Information("  - HTTP Base: {HttpBase}", httpBase);
         Log.Information("  - WebSocket API: {ApiGateway}", apiGateway);
         Log.Information("  - WebSocket Realtime: {RealtimeGateway}", realtimeGateway);
+        Log.Information("  - WebSocket Presence: {PresenceGateway}", presenceGateway);
         Log.Information("  - WebSocket Notify: {NotifyGateway}", notifyGateway);
         Log.Information("  - WebSocket Game: {GameGateway}", gameGateway);
         Log.Information("  - Shared Secret: {HasSecret}", string.IsNullOrWhiteSpace(sharedSecret) ? "non défini" : "*****");
