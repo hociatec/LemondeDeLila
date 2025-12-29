@@ -56,4 +56,4 @@ Notes :
 - L'écran "Mises à jour client" utilise uniquement le champ **Version** (pré-rempli avec la version actuelle).
 - Pour que ClickOnce propose une mise à jour, la version doit changer : le champ **Version** est utilisé pour fixer `ApplicationVersion` lors du publish.
 - Si tu exécutes le client en `dotnet run`, tu ne verras pas la mise à jour s'appliquer : installe et lance la version ClickOnce pour tester la chaîne de MAJ.
-- Si `setup.exe` est introuvable, relance "Compiler + uploader" : la publication utilise `dotnet msbuild /t:Publish` pour générer les artefacts ClickOnce (`setup.exe`, `*.application`, `Application Files/`).
+- La publication peut être faite sans `setup.exe` (si Visual Studio Build Tools n'est pas installé) : dans ce cas l'installation se fait via `*.application` (ex: `https://api.lilas.hociatec.fr/updates/client-win/client-win.application`).

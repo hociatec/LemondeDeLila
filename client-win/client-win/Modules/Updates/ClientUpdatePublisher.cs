@@ -138,11 +138,55 @@ public sealed class ClientUpdatePublisher : IClientUpdatePublisher
             ? normalized
             : null;
 
-        // ClickOnce publish is best done through MSBuild's Publish target.
-        // (dotnet publish often produces a normal publish output without ClickOnce artifacts.)
-        var args = string.Join(' ', new[]
+        // Try full MSBuild.exe first (can generate setup.exe bootstrapper). If unavailable, fall back to dotnet msbuild
+        // without bootstrapper (still generates *.application + Application Files).
+        var fullMsbuild = FindFullMsBuildExe();
+        if (!string.IsNullOrWhiteSpace(fullMsbuild) && File.Exists(fullMsbuild))
         {
-            "msbuild",
+            var res = await RunMsBuildPublishAsync(
+                    msbuildExe: fullMsbuild,
+                    projectPath: projectPath,
+                    publishDir: publishDir,
+                    baseUrl: baseUrl,
+                    clickOnceVersion: clickOnceVersion,
+                    useBootstrapper: true,
+                    cancellationToken: cancellationToken)
+                .ConfigureAwait(true);
+
+            if (res.Success)
+            {
+                return res;
+            }
+        }
+
+        // Fallback (works with dotnet SDK MSBuild but cannot generate setup.exe).
+        return await RunMsBuildPublishAsync(
+                msbuildExe: "dotnet",
+                projectPath: projectPath,
+                publishDir: publishDir,
+                baseUrl: baseUrl,
+                clickOnceVersion: clickOnceVersion,
+                useBootstrapper: false,
+                cancellationToken: cancellationToken)
+            .ConfigureAwait(true);
+    }
+
+    private async Task<ClientUpdatePublishResult> RunMsBuildPublishAsync(
+        string msbuildExe,
+        string projectPath,
+        string publishDir,
+        string baseUrl,
+        string? clickOnceVersion,
+        bool useBootstrapper,
+        CancellationToken cancellationToken)
+    {
+        var isDotnet = string.Equals(msbuildExe, "dotnet", StringComparison.OrdinalIgnoreCase) ||
+                       msbuildExe.EndsWith("dotnet.exe", StringComparison.OrdinalIgnoreCase);
+
+        var msbuildArgs = new[]
+        {
+            // dotnet msbuild <proj> ... vs MSBuild.exe <proj> ...
+            isDotnet ? "msbuild" : string.Empty,
             Quote(projectPath),
             "/t:Publish",
             "/restore",
@@ -153,18 +197,20 @@ public sealed class ClientUpdatePublisher : IClientUpdatePublisher
             "/p:Install=true",
             "/p:InstallFrom=Web",
             "/p:UpdateEnabled=true",
-            "/p:IsWebBootstrapper=true",
-            "/p:BootstrapperEnabled=true",
             "/p:GenerateManifests=true",
+            useBootstrapper ? "/p:BootstrapperEnabled=true" : "/p:BootstrapperEnabled=false",
+            useBootstrapper ? "/p:IsWebBootstrapper=true" : "/p:IsWebBootstrapper=false",
             $"/p:PublishUrl={Quote(baseUrl)}",
             $"/p:InstallUrl={Quote(baseUrl)}",
             $"/p:UpdateUrl={Quote(baseUrl)}",
-            clickOnceVersion != null ? $"/p:ApplicationVersion={Quote(clickOnceVersion)}" : string.Empty,
-        }.Where(s => !string.IsNullOrWhiteSpace(s)));
+            !string.IsNullOrWhiteSpace(clickOnceVersion) ? $"/p:ApplicationVersion={Quote(clickOnceVersion)}" : string.Empty,
+        }.Where(s => !string.IsNullOrWhiteSpace(s));
+
+        var args = string.Join(' ', msbuildArgs);
 
         var psi = new ProcessStartInfo
         {
-            FileName = "dotnet",
+            FileName = msbuildExe,
             Arguments = args,
             UseShellExecute = false,
             RedirectStandardOutput = true,
@@ -172,12 +218,12 @@ public sealed class ClientUpdatePublisher : IClientUpdatePublisher
             CreateNoWindow = true,
         };
 
-        _logger.LogInformation("ClickOnce publish: dotnet {Args}", args);
+        _logger.LogInformation("ClickOnce publish: {Exe} {Args}", msbuildExe, args);
 
         using var proc = Process.Start(psi);
         if (proc == null)
         {
-            return new ClientUpdatePublishResult(false, "Impossible de lancer dotnet.");
+            return new ClientUpdatePublishResult(false, "Impossible de lancer MSBuild.");
         }
 
         var stdoutTask = proc.StandardOutput.ReadToEndAsync();
@@ -199,10 +245,56 @@ public sealed class ClientUpdatePublisher : IClientUpdatePublisher
         if (proc.ExitCode != 0)
         {
             var details = BuildFailureDetails(stdout, stderr);
-            return new ClientUpdatePublishResult(false, $"Publication ClickOnce échouée (code {proc.ExitCode}).{details}");
+            var bootstrapHint = useBootstrapper
+                ? "\n\nAstuce: si tu n'as pas Visual Studio Build Tools, la génération de setup.exe peut échouer. La publication sans setup.exe reste possible via le fichier *.application."
+                : string.Empty;
+            return new ClientUpdatePublishResult(false, $"Publication ClickOnce échouée (code {proc.ExitCode}).{bootstrapHint}{details}");
         }
 
         return new ClientUpdatePublishResult(true, "Build OK.");
+    }
+
+    private static string? FindFullMsBuildExe()
+    {
+        // Prefer MSBUILD_EXE_PATH if set.
+        var fromEnv = Environment.GetEnvironmentVariable("MSBUILD_EXE_PATH");
+        if (!string.IsNullOrWhiteSpace(fromEnv) && File.Exists(fromEnv))
+        {
+            return fromEnv;
+        }
+
+        // Try vswhere (Build Tools / Visual Studio).
+        var programFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
+        var vswhere = Path.Combine(programFilesX86, "Microsoft Visual Studio", "Installer", "vswhere.exe");
+        if (!File.Exists(vswhere))
+        {
+            return null;
+        }
+
+        try
+        {
+            var psi = new ProcessStartInfo
+            {
+                FileName = vswhere,
+                Arguments = "-latest -products * -requires Microsoft.Component.MSBuild -property installationPath",
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                CreateNoWindow = true,
+            };
+            using var proc = Process.Start(psi);
+            if (proc == null) return null;
+            var output = proc.StandardOutput.ReadToEnd().Trim();
+            proc.WaitForExit(5000);
+            if (string.IsNullOrWhiteSpace(output)) return null;
+
+            var candidate = Path.Combine(output, "MSBuild", "Current", "Bin", "MSBuild.exe");
+            return File.Exists(candidate) ? candidate : null;
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     private static string BuildFailureDetails(string stdout, string stderr)
