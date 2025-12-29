@@ -16,23 +16,16 @@ public sealed class OptionsViewModel : ObservableObject
     private bool _updateAvailable;
     private bool _canCheckUpdates = true;
     private bool _canInstallUpdates;
-    private readonly IUpdateService _updates;
 
-    public OptionsViewModel(OptionsState state, IUpdateService updates, Action onSave, Action onCancel)
+    public OptionsViewModel(OptionsState state, Action onSave, Action onCancel)
     {
         _state = state ?? throw new ArgumentNullException(nameof(state));
-        _updates = updates ?? throw new ArgumentNullException(nameof(updates));
-        _currentVersion = string.IsNullOrWhiteSpace(_updates.CurrentVersion) ? "inconnue" : _updates.CurrentVersion;
+        _currentVersion = AppInfo.GetShortVersion();
         SaveCommand = new RelayCommand(onSave);
         CancelCommand = new RelayCommand(onCancel);
         CheckUpdateCommand = new AsyncRelayCommand(HandleCheckUpdateAsync, () => CanCheckUpdates);
         InstallUpdateCommand = new AsyncRelayCommand(HandleInstallUpdateAsync, () => CanInstallUpdates);
-
-        if (!_updates.IsSupported)
-        {
-            _updateStatus = "Mises à jour indisponibles (installation ClickOnce requise).";
-            _canInstallUpdates = false;
-        }
+        _canInstallUpdates = true;
     }
 
     public bool MuteAll
@@ -214,24 +207,15 @@ public sealed class OptionsViewModel : ObservableObject
 
     private async Task HandleCheckUpdateAsync()
     {
-        if (!_updates.IsSupported)
-        {
-            UpdateStatus = "Mises à jour indisponibles (installation ClickOnce requise).";
-            CanInstallUpdates = false;
-            return;
-        }
-
         CanCheckUpdates = false;
         CanInstallUpdates = false;
         _updateAvailable = false;
-        UpdateStatus = "Recherche de mise à jour...";
+        UpdateStatus = "Les mises à jour sont appliquées au démarrage. Redémarre l'application pour les récupérer.";
 
         try
         {
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
-            var result = await _updates.CheckAsync(cts.Token).ConfigureAwait(true);
-            UpdateStatus = result.StatusMessage;
-            _updateAvailable = result.IsUpdateAvailable;
+            await Task.Delay(50).ConfigureAwait(true);
+            _updateAvailable = true;
         }
         catch (OperationCanceledException)
         {
@@ -240,7 +224,7 @@ public sealed class OptionsViewModel : ObservableObject
         finally
         {
             CanCheckUpdates = true;
-            CanInstallUpdates = _updateAvailable;
+            CanInstallUpdates = true;
         }
     }
 
@@ -248,30 +232,15 @@ public sealed class OptionsViewModel : ObservableObject
     {
         if (!_updateAvailable)
         {
-            UpdateStatus = "Aucune mise à jour disponible.";
-            CanInstallUpdates = false;
-            return;
-        }
-
-        if (!_updates.IsSupported)
-        {
-            UpdateStatus = "Installation impossible (installation ClickOnce requise).";
-            CanInstallUpdates = false;
-            return;
+            _updateAvailable = true;
         }
 
         CanCheckUpdates = false;
         CanInstallUpdates = false;
-        UpdateStatus = "Téléchargement et installation en cours...";
+        UpdateStatus = "Redémarrage en cours...";
         try
         {
-            using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(5));
-            var result = await _updates.InstallAsync(cts.Token).ConfigureAwait(true);
-            UpdateStatus = result.StatusMessage;
-            if (result.RestartRequired && result.Installed)
-            {
-                UpdateRestartHelper.RestartCurrentProcess();
-            }
+            UpdateRestartHelper.RestartCurrentProcess();
         }
         catch (OperationCanceledException)
         {

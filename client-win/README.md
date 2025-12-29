@@ -36,7 +36,7 @@ La solution recommandée ici est **ClickOnce** :
 
 Notes :
 - En mode dev (`dotnet run` / exécutable copié), les mises à jour ClickOnce sont désactivées (le bouton indique que ClickOnce est requis).
-- En ClickOnce, le client vérifie et installe automatiquement les mises à jour au démarrage (puis redémarre si nécessaire).
+- En ClickOnce, les mises à jour sont gérées par ClickOnce au démarrage (si une nouvelle version est publiée, elle est appliquée au lancement suivant).
 - Pour une distribution "propre" hors test, il est recommandé d'activer la signature ClickOnce (certificat) dans `client-win/client-win/Properties/PublishProfiles/ClickOnce.pubxml`.
 
 ## Gestion 100% depuis l'administration (PC Windows admin)

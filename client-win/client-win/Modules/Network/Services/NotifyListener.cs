@@ -6,7 +6,6 @@ using client_win.Modules.Config;
 using client_win.Modules.Catalog.Services;
 using client_win.Modules.Network.WebSockets;
 using client_win.Modules.Shell.Services;
-using client_win.Modules.Updates;
 using client_win.Modules.User.Services;
 using Serilog;
 
@@ -20,7 +19,6 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
     private readonly IScreenReaderAnnouncer _screenReader;
     private readonly ICatalogService _catalog;
     private readonly IDialogService _dialogs;
-    private readonly IUpdateService _updates;
     private readonly SemaphoreSlim _updateGate = new(1, 1);
 
     private IWebSocketConnection? _ws;
@@ -32,8 +30,7 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
         Func<IWebSocketConnection> wsFactory,
         IScreenReaderAnnouncer screenReader,
         ICatalogService catalog,
-        IDialogService dialogs,
-        IUpdateService updates)
+        IDialogService dialogs)
     {
         _config = config ?? throw new ArgumentNullException(nameof(config));
         _session = session ?? throw new ArgumentNullException(nameof(session));
@@ -41,7 +38,6 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
         _screenReader = screenReader ?? throw new ArgumentNullException(nameof(screenReader));
         _catalog = catalog ?? throw new ArgumentNullException(nameof(catalog));
         _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
-        _updates = updates ?? throw new ArgumentNullException(nameof(updates));
     }
 
     public async Task StartAsync(CancellationToken cancellationToken = default)
@@ -141,16 +137,6 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
 
         try
         {
-            if (!_updates.IsSupported)
-            {
-                await _dialogs.ShowInfo(
-                        "Mise à jour",
-                        "Une mise à jour est disponible, mais ce client n'est pas installé via ClickOnce.\n" +
-                        "Veuillez réinstaller depuis le lien officiel pour activer les mises à jour automatiques.")
-                    .ConfigureAwait(true);
-                return;
-            }
-
             var msg = string.IsNullOrWhiteSpace(message)
                 ? "Une mise à jour du client est disponible."
                 : message.Trim();
@@ -166,24 +152,8 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
                 return;
             }
 
-            using var checkCts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
-            var check = await _updates.CheckAsync(checkCts.Token).ConfigureAwait(true);
-            if (!check.IsUpdateAvailable)
-            {
-                await _dialogs.ShowInfo("Mise à jour", "Aucune mise à jour n'est disponible pour le moment.").ConfigureAwait(true);
-                return;
-            }
-
-            using var installCts = new CancellationTokenSource(TimeSpan.FromMinutes(5));
-            var result = await _updates.InstallAsync(installCts.Token).ConfigureAwait(true);
-            if (result.Installed && result.RestartRequired)
-            {
-                UpdateRestartHelper.RestartCurrentProcess();
-            }
-            else
-            {
-                await _dialogs.ShowInfo("Mise à jour", result.StatusMessage).ConfigureAwait(true);
-            }
+            // Les mises à jour ClickOnce sont appliquées au (re)démarrage.
+            UpdateRestartHelper.RestartCurrentProcess();
         }
         catch (Exception ex)
         {

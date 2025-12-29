@@ -166,15 +166,12 @@ public static class AppBootstrapper
 
         services.AddSingleton<ISessionService, SessionService>();
 
-        // Mises à jour (ClickOnce) : disponible seulement si l'app est installée via ClickOnce.
-        services.AddSingleton<IUpdateService, ClickOnceUpdateService>();
         services.AddSingleton<IClientUpdatePublisher, ClientUpdatePublisher>();
 
         // OptionsService (dans le shell) avec SettingsManager + Navigation
         services.AddSingleton<IOptionsService>(sp => new OptionsService(
             sp.GetRequiredService<SettingsManager<OptionsState>>(),
-            sp.GetRequiredService<INavigationService>(),
-            sp.GetRequiredService<IUpdateService>()));
+            sp.GetRequiredService<INavigationService>()));
 
         services.AddSingleton<Dispatcher>(_ => Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher);
 
@@ -246,8 +243,7 @@ public static class AppBootstrapper
                 () => sp.GetRequiredService<IWebSocketConnection>(),
                 sp.GetRequiredService<IScreenReaderAnnouncer>(),
                 sp.GetRequiredService<Modules.Catalog.Services.ICatalogService>(),
-                sp.GetRequiredService<IDialogService>(),
-                sp.GetRequiredService<IUpdateService>()));
+                sp.GetRequiredService<IDialogService>()));
 
         services.AddTransient<IMenuRouter, MenuRouter>();
 
