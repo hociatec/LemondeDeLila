@@ -81,6 +81,7 @@ export class GameCategoriesService {
       id: slug,
       name: trimmed,
       parentId: actualParentId,
+      enabled: true,
     };
     root.categories.push(category);
     await this.save(root);
@@ -160,7 +161,12 @@ export class GameCategoriesService {
       if (!parsed || typeof parsed !== 'object') {
         return { categories: [], assignments: {} };
       }
-      const categories = Array.isArray(parsed.categories) ? parsed.categories : [];
+      const categories = Array.isArray(parsed.categories)
+        ? parsed.categories.map((category) => ({
+            ...category,
+            enabled: typeof category.enabled === 'boolean' ? category.enabled : true,
+          }))
+        : [];
       const assignments =
         parsed.assignments && typeof parsed.assignments === 'object'
           ? parsed.assignments

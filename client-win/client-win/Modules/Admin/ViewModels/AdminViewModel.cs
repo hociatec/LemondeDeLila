@@ -48,6 +48,7 @@ public sealed class AdminViewModel : ObservableObject
     private readonly IDialogService _dialogs;
     private readonly Action _close;
     private readonly Dispatcher _dispatcher;
+    private AdminPage _categoriesReturnPage = AdminPage.Games;
 
     private AdminPage _page = AdminPage.Root;
     private string _title = "Administration";
@@ -295,7 +296,14 @@ public sealed class AdminViewModel : ObservableObject
 
         if (_page == AdminPage.GameCategories)
         {
-            ShowGames();
+            if (_categoriesReturnPage == AdminPage.Root)
+            {
+                BuildRoot();
+            }
+            else
+            {
+                ShowGames();
+            }
             return AdminNavResult.Moved;
         }
 
@@ -355,6 +363,7 @@ public sealed class AdminViewModel : ObservableObject
         IsSecondaryInputVisible = false;
         IsAdditionalPermissionsVisible = false;
         Items.Clear();
+        Items.Add(new AdminMenuItem("Gérer les catégories", tag: "categories"));
         Items.Add(new AdminMenuItem("Gérer les jeux", tag: "games"));
         Items.Add(new AdminMenuItem("Gérer les utilisateurs", tag: "users"));
         Items.Add(new AdminMenuItem("Envoyer un message global", tag: "broadcast"));
@@ -381,6 +390,11 @@ public sealed class AdminViewModel : ObservableObject
         {
             if (_page == AdminPage.Root)
             {
+                if (tag is string rootCategories && rootCategories == "categories")
+                {
+                    await LoadCategoriesAsync(AdminPage.Root).ConfigureAwait(true);
+                    return;
+                }
                 if (tag is string s && s == "games")
                 {
                     await LoadGamesAsync().ConfigureAwait(true);
@@ -410,7 +424,7 @@ public sealed class AdminViewModel : ObservableObject
 
             if (_page == AdminPage.Games && tag is string gamesAction && gamesAction == "games.categories")
             {
-                await LoadCategoriesAsync().ConfigureAwait(true);
+                await LoadCategoriesAsync(AdminPage.Games).ConfigureAwait(true);
                 return;
             }
 
@@ -614,7 +628,6 @@ public sealed class AdminViewModel : ObservableObject
             _dispatcher.Invoke(() =>
             {
                 Items.Clear();
-                Items.Add(new AdminMenuItem("Gérer les catÃ©gories", tag: "games.categories"));
                 foreach (var game in _loadedGames.OrderBy(g => g.Name))
                 {
                     var label = $"{(game.Enabled ? "Actif" : "Désactivé")} : {game.Name} ({game.Id})";
@@ -643,7 +656,6 @@ public sealed class AdminViewModel : ObservableObject
         IsAdditionalPermissionsVisible = false;
         IsSecondaryInputVisible = false;
         Items.Clear();
-        Items.Add(new AdminMenuItem("Gérer les catÃ©gories", tag: "games.categories"));
         foreach (var game in _loadedGames.OrderBy(g => g.Name))
         {
             var label = $"{(game.Enabled ? "Actif" : "Désactivé")} : {game.Name} ({game.Id})";
@@ -658,9 +670,12 @@ public sealed class AdminViewModel : ObservableObject
         UpdateFilterVisibility();
     }
 
-    private async Task LoadCategoriesAsync()
+    private Task LoadCategoriesAsync() => LoadCategoriesAsync(AdminPage.Games);
+
+    private async Task LoadCategoriesAsync(AdminPage returnPage)
     {
         if (IsBusy) return;
+        _categoriesReturnPage = returnPage;
         _page = AdminPage.GameCategories;
         Title = "Gérer les catégories";
         Details = string.Empty;
