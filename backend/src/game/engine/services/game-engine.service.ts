@@ -678,11 +678,13 @@ export class GameEngineService {
     const previous = this.mutationQueue.get(key) ?? Promise.resolve();
     const next = previous.then(task, task);
     this.mutationQueue.set(key, next);
-    next.finally(() => {
-      if (this.mutationQueue.get(key) === next) {
-        this.mutationQueue.delete(key);
-      }
-    });
+    next
+      .finally(() => {
+        if (this.mutationQueue.get(key) === next) {
+          this.mutationQueue.delete(key);
+        }
+      })
+      .catch(() => {});
     return next;
   }
 

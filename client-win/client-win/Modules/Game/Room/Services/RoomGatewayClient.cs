@@ -65,6 +65,7 @@ public sealed class RoomGatewayClient : IRoomGatewayClient
 
         var tcs = new TaskCompletionSource<RoomEnvelope<RoomPayloadDto>>(TaskCreationOptions.RunContinuationsAsynchronously);
         var connected = false;
+        var startedAt = DateTime.UtcNow;
         void OnMessage(string raw)
         {
             try
@@ -131,14 +132,17 @@ public sealed class RoomGatewayClient : IRoomGatewayClient
 
         try
         {
+            Log.Information("WS room.create: connexion à {Endpoint}", uri);
             await socket.ConnectAsync(uri, token: null, headers: headers, cancellationToken: cancellationToken).ConfigureAwait(false);
             connected = true;
+            Log.Information("WS room.create: connecté en {ElapsedMs}ms", (DateTime.UtcNow - startedAt).TotalMilliseconds);
             var create = JsonSerializer.Serialize(new { type = "room.create", payload = new { gameType } }, _json);
             await socket.SendAsync(create, cancellationToken).ConfigureAwait(false);
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(20));
             using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeout.Token);
             var res = await tcs.Task.WaitAsync(linked.Token).ConfigureAwait(false);
+            Log.Information("WS room.create: réponse reçue en {ElapsedMs}ms (roomId={RoomId})", (DateTime.UtcNow - startedAt).TotalMilliseconds, res.RoomId);
             return res;
         }
         catch (OperationCanceledException)

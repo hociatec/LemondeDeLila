@@ -594,12 +594,14 @@ export class RoomGateway
     );
     const state = await this.roomsService.getRoomPayload(room.id);
     const message = { type: 'room.created', roomId: room.id, payload: state };
-    await this.broadcast(
-      meta.roomId,
-      message.type,
-      message.payload ?? state,
-      room.id,
-    );
+    if (meta.roomId > 0) {
+      await this.broadcast(
+        meta.roomId,
+        message.type,
+        message.payload ?? state,
+        room.id,
+      );
+    }
     this.safeSend(client, message);
   }
 
