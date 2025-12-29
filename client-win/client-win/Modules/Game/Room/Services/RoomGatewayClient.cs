@@ -64,14 +64,43 @@ public sealed class RoomGatewayClient : IRoomGatewayClient
         var headers = BuildHeaders(_config.SharedSecret);
 
         var tcs = new TaskCompletionSource<RoomEnvelope<RoomPayloadDto>>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var connected = false;
         void OnMessage(string raw)
         {
             try
             {
-                var msg = JsonSerializer.Deserialize<RoomEnvelope<RoomPayloadDto>>(raw, _json);
-                if (msg == null) return;
-                if (!string.Equals(msg.Type, "room.created", StringComparison.OrdinalIgnoreCase)) return;
-                tcs.TrySetResult(msg);
+                using var doc = JsonDocument.Parse(raw);
+                if (!doc.RootElement.TryGetProperty("type", out var typeProp) ||
+                    typeProp.ValueKind != JsonValueKind.String)
+                {
+                    return;
+                }
+
+                var type = typeProp.GetString() ?? string.Empty;
+                if (string.Equals(type, "room.created", StringComparison.OrdinalIgnoreCase))
+                {
+                    var msg = JsonSerializer.Deserialize<RoomEnvelope<RoomPayloadDto>>(raw, _json);
+                    if (msg != null)
+                    {
+                        tcs.TrySetResult(msg);
+                    }
+                    return;
+                }
+
+                if (string.Equals(type, "error", StringComparison.OrdinalIgnoreCase))
+                {
+                    string? message = null;
+                    if (doc.RootElement.TryGetProperty("payload", out var payload) &&
+                        payload.ValueKind == JsonValueKind.Object &&
+                        payload.TryGetProperty("message", out var messageProp) &&
+                        messageProp.ValueKind == JsonValueKind.String)
+                    {
+                        message = messageProp.GetString();
+                    }
+
+                    tcs.TrySetException(new InvalidOperationException(
+                        string.IsNullOrWhiteSpace(message) ? "Erreur création de table." : message));
+                }
             }
             catch
             {
@@ -79,15 +108,35 @@ public sealed class RoomGatewayClient : IRoomGatewayClient
             }
         }
 
+        void OnError(string message)
+        {
+            if (tcs.Task.IsCompleted) return;
+            tcs.TrySetException(new InvalidOperationException(message));
+        }
+
+        void OnStateChanged(WebSocketState state)
+        {
+            if (tcs.Task.IsCompleted) return;
+            if (!connected) return;
+            if (state is WebSocketState.Error or WebSocketState.Disconnected)
+            {
+                tcs.TrySetException(new InvalidOperationException(
+                    "Connexion WebSocket fermée pendant la création de table. Vérifiez network.ws.secret et la connectivité WS."));
+            }
+        }
+
         socket.MessageReceived += OnMessage;
+        socket.Error += OnError;
+        socket.StateChanged += OnStateChanged;
 
         try
         {
             await socket.ConnectAsync(uri, token: null, headers: headers, cancellationToken: cancellationToken).ConfigureAwait(false);
+            connected = true;
             var create = JsonSerializer.Serialize(new { type = "room.create", payload = new { gameType } }, _json);
             await socket.SendAsync(create, cancellationToken).ConfigureAwait(false);
 
-            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(20));
             using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeout.Token);
             var res = await tcs.Task.WaitAsync(linked.Token).ConfigureAwait(false);
             return res;
@@ -99,6 +148,8 @@ public sealed class RoomGatewayClient : IRoomGatewayClient
         finally
         {
             socket.MessageReceived -= OnMessage;
+            socket.Error -= OnError;
+            socket.StateChanged -= OnStateChanged;
             await socket.CloseAsync().ConfigureAwait(false);
             await socket.DisposeAsync().ConfigureAwait(false);
         }
