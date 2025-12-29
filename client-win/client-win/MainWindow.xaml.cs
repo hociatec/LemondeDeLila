@@ -15,6 +15,7 @@ using client_win.Modules.Shell.Services;
 using Microsoft.Extensions.DependencyInjection;
 using System.Threading;
 using client_win.Modules.Network.Services;
+using System.Windows.Input;
 
 namespace client_win
 {
@@ -48,6 +49,18 @@ namespace client_win
             _errorHandler = new ShellErrorHandler(_errorBus, _navigation, _dialogs, () => _homeView, _host.CrashReporter);
 
             Loaded += OnLoaded;
+            PreviewKeyDown += OnPreviewKeyDown;
+        }
+
+        private void OnPreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            var isAlt = (Keyboard.Modifiers & ModifierKeys.Alt) == ModifierKeys.Alt;
+            var key = e.Key == Key.System ? e.SystemKey : e.Key;
+            if (isAlt && key == Key.F4)
+            {
+                e.Handled = true;
+                Close();
+            }
         }
 
         private async void OnLoaded(object sender, RoutedEventArgs e)

@@ -1,145 +1,106 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Threading;
+using client_win.Modules.MainMenu.ViewModels;
 
 namespace client_win.Modules.MainMenu.Views;
 
 public partial class MainMenuView : UserControl
 {
-    private List<Button> _orderedButtons = new();
-    private string? _lastFocusedButtonName;
-    private bool _subscriptionsAttached;
-
     public MainMenuView()
     {
         InitializeComponent();
-        Loaded += OnLoaded;
     }
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
-        _orderedButtons = new[]
-        {
-            CatalogButton,
-            JoinButton,
-            MessagingButton,
-            ChatButton,
-            SocialButton,
-            StatsButton,
-            AdminButton,
-            OptionsButton,
-            LogoutButton
-        }.Where(b => b != null).ToList();
+        FocusWhenContainersGenerated();
+    }
 
-        if (!_subscriptionsAttached)
+    private void OnKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Escape)
         {
-            foreach (var button in _orderedButtons)
-            {
-                button.GotKeyboardFocus += OnButtonGotKeyboardFocus;
-            }
-            _subscriptionsAttached = true;
+            e.Handled = true;
         }
+    }
 
-        // UX: le menu s'ouvre toujours sur le catalogue, pour que "Entrée" fonctionne immédiatement.
-        if (!string.IsNullOrWhiteSpace(_lastFocusedButtonName))
+    private async void OnListPreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key != Key.Enter && e.Key != Key.Return)
         {
-            FocusLastOrFirstVisibleButton();
+            return;
+        }
+        if (DataContext is not MainMenuViewModel vm)
+        {
+            return;
+        }
+        e.Handled = true;
+        await vm.ActivateCommand.ExecuteAsync(null).ConfigureAwait(true);
+        FocusWhenContainersGenerated();
+    }
+
+    private void OnListKeyDown(object sender, KeyEventArgs e)
+    {
+        // Empêche Tab de sortir de la zone principale lorsque l'utilisateur est dans la liste.
+        if (e.Key == Key.Tab || e.Key == Key.System)
+        {
+            e.Handled = true;
+        }
+    }
+
+    private void FocusFirstItem()
+    {
+        if (ItemsList == null || ItemsList.Items.Count == 0)
+        {
+            ItemsList?.Focus();
             return;
         }
 
-        if (CatalogButton != null && CatalogButton.Visibility == Visibility.Visible && CatalogButton.IsEnabled)
+        if (ItemsList.SelectedIndex < 0)
         {
-            CatalogButton.Focus();
-            _lastFocusedButtonName = CatalogButton.Name;
+            ItemsList.SelectedIndex = 0;
+        }
+
+        ItemsList.UpdateLayout();
+        if (ItemsList.ItemContainerGenerator.ContainerFromIndex(ItemsList.SelectedIndex) is ListBoxItem item)
+        {
+            item.Focus();
+        }
+        else
+        {
+            ItemsList.Focus();
+        }
+    }
+
+    private void FocusWhenContainersGenerated()
+    {
+        if (ItemsList == null)
+        {
             return;
         }
 
-        FocusLastOrFirstVisibleButton();
-    }
-
-    private void OnMenuButtonKeyDown(object sender, KeyEventArgs e)
-    {
-        if (e.Key == Key.Tab || e.Key == Key.Left || e.Key == Key.Right)
+        if (ItemsList.HasItems &&
+            ItemsList.ItemContainerGenerator.Status == System.Windows.Controls.Primitives.GeneratorStatus.ContainersGenerated)
         {
-            e.Handled = true;
+            _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusFirstItem));
             return;
         }
 
-        if (sender is not Button current) return;
-
-        int index = _orderedButtons.IndexOf(current);
-        if (index < 0) return;
-
-        if (e.Key == Key.Up)
+        EventHandler? handler = null;
+        handler = (_, __) =>
         {
-            e.Handled = true;
-            var previous = FindPrevious(index);
-            if (previous != null)
+            if (ItemsList.ItemContainerGenerator.Status != System.Windows.Controls.Primitives.GeneratorStatus.ContainersGenerated)
             {
-                previous.Focus();
+                return;
             }
-        }
-        else if (e.Key == Key.Down)
-        {
-            e.Handled = true;
-            var next = FindNext(index);
-            if (next != null)
-            {
-                next.Focus();
-            }
-        }
-    }
 
-    private Button? FindPrevious(int startIndex)
-    {
-        for (int i = startIndex - 1; i >= 0; i--)
-        {
-            var candidate = _orderedButtons[i];
-            if (candidate.Visibility == Visibility.Visible && candidate.IsEnabled)
-            {
-                return candidate;
-            }
-        }
-        return null;
-    }
-
-    private Button? FindNext(int startIndex)
-    {
-        for (int i = startIndex + 1; i < _orderedButtons.Count; i++)
-        {
-            var candidate = _orderedButtons[i];
-            if (candidate.Visibility == Visibility.Visible && candidate.IsEnabled)
-            {
-                return candidate;
-            }
-        }
-        return null;
-    }
-
-    private void OnButtonGotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
-    {
-        if (sender is Button b && !string.IsNullOrWhiteSpace(b.Name))
-        {
-            _lastFocusedButtonName = b.Name;
-        }
-    }
-
-    private void FocusLastOrFirstVisibleButton()
-    {
-        var target = _orderedButtons.FirstOrDefault(b =>
-            !string.IsNullOrWhiteSpace(_lastFocusedButtonName) &&
-            string.Equals(b.Name, _lastFocusedButtonName, StringComparison.Ordinal) &&
-            b.Visibility == Visibility.Visible &&
-            b.IsEnabled);
-
-        if (target == null)
-        {
-            target = _orderedButtons.FirstOrDefault(b => b.Visibility == Visibility.Visible && b.IsEnabled);
-        }
-
-        target?.Focus();
+            ItemsList.ItemContainerGenerator.StatusChanged -= handler;
+            _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusFirstItem));
+        };
+        ItemsList.ItemContainerGenerator.StatusChanged += handler;
     }
 }
+

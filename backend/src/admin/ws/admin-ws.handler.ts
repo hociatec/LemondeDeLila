@@ -13,10 +13,18 @@ import { NotificationService } from '../../notification/services/notification.se
 import { User } from '../../user/entities/user.entity';
 import { CatalogService } from '../../catalog/services/catalog.service';
 import { RoleDefinitionsService } from '../services/role-definitions.service';
+import { BotService } from '../../bot/services/bot.service';
+import { BotSettingsService } from '../../game/modules/bot/services/bot-settings.service';
 import * as fs from 'fs';
 import * as path from 'path';
 import {
   AdminBanUserWsDto,
+  AdminBotNameCreateWsDto,
+  AdminBotNameDeleteWsDto,
+  AdminBotNameUpdateWsDto,
+  AdminBotNamesListWsDto,
+  AdminBotSettingsGetWsDto,
+  AdminBotSettingsUpdateWsDto,
   AdminBroadcastWsDto,
   AdminGameCategoryAssignWsDto,
   AdminGameCategoryCreateWsDto,
@@ -47,6 +55,8 @@ export class AdminWsHandler {
     private readonly catalog: CatalogService,
     private readonly config: ConfigService,
     private readonly roleDefinitions: RoleDefinitionsService,
+    private readonly bots: BotService,
+    private readonly botSettings: BotSettingsService,
     @InjectRepository(User) private readonly userRepo: Repository<User>,
   ) {}
 
@@ -223,6 +233,98 @@ export class AdminWsHandler {
     return {
       type: 'admin.roles.definitions',
       payload: { definitions },
+    };
+  }
+
+  async botsNamesList(session: WsSession, payload: any) {
+    requireAdmin(session);
+    this.validator.validate(AdminBotNamesListWsDto, payload ?? {});
+    const names = await this.bots.listBotNames();
+    return {
+      type: 'admin.bots.names.list',
+      payload: {
+        names: names.map((n) => ({
+          id: n.id,
+          name: n.name,
+          enabled: n.enabled,
+          createdAt: n.createdAt,
+        })),
+      },
+    };
+  }
+
+  async botSettingsGet(session: WsSession, payload: any) {
+    requireAdmin(session);
+    this.validator.validate(AdminBotSettingsGetWsDto, payload ?? {});
+    return {
+      type: 'admin.bots.settings.get',
+      payload: this.botSettings.getSettings(),
+    };
+  }
+
+  async botSettingsUpdate(session: WsSession, payload: any) {
+    requireAdmin(session);
+    const dto = this.validator.validate(AdminBotSettingsUpdateWsDto, payload);
+    const updated = await this.botSettings.updateSettings({
+      botTurnDelayMs: dto.botTurnDelayMs,
+    });
+    return { type: 'admin.bots.settings.update', payload: updated };
+  }
+
+  async botNameCreate(session: WsSession, payload: any) {
+    requireAdmin(session);
+    const dto = this.validator.validate(AdminBotNameCreateWsDto, payload);
+    await this.bots.createBotName(dto.name, dto.enabled ?? true);
+    const names = await this.bots.listBotNames();
+    return {
+      type: 'admin.bots.names.list',
+      payload: {
+        names: names.map((n) => ({
+          id: n.id,
+          name: n.name,
+          enabled: n.enabled,
+          createdAt: n.createdAt,
+        })),
+      },
+    };
+  }
+
+  async botNameUpdate(session: WsSession, payload: any) {
+    requireAdmin(session);
+    const dto = this.validator.validate(AdminBotNameUpdateWsDto, payload);
+    await this.bots.updateBotName(dto.id, {
+      name: dto.name,
+      enabled: dto.enabled,
+    });
+    const names = await this.bots.listBotNames();
+    return {
+      type: 'admin.bots.names.list',
+      payload: {
+        names: names.map((n) => ({
+          id: n.id,
+          name: n.name,
+          enabled: n.enabled,
+          createdAt: n.createdAt,
+        })),
+      },
+    };
+  }
+
+  async botNameDelete(session: WsSession, payload: any) {
+    requireAdmin(session);
+    const dto = this.validator.validate(AdminBotNameDeleteWsDto, payload);
+    await this.bots.deleteBotName(dto.id);
+    const names = await this.bots.listBotNames();
+    return {
+      type: 'admin.bots.names.list',
+      payload: {
+        names: names.map((n) => ({
+          id: n.id,
+          name: n.name,
+          enabled: n.enabled,
+          createdAt: n.createdAt,
+        })),
+      },
     };
   }
 

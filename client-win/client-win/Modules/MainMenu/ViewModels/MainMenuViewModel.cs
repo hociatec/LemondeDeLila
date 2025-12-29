@@ -1,6 +1,7 @@
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Collections.ObjectModel;
 using System.Windows.Input;
 using client_win.Core;
 using client_win.Modules.Catalog.Services;
@@ -18,6 +19,8 @@ public sealed class MainMenuViewModel : ObservableObject
     private readonly Action? _logout;
     private string _statusMessage = "Prêt.";
     private bool _isAdminVisible;
+    private bool _isBusy;
+    private MainMenuItem? _selectedItem;
 
     public MainMenuViewModel(AuthenticatedUser user, IMenuRouter router, ICatalogService catalog, Action? logout = null)
     {
@@ -59,6 +62,10 @@ public sealed class MainMenuViewModel : ObservableObject
             SetStatus(await _router.Logout());
             _logout?.Invoke();
         });
+
+        Items = new ObservableCollection<MainMenuItem>();
+        ActivateCommand = new AsyncRelayCommand(ActivateSelectedAsync);
+        BuildMenuItems();
     }
 
     public string Welcome => $"Bienvenue, {_user.Username}";
@@ -87,7 +94,73 @@ public sealed class MainMenuViewModel : ObservableObject
     public ICommand OptionsCommand { get; }
     public ICommand LogoutCommand { get; }
 
+    public ObservableCollection<MainMenuItem> Items { get; }
+
+    public MainMenuItem? SelectedItem
+    {
+        get => _selectedItem;
+        set => SetProperty(ref _selectedItem, value);
+    }
+
+    public AsyncRelayCommand ActivateCommand { get; }
+
     private void SetStatus(string text) => StatusMessage = text;
+
+    private void BuildMenuItems()
+    {
+        Items.Clear();
+
+        Items.Add(new MainMenuItem("Étagères", tag: OpenCatalogCommand));
+        Items.Add(new MainMenuItem("Rejoindre une partie", tag: JoinGameCommand));
+        Items.Add(new MainMenuItem("Messagerie", tag: MessagingCommand));
+        Items.Add(new MainMenuItem("Chat", tag: ChatCommand));
+        Items.Add(new MainMenuItem("Social", tag: SocialCommand));
+        Items.Add(new MainMenuItem("Statistiques", tag: StatsCommand));
+
+        if (_isAdminVisible)
+        {
+            Items.Add(new MainMenuItem("Administration", tag: AdminCommand));
+        }
+
+        Items.Add(new MainMenuItem("Options", tag: OptionsCommand));
+        Items.Add(new MainMenuItem("Déconnexion", tag: LogoutCommand));
+
+        SelectedItem = Items.FirstOrDefault();
+        StatusMessage = "Entrée : sélectionner.";
+    }
+
+    private async Task ActivateSelectedAsync()
+    {
+        if (_isBusy)
+        {
+            return;
+        }
+
+        var item = SelectedItem;
+        if (item?.Tag is not ICommand cmd)
+        {
+            return;
+        }
+
+        _isBusy = true;
+        try
+        {
+            if (cmd is AsyncRelayCommand asyncCmd)
+            {
+                await asyncCmd.ExecuteAsync(null).ConfigureAwait(true);
+                return;
+            }
+
+            if (cmd.CanExecute(null))
+            {
+                cmd.Execute(null);
+            }
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
 
     private bool HasAdminRole(string token)
     {

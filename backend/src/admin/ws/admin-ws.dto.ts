@@ -260,3 +260,54 @@ export class AdminRoleDefinitionDeleteWsDto {
   @MinLength(1)
   name!: string;
 }
+
+export class AdminBotNamesListWsDto {
+  @IsOptional()
+  @IsBoolean()
+  _noop?: boolean;
+}
+
+export class AdminBotNameCreateWsDto {
+  @IsString()
+  @MinLength(1)
+  @MaxLength(150)
+  name!: string;
+
+  @IsOptional()
+  @IsBoolean()
+  enabled?: boolean;
+}
+
+export class AdminBotNameUpdateWsDto {
+  @IsInt()
+  @IsPositive()
+  id!: number;
+
+  @IsOptional()
+  @IsString()
+  @MinLength(1)
+  @MaxLength(150)
+  name?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  enabled?: boolean;
+}
+
+export class AdminBotNameDeleteWsDto {
+  @IsInt()
+  @IsPositive()
+  id!: number;
+}
+
+export class AdminBotSettingsGetWsDto {
+  @IsOptional()
+  @IsBoolean()
+  _noop?: boolean;
+}
+
+export class AdminBotSettingsUpdateWsDto {
+  @IsInt()
+  @Min(0)
+  botTurnDelayMs!: number;
+}

@@ -143,6 +143,13 @@ public static class WsMessageTypes
         public const string RoleDefinitionDelete = "admin.roles.delete";
 
         public const string Broadcast = "admin.broadcast";
+
+        public const string BotNamesList = "admin.bots.names.list";
+        public const string BotSettingsGet = "admin.bots.settings.get";
+        public const string BotSettingsUpdate = "admin.bots.settings.update";
+        public const string BotNameCreate = "admin.bots.name.create";
+        public const string BotNameUpdate = "admin.bots.name.update";
+        public const string BotNameDelete = "admin.bots.name.delete";
     }
 
     /// <summary>

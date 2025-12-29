@@ -63,6 +63,62 @@ export class BotService {
     return { roomId, total };
   }
 
+  async listBotNames(): Promise<BotName[]> {
+    return this.botNames.find({ order: { name: 'ASC' } });
+  }
+
+  async createBotName(name: string, enabled = true): Promise<BotName> {
+    const sanitized = this.sanitizeName(name);
+    if (!sanitized) {
+      throw new BadRequestException('Nom requis');
+    }
+    const exists = await this.botNames.findOne({ where: { name: sanitized } });
+    if (exists) {
+      throw new BadRequestException('Nom déjà utilisé');
+    }
+    const botName = this.botNames.create({ name: sanitized, enabled });
+    return this.botNames.save(botName);
+  }
+
+  async updateBotName(
+    id: number,
+    update: { name?: string; enabled?: boolean },
+  ): Promise<BotName> {
+    const botName = await this.botNames.findOne({ where: { id } });
+    if (!botName) {
+      throw new NotFoundException('Bot introuvable');
+    }
+
+    if (update.name !== undefined) {
+      const sanitized = this.sanitizeName(update.name);
+      if (!sanitized) {
+        throw new BadRequestException('Nom requis');
+      }
+      if (sanitized !== botName.name) {
+        const exists = await this.botNames.findOne({ where: { name: sanitized } });
+        if (exists) {
+          throw new BadRequestException('Nom déjà utilisé');
+        }
+        botName.name = sanitized;
+      }
+    }
+
+    if (update.enabled !== undefined) {
+      botName.enabled = Boolean(update.enabled);
+    }
+
+    return this.botNames.save(botName);
+  }
+
+  async deleteBotName(id: number): Promise<BotName> {
+    const botName = await this.botNames.findOne({ where: { id } });
+    if (!botName) {
+      throw new NotFoundException('Bot introuvable');
+    }
+    await this.botNames.delete(botName.id);
+    return botName;
+  }
+
   private async pickName(roomId: number): Promise<string> {
     const existing = await this.bots.find({ where: { room: { id: roomId } } });
     const names = existing.map((b) => b.name.toLowerCase());

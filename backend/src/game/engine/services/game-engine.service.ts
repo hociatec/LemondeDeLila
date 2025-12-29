@@ -18,6 +18,7 @@ import type { GameRulesAdapter } from '../interfaces/game-rules-adapter.interfac
 import { TurnLabelService } from '../../modules/turn/services/turn-label.service';
 import { BotRunnerService } from '../../modules/bot/services/bot-runner.service';
 import { BotSchedulerService } from '../../modules/bot/services/bot-scheduler.service';
+import { BotSettingsService } from '../../modules/bot/services/bot-settings.service';
 import { GameEngineStateStore } from './game-engine-state.store';
 import {
   validateActions as validateActionDtos,
@@ -57,6 +58,7 @@ export class GameEngineService {
     private readonly turnLabel: TurnLabelService,
     private readonly botRunner: BotRunnerService,
     private readonly botScheduler: BotSchedulerService,
+    private readonly botSettings: BotSettingsService,
     private readonly store: GameEngineStateStore,
     private readonly gameLogger: GameLoggerService,
     private readonly stats: GameStatsService,
@@ -766,7 +768,7 @@ export class GameEngineService {
     }
     if (this.botScheduler.has(key)) return;
 
-    const delayMs = 4000;
+    const delayMs = this.botSettings.getBotTurnDelayMs();
     const thinking = await this.markBotThinking(roomId, gameType, state, true);
     this.broadcaster?.(gameType, roomId, thinking);
     this.gameLogger.debug('Bot turn scheduled', {

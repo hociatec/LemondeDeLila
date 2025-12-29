@@ -4,31 +4,57 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
-             d:DesignHeight="720" d:DesignWidth="1280">
+             d:DesignHeight="720" d:DesignWidth="1280"
+             Loaded="OnLoaded"
+             KeyDown="OnKeyDown">
     <UserControl.Resources>
-        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
-        <LinearGradientBrush x:Key="ShellBackground" StartPoint="0,0" EndPoint="1,1">
-            <GradientStop Color="#0F1D2D" Offset="0" />
-            <GradientStop Color="#1C3B5E" Offset="0.55" />
-            <GradientStop Color="#0E1724" Offset="1" />
-        </LinearGradientBrush>
+        <SolidColorBrush x:Key="ShellBackground" Color="#0B111A" />
         <SolidColorBrush x:Key="PanelBrush" Color="#12263C" />
         <SolidColorBrush x:Key="HighlightBrush" Color="#F2C14E" />
-        <Style TargetType="Button">
-            <Setter Property="Height" Value="48" />
-            <Setter Property="Margin" Value="0 6 0 0" />
-            <Setter Property="Padding" Value="12 10" />
+        <Style TargetType="ListBox">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
             <Setter Property="Foreground" Value="White" />
-            <Setter Property="Background" Value="#1E3A5C" />
-            <Setter Property="BorderBrush" Value="#284C75" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="HorizontalAlignment" Value="Stretch" />
-            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+            <Setter Property="ItemContainerStyle">
+                <Setter.Value>
+                    <Style TargetType="ListBoxItem">
+                        <Setter Property="Margin" Value="0 4 0 4" />
+                        <Setter Property="Padding" Value="10" />
+                        <Setter Property="Background" Value="#10223A" />
+                        <Setter Property="BorderBrush" Value="#1F3C60" />
+                        <Setter Property="BorderThickness" Value="1" />
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ListBoxItem">
+                                    <Border Background="{TemplateBinding Background}"
+                                            BorderBrush="{TemplateBinding BorderBrush}"
+                                            BorderThickness="{TemplateBinding BorderThickness}"
+                                            CornerRadius="6">
+                                        <ContentPresenter />
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#1B3554" />
+                                        </Trigger>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter Property="Background" Value="#214570" />
+                                            <Setter Property="BorderBrush" Value="{StaticResource HighlightBrush}" />
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </Setter.Value>
+            </Setter>
         </Style>
     </UserControl.Resources>
 
-    <Grid Background="{StaticResource ShellBackground}"
-          FocusManager.IsFocusScope="True">
+    <Grid Background="{StaticResource ShellBackground}" FocusManager.IsFocusScope="True">
         <Grid.RowDefinitions>
             <RowDefinition Height="80" />
             <RowDefinition Height="*" />
@@ -36,32 +62,31 @@
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
-            <TextBlock Text="Menu principal" FontSize="28" FontWeight="SemiBold" Foreground="White"
-                       TextOptions.TextFormattingMode="Ideal" />
-            <TextBlock Text="{Binding Welcome}" Foreground="#9CB2D1" FontSize="14"
-                       HorizontalAlignment="Center" Margin="0,4,0,0" />
+            <TextBlock x:Name="TitleText" Text="Menu principal" FontSize="28" FontWeight="SemiBold" Foreground="White" />
+            <TextBlock Text="{Binding Welcome}" Foreground="#9CB2D1" FontSize="14" HorizontalAlignment="Center" Margin="0,4,0,0" />
         </StackPanel>
 
         <Border Grid.Row="1" Background="{StaticResource PanelBrush}" CornerRadius="12"
-                Margin="24" Padding="32">
-            <StackPanel KeyboardNavigation.TabNavigation="None"
-                        KeyboardNavigation.ControlTabNavigation="None">
+                Margin="24" Padding="24">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
                 <TextBlock Text="Navigation" Foreground="White" FontSize="18" Margin="0 0 0 12" />
-                <Button x:Name="CatalogButton" Content="Étagères" Command="{Binding OpenCatalogCommand}"
-                        IsDefault="True"
-                        KeyDown="OnMenuButtonKeyDown" />
-                <Button x:Name="JoinButton" Content="Rejoindre une partie" Command="{Binding JoinGameCommand}" KeyDown="OnMenuButtonKeyDown" />
-                <Button x:Name="MessagingButton" Content="Messagerie" Background="#2A5C86" Command="{Binding MessagingCommand}" KeyDown="OnMenuButtonKeyDown" />
-                <Button x:Name="ChatButton" Content="Chat" Command="{Binding ChatCommand}" KeyDown="OnMenuButtonKeyDown" />
-                <Button x:Name="SocialButton" Content="Social" Command="{Binding SocialCommand}" KeyDown="OnMenuButtonKeyDown" />
-                <Button x:Name="StatsButton" Content="Statistiques" Command="{Binding StatsCommand}" KeyDown="OnMenuButtonKeyDown" />
-                <Button x:Name="AdminButton" Content="Administration" Command="{Binding AdminCommand}"
-                        Visibility="{Binding IsAdminVisible, Converter={StaticResource BoolToVisibilityConverter}}"
-                        Background="#7A2A2A"
-                        KeyDown="OnMenuButtonKeyDown" />
-                <Button x:Name="OptionsButton" Content="Options" Command="{Binding OptionsCommand}" Background="#234A7A" KeyDown="OnMenuButtonKeyDown" />
-                <Button x:Name="LogoutButton" Content="Déconnexion" Command="{Binding LogoutCommand}" Background="#742A2A" KeyDown="OnMenuButtonKeyDown" />
-            </StackPanel>
+
+                <ListBox x:Name="ItemsList"
+                         Grid.Row="1"
+                         ItemsSource="{Binding Items}"
+                         SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
+                         DisplayMemberPath="Label"
+                         SelectionMode="Single"
+                         VirtualizingStackPanel.IsVirtualizing="False"
+                         PreviewKeyDown="OnListPreviewKeyDown"
+                         KeyDown="OnListKeyDown"
+                         AutomationProperties.LabeledBy="{Binding ElementName=TitleText}" />
+            </Grid>
         </Border>
 
         <Border Grid.Row="2" Background="#0C1523" Padding="12 8" Focusable="False"
@@ -80,3 +105,4 @@
         </Border>
     </Grid>
 </UserControl>
+

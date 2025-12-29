@@ -29,6 +29,10 @@ internal enum AdminPage
     GameActions,
     EditText,
     EditPlayers,
+    Bots,
+    BotNameActions,
+    BotNameForm,
+    BotSettingsForm,
     Roles,
     Users,
     UserActions,
@@ -64,6 +68,11 @@ public sealed class AdminViewModel : ObservableObject
     private Dictionary<string, string?> _categoryAssignments = new();
     private string _categoryFormMode = string.Empty;
     private string _categoryFormId = string.Empty;
+    private AdminBotNameDto[] _loadedBotNames = Array.Empty<AdminBotNameDto>();
+    private AdminBotNameDto? _selectedBotName;
+    private int _botTurnDelayMs = 4000;
+    private string _botNameFormMode = string.Empty;
+    private int _botNameFormId;
     private AdminRoleDefinitionDto[] _loadedRoleDefinitions = Array.Empty<AdminRoleDefinitionDto>();
     private AdminRoleDefinitionDto? _selectedRoleDefinition;
     private string _roleDefinitionFormMode = string.Empty;
@@ -307,6 +316,18 @@ public sealed class AdminViewModel : ObservableObject
             return AdminNavResult.Moved;
         }
 
+        if (_page is AdminPage.BotNameActions or AdminPage.BotNameForm or AdminPage.BotSettingsForm)
+        {
+            ShowBots();
+            return AdminNavResult.Moved;
+        }
+
+        if (_page == AdminPage.Bots)
+        {
+            BuildRoot();
+            return AdminNavResult.Moved;
+        }
+
         if (_page == AdminPage.Roles)
         {
             ShowUsers();
@@ -365,6 +386,7 @@ public sealed class AdminViewModel : ObservableObject
         Items.Clear();
         Items.Add(new AdminMenuItem("Gérer les catégories", tag: "categories"));
         Items.Add(new AdminMenuItem("Gérer les jeux", tag: "games"));
+        Items.Add(new AdminMenuItem("Gérer les bots", tag: "bots"));
         Items.Add(new AdminMenuItem("Gérer les utilisateurs", tag: "users"));
         Items.Add(new AdminMenuItem("Envoyer un message global", tag: "broadcast"));
         Items.Add(new AdminMenuItem("Gérer les rôles", tag: "rolesDefinitions"));
@@ -398,6 +420,11 @@ public sealed class AdminViewModel : ObservableObject
                 if (tag is string s && s == "games")
                 {
                     await LoadGamesAsync().ConfigureAwait(true);
+                    return;
+                }
+                if (tag is string bots && bots == "bots")
+                {
+                    await LoadBotsAsync().ConfigureAwait(true);
                     return;
                 }
                 if (tag is string s2 && s2 == "users")
@@ -480,6 +507,43 @@ public sealed class AdminViewModel : ObservableObject
                     await AssignCategoryToGameAsync(category.Id).ConfigureAwait(true);
                     return;
                 }
+            }
+
+            if (_page == AdminPage.Bots)
+            {
+                if (tag is string botsAction && botsAction == "bots.settings")
+                {
+                    BuildBotSettingsForm();
+                    return;
+                }
+                if (tag is string createBot && createBot == "bots.create")
+                {
+                    BuildBotNameForm("create");
+                    return;
+                }
+                if (tag is AdminBotNameDto botName)
+                {
+                    BuildBotNameActions(botName);
+                    return;
+                }
+            }
+
+            if (_page == AdminPage.BotNameActions && _selectedBotName != null && tag is string botAction)
+            {
+                await ExecuteBotNameActionAsync(_selectedBotName, botAction).ConfigureAwait(true);
+                return;
+            }
+
+            if (_page == AdminPage.BotNameForm && tag is string botFormTag && botFormTag == "bots.name.submit")
+            {
+                await SubmitBotNameFormAsync().ConfigureAwait(true);
+                return;
+            }
+
+            if (_page == AdminPage.BotSettingsForm && tag is string botSettingsTag && botSettingsTag == "bots.settings.submit")
+            {
+                await SubmitBotSettingsFormAsync().ConfigureAwait(true);
+                return;
             }
 
             if (_page == AdminPage.EditText && _selectedGame != null && tag is string editTag && editTag == "game.edit.submit")
@@ -702,6 +766,213 @@ public sealed class AdminViewModel : ObservableObject
         var payload = await _admin.ListGameCategoriesAsync().ConfigureAwait(true);
         _loadedCategories = (payload.Categories ?? new()).ToArray();
         _categoryAssignments = payload.Assignments ?? new Dictionary<string, string?>();
+    }
+
+    private async Task LoadBotsAsync()
+    {
+        if (IsBusy) return;
+        _page = AdminPage.Bots;
+        Title = "Gérer les bots";
+        Details = string.Empty;
+        IsTextInputVisible = false;
+        IsSecondaryInputVisible = false;
+        IsAdditionalPermissionsVisible = false;
+        Items.Clear();
+        SelectedItem = null;
+        Status = "Chargement...";
+        IsBusy = true;
+        try
+        {
+            var names = await _admin.ListBotNamesAsync().ConfigureAwait(true);
+            var settings = await _admin.GetBotSettingsAsync().ConfigureAwait(true);
+            _loadedBotNames = (names.Names ?? new()).ToArray();
+            _botTurnDelayMs = settings.BotTurnDelayMs;
+            _dispatcher.Invoke(ShowBots);
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private void ShowBots()
+    {
+        _page = AdminPage.Bots;
+        Title = "Gérer les bots";
+        Details = "Gérer la liste de noms de bots et la vitesse des tours.";
+        IsTextInputVisible = false;
+        IsSecondaryInputVisible = false;
+        IsAdditionalPermissionsVisible = false;
+        Items.Clear();
+        Items.Add(new AdminMenuItem($"Délai bot : {_botTurnDelayMs} ms", tag: "bots.settings"));
+        Items.Add(new AdminMenuItem("Créer un bot", tag: "bots.create"));
+        foreach (var bot in _loadedBotNames.OrderBy(b => b.Name, StringComparer.OrdinalIgnoreCase))
+        {
+            var status = bot.Enabled ? string.Empty : " (désactivé)";
+            Items.Add(new AdminMenuItem($"{bot.Name}{status}", tag: bot));
+        }
+        if (_loadedBotNames.Length == 0)
+        {
+            Items.Add(new AdminMenuItem("Aucun bot configuré."));
+        }
+        SelectedItem = Items.FirstOrDefault();
+        Status = "Entrée : sélectionner. Échap : retour.";
+        UpdateFilterVisibility();
+    }
+
+    private void BuildBotNameActions(AdminBotNameDto bot)
+    {
+        _page = AdminPage.BotNameActions;
+        _selectedBotName = bot;
+        Title = $"Bot : {bot.Name}";
+        Details = $"ID : {bot.Id}. Statut : {(bot.Enabled ? "actif" : "désactivé")}.";
+        IsTextInputVisible = false;
+        IsSecondaryInputVisible = false;
+        IsAdditionalPermissionsVisible = false;
+        Items.Clear();
+        Items.Add(new AdminMenuItem(bot.Enabled ? "Désactiver" : "Activer", tag: "bots.name.toggle"));
+        Items.Add(new AdminMenuItem("Renommer", tag: "bots.name.rename"));
+        Items.Add(new AdminMenuItem("Supprimer", tag: "bots.name.delete"));
+        SelectedItem = Items.FirstOrDefault();
+        Status = "Entrée : sélectionner. Échap : retour.";
+    }
+
+    private void BuildBotNameForm(string mode, AdminBotNameDto? bot = null)
+    {
+        _page = AdminPage.BotNameForm;
+        _botNameFormMode = mode;
+        _botNameFormId = bot?.Id ?? 0;
+        Title = mode == "create" ? "Créer un bot" : $"Renommer {bot?.Name}";
+        Details = mode == "create" ? "Nom affiché dans les tables." : $"ID : {bot?.Id}";
+        TextInputLabel = "Nom";
+        TextInput = bot?.Name ?? string.Empty;
+        IsTextInputVisible = true;
+        IsSecondaryInputVisible = false;
+        IsAdditionalPermissionsVisible = false;
+        Items.Clear();
+        Items.Add(new AdminMenuItem("Valider", tag: "bots.name.submit"));
+        SelectedItem = Items.FirstOrDefault();
+        Status = "Entrée : valider. Échap : retour.";
+    }
+
+    private void BuildBotSettingsForm()
+    {
+        _page = AdminPage.BotSettingsForm;
+        Title = "Paramètres bots";
+        Details = "Ajuster le délai avant qu'un bot joue son tour.";
+        TextInputLabel = "Délai (ms)";
+        TextInput = _botTurnDelayMs.ToString();
+        IsTextInputVisible = true;
+        IsSecondaryInputVisible = false;
+        IsAdditionalPermissionsVisible = false;
+        Items.Clear();
+        Items.Add(new AdminMenuItem("Valider", tag: "bots.settings.submit"));
+        SelectedItem = Items.FirstOrDefault();
+        Status = "Entrée : valider. Échap : retour.";
+    }
+
+    private async Task SubmitBotSettingsFormAsync()
+    {
+        var raw = (TextInput ?? string.Empty).Trim();
+        if (!int.TryParse(raw, out var delayMs) || delayMs < 0)
+        {
+            await _dialogs.ShowError("Bots", "Délai invalide (ms).").ConfigureAwait(true);
+            return;
+        }
+
+        if (IsBusy) return;
+        IsBusy = true;
+        try
+        {
+            var updated = await _admin.UpdateBotSettingsAsync(delayMs).ConfigureAwait(true);
+            _botTurnDelayMs = updated.BotTurnDelayMs;
+            _dispatcher.Invoke(() =>
+            {
+                ShowBots();
+                Status = "Paramètres bots enregistrés.";
+            });
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private async Task SubmitBotNameFormAsync()
+    {
+        var name = (TextInput ?? string.Empty).Trim();
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            await _dialogs.ShowError("Bots", "Un nom est requis.").ConfigureAwait(true);
+            return;
+        }
+
+        if (IsBusy) return;
+        IsBusy = true;
+        try
+        {
+            AdminBotNamesListResponseDto response;
+            if (string.Equals(_botNameFormMode, "edit", StringComparison.OrdinalIgnoreCase) && _botNameFormId > 0)
+            {
+                response = await _admin.UpdateBotNameAsync(_botNameFormId, name: name).ConfigureAwait(true);
+            }
+            else
+            {
+                response = await _admin.CreateBotNameAsync(name, enabled: true).ConfigureAwait(true);
+            }
+
+            _loadedBotNames = (response.Names ?? new()).ToArray();
+            _dispatcher.Invoke(() =>
+            {
+                ShowBots();
+                Status = "Bot enregistré.";
+            });
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private async Task ExecuteBotNameActionAsync(AdminBotNameDto bot, string action)
+    {
+        if (IsBusy) return;
+
+        if (action == "bots.name.rename")
+        {
+            BuildBotNameForm("edit", bot);
+            return;
+        }
+
+        IsBusy = true;
+        try
+        {
+            AdminBotNamesListResponseDto response;
+            if (action == "bots.name.toggle")
+            {
+                response = await _admin.UpdateBotNameAsync(bot.Id, enabled: !bot.Enabled).ConfigureAwait(true);
+            }
+            else if (action == "bots.name.delete")
+            {
+                response = await _admin.DeleteBotNameAsync(bot.Id).ConfigureAwait(true);
+            }
+            else
+            {
+                return;
+            }
+
+            _loadedBotNames = (response.Names ?? new()).ToArray();
+            _selectedBotName = null;
+            _dispatcher.Invoke(() =>
+            {
+                ShowBots();
+                Status = "Bots mis à jour.";
+            });
+        }
+        finally
+        {
+            IsBusy = false;
+        }
     }
 
     private void ShowCategories()

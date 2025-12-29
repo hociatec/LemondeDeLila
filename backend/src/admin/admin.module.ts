@@ -12,6 +12,8 @@ import { ValidationModule } from '../common/validation/validation.module';
 import { GameRegistryModule } from '../game/engine/game-registry.module';
 import { NotificationModule } from '../notification/notification.module';
 import { CatalogModule } from '../catalog/catalog.module';
+import { BotModule as RoomBotModule } from '../bot/bot.module';
+import { BotModule as GameBotModule } from '../game/modules/bot/bot.module';
 
 @Module({
   imports: [
@@ -20,6 +22,8 @@ import { CatalogModule } from '../catalog/catalog.module';
     GameRegistryModule,
     NotificationModule,
     CatalogModule,
+    RoomBotModule,
+    GameBotModule,
   ],
   controllers: [AdminUsersController],
   providers: [
