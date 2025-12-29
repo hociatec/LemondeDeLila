@@ -7,6 +7,7 @@ using client_win.Modules.Catalog.Services;
 using client_win.Modules.Network.WebSockets;
 using client_win.Modules.Shell.Services;
 using client_win.Modules.User.Services;
+using client_win.Modules.Updates;
 using Serilog;
 
 namespace client_win.Modules.Network.Services;

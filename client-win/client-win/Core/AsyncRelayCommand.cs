@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
@@ -8,33 +9,58 @@ public sealed class AsyncRelayCommand : ICommand
 {
     private readonly Func<Task> _execute;
     private readonly Func<bool>? _canExecute;
+    private readonly Action<Exception>? _onException;
     private bool _isExecuting;
+    private readonly SemaphoreSlim _gate = new(1, 1);
 
-    public AsyncRelayCommand(Func<Task> execute, Func<bool>? canExecute = null)
+    public AsyncRelayCommand(Func<Task> execute, Func<bool>? canExecute = null, Action<Exception>? onException = null)
     {
         _execute = execute ?? throw new ArgumentNullException(nameof(execute));
         _canExecute = canExecute;
+        _onException = onException;
     }
 
     public bool CanExecute(object? parameter) => !_isExecuting && (_canExecute?.Invoke() ?? true);
 
-    public async void Execute(object? parameter)
+    public async void Execute(object? parameter) => await ExecuteAsync(parameter).ConfigureAwait(true);
+
+    public async Task ExecuteAsync(object? parameter)
     {
         if (!CanExecute(parameter))
         {
             return;
         }
 
+        await _gate.WaitAsync().ConfigureAwait(true);
         try
         {
+            if (_isExecuting)
+            {
+                return;
+            }
+
             _isExecuting = true;
             RaiseCanExecuteChanged();
-            await _execute().ConfigureAwait(true);
+
+            try
+            {
+                await _execute().ConfigureAwait(true);
+            }
+            catch (Exception ex)
+            {
+                if (_onException != null)
+                {
+                    _onException(ex);
+                    return;
+                }
+                throw;
+            }
         }
         finally
         {
             _isExecuting = false;
             RaiseCanExecuteChanged();
+            _gate.Release();
         }
     }
 
@@ -42,4 +68,3 @@ public sealed class AsyncRelayCommand : ICommand
 
     public void RaiseCanExecuteChanged() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
 }
-
