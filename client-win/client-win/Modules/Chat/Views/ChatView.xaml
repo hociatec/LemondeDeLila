@@ -86,6 +86,7 @@
                          x:Name="HistoryBox"
                          Text="{Binding HistoryText, Mode=OneWay}"
                          IsReadOnly="True"
+                         IsReadOnlyCaretVisible="True"
                          AcceptsReturn="True"
                          TextWrapping="Wrap"
                          VerticalScrollBarVisibility="Auto"
@@ -95,8 +96,10 @@
                          Foreground="White"
                          IsTabStop="True"
                          TabIndex="0"
-                         PreviewKeyDown="OnHistoryPreviewKeyDown"
-                         AutomationProperties.Name="Historique des messages" />
+                         SpellCheck.IsEnabled="False"
+                         TextBoxBase.IsUndoEnabled="False"
+                         AutomationProperties.Name="Historique des messages"
+                         AutomationProperties.HelpText="Historique en lecture seule. Utilisez les flèches pour lire ligne par ligne." />
 
                 <Grid Grid.Row="2" Margin="0 16 0 0">
                     <Grid.ColumnDefinitions>

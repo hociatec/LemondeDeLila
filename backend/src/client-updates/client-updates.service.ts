@@ -18,6 +18,7 @@ export type ClientUpdateMeta = {
 export class ClientUpdatesService {
   private readonly updatesDir: string;
   private readonly metaPath: string;
+  private readonly legacyApplicationName = 'client-win.application';
 
   constructor() {
     // Folder served by your reverse-proxy (nginx) as:
@@ -107,6 +108,8 @@ export class ClientUpdatesService {
     }
     await fs.promises.rename(stagingDir, targetDir);
 
+    await this.ensureLegacyAliases(targetDir);
+
     // Cleanup backup best-effort
     if (targetExists) {
       fs.promises.rm(backupDir, { recursive: true, force: true }).catch(() => {
@@ -118,5 +121,27 @@ export class ClientUpdatesService {
       /* ignore */
     });
   }
-}
 
+  private async ensureLegacyAliases(targetDir: string): Promise<void> {
+    try {
+      const legacyPath = path.join(targetDir, this.legacyApplicationName);
+      if (fs.existsSync(legacyPath)) {
+        return;
+      }
+
+      const entries = await fs.promises.readdir(targetDir, { withFileTypes: true });
+      const application = entries
+        .filter((e) => e.isFile())
+        .map((e) => e.name)
+        .find((name) => name.toLowerCase().endsWith('.application'));
+
+      if (!application) {
+        return;
+      }
+
+      await fs.promises.copyFile(path.join(targetDir, application), legacyPath);
+    } catch {
+      // Best-effort: if it fails, updates are still accessible via the real *.application filename.
+    }
+  }
+}

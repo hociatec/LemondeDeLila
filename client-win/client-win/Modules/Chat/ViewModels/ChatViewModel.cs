@@ -112,7 +112,7 @@ public sealed class ChatViewModel : ObservableObject
             }
             _historyBuilder.Append(FormatLine(m));
         }
-        HistoryText = _historyBuilder.ToString();
+        HistoryText = EnsureTrailingEmptyLine(_historyBuilder.ToString());
     }
 
     private void AppendLine(ChatMessage m)
@@ -126,8 +126,21 @@ public sealed class ChatViewModel : ObservableObject
             _historyBuilder.AppendLine();
         }
         _historyBuilder.Append(FormatLine(m));
-        HistoryText = _historyBuilder.ToString();
+        HistoryText = EnsureTrailingEmptyLine(_historyBuilder.ToString());
     }
 
     private static string FormatLine(ChatMessage m) => $"{m.User} : {m.Text} ({m.Timestamp:O})";
+
+    private static string EnsureTrailingEmptyLine(string text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return string.Empty;
+        }
+
+        // Une "ligne vide à la fin" = le texte se termine par un saut de ligne.
+        return text.EndsWith(Environment.NewLine, StringComparison.Ordinal)
+            ? text
+            : text + Environment.NewLine;
+    }
 }

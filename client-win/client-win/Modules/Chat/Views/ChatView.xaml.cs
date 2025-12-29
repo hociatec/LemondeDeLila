@@ -53,59 +53,6 @@ public partial class ChatView : UserControl
         }
     }
 
-    private void OnHistoryPreviewKeyDown(object sender, KeyEventArgs e)
-    {
-        if (HistoryBox == null || sender != HistoryBox)
-        {
-            return;
-        }
-
-        if (e.Key == Key.Up)
-        {
-            MoveCaretLine(-1);
-            e.Handled = true;
-        }
-        else if (e.Key == Key.Down)
-        {
-            MoveCaretLine(1);
-            e.Handled = true;
-        }
-        else if (e.Key == Key.Home && Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
-        {
-            MoveCaretToBoundary(isStart: true);
-            e.Handled = true;
-        }
-        else if (e.Key == Key.End && Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
-        {
-            MoveCaretToBoundary(isStart: false);
-            e.Handled = true;
-        }
-    }
-
-    private void MoveCaretLine(int offset)
-    {
-        if (HistoryBox == null)
-        {
-            return;
-        }
-
-        int currentLine = HistoryBox.GetLineIndexFromCharacterIndex(HistoryBox.CaretIndex);
-        int targetLine = Math.Clamp(currentLine + offset, 0, Math.Max(0, HistoryBox.LineCount - 1));
-        int targetIndex = HistoryBox.GetCharacterIndexFromLineIndex(targetLine);
-        HistoryBox.CaretIndex = targetIndex;
-        HistoryBox.ScrollToLine(targetLine);
-    }
-
-    private void MoveCaretToBoundary(bool isStart)
-    {
-        if (HistoryBox == null || HistoryBox.LineCount == 0)
-        {
-            return;
-        }
-
-        int targetLine = isStart ? 0 : HistoryBox.LineCount - 1;
-        int targetIndex = HistoryBox.GetCharacterIndexFromLineIndex(targetLine);
-        HistoryBox.CaretIndex = targetIndex;
-        HistoryBox.ScrollToLine(targetLine);
-    }
+    // IMPORTANT: on ne surcharge pas les flèches dans l'historique.
+    // WPF + le lecteur d'écran gèrent mieux la lecture ligne par ligne sans interception.
 }
