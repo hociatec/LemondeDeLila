@@ -138,15 +138,23 @@ public sealed class ClientUpdatePublisher : IClientUpdatePublisher
             ? normalized
             : null;
 
+        // ClickOnce publish is best done through MSBuild's Publish target.
+        // (dotnet publish often produces a normal publish output without ClickOnce artifacts.)
         var args = string.Join(' ', new[]
         {
-            "publish",
+            "msbuild",
             Quote(projectPath),
-            "-c", "Release",
+            "/t:Publish",
+            "/p:Configuration=Release",
             "/p:PublishProfile=ClickOnce",
             $"/p:PublishDir={Quote(publishDir + Path.DirectorySeparatorChar)}",
+            "/p:PublishProtocol=ClickOnce",
+            "/p:Install=true",
             "/p:InstallFrom=Web",
+            "/p:UpdateEnabled=true",
             "/p:IsWebBootstrapper=true",
+            "/p:BootstrapperEnabled=true",
+            "/p:GenerateManifests=true",
             $"/p:PublishUrl={Quote(baseUrl)}",
             $"/p:InstallUrl={Quote(baseUrl)}",
             $"/p:UpdateUrl={Quote(baseUrl)}",
