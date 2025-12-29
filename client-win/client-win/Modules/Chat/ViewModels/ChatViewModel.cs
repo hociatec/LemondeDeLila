@@ -1,6 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using client_win.Core;
@@ -16,6 +17,7 @@ public sealed class ChatViewModel : ObservableObject
     private string _input = string.Empty;
     private string _status = "Tchat fermé.";
     private string _historyText = string.Empty;
+    private readonly StringBuilder _historyBuilder = new();
 
     public ChatViewModel(IChatService chat, Action? closeWindow = null)
     {
@@ -31,7 +33,7 @@ public sealed class ChatViewModel : ObservableObject
 
         if (Messages is INotifyCollectionChanged coll)
         {
-            coll.CollectionChanged += (_, _) => RebuildHistory();
+            coll.CollectionChanged += (_, args) => OnMessagesChanged(args);
         }
         RebuildHistory();
     }
@@ -76,20 +78,56 @@ public sealed class ChatViewModel : ObservableObject
         string toSend = Input;
         Input = string.Empty;
         await _chat.SendAsync(toSend);
+    }
+
+    private void OnMessagesChanged(NotifyCollectionChangedEventArgs args)
+    {
+        if (args.Action == NotifyCollectionChangedAction.Add && args.NewItems != null)
+        {
+            foreach (var item in args.NewItems)
+            {
+                if (item is ChatMessage m)
+                {
+                    AppendLine(m);
+                }
+            }
+            return;
+        }
+
         RebuildHistory();
     }
 
     private void RebuildHistory()
     {
-        var builder = new System.Text.StringBuilder();
+        _historyBuilder.Clear();
         foreach (var m in Messages)
         {
             if (string.IsNullOrWhiteSpace(m.Text) && string.IsNullOrWhiteSpace(m.User))
             {
                 continue;
             }
-            builder.AppendLine($"{m.User} : {m.Text} ({m.Timestamp})");
+            if (_historyBuilder.Length > 0)
+            {
+                _historyBuilder.AppendLine();
+            }
+            _historyBuilder.Append(FormatLine(m));
         }
-        HistoryText = builder.ToString().TrimEnd('\r', '\n');
+        HistoryText = _historyBuilder.ToString();
     }
+
+    private void AppendLine(ChatMessage m)
+    {
+        if (string.IsNullOrWhiteSpace(m.Text) && string.IsNullOrWhiteSpace(m.User))
+        {
+            return;
+        }
+        if (_historyBuilder.Length > 0)
+        {
+            _historyBuilder.AppendLine();
+        }
+        _historyBuilder.Append(FormatLine(m));
+        HistoryText = _historyBuilder.ToString();
+    }
+
+    private static string FormatLine(ChatMessage m) => $"{m.User} : {m.Text} ({m.Timestamp:O})";
 }

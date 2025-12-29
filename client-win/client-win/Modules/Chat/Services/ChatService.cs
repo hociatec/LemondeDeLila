@@ -1,8 +1,10 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Threading;
 using client_win.Modules.Chat.Models;
 using client_win.Modules.Network.WebSockets;
 using client_win.Modules.Settings.Services;
@@ -15,9 +17,12 @@ namespace client_win.Modules.Chat.Services;
 /// </summary>
 public sealed class ChatService : IChatService
 {
+    private const int MaxMessages = 500;
     private readonly ChatClient _client;
     private readonly IOptionsService _options;
     private readonly ISessionService _session;
+    private readonly Dispatcher _dispatcher;
+    private readonly HashSet<string> _seenMessageKeys = new(StringComparer.Ordinal);
 
     public ObservableCollection<ChatMessage> Messages { get; } = new();
     public ChatState State { get; private set; } = ChatState.Disconnected;
@@ -26,24 +31,28 @@ public sealed class ChatService : IChatService
     public event Action<string>? StatusChanged;
     public event Action<string>? Error;
 
-    public ChatService(Uri endpoint, IWebSocketConnection transport, IOptionsService options, ISessionService session)
+    public ChatService(Uri endpoint, IWebSocketConnection transport, IOptionsService options, ISessionService session, Dispatcher dispatcher)
     {
         _client = new ChatClient(endpoint, transport);
         _options = options ?? throw new ArgumentNullException(nameof(options));
         _session = session ?? throw new ArgumentNullException(nameof(session));
+        _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
-        _client.StateChanged += s => UpdateState(s);
-        _client.ErrorReceived += msg => SetStatus(msg, isError: true);
+        _client.StateChanged += s => _dispatcher.InvokeAsync(() => UpdateState(s), DispatcherPriority.Background);
+        _client.ErrorReceived += msg => _dispatcher.InvokeAsync(() => SetStatus(msg, isError: true), DispatcherPriority.Background);
         _client.HistoryReceived += history =>
         {
-            foreach (var m in history.OrderBy(m => m.Timestamp))
+            _dispatcher.InvokeAsync(() =>
             {
-                Messages.Add(m);
-            }
+                foreach (var m in history.OrderBy(m => m.Timestamp))
+                {
+                    AddMessage(m);
+                }
+            }, DispatcherPriority.Background);
         };
         _client.MessageReceived += msg =>
         {
-            Messages.Add(msg);
+            _dispatcher.InvokeAsync(() => AddMessage(msg), DispatcherPriority.Background);
         };
     }
 
@@ -64,12 +73,12 @@ public sealed class ChatService : IChatService
         try
         {
             await _client.ConnectAsync(user.Token, cancellationToken).ConfigureAwait(false);
-            SetStatus("Connexion tchat ouverte.");
+            _dispatcher.InvokeAsync(() => SetStatus("Connexion tchat ouverte."), DispatcherPriority.Background);
             return true;
         }
         catch (Exception ex)
         {
-            SetStatus($"Connexion tchat échouée : {ex.Message}", isError: true);
+            _dispatcher.InvokeAsync(() => SetStatus($"Connexion tchat échouée : {ex.Message}", isError: true), DispatcherPriority.Background);
             return false;
         }
     }
@@ -104,7 +113,7 @@ public sealed class ChatService : IChatService
     public async Task CloseAsync()
     {
         await _client.DisposeAsync().ConfigureAwait(false);
-        UpdateState(ChatState.Disconnected);
+        _dispatcher.InvokeAsync(() => UpdateState(ChatState.Disconnected), DispatcherPriority.Background);
     }
 
     private void UpdateState(ChatState state)
@@ -131,6 +140,32 @@ public sealed class ChatService : IChatService
         {
             StatusChanged?.Invoke(message);
         }
+    }
+
+    private void AddMessage(ChatMessage message)
+    {
+        var key = GetMessageKey(message);
+        if (!_seenMessageKeys.Add(key))
+        {
+            return;
+        }
+
+        Messages.Add(message);
+        while (Messages.Count > MaxMessages)
+        {
+            var removed = Messages[0];
+            Messages.RemoveAt(0);
+            _seenMessageKeys.Remove(GetMessageKey(removed));
+        }
+    }
+
+    private static string GetMessageKey(ChatMessage message)
+    {
+        if (!string.IsNullOrWhiteSpace(message.Id))
+        {
+            return $"id:{message.Id}";
+        }
+        return $"legacy:{message.User}\n{message.Timestamp:O}\n{message.Text}";
     }
 
     public async ValueTask DisposeAsync()

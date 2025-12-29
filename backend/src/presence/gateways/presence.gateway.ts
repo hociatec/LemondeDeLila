@@ -48,7 +48,9 @@ export class PresenceGateway
     this.presence.register(client, payload, context);
     client.on('message', (raw) => this.handleIncoming(client, raw));
     client.on('error', () => client.close());
-    await this.presence.sendHistory(client);
+    if (context === 'chat') {
+      await this.presence.sendHistory(client);
+    }
     this.presence.broadcastPresence();
   }
 

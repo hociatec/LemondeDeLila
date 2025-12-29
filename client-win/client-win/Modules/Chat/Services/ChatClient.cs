@@ -51,56 +51,71 @@ public sealed class ChatClient : IAsyncDisposable
 
     private void HandleRawMessage(string raw)
     {
-        var options = new JsonSerializerOptions(JsonSerializerDefaults.Web);
-        using var doc = JsonDocument.Parse(raw);
-        var root = doc.RootElement;
-        string type = root.TryGetProperty("type", out var t) ? t.GetString() ?? string.Empty : string.Empty;
-        if (type.Equals(WsMessageTypes.Chat.History, StringComparison.OrdinalIgnoreCase))
+        if (raw.IndexOf("chat-history", StringComparison.OrdinalIgnoreCase) < 0 &&
+            raw.IndexOf("chat-message", StringComparison.OrdinalIgnoreCase) < 0 &&
+            raw.IndexOf("\"type\":\"error\"", StringComparison.OrdinalIgnoreCase) < 0 &&
+            raw.IndexOf("\"type\": \"error\"", StringComparison.OrdinalIgnoreCase) < 0)
         {
-            var list = new List<ChatMessage>();
-            JsonElement? container = null;
-            if (root.TryGetProperty("messages", out var msgs))
+            return;
+        }
+
+        try
+        {
+            using var doc = JsonDocument.Parse(raw);
+            var root = doc.RootElement;
+            string type = root.TryGetProperty("type", out var t) ? t.GetString() ?? string.Empty : string.Empty;
+            if (type.Equals(WsMessageTypes.Chat.History, StringComparison.OrdinalIgnoreCase))
             {
-                container = msgs;
-            }
-            else if (root.TryGetProperty("payload", out var payload) && payload.ValueKind == JsonValueKind.Array)
-            {
-                container = payload;
-            }
-            if (container.HasValue && container.Value.ValueKind == JsonValueKind.Array)
-            {
-                foreach (var item in container.Value.EnumerateArray())
+                var list = new List<ChatMessage>();
+                JsonElement? container = null;
+                if (root.TryGetProperty("messages", out var msgs))
                 {
-                    var msg = ParseMessage(item);
-                    if (msg != null) list.Add(msg);
+                    container = msgs;
+                }
+                else if (root.TryGetProperty("payload", out var payload) && payload.ValueKind == JsonValueKind.Array)
+                {
+                    container = payload;
+                }
+                if (container.HasValue && container.Value.ValueKind == JsonValueKind.Array)
+                {
+                    foreach (var item in container.Value.EnumerateArray())
+                    {
+                        var msg = ParseMessage(item);
+                        if (msg != null) list.Add(msg);
+                    }
+                }
+                if (list.Count > 0)
+                {
+                    HistoryReceived?.Invoke(list);
                 }
             }
-            if (list.Count > 0)
+            else if (type.Equals(WsMessageTypes.Chat.Message, StringComparison.OrdinalIgnoreCase))
             {
-                HistoryReceived?.Invoke(list);
+                var msgNode = root.TryGetProperty("payload", out var payload) ? payload : root;
+                var msg = ParseMessage(msgNode);
+                if (msg != null)
+                {
+                    MessageReceived?.Invoke(msg);
+                }
+            }
+            else if (type.Equals("error", StringComparison.OrdinalIgnoreCase))
+            {
+                string message = root.TryGetProperty("payload", out var p) &&
+                                 p.TryGetProperty("message", out var m)
+                    ? m.GetString() ?? "Erreur tchat"
+                    : "Erreur tchat";
+                ErrorReceived?.Invoke(message);
             }
         }
-        else if (type.Equals(WsMessageTypes.Chat.Message, StringComparison.OrdinalIgnoreCase))
+        catch
         {
-            var msgNode = root.TryGetProperty("payload", out var payload) ? payload : root;
-            var msg = ParseMessage(msgNode);
-            if (msg != null)
-            {
-                MessageReceived?.Invoke(msg);
-            }
-        }
-        else if (type.Equals("error", StringComparison.OrdinalIgnoreCase))
-        {
-            string message = root.TryGetProperty("payload", out var p) &&
-                             p.TryGetProperty("message", out var m)
-                ? m.GetString() ?? "Erreur tchat"
-                : "Erreur tchat";
-            ErrorReceived?.Invoke(message);
+            // Ignore messages invalides/non attendus sur cette socket (presence-update, etc.)
         }
     }
 
     private static ChatMessage? ParseMessage(JsonElement element)
     {
+        string? id = element.TryGetProperty("id", out var idProp) ? idProp.GetString() : null;
         string user = "inconnu";
         if (element.TryGetProperty("user", out var userProp) &&
             userProp.ValueKind == JsonValueKind.Object &&
@@ -129,7 +144,7 @@ public sealed class ChatClient : IAsyncDisposable
             timestamp = dt;
         }
 
-        return new ChatMessage(user, text, timestamp);
+        return new ChatMessage(user, text, timestamp, id);
     }
 
     private void SetState(ChatState state) => StateChanged?.Invoke(state);

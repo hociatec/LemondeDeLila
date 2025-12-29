@@ -128,7 +128,7 @@ export class PresenceService implements OnModuleDestroy {
     }
     const message = await this.chat.recordMessage(from.user.id, sanitized);
     const normalized = this.chat.normalize(message);
-    this.broadcast(normalized);
+    this.broadcastChat(normalized);
   }
 
   private handlePresenceContext(client: PresenceClient, payload: any) {
@@ -283,6 +283,26 @@ export class PresenceService implements OnModuleDestroy {
   private broadcast(payload: Record<string, unknown>) {
     const encoded = JSON.stringify(payload);
     for (const { socket } of this.clients.values()) {
+      try {
+        socket.send(encoded);
+      } catch (err) {
+        this.logger.warn('Envoi WS échoué', err as Error);
+        this.unregister(socket);
+        try {
+          socket.close();
+        } catch {
+          /* ignore */
+        }
+      }
+    }
+  }
+
+  private broadcastChat(payload: Record<string, unknown>) {
+    const encoded = JSON.stringify(payload);
+    for (const { socket, context } of this.clients.values()) {
+      if (context !== 'chat') {
+        continue;
+      }
       try {
         socket.send(encoded);
       } catch (err) {

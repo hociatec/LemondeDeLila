@@ -2,7 +2,9 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Serilog;
@@ -167,6 +169,8 @@ public static class AppBootstrapper
             sp.GetRequiredService<SettingsManager<OptionsState>>(),
             sp.GetRequiredService<INavigationService>()));
 
+        services.AddSingleton<Dispatcher>(_ => Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher);
+
         // Services métier
         services.AddSingleton<ICatalogService>(sp =>
             new CatalogService(
@@ -195,7 +199,8 @@ public static class AppBootstrapper
                 BuildPresenceEndpoint(config),
                 sp.GetRequiredService<IWebSocketConnection>(),
                 sp.GetRequiredService<IOptionsService>(),
-                sp.GetRequiredService<ISessionService>()));
+                sp.GetRequiredService<ISessionService>(),
+                sp.GetRequiredService<Dispatcher>()));
 
         services.AddSingleton<IViewFactory<ChatWindow>, ChatWindowFactory>();
         services.AddSingleton<IChatLauncher, ChatLauncher>();

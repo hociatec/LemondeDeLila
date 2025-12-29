@@ -4,13 +4,15 @@ namespace client_win.Modules.Chat.Models;
 
 public sealed class ChatMessage
 {
-    public ChatMessage(string user, string text, DateTime timestamp)
+    public ChatMessage(string user, string text, DateTime timestamp, string? id = null)
     {
         User = user;
         Text = text;
         Timestamp = timestamp;
+        Id = id;
     }
 
+    public string? Id { get; }
     public string User { get; }
     public string Text { get; }
     public DateTime Timestamp { get; }

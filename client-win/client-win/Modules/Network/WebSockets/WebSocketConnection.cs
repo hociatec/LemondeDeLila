@@ -99,7 +99,7 @@ public sealed class WebSocketConnection : IWebSocketConnection
 
                 if (ms.Length == 0) continue;
                 string text = Encoding.UTF8.GetString(ms.ToArray());
-                MessageReceived?.Invoke(text);
+                SafeInvoke(MessageReceived, text);
             }
             catch (OperationCanceledException)
             {
@@ -143,6 +143,26 @@ public sealed class WebSocketConnection : IWebSocketConnection
     }
 
     private void SetState(WebSocketState state) => StateChanged?.Invoke(state);
+
+    private void SafeInvoke(Action<string>? handlers, string payload)
+    {
+        if (handlers == null)
+        {
+            return;
+        }
+
+        foreach (var del in handlers.GetInvocationList())
+        {
+            try
+            {
+                ((Action<string>)del).Invoke(payload);
+            }
+            catch (Exception ex)
+            {
+                Error?.Invoke($"WebSocket handler error: {ex.Message}");
+            }
+        }
+    }
 
     public async ValueTask DisposeAsync()
     {
