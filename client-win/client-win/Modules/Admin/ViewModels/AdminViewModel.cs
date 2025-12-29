@@ -40,6 +40,7 @@ internal enum AdminPage
     UserActions,
     BanForm,
     Broadcast,
+    ClientUpdates,
     Logs,
     RoleDefinitions,
     RoleDefinitionActions,
@@ -369,7 +370,7 @@ public sealed class AdminViewModel : ObservableObject
             return AdminNavResult.Moved;
         }
 
-        if (_page is AdminPage.Games or AdminPage.Users or AdminPage.Broadcast)
+        if (_page is AdminPage.Games or AdminPage.Users or AdminPage.Broadcast or AdminPage.ClientUpdates)
         {
             BuildRoot();
             return AdminNavResult.Moved;
@@ -393,6 +394,7 @@ public sealed class AdminViewModel : ObservableObject
         Items.Add(new AdminMenuItem("Gérer les bots", tag: "bots"));
         Items.Add(new AdminMenuItem("Gérer les utilisateurs", tag: "users"));
         Items.Add(new AdminMenuItem("Envoyer un message global", tag: "broadcast"));
+        Items.Add(new AdminMenuItem("Mises à jour client", tag: "clientUpdates"));
         Items.Add(new AdminMenuItem("Gérer les rôles", tag: "rolesDefinitions"));
         Items.Add(new AdminMenuItem("Consulter les logs", tag: "logs"));
         SelectedItem = Items.FirstOrDefault();
@@ -439,6 +441,11 @@ public sealed class AdminViewModel : ObservableObject
                 if (tag is string s3 && s3 == "broadcast")
                 {
                     BuildBroadcast();
+                    return;
+                }
+                if (tag is string cu && cu == "clientUpdates")
+                {
+                    BuildClientUpdates();
                     return;
                 }
                 if (tag is string s4 && s4 == "rolesDefinitions")
@@ -596,12 +603,12 @@ public sealed class AdminViewModel : ObservableObject
                 await SendBroadcastAsync().ConfigureAwait(true);
                 return;
             }
-            if (_page == AdminPage.Broadcast && tag is string buildTag && buildTag == "clientUpdate.buildUpload")
+            if (_page == AdminPage.ClientUpdates && tag is string buildTag && buildTag == "clientUpdate.buildUpload")
             {
                 await BuildAndUploadClientUpdateAsync().ConfigureAwait(true);
                 return;
             }
-            if (_page == AdminPage.Broadcast && tag is string updateTag && updateTag == "clientUpdate.announce")
+            if (_page == AdminPage.ClientUpdates && tag is string updateTag && updateTag == "clientUpdate.announce")
             {
                 await AnnounceClientUpdateAsync().ConfigureAwait(true);
                 return;
@@ -1622,12 +1629,26 @@ public sealed class AdminViewModel : ObservableObject
     private void BuildBroadcast()
     {
         _page = AdminPage.Broadcast;
-        Title = "Message global / Mises à jour";
+        Title = "Message global";
         Details = string.Empty;
         Items.Clear();
         Items.Add(new AdminMenuItem("Envoyer", tag: "broadcast.send"));
+        SelectedItem = Items.FirstOrDefault();
+        TextInputLabel = "Message";
+        TextInput = string.Empty;
+        IsTextInputVisible = true;
+        IsSecondaryInputVisible = false;
+        Status = "Saisissez le message. Entrée : envoyer. Échap : retour.";
+    }
+
+    private void BuildClientUpdates()
+    {
+        _page = AdminPage.ClientUpdates;
+        Title = "Mises à jour client";
+        Details = string.Empty;
+        Items.Clear();
         Items.Add(new AdminMenuItem("Compiler + uploader la mise à jour (admin)", tag: "clientUpdate.buildUpload"));
-        Items.Add(new AdminMenuItem("Proposer une mise à jour client", tag: "clientUpdate.announce"));
+        Items.Add(new AdminMenuItem("Proposer la mise à jour à tous", tag: "clientUpdate.announce"));
         SelectedItem = Items.FirstOrDefault();
         TextInputLabel = "Message (optionnel)";
         TextInput = string.Empty;
@@ -1635,7 +1656,7 @@ public sealed class AdminViewModel : ObservableObject
         SecondaryInputLabel = "Version (optionnel)";
         SecondaryInput = string.Empty;
         IsSecondaryInputVisible = true;
-        Status = "Saisissez le message. Entrée : exécuter l'action sélectionnée. Échap : retour.";
+        Status = "Entrée : exécuter l'action sélectionnée. Échap : retour.";
     }
 
     private async Task SendBroadcastAsync()
