@@ -142,6 +142,12 @@ public sealed class AdminBroadcastResponseDto
   public int Delivered { get; set; }
 }
 
+public sealed class AdminClientUpdateAnnounceResponseDto
+{
+  [JsonPropertyName("delivered")]
+  public int Delivered { get; set; }
+}
+
 public sealed class AdminLogsDownloadResponseDto
 {
   [JsonPropertyName("file")]

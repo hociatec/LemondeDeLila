@@ -74,6 +74,10 @@ export class AdminWsRegistrar implements OnModuleInit {
       this.handler.broadcast(s, p),
     );
 
+    this.registry.register('admin.client.update.announce', (s, p) =>
+      this.handler.clientUpdateAnnounce(s, p),
+    );
+
     this.registry.register('admin.bots.names.list', (s, p) =>
       this.handler.botsNamesList(s, p),
     );

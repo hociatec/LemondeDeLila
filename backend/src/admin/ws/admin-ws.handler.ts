@@ -26,6 +26,7 @@ import {
   AdminBotSettingsGetWsDto,
   AdminBotSettingsUpdateWsDto,
   AdminBroadcastWsDto,
+  AdminClientUpdateAnnounceWsDto,
   AdminGameCategoryAssignWsDto,
   AdminGameCategoryCreateWsDto,
   AdminGameCategoryUpdateWsDto,
@@ -459,5 +460,39 @@ export class AdminWsHandler {
     );
 
     return { type: 'admin.broadcast', payload: { delivered: ids.length } };
+  }
+
+  async clientUpdateAnnounce(session: WsSession, payload: any) {
+    const admin = requireAdmin(session);
+    const dto = this.validator.validate(AdminClientUpdateAnnounceWsDto, payload);
+
+    const ids = await this.userRepo
+      .createQueryBuilder('u')
+      .select(['u.id'])
+      .getMany();
+
+    const message =
+      typeof dto.message === 'string' && dto.message.trim().length > 0
+        ? dto.message.trim()
+        : 'Une mise à jour du client est disponible.';
+
+    const payloadOut = {
+      message,
+      version: dto.version?.trim() || null,
+      fromUserId: admin.id,
+      fromUsername: admin.username,
+      timestamp: new Date().toISOString(),
+    };
+
+    await Promise.all(
+      ids.map((u) =>
+        this.notifications.notifyUser(u.id, 'client.update.available', payloadOut),
+      ),
+    );
+
+    return {
+      type: 'admin.client.update.announce',
+      payload: { delivered: ids.length },
+    };
   }
 }

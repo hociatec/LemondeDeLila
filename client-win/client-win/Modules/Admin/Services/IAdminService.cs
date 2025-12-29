@@ -29,6 +29,7 @@ public interface IAdminService
     Task<AdminLogsDownloadResponseDto> DownloadLogsAsync(int lines = 200, string? filter = null, CancellationToken cancellationToken = default);
 
     Task<int> BroadcastAsync(string message, CancellationToken cancellationToken = default);
+    Task<int> AnnounceClientUpdateAsync(string? message = null, string? version = null, CancellationToken cancellationToken = default);
 
     Task<AdminRoleDefinitionsResponseDto> ListRoleDefinitionsAsync(CancellationToken cancellationToken = default);
     Task<AdminRoleDefinitionsResponseDto> CreateRoleDefinitionAsync(string name, string description, IEnumerable<string> permissions, CancellationToken cancellationToken = default);

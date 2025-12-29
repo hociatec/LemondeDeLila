@@ -16,6 +16,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Threading;
 using client_win.Modules.Network.Services;
 using System.Windows.Input;
+using client_win.Modules.Updates;
 
 namespace client_win
 {
@@ -30,6 +31,7 @@ namespace client_win
         private readonly PersistentWsClient _wsConnection;
         private readonly ShellErrorHandler _errorHandler;
         private readonly INotifyListener _notify;
+        private readonly IUpdateService _updates;
 
         public INavigationService Navigation => _navigation;
 
@@ -41,6 +43,7 @@ namespace client_win
             _wsConnection = _host.WsClient;
             _dialogs = _host.Dialogs;
             _notify = _host.Services.GetRequiredService<INotifyListener>();
+            _updates = _host.Services.GetRequiredService<IUpdateService>();
 
             _homeViewModel = _host.CreateHomeViewModel(OnNavigateToMainMenu, Close);
 
@@ -65,6 +68,24 @@ namespace client_win
 
         private async void OnLoaded(object sender, RoutedEventArgs e)
         {
+            // Auto-update (ClickOnce) : vérifie/installe avant d'initialiser l'app,
+            // pour éviter un démarrage sur une version obsolète.
+            try
+            {
+                if (await TryAutoUpdateAndRestartAsync())
+                {
+                    return; // l'application va se fermer / redémarrer
+                }
+            }
+            catch (Exception ex)
+            {
+                _errorBus.Publish(new AppError(
+                    "Erreur lors de la vérification de mise à jour.",
+                    ErrorSeverity.Warning,
+                    context: "app.update.startup",
+                    detail: ex.Message));
+            }
+
             _navigation.Show(_homeView);
 
             // CORRECTION: Ajout de try-catch pour éviter crash silencieux avec async void
@@ -80,6 +101,45 @@ namespace client_win
                     context: "app.startup",
                     detail: ex.Message));
             }
+        }
+
+        private async Task<bool> TryAutoUpdateAndRestartAsync()
+        {
+            if (!_updates.IsSupported)
+            {
+                return false;
+            }
+
+            using var checkCts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+            var check = await _updates.CheckAsync(checkCts.Token).ConfigureAwait(true);
+            if (!check.IsUpdateAvailable)
+            {
+                return false;
+            }
+
+            await _dialogs.ShowInfo(
+                "Mise à jour",
+                $"{check.StatusMessage}\n\nInstallation automatique en cours, l'application va redémarrer.")
+                .ConfigureAwait(true);
+
+            using var installCts = new CancellationTokenSource(TimeSpan.FromMinutes(5));
+            var result = await _updates.InstallAsync(installCts.Token).ConfigureAwait(true);
+            if (result.Installed && result.RestartRequired)
+            {
+                UpdateRestartHelper.RestartCurrentProcess();
+                return true;
+            }
+
+            if (!result.Installed)
+            {
+                _errorBus.Publish(new AppError(
+                    "Mise à jour non installée.",
+                    ErrorSeverity.Warning,
+                    context: "app.update.startup",
+                    detail: result.StatusMessage));
+            }
+
+            return false;
         }
 
         private void OnNavigateToMainMenu(AuthenticatedUser user)

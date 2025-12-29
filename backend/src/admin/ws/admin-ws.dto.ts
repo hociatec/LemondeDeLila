@@ -83,6 +83,18 @@ export class AdminBroadcastWsDto {
   message!: string;
 }
 
+export class AdminClientUpdateAnnounceWsDto {
+  @IsOptional()
+  @IsString()
+  @MaxLength(2000)
+  message?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  version?: string;
+}
+
 export class AdminGameSetEnabledWsDto {
   @IsString()
   @MinLength(1)

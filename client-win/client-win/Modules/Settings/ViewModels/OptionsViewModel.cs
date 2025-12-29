@@ -1,7 +1,10 @@
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using client_win.Core;
 using client_win.Modules.Settings.Models;
+using client_win.Modules.Updates;
 
 namespace client_win.Modules.Settings.ViewModels;
 
@@ -13,15 +16,23 @@ public sealed class OptionsViewModel : ObservableObject
     private bool _updateAvailable;
     private bool _canCheckUpdates = true;
     private bool _canInstallUpdates;
+    private readonly IUpdateService _updates;
 
-    public OptionsViewModel(OptionsState state, Action onSave, Action onCancel)
+    public OptionsViewModel(OptionsState state, IUpdateService updates, Action onSave, Action onCancel)
     {
         _state = state ?? throw new ArgumentNullException(nameof(state));
-        _currentVersion = string.IsNullOrWhiteSpace(state.CurrentVersion) ? "inconnue" : state.CurrentVersion;
+        _updates = updates ?? throw new ArgumentNullException(nameof(updates));
+        _currentVersion = string.IsNullOrWhiteSpace(_updates.CurrentVersion) ? "inconnue" : _updates.CurrentVersion;
         SaveCommand = new RelayCommand(onSave);
         CancelCommand = new RelayCommand(onCancel);
-        CheckUpdateCommand = new RelayCommand(HandleCheckUpdate, () => CanCheckUpdates);
-        InstallUpdateCommand = new RelayCommand(HandleInstallUpdate, () => CanInstallUpdates);
+        CheckUpdateCommand = new AsyncRelayCommand(HandleCheckUpdateAsync, () => CanCheckUpdates);
+        InstallUpdateCommand = new AsyncRelayCommand(HandleInstallUpdateAsync, () => CanInstallUpdates);
+
+        if (!_updates.IsSupported)
+        {
+            _updateStatus = "Mises à jour indisponibles (installation ClickOnce requise).";
+            _canInstallUpdates = false;
+        }
     }
 
     public bool MuteAll
@@ -201,19 +212,39 @@ public sealed class OptionsViewModel : ObservableObject
         return _state;
     }
 
-    private void HandleCheckUpdate()
+    private async Task HandleCheckUpdateAsync()
     {
+        if (!_updates.IsSupported)
+        {
+            UpdateStatus = "Mises à jour indisponibles (installation ClickOnce requise).";
+            CanInstallUpdates = false;
+            return;
+        }
+
         CanCheckUpdates = false;
         CanInstallUpdates = false;
         _updateAvailable = false;
         UpdateStatus = "Recherche de mise à jour...";
-        UpdateStatus = "Nouvelle version 1.0.1 disponible.";
-        _updateAvailable = true;
-        CanCheckUpdates = true;
-        CanInstallUpdates = true;
+
+        try
+        {
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+            var result = await _updates.CheckAsync(cts.Token).ConfigureAwait(true);
+            UpdateStatus = result.StatusMessage;
+            _updateAvailable = result.IsUpdateAvailable;
+        }
+        catch (OperationCanceledException)
+        {
+            UpdateStatus = "Vérification annulée (timeout).";
+        }
+        finally
+        {
+            CanCheckUpdates = true;
+            CanInstallUpdates = _updateAvailable;
+        }
     }
 
-    private void HandleInstallUpdate()
+    private async Task HandleInstallUpdateAsync()
     {
         if (!_updateAvailable)
         {
@@ -221,9 +252,37 @@ public sealed class OptionsViewModel : ObservableObject
             CanInstallUpdates = false;
             return;
         }
+
+        if (!_updates.IsSupported)
+        {
+            UpdateStatus = "Installation impossible (installation ClickOnce requise).";
+            CanInstallUpdates = false;
+            return;
+        }
+
+        CanCheckUpdates = false;
         CanInstallUpdates = false;
-        UpdateStatus = "Installation en cours (simulation)...";
-        UpdateStatus = "Mise à jour installée. Redémarre l'application pour l'appliquer.";
+        UpdateStatus = "Téléchargement et installation en cours...";
+        try
+        {
+            using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(5));
+            var result = await _updates.InstallAsync(cts.Token).ConfigureAwait(true);
+            UpdateStatus = result.StatusMessage;
+            if (result.RestartRequired && result.Installed)
+            {
+                UpdateRestartHelper.RestartCurrentProcess();
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            UpdateStatus = "Installation annulée (timeout).";
+        }
+        finally
+        {
+            CanCheckUpdates = true;
+            CanInstallUpdates = false;
+            _updateAvailable = false;
+        }
     }
 
     private bool Update<T>(Func<T> getter, Action<T> setter, T value)
@@ -237,4 +296,5 @@ public sealed class OptionsViewModel : ObservableObject
         OnPropertyChanged();
         return true;
     }
+
 }

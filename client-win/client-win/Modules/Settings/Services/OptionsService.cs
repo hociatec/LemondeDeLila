@@ -6,6 +6,7 @@ using client_win.Modules.Settings.Models;
 using client_win.Modules.Settings.ViewModels;
 using client_win.Modules.Settings.Views;
 using client_win.Modules.Shell.Services;
+using client_win.Modules.Updates;
 
 namespace client_win.Modules.Settings.Services;
 
@@ -13,6 +14,7 @@ public sealed class OptionsService : IOptionsService
 {
     private readonly SettingsManager<OptionsState>? _settingsManager;
     private readonly INavigationService? _navigation;
+    private readonly IUpdateService? _updates;
     private OptionsState _state;
 
     public OptionsService()
@@ -26,10 +28,11 @@ public sealed class OptionsService : IOptionsService
         _state = _settingsManager.Current;
     }
 
-    public OptionsService(SettingsManager<OptionsState> settingsManager, INavigationService navigation)
+    public OptionsService(SettingsManager<OptionsState> settingsManager, INavigationService navigation, IUpdateService updates)
     {
         _settingsManager = settingsManager ?? throw new ArgumentNullException(nameof(settingsManager));
         _navigation = navigation ?? throw new ArgumentNullException(nameof(navigation));
+        _updates = updates ?? throw new ArgumentNullException(nameof(updates));
         _state = _settingsManager.Current;
     }
 
@@ -60,7 +63,14 @@ public sealed class OptionsService : IOptionsService
             var view = new OptionsView();
             OptionsViewModel? vm = null;
 
-            vm = new OptionsViewModel(CloneState(_state),
+            var clone = CloneState(_state);
+            if (_updates != null)
+            {
+                clone.CurrentVersion = _updates.CurrentVersion;
+            }
+
+            vm = new OptionsViewModel(clone,
+                _updates ?? NullUpdateService.Instance,
                 onSave: () =>
                 {
                     if (vm != null)
@@ -100,7 +110,14 @@ public sealed class OptionsService : IOptionsService
     {
         OptionsViewModel? vm = null;
         var dialog = new OptionsDialog();
-        vm = new OptionsViewModel(CloneState(_state),
+        var clone = CloneState(_state);
+        if (_updates != null)
+        {
+            clone.CurrentVersion = _updates.CurrentVersion;
+        }
+
+        vm = new OptionsViewModel(clone,
+            _updates ?? NullUpdateService.Instance,
             onSave: () =>
             {
                 if (vm != null)

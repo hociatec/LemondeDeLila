@@ -22,6 +22,7 @@ import { RealtimeModule } from './realtime/realtime.module';
 import { NotificationModule } from './notification/notification.module';
 import { GameLoggerModule } from './common/services/game-logger.module';
 import { HealthModule } from './health/health.module';
+import { ClientUpdatesModule } from './client-updates/client-updates.module';
 
 @Module({
   imports: [
@@ -53,6 +54,8 @@ import { HealthModule } from './health/health.module';
           .falsy('false')
           .default(true),
         ENABLE_PROTOTYPE_GAMES: Joi.string().optional(),
+        CLIENT_UPDATES_DIR: Joi.string().optional(),
+        CLIENT_UPDATES_PUBLIC_URL: Joi.string().uri().optional(),
       }),
     }),
     ThrottlerModule.forRootAsync({
@@ -103,6 +106,7 @@ import { HealthModule } from './health/health.module';
     NotificationModule,
     AdminModule,
     HealthModule,
+    ClientUpdatesModule,
   ],
   providers: [
     {

@@ -23,6 +23,7 @@ using client_win.Modules.Leaderboard.Services;
 using client_win.Modules.Leaderboard.ViewModels;
 using client_win.Modules.Leaderboard.Views;
 using client_win.Modules.Admin.Services;
+using client_win.Modules.Updates;
 
 namespace client_win.Modules.MainMenu.Services;
 
@@ -44,6 +45,7 @@ public sealed class MenuRouter : IMenuRouter
     private readonly ILeaderboardService _leaderboard;
     private readonly IAdminService _admin;
     private readonly IDialogService _dialogs;
+    private readonly IClientUpdatePublisher _publisher;
 
     public MenuRouter(
         ILogger<MenuRouter> logger,
@@ -57,7 +59,8 @@ public sealed class MenuRouter : IMenuRouter
         IStatsService stats,
         ILeaderboardService leaderboard,
         IAdminService admin,
-        IDialogService dialogs)
+        IDialogService dialogs,
+        IClientUpdatePublisher publisher)
     {
         _logger = logger;
         _options = options;
@@ -71,6 +74,7 @@ public sealed class MenuRouter : IMenuRouter
         _leaderboard = leaderboard;
         _admin = admin;
         _dialogs = dialogs;
+        _publisher = publisher;
     }
 
     public Task<string> OpenCatalog()
@@ -196,7 +200,7 @@ public sealed class MenuRouter : IMenuRouter
 
         var previous = _navigation.CurrentView;
         var view = new AdminView();
-        var vm = new AdminViewModel(_admin, _dialogs, onClose: () =>
+        var vm = new AdminViewModel(_admin, _publisher, _dialogs, onClose: () =>
         {
             if (previous != null)
             {

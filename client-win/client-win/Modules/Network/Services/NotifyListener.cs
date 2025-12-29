@@ -1,11 +1,12 @@
 using System;
 using System.Text.Json;
-using System.Threading;
 using System.Threading.Tasks;
+using System.Threading;
 using client_win.Modules.Config;
 using client_win.Modules.Catalog.Services;
 using client_win.Modules.Network.WebSockets;
 using client_win.Modules.Shell.Services;
+using client_win.Modules.Updates;
 using client_win.Modules.User.Services;
 using Serilog;
 
@@ -18,6 +19,9 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
     private readonly Func<IWebSocketConnection> _wsFactory;
     private readonly IScreenReaderAnnouncer _screenReader;
     private readonly ICatalogService _catalog;
+    private readonly IDialogService _dialogs;
+    private readonly IUpdateService _updates;
+    private readonly SemaphoreSlim _updateGate = new(1, 1);
 
     private IWebSocketConnection? _ws;
     private bool _started;
@@ -27,13 +31,17 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
         ISessionService session,
         Func<IWebSocketConnection> wsFactory,
         IScreenReaderAnnouncer screenReader,
-        ICatalogService catalog)
+        ICatalogService catalog,
+        IDialogService dialogs,
+        IUpdateService updates)
     {
         _config = config ?? throw new ArgumentNullException(nameof(config));
         _session = session ?? throw new ArgumentNullException(nameof(session));
         _wsFactory = wsFactory ?? throw new ArgumentNullException(nameof(wsFactory));
         _screenReader = screenReader ?? throw new ArgumentNullException(nameof(screenReader));
         _catalog = catalog ?? throw new ArgumentNullException(nameof(catalog));
+        _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
+        _updates = updates ?? throw new ArgumentNullException(nameof(updates));
     }
 
     public async Task StartAsync(CancellationToken cancellationToken = default)
@@ -105,6 +113,18 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
             {
                 _catalog.InvalidateCache();
             }
+            else if (string.Equals(type, "client.update.available", StringComparison.OrdinalIgnoreCase))
+            {
+                var payload = root.TryGetProperty("payload", out var p) ? p : default;
+                var message = payload.ValueKind != JsonValueKind.Undefined && payload.TryGetProperty("message", out var m)
+                    ? (m.GetString() ?? string.Empty)
+                    : string.Empty;
+                var version = payload.ValueKind != JsonValueKind.Undefined && payload.TryGetProperty("version", out var v)
+                    ? (v.GetString() ?? string.Empty)
+                    : string.Empty;
+
+                _ = HandleClientUpdateAvailableAsync(message, version);
+            }
         }
         catch (Exception ex)
         {
@@ -112,8 +132,73 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
         }
     }
 
+    private async Task HandleClientUpdateAvailableAsync(string message, string version)
+    {
+        if (!await _updateGate.WaitAsync(0).ConfigureAwait(false))
+        {
+            return;
+        }
+
+        try
+        {
+            if (!_updates.IsSupported)
+            {
+                await _dialogs.ShowInfo(
+                        "Mise à jour",
+                        "Une mise à jour est disponible, mais ce client n'est pas installé via ClickOnce.\n" +
+                        "Veuillez réinstaller depuis le lien officiel pour activer les mises à jour automatiques.")
+                    .ConfigureAwait(true);
+                return;
+            }
+
+            var msg = string.IsNullOrWhiteSpace(message)
+                ? "Une mise à jour du client est disponible."
+                : message.Trim();
+
+            if (!string.IsNullOrWhiteSpace(version))
+            {
+                msg += $"\nVersion annoncée : {version.Trim()}";
+            }
+
+            var confirm = await _dialogs.Confirm("Mise à jour", msg + "\n\nInstaller maintenant ?").ConfigureAwait(true);
+            if (confirm != true)
+            {
+                return;
+            }
+
+            using var checkCts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+            var check = await _updates.CheckAsync(checkCts.Token).ConfigureAwait(true);
+            if (!check.IsUpdateAvailable)
+            {
+                await _dialogs.ShowInfo("Mise à jour", "Aucune mise à jour n'est disponible pour le moment.").ConfigureAwait(true);
+                return;
+            }
+
+            using var installCts = new CancellationTokenSource(TimeSpan.FromMinutes(5));
+            var result = await _updates.InstallAsync(installCts.Token).ConfigureAwait(true);
+            if (result.Installed && result.RestartRequired)
+            {
+                UpdateRestartHelper.RestartCurrentProcess();
+            }
+            else
+            {
+                await _dialogs.ShowInfo("Mise à jour", result.StatusMessage).ConfigureAwait(true);
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "Erreur lors de la mise à jour client (notify).");
+            await _dialogs.ShowError("Mise à jour", ex.Message).ConfigureAwait(true);
+        }
+        finally
+        {
+            _updateGate.Release();
+        }
+    }
+
     public async ValueTask DisposeAsync()
     {
         await StopAsync().ConfigureAwait(false);
+        _updateGate.Dispose();
     }
 }

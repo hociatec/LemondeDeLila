@@ -425,6 +425,21 @@ public sealed class AdminService : IAdminService
         return response.Payload.Delivered;
     }
 
+    public async Task<int> AnnounceClientUpdateAsync(string? message = null, string? version = null, CancellationToken cancellationToken = default)
+    {
+        var token = EnsureAuth();
+        var response = await _ws.RequestAsync<AdminClientUpdateAnnounceResponseDto>(
+            WsMessageTypes.Admin.ClientUpdateAnnounce,
+            new { message, version },
+            token,
+            cancellationToken).ConfigureAwait(false);
+        if (!response.Success || response.Payload == null)
+        {
+            throw new InvalidOperationException(response.Error ?? "Annonce de mise à jour impossible.");
+        }
+        return response.Payload.Delivered;
+    }
+
     public async Task<AdminLogsDownloadResponseDto> DownloadLogsAsync(int lines = 200, string? filter = null, CancellationToken cancellationToken = default)
     {
         var token = EnsureAuth();

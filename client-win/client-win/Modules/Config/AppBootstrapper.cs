@@ -37,6 +37,7 @@ using client_win.Modules.Leaderboard.Services;
 using client_win.Modules.Game.Play.Services;
 using client_win.Modules.Game.Room.Services;
 using client_win.Modules.Game.Shell.Services;
+using client_win.Modules.Updates;
 
 namespace client_win.Modules.Config;
 
@@ -165,10 +166,15 @@ public static class AppBootstrapper
 
         services.AddSingleton<ISessionService, SessionService>();
 
+        // Mises à jour (ClickOnce) : disponible seulement si l'app est installée via ClickOnce.
+        services.AddSingleton<IUpdateService, ClickOnceUpdateService>();
+        services.AddSingleton<IClientUpdatePublisher, ClientUpdatePublisher>();
+
         // OptionsService (dans le shell) avec SettingsManager + Navigation
         services.AddSingleton<IOptionsService>(sp => new OptionsService(
             sp.GetRequiredService<SettingsManager<OptionsState>>(),
-            sp.GetRequiredService<INavigationService>()));
+            sp.GetRequiredService<INavigationService>(),
+            sp.GetRequiredService<IUpdateService>()));
 
         services.AddSingleton<Dispatcher>(_ => Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher);
 
@@ -239,7 +245,9 @@ public static class AppBootstrapper
                 sp.GetRequiredService<ISessionService>(),
                 () => sp.GetRequiredService<IWebSocketConnection>(),
                 sp.GetRequiredService<IScreenReaderAnnouncer>(),
-                sp.GetRequiredService<Modules.Catalog.Services.ICatalogService>()));
+                sp.GetRequiredService<Modules.Catalog.Services.ICatalogService>(),
+                sp.GetRequiredService<IDialogService>(),
+                sp.GetRequiredService<IUpdateService>()));
 
         services.AddTransient<IMenuRouter, MenuRouter>();
 

@@ -9,6 +9,8 @@ using client_win.Core;
 using client_win.Modules.Admin.Dtos;
 using client_win.Modules.Admin.Services;
 using client_win.Modules.Shell.Services;
+using client_win.Modules.Updates;
+using Microsoft.Win32;
 
 namespace client_win.Modules.Admin.ViewModels;
 
@@ -109,10 +111,12 @@ public sealed class AdminViewModel : ObservableObject
     private bool _isAdditionalPermissionsVisible;
     private int _logLines = 200;
     private string _logFilter = string.Empty;
+    private readonly IClientUpdatePublisher _publisher;
 
-    public AdminViewModel(IAdminService admin, IDialogService dialogs, Action onClose)
+    public AdminViewModel(IAdminService admin, IClientUpdatePublisher publisher, IDialogService dialogs, Action onClose)
     {
         _admin = admin ?? throw new ArgumentNullException(nameof(admin));
+        _publisher = publisher ?? throw new ArgumentNullException(nameof(publisher));
         _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
         _close = onClose ?? (() => { });
         _dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
@@ -590,6 +594,16 @@ public sealed class AdminViewModel : ObservableObject
             if (_page == AdminPage.Broadcast && tag is string sendTag && sendTag == "broadcast.send")
             {
                 await SendBroadcastAsync().ConfigureAwait(true);
+                return;
+            }
+            if (_page == AdminPage.Broadcast && tag is string buildTag && buildTag == "clientUpdate.buildUpload")
+            {
+                await BuildAndUploadClientUpdateAsync().ConfigureAwait(true);
+                return;
+            }
+            if (_page == AdminPage.Broadcast && tag is string updateTag && updateTag == "clientUpdate.announce")
+            {
+                await AnnounceClientUpdateAsync().ConfigureAwait(true);
                 return;
             }
             if (_page == AdminPage.Logs && tag is string logTag && logTag == "logs.download")
@@ -1608,16 +1622,20 @@ public sealed class AdminViewModel : ObservableObject
     private void BuildBroadcast()
     {
         _page = AdminPage.Broadcast;
-        Title = "Message global";
+        Title = "Message global / Mises à jour";
         Details = string.Empty;
         Items.Clear();
         Items.Add(new AdminMenuItem("Envoyer", tag: "broadcast.send"));
+        Items.Add(new AdminMenuItem("Compiler + uploader la mise à jour (admin)", tag: "clientUpdate.buildUpload"));
+        Items.Add(new AdminMenuItem("Proposer une mise à jour client", tag: "clientUpdate.announce"));
         SelectedItem = Items.FirstOrDefault();
-        TextInputLabel = "Message";
+        TextInputLabel = "Message (optionnel)";
         TextInput = string.Empty;
         IsTextInputVisible = true;
-        IsSecondaryInputVisible = false;
-        Status = "Saisissez le message. Entrée : envoyer. Échap : retour.";
+        SecondaryInputLabel = "Version (optionnel)";
+        SecondaryInput = string.Empty;
+        IsSecondaryInputVisible = true;
+        Status = "Saisissez le message. Entrée : exécuter l'action sélectionnée. Échap : retour.";
     }
 
     private async Task SendBroadcastAsync()
@@ -1634,6 +1652,107 @@ public sealed class AdminViewModel : ObservableObject
             var delivered = await _admin.BroadcastAsync(msg).ConfigureAwait(true);
             await _dialogs.ShowInfo("Message global", $"Envoyé à {delivered} utilisateur(s).").ConfigureAwait(true);
             TextInput = string.Empty;
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private async Task AnnounceClientUpdateAsync()
+    {
+        var message = (TextInput ?? string.Empty).Trim();
+        var version = (SecondaryInput ?? string.Empty).Trim();
+        IsBusy = true;
+        try
+        {
+            var delivered = await _admin.AnnounceClientUpdateAsync(
+                    string.IsNullOrWhiteSpace(message) ? null : message,
+                    version: string.IsNullOrWhiteSpace(version) ? null : version)
+                .ConfigureAwait(true);
+            await _dialogs.ShowInfo("Mise à jour", $"Proposition envoyée à {delivered} utilisateur(s).").ConfigureAwait(true);
+            TextInput = string.Empty;
+            SecondaryInput = string.Empty;
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private async Task BuildAndUploadClientUpdateAsync()
+    {
+        var message = (TextInput ?? string.Empty).Trim();
+        var version = (SecondaryInput ?? string.Empty).Trim();
+        IsBusy = true;
+        try
+        {
+            var result = await _publisher.BuildAndUploadAsync(
+                    string.IsNullOrWhiteSpace(message) ? null : message,
+                    string.IsNullOrWhiteSpace(version) ? null : version)
+                .ConfigureAwait(true);
+
+            if (!result.Success)
+            {
+                // First-time setup: allow selecting the csproj from the admin UI.
+                if (result.StatusMessage.Contains("Projet client introuvable", StringComparison.OrdinalIgnoreCase))
+                {
+                    var pick = await _dialogs.Confirm(
+                            "Mise à jour",
+                            result.StatusMessage + "\n\nSélectionner le fichier .csproj maintenant ?")
+                        .ConfigureAwait(true);
+                    if (pick == true)
+                    {
+                        var ofd = new OpenFileDialog
+                        {
+                            Title = "Sélectionner client-win.csproj",
+                            Filter = "Projet .NET (*.csproj)|*.csproj",
+                            CheckFileExists = true,
+                            Multiselect = false
+                        };
+                        if (ofd.ShowDialog() == true)
+                        {
+                            var settings = UpdatePublisherLocalSettings.Load() with { ProjectPath = ofd.FileName };
+                            settings.Save();
+                            result = await _publisher.BuildAndUploadAsync(
+                                    string.IsNullOrWhiteSpace(message) ? null : message,
+                                    string.IsNullOrWhiteSpace(version) ? null : version)
+                                .ConfigureAwait(true);
+                            if (!result.Success)
+                            {
+                                await _dialogs.ShowError("Mise à jour", result.StatusMessage).ConfigureAwait(true);
+                                return;
+                            }
+                        }
+                        else
+                        {
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        return;
+                    }
+                }
+                else
+                {
+                    await _dialogs.ShowError("Mise à jour", result.StatusMessage).ConfigureAwait(true);
+                    return;
+                }
+            }
+
+            var confirm = await _dialogs.Confirm(
+                    "Mise à jour",
+                    $"{result.StatusMessage}\n\nProposer la mise à jour à tous les clients maintenant ?")
+                .ConfigureAwait(true);
+            if (confirm == true)
+            {
+                await AnnounceClientUpdateAsync().ConfigureAwait(true);
+            }
+            else
+            {
+                await _dialogs.ShowInfo("Mise à jour", result.StatusMessage).ConfigureAwait(true);
+            }
         }
         finally
         {
