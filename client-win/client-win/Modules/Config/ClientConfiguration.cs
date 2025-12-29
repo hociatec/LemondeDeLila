@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using client_win.Core.Constants;
 using Serilog;
 
@@ -174,6 +176,9 @@ public sealed class ClientConfiguration
         string baseDir = AppContext.BaseDirectory;
         string appConfigPath = Path.Combine(baseDir, "config", "client.properties");
         string appConfigExamplePath = Path.Combine(baseDir, "config", "client.properties.example");
+        string? packagedTemplatePath = File.Exists(appConfigPath)
+            ? appConfigPath
+            : (File.Exists(appConfigExamplePath) ? appConfigExamplePath : null);
 
         // 1. Override explicite (si fourni)
         if (!string.IsNullOrWhiteSpace(overridePath))
@@ -213,6 +218,11 @@ public sealed class ClientConfiguration
             "client.properties");
         if (File.Exists(appDataPath))
         {
+            // Migration "sans action utilisateur" (dev uniquement) :
+            // - si AppData contient encore l'ancien template (localhost)
+            // - et que le template packagé a changé (ex: endpoints prod),
+            // alors on met à jour AppData uniquement si l'utilisateur n'a pas modifié le fichier.
+            TryMigrateDevAppDataConfig(appDataPath, packagedTemplatePath);
             Log.Information("Configuration chargée depuis AppData: {Path}", appDataPath);
             return appDataPath;
         }
@@ -220,16 +230,14 @@ public sealed class ClientConfiguration
         // 3. Dossier de l'application (fallback / configuration packagée)
         // OPTIM: si aucun fichier AppData, on copie un template packagé vers AppData pour éviter les confusions
         // entre "config côté exécutable" et "config utilisateur".
-        string? template = File.Exists(appConfigPath)
-            ? appConfigPath
-            : (File.Exists(appConfigExamplePath) ? appConfigExamplePath : null);
-        if (template != null)
+        if (packagedTemplatePath != null)
         {
             try
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(appDataPath) ?? Path.Combine(baseDir, "config"));
-                File.Copy(template, appDataPath, overwrite: false);
-                Log.Information("Configuration initialisée dans AppData depuis {Template}: {Path}", template, appDataPath);
+                File.Copy(packagedTemplatePath, appDataPath, overwrite: false);
+                WriteSeedHashIfMissing(appDataPath, packagedTemplatePath);
+                Log.Information("Configuration initialisée dans AppData depuis {Template}: {Path}", packagedTemplatePath, appDataPath);
                 return appDataPath;
             }
             catch (IOException)
@@ -237,13 +245,14 @@ public sealed class ClientConfiguration
                 // Déjà créé en parallèle ou verrouillé: on reteste l'existence.
                 if (File.Exists(appDataPath))
                 {
+                    WriteSeedHashIfMissing(appDataPath, packagedTemplatePath);
                     Log.Information("Configuration chargée depuis AppData: {Path}", appDataPath);
                     return appDataPath;
                 }
             }
             catch (Exception ex)
             {
-                Log.Warning(ex, "Impossible d'initialiser la configuration AppData depuis {Template}", template);
+                Log.Warning(ex, "Impossible d'initialiser la configuration AppData depuis {Template}", packagedTemplatePath);
             }
         }
 
@@ -273,6 +282,105 @@ public sealed class ClientConfiguration
         }
         var trimmed = candidate.Trim();
         return trimmed.Length == 0 ? null : trimmed;
+    }
+
+    private static void TryMigrateDevAppDataConfig(string appDataPath, string? packagedTemplatePath)
+    {
+        if (packagedTemplatePath == null) return;
+
+        // On ne migre qu'en dev : en prod, AppData n'est pas utilisé.
+        var environment = EnvironmentDetector.GetEnvironment();
+        if (environment != EnvironmentDetector.AppEnvironment.Development) return;
+
+        try
+        {
+            string current = File.ReadAllText(appDataPath);
+            if (!LooksLikeLegacyLocalhost(current))
+            {
+                // Pas un template local "hérité" -> on ne touche pas.
+                return;
+            }
+
+            string packaged = File.ReadAllText(packagedTemplatePath);
+            // Si le template packagé est lui-même localhost, rien à migrer.
+            if (LooksLikeLegacyLocalhost(packaged))
+            {
+                return;
+            }
+
+            // Si l'utilisateur a déjà modifié AppData, on ne migre pas.
+            // On considère "non modifié" si le contenu actuel correspond au seed d'origine.
+            string seedPath = SeedPath(appDataPath);
+            if (File.Exists(seedPath))
+            {
+                var seedHash = (File.ReadAllText(seedPath) ?? string.Empty).Trim();
+                var currentHash = HashText(current);
+                if (!string.IsNullOrWhiteSpace(seedHash) &&
+                    string.Equals(seedHash, currentHash, StringComparison.OrdinalIgnoreCase))
+                {
+                    File.WriteAllText(appDataPath, packaged);
+                    File.WriteAllText(seedPath, HashText(packaged));
+                    Log.Information("Configuration AppData migrée automatiquement vers le template packagé (dev).");
+                }
+                return;
+            }
+
+            // Anciennes versions : pas de seed. Migration seulement si AppData semble être le template par défaut.
+            // Heuristique : présence explicite de tous les endpoints localhost.
+            if (LooksLikeFullLegacyLocalTemplate(current))
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(appDataPath) ?? ".");
+                File.WriteAllText(appDataPath, packaged);
+                File.WriteAllText(seedPath, HashText(packaged));
+                Log.Information("Configuration AppData migrée automatiquement (seed créé).");
+            }
+        }
+        catch
+        {
+            // Best effort: ne jamais empêcher le démarrage
+        }
+    }
+
+    private static bool LooksLikeLegacyLocalhost(string content)
+    {
+        if (string.IsNullOrWhiteSpace(content)) return false;
+        return content.Contains("127.0.0.1:3001", StringComparison.OrdinalIgnoreCase) ||
+               content.Contains("localhost:3001", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool LooksLikeFullLegacyLocalTemplate(string content)
+    {
+        if (string.IsNullOrWhiteSpace(content)) return false;
+        return content.Contains("network.http.base=http://127.0.0.1:3001/api/", StringComparison.OrdinalIgnoreCase) &&
+               content.Contains("network.ws.url=ws://127.0.0.1:3001/ws", StringComparison.OrdinalIgnoreCase) &&
+               content.Contains("network.ws.api=ws://127.0.0.1:3001/ws/api", StringComparison.OrdinalIgnoreCase) &&
+               content.Contains("network.ws.game=ws://127.0.0.1:3001/ws/game", StringComparison.OrdinalIgnoreCase) &&
+               content.Contains("network.ws.notify=ws://127.0.0.1:3001/ws/notify", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static void WriteSeedHashIfMissing(string appDataPath, string templatePath)
+    {
+        try
+        {
+            string seedPath = SeedPath(appDataPath);
+            if (File.Exists(seedPath)) return;
+            if (!File.Exists(templatePath)) return;
+            var template = File.ReadAllText(templatePath);
+            File.WriteAllText(seedPath, HashText(template));
+        }
+        catch
+        {
+            // ignore
+        }
+    }
+
+    private static string SeedPath(string appDataPath) => $"{appDataPath}.seed";
+
+    private static string HashText(string text)
+    {
+        var bytes = Encoding.UTF8.GetBytes(text ?? string.Empty);
+        var hash = SHA256.HashData(bytes);
+        return Convert.ToHexString(hash);
     }
 
     private static Uri ToHttpUri(string candidate)
