@@ -1,6 +1,9 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { BotSettingsEntity } from '../entities/bot-settings.entity';
 
 export type BotSettings = {
   botTurnDelayMs: number;
@@ -11,7 +14,7 @@ type BotSettingsFile = {
 };
 
 @Injectable()
-export class BotSettingsService {
+export class BotSettingsService implements OnModuleInit {
   private readonly logger = new Logger(BotSettingsService.name);
   private readonly filePath: string;
   private cache: BotSettingsFile | null = null;
@@ -20,9 +23,16 @@ export class BotSettingsService {
   private static readonly MIN_DELAY_MS = 0;
   private static readonly MAX_DELAY_MS = 60000;
 
-  constructor() {
+  constructor(
+    @InjectRepository(BotSettingsEntity)
+    private readonly repo: Repository<BotSettingsEntity>,
+  ) {
     const cwd = process.cwd();
     this.filePath = path.resolve(cwd, 'data', 'bot-settings.json');
+  }
+
+  async onModuleInit(): Promise<void> {
+    await this.ensureSeeded();
   }
 
   getSettings(): BotSettings {
@@ -36,13 +46,14 @@ export class BotSettingsService {
   }
 
   async updateSettings(update: { botTurnDelayMs?: number }): Promise<BotSettings> {
+    await this.ensureSeeded();
     const root = this.getRoot();
 
     if (update.botTurnDelayMs !== undefined) {
       root.botTurnDelayMs = this.clampDelay(update.botTurnDelayMs);
     }
 
-    await this.save(root);
+    await this.repo.save({ id: 1, botTurnDelayMs: root.botTurnDelayMs });
     this.cache = root;
     return { botTurnDelayMs: root.botTurnDelayMs };
   }
@@ -66,12 +77,11 @@ export class BotSettingsService {
     if (this.cache) {
       return this.cache;
     }
-    const loaded = this.tryLoad();
-    this.cache = loaded;
-    return loaded;
+    // Si onModuleInit n'est pas encore passé, on renvoie une valeur safe.
+    return { botTurnDelayMs: BotSettingsService.DEFAULT_DELAY_MS };
   }
 
-  private tryLoad(): BotSettingsFile {
+  private tryLoadFromJson(): BotSettingsFile {
     try {
       if (!fs.existsSync(this.filePath)) {
         return { botTurnDelayMs: BotSettingsService.DEFAULT_DELAY_MS };
@@ -91,14 +101,19 @@ export class BotSettingsService {
     }
   }
 
-  private async save(root: BotSettingsFile): Promise<void> {
-    const dir = path.dirname(this.filePath);
-    await fs.promises.mkdir(dir, { recursive: true });
-    await fs.promises.writeFile(
-      this.filePath,
-      JSON.stringify(root, null, 2),
-      'utf-8',
-    );
+  private async ensureSeeded(): Promise<void> {
+    if (this.cache) return;
+    const existing = await this.repo.findOne({ where: { id: 1 } });
+    if (existing) {
+      this.cache = {
+        botTurnDelayMs: this.clampDelay(existing.botTurnDelayMs),
+      };
+      return;
+    }
+
+    const fromFile = this.tryLoadFromJson();
+    const delay = this.clampDelay(fromFile.botTurnDelayMs);
+    await this.repo.insert({ id: 1, botTurnDelayMs: delay });
+    this.cache = { botTurnDelayMs: delay };
   }
 }
-

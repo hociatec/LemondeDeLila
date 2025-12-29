@@ -1691,7 +1691,6 @@ public sealed class AdminViewModel : ObservableObject
                     version: string.IsNullOrWhiteSpace(version) ? null : version)
                 .ConfigureAwait(true);
             await _dialogs.ShowInfo("Mise à jour", $"Proposition envoyée à {delivered} utilisateur(s).").ConfigureAwait(true);
-            SecondaryInput = string.Empty;
         }
         finally
         {

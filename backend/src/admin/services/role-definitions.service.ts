@@ -1,6 +1,9 @@
-import { Injectable } from '@nestjs/common';
-import * as fs from 'fs/promises';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import * as fs from 'fs';
 import * as path from 'path';
+import { RoleDefinitionEntity } from '../entities/role-definition.entity';
 
 export interface RoleDefinition {
   name: string;
@@ -9,9 +12,15 @@ export interface RoleDefinition {
 }
 
 @Injectable()
-export class RoleDefinitionsService {
+export class RoleDefinitionsService implements OnModuleInit {
+  private readonly logger = new Logger(RoleDefinitionsService.name);
   private cache: RoleDefinition[] | null = null;
   private _filePath: string | null = null;
+
+  constructor(
+    @InjectRepository(RoleDefinitionEntity)
+    private readonly repo: Repository<RoleDefinitionEntity>,
+  ) {}
 
   private get filePath(): string {
     if (!this._filePath) {
@@ -20,32 +29,26 @@ export class RoleDefinitionsService {
     return this._filePath;
   }
 
+  async onModuleInit(): Promise<void> {
+    await this.ensureSeeded();
+  }
+
   async list(): Promise<RoleDefinition[]> {
     if (this.cache) {
       return this.cache;
     }
 
-    await fs.mkdir(path.dirname(this.filePath), { recursive: true });
-    let content: string;
-    try {
-      content = await fs.readFile(this.filePath, 'utf-8');
-    } catch {
-      const defaults = this.getDefaultDefinitions();
-      await this.saveDefinitions(defaults);
-      this.cache = defaults;
-      return defaults;
-    }
-
-    try {
-      const parsed = JSON.parse(content) as RoleDefinition[];
-      this.cache = parsed;
-      return parsed;
-    } catch {
-      const defaults = this.getDefaultDefinitions();
-      await this.saveDefinitions(defaults);
-      this.cache = defaults;
-      return defaults;
-    }
+    await this.ensureSeeded();
+    const all = await this.repo.find();
+    const definitions = all
+      .map((row) => ({
+        name: row.name,
+        description: row.description,
+        permissions: Array.isArray(row.permissions) ? row.permissions : [],
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name, 'fr'));
+    this.cache = definitions;
+    return definitions;
   }
 
   async create(definition: RoleDefinition): Promise<void> {
@@ -53,42 +56,56 @@ export class RoleDefinitionsService {
     if (current.some((d) => d.name === definition.name)) {
       throw new Error(`Le rôle '${definition.name}' existe déjà.`);
     }
-    const next = [...current, definition];
-    await this.saveDefinitions(next);
-    this.cache = next;
+    await this.repo.insert({
+      name: definition.name,
+      description: definition.description,
+      permissions: definition.permissions ?? [],
+    });
+    this.cache = null;
   }
 
   async update(name: string, update: Partial<RoleDefinition> & { name?: string }): Promise<void> {
-    const current = await this.list();
-    const idx = current.findIndex((d) => d.name === name);
-    if (idx < 0) {
+    await this.ensureSeeded();
+    const current = await this.repo.findOne({ where: { name } });
+    if (!current) {
       throw new Error(`Rôle '${name}' introuvable.`);
     }
-    const updatedName = update.name ?? current[idx].name;
-    if (updatedName !== name && current.some((d) => d.name === updatedName)) {
-      throw new Error(`Le rôle '${updatedName}' existe déjà.`);
-    }
-    const updated: RoleDefinition = {
-      ...current[idx],
-      ...update,
-      name: updatedName,
-      description: update.description ?? current[idx].description,
-      permissions: update.permissions ?? current[idx].permissions,
-    };
-    const next = [...current];
-    next[idx] = updated;
-    await this.saveDefinitions(next);
-    this.cache = next;
+    const nextName = update.name ?? current.name;
+    await this.repo.manager.transaction(async (manager) => {
+      if (nextName !== name) {
+        const existing = await manager.findOne(RoleDefinitionEntity, {
+          where: { name: nextName },
+        });
+        if (existing) {
+          throw new Error(`Le rôle '${nextName}' existe déjà.`);
+        }
+        await manager.delete(RoleDefinitionEntity, { name });
+        await manager.insert(RoleDefinitionEntity, {
+          name: nextName,
+          description: update.description ?? current.description,
+          permissions: update.permissions ?? current.permissions ?? [],
+        });
+        return;
+      }
+      await manager.update(
+        RoleDefinitionEntity,
+        { name },
+        {
+          description: update.description ?? current.description,
+          permissions: update.permissions ?? current.permissions ?? [],
+        },
+      );
+    });
+    this.cache = null;
   }
 
   async delete(name: string): Promise<void> {
-    const current = await this.list();
-    const next = current.filter((d) => d.name !== name);
-    if (next.length === current.length) {
+    await this.ensureSeeded();
+    const res = await this.repo.delete({ name });
+    if (!res.affected) {
       throw new Error(`Rôle '${name}' introuvable.`);
     }
-    await this.saveDefinitions(next);
-    this.cache = next;
+    this.cache = null;
   }
 
   private getDefaultDefinitions(): RoleDefinition[] {
@@ -111,8 +128,37 @@ export class RoleDefinitionsService {
     ];
   }
 
-  private async saveDefinitions(definitions: RoleDefinition[]): Promise<void> {
-    await fs.mkdir(path.dirname(this.filePath), { recursive: true });
-    await fs.writeFile(this.filePath, JSON.stringify(definitions, null, 2), 'utf-8');
+  private tryLoadFromJson(): RoleDefinition[] | null {
+    try {
+      if (!fs.existsSync(this.filePath)) return null;
+      const raw = fs.readFileSync(this.filePath, 'utf-8');
+      const parsed = JSON.parse(raw.replace(/^\uFEFF/, '')) as RoleDefinition[];
+      return Array.isArray(parsed) ? parsed : null;
+    } catch (error) {
+      this.logger.warn(
+        `Impossible de charger role-definitions depuis JSON (${this.filePath}): ${(error as Error).message}`,
+      );
+      return null;
+    }
+  }
+
+  private async ensureSeeded(): Promise<void> {
+    const count = await this.repo.count();
+    if (count > 0) return;
+
+    const fromFile = this.tryLoadFromJson();
+    const definitions =
+      fromFile && fromFile.length > 0 ? fromFile : this.getDefaultDefinitions();
+
+    await this.repo.save(
+      definitions
+        .filter((d) => d?.name && d?.description)
+        .map((d) => ({
+          name: d.name,
+          description: d.description,
+          permissions: Array.isArray(d.permissions) ? d.permissions : [],
+        })),
+    );
+    this.cache = null;
   }
 }

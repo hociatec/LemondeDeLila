@@ -14,10 +14,11 @@ import { NotificationModule } from '../notification/notification.module';
 import { CatalogModule } from '../catalog/catalog.module';
 import { BotModule as RoomBotModule } from '../bot/bot.module';
 import { BotModule as GameBotModule } from '../game/modules/bot/bot.module';
+import { RoleDefinitionEntity } from './entities/role-definition.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User, RoleDefinitionEntity]),
     ValidationModule,
     GameRegistryModule,
     NotificationModule,

@@ -1,7 +1,11 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import * as fs from 'fs';
 import * as path from 'path';
 import type { GameDefinition } from '../interfaces/game-rules-adapter.interface';
+import { GameCategoryAssignmentEntity } from '../entities/game-category-assignment.entity';
+import { GameCategoryEntity } from '../entities/game-category.entity';
 
 export type GameCategory = {
   id: string;
@@ -16,14 +20,23 @@ type CategoriesFile = {
 };
 
 @Injectable()
-export class GameCategoriesService {
+export class GameCategoriesService implements OnModuleInit {
   private readonly logger = new Logger(GameCategoriesService.name);
   private readonly filePath: string;
   private cache: CategoriesFile | null = null;
 
-  constructor() {
+  constructor(
+    @InjectRepository(GameCategoryEntity)
+    private readonly categoriesRepo: Repository<GameCategoryEntity>,
+    @InjectRepository(GameCategoryAssignmentEntity)
+    private readonly assignmentsRepo: Repository<GameCategoryAssignmentEntity>,
+  ) {
     const cwd = process.cwd();
     this.filePath = path.resolve(cwd, 'data', 'game-categories.json');
+  }
+
+  async onModuleInit(): Promise<void> {
+    await this.ensureLoaded();
   }
 
   getCategories(): GameCategory[] {
@@ -48,6 +61,7 @@ export class GameCategoriesService {
     if (!gameType || !gameType.trim()) {
       throw new Error('gameType requis');
     }
+    await this.ensureLoaded();
     const root = this.getRoot();
     const normalizedCategoryId = typeof categoryId === 'string' ? categoryId.trim() : categoryId;
     if (normalizedCategoryId === '') {
@@ -59,7 +73,10 @@ export class GameCategoriesService {
       throw new Error(`Catégorie inconnue : ${categoryId}`);
     }
     root.assignments[gameType] = categoryId ?? null;
-    await this.save(root);
+    await this.assignmentsRepo.save({
+      gameType,
+      categoryId: categoryId ?? null,
+    });
     this.cache = root;
   }
 
@@ -68,6 +85,7 @@ export class GameCategoriesService {
     if (!trimmed) {
       throw new Error('Nom de catégorie requis');
     }
+    await this.ensureLoaded();
     const root = this.getRoot();
     const normalizedParentId =
       typeof parentId === 'string' ? parentId.trim() : parentId;
@@ -84,7 +102,12 @@ export class GameCategoriesService {
       enabled: true,
     };
     root.categories.push(category);
-    await this.save(root);
+    await this.categoriesRepo.insert({
+      id: category.id,
+      name: category.name,
+      parentId: category.parentId,
+      enabled: category.enabled,
+    });
     this.cache = root;
     return category;
   }
@@ -96,6 +119,7 @@ export class GameCategoriesService {
     if (!id || !id.trim()) {
       throw new Error('Identifiant requis');
     }
+    await this.ensureLoaded();
     const root = this.getRoot();
     const category = root.categories.find((item) => item.id === id);
     if (!category) {
@@ -121,7 +145,10 @@ export class GameCategoriesService {
       }
       category.parentId = targetParentId;
     }
-    await this.save(root);
+    await this.categoriesRepo.update(
+      { id },
+      { name: category.name, parentId: category.parentId },
+    );
     this.cache = root;
     return category;
   }
@@ -146,12 +173,10 @@ export class GameCategoriesService {
     if (this.cache) {
       return this.cache;
     }
-    const loaded = this.tryLoad();
-    this.cache = loaded;
-    return loaded;
+    return { categories: [], assignments: {} };
   }
 
-  private tryLoad(): CategoriesFile {
+  private tryLoadFromJson(): CategoriesFile {
     try {
       if (!fs.existsSync(this.filePath)) {
         return { categories: [], assignments: {} };
@@ -169,14 +194,6 @@ export class GameCategoriesService {
             ? (parsed.assignments as Record<string, string | null>)
             : {},
       });
-
-      if (normalized.changed) {
-        fs.writeFileSync(
-          this.filePath,
-          JSON.stringify(normalized.root, null, 2),
-          'utf-8',
-        );
-      }
 
       return normalized.root;
     } catch (error) {
@@ -263,10 +280,59 @@ export class GameCategoriesService {
     return { root: { categories, assignments }, changed };
   }
 
-  private async save(root: CategoriesFile): Promise<void> {
-    const dir = path.dirname(this.filePath);
-    await fs.promises.mkdir(dir, { recursive: true });
-    await fs.promises.writeFile(this.filePath, JSON.stringify(root, null, 2), 'utf-8');
+  private async ensureLoaded(): Promise<void> {
+    if (this.cache) return;
+
+    const categoriesRows = await this.categoriesRepo.find();
+    const assignmentsRows = await this.assignmentsRepo.find();
+
+    if (categoriesRows.length === 0 && assignmentsRows.length === 0) {
+      const imported = this.tryLoadFromJson();
+      this.cache = imported;
+      await this.importToDb(imported);
+      return;
+    }
+
+    const categories: GameCategory[] = categoriesRows.map((row) => ({
+      id: row.id,
+      name: row.name,
+      parentId: row.parentId ?? null,
+      enabled: row.enabled !== false,
+    }));
+    const assignments: Record<string, string | null> = {};
+    for (const row of assignmentsRows) {
+      assignments[row.gameType] = row.categoryId ?? null;
+    }
+    this.cache = { categories, assignments };
+  }
+
+  private async importToDb(root: CategoriesFile): Promise<void> {
+    const categories = root.categories ?? [];
+    const assignments = root.assignments ?? {};
+
+    const known = new Set<string>();
+    await this.categoriesRepo.save(
+      categories
+        .filter((c) => c?.id && c?.name)
+        .map((c) => {
+          known.add(c.id);
+          return {
+            id: c.id,
+            name: c.name,
+            parentId: c.parentId ?? null,
+            enabled: c.enabled !== false,
+          };
+        }),
+    );
+
+    await this.assignmentsRepo.save(
+      Object.entries(assignments)
+        .map(([gameType, categoryId]) => ({
+          gameType,
+          categoryId: categoryId && known.has(categoryId) ? categoryId : null,
+        }))
+        .filter((row) => row.gameType),
+    );
   }
 
   private ensureUniqueId(name: string, existing: GameCategory[]): string {

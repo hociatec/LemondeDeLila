@@ -17,7 +17,7 @@ public partial class AdminView : UserControl
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
         FocusWhenContainersGenerated();
-        FocusPrimaryInputIfVisible();
+        FocusBestInputIfVisible();
     }
 
     private void OnKeyDown(object sender, KeyEventArgs e)
@@ -29,7 +29,7 @@ public partial class AdminView : UserControl
             if (result != AdminNavResult.Closed)
             {
                 FocusWhenContainersGenerated();
-                FocusPrimaryInputIfVisible();
+                FocusBestInputIfVisible();
             }
         }
     }
@@ -47,7 +47,7 @@ public partial class AdminView : UserControl
         e.Handled = true;
         await vm.ActivateCommand.ExecuteAsync(null).ConfigureAwait(true);
         FocusWhenContainersGenerated();
-        FocusPrimaryInputIfVisible();
+        FocusBestInputIfVisible();
     }
 
     private void OnListKeyDown(object sender, KeyEventArgs e)
@@ -74,7 +74,7 @@ public partial class AdminView : UserControl
         e.Handled = true;
         await vm.ActivateCommand.ExecuteAsync(null).ConfigureAwait(true);
         FocusWhenContainersGenerated();
-        FocusPrimaryInputIfVisible();
+        FocusBestInputIfVisible();
     }
 
     private async void OnCheckItemClick(object sender, RoutedEventArgs e)
@@ -92,22 +92,27 @@ public partial class AdminView : UserControl
         vm.SelectedItem = clicked;
         await vm.ActivateCommand.ExecuteAsync(null).ConfigureAwait(true);
         FocusWhenContainersGenerated();
-        FocusPrimaryInputIfVisible();
+        FocusBestInputIfVisible();
     }
 
-    private void FocusPrimaryInputIfVisible()
+    private void FocusBestInputIfVisible()
     {
         if (DataContext is not AdminViewModel vm)
         {
             return;
         }
-        if (!vm.IsTextInputVisible)
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
         {
-            return;
-        }
-        _ = Dispatcher.BeginInvoke(
-            DispatcherPriority.Input,
-            new Action(() => PrimaryInput?.Focus()));
+            if (vm.IsTextInputVisible)
+            {
+                PrimaryInput?.Focus();
+                return;
+            }
+            if (vm.IsSecondaryInputVisible)
+            {
+                SecondaryInputBox?.Focus();
+            }
+        }));
     }
 
     private void FocusFirstItem()
