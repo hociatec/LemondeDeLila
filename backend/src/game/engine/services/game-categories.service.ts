@@ -161,21 +161,106 @@ export class GameCategoriesService {
       if (!parsed || typeof parsed !== 'object') {
         return { categories: [], assignments: {} };
       }
-      const categories = Array.isArray(parsed.categories)
-        ? parsed.categories.map((category) => ({
-            ...category,
-            enabled: typeof category.enabled === 'boolean' ? category.enabled : true,
-          }))
-        : [];
-      const assignments =
-        parsed.assignments && typeof parsed.assignments === 'object'
-          ? parsed.assignments
-          : {};
-      return { categories, assignments };
+
+      const normalized = this.normalizeRoot({
+        categories: Array.isArray(parsed.categories) ? parsed.categories : [],
+        assignments:
+          parsed.assignments && typeof parsed.assignments === 'object'
+            ? (parsed.assignments as Record<string, string | null>)
+            : {},
+      });
+
+      if (normalized.changed) {
+        fs.writeFileSync(
+          this.filePath,
+          JSON.stringify(normalized.root, null, 2),
+          'utf-8',
+        );
+      }
+
+      return normalized.root;
     } catch (error) {
       this.logger.warn(`Impossible de charger les catégories (${this.filePath}): ${(error as Error).message}`);
       return { categories: [], assignments: {} };
     }
+  }
+
+  private normalizeRoot(raw: CategoriesFile): { root: CategoriesFile; changed: boolean } {
+    let changed = false;
+
+    const byId = new Map<string, GameCategory>();
+    const order: string[] = [];
+
+    for (const entry of raw.categories ?? []) {
+      const id = typeof (entry as any)?.id === 'string' ? (entry as any).id.trim() : '';
+      const name = typeof (entry as any)?.name === 'string' ? (entry as any).name.trim() : '';
+      if (!id || !name) {
+        changed = true;
+        continue;
+      }
+      const key = id.toLowerCase();
+      const parentIdRaw = (entry as any).parentId;
+      const parentId =
+        typeof parentIdRaw === 'string' ? parentIdRaw.trim() || null : null;
+      const enabledRaw = (entry as any).enabled;
+      const enabled = typeof enabledRaw === 'boolean' ? enabledRaw : true;
+      if (typeof enabledRaw !== 'boolean') {
+        changed = true;
+      }
+
+      const next: GameCategory = { id, name, parentId, enabled };
+      if (!byId.has(key)) {
+        byId.set(key, next);
+        order.push(key);
+      } else {
+        // Doublon d'id : on garde l'existant, mais on complète s'il manque des infos.
+        changed = true;
+        const current = byId.get(key) as GameCategory;
+        if (!current.name && next.name) current.name = next.name;
+        if (current.parentId == null && next.parentId != null) current.parentId = next.parentId;
+        if (current.enabled !== false && next.enabled === false) current.enabled = false;
+      }
+    }
+
+    // Nettoyage parentId invalides (références absentes / auto-référence)
+    for (const key of order) {
+      const category = byId.get(key) as GameCategory;
+      if (!category.parentId) continue;
+      const parentKey = category.parentId.toLowerCase();
+      if (parentKey === key || !byId.has(parentKey)) {
+        category.parentId = null;
+        changed = true;
+      }
+    }
+
+    const categories = order.map((key) => byId.get(key) as GameCategory);
+
+    const assignments: Record<string, string | null> = {};
+    for (const [gameType, rawCategoryId] of Object.entries(raw.assignments ?? {})) {
+      const normalizedGameType = (gameType ?? '').trim();
+      if (!normalizedGameType) {
+        changed = true;
+        continue;
+      }
+      const normalizedCategoryId =
+        typeof rawCategoryId === 'string' ? rawCategoryId.trim() : null;
+      if (!normalizedCategoryId) {
+        assignments[normalizedGameType] = null;
+        if (rawCategoryId !== null) changed = true;
+        continue;
+      }
+      if (!byId.has(normalizedCategoryId.toLowerCase())) {
+        assignments[normalizedGameType] = null;
+        changed = true;
+        continue;
+      }
+      assignments[normalizedGameType] = normalizedCategoryId;
+      if (normalizedGameType !== gameType || normalizedCategoryId !== rawCategoryId) {
+        changed = true;
+      }
+    }
+
+    return { root: { categories, assignments }, changed };
   }
 
   private async save(root: CategoriesFile): Promise<void> {

@@ -16,7 +16,7 @@ internal sealed class GamePlayAnnouncementRouter
         _announcements = announcements;
     }
 
-    internal bool TryHandleTurnUpdate(TurnInfoDto info, Action<string> emitHistoryMessage)
+    internal bool TryHandleTurnUpdate(TurnInfoDto info, Action<string> emitHistoryMessage, bool force = false)
     {
         if (info == null)
         {
@@ -29,7 +29,8 @@ internal sealed class GamePlayAnnouncementRouter
             : $"C'est au tour de {who}.";
 
         var now = DateTime.UtcNow;
-        if (string.Equals(_lastTurnAnnouncement, msg, StringComparison.Ordinal) &&
+        if (!force &&
+            string.Equals(_lastTurnAnnouncement, msg, StringComparison.Ordinal) &&
             (now - _lastTurnAnnouncementAtUtc) < TimeSpan.FromSeconds(1))
         {
             return false;
@@ -80,4 +81,3 @@ internal sealed class GamePlayAnnouncementRouter
         return message.Contains("rejoue", StringComparison.OrdinalIgnoreCase);
     }
 }
-

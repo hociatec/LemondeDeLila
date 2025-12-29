@@ -77,6 +77,24 @@ public partial class AdminView : UserControl
         FocusPrimaryInputIfVisible();
     }
 
+    private async void OnCheckItemClick(object sender, RoutedEventArgs e)
+    {
+        if (DataContext is not AdminViewModel vm)
+        {
+            return;
+        }
+        if (sender is not FrameworkElement fe || fe.DataContext is not AdminMenuItem clicked)
+        {
+            return;
+        }
+
+        e.Handled = true;
+        vm.SelectedItem = clicked;
+        await vm.ActivateCommand.ExecuteAsync(null).ConfigureAwait(true);
+        FocusWhenContainersGenerated();
+        FocusPrimaryInputIfVisible();
+    }
+
     private void FocusPrimaryInputIfVisible()
     {
         if (DataContext is not AdminViewModel vm)

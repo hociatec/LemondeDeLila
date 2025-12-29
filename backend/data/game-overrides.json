@@ -12,6 +12,9 @@
     },
     "aventure-sauvage": {
       "enabled": true
+    },
+    "mission-nemesis": {
+      "enabled": true
     }
   }
 }

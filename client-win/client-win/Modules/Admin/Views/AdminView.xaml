@@ -11,6 +11,30 @@
         <SolidColorBrush x:Key="PanelBrush" Color="#12263C" />
         <SolidColorBrush x:Key="HighlightBrush" Color="#F2C14E" />
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
+        <DataTemplate x:Key="AdminMenuItemTemplate">
+            <Grid>
+                <TextBlock x:Name="PlainLabel"
+                           Text="{Binding Label}"
+                           Foreground="White"
+                           FontSize="16"
+                           VerticalAlignment="Center"
+                           TextWrapping="Wrap" />
+                <CheckBox x:Name="CheckLabel"
+                          Visibility="Collapsed"
+                          Content="{Binding Label}"
+                          IsChecked="{Binding IsChecked, Mode=OneWay}"
+                          Foreground="White"
+                          FontSize="16"
+                          VerticalAlignment="Center"
+                          Click="OnCheckItemClick" />
+            </Grid>
+            <DataTemplate.Triggers>
+                <DataTrigger Binding="{Binding IsCheckable}" Value="True">
+                    <Setter TargetName="PlainLabel" Property="Visibility" Value="Collapsed" />
+                    <Setter TargetName="CheckLabel" Property="Visibility" Value="Visible" />
+                </DataTrigger>
+            </DataTemplate.Triggers>
+        </DataTemplate>
         <Style TargetType="ListBox">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
@@ -242,7 +266,7 @@
                          Grid.Row="1"
                          ItemsSource="{Binding Items}"
                          SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
-                         DisplayMemberPath="Label"
+                         ItemTemplate="{StaticResource AdminMenuItemTemplate}"
                          SelectionMode="Single"
                          VirtualizingStackPanel.IsVirtualizing="False"
                          PreviewKeyDown="OnListPreviewKeyDown"

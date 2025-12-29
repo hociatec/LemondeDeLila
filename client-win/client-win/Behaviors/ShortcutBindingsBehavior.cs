@@ -272,9 +272,11 @@ public static class ShortcutBindingsBehavior
             return false;
         }
 
-        if (focused is TextBox)
+        if (focused is TextBox tb)
         {
-            return true;
+            // Les TextBox en lecture seule (ex: historique de partie) ne sont pas un "input" :
+            // on autorise les raccourcis globaux, et seuls les champs éditables bloquent les raccourcis.
+            return !tb.IsReadOnly;
         }
 
         if (focused is PasswordBox)
@@ -282,9 +284,9 @@ public static class ShortcutBindingsBehavior
             return true;
         }
 
-        if (focused is RichTextBox)
+        if (focused is RichTextBox rtb)
         {
-            return true;
+            return !rtb.IsReadOnly;
         }
 
         if (focused is ComboBox combo && combo.IsEditable)

@@ -630,7 +630,7 @@ public sealed class AdminViewModel : ObservableObject
                 Items.Clear();
                 foreach (var game in _loadedGames.OrderBy(g => g.Name))
                 {
-                    var label = $"{(game.Enabled ? "Actif" : "Désactivé")} : {game.Name} ({game.Id})";
+                    var label = $"{(game.Enabled ? "Actif" : "Désactivé")} : {game.Name}";
                     Items.Add(new AdminMenuItem(label, tag: game));
                 }
                 if (Items.Count == 0)
@@ -658,7 +658,7 @@ public sealed class AdminViewModel : ObservableObject
         Items.Clear();
         foreach (var game in _loadedGames.OrderBy(g => g.Name))
         {
-            var label = $"{(game.Enabled ? "Actif" : "Désactivé")} : {game.Name} ({game.Id})";
+            var label = $"{(game.Enabled ? "Actif" : "Désactivé")} : {game.Name}";
             Items.Add(new AdminMenuItem(label, tag: game));
         }
         if (Items.Count == 0)
@@ -716,8 +716,11 @@ public sealed class AdminViewModel : ObservableObject
         Items.Add(new AdminMenuItem("Créer une catégorie", tag: "games.categories.create"));
         foreach (var category in _loadedCategories.OrderBy(c => c.Name, StringComparer.OrdinalIgnoreCase))
         {
-            var parent = string.IsNullOrWhiteSpace(category.ParentId) ? string.Empty : $" (parent : {category.ParentId})";
-            Items.Add(new AdminMenuItem($"{category.Name} [{category.Id}]{parent}", tag: category));
+            var parentName = ResolveCategoryName(category.ParentId);
+            var parentLabel = string.IsNullOrWhiteSpace(category.ParentId)
+                ? string.Empty
+                : $" (parent : {parentName ?? category.ParentId})";
+            Items.Add(new AdminMenuItem($"{category.Name}{parentLabel}", tag: category));
         }
         if (_loadedCategories.Length == 0)
         {
@@ -825,11 +828,11 @@ public sealed class AdminViewModel : ObservableObject
         IsSecondaryInputVisible = false;
         IsAdditionalPermissionsVisible = false;
         Items.Clear();
-        Items.Add(new AdminMenuItem("Pas de catégorie", tag: "game.category.assign.none"));
+        Items.Add(new AdminMenuItem("Aucune catégorie", tag: "game.category.assign.none", isCheckable: true, isChecked: assignedId == null));
         foreach (var category in _loadedCategories.OrderBy(c => c.Name, StringComparer.OrdinalIgnoreCase))
         {
-            var assignedMarker = string.Equals(assignedId, category.Id, StringComparison.OrdinalIgnoreCase) ? "✓ " : string.Empty;
-            Items.Add(new AdminMenuItem($"{assignedMarker}{category.Name} [{category.Id}]", tag: category));
+            var isChecked = string.Equals(assignedId, category.Id, StringComparison.OrdinalIgnoreCase);
+            Items.Add(new AdminMenuItem($"{category.Name}", tag: category, isCheckable: true, isChecked: isChecked));
         }
         SelectedItem = Items.FirstOrDefault();
         Status = "Entrée : assigner. Échap : retour.";

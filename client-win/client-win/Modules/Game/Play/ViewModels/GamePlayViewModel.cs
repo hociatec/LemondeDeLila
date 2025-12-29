@@ -33,6 +33,7 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
     private readonly GamePlayShortcutsViewModel _shortcuts;
     private readonly GamePlayConnectionController _connection;
     private readonly GamePlayAnnouncementRouter _announcementRouter;
+    private DateTime _forceTurnAnnouncementUntilUtc;
 
     private GameSession? _session;
 
@@ -587,6 +588,7 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
         if (session == null) return;
         try
         {
+            _forceTurnAnnouncementUntilUtc = DateTime.UtcNow.AddSeconds(3);
             await session.RequestTurnAsync().ConfigureAwait(false);
         }
         catch (Exception ex)
@@ -603,7 +605,16 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
     {
         _dispatcher.InvokeAsync(() =>
         {
-            _announcementRouter.TryHandleTurnUpdate(info, msg => MessageReceived?.Invoke(msg));
+            var now = DateTime.UtcNow;
+            var force = now <= _forceTurnAnnouncementUntilUtc;
+            if (force)
+            {
+                _forceTurnAnnouncementUntilUtc = DateTime.MinValue;
+            }
+            _announcementRouter.TryHandleTurnUpdate(
+                info,
+                msg => MessageReceived?.Invoke(msg),
+                force: force);
         }, DispatcherPriority.Background);
     }
 
