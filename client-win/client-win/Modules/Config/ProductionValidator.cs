@@ -11,8 +11,13 @@ public static class ProductionValidator
     /// Valide les exigences de production. Lance ConfigValidationException si la validation échoue.
     /// </summary>
     /// <param name="environment">L'environnement détecté.</param>
+    /// <param name="config">Configuration client résolue (fichier + env).</param>
+    /// <param name="jwtStrictMode">Mode strict JWT (opt-in via env).</param>
     /// <exception cref="ConfigValidationException">Si la configuration est invalide pour la production.</exception>
-    public static void ValidateProductionRequirements(EnvironmentDetector.AppEnvironment environment)
+    public static void ValidateProductionRequirements(
+        EnvironmentDetector.AppEnvironment environment,
+        ClientConfiguration config,
+        bool jwtStrictMode)
     {
         Log.Information("Validation des exigences pour environnement: {Environment}", environment);
 
@@ -26,35 +31,26 @@ public static class ProductionValidator
         // En Staging ou Production, on applique les règles strictes
         var errors = new List<string>();
 
-        // 1. Vérifier JWT_STRICT_MODE
-        var jwtStrictMode = Environment.GetEnvironmentVariable("JWT_STRICT_MODE");
-        if (!string.Equals(jwtStrictMode, "true", StringComparison.OrdinalIgnoreCase))
+        // 1. JWT strict mode est opt-in (ne pas obliger un secret en client en prod).
+        // Si activé, il exige un secret suffisamment robuste.
+        if (jwtStrictMode)
         {
-            errors.Add("JWT_STRICT_MODE doit être défini à 'true' en production.");
-        }
-
-        // 2. Vérifier JWT_SECRET (obligatoire si strict mode activé)
-        if (string.Equals(jwtStrictMode, "true", StringComparison.OrdinalIgnoreCase))
-        {
-            var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET");
-            if (string.IsNullOrWhiteSpace(jwtSecret))
+            if (string.IsNullOrWhiteSpace(config.JwtSecret))
             {
                 errors.Add("JWT_SECRET est requis lorsque JWT_STRICT_MODE=true.");
             }
-            else if (jwtSecret.Length < 32)
+            else if (config.JwtSecret.Length < 32)
             {
                 errors.Add("JWT_SECRET doit contenir au moins 32 caractères pour être sécurisé.");
             }
         }
 
-        // 3. Vérifier WS Shared Secret (déjà validé dans ClientConfiguration, mais on double-check)
-        var wsSecret = Environment.GetEnvironmentVariable("NETWORK_WS_SECRET")
-                       ?? Environment.GetEnvironmentVariable("WS_SHARED_SECRET");
-        if (string.IsNullOrWhiteSpace(wsSecret))
+        // 2. Vérifier le secret WS (résolu depuis env OU client.properties).
+        if (string.IsNullOrWhiteSpace(config.SharedSecret))
         {
-            errors.Add("NETWORK_WS_SECRET ou WS_SHARED_SECRET est requis.");
+            errors.Add("network.ws.secret (ou env NETWORK_WS_SECRET/WS_SHARED_SECRET) est requis.");
         }
-        else if (wsSecret.Length < 16)
+        else if (config.SharedSecret.Length < 16)
         {
             errors.Add("NETWORK_WS_SECRET/WS_SHARED_SECRET doit contenir au moins 16 caractères.");
         }
@@ -77,19 +73,15 @@ public static class ProductionValidator
     /// <summary>
     /// Log les informations de configuration (en masquant les secrets).
     /// </summary>
-    public static void LogConfiguration()
+    public static void LogConfiguration(ClientConfiguration config, bool jwtStrictMode)
     {
         var environment = EnvironmentDetector.GetEnvironment();
-        var jwtStrictMode = Environment.GetEnvironmentVariable("JWT_STRICT_MODE");
-        var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET");
-        var wsSecret = Environment.GetEnvironmentVariable("NETWORK_WS_SECRET")
-                       ?? Environment.GetEnvironmentVariable("WS_SHARED_SECRET");
 
         Log.Information("=== Configuration de Sécurité ===");
         Log.Information("Environnement: {Environment}", environment);
-        Log.Information("JWT Strict Mode: {JwtStrictMode}", jwtStrictMode ?? "false");
-        Log.Information("JWT Secret: {JwtSecret}", string.IsNullOrWhiteSpace(jwtSecret) ? "(non défini)" : "*****");
-        Log.Information("WS Shared Secret: {WsSecret}", string.IsNullOrWhiteSpace(wsSecret) ? "(non défini)" : "*****");
+        Log.Information("JWT Strict Mode: {JwtStrictMode}", jwtStrictMode);
+        Log.Information("JWT Secret: {JwtSecret}", string.IsNullOrWhiteSpace(config.JwtSecret) ? "(non défini)" : "*****");
+        Log.Information("WS Shared Secret: {WsSecret}", string.IsNullOrWhiteSpace(config.SharedSecret) ? "(non défini)" : "*****");
         Log.Information("=================================");
     }
 }

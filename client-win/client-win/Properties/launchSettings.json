@@ -3,8 +3,10 @@
     "client-win": {
       "commandName": "Project",
       "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development",
         "NETWORK_WS_SECRET": "remote-ws-shared-secret-2025",
         "WS_SHARED_SECRET": "remote-ws-shared-secret-2025",
+        "JWT_STRICT_MODE": "false",
         "JWT_SECRET": "change-me-in-prod"
       }
     }

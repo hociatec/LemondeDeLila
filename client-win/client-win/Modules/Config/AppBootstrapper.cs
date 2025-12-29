@@ -83,13 +83,18 @@ public static class AppBootstrapper
         // 2. Détecter environnement et valider exigences de production
         Log.Information("Environnement détecté: {Environment}", environment);
 
-        ProductionValidator.ValidateProductionRequirements(environment);
-        ProductionValidator.LogConfiguration();
-
-        // 3. Charger configuration réseau et applicative
+        // 3. Charger configuration réseau et applicative (avant validation prod, car la config peut venir du fichier).
         var config = ClientConfiguration.Load();
         var networkConfig = NetworkConfiguration.Load();
         Log.Information("Configuration réseau: {NetworkConfig}", networkConfig);
+
+        // 4. Validation sécurité (prod/staging)
+        bool jwtStrictMode = string.Equals(
+            Environment.GetEnvironmentVariable("JWT_STRICT_MODE"),
+            "true",
+            StringComparison.OrdinalIgnoreCase);
+        ProductionValidator.ValidateProductionRequirements(environment, config, jwtStrictMode);
+        ProductionValidator.LogConfiguration(config, jwtStrictMode);
 
         // 4. Créer services d'infrastructure
         var errors = new ErrorBus();
@@ -144,11 +149,7 @@ public static class AppBootstrapper
             config.SharedSecret,
             errors));
 
-        // JWT avec strict mode
-        bool jwtStrictMode = string.Equals(
-            Environment.GetEnvironmentVariable("JWT_STRICT_MODE"),
-            "true",
-            StringComparison.OrdinalIgnoreCase);
+        // JWT avec strict mode (déjà calculé plus haut)
         services.AddSingleton<JwtTokenValidator>(_ => new JwtTokenValidator(config.JwtSecret, jwtStrictMode));
 
         // Services d'authentification
