@@ -76,8 +76,17 @@ internal sealed class GamePlayAnnouncementRouter
             return false;
         }
 
-        // Important en lecture d'écran : "rejoue" (peut survenir plusieurs fois).
+        var msg = message.Trim();
+
         // Le tour est annoncé via `game.turn` (pas via les logs) pour éviter les doublons.
-        return message.Contains("rejoue", StringComparison.OrdinalIgnoreCase);
+        if (msg.StartsWith("C'est au tour de", StringComparison.OrdinalIgnoreCase) ||
+            msg.StartsWith("Tour actuel", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        // Par défaut on annonce toutes les nouvelles lignes de log: elles arrivent dans l'historique
+        // et doivent être accessibles sans déplacer le focus.
+        return true;
     }
 }

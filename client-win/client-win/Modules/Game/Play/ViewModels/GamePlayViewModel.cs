@@ -34,6 +34,7 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
     private readonly GamePlayConnectionController _connection;
     private readonly GamePlayAnnouncementRouter _announcementRouter;
     private DateTime _forceTurnAnnouncementUntilUtc;
+    private int? _lastStateTurnPlayerId;
 
     private GameSession? _session;
 
@@ -315,6 +316,7 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
     public async Task InitializeAsync(CancellationToken cancellationToken = default)
     {
         _projector.ResetLogCursor();
+        _lastStateTurnPlayerId = null;
 
         await _connection.InitializeAsync(cancellationToken).ConfigureAwait(false);
     }
@@ -659,7 +661,50 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
                 MessageReceived?.Invoke(msg);
                 _announcementRouter.TryAnnounceLogMessage(msg);
             }
+
+            if (state != null)
+            {
+                TryAnnounceTurnFromState(state);
+            }
         }, DispatcherPriority.Background);
+    }
+
+    private void TryAnnounceTurnFromState(GameStateDto state)
+    {
+        if (state == null)
+        {
+            return;
+        }
+
+        if (!string.Equals(state.Status, "started", StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        var currentPlayerId = state.Turn?.CurrentPlayerId;
+        if (currentPlayerId == null)
+        {
+            return;
+        }
+
+        if (_lastStateTurnPlayerId == currentPlayerId)
+        {
+            return;
+        }
+
+        _lastStateTurnPlayerId = currentPlayerId;
+
+        var username = state.Players?
+            .FirstOrDefault(p => p != null && p.Id == currentPlayerId.Value)?
+            .Username;
+
+        _announcementRouter.TryHandleTurnUpdate(
+            new TurnInfoDto
+            {
+                CurrentPlayerId = currentPlayerId,
+                CurrentPlayerUsername = string.IsNullOrWhiteSpace(username) ? null : username.Trim()
+            },
+            emitHistoryMessage: _ => { });
     }
 
     private bool CanSendActionNow(GameSession session)
