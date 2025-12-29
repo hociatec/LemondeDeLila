@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Windows;
+using System.Windows.Automation;
+using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
@@ -14,6 +16,8 @@ public partial class GameHistoryView : UserControl
 {
     private GameHistoryViewModel? _viewModel;
     private bool _pendingRebuild;
+    private string? _lastUiaNotification;
+    private DateTime _lastUiaNotificationAtUtc;
 
     public GameHistoryView()
     {
@@ -83,14 +87,18 @@ public partial class GameHistoryView : UserControl
 
         if (e.Action == NotifyCollectionChangedAction.Add && e.NewItems != null && e.NewItems.Count > 0)
         {
-            AppendEntries(e.NewItems.Cast<string>());
+            var last = AppendEntries(e.NewItems.Cast<string>());
+            if (!string.IsNullOrWhiteSpace(last))
+            {
+                AnnounceToScreenReader(last);
+            }
             return;
         }
 
         ScheduleRebuild(scrollToEnd: false);
     }
 
-    private void AppendEntries(IEnumerable<string> entries)
+    private string? AppendEntries(IEnumerable<string> entries)
     {
         var shouldAutoScroll = ShouldAutoScrollToEnd();
         var preserveSelection = HistoryEditor.IsKeyboardFocusWithin && !shouldAutoScroll;
@@ -99,6 +107,7 @@ public partial class GameHistoryView : UserControl
         var selectionLength = HistoryEditor.SelectionLength;
         var caretIndex = HistoryEditor.CaretIndex;
 
+        string? last = null;
         foreach (var entry in entries.Where(s => !string.IsNullOrWhiteSpace(s)))
         {
             if (HistoryEditor.Text.Length > 0)
@@ -107,12 +116,13 @@ public partial class GameHistoryView : UserControl
             }
 
             HistoryEditor.AppendText(entry);
+            last = entry;
         }
 
         if (preserveSelection)
         {
             RestoreSelection(selectionStart, selectionLength, caretIndex);
-            return;
+            return last;
         }
 
         if (shouldAutoScroll)
@@ -120,6 +130,8 @@ public partial class GameHistoryView : UserControl
             HistoryEditor.CaretIndex = HistoryEditor.Text.Length;
             HistoryEditor.ScrollToEnd();
         }
+
+        return last;
     }
 
     private void ScheduleRebuild(bool scrollToEnd)
@@ -206,6 +218,35 @@ public partial class GameHistoryView : UserControl
         var shift = (Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift;
         TabNavigationRequested?.Invoke(this, new TabNavigationRequestedEventArgs(shift));
     }
+
+    private void AnnounceToScreenReader(string message)
+    {
+        // UIA notification events are more reliable than live regions for Narrator/NVDA in some cases.
+        // Deduplicate rapid repeats (auto-repeat / bursts).
+        var now = DateTime.UtcNow;
+        if (string.Equals(_lastUiaNotification, message, StringComparison.Ordinal) &&
+            (now - _lastUiaNotificationAtUtc) < TimeSpan.FromMilliseconds(500))
+        {
+            return;
+        }
+        _lastUiaNotification = message;
+        _lastUiaNotificationAtUtc = now;
+
+        try
+        {
+            var peer = FrameworkElementAutomationPeer.FromElement(this) ??
+                       FrameworkElementAutomationPeer.CreatePeerForElement(this);
+            peer?.RaiseNotificationEvent(
+                AutomationNotificationKind.Other,
+                AutomationNotificationProcessing.ImportantMostRecent,
+                message,
+                "GameHistory");
+        }
+        catch
+        {
+            // ignore (best-effort)
+        }
+    }
 }
 
 public sealed class TabNavigationRequestedEventArgs : EventArgs
@@ -217,4 +258,3 @@ public sealed class TabNavigationRequestedEventArgs : EventArgs
 
     public bool IsShiftPressed { get; }
 }
-

@@ -46,15 +46,15 @@
                         <CheckBox x:Name="FirstFocusable" Content="Désactiver tous les sons" IsChecked="{Binding MuteAll}" />
                         <CheckBox Content="Demander confirmation à la fermeture" IsChecked="{Binding ConfirmExit}" />
                         <TextBlock Text="Musique" Foreground="White" Margin="0 6 0 2" />
-                        <Slider Minimum="0" Maximum="100" Value="{Binding MusicVolume}" IsEnabled="{Binding IsVolumeEnabled}" />
+                        <Slider Minimum="0" Maximum="100" Value="{Binding MusicVolume, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding IsVolumeEnabled}" />
                         <CheckBox Content="Son d'entrée dans la taverne" IsChecked="{Binding SoundAppLaunch}" />
-                        <Slider Minimum="0" Maximum="100" Value="{Binding SoundAppLaunchVolume}" IsEnabled="{Binding IsAppLaunchVolumeEnabled}" />
+                        <Slider Minimum="0" Maximum="100" Value="{Binding SoundAppLaunchVolume, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding IsAppLaunchVolumeEnabled}" />
                         <CheckBox Content="Ambiance de taverne en fond" IsChecked="{Binding SoundBackground}" />
-                        <Slider Minimum="0" Maximum="100" Value="{Binding SoundBackgroundVolume}" IsEnabled="{Binding IsBackgroundVolumeEnabled}" />
+                        <Slider Minimum="0" Maximum="100" Value="{Binding SoundBackgroundVolume, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding IsBackgroundVolumeEnabled}" />
                         <CheckBox Content="Son lors de la navigation" IsChecked="{Binding SoundNavigate}" />
-                        <Slider Minimum="0" Maximum="100" Value="{Binding SoundNavigateVolume}" IsEnabled="{Binding IsNavigateVolumeEnabled}" />
+                        <Slider Minimum="0" Maximum="100" Value="{Binding SoundNavigateVolume, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding IsNavigateVolumeEnabled}" />
                         <CheckBox Content="Son lors de la sélection" IsChecked="{Binding SoundSelect}" />
-                        <Slider Minimum="0" Maximum="100" Value="{Binding SoundSelectVolume}" IsEnabled="{Binding IsSelectVolumeEnabled}" />
+                        <Slider Minimum="0" Maximum="100" Value="{Binding SoundSelectVolume, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding IsSelectVolumeEnabled}" />
                     </StackPanel>
                 </TabItem>
                 <TabItem Header="Chat">

@@ -62,13 +62,13 @@
       <dsig:DigestValue>aweOfE2W5C6prtDWg9Cc0wTRcM4SVjISdb18ZY15bkk=</dsig:DigestValue>
     </hash>
   </file>
-  <file name="client-win.dll" size="833536">
+  <file name="client-win.dll" size="837120">
     <hash>
       <dsig:Transforms>
         <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
       </dsig:Transforms>
       <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-      <dsig:DigestValue>8EMRjW+hyk7qEhRc2x+wlfY49FUwaJWbPvQPz0+5LdU=</dsig:DigestValue>
+      <dsig:DigestValue>o8KA4Eg4Hu5WyZ9E8DSVEJ2+mvupnKSbPSIuPdwu4rk=</dsig:DigestValue>
     </hash>
   </file>
   <file name="client-win.exe" size="151040">
@@ -77,7 +77,7 @@
         <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
       </dsig:Transforms>
       <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-      <dsig:DigestValue>K0983Ft6GBmKbDmxkVmJII7STwEcEoMwfy9gaG1jMko=</dsig:DigestValue>
+      <dsig:DigestValue>Unl9+JN7CA1i78FYs7PDTc80YFiWlZ7E3GkShicEQ+Y=</dsig:DigestValue>
     </hash>
   </file>
   <file name="client-win.runtimeconfig.json" size="429">
