@@ -240,7 +240,7 @@ public sealed class OptionsViewModel : ObservableObject
         UpdateStatus = "Redémarrage en cours...";
         try
         {
-            UpdateRestartHelper.RestartCurrentProcess();
+            UpdateRestartHelper.RestartCurrentProcess("options.install");
         }
         catch (OperationCanceledException)
         {

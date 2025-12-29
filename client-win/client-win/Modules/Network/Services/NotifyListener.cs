@@ -165,7 +165,8 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
             }
 
             // ClickOnce applique les mises à jour au démarrage : on force un redémarrage.
-            UpdateRestartHelper.RestartCurrentProcess();
+            Log.Information("Mise à jour acceptée (notify): version={Version}", version?.Trim());
+            UpdateRestartHelper.RestartCurrentProcess("notify");
         }
         catch (Exception ex)
         {
