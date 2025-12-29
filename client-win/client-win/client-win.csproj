@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
+    <AssemblyName>LeMondeDeLila</AssemblyName>
     <TargetFramework>net8.0-windows</TargetFramework>
     <RootNamespace>client_win</RootNamespace>
     <Nullable>enable</Nullable>
