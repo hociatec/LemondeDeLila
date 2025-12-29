@@ -2,6 +2,7 @@ using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Collections.ObjectModel;
+using System.Text.Json;
 using System.Windows.Input;
 using client_win.Core;
 using client_win.Modules.Catalog.Services;
@@ -174,15 +175,47 @@ public sealed class MainMenuViewModel : ObservableObject
             var jwt = handler.ReadJwtToken(token);
             var roleClaims = jwt.Claims.Where(c =>
                 string.Equals(c.Type, "roles", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(c.Type, "role", StringComparison.OrdinalIgnoreCase));
+                string.Equals(c.Type, "role", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(c.Type, "http://schemas.microsoft.com/ws/2008/06/identity/claims/role", StringComparison.OrdinalIgnoreCase));
 
             foreach (var claim in roleClaims)
             {
-                var roles = claim.Value.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+                var raw = (claim.Value ?? string.Empty).Trim();
+                if (string.IsNullOrWhiteSpace(raw))
+                {
+                    continue;
+                }
+
+                // Backend uses roles as a JSON array in the JWT payload (ex: ["ROLE_ADMIN"]).
+                if (raw.StartsWith("[", StringComparison.Ordinal))
+                {
+                    try
+                    {
+                        using var doc = JsonDocument.Parse(raw);
+                        if (doc.RootElement.ValueKind == JsonValueKind.Array)
+                        {
+                            foreach (var el in doc.RootElement.EnumerateArray())
+                            {
+                                var role = el.ValueKind == JsonValueKind.String ? (el.GetString() ?? string.Empty) : string.Empty;
+                                if (IsAdminRole(role))
+                                {
+                                    return true;
+                                }
+                            }
+                            continue;
+                        }
+                    }
+                    catch
+                    {
+                        // fallback below
+                    }
+                }
+
+                var roles = raw.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
                 foreach (var role in roles)
                 {
-                    if (string.Equals(role, "ROLE_ADMIN", StringComparison.OrdinalIgnoreCase) ||
-                        string.Equals(role, "admin", StringComparison.OrdinalIgnoreCase))
+                    var cleaned = role.Trim().Trim('"', '\'', '[', ']', ' ');
+                    if (IsAdminRole(cleaned))
                     {
                         return true;
                     }
@@ -199,4 +232,8 @@ public sealed class MainMenuViewModel : ObservableObject
         }
         return false;
     }
+
+    private static bool IsAdminRole(string role) =>
+        string.Equals(role, "ROLE_ADMIN", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(role, "admin", StringComparison.OrdinalIgnoreCase);
 }
