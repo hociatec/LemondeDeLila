@@ -36,7 +36,7 @@ public sealed class StatsService : IStatsService
 
         if (!response.Success)
         {
-            throw new InvalidOperationException(response.Error ?? "Statistiques indisponibles.");
+            throw new InvalidOperationException(response.Error ?? "Livre des contes indisponible.");
         }
 
         return response.Payload?.Games ?? new List<MyGameStatsDto>();

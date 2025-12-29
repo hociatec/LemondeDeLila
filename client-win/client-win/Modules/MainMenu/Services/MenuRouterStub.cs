@@ -62,7 +62,7 @@ public sealed class MenuRouterStub : IMenuRouter
         return Task.FromResult("Catalogue ouvert.");
     }
 
-    public Task<string> OpenStats() => LogAndReturn("Statistiques (stub)");
+    public Task<string> OpenStats() => LogAndReturn("Livre des contes (stub)");
 
     public Task<string> OpenLeaderboard() => LogAndReturn("Classement (stub)");
 

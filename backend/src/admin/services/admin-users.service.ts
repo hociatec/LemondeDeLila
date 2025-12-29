@@ -142,7 +142,10 @@ export class AdminUsersService {
       user.bannedUntil = body.bannedUntil ? new Date(body.bannedUntil) : null;
     }
     if (body.banReason !== undefined) {
-      user.banReason = body.banReason ?? null;
+      user.banReason =
+        body.banReason === null || body.banReason === undefined
+          ? null
+          : sanitizeBanReason(body.banReason);
     }
     if (body.avatar !== undefined) {
       user.avatar = body.avatar;
@@ -200,7 +203,7 @@ export class AdminUsersService {
       throw new BadRequestException('Durée ou date de fin requise');
     }
     user.bannedUntil = until;
-    user.banReason = reason.trim();
+    user.banReason = sanitizeBanReason(reason);
     await this.users.save(user);
     const { password: _, ...safe } = user;
     return { user: safe };
@@ -247,4 +250,15 @@ export class AdminUsersService {
       .replace(/[^a-zA-Z0-9]/g, '')
       .slice(0, 10);
   }
+}
+
+function sanitizeBanReason(reason: string): string {
+  const raw = (reason ?? '').toString();
+  // Évite les retours à la ligne / tabs qui cassent l'affichage client.
+  const normalized = raw.replace(/\s+/g, ' ').trim();
+  if (!normalized) {
+    throw new BadRequestException('Motif requis');
+  }
+  // Colonne SQL: varchar(255)
+  return normalized.length > 255 ? normalized.substring(0, 255) : normalized;
 }

@@ -116,7 +116,7 @@ public sealed class MainMenuViewModel : ObservableObject
         Items.Add(new MainMenuItem("Messagerie", tag: MessagingCommand));
         Items.Add(new MainMenuItem("Chat", tag: ChatCommand));
         Items.Add(new MainMenuItem("Social", tag: SocialCommand));
-        Items.Add(new MainMenuItem("Statistiques", tag: StatsCommand));
+        Items.Add(new MainMenuItem("Livre des contes", tag: StatsCommand));
 
         if (_isAdminVisible)
         {

@@ -80,8 +80,9 @@ export class UserAuthService {
       throw new UnauthorizedException('Email non vérifié');
     }
     if (user.bannedUntil && user.bannedUntil.getTime() > Date.now()) {
-      const until = user.bannedUntil.toISOString();
-      const reason = user.banReason ? ` (motif : ${user.banReason})` : '';
+      const until = formatDateFr(user.bannedUntil);
+      const banReason = this.sanitizeBanReason(user.banReason);
+      const reason = banReason ? ` (motif : ${banReason})` : '';
       throw new UnauthorizedException(
         `Compte banni jusqu'au ${until}${reason}`,
       );
@@ -103,6 +104,13 @@ export class UserAuthService {
       },
     );
     return { token };
+  }
+
+  private readonly _banReasonWhitespace = /\s+/g;
+  private sanitizeBanReason(reason: string | null | undefined): string | null {
+    if (!reason) return null;
+    const normalized = String(reason).replace(this._banReasonWhitespace, ' ').trim();
+    return normalized ? normalized : null;
   }
 
   private async ensureUsernameAvailable(username: string): Promise<void> {
@@ -143,4 +151,11 @@ export class UserAuthService {
       throw new ConflictException('Email déjà enregistré');
     }
   }
+}
+
+function formatDateFr(date: Date): string {
+  // Use UTC date to avoid timezone shifting in display.
+  const iso = date.toISOString().slice(0, 10); // yyyy-MM-dd
+  const [y, m, d] = iso.split('-');
+  return `${d}/${m}/${y}`;
 }

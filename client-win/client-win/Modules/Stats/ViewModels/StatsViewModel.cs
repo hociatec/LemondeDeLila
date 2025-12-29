@@ -26,12 +26,12 @@ public sealed class StatsViewModel : ObservableObject
     private StatsPage _page = StatsPage.Root;
     private MyGameStatsDto? _selectedGame;
     private MyGameStatsDto[] _loadedGames = Array.Empty<MyGameStatsDto>();
-    private string _title = "Statistiques";
+    private string _title = "Livre des contes";
     private string _status = string.Empty;
     private string _details = string.Empty;
     private bool _isBusy;
 
-    private const string ConsultMyStats = "Consulter mes statistiques";
+    private const string ConsultMyStats = "Consulter mon livre des contes";
     private const string OpenLeaderboard = "Classement";
     private const string EmptyInfo = "Aucune information encore disponible";
 
@@ -44,7 +44,7 @@ public sealed class StatsViewModel : ObservableObject
 
         Items = new ObservableCollection<StatsMenuItem>();
         ActivateCommand = new AsyncRelayCommand(ActivateSelectedAsync);
-        Title = "Statistiques";
+        Title = "Livre des contes";
         Status = "Entrée : sélectionner. Échap : retour.";
 
         BuildRoot();
@@ -117,7 +117,7 @@ public sealed class StatsViewModel : ObservableObject
     private void BuildRoot()
     {
         _page = StatsPage.Root;
-        Title = "Statistiques";
+        Title = "Livre des contes";
         Details = string.Empty;
         Items.Clear();
         Items.Add(new StatsMenuItem(ConsultMyStats, tag: ConsultMyStats));
@@ -130,7 +130,7 @@ public sealed class StatsViewModel : ObservableObject
     {
         _page = StatsPage.Games;
         _selectedGame = null;
-        Title = "Mes statistiques";
+        Title = "Mon livre des contes";
         Details = string.Empty;
         var hasStats = Items.Any(i => i.Tag is MyGameStatsDto);
         Status = hasStats ? "Choisissez un jeu. Échap : retour." : "Aucune information encore disponible. Échap : retour.";
@@ -236,7 +236,7 @@ public sealed class StatsViewModel : ObservableObject
                 Items.Clear();
                 Items.Add(new StatsMenuItem(EmptyInfo, tag: null));
                 _page = StatsPage.Games;
-                Title = "Mes statistiques";
+                Title = "Mon livre des contes";
                 Details = string.Empty;
                 SelectedItem = Items.FirstOrDefault();
                 Status = $"Erreur : {ex.Message}";

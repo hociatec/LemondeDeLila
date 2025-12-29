@@ -102,7 +102,7 @@ public sealed class AdminViewModel : ObservableObject
         new("admin.roles", "Rôles", "Lire/écrire les définitions de rôle"),
         new("admin.logs", "Logs", "Télécharger et consulter les journaux"),
         new("admin.catalog", "Catalogue", "Valider l’état des jeux et catégories"),
-        new("admin.stats", "Statistiques", "Consulter les statistiques"),
+        new("admin.stats", "Livre des contes", "Consulter le livre des contes"),
         new("admin.chat", "Chat", "Gérer et surveiller la messagerie"),
         new("game", "Parties", "Actions génériques sur les parties")
     };
@@ -1416,7 +1416,7 @@ public sealed class AdminViewModel : ObservableObject
                 foreach (var user in _loadedUsers.OrderBy(u => u.Username))
                 {
                     var roles = user.Roles != null && user.Roles.Count > 0 ? string.Join(',', user.Roles) : "ROLE_USER";
-                    var banned = user.BannedUntil.HasValue ? $"Banni (jusqu'au {user.BannedUntil:yyyy-MM-dd})" : "Actif";
+                    var banned = user.BannedUntil.HasValue ? $"Banni (jusqu'au {user.BannedUntil:dd/MM/yyyy})" : "Actif";
                     Items.Add(new AdminMenuItem($"{user.Username} (id {user.Id}) - {roles} - {banned}", tag: user));
                 }
                 if (Items.Count == 0)
@@ -1447,7 +1447,7 @@ public sealed class AdminViewModel : ObservableObject
         foreach (var user in _loadedUsers.OrderBy(u => u.Username))
         {
             var roles = user.Roles != null && user.Roles.Count > 0 ? string.Join(',', user.Roles) : "ROLE_USER";
-            var banned = user.BannedUntil.HasValue ? $"Banni (jusqu'au {user.BannedUntil:yyyy-MM-dd})" : "Actif";
+            var banned = user.BannedUntil.HasValue ? $"Banni (jusqu'au {user.BannedUntil:dd/MM/yyyy})" : "Actif";
             Items.Add(new AdminMenuItem($"{user.Username} (id {user.Id}) - {roles} - {banned}", tag: user));
         }
         if (Items.Count == 0)

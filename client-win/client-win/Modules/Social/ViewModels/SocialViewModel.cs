@@ -135,7 +135,14 @@ public sealed class SocialViewModel : ObservableObject
         private set => SetProperty(ref _profile, value);
     }
 
-    public string[] VisibilityOptions { get; } = { "public", "friends", "private" };
+    public sealed record VisibilityOption(string Value, string Label);
+
+    public VisibilityOption[] VisibilityOptions { get; } =
+    {
+        new("public", "Public"),
+        new("friends", "Amis"),
+        new("private", "Privé"),
+    };
 
     public SocialUser? SelectedFriend
     {

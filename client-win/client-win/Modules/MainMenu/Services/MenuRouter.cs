@@ -100,7 +100,7 @@ public sealed class MenuRouter : IMenuRouter
 
     public Task<string> OpenStats()
     {
-        _logger.LogInformation("Ouverture des statistiques");
+        _logger.LogInformation("Ouverture du livre des contes");
 
         var previous = _navigation.CurrentView;
         var view = new StatsView();
@@ -114,7 +114,7 @@ public sealed class MenuRouter : IMenuRouter
         view.DataContext = vm;
         _navigation.Show(view);
 
-        return Task.FromResult("Statistiques ouvertes.");
+        return Task.FromResult("Livre des contes ouvert.");
     }
 
     public Task<string> OpenLeaderboard()

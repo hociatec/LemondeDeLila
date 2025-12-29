@@ -702,7 +702,9 @@
                                 <ComboBox x:Name="VisibilityBox"
                                           Width="160"
                                           ItemsSource="{Binding VisibilityOptions}"
-                                          SelectedItem="{Binding ProfileVisibility, Mode=TwoWay}"
+                                          DisplayMemberPath="Label"
+                                          SelectedValuePath="Value"
+                                          SelectedValue="{Binding ProfileVisibility, Mode=TwoWay}"
                                           Style="{StaticResource InputComboBox}"
                                           AutomationProperties.Name="Visibilité du profil" />
                             </StackPanel>

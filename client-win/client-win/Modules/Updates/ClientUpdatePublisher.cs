@@ -247,6 +247,7 @@ public sealed class ClientUpdatePublisher : IClientUpdatePublisher
             "/p:Install=true",
             "/p:InstallFrom=Web",
             "/p:UpdateEnabled=true",
+            "/p:CreateDesktopShortcut=true",
             "/p:GenerateManifests=true",
             useBootstrapper ? "/p:BootstrapperEnabled=true" : "/p:BootstrapperEnabled=false",
             useBootstrapper ? "/p:IsWebBootstrapper=true" : "/p:IsWebBootstrapper=false",
