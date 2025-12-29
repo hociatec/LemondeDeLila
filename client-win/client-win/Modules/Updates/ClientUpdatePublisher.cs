@@ -69,7 +69,7 @@ public sealed class ClientUpdatePublisher : IClientUpdatePublisher
 
         try
         {
-            var publishResult = await RunDotnetPublishAsync(projectPath, publishDir, baseUrl, cancellationToken)
+            var publishResult = await RunDotnetPublishAsync(projectPath, publishDir, baseUrl, version, cancellationToken)
                 .ConfigureAwait(true);
             if (!publishResult.Success)
             {
@@ -131,8 +131,13 @@ public sealed class ClientUpdatePublisher : IClientUpdatePublisher
         string projectPath,
         string publishDir,
         string baseUrl,
+        string? version,
         CancellationToken cancellationToken)
     {
+        var clickOnceVersion = TryNormalizeClickOnceVersion(version, out var normalized)
+            ? normalized
+            : null;
+
         var args = string.Join(' ', new[]
         {
             "publish",
@@ -145,7 +150,8 @@ public sealed class ClientUpdatePublisher : IClientUpdatePublisher
             $"/p:PublishUrl={Quote(baseUrl)}",
             $"/p:InstallUrl={Quote(baseUrl)}",
             $"/p:UpdateUrl={Quote(baseUrl)}",
-        });
+            clickOnceVersion != null ? $"/p:ApplicationVersion={Quote(clickOnceVersion)}" : string.Empty,
+        }.Where(s => !string.IsNullOrWhiteSpace(s)));
 
         var psi = new ProcessStartInfo
         {
@@ -187,6 +193,35 @@ public sealed class ClientUpdatePublisher : IClientUpdatePublisher
         }
 
         return new ClientUpdatePublishResult(true, "Build OK.");
+    }
+
+    private static bool TryNormalizeClickOnceVersion(string? version, out string normalized)
+    {
+        normalized = string.Empty;
+        var raw = (version ?? string.Empty).Trim();
+        if (string.IsNullOrWhiteSpace(raw))
+        {
+            return false;
+        }
+
+        var parts = raw.Split('.', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        if (parts.Length is < 1 or > 4)
+        {
+            return false;
+        }
+
+        var nums = new int[4];
+        for (var i = 0; i < parts.Length; i++)
+        {
+            if (!int.TryParse(parts[i], out var n) || n < 0)
+            {
+                return false;
+            }
+            nums[i] = n;
+        }
+
+        normalized = $"{nums[0]}.{nums[1]}.{nums[2]}.{nums[3]}";
+        return true;
     }
 
     private async Task<bool> UploadAsync(string zipPath, string jwt, string? message, string? version, CancellationToken cancellationToken)

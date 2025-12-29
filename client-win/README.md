@@ -54,3 +54,5 @@ Pré-requis :
 
 Notes :
 - L'écran "Mises à jour client" utilise uniquement le champ **Version** (pré-rempli avec la version actuelle).
+- Pour que ClickOnce propose une mise à jour, la version doit changer : le champ **Version** est utilisé pour fixer `ApplicationVersion` lors du publish.
+- Si tu exécutes le client en `dotnet run`, tu ne verras pas la mise à jour s'appliquer : installe et lance la version ClickOnce pour tester la chaîne de MAJ.

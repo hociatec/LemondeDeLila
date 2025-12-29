@@ -153,7 +153,18 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
                 return;
             }
 
-            // Les mises à jour ClickOnce sont appliquées au (re)démarrage.
+            if (!UpdateEnvironment.IsLikelyClickOnceInstall() || UpdateEnvironment.IsRunningUnderDotnetHost())
+            {
+                await _dialogs.ShowInfo(
+                        "Mise à jour",
+                        "Mise à jour publiée.\n\n" +
+                        "Ce client est lancé en mode dev (dotnet run) ou hors ClickOnce : les mises à jour automatiques ne s'appliquent pas.\n" +
+                        "Ferme l'application, puis relance la version installée ClickOnce (setup.exe) pour voir la mise à jour.")
+                    .ConfigureAwait(true);
+                return;
+            }
+
+            // ClickOnce applique les mises à jour au démarrage : on force un redémarrage.
             UpdateRestartHelper.RestartCurrentProcess();
         }
         catch (Exception ex)
