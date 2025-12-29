@@ -72,23 +72,30 @@ export class RoomService {
         : known.maxPlayers && known.maxPlayers > 0
           ? known.maxPlayers
           : 4;
-    const room = this.rooms.create({
-      name: name && name.trim() ? name.trim() : `Table ${gameType}`,
-      gameType: gameId,
-      maxPlayers: resolvedMaxPlayers,
-      isPrivate: isPrivate === true,
-      status: 'setup',
-      owner,
-      createdAt: new Date(),
+    return await this.rooms.manager.transaction(async (manager) => {
+      const roomRepo = manager.getRepository(Room);
+      const participantRepo = manager.getRepository(RoomParticipant);
+
+      const room = roomRepo.create({
+        name: name && name.trim() ? name.trim() : `Table ${gameType}`,
+        gameType: gameId,
+        maxPlayers: resolvedMaxPlayers,
+        isPrivate: isPrivate === true,
+        status: 'setup',
+        owner,
+        createdAt: new Date(),
+      });
+      await roomRepo.save(room);
+
+      const participant = participantRepo.create({
+        room,
+        user: owner,
+        role: 'owner',
+      });
+      await participantRepo.save(participant);
+
+      return room;
     });
-    await this.rooms.save(room);
-    const participant = this.participants.create({
-      room,
-      user: owner,
-      role: 'owner',
-    });
-    await this.participants.save(participant);
-    return room;
   }
 
   async joinRoom(

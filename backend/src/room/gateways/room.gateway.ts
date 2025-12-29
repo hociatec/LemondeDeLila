@@ -13,6 +13,7 @@ import { Inject, Logger, forwardRef } from '@nestjs/common';
 import { WsJwtAuthService } from '../../common/ws/ws-jwt-auth.service';
 import { WsSignatureService } from '../../common/ws/ws-signature.service';
 import type { RoomPlayer } from '../dto/room-response.dto';
+import { CatalogService } from '../../catalog/services/catalog.service';
 
 type AuthedClient = {
   socket: WebSocket;
@@ -45,6 +46,7 @@ export class RoomGateway
     config: ConfigService,
     private readonly auth: WsJwtAuthService,
     private readonly signature: WsSignatureService,
+    private readonly catalog: CatalogService,
   ) {
     // Permet au backend (ex: moteur de jeu) de notifier les clients room sans dépendre du Gateway.
     this.roomsService.setRealtimeNotifier(async (roomId: number) => {
@@ -592,7 +594,32 @@ export class RoomGateway
       maxPlayers,
       isPrivate,
     );
-    const state = await this.roomsService.getRoomPayload(room.id);
+    const manifest = await this.catalog.getGame(room.gameType);
+    const state = {
+      manifest: manifest
+        ? {
+            id: manifest.id,
+            name: manifest.name,
+            minPlayers: manifest.minPlayers ?? 2,
+            maxPlayers: manifest.maxPlayers ?? room.maxPlayers,
+          }
+        : null,
+      room: {
+        id: room.id,
+        name: room.name,
+        isPrivate: room.isPrivate,
+        maxPlayers: room.maxPlayers,
+        status: room.status,
+        gameType: room.gameType,
+        startedAt: room.startedAt ? room.startedAt.toISOString() : null,
+        counts: { players: 1, spectators: 0 },
+        owner: { id: meta.userId, username: meta.username },
+        players: [{ id: meta.userId, username: meta.username } satisfies RoomPlayer],
+        spectators: [],
+        bots: [],
+      },
+      generatedAt: new Date().toISOString(),
+    };
     const message = { type: 'room.created', roomId: room.id, payload: state };
     if (meta.roomId > 0) {
       await this.broadcast(
