@@ -38,11 +38,11 @@ public sealed class ChatService : IChatService
         _session = session ?? throw new ArgumentNullException(nameof(session));
         _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
-        _client.StateChanged += s => _dispatcher.InvokeAsync(() => UpdateState(s), DispatcherPriority.Background);
-        _client.ErrorReceived += msg => _dispatcher.InvokeAsync(() => SetStatus(msg, isError: true), DispatcherPriority.Background);
+        _client.StateChanged += s => _ = _dispatcher.InvokeAsync(() => UpdateState(s), DispatcherPriority.Background);
+        _client.ErrorReceived += msg => _ = _dispatcher.InvokeAsync(() => SetStatus(msg, isError: true), DispatcherPriority.Background);
         _client.HistoryReceived += history =>
         {
-            _dispatcher.InvokeAsync(() =>
+            _ = _dispatcher.InvokeAsync(() =>
             {
                 foreach (var m in history.OrderBy(m => m.Timestamp))
                 {
@@ -52,7 +52,7 @@ public sealed class ChatService : IChatService
         };
         _client.MessageReceived += msg =>
         {
-            _dispatcher.InvokeAsync(() => AddMessage(msg), DispatcherPriority.Background);
+            _ = _dispatcher.InvokeAsync(() => AddMessage(msg), DispatcherPriority.Background);
         };
     }
 
@@ -73,12 +73,12 @@ public sealed class ChatService : IChatService
         try
         {
             await _client.ConnectAsync(user.Token, cancellationToken).ConfigureAwait(false);
-            _dispatcher.InvokeAsync(() => SetStatus("Connexion tchat ouverte."), DispatcherPriority.Background);
+            _ = _dispatcher.InvokeAsync(() => SetStatus("Connexion tchat ouverte."), DispatcherPriority.Background);
             return true;
         }
         catch (Exception ex)
         {
-            _dispatcher.InvokeAsync(() => SetStatus($"Connexion tchat échouée : {ex.Message}", isError: true), DispatcherPriority.Background);
+            _ = _dispatcher.InvokeAsync(() => SetStatus($"Connexion tchat échouée : {ex.Message}", isError: true), DispatcherPriority.Background);
             return false;
         }
     }
@@ -113,7 +113,7 @@ public sealed class ChatService : IChatService
     public async Task CloseAsync()
     {
         await _client.DisposeAsync().ConfigureAwait(false);
-        _dispatcher.InvokeAsync(() => UpdateState(ChatState.Disconnected), DispatcherPriority.Background);
+        _ = _dispatcher.InvokeAsync(() => UpdateState(ChatState.Disconnected), DispatcherPriority.Background);
     }
 
     private void UpdateState(ChatState state)
