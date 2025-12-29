@@ -28,11 +28,11 @@
 
   <ItemGroup>
     <Content Include="Modules\Config\client.properties.example">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <Link>config\client.properties.example</Link>
     </Content>
     <Content Include="Modules\Config\client.properties">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <Link>config\client.properties</Link>
     </Content>
   </ItemGroup>
