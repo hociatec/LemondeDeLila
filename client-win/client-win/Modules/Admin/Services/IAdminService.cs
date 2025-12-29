@@ -34,4 +34,9 @@ public interface IAdminService
     Task<AdminRoleDefinitionsResponseDto> CreateRoleDefinitionAsync(string name, string description, IEnumerable<string> permissions, CancellationToken cancellationToken = default);
     Task<AdminRoleDefinitionsResponseDto> UpdateRoleDefinitionAsync(string name, string? newName, string? description, IEnumerable<string>? permissions, CancellationToken cancellationToken = default);
     Task<AdminRoleDefinitionsResponseDto> DeleteRoleDefinitionAsync(string name, CancellationToken cancellationToken = default);
+
+    Task<AdminGameCategoriesResponseDto> ListGameCategoriesAsync(CancellationToken cancellationToken = default);
+    Task<AdminGameCategoriesResponseDto> CreateGameCategoryAsync(string name, string? parentId = null, CancellationToken cancellationToken = default);
+    Task<AdminGameCategoriesResponseDto> UpdateGameCategoryAsync(string id, string? name = null, string? parentId = null, CancellationToken cancellationToken = default);
+    Task<AdminGameCategoriesResponseDto> AssignGameCategoryAsync(string gameType, string? categoryId = null, CancellationToken cancellationToken = default);
 }

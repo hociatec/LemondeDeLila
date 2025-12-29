@@ -1,0 +1,50 @@
+{
+  "categories": [
+    {
+      "id": "les-quatre-vents",
+      "name": "Les Quatre Vents",
+      "parentId": null,
+      "enabled": true
+    },
+    {
+      "id": "galopant",
+      "name": "Galopant",
+      "parentId": null,
+      "enabled": true
+    },
+    {
+      "id": "vents-dansants",
+      "name": "Vents Dansants",
+      "parentId": null,
+      "enabled": true
+    },
+    {
+      "id": "vents-infinis",
+      "name": "Vents Infinis",
+      "parentId": null,
+      "enabled": true
+    },
+    {
+      "id": "village-mystique",
+      "name": "Village Mystique",
+      "parentId": null,
+      "enabled": true
+    }
+  ],
+  "assignments": {
+    "petit-chevaux": "galopant",
+    "jeu-oie": "galopant",
+    "panier-express": "les-quatre-vents",
+    "a-fond-les-ballons": "les-quatre-vents",
+    "aventure-sauvage": "les-quatre-vents",
+    "ca-derape": "les-quatre-vents",
+    "contes-et-cacahuetes": "les-quatre-vents",
+    "en-attendant-minuit": "les-quatre-vents",
+    "frousse-party": "les-quatre-vents",
+    "galopons-ensemble": "les-quatre-vents",
+    "odyssee-quatre-cieux": "les-quatre-vents",
+    "dame-nature": "vents-dansants",
+    "mission-nemesis": "vents-infinis",
+    "loup-garou": "village-mystique"
+  }
+}

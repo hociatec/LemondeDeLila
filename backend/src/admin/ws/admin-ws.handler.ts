@@ -8,6 +8,7 @@ import { PayloadValidationService } from '../../common/validation/payload-valida
 import { AdminUsersService } from '../services/admin-users.service';
 import { GameRegistryService } from '../../game/engine/services/game-registry.service';
 import { GameCatalogOverridesService } from '../../game/engine/services/game-catalog-overrides.service';
+import { GameCategoriesService } from '../../game/engine/services/game-categories.service';
 import { NotificationService } from '../../notification/services/notification.service';
 import { User } from '../../user/entities/user.entity';
 import { CatalogService } from '../../catalog/services/catalog.service';
@@ -17,6 +18,10 @@ import * as path from 'path';
 import {
   AdminBanUserWsDto,
   AdminBroadcastWsDto,
+  AdminGameCategoryAssignWsDto,
+  AdminGameCategoryCreateWsDto,
+  AdminGameCategoryUpdateWsDto,
+  AdminGameCategoriesListWsDto,
   AdminGameResetWsDto,
   AdminGameSetEnabledWsDto,
   AdminGameUpdateWsDto,
@@ -37,6 +42,7 @@ export class AdminWsHandler {
     private readonly users: AdminUsersService,
     private readonly registry: GameRegistryService,
     private readonly overrides: GameCatalogOverridesService,
+    private readonly categories: GameCategoriesService,
     private readonly notifications: NotificationService,
     private readonly catalog: CatalogService,
     private readonly config: ConfigService,
@@ -58,6 +64,19 @@ export class AdminWsHandler {
         }),
       ),
     );
+  }
+
+  private buildCategoriesPayload() {
+    return {
+      categories: this.categories.getCategories(),
+      assignments: this.categories.listAssignments(),
+    };
+  }
+
+  private async refreshCatalog(adminId: number) {
+    this.registry.invalidateCache();
+    await this.catalog.clearCache();
+    await this.notifyCatalogInvalidated(adminId);
   }
 
   async usersList(session: WsSession, payload: any) {
@@ -109,10 +128,12 @@ export class AdminWsHandler {
       .map((g) => {
         const ov = this.overrides.getGameOverride(g.id);
         const enabled = ov?.enabled !== false;
+        const categoryId = this.categories.getAssignment(g.id);
         return {
           id: g.id,
           name: g.name,
           category: g.category,
+          categoryId: categoryId ?? undefined,
           subcategory: g.subcategory,
           description: g.description,
           minPlayers: g.minPlayers,
@@ -122,6 +143,39 @@ export class AdminWsHandler {
       })
       .sort((a, b) => a.name.localeCompare(b.name, 'fr'));
     return { type: 'admin.games.list', payload: { games: payload } };
+  }
+
+  async gamesCategoriesList(session: WsSession, payload: any) {
+    requireAdmin(session);
+    this.validator.validate(AdminGameCategoriesListWsDto, payload ?? {});
+    return { type: 'admin.games.categories', payload: this.buildCategoriesPayload() };
+  }
+
+  async gamesCategoryCreate(session: WsSession, payload: any) {
+    const admin = requireAdmin(session);
+    const dto = this.validator.validate(AdminGameCategoryCreateWsDto, payload);
+    await this.categories.createCategory(dto.name, dto.parentId ?? null);
+    await this.refreshCatalog(admin.id);
+    return { type: 'admin.games.categories', payload: this.buildCategoriesPayload() };
+  }
+
+  async gamesCategoryUpdate(session: WsSession, payload: any) {
+    const admin = requireAdmin(session);
+    const dto = this.validator.validate(AdminGameCategoryUpdateWsDto, payload);
+    await this.categories.updateCategory(dto.id, {
+      name: dto.name,
+      parentId: dto.parentId ?? null,
+    });
+    await this.refreshCatalog(admin.id);
+    return { type: 'admin.games.categories', payload: this.buildCategoriesPayload() };
+  }
+
+  async gamesCategoryAssign(session: WsSession, payload: any) {
+    const admin = requireAdmin(session);
+    const dto = this.validator.validate(AdminGameCategoryAssignWsDto, payload);
+    await this.categories.assignCategory(dto.gameType, dto.categoryId ?? null);
+    await this.refreshCatalog(admin.id);
+    return { type: 'admin.games.category.assign', payload: this.buildCategoriesPayload() };
   }
 
   async gamesSetEnabled(session: WsSession, payload: any) {

@@ -23,6 +23,9 @@ internal enum AdminPage
 {
     Root,
     Games,
+    GameCategories,
+    GameCategoryForm,
+    GameCategoryAssign,
     GameActions,
     EditText,
     EditPlayers,
@@ -36,6 +39,8 @@ internal enum AdminPage
     RoleDefinitionActions,
     RoleDefinitionForm
 }
+
+public sealed record PermissionModuleDescriptor(string ModuleId, string DisplayName, string Description);
 
 public sealed class AdminViewModel : ObservableObject
 {
@@ -54,10 +59,15 @@ public sealed class AdminViewModel : ObservableObject
     private AdminUserDto[] _loadedUsers = Array.Empty<AdminUserDto>();
     private AdminGameDto[] _loadedGames = Array.Empty<AdminGameDto>();
     private AdminGameDto? _selectedGame;
+    private AdminGameCategoryDto[] _loadedCategories = Array.Empty<AdminGameCategoryDto>();
+    private Dictionary<string, string?> _categoryAssignments = new();
+    private string _categoryFormMode = string.Empty;
+    private string _categoryFormId = string.Empty;
     private AdminRoleDefinitionDto[] _loadedRoleDefinitions = Array.Empty<AdminRoleDefinitionDto>();
     private AdminRoleDefinitionDto? _selectedRoleDefinition;
     private string _roleDefinitionFormMode = string.Empty;
     private string _roleDefinitionOriginalName = string.Empty;
+    private string _currentEditMode = string.Empty;
 
     private string _primaryInputLabel = string.Empty;
     private string _primaryInput = string.Empty;
@@ -65,9 +75,6 @@ public sealed class AdminViewModel : ObservableObject
     private string _secondaryInput = string.Empty;
     private bool _isPrimaryInputVisible;
     private bool _isSecondaryInputVisible;
-    private string _ternaryInputLabel = string.Empty;
-    private string _ternaryInput = string.Empty;
-    private bool _isTernaryInputVisible;
     private List<string> _availableRoles = new();
     private HashSet<string> _currentRoleSet = new();
     private string _filterSearch = string.Empty;
@@ -75,6 +82,21 @@ public sealed class AdminViewModel : ObservableObject
     private string _filterStatus = "all";
     private string _filterCreatedAfter = string.Empty;
     private string _filterCreatedBefore = string.Empty;
+    private static readonly PermissionModuleDescriptor[] PermissionModuleDescriptors =
+    {
+        new("admin.games", "Jeux", "Charger et configurer les tables"),
+        new("admin.users", "Utilisateurs", "Lister, bannir, modifier les membres"),
+        new("admin.roles", "Rôles", "Lire/écrire les définitions de rôle"),
+        new("admin.logs", "Logs", "Télécharger et consulter les journaux"),
+        new("admin.catalog", "Catalogue", "Valider l’état des jeux et catégories"),
+        new("admin.stats", "Statistiques", "Consulter les statistiques"),
+        new("admin.chat", "Chat", "Gérer et surveiller la messagerie"),
+        new("game", "Parties", "Actions génériques sur les parties")
+    };
+    private readonly List<PermissionModuleState> _permissionModules = PermissionModuleDescriptors.Select(d => new PermissionModuleState(d)).ToList();
+    private string _additionalPermissionsLabel = string.Empty;
+    private string _additionalPermissions = string.Empty;
+    private bool _isAdditionalPermissionsVisible;
     private int _logLines = 200;
     private string _logFilter = string.Empty;
 
@@ -162,24 +184,6 @@ public sealed class AdminViewModel : ObservableObject
         private set => SetProperty(ref _isSecondaryInputVisible, value);
     }
 
-    public string TernaryInputLabel
-    {
-        get => _ternaryInputLabel;
-        private set => SetProperty(ref _ternaryInputLabel, value);
-    }
-
-    public string TernaryInput
-    {
-        get => _ternaryInput;
-        set => SetProperty(ref _ternaryInput, value);
-    }
-
-    public bool IsTernaryInputVisible
-    {
-        get => _isTernaryInputVisible;
-        private set => SetProperty(ref _isTernaryInputVisible, value);
-    }
-
     public string FilterSearch
     {
         get => _filterSearch;
@@ -224,6 +228,33 @@ public sealed class AdminViewModel : ObservableObject
 
     public bool ShowUserFilters => _page == AdminPage.Users || _page == AdminPage.Roles;
     public bool ShowLogControls => _page == AdminPage.Logs;
+    public bool ShowPermissionMatrix => IsAdditionalPermissionsVisible;
+
+    public IEnumerable<PermissionModuleState> PermissionModules => _permissionModules;
+
+    public string AdditionalPermissionsLabel
+    {
+        get => _additionalPermissionsLabel;
+        private set => SetProperty(ref _additionalPermissionsLabel, value);
+    }
+
+    public string AdditionalPermissions
+    {
+        get => _additionalPermissions;
+        set => SetProperty(ref _additionalPermissions, value);
+    }
+
+    public bool IsAdditionalPermissionsVisible
+    {
+        get => _isAdditionalPermissionsVisible;
+        private set
+        {
+            if (SetProperty(ref _isAdditionalPermissionsVisible, value))
+            {
+                OnPropertyChanged(nameof(ShowPermissionMatrix));
+            }
+        }
+    }
 
     public AsyncRelayCommand ActivateCommand { get; }
     public AsyncRelayCommand ApplyFiltersCommand { get; }
@@ -238,6 +269,31 @@ public sealed class AdminViewModel : ObservableObject
         }
 
         if (_page is AdminPage.GameActions or AdminPage.EditText or AdminPage.EditPlayers)
+        {
+            ShowGames();
+            return AdminNavResult.Moved;
+        }
+
+        if (_page == AdminPage.GameCategoryAssign)
+        {
+            if (_selectedGame != null)
+            {
+                BuildGameActions(_selectedGame);
+            }
+            else
+            {
+                ShowGames();
+            }
+            return AdminNavResult.Moved;
+        }
+
+        if (_page == AdminPage.GameCategoryForm)
+        {
+            ShowCategories();
+            return AdminNavResult.Moved;
+        }
+
+        if (_page == AdminPage.GameCategories)
         {
             ShowGames();
             return AdminNavResult.Moved;
@@ -296,11 +352,8 @@ public sealed class AdminViewModel : ObservableObject
         Title = "Administration";
         Details = string.Empty;
         IsTextInputVisible = false;
-        IsTernaryInputVisible = false;
         IsSecondaryInputVisible = false;
-        IsTernaryInputVisible = false;
-        IsTernaryInputVisible = false;
-        IsTernaryInputVisible = false;
+        IsAdditionalPermissionsVisible = false;
         Items.Clear();
         Items.Add(new AdminMenuItem("Gérer les jeux", tag: "games"));
         Items.Add(new AdminMenuItem("Gérer les utilisateurs", tag: "users"));
@@ -355,16 +408,64 @@ public sealed class AdminViewModel : ObservableObject
                 }
             }
 
+            if (_page == AdminPage.Games && tag is string gamesAction && gamesAction == "games.categories")
+            {
+                await LoadCategoriesAsync().ConfigureAwait(true);
+                return;
+            }
+
             if (_page == AdminPage.Games && tag is AdminGameDto game)
             {
                 BuildGameActions(game);
                 return;
             }
 
-            if (_page == AdminPage.GameActions && _selectedGame != null && tag is string gameAction)
+            if (_page == AdminPage.GameActions && tag is string gameAction)
             {
-                await ExecuteGameActionAsync(_selectedGame, gameAction).ConfigureAwait(true);
+                if (gameAction == "game.category.assign")
+                {
+                    await LoadCategoryAssignmentMenuAsync().ConfigureAwait(true);
+                    return;
+                }
+                if (_selectedGame != null)
+                {
+                    await ExecuteGameActionAsync(_selectedGame, gameAction).ConfigureAwait(true);
+                    return;
+                }
+            }
+
+            if (_page == AdminPage.GameCategories)
+            {
+                if (tag is string categoryAction && categoryAction == "games.categories.create")
+                {
+                    BuildCategoryForm("create");
+                    return;
+                }
+                if (tag is AdminGameCategoryDto category)
+                {
+                    BuildCategoryForm("edit", category);
+                    return;
+                }
+            }
+
+            if (_page == AdminPage.GameCategoryForm && tag is string categoryFormTag && categoryFormTag == "game.category.submit")
+            {
+                await SubmitCategoryFormAsync().ConfigureAwait(true);
                 return;
+            }
+
+            if (_page == AdminPage.GameCategoryAssign)
+            {
+                if (tag is string assignTag && assignTag == "game.category.assign.none")
+                {
+                    await AssignCategoryToGameAsync(null).ConfigureAwait(true);
+                    return;
+                }
+                if (tag is AdminGameCategoryDto category)
+                {
+                    await AssignCategoryToGameAsync(category.Id).ConfigureAwait(true);
+                    return;
+                }
             }
 
             if (_page == AdminPage.EditText && _selectedGame != null && tag is string editTag && editTag == "game.edit.submit")
@@ -500,7 +601,7 @@ public sealed class AdminViewModel : ObservableObject
         Title = "Gestion des jeux";
         Details = string.Empty;
         IsTextInputVisible = false;
-        IsTernaryInputVisible = false;
+        IsAdditionalPermissionsVisible = false;
         IsSecondaryInputVisible = false;
         Items.Clear();
         SelectedItem = null;
@@ -513,6 +614,7 @@ public sealed class AdminViewModel : ObservableObject
             _dispatcher.Invoke(() =>
             {
                 Items.Clear();
+                Items.Add(new AdminMenuItem("Gérer les catÃ©gories", tag: "games.categories"));
                 foreach (var game in _loadedGames.OrderBy(g => g.Name))
                 {
                     var label = $"{(game.Enabled ? "Actif" : "Désactivé")} : {game.Name} ({game.Id})";
@@ -538,9 +640,10 @@ public sealed class AdminViewModel : ObservableObject
         Title = "Gestion des jeux";
         Details = string.Empty;
         IsTextInputVisible = false;
-        IsTernaryInputVisible = false;
+        IsAdditionalPermissionsVisible = false;
         IsSecondaryInputVisible = false;
         Items.Clear();
+        Items.Add(new AdminMenuItem("Gérer les catÃ©gories", tag: "games.categories"));
         foreach (var game in _loadedGames.OrderBy(g => g.Name))
         {
             var label = $"{(game.Enabled ? "Actif" : "Désactivé")} : {game.Name} ({game.Id})";
@@ -555,19 +658,223 @@ public sealed class AdminViewModel : ObservableObject
         UpdateFilterVisibility();
     }
 
+    private async Task LoadCategoriesAsync()
+    {
+        if (IsBusy) return;
+        _page = AdminPage.GameCategories;
+        Title = "Gérer les catégories";
+        Details = string.Empty;
+        IsTextInputVisible = false;
+        IsAdditionalPermissionsVisible = false;
+        IsSecondaryInputVisible = false;
+        Items.Clear();
+        SelectedItem = null;
+        Status = "Chargement des catégories...";
+        IsBusy = true;
+        try
+        {
+            await RefreshCategoriesCacheAsync().ConfigureAwait(true);
+            _dispatcher.Invoke(ShowCategories);
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private async Task RefreshCategoriesCacheAsync()
+    {
+        var payload = await _admin.ListGameCategoriesAsync().ConfigureAwait(true);
+        _loadedCategories = (payload.Categories ?? new()).ToArray();
+        _categoryAssignments = payload.Assignments ?? new Dictionary<string, string?>();
+    }
+
+    private void ShowCategories()
+    {
+        _page = AdminPage.GameCategories;
+        Title = "Gérer les catégories";
+        Details = "Créer ou modifier les catégories disponibles.";
+        IsTextInputVisible = false;
+        IsAdditionalPermissionsVisible = false;
+        IsSecondaryInputVisible = false;
+        Items.Clear();
+        Items.Add(new AdminMenuItem("Créer une catégorie", tag: "games.categories.create"));
+        foreach (var category in _loadedCategories.OrderBy(c => c.Name, StringComparer.OrdinalIgnoreCase))
+        {
+            var parent = string.IsNullOrWhiteSpace(category.ParentId) ? string.Empty : $" (parent : {category.ParentId})";
+            Items.Add(new AdminMenuItem($"{category.Name} [{category.Id}]{parent}", tag: category));
+        }
+        if (_loadedCategories.Length == 0)
+        {
+            Items.Add(new AdminMenuItem("Aucune catégorie disponible."));
+        }
+        SelectedItem = Items.FirstOrDefault();
+        Status = "Entrée : créer / modifier. Échap : retour.";
+    }
+
+    private void BuildCategoryForm(string mode, AdminGameCategoryDto? category = null)
+    {
+        _page = AdminPage.GameCategoryForm;
+        _categoryFormMode = mode;
+        _categoryFormId = category?.Id ?? string.Empty;
+        Title = mode == "create" ? "Créer une catégorie" : $"Modifier la catégorie {category?.Name}";
+        Details = mode == "create"
+            ? "Donnez un nom et un parent (optionnel)."
+            : $"ID : {category?.Id}";
+        TextInputLabel = "Nom";
+        TextInput = category?.Name ?? string.Empty;
+        SecondaryInputLabel = "Parent (id, facultatif)";
+        SecondaryInput = category?.ParentId ?? string.Empty;
+        IsTextInputVisible = true;
+        IsSecondaryInputVisible = true;
+        IsAdditionalPermissionsVisible = false;
+        Items.Clear();
+        Items.Add(new AdminMenuItem("Valider", tag: "game.category.submit"));
+        SelectedItem = Items.FirstOrDefault();
+        Status = "Entrée : valider. Échap : retour.";
+    }
+
+    private async Task SubmitCategoryFormAsync()
+    {
+        var name = (TextInput ?? string.Empty).Trim();
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            await _dialogs.ShowError("Catégorie", "Un nom est requis.").ConfigureAwait(true);
+            return;
+        }
+
+        var parentInput = (SecondaryInput ?? string.Empty).Trim();
+        var parentId = string.IsNullOrEmpty(parentInput) ? null : parentInput;
+        if (IsBusy) return;
+        IsBusy = true;
+        try
+        {
+            AdminGameCategoriesResponseDto response;
+            if (string.Equals(_categoryFormMode, "edit", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(_categoryFormId))
+            {
+                response = await _admin.UpdateGameCategoryAsync(_categoryFormId, name, parentId).ConfigureAwait(true);
+            }
+            else
+            {
+                response = await _admin.CreateGameCategoryAsync(name, parentId).ConfigureAwait(true);
+            }
+            _loadedCategories = (response.Categories ?? new()).ToArray();
+            _categoryAssignments = response.Assignments ?? new Dictionary<string, string?>();
+            _dispatcher.Invoke(() =>
+            {
+                ShowCategories();
+                Status = "Catégorie enregistrée.";
+            });
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private async Task LoadCategoryAssignmentMenuAsync()
+    {
+        if (_selectedGame == null)
+        {
+            await _dialogs.ShowError("Catégorie", "Aucun jeu sélectionné.").ConfigureAwait(true);
+            return;
+        }
+
+        if (IsBusy) return;
+        IsBusy = true;
+        try
+        {
+            await RefreshCategoriesCacheAsync().ConfigureAwait(true);
+            _dispatcher.Invoke(ShowCategoryAssignmentList);
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private void ShowCategoryAssignmentList()
+    {
+        if (_selectedGame == null)
+        {
+            ShowGames();
+            return;
+        }
+
+        _page = AdminPage.GameCategoryAssign;
+        Title = $"Catégorie : {_selectedGame.Name}";
+        var assignedId = _categoryAssignments.TryGetValue(_selectedGame.Id, out var id) ? id : null;
+        var currentName = ResolveCategoryName(assignedId);
+        Details = $"Catégorie actuelle : {currentName ?? "pas de catégorie"}";
+        IsTextInputVisible = false;
+        IsSecondaryInputVisible = false;
+        IsAdditionalPermissionsVisible = false;
+        Items.Clear();
+        Items.Add(new AdminMenuItem("Pas de catégorie", tag: "game.category.assign.none"));
+        foreach (var category in _loadedCategories.OrderBy(c => c.Name, StringComparer.OrdinalIgnoreCase))
+        {
+            var assignedMarker = string.Equals(assignedId, category.Id, StringComparison.OrdinalIgnoreCase) ? "✓ " : string.Empty;
+            Items.Add(new AdminMenuItem($"{assignedMarker}{category.Name} [{category.Id}]", tag: category));
+        }
+        SelectedItem = Items.FirstOrDefault();
+        Status = "Entrée : assigner. Échap : retour.";
+    }
+
+    private async Task AssignCategoryToGameAsync(string? categoryId)
+    {
+        if (_selectedGame == null)
+        {
+            return;
+        }
+
+        if (IsBusy) return;
+        IsBusy = true;
+        try
+        {
+            var payload = await _admin.AssignGameCategoryAsync(_selectedGame.Id, categoryId).ConfigureAwait(true);
+            _loadedCategories = (payload.Categories ?? new()).ToArray();
+            _categoryAssignments = payload.Assignments ?? new Dictionary<string, string?>();
+            var categoryName = ResolveCategoryName(categoryId);
+            _selectedGame.CategoryId = categoryId;
+            _selectedGame.Category = categoryName ?? string.Empty;
+            var synced = _loadedGames.FirstOrDefault(g => string.Equals(g.Id, _selectedGame.Id, StringComparison.OrdinalIgnoreCase));
+            if (synced != null)
+            {
+                synced.CategoryId = categoryId;
+                synced.Category = _selectedGame.Category;
+            }
+            BuildGameActions(_selectedGame);
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private string? ResolveCategoryName(string? categoryId)
+    {
+        if (string.IsNullOrWhiteSpace(categoryId))
+        {
+            return null;
+        }
+        return _loadedCategories.FirstOrDefault(c => string.Equals(c.Id, categoryId, StringComparison.OrdinalIgnoreCase))?.Name;
+    }
+
     private void BuildGameActions(AdminGameDto game)
     {
+        _currentEditMode = string.Empty;
         _page = AdminPage.GameActions;
         _selectedGame = game;
         Title = $"Jeu : {game.Name}";
         Details = $"Type: {game.Id}. Joueurs: {game.MinPlayers ?? 0}-{game.MaxPlayers ?? 0}. Statut: {(game.Enabled ? "actif" : "désactivé")}.";
         IsTextInputVisible = false;
-        IsTernaryInputVisible = false;
+        IsAdditionalPermissionsVisible = false;
         IsSecondaryInputVisible = false;
         Items.Clear();
         Items.Add(new AdminMenuItem(game.Enabled ? "Désactiver" : "Activer", tag: "game.toggle"));
         Items.Add(new AdminMenuItem("Modifier le nom", tag: "game.edit.name"));
         Items.Add(new AdminMenuItem("Modifier la description", tag: "game.edit.description"));
+        Items.Add(new AdminMenuItem("Attribuer une catégorie", tag: "game.category.assign"));
         Items.Add(new AdminMenuItem("Modifier min/max joueurs", tag: "game.edit.players"));
         Items.Add(new AdminMenuItem("Réinitialiser les paramètres", tag: "game.reset"));
         SelectedItem = Items.FirstOrDefault();
@@ -643,7 +950,6 @@ public sealed class AdminViewModel : ObservableObject
         Title = title;
         Items.Clear();
         Items.Add(new AdminMenuItem("Valider", tag: "game.edit.submit"));
-        Items.Add(new AdminMenuItem($"Mode: {mode}", tag: mode));
         SelectedItem = Items.FirstOrDefault();
         TextInputLabel = label;
         TextInput = initialValue;
@@ -653,11 +959,12 @@ public sealed class AdminViewModel : ObservableObject
         IsSecondaryInputVisible = false;
         Details = $"Type: {game.Id}";
         Status = "Saisissez puis Entrée pour valider. Échap : retour.";
+        _currentEditMode = mode;
     }
 
     private async Task SubmitGameTextEditAsync(AdminGameDto game)
     {
-        var mode = Items.FirstOrDefault(i => i.Tag is string s && (s == "name" || s == "description"))?.Tag as string;
+        var mode = _currentEditMode;
         var value = (TextInput ?? string.Empty).Trim();
         if (mode == "name")
         {
@@ -747,7 +1054,7 @@ public sealed class AdminViewModel : ObservableObject
         Title = "Gestion des utilisateurs";
         Details = string.Empty;
         IsTextInputVisible = false;
-        IsTernaryInputVisible = false;
+        IsAdditionalPermissionsVisible = false;
         IsSecondaryInputVisible = false;
         Items.Clear();
         SelectedItem = null;
@@ -823,7 +1130,7 @@ public sealed class AdminViewModel : ObservableObject
         Title = "Gestion des utilisateurs";
         Details = string.Empty;
         IsTextInputVisible = false;
-        IsTernaryInputVisible = false;
+        IsAdditionalPermissionsVisible = false;
         IsSecondaryInputVisible = false;
         Items.Clear();
         Items.Add(new AdminMenuItem("Filtres utilisateurs (Entrée pour plus d'infos)", tag: "filters"));
@@ -849,7 +1156,7 @@ public sealed class AdminViewModel : ObservableObject
         Title = $"Utilisateur : {user.Username}";
         Details = string.Empty;
         IsTextInputVisible = false;
-        IsTernaryInputVisible = false;
+        IsAdditionalPermissionsVisible = false;
         IsSecondaryInputVisible = false;
         Items.Clear();
         Items.Add(new AdminMenuItem("Bannir", tag: "ban"));
@@ -869,7 +1176,7 @@ public sealed class AdminViewModel : ObservableObject
         Title = $"Rôles : {user.Username}";
         Details = "Sélectionnez un rôle, Entrée pour basculer.";
         IsTextInputVisible = false;
-        IsTernaryInputVisible = false;
+        IsAdditionalPermissionsVisible = false;
         IsSecondaryInputVisible = false;
         RebuildRolesItems();
         UpdateFilterVisibility();
@@ -1045,13 +1352,262 @@ public sealed class AdminViewModel : ObservableObject
         }
     }
 
+    private async Task LoadRoleDefinitionsAsync()
+    {
+        _page = AdminPage.RoleDefinitions;
+        Title = "Gestion des rôles";
+        Details = string.Empty;
+        IsTextInputVisible = false;
+        IsSecondaryInputVisible = false;
+        IsAdditionalPermissionsVisible = false;
+        Items.Clear();
+        SelectedItem = null;
+        Status = "Chargement des définitions...";
+        IsBusy = true;
+        try
+        {
+            var response = await _admin.ListRoleDefinitionsAsync().ConfigureAwait(true);
+            _loadedRoleDefinitions = (response.Definitions ?? new()).ToArray();
+            _dispatcher.Invoke(ShowRoleDefinitionsList);
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private void ShowRoleDefinitionsList()
+    {
+        _page = AdminPage.RoleDefinitions;
+        Title = "Gestion des rôles";
+        Details = $"Définitions disponibles : {_loadedRoleDefinitions.Length}.";
+        IsTextInputVisible = false;
+        IsSecondaryInputVisible = false;
+        IsAdditionalPermissionsVisible = false;
+        _selectedRoleDefinition = null;
+        Items.Clear();
+        Items.Add(new AdminMenuItem("Créer un rôle", tag: "roleDefinition.create"));
+        foreach (var definition in _loadedRoleDefinitions.OrderBy(d => d.Name, StringComparer.OrdinalIgnoreCase))
+        {
+            var label = $"{definition.Name} — {definition.Description}";
+            Items.Add(new AdminMenuItem(label, tag: definition));
+        }
+        if (!_loadedRoleDefinitions.Any())
+        {
+            Items.Add(new AdminMenuItem("Aucune définition disponible."));
+        }
+        SelectedItem = Items.FirstOrDefault();
+        Status = "Entrée : actions sur le rôle. Échap : retour.";
+    }
+
+    private void BuildRoleDefinitionActions(AdminRoleDefinitionDto definition)
+    {
+        _page = AdminPage.RoleDefinitionActions;
+        _selectedRoleDefinition = definition;
+        Title = $"Rôle : {definition.Name}";
+        Details = definition.Description;
+        IsTextInputVisible = false;
+        IsSecondaryInputVisible = false;
+        IsAdditionalPermissionsVisible = false;
+        Items.Clear();
+        Items.Add(new AdminMenuItem("Modifier", tag: "roleDefinition.edit"));
+        Items.Add(new AdminMenuItem("Supprimer", tag: "roleDefinition.delete"));
+        SelectedItem = Items.FirstOrDefault();
+        Status = "Entrée : action. Échap : retour.";
+    }
+
+    private void BuildRoleDefinitionForm(string mode, AdminRoleDefinitionDto? definition = null)
+    {
+        _page = AdminPage.RoleDefinitionForm;
+        _roleDefinitionFormMode = mode;
+        _selectedRoleDefinition = definition;
+        _roleDefinitionOriginalName = definition?.Name ?? string.Empty;
+        Title = mode == "create" ? "Créer un rôle" : $"Modifier le rôle {definition?.Name}";
+        Details = mode == "create"
+            ? "Donnez un nom, une description et la liste des permissions."
+            : definition?.Description ?? string.Empty;
+        TextInputLabel = "Nom";
+        TextInput = definition?.Name ?? string.Empty;
+        SecondaryInputLabel = "Description";
+        SecondaryInput = definition?.Description ?? string.Empty;
+        AdditionalPermissionsLabel = "Permissions supplémentaires (une par ligne)";
+        InitializePermissionModules(definition?.Permissions);
+        IsTextInputVisible = true;
+        IsSecondaryInputVisible = true;
+        IsAdditionalPermissionsVisible = true;
+        Items.Clear();
+        Items.Add(new AdminMenuItem("Valider", tag: "roleDefinition.submit"));
+        SelectedItem = Items.FirstOrDefault();
+        Status = "Entrée : valider. Échap : retour.";
+    }
+
+    private async Task SubmitRoleDefinitionFormAsync()
+    {
+        var name = (TextInput ?? string.Empty).Trim();
+        var description = (SecondaryInput ?? string.Empty).Trim();
+        var permissions = PermissionModules
+            .SelectMany(module => module.SelectedPermissions)
+            .Concat(ParsePermissions(AdditionalPermissions))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            await _dialogs.ShowError("Rôle", "Un nom est requis.").ConfigureAwait(true);
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(description))
+        {
+            await _dialogs.ShowError("Rôle", "Une description est requise.").ConfigureAwait(true);
+            return;
+        }
+
+        if (permissions.Count == 0)
+        {
+            await _dialogs.ShowError("Rôle", "Liste de permissions invalide.").ConfigureAwait(true);
+            return;
+        }
+
+        IsBusy = true;
+        try
+        {
+            if (string.Equals(_roleDefinitionFormMode, "create", StringComparison.OrdinalIgnoreCase))
+            {
+                await _admin.CreateRoleDefinitionAsync(name, description, permissions).ConfigureAwait(true);
+                await _dialogs.ShowInfo("Rôle", $"Rôle {name} créé.").ConfigureAwait(true);
+            }
+            else
+            {
+                var targetName = _roleDefinitionOriginalName;
+                var newName = string.Equals(name, targetName, StringComparison.Ordinal) ? null : name;
+                await _admin.UpdateRoleDefinitionAsync(targetName, newName, description, permissions).ConfigureAwait(true);
+                await _dialogs.ShowInfo("Rôle", $"Rôle {targetName} mis à jour.").ConfigureAwait(true);
+            }
+
+            await LoadRoleDefinitionsAsync().ConfigureAwait(true);
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private async Task DeleteRoleDefinitionAsync(AdminRoleDefinitionDto definition)
+    {
+        var confirmation = await _dialogs.Confirm("Suppression", $"Supprimer {definition.Name} ?").ConfigureAwait(true);
+        if (confirmation != true)
+        {
+            return;
+        }
+
+        IsBusy = true;
+        try
+        {
+            await _admin.DeleteRoleDefinitionAsync(definition.Name).ConfigureAwait(true);
+            await LoadRoleDefinitionsAsync().ConfigureAwait(true);
+            await _dialogs.ShowInfo("Rôle", $"Rôle {definition.Name} supprimé.").ConfigureAwait(true);
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private static List<string> ParsePermissions(string? raw)
+    {
+        var separators = new[] { '\r', '\n', ',', ';' };
+        return (raw ?? string.Empty)
+            .Split(separators, StringSplitOptions.RemoveEmptyEntries)
+            .Select(p => p.Trim())
+            .Where(p => !string.IsNullOrWhiteSpace(p))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+    }
+
+    private void InitializePermissionModules(IEnumerable<string>? permissions)
+    {
+        var remaining = new HashSet<string>(permissions ?? Enumerable.Empty<string>(), StringComparer.OrdinalIgnoreCase);
+        _permissionModules.Clear();
+        foreach (var descriptor in PermissionModuleDescriptors)
+        {
+            var state = new PermissionModuleState(descriptor);
+            state.Read = remaining.Remove(state.ReadPermission);
+            state.Write = remaining.Remove(state.WritePermission);
+            state.Delete = remaining.Remove(state.DeletePermission);
+            _permissionModules.Add(state);
+        }
+
+        var extras = remaining.OrderBy(p => p, StringComparer.OrdinalIgnoreCase).ToList();
+        AdditionalPermissions = extras.Count > 0 ? string.Join(Environment.NewLine, extras) : string.Empty;
+        OnPropertyChanged(nameof(PermissionModules));
+    }
+
+    public sealed class PermissionModuleState : ObservableObject
+    {
+        private bool _read;
+        private bool _write;
+        private bool _delete;
+
+        public PermissionModuleState(PermissionModuleDescriptor descriptor)
+        {
+            Descriptor = descriptor;
+        }
+
+        public PermissionModuleDescriptor Descriptor { get; }
+
+        public string DisplayName => Descriptor.DisplayName;
+
+        public string Description => Descriptor.Description;
+
+        public string ModuleId => Descriptor.ModuleId;
+
+        public string ReadPermission => $"{ModuleId}.read";
+
+        public string WritePermission => $"{ModuleId}.write";
+
+        public string DeletePermission => $"{ModuleId}.delete";
+
+        public string ReadLabel => $"Lecture {DisplayName}";
+        public string WriteLabel => $"Écriture {DisplayName}";
+        public string DeleteLabel => $"Suppression {DisplayName}";
+
+        public bool Read
+        {
+            get => _read;
+            set => SetProperty(ref _read, value);
+        }
+
+        public bool Write
+        {
+            get => _write;
+            set => SetProperty(ref _write, value);
+        }
+
+        public bool Delete
+        {
+            get => _delete;
+            set => SetProperty(ref _delete, value);
+        }
+
+        public IEnumerable<string> SelectedPermissions
+        {
+            get
+            {
+                if (Read) yield return ReadPermission;
+                if (Write) yield return WritePermission;
+                if (Delete) yield return DeletePermission;
+            }
+        }
+    }
+
     private void ShowLogs()
     {
         _page = AdminPage.Logs;
         Title = "Logs serveurs";
         Details = "Télécharger les logs les plus récents.";
         IsTextInputVisible = false;
-        IsTernaryInputVisible = false;
+        IsAdditionalPermissionsVisible = false;
         IsSecondaryInputVisible = false;
         Items.Clear();
         Items.Add(new AdminMenuItem("Télécharger les logs", tag: "logs.download"));

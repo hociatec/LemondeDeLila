@@ -141,6 +141,78 @@ public sealed class AdminService : IAdminService
         }
     }
 
+    public async Task<AdminGameCategoriesResponseDto> ListGameCategoriesAsync(CancellationToken cancellationToken = default)
+    {
+        var token = EnsureAuth();
+        var response = await _ws.RequestAsync<AdminGameCategoriesResponseDto>(
+            WsMessageTypes.Admin.GamesCategories,
+            new { },
+            token,
+            cancellationToken).ConfigureAwait(false);
+        if (!response.Success || response.Payload == null)
+        {
+            throw new InvalidOperationException(response.Error ?? "Chargement des catégories impossible.");
+        }
+        return response.Payload;
+    }
+
+    public async Task<AdminGameCategoriesResponseDto> CreateGameCategoryAsync(string name, string? parentId = null, CancellationToken cancellationToken = default)
+    {
+        var token = EnsureAuth();
+        var response = await _ws.RequestAsync<AdminGameCategoriesResponseDto>(
+            WsMessageTypes.Admin.GameCategoryCreate,
+            new { name, parentId },
+            token,
+            cancellationToken).ConfigureAwait(false);
+        if (!response.Success || response.Payload == null)
+        {
+            throw new InvalidOperationException(response.Error ?? "Création catégorie impossible.");
+        }
+        return response.Payload;
+    }
+
+    public async Task<AdminGameCategoriesResponseDto> UpdateGameCategoryAsync(string id, string? name = null, string? parentId = null, CancellationToken cancellationToken = default)
+    {
+        var token = EnsureAuth();
+        var payload = new Dictionary<string, object?>
+        {
+            ["id"] = id,
+        };
+        if (!string.IsNullOrWhiteSpace(name))
+        {
+            payload["name"] = name;
+        }
+        if (parentId != null)
+        {
+            payload["parentId"] = parentId;
+        }
+        var response = await _ws.RequestAsync<AdminGameCategoriesResponseDto>(
+            WsMessageTypes.Admin.GameCategoryUpdate,
+            payload,
+            token,
+            cancellationToken).ConfigureAwait(false);
+        if (!response.Success || response.Payload == null)
+        {
+            throw new InvalidOperationException(response.Error ?? "Mise à jour catégorie impossible.");
+        }
+        return response.Payload;
+    }
+
+    public async Task<AdminGameCategoriesResponseDto> AssignGameCategoryAsync(string gameType, string? categoryId = null, CancellationToken cancellationToken = default)
+    {
+        var token = EnsureAuth();
+        var response = await _ws.RequestAsync<AdminGameCategoriesResponseDto>(
+            WsMessageTypes.Admin.GameCategoryAssign,
+            new { gameType, categoryId },
+            token,
+            cancellationToken).ConfigureAwait(false);
+        if (!response.Success || response.Payload == null)
+        {
+            throw new InvalidOperationException(response.Error ?? "Assignation de catégorie impossible.");
+        }
+        return response.Payload;
+    }
+
     public async Task<AdminRolesListResponseDto> GetAvailableRolesAsync(CancellationToken cancellationToken = default)
     {
         var token = EnsureAuth();

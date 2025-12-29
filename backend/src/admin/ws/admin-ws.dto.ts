@@ -131,6 +131,54 @@ export class AdminGameResetWsDto {
   gameType!: string;
 }
 
+export class AdminGameCategoriesListWsDto {
+  @IsOptional()
+  @IsBoolean()
+  _noop?: boolean;
+}
+
+export class AdminGameCategoryCreateWsDto {
+  @IsString()
+  @MinLength(1)
+  @MaxLength(200)
+  name!: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  parentId?: string | null;
+}
+
+export class AdminGameCategoryUpdateWsDto {
+  @IsString()
+  @MinLength(1)
+  @MaxLength(200)
+  id!: string;
+
+  @IsOptional()
+  @IsString()
+  @MinLength(1)
+  @MaxLength(200)
+  name?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  parentId?: string | null;
+}
+
+export class AdminGameCategoryAssignWsDto {
+  @IsString()
+  @MinLength(1)
+  @MaxLength(100)
+  gameType!: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  categoryId?: string | null;
+}
+
 export class AdminUserRolesWsDto {
   @IsInt()
   @IsPositive()

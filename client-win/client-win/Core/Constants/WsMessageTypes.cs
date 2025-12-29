@@ -131,6 +131,10 @@ public static class WsMessageTypes
         public const string GamesSetEnabled = "admin.games.setEnabled";
         public const string GamesUpdate = "admin.games.update";
         public const string GamesReset = "admin.games.reset";
+        public const string GamesCategories = "admin.games.categories";
+        public const string GameCategoryCreate = "admin.games.category.create";
+        public const string GameCategoryUpdate = "admin.games.category.update";
+        public const string GameCategoryAssign = "admin.games.category.assign";
         public const string RolesList = "admin.roles.list";
         public const string LogsDownload = "admin.logs.download";
         public const string RolesDefinitionsList = "admin.roles.definitions";

@@ -6,6 +6,7 @@ import {
   GameRulesAdapter,
 } from '../interfaces/game-rules-adapter.interface';
 import { GameCatalogOverridesService } from './game-catalog-overrides.service';
+import { GameCategoriesService } from './game-categories.service';
 
 @Injectable()
 export class GameRegistryService {
@@ -16,7 +17,10 @@ export class GameRegistryService {
   private cachedAtMs = 0;
   private readonly devTtlMs = 30000;
 
-  constructor(private readonly overrides: GameCatalogOverridesService) {
+  constructor(
+    private readonly overrides: GameCatalogOverridesService,
+    private readonly categories: GameCategoriesService,
+  ) {
     const envRoot = process.env.GAME_CATALOG_PATH;
     const cwd = process.cwd();
     const candidates = [
@@ -100,7 +104,7 @@ export class GameRegistryService {
     if (!handler) {
       return def;
     }
-    return {
+    const enriched: GameDefinition = {
       id: def.id,
       name: def.name || handler.displayName,
       category: def.category || handler.category,
@@ -111,6 +115,7 @@ export class GameRegistryService {
       manifestPath: def.manifestPath,
       rulesPath: def.rulesPath,
     };
+    return this.categories.applyToDefinition(enriched);
   }
 
   private async loadDefinitionsFromFs(): Promise<GameDefinition[]> {
