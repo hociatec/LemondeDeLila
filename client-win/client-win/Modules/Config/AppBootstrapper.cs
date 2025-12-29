@@ -54,32 +54,40 @@ public static class AppBootstrapper
         // 1. Initialiser AppData et logging en premier
         var baseDir = AppContext.BaseDirectory;
         var environment = EnvironmentDetector.GetEnvironment();
-        var logsPath = Environment.GetEnvironmentVariable("LOG_PATH");
-        if (string.IsNullOrWhiteSpace(logsPath))
-        {
-            if (environment == EnvironmentDetector.AppEnvironment.Development)
-            {
-                var repoRoot = TryFindRepoRoot();
-                if (!string.IsNullOrWhiteSpace(repoRoot))
-                {
-                    logsPath = Path.Combine(repoRoot, "client-win", "client", "log");
-                }
-            }
-            // En dev (dotnet run / scripts), on logge dans le dossier de travail pour faciliter le debug.
-            // En prod, on logge à côté de l'exécutable.
-            if (string.IsNullOrWhiteSpace(logsPath))
-            {
-                logsPath = environment == EnvironmentDetector.AppEnvironment.Development
-                    ? Path.Combine(Directory.GetCurrentDirectory(), "client", "log")
-                    : Path.Combine(baseDir, "client", "log");
-            }
-        }
         var appDataPath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             AppConstants.AppDataFolderName);
         Directory.CreateDirectory(appDataPath);
 
-        LoggingConfiguration.ConfigureLogger(logsPath);
+        // Logs centralisés: toujours dans %LOCALAPPDATA%\LeMondeDeLila\log (debug facile après restart/updates).
+        // Si LOG_PATH est fourni, on le garde en "chemin principal" et on mirror aussi vers AppData.
+        var appLogsPath = Path.Combine(appDataPath, "log");
+        var configuredLogsPath = Environment.GetEnvironmentVariable("LOG_PATH");
+
+        string? legacyLogsPath = null;
+        if (environment == EnvironmentDetector.AppEnvironment.Development)
+        {
+            var repoRoot = TryFindRepoRoot();
+            if (!string.IsNullOrWhiteSpace(repoRoot))
+            {
+                legacyLogsPath = Path.Combine(repoRoot, "client-win", "client", "log");
+            }
+        }
+        if (string.IsNullOrWhiteSpace(legacyLogsPath))
+        {
+            legacyLogsPath = environment == EnvironmentDetector.AppEnvironment.Development
+                ? Path.Combine(Directory.GetCurrentDirectory(), "client", "log")
+                : Path.Combine(baseDir, "client", "log");
+        }
+
+        if (!string.IsNullOrWhiteSpace(configuredLogsPath))
+        {
+            LoggingConfiguration.ConfigureLogger(configuredLogsPath, mirrorLogsPath: appLogsPath);
+        }
+        else
+        {
+            LoggingConfiguration.ConfigureLogger(appLogsPath, mirrorLogsPath: legacyLogsPath);
+        }
 
         // 2. Détecter environnement et valider exigences de production
         Log.Information("Environnement détecté: {Environment}", environment);

@@ -1,5 +1,7 @@
 using System.IO;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Serilog;
 using Serilog.Events;
 
@@ -44,32 +46,46 @@ public static class LoggingConfiguration
     /// Configure et initialise le logger global Serilog.
     /// </summary>
     /// <param name="logsPath">Chemin du dossier de logs (ex: client/log).</param>
+    /// <param name="mirrorLogsPath">Chemin additionnel (optionnel) où recopier les logs.</param>
     /// <param name="minLevel">Niveau minimum de log (défaut: Information).</param>
-    public static void ConfigureLogger(string logsPath, LogEventLevel minLevel = LogEventLevel.Information)
+    public static void ConfigureLogger(string logsPath, string? mirrorLogsPath = null, LogEventLevel minLevel = LogEventLevel.Information)
     {
         minLevel = ResolveMinimumLevel(minLevel);
 
-        // Créer le dossier de logs s'il n'existe pas
-        Directory.CreateDirectory(logsPath);
+        var targets = new[] { logsPath, mirrorLogsPath }
+            .Where(p => !string.IsNullOrWhiteSpace(p))
+            .Select(p => p!.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
 
-        Log.Logger = new LoggerConfiguration()
+        foreach (var target in targets)
+        {
+            Directory.CreateDirectory(target);
+        }
+
+        var cfg = new LoggerConfiguration()
             .MinimumLevel.Is(minLevel)
             .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
             .MinimumLevel.Override("System", LogEventLevel.Warning)
             .Enrich.FromLogContext()
             .WriteTo.Console(
                 outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}")
-            .WriteTo.Debug()
-            .WriteTo.File(
-                path: Path.Combine(logsPath, "lemondedelila-.log"),
+            .WriteTo.Debug();
+
+        foreach (var target in targets)
+        {
+            cfg = cfg.WriteTo.File(
+                path: Path.Combine(target, "lemondedelila-.log"),
                 rollingInterval: RollingInterval.Day,
-                retainedFileCountLimit: 7,
+                retainedFileCountLimit: 14,
                 outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff} [{Level:u3}] {Message:lj}{NewLine}{Exception}",
-                shared: true)
-            .CreateLogger();
+                shared: true);
+        }
+
+        Log.Logger = cfg.CreateLogger();
 
         Log.Information("=== Le Monde de Lila - Démarrage de l'application ===");
-        Log.Information("Chemin des logs: {LogsPath}", logsPath);
+        Log.Information("Chemins des logs: {LogsPaths}", string.Join(" | ", targets));
         Log.Information("Niveau de logs: {LogLevel}", minLevel);
     }
 
