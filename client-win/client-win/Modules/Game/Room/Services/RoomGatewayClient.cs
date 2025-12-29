@@ -37,32 +37,33 @@ public sealed class RoomGatewayClient : IRoomGatewayClient
             throw new ArgumentException("gameType requis", nameof(gameType));
         }
 
-        var created = await CreateRoomAsync(gameType, token, cancellationToken).ConfigureAwait(false);
-        var roomId = created.RoomId;
-        if (roomId <= 0)
-        {
-            throw new InvalidOperationException("Création de table échouée (roomId invalide).");
-        }
-
-        var socket = _socketFactory();
-        var uri = BuildRoomUri(_config.RealtimeGatewayWs, token, roomId);
-        var headers = BuildHeaders(_config.SharedSecret);
-
-        Log.Information("Connexion à la room WS roomId={RoomId}", roomId);
-        await socket.ConnectAsync(uri, token: null, headers: headers, cancellationToken: cancellationToken).ConfigureAwait(false);
-
-        var session = new RoomSession(roomId, gameType, socket);
-        // Le backend envoie un room.updated à la connexion ; sinon on garde au moins l'état "created".
-        session.LastRoomState = created.Payload;
-        return session;
-    }
-
-    private async Task<RoomEnvelope<RoomPayloadDto>> CreateRoomAsync(string gameType, string token, CancellationToken cancellationToken)
-    {
         var socket = _socketFactory();
         var uri = BuildRoomUri(_config.RealtimeGatewayWs, token, roomId: 0);
         var headers = BuildHeaders(_config.SharedSecret);
 
+        Log.Information("WS room.create: connexion à {Endpoint}", uri);
+        await socket.ConnectAsync(uri, token: null, headers: headers, cancellationToken: cancellationToken).ConfigureAwait(false);
+
+        var created = await WaitRoomCreatedAsync(socket, gameType, cancellationToken).ConfigureAwait(false);
+        var roomId = created.RoomId;
+        if (roomId <= 0)
+        {
+            await socket.CloseAsync().ConfigureAwait(false);
+            await socket.DisposeAsync().ConfigureAwait(false);
+            throw new InvalidOperationException("Création de table échouée (roomId invalide).");
+        }
+
+        Log.Information("Connexion à la room WS (réutilisation socket) roomId={RoomId}", roomId);
+        var session = new RoomSession(roomId, gameType, socket);
+        session.LastRoomState = created.Payload;
+        return session;
+    }
+
+    private static async Task<RoomEnvelope<RoomPayloadDto>> WaitRoomCreatedAsync(
+        IWebSocketConnection socket,
+        string gameType,
+        CancellationToken cancellationToken)
+    {
         var tcs = new TaskCompletionSource<RoomEnvelope<RoomPayloadDto>>(TaskCreationOptions.RunContinuationsAsynchronously);
         var connected = false;
         var startedAt = DateTime.UtcNow;
@@ -132,12 +133,9 @@ public sealed class RoomGatewayClient : IRoomGatewayClient
 
         try
         {
-            Log.Information("WS room.create: connexion à {Endpoint}", uri);
-            await socket.ConnectAsync(uri, token: null, headers: headers, cancellationToken: cancellationToken).ConfigureAwait(false);
-            connected = true;
-            Log.Information("WS room.create: connecté en {ElapsedMs}ms", (DateTime.UtcNow - startedAt).TotalMilliseconds);
             var create = JsonSerializer.Serialize(new { type = "room.create", payload = new { gameType } }, _json);
             await socket.SendAsync(create, cancellationToken).ConfigureAwait(false);
+            connected = true;
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(20));
             using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeout.Token);
@@ -154,8 +152,6 @@ public sealed class RoomGatewayClient : IRoomGatewayClient
             socket.MessageReceived -= OnMessage;
             socket.Error -= OnError;
             socket.StateChanged -= OnStateChanged;
-            await socket.CloseAsync().ConfigureAwait(false);
-            await socket.DisposeAsync().ConfigureAwait(false);
         }
     }
 

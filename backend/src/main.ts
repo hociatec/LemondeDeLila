@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
-import { WsAdapter } from '@nestjs/platform-ws';
+import { LilaWsAdapter } from './common/ws/lila-ws.adapter';
 import helmet from 'helmet';
 import compression from 'compression';
 import { ConfigService } from '@nestjs/config';
@@ -25,7 +25,7 @@ async function bootstrap() {
     origin: origins && origins.length > 0 ? origins : true,
     credentials: true,
   });
-  app.useWebSocketAdapter(new WsAdapter(app));
+  app.useWebSocketAdapter(new LilaWsAdapter(app));
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,

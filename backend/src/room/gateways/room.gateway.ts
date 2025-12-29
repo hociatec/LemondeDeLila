@@ -362,6 +362,9 @@ export class RoomGateway
       case 'room.create':
         await this.handleRoomCreate(client, meta, data);
         break;
+      case 'room.join':
+        await this.handleRoomJoin(client, meta, data);
+        break;
       default:
         break;
     }
@@ -480,6 +483,7 @@ export class RoomGateway
 
   private async handleBotAdd(meta: AuthedClient, payload: any) {
     const bot = await this.botService.addBot(meta.roomId, meta.userId);
+    await this.roomsService.invalidateRoomPayloadCache(meta.roomId);
     await this.broadcast(meta.roomId, 'bot.added', {
       roomId: meta.roomId,
       bot: { id: bot.id, name: bot.name },
@@ -503,6 +507,7 @@ export class RoomGateway
       meta.userId,
       botId,
     );
+    await this.roomsService.invalidateRoomPayloadCache(meta.roomId);
     await this.broadcast(meta.roomId, 'bot.removed', {
       roomId: meta.roomId,
       bot: { id: bot.id, name: bot.name },
@@ -572,9 +577,10 @@ export class RoomGateway
 
   private async handleRoomCreate(
     client: WebSocket,
-    meta: AuthedClient,
+    meta: ClientMeta,
     payload: any,
   ) {
+    const startedAt = Date.now();
     const gameType =
       typeof payload?.gameType === 'string' ? payload.gameType : '';
     const name = typeof payload?.name === 'string' ? payload.name : null;
@@ -594,6 +600,24 @@ export class RoomGateway
       maxPlayers,
       isPrivate,
     );
+
+    const previousRoomId = meta.roomId;
+    if (previousRoomId !== room.id) {
+      const previousSet = this.rooms.get(previousRoomId);
+      if (previousSet) {
+        previousSet.delete(client);
+        if (previousSet.size === 0) {
+          this.rooms.delete(previousRoomId);
+        }
+      }
+      if (!this.rooms.has(room.id)) {
+        this.rooms.set(room.id, new Set());
+      }
+      this.rooms.get(room.id)!.add(client);
+    }
+    meta.roomId = room.id;
+    meta.role = 'participant';
+
     const manifest = await this.catalog.getGame(room.gameType);
     const state = {
       manifest: manifest
@@ -621,15 +645,70 @@ export class RoomGateway
       generatedAt: new Date().toISOString(),
     };
     const message = { type: 'room.created', roomId: room.id, payload: state };
-    if (meta.roomId > 0) {
+    if (previousRoomId > 0) {
       await this.broadcast(
-        meta.roomId,
+        previousRoomId,
         message.type,
         message.payload ?? state,
         room.id,
       );
     }
+    await this.roomsService.primeRoomPayloadCache(room.id, state);
     this.safeSend(client, message);
+    await this.sendRoomState(room.id);
+    const elapsedMs = Date.now() - startedAt;
+    if (elapsedMs >= 1500) {
+      this.logger.warn(
+        `room.create lent: ${elapsedMs}ms (userId=${meta.userId}, roomId=${room.id}, gameType=${room.gameType})`,
+      );
+    }
+  }
+
+  private async handleRoomJoin(client: WebSocket, meta: ClientMeta, payload: any) {
+    const roomId = Number(payload?.roomId ?? payload?.room ?? 0);
+    const spectatorRaw = payload?.spectator;
+    const spectator =
+      spectatorRaw === true ||
+      spectatorRaw === 1 ||
+      spectatorRaw === '1' ||
+      spectatorRaw === 'true' ||
+      spectatorRaw === 'yes' ||
+      spectatorRaw === 'y';
+
+    if (!Number.isFinite(roomId) || roomId <= 0) {
+      throw new Error('roomId invalide');
+    }
+
+    if (spectator) {
+      const allowed = await this.canSpectate(roomId, meta.userId);
+      if (!allowed) {
+        client.close(4003, 'Spectateur non autorise sur cette table');
+        return;
+      }
+    }
+
+    if (!spectator) {
+      await this.roomsService.joinRoom(roomId, meta.userId);
+    }
+
+    const previousRoomId = meta.roomId;
+    if (previousRoomId !== roomId) {
+      const previousSet = this.rooms.get(previousRoomId);
+      if (previousSet) {
+        previousSet.delete(client);
+        if (previousSet.size === 0) {
+          this.rooms.delete(previousRoomId);
+        }
+      }
+      if (!this.rooms.has(roomId)) {
+        this.rooms.set(roomId, new Set());
+      }
+      this.rooms.get(roomId)!.add(client);
+    }
+
+    meta.roomId = roomId;
+    meta.role = spectator ? 'spectator' : 'participant';
+    await this.sendRoomState(roomId);
   }
 
   private extractParams(client: WebSocket, args: any[]) {

@@ -6,6 +6,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { Inject, forwardRef } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Repository } from 'typeorm';
 import { Room } from '../entities/room.entity';
@@ -17,11 +18,15 @@ import { PresenceService } from '../../presence/services/presence.service';
 import { OPEN_ROOM_STATUSES } from '../constants/room-status.constants';
 import { CatalogService } from '../../catalog/services/catalog.service';
 import { GameStatsService } from '../../stats/services/game-stats.service';
+import type { Redis } from 'ioredis';
 
 @Injectable()
 export class RoomService {
   private realtimeNotifier?: (roomId: number) => Promise<void> | void;
   private readonly logger = new Logger(RoomService.name);
+  private redis: Redis | null = null;
+  private readonly roomPayloadRedisPrefix = 'room:payload:';
+  private readonly roomPayloadTtlSeconds = 3;
 
   /**
    * Hook optionnel pour notifier les clients WS room (set par RoomGateway).
@@ -48,7 +53,24 @@ export class RoomService {
     private readonly presenceService: PresenceService,
     private readonly catalog: CatalogService,
     private readonly stats: GameStatsService,
+    private readonly config: ConfigService,
   ) {}
+
+  async primeRoomPayloadCache(roomId: number, payload: RoomPayload): Promise<void> {
+    await this.persistRoomPayload(roomId, payload);
+  }
+
+  async invalidateRoomPayloadCache(roomId: number): Promise<void> {
+    if (!this.redis) {
+      this.ensureRedisInitialized();
+    }
+    if (!this.redis) return;
+    try {
+      await this.redis.del(this.roomPayloadKey(roomId));
+    } catch {
+      // best effort
+    }
+  }
 
   async createRoom(
     userId: number,
@@ -57,12 +79,15 @@ export class RoomService {
     maxPlayers?: number | null,
     isPrivate = false,
   ): Promise<Room> {
+    const startedAt = Date.now();
     const owner = await this.requireUser(userId);
+    const afterOwnerAt = Date.now();
     if (!gameType || gameType.trim() === '') {
       throw new BadRequestException('Type de jeu requis');
     }
     const gameId = gameType.trim();
     const known = await this.catalog.getGame(gameId);
+    const afterCatalogAt = Date.now();
     if (!known) {
       throw new BadRequestException('Type de jeu invalide');
     }
@@ -72,7 +97,7 @@ export class RoomService {
         : known.maxPlayers && known.maxPlayers > 0
           ? known.maxPlayers
           : 4;
-    return await this.rooms.manager.transaction(async (manager) => {
+    const room = await this.rooms.manager.transaction(async (manager) => {
       const roomRepo = manager.getRepository(Room);
       const participantRepo = manager.getRepository(RoomParticipant);
 
@@ -96,6 +121,25 @@ export class RoomService {
 
       return room;
     });
+    await this.invalidateRoomPayloadCache(room.id);
+    const elapsedMs = Date.now() - startedAt;
+    if (elapsedMs >= 1500) {
+      const now = Date.now();
+      this.logger.warn(
+        `createRoom lent ${JSON.stringify({
+          userId,
+          gameType: gameId,
+          roomId: room.id,
+          ms: elapsedMs,
+          stepsMs: {
+            requireUser: afterOwnerAt - startedAt,
+            catalog: afterCatalogAt - afterOwnerAt,
+            transaction: now - afterCatalogAt,
+          },
+        })}`,
+      );
+    }
+    return room;
   }
 
   async joinRoom(
@@ -130,6 +174,7 @@ export class RoomService {
       });
       await this.participants.save(participant);
     }
+    await this.invalidateRoomPayloadCache(room.id);
 
     if (String(room.status ?? '').toLowerCase() === 'started') {
       try {
@@ -163,6 +208,7 @@ export class RoomService {
       participant.leftAt = new Date();
       await this.participants.save(participant);
     }
+    await this.invalidateRoomPayloadCache(room.id);
 
     // Quit explicite d'une partie démarrée = "partie quittée" dans les stats.
     // (Ne pas le faire en mode disconnectOnly, déjà géré plus haut.)
@@ -196,6 +242,7 @@ export class RoomService {
         bots,
       });
       await this.rooms.delete(room.id);
+      await this.invalidateRoomPayloadCache(room.id);
       // Broadcast la mise à jour de présence en temps réel
       this.presenceService.broadcastPresence();
       return null;
@@ -226,6 +273,7 @@ export class RoomService {
     this.ensureOwner(room, userId);
     room.isPrivate = !room.isPrivate;
     await this.rooms.save(room);
+    await this.invalidateRoomPayloadCache(room.id);
     return room;
   }
 
@@ -240,6 +288,7 @@ export class RoomService {
     room.status = 'started';
     room.startedAt = room.startedAt ?? new Date();
     await this.rooms.save(room);
+    await this.invalidateRoomPayloadCache(room.id);
 
     try {
       const activeParticipants = await this.participants.find({
@@ -278,6 +327,7 @@ export class RoomService {
     room.status = 'setup';
     room.startedAt = null;
     await this.rooms.save(room);
+    await this.invalidateRoomPayloadCache(room.id);
     return room;
   }
 
@@ -290,10 +340,15 @@ export class RoomService {
     room.status = 'setup';
     room.startedAt = null;
     await this.rooms.save(room);
+    await this.invalidateRoomPayloadCache(room.id);
     return room;
   }
 
   async getRoomPayload(roomId: number): Promise<RoomPayload> {
+    const cached = await this.getCachedRoomPayload(roomId);
+    if (cached) {
+      return cached;
+    }
     const room = await this.rooms.findOne({
       where: { id: roomId },
       relations: ['owner', 'participants', 'participants.user', 'bots'],
@@ -301,7 +356,9 @@ export class RoomService {
     if (!room) {
       throw new NotFoundException('Room introuvable');
     }
-    return await this.toPayload(room);
+    const payload = await this.toPayload(room);
+    await this.persistRoomPayload(roomId, payload);
+    return payload;
   }
 
   private async toPayload(room: Room): Promise<RoomPayload> {
@@ -398,6 +455,65 @@ export class RoomService {
     }
     if (activeParticipations.length > 0) {
       await this.participants.save(activeParticipations);
+    }
+  }
+
+  private roomPayloadKey(roomId: number): string {
+    return `${this.roomPayloadRedisPrefix}${roomId}`;
+  }
+
+  private ensureRedisInitialized(): void {
+    if (this.redis) return;
+    const redisUrl =
+      this.config.get<string>('ROOM_PAYLOAD_REDIS_URL') ??
+      this.config.get<string>('SESSION_STORE_REDIS_URL') ??
+      process.env.ROOM_PAYLOAD_REDIS_URL ??
+      process.env.SESSION_STORE_REDIS_URL ??
+      null;
+    if (!redisUrl) return;
+    try {
+      const RedisCtor = require('ioredis');
+      const redisInstance = new RedisCtor(redisUrl);
+      redisInstance.on('error', (error: Error) => {
+        this.logger.error('Erreur Redis (room payload cache)', error);
+      });
+      this.redis = redisInstance;
+    } catch {
+      this.redis = null;
+    }
+  }
+
+  private async getCachedRoomPayload(roomId: number): Promise<RoomPayload | null> {
+    if (!this.redis) {
+      this.ensureRedisInitialized();
+    }
+    if (!this.redis) return null;
+    try {
+      const raw = await this.redis.get(this.roomPayloadKey(roomId));
+      if (!raw) return null;
+      return JSON.parse(raw) as RoomPayload;
+    } catch {
+      return null;
+    }
+  }
+
+  private async persistRoomPayload(
+    roomId: number,
+    payload: RoomPayload,
+  ): Promise<void> {
+    if (!this.redis) {
+      this.ensureRedisInitialized();
+    }
+    if (!this.redis) return;
+    try {
+      await this.redis.set(
+        this.roomPayloadKey(roomId),
+        JSON.stringify(payload),
+        'EX',
+        this.roomPayloadTtlSeconds,
+      );
+    } catch {
+      // best effort
     }
   }
 }
