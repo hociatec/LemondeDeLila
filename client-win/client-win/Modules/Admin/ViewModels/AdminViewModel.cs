@@ -1653,10 +1653,35 @@ public sealed class AdminViewModel : ObservableObject
         IsTextInputVisible = false;
         TextInputLabel = string.Empty;
         TextInput = string.Empty;
-        SecondaryInputLabel = "Version";
+        SecondaryInputLabel = "Version (nouvelle)";
         SecondaryInput = AppInfo.GetShortVersion();
         IsSecondaryInputVisible = true;
-        Status = "Entrée : exécuter l'action sélectionnée. Échap : retour.";
+        Status = "Choisis une version plus haute que la dernière publiée. Entrée : exécuter l'action sélectionnée. Échap : retour.";
+
+        _ = PrefillClientUpdateVersionAsync();
+    }
+
+    private async Task PrefillClientUpdateVersionAsync()
+    {
+        try
+        {
+            var latest = await _publisher.GetLatestPublishedVersionAsync().ConfigureAwait(true);
+            if (string.IsNullOrWhiteSpace(latest))
+            {
+                return;
+            }
+            if (_page != AdminPage.ClientUpdates)
+            {
+                return;
+            }
+
+            Details = $"Dernière version publiée : {latest}";
+            SecondaryInput = _publisher.SuggestNextVersion(latest);
+        }
+        catch
+        {
+            // Non bloquant.
+        }
     }
 
     private async Task SendBroadcastAsync()
@@ -1701,6 +1726,18 @@ public sealed class AdminViewModel : ObservableObject
     private async Task BuildAndUploadClientUpdateAsync()
     {
         var version = (SecondaryInput ?? string.Empty).Trim();
+
+        var latest = await _publisher.GetLatestPublishedVersionAsync().ConfigureAwait(true);
+        if (!string.IsNullOrWhiteSpace(latest) &&
+            !string.IsNullOrWhiteSpace(version) &&
+            string.Equals(latest, version, StringComparison.OrdinalIgnoreCase))
+        {
+            var suggested = _publisher.SuggestNextVersion(latest);
+            SecondaryInput = suggested;
+            version = suggested;
+            await _dialogs.ShowInfo("Mise à jour", $"La version {latest} est déjà publiée. Version ajustée automatiquement en {suggested}.").ConfigureAwait(true);
+        }
+
         IsBusy = true;
         try
         {

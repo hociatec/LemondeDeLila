@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using client_win.Modules.Config;
@@ -30,6 +31,49 @@ public sealed class ClientUpdatePublisher : IClientUpdatePublisher
         _config = config ?? throw new ArgumentNullException(nameof(config));
         _session = session ?? throw new ArgumentNullException(nameof(session));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    }
+
+    public async Task<string?> GetLatestPublishedVersionAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            // HttpBase ends with "/api/" so "../client/version" resolves to "/client/version".
+            var endpoint = new Uri(_config.HttpBase, "../client/version");
+            using var http = new HttpClient();
+            var payload = await http.GetFromJsonAsync<ClientVersionDto>(endpoint, cancellationToken).ConfigureAwait(false);
+            return string.IsNullOrWhiteSpace(payload?.Version) ? null : payload!.Version!.Trim();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogDebug(ex, "Impossible de récupérer la dernière version publiée.");
+            return null;
+        }
+    }
+
+    public string SuggestNextVersion(string? currentVersion)
+    {
+        var raw = (currentVersion ?? string.Empty).Trim();
+        if (string.IsNullOrWhiteSpace(raw))
+        {
+            return "1.0.1";
+        }
+
+        var parts = raw.Split('.', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        if (parts.Length == 1 && int.TryParse(parts[0], out var majorOnly))
+        {
+            return $"{majorOnly}.0.1";
+        }
+
+        if (parts.Length >= 3 &&
+            int.TryParse(parts[0], out var major) &&
+            int.TryParse(parts[1], out var minor) &&
+            int.TryParse(parts[2], out var patch))
+        {
+            var nextPatch = patch + 1;
+            return $"{major}.{minor}.{nextPatch}";
+        }
+
+        return raw;
     }
 
     public async Task<ClientUpdatePublishResult> BuildAndUploadAsync(
@@ -169,6 +213,12 @@ public sealed class ClientUpdatePublisher : IClientUpdatePublisher
                 useBootstrapper: false,
                 cancellationToken: cancellationToken)
             .ConfigureAwait(true);
+    }
+
+    private sealed class ClientVersionDto
+    {
+        [JsonPropertyName("version")]
+        public string? Version { get; set; }
     }
 
     private async Task<ClientUpdatePublishResult> RunMsBuildPublishAsync(
