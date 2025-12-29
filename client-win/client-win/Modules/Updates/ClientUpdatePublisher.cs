@@ -145,6 +145,7 @@ public sealed class ClientUpdatePublisher : IClientUpdatePublisher
             "msbuild",
             Quote(projectPath),
             "/t:Publish",
+            "/restore",
             "/p:Configuration=Release",
             "/p:PublishProfile=ClickOnce",
             $"/p:PublishDir={Quote(publishDir + Path.DirectorySeparatorChar)}",
@@ -197,10 +198,41 @@ public sealed class ClientUpdatePublisher : IClientUpdatePublisher
 
         if (proc.ExitCode != 0)
         {
-            return new ClientUpdatePublishResult(false, $"dotnet publish a échoué (code {proc.ExitCode}).");
+            var details = BuildFailureDetails(stdout, stderr);
+            return new ClientUpdatePublishResult(false, $"Publication ClickOnce échouée (code {proc.ExitCode}).{details}");
         }
 
         return new ClientUpdatePublishResult(true, "Build OK.");
+    }
+
+    private static string BuildFailureDetails(string stdout, string stderr)
+    {
+        var tailErr = TailLines(stderr, 20);
+        var tailOut = TailLines(stdout, 20);
+        if (string.IsNullOrWhiteSpace(tailErr) && string.IsNullOrWhiteSpace(tailOut))
+        {
+            return string.Empty;
+        }
+        return "\n\n--- Détails (fin du log) ---\n" +
+               (!string.IsNullOrWhiteSpace(tailErr) ? ("[stderr]\n" + tailErr + "\n") : string.Empty) +
+               (!string.IsNullOrWhiteSpace(tailOut) ? ("[stdout]\n" + tailOut) : string.Empty);
+    }
+
+    private static string TailLines(string text, int maxLines)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return string.Empty;
+        }
+        var lines = text
+            .Replace("\r\n", "\n", StringComparison.Ordinal)
+            .Replace('\r', '\n')
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries);
+        if (lines.Length <= maxLines)
+        {
+            return string.Join("\n", lines);
+        }
+        return string.Join("\n", lines.Skip(lines.Length - maxLines));
     }
 
     private static bool TryNormalizeClickOnceVersion(string? version, out string normalized)
