@@ -35,7 +35,6 @@ public sealed class ChatClient : IAsyncDisposable
     public async Task ConnectAsync(string token, CancellationToken cancellationToken = default)
     {
         _cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        _cts.CancelAfter(TimeSpan.FromSeconds(30));
         await _transport.ConnectAsync(_endpoint, token, cancellationToken: _cts.Token).ConfigureAwait(false);
     }
 

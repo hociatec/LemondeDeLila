@@ -80,7 +80,25 @@ public sealed class ChatService : IChatService
         {
             return;
         }
-        await _client.SendMessageAsync(text, cancellationToken).ConfigureAwait(false);
+        try
+        {
+            if (State != ChatState.Connected)
+            {
+                // UX: si le tchat s'est déconnecté (réseau, veille, etc.), tenter une reconnexion
+                // plutôt que d'afficher une exception "WebSocket non connecté.".
+                bool opened = await OpenAsync(cancellationToken).ConfigureAwait(false);
+                if (!opened)
+                {
+                    throw new InvalidOperationException("Tchat non connecté.");
+                }
+            }
+            await _client.SendMessageAsync(text, cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            SetStatus($"Envoi tchat échoué : {ex.Message}", isError: true);
+            throw;
+        }
     }
 
     public async Task CloseAsync()
