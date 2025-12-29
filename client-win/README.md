@@ -51,3 +51,6 @@ Pré-requis :
   - (optionnel) `CLIENT_UPDATES_DIR` = dossier où extraire la publication ClickOnce. Par défaut: `backend/data/client-updates/client-win` (créé automatiquement).
   - (optionnel) `CLIENT_UPDATES_PUBLIC_URL` = URL publique (ex: `https://api.lilas.hociatec.fr/updates/client-win/`)
 - Sur le PC Windows admin (si l'URL change) : `LILA_CLICKONCE_BASEURL` = URL ClickOnce (ex: `https://api.lilas.hociatec.fr/updates/client-win/`).
+
+Notes :
+- L'écran "Mises à jour client" utilise uniquement le champ **Version** (pré-rempli avec la version actuelle).

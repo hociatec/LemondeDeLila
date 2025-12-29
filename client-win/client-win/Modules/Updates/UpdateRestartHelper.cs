@@ -13,7 +13,9 @@ public static class UpdateRestartHelper
         var dispatcher = app?.Dispatcher;
         if (dispatcher != null && !dispatcher.CheckAccess())
         {
-            dispatcher.Invoke(RestartCurrentProcess, DispatcherPriority.Normal);
+            dispatcher.BeginInvoke(
+                DispatcherPriority.Normal,
+                new Action(RestartCurrentProcess));
             return;
         }
 
@@ -34,7 +36,14 @@ public static class UpdateRestartHelper
         }
         finally
         {
-            app?.Shutdown();
+            try
+            {
+                app?.Shutdown();
+            }
+            catch
+            {
+                // Ignore shutdown errors (dispatcher tearing down / wrong thread), the app is already closing.
+            }
         }
     }
 }

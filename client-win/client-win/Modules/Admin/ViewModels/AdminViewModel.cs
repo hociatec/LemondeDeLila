@@ -1650,11 +1650,11 @@ public sealed class AdminViewModel : ObservableObject
         Items.Add(new AdminMenuItem("Compiler + uploader la mise à jour (admin)", tag: "clientUpdate.buildUpload"));
         Items.Add(new AdminMenuItem("Proposer la mise à jour à tous", tag: "clientUpdate.announce"));
         SelectedItem = Items.FirstOrDefault();
-        TextInputLabel = "Message (optionnel)";
+        IsTextInputVisible = false;
+        TextInputLabel = string.Empty;
         TextInput = string.Empty;
-        IsTextInputVisible = true;
-        SecondaryInputLabel = "Version (optionnel)";
-        SecondaryInput = string.Empty;
+        SecondaryInputLabel = "Version";
+        SecondaryInput = AppInfo.GetShortVersion();
         IsSecondaryInputVisible = true;
         Status = "Entrée : exécuter l'action sélectionnée. Échap : retour.";
     }
@@ -1682,17 +1682,15 @@ public sealed class AdminViewModel : ObservableObject
 
     private async Task AnnounceClientUpdateAsync()
     {
-        var message = (TextInput ?? string.Empty).Trim();
         var version = (SecondaryInput ?? string.Empty).Trim();
         IsBusy = true;
         try
         {
             var delivered = await _admin.AnnounceClientUpdateAsync(
-                    string.IsNullOrWhiteSpace(message) ? null : message,
+                    message: null,
                     version: string.IsNullOrWhiteSpace(version) ? null : version)
                 .ConfigureAwait(true);
             await _dialogs.ShowInfo("Mise à jour", $"Proposition envoyée à {delivered} utilisateur(s).").ConfigureAwait(true);
-            TextInput = string.Empty;
             SecondaryInput = string.Empty;
         }
         finally
@@ -1703,13 +1701,12 @@ public sealed class AdminViewModel : ObservableObject
 
     private async Task BuildAndUploadClientUpdateAsync()
     {
-        var message = (TextInput ?? string.Empty).Trim();
         var version = (SecondaryInput ?? string.Empty).Trim();
         IsBusy = true;
         try
         {
             var result = await _publisher.BuildAndUploadAsync(
-                    string.IsNullOrWhiteSpace(message) ? null : message,
+                    message: null,
                     string.IsNullOrWhiteSpace(version) ? null : version)
                 .ConfigureAwait(true);
 
@@ -1736,7 +1733,7 @@ public sealed class AdminViewModel : ObservableObject
                             var settings = UpdatePublisherLocalSettings.Load() with { ProjectPath = ofd.FileName };
                             settings.Save();
                             result = await _publisher.BuildAndUploadAsync(
-                                    string.IsNullOrWhiteSpace(message) ? null : message,
+                                    message: null,
                                     string.IsNullOrWhiteSpace(version) ? null : version)
                                 .ConfigureAwait(true);
                             if (!result.Success)
