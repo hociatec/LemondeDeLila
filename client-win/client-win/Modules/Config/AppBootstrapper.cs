@@ -38,6 +38,7 @@ using client_win.Modules.Game.Play.Services;
 using client_win.Modules.Game.Room.Services;
 using client_win.Modules.Game.Shell.Services;
 using client_win.Modules.Updates;
+using client_win.Modules.Audio.Services;
 
 namespace client_win.Modules.Config;
 
@@ -183,6 +184,12 @@ public static class AppBootstrapper
 
         services.AddSingleton<Dispatcher>(_ => Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher);
 
+        services.AddSingleton<ISoundService>(sp =>
+            new SoundService(
+                sp.GetRequiredService<IOptionsService>(),
+                sp.GetRequiredService<Dispatcher>(),
+                sp.GetRequiredService<ILogger<SoundService>>()));
+
         // Services métier
         services.AddSingleton<ICatalogService>(sp =>
             new CatalogService(
@@ -232,7 +239,8 @@ public static class AppBootstrapper
                 sp.GetRequiredService<IWebSocketConnection>(),
                 sp.GetRequiredService<IOptionsService>(),
                 sp.GetRequiredService<ISessionService>(),
-                sp.GetRequiredService<Dispatcher>()));
+                sp.GetRequiredService<Dispatcher>(),
+                sp.GetRequiredService<ISoundService>()));
 
         services.AddSingleton<IViewFactory<ChatWindow>, ChatWindowFactory>();
         services.AddSingleton<IChatLauncher, ChatLauncher>();

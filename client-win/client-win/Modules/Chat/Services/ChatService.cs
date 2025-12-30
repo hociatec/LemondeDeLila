@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using System.Windows.Threading;
 using client_win.Modules.Chat.Models;
 using client_win.Modules.Network.WebSockets;
+using client_win.Modules.Audio.Models;
+using client_win.Modules.Audio.Services;
 using client_win.Modules.Settings.Services;
 using client_win.Modules.User.Services;
 
@@ -22,6 +24,7 @@ public sealed class ChatService : IChatService
     private readonly IOptionsService _options;
     private readonly ISessionService _session;
     private readonly Dispatcher _dispatcher;
+    private readonly ISoundService _sounds;
     private readonly HashSet<string> _seenMessageKeys = new(StringComparer.Ordinal);
 
     public ObservableCollection<ChatMessage> Messages { get; } = new();
@@ -31,12 +34,19 @@ public sealed class ChatService : IChatService
     public event Action<string>? StatusChanged;
     public event Action<string>? Error;
 
-    public ChatService(Uri endpoint, IWebSocketConnection transport, IOptionsService options, ISessionService session, Dispatcher dispatcher)
+    public ChatService(
+        Uri endpoint,
+        IWebSocketConnection transport,
+        IOptionsService options,
+        ISessionService session,
+        Dispatcher dispatcher,
+        ISoundService sounds)
     {
         _client = new ChatClient(endpoint, transport);
         _options = options ?? throw new ArgumentNullException(nameof(options));
         _session = session ?? throw new ArgumentNullException(nameof(session));
         _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
+        _sounds = sounds ?? throw new ArgumentNullException(nameof(sounds));
 
         _client.StateChanged += s => _ = _dispatcher.InvokeAsync(() => UpdateState(s), DispatcherPriority.Background);
         _client.ErrorReceived += msg => _ = _dispatcher.InvokeAsync(() => SetStatus(msg, isError: true), DispatcherPriority.Background);
@@ -46,13 +56,13 @@ public sealed class ChatService : IChatService
             {
                 foreach (var m in history.OrderBy(m => m.Timestamp))
                 {
-                    AddMessage(m);
+                    AddMessage(m, playReceiveSound: false);
                 }
             }, DispatcherPriority.Background);
         };
         _client.MessageReceived += msg =>
         {
-            _ = _dispatcher.InvokeAsync(() => AddMessage(msg), DispatcherPriority.Background);
+            _ = _dispatcher.InvokeAsync(() => AddMessage(msg, playReceiveSound: true), DispatcherPriority.Background);
         };
     }
 
@@ -102,6 +112,7 @@ public sealed class ChatService : IChatService
                 }
             }
             await _client.SendMessageAsync(text, cancellationToken).ConfigureAwait(false);
+            _sounds.Play(SoundId.ChatMessageSent);
         }
         catch (Exception ex)
         {
@@ -142,7 +153,7 @@ public sealed class ChatService : IChatService
         }
     }
 
-    private void AddMessage(ChatMessage message)
+    private void AddMessage(ChatMessage message, bool playReceiveSound)
     {
         var key = GetMessageKey(message);
         if (!_seenMessageKeys.Add(key))
@@ -151,12 +162,27 @@ public sealed class ChatService : IChatService
         }
 
         Messages.Add(message);
+        if (playReceiveSound && ShouldPlayReceiveSound(message))
+        {
+            _sounds.Play(SoundId.ChatMessageReceived);
+        }
         while (Messages.Count > MaxMessages)
         {
             var removed = Messages[0];
             Messages.RemoveAt(0);
             _seenMessageKeys.Remove(GetMessageKey(removed));
         }
+    }
+
+    private bool ShouldPlayReceiveSound(ChatMessage message)
+    {
+        var self = _session.CurrentUser?.Username;
+        if (string.IsNullOrWhiteSpace(self))
+        {
+            return true;
+        }
+
+        return !string.Equals(message.User, self, StringComparison.OrdinalIgnoreCase);
     }
 
     private static string GetMessageKey(ChatMessage message)

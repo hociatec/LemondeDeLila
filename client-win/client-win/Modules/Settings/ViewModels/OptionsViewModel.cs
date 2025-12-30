@@ -40,6 +40,7 @@ public sealed class OptionsViewModel : ObservableObject
                 OnPropertyChanged(nameof(IsBackgroundVolumeEnabled));
                 OnPropertyChanged(nameof(IsNavigateVolumeEnabled));
                 OnPropertyChanged(nameof(IsSelectVolumeEnabled));
+                OnPropertyChanged(nameof(IsChatMessagesVolumeEnabled));
             }
         }
     }
@@ -98,6 +99,18 @@ public sealed class OptionsViewModel : ObservableObject
         }
     }
 
+    public bool SoundChatMessages
+    {
+        get => _state.SoundChatMessages;
+        set
+        {
+            if (Update(() => _state.SoundChatMessages, v => _state.SoundChatMessages = v, value))
+            {
+                OnPropertyChanged(nameof(IsChatMessagesVolumeEnabled));
+            }
+        }
+    }
+
     public int MusicVolume
     {
         get => _state.MusicVolume;
@@ -126,6 +139,12 @@ public sealed class OptionsViewModel : ObservableObject
     {
         get => _state.SoundSelectVolume;
         set => Update(() => _state.SoundSelectVolume, v => _state.SoundSelectVolume = v, value);
+    }
+
+    public int SoundChatMessagesVolume
+    {
+        get => _state.SoundChatMessagesVolume;
+        set => Update(() => _state.SoundChatMessagesVolume, v => _state.SoundChatMessagesVolume = v, value);
     }
 
     public bool ChatEnabled
@@ -193,6 +212,7 @@ public sealed class OptionsViewModel : ObservableObject
     public bool IsBackgroundVolumeEnabled => IsVolumeEnabled && SoundBackground;
     public bool IsNavigateVolumeEnabled => IsVolumeEnabled && SoundNavigate;
     public bool IsSelectVolumeEnabled => IsVolumeEnabled && SoundSelect;
+    public bool IsChatMessagesVolumeEnabled => IsVolumeEnabled && SoundChatMessages;
 
     public ICommand SaveCommand { get; }
     public ICommand CancelCommand { get; }

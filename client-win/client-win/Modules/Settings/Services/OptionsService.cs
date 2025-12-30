@@ -142,6 +142,8 @@ public sealed class OptionsService : IOptionsService
         SoundNavigateVolume = source.SoundNavigateVolume,
         SoundSelect = source.SoundSelect,
         SoundSelectVolume = source.SoundSelectVolume,
+        SoundChatMessages = source.SoundChatMessages,
+        SoundChatMessagesVolume = source.SoundChatMessagesVolume,
         MusicVolume = source.MusicVolume,
         ChatEnabled = source.ChatEnabled,
         ConfirmChatExit = source.ConfirmChatExit,
