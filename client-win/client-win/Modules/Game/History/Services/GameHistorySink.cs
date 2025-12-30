@@ -42,6 +42,20 @@ public sealed class GameHistorySink : IGameHistorySink
                     }
                 }
 
+                // Évite les doublons de tour trop rapprochés (certains jeux le renvoient plusieurs fois).
+                if (cleaned.StartsWith("C'est au tour de", StringComparison.OrdinalIgnoreCase) ||
+                    cleaned.StartsWith("Tour actuel", StringComparison.OrdinalIgnoreCase))
+                {
+                    for (var i = Math.Max(0, count - 5); i < count; i++)
+                    {
+                        var prev = (_history.Entries[i] ?? string.Empty).Trim();
+                        if (string.Equals(prev, cleaned, StringComparison.Ordinal))
+                        {
+                            return;
+                        }
+                    }
+                }
+
                 _history.Entries.Add(cleaned);
             },
             DispatcherPriority.Background);

@@ -431,7 +431,7 @@ describe('PanierExpressService', () => {
     expect(second.pending?.playerId).toBe(1);
   });
 
-  it("rejette l'action d'un autre joueur que celui concerné", () => {
+  it("rejette l'action d'un autre joueur que celui concernÃ©", () => {
     const base: any = service.hydrateInitialState({
       players: [
         { id: 1, username: 'A', inventory: ['pomme'] },

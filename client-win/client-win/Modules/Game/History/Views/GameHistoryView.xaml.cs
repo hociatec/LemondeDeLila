@@ -18,8 +18,9 @@ public partial class GameHistoryView : UserControl
     private bool _pendingRebuild;
     private DispatcherTimer? _announceTimer;
     private string _pendingAnnouncement = string.Empty;
-    private string? _lastAnnounced;
+    private DateTime _pendingAnnouncementUpdatedAtUtc;
     private DateTime _lastAnnouncedAtUtc;
+    private string? _lastAnnounced;
 
     public GameHistoryView()
     {
@@ -261,6 +262,7 @@ public partial class GameHistoryView : UserControl
             _pendingAnnouncement = _pendingAnnouncement.Substring(_pendingAnnouncement.Length - maxChars);
         }
 
+        _pendingAnnouncementUpdatedAtUtc = DateTime.UtcNow;
         EnsureAnnouncePump();
     }
 
@@ -297,13 +299,25 @@ public partial class GameHistoryView : UserControl
             return;
         }
 
+        // Rendre le flux plus "naturel" :
+        // - debounce : on attend un petit silence avant de parler (évite d'être haché pendant les rafales)
+        // - min gap : évite les annonces trop rapprochées
+        var now = DateTime.UtcNow;
+        if ((now - _pendingAnnouncementUpdatedAtUtc) < TimeSpan.FromMilliseconds(650))
+        {
+            return;
+        }
+        if ((now - _lastAnnouncedAtUtc) < TimeSpan.FromMilliseconds(950))
+        {
+            return;
+        }
+
         var next = _pendingAnnouncement.Trim();
         _pendingAnnouncement = string.Empty;
-        var now = DateTime.UtcNow;
 
         // Anti-spam : ignore un doublon strict très rapproché (ex: "Table démarrée." répété).
         if (string.Equals(_lastAnnounced, next, StringComparison.Ordinal) &&
-            (now - _lastAnnouncedAtUtc) < TimeSpan.FromSeconds(1))
+            (now - _lastAnnouncedAtUtc) < TimeSpan.FromSeconds(2))
         {
             return;
         }

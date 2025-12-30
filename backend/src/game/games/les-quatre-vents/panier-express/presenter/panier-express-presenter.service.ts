@@ -197,7 +197,7 @@ export class PanierExpressPresenterService extends BasePresenterService {
           type: 'exchange',
           playerId: exchangePending.playerId,
           blocking: true,
-          question: "Choisir un joueur pour l'échange.",
+          question: "Choisir un joueur pour l'Ã©change.",
           choices,
           data: { step: 'choose_target', targets },
         } as any;
@@ -218,8 +218,8 @@ export class PanierExpressPresenterService extends BasePresenterService {
           targetPlayerId: exchangePending.targetPlayerId,
           blocking: true,
           question: targetUsername
-            ? `Choisir une carte à donner à ${targetUsername}.`
-            : 'Choisir une carte à donner.',
+            ? `Choisir une carte Ã  donner Ã  ${targetUsername}.`
+            : 'Choisir une carte Ã  donner.',
           choices,
           data: {
             step: 'choose_give',
@@ -238,8 +238,8 @@ export class PanierExpressPresenterService extends BasePresenterService {
             ? sanitizeText(String(exchangePending.take))
             : '';
         const question = take
-          ? `${initiator} vous propose un échange : il vous donne "${give}" et vous lui donnez "${take}". (A = accepter, R = refuser)`
-          : `${initiator} vous propose un échange : il vous donne "${give}". (A = accepter, R = refuser)`;
+          ? `${initiator} vous propose un Ã©change : il vous donne "${give}" et vous lui donnez "${take}". (A = accepter, R = refuser)`
+          : `${initiator} vous propose un Ã©change : il vous donne "${give}". (A = accepter, R = refuser)`;
         return {
           type: 'exchange',
           playerId: exchangePending.playerId,

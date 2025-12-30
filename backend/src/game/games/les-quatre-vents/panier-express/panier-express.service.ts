@@ -53,7 +53,7 @@ export class PanierExpressService extends AbstractGameService {
   readonly subcategory = 'LesQuatreVents';
   readonly displayName = 'Panier Express';
   readonly description =
-    'Course au marchÈ : complÈter sa liste puis revenir pile sur la case dÈpart.';
+    'Course au march√© : compl√©ter sa liste puis revenir pile sur la case d√©part.';
   readonly minPlayers = 2;
   readonly maxPlayers = 10;
   private readonly phaseOrder = PANIER_EXPRESS_PHASES;
@@ -166,7 +166,7 @@ export class PanierExpressService extends AbstractGameService {
         return hasList || hasBasket || hasInventory;
       });
     if (inProgress) {
-      // Partie dÈj‡ dÈmarrÈe ou en reprise : ne pas rÈattribuer de listes ni de decks, juste normaliser.
+      // Partie d√©j√† d√©marr√©e ou en reprise : ne pas r√©attribuer de listes ni de decks, juste normaliser.
       return this.ensureMetadata({
         ...baseState,
         status: baseState.status ?? 'started',
@@ -175,7 +175,7 @@ export class PanierExpressService extends AbstractGameService {
 
     const existingMeta = (baseState.metadata as PanierExpressMetadata) ?? null;
     const baseMeta = this.buildMetadata(baseState);
-    // Conserver les decks existants si prÈsents (Èvite de rÈattribuer de nouvelles listes).
+    // Conserver les decks existants si pr√©sents (√©vite de r√©attribuer de nouvelles listes).
     const metadata: PanierExpressMetadata = {
       ...baseMeta,
       ...(existingMeta ?? {}),
@@ -220,7 +220,7 @@ export class PanierExpressService extends AbstractGameService {
         positions,
       },
     };
-    // Journaliser la liste attribuÈe ‡ chaque joueur dËs le lancement.
+    // Journaliser la liste attribu√©e √† chaque joueur d√®s le lancement.
     let withLogs: GameStateEntity = initial;
     hydratedPlayers.forEach((p, idx) => {
       const originalPlayer = (baseState.players ?? [])[idx];
@@ -228,7 +228,7 @@ export class PanierExpressService extends AbstractGameService {
         Array.isArray(originalPlayer?.shoppingList) &&
         originalPlayer.shoppingList.length > 0;
       if (hadList) {
-        return; // ne pas relogger une liste dÈj‡ attribuÈe (Èvite l'impression de rÈinitialisation).
+        return; // ne pas relogger une liste d√©j√† attribu√©e (√©vite l'impression de r√©initialisation).
       }
       const normalizedList = this.toStringArray(p.shoppingList);
       const list: string[] = normalizedList.length
@@ -291,7 +291,7 @@ export class PanierExpressService extends AbstractGameService {
       default:
         return this.core.appendLog(
           state,
-          `[Panier Express] Action non gÈrÈe: ${action.type}`,
+          `[Panier Express] Action non g√©r√©e: ${action.type}`,
         );
     }
   }
@@ -461,7 +461,7 @@ export class PanierExpressService extends AbstractGameService {
   private ensureStarted(state: GameStateEntity): GameStateEntity {
     const status = (state.status || '').toLowerCase();
     if (status === 'started') return state;
-    if (status !== 'starting') return state; // ne dÈmarre que quand la table l'a explicitement demandÈ
+    if (status !== 'starting') return state; // ne d√©marre que quand la table l'a explicitement demand√©
     const players = state.players ?? [];
     if (players.length < this.minPlayers) return state;
     return {
@@ -481,8 +481,8 @@ export class PanierExpressService extends AbstractGameService {
   ): GameStateEntity {
     const currentId = state.turn?.currentPlayerId ?? null;
     if (currentId == null) return state;
-    // Anti-triche: le serveur est la source de vÈritÈ pour l'alÈatoire (dÈs).
-    // Bonus: RNG seedÈ dans metadata pour rendre le dÈ dÈterministe en debug/tests (si besoin).
+    // Anti-triche: le serveur est la source de v√©rit√© pour l'al√©atoire (d√©s).
+    // Bonus: RNG seed√© dans metadata pour rendre le d√© d√©terministe en debug/tests (si besoin).
     const meta = this.getMetadata(state) as any;
     const rng = this.random.rollDice(meta, 6);
     const roll = rng.roll;
@@ -503,7 +503,7 @@ export class PanierExpressService extends AbstractGameService {
     next.lastRoll = roll;
     next = this.core.appendLog(
       next,
-      `${this.utils.playerName(state, currentId)} lance le dÈ : "${roll}"`,
+      `${this.utils.playerName(state, currentId)} lance le d√© : "${roll}"`,
     );
     next = this.appendActionLog(next, currentId, 'roll', { roll });
 
@@ -540,14 +540,14 @@ export class PanierExpressService extends AbstractGameService {
     const nextPos = this.movement.moveCircular(tiles.length, currentPos, roll);
     const tile = this.movement.tileAt(tiles, nextPos);
 
-    // Tour de plateau : modifier quand le joueur "repasse" par la case dÈpart.
-    // - Avancer et dÈpasser la case dÈpart => +1 (ou plus si gros dÈplacement)
-    // - Reculer et repasser la case dÈpart => -1 (ex: tour 1 -> tour 0)
+    // Tour de plateau : modifier quand le joueur "repasse" par la case d√©part.
+    // - Avancer et d√©passer la case d√©part => +1 (ou plus si gros d√©placement)
+    // - Reculer et repasser la case d√©part => -1 (ex: tour 1 -> tour 0)
     const laps = { ...(meta.laps ?? {}) };
     const currentLaps = typeof laps[playerId] === 'number' ? laps[playerId] : 0;
     if (roll != null && roll !== 0 && tiles.length > 0) {
-      // Robuste mÍme si |roll| > tiles.length (move_to_stand, effets, etc.).
-      // Math.floor gËre correctement les valeurs nÈgatives (ex: -1/40 => -1).
+      // Robuste m√™me si |roll| > tiles.length (move_to_stand, effets, etc.).
+      // Math.floor g√®re correctement les valeurs n√©gatives (ex: -1/40 => -1).
       const wraps = Math.floor((currentPos + roll) / tiles.length);
       laps[playerId] = Math.max(-1, currentLaps + wraps);
     } else {
@@ -622,7 +622,7 @@ export class PanierExpressService extends AbstractGameService {
     if (!tile) {
       return this.core.appendLog(
         state,
-        `[Panier Express] RÈsolution tuile: aucune tuile en position ${position} pour ${this.utils.playerName(state, playerId)}.`,
+        `[Panier Express] R√©solution tuile: aucune tuile en position ${position} pour ${this.utils.playerName(state, playerId)}.`,
       );
     }
     const resolved = this.tileRegistry.apply(tile.type, ensured, {
@@ -672,7 +672,7 @@ export class PanierExpressService extends AbstractGameService {
   }
 
   private registerStandHandlers(): void {
-    // Stands paramÈtrables : tous les stands routent vers l'effet gÈnÈrique drawCourse
+    // Stands param√©trables : tous les stands routent vers l'effet g√©n√©rique drawCourse
     this.standEffects.registerStand('stand', (s, ctx) =>
       this.drawSvc.drawCourse(s, ctx.playerId, ctx.standId),
     );
@@ -692,7 +692,7 @@ export class PanierExpressService extends AbstractGameService {
     let drawn = this.drawFromPool(meta, 'events');
     let metadata = drawn.metadata;
     if (!drawn.card) {
-      // RÈinitialiser le deck d'ÈvÈnements si ÈpuisÈ, puis retenter.
+      // R√©initialiser le deck d'√©v√©nements si √©puis√©, puis retenter.
       const refilled = this.deckPool.set<string>(
         meta.decks as DeckPoolState<string>,
         'events',
@@ -785,7 +785,7 @@ export class PanierExpressService extends AbstractGameService {
     if (typeof playerId !== 'number' || typeof targetPlayerId !== 'number') {
       return this.core.appendLog(
         state,
-        "[Panier Express] Choix cible d'Èchange invalide.",
+        "[Panier Express] Choix cible d'√©change invalide.",
       );
     }
     return this.exchangeSvc.chooseTarget(state, playerId, targetPlayerId);
@@ -804,11 +804,11 @@ export class PanierExpressService extends AbstractGameService {
     if (typeof playerId !== 'number' || typeof give !== 'string') {
       return this.core.appendLog(
         state,
-        "[Panier Express] Choix carte d'Èchange invalide.",
+        "[Panier Express] Choix carte d'√©change invalide.",
       );
     }
-    // ¿ ce stade, on crÈe une offre d'Èchange ‡ confirmer par la cible (A/R).
-    // On n'avance pas le tour tant que la cible n'a pas rÈpondu.
+    // √Ä ce stade, on cr√©e une offre d'√©change √† confirmer par la cible (A/R).
+    // On n'avance pas le tour tant que la cible n'a pas r√©pondu.
     return this.exchangeSvc.chooseGive(state, playerId, give);
   }
 
@@ -823,7 +823,7 @@ export class PanierExpressService extends AbstractGameService {
     if (typeof actorId !== 'number') {
       return this.core.appendLog(
         state,
-        "[Panier Express] Acceptation d'Èchange invalide.",
+        "[Panier Express] Acceptation d'√©change invalide.",
       );
     }
     const resolved = this.exchangeSvc.acceptOffer(state, actorId);
@@ -841,7 +841,7 @@ export class PanierExpressService extends AbstractGameService {
     if (typeof actorId !== 'number') {
       return this.core.appendLog(
         state,
-        "[Panier Express] Refus d'Èchange invalide.",
+        "[Panier Express] Refus d'√©change invalide.",
       );
     }
     const resolved = this.exchangeSvc.refuseOffer(state, actorId);
@@ -882,9 +882,9 @@ export class PanierExpressService extends AbstractGameService {
     return this.quizSvc.applyQuiz(state, playerId);
   }
 
-  // RÈsolution de quiz : PanierExpressQuizService ne fait que mettre une question en pending.
-  // La validation de la rÈponse et la levÈe du pending restent ici via QuizRunner
-  // pour garder la logique de tour et de scoring centralisÈe dans le service principal.
+  // R√©solution de quiz : PanierExpressQuizService ne fait que mettre une question en pending.
+  // La validation de la r√©ponse et la lev√©e du pending restent ici via QuizRunner
+  // pour garder la logique de tour et de scoring centralis√©e dans le service principal.
   private handleAnswerQuiz(
     state: GameStateEntity,
     action: GameSingleActionDto,
@@ -908,7 +908,7 @@ export class PanierExpressService extends AbstractGameService {
     if (!answer) {
       return this.core.appendLog(
         state,
-        `[Panier Express] Quiz : rÈponse manquante pour ${this.utils.playerName(state, playerId)}.`,
+        `[Panier Express] Quiz : r√©ponse manquante pour ${this.utils.playerName(state, playerId)}.`,
       );
     }
     const result = this.quizRunner.validateAnswer(quizState, playerId, answer);
@@ -921,7 +921,7 @@ export class PanierExpressService extends AbstractGameService {
     };
     next = this.core.appendLog(
       next,
-      `[Panier Express] ${this.utils.playerName(state, playerId)} rÈpond au quiz (${correct ? 'rÈussite' : 'Èchec'})`,
+      `[Panier Express] ${this.utils.playerName(state, playerId)} r√©pond au quiz (${correct ? 'r√©ussite' : '√©chec'})`,
     );
     next = this.appendActionLog(next, playerId, 'answer_quiz', { correct });
     if (correct) {
@@ -1003,7 +1003,7 @@ export class PanierExpressService extends AbstractGameService {
     const winnerName =
       winnerId != null
         ? this.utils.playerName(state, winnerId)
-        : 'Partie terminÈe';
+        : 'Partie termin√©e';
     const logged = this.core.appendLog(
       nextState,
       `[Panier Express] ${winnerName} remporte la partie !`,
