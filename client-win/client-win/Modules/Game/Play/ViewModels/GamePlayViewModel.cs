@@ -703,7 +703,7 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
                 CurrentPlayerId = currentPlayerId,
                 CurrentPlayerUsername = string.IsNullOrWhiteSpace(username) ? null : username.Trim()
             },
-            emitHistoryMessage: msg => MessageReceived?.Invoke(msg));
+            emitHistoryMessage: _ => { });
     }
 
     private bool CanSendActionNow(GameSession session)

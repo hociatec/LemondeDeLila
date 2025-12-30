@@ -16,8 +16,8 @@ public partial class GameHistoryView : UserControl
 {
     private GameHistoryViewModel? _viewModel;
     private bool _pendingRebuild;
-    private readonly Queue<string> _announceQueue = new();
     private DispatcherTimer? _announceTimer;
+    private string _pendingAnnouncement = string.Empty;
     private string? _lastAnnounced;
     private DateTime _lastAnnouncedAtUtc;
 
@@ -104,13 +104,13 @@ public partial class GameHistoryView : UserControl
 
                 if (added.Count == 1)
                 {
-                    EnqueueAnnouncement(added[0]);
+                    SetPendingAnnouncement(added[0]);
                 }
                 else if (added.Count > 1)
                 {
-                    // Regroupe un burst en un seul message pour éviter que NVDA/Narrateur ne coupe la file.
-                    // On garde des séparateurs ligne par ligne pour la lisibilité.
-                    EnqueueAnnouncement(string.Join(Environment.NewLine, added));
+                    // Regroupe un burst : annonces temps réel (pas de backlog),
+                    // on privilégie le "plus récent" sans faire une file infinie.
+                    SetPendingAnnouncement(string.Join(Environment.NewLine, added));
                 }
             }
             return;
@@ -236,7 +236,7 @@ public partial class GameHistoryView : UserControl
         TabNavigationRequested?.Invoke(this, new TabNavigationRequestedEventArgs(shift));
     }
 
-    private void EnqueueAnnouncement(string message)
+    private void SetPendingAnnouncement(string message)
     {
         var cleaned = (message ?? string.Empty).Trim();
         if (string.IsNullOrWhiteSpace(cleaned))
@@ -244,7 +244,23 @@ public partial class GameHistoryView : UserControl
             return;
         }
 
-        _announceQueue.Enqueue(cleaned);
+        // Coalescing: si plusieurs messages arrivent très vite, on les regroupe mais on limite
+        // pour rester "temps réel" et éviter de lire 20 lignes en retard.
+        if (string.IsNullOrWhiteSpace(_pendingAnnouncement))
+        {
+            _pendingAnnouncement = cleaned;
+        }
+        else
+        {
+            _pendingAnnouncement = $"{_pendingAnnouncement}{Environment.NewLine}{cleaned}";
+        }
+
+        const int maxChars = 700;
+        if (_pendingAnnouncement.Length > maxChars)
+        {
+            _pendingAnnouncement = _pendingAnnouncement.Substring(_pendingAnnouncement.Length - maxChars);
+        }
+
         EnsureAnnouncePump();
     }
 
@@ -261,15 +277,15 @@ public partial class GameHistoryView : UserControl
 
         _announceTimer = new DispatcherTimer(DispatcherPriority.Background, Dispatcher)
         {
-            Interval = TimeSpan.FromMilliseconds(250),
+            Interval = TimeSpan.FromMilliseconds(150),
         };
-        _announceTimer.Tick += (_, __) => PumpNextAnnouncement();
+        _announceTimer.Tick += (_, __) => PumpAnnouncement();
         _announceTimer.Start();
     }
 
-    private void PumpNextAnnouncement()
+    private void PumpAnnouncement()
     {
-        if (_announceQueue.Count == 0)
+        if (string.IsNullOrWhiteSpace(_pendingAnnouncement))
         {
             StopAnnouncements();
             return;
@@ -281,7 +297,8 @@ public partial class GameHistoryView : UserControl
             return;
         }
 
-        var next = _announceQueue.Dequeue();
+        var next = _pendingAnnouncement.Trim();
+        _pendingAnnouncement = string.Empty;
         var now = DateTime.UtcNow;
 
         // Anti-spam : ignore un doublon strict très rapproché (ex: "Table démarrée." répété).
@@ -299,9 +316,8 @@ public partial class GameHistoryView : UserControl
                        FrameworkElementAutomationPeer.CreatePeerForElement(this);
             peer?.RaiseNotificationEvent(
                 AutomationNotificationKind.Other,
-                // IMPORTANT: ImportantMostRecent peut "écraser" des annonces en rafale.
-                // All permet de ne pas couper des messages (ex: deux listes successives).
-                AutomationNotificationProcessing.All,
+                // MostRecent: comportement "temps réel" (on privilégie la dernière info).
+                AutomationNotificationProcessing.MostRecent,
                 next,
                 "GameHistory");
         }
@@ -309,19 +325,11 @@ public partial class GameHistoryView : UserControl
         {
             // ignore (best-effort)
         }
-
-        // Ajuste l'intervalle pour laisser le temps au lecteur d'écran (messages longs = plus de temps).
-        // Heuristique simple : base + proportionnel à la longueur, borné.
-        if (_announceTimer != null)
-        {
-            var ms = 250 + (int)Math.Min(1200, Math.Max(0, next.Length * 10));
-            _announceTimer.Interval = TimeSpan.FromMilliseconds(ms);
-        }
     }
 
     private void StopAnnouncements()
     {
-        _announceQueue.Clear();
+        _pendingAnnouncement = string.Empty;
         if (_announceTimer != null)
         {
             _announceTimer.Stop();
