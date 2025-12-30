@@ -11,7 +11,7 @@ import { NotificationService } from '../services/notification.service';
 import { ClientUpdatesService } from '../../client-updates/client-updates.service';
 import { isVersionGreater, isVersionLower } from '../../common/utils/version.utils';
 
-type ClientMeta = { userId: number; socket: WebSocket };
+type ClientMeta = { userId: number; socket: WebSocket; origin: string | null };
 
 @WebSocketGateway({ path: '/ws/notify' })
 export class NotificationGateway
@@ -28,6 +28,26 @@ export class NotificationGateway
     private readonly notifications: NotificationService,
     private readonly clientUpdates: ClientUpdatesService,
   ) {}
+
+  private extractOriginFromWsArgs(args: any[]): string | null {
+    try {
+      const request: any = (args && args[0]) || null;
+      const headers = request?.headers || null;
+      const hostHeader =
+        (headers?.['x-forwarded-host'] as string | undefined) ||
+        (headers?.host as string | undefined) ||
+        '';
+      const host = (hostHeader || '').split(',')[0]?.trim();
+      if (!host) return null;
+
+      const protoHeader =
+        (headers?.['x-forwarded-proto'] as string | undefined) || 'https';
+      const proto = (protoHeader || '').split(',')[0]?.trim() || 'https';
+      return `${proto}://${host}`;
+    } catch {
+      return null;
+    }
+  }
 
   async handleConnection(client: WebSocket, ...args: any[]) {
     const token = this.auth.extractToken(client, args);
@@ -48,6 +68,8 @@ export class NotificationGateway
           !clientVersion ||
           isVersionLower(clientVersion, minRequiredVersion) === true;
         if (outdated) {
+          const origin = this.extractOriginFromWsArgs(args);
+          const latest = await this.clientUpdates.getLatest();
           this.safeSend(client, {
             type: 'client.update.required',
             payload: {
@@ -56,7 +78,10 @@ export class NotificationGateway
               message:
                 'Une mise à jour du client est requise pour continuer.',
               publishedAt: null,
-              url: (await this.clientUpdates.getLatest())?.publicUrl ?? this.clientUpdates.getPublicUrl(),
+              url: this.clientUpdates.resolveClientPublicUrlForOrigin(
+                latest,
+                origin,
+              ),
             },
           });
           client.close(4406, 'update required');
@@ -66,7 +91,11 @@ export class NotificationGateway
     } catch {
       // ignore
     }
-    this.clients.set(client, { userId: user.id, socket: client });
+    this.clients.set(client, {
+      userId: user.id,
+      socket: client,
+      origin: this.extractOriginFromWsArgs(args),
+    });
     this.notifications.register(user.id, client);
     client.on('error', () => client.close());
     client.on('message', (data) => this.onClientMessage(client, data));
@@ -135,7 +164,10 @@ export class NotificationGateway
       const latestVersion = latest?.version?.trim();
       const minRequiredVersion =
         (await this.clientUpdates.getMinRequiredVersion())?.trim() || null;
-      const url = latest?.publicUrl ?? this.clientUpdates.getPublicUrl();
+      const url = this.clientUpdates.resolveClientPublicUrlForOrigin(
+        latest,
+        meta.origin,
+      );
 
       if (minRequiredVersion) {
         const required = isVersionLower(version, minRequiredVersion);

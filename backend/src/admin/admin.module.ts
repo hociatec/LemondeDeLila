@@ -15,6 +15,7 @@ import { CatalogModule } from '../catalog/catalog.module';
 import { BotModule as RoomBotModule } from '../bot/bot.module';
 import { BotModule as GameBotModule } from '../game/modules/bot/bot.module';
 import { RoleDefinitionEntity } from './entities/role-definition.entity';
+import { ClientUpdatesModule } from '../client-updates/client-updates.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { RoleDefinitionEntity } from './entities/role-definition.entity';
     ValidationModule,
     GameRegistryModule,
     NotificationModule,
+    ClientUpdatesModule,
     CatalogModule,
     RoomBotModule,
     GameBotModule,

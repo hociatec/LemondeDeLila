@@ -95,6 +95,13 @@ export class AdminClientUpdateAnnounceWsDto {
   version?: string;
 }
 
+export class AdminClientUpdateForceLatestWsDto {
+  @IsOptional()
+  @IsString()
+  @MaxLength(2000)
+  message?: string;
+}
+
 export class AdminGameSetEnabledWsDto {
   @IsString()
   @MinLength(1)

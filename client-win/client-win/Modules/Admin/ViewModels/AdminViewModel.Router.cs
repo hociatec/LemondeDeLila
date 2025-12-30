@@ -216,6 +216,11 @@ public sealed partial class AdminViewModel
                 await AnnounceClientUpdateAsync().ConfigureAwait(true);
                 return;
             }
+            if (_page == AdminPage.ClientUpdates && tag is string forceTag && forceTag == "clientUpdate.forceLatest")
+            {
+                await ForceClientUpdateLatestAsync().ConfigureAwait(true);
+                return;
+            }
             if (_page == AdminPage.Logs && tag is string logTag && logTag == "logs.download")
             {
                 await DownloadLogsAsync().ConfigureAwait(true);

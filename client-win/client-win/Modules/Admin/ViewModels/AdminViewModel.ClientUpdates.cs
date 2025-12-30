@@ -17,6 +17,7 @@ public sealed partial class AdminViewModel
         Items.Clear();
         Items.Add(new AdminMenuItem("Compiler + uploader la mise à jour (admin)", tag: "clientUpdate.buildUpload"));
         Items.Add(new AdminMenuItem("Proposer la mise à jour à tous", tag: "clientUpdate.announce"));
+        Items.Add(new AdminMenuItem("Forcer la mise à jour (bloquer les anciens clients)", tag: "clientUpdate.forceLatest"));
         SelectedItem = Items.FirstOrDefault();
         IsTextInputVisible = false;
         TextInputLabel = string.Empty;
@@ -49,6 +50,21 @@ public sealed partial class AdminViewModel
         catch
         {
             // Non bloquant.
+        }
+    }
+
+    private async Task ForceClientUpdateLatestAsync()
+    {
+        IsBusy = true;
+        try
+        {
+            var (delivered, min) = await _admin.ForceClientUpdateLatestAsync(message: null).ConfigureAwait(true);
+            var suffix = string.IsNullOrWhiteSpace(min) ? string.Empty : $" (min: {min})";
+            await _dialogs.ShowInfo("Mise à jour", $"Mise à jour forcée pour {delivered} utilisateur(s){suffix}.").ConfigureAwait(true);
+        }
+        finally
+        {
+            IsBusy = false;
         }
     }
 

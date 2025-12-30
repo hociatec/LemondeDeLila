@@ -21,6 +21,7 @@ export class ClientUpdatesService {
   private readonly updatesDir: string;
   private readonly metaPath: string;
   private readonly legacyApplicationName = 'client-win.application';
+  private readonly latestZipName = 'client-win.zip';
   private latestCache: { at: number; value: ClientUpdateMeta | null } | null =
     null;
   private readonly latestCacheTtlMs = 10_000;
@@ -46,6 +47,123 @@ export class ClientUpdatesService {
 
   getPublicUrl() {
     return process.env.CLIENT_UPDATES_PUBLIC_URL || null;
+  }
+
+  private hasLatestZipOnDisk(): boolean {
+    try {
+      return fs.existsSync(path.join(this.getTargetDir(), this.latestZipName));
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Resolves the public "update URL" shown to clients.
+   * - If latest.json has an explicit `publicUrl`, it wins (can be .zip/.application/exe/page).
+   * - Otherwise, we return `CLIENT_UPDATES_PUBLIC_URL` as-is.
+   */
+  resolveClientPublicUrl(latest: ClientUpdateMeta | null): string | null {
+    const explicit = (latest?.publicUrl || '').trim();
+    if (explicit) {
+      return explicit;
+    }
+
+    const base = (this.getPublicUrl() || '').trim();
+    if (!base) return null;
+
+    return base;
+  }
+
+  resolveClientPublicUrlForOrigin(
+    latest: ClientUpdateMeta | null,
+    origin: string | null,
+  ): string | null {
+    const resolved = this.resolveClientPublicUrl(latest);
+    if (resolved) {
+      if (
+        resolved.startsWith('http://') ||
+        resolved.startsWith('https://') ||
+        resolved.startsWith('ms-appx://')
+      ) {
+        return resolved;
+      }
+      if (origin && resolved.startsWith('/')) {
+        return `${origin.replace(/\/$/, '')}${resolved}`;
+      }
+      return resolved;
+    }
+
+    if (!origin) return null;
+    const base = origin.replace(/\/$/, '');
+    return `${base}/updates/client-win/`;
+  }
+
+  async writeLandingPage(targetDir: string): Promise<void> {
+    const zipExists = fs.existsSync(path.join(targetDir, this.latestZipName));
+    const entries = await fs.promises.readdir(targetDir, { withFileTypes: true });
+    const application = entries
+      .filter((e) => e.isFile())
+      .map((e) => e.name)
+      .find((name) => name.toLowerCase().endsWith('.application'));
+
+    const links: Array<{ href: string; label: string; note?: string }> = [];
+    if (zipExists) {
+      links.push({
+        href: this.latestZipName,
+        label: 'Télécharger (ZIP)',
+        note: 'Version portable (à extraire).',
+      });
+    }
+    if (application) {
+      links.push({
+        href: application,
+        label: 'Installer / Mettre à jour (ClickOnce)',
+        note: 'Si vous utilisez ClickOnce.',
+      });
+    }
+
+    const html = `<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Le Monde de Lila – Mise à jour</title>
+    <style>
+      body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; padding: 24px; max-width: 760px; margin: 0 auto; }
+      h1 { margin: 0 0 8px; }
+      .muted { color: #666; }
+      .card { border: 1px solid #e5e5e5; border-radius: 12px; padding: 16px; margin-top: 16px; }
+      a.btn { display: inline-block; padding: 10px 14px; border-radius: 10px; background: #111; color: #fff; text-decoration: none; }
+      a.btn.secondary { background: #2b2b2b; }
+      .note { margin-top: 8px; color: #666; font-size: 14px; }
+      code { background: #f5f5f5; padding: 2px 6px; border-radius: 6px; }
+    </style>
+  </head>
+  <body>
+    <h1>Mise à jour du client</h1>
+    <div class="muted">Téléchargez la dernière version du client Windows.</div>
+    <div class="card">
+      ${
+        links.length > 0
+          ? links
+              .map(
+                (l, idx) =>
+                  `<div style="margin-top: ${idx === 0 ? 0 : 12}px;">
+                     <a class="btn ${idx === 0 ? '' : 'secondary'}" href="${l.href}">${l.label}</a>
+                     ${l.note ? `<div class="note">${l.note}</div>` : ''}
+                   </div>`,
+              )
+              .join('\n')
+          : '<div>Aucun package disponible pour le moment.</div>'
+      }
+      <div class="note" style="margin-top: 16px;">
+        Si l’application vous indique qu’une mise à jour est requise, installez la dernière version puis relancez.
+      </div>
+    </div>
+  </body>
+</html>`;
+
+    await fs.promises.writeFile(path.join(targetDir, 'index.html'), html, 'utf-8');
   }
 
   async getLatest(): Promise<ClientUpdateMeta | null> {
@@ -157,6 +275,21 @@ export class ClientUpdatesService {
     await fs.promises.rename(stagingDir, targetDir);
 
     await this.ensureLegacyAliases(targetDir);
+
+    // Keep a stable downloadable artifact for clients (no need to keep the original upload name).
+    try {
+      const zipDest = path.join(targetDir, this.latestZipName);
+      await fs.promises.copyFile(zipPath, zipDest);
+    } catch {
+      // Best-effort: the extracted folder is still served, but the "client-win.zip" URL won't work.
+    }
+
+    // Provide a stable /updates/client-win/ landing page even without nginx directory listing.
+    try {
+      await this.writeLandingPage(targetDir);
+    } catch {
+      // Best-effort
+    }
 
     // Cleanup backup best-effort
     if (targetExists) {

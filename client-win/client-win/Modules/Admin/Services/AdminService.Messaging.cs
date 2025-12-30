@@ -37,5 +37,25 @@ public sealed partial class AdminService
         }
         return response.Payload.Delivered;
     }
+
+    public async Task<(int delivered, string minRequiredVersion)> ForceClientUpdateLatestAsync(string? message = null, CancellationToken cancellationToken = default)
+    {
+        var token = EnsureAuth();
+        var response = await _ws.RequestAsync<AdminClientUpdateForceLatestResponseDto>(
+            WsMessageTypes.Admin.ClientUpdateForceLatest,
+            new { message },
+            token,
+            cancellationToken).ConfigureAwait(false);
+        if (!response.Success || response.Payload == null)
+        {
+            throw new InvalidOperationException(response.Error ?? "Forçage de mise à jour impossible.");
+        }
+        return (response.Payload.Delivered, response.Payload.MinRequiredVersion ?? string.Empty);
+    }
 }
 
+internal sealed class AdminClientUpdateForceLatestResponseDto
+{
+    public int Delivered { get; set; }
+    public string? MinRequiredVersion { get; set; }
+}

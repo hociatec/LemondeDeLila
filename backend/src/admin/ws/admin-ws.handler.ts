@@ -16,6 +16,7 @@ import { RoleDefinitionsService } from '../services/role-definitions.service';
 import { BotService } from '../../bot/services/bot.service';
 import { BotSettingsService } from '../../game/modules/bot/services/bot-settings.service';
 import { PerfMetricsService } from '../../common/services/perf-metrics.service';
+import { ClientUpdatesService } from '../../client-updates/client-updates.service';
 import * as fs from 'fs';
 import * as path from 'path';
 import {
@@ -28,6 +29,7 @@ import {
   AdminBotSettingsUpdateWsDto,
   AdminBroadcastWsDto,
   AdminClientUpdateAnnounceWsDto,
+  AdminClientUpdateForceLatestWsDto,
   AdminGameCategoryAssignWsDto,
   AdminGameCategoryCreateWsDto,
   AdminGameCategoryUpdateWsDto,
@@ -54,6 +56,7 @@ export class AdminWsHandler {
     private readonly overrides: GameCatalogOverridesService,
     private readonly categories: GameCategoriesService,
     private readonly notifications: NotificationService,
+    private readonly clientUpdates: ClientUpdatesService,
     private readonly catalog: CatalogService,
     private readonly config: ConfigService,
     private readonly roleDefinitions: RoleDefinitionsService,
@@ -504,6 +507,61 @@ export class AdminWsHandler {
     return {
       type: 'admin.client.update.announce',
       payload: { delivered: recipients.length },
+    };
+  }
+
+  async clientUpdateForceLatest(session: WsSession, payload: any) {
+    const admin = requireAdmin(session);
+    const dto = this.validator.validate(AdminClientUpdateForceLatestWsDto, payload ?? {});
+
+    const latest = await this.clientUpdates.getLatest();
+    const latestVersion = latest?.version?.trim() || null;
+    if (!latestVersion) {
+      throw new BadRequestException(
+        "Impossible de forcer la mise à jour : aucune version publiée (latest.json manquant).",
+      );
+    }
+
+    const message =
+      typeof dto.message === 'string' && dto.message.trim().length > 0
+        ? dto.message.trim()
+        : 'Une mise à jour du client est requise pour continuer.';
+
+    await this.clientUpdates.saveLatest({
+      version: latestVersion,
+      publishedAt: latest?.publishedAt ?? new Date().toISOString(),
+      message: latest?.message ?? null,
+      publicUrl: latest?.publicUrl ?? null,
+      minRequiredVersion: latestVersion,
+    });
+
+    const ids = await this.userRepo
+      .createQueryBuilder('u')
+      .select(['u.id'])
+      .getMany();
+    const recipients = ids.filter((u) => u.id !== admin.id);
+
+    const url = this.clientUpdates.resolveClientPublicUrl(latest);
+    const payloadOut = {
+      minRequiredVersion: latestVersion,
+      currentVersion: null,
+      message,
+      publishedAt: latest?.publishedAt ?? null,
+      url,
+      fromUserId: admin.id,
+      fromUsername: admin.username,
+      timestamp: new Date().toISOString(),
+    };
+
+    await Promise.all(
+      recipients.map((u) =>
+        this.notifications.notifyUser(u.id, 'client.update.required', payloadOut),
+      ),
+    );
+
+    return {
+      type: 'admin.client.update.forceLatest',
+      payload: { delivered: recipients.length, minRequiredVersion: latestVersion },
     };
   }
 }
