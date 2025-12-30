@@ -7,6 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Threading;
 using Microsoft.Extensions.Logging;
 using client_win.Modules.Catalog.Models;
+using client_win.Modules.Game.History.Services;
 using client_win.Modules.Game.Play.Services;
 using client_win.Modules.Game.Play.ViewModels;
 using client_win.Modules.Game.Room.Services;
@@ -112,7 +113,10 @@ public sealed class GameTableOpener : IGameTableOpener
 
         tableVm.Status = "Table créée.";
         var createdMessage = $"Table de {game.Name} créée. Ajoutez des bots et commencez à jouer.";
-        tableVm.History.Entries.Add(createdMessage);
+        foreach (var line in GameHistoryMessageSplitter.Split(createdMessage))
+        {
+            tableVm.History.Entries.Add(line);
+        }
         _gameAnnouncements.Info(createdMessage);
 
         bindings = new GameTableBindings(
