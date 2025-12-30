@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Reflection;
 using System.Net.Http;
 using System.Text.RegularExpressions;
@@ -46,9 +47,14 @@ public static class ClientUpdateInstaller
                 return true;
             }
 
-            // Fallback (dernier recours): laisser Windows décider (peut ouvrir un navigateur selon la config du poste).
-            Process.Start(new ProcessStartInfo(applicationUrl) { UseShellExecute = true });
-            return true;
+            // IMPORTANT: pas de fallback navigateur — on veut un comportement uniforme.
+            await dialogs.ShowError(
+                    "Mise à jour",
+                    "Impossible de lancer ClickOnce automatiquement sur ce poste.\n\n" +
+                    "Cause probable : composant ClickOnce manquant/corrompu, ou association .application absente.\n\n" +
+                    "Réinstalle le client via l'installateur ClickOnce, puis relance.")
+                .ConfigureAwait(true);
+            return false;
         }
         catch (Exception ex)
         {
@@ -66,10 +72,18 @@ public static class ClientUpdateInstaller
         {
             // https://learn.microsoft.com/en-us/visualstudio/deployment/clickonce-security-and-deployment
             // rundll32 dfshim.dll,ShOpenVerbApplication <url>
-            var args = $"dfshim.dll,ShOpenVerbApplication \"{applicationUrl.Replace("\"", "\\\"", StringComparison.Ordinal)}\"";
+            var args = $"dfshim.dll,ShOpenVerbApplication \"{applicationUrl}\"";
+
+            // Évite les cas où rundll32 n'est pas résolu dans le PATH (sinon on retombe sur un fallback navigateur).
+            var rundll32 = Path.Combine(Environment.SystemDirectory ?? string.Empty, "rundll32.exe");
+            if (string.IsNullOrWhiteSpace(Environment.SystemDirectory) || !File.Exists(rundll32))
+            {
+                rundll32 = "rundll32.exe";
+            }
+
             var psi = new ProcessStartInfo
             {
-                FileName = "rundll32.exe",
+                FileName = rundll32,
                 Arguments = args,
                 UseShellExecute = false,
                 CreateNoWindow = true,
