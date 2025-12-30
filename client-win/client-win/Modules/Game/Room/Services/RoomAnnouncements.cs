@@ -61,7 +61,9 @@ public sealed class RoomAnnouncements : IRoomAnnouncements
     public void Error(string message)
     {
         if (string.IsNullOrWhiteSpace(message)) return;
+        // IMPORTANT:
+        // Les erreurs sont déjà ajoutées à l'historique (via Announced -> HistorySink) et annoncées depuis l'historique.
+        // Si on annonce aussi ici, certains lecteurs d'écran lisent en double.
         Announced?.Invoke(new(RoomAnnouncementKind.Assertive, message));
-        _announcer.AnnounceAssertive(message);
     }
 }

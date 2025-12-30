@@ -39,6 +39,8 @@ public sealed class GameAnnouncements : IGameAnnouncements
     public void Error(string message)
     {
         if (string.IsNullOrWhiteSpace(message)) return;
-        _announcer.AnnounceAssertive(message);
+        // IMPORTANT:
+        // Les erreurs sont déjà relayées vers l'historique (MessageReceived) et annoncées depuis l'historique.
+        // On évite une annonce directe ici pour ne pas doubler.
     }
 }
