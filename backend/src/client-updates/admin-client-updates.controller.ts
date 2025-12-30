@@ -60,6 +60,10 @@ export class AdminClientUpdatesController {
       typeof body?.version === 'string' ? body.version.trim() : '';
     const message =
       typeof body?.message === 'string' ? body.message.trim() : '';
+    const minRequiredVersion =
+      typeof body?.minRequiredVersion === 'string'
+        ? body.minRequiredVersion.trim()
+        : '';
 
     const zipPath = file.path;
     try {
@@ -75,6 +79,7 @@ export class AdminClientUpdatesController {
         publishedAt: new Date().toISOString(),
         message: message.length > 0 ? message : null,
         publicUrl,
+        minRequiredVersion: minRequiredVersion.length > 0 ? minRequiredVersion : null,
       };
       await this.updates.saveLatest(meta);
 
@@ -95,6 +100,10 @@ export class AdminClientUpdatesController {
       typeof body?.version === 'string' ? body.version.trim() : '';
     const message =
       typeof body?.message === 'string' ? body.message.trim() : '';
+    const minRequiredVersion =
+      typeof body?.minRequiredVersion === 'string'
+        ? body.minRequiredVersion.trim()
+        : '';
     const totalBytes =
       typeof body?.totalBytes === 'number' ? body.totalBytes : null;
 
@@ -108,6 +117,7 @@ export class AdminClientUpdatesController {
           uploadId,
           version: version.length > 0 ? version : null,
           message: message.length > 0 ? message : null,
+          minRequiredVersion: minRequiredVersion.length > 0 ? minRequiredVersion : null,
           totalBytes,
           createdAt: new Date().toISOString(),
         },
@@ -210,6 +220,7 @@ export class AdminClientUpdatesController {
         publishedAt: new Date().toISOString(),
         message: meta?.message || null,
         publicUrl,
+        minRequiredVersion: meta?.minRequiredVersion || null,
       };
       await this.updates.saveLatest(saved);
 

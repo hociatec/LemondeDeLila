@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using client_win.Core;
 using client_win.Core.Constants;
 using client_win.Core.Network;
 using Serilog;
@@ -193,6 +194,7 @@ public sealed class PersistentWsClient : IAsyncDisposable
                 {
                     socket.Options.SetRequestHeader("x-lila-ws-signature", signature);
                 }
+                socket.Options.SetRequestHeader("x-lila-client-version", AppInfo.GetShortVersion());
 
                 Log.Debug("Tentative de connexion WebSocket {Attempt}/{Max} vers {Endpoint}", attempt, maxAttempts, _endpoint);
                 using var connectCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);

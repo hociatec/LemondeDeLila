@@ -14,6 +14,8 @@ import {
 } from '../../common/session/session-store.interface';
 import { WsRouteRegistry } from '../../common/ws/ws-route-registry.service';
 import { WsJwtAuthService } from '../../common/ws/ws-jwt-auth.service';
+import { ClientUpdatesService } from '../../client-updates/client-updates.service';
+import { isVersionLower } from '../../common/utils/version.utils';
 
 type IncomingMessage = {
   type?: string;
@@ -25,6 +27,7 @@ type ClientSession = {
   socket: WebSocket;
   user: WsAuthPayload | null;
   connectionId: string;
+  clientVersion: string | null;
 };
 
 @WebSocketGateway({
@@ -43,12 +46,19 @@ export class RealtimeApiGateway
     private readonly registry: WsRouteRegistry,
     private readonly auth: WsJwtAuthService,
     @Inject(SESSION_STORE) private readonly sessionStore: SessionStateStore,
+    private readonly clientUpdates: ClientUpdatesService,
   ) {}
 
   async handleConnection(client: WebSocket, ...args: any[]) {
     const connectionId = randomUUID();
+    const clientVersion = this.auth.extractClientVersion(client, args);
     const token = this.auth.extractToken(client, args);
-    const session: ClientSession = { socket: client, user: null, connectionId };
+    const session: ClientSession = {
+      socket: client,
+      user: null,
+      connectionId,
+      clientVersion,
+    };
     if (token) {
       try {
         session.user = this.auth.verify(token);
@@ -102,6 +112,27 @@ export class RealtimeApiGateway
       return;
     }
     const { type, payload, requestId } = decoded;
+
+    const minRequired = await this.clientUpdates.getMinRequiredVersion();
+    if (
+      minRequired &&
+      (!session.clientVersion ||
+        isVersionLower(session.clientVersion, minRequired) === true)
+    ) {
+      this.sendError(
+        client,
+        `Mise à jour requise (version minimale: ${minRequired}).`,
+        type,
+        requestId,
+      );
+      try {
+        client.close(4406, 'update required');
+      } catch {
+        /* ignore */
+      }
+      return;
+    }
+
     try {
       const handler = this.registry.get(type);
       if (!handler) {

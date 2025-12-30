@@ -9,6 +9,7 @@ import { Server, WebSocket } from 'ws';
 import { WsJwtAuthService } from '../../common/ws/ws-jwt-auth.service';
 import { NotificationService } from '../services/notification.service';
 import { ClientUpdatesService } from '../../client-updates/client-updates.service';
+import { isVersionGreater, isVersionLower } from '../../common/utils/version.utils';
 
 type ClientMeta = { userId: number; socket: WebSocket };
 
@@ -34,6 +35,36 @@ export class NotificationGateway
     if (!user?.id) {
       client.close(4001, 'auth required');
       return;
+    }
+
+    // Best-effort "early" enforcement: if the client is already below the required version,
+    // tell them immediately (no need to wait for client.hello).
+    try {
+      const clientVersion = this.auth.extractClientVersion(client, args);
+      const minRequiredVersion =
+        (await this.clientUpdates.getMinRequiredVersion())?.trim() || null;
+      if (minRequiredVersion) {
+        const outdated =
+          !clientVersion ||
+          isVersionLower(clientVersion, minRequiredVersion) === true;
+        if (outdated) {
+          this.safeSend(client, {
+            type: 'client.update.required',
+            payload: {
+              minRequiredVersion,
+              currentVersion: clientVersion || null,
+              message:
+                'Une mise à jour du client est requise pour continuer.',
+              publishedAt: null,
+              url: (await this.clientUpdates.getLatest())?.publicUrl ?? this.clientUpdates.getPublicUrl(),
+            },
+          });
+          client.close(4406, 'update required');
+          return;
+        }
+      }
+    } catch {
+      // ignore
     }
     this.clients.set(client, { userId: user.id, socket: client });
     this.notifications.register(user.id, client);
@@ -102,53 +133,51 @@ export class NotificationGateway
     try {
       const latest = await this.clientUpdates.getLatest();
       const latestVersion = latest?.version?.trim();
-      if (!latestVersion) {
-        return;
+      const minRequiredVersion =
+        (await this.clientUpdates.getMinRequiredVersion())?.trim() || null;
+      const url = latest?.publicUrl ?? this.clientUpdates.getPublicUrl();
+
+      if (minRequiredVersion) {
+        const required = isVersionLower(version, minRequiredVersion);
+        if (required === true) {
+          this.safeSend(client, {
+            type: 'client.update.required',
+            payload: {
+              minRequiredVersion,
+              currentVersion: version,
+              message:
+                latest?.message ??
+                'Une mise à jour du client est requise pour continuer.',
+              publishedAt: latest?.publishedAt ?? null,
+              url,
+            },
+          });
+          try {
+            client.close(4406, 'update required');
+          } catch {
+            /* ignore */
+          }
+          return;
+        }
       }
 
-      if (!isUpdateAvailable(latestVersion, version)) {
-        return;
+      if (latestVersion) {
+        const available = isVersionGreater(latestVersion, version);
+        if (available === true) {
+          // Send directly to this socket (no broadcast) to avoid duplicates across instances.
+          this.safeSend(client, {
+            type: 'client.update.available',
+            payload: {
+              version: latestVersion,
+              message: latest?.message ?? null,
+              publishedAt: latest?.publishedAt ?? null,
+              url,
+            },
+          });
+        }
       }
-
-      // Send directly to this socket (no broadcast) to avoid duplicates across instances.
-      this.safeSend(client, {
-        type: 'client.update.available',
-        payload: {
-          version: latestVersion,
-          message: latest?.message ?? null,
-          publishedAt: latest?.publishedAt ?? null,
-          url: latest?.publicUrl ?? this.clientUpdates.getPublicUrl(),
-        },
-      });
     } catch (err) {
       this.logger.debug('Echec vérification version client', err as Error);
     }
   }
-}
-
-function isUpdateAvailable(latest: string, current: string): boolean {
-  const a = parseVersion(latest);
-  const b = parseVersion(current);
-  if (!a || !b) return false;
-  return a > b;
-}
-
-function parseVersion(value: string): number | null {
-  const raw = (value ?? '').trim();
-  if (!raw) return null;
-
-  const parts = raw
-    .split('.')
-    .map((p) => p.trim())
-    .filter(Boolean);
-  if (parts.length < 1 || parts.length > 4) return null;
-
-  const nums: number[] = [];
-  for (const p of parts) {
-    if (!/^\d+$/.test(p)) return null;
-    nums.push(Number(p));
-  }
-  while (nums.length < 4) nums.push(0);
-
-  return nums[0] * 1_000_000_000 + nums[1] * 1_000_000 + nums[2] * 1_000 + nums[3];
 }

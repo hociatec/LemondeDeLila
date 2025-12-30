@@ -2,6 +2,7 @@ using System;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Threading;
+using System.Diagnostics;
 using client_win.Core;
 using client_win.Modules.Config;
 using client_win.Modules.Catalog.Services;
@@ -149,6 +150,21 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
 
                 _ = HandleClientUpdateAvailableAsync(message, version);
             }
+            else if (string.Equals(type, "client.update.required", StringComparison.OrdinalIgnoreCase))
+            {
+                var payload = root.TryGetProperty("payload", out var p) ? p : default;
+                var message = payload.ValueKind != JsonValueKind.Undefined && payload.TryGetProperty("message", out var m)
+                    ? (m.GetString() ?? string.Empty)
+                    : string.Empty;
+                var minRequiredVersion = payload.ValueKind != JsonValueKind.Undefined && payload.TryGetProperty("minRequiredVersion", out var v)
+                    ? (v.GetString() ?? string.Empty)
+                    : string.Empty;
+                var url = payload.ValueKind != JsonValueKind.Undefined && payload.TryGetProperty("url", out var u)
+                    ? (u.GetString() ?? string.Empty)
+                    : string.Empty;
+
+                _ = HandleClientUpdateRequiredAsync(message, minRequiredVersion, url);
+            }
             else if (string.Equals(type, "rooms.invite.received", StringComparison.OrdinalIgnoreCase))
             {
                 _ = HandleRoomInviteReceivedAsync(root);
@@ -165,6 +181,79 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
         catch (Exception ex)
         {
             Log.Debug(ex, "Message notify invalide.");
+        }
+    }
+
+    private async Task HandleClientUpdateRequiredAsync(string message, string minRequiredVersion, string url)
+    {
+        if (!await _updateGate.WaitAsync(0).ConfigureAwait(false))
+        {
+            return;
+        }
+
+        try
+        {
+            var msg = string.IsNullOrWhiteSpace(message)
+                ? "Une mise à jour du client est requise pour continuer."
+                : message.Trim();
+
+            var current = AppInfo.GetShortVersion();
+            if (!string.IsNullOrWhiteSpace(minRequiredVersion))
+            {
+                msg += $"\n\nVersion minimale requise : {minRequiredVersion.Trim()}";
+            }
+            if (!string.IsNullOrWhiteSpace(current))
+            {
+                msg += $"\nVotre version : {current.Trim()}";
+            }
+            if (!string.IsNullOrWhiteSpace(url))
+            {
+                msg += $"\n\nURL de mise à jour : {url.Trim()}";
+            }
+
+            var confirm = await _dialogs.Confirm(
+                    "Mise à jour requise",
+                    msg + "\n\nMettre à jour maintenant ?",
+                    okText: "Mettre à jour",
+                    cancelText: "Quitter")
+                .ConfigureAwait(true);
+
+            if (confirm != true)
+            {
+                Environment.Exit(0);
+                return;
+            }
+
+            if (!UpdateEnvironment.IsLikelyClickOnceInstall() || UpdateEnvironment.IsRunningUnderDotnetHost())
+            {
+                TryOpenUrl(url);
+                Environment.Exit(0);
+                return;
+            }
+
+            var restarted = UpdateRestartHelper.RestartCurrentProcess("required");
+            if (!restarted)
+            {
+                TryOpenUrl(url);
+                Environment.Exit(0);
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "Erreur lors d'une mise à jour requise (notify).");
+            try
+            {
+                await _dialogs.ShowError("Mise à jour requise", ex.Message).ConfigureAwait(true);
+            }
+            catch
+            {
+                // ignore
+            }
+            Environment.Exit(0);
+        }
+        finally
+        {
+            _updateGate.Release();
         }
     }
 
@@ -323,7 +412,12 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
                 msg += $"\nVersion annoncée : {version.Trim()}";
             }
 
-            var confirm = await _dialogs.Confirm("Mise à jour", msg + "\n\nInstaller maintenant ?").ConfigureAwait(true);
+            var confirm = await _dialogs.Confirm(
+                    "Mise à jour",
+                    msg + "\n\nInstaller maintenant ?",
+                    okText: "Mettre à jour",
+                    cancelText: "Plus tard")
+                .ConfigureAwait(true);
             if (confirm != true)
             {
                 return;
@@ -360,6 +454,23 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
         finally
         {
             _updateGate.Release();
+        }
+    }
+
+    private static void TryOpenUrl(string url)
+    {
+        if (string.IsNullOrWhiteSpace(url))
+        {
+            return;
+        }
+
+        try
+        {
+            Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+        }
+        catch
+        {
+            // ignore
         }
     }
 

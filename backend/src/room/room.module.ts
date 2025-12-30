@@ -15,6 +15,7 @@ import { RoomDirectoryWsHandler } from './gateways/room-directory-ws.handler';
 import { RoomWsRegistrar } from './gateways/room-ws.registrar';
 import { CatalogModule } from '../catalog/catalog.module';
 import { StatsModule } from '../stats/stats.module';
+import { ClientUpdatesModule } from '../client-updates/client-updates.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { StatsModule } from '../stats/stats.module';
     forwardRef(() => BotModule),
     forwardRef(() => PresenceModule),
     NotificationModule,
+    ClientUpdatesModule,
     CatalogModule,
     StatsModule,
   ],

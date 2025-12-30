@@ -10,6 +10,7 @@ import { GameEngineStateStore } from './services/game-engine-state.store';
 import { GameGateway } from './gateways/game.gateway';
 import { EngineServicesModule } from './services/engine-services.module';
 import { StatsModule } from '../../stats/stats.module';
+import { ClientUpdatesModule } from '../../client-updates/client-updates.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { StatsModule } from '../../stats/stats.module';
     TurnModule,
     EngineServicesModule,
     StatsModule,
+    ClientUpdatesModule,
   ],
   providers: [GameEngineService, GameEngineStateStore, GameGateway],
   exports: [GameEngineService, EngineServicesModule],

@@ -4,6 +4,7 @@ using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using client_win.Core;
 
 namespace client_win.Modules.Network.WebSockets;
 
@@ -32,6 +33,7 @@ public sealed class WebSocketConnection : IWebSocketConnection
         {
             _socket.Options.SetRequestHeader("Authorization", $"Bearer {token}");
         }
+        _socket.Options.SetRequestHeader("x-lila-client-version", AppInfo.GetShortVersion());
         if (headers != null)
         {
             foreach (var kvp in headers)

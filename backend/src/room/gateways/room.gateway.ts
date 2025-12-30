@@ -16,6 +16,8 @@ import type { RoomPlayer } from '../dto/room-response.dto';
 import { CatalogService } from '../../catalog/services/catalog.service';
 import { PerfMetricsService } from '../../common/services/perf-metrics.service';
 import { RoomInviteService } from '../services/room-invite.service';
+import { ClientUpdatesService } from '../../client-updates/client-updates.service';
+import { isVersionLower } from '../../common/utils/version.utils';
 
 type AuthedClient = {
   socket: WebSocket;
@@ -51,6 +53,7 @@ export class RoomGateway
     private readonly catalog: CatalogService,
     private readonly perf: PerfMetricsService,
     private readonly invites: RoomInviteService,
+    private readonly clientUpdates: ClientUpdatesService,
   ) {
     // Permet au backend (ex: moteur de jeu) de notifier les clients room sans dépendre du Gateway.
     this.roomsService.setRealtimeNotifier(async (roomId: number) => {
@@ -71,6 +74,16 @@ export class RoomGateway
       );
       client.close(4403, 'signature temps reel requise');
       return;
+    }
+    const clientVersion = this.auth.extractClientVersion(client, args);
+    const minRequired = await this.clientUpdates.getMinRequiredVersion();
+    if (minRequired) {
+      const outdated =
+        !clientVersion || isVersionLower(clientVersion, minRequired) === true;
+      if (outdated) {
+        client.close(4406, 'update required');
+        return;
+      }
     }
     const { token, roomId, spectator } = this.extractParams(client, args);
     const payload = this.auth.tryVerify(token);

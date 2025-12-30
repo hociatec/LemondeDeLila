@@ -4,6 +4,7 @@ import * as path from 'path';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
 import { Injectable } from '@nestjs/common';
+import { parseVersion } from '../common/utils/version.utils';
 
 const execFileAsync = promisify(execFile);
 
@@ -12,6 +13,7 @@ export type ClientUpdateMeta = {
   publishedAt: string;
   message?: string | null;
   publicUrl?: string | null;
+  minRequiredVersion?: string | null;
 };
 
 @Injectable()
@@ -19,6 +21,9 @@ export class ClientUpdatesService {
   private readonly updatesDir: string;
   private readonly metaPath: string;
   private readonly legacyApplicationName = 'client-win.application';
+  private latestCache: { at: number; value: ClientUpdateMeta | null } | null =
+    null;
+  private readonly latestCacheTtlMs = 10_000;
 
   constructor() {
     // Folder served by your reverse-proxy (nginx) as:
@@ -44,10 +49,17 @@ export class ClientUpdatesService {
   }
 
   async getLatest(): Promise<ClientUpdateMeta | null> {
+    const cached = this.latestCache;
+    if (cached && Date.now() - cached.at < this.latestCacheTtlMs) {
+      return cached.value;
+    }
     try {
       const raw = await fs.promises.readFile(this.metaPath, 'utf-8');
-      return JSON.parse(raw.replace(/^\uFEFF/, '')) as ClientUpdateMeta;
+      const parsed = JSON.parse(raw.replace(/^\uFEFF/, '')) as ClientUpdateMeta;
+      this.latestCache = { at: Date.now(), value: parsed };
+      return parsed;
     } catch {
+      this.latestCache = { at: Date.now(), value: null };
       return null;
     }
   }
@@ -56,6 +68,42 @@ export class ClientUpdatesService {
     const dir = path.dirname(this.metaPath);
     await fs.promises.mkdir(dir, { recursive: true });
     await fs.promises.writeFile(this.metaPath, JSON.stringify(meta, null, 2));
+    this.latestCache = { at: Date.now(), value: meta };
+  }
+
+  /**
+   * Returns the minimum required client version, coming from:
+   * - env `CLIENT_MIN_VERSION` (emergency override)
+   * - latest.json `minRequiredVersion`
+   * - env `CLIENT_FORCE_LATEST=1` => latest.json `version`
+   */
+  async getMinRequiredVersion(): Promise<string | null> {
+    const env = (process.env.CLIENT_MIN_VERSION || '').trim();
+    const latest = await this.getLatest();
+    const forceLatestRaw = (process.env.CLIENT_FORCE_LATEST || '').trim().toLowerCase();
+    const forceLatest =
+      forceLatestRaw === '1' ||
+      forceLatestRaw === 'true' ||
+      forceLatestRaw === 'yes' ||
+      forceLatestRaw === 'y';
+
+    const metaMin = (latest?.minRequiredVersion || '').trim();
+    const latestAsMin = forceLatest ? (latest?.version || '').trim() : '';
+
+    const candidates = [env, metaMin, latestAsMin].filter((v) => Boolean(v));
+    if (candidates.length === 0) return null;
+    if (candidates.length === 1) return candidates[0] || null;
+
+    // Choose the highest valid one (invalids are ignored, except env which still wins as a fallback).
+    const parsed = candidates
+      .map((v) => ({ v, p: parseVersion(v) }))
+      .filter((x) => x.p != null) as Array<{ v: string; p: number }>;
+    if (parsed.length === 0) {
+      return env || metaMin || latestAsMin || null;
+    }
+    parsed.sort((a, b) => b.p - a.p);
+    return parsed[0].v;
+
   }
 
   private async assertZipSafe(zipPath: string) {

@@ -21,6 +21,38 @@ export class WsJwtAuthService {
     return this.extractQueryToken(urlCandidate);
   }
 
+  extractClientVersion(client: WebSocket, args: any[]): string | null {
+    const request: any =
+      (args && args[0]) || (client as any).upgradeReq || (client as any).req;
+    const urlCandidate = (client as any).url || request?.url || '';
+
+    const headers = (client as any).handshakeHeaders || request?.headers;
+    const headerVersion =
+      (headers?.['x-lila-client-version'] as string | undefined) ||
+      (headers?.['X-Lila-Client-Version'] as string | undefined);
+    if (headerVersion && typeof headerVersion === 'string') {
+      const trimmed = headerVersion.trim();
+      if (trimmed) return trimmed;
+    }
+
+    if (urlCandidate && typeof urlCandidate === 'string') {
+      try {
+        const url = new URL(urlCandidate, 'ws://localhost');
+        const v =
+          url.searchParams.get('v') ||
+          url.searchParams.get('version') ||
+          url.searchParams.get('clientVersion') ||
+          null;
+        const trimmed = (v || '').trim();
+        return trimmed || null;
+      } catch {
+        return null;
+      }
+    }
+
+    return null;
+  }
+
   verify(token: string): WsAuthPayload {
     const secret = this.requireSecret();
     try {

@@ -3,8 +3,10 @@ import { ConfigService } from '@nestjs/config';
 import { RealtimeApiGateway } from './gateways/realtime-api.gateway';
 import { SESSION_STORE } from '../common/session/session-store.interface';
 import { RedisSessionStore } from '../common/session/redis-session-store';
+import { ClientUpdatesModule } from '../client-updates/client-updates.module';
 
 @Module({
+  imports: [ClientUpdatesModule],
   providers: [
     {
       provide: SESSION_STORE,

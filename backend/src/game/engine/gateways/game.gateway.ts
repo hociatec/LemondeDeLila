@@ -12,6 +12,8 @@ import { GameSingleActionDto } from '../dto/game-action.dto';
 import { playingLog } from '../../../common/utils/playing-logger';
 import { WsJwtAuthService } from '../../../common/ws/ws-jwt-auth.service';
 import { PerfMetricsService } from '../../../common/services/perf-metrics.service';
+import { ClientUpdatesService } from '../../../client-updates/client-updates.service';
+import { isVersionLower } from '../../../common/utils/version.utils';
 
 type IncomingPayload = { type?: string; payload?: any };
 type GameClient = {
@@ -50,6 +52,7 @@ export class GameGateway
     private readonly engine: GameEngineService,
     private readonly auth: WsJwtAuthService,
     private readonly perf: PerfMetricsService,
+    private readonly clientUpdates: ClientUpdatesService,
   ) {
     this.engine.setBroadcaster((gameType, roomId, state) =>
       this.broadcastState(gameType, roomId, state),
@@ -62,6 +65,17 @@ export class GameGateway
   }
 
   async handleConnection(client: WebSocket, ...args: any[]) {
+    const clientVersion = this.auth.extractClientVersion(client, args);
+    const minRequired = await this.clientUpdates.getMinRequiredVersion();
+    if (minRequired) {
+      const outdated =
+        !clientVersion || isVersionLower(clientVersion, minRequired) === true;
+      if (outdated) {
+        client.close(4406, 'update required');
+        return;
+      }
+    }
+
     const auth = this.resolveAuth(client, args);
     if (!auth?.id) {
       client.close(4001, 'auth required');
