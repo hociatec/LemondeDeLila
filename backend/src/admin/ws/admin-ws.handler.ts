@@ -470,6 +470,7 @@ export class AdminWsHandler {
       .createQueryBuilder('u')
       .select(['u.id'])
       .getMany();
+    const recipients = ids.filter((u) => u.id !== admin.id);
 
     const message =
       typeof dto.message === 'string' && dto.message.trim().length > 0
@@ -485,14 +486,14 @@ export class AdminWsHandler {
     };
 
     await Promise.all(
-      ids.map((u) =>
+      recipients.map((u) =>
         this.notifications.notifyUser(u.id, 'client.update.available', payloadOut),
       ),
     );
 
     return {
       type: 'admin.client.update.announce',
-      payload: { delivered: ids.length },
+      payload: { delivered: recipients.length },
     };
   }
 }
