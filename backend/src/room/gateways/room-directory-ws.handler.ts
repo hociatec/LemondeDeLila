@@ -130,9 +130,6 @@ export class RoomDirectoryWsHandler {
     if (!room.owner || room.owner.id !== user.id) {
       throw new ForbiddenException('Seul le propriétaire peut inviter');
     }
-    if (!room.isPrivate) {
-      throw new ForbiddenException('Invitation réservée aux tables privées');
-    }
     const existingParticipant = await this.participantRepo.findOne({
       where: {
         room: { id: room.id },
@@ -201,9 +198,54 @@ export class RoomDirectoryWsHandler {
         payload: { invitationId: dto.invitationId, accepted: false },
       };
     }
+
+    const current = await this.rooms.getRoomPayload(invite.roomId);
+    const started =
+      (current.room.status || '').toLowerCase() === 'started' ||
+      Boolean(current.room.startedAt);
+    if (started) {
+      // Table déjà démarrée : l'invité rejoint en spectateur (même table privée).
+      this.invites.consume(dto.invitationId, { keep: true });
+      this.notifications.notifyUser(invite.fromUserId, 'rooms.invite.responded', {
+        invitationId: dto.invitationId,
+        roomId: invite.roomId,
+        accepted: true,
+        by: { id: user.id, username: user.username },
+      });
+      return {
+        type: 'rooms.invite.accepted',
+        payload: { roomId: invite.roomId, room: current.room, spectator: true },
+      };
+    }
+
     // accept: join first, then consume the invitation (one-shot) only on success
-    await this.rooms.joinRoom(invite.roomId, user.id, { allowPrivate: true });
-    this.invites.consume(dto.invitationId);
+    try {
+      await this.rooms.joinRoom(invite.roomId, user.id, { allowPrivate: true });
+      this.invites.consume(dto.invitationId);
+    } catch (err) {
+      const msg = String((err as Error)?.message ?? '');
+      const msgLower = msg.toLowerCase();
+      if (msgLower.includes('démarr') || msgLower.includes('demarr')) {
+        const state = await this.rooms.getRoomPayload(invite.roomId);
+        this.invites.consume(dto.invitationId, { keep: true });
+        this.notifications.notifyUser(
+          invite.fromUserId,
+          'rooms.invite.responded',
+          {
+            invitationId: dto.invitationId,
+            roomId: invite.roomId,
+            accepted: true,
+            by: { id: user.id, username: user.username },
+          },
+        );
+        return {
+          type: 'rooms.invite.accepted',
+          payload: { roomId: invite.roomId, room: state.room, spectator: true },
+        };
+      }
+      throw err;
+    }
+
     const state = await this.rooms.getRoomPayload(invite.roomId);
     this.notifications.notifyUser(invite.fromUserId, 'rooms.invite.responded', {
       invitationId: dto.invitationId,
@@ -213,7 +255,7 @@ export class RoomDirectoryWsHandler {
     });
     return {
       type: 'rooms.invite.accepted',
-      payload: { roomId: invite.roomId, room: state.room },
+      payload: { roomId: invite.roomId, room: state.room, spectator: false },
     };
   }
 }

@@ -238,7 +238,7 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
                 return;
             }
 
-            await _tables.OpenExistingAsync(effectiveRoomId, returnView).ConfigureAwait(true);
+            await _tables.OpenExistingAsync(effectiveRoomId, returnView, res.Spectator).ConfigureAwait(true);
         }
         catch (Exception ex)
         {

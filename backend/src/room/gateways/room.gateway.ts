@@ -15,6 +15,7 @@ import { WsSignatureService } from '../../common/ws/ws-signature.service';
 import type { RoomPlayer } from '../dto/room-response.dto';
 import { CatalogService } from '../../catalog/services/catalog.service';
 import { PerfMetricsService } from '../../common/services/perf-metrics.service';
+import { RoomInviteService } from '../services/room-invite.service';
 
 type AuthedClient = {
   socket: WebSocket;
@@ -49,6 +50,7 @@ export class RoomGateway
     private readonly signature: WsSignatureService,
     private readonly catalog: CatalogService,
     private readonly perf: PerfMetricsService,
+    private readonly invites: RoomInviteService,
   ) {
     // Permet au backend (ex: moteur de jeu) de notifier les clients room sans dépendre du Gateway.
     this.roomsService.setRealtimeNotifier(async (roomId: number) => {
@@ -911,7 +913,11 @@ export class RoomGateway
       const isOwner = state.room.owner?.id === userId;
       const isParticipant =
         state.room.players?.some((p) => p?.id === userId) ?? false;
-      return isOwner || isParticipant;
+      if (isOwner || isParticipant) return true;
+      const started =
+        (state.room.status || '').toLowerCase() === 'started' ||
+        Boolean(state.room.startedAt);
+      return started && this.invites.canSpectate(roomId, userId);
     } catch {
       return false;
     }

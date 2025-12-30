@@ -57,19 +57,24 @@ public sealed class RoomDirectoryClient : IRoomDirectoryClient
 
         if (!res.Success)
         {
-            return new RoomInviteRespondResult(accepted: false, expired: false, roomId: null);
+            return new RoomInviteRespondResult(accepted: false, expired: false, roomId: null, spectator: false);
         }
 
         if (string.Equals(res.Type, "rooms.invite.accepted", StringComparison.OrdinalIgnoreCase))
         {
-            return new RoomInviteRespondResult(accepted: true, expired: false, roomId: res.Payload?.RoomId);
+            return new RoomInviteRespondResult(
+                accepted: true,
+                expired: false,
+                roomId: res.Payload?.RoomId,
+                spectator: res.Payload?.Spectator == true);
         }
 
         // rooms.invite.responded
         return new RoomInviteRespondResult(
             accepted: res.Payload?.Accepted == true,
             expired: res.Payload?.Expired == true,
-            roomId: res.Payload?.RoomId);
+            roomId: res.Payload?.RoomId,
+            spectator: false);
     }
 
     private sealed class InviteSendPayload
@@ -91,6 +96,8 @@ public sealed class RoomDirectoryClient : IRoomDirectoryClient
 
         [JsonPropertyName("roomId")]
         public int? RoomId { get; set; }
+
+        [JsonPropertyName("spectator")]
+        public bool Spectator { get; set; }
     }
 }
-

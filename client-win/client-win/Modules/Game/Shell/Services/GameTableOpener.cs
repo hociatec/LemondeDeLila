@@ -78,6 +78,11 @@ public sealed class GameTableOpener : IGameTableOpener
 
     public async Task OpenExistingAsync(int roomId, UserControl returnView)
     {
+        await OpenExistingAsync(roomId, returnView, spectator: false).ConfigureAwait(true);
+    }
+
+    public async Task OpenExistingAsync(int roomId, UserControl returnView, bool spectator)
+    {
         if (roomId <= 0) throw new ArgumentException("roomId invalide", nameof(roomId));
         if (returnView == null) throw new ArgumentNullException(nameof(returnView));
 
@@ -86,7 +91,7 @@ public sealed class GameTableOpener : IGameTableOpener
         RoomSession session;
         try
         {
-            session = await _rooms.ConnectAsync(roomId).ConfigureAwait(true);
+            session = await _rooms.ConnectAsync(roomId, spectator).ConfigureAwait(true);
         }
         catch (Exception ex)
         {

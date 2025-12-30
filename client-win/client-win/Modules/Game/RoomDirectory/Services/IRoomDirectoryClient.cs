@@ -11,15 +11,16 @@ public interface IRoomDirectoryClient
 
 public sealed class RoomInviteRespondResult
 {
-    public RoomInviteRespondResult(bool accepted, bool expired, int? roomId)
+    public RoomInviteRespondResult(bool accepted, bool expired, int? roomId, bool spectator)
     {
         Accepted = accepted;
         Expired = expired;
         RoomId = roomId;
+        Spectator = spectator;
     }
 
     public bool Accepted { get; }
     public bool Expired { get; }
     public int? RoomId { get; }
+    public bool Spectator { get; }
 }
-

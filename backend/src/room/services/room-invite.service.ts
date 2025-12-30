@@ -8,6 +8,7 @@ export type RoomInvite = {
   toUserId: number;
   createdAt: number;
   expiresAt: number;
+  consumedAt?: number | null;
 };
 
 @Injectable()
@@ -24,6 +25,7 @@ export class RoomInviteService {
       toUserId,
       createdAt: Date.now(),
       expiresAt: Date.now() + this.ttlMs,
+      consumedAt: null,
     };
     this.invites.set(invite.id, invite);
     return invite;
@@ -42,22 +44,51 @@ export class RoomInviteService {
   findActive(roomId: number, toUserId: number): RoomInvite | null {
     this.cleanupExpired();
     for (const invite of this.invites.values()) {
-      if (invite.roomId === roomId && invite.toUserId === toUserId) {
+      if (
+        invite.roomId === roomId &&
+        invite.toUserId === toUserId &&
+        !invite.consumedAt
+      ) {
         return invite;
       }
     }
     return null;
   }
 
-  consume(id: string): RoomInvite | null {
+  /**
+   * "Consomme" une invitation. Par défaut on la supprime (one-shot).
+   * Si `keep=true`, on la garde jusqu'à expiration pour autoriser une connexion
+   * immédiate (ex: spectateur sur table privée déjà démarrée).
+   */
+  consume(id: string, opts?: { keep?: boolean }): RoomInvite | null {
     const invite = this.get(id);
     if (!invite) return null;
-    this.invites.delete(id);
+    const keep = opts?.keep === true;
+    if (!keep) {
+      this.invites.delete(id);
+      return invite;
+    }
+    invite.consumedAt = Date.now();
+    this.invites.set(invite.id, invite);
     return invite;
   }
 
   delete(id: string) {
     this.invites.delete(id);
+  }
+
+  canSpectate(roomId: number, userId: number): boolean {
+    this.cleanupExpired();
+    for (const invite of this.invites.values()) {
+      if (
+        invite.roomId === roomId &&
+        invite.toUserId === userId &&
+        Boolean(invite.consumedAt)
+      ) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private cleanupExpired() {
