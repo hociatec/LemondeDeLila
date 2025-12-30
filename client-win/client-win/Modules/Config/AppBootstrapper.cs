@@ -198,11 +198,31 @@ public static class AppBootstrapper
                 sp.GetRequiredService<ISessionService>(),
                 () => sp.GetRequiredService<IWebSocketConnection>()));
 
+        services.AddSingleton<Modules.Game.RoomDirectory.Services.IRoomDirectoryClient>(sp =>
+            new Modules.Game.RoomDirectory.Services.RoomDirectoryClient(
+                sp.GetRequiredService<WsRequestClient>(),
+                sp.GetRequiredService<ISessionService>()));
+
         services.AddSingleton<IGameGatewayClient>(sp =>
             new GameGatewayClient(
                 sp.GetRequiredService<ClientConfiguration>(),
                 sp.GetRequiredService<ISessionService>(),
                 () => sp.GetRequiredService<IWebSocketConnection>()));
+
+        services.AddSingleton<Modules.Presence.Services.IPresenceMonitor>(sp =>
+            new Modules.Presence.Services.PresenceMonitor(
+                sp.GetRequiredService<ClientConfiguration>(),
+                sp.GetRequiredService<ISessionService>(),
+                () => sp.GetRequiredService<IWebSocketConnection>(),
+                sp.GetRequiredService<Dispatcher>()));
+
+        services.AddSingleton<Modules.TextPrompts.Services.ITextPromptService, Modules.TextPrompts.Services.TextPromptService>();
+
+        services.AddSingleton<Modules.Presence.Services.IPresenceLauncher>(sp =>
+            new Modules.Presence.Services.PresenceLauncher(
+                sp,
+                sp.GetRequiredService<INavigationService>(),
+                sp.GetRequiredService<ISessionService>()));
 
         services.AddTransient<IGameTableOpener, GameTableOpener>();
 
@@ -251,7 +271,10 @@ public static class AppBootstrapper
                 () => sp.GetRequiredService<IWebSocketConnection>(),
                 sp.GetRequiredService<IScreenReaderAnnouncer>(),
                 sp.GetRequiredService<Modules.Catalog.Services.ICatalogService>(),
-                sp.GetRequiredService<IDialogService>()));
+                sp.GetRequiredService<IDialogService>(),
+                sp.GetRequiredService<Modules.Game.RoomDirectory.Services.IRoomDirectoryClient>(),
+                sp.GetRequiredService<Modules.Game.Shell.Services.IGameTableOpener>(),
+                sp.GetRequiredService<INavigationService>()));
 
         services.AddTransient<IMenuRouter, MenuRouter>();
 

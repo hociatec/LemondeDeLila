@@ -59,6 +59,41 @@ public sealed class RoomGatewayClient : IRoomGatewayClient
         return session;
     }
 
+    public async Task<RoomSession> ConnectAsync(int roomId, CancellationToken cancellationToken = default)
+    {
+        var user = _session.CurrentUser;
+        var token = user?.Token;
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            throw new InvalidOperationException("Utilisateur non authentifié.");
+        }
+        if (roomId <= 0)
+        {
+            throw new ArgumentException("roomId invalide", nameof(roomId));
+        }
+
+        var socket = _socketFactory();
+        var uri = BuildRoomUri(_config.RealtimeGatewayWs, token, roomId);
+        var headers = BuildHeaders(_config.SharedSecret);
+
+        Log.Information("WS room.connect: connexion à {Endpoint}", uri);
+        await socket.ConnectAsync(uri, token: null, headers: headers, cancellationToken: cancellationToken).ConfigureAwait(false);
+
+        var initial = await WaitRoomStateAsync(socket, cancellationToken).ConfigureAwait(false);
+        var payload = initial.Payload;
+        if (payload?.Room == null)
+        {
+            await socket.CloseAsync().ConfigureAwait(false);
+            await socket.DisposeAsync().ConfigureAwait(false);
+            throw new InvalidOperationException("Connexion table échouée (état manquant).");
+        }
+
+        var gameType = payload.Room.GameType;
+        var session = new RoomSession(roomId, gameType, socket);
+        session.LastRoomState = payload;
+        return session;
+    }
+
     private static async Task<RoomEnvelope<RoomPayloadDto>> WaitRoomCreatedAsync(
         IWebSocketConnection socket,
         string gameType,
@@ -146,6 +181,100 @@ public sealed class RoomGatewayClient : IRoomGatewayClient
         catch (OperationCanceledException)
         {
             throw new InvalidOperationException("Timeout création de table.");
+        }
+        finally
+        {
+            socket.MessageReceived -= OnMessage;
+            socket.Error -= OnError;
+            socket.StateChanged -= OnStateChanged;
+        }
+    }
+
+    private static async Task<RoomEnvelope<RoomPayloadDto>> WaitRoomStateAsync(
+        IWebSocketConnection socket,
+        CancellationToken cancellationToken)
+    {
+        var tcs = new TaskCompletionSource<RoomEnvelope<RoomPayloadDto>>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var connected = false;
+        var startedAt = DateTime.UtcNow;
+
+        void OnMessage(string raw)
+        {
+            try
+            {
+                using var doc = JsonDocument.Parse(raw);
+                if (!doc.RootElement.TryGetProperty("type", out var typeProp) ||
+                    typeProp.ValueKind != JsonValueKind.String)
+                {
+                    return;
+                }
+
+                var type = typeProp.GetString() ?? string.Empty;
+                if (string.Equals(type, "room.updated", StringComparison.OrdinalIgnoreCase))
+                {
+                    var msg = JsonSerializer.Deserialize<RoomEnvelope<RoomPayloadDto>>(raw, _json);
+                    if (msg != null)
+                    {
+                        tcs.TrySetResult(msg);
+                    }
+                    return;
+                }
+
+                if (string.Equals(type, "error", StringComparison.OrdinalIgnoreCase))
+                {
+                    string? message = null;
+                    if (doc.RootElement.TryGetProperty("payload", out var payload) &&
+                        payload.ValueKind == JsonValueKind.Object &&
+                        payload.TryGetProperty("message", out var messageProp) &&
+                        messageProp.ValueKind == JsonValueKind.String)
+                    {
+                        message = messageProp.GetString();
+                    }
+
+                    tcs.TrySetException(new InvalidOperationException(
+                        string.IsNullOrWhiteSpace(message) ? "Erreur connexion table." : message));
+                }
+            }
+            catch
+            {
+                // ignore
+            }
+        }
+
+        void OnError(string message)
+        {
+            if (tcs.Task.IsCompleted) return;
+            tcs.TrySetException(new InvalidOperationException(message));
+        }
+
+        void OnStateChanged(WebSocketState state)
+        {
+            if (tcs.Task.IsCompleted) return;
+            if (!connected) return;
+            if (state is WebSocketState.Error or WebSocketState.Disconnected)
+            {
+                tcs.TrySetException(new InvalidOperationException(
+                    "Connexion WebSocket fermée pendant la connexion à la table. Vérifiez network.ws.secret et la connectivité WS."));
+            }
+        }
+
+        socket.MessageReceived += OnMessage;
+        socket.Error += OnError;
+        socket.StateChanged += OnStateChanged;
+
+        try
+        {
+            connected = true;
+
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeout.Token);
+            var res = await tcs.Task.WaitAsync(linked.Token).ConfigureAwait(false);
+            Log.Information("WS room.connect: état reçu en {ElapsedMs}ms (roomId={RoomId})", (DateTime.UtcNow - startedAt).TotalMilliseconds, res.RoomId);
+            return res;
+        }
+        catch (OperationCanceledException)
+        {
+            throw new InvalidOperationException("Timeout connexion table.");
         }
         finally
         {

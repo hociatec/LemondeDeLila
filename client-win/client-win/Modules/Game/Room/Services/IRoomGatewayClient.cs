@@ -6,4 +6,5 @@ namespace client_win.Modules.Game.Room.Services;
 public interface IRoomGatewayClient
 {
     Task<RoomSession> CreateAndConnectAsync(string gameType, CancellationToken cancellationToken = default);
+    Task<RoomSession> ConnectAsync(int roomId, CancellationToken cancellationToken = default);
 }

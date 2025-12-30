@@ -432,6 +432,7 @@ public sealed class AboutViewModel : ObservableObject
         sb.AppendLine("- Flèches : naviguer");
         sb.AppendLine("- Entrée : valider / sélectionner");
         sb.AppendLine("- Échap : retour / fermer");
+        sb.AppendLine("- Ctrl+U : présence (joueurs connectés)");
         sb.AppendLine();
         sb.AppendLine("Table (salle)");
         sb.AppendLine("- Tab : basculer Zone de jeu → Historique");

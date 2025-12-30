@@ -155,6 +155,12 @@ public static class WsMessageTypes
         public const string PerfSnapshot = "admin.perf.snapshot";
     }
 
+    public static class Rooms
+    {
+        public const string InviteSend = "rooms.invite.send";
+        public const string InviteRespond = "rooms.invite.respond";
+    }
+
     /// <summary>
     /// Contextes d'erreur pour ErrorBus (identification de la source de l'erreur)
     /// </summary>

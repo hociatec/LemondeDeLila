@@ -13,6 +13,7 @@ using client_win.Modules.Game.Play.ViewModels;
 using client_win.Modules.Game.Room.Services;
 using client_win.Modules.Game.Shell.ViewModels;
 using client_win.Modules.Game.Shell.Views;
+using client_win.Modules.Presence.Services;
 using client_win.Modules.Shell.Services;
 
 namespace client_win.Modules.Game.Shell.Services;
@@ -27,6 +28,7 @@ public sealed class GameTableOpener : IGameTableOpener
     private readonly IScreenReaderAnnouncer _screenReader;
     private readonly IRoomAnnouncements _announcements;
     private readonly IGameAnnouncements _gameAnnouncements;
+    private readonly IPresenceMonitor _presence;
 
     public GameTableOpener(
         ILogger<GameTableOpener> logger,
@@ -36,7 +38,8 @@ public sealed class GameTableOpener : IGameTableOpener
         IDialogService dialogs,
         IScreenReaderAnnouncer screenReader,
         IRoomAnnouncements announcements,
-        IGameAnnouncements gameAnnouncements)
+        IGameAnnouncements gameAnnouncements,
+        IPresenceMonitor presence)
     {
         _logger = logger;
         _rooms = rooms;
@@ -46,6 +49,7 @@ public sealed class GameTableOpener : IGameTableOpener
         _screenReader = screenReader ?? throw new ArgumentNullException(nameof(screenReader));
         _announcements = announcements;
         _gameAnnouncements = gameAnnouncements;
+        _presence = presence ?? throw new ArgumentNullException(nameof(presence));
     }
 
     public async Task OpenAsync(CatalogGame game, UserControl returnView)
@@ -69,16 +73,60 @@ public sealed class GameTableOpener : IGameTableOpener
             return;
         }
 
+        await OpenSessionAsync(session, game, returnView, isNew: true).ConfigureAwait(true);
+    }
+
+    public async Task OpenExistingAsync(int roomId, UserControl returnView)
+    {
+        if (roomId <= 0) throw new ArgumentException("roomId invalide", nameof(roomId));
+        if (returnView == null) throw new ArgumentNullException(nameof(returnView));
+
+        _screenReader.AnnouncePolite($"Connexion à la table {roomId}...");
+
+        RoomSession session;
+        try
+        {
+            session = await _rooms.ConnectAsync(roomId).ConfigureAwait(true);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erreur connexion table: roomId={RoomId}", roomId);
+            await _dialogs.ShowError("Rejoindre une table", $"Impossible de rejoindre la table : {ex.Message}")
+                .ConfigureAwait(true);
+            return;
+        }
+
+        var payload = session.LastRoomState;
+        var manifest = payload?.Manifest;
+        var gameType = payload?.Room?.GameType;
+        var name = manifest?.Name;
+        var min = manifest?.MinPlayers ?? 1;
+        var max = manifest?.MaxPlayers ?? 8;
+
+        var game = new CatalogGame(
+            code: string.IsNullOrWhiteSpace(gameType) ? "unknown" : gameType!,
+            name: string.IsNullOrWhiteSpace(name) ? $"Table #{roomId}" : name!,
+            summary: string.Empty,
+            minPlayers: min,
+            maxPlayers: max,
+            engine: string.Empty,
+            categories: Array.Empty<string>());
+
+        await OpenSessionAsync(session, game, returnView, isNew: false).ConfigureAwait(true);
+    }
+
+    private async Task OpenSessionAsync(RoomSession session, CatalogGame game, UserControl returnView, bool isNew)
+    {
+        var roomName = session.LastRoomState?.Room?.Name;
+        await _presence.SetTableAsync(session.RoomId, string.IsNullOrWhiteSpace(roomName) ? game.Name : roomName)
+            .ConfigureAwait(true);
+
         var dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
         var tableView = new GameRoomView();
 
         GameTableBindings? bindings = null;
-        GameRoomViewModel? tableVm = null;
 
-        Task Start()
-        {
-            return session.SendCommandAsync("room.start", payload: null);
-        }
+        Task Start() => session.SendCommandAsync("room.start", payload: null);
         Task Reset() => session.SendCommandAsync("room.reset", payload: null);
         Task AddBot() => bindings?.AddBotAsync() ?? Task.CompletedTask;
         Task RemoveBot() => bindings?.RemoveBotAsync() ?? Task.CompletedTask;
@@ -110,6 +158,7 @@ public sealed class GameTableOpener : IGameTableOpener
                     // Best-effort; le backend ferme la table quand la dernière connexion sort.
                 }
 
+                _ = _presence.SetHomeAsync();
                 _navigation.Show(returnView);
             },
             onAddBot: AddBot,
@@ -119,9 +168,10 @@ public sealed class GameTableOpener : IGameTableOpener
             onTogglePrivacy: TogglePrivacy,
             onToggleRole: ToggleRole,
             dialogs: _dialogs);
-        tableVm = vm;
 
-        var createdMessage = $"Table de {game.Name} créée. Ajoutez des bots et commencez à jouer.";
+        var createdMessage = isNew
+            ? $"Table de {game.Name} créée. Ajoutez des bots et commencez à jouer."
+            : $"Table rejointe : {game.Name}.";
         foreach (var line in GameHistoryMessageSplitter.Split(createdMessage))
         {
             vm.History.Entries.Add(line);
@@ -138,8 +188,6 @@ public sealed class GameTableOpener : IGameTableOpener
             createGamePlayVm: () => CreateGamePlayViewModel(session, game));
         bindings.Attach();
         bindings.InitializeFromLastState();
-
-        // Les détails techniques (status/gameType/privacy/max) ne vont pas dans l'historique : trop verbeux.
 
         tableView.DataContext = vm;
         _navigation.Show(tableView);

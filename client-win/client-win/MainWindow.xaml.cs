@@ -16,6 +16,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Threading;
 using client_win.Modules.Network.Services;
 using System.Windows.Input;
+using client_win.Modules.Presence.Services;
 
 namespace client_win
 {
@@ -30,6 +31,8 @@ namespace client_win
         private readonly PersistentWsClient _wsConnection;
         private readonly ShellErrorHandler _errorHandler;
         private readonly INotifyListener _notify;
+        private readonly IPresenceMonitor _presence;
+        private readonly IPresenceLauncher _presenceUi;
 
         public INavigationService Navigation => _navigation;
 
@@ -41,6 +44,8 @@ namespace client_win
             _wsConnection = _host.WsClient;
             _dialogs = _host.Dialogs;
             _notify = _host.Services.GetRequiredService<INotifyListener>();
+            _presence = _host.Services.GetRequiredService<IPresenceMonitor>();
+            _presenceUi = _host.Services.GetRequiredService<IPresenceLauncher>();
 
             _homeViewModel = _host.CreateHomeViewModel(OnNavigateToMainMenu, Close);
 
@@ -55,11 +60,17 @@ namespace client_win
         private void OnPreviewKeyDown(object sender, KeyEventArgs e)
         {
             var isAlt = (Keyboard.Modifiers & ModifierKeys.Alt) == ModifierKeys.Alt;
+            var isCtrl = (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control;
             var key = e.Key == Key.System ? e.SystemKey : e.Key;
             if (isAlt && key == Key.F4)
             {
                 e.Handled = true;
                 Close();
+            }
+            else if (isCtrl && key == Key.U)
+            {
+                e.Handled = true;
+                _ = _presenceUi.OpenAsync(this);
             }
         }
 
@@ -92,6 +103,7 @@ namespace client_win
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(8));
             _ = _host.Services.GetRequiredService<Modules.Catalog.Services.ICatalogService>().PreloadAsync(cts.Token);
             _ = _notify.StartAsync();
+            _ = _presence.StartAsync();
             var menuVm = _host.CreateMainMenuViewModel(user, OnLogoutRequested);
             var menuView = new MainMenuView { DataContext = menuVm };
             _navigation.Show(menuView);
@@ -100,6 +112,7 @@ namespace client_win
         private void OnLogoutRequested()
         {
             _ = _notify.StopAsync();
+            _ = _presence.StopAsync();
             _host.Session.Clear();
             _navigation.ClearUser();
             Title = "Le Monde de Lila";

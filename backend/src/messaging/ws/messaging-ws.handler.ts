@@ -4,6 +4,7 @@ import { SendMessageDto } from '../dto/send-message.dto';
 import { PayloadValidationService } from '../../common/validation/payload-validation.service';
 import { requireUser } from '../../common/ws/ws-auth';
 import type { WsSession } from '../../common/ws/ws-route-registry.service';
+import { NotificationService } from '../../notification/services/notification.service';
 import {
   MessagingConversationDto,
   MessagingListDto,
@@ -16,6 +17,7 @@ export class MessagingWsHandler {
   constructor(
     private readonly messaging: MessagingService,
     private readonly validator: PayloadValidationService,
+    private readonly notifications: NotificationService,
   ) {}
 
   async conversation(session: WsSession, payload: any) {
@@ -44,6 +46,22 @@ export class MessagingWsHandler {
     const user = requireUser(session);
     const dto = this.validator.validate(MessagingSendDto, payload);
     const message = await this.messaging.send(user.id, dto as SendMessageDto);
+    // Notification temps réel au destinataire (via WS notify).
+    try {
+      const preview =
+        (message.text || '').trim().length > 0
+          ? (message.text || '').trim().slice(0, 200)
+          : '';
+      await this.notifications.notifyUser(dto.recipientId, 'messaging.new', {
+        messageId: message.id,
+        from: message.sender,
+        subject: message.subject,
+        preview,
+        createdAt: message.createdAt,
+      });
+    } catch {
+      // best-effort
+    }
     return { type: 'messaging.message', payload: { message } };
   }
 

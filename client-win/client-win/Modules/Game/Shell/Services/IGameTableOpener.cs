@@ -7,4 +7,5 @@ namespace client_win.Modules.Game.Shell.Services;
 public interface IGameTableOpener
 {
     Task OpenAsync(CatalogGame game, UserControl returnView);
+    Task OpenExistingAsync(int roomId, UserControl returnView);
 }
