@@ -304,6 +304,33 @@ public sealed class OptionsViewModel : ObservableObject
             }
 
             var url = _lastUpdateInfo?.Url;
+            var msg = "Une mise à jour du client est disponible.";
+            if (_lastUpdateInfo?.UpdateRequired == true)
+            {
+                msg = "Une mise à jour du client est requise pour continuer.";
+            }
+            if (!string.IsNullOrWhiteSpace(_lastUpdateInfo?.MinRequiredVersion))
+            {
+                msg += $"\n\nVersion minimale requise : {_lastUpdateInfo!.MinRequiredVersion!.Trim()}";
+            }
+            if (!string.IsNullOrWhiteSpace(_lastUpdateInfo?.LatestVersion))
+            {
+                msg += $"\nDernière version : {_lastUpdateInfo!.LatestVersion!.Trim()}";
+            }
+
+            var confirm = await _dialogs.Confirm(
+                    "Mise à jour",
+                    msg + "\n\nInstaller maintenant ?",
+                    okText: "Mettre à jour",
+                    cancelText: "Plus tard")
+                .ConfigureAwait(true);
+
+            if (confirm != true)
+            {
+                UpdateStatus = "Mise à jour ignorée.";
+                return;
+            }
+
             UpdateStatus = "Installation de la mise à jour...";
             await ClientUpdateInstaller
                 .InstallLatestAsync(_dialogs, url, reason: "options")
