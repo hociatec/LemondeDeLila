@@ -3,6 +3,7 @@ using System.Windows;
 using Microsoft.Extensions.Logging;
 using client_win.Modules.Admin.ViewModels;
 using client_win.Modules.Admin.Views;
+using client_win.Modules.Config;
 using client_win.Modules.Catalog.Services;
 using client_win.Modules.Catalog.ViewModels;
 using client_win.Modules.Catalog.Views;
@@ -23,6 +24,8 @@ using client_win.Modules.Leaderboard.Services;
 using client_win.Modules.Leaderboard.ViewModels;
 using client_win.Modules.Leaderboard.Views;
 using client_win.Modules.Admin.Services;
+using client_win.Modules.About.ViewModels;
+using client_win.Modules.About.Views;
 using client_win.Modules.Updates;
 
 namespace client_win.Modules.MainMenu.Services;
@@ -46,9 +49,11 @@ public sealed class MenuRouter : IMenuRouter
     private readonly IAdminService _admin;
     private readonly IDialogService _dialogs;
     private readonly IClientUpdatePublisher _publisher;
+    private readonly ClientConfiguration _config;
 
     public MenuRouter(
         ILogger<MenuRouter> logger,
+        ClientConfiguration config,
         IOptionsService options,
         IChatLauncher chat,
         ICatalogService catalog,
@@ -63,6 +68,7 @@ public sealed class MenuRouter : IMenuRouter
         IClientUpdatePublisher publisher)
     {
         _logger = logger;
+        _config = config;
         _options = options;
         _chat = chat;
         _catalog = catalog;
@@ -211,6 +217,25 @@ public sealed class MenuRouter : IMenuRouter
         _navigation.Show(view);
 
         return Task.FromResult("Panneau d'administration ouvert.");
+    }
+
+    public Task<string> OpenAbout()
+    {
+        _logger.LogInformation("Ouverture de la page À propos");
+
+        var previous = _navigation.CurrentView;
+        var view = new AboutView();
+        var vm = new AboutViewModel(_config, _dialogs, _publisher, onClose: () =>
+        {
+            if (previous != null)
+            {
+                _navigation.Show(previous);
+            }
+        });
+        view.DataContext = vm;
+        _navigation.Show(view);
+
+        return Task.FromResult("À propos ouvert.");
     }
 
     public Task<string> OpenOptions()

@@ -95,6 +95,8 @@ public sealed class MenuRouterStub : IMenuRouter
 
     public Task<string> OpenAdmin() => LogAndReturn("Administration (stub)");
 
+    public Task<string> OpenAbout() => LogAndReturn("À propos (stub)");
+
     public Task<string> OpenOptions() => _options.OpenAsync();
 
     public Task<string> Logout() => LogAndReturn("Déconnexion...");

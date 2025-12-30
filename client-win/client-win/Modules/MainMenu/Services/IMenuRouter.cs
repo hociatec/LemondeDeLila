@@ -12,6 +12,7 @@ public interface IMenuRouter
     Task<string> OpenMessaging();
     Task<string> OpenSocial();
     Task<string> OpenAdmin();
+    Task<string> OpenAbout();
     Task<string> OpenOptions();
     Task<string> Logout();
 }

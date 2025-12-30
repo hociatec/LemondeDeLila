@@ -48,6 +48,7 @@ public sealed class MainMenuViewModel : ObservableObject
         MessagingCommand = new AsyncRelayCommand(async () => SetStatus(await _router.OpenMessaging()));
         SocialCommand = new AsyncRelayCommand(async () => SetStatus(await _router.OpenSocial()));
         StatsCommand = new AsyncRelayCommand(async () => SetStatus(await _router.OpenStats()));
+        AboutCommand = new AsyncRelayCommand(async () => SetStatus(await _router.OpenAbout()));
         AdminCommand = new AsyncRelayCommand(async () =>
         {
             if (!_isAdminVisible)
@@ -92,6 +93,7 @@ public sealed class MainMenuViewModel : ObservableObject
     public ICommand SocialCommand { get; }
     public ICommand StatsCommand { get; }
     public ICommand AdminCommand { get; }
+    public ICommand AboutCommand { get; }
     public ICommand OptionsCommand { get; }
     public ICommand LogoutCommand { get; }
 
@@ -117,6 +119,7 @@ public sealed class MainMenuViewModel : ObservableObject
         Items.Add(new MainMenuItem("Chat", tag: ChatCommand));
         Items.Add(new MainMenuItem("Social", tag: SocialCommand));
         Items.Add(new MainMenuItem("Livre des contes", tag: StatsCommand));
+        Items.Add(new MainMenuItem("À propos", tag: AboutCommand));
 
         if (_isAdminVisible)
         {
