@@ -200,7 +200,8 @@ public sealed class PresenceViewModel : ObservableObject
             if (_session.CurrentUser != null &&
                 string.Equals(StripSelfSuffix(player.Username), _session.CurrentUser.Username, StringComparison.OrdinalIgnoreCase))
             {
-                await _dialogs.ShowInfo("Présence", "Ceci est votre propre profil de présence.").ConfigureAwait(true);
+                // Ne pas ouvrir de boîte de dialogue : garder la navigation fluide pour lecteur d'écran.
+                Details = "Ceci est votre propre profil de présence.";
                 return;
             }
 
