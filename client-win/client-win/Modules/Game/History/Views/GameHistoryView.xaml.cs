@@ -7,6 +7,7 @@ using System.Windows.Automation;
 using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Threading;
 using client_win.Modules.Game.History.ViewModels;
 
 namespace client_win.Modules.Game.History.Views;
