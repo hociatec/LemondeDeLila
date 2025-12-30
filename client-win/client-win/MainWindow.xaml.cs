@@ -17,6 +17,7 @@ using System.Threading;
 using client_win.Modules.Network.Services;
 using System.Windows.Input;
 using client_win.Modules.Updates;
+using client_win.Core;
 
 namespace client_win
 {
