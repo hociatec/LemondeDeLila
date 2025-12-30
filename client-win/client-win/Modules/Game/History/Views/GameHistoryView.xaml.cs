@@ -16,8 +16,10 @@ public partial class GameHistoryView : UserControl
 {
     private GameHistoryViewModel? _viewModel;
     private bool _pendingRebuild;
-    private string? _lastUiaNotification;
-    private DateTime _lastUiaNotificationAtUtc;
+    private readonly Queue<string> _announceQueue = new();
+    private DispatcherTimer? _announceTimer;
+    private string? _lastAnnounced;
+    private DateTime _lastAnnouncedAtUtc;
 
     public GameHistoryView()
     {
@@ -75,6 +77,7 @@ public partial class GameHistoryView : UserControl
             return;
         }
 
+        StopAnnouncements();
         HistoryEditor.Clear();
     }
 
@@ -87,10 +90,16 @@ public partial class GameHistoryView : UserControl
 
         if (e.Action == NotifyCollectionChangedAction.Add && e.NewItems != null && e.NewItems.Count > 0)
         {
-            var last = AppendEntries(e.NewItems.Cast<string>());
-            if (!string.IsNullOrWhiteSpace(last) && !HistoryEditor.IsKeyboardFocusWithin)
+            AppendEntries(e.NewItems.Cast<string>());
+
+            // Annoncer uniquement ce qui vient d'être ajouté (et pas tout le texte),
+            // en séquençant pour éviter que le lecteur d'écran ne "coupe" des messages en rafale.
+            if (!HistoryEditor.IsKeyboardFocusWithin)
             {
-                AnnounceToScreenReader(last);
+                foreach (var entry in e.NewItems.Cast<string>().Where(s => !string.IsNullOrWhiteSpace(s)))
+                {
+                    EnqueueAnnouncement(entry);
+                }
             }
             return;
         }
@@ -98,7 +107,7 @@ public partial class GameHistoryView : UserControl
         ScheduleRebuild(scrollToEnd: false);
     }
 
-    private string? AppendEntries(IEnumerable<string> entries)
+    private void AppendEntries(IEnumerable<string> entries)
     {
         var shouldAutoScroll = ShouldAutoScrollToEnd();
         var preserveSelection = HistoryEditor.IsKeyboardFocusWithin && !shouldAutoScroll;
@@ -107,7 +116,6 @@ public partial class GameHistoryView : UserControl
         var selectionLength = HistoryEditor.SelectionLength;
         var caretIndex = HistoryEditor.CaretIndex;
 
-        string? last = null;
         foreach (var entry in entries.Where(s => !string.IsNullOrWhiteSpace(s)))
         {
             if (HistoryEditor.Text.Length > 0)
@@ -116,13 +124,12 @@ public partial class GameHistoryView : UserControl
             }
 
             HistoryEditor.AppendText(entry);
-            last = entry;
         }
 
         if (preserveSelection)
         {
             RestoreSelection(selectionStart, selectionLength, caretIndex);
-            return last;
+            return;
         }
 
         if (shouldAutoScroll)
@@ -130,8 +137,6 @@ public partial class GameHistoryView : UserControl
             HistoryEditor.CaretIndex = HistoryEditor.Text.Length;
             HistoryEditor.ScrollToEnd();
         }
-
-        return last;
     }
 
     private void ScheduleRebuild(bool scrollToEnd)
@@ -219,18 +224,62 @@ public partial class GameHistoryView : UserControl
         TabNavigationRequested?.Invoke(this, new TabNavigationRequestedEventArgs(shift));
     }
 
-    private void AnnounceToScreenReader(string message)
+    private void EnqueueAnnouncement(string message)
     {
-        // UIA notification events are more reliable than live regions for Narrator/NVDA in some cases.
-        // Deduplicate rapid repeats (auto-repeat / bursts).
-        var now = DateTime.UtcNow;
-        if (string.Equals(_lastUiaNotification, message, StringComparison.Ordinal) &&
-            (now - _lastUiaNotificationAtUtc) < TimeSpan.FromMilliseconds(500))
+        var cleaned = (message ?? string.Empty).Trim();
+        if (string.IsNullOrWhiteSpace(cleaned))
         {
             return;
         }
-        _lastUiaNotification = message;
-        _lastUiaNotificationAtUtc = now;
+
+        _announceQueue.Enqueue(cleaned);
+        EnsureAnnouncePump();
+    }
+
+    private void EnsureAnnouncePump()
+    {
+        if (_announceTimer != null)
+        {
+            if (!_announceTimer.IsEnabled)
+            {
+                _announceTimer.Start();
+            }
+            return;
+        }
+
+        _announceTimer = new DispatcherTimer(DispatcherPriority.Background, Dispatcher)
+        {
+            Interval = TimeSpan.FromMilliseconds(350),
+        };
+        _announceTimer.Tick += (_, __) => PumpNextAnnouncement();
+        _announceTimer.Start();
+    }
+
+    private void PumpNextAnnouncement()
+    {
+        if (_announceQueue.Count == 0)
+        {
+            StopAnnouncements();
+            return;
+        }
+
+        // Si l'utilisateur est en train de lire l'historique, ne pas interrompre.
+        if (HistoryEditor.IsKeyboardFocusWithin)
+        {
+            return;
+        }
+
+        var next = _announceQueue.Dequeue();
+        var now = DateTime.UtcNow;
+
+        // Anti-spam : ignore un doublon strict très rapproché (ex: "Table démarrée." répété).
+        if (string.Equals(_lastAnnounced, next, StringComparison.Ordinal) &&
+            (now - _lastAnnouncedAtUtc) < TimeSpan.FromSeconds(1))
+        {
+            return;
+        }
+        _lastAnnounced = next;
+        _lastAnnouncedAtUtc = now;
 
         try
         {
@@ -238,13 +287,33 @@ public partial class GameHistoryView : UserControl
                        FrameworkElementAutomationPeer.CreatePeerForElement(this);
             peer?.RaiseNotificationEvent(
                 AutomationNotificationKind.Other,
-                AutomationNotificationProcessing.ImportantMostRecent,
-                message,
+                // IMPORTANT: ImportantMostRecent peut "écraser" des annonces en rafale.
+                // All permet de ne pas couper des messages (ex: deux listes successives).
+                AutomationNotificationProcessing.All,
+                next,
                 "GameHistory");
         }
         catch
         {
             // ignore (best-effort)
+        }
+
+        // Ajuste l'intervalle pour laisser le temps au lecteur d'écran (messages longs = plus de temps).
+        // Heuristique simple : base + proportionnel à la longueur, borné.
+        if (_announceTimer != null)
+        {
+            var ms = 450 + (int)Math.Min(2000, Math.Max(0, next.Length * 18));
+            _announceTimer.Interval = TimeSpan.FromMilliseconds(ms);
+        }
+    }
+
+    private void StopAnnouncements()
+    {
+        _announceQueue.Clear();
+        if (_announceTimer != null)
+        {
+            _announceTimer.Stop();
+            _announceTimer = null;
         }
     }
 }

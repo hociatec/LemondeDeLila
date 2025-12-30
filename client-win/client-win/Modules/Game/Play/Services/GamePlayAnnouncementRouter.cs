@@ -40,7 +40,6 @@ internal sealed class GamePlayAnnouncementRouter
         _lastTurnAnnouncementAtUtc = now;
 
         emitHistoryMessage(msg);
-        _announcements?.Info(msg);
         return true;
     }
 

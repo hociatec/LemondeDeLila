@@ -19,7 +19,6 @@ public sealed class RoomAnnouncements : IRoomAnnouncements
         if (string.IsNullOrWhiteSpace(botName)) return;
         var message = $"{botName} a rejoint la table.";
         Announced?.Invoke(new(RoomAnnouncementKind.Polite, message));
-        _announcer.AnnouncePolite(message);
     }
 
     public void BotLeft(string botName)
@@ -27,7 +26,6 @@ public sealed class RoomAnnouncements : IRoomAnnouncements
         if (string.IsNullOrWhiteSpace(botName)) return;
         var message = $"{botName} a quitté la table.";
         Announced?.Invoke(new(RoomAnnouncementKind.Polite, message));
-        _announcer.AnnouncePolite(message);
     }
 
     public void ShortcutKey(string key)
@@ -40,28 +38,24 @@ public sealed class RoomAnnouncements : IRoomAnnouncements
     {
         if (string.IsNullOrWhiteSpace(message)) return;
         Announced?.Invoke(new(RoomAnnouncementKind.Polite, message));
-        _announcer.AnnouncePolite(message);
     }
 
     public void TableInfo(string message)
     {
         if (string.IsNullOrWhiteSpace(message)) return;
         Announced?.Invoke(new(RoomAnnouncementKind.Polite, message));
-        _announcer.AnnouncePolite(message);
     }
 
     public void VisibilityChanged(bool isPrivate)
     {
         var message = isPrivate ? "Table privée." : "Table publique.";
         Announced?.Invoke(new(RoomAnnouncementKind.Polite, message));
-        _announcer.AnnouncePolite(message);
     }
 
     public void RoleChanged(bool isSpectator)
     {
         var message = isSpectator ? "Mode spectateur." : "Mode joueur.";
         Announced?.Invoke(new(RoomAnnouncementKind.Polite, message));
-        _announcer.AnnouncePolite(message);
     }
 
     public void Error(string message)

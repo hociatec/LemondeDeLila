@@ -31,7 +31,9 @@ public sealed class GameAnnouncements : IGameAnnouncements
     public void Info(string message)
     {
         if (string.IsNullOrWhiteSpace(message)) return;
-        _announcer.AnnouncePolite(message);
+        // IMPORTANT:
+        // Les messages "Info" sont déjà ajoutés à l'historique et annoncés depuis l'historique
+        // (séquencé) pour éviter que le lecteur d'écran ne coupe des annonces en rafale.
     }
 
     public void Error(string message)
