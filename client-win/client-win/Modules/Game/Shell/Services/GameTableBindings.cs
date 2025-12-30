@@ -124,9 +124,8 @@ internal sealed class GameTableBindings : IAsyncDisposable
         {
             _dispatcher.InvokeAsync(() =>
             {
-                var label = isPrivate ? "privée" : "publique";
-                _history.Add($"Table {label}");
-                _tableVm.Status = $"Visibilité : {label}.";
+                // L'annonce passe via IRoomAnnouncements -> Announced -> historique (puis SR).
+                // Ne pas dupliquer via _history.Add / Status (sinon double lecture).
                 _announcements.VisibilityChanged(isPrivate);
             }, DispatcherPriority.Background);
         };
@@ -135,9 +134,8 @@ internal sealed class GameTableBindings : IAsyncDisposable
         {
             _dispatcher.InvokeAsync(() =>
             {
-                var label = isSpectator ? "spectateur" : "joueur";
-                _history.Add($"Mode {label}");
-                _tableVm.Status = $"Mode : {label}.";
+                // L'annonce passe via IRoomAnnouncements -> Announced -> historique (puis SR).
+                // Ne pas dupliquer via _history.Add / Status (sinon double lecture).
                 _announcements.RoleChanged(isSpectator);
             }, DispatcherPriority.Background);
         };
