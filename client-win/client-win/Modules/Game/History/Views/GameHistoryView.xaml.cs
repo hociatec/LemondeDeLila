@@ -96,9 +96,21 @@ public partial class GameHistoryView : UserControl
             // en séquençant pour éviter que le lecteur d'écran ne "coupe" des messages en rafale.
             if (!HistoryEditor.IsKeyboardFocusWithin)
             {
-                foreach (var entry in e.NewItems.Cast<string>().Where(s => !string.IsNullOrWhiteSpace(s)))
+                var added = e.NewItems
+                    .Cast<string>()
+                    .Select(s => (s ?? string.Empty).Trim())
+                    .Where(s => !string.IsNullOrWhiteSpace(s))
+                    .ToList();
+
+                if (added.Count == 1)
                 {
-                    EnqueueAnnouncement(entry);
+                    EnqueueAnnouncement(added[0]);
+                }
+                else if (added.Count > 1)
+                {
+                    // Regroupe un burst en un seul message pour éviter que NVDA/Narrateur ne coupe la file.
+                    // On garde des séparateurs ligne par ligne pour la lisibilité.
+                    EnqueueAnnouncement(string.Join(Environment.NewLine, added));
                 }
             }
             return;
@@ -249,7 +261,7 @@ public partial class GameHistoryView : UserControl
 
         _announceTimer = new DispatcherTimer(DispatcherPriority.Background, Dispatcher)
         {
-            Interval = TimeSpan.FromMilliseconds(350),
+            Interval = TimeSpan.FromMilliseconds(250),
         };
         _announceTimer.Tick += (_, __) => PumpNextAnnouncement();
         _announceTimer.Start();
@@ -302,7 +314,7 @@ public partial class GameHistoryView : UserControl
         // Heuristique simple : base + proportionnel à la longueur, borné.
         if (_announceTimer != null)
         {
-            var ms = 450 + (int)Math.Min(2000, Math.Max(0, next.Length * 18));
+            var ms = 250 + (int)Math.Min(1200, Math.Max(0, next.Length * 10));
             _announceTimer.Interval = TimeSpan.FromMilliseconds(ms);
         }
     }

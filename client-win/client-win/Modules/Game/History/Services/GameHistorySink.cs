@@ -23,8 +23,27 @@ public sealed class GameHistorySink : IGameHistorySink
         }
 
         _dispatcher.InvokeAsync(
-            () => _history.Entries.Add(message),
+            () =>
+            {
+                var cleaned = message.Trim();
+                if (string.IsNullOrWhiteSpace(cleaned))
+                {
+                    return;
+                }
+
+                // Évite les doublons consécutifs (ex: "Table démarrée." deux fois).
+                var count = _history.Entries.Count;
+                if (count > 0)
+                {
+                    var last = _history.Entries[count - 1] ?? string.Empty;
+                    if (string.Equals(last.Trim(), cleaned, StringComparison.Ordinal))
+                    {
+                        return;
+                    }
+                }
+
+                _history.Entries.Add(cleaned);
+            },
             DispatcherPriority.Background);
     }
 }
-
