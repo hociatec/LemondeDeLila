@@ -36,6 +36,8 @@ export class AdminUsersService {
         'user.emailVerified',
         'user.bannedUntil',
         'user.banReason',
+        'user.chatBannedUntil',
+        'user.chatBanReason',
         'user.createdAt',
       ])
       .orderBy('user.id', 'DESC')
@@ -88,6 +90,8 @@ export class AdminUsersService {
         'emailVerified',
         'bannedUntil',
         'banReason',
+        'chatBannedUntil',
+        'chatBanReason',
         'createdAt',
       ],
     });

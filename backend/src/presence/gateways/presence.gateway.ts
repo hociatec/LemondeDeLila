@@ -45,6 +45,23 @@ export class PresenceGateway
       return;
     }
     const context = this.resolveContext(client, args);
+    if (context === 'chat') {
+      const banned = await this.presence.isChatBannedNow(payload.id);
+      if (banned) {
+        try {
+          client.send(
+            JSON.stringify({
+              type: 'error',
+              payload: { message: 'Accès au tchat refusé.' },
+            }),
+          );
+        } catch {
+          /* ignore */
+        }
+        client.close(4403, 'chat banned');
+        return;
+      }
+    }
     this.presence.register(client, payload, context);
     client.on('message', (raw) => this.handleIncoming(client, raw));
     client.on('error', () => client.close());

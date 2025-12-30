@@ -126,7 +126,6 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <Label Grid.Column="0" Content="Message" Target="{Binding ElementName=InputBox}" Foreground="#9CB2D1" VerticalAlignment="Center" />
                     <TextBox Grid.Column="1"
@@ -137,7 +136,6 @@
                              KeyDown="OnInputKeyDown"
                              TabIndex="2"
                              AutomationProperties.Name="Message à envoyer" />
-                    <Button Grid.Column="2" Content="Envoyer" Command="{Binding SendCommand}" Margin="8 0 0 0" TabIndex="3" />
                 </Grid>
             </Grid>
         </Border>

@@ -80,9 +80,52 @@ public sealed class ChatService : IChatService
             return false;
         }
 
+        var gate = new TaskCompletionSource<ChatState>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var lastState = ChatState.Disconnected;
+        string? lastError = null;
+        void OnState(ChatState s)
+        {
+            lastState = s;
+            if (s is ChatState.Connected or ChatState.Error or ChatState.Disconnected)
+            {
+                gate.TrySetResult(s);
+            }
+        }
+        void OnError(string msg)
+        {
+            lastError = msg;
+            gate.TrySetResult(ChatState.Error);
+        }
+
+        _client.StateChanged += OnState;
+        _client.ErrorReceived += OnError;
+
         try
         {
             await _client.ConnectAsync(user.Token, cancellationToken).ConfigureAwait(false);
+            // Attendre que la connexion soit réellement stable (évite un "flash" si le serveur refuse aussitôt: ban, etc.)
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            cts.CancelAfter(TimeSpan.FromSeconds(2));
+            await gate.Task.WaitAsync(cts.Token).ConfigureAwait(false);
+
+            if (lastState != ChatState.Connected)
+            {
+                _ = _dispatcher.InvokeAsync(() =>
+                        SetStatus(lastError ?? "Accès au tchat refusé.", isError: true),
+                    DispatcherPriority.Background);
+                return false;
+            }
+
+            // Grace window: si le serveur ferme immédiatement après l'ouverture, on considère que l'accès est refusé.
+            await Task.Delay(350, cancellationToken).ConfigureAwait(false);
+            if (lastState != ChatState.Connected)
+            {
+                _ = _dispatcher.InvokeAsync(() =>
+                        SetStatus(lastError ?? "Accès au tchat refusé.", isError: true),
+                    DispatcherPriority.Background);
+                return false;
+            }
+
             _ = _dispatcher.InvokeAsync(() => SetStatus("Connexion tchat ouverte."), DispatcherPriority.Background);
             return true;
         }
@@ -90,6 +133,11 @@ public sealed class ChatService : IChatService
         {
             _ = _dispatcher.InvokeAsync(() => SetStatus($"Connexion tchat échouée : {ex.Message}", isError: true), DispatcherPriority.Background);
             return false;
+        }
+        finally
+        {
+            _client.StateChanged -= OnState;
+            _client.ErrorReceived -= OnError;
         }
     }
 

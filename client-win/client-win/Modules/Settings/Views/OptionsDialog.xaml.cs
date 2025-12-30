@@ -2,6 +2,7 @@ using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using client_win.Modules.Settings.ViewModels;
 
 namespace client_win.Modules.Settings.Views;
@@ -33,7 +34,7 @@ public partial class OptionsDialog : Window
     {
         if (e.Key is Key.Up or Key.Down)
         {
-            var slider = FindAncestor<Slider>(Keyboard.FocusedElement as DependencyObject);
+            var slider = FindAncestorOrSelf<Slider>(Keyboard.FocusedElement as DependencyObject);
             if (slider != null && slider.IsEnabled)
             {
                 e.Handled = true;
@@ -49,7 +50,7 @@ public partial class OptionsDialog : Window
         }
     }
 
-    private static T? FindAncestor<T>(DependencyObject? start) where T : DependencyObject
+    private static T? FindAncestorOrSelf<T>(DependencyObject? start) where T : DependencyObject
     {
         var current = start;
         while (current != null)
@@ -58,7 +59,9 @@ public partial class OptionsDialog : Window
             {
                 return matched;
             }
-            current = LogicalTreeHelper.GetParent(current);
+
+            var parent = VisualTreeHelper.GetParent(current);
+            current = parent ?? LogicalTreeHelper.GetParent(current);
         }
         return null;
     }

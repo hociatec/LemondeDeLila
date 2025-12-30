@@ -23,6 +23,12 @@ public sealed class AdminUserDto
 
     [JsonPropertyName("banReason")]
     public string? BanReason { get; set; }
+
+    [JsonPropertyName("chatBannedUntil")]
+    public DateTime? ChatBannedUntil { get; set; }
+
+    [JsonPropertyName("chatBanReason")]
+    public string? ChatBanReason { get; set; }
 }
 
 public sealed class AdminUsersListResponseDto

@@ -31,8 +31,7 @@
     </UserControl.Resources>
 
     <Grid Background="{StaticResource ShellBackground}"
-          FocusManager.IsFocusScope="True"
-          FocusManager.FocusedElement="{Binding ElementName=FirstFocusable}">
+          FocusManager.IsFocusScope="True">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />

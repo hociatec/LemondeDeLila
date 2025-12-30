@@ -41,6 +41,11 @@ public sealed partial class AdminViewModel
                     await LoadChatAsync().ConfigureAwait(true);
                     return;
                 }
+                if (tag is string chatAccess && chatAccess == "chatAccess")
+                {
+                    await LoadChatAccessAsync().ConfigureAwait(true);
+                    return;
+                }
                 if (tag is string s3 && s3 == "broadcast")
                 {
                     BuildBroadcast();
@@ -229,6 +234,47 @@ public sealed partial class AdminViewModel
                     BuildChatMessageActions(msg);
                     return;
                 }
+            }
+
+            if (_page == AdminPage.ChatAccess)
+            {
+                if (tag is string refresh && refresh == "chatAccess.refresh")
+                {
+                    await LoadChatAccessAsync().ConfigureAwait(true);
+                    return;
+                }
+                if (tag is AdminUserDto chatUser)
+                {
+                    BuildChatAccessUserActions(chatUser);
+                    return;
+                }
+            }
+
+            if (_page == AdminPage.ChatAccessUserActions && _selectedUser != null && tag is string accessAction)
+            {
+                if (accessAction == "chatAccess.user.ban")
+                {
+                    BuildChatAccessBanForm(_selectedUser);
+                    return;
+                }
+                if (accessAction == "chatAccess.user.unban")
+                {
+                    await _admin.UnbanUserFromChatAsync(_selectedUser.Id).ConfigureAwait(true);
+                    await _dialogs.ShowInfo("Tchat", "Utilisateur débanni du tchat.").ConfigureAwait(true);
+                    await LoadChatAccessAsync().ConfigureAwait(true);
+                    return;
+                }
+                if (accessAction == "chatAccess.back")
+                {
+                    await LoadChatAccessAsync().ConfigureAwait(true);
+                    return;
+                }
+            }
+
+            if (_page == AdminPage.ChatAccessBanForm && _selectedUser != null && tag is string submitBan && submitBan == "chatAccess.ban.submit")
+            {
+                await SubmitChatAccessBanAsync(_selectedUser).ConfigureAwait(true);
+                return;
             }
 
             if (_page == AdminPage.ChatMessageActions && _selectedChatMessage != null && tag is string chatAction)

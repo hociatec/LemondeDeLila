@@ -132,12 +132,14 @@ export class PresenceService implements OnModuleDestroy {
         this.safeSend(from.socket, {
           type: 'error',
           payload: {
-            message:
-              ban.reason && ban.reason.trim().length > 0
-                ? `Vous êtes banni du tchat. Raison : ${ban.reason.trim()}`
-                : 'Vous êtes banni du tchat.',
+            message: 'Accès au tchat refusé.',
           },
         });
+        try {
+          from.socket.close(4403, 'chat banned');
+        } catch {
+          /* ignore */
+        }
         return;
       }
       sanitized = this.validator.validate(text);
@@ -150,6 +152,11 @@ export class PresenceService implements OnModuleDestroy {
     const message = await this.chat.recordMessage(from.user.id, sanitized);
     const normalized = this.chat.normalize(message);
     this.broadcastChat(normalized);
+  }
+
+  async isChatBannedNow(userId: number): Promise<boolean> {
+    const ban = await this.getChatBan(userId);
+    return !!(ban?.until && ban.until.getTime() > Date.now());
   }
 
   private async getChatBan(
