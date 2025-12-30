@@ -77,13 +77,17 @@ public partial class GameHistoryView : UserControl
 
             // Cas important: certains messages (ex: "Table créée...") sont ajoutés avant que la vue
             // ne soit chargée et donc avant l'abonnement à CollectionChanged.
-            // On annonce au moins la dernière ligne existante à l'attache.
+            // On annonce les dernières lignes existantes à l'attache.
             if (!HistoryEditor.IsKeyboardFocusWithin && _viewModel.Entries.Count > 0)
             {
-                var last = (_viewModel.Entries[_viewModel.Entries.Count - 1] ?? string.Empty).Trim();
-                if (!string.IsNullOrWhiteSpace(last))
+                var startIndex = Math.Max(0, _viewModel.Entries.Count - 5);
+                for (var i = startIndex; i < _viewModel.Entries.Count; i++)
                 {
-                    EnqueueAnnouncement(last);
+                    var line = (_viewModel.Entries[i] ?? string.Empty).Trim();
+                    if (!string.IsNullOrWhiteSpace(line))
+                    {
+                        EnqueueAnnouncement(line);
+                    }
                 }
             }
             return;
