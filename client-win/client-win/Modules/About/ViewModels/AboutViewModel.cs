@@ -258,7 +258,7 @@ public sealed class AboutViewModel : ObservableObject
             return;
         }
 
-        var previousTag = SelectedItem?.Tag;
+        var previousTag = SelectedItem?.Tag as string;
         var previousLabel = SelectedItem?.Label;
 
         Items.Clear();
@@ -272,7 +272,8 @@ public sealed class AboutViewModel : ObservableObject
         if (!string.IsNullOrWhiteSpace(previousTag))
         {
             SelectedItem = Items.FirstOrDefault(i =>
-                string.Equals(i.Tag, previousTag, StringComparison.OrdinalIgnoreCase));
+                i.Tag is string tag &&
+                string.Equals(tag, previousTag, StringComparison.OrdinalIgnoreCase));
             if (SelectedItem != null)
             {
                 return;

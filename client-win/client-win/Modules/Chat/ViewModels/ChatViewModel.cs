@@ -129,7 +129,21 @@ public sealed class ChatViewModel : ObservableObject
         HistoryText = EnsureTrailingEmptyLine(_historyBuilder.ToString());
     }
 
-    private static string FormatLine(ChatMessage m) => $"{m.User} : {m.Text} ({m.Timestamp:O})";
+    private static string FormatLine(ChatMessage m)
+    {
+        var user = (m.User ?? string.Empty).Trim();
+        var text = (m.Text ?? string.Empty).TrimEnd();
+
+        if (string.IsNullOrWhiteSpace(user))
+        {
+            return text;
+        }
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return user;
+        }
+        return $"{user} : {text}";
+    }
 
     private static string EnsureTrailingEmptyLine(string text)
     {
