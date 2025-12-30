@@ -6,6 +6,7 @@ import { PresenceService } from './services/presence.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RoomParticipant } from '../room/entities/room-participant.entity';
 import { Room } from '../room/entities/room.entity';
+import { User } from '../user/entities/user.entity';
 import {
   PresenceTransport,
   RedisPresenceTransport,
@@ -15,7 +16,7 @@ import {
   imports: [
     ConfigModule,
     ChatModule,
-    TypeOrmModule.forFeature([RoomParticipant, Room]),
+    TypeOrmModule.forFeature([RoomParticipant, Room, User]),
   ],
   providers: [
     {

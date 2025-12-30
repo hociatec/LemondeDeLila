@@ -88,6 +88,9 @@ function writeUpdatesLandingPage(updatesDir: string) {
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     logger: new ServLoggerService(),
+    // Important: let errors bubble so our bootstrap().catch can log them.
+    // Otherwise Nest may abort via ExceptionsZone and exit(1) without any useful output.
+    abortOnError: false,
   });
   const config = app.get(ConfigService);
 
