@@ -1,0 +1,172 @@
+name: Client Win - Build/Sign/Publish (auto)
+
+on:
+  push:
+    branches: [ "main" ]
+
+concurrency:
+  group: client-win-publish-main
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Compute version
+        id: ver
+        shell: pwsh
+        run: |
+          $csproj = "client-win/client-win/client-win.csproj"
+          [xml]$xml = Get-Content $csproj
+          $base = $xml.Project.PropertyGroup.Version | Select-Object -First 1
+          if ([string]::IsNullOrWhiteSpace($base)) { $base = "1.0.0" }
+          $parts = $base.Split(".")
+          $major = $parts[0]
+          $minor = if ($parts.Length -ge 2) { $parts[1] } else { "0" }
+          $run = "${{ github.run_number }}"
+          $ver = "$major.$minor.$run"
+          "version=$ver" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          "version4=$ver.0" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+      - name: Prepare ClickOnce signing cert
+        id: cert
+        shell: pwsh
+        env:
+          CODESIGN_PFX_BASE64: ${{ secrets.CODESIGN_PFX_BASE64 }}
+          CODESIGN_PFX_PASSWORD: ${{ secrets.CODESIGN_PFX_PASSWORD }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:CODESIGN_PFX_BASE64) -or [string]::IsNullOrWhiteSpace($env:CODESIGN_PFX_PASSWORD)) {
+            throw "Missing secrets: CODESIGN_PFX_BASE64 and/or CODESIGN_PFX_PASSWORD"
+          }
+
+          $pfxPath = Join-Path $env:RUNNER_TEMP "codesign.pfx"
+          [IO.File]::WriteAllBytes($pfxPath, [Convert]::FromBase64String($env:CODESIGN_PFX_BASE64))
+
+          $secure = ConvertTo-SecureString -String $env:CODESIGN_PFX_PASSWORD -AsPlainText -Force
+          $cert = Import-PfxCertificate -FilePath $pfxPath -Password $secure -CertStoreLocation Cert:\CurrentUser\My
+          if (!$cert -or [string]::IsNullOrWhiteSpace($cert.Thumbprint)) {
+            throw "Unable to import PFX certificate"
+          }
+          "thumbprint=$($cert.Thumbprint)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+      - name: ClickOnce publish (signed manifests)
+        id: pub
+        shell: pwsh
+        env:
+          CODESIGN_TIMESTAMP_URL: ${{ secrets.CODESIGN_TIMESTAMP_URL }}
+          LILA_UPDATES_BASEURL: ${{ secrets.LILA_UPDATES_BASEURL }}
+        run: |
+          $ver = "${{ steps.ver.outputs.version }}"
+          $ver4 = "${{ steps.ver.outputs.version4 }}"
+          $thumb = "${{ steps.cert.outputs.thumbprint }}"
+          if ([string]::IsNullOrWhiteSpace($thumb)) { throw "thumbprint missing" }
+
+          $ts = $env:CODESIGN_TIMESTAMP_URL
+          if ([string]::IsNullOrWhiteSpace($ts)) { $ts = "http://timestamp.digicert.com" }
+
+          $baseUrl = $env:LILA_UPDATES_BASEURL
+          if ([string]::IsNullOrWhiteSpace($baseUrl)) { $baseUrl = "https://api.lilas.hociatec.fr/updates/client-win/" }
+          if (!$baseUrl.EndsWith("/")) { $baseUrl += "/" }
+
+          $publishDir = Join-Path $env:RUNNER_TEMP "clickonce-publish"
+          if (Test-Path $publishDir) { Remove-Item $publishDir -Recurse -Force }
+          New-Item -ItemType Directory -Path $publishDir | Out-Null
+
+          dotnet msbuild client-win/client-win/client-win.csproj `
+            /t:Publish `
+            /restore `
+            /p:Configuration=Release `
+            /p:PublishProfile=ClickOnce `
+            /p:PublishDir="$publishDir\\" `
+            /p:PublishUrl="$baseUrl" `
+            /p:InstallUrl="$baseUrl" `
+            /p:UpdateUrl="$baseUrl" `
+            /p:ApplicationVersion="$ver4" `
+            /p:Version="$ver4" `
+            /p:AssemblyVersion="$ver4" `
+            /p:FileVersion="$ver4" `
+            /p:GenerateManifests=true `
+            /p:SignManifests=true `
+            /p:ManifestCertificateThumbprint="$thumb" `
+            /p:ManifestTimestampUrl="$ts"
+
+          "publishDir=$publishDir" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+      - name: Zip publish directory
+        id: zip
+        shell: pwsh
+        run: |
+          $ver = "${{ steps.ver.outputs.version }}"
+          $publishDir = "${{ steps.pub.outputs.publishDir }}"
+          $zipPath = Join-Path $env:RUNNER_TEMP ("client-win-$ver-clickonce.zip")
+          if (Test-Path $zipPath) { Remove-Item $zipPath -Force }
+          Compress-Archive -Path (Join-Path $publishDir "*") -DestinationPath $zipPath -Force
+          "zip=$zipPath" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+      - name: Upload to server (chunked)
+        shell: pwsh
+        env:
+          LILA_API_BASE: ${{ secrets.LILA_API_BASE }}
+          LILA_UPLOAD_TOKEN: ${{ secrets.LILA_UPLOAD_TOKEN }}
+        run: |
+          $api = $env:LILA_API_BASE
+          if ([string]::IsNullOrWhiteSpace($api)) { throw "Missing secret: LILA_API_BASE (example: https://api.lilas.hociatec.fr/api/)" }
+          if (!$api.EndsWith("/")) { $api += "/" }
+          $uploadToken = $env:LILA_UPLOAD_TOKEN
+          if ([string]::IsNullOrWhiteSpace($uploadToken)) { throw "Missing secret: LILA_UPLOAD_TOKEN" }
+
+          $ver = "${{ steps.ver.outputs.version }}"
+          $zipPath = "${{ steps.zip.outputs.zip }}"
+          $size = (Get-Item $zipPath).Length
+
+          $headers = @{ "x-client-updates-upload-token" = $uploadToken }
+          $initUrl = "$api" + "ci/client-updates/upload/init"
+          $chunkUrl = "$api" + "ci/client-updates/upload/chunk"
+          $completeUrl = "$api" + "ci/client-updates/upload/complete"
+
+          $initBody = @{
+            version = $ver
+            message = "Auto publish ClickOnce (main @ ${{ github.sha }})"
+            minRequiredVersion = $ver
+            totalBytes = $size
+          } | ConvertTo-Json
+
+          $init = Invoke-RestMethod -Method Post -Uri $initUrl -Headers $headers -ContentType "application/json" -Body $initBody
+          $uploadId = $init.uploadId
+          if ([string]::IsNullOrWhiteSpace($uploadId)) { throw "uploadId missing" }
+
+          $chunkSize = 10MB
+          $buffer = New-Object byte[] $chunkSize
+          $fs = [IO.File]::OpenRead($zipPath)
+          try {
+            $index = 0
+            while ($true) {
+              $read = $fs.Read($buffer, 0, $buffer.Length)
+              if ($read -le 0) { break }
+              $tmp = Join-Path $env:RUNNER_TEMP ("chunk-$index.part")
+              [IO.File]::WriteAllBytes($tmp, $buffer[0..($read-1)])
+
+              Invoke-RestMethod -Method Post -Uri $chunkUrl -Headers $headers -Form @{
+                uploadId = $uploadId
+                index = "$index"
+                file = Get-Item $tmp
+              } | Out-Null
+
+              Remove-Item $tmp -Force
+              $index++
+            }
+          } finally {
+            $fs.Dispose()
+          }
+
+          $completeBody = @{ uploadId = $uploadId } | ConvertTo-Json
+          Invoke-RestMethod -Method Post -Uri $completeUrl -Headers $headers -ContentType "application/json" -Body $completeBody | Out-Null

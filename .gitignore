@@ -33,6 +33,7 @@ tools/wix*.zip
 tools/jdk*/
 tools/**/*.tar.gz
 tools/**/*.zip
+tools/codesign/
 
 ###############################
 # Logs files
