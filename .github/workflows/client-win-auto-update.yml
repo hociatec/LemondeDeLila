@@ -21,6 +21,9 @@ jobs:
         with:
           dotnet-version: "8.0.x"
 
+      - name: Setup MSBuild (Visual Studio)
+        uses: microsoft/setup-msbuild@v2
+
       - name: Compute version
         id: ver
         shell: pwsh
@@ -81,7 +84,7 @@ jobs:
           if (Test-Path $publishDir) { Remove-Item $publishDir -Recurse -Force }
           New-Item -ItemType Directory -Path $publishDir | Out-Null
 
-          dotnet msbuild client-win/client-win/client-win.csproj `
+          msbuild client-win/client-win/client-win.csproj `
             /t:Publish `
             /restore `
             /p:Configuration=Release `
