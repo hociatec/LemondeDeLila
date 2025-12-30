@@ -3,7 +3,6 @@ import { WebSocket } from 'ws';
 import { randomUUID } from 'crypto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ChatService } from '../../chat/services/chat.service';
-import { ChatValidator } from '../../chat/services/chat.validator';
 import { WsAuthPayload } from '../../common/interfaces/ws-auth-payload';
 import { RoomParticipant } from '../../room/entities/room-participant.entity';
 import { In, IsNull, Repository } from 'typeorm';
@@ -46,7 +45,6 @@ export class PresenceService implements OnModuleDestroy {
 
   constructor(
     private readonly chat: ChatService,
-    private readonly validator: ChatValidator,
     @InjectRepository(RoomParticipant)
     private readonly participants: Repository<RoomParticipant>,
     @InjectRepository(User)
@@ -122,7 +120,6 @@ export class PresenceService implements OnModuleDestroy {
 
   private async handleChatSend(from: PresenceClient, payload: any) {
     const text = typeof payload.text === 'string' ? payload.text : '';
-    let sanitized: string;
     try {
       // IMPORTANT: éviter le log info sur chaque message (bruyant + ajoute de la latence sur disque).
       this.logger.debug(
@@ -145,16 +142,23 @@ export class PresenceService implements OnModuleDestroy {
         }
         return;
       }
-      sanitized = this.validator.validate(text);
     } catch (err) {
       this.logger.warn(
         `Message chat invalide pour ${from.user.username}: ${(err as Error)?.message ?? 'inconnu'}`,
       );
       return;
     }
-    const message = await this.chat.recordMessage(from.user.id, sanitized);
-    const normalized = this.chat.normalize(message);
-    this.broadcastChat(normalized);
+    try {
+      const normalized = await this.chat.recordMessageForBroadcast(
+        { id: from.user.id, username: from.user.username },
+        text,
+      );
+      this.broadcastChat(normalized);
+    } catch (err) {
+      this.logger.warn(
+        `Echec enregistrement/diffusion message tchat pour ${from.user.username}: ${(err as Error)?.message ?? 'inconnu'}`,
+      );
+    }
   }
 
   async isChatBannedNow(userId: number): Promise<boolean> {
@@ -238,10 +242,9 @@ export class PresenceService implements OnModuleDestroy {
 
   async sendHistory(to: WebSocket) {
     try {
-      const history = await this.chat.getRecentMessages();
       const payload = {
         type: 'chat-history',
-        messages: this.chat.normalizeMany(history),
+        messages: await this.chat.getRecentNormalizedMessages(),
       };
       to.send(JSON.stringify(payload));
     } catch (err) {

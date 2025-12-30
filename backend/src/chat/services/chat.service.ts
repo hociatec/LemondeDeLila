@@ -1,37 +1,61 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { randomBytes } from 'crypto';
 import { ChatMessage } from '../entities/chat-message.entity';
-import { User } from '../../user/entities/user.entity';
 import { ChatValidator } from './chat.validator';
 import { IsNull } from 'typeorm';
+
+type BroadcastUser = {
+  id: number;
+  username: string;
+};
 
 @Injectable()
 export class ChatService {
   private static readonly DEFAULT_HISTORY_LIMIT = 200;
+  private static readonly CACHE_LIMIT = 500;
+  private historyCache: Array<Record<string, unknown>> | null = null;
 
   constructor(
     @InjectRepository(ChatMessage)
     private readonly messages: Repository<ChatMessage>,
-    @InjectRepository(User)
-    private readonly users: Repository<User>,
     private readonly validator: ChatValidator,
   ) {}
 
-  async recordMessage(userId: number, text: string): Promise<ChatMessage> {
-    const user = await this.users.findOne({ where: { id: userId } });
-    if (!user) {
-      throw new NotFoundException('Utilisateur introuvable');
-    }
+  async recordMessageForBroadcast(
+    user: BroadcastUser,
+    text: string,
+  ): Promise<Record<string, unknown>> {
     const sanitized = this.validator.validate(text);
+    const messageId = this.generateMessageId();
+    const createdAt = new Date();
+
     const message = this.messages.create({
-      user,
+      user: { id: user.id } as any,
       message: sanitized,
-      messageId: this.generateMessageId(),
-      createdAt: new Date(),
+      messageId,
+      createdAt,
     });
-    return this.messages.save(message);
+
+    // Évite un aller-retour DB (fetch user) : l'utilisateur vient du JWT.
+    // Si la contrainte FK échoue, on ne diffuse pas.
+    await this.messages.save(message);
+
+    const normalized = {
+      type: 'chat-message',
+      id: messageId,
+      text: sanitized,
+      createdAt: createdAt.toISOString(),
+      user: {
+        id: user.id,
+        username: user.username,
+        avatar: null,
+      },
+    };
+
+    this.appendToCache(normalized);
+    return normalized;
   }
 
   async getRecentMessages(
@@ -51,6 +75,14 @@ export class ChatService {
 
     const rows = await qb.getMany();
     return rows.reverse(); // renvoyer dans l'ordre chronologique
+  }
+
+  async getRecentNormalizedMessages(
+    limit = ChatService.DEFAULT_HISTORY_LIMIT,
+  ): Promise<Array<Record<string, unknown>>> {
+    await this.ensureHistoryCache();
+    const safeLimit = Math.min(Math.max(limit, 1), ChatService.CACHE_LIMIT);
+    return this.historyCache!.slice(-safeLimit);
   }
 
   normalize(message: ChatMessage): Record<string, unknown> {
@@ -99,6 +131,9 @@ export class ChatService {
     const id = (messageId || '').trim();
     if (!id) return false;
     const res = await this.messages.delete({ messageId: id });
+    if ((res.affected ?? 0) > 0) {
+      this.removeFromCache(id);
+    }
     return (res.affected ?? 0) > 0;
   }
 
@@ -109,10 +144,35 @@ export class ChatService {
       .delete()
       .from(ChatMessage)
       .execute();
+    if ((res.affected ?? 0) > 0) {
+      this.historyCache = [];
+    }
     return res.affected ?? 0;
   }
 
   private generateMessageId(): string {
     return randomBytes(8).toString('hex');
+  }
+
+  private async ensureHistoryCache(): Promise<void> {
+    if (this.historyCache !== null) return;
+    const rows = await this.getRecentMessages(ChatService.DEFAULT_HISTORY_LIMIT);
+    this.historyCache = this.normalizeMany(rows);
+  }
+
+  private appendToCache(message: Record<string, unknown>): void {
+    if (this.historyCache === null) {
+      this.historyCache = [];
+    }
+    this.historyCache.push(message);
+    if (this.historyCache.length > ChatService.CACHE_LIMIT) {
+      this.historyCache.splice(0, this.historyCache.length - ChatService.CACHE_LIMIT);
+    }
+  }
+
+  private removeFromCache(messageId: string): void {
+    if (!this.historyCache) return;
+    const idx = this.historyCache.findIndex((m) => (m as any)?.id === messageId);
+    if (idx >= 0) this.historyCache.splice(idx, 1);
   }
 }
