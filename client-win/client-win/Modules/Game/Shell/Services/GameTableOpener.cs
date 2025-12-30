@@ -111,7 +111,6 @@ public sealed class GameTableOpener : IGameTableOpener
             onToggleRole: ToggleRole,
             dialogs: _dialogs);
 
-        tableVm.Status = "Table créée.";
         var createdMessage = $"Table de {game.Name} créée. Ajoutez des bots et commencez à jouer.";
         foreach (var line in GameHistoryMessageSplitter.Split(createdMessage))
         {

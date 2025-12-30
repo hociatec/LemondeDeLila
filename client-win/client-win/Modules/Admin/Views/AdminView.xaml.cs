@@ -1,7 +1,6 @@
 using System;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
 using System.Windows.Threading;
 using client_win.Modules.Admin.ViewModels;
 
@@ -9,88 +8,43 @@ namespace client_win.Modules.Admin.Views;
 
 public partial class AdminView : UserControl
 {
+    private AdminViewModel? _vm;
+
     public AdminView()
     {
         InitializeComponent();
+        DataContextChanged += (_, __) => AttachViewModel(DataContext as AdminViewModel);
+        Unloaded += (_, __) => AttachViewModel(null);
     }
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
+        AttachViewModel(DataContext as AdminViewModel);
         FocusWhenContainersGenerated();
         FocusBestInputIfVisible();
     }
 
-    private void OnKeyDown(object sender, KeyEventArgs e)
+    private void AttachViewModel(AdminViewModel? vm)
     {
-        if (e.Key == Key.Escape && DataContext is AdminViewModel vm)
+        if (_vm == vm)
         {
-            e.Handled = true;
-            var result = vm.HandleEscape();
-            if (result != AdminNavResult.Closed)
-            {
-                FocusWhenContainersGenerated();
-                FocusBestInputIfVisible();
-            }
+            return;
+        }
+
+        if (_vm != null)
+        {
+            _vm.NavigationChanged -= OnNavigationChanged;
+        }
+
+        _vm = vm;
+        if (_vm != null)
+        {
+            _vm.NavigationChanged += OnNavigationChanged;
         }
     }
 
-    private async void OnListPreviewKeyDown(object sender, KeyEventArgs e)
+    private void OnNavigationChanged()
     {
-        if (e.Key != Key.Enter && e.Key != Key.Return)
-        {
-            return;
-        }
-        if (DataContext is not AdminViewModel vm)
-        {
-            return;
-        }
-        e.Handled = true;
-        await vm.ActivateCommand.ExecuteAsync(null).ConfigureAwait(true);
-        FocusWhenContainersGenerated();
-        FocusBestInputIfVisible();
-    }
-
-    private void OnListKeyDown(object sender, KeyEventArgs e)
-    {
-        // EmpÃªche Tab de sortir de la zone principale lorsque l'utilisateur est dans les listes.
-        if ((e.Key == Key.Tab || e.Key == Key.System) &&
-            DataContext is AdminViewModel vm &&
-            !vm.IsTextInputVisible)
-        {
-            e.Handled = true;
-        }
-    }
-
-    private async void OnInputKeyDown(object sender, KeyEventArgs e)
-    {
-        if (e.Key != Key.Enter && e.Key != Key.Return)
-        {
-            return;
-        }
-        if (DataContext is not AdminViewModel vm)
-        {
-            return;
-        }
-        e.Handled = true;
-        await vm.ActivateCommand.ExecuteAsync(null).ConfigureAwait(true);
-        FocusWhenContainersGenerated();
-        FocusBestInputIfVisible();
-    }
-
-    private async void OnCheckItemClick(object sender, RoutedEventArgs e)
-    {
-        if (DataContext is not AdminViewModel vm)
-        {
-            return;
-        }
-        if (sender is not FrameworkElement fe || fe.DataContext is not AdminMenuItem clicked)
-        {
-            return;
-        }
-
-        e.Handled = true;
-        vm.SelectedItem = clicked;
-        await vm.ActivateCommand.ExecuteAsync(null).ConfigureAwait(true);
         FocusWhenContainersGenerated();
         FocusBestInputIfVisible();
     }
@@ -105,12 +59,12 @@ public partial class AdminView : UserControl
         {
             if (vm.IsTextInputVisible)
             {
-                PrimaryInput?.Focus();
+                InputsView?.PrimaryInputBox?.Focus();
                 return;
             }
             if (vm.IsSecondaryInputVisible)
             {
-                SecondaryInputBox?.Focus();
+                InputsView?.SecondaryInputTextBox?.Focus();
             }
         }));
     }

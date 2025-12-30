@@ -87,7 +87,6 @@ internal sealed class GameTableBindings : IAsyncDisposable
         {
             _dispatcher.InvokeAsync(() =>
             {
-                _tableVm.Status = "Informations table.";
                 _announcements.TableInfo(message);
             }, DispatcherPriority.Background);
         };
@@ -96,7 +95,6 @@ internal sealed class GameTableBindings : IAsyncDisposable
         {
             _dispatcher.InvokeAsync(() =>
             {
-                _tableVm.Status = $"Erreur : {message}";
                 _announcements.Error(message);
             }, DispatcherPriority.Background);
         };
@@ -106,7 +104,6 @@ internal sealed class GameTableBindings : IAsyncDisposable
         {
             _dispatcher.InvokeAsync(() =>
             {
-                _tableVm.Status = $"{name} a rejoint la table.";
                 _announcements.BotJoined(name);
             }, DispatcherPriority.Background);
         };
@@ -115,7 +112,6 @@ internal sealed class GameTableBindings : IAsyncDisposable
         {
             _dispatcher.InvokeAsync(() =>
             {
-                _tableVm.Status = $"{name} a quitté la table.";
                 _announcements.BotLeft(name);
             }, DispatcherPriority.Background);
         };
@@ -157,8 +153,6 @@ internal sealed class GameTableBindings : IAsyncDisposable
                     EnsureGamePlayLoaded();
                     SyncGameplayShortcuts();
 
-                    _history.Add("Table démarrée.");
-                    _tableVm.Status = "Table démarrée.";
                     _announcements.TableInfo("Table démarrée.");
 
                     // Forcer le focus sur la zone de jeu.
@@ -193,8 +187,6 @@ internal sealed class GameTableBindings : IAsyncDisposable
                         _gamePlayVm = null;
                     }
 
-                    _history.Add("Table réinitialisée.");
-                    _tableVm.Status = "Table réinitialisée.";
                     _announcements.TableInfo("Table réinitialisée.");
 
                     // Forcer le focus sur la zone de jeu (le contenu a été déchargé).

@@ -1,0 +1,130 @@
+using System;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace client_win.Modules.Admin.ViewModels;
+
+public sealed partial class AdminViewModel
+{
+    private async Task ApplyFiltersAsync()
+    {
+        if (!ShowUserFilters || IsBusy)
+        {
+            return;
+        }
+        await LoadUsersAsync().ConfigureAwait(true);
+    }
+
+    private async Task LoadUsersAsync()
+    {
+        if (IsBusy)
+        {
+            return;
+        }
+
+        _page = AdminPage.Users;
+        Title = "Gestion des utilisateurs";
+        Details = string.Empty;
+        IsTextInputVisible = false;
+        IsAdditionalPermissionsVisible = false;
+        IsSecondaryInputVisible = false;
+        Items.Clear();
+        SelectedItem = null;
+        Status = "Chargement...";
+        IsBusy = true;
+        try
+        {
+            var search = string.IsNullOrWhiteSpace(FilterSearch) ? null : FilterSearch.Trim();
+            var role = string.IsNullOrWhiteSpace(FilterRole) ? null : FilterRole.Trim();
+            var status = string.Equals(FilterStatus, "all", StringComparison.OrdinalIgnoreCase) ? null : FilterStatus;
+
+            string? after = null;
+            if (!string.IsNullOrWhiteSpace(FilterCreatedAfter))
+            {
+                if (!DateTime.TryParse(FilterCreatedAfter, out var parsedAfter))
+                {
+                    await _dialogs.ShowError("Filtres", "Date « créé après » invalide.").ConfigureAwait(true);
+                    return;
+                }
+                after = parsedAfter.ToString("o");
+            }
+
+            string? before = null;
+            if (!string.IsNullOrWhiteSpace(FilterCreatedBefore))
+            {
+                if (!DateTime.TryParse(FilterCreatedBefore, out var parsedBefore))
+                {
+                    await _dialogs.ShowError("Filtres", "Date « créé avant » invalide.").ConfigureAwait(true);
+                    return;
+                }
+                before = parsedBefore.ToString("o");
+            }
+
+            var res = await _admin.ListUsersAsync(
+                    search: search,
+                    role: role,
+                    status: status,
+                    createdAfter: after,
+                    createdBefore: before,
+                    page: 1,
+                    limit: 50)
+                .ConfigureAwait(true);
+
+            _loadedUsers = (res.Items ?? new()).ToArray();
+            _dispatcher.Invoke(() =>
+            {
+                Items.Clear();
+                Items.Add(new AdminMenuItem("Filtres utilisateurs (Entrée pour plus d'infos)", tag: "filters"));
+                foreach (var user in _loadedUsers.OrderBy(u => u.Username))
+                {
+                    var roles = user.Roles != null && user.Roles.Count > 0 ? string.Join(',', user.Roles) : "ROLE_USER";
+                    var banned = user.BannedUntil.HasValue ? $"Banni (jusqu'au {user.BannedUntil:dd/MM/yyyy})" : "Actif";
+                    Items.Add(new AdminMenuItem($"{user.Username} (id {user.Id}) - {roles} - {banned}", tag: user));
+                }
+                if (Items.Count == 0)
+                {
+                    Items.Add(new AdminMenuItem("Aucun utilisateur."));
+                }
+                SelectedItem = Items.FirstOrDefault();
+                Status = $"Affichage {Items.Count} / {res.Total} utilisateurs. Entrée : actions. Échap : retour.";
+                UpdateFilterVisibility();
+            });
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private void ShowUsers()
+    {
+        _page = AdminPage.Users;
+        Title = "Gestion des utilisateurs";
+        Details = string.Empty;
+        IsTextInputVisible = false;
+        IsAdditionalPermissionsVisible = false;
+        IsSecondaryInputVisible = false;
+        Items.Clear();
+        Items.Add(new AdminMenuItem("Filtres utilisateurs (Entrée pour plus d'infos)", tag: "filters"));
+        foreach (var user in _loadedUsers.OrderBy(u => u.Username))
+        {
+            var roles = user.Roles != null && user.Roles.Count > 0 ? string.Join(',', user.Roles) : "ROLE_USER";
+            var banned = user.BannedUntil.HasValue ? $"Banni (jusqu'au {user.BannedUntil:dd/MM/yyyy})" : "Actif";
+            Items.Add(new AdminMenuItem($"{user.Username} (id {user.Id}) - {roles} - {banned}", tag: user));
+        }
+        if (Items.Count == 0)
+        {
+            Items.Add(new AdminMenuItem("Aucun utilisateur."));
+        }
+        SelectedItem = Items.FirstOrDefault();
+        Status = "Entrée : actions. Échap : retour.";
+        UpdateFilterVisibility();
+    }
+
+    private void ShowFilterReminder()
+    {
+        Status = "Utilise les champs de filtres en haut (recherche/role/statut/dates) puis Appliquer.";
+        Details = "Les filtres modèrent la liste d'utilisateurs. Appuie sur Appliquer pour recharger.";
+        UpdateFilterVisibility();
+    }
+}

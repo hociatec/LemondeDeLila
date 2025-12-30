@@ -1,0 +1,36 @@
+namespace client_win.Modules.Admin.ViewModels;
+
+public enum AdminNavResult
+{
+    Stay,
+    Moved,
+    Closed
+}
+
+internal enum AdminPage
+{
+    Root,
+    Games,
+    GameCategories,
+    GameCategoryForm,
+    GameCategoryAssign,
+    GameActions,
+    EditText,
+    EditPlayers,
+    Bots,
+    BotNameActions,
+    BotNameForm,
+    BotSettingsForm,
+    Roles,
+    Users,
+    UserActions,
+    BanForm,
+    Broadcast,
+    ClientUpdates,
+    Logs,
+    RoleDefinitions,
+    RoleDefinitionActions,
+    RoleDefinitionForm
+}
+
+public sealed record PermissionModuleDescriptor(string ModuleId, string DisplayName, string Description);

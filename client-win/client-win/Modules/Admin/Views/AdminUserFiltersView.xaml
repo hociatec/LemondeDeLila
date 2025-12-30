@@ -1,0 +1,90 @@
+<UserControl x:Class="client_win.Modules.Admin.Views.AdminUserFiltersView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             Focusable="False"
+             IsTabStop="False">
+    <Border Visibility="{Binding ShowUserFilters, Converter={DynamicResource BoolToVis}}"
+            Background="#0E2034"
+            CornerRadius="6"
+            Padding="12"
+            Margin="0,0,0,12">
+        <StackPanel>
+            <TextBlock Text="Filtres utilisateurs"
+                       Foreground="#BFD0E6"
+                       FontSize="14"
+                       FontWeight="SemiBold"
+                       Margin="0,0,0,8" />
+            <UniformGrid Columns="2" Margin="0,0,0,8">
+                <StackPanel Margin="0,0,6,8">
+                    <TextBlock x:Name="FilterSearchLabel"
+                               Text="Rechercher"
+                               Foreground="#BFD0E6"
+                               FontSize="12" />
+                    <TextBox Text="{Binding FilterSearch, UpdateSourceTrigger=PropertyChanged}"
+                             Style="{DynamicResource InputTextBox}"
+                             MinHeight="32"
+                             AutomationProperties.LabeledBy="{Binding ElementName=FilterSearchLabel}" />
+                </StackPanel>
+                <StackPanel Margin="0,0,0,8">
+                    <TextBlock x:Name="FilterRoleLabel"
+                               Text="Rôle"
+                               Foreground="#BFD0E6"
+                               FontSize="12" />
+                    <TextBox Text="{Binding FilterRole, UpdateSourceTrigger=PropertyChanged}"
+                             Style="{DynamicResource InputTextBox}"
+                             MinHeight="32"
+                             AutomationProperties.LabeledBy="{Binding ElementName=FilterRoleLabel}" />
+                </StackPanel>
+                <StackPanel Margin="0,0,6,8">
+                    <TextBlock x:Name="FilterStatusLabel"
+                               Text="Statut"
+                               Foreground="#BFD0E6"
+                               FontSize="12" />
+                    <ComboBox SelectedValue="{Binding FilterStatus, UpdateSourceTrigger=PropertyChanged}"
+                              SelectedValuePath="Tag"
+                              Background="#0E2034"
+                              Foreground="White"
+                              BorderBrush="#1F3C60"
+                              BorderThickness="1"
+                              Padding="6"
+                              AutomationProperties.LabeledBy="{Binding ElementName=FilterStatusLabel}">
+                        <ComboBoxItem Content="Tous" Tag="all" />
+                        <ComboBoxItem Content="Actifs" Tag="active" />
+                        <ComboBoxItem Content="Bannis" Tag="banned" />
+                    </ComboBox>
+                </StackPanel>
+                <StackPanel Margin="0,0,0,8">
+                    <TextBlock x:Name="FilterCreatedAfterLabel"
+                               Text="Créé après"
+                               Foreground="#BFD0E6"
+                               FontSize="12" />
+                    <TextBox Text="{Binding FilterCreatedAfter, UpdateSourceTrigger=PropertyChanged}"
+                             Style="{DynamicResource InputTextBox}"
+                             MinHeight="32"
+                             AutomationProperties.LabeledBy="{Binding ElementName=FilterCreatedAfterLabel}" />
+                </StackPanel>
+                <StackPanel Margin="0,0,6,0">
+                    <TextBlock x:Name="FilterCreatedBeforeLabel"
+                               Text="Créé avant"
+                               Foreground="#BFD0E6"
+                               FontSize="12" />
+                    <TextBox Text="{Binding FilterCreatedBefore, UpdateSourceTrigger=PropertyChanged}"
+                             Style="{DynamicResource InputTextBox}"
+                             MinHeight="32"
+                             AutomationProperties.LabeledBy="{Binding ElementName=FilterCreatedBeforeLabel}" />
+                </StackPanel>
+            </UniformGrid>
+            <Button Content="Appliquer"
+                    Command="{Binding ApplyFiltersCommand}"
+                    HorizontalAlignment="Left"
+                    Padding="8 4"
+                    Background="#214570"
+                    Foreground="White"
+                    FontWeight="SemiBold" />
+        </StackPanel>
+    </Border>
+</UserControl>
+
