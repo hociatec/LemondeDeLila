@@ -2,7 +2,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Globalization;
-using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using client_win.Core;
@@ -16,6 +16,7 @@ public sealed class ChatViewModel : ObservableObject
     private readonly IChatService _chat;
     private readonly Action? _closeWindow;
     private string _input = string.Empty;
+    private string _historyText = string.Empty;
     private string _status = "Tchat fermé.";
 
     public ChatViewModel(IChatService chat, Action? closeWindow = null)
@@ -23,7 +24,6 @@ public sealed class ChatViewModel : ObservableObject
         _chat = chat ?? throw new ArgumentNullException(nameof(chat));
         _closeWindow = closeWindow;
         Messages = chat.Messages;
-        Items = new ObservableCollection<ChatMessageItem>();
         _status = chat.StatusMessage;
         chat.StatusChanged += msg => Status = msg;
         chat.Error += msg => Status = msg;
@@ -33,14 +33,12 @@ public sealed class ChatViewModel : ObservableObject
 
         if (Messages is INotifyCollectionChanged coll)
         {
-            coll.CollectionChanged += (_, _) => RebuildItems();
+            coll.CollectionChanged += (_, _) => RebuildHistory();
         }
-        RebuildItems();
+        RebuildHistory();
     }
 
     public ObservableCollection<ChatMessage> Messages { get; }
-
-    public ObservableCollection<ChatMessageItem> Items { get; }
 
     public string Input
     {
@@ -62,6 +60,12 @@ public sealed class ChatViewModel : ObservableObject
 
     public bool CanSend => !string.IsNullOrWhiteSpace(Input);
 
+    public string HistoryText
+    {
+        get => _historyText;
+        private set => SetProperty(ref _historyText, value);
+    }
+
     public ICommand SendCommand { get; }
     public ICommand CloseCommand { get; }
 
@@ -76,52 +80,35 @@ public sealed class ChatViewModel : ObservableObject
         await _chat.SendAsync(toSend);
     }
 
-    private void RebuildItems()
+    private void RebuildHistory()
     {
-        var ordered = Messages
-            .Select(m =>
+        var builder = new StringBuilder();
+        foreach (var m in Messages)
+        {
+            var user = (m.User ?? string.Empty).Trim();
+            var text = (m.Text ?? string.Empty).TrimEnd();
+            if (string.IsNullOrWhiteSpace(user) && string.IsNullOrWhiteSpace(text))
             {
-                var local = m.Timestamp.Kind == DateTimeKind.Unspecified ? m.Timestamp : m.Timestamp.ToLocalTime();
-                return (m, local);
-            })
-            .OrderBy(x => x.local)
-            .ToArray();
+                continue;
+            }
 
-        Items.Clear();
-        foreach (var entry in ordered)
-        {
-            Items.Add(new ChatMessageItem(entry.m, entry.local));
-        }
-    }
+            var local = m.Timestamp.Kind == DateTimeKind.Unspecified ? m.Timestamp : m.Timestamp.ToLocalTime();
+            var time = local.ToString("HH:mm", CultureInfo.GetCultureInfo("fr-FR"));
 
-    public sealed class ChatMessageItem
-    {
-        public ChatMessageItem(ChatMessage message, DateTime localTimestamp)
-        {
-            Message = message;
-            LocalTimestamp = localTimestamp;
-        }
-
-        public ChatMessage Message { get; }
-        public DateTime LocalTimestamp { get; }
-
-        public string DisplayText
-        {
-            get
+            if (string.IsNullOrWhiteSpace(user))
             {
-                var user = (Message.User ?? string.Empty).Trim();
-                var text = (Message.Text ?? string.Empty).TrimEnd();
-                var time = LocalTimestamp.ToString("HH:mm", CultureInfo.GetCultureInfo("fr-FR"));
-                if (string.IsNullOrWhiteSpace(user))
-                {
-                    return $"{time} {text}";
-                }
-                if (string.IsNullOrWhiteSpace(text))
-                {
-                    return $"{time} {user}";
-                }
-                return $"{time} {user} : {text}";
+                builder.AppendLine($"{time} {text}");
+            }
+            else if (string.IsNullOrWhiteSpace(text))
+            {
+                builder.AppendLine($"{time} {user}");
+            }
+            else
+            {
+                builder.AppendLine($"{time} {user} : {text}");
             }
         }
+
+        HistoryText = builder.ToString().TrimEnd('\r', '\n');
     }
 }

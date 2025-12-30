@@ -2,19 +2,14 @@ using System;
 using System.Windows;
 using client_win.Modules.Chat.ViewModels;
 using System.Collections.Specialized;
-using System.Windows.Controls;
-using System.ComponentModel;
 using System.Windows.Input;
-using System.Windows.Media;
 
 namespace client_win.Modules.Chat.Views;
 
 public partial class ChatWindow : Window
 {
-    private INotifyCollectionChanged? _currentItems;
-    private ScrollViewer? _scrollViewer;
-    private bool _stickToBottom = true;
-    private bool _didInitialPositioning;
+    private INotifyCollectionChanged? _currentMessages;
+    private bool _didInitialFocus;
 
     public ChatWindow()
     {
@@ -34,109 +29,44 @@ public partial class ChatWindow : Window
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
-        if (DataContext is ChatViewModel vm)
+        if (DataContext is ChatViewModel vm && vm.Messages is INotifyCollectionChanged coll)
         {
-            AttachItems(vm);
-        }
-
-        _scrollViewer = FindDescendantScrollViewer(MessagesList);
-        if (_scrollViewer != null)
-        {
-            _scrollViewer.ScrollChanged += (_, _) =>
+            if (_currentMessages != null)
             {
-                _stickToBottom = IsNearBottom(_scrollViewer);
-            };
+                _currentMessages.CollectionChanged -= OnMessagesChanged;
+            }
+            _currentMessages = coll;
+            coll.CollectionChanged += OnMessagesChanged;
         }
 
-        PositionToBottom(force: true);
-    }
-
-    private void AttachItems(ChatViewModel vm)
-    {
-        if (_currentItems != null)
+        if (!_didInitialFocus)
         {
-            _currentItems.CollectionChanged -= OnItemsChanged;
-            _currentItems = null;
-        }
-
-        if (vm.Items is INotifyCollectionChanged coll)
-        {
-            _currentItems = coll;
-            coll.CollectionChanged += OnItemsChanged;
+            _didInitialFocus = true;
+            ScrollHistoryToEnd();
         }
     }
 
-    private void OnItemsChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    private void OnMessagesChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
-        PositionToBottom(force: false);
+        ScrollHistoryToEnd();
     }
 
-    private void PositionToBottom(bool force)
+    private void ScrollHistoryToEnd()
     {
-        if (MessagesList == null)
-        {
-            return;
-        }
-
-        if (!_didInitialPositioning)
-        {
-            force = true;
-            _didInitialPositioning = true;
-        }
-
-        if (!force && !_stickToBottom)
+        if (HistoryBox == null)
         {
             return;
         }
 
         try
         {
-            if (MessagesList.Items.Count > 0)
-            {
-                var last = MessagesList.Items[MessagesList.Items.Count - 1];
-                MessagesList.ScrollIntoView(last);
-                MessagesList.SelectedItem = last;
-            }
+            HistoryBox.CaretIndex = HistoryBox.Text?.Length ?? 0;
+            HistoryBox.ScrollToEnd();
         }
         catch
         {
             // Best-effort: never crash the UI for a sound UX enhancement.
         }
-    }
-
-    private static bool IsNearBottom(ScrollViewer sv)
-    {
-        if (sv.ScrollableHeight <= 0)
-        {
-            return true;
-        }
-        return sv.VerticalOffset >= sv.ScrollableHeight - 1.0;
-    }
-
-    private static ScrollViewer? FindDescendantScrollViewer(DependencyObject? root)
-    {
-        if (root == null)
-        {
-            return null;
-        }
-
-        if (root is ScrollViewer sv)
-        {
-            return sv;
-        }
-
-        var count = VisualTreeHelper.GetChildrenCount(root);
-        for (var i = 0; i < count; i++)
-        {
-            var child = VisualTreeHelper.GetChild(root, i);
-            var found = FindDescendantScrollViewer(child);
-            if (found != null)
-            {
-                return found;
-            }
-        }
-
-        return null;
     }
 
     // IMPORTANT: on ne surcharge pas les flèches dans les listes.

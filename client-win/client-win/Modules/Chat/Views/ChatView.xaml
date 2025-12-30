@@ -78,7 +78,7 @@
                            FontSize="14"
                            FontWeight="SemiBold"
                            Margin="0 0 12 0"
-                           Target="{Binding ElementName=MessagesList}" />
+                           Target="{Binding ElementName=HistoryBox}" />
                     <TextBlock Text="Aucun message pour le moment"
                                Foreground="#9CB2D1"
                                VerticalAlignment="Center"
@@ -96,23 +96,22 @@
                     </TextBlock>
                 </StackPanel>
 
-                <GroupBox Grid.Row="1" Header="Messages" Foreground="White" BorderBrush="#284C75" BorderThickness="1" Margin="0 10 0 0">
-                    <ListBox x:Name="MessagesList"
-                             ItemsSource="{Binding Items}"
-                             MinHeight="200"
-                             TabIndex="0"
-                             AutomationProperties.Name="Messages du tchat"
-                             AutomationProperties.HelpText="Utilisez les flèches pour lire les messages.">
-                        <ListBox.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding DisplayText}"
-                                           TextWrapping="Wrap"
-                                           Foreground="White"
-                                           Margin="0 2 0 6" />
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
-                </GroupBox>
+                <TextBox Grid.Row="1"
+                         x:Name="HistoryBox"
+                         Text="{Binding HistoryText, Mode=OneWay}"
+                         IsReadOnly="True"
+                         AcceptsReturn="True"
+                         TextWrapping="Wrap"
+                         VerticalScrollBarVisibility="Auto"
+                         HorizontalScrollBarVisibility="Disabled"
+                         BorderThickness="1"
+                         BorderBrush="#284C75"
+                         Background="#0C1523"
+                         Foreground="White"
+                         MinHeight="200"
+                         TabIndex="0"
+                         AutomationProperties.Name="Historique du tchat"
+                         AutomationProperties.HelpText="Historique des messages. Le focus est placé en bas à l'ouverture." />
 
                 <Grid Grid.Row="2" Margin="0 16 0 0">
                     <Grid.ColumnDefinitions>
