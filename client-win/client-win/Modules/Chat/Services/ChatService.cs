@@ -127,7 +127,8 @@ public sealed class ChatService : IChatService
             }
 
             // Grace window: si le serveur ferme immédiatement après l'ouverture, on considère que l'accès est refusé.
-            await Task.Delay(350, cancellationToken).ConfigureAwait(false);
+            // Garder ce délai très court pour éviter une latence perceptible à l'ouverture.
+            await Task.Delay(75, cancellationToken).ConfigureAwait(false);
             if (lastState != ChatState.Connected)
             {
                 _ = _dispatcher.InvokeAsync(() =>

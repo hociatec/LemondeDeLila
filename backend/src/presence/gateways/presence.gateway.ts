@@ -86,10 +86,7 @@ export class PresenceGateway
       client.close();
       return;
     }
-    // tracer la reception brute pour debug
-    this.logger.log(
-      `WS message reçu (${typeof raw}) de ${session.user.username}`,
-    );
+    // IMPORTANT: ne pas logger chaque message en production (latence + I/O disque).
     await this.presence.handleClientPayload(session, raw);
   }
 

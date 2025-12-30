@@ -124,7 +124,8 @@ export class PresenceService implements OnModuleDestroy {
     const text = typeof payload.text === 'string' ? payload.text : '';
     let sanitized: string;
     try {
-      this.logger.log(
+      // IMPORTANT: éviter le log info sur chaque message (bruyant + ajoute de la latence sur disque).
+      this.logger.debug(
         `Chat-send reçu de ${from.user.username} (#${from.user.id})`,
       );
       const ban = await this.getChatBan(from.user.id);
