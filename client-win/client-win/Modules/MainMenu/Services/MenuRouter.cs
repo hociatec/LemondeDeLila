@@ -150,12 +150,12 @@ public sealed class MenuRouter : IMenuRouter
 
     public async Task<string> OpenChat()
     {
-        _logger.LogInformation("Ouverture du chat");
+        _logger.LogInformation("Ouverture du tchat");
 
         var owner = Application.Current?.MainWindow;
         if (owner == null)
         {
-            _logger.LogWarning("Fenêtre principale indisponible pour le chat");
+            _logger.LogWarning("Fenêtre principale indisponible pour le tchat");
             return "Fenêtre principale indisponible.";
         }
 

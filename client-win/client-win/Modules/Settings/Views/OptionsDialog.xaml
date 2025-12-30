@@ -32,7 +32,7 @@
 
         <StackPanel Grid.Row="0" Orientation="Vertical" Margin="0 0 0 12">
             <TextBlock Text="Options" FontSize="22" Foreground="White" />
-            <TextBlock Text="Volume, chat, général, mises à jour" Foreground="#9CB2D1" />
+            <TextBlock Text="Volume, tchat, général, mises à jour" Foreground="#9CB2D1" />
         </StackPanel>
 
         <Border Grid.Row="1" Background="{StaticResource PanelBrush}" CornerRadius="8" Padding="12">
@@ -80,7 +80,7 @@
                 </StackPanel>
                 </ScrollViewer>
             </TabItem>
-                <TabItem Header="Chat">
+                <TabItem Header="Tchat">
                     <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel Margin="8">
                         <CheckBox Content="Activer le tchat global" IsChecked="{Binding ChatEnabled}" />

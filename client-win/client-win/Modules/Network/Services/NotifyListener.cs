@@ -206,10 +206,6 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
             {
                 msg += $"\nVotre version : {current.Trim()}";
             }
-            if (!string.IsNullOrWhiteSpace(url))
-            {
-                msg += $"\n\nURL de mise à jour : {url.Trim()}";
-            }
 
             var confirm = await _dialogs.Confirm(
                     "Mise à jour requise",

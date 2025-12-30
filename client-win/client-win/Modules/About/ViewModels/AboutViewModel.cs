@@ -455,9 +455,9 @@ public sealed class AboutViewModel : ObservableObject
         sb.AppendLine("- f : annoncer familles complètes");
         sb.AppendLine("- p : position plateau");
         sb.AppendLine();
-        sb.AppendLine("Chat");
+        sb.AppendLine("Tchat");
         sb.AppendLine("- Entrée : envoyer le message");
-        sb.AppendLine("- Échap : fermer le chat");
+        sb.AppendLine("- Échap : fermer le tchat");
         return sb.ToString();
     }
 
