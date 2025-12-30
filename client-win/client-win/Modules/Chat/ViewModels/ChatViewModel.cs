@@ -109,6 +109,8 @@ public sealed class ChatViewModel : ObservableObject
             }
         }
 
-        HistoryText = builder.ToString().TrimEnd('\r', '\n');
+        // Ajouter une ligne vide à la fin : améliore le confort de lecture (dernier message non "collé" au bord).
+        var history = builder.ToString().TrimEnd('\r', '\n');
+        HistoryText = string.IsNullOrEmpty(history) ? string.Empty : history + Environment.NewLine;
     }
 }
