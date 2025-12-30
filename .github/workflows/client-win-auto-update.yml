@@ -124,8 +124,11 @@ jobs:
           $api = $env:LILA_API_BASE
           if ([string]::IsNullOrWhiteSpace($api)) { throw "Missing secret: LILA_API_BASE (example: https://api.lilas.hociatec.fr/api/)" }
           if (!$api.EndsWith("/")) { $api += "/" }
-          $uploadToken = $env:LILA_UPLOAD_TOKEN
+          $uploadToken = ($env:LILA_UPLOAD_TOKEN ?? "").Trim()
           if ([string]::IsNullOrWhiteSpace($uploadToken)) { throw "Missing secret: LILA_UPLOAD_TOKEN" }
+          if ($uploadToken -notmatch '^[0-9a-f]{64}$') {
+            throw "Invalid LILA_UPLOAD_TOKEN format (expected 64 lowercase hex chars, no prefix like '- ')."
+          }
 
           $ver = "${{ steps.ver.outputs.version }}"
           $zipPath = "${{ steps.zip.outputs.zip }}"
