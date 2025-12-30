@@ -146,6 +146,12 @@ public static class WsMessageTypes
         public const string ClientUpdateAnnounce = "admin.client.update.announce";
         public const string ClientUpdateForceLatest = "admin.client.update.forceLatest";
 
+        public const string ChatMessages = "admin.chat.messages";
+        public const string ChatDelete = "admin.chat.delete";
+        public const string ChatClear = "admin.chat.clear";
+        public const string ChatBan = "admin.chat.ban";
+        public const string ChatUnban = "admin.chat.unban";
+
         public const string BotNamesList = "admin.bots.names.list";
         public const string BotSettingsGet = "admin.bots.settings.get";
         public const string BotSettingsUpdate = "admin.bots.settings.update";

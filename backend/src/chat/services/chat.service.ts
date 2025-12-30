@@ -5,6 +5,7 @@ import { randomBytes } from 'crypto';
 import { ChatMessage } from '../entities/chat-message.entity';
 import { User } from '../../user/entities/user.entity';
 import { ChatValidator } from './chat.validator';
+import { IsNull } from 'typeorm';
 
 @Injectable()
 export class ChatService {
@@ -74,6 +75,48 @@ export class ChatService {
 
   normalizeMany(messages: ChatMessage[]): Array<Record<string, unknown>> {
     return messages.map((m) => this.normalize(m));
+  }
+
+  async adminListMessages(
+    limit = ChatService.DEFAULT_HISTORY_LIMIT,
+    includeDeleted = false,
+  ): Promise<ChatMessage[]> {
+    const qb = this.messages
+      .createQueryBuilder('m')
+      .leftJoinAndSelect('m.user', 'user')
+      .orderBy('m.createdAt', 'DESC')
+      .take(Math.min(Math.max(limit, 1), 1000));
+
+    if (!includeDeleted) {
+      qb.where({ deletedAt: IsNull() });
+    }
+
+    const rows = await qb.getMany();
+    return rows.reverse();
+  }
+
+  async adminDeleteMessage(messageId: string): Promise<boolean> {
+    const id = (messageId || '').trim();
+    if (!id) return false;
+    const msg = await this.messages.findOne({
+      where: { messageId: id },
+    });
+    if (!msg) return false;
+    if (msg.deletedAt) return true;
+    msg.deletedAt = new Date();
+    await this.messages.save(msg);
+    return true;
+  }
+
+  async adminClearAll(): Promise<number> {
+    const now = new Date();
+    const res = await this.messages
+      .createQueryBuilder()
+      .update(ChatMessage)
+      .set({ deletedAt: now })
+      .where('deletedAt IS NULL')
+      .execute();
+    return res.affected ?? 0;
   }
 
   private generateMessageId(): string {

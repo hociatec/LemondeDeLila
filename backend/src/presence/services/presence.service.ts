@@ -8,6 +8,7 @@ import { WsAuthPayload } from '../../common/interfaces/ws-auth-payload';
 import { RoomParticipant } from '../../room/entities/room-participant.entity';
 import { In, IsNull, Repository } from 'typeorm';
 import { PresenceEvent, PresenceTransport } from './presence-transport';
+import { User } from '../../user/entities/user.entity';
 
 export type PresenceConnectionContext = 'home' | 'chat' | 'table';
 type PresenceActivity = 'home' | 'chat' | 'table';
@@ -37,12 +38,19 @@ export class PresenceService implements OnModuleDestroy {
   private readonly pingIntervalMs = 30_000;
   private readonly pingTimeoutMs = 10_000;
   private readonly instanceId = randomUUID();
+  private readonly chatBanCache = new Map<
+    number,
+    { at: number; until: Date | null; reason: string | null }
+  >();
+  private readonly chatBanCacheTtlMs = 10_000;
 
   constructor(
     private readonly chat: ChatService,
     private readonly validator: ChatValidator,
     @InjectRepository(RoomParticipant)
     private readonly participants: Repository<RoomParticipant>,
+    @InjectRepository(User)
+    private readonly users: Repository<User>,
     private readonly transport: PresenceTransport,
   ) {
     this.transport
@@ -119,6 +127,19 @@ export class PresenceService implements OnModuleDestroy {
       this.logger.log(
         `Chat-send reçu de ${from.user.username} (#${from.user.id})`,
       );
+      const ban = await this.getChatBan(from.user.id);
+      if (ban?.until && ban.until.getTime() > Date.now()) {
+        this.safeSend(from.socket, {
+          type: 'error',
+          payload: {
+            message:
+              ban.reason && ban.reason.trim().length > 0
+                ? `Vous êtes banni du tchat. Raison : ${ban.reason.trim()}`
+                : 'Vous êtes banni du tchat.',
+          },
+        });
+        return;
+      }
       sanitized = this.validator.validate(text);
     } catch (err) {
       this.logger.warn(
@@ -129,6 +150,33 @@ export class PresenceService implements OnModuleDestroy {
     const message = await this.chat.recordMessage(from.user.id, sanitized);
     const normalized = this.chat.normalize(message);
     this.broadcastChat(normalized);
+  }
+
+  private async getChatBan(
+    userId: number,
+  ): Promise<{ until: Date | null; reason: string | null } | null> {
+    const cached = this.chatBanCache.get(userId);
+    if (cached && Date.now() - cached.at < this.chatBanCacheTtlMs) {
+      return { until: cached.until, reason: cached.reason };
+    }
+
+    const user = await this.users.findOne({
+      where: { id: userId },
+      select: ['id', 'chatBannedUntil', 'chatBanReason'] as any,
+    });
+    const until = user?.chatBannedUntil ?? null;
+    const reason = user?.chatBanReason ?? null;
+    this.chatBanCache.set(userId, { at: Date.now(), until, reason });
+    return { until, reason };
+  }
+
+  private safeSend(client: WebSocket, payload: any) {
+    if (client.readyState !== WebSocket.OPEN) return;
+    try {
+      client.send(JSON.stringify(payload));
+    } catch {
+      // ignore
+    }
   }
 
   private handlePresenceContext(client: PresenceClient, payload: any) {

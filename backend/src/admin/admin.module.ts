@@ -16,6 +16,7 @@ import { BotModule as RoomBotModule } from '../bot/bot.module';
 import { BotModule as GameBotModule } from '../game/modules/bot/bot.module';
 import { RoleDefinitionEntity } from './entities/role-definition.entity';
 import { ClientUpdatesModule } from '../client-updates/client-updates.module';
+import { ChatModule } from '../chat/chat.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { ClientUpdatesModule } from '../client-updates/client-updates.module';
     GameRegistryModule,
     NotificationModule,
     ClientUpdatesModule,
+    ChatModule,
     CatalogModule,
     RoomBotModule,
     GameBotModule,

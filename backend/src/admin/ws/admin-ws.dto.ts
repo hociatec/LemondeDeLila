@@ -102,6 +102,48 @@ export class AdminClientUpdateForceLatestWsDto {
   message?: string;
 }
 
+export class AdminChatMessagesWsDto {
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  limit?: number;
+
+  @IsOptional()
+  @IsBoolean()
+  includeDeleted?: boolean;
+}
+
+export class AdminChatDeleteWsDto {
+  @IsString()
+  @MinLength(1)
+  @MaxLength(64)
+  messageId!: string;
+}
+
+export class AdminChatClearWsDto {
+  @IsOptional()
+  @IsBoolean()
+  _noop?: boolean;
+}
+
+export class AdminChatBanWsDto extends AdminUserIdWsDto {
+  @IsOptional()
+  @IsString()
+  @MaxLength(255)
+  reason?: string;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  durationDays?: number;
+}
+
+export class AdminChatUnbanWsDto extends AdminUserIdWsDto {
+  @IsOptional()
+  @IsBoolean()
+  _noop?: boolean;
+}
+
 export class AdminGameSetEnabledWsDto {
   @IsString()
   @MinLength(1)

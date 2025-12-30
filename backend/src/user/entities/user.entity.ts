@@ -37,6 +37,12 @@ export class User {
   @Column({ name: 'ban_reason', type: 'varchar', length: 255, nullable: true })
   banReason?: string | null;
 
+  @Column({ name: 'chat_banned_until', type: 'datetime', nullable: true })
+  chatBannedUntil?: Date | null;
+
+  @Column({ name: 'chat_ban_reason', type: 'varchar', length: 255, nullable: true })
+  chatBanReason?: string | null;
+
   @CreateDateColumn({ name: 'created_at', type: 'datetime' })
   createdAt!: Date;
 }

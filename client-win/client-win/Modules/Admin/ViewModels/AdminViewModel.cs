@@ -47,6 +47,10 @@ public sealed partial class AdminViewModel : ObservableObject
     private string _roleDefinitionFormMode = string.Empty;
     private string _roleDefinitionOriginalName = string.Empty;
     private string _currentEditMode = string.Empty;
+    private AdminChatMessageDto[] _loadedChatMessages = Array.Empty<AdminChatMessageDto>();
+    private AdminChatMessageDto? _selectedChatMessage;
+    private string _chatBanReason = string.Empty;
+    private string _chatBanDays = "30";
 
     private string _primaryInputLabel = string.Empty;
     private string _primaryInput = string.Empty;

@@ -36,6 +36,11 @@ public sealed partial class AdminViewModel
                     await LoadUsersAsync().ConfigureAwait(true);
                     return;
                 }
+                if (tag is string chat && chat == "chat")
+                {
+                    await LoadChatAsync().ConfigureAwait(true);
+                    return;
+                }
                 if (tag is string s3 && s3 == "broadcast")
                 {
                     BuildBroadcast();
@@ -206,6 +211,62 @@ public sealed partial class AdminViewModel
                 await SendBroadcastAsync().ConfigureAwait(true);
                 return;
             }
+
+            if (_page == AdminPage.Chat)
+            {
+                if (tag is string t && t == "chat.refresh")
+                {
+                    await LoadChatAsync().ConfigureAwait(true);
+                    return;
+                }
+                if (tag is string t2 && t2 == "chat.clear")
+                {
+                    await ClearChatAsync().ConfigureAwait(true);
+                    return;
+                }
+                if (tag is AdminChatMessageDto msg)
+                {
+                    BuildChatMessageActions(msg);
+                    return;
+                }
+            }
+
+            if (_page == AdminPage.ChatMessageActions && _selectedChatMessage != null && tag is string chatAction)
+            {
+                if (chatAction == "chat.message.delete")
+                {
+                    await DeleteSelectedChatMessageAsync(_selectedChatMessage).ConfigureAwait(true);
+                    return;
+                }
+                if (chatAction == "chat.user.ban")
+                {
+                    BuildChatBanForm(_selectedChatMessage);
+                    return;
+                }
+                if (chatAction == "chat.user.unban")
+                {
+                    var uid = _selectedChatMessage.User?.Id ?? 0;
+                    if (uid > 0)
+                    {
+                        await _admin.UnbanUserFromChatAsync(uid).ConfigureAwait(true);
+                        await _dialogs.ShowInfo("Tchat", "Utilisateur débanni du tchat.").ConfigureAwait(true);
+                        await LoadChatAsync().ConfigureAwait(true);
+                    }
+                    return;
+                }
+                if (chatAction == "chat.back")
+                {
+                    await LoadChatAsync().ConfigureAwait(true);
+                    return;
+                }
+            }
+
+            if (_page == AdminPage.ChatBanForm && _selectedChatMessage != null && tag is string banSubmit && banSubmit == "chat.ban.submit")
+            {
+                await SubmitChatBanAsync(_selectedChatMessage).ConfigureAwait(true);
+                return;
+            }
+
             if (_page == AdminPage.ClientUpdates && tag is string buildTag && buildTag == "clientUpdate.buildUpload")
             {
                 await BuildAndUploadClientUpdateAsync().ConfigureAwait(true);

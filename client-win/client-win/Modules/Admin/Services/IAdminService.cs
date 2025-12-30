@@ -32,6 +32,12 @@ public interface IAdminService
     Task<int> AnnounceClientUpdateAsync(string? message = null, string? version = null, CancellationToken cancellationToken = default);
     Task<(int delivered, string minRequiredVersion)> ForceClientUpdateLatestAsync(string? message = null, CancellationToken cancellationToken = default);
 
+    Task<AdminChatMessageDto[]> GetChatMessagesAsync(int limit = 200, bool includeDeleted = false, CancellationToken cancellationToken = default);
+    Task<bool> DeleteChatMessageAsync(string messageId, CancellationToken cancellationToken = default);
+    Task<int> ClearChatAsync(CancellationToken cancellationToken = default);
+    Task<AdminChatBanResponseDto> BanUserFromChatAsync(int userId, string? reason = null, int? durationDays = null, CancellationToken cancellationToken = default);
+    Task<bool> UnbanUserFromChatAsync(int userId, CancellationToken cancellationToken = default);
+
     Task<AdminRoleDefinitionsResponseDto> ListRoleDefinitionsAsync(CancellationToken cancellationToken = default);
     Task<AdminRoleDefinitionsResponseDto> CreateRoleDefinitionAsync(string name, string description, IEnumerable<string> permissions, CancellationToken cancellationToken = default);
     Task<AdminRoleDefinitionsResponseDto> UpdateRoleDefinitionAsync(string name, string? newName, string? description, IEnumerable<string>? permissions, CancellationToken cancellationToken = default);
