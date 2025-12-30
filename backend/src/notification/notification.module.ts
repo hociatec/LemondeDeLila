@@ -6,9 +6,10 @@ import {
   NotificationTransport,
   RedisNotificationTransport,
 } from './services/notification-transport';
+import { ClientUpdatesModule } from '../client-updates/client-updates.module';
 
 @Module({
-  imports: [ConfigModule],
+  imports: [ConfigModule, ClientUpdatesModule],
   providers: [
     {
       provide: NotificationTransport,

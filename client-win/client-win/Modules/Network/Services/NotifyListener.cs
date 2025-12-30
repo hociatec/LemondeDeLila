@@ -2,6 +2,7 @@ using System;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Threading;
+using client_win.Core;
 using client_win.Modules.Config;
 using client_win.Modules.Catalog.Services;
 using client_win.Modules.Network.WebSockets;
@@ -59,6 +60,21 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
         {
             await _ws.ConnectAsync(_config.NotifyGatewayWs, token, headers: null, cancellationToken).ConfigureAwait(false);
             Log.Information("Connexion WS notify établie.");
+
+            // Handshake version: permet au serveur de proposer la MAJ à chaque connexion.
+            try
+            {
+                var hello = JsonSerializer.Serialize(new
+                {
+                    type = "client.hello",
+                    payload = new { version = AppInfo.GetShortVersion() },
+                });
+                await _ws.SendAsync(hello, cancellationToken).ConfigureAwait(false);
+            }
+            catch
+            {
+                // Best-effort
+            }
         }
         catch (Exception ex)
         {

@@ -8,6 +8,6 @@ import { AdminRoleGuard } from '../common/guards/admin-role.guard';
 @Module({
   controllers: [ClientUpdatesController, AdminClientUpdatesController],
   providers: [ClientUpdatesService, HttpJwtGuard, AdminRoleGuard],
+  exports: [ClientUpdatesService],
 })
 export class ClientUpdatesModule {}
-
