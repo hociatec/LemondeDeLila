@@ -16,6 +16,9 @@ public partial class GameHistoryView : UserControl
 {
     private GameHistoryViewModel? _viewModel;
     private bool _pendingRebuild;
+    private int _lastKnownEntryCount;
+    private DispatcherTimer? _announceTimer;
+    private readonly Queue<string> _announceQueue = new();
 
     public GameHistoryView()
     {
@@ -70,10 +73,25 @@ public partial class GameHistoryView : UserControl
         {
             _viewModel.Entries.CollectionChanged += OnEntriesCollectionChanged;
             RebuildFromViewModel(scrollToEnd: true);
+            _lastKnownEntryCount = _viewModel.Entries.Count;
+
+            // Cas important: certains messages (ex: "Table créée...") sont ajoutés avant que la vue
+            // ne soit chargée et donc avant l'abonnement à CollectionChanged.
+            // On annonce au moins la dernière ligne existante à l'attache.
+            if (!HistoryEditor.IsKeyboardFocusWithin && _viewModel.Entries.Count > 0)
+            {
+                var last = (_viewModel.Entries[_viewModel.Entries.Count - 1] ?? string.Empty).Trim();
+                if (!string.IsNullOrWhiteSpace(last))
+                {
+                    EnqueueAnnouncement(last);
+                }
+            }
             return;
         }
 
         HistoryEditor.Clear();
+        _lastKnownEntryCount = 0;
+        StopAnnouncePump(clearQueue: true);
     }
 
     private void OnEntriesCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -101,14 +119,17 @@ public partial class GameHistoryView : UserControl
                 {
                     foreach (var msg in added.SelectMany(SplitLines))
                     {
-                        AnnounceNow(msg);
+                        EnqueueAnnouncement(msg);
                     }
                 }
             }
+
+            _lastKnownEntryCount = _viewModel.Entries.Count;
             return;
         }
 
         ScheduleRebuild(scrollToEnd: false);
+        _lastKnownEntryCount = _viewModel.Entries.Count;
     }
 
     private void AppendEntries(IEnumerable<string> entries)
@@ -249,7 +270,7 @@ public partial class GameHistoryView : UserControl
         }
     }
 
-    private void AnnounceNow(string message)
+    private void EnqueueAnnouncement(string message)
     {
         var cleaned = (message ?? string.Empty).Trim();
         if (string.IsNullOrWhiteSpace(cleaned))
@@ -263,6 +284,47 @@ public partial class GameHistoryView : UserControl
             return;
         }
 
+        _announceQueue.Enqueue(cleaned);
+        EnsureAnnouncePump();
+    }
+
+    private void EnsureAnnouncePump()
+    {
+        if (_announceTimer != null)
+        {
+            if (!_announceTimer.IsEnabled)
+            {
+                _announceTimer.Start();
+            }
+            return;
+        }
+
+        // Sans anti-rafale/coalescing: on séquence juste les notifications pour éviter que certains lecteurs d'écran
+        // en "ratent" quand plusieurs events UIA partent trop vite.
+        _announceTimer = new DispatcherTimer(DispatcherPriority.Background, Dispatcher)
+        {
+            Interval = TimeSpan.FromMilliseconds(80),
+        };
+        _announceTimer.Tick += (_, __) => PumpAnnouncements();
+        _announceTimer.Start();
+    }
+
+    private void PumpAnnouncements()
+    {
+        if (_announceQueue.Count == 0)
+        {
+            StopAnnouncePump(clearQueue: false);
+            return;
+        }
+
+        // Si l'utilisateur est en train de lire l'historique, ne pas interrompre (et ne pas backlogger).
+        if (HistoryEditor.IsKeyboardFocusWithin)
+        {
+            StopAnnouncePump(clearQueue: true);
+            return;
+        }
+
+        var next = _announceQueue.Dequeue();
         try
         {
             var peer = FrameworkElementAutomationPeer.FromElement(this) ??
@@ -270,12 +332,26 @@ public partial class GameHistoryView : UserControl
             peer?.RaiseNotificationEvent(
                 AutomationNotificationKind.Other,
                 AutomationNotificationProcessing.All,
-                cleaned,
+                next,
                 "GameHistory");
         }
         catch
         {
             // ignore (best-effort)
+        }
+    }
+
+    private void StopAnnouncePump(bool clearQueue)
+    {
+        if (clearQueue)
+        {
+            _announceQueue.Clear();
+        }
+
+        if (_announceTimer != null)
+        {
+            _announceTimer.Stop();
+            _announceTimer = null;
         }
     }
 }
