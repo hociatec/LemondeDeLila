@@ -75,7 +75,7 @@ namespace client_win.Modules.Catalog.Views {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/client-win;V1.0.0.0;component/modules/catalog/views/catalogview.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/LeMondeDeLila;V1.0.0.0;component/modules/catalog/views/catalogview.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\..\..\..\Modules\Catalog\Views\CatalogView.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);

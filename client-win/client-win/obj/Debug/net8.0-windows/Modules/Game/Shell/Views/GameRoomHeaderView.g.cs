@@ -51,7 +51,8 @@ namespace client_win.Modules.Game.Shell.Views {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/client-win;V1.0.0.0;component/modules/game/shell/views/gameroomheaderview.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri(("/LeMondeDeLila;V1.0.0.0;component/modules/game/shell/views/gameroomheaderview.xam" +
+                    "l"), System.UriKind.Relative);
             
             #line 1 "..\..\..\..\..\..\..\Modules\Game\Shell\Views\GameRoomHeaderView.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);

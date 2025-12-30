@@ -109,7 +109,7 @@ namespace client_win.Modules.Home.Views {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/client-win;V1.0.0.0;component/modules/home/views/homeview.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/LeMondeDeLila;V1.0.0.0;component/modules/home/views/homeview.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\..\..\..\Modules\Home\Views\HomeView.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);

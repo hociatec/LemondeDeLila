@@ -164,7 +164,7 @@ namespace client_win.Modules.Messaging.Views {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/client-win;V1.0.0.0;component/modules/messaging/views/messagingview.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/LeMondeDeLila;V1.0.0.0;component/modules/messaging/views/messagingview.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\..\..\..\Modules\Messaging\Views\MessagingView.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);

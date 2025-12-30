@@ -67,7 +67,7 @@ namespace client_win.Modules.MainMenu.Views {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/client-win;V1.0.0.0;component/modules/mainmenu/views/mainmenuview.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/LeMondeDeLila;V1.0.0.0;component/modules/mainmenu/views/mainmenuview.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\..\..\..\Modules\MainMenu\Views\MainMenuView.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);

@@ -67,7 +67,7 @@ namespace client_win.Modules.Leaderboard.Views {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/client-win;V1.0.0.0;component/modules/leaderboard/views/leaderboardview.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/LeMondeDeLila;V1.0.0.0;component/modules/leaderboard/views/leaderboardview.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\..\..\..\Modules\Leaderboard\Views\LeaderboardView.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);
