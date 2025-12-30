@@ -7,7 +7,6 @@ using System.Windows.Automation;
 using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Threading;
 using client_win.Modules.Game.History.ViewModels;
 
 namespace client_win.Modules.Game.History.Views;
@@ -16,11 +15,6 @@ public partial class GameHistoryView : UserControl
 {
     private GameHistoryViewModel? _viewModel;
     private bool _pendingRebuild;
-    private DispatcherTimer? _announceTimer;
-    private string _pendingAnnouncement = string.Empty;
-    private DateTime _pendingAnnouncementUpdatedAtUtc;
-    private DateTime _lastAnnouncedAtUtc;
-    private string? _lastAnnounced;
 
     public GameHistoryView()
     {
@@ -78,7 +72,6 @@ public partial class GameHistoryView : UserControl
             return;
         }
 
-        StopAnnouncements();
         HistoryEditor.Clear();
     }
 
@@ -103,15 +96,12 @@ public partial class GameHistoryView : UserControl
                     .Where(s => !string.IsNullOrWhiteSpace(s))
                     .ToList();
 
-                if (added.Count == 1)
+                if (added.Count > 0)
                 {
-                    SetPendingAnnouncement(added[0]);
-                }
-                else if (added.Count > 1)
-                {
-                    // Regroupe un burst : annonces temps réel (pas de backlog),
-                    // on privilégie le "plus récent" sans faire une file infinie.
-                    SetPendingAnnouncement(string.Join(Environment.NewLine, added));
+                    foreach (var msg in added.SelectMany(SplitLines))
+                    {
+                        AnnounceNow(msg);
+                    }
                 }
             }
             return;
@@ -237,59 +227,32 @@ public partial class GameHistoryView : UserControl
         TabNavigationRequested?.Invoke(this, new TabNavigationRequestedEventArgs(shift));
     }
 
-    private void SetPendingAnnouncement(string message)
+    private static IEnumerable<string> SplitLines(string message)
+    {
+        if (string.IsNullOrWhiteSpace(message))
+        {
+            yield break;
+        }
+
+        var normalized = message
+            .Replace("\r\n", "\n", StringComparison.Ordinal)
+            .Replace('\r', '\n');
+
+        foreach (var raw in normalized.Split('\n'))
+        {
+            var cleaned = (raw ?? string.Empty).Trim();
+            if (!string.IsNullOrWhiteSpace(cleaned))
+            {
+                yield return cleaned;
+            }
+        }
+    }
+
+    private void AnnounceNow(string message)
     {
         var cleaned = (message ?? string.Empty).Trim();
         if (string.IsNullOrWhiteSpace(cleaned))
         {
-            return;
-        }
-
-        // Coalescing: si plusieurs messages arrivent très vite, on les regroupe mais on limite
-        // pour rester "temps réel" et éviter de lire 20 lignes en retard.
-        if (string.IsNullOrWhiteSpace(_pendingAnnouncement))
-        {
-            _pendingAnnouncement = cleaned;
-        }
-        else
-        {
-            _pendingAnnouncement = $"{_pendingAnnouncement}{Environment.NewLine}{cleaned}";
-        }
-
-        const int maxChars = 700;
-        if (_pendingAnnouncement.Length > maxChars)
-        {
-            _pendingAnnouncement = _pendingAnnouncement.Substring(_pendingAnnouncement.Length - maxChars);
-        }
-
-        _pendingAnnouncementUpdatedAtUtc = DateTime.UtcNow;
-        EnsureAnnouncePump();
-    }
-
-    private void EnsureAnnouncePump()
-    {
-        if (_announceTimer != null)
-        {
-            if (!_announceTimer.IsEnabled)
-            {
-                _announceTimer.Start();
-            }
-            return;
-        }
-
-        _announceTimer = new DispatcherTimer(DispatcherPriority.Background, Dispatcher)
-        {
-            Interval = TimeSpan.FromMilliseconds(150),
-        };
-        _announceTimer.Tick += (_, __) => PumpAnnouncement();
-        _announceTimer.Start();
-    }
-
-    private void PumpAnnouncement()
-    {
-        if (string.IsNullOrWhiteSpace(_pendingAnnouncement))
-        {
-            StopAnnouncements();
             return;
         }
 
@@ -299,55 +262,19 @@ public partial class GameHistoryView : UserControl
             return;
         }
 
-        // Rendre le flux plus "naturel" :
-        // - debounce : on attend un petit silence avant de parler (évite d'être haché pendant les rafales)
-        // - min gap : évite les annonces trop rapprochées
-        var now = DateTime.UtcNow;
-        if ((now - _pendingAnnouncementUpdatedAtUtc) < TimeSpan.FromMilliseconds(650))
-        {
-            return;
-        }
-        if ((now - _lastAnnouncedAtUtc) < TimeSpan.FromMilliseconds(950))
-        {
-            return;
-        }
-
-        var next = _pendingAnnouncement.Trim();
-        _pendingAnnouncement = string.Empty;
-
-        // Anti-spam : ignore un doublon strict très rapproché (ex: "Table démarrée." répété).
-        if (string.Equals(_lastAnnounced, next, StringComparison.Ordinal) &&
-            (now - _lastAnnouncedAtUtc) < TimeSpan.FromSeconds(2))
-        {
-            return;
-        }
-        _lastAnnounced = next;
-        _lastAnnouncedAtUtc = now;
-
         try
         {
             var peer = FrameworkElementAutomationPeer.FromElement(this) ??
                        FrameworkElementAutomationPeer.CreatePeerForElement(this);
             peer?.RaiseNotificationEvent(
                 AutomationNotificationKind.Other,
-                // MostRecent: comportement "temps réel" (on privilégie la dernière info).
-                AutomationNotificationProcessing.MostRecent,
-                next,
+                AutomationNotificationProcessing.All,
+                cleaned,
                 "GameHistory");
         }
         catch
         {
             // ignore (best-effort)
-        }
-    }
-
-    private void StopAnnouncements()
-    {
-        _pendingAnnouncement = string.Empty;
-        if (_announceTimer != null)
-        {
-            _announceTimer.Stop();
-            _announceTimer = null;
         }
     }
 }

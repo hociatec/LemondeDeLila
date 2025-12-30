@@ -106,8 +106,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
         {
             _dispatcher.InvokeAsync(() =>
             {
-                _history.Add($"Bot ajouté ({name})");
-                _tableVm.Status = $"Bot ajouté : {name}.";
+                _tableVm.Status = $"{name} a rejoint la table.";
                 _announcements.BotJoined(name);
             }, DispatcherPriority.Background);
         };
@@ -116,8 +115,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
         {
             _dispatcher.InvokeAsync(() =>
             {
-                _history.Add($"Bot retiré ({name})");
-                _tableVm.Status = $"Bot retiré : {name}.";
+                _tableVm.Status = $"{name} a quitté la table.";
                 _announcements.BotLeft(name);
             }, DispatcherPriority.Background);
         };
