@@ -1,9 +1,14 @@
 using System;
+using System.Diagnostics;
+using System.Net.Http;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
 using client_win.Modules.Error;
+using client_win.Modules.Config;
 using client_win.Core.Diagnostics;
 using client_win.Core.Constants;
+using client_win.Modules.Updates;
 using Serilog;
 
 namespace client_win.Modules.Shell.Services;
@@ -17,6 +22,7 @@ public sealed class ShellErrorHandler : IDisposable
     private readonly ErrorBus _errors;
     private readonly INavigationService _navigation;
     private readonly IDialogService _dialogs;
+    private readonly ClientConfiguration _config;
     private readonly Func<System.Windows.Controls.UserControl> _homeViewProvider;
     private readonly CrashReporter? _crashReporter;
     private readonly IDisposable _subscription;
@@ -30,12 +36,14 @@ public sealed class ShellErrorHandler : IDisposable
         ErrorBus errors,
         INavigationService navigation,
         IDialogService dialogs,
+        ClientConfiguration config,
         Func<System.Windows.Controls.UserControl> homeViewProvider,
         CrashReporter? crashReporter = null)
     {
         _errors = errors ?? throw new ArgumentNullException(nameof(errors));
         _navigation = navigation ?? throw new ArgumentNullException(nameof(navigation));
         _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
+        _config = config ?? throw new ArgumentNullException(nameof(config));
         _homeViewProvider = homeViewProvider ?? throw new ArgumentNullException(nameof(homeViewProvider));
         _crashReporter = crashReporter;
 
@@ -131,6 +139,12 @@ public sealed class ShellErrorHandler : IDisposable
 
             try
             {
+                if (IsUpdateRequiredError(err))
+                {
+                    await ShowUpdateRequiredDialogAsync(err).ConfigureAwait(false);
+                    return;
+                }
+
                 // Anti-flood: ignore les messages identiques dans un délai configuré
                 if (string.Equals(_lastErrorMessage, message, StringComparison.Ordinal) &&
                     now - _lastErrorShownAt < TimeSpan.FromSeconds(AppConstants.ErrorDialogAntiFloodSeconds))
@@ -150,6 +164,98 @@ public sealed class ShellErrorHandler : IDisposable
                 System.Threading.Interlocked.Exchange(ref _isShowingErrorDialog, 0);
             }
         });
+    }
+
+    private static bool IsUpdateRequiredError(AppError err)
+    {
+        var msg = (err.Message ?? string.Empty).Trim();
+        if (msg.Length == 0) return false;
+        return msg.StartsWith("Mise à jour requise", StringComparison.OrdinalIgnoreCase) ||
+               msg.Contains("version minimale", StringComparison.OrdinalIgnoreCase) ||
+               msg.Contains("update required", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private async Task ShowUpdateRequiredDialogAsync(AppError err)
+    {
+        var info = await TryGetClientVersionInfoAsync().ConfigureAwait(false);
+        var url = info?.Url ?? "https://api.lilas.hociatec.fr/updates/client-win/";
+        var min = info?.MinRequiredVersion;
+
+        var msg = (err.Message ?? string.Empty).Trim();
+        if (!string.IsNullOrWhiteSpace(min) && msg.IndexOf("version minimale", StringComparison.OrdinalIgnoreCase) < 0)
+        {
+            msg += $"\n\nVersion minimale requise : {min}";
+        }
+        msg += "\n\nMettre à jour maintenant ?";
+
+        var confirm = await _dialogs.Confirm(
+                "Mise à jour requise",
+                msg,
+                okText: "Mettre à jour",
+                cancelText: "Quitter")
+            .ConfigureAwait(false);
+
+        if (confirm != true)
+        {
+            Environment.Exit(0);
+            return;
+        }
+
+        if (!UpdateEnvironment.IsLikelyClickOnceInstall() || UpdateEnvironment.IsRunningUnderDotnetHost())
+        {
+            TryOpenUrl(url);
+            Environment.Exit(0);
+            return;
+        }
+
+        var restarted = UpdateRestartHelper.RestartCurrentProcess("required-auth");
+        if (!restarted)
+        {
+            TryOpenUrl(url);
+            Environment.Exit(0);
+        }
+    }
+
+    private sealed class ClientVersionInfo
+    {
+        public string? Url { get; set; }
+        public string? MinRequiredVersion { get; set; }
+    }
+
+    private async Task<ClientVersionInfo?> TryGetClientVersionInfoAsync()
+    {
+        try
+        {
+            var endpoint = new Uri(_config.HttpBase, "../client/version");
+            using var http = new HttpClient();
+            var json = await http.GetStringAsync(endpoint).ConfigureAwait(false);
+            using var doc = JsonDocument.Parse(json);
+            var root = doc.RootElement;
+            var url = root.TryGetProperty("url", out var u) ? u.GetString() : null;
+            var min = root.TryGetProperty("minRequiredVersion", out var m) ? m.GetString() : null;
+            return new ClientVersionInfo { Url = url, MinRequiredVersion = min };
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static void TryOpenUrl(string url)
+    {
+        if (string.IsNullOrWhiteSpace(url))
+        {
+            return;
+        }
+
+        try
+        {
+            Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+        }
+        catch
+        {
+            // ignore
+        }
     }
 
     private void EnsureHomeVisible()

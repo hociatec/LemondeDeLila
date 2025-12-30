@@ -51,7 +51,7 @@ namespace client_win
 
             _homeView = new HomeView { DataContext = _homeViewModel };
             _navigation = _host.Navigation;
-            _errorHandler = new ShellErrorHandler(_errorBus, _navigation, _dialogs, () => _homeView, _host.CrashReporter);
+            _errorHandler = new ShellErrorHandler(_errorBus, _navigation, _dialogs, _host.Configuration, () => _homeView, _host.CrashReporter);
 
             Loaded += OnLoaded;
             PreviewKeyDown += OnPreviewKeyDown;
