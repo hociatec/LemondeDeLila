@@ -366,17 +366,34 @@ public sealed class AboutViewModel : ObservableObject
     private string BuildShortcutsText()
     {
         var sb = new StringBuilder();
-        sb.AppendLine("Menu principal");
+        sb.AppendLine("Général");
         sb.AppendLine("- Flèches : naviguer");
-        sb.AppendLine("- Entrée : sélectionner");
-        sb.AppendLine("- Échap : retour/fermer");
+        sb.AppendLine("- Entrée : valider / sélectionner");
+        sb.AppendLine("- Échap : retour / fermer");
         sb.AppendLine();
-        sb.AppendLine("En partie");
-        sb.AppendLine("- Tab : basculer Zone de jeu ↔ Historique");
-        sb.AppendLine("- i : infos table");
-        sb.AppendLine("- w : liste des joueurs");
+        sb.AppendLine("Table (salle)");
+        sb.AppendLine("- Tab : basculer Zone de jeu → Historique");
+        sb.AppendLine("- Maj+Tab : basculer Historique → Zone de jeu");
+        sb.AppendLine("- i : informations table");
+        sb.AppendLine("- w : lister les joueurs");
+        sb.AppendLine("- q : quitter la table");
+        sb.AppendLine("- b : ajouter un bot (hors partie)");
+        sb.AppendLine("- Maj+B : retirer un bot (hors partie)");
+        sb.AppendLine("- Ctrl+M : mode joueur/spectateur");
+        sb.AppendLine("- Ctrl+H : visiblité de la table");
+        sb.AppendLine();
+        sb.AppendLine("Objets / interface (en partie, selon le jeu)");
+        sb.AppendLine("- Espace : piocher");
+        sb.AppendLine("- Retour arrière : défausser (choisir une carte)");
+        sb.AppendLine("- s : score ou shopping list (Panier Express)");
+        sb.AppendLine("- b : annoncer panier");
+        sb.AppendLine("- i : annoncer inventaire");
+        sb.AppendLine("- c : annoncer main");
+        sb.AppendLine("- f : annoncer familles complètes");
+        sb.AppendLine("- p : position plateau");
         sb.AppendLine();
         sb.AppendLine("Chat");
+        sb.AppendLine("- Entrée : envoyer le message");
         sb.AppendLine("- Échap : fermer le chat");
         return sb.ToString();
     }
