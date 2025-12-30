@@ -376,7 +376,14 @@ public sealed class AppHost : IAsyncDisposable
     public IServiceProvider Services { get; }
 
     public HomeViewModel CreateHomeViewModel(Action<AuthenticatedUser> navigateToMenu, Action? requestExit) =>
-        new(Configuration.ApplicationName, AuthenticationService, CredentialStore, navigateToMenu, requestExit, Errors);
+        new(
+            Configuration.ApplicationName,
+            AuthenticationService,
+            CredentialStore,
+            Dialogs,
+            navigateToMenu,
+            requestExit,
+            Errors);
 
     public MainMenuViewModel CreateMainMenuViewModel(AuthenticatedUser user, Action logout) =>
         new(user,

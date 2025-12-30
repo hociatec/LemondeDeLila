@@ -20,6 +20,7 @@ public sealed class HomeViewModel : ObservableObject, IDisposable
 {
     private readonly IAuthenticationService _authenticationService;
     private readonly ICredentialStore _credentialStore;
+    private readonly Modules.Shell.Services.IDialogService? _dialogs;
     private readonly Action<AuthenticatedUser>? _navigateToMainMenu;
     private readonly Action? _requestExit;
     private readonly IDisposable? _errorSubscription;
@@ -32,6 +33,7 @@ public sealed class HomeViewModel : ObservableObject, IDisposable
     public HomeViewModel(string applicationName,
         IAuthenticationService authenticationService,
         ICredentialStore credentialStore,
+        Modules.Shell.Services.IDialogService? dialogs,
         Action<AuthenticatedUser>? navigateToMainMenu,
         Action? requestExit,
         ErrorBus? errorBus = null)
@@ -39,6 +41,7 @@ public sealed class HomeViewModel : ObservableObject, IDisposable
         ApplicationName = applicationName;
         _authenticationService = authenticationService ?? throw new ArgumentNullException(nameof(authenticationService));
         _credentialStore = credentialStore ?? throw new ArgumentNullException(nameof(credentialStore));
+        _dialogs = dialogs;
         _navigateToMainMenu = navigateToMainMenu;
         _requestExit = requestExit;
         _errorBus = errorBus;
@@ -254,6 +257,10 @@ public sealed class HomeViewModel : ObservableObject, IDisposable
             if (result.Success)
             {
                 StatusMessage = "Compte créé, vous pouvez vous connecter.";
+                if (_dialogs != null)
+                {
+                    await _dialogs.ShowInfo("Inscription", $"Compte créé pour {username}. Vous pouvez vous connecter.").ConfigureAwait(true);
+                }
                 LoginForm.Username = username;
                 LoginForm.Password = new System.Security.SecureString();
                 ShowLogin();
@@ -261,11 +268,19 @@ public sealed class HomeViewModel : ObservableObject, IDisposable
             else
             {
                 StatusMessage = result.ErrorMessage ?? "L'inscription a échoué.";
+                if (_dialogs != null)
+                {
+                    await _dialogs.ShowError("Inscription", StatusMessage).ConfigureAwait(true);
+                }
             }
         }
         catch (Exception ex)
         {
             StatusMessage = "Erreur lors de l'inscription.";
+            if (_dialogs != null)
+            {
+                await _dialogs.ShowError("Inscription", ex.Message).ConfigureAwait(true);
+            }
             _errorBus?.Publish(new AppError("Inscription échouée", ErrorSeverity.Error, context: "home.register", detail: ex.Message));
         }
         finally
