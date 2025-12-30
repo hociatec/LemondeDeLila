@@ -1,21 +1,24 @@
 using System;
 using System.Collections.Specialized;
-using System.ComponentModel;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using client_win.Modules.Chat.ViewModels;
 
 namespace client_win.Modules.Chat.Views;
 
 public partial class ChatView : UserControl
 {
-    private INotifyCollectionChanged? _currentMessages;
+    private INotifyCollectionChanged? _currentItems;
+    private ScrollViewer? _scrollViewer;
+    private bool _stickToBottom = true;
+    private bool _didInitialPositioning;
 
     public ChatView()
     {
         InitializeComponent();
         Loaded += (_, _) => InputBox.Focus();
-        Loaded += OnLoaded;
     }
 
     private void OnRootPreviewKeyDown(object sender, KeyEventArgs e)
@@ -38,66 +41,109 @@ public partial class ChatView : UserControl
 
     private void OnLoaded(object sender, System.Windows.RoutedEventArgs e)
     {
-        if (DaysList != null)
-        {
-            DaysList.SelectionChanged += (_, _) => ScrollMessagesToEnd();
-        }
-
         if (DataContext is ChatViewModel vm)
         {
-            vm.PropertyChanged += (_, args) =>
+            AttachItems(vm);
+        }
+
+        _scrollViewer = FindDescendantScrollViewer(MessagesList);
+        if (_scrollViewer != null)
+        {
+            _scrollViewer.ScrollChanged += (_, _) =>
             {
-                if (args.PropertyName == nameof(ChatViewModel.SelectedDay) ||
-                    args.PropertyName == nameof(ChatViewModel.SelectedMessages))
-                {
-                    AttachSelectedMessages(vm);
-                    ScrollMessagesToEnd();
-                }
+                _stickToBottom = IsNearBottom(_scrollViewer);
             };
-
-            AttachSelectedMessages(vm);
-            ScrollMessagesToEnd();
         }
+
+        PositionToBottom(force: true);
     }
 
-    private void AttachSelectedMessages(ChatViewModel vm)
+    private void AttachItems(ChatViewModel vm)
     {
-        if (_currentMessages != null)
+        if (_currentItems != null)
         {
-            _currentMessages.CollectionChanged -= OnSelectedMessagesChanged;
-            _currentMessages = null;
+            _currentItems.CollectionChanged -= OnItemsChanged;
+            _currentItems = null;
         }
 
-        var selected = vm.SelectedMessages;
-        if (selected is INotifyCollectionChanged coll)
+        if (vm.Items is INotifyCollectionChanged coll)
         {
-            _currentMessages = coll;
-            coll.CollectionChanged += OnSelectedMessagesChanged;
+            _currentItems = coll;
+            coll.CollectionChanged += OnItemsChanged;
         }
     }
 
-    private void OnSelectedMessagesChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    private void OnItemsChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
-        ScrollMessagesToEnd();
+        PositionToBottom(force: false);
     }
 
-    private void ScrollMessagesToEnd()
+    private void PositionToBottom(bool force)
     {
         if (MessagesList == null)
         {
             return;
         }
+
+        if (!_didInitialPositioning)
+        {
+            force = true;
+            _didInitialPositioning = true;
+        }
+
+        if (!force && !_stickToBottom)
+        {
+            return;
+        }
+
         try
         {
             if (MessagesList.Items.Count > 0)
             {
-                MessagesList.ScrollIntoView(MessagesList.Items[MessagesList.Items.Count - 1]);
+                var last = MessagesList.Items[MessagesList.Items.Count - 1];
+                MessagesList.ScrollIntoView(last);
+                MessagesList.SelectedItem = last;
             }
         }
         catch
         {
             // ignore
         }
+    }
+
+    private static bool IsNearBottom(ScrollViewer sv)
+    {
+        if (sv.ScrollableHeight <= 0)
+        {
+            return true;
+        }
+        return sv.VerticalOffset >= sv.ScrollableHeight - 1.0;
+    }
+
+    private static ScrollViewer? FindDescendantScrollViewer(DependencyObject? root)
+    {
+        if (root == null)
+        {
+            return null;
+        }
+
+        if (root is ScrollViewer sv)
+        {
+            return sv;
+        }
+
+        var count = VisualTreeHelper.GetChildrenCount(root);
+        for (var i = 0; i < count; i++)
+        {
+            var child = VisualTreeHelper.GetChild(root, i);
+            var found = FindDescendantScrollViewer(child);
+            if (found != null)
+            {
+                return found;
+            }
+        }
+
+        return null;
     }
 
     // IMPORTANT: on ne surcharge pas les flèches dans l'historique.

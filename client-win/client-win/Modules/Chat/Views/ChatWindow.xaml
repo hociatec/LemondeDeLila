@@ -58,41 +58,35 @@
                     <TextBlock Text="Aucun message pour le moment"
                                Foreground="#9CB2D1"
                                VerticalAlignment="Center"
-                               Visibility="{Binding Messages.Count, Converter={StaticResource BoolToVisibility}, ConverterParameter=False}" />
+                               AutomationProperties.LiveSetting="Polite">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Items.Count}" Value="0">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
                 </StackPanel>
 
-                <Grid Grid.Row="1" Margin="0 10 0 0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="180" />
-                        <ColumnDefinition Width="12" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-
-                    <GroupBox Grid.Column="0" Header="Jours" Foreground="White" BorderBrush="#284C75" BorderThickness="1">
-                        <ListBox x:Name="DaysList"
-                                 ItemsSource="{Binding Days}"
-                                 SelectedItem="{Binding SelectedDay}"
-                                 DisplayMemberPath="Key"
-                                 TabIndex="0"
-                                 AutomationProperties.Name="Liste des jours" />
-                    </GroupBox>
-
-                    <GroupBox Grid.Column="2" Header="{Binding SelectedDay.Key}" Foreground="White" BorderBrush="#284C75" BorderThickness="1">
-                        <ListBox x:Name="MessagesList"
-                                 ItemsSource="{Binding SelectedMessages}"
-                                 TabIndex="1"
-                                 AutomationProperties.Name="Messages du jour">
-                            <ListBox.ItemTemplate>
-                                <DataTemplate>
-                                    <TextBlock Text="{Binding DisplayText}"
-                                               TextWrapping="Wrap"
-                                               Foreground="White"
-                                               Margin="0 2 0 6" />
-                                </DataTemplate>
-                            </ListBox.ItemTemplate>
-                        </ListBox>
-                    </GroupBox>
-                </Grid>
+                <GroupBox Grid.Row="1" Header="Messages" Foreground="White" BorderBrush="#284C75" BorderThickness="1" Margin="0 10 0 0">
+                    <ListBox x:Name="MessagesList"
+                             ItemsSource="{Binding Items}"
+                             TabIndex="0"
+                             AutomationProperties.Name="Messages du tchat">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding DisplayText}"
+                                           TextWrapping="Wrap"
+                                           Foreground="White"
+                                           Margin="0 2 0 6" />
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </GroupBox>
             </Grid>
         </Border>
 

@@ -138,13 +138,29 @@ public sealed partial class AdminViewModel
             Items.Add(new AdminMenuItem("Rafraîchir", tag: "chat.refresh"));
             Items.Add(new AdminMenuItem("Réinitialiser le tchat (supprimer tous les messages)", tag: "chat.clear"));
 
-            foreach (var msg in _loadedChatMessages.OrderByDescending(m => m.CreatedAt))
+            var groups = _loadedChatMessages
+                .Select(m =>
+                {
+                    var local = m.CreatedAt.ToLocalTime();
+                    return (m, local, day: local.Date);
+                })
+                .OrderByDescending(x => x.day)
+                .ThenByDescending(x => x.local)
+                .GroupBy(x => x.day)
+                .ToArray();
+
+            foreach (var g in groups)
             {
-                var user = msg.User?.Username ?? "inconnu";
-                var text = (msg.Text ?? string.Empty).Replace("\r", " ").Replace("\n", " ");
-                if (text.Length > 120) text = text[..120] + "…";
-                var stamp = msg.CreatedAt.ToLocalTime().ToString("g", CultureInfo.CurrentCulture);
-                Items.Add(new AdminMenuItem($"[{stamp}] {user}: {text}", tag: msg));
+                Items.Add(new AdminMenuItem($"--- {g.Key:dd/MM/yyyy} ---"));
+                foreach (var entry in g)
+                {
+                    var msg = entry.m;
+                    var user = msg.User?.Username ?? "inconnu";
+                    var text = (msg.Text ?? string.Empty).Replace("\r", " ").Replace("\n", " ");
+                    if (text.Length > 120) text = text[..120] + "…";
+                    var stamp = entry.local.ToString("HH:mm", CultureInfo.GetCultureInfo("fr-FR"));
+                    Items.Add(new AdminMenuItem($"[{stamp}] {user}: {text}", tag: msg));
+                }
             }
 
             SelectedItem = Items.FirstOrDefault();

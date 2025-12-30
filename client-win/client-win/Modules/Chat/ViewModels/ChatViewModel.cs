@@ -1,7 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
@@ -18,13 +17,13 @@ public sealed class ChatViewModel : ObservableObject
     private readonly Action? _closeWindow;
     private string _input = string.Empty;
     private string _status = "Tchat fermé.";
-    private ChatDayGroup? _selectedDay;
 
     public ChatViewModel(IChatService chat, Action? closeWindow = null)
     {
         _chat = chat ?? throw new ArgumentNullException(nameof(chat));
         _closeWindow = closeWindow;
         Messages = chat.Messages;
+        Items = new ObservableCollection<ChatMessageItem>();
         _status = chat.StatusMessage;
         chat.StatusChanged += msg => Status = msg;
         chat.Error += msg => Status = msg;
@@ -34,28 +33,14 @@ public sealed class ChatViewModel : ObservableObject
 
         if (Messages is INotifyCollectionChanged coll)
         {
-            coll.CollectionChanged += (_, _) => RebuildGroups();
+            coll.CollectionChanged += (_, _) => RebuildItems();
         }
-        RebuildGroups();
+        RebuildItems();
     }
 
     public ObservableCollection<ChatMessage> Messages { get; }
 
-    public ObservableCollection<ChatDayGroup> Days { get; } = new();
-
-    public ChatDayGroup? SelectedDay
-    {
-        get => _selectedDay;
-        set
-        {
-            if (SetProperty(ref _selectedDay, value))
-            {
-                OnPropertyChanged(nameof(SelectedMessages));
-            }
-        }
-    }
-
-    public ObservableCollection<ChatMessageItem>? SelectedMessages => SelectedDay?.Messages;
+    public ObservableCollection<ChatMessageItem> Items { get; }
 
     public string Input
     {
@@ -91,61 +76,22 @@ public sealed class ChatViewModel : ObservableObject
         await _chat.SendAsync(toSend);
     }
 
-    private void RebuildGroups()
+    private void RebuildItems()
     {
-        var previousKey = SelectedDay?.Key;
-
-        var grouped = Messages
+        var ordered = Messages
             .Select(m =>
             {
                 var local = m.Timestamp.Kind == DateTimeKind.Unspecified ? m.Timestamp : m.Timestamp.ToLocalTime();
-                var day = local.Date;
-                var key = day.ToString("dd/MM/yyyy", CultureInfo.GetCultureInfo("fr-FR"));
-                return (m, day, key, local);
+                return (m, local);
             })
-            .GroupBy(x => new { x.day, x.key })
-            .OrderByDescending(g => g.Key.day)
+            .OrderBy(x => x.local)
             .ToArray();
 
-        Days.Clear();
-        foreach (var g in grouped)
+        Items.Clear();
+        foreach (var entry in ordered)
         {
-            var group = new ChatDayGroup(g.Key.key, g.Key.day);
-            foreach (var entry in g.OrderBy(x => x.local))
-            {
-                group.Messages.Add(new ChatMessageItem(entry.m, entry.local));
-            }
-            Days.Add(group);
+            Items.Add(new ChatMessageItem(entry.m, entry.local));
         }
-
-        // Sélection par défaut: dernier jour (le plus récent).
-        if (Days.Count == 0)
-        {
-            SelectedDay = null;
-            return;
-        }
-
-        if (!string.IsNullOrWhiteSpace(previousKey))
-        {
-            SelectedDay = Days.FirstOrDefault(d => string.Equals(d.Key, previousKey, StringComparison.Ordinal)) ?? Days[0];
-        }
-        else
-        {
-            SelectedDay = Days[0];
-        }
-    }
-
-    public sealed class ChatDayGroup : ObservableObject
-    {
-        public ChatDayGroup(string key, DateTime date)
-        {
-            Key = key;
-            Date = date;
-        }
-
-        public string Key { get; }
-        public DateTime Date { get; }
-        public ObservableCollection<ChatMessageItem> Messages { get; } = new();
     }
 
     public sealed class ChatMessageItem
