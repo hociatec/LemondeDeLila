@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using System.Windows;
 using client_win.Core.Settings;
+using client_win.Modules.Config;
 using client_win.Modules.Settings.Models;
 using client_win.Modules.Settings.ViewModels;
 using client_win.Modules.Settings.Views;
@@ -13,6 +14,8 @@ public sealed class OptionsService : IOptionsService
 {
     private readonly SettingsManager<OptionsState>? _settingsManager;
     private readonly INavigationService? _navigation;
+    private readonly ClientConfiguration? _config;
+    private readonly IDialogService? _dialogs;
     private OptionsState _state;
 
     public OptionsService()
@@ -30,6 +33,19 @@ public sealed class OptionsService : IOptionsService
     {
         _settingsManager = settingsManager ?? throw new ArgumentNullException(nameof(settingsManager));
         _navigation = navigation ?? throw new ArgumentNullException(nameof(navigation));
+        _state = _settingsManager.Current;
+    }
+
+    public OptionsService(
+        SettingsManager<OptionsState> settingsManager,
+        INavigationService navigation,
+        ClientConfiguration config,
+        IDialogService dialogs)
+    {
+        _settingsManager = settingsManager ?? throw new ArgumentNullException(nameof(settingsManager));
+        _navigation = navigation ?? throw new ArgumentNullException(nameof(navigation));
+        _config = config ?? throw new ArgumentNullException(nameof(config));
+        _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
         _state = _settingsManager.Current;
     }
 
@@ -61,7 +77,10 @@ public sealed class OptionsService : IOptionsService
             OptionsViewModel? vm = null;
 
             var clone = CloneState(_state);
-            vm = new OptionsViewModel(clone,
+            vm = new OptionsViewModel(
+                clone,
+                _config,
+                _dialogs,
                 onSave: () =>
                 {
                     if (vm != null)
@@ -86,12 +105,14 @@ public sealed class OptionsService : IOptionsService
                 });
 
             view.DataContext = vm;
-            _navigation.Show(view);
-
-            if (!tcs.Task.IsCompleted)
+            view.Unloaded += (_, _) =>
             {
-                tcs.TrySetResult("Options annulées.");
-            }
+                if (!tcs.Task.IsCompleted)
+                {
+                    tcs.TrySetResult("Options fermées.");
+                }
+            };
+            _navigation.Show(view);
         });
 
         return tcs.Task;
@@ -102,7 +123,10 @@ public sealed class OptionsService : IOptionsService
         OptionsViewModel? vm = null;
         var dialog = new OptionsDialog();
         var clone = CloneState(_state);
-        vm = new OptionsViewModel(clone,
+        vm = new OptionsViewModel(
+            clone,
+            _config,
+            _dialogs,
             onSave: () =>
             {
                 if (vm != null)

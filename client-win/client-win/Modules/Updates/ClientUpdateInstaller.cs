@@ -18,28 +18,7 @@ public static class ClientUpdateInstaller
         string reason,
         CancellationToken cancellationToken = default)
     {
-        // 1) Si on est en ClickOnce: on télécharge/applique la MAJ, puis restart.
-        if (UpdateEnvironment.IsLikelyClickOnceInstall() && !UpdateEnvironment.IsRunningUnderDotnetHost())
-        {
-            var result = await ClickOnceUpdater.CheckAndUpdateAsync().ConfigureAwait(true);
-            if (result.Updated)
-            {
-                // L'installation est appliquée, on redémarre sur la nouvelle version.
-                UpdateRestartHelper.RestartCurrentProcess($"clickonce-update:{reason}");
-                return true;
-            }
-
-            if (!string.IsNullOrWhiteSpace(result.Error))
-            {
-                await dialogs.ShowError(
-                        "Mise à jour",
-                        "Impossible d'appliquer la mise à jour automatiquement.\n\n" +
-                        result.Error)
-                    .ConfigureAwait(true);
-            }
-        }
-
-        // 2) Fallback sans rediriger vers un site:
+        // 1) Sans rediriger vers un site:
         // On tente de lancer directement le fichier .application (ClickOnce) depuis l'URL publique.
         var baseUrl = NormalizeBaseUrl(updatesBaseUrl);
         var applicationUrl = await TryResolveApplicationUrlAsync(baseUrl, cancellationToken).ConfigureAwait(true);
@@ -56,7 +35,16 @@ public static class ClientUpdateInstaller
                         "Mise à jour",
                         $"Impossible de lancer l'installateur ClickOnce.\n\n{ex.GetType().Name}: {ex.Message}")
                     .ConfigureAwait(true);
-                return false;
+            }
+        }
+
+        // 2) Si on est en ClickOnce, une mise à jour peut s'appliquer au démarrage : on tente un redémarrage.
+        if (UpdateEnvironment.IsLikelyClickOnceInstall() && !UpdateEnvironment.IsRunningUnderDotnetHost())
+        {
+            var restarted = UpdateRestartHelper.RestartCurrentProcess($"update-restart:{reason}");
+            if (restarted)
+            {
+                return true;
             }
         }
 
@@ -133,4 +121,3 @@ public static class ClientUpdateInstaller
         return null;
     }
 }
-

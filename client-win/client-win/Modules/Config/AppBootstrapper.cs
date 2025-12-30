@@ -180,7 +180,9 @@ public static class AppBootstrapper
         // OptionsService (dans le shell) avec SettingsManager + Navigation
         services.AddSingleton<IOptionsService>(sp => new OptionsService(
             sp.GetRequiredService<SettingsManager<OptionsState>>(),
-            sp.GetRequiredService<INavigationService>()));
+            sp.GetRequiredService<INavigationService>(),
+            sp.GetRequiredService<ClientConfiguration>(),
+            sp.GetRequiredService<IDialogService>()));
 
         services.AddSingleton<Dispatcher>(_ => Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher);
 

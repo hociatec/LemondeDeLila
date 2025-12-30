@@ -18,6 +18,8 @@ using client_win.Modules.Network.Services;
 using System.Windows.Input;
 using client_win.Modules.Presence.Services;
 using client_win.Modules.Updates;
+using client_win.Modules.Settings.Services;
+using System.ComponentModel;
 
 namespace client_win
 {
@@ -34,6 +36,8 @@ namespace client_win
         private readonly INotifyListener _notify;
         private readonly IPresenceMonitor _presence;
         private readonly IPresenceLauncher _presenceUi;
+        private readonly IOptionsService _options;
+        private bool _exitConfirmed;
 
         public INavigationService Navigation => _navigation;
 
@@ -47,6 +51,7 @@ namespace client_win
             _notify = _host.Services.GetRequiredService<INotifyListener>();
             _presence = _host.Services.GetRequiredService<IPresenceMonitor>();
             _presenceUi = _host.Services.GetRequiredService<IPresenceLauncher>();
+            _options = _host.Services.GetRequiredService<IOptionsService>();
 
             _homeViewModel = _host.CreateHomeViewModel(OnNavigateToMainMenu, Close);
 
@@ -56,6 +61,41 @@ namespace client_win
 
             Loaded += OnLoaded;
             PreviewKeyDown += OnPreviewKeyDown;
+            Closing += OnClosing;
+        }
+
+        private async void OnClosing(object? sender, CancelEventArgs e)
+        {
+            if (_exitConfirmed)
+            {
+                return;
+            }
+            if (!_options.Current.ConfirmExit)
+            {
+                return;
+            }
+
+            e.Cancel = true;
+            try
+            {
+                var ok = await _dialogs.Confirm(
+                        "Quitter",
+                        "Voulez-vous vraiment quitter Le Monde de Lila ?",
+                        okText: "Quitter",
+                        cancelText: "Annuler")
+                    .ConfigureAwait(true);
+                if (ok == true)
+                {
+                    _exitConfirmed = true;
+                    Close();
+                }
+            }
+            catch
+            {
+                // En cas de problème de dialogue, ne pas bloquer la fermeture.
+                _exitConfirmed = true;
+                Close();
+            }
         }
 
         private void OnPreviewKeyDown(object sender, KeyEventArgs e)

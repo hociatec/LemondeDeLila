@@ -3,8 +3,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using client_win.Core;
+using client_win.Modules.Config;
 using client_win.Modules.Settings.Models;
 using client_win.Modules.Updates;
+using client_win.Modules.Shell.Services;
 
 namespace client_win.Modules.Settings.ViewModels;
 
@@ -13,19 +15,28 @@ public sealed class OptionsViewModel : ObservableObject
     private OptionsState _state;
     private string _updateStatus = "Aucune vérification en cours.";
     private string _currentVersion;
-    private bool _updateAvailable;
     private bool _canCheckUpdates = true;
     private bool _canInstallUpdates;
+    private readonly ClientConfiguration? _config;
+    private readonly IDialogService? _dialogs;
+    private ClientUpdateInfo? _lastUpdateInfo;
 
-    public OptionsViewModel(OptionsState state, Action onSave, Action onCancel)
+    public OptionsViewModel(
+        OptionsState state,
+        ClientConfiguration? config,
+        IDialogService? dialogs,
+        Action onSave,
+        Action onCancel)
     {
         _state = state ?? throw new ArgumentNullException(nameof(state));
+        _config = config;
+        _dialogs = dialogs;
         _currentVersion = AppInfo.GetShortVersion();
         SaveCommand = new RelayCommand(onSave);
         CancelCommand = new RelayCommand(onCancel);
         CheckUpdateCommand = new AsyncRelayCommand(HandleCheckUpdateAsync, () => CanCheckUpdates);
         InstallUpdateCommand = new AsyncRelayCommand(HandleInstallUpdateAsync, () => CanInstallUpdates);
-        _canInstallUpdates = true;
+        _canInstallUpdates = false;
     }
 
     public bool MuteAll
@@ -229,52 +240,91 @@ public sealed class OptionsViewModel : ObservableObject
     {
         CanCheckUpdates = false;
         CanInstallUpdates = false;
-        _updateAvailable = false;
-        UpdateStatus = "Les mises à jour sont appliquées au démarrage. Redémarre l'application pour les récupérer.";
 
         try
         {
-            await Task.Delay(50).ConfigureAwait(true);
-            _updateAvailable = true;
+            if (_config == null)
+            {
+                UpdateStatus = "Impossible de vérifier les mises à jour (configuration manquante).";
+                return;
+            }
+
+            UpdateStatus = "Vérification des mises à jour...";
+            var info = await ClientUpdateApi.GetAsync(_config).ConfigureAwait(true);
+            _lastUpdateInfo = info;
+            if (info == null)
+            {
+                UpdateStatus = "Impossible de contacter le serveur de mise à jour.";
+                return;
+            }
+
+            CurrentVersion = AppInfo.GetShortVersion();
+
+            if (info.UpdateRequired == true)
+            {
+                UpdateStatus = $"Mise à jour requise (min: {info.MinRequiredVersion ?? "inconnue"}).";
+                CanInstallUpdates = true;
+                return;
+            }
+
+            if (info.UpdateAvailable == true)
+            {
+                UpdateStatus = $"Mise à jour disponible (dernière: {info.LatestVersion ?? "inconnue"}).";
+                CanInstallUpdates = true;
+                return;
+            }
+
+            UpdateStatus = "Vous êtes à jour.";
         }
         catch (OperationCanceledException)
         {
             UpdateStatus = "Vérification annulée (timeout).";
         }
+        catch (Exception ex)
+        {
+            UpdateStatus = $"Erreur lors de la vérification: {ex.Message}";
+        }
         finally
         {
             CanCheckUpdates = true;
-            CanInstallUpdates = true;
         }
     }
 
     private async Task HandleInstallUpdateAsync()
     {
-        if (!_updateAvailable)
-        {
-            _updateAvailable = true;
-        }
-
         CanCheckUpdates = false;
         CanInstallUpdates = false;
-        UpdateStatus = "Redémarrage en cours...";
+
         try
         {
-            var restarted = UpdateRestartHelper.RestartCurrentProcess("options.install");
-            if (!restarted)
+            if (_dialogs == null)
             {
-                UpdateStatus = "Redémarrage annulé ou bloqué. Ferme puis relance l'application depuis le menu Démarrer.";
+                UpdateStatus = "Impossible de lancer la mise à jour (dialogues indisponibles).";
+                return;
             }
+
+            var url = _lastUpdateInfo?.Url;
+            UpdateStatus = "Installation de la mise à jour...";
+            await ClientUpdateInstaller
+                .InstallLatestAsync(_dialogs, url, reason: "options")
+                .ConfigureAwait(true);
+
+            // L'installation ClickOnce se termine au redémarrage, et le fallback lance l'installateur.
+            // Dans tous les cas, on ferme l'app pour laisser Windows appliquer la mise à jour.
+            Environment.Exit(0);
         }
         catch (OperationCanceledException)
         {
             UpdateStatus = "Installation annulée (timeout).";
         }
+        catch (Exception ex)
+        {
+            UpdateStatus = $"Erreur lors de l'installation: {ex.Message}";
+        }
         finally
         {
             CanCheckUpdates = true;
             CanInstallUpdates = false;
-            _updateAvailable = false;
         }
     }
 

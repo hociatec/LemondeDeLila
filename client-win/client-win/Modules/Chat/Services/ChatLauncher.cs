@@ -60,6 +60,20 @@ public sealed class ChatLauncher : IChatLauncher
 
     public async Task CloseAsync()
     {
+        if (_options.Current.ConfirmChatExit)
+        {
+            var confirm = await _dialogs.Confirm(
+                    "Tchat",
+                    "Fermer le tchat ?",
+                    okText: "Fermer",
+                    cancelText: "Annuler")
+                .ConfigureAwait(true);
+            if (confirm != true)
+            {
+                return;
+            }
+        }
+
         await Application.Current.Dispatcher.InvokeAsync(() =>
         {
             if (_previousView != null)

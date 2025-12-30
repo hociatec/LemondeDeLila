@@ -29,10 +29,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="System.Deployment" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Content Include="Modules\Config\client.properties.example">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <CopyToPublishDirectory>Always</CopyToPublishDirectory>
