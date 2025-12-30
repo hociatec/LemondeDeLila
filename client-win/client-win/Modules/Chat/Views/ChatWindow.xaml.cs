@@ -10,8 +10,6 @@ namespace client_win.Modules.Chat.Views;
 
 public partial class ChatWindow : Window
 {
-    private bool _historyFocusFromMouse;
-
     public ChatWindow()
     {
         InitializeComponent();
@@ -30,58 +28,39 @@ public partial class ChatWindow : Window
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
-        if (HistoryBox != null)
+        if (DaysList != null)
         {
-            // If the user clicks in the history, don't override their caret position.
-            HistoryBox.PreviewMouseDown += (_, _) => _historyFocusFromMouse = true;
-            HistoryBox.GotKeyboardFocus += (_, _) =>
-            {
-                if (!_historyFocusFromMouse)
-                {
-                    ScrollHistoryToEnd();
-                }
-                _historyFocusFromMouse = false;
-            };
+            DaysList.SelectionChanged += (_, _) => ScrollMessagesToEnd();
         }
 
-        if (DataContext is ChatViewModel vm && vm.Messages is INotifyCollectionChanged coll)
+        if (DataContext is ChatViewModel vm)
         {
-            coll.CollectionChanged += (_, _) =>
+            vm.PropertyChanged += (_, args) =>
             {
-                ScrollHistoryToEnd();
-            };
-        }
-
-        if (DataContext is INotifyPropertyChanged npc)
-        {
-            npc.PropertyChanged += (_, args) =>
-            {
-                if (args.PropertyName == nameof(ChatViewModel.HistoryText))
+                if (args.PropertyName == nameof(ChatViewModel.SelectedDay) ||
+                    args.PropertyName == nameof(ChatViewModel.SelectedMessages))
                 {
-                    ScrollHistoryToEnd();
+                    ScrollMessagesToEnd();
                 }
             };
         }
 
-        // On open, keep the history scrolled to the newest messages (but keep input focused).
-        ScrollHistoryToEnd();
+        ScrollMessagesToEnd();
     }
 
-    private void ScrollHistoryToEnd()
+    private void ScrollMessagesToEnd()
     {
-        if (HistoryBox == null)
+        if (MessagesList == null)
         {
             return;
         }
 
         try
         {
-            // Keep the caret at the end so screen readers / arrow navigation start from the newest messages.
-            var len = HistoryBox.Text?.Length ?? 0;
-            HistoryBox.CaretIndex = len;
-            HistoryBox.SelectionStart = len;
-            HistoryBox.SelectionLength = 0;
-            HistoryBox.ScrollToEnd();
+            if (MessagesList.Items.Count > 0)
+            {
+                MessagesList.ScrollIntoView(MessagesList.Items[MessagesList.Items.Count - 1]);
+            }
         }
         catch
         {
@@ -89,6 +68,6 @@ public partial class ChatWindow : Window
         }
     }
 
-    // IMPORTANT: on ne surcharge pas les flèches dans l'historique.
+    // IMPORTANT: on ne surcharge pas les flèches dans les listes.
     // WPF + le lecteur d'écran gèrent mieux la lecture ligne par ligne sans interception.
 }

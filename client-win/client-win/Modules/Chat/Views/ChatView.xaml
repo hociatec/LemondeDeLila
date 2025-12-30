@@ -29,13 +29,16 @@
             <Setter Property="BorderBrush" Value="#284C75" />
             <Setter Property="BorderThickness" Value="1" />
         </Style>
+        <Style TargetType="GroupBox">
+            <Setter Property="Padding" Value="8" />
+            <Setter Property="FontSize" Value="14" />
+        </Style>
     </UserControl.Resources>
 
     <Grid Background="{StaticResource ShellBackground}" KeyboardNavigation.TabNavigation="Cycle">
         <Grid.RowDefinitions>
             <RowDefinition Height="80" />
             <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <Border Grid.Row="0"
@@ -75,31 +78,49 @@
                            FontSize="14"
                            FontWeight="SemiBold"
                            Margin="0 0 12 0"
-                           Target="{Binding ElementName=HistoryBox}" />
+                           Target="{Binding ElementName=MessagesList}" />
                     <TextBlock Text="Aucun message pour le moment"
                                Foreground="#9CB2D1"
                                VerticalAlignment="Center"
                                Visibility="{Binding Messages.Count, Converter={StaticResource BoolToVisibility}, ConverterParameter=False}" />
                 </StackPanel>
 
-                <TextBox Grid.Row="1"
-                         x:Name="HistoryBox"
-                         Text="{Binding HistoryText, Mode=OneWay}"
-                         IsReadOnly="True"
-                         IsReadOnlyCaretVisible="True"
-                         AcceptsReturn="True"
-                         TextWrapping="Wrap"
-                         VerticalScrollBarVisibility="Auto"
-                         HorizontalScrollBarVisibility="Disabled"
-                         BorderThickness="0"
-                         Background="Transparent"
-                         Foreground="White"
-                         IsTabStop="True"
-                         TabIndex="0"
-                         SpellCheck.IsEnabled="False"
-                         TextBoxBase.IsUndoEnabled="False"
-                         AutomationProperties.Name="Historique des messages"
-                         AutomationProperties.HelpText="Historique en lecture seule. Utilisez les flèches pour lire ligne par ligne." />
+                <Grid Grid.Row="1" Margin="0 10 0 0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="180" />
+                        <ColumnDefinition Width="12" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <GroupBox Grid.Column="0" Header="Jours" Foreground="White" BorderBrush="#284C75" BorderThickness="1">
+                        <ListBox x:Name="DaysList"
+                                 ItemsSource="{Binding Days}"
+                                 SelectedItem="{Binding SelectedDay}"
+                                 DisplayMemberPath="Key"
+                                 MinHeight="200"
+                                 TabIndex="0"
+                                 AutomationProperties.Name="Liste des jours"
+                                 AutomationProperties.HelpText="Choisissez une date pour afficher les messages." />
+                    </GroupBox>
+
+                    <GroupBox Grid.Column="2" Header="{Binding SelectedDay.Key}" Foreground="White" BorderBrush="#284C75" BorderThickness="1">
+                        <ListBox x:Name="MessagesList"
+                                 ItemsSource="{Binding SelectedMessages}"
+                                 MinHeight="200"
+                                 TabIndex="1"
+                                 AutomationProperties.Name="Messages du jour"
+                                 AutomationProperties.HelpText="Messages du jour sélectionné. Utilisez les flèches pour lire.">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding DisplayText}"
+                                               TextWrapping="Wrap"
+                                               Foreground="White"
+                                               Margin="0 2 0 6" />
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </GroupBox>
+                </Grid>
 
                 <Grid Grid.Row="2" Margin="0 16 0 0">
                     <Grid.ColumnDefinitions>
@@ -114,20 +135,11 @@
                              MinWidth="200"
                              VerticalContentAlignment="Center"
                              KeyDown="OnInputKeyDown"
-                             TabIndex="1"
+                             TabIndex="2"
                              AutomationProperties.Name="Message à envoyer" />
-                    <Button Grid.Column="2" Content="Envoyer" Command="{Binding SendCommand}" Margin="8 0 0 0" TabIndex="2" />
+                    <Button Grid.Column="2" Content="Envoyer" Command="{Binding SendCommand}" Margin="8 0 0 0" TabIndex="3" />
                 </Grid>
             </Grid>
-        </Border>
-
-        <Border Grid.Row="2" Background="#0C1523" Padding="12 8" Focusable="False"
-                AutomationProperties.LiveSetting="Polite">
-            <TextBlock Text="Appuyez sur Échap pour fermer le tchat."
-                       Foreground="#9CB2D1"
-                       FontSize="12"
-                       HorizontalAlignment="Center"
-                       Focusable="False" />
         </Border>
     </Grid>
 </UserControl>

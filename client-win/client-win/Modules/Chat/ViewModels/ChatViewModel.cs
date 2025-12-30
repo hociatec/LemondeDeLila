@@ -1,7 +1,9 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using System.Text;
+using System.ComponentModel;
+using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using client_win.Core;
@@ -16,8 +18,7 @@ public sealed class ChatViewModel : ObservableObject
     private readonly Action? _closeWindow;
     private string _input = string.Empty;
     private string _status = "Tchat fermé.";
-    private string _historyText = string.Empty;
-    private readonly StringBuilder _historyBuilder = new();
+    private ChatDayGroup? _selectedDay;
 
     public ChatViewModel(IChatService chat, Action? closeWindow = null)
     {
@@ -33,12 +34,28 @@ public sealed class ChatViewModel : ObservableObject
 
         if (Messages is INotifyCollectionChanged coll)
         {
-            coll.CollectionChanged += (_, args) => OnMessagesChanged(args);
+            coll.CollectionChanged += (_, _) => RebuildGroups();
         }
-        RebuildHistory();
+        RebuildGroups();
     }
 
     public ObservableCollection<ChatMessage> Messages { get; }
+
+    public ObservableCollection<ChatDayGroup> Days { get; } = new();
+
+    public ChatDayGroup? SelectedDay
+    {
+        get => _selectedDay;
+        set
+        {
+            if (SetProperty(ref _selectedDay, value))
+            {
+                OnPropertyChanged(nameof(SelectedMessages));
+            }
+        }
+    }
+
+    public ObservableCollection<ChatMessageItem>? SelectedMessages => SelectedDay?.Messages;
 
     public string Input
     {
@@ -60,12 +77,6 @@ public sealed class ChatViewModel : ObservableObject
 
     public bool CanSend => !string.IsNullOrWhiteSpace(Input);
 
-    public string HistoryText
-    {
-        get => _historyText;
-        private set => SetProperty(ref _historyText, value);
-    }
-
     public ICommand SendCommand { get; }
     public ICommand CloseCommand { get; }
 
@@ -80,81 +91,91 @@ public sealed class ChatViewModel : ObservableObject
         await _chat.SendAsync(toSend);
     }
 
-    private void OnMessagesChanged(NotifyCollectionChangedEventArgs args)
+    private void RebuildGroups()
     {
-        if (args.Action == NotifyCollectionChangedAction.Add && args.NewItems != null)
-        {
-            foreach (var item in args.NewItems)
+        var previousKey = SelectedDay?.Key;
+
+        var grouped = Messages
+            .Select(m =>
             {
-                if (item is ChatMessage m)
+                var local = m.Timestamp.Kind == DateTimeKind.Unspecified ? m.Timestamp : m.Timestamp.ToLocalTime();
+                var day = local.Date;
+                var key = day.ToString("dd/MM/yyyy", CultureInfo.GetCultureInfo("fr-FR"));
+                return (m, day, key, local);
+            })
+            .GroupBy(x => new { x.day, x.key })
+            .OrderByDescending(g => g.Key.day)
+            .ToArray();
+
+        Days.Clear();
+        foreach (var g in grouped)
+        {
+            var group = new ChatDayGroup(g.Key.key, g.Key.day);
+            foreach (var entry in g.OrderBy(x => x.local))
+            {
+                group.Messages.Add(new ChatMessageItem(entry.m, entry.local));
+            }
+            Days.Add(group);
+        }
+
+        // Sélection par défaut: dernier jour (le plus récent).
+        if (Days.Count == 0)
+        {
+            SelectedDay = null;
+            return;
+        }
+
+        if (!string.IsNullOrWhiteSpace(previousKey))
+        {
+            SelectedDay = Days.FirstOrDefault(d => string.Equals(d.Key, previousKey, StringComparison.Ordinal)) ?? Days[0];
+        }
+        else
+        {
+            SelectedDay = Days[0];
+        }
+    }
+
+    public sealed class ChatDayGroup : ObservableObject
+    {
+        public ChatDayGroup(string key, DateTime date)
+        {
+            Key = key;
+            Date = date;
+        }
+
+        public string Key { get; }
+        public DateTime Date { get; }
+        public ObservableCollection<ChatMessageItem> Messages { get; } = new();
+    }
+
+    public sealed class ChatMessageItem
+    {
+        public ChatMessageItem(ChatMessage message, DateTime localTimestamp)
+        {
+            Message = message;
+            LocalTimestamp = localTimestamp;
+        }
+
+        public ChatMessage Message { get; }
+        public DateTime LocalTimestamp { get; }
+
+        public string DisplayText
+        {
+            get
+            {
+                var user = (Message.User ?? string.Empty).Trim();
+                var text = (Message.Text ?? string.Empty).TrimEnd();
+                var time = LocalTimestamp.ToString("HH:mm", CultureInfo.GetCultureInfo("fr-FR"));
+                if (string.IsNullOrWhiteSpace(user))
                 {
-                    AppendLine(m);
+                    return $"{time} {text}";
                 }
+                if (string.IsNullOrWhiteSpace(text))
+                {
+                    return $"{time} {user}";
+                }
+                return $"{time} {user} : {text}";
             }
-            return;
         }
-
-        RebuildHistory();
-    }
-
-    private void RebuildHistory()
-    {
-        _historyBuilder.Clear();
-        foreach (var m in Messages)
-        {
-            if (string.IsNullOrWhiteSpace(m.Text) && string.IsNullOrWhiteSpace(m.User))
-            {
-                continue;
-            }
-            if (_historyBuilder.Length > 0)
-            {
-                _historyBuilder.AppendLine();
-            }
-            _historyBuilder.Append(FormatLine(m));
-        }
-        HistoryText = EnsureTrailingEmptyLine(_historyBuilder.ToString());
-    }
-
-    private void AppendLine(ChatMessage m)
-    {
-        if (string.IsNullOrWhiteSpace(m.Text) && string.IsNullOrWhiteSpace(m.User))
-        {
-            return;
-        }
-        if (_historyBuilder.Length > 0)
-        {
-            _historyBuilder.AppendLine();
-        }
-        _historyBuilder.Append(FormatLine(m));
-        HistoryText = EnsureTrailingEmptyLine(_historyBuilder.ToString());
-    }
-
-    private static string FormatLine(ChatMessage m)
-    {
-        var user = (m.User ?? string.Empty).Trim();
-        var text = (m.Text ?? string.Empty).TrimEnd();
-
-        if (string.IsNullOrWhiteSpace(user))
-        {
-            return text;
-        }
-        if (string.IsNullOrWhiteSpace(text))
-        {
-            return user;
-        }
-        return $"{user} : {text}";
-    }
-
-    private static string EnsureTrailingEmptyLine(string text)
-    {
-        if (string.IsNullOrWhiteSpace(text))
-        {
-            return string.Empty;
-        }
-
-        // Une "ligne vide à la fin" = le texte se termine par un saut de ligne.
-        return text.EndsWith(Environment.NewLine, StringComparison.Ordinal)
-            ? text
-            : text + Environment.NewLine;
     }
 }

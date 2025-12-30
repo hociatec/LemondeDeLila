@@ -1,59 +1,98 @@
 <Window x:Class="client_win.Modules.Chat.Views.ChatWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Tchat" Height="500" Width="420"
+        Title="Tchat" Height="600" Width="720"
         WindowStartupLocation="CenterOwner"
         Background="#0B1523">
     <Window.Resources>
+        <LinearGradientBrush x:Key="ShellBackground" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#0F1D2D" Offset="0" />
+            <GradientStop Color="#1C3B5E" Offset="0.55" />
+            <GradientStop Color="#0E1724" Offset="1" />
+        </LinearGradientBrush>
         <SolidColorBrush x:Key="PanelBrush" Color="#12263C" />
         <SolidColorBrush x:Key="HighlightBrush" Color="#F2C14E" />
         <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+        <Style TargetType="GroupBox">
+            <Setter Property="Padding" Value="8" />
+            <Setter Property="FontSize" Value="14" />
+        </Style>
+        <Style TargetType="TextBox">
+            <Setter Property="Background" Value="#0C1523" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="BorderBrush" Value="#284C75" />
+            <Setter Property="BorderThickness" Value="1" />
+        </Style>
+        <Style TargetType="Button">
+            <Setter Property="Padding" Value="12 8" />
+        </Style>
     </Window.Resources>
-    <Grid Margin="8">
+
+    <Grid Margin="12" Background="{StaticResource ShellBackground}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <TextBlock Grid.Row="0" Text="{Binding Status}" Foreground="{StaticResource HighlightBrush}" Margin="4" TextWrapping="Wrap" />
+        <TextBlock Grid.Row="0"
+                   Text="{Binding Status}"
+                   Foreground="{StaticResource HighlightBrush}"
+                   Margin="4"
+                   TextWrapping="Wrap" />
 
-        <Border Grid.Row="1" Background="{StaticResource PanelBrush}" CornerRadius="6" Padding="8">
+        <Border Grid.Row="1" Background="{StaticResource PanelBrush}" CornerRadius="8" Padding="12" Margin="0 8 0 8">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
+
                 <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
                     <Label Content="Historique"
                            Foreground="White"
                            FontSize="14"
                            FontWeight="SemiBold"
                            Margin="0 0 12 0"
-                           Target="{Binding ElementName=HistoryBox}" />
+                           Target="{Binding ElementName=MessagesList}" />
                     <TextBlock Text="Aucun message pour le moment"
                                Foreground="#9CB2D1"
                                VerticalAlignment="Center"
                                Visibility="{Binding Messages.Count, Converter={StaticResource BoolToVisibility}, ConverterParameter=False}" />
                 </StackPanel>
-                <TextBox Grid.Row="1"
-                         x:Name="HistoryBox"
-                         Text="{Binding HistoryText, Mode=OneWay}"
-                         IsReadOnly="True"
-                         IsReadOnlyCaretVisible="True"
-                         AcceptsReturn="True"
-                         TextWrapping="Wrap"
-                         VerticalScrollBarVisibility="Auto"
-                         HorizontalScrollBarVisibility="Disabled"
-                         BorderThickness="0"
-                         Background="Transparent"
-                         Foreground="White"
-                         IsTabStop="True"
-                         TabIndex="0"
-                         SpellCheck.IsEnabled="False"
-                         TextBoxBase.IsUndoEnabled="False"
-                         AutomationProperties.Name="Historique des messages"
-                         AutomationProperties.HelpText="Historique en lecture seule. Utilisez les flèches pour lire ligne par ligne." />
+
+                <Grid Grid.Row="1" Margin="0 10 0 0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="180" />
+                        <ColumnDefinition Width="12" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <GroupBox Grid.Column="0" Header="Jours" Foreground="White" BorderBrush="#284C75" BorderThickness="1">
+                        <ListBox x:Name="DaysList"
+                                 ItemsSource="{Binding Days}"
+                                 SelectedItem="{Binding SelectedDay}"
+                                 DisplayMemberPath="Key"
+                                 TabIndex="0"
+                                 AutomationProperties.Name="Liste des jours" />
+                    </GroupBox>
+
+                    <GroupBox Grid.Column="2" Header="{Binding SelectedDay.Key}" Foreground="White" BorderBrush="#284C75" BorderThickness="1">
+                        <ListBox x:Name="MessagesList"
+                                 ItemsSource="{Binding SelectedMessages}"
+                                 TabIndex="1"
+                                 AutomationProperties.Name="Messages du jour">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding DisplayText}"
+                                               TextWrapping="Wrap"
+                                               Foreground="White"
+                                               Margin="0 2 0 6" />
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </GroupBox>
+                </Grid>
             </Grid>
         </Border>
 

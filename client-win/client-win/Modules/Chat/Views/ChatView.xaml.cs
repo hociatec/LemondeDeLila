@@ -9,6 +9,8 @@ namespace client_win.Modules.Chat.Views;
 
 public partial class ChatView : UserControl
 {
+    private INotifyCollectionChanged? _currentMessages;
+
     public ChatView()
     {
         InitializeComponent();
@@ -36,20 +38,65 @@ public partial class ChatView : UserControl
 
     private void OnLoaded(object sender, System.Windows.RoutedEventArgs e)
     {
-        if (DataContext is ChatViewModel vm && vm.Messages is INotifyCollectionChanged coll)
+        if (DaysList != null)
         {
-            coll.CollectionChanged += (_, _) => HistoryBox?.ScrollToEnd();
+            DaysList.SelectionChanged += (_, _) => ScrollMessagesToEnd();
         }
 
-        if (DataContext is INotifyPropertyChanged npc)
+        if (DataContext is ChatViewModel vm)
         {
-            npc.PropertyChanged += (_, args) =>
+            vm.PropertyChanged += (_, args) =>
             {
-                if (args.PropertyName == nameof(ChatViewModel.HistoryText))
+                if (args.PropertyName == nameof(ChatViewModel.SelectedDay) ||
+                    args.PropertyName == nameof(ChatViewModel.SelectedMessages))
                 {
-                    HistoryBox?.ScrollToEnd();
+                    AttachSelectedMessages(vm);
+                    ScrollMessagesToEnd();
                 }
             };
+
+            AttachSelectedMessages(vm);
+            ScrollMessagesToEnd();
+        }
+    }
+
+    private void AttachSelectedMessages(ChatViewModel vm)
+    {
+        if (_currentMessages != null)
+        {
+            _currentMessages.CollectionChanged -= OnSelectedMessagesChanged;
+            _currentMessages = null;
+        }
+
+        var selected = vm.SelectedMessages;
+        if (selected is INotifyCollectionChanged coll)
+        {
+            _currentMessages = coll;
+            coll.CollectionChanged += OnSelectedMessagesChanged;
+        }
+    }
+
+    private void OnSelectedMessagesChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        ScrollMessagesToEnd();
+    }
+
+    private void ScrollMessagesToEnd()
+    {
+        if (MessagesList == null)
+        {
+            return;
+        }
+        try
+        {
+            if (MessagesList.Items.Count > 0)
+            {
+                MessagesList.ScrollIntoView(MessagesList.Items[MessagesList.Items.Count - 1]);
+            }
+        }
+        catch
+        {
+            // ignore
         }
     }
 
