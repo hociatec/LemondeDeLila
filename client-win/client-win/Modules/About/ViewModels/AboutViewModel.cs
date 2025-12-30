@@ -51,6 +51,7 @@ public sealed class AboutViewModel : ObservableObject
 
     private const string TagShortcuts = "shortcuts";
     private const string TagInfo = "info";
+    private const string TagCheckUpdates = "checkUpdates";
 
     public AboutViewModel(
         ClientConfiguration config,
@@ -113,7 +114,7 @@ public sealed class AboutViewModel : ObservableObject
 
     public bool CanCheckUpdates => !IsBusy;
 
-    public bool ShowItemsList => _page == AboutPage.Root;
+    public bool ShowItemsList => _page is AboutPage.Root or AboutPage.Info;
     public bool ShowShortcuts => _page == AboutPage.Shortcuts;
     public bool ShowInfo => _page == AboutPage.Info;
 
@@ -210,9 +211,7 @@ public sealed class AboutViewModel : ObservableObject
 
         Title = "Informations sur l'application";
         Details = string.Empty;
-        Items.Clear();
-        SelectedItem = null;
-        Status = "Bouton : Rechercher une mise à jour. Échap : retour.";
+        Status = "Flèches : lire. Entrée : rechercher une mise à jour. Échap : retour.";
 
         RefreshLocalInfo();
         _ = CheckUpdatesAsync();
@@ -226,21 +225,71 @@ public sealed class AboutViewModel : ObservableObject
         }
 
         var selected = SelectedItem;
-        if (_page != AboutPage.Root || selected?.Tag is not string tag)
+        if (selected?.Tag is not string tag)
         {
             return;
         }
 
-        if (string.Equals(tag, TagShortcuts, StringComparison.OrdinalIgnoreCase))
+        if (_page == AboutPage.Root &&
+            string.Equals(tag, TagShortcuts, StringComparison.OrdinalIgnoreCase))
         {
             BuildShortcuts();
             return;
         }
 
-        if (string.Equals(tag, TagInfo, StringComparison.OrdinalIgnoreCase))
+        if (_page == AboutPage.Root &&
+            string.Equals(tag, TagInfo, StringComparison.OrdinalIgnoreCase))
         {
             BuildInfo();
+            return;
         }
+
+        if (_page == AboutPage.Info &&
+            string.Equals(tag, TagCheckUpdates, StringComparison.OrdinalIgnoreCase))
+        {
+            await CheckUpdatesAsync().ConfigureAwait(true);
+        }
+    }
+
+    private void RebuildInfoItems()
+    {
+        if (_page != AboutPage.Info)
+        {
+            return;
+        }
+
+        var previousTag = SelectedItem?.Tag;
+        var previousLabel = SelectedItem?.Label;
+
+        Items.Clear();
+        Items.Add(new AboutMenuItem($"Nom : {AppName}"));
+        Items.Add(new AboutMenuItem($"Version actuelle : {CurrentVersion}"));
+        Items.Add(new AboutMenuItem($"Dernière mise à jour locale : {LocalUpdatedAt}"));
+        Items.Add(new AboutMenuItem($"Version serveur : {ServerVersion}"));
+        Items.Add(new AboutMenuItem($"Date de publication serveur : {ServerPublishedAt}"));
+        Items.Add(new AboutMenuItem("Rechercher une mise à jour", tag: TagCheckUpdates));
+
+        if (!string.IsNullOrWhiteSpace(previousTag))
+        {
+            SelectedItem = Items.FirstOrDefault(i =>
+                string.Equals(i.Tag, previousTag, StringComparison.OrdinalIgnoreCase));
+            if (SelectedItem != null)
+            {
+                return;
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(previousLabel))
+        {
+            SelectedItem = Items.FirstOrDefault(i =>
+                string.Equals(i.Label, previousLabel, StringComparison.OrdinalIgnoreCase));
+            if (SelectedItem != null)
+            {
+                return;
+            }
+        }
+
+        SelectedItem = Items.FirstOrDefault();
     }
 
     private void RefreshLocalInfo()
@@ -273,6 +322,8 @@ public sealed class AboutViewModel : ObservableObject
         {
             LocalUpdatedAt = "Inconnue";
         }
+
+        RebuildInfoItems();
     }
 
     private async Task CheckUpdatesAsync()
@@ -331,6 +382,8 @@ public sealed class AboutViewModel : ObservableObject
             {
                 UpdateCheckStatus = "Vous êtes à jour.";
             }
+
+            RebuildInfoItems();
         }
         catch (Exception ex)
         {

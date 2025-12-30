@@ -89,7 +89,13 @@
                 </Grid.RowDefinitions>
 
                 <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
                     <ListBox x:Name="ItemsList"
+                             Grid.Row="0"
                              Visibility="{Binding ShowItemsList, Converter={StaticResource BoolToVis}}"
                              ItemsSource="{Binding Items}"
                              SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
@@ -102,12 +108,14 @@
                              AutomationProperties.LabeledBy="{Binding ElementName=TitleText}">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding Label}" />
+                                <TextBlock Text="{Binding Label}"
+                                           TextWrapping="Wrap" />
                             </DataTemplate>
                         </ListBox.ItemTemplate>
                     </ListBox>
 
                     <TextBox x:Name="ShortcutsBox"
+                             Grid.Row="0"
                              Visibility="{Binding ShowShortcuts, Converter={StaticResource BoolToVis}}"
                              Text="{Binding ShortcutsText, Mode=OneWay}"
                              Style="{StaticResource InputTextBox}"
@@ -119,35 +127,14 @@
                              HorizontalScrollBarVisibility="Disabled"
                              AutomationProperties.Name="Raccourcis" />
 
-                    <StackPanel Visibility="{Binding ShowInfo, Converter={StaticResource BoolToVis}}"
-                                Orientation="Vertical">
-                        <TextBlock Text="{Binding AppName, StringFormat=Nom : {0}}"
-                                   Foreground="White" FontSize="16" Margin="0 0 0 6" />
-                        <TextBlock Text="{Binding CurrentVersion, StringFormat=Version actuelle : {0}}"
-                                   Foreground="#BFD0E6" FontSize="14" Margin="0 0 0 6" />
-                        <TextBlock Text="{Binding LocalUpdatedAt, StringFormat=Dernière mise à jour locale : {0}}"
-                                   Foreground="#BFD0E6" FontSize="14" Margin="0 0 0 6" />
-                        <TextBlock Text="{Binding ServerVersion, StringFormat=Version serveur : {0}}"
-                                   Foreground="#BFD0E6" FontSize="14" Margin="0 0 0 6" />
-                        <TextBlock Text="{Binding ServerPublishedAt, StringFormat=Date de publication serveur : {0}}"
-                                   Foreground="#BFD0E6" FontSize="14" Margin="0 0 0 12" />
-
-                        <Button Content="Rechercher une mise à jour"
-                                x:Name="UpdateButton"
-                                Command="{Binding CheckUpdatesCommand}"
-                                IsEnabled="{Binding CanCheckUpdates}"
-                                Padding="10 6"
-                                Background="#214570"
-                                Foreground="White"
-                                FontWeight="SemiBold"
-                                HorizontalAlignment="Left" />
-                        <TextBlock Text="{Binding UpdateCheckStatus}"
-                                   Foreground="{StaticResource HighlightBrush}"
-                                   FontSize="14"
-                                   TextWrapping="Wrap"
-                                   Margin="0,12,0,0"
-                                   AutomationProperties.LiveSetting="Polite" />
-                    </StackPanel>
+                    <TextBlock Grid.Row="1"
+                               Visibility="{Binding ShowInfo, Converter={StaticResource BoolToVis}}"
+                               Text="{Binding UpdateCheckStatus}"
+                               Foreground="{StaticResource HighlightBrush}"
+                               FontSize="14"
+                               TextWrapping="Wrap"
+                               Margin="0,12,0,0"
+                               AutomationProperties.LiveSetting="Polite" />
                 </Grid>
 
                 <TextBlock Grid.Row="1"

@@ -75,12 +75,6 @@ public partial class AboutView : UserControl
             return;
         }
 
-        if (UpdateButton != null && UpdateButton.IsVisible)
-        {
-            UpdateButton.Focus();
-            return;
-        }
-
         Focus();
     }
 
@@ -136,4 +130,3 @@ public partial class AboutView : UserControl
         ItemsList.ItemContainerGenerator.StatusChanged += handler;
     }
 }
-
