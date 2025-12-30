@@ -38,6 +38,7 @@ namespace client_win
         private readonly IPresenceLauncher _presenceUi;
         private readonly IOptionsService _options;
         private bool _exitConfirmed;
+        private bool _exitPromptOpen;
 
         public INavigationService Navigation => _navigation;
 
@@ -64,7 +65,7 @@ namespace client_win
             Closing += OnClosing;
         }
 
-        private async void OnClosing(object? sender, CancelEventArgs e)
+        private void OnClosing(object? sender, CancelEventArgs e)
         {
             if (_exitConfirmed)
             {
@@ -76,26 +77,42 @@ namespace client_win
             }
 
             e.Cancel = true;
-            try
+            if (_exitPromptOpen)
             {
-                var ok = await _dialogs.Confirm(
-                        "Quitter",
-                        "Voulez-vous vraiment quitter Le Monde de Lila ?",
-                        okText: "Quitter",
-                        cancelText: "Annuler")
-                    .ConfigureAwait(true);
-                if (ok == true)
+                return;
+            }
+            _exitPromptOpen = true;
+
+            // IMPORTANT:
+            // Ne pas afficher un dialogue dans le handler Closing, sinon WPF peut considérer la fenêtre "en cours de fermeture"
+            // et lever l'exception: "Impossible d'affecter Visible à Visibility... lorsqu'un objet Window est en cours de fermeture."
+            Dispatcher.BeginInvoke(async () =>
+            {
+                try
                 {
-                    _exitConfirmed = true;
-                    Close();
+                    var ok = await _dialogs.Confirm(
+                            "Quitter",
+                            "Voulez-vous vraiment quitter Le Monde de Lila ?",
+                            okText: "Quitter",
+                            cancelText: "Annuler")
+                        .ConfigureAwait(true);
+                    if (ok == true)
+                    {
+                        _exitConfirmed = true;
+                        Application.Current.Shutdown();
+                    }
                 }
-            }
-            catch
-            {
-                // En cas de problème de dialogue, ne pas bloquer la fermeture.
-                _exitConfirmed = true;
-                Close();
-            }
+                catch
+                {
+                    // En cas de problème de dialogue, ne pas bloquer la fermeture.
+                    _exitConfirmed = true;
+                    Application.Current.Shutdown();
+                }
+                finally
+                {
+                    _exitPromptOpen = false;
+                }
+            });
         }
 
         private void OnPreviewKeyDown(object sender, KeyEventArgs e)
