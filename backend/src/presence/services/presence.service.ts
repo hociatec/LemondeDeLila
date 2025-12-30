@@ -133,6 +133,8 @@ export class PresenceService implements OnModuleDestroy {
           type: 'error',
           payload: {
             message: 'Accès au tchat refusé.',
+            reason: ban.reason ?? null,
+            until: ban.until ? ban.until.toISOString() : null,
           },
         });
         try {
@@ -157,6 +159,12 @@ export class PresenceService implements OnModuleDestroy {
   async isChatBannedNow(userId: number): Promise<boolean> {
     const ban = await this.getChatBan(userId);
     return !!(ban?.until && ban.until.getTime() > Date.now());
+  }
+
+  async getChatBanInfo(
+    userId: number,
+  ): Promise<{ until: Date | null; reason: string | null } | null> {
+    return this.getChatBan(userId);
   }
 
   private async getChatBan(

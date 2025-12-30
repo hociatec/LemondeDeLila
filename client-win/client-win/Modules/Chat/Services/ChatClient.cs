@@ -21,6 +21,7 @@ public sealed class ChatClient : IAsyncDisposable
     public event Action<IReadOnlyList<ChatMessage>>? HistoryReceived;
     public event Action<ChatMessage>? MessageReceived;
     public event Action<string>? ErrorReceived;
+    public event Action<ChatServerError>? ErrorDetailsReceived;
     public event Action<ChatState>? StateChanged;
 
     public ChatClient(Uri endpoint, IWebSocketConnection transport)
@@ -104,6 +105,20 @@ public sealed class ChatClient : IAsyncDisposable
                                  p.TryGetProperty("message", out var m)
                     ? m.GetString() ?? "Erreur tchat"
                     : "Erreur tchat";
+                string? reason = null;
+                DateTime? until = null;
+                if (root.TryGetProperty("payload", out var payload))
+                {
+                    if (payload.TryGetProperty("reason", out var r))
+                    {
+                        reason = r.GetString();
+                    }
+                    if (payload.TryGetProperty("until", out var u) && u.TryGetDateTime(out var dt))
+                    {
+                        until = dt;
+                    }
+                }
+                ErrorDetailsReceived?.Invoke(new ChatServerError(message, reason, until));
                 ErrorReceived?.Invoke(message);
             }
         }

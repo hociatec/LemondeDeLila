@@ -30,6 +30,7 @@ public sealed class ChatService : IChatService
     public ObservableCollection<ChatMessage> Messages { get; } = new();
     public ChatState State { get; private set; } = ChatState.Disconnected;
     public string StatusMessage { get; private set; } = "Tchat fermé.";
+    public ChatServerError? LastServerError { get; private set; }
 
     public event Action<string>? StatusChanged;
     public event Action<string>? Error;
@@ -50,6 +51,14 @@ public sealed class ChatService : IChatService
 
         _client.StateChanged += s => _ = _dispatcher.InvokeAsync(() => UpdateState(s), DispatcherPriority.Background);
         _client.ErrorReceived += msg => _ = _dispatcher.InvokeAsync(() => SetStatus(msg, isError: true), DispatcherPriority.Background);
+        _client.ErrorDetailsReceived += err =>
+        {
+            _ = _dispatcher.InvokeAsync(() =>
+            {
+                LastServerError = err;
+                SetStatus(err.Message, isError: true);
+            }, DispatcherPriority.Background);
+        };
         _client.HistoryReceived += history =>
         {
             _ = _dispatcher.InvokeAsync(() =>
@@ -80,6 +89,7 @@ public sealed class ChatService : IChatService
             return false;
         }
 
+        LastServerError = null;
         var gate = new TaskCompletionSource<ChatState>(TaskCreationOptions.RunContinuationsAsynchronously);
         var lastState = ChatState.Disconnected;
         string? lastError = null;

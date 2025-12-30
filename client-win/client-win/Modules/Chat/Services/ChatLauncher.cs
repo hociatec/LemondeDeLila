@@ -40,6 +40,18 @@ public sealed class ChatLauncher : IChatLauncher
         bool opened = await _chat.OpenAsync().ConfigureAwait(false);
         if (!opened)
         {
+            var err = _chat.LastServerError;
+            var message = err?.Message ?? _chat.StatusMessage ?? "Connexion tchat échouée.";
+            if (!string.IsNullOrWhiteSpace(err?.Reason))
+            {
+                message += $"\n\nMotif : {err!.Reason}";
+            }
+            if (err?.Until is DateTime until)
+            {
+                message += $"\nJusqu'au : {until.ToLocalTime():dd/MM/yyyy HH:mm}";
+            }
+
+            await _dialogs.ShowError("Tchat", message).ConfigureAwait(true);
             return "Connexion tchat échouée.";
         }
 

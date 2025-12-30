@@ -48,6 +48,7 @@ public sealed partial class AdminViewModel : ObservableObject
     private string _roleDefinitionOriginalName = string.Empty;
     private string _currentEditMode = string.Empty;
     private AdminChatMessageDto[] _loadedChatMessages = Array.Empty<AdminChatMessageDto>();
+    private bool _chatIncludeDeleted;
     private AdminChatMessageDto? _selectedChatMessage;
     private string _chatBanReason = string.Empty;
     private string _chatBanDays = "30";
@@ -73,7 +74,7 @@ public sealed partial class AdminViewModel : ObservableObject
         new("admin.logs", "Logs", "Télécharger et consulter les journaux"),
         new("admin.catalog", "Catalogue", "Valider l’état des jeux et catégories"),
         new("admin.stats", "Livre des contes", "Consulter le livre des contes"),
-        new("admin.chat", "Chat", "Gérer et surveiller la messagerie"),
+        new("admin.chat", "Tchat", "Gérer et surveiller la messagerie"),
         new("game", "Parties", "Actions génériques sur les parties")
     };
     private readonly List<PermissionModuleState> _permissionModules = PermissionModuleDescriptors.Select(d => new PermissionModuleState(d)).ToList();

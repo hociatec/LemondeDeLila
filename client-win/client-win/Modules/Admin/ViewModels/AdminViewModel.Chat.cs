@@ -133,10 +133,17 @@ public sealed partial class AdminViewModel
             Items.Clear();
 
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-            _loadedChatMessages = await _admin.GetChatMessagesAsync(limit: 200, includeDeleted: false, cts.Token).ConfigureAwait(true);
+            _loadedChatMessages = await _admin.GetChatMessagesAsync(limit: 200, includeDeleted: _chatIncludeDeleted, cts.Token).ConfigureAwait(true);
 
             Items.Add(new AdminMenuItem("Rafraîchir", tag: "chat.refresh"));
+            Items.Add(new AdminMenuItem(
+                $"Inclure les messages supprimés : {(_chatIncludeDeleted ? "Oui" : "Non")}",
+                tag: "chat.includeDeleted.toggle",
+                isCheckable: true,
+                isChecked: _chatIncludeDeleted));
             Items.Add(new AdminMenuItem("Réinitialiser le tchat (supprimer tous les messages)", tag: "chat.clear"));
+
+            Details = $"Messages chargés : {_loadedChatMessages.Length}";
 
             var groups = _loadedChatMessages
                 .Select(m =>
@@ -149,6 +156,11 @@ public sealed partial class AdminViewModel
                 .GroupBy(x => x.day)
                 .ToArray();
 
+            if (groups.Length == 0)
+            {
+                Items.Add(new AdminMenuItem("Aucun message."));
+            }
+
             foreach (var g in groups)
             {
                 Items.Add(new AdminMenuItem($"--- {g.Key:dd/MM/yyyy} ---"));
@@ -159,7 +171,8 @@ public sealed partial class AdminViewModel
                     var text = (msg.Text ?? string.Empty).Replace("\r", " ").Replace("\n", " ");
                     if (text.Length > 120) text = text[..120] + "…";
                     var stamp = entry.local.ToString("HH:mm", CultureInfo.GetCultureInfo("fr-FR"));
-                    Items.Add(new AdminMenuItem($"[{stamp}] {user}: {text}", tag: msg));
+                    var deletedSuffix = msg.DeletedAt.HasValue ? " (supprimé)" : string.Empty;
+                    Items.Add(new AdminMenuItem($"[{stamp}] {user}: {text}{deletedSuffix}", tag: msg));
                 }
             }
 
