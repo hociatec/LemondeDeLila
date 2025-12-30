@@ -33,7 +33,7 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
     private readonly GamePlayShortcutsViewModel _shortcuts;
     private readonly GamePlayConnectionController _connection;
     private readonly GamePlayAnnouncementRouter _announcementRouter;
-    private DateTime _forceTurnAnnouncementUntilUtc;
+    private int _pendingForcedTurnAnnouncements;
     private int? _lastStateTurnPlayerId;
 
     private GameSession? _session;
@@ -590,11 +590,12 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
         if (session == null) return;
         try
         {
-            _forceTurnAnnouncementUntilUtc = DateTime.UtcNow.AddSeconds(3);
+            _pendingForcedTurnAnnouncements = Math.Min(3, _pendingForcedTurnAnnouncements + 1);
             await session.RequestTurnAsync().ConfigureAwait(false);
         }
         catch (Exception ex)
         {
+            _pendingForcedTurnAnnouncements = Math.Max(0, _pendingForcedTurnAnnouncements - 1);
             Log.Error(ex, "Erreur lors de la demande de game.turn");
         }
     }
@@ -607,12 +608,8 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
     {
         _dispatcher.InvokeAsync(() =>
         {
-            var now = DateTime.UtcNow;
-            var force = now <= _forceTurnAnnouncementUntilUtc;
-            if (force)
-            {
-                _forceTurnAnnouncementUntilUtc = DateTime.MinValue;
-            }
+            var force = _pendingForcedTurnAnnouncements > 0;
+            if (force) _pendingForcedTurnAnnouncements = Math.Max(0, _pendingForcedTurnAnnouncements - 1);
             _announcementRouter.TryHandleTurnUpdate(
                 info,
                 msg => MessageReceived?.Invoke(msg),

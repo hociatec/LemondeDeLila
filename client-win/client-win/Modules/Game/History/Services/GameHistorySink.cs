@@ -34,36 +34,19 @@ public sealed class GameHistorySink : IGameHistorySink
                         continue;
                     }
 
+                    var isTurnLine =
+                        cleaned.StartsWith("C'est au tour de", StringComparison.OrdinalIgnoreCase) ||
+                        cleaned.StartsWith("Tour actuel", StringComparison.OrdinalIgnoreCase);
+
                     // Évite les doublons consécutifs (ex: "Table démarrée." deux fois).
                     var count = _history.Entries.Count;
-                    if (count > 0)
+                    if (!isTurnLine && count > 0)
                     {
                         var last = _history.Entries[count - 1] ?? string.Empty;
                         if (string.Equals(last.Trim(), cleaned, StringComparison.Ordinal))
                         {
                             continue;
                         }
-                    }
-
-                    // Évite les doublons de tour trop rapprochés (certains jeux le renvoient plusieurs fois).
-                    var shouldSkip = false;
-                    if (cleaned.StartsWith("C'est au tour de", StringComparison.OrdinalIgnoreCase) ||
-                        cleaned.StartsWith("Tour actuel", StringComparison.OrdinalIgnoreCase))
-                    {
-                        for (var i = Math.Max(0, count - 5); i < count; i++)
-                        {
-                            var prev = (_history.Entries[i] ?? string.Empty).Trim();
-                            if (string.Equals(prev, cleaned, StringComparison.Ordinal))
-                            {
-                                shouldSkip = true;
-                                break;
-                            }
-                        }
-                    }
-
-                    if (shouldSkip)
-                    {
-                        continue;
                     }
 
                     _history.Entries.Add(cleaned);
