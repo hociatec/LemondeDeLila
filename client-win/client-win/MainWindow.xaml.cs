@@ -18,6 +18,7 @@ using client_win.Modules.Network.Services;
 using System.Windows.Input;
 using client_win.Modules.Updates;
 using client_win.Core;
+using System.Net.Http.Json;
 
 namespace client_win
 {
@@ -97,12 +98,7 @@ namespace client_win
             // Ne pas gêner le dev : les mises à jour ClickOnce ne s'appliquent pas sous dotnet run.
             if (UpdateEnvironment.IsRunningUnderDotnetHost())
             {
-                return;
-            }
-
-            // Si ce n'est pas une installation ClickOnce, on ne propose pas automatiquement ici.
-            if (!UpdateEnvironment.IsLikelyClickOnceInstall())
-            {
+                Serilog.Log.Information("Startup update check: skipped (dotnet host).");
                 return;
             }
 
@@ -110,18 +106,47 @@ namespace client_win
             {
                 using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
                 var publisher = _host.Services.GetRequiredService<IClientUpdatePublisher>();
+
+                // Prefer server-side comparison (current -> updateAvailable) when supported.
                 var latest = await publisher.GetLatestPublishedVersionAsync(cts.Token).ConfigureAwait(true);
                 if (string.IsNullOrWhiteSpace(latest))
                 {
+                    Serilog.Log.Information("Startup update check: no server version.");
                     return;
                 }
 
-                var current = TryParseVersion(AppInfo.GetShortVersion());
-                var available = TryParseVersion(latest);
-                if (current == null || available == null || available <= current)
+                var currentVersion = AppInfo.GetShortVersion();
+                bool updateAvailable;
+                try
                 {
+                    var endpoint = new Uri(_host.Configuration.HttpBase, $"../client/version?current={Uri.EscapeDataString(currentVersion)}");
+                    using var http = new System.Net.Http.HttpClient();
+                    var payload = await http.GetFromJsonAsync<ServerVersionPayload>(endpoint, cts.Token).ConfigureAwait(true);
+                    updateAvailable = payload?.UpdateAvailable ?? false;
+                }
+                catch
+                {
+                    // Fallback to local comparison if the server doesn't support it.
+                    var current = TryParseVersion(currentVersion);
+                    var available = TryParseVersion(latest);
+                    updateAvailable = current != null && available != null && available > current;
+                }
+
+                if (!updateAvailable)
+                {
+                    Serilog.Log.Information(
+                        "Startup update check: up-to-date. current={Current} latest={Latest}",
+                        currentVersion,
+                        latest);
                     return;
                 }
+
+                var isClickOnce = UpdateEnvironment.IsLikelyClickOnceInstall();
+                Serilog.Log.Information(
+                    "Startup update check: update available. current={Current} latest={Latest} clickOnce={ClickOnce}",
+                    currentVersion,
+                    latest,
+                    isClickOnce);
 
                 var confirm = await _dialogs.Confirm(
                         "Mise à jour",
@@ -129,6 +154,18 @@ namespace client_win
                     .ConfigureAwait(true);
                 if (confirm != true)
                 {
+                    Serilog.Log.Information("Startup update check: user declined update. latest={Latest}", latest);
+                    return;
+                }
+
+                if (!isClickOnce)
+                {
+                    await _dialogs.ShowInfo(
+                            "Mise à jour",
+                            "Mise à jour disponible.\n\n" +
+                            "Ce client n'est pas détecté comme une installation ClickOnce : les mises à jour automatiques ne s'appliquent pas ici.\n" +
+                            "Relance l'application depuis le menu Démarrer / raccourci ClickOnce pour appliquer la mise à jour.")
+                        .ConfigureAwait(true);
                     return;
                 }
 
@@ -142,10 +179,16 @@ namespace client_win
                         .ConfigureAwait(true);
                 }
             }
-            catch
+            catch (Exception ex)
             {
                 // Best-effort : pas de popup d'erreur au démarrage si le réseau est indisponible.
+                Serilog.Log.Debug(ex, "Startup update check: failed.");
             }
+        }
+
+        private sealed class ServerVersionPayload
+        {
+            public bool? UpdateAvailable { get; set; }
         }
 
         private static Version? TryParseVersion(string? value)

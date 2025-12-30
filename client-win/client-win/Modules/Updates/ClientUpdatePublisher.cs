@@ -255,6 +255,9 @@ public sealed class ClientUpdatePublisher : IClientUpdatePublisher
             $"/p:InstallUrl={Quote(baseUrl)}",
             $"/p:UpdateUrl={Quote(baseUrl)}",
             !string.IsNullOrWhiteSpace(clickOnceVersion) ? $"/p:ApplicationVersion={Quote(clickOnceVersion)}" : string.Empty,
+            !string.IsNullOrWhiteSpace(clickOnceVersion) ? $"/p:Version={Quote(clickOnceVersion)}" : string.Empty,
+            !string.IsNullOrWhiteSpace(clickOnceVersion) ? $"/p:AssemblyVersion={Quote(NormalizeAssemblyVersion(clickOnceVersion!))}" : string.Empty,
+            !string.IsNullOrWhiteSpace(clickOnceVersion) ? $"/p:FileVersion={Quote(NormalizeAssemblyVersion(clickOnceVersion!))}" : string.Empty,
         }.Where(s => !string.IsNullOrWhiteSpace(s));
 
         var args = string.Join(' ', msbuildArgs);
@@ -303,6 +306,39 @@ public sealed class ClientUpdatePublisher : IClientUpdatePublisher
         }
 
         return new ClientUpdatePublishResult(true, "Build OK.");
+    }
+
+    private static string NormalizeAssemblyVersion(string version)
+    {
+        var raw = (version ?? string.Empty).Trim();
+        if (string.IsNullOrWhiteSpace(raw))
+        {
+            return "1.0.0.0";
+        }
+
+        var parts = raw.Split('.', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        if (parts.Length >= 4)
+        {
+            return raw;
+        }
+
+        // Ensure 4 components for AssemblyVersion/FileVersion.
+        if (parts.Length == 3)
+        {
+            return $"{parts[0]}.{parts[1]}.{parts[2]}.0";
+        }
+
+        if (parts.Length == 2)
+        {
+            return $"{parts[0]}.{parts[1]}.0.0";
+        }
+
+        if (parts.Length == 1)
+        {
+            return $"{parts[0]}.0.0.0";
+        }
+
+        return "1.0.0.0";
     }
 
     private static string? FindFullMsBuildExe()

@@ -286,7 +286,8 @@ public sealed class AboutViewModel : ObservableObject
         UpdateCheckStatus = "Recherche de mise à jour...";
         try
         {
-            var endpoint = new Uri(_config.HttpBase, "../client/version");
+            var current = AppInfo.GetShortVersion();
+            var endpoint = new Uri(_config.HttpBase, $"../client/version?current={Uri.EscapeDataString(current)}");
             using var http = new HttpClient();
             var dto = await http.GetFromJsonAsync<ClientVersionDto>(endpoint, CancellationToken.None).ConfigureAwait(true);
 
@@ -309,9 +310,16 @@ public sealed class AboutViewModel : ObservableObject
                 ServerPublishedAt = "Inconnue";
             }
 
-            var current = TryParseVersion(CurrentVersion);
-            var available = TryParseVersion(ServerVersion);
-            if (current != null && available != null && available > current)
+            var isAvailable = dto?.UpdateAvailable;
+            if (isAvailable == null)
+            {
+                // Fallback (ancien backend): comparaison côté client.
+                var parsedCurrent = TryParseVersion(CurrentVersion);
+                var parsedAvailable = TryParseVersion(ServerVersion);
+                isAvailable = parsedCurrent != null && parsedAvailable != null && parsedAvailable > parsedCurrent;
+            }
+
+            if (isAvailable == true)
             {
                 UpdateCheckStatus = $"Mise à jour disponible : {ServerVersion}. Redémarre l'application pour l'appliquer.";
             }
@@ -412,5 +420,8 @@ public sealed class AboutViewModel : ObservableObject
 
         [JsonPropertyName("publishedAt")]
         public string? PublishedAt { get; set; }
+
+        [JsonPropertyName("updateAvailable")]
+        public bool? UpdateAvailable { get; set; }
     }
 }
