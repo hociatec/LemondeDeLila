@@ -177,20 +177,10 @@ public sealed class RoomSession : IAsyncDisposable
                 ? actionProp.GetString() ?? string.Empty
                 : string.Empty;
 
-            var message = action switch
-            {
-                "room.start" => "Démarrage.",
-                "room.reset" => "Réinitialisation.",
-                "bot.add" => "Ajout du bot.",
-                "bot.remove" => "Retrait du bot.",
-                "room.toggle-privacy" => "Changement de visibilité.",
-                _ => string.Empty
-            };
-
-            if (!string.IsNullOrWhiteSpace(message))
-            {
-                CommandAckReceived?.Invoke(message);
-            }
+            // L'ACK de commande peut être utile pour le debug, mais côté UX (raccourcis table)
+            // l'utilisateur ne veut pas de messages "préfix" type "Ajout du bot.", etc.
+            // On ignore donc volontairement les ACKs.
+            _ = action;
         }
         catch
         {
