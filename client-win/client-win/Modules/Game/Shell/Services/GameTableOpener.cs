@@ -69,7 +69,15 @@ public sealed class GameTableOpener : IGameTableOpener
 
         GameTableBindings? bindings = null;
 
-        Task Start() => session.SendCommandAsync("room.start", payload: null);
+        Task Start()
+        {
+            // Feedback immédiat (même si le backend met du temps à répondre).
+            foreach (var line in GameHistoryMessageSplitter.Split("Démarrage demandé."))
+            {
+                tableVm.History.Entries.Add(line);
+            }
+            return session.SendCommandAsync("room.start", payload: null);
+        }
         Task Reset() => session.SendCommandAsync("room.reset", payload: null);
         Task AddBot() => bindings?.AddBotAsync() ?? Task.CompletedTask;
         Task RemoveBot() => bindings?.RemoveBotAsync() ?? Task.CompletedTask;

@@ -295,15 +295,18 @@ export class RoomService {
         where: { room: { id: room.id }, leftAt: IsNull() },
         relations: ['user'],
       });
-      await this.stats.startMatch({
-        roomId: room.id,
-        gameType: room.gameType,
-        humans: activeParticipants.map((p) => ({
-          id: p.user.id,
-          username: p.user.username,
-        })),
-        botsCount: bots,
-      });
+      // Ne pas bloquer le démarrage côté client sur les écritures statistiques (best-effort).
+      void this.stats
+        .startMatch({
+          roomId: room.id,
+          gameType: room.gameType,
+          humans: activeParticipants.map((p) => ({
+            id: p.user.id,
+            username: p.user.username,
+          })),
+          botsCount: bots,
+        })
+        .catch(() => undefined);
     } catch {
       // best effort
     }
@@ -319,7 +322,8 @@ export class RoomService {
     this.ensureOwner(room, userId);
     if (String(room.status ?? '').toLowerCase() === 'started') {
       try {
-        await this.stats.endMatchOnReset(room.id);
+        // Best-effort: ne pas ralentir le reset côté client.
+        void this.stats.endMatchOnReset(room.id).catch(() => undefined);
       } catch {
         // best effort
       }

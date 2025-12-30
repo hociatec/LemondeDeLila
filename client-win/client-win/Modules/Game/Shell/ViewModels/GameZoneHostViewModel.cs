@@ -118,7 +118,6 @@ public sealed class GameZoneHostViewModel : ObservableObject
 
     private async Task StartAsync()
     {
-        StatusRequested?.Invoke("Démarrage de la table.");
         await _onStart().ConfigureAwait(true);
     }
 
@@ -136,43 +135,36 @@ public sealed class GameZoneHostViewModel : ObservableObject
             return;
         }
 
-        StatusRequested?.Invoke("Réinitialisation de la table.");
         await _onReset().ConfigureAwait(true);
     }
 
     private async Task AddBotAsync()
     {
-        StatusRequested?.Invoke("Ajout d'un bot.");
         await _onAddBot().ConfigureAwait(true);
     }
 
     private async Task RemoveBotAsync()
     {
-        StatusRequested?.Invoke("Retrait d'un bot.");
         await _onRemoveBot().ConfigureAwait(true);
     }
 
     private async Task AnnouncePlayersAsync()
     {
-        StatusRequested?.Invoke("Liste des joueurs.");
         await _onAnnouncePlayers().ConfigureAwait(true);
     }
 
     private async Task AnnounceInfoAsync()
     {
-        StatusRequested?.Invoke("Informations.");
         await _onAnnounceInfo().ConfigureAwait(true);
     }
 
     private async Task TogglePrivacyAsync()
     {
-        StatusRequested?.Invoke("Changement de visibilité.");
         await _onTogglePrivacy().ConfigureAwait(true);
     }
 
     private async Task ToggleRoleAsync()
     {
-        StatusRequested?.Invoke("Changement de mode.");
         await _onToggleRole().ConfigureAwait(true);
     }
 
@@ -189,7 +181,6 @@ public sealed class GameZoneHostViewModel : ObservableObject
             return;
         }
 
-        StatusRequested?.Invoke("Retour au menu principal.");
         await _onQuit().ConfigureAwait(true);
     }
 }

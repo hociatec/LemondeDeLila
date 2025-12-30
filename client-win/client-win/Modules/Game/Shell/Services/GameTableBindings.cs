@@ -159,7 +159,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
                     _tableView.Dispatcher.BeginInvoke(
                         DispatcherPriority.Input,
                         new Action(_tableView.RequestFocusGameZone));
-                }, DispatcherPriority.Background);
+                }, DispatcherPriority.Normal);
                 return;
             }
 
@@ -193,7 +193,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
                     _ = _tableView.Dispatcher.BeginInvoke(
                         DispatcherPriority.Input,
                         new Action(_tableView.RequestFocusGameZone));
-                }, DispatcherPriority.Background);
+                }, DispatcherPriority.Normal);
             }
         };
         _session.RoomUpdated += _onRoomUpdated;
