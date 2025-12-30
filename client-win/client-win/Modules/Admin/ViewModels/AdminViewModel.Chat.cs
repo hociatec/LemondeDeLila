@@ -9,6 +9,8 @@ namespace client_win.Modules.Admin.ViewModels;
 
 public sealed partial class AdminViewModel
 {
+    private sealed record ChatDayTag(DateTime DayLocalDate);
+
     private async Task LoadChatAccessAsync()
     {
         if (IsBusy) return;
@@ -123,55 +125,11 @@ public sealed partial class AdminViewModel
         IsBusy = true;
         try
         {
-            _page = AdminPage.Chat;
-            Title = "Tchat (modération)";
-            Details = string.Empty;
-            IsTextInputVisible = false;
-            IsSecondaryInputVisible = false;
-
             Status = "Chargement des messages...";
-            Items.Clear();
 
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
             _loadedChatMessages = await _admin.GetChatMessagesAsync(limit: 200, includeDeleted: false, cts.Token).ConfigureAwait(true);
-
-            Items.Add(new AdminMenuItem("Rafraîchir", tag: "chat.refresh"));
-            Items.Add(new AdminMenuItem("Réinitialiser le tchat (supprimer tous les messages)", tag: "chat.clear"));
-
-            Details = $"Messages chargés : {_loadedChatMessages.Length}";
-
-            var groups = _loadedChatMessages
-                .Select(m =>
-                {
-                    var local = m.CreatedAt.ToLocalTime();
-                    return (m, local, day: local.Date);
-                })
-                .OrderByDescending(x => x.day)
-                .ThenByDescending(x => x.local)
-                .GroupBy(x => x.day)
-                .ToArray();
-
-            if (groups.Length == 0)
-            {
-                Items.Add(new AdminMenuItem("Aucun message."));
-            }
-
-            foreach (var g in groups)
-            {
-                Items.Add(new AdminMenuItem($"--- {g.Key:dd/MM/yyyy} ---"));
-                foreach (var entry in g)
-                {
-                    var msg = entry.m;
-                    var user = msg.User?.Username ?? "inconnu";
-                    var text = (msg.Text ?? string.Empty).Replace("\r", " ").Replace("\n", " ");
-                    if (text.Length > 120) text = text[..120] + "…";
-                    var stamp = entry.local.ToString("HH:mm", CultureInfo.GetCultureInfo("fr-FR"));
-                    Items.Add(new AdminMenuItem($"[{stamp}] {user}: {text}", tag: msg));
-                }
-            }
-
-            SelectedItem = Items.FirstOrDefault();
-            Status = "Entrée : sélectionner. Échap : retour.";
+            BuildChatDaysMenu();
         }
         finally
         {
@@ -179,8 +137,91 @@ public sealed partial class AdminViewModel
         }
     }
 
+    private void BuildChatDaysMenu()
+    {
+        _page = AdminPage.Chat;
+        _chatReturnPage = AdminPage.Chat;
+        _selectedChatDay = null;
+        Title = "Tchat (modération)";
+        Details = $"Messages chargés : {_loadedChatMessages.Length}";
+        IsTextInputVisible = false;
+        IsSecondaryInputVisible = false;
+
+        Items.Clear();
+        Items.Add(new AdminMenuItem("Rafraîchir", tag: "chat.refresh"));
+        Items.Add(new AdminMenuItem("Réinitialiser le tchat (supprimer tous les messages)", tag: "chat.clear"));
+
+        var days = _loadedChatMessages
+            .Select(m => m.CreatedAt.ToLocalTime().Date)
+            .Distinct()
+            .OrderByDescending(d => d)
+            .ToArray();
+
+        if (days.Length == 0)
+        {
+            Items.Add(new AdminMenuItem("Aucun message."));
+            SelectedItem = Items.FirstOrDefault();
+            Status = "Échap : retour.";
+            return;
+        }
+
+        foreach (var day in days)
+        {
+            var count = _loadedChatMessages.Count(m => m.CreatedAt.ToLocalTime().Date == day);
+            Items.Add(new AdminMenuItem($"{day:dd/MM/yyyy} ({count})", tag: new ChatDayTag(day)));
+        }
+
+        SelectedItem = Items.FirstOrDefault(i => i.Tag is ChatDayTag) ?? Items.FirstOrDefault();
+        Status = "Entrée : ouvrir le jour. Échap : retour.";
+    }
+
+    private void BuildChatDayMessages(DateTime dayLocalDate)
+    {
+        _page = AdminPage.ChatDay;
+        _chatReturnPage = AdminPage.ChatDay;
+        _selectedChatDay = dayLocalDate;
+        Title = $"Tchat : {dayLocalDate:dd/MM/yyyy}";
+        IsTextInputVisible = false;
+        IsSecondaryInputVisible = false;
+
+        Items.Clear();
+        Items.Add(new AdminMenuItem("Retour", tag: "chat.day.back"));
+
+        var messages = _loadedChatMessages
+            .Select(m =>
+            {
+                var local = m.CreatedAt.ToLocalTime();
+                return (m, local, day: local.Date);
+            })
+            .Where(x => x.day == dayLocalDate)
+            .OrderByDescending(x => x.local)
+            .ToArray();
+
+        if (messages.Length == 0)
+        {
+            Items.Add(new AdminMenuItem("Aucun message pour ce jour."));
+            SelectedItem = Items.FirstOrDefault();
+            Status = "Échap : retour.";
+            return;
+        }
+
+        foreach (var entry in messages)
+        {
+            var msg = entry.m;
+            var user = msg.User?.Username ?? "inconnu";
+            var text = (msg.Text ?? string.Empty).Replace("\r", " ").Replace("\n", " ");
+            if (text.Length > 120) text = text[..120] + "…";
+            var stamp = entry.local.ToString("HH:mm", CultureInfo.GetCultureInfo("fr-FR"));
+            Items.Add(new AdminMenuItem($"[{stamp}] {user}: {text}", tag: msg));
+        }
+
+        SelectedItem = Items.FirstOrDefault(i => i.Tag is AdminChatMessageDto) ?? Items.FirstOrDefault();
+        Status = "Entrée : actions. Échap : retour.";
+    }
+
     private void BuildChatMessageActions(AdminChatMessageDto message)
     {
+        _chatReturnPage = _page;
         _page = AdminPage.ChatMessageActions;
         _selectedChatMessage = message;
         var user = message.User?.Username ?? "inconnu";
@@ -248,7 +289,7 @@ public sealed partial class AdminViewModel
         {
             await _admin.BanUserFromChatAsync(userId, reason: _chatBanReason, durationDays: days).ConfigureAwait(true);
             await _dialogs.ShowInfo("Tchat", $"Utilisateur banni du tchat ({days} jours).").ConfigureAwait(true);
-            await LoadChatAsync().ConfigureAwait(true);
+            await ReloadChatModerationAsync().ConfigureAwait(true);
         }
         finally
         {
@@ -271,7 +312,7 @@ public sealed partial class AdminViewModel
         try
         {
             await _admin.DeleteChatMessageAsync(message.Id).ConfigureAwait(true);
-            await LoadChatAsync().ConfigureAwait(true);
+            await ReloadChatModerationAsync().ConfigureAwait(true);
         }
         finally
         {
@@ -295,11 +336,21 @@ public sealed partial class AdminViewModel
         {
             var deleted = await _admin.ClearChatAsync().ConfigureAwait(true);
             await _dialogs.ShowInfo("Tchat", $"Messages supprimés: {deleted}").ConfigureAwait(true);
-            await LoadChatAsync().ConfigureAwait(true);
+            await ReloadChatModerationAsync().ConfigureAwait(true);
         }
         finally
         {
             IsBusy = false;
+        }
+    }
+
+    private async Task ReloadChatModerationAsync()
+    {
+        var day = _chatReturnPage == AdminPage.ChatDay ? _selectedChatDay : null;
+        await LoadChatAsync().ConfigureAwait(true);
+        if (day.HasValue)
+        {
+            BuildChatDayMessages(day.Value);
         }
     }
 }

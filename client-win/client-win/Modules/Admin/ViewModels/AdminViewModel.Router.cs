@@ -229,9 +229,28 @@ public sealed partial class AdminViewModel
                     await ClearChatAsync().ConfigureAwait(true);
                     return;
                 }
+                if (tag is ChatDayTag day)
+                {
+                    BuildChatDayMessages(day.DayLocalDate);
+                    return;
+                }
                 if (tag is AdminChatMessageDto msg)
                 {
                     BuildChatMessageActions(msg);
+                    return;
+                }
+            }
+
+            if (_page == AdminPage.ChatDay)
+            {
+                if (tag is string back && back == "chat.day.back")
+                {
+                    BuildChatDaysMenu();
+                    return;
+                }
+                if (tag is AdminChatMessageDto msgDay)
+                {
+                    BuildChatMessageActions(msgDay);
                     return;
                 }
             }
@@ -296,13 +315,20 @@ public sealed partial class AdminViewModel
                     {
                         await _admin.UnbanUserFromChatAsync(uid).ConfigureAwait(true);
                         await _dialogs.ShowInfo("Tchat", "Utilisateur débanni du tchat.").ConfigureAwait(true);
-                        await LoadChatAsync().ConfigureAwait(true);
+                        await ReloadChatModerationAsync().ConfigureAwait(true);
                     }
                     return;
                 }
                 if (chatAction == "chat.back")
                 {
-                    await LoadChatAsync().ConfigureAwait(true);
+                    if (_chatReturnPage == AdminPage.ChatDay && _selectedChatDay.HasValue)
+                    {
+                        BuildChatDayMessages(_selectedChatDay.Value);
+                    }
+                    else
+                    {
+                        BuildChatDaysMenu();
+                    }
                     return;
                 }
             }

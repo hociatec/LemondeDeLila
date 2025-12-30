@@ -26,6 +26,7 @@ internal enum AdminPage
     UserActions,
     BanForm,
     Chat,
+    ChatDay,
     ChatMessageActions,
     ChatBanForm,
     ChatAccess,

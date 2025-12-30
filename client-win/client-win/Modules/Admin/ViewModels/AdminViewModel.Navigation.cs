@@ -112,10 +112,23 @@ public sealed partial class AdminViewModel
             return AdminNavResult.Moved;
         }
 
+        if (_page is AdminPage.ChatDay)
+        {
+            BuildChatDaysMenu();
+            return AdminNavResult.Moved;
+        }
+
         if (_page is AdminPage.ChatMessageActions or AdminPage.ChatBanForm)
         {
-            // Return to chat list
-            _ = LoadChatAsync();
+            // Return to chat list (jours) ou au jour sélectionné
+            if (_chatReturnPage == AdminPage.ChatDay && _selectedChatDay.HasValue)
+            {
+                BuildChatDayMessages(_selectedChatDay.Value);
+            }
+            else
+            {
+                BuildChatDaysMenu();
+            }
             return AdminNavResult.Moved;
         }
 
