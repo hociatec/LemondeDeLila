@@ -166,7 +166,15 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
 
             // ClickOnce applique les mises à jour au démarrage : on force un redémarrage.
             Log.Information("Mise à jour acceptée (notify): version={Version}", version?.Trim());
-            UpdateRestartHelper.RestartCurrentProcess("notify");
+            var restarted = UpdateRestartHelper.RestartCurrentProcess("notify");
+            if (!restarted)
+            {
+                await _dialogs.ShowInfo(
+                        "Mise à jour",
+                        "La mise à jour est disponible, mais le redémarrage automatique a été annulé ou bloqué par Windows.\n\n" +
+                        "Ferme puis relance l'application depuis le menu Démarrer (installation ClickOnce) pour appliquer la mise à jour.")
+                    .ConfigureAwait(true);
+            }
         }
         catch (Exception ex)
         {
