@@ -98,6 +98,34 @@ export class ClientUpdatesService {
     return `${base}/updates/client-win/`;
   }
 
+  private async getPublishedClickOnceVersion(): Promise<string | null> {
+    // Source of truth: the ClickOnce manifest currently served from updatesDir.
+    // This avoids mismatches when latest.json gets out of sync.
+    const targetDir = this.getTargetDir();
+    const candidates = [
+      path.join(targetDir, 'LeMondeDeLila.application'),
+      path.join(targetDir, this.legacyApplicationName),
+    ];
+
+    for (const file of candidates) {
+      try {
+        if (!fs.existsSync(file)) continue;
+        const raw = await fs.promises.readFile(file, 'utf-8');
+        const text = raw.replace(/^\uFEFF/, '');
+        const m = text.match(/assemblyIdentity[^>]*version=\"(?<v>[0-9.]+)\"/i);
+        const v = (m?.groups?.v || '').trim();
+        if (!v) continue;
+        // Validate format for our comparator.
+        if (parseVersion(v) == null) continue;
+        return v;
+      } catch {
+        // ignore
+      }
+    }
+
+    return null;
+  }
+
   async writeLandingPage(targetDir: string): Promise<void> {
     const zipExists = fs.existsSync(path.join(targetDir, this.latestZipName));
     const entries = await fs.promises.readdir(targetDir, { withFileTypes: true });
@@ -193,7 +221,7 @@ export class ClientUpdatesService {
    * Returns the minimum required client version, coming from:
    * - env `CLIENT_MIN_VERSION` (emergency override)
    * - latest.json `minRequiredVersion`
-   * - env `CLIENT_FORCE_LATEST=1` => latest.json `version`
+   * - env `CLIENT_FORCE_LATEST=1` => ClickOnce manifest version (fallback to latest.json `version`)
    */
   async getMinRequiredVersion(): Promise<string | null> {
     const env = (process.env.CLIENT_MIN_VERSION || '').trim();
@@ -206,7 +234,8 @@ export class ClientUpdatesService {
       forceLatestRaw === 'y';
 
     const metaMin = (latest?.minRequiredVersion || '').trim();
-    const latestAsMin = forceLatest ? (latest?.version || '').trim() : '';
+    const publishedClickOnce = forceLatest ? (await this.getPublishedClickOnceVersion()) : null;
+    const latestAsMin = forceLatest ? ((publishedClickOnce || (latest?.version || '')).trim()) : '';
 
     const candidates = [env, metaMin, latestAsMin].filter((v) => Boolean(v));
     if (candidates.length === 0) return null;
