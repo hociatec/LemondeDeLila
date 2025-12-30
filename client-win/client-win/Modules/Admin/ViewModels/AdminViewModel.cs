@@ -7,6 +7,7 @@ using System.Windows.Threading;
 using client_win.Core;
 using client_win.Modules.Admin.Dtos;
 using client_win.Modules.Admin.Services;
+using client_win.Modules.Config;
 using client_win.Modules.Shell.Services;
 using client_win.Modules.Updates;
 
@@ -18,6 +19,7 @@ public sealed partial class AdminViewModel : ObservableObject
     private readonly IDialogService _dialogs;
     private readonly Action _close;
     private readonly Dispatcher _dispatcher;
+    private readonly ClientConfiguration _config;
     private AdminPage _categoriesReturnPage = AdminPage.Games;
 
     private AdminPage _page = AdminPage.Root;
@@ -78,9 +80,10 @@ public sealed partial class AdminViewModel : ObservableObject
     private string _logFilter = string.Empty;
     private readonly IClientUpdatePublisher _publisher;
 
-    public AdminViewModel(IAdminService admin, IClientUpdatePublisher publisher, IDialogService dialogs, Action onClose)
+    public AdminViewModel(IAdminService admin, ClientConfiguration config, IClientUpdatePublisher publisher, IDialogService dialogs, Action onClose)
     {
         _admin = admin ?? throw new ArgumentNullException(nameof(admin));
+        _config = config ?? throw new ArgumentNullException(nameof(config));
         _publisher = publisher ?? throw new ArgumentNullException(nameof(publisher));
         _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
         _close = onClose ?? (() => { });

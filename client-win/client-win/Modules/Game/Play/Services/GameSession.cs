@@ -47,6 +47,7 @@ public sealed class GameSession : IAsyncDisposable
     public event Action<TurnInfoDto>? TurnUpdated;
     public event Action<string>? RawMessageReceived;
     public event Action<string>? ErrorReceived;
+    public event Action<string>? CommandAckReceived;
 
     public Task CloseAsync() => _socket.CloseAsync();
 
@@ -200,8 +201,45 @@ public sealed class GameSession : IAsyncDisposable
     {
         RawMessageReceived?.Invoke(raw);
         ParseError(raw);
+        ParseCommandAck(raw);
         ParseState(raw);
         ParseTurn(raw);
+    }
+
+    private void ParseCommandAck(string raw)
+    {
+        try
+        {
+            using var doc = JsonDocument.Parse(raw);
+            var root = doc.RootElement;
+            if (root.ValueKind != JsonValueKind.Object) return;
+
+            if (!root.TryGetProperty("type", out var typeProp)) return;
+            var type = typeProp.GetString() ?? string.Empty;
+            if (!string.Equals(type, "game.ack", StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            if (!root.TryGetProperty("payload", out var payload) ||
+                payload.ValueKind != JsonValueKind.Object)
+            {
+                return;
+            }
+
+            var action = payload.TryGetProperty("action", out var actionProp) && actionProp.ValueKind == JsonValueKind.String
+                ? actionProp.GetString() ?? string.Empty
+                : string.Empty;
+
+            if (string.Equals(action, "game.actions", StringComparison.OrdinalIgnoreCase))
+            {
+                CommandAckReceived?.Invoke("Action reçue par le serveur.");
+            }
+        }
+        catch
+        {
+            // ignore
+        }
     }
 
     private async Task TrySendAsync(string message, CancellationToken cancellationToken)

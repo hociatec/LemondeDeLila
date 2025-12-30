@@ -246,12 +246,14 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
                 s.StateUpdated += OnStateUpdated;
                 s.TurnUpdated += OnTurnUpdated;
                 s.ErrorReceived += OnServerError;
+                s.CommandAckReceived += OnCommandAckReceived;
             },
             unbindSession: s =>
             {
                 s.StateUpdated -= OnStateUpdated;
                 s.TurnUpdated -= OnTurnUpdated;
                 s.ErrorReceived -= OnServerError;
+                s.CommandAckReceived -= OnCommandAckReceived;
             },
             setConnectionStatus: status => ConnectionStatus = status,
             refreshCanExecute: RefreshCanExecute);
@@ -290,6 +292,16 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
     {
         get => _actionsText;
         private set => SetProperty(ref _actionsText, value);
+    }
+
+    private void OnCommandAckReceived(string message)
+    {
+        if (string.IsNullOrWhiteSpace(message))
+        {
+            return;
+        }
+
+        ConnectionStatus = message.Trim();
     }
 
     public bool IsBotThinking

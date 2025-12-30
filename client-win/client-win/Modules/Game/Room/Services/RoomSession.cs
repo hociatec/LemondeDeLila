@@ -30,6 +30,7 @@ public sealed class RoomSession : IAsyncDisposable
     public event Action<RoomPayloadDto>? RoomUpdated;
     public event Action<string>? RawMessageReceived;
     public event Action<string>? ErrorReceived;
+    public event Action<string>? CommandAckReceived;
 
     public Task CloseAsync() => _socket.CloseAsync();
 
@@ -71,6 +72,7 @@ public sealed class RoomSession : IAsyncDisposable
     {
         RawMessageReceived?.Invoke(raw);
         ParseError(raw);
+        ParseCommandAck(raw);
         ParseRoomState(raw);
     }
 
@@ -147,6 +149,52 @@ public sealed class RoomSession : IAsyncDisposable
         catch (Exception ex)
         {
             Log.Debug(ex, "RoomSession: ignore message parse error");
+        }
+    }
+
+    private void ParseCommandAck(string raw)
+    {
+        try
+        {
+            using var doc = JsonDocument.Parse(raw);
+            var root = doc.RootElement;
+            if (root.ValueKind != JsonValueKind.Object) return;
+
+            if (!root.TryGetProperty("type", out var typeProp)) return;
+            var type = typeProp.GetString() ?? string.Empty;
+            if (!string.Equals(type, "room.ack", StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            if (!root.TryGetProperty("payload", out var payload) ||
+                payload.ValueKind != JsonValueKind.Object)
+            {
+                return;
+            }
+
+            var action = payload.TryGetProperty("action", out var actionProp) && actionProp.ValueKind == JsonValueKind.String
+                ? actionProp.GetString() ?? string.Empty
+                : string.Empty;
+
+            var message = action switch
+            {
+                "room.start" => "Démarrage en cours.",
+                "room.reset" => "Réinitialisation en cours.",
+                "bot.add" => "Ajout du bot en cours.",
+                "bot.remove" => "Retrait du bot en cours.",
+                "room.toggle-privacy" => "Changement de visibilité en cours.",
+                _ => string.Empty
+            };
+
+            if (!string.IsNullOrWhiteSpace(message))
+            {
+                CommandAckReceived?.Invoke(message);
+            }
+        }
+        catch
+        {
+            // ignore
         }
     }
 

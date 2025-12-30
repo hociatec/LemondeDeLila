@@ -337,6 +337,28 @@ export class RoomGateway
     const type = payload?.type;
     const data = payload?.payload ?? {};
     const receivedAtMs = Date.now();
+    const trace = this.extractTraceMeta(data, receivedAtMs);
+
+    // ACK immédiat (réduit la latence perçue côté client : "commande reçue")
+    // Les erreurs éventuelles seront envoyées ensuite via `error`.
+    if (
+      type === 'room.start' ||
+      type === 'room.reset' ||
+      type === 'bot.add' ||
+      type === 'bot.remove' ||
+      type === 'room.toggle-privacy'
+    ) {
+      this.safeSend(client, {
+        type: 'room.ack',
+        roomId: meta.roomId,
+        payload: {
+          action: type,
+          traceId: trace.traceId,
+          receivedAtMs,
+          clientToServerMs: trace.clientToServerMs,
+        },
+      });
+    }
     switch (type) {
       case 'room.leave':
         await this.handleRoomLeave(client, meta);

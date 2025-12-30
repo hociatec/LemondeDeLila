@@ -39,6 +39,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
     private Action<RoomAnnouncement>? _onAnnounced;
     private Action<string>? _onSessionError;
     private Action<string>? _onGameMessage;
+    private Action<string>? _onCommandAck;
 
     private string? _lastStatus;
 
@@ -99,6 +100,15 @@ internal sealed class GameTableBindings : IAsyncDisposable
             }, DispatcherPriority.Background);
         };
         _session.ErrorReceived += _onSessionError;
+
+        _onCommandAck = message =>
+        {
+            _dispatcher.InvokeAsync(() =>
+            {
+                _announcements.TableInfo(message);
+            }, DispatcherPriority.Background);
+        };
+        _session.CommandAckReceived += _onCommandAck;
 
         _bots.BotAdded += name =>
         {
@@ -325,6 +335,11 @@ internal sealed class GameTableBindings : IAsyncDisposable
             {
                 _session.ErrorReceived -= _onSessionError;
                 _onSessionError = null;
+            }
+            if (_onCommandAck != null)
+            {
+                _session.CommandAckReceived -= _onCommandAck;
+                _onCommandAck = null;
             }
 
             if (_gamePlayVm != null)

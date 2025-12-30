@@ -24,6 +24,7 @@ public sealed class GameTableOpener : IGameTableOpener
     private readonly IGameGatewayClient _games;
     private readonly INavigationService _navigation;
     private readonly IDialogService _dialogs;
+    private readonly IScreenReaderAnnouncer _screenReader;
     private readonly IRoomAnnouncements _announcements;
     private readonly IGameAnnouncements _gameAnnouncements;
 
@@ -33,6 +34,7 @@ public sealed class GameTableOpener : IGameTableOpener
         IGameGatewayClient games,
         INavigationService navigation,
         IDialogService dialogs,
+        IScreenReaderAnnouncer screenReader,
         IRoomAnnouncements announcements,
         IGameAnnouncements gameAnnouncements)
     {
@@ -41,6 +43,7 @@ public sealed class GameTableOpener : IGameTableOpener
         _games = games;
         _navigation = navigation;
         _dialogs = dialogs;
+        _screenReader = screenReader ?? throw new ArgumentNullException(nameof(screenReader));
         _announcements = announcements;
         _gameAnnouncements = gameAnnouncements;
     }
@@ -49,6 +52,8 @@ public sealed class GameTableOpener : IGameTableOpener
     {
         if (game == null) throw new ArgumentNullException(nameof(game));
         if (returnView == null) throw new ArgumentNullException(nameof(returnView));
+
+        _screenReader.AnnouncePolite($"Création de la table {game.Name}...");
 
         RoomSession session;
         try
@@ -72,11 +77,6 @@ public sealed class GameTableOpener : IGameTableOpener
 
         Task Start()
         {
-            // Feedback immédiat (même si le backend met du temps à répondre).
-            foreach (var line in GameHistoryMessageSplitter.Split("Démarrage demandé."))
-            {
-                tableVm?.History.Entries.Add(line);
-            }
             return session.SendCommandAsync("room.start", payload: null);
         }
         Task Reset() => session.SendCommandAsync("room.reset", payload: null);

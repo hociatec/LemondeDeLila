@@ -206,7 +206,7 @@ public sealed class MenuRouter : IMenuRouter
 
         var previous = _navigation.CurrentView;
         var view = new AdminView();
-        var vm = new AdminViewModel(_admin, _publisher, _dialogs, onClose: () =>
+        var vm = new AdminViewModel(_admin, _config, _publisher, _dialogs, onClose: () =>
         {
             if (previous != null)
             {

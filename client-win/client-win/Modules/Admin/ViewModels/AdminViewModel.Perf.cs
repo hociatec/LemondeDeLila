@@ -66,6 +66,9 @@ public sealed partial class AdminViewModel
         Items.Clear();
 
         Items.Add(new AdminMenuItem("Rafraîchir", tag: "perf.refresh"));
+        Items.Add(new AdminMenuItem($"WS API: {_config.ApiGatewayWs}"));
+        Items.Add(new AdminMenuItem($"WS Rooms: {_config.RealtimeGatewayWs}"));
+        Items.Add(new AdminMenuItem($"WS Game: {_config.GameGatewayWs}"));
 
         var snap = _lastPerf;
         if (snap == null)

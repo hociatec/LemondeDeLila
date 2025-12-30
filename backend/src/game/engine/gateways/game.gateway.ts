@@ -176,7 +176,7 @@ export class GameGateway
           await this.handleTurn(client, meta, payload);
           break;
         case 'game.actions':
-          await this.handleActions(meta, payload);
+          await this.handleActions(client, meta, payload);
           break;
         case 'game.bot.play':
           await this.handleBot(meta, payload);
@@ -324,7 +324,7 @@ export class GameGateway
     );
   }
 
-  private async handleActions(meta: GameClient, payload: any) {
+  private async handleActions(client: WebSocket, meta: GameClient, payload: any) {
     const roomId = Number(payload?.roomId ?? meta.roomId ?? 0);
     const gameType = String(payload?.gameType ?? meta.gameType ?? '');
     if (!roomId || !gameType) {
@@ -339,6 +339,17 @@ export class GameGateway
       typeof sentAtMs === 'number' && Number.isFinite(sentAtMs)
         ? Math.max(0, receivedAtMs - sentAtMs)
         : null;
+
+    // ACK immédiat au client émetteur (utile quand la latence réseau est élevée).
+    this.safeSend(client, {
+      type: 'game.ack',
+      payload: {
+        action: 'game.actions',
+        traceId,
+        receivedAtMs,
+        clientToServerMs,
+      },
+    });
     await this.perf.measure(
       'ws.game.actions.total',
       async () => {
