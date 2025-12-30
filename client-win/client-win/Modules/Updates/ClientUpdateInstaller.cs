@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Reflection;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -20,9 +21,11 @@ public static class ClientUpdateInstaller
     {
         _ = reason;
 
-        // Objectif: ne jamais ouvrir une page web.
-        // On déclenche toujours ClickOnce en lançant directement le fichier *.application.
-        var baseUrl = NormalizeBaseUrl(updatesBaseUrl);
+        // Objectif: mise à jour uniforme et robuste:
+        // - ne jamais ouvrir une page web
+        // - lancer ClickOnce via dfshim (même si Windows aurait ouvert un navigateur)
+        // - en cas d'installation ClickOnce existante, utiliser UpdateLocation quand possible (répare aussi les fichiers manquants)
+        var baseUrl = NormalizeBaseUrl(updatesBaseUrl ?? TryGetCurrentDeploymentUpdateLocation() ?? DefaultBaseUrl);
         var applicationUrl = await TryResolveApplicationUrlAsync(baseUrl, cancellationToken).ConfigureAwait(true);
         if (string.IsNullOrWhiteSpace(applicationUrl))
         {
@@ -37,6 +40,13 @@ public static class ClientUpdateInstaller
 
         try
         {
+            // Prefer dfshim to force ClickOnce handler (évite les cas où Windows ouvre le navigateur / télécharge au lieu d'installer).
+            if (TryLaunchClickOnce(applicationUrl))
+            {
+                return true;
+            }
+
+            // Fallback (dernier recours): laisser Windows décider (peut ouvrir un navigateur selon la config du poste).
             Process.Start(new ProcessStartInfo(applicationUrl) { UseShellExecute = true });
             return true;
         }
@@ -47,6 +57,65 @@ public static class ClientUpdateInstaller
                     $"Impossible de lancer l'installateur ClickOnce.\n\n{ex.GetType().Name}: {ex.Message}")
                 .ConfigureAwait(true);
             return false;
+        }
+    }
+
+    private static bool TryLaunchClickOnce(string applicationUrl)
+    {
+        try
+        {
+            // https://learn.microsoft.com/en-us/visualstudio/deployment/clickonce-security-and-deployment
+            // rundll32 dfshim.dll,ShOpenVerbApplication <url>
+            var args = $"dfshim.dll,ShOpenVerbApplication \"{applicationUrl.Replace("\"", "\\\"", StringComparison.Ordinal)}\"";
+            var psi = new ProcessStartInfo
+            {
+                FileName = "rundll32.exe",
+                Arguments = args,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                WindowStyle = ProcessWindowStyle.Hidden,
+            };
+            Process.Start(psi);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static string? TryGetCurrentDeploymentUpdateLocation()
+    {
+        // Utilise la location ClickOnce actuelle quand l'app est déjà installée en ClickOnce.
+        // Réduit les cas "fichier manquant" en forçant une réparation via le manifest officiel.
+        try
+        {
+            var deploymentType = Type.GetType(
+                "System.Deployment.Application.ApplicationDeployment, System.Deployment",
+                throwOnError: false);
+            if (deploymentType == null) return null;
+
+            var isNetworkDeployedProp = deploymentType.GetProperty(
+                "IsNetworkDeployed",
+                BindingFlags.Public | BindingFlags.Static);
+            var isNetworkDeployed = isNetworkDeployedProp?.GetValue(null) as bool? ?? false;
+            if (!isNetworkDeployed) return null;
+
+            var currentDeploymentProp = deploymentType.GetProperty(
+                "CurrentDeployment",
+                BindingFlags.Public | BindingFlags.Static);
+            var current = currentDeploymentProp?.GetValue(null);
+            if (current == null) return null;
+
+            var updateLocationProp = current.GetType().GetProperty(
+                "UpdateLocation",
+                BindingFlags.Public | BindingFlags.Instance);
+            var updateLocation = updateLocationProp?.GetValue(current) as Uri;
+            return updateLocation?.ToString();
+        }
+        catch
+        {
+            return null;
         }
     }
 
