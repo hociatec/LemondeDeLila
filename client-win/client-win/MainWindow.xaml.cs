@@ -16,6 +16,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Threading;
 using client_win.Modules.Network.Services;
 using System.Windows.Input;
+using client_win.Modules.Updates;
 
 namespace client_win
 {
@@ -30,6 +31,7 @@ namespace client_win
         private readonly PersistentWsClient _wsConnection;
         private readonly ShellErrorHandler _errorHandler;
         private readonly INotifyListener _notify;
+        private bool _startupUpdateChecked;
 
         public INavigationService Navigation => _navigation;
 
@@ -70,6 +72,7 @@ namespace client_win
             // CORRECTION: Ajout de try-catch pour éviter crash silencieux avec async void
             try
             {
+                _ = CheckForUpdateOnStartupAsync();
                 await _homeViewModel.InitializeAsync();
             }
             catch (Exception ex)
@@ -80,6 +83,95 @@ namespace client_win
                     context: "app.startup",
                     detail: ex.Message));
             }
+        }
+
+        private async Task CheckForUpdateOnStartupAsync()
+        {
+            if (_startupUpdateChecked)
+            {
+                return;
+            }
+            _startupUpdateChecked = true;
+
+            // Ne pas gêner le dev : les mises à jour ClickOnce ne s'appliquent pas sous dotnet run.
+            if (UpdateEnvironment.IsRunningUnderDotnetHost())
+            {
+                return;
+            }
+
+            // Si ce n'est pas une installation ClickOnce, on ne propose pas automatiquement ici.
+            if (!UpdateEnvironment.IsLikelyClickOnceInstall())
+            {
+                return;
+            }
+
+            try
+            {
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                var publisher = _host.Services.GetRequiredService<IClientUpdatePublisher>();
+                var latest = await publisher.GetLatestPublishedVersionAsync(cts.Token).ConfigureAwait(true);
+                if (string.IsNullOrWhiteSpace(latest))
+                {
+                    return;
+                }
+
+                var current = TryParseVersion(AppInfo.GetShortVersion());
+                var available = TryParseVersion(latest);
+                if (current == null || available == null || available <= current)
+                {
+                    return;
+                }
+
+                var confirm = await _dialogs.Confirm(
+                        "Mise à jour",
+                        $"Une mise à jour est disponible ({latest}).\n\nInstaller maintenant ?")
+                    .ConfigureAwait(true);
+                if (confirm != true)
+                {
+                    return;
+                }
+
+                var restarted = UpdateRestartHelper.RestartCurrentProcess("startup-check");
+                if (!restarted)
+                {
+                    await _dialogs.ShowInfo(
+                            "Mise à jour",
+                            "Le redémarrage automatique a été annulé ou bloqué par Windows.\n\n" +
+                            "Ferme puis relance l'application depuis le menu Démarrer pour appliquer la mise à jour.")
+                        .ConfigureAwait(true);
+                }
+            }
+            catch
+            {
+                // Best-effort : pas de popup d'erreur au démarrage si le réseau est indisponible.
+            }
+        }
+
+        private static Version? TryParseVersion(string? value)
+        {
+            var raw = (value ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(raw))
+            {
+                return null;
+            }
+
+            var parts = raw.Split('.', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            if (parts.Length is < 1 or > 4)
+            {
+                return null;
+            }
+
+            int[] nums = new int[4];
+            for (int i = 0; i < parts.Length; i++)
+            {
+                if (!int.TryParse(parts[i], out var n) || n < 0)
+                {
+                    return null;
+                }
+                nums[i] = n;
+            }
+
+            return new Version(nums[0], nums[1], nums[2], nums[3]);
         }
 
         private void OnNavigateToMainMenu(AuthenticatedUser user)
