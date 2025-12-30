@@ -17,6 +17,7 @@ using System.Threading;
 using client_win.Modules.Network.Services;
 using System.Windows.Input;
 using client_win.Modules.Presence.Services;
+using client_win.Modules.Updates;
 
 namespace client_win
 {
@@ -81,6 +82,15 @@ namespace client_win
             // CORRECTION: Ajout de try-catch pour éviter crash silencieux avec async void
             try
             {
+                // Vérifie les MAJ dès le lancement (même avant login) et repropose à chaque ouverture si pas à jour.
+                var shouldContinue = await ClientUpdateStartupPrompt
+                    .CheckAndPromptAsync(_host.Configuration, _dialogs)
+                    .ConfigureAwait(true);
+                if (!shouldContinue)
+                {
+                    return;
+                }
+
                 await _homeViewModel.InitializeAsync();
             }
             catch (Exception ex)

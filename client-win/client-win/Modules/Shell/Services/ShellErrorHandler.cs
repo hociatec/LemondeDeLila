@@ -201,19 +201,10 @@ public sealed class ShellErrorHandler : IDisposable
             return;
         }
 
-        if (!UpdateEnvironment.IsLikelyClickOnceInstall() || UpdateEnvironment.IsRunningUnderDotnetHost())
-        {
-            TryOpenUrl(url);
-            Environment.Exit(0);
-            return;
-        }
-
-        var restarted = UpdateRestartHelper.RestartCurrentProcess("required-auth");
-        if (!restarted)
-        {
-            TryOpenUrl(url);
-            Environment.Exit(0);
-        }
+        await ClientUpdateInstaller
+            .InstallLatestAsync(_dialogs, url, reason: "shell-required")
+            .ConfigureAwait(false);
+        Environment.Exit(0);
     }
 
     private sealed class ClientVersionInfo

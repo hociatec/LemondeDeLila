@@ -224,19 +224,10 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
                 return;
             }
 
-            if (!UpdateEnvironment.IsLikelyClickOnceInstall() || UpdateEnvironment.IsRunningUnderDotnetHost())
-            {
-                TryOpenUrl(url);
-                Environment.Exit(0);
-                return;
-            }
-
-            var restarted = UpdateRestartHelper.RestartCurrentProcess("required");
-            if (!restarted)
-            {
-                TryOpenUrl(url);
-                Environment.Exit(0);
-            }
+            await ClientUpdateInstaller
+                .InstallLatestAsync(_dialogs, url, reason: "notify-required")
+                .ConfigureAwait(true);
+            Environment.Exit(0);
         }
         catch (Exception ex)
         {
@@ -423,28 +414,10 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
                 return;
             }
 
-            if (!UpdateEnvironment.IsLikelyClickOnceInstall() || UpdateEnvironment.IsRunningUnderDotnetHost())
-            {
-                await _dialogs.ShowInfo(
-                        "Mise à jour",
-                        "Mise à jour publiée.\n\n" +
-                        "Ce client est lancé en mode dev (dotnet run) ou hors ClickOnce : les mises à jour automatiques ne s'appliquent pas.\n" +
-                        "Ferme l'application, puis relance la version installée ClickOnce (setup.exe) pour voir la mise à jour.")
-                    .ConfigureAwait(true);
-                return;
-            }
-
-            // ClickOnce applique les mises à jour au démarrage : on force un redémarrage.
             Log.Information("Mise à jour acceptée (notify): version={Version}", version?.Trim());
-            var restarted = UpdateRestartHelper.RestartCurrentProcess("notify");
-            if (!restarted)
-            {
-                await _dialogs.ShowInfo(
-                        "Mise à jour",
-                        "La mise à jour est disponible, mais le redémarrage automatique a été annulé ou bloqué par Windows.\n\n" +
-                        "Ferme puis relance l'application depuis le menu Démarrer (installation ClickOnce) pour appliquer la mise à jour.")
-                    .ConfigureAwait(true);
-            }
+            await ClientUpdateInstaller
+                .InstallLatestAsync(_dialogs, updatesBaseUrl: null, reason: "notify-available")
+                .ConfigureAwait(true);
         }
         catch (Exception ex)
         {
