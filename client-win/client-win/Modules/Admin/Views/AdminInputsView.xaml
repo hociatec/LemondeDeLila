@@ -8,7 +8,7 @@
              IsTabStop="False">
     <StackPanel Orientation="Vertical" Margin="0,0,0,12">
         <StackPanel Orientation="Vertical"
-                    Visibility="{Binding IsTextInputVisible, Converter={DynamicResource BoolToVis}}"
+                    Visibility="{Binding IsTextInputVisible, Converter={StaticResource BoolToVis}}"
                     Margin="0,0,0,12">
             <TextBlock x:Name="PrimaryInputLabelText"
                        Text="{Binding TextInputLabel}"
@@ -29,7 +29,7 @@
         </StackPanel>
 
         <StackPanel Margin="0,0,0,12"
-                    Visibility="{Binding IsSecondaryInputVisible, Converter={DynamicResource BoolToVis}}">
+                    Visibility="{Binding IsSecondaryInputVisible, Converter={StaticResource BoolToVis}}">
             <TextBlock x:Name="SecondaryInputLabelText"
                        Text="{Binding SecondaryInputLabel}"
                        Foreground="#BFD0E6"

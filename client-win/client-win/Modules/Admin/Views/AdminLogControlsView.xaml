@@ -6,7 +6,7 @@
              mc:Ignorable="d"
              Focusable="False"
              IsTabStop="False">
-    <Border Visibility="{Binding ShowLogControls, Converter={DynamicResource BoolToVis}}"
+    <Border Visibility="{Binding ShowLogControls, Converter={StaticResource BoolToVis}}"
             Background="#0E2034"
             CornerRadius="6"
             Padding="12">
@@ -48,4 +48,3 @@
         </StackPanel>
     </Border>
 </UserControl>
-
