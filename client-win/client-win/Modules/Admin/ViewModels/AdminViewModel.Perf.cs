@@ -28,6 +28,28 @@ public sealed partial class AdminViewModel
             _lastPerf = await _admin.GetPerfSnapshotAsync(windowSeconds: 300).ConfigureAwait(true);
             _dispatcher.Invoke(ShowPerf);
         }
+        catch (Exception ex)
+        {
+            var message = ex.Message;
+            if (message.Contains("Type de message inconnu", StringComparison.OrdinalIgnoreCase) ||
+                message.Contains("admin.perf.snapshot", StringComparison.OrdinalIgnoreCase))
+            {
+                message =
+                    "Le serveur n'expose pas encore les diagnostics de latence (admin.perf.snapshot).\n" +
+                    "Mets à jour/redémarre le backend puis réessaie.";
+            }
+
+            _lastPerf = null;
+            _dispatcher.Invoke(() =>
+            {
+                Items.Clear();
+                Items.Add(new AdminMenuItem("Rafraîchir", tag: "perf.refresh"));
+                Items.Add(new AdminMenuItem("Diagnostics indisponibles (serveur non à jour)."));
+                SelectedItem = Items.FirstOrDefault();
+                Status = "Entrée : rafraîchir. Échap : retour.";
+                Details = message;
+            });
+        }
         finally
         {
             IsBusy = false;
