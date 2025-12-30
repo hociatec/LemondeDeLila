@@ -323,6 +323,7 @@ public sealed class PersistentWsClient : IAsyncDisposable
                     {
                         Log.Information("WebSocket fermé par le serveur: {Status} - {Description}",
                             socket.CloseStatus, socket.CloseStatusDescription);
+                        PublishCloseAsErrorIfNeeded(socket.CloseStatus, socket.CloseStatusDescription);
                         FailAllPending($"Connexion WS fermée par le serveur ({socket.CloseStatus} - {socket.CloseStatusDescription}).");
                         await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "closing", cancellationToken).ConfigureAwait(false);
                         return;
@@ -400,6 +401,38 @@ public sealed class PersistentWsClient : IAsyncDisposable
 
         Log.Debug("Receive loop terminée (cancelled: {Cancelled}, state: {State})",
             cancellationToken.IsCancellationRequested, socket.State);
+    }
+
+    private void PublishCloseAsErrorIfNeeded(WebSocketCloseStatus? status, string? description)
+    {
+        try
+        {
+            var code = status.HasValue ? (int)status.Value : 0;
+            var reason = (description ?? string.Empty).Trim();
+
+            // Custom server close code used by Lila to force updates.
+            // We also fallback to reason substring detection because some stacks may not preserve custom codes.
+            var isUpdateRequired =
+                code == 4406 ||
+                reason.Contains("update required", StringComparison.OrdinalIgnoreCase) ||
+                reason.Contains("mise à jour", StringComparison.OrdinalIgnoreCase);
+
+            if (!isUpdateRequired)
+            {
+                return;
+            }
+
+            // Keep message stable so ShellErrorHandler can consistently show the update dialog.
+            _errorBus?.Publish(new Modules.Error.AppError(
+                "Mise à jour requise pour continuer.",
+                Modules.Error.ErrorSeverity.Error,
+                context: "client.update.required",
+                detail: $"ws.close {code} {reason}".Trim()));
+        }
+        catch
+        {
+            // ignore
+        }
     }
 
     private void FailAllPending(string message)
