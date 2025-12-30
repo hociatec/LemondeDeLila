@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using System.Reflection;
 
 namespace client_win.Core;
@@ -9,6 +11,12 @@ public static class AppInfo
 {
     private static readonly Lazy<string> _version = new(() =>
     {
+        var clickOnce = TryGetClickOnceVersion();
+        if (!string.IsNullOrWhiteSpace(clickOnce))
+        {
+            return clickOnce!;
+        }
+
         var assembly = Assembly.GetExecutingAssembly();
         var version = assembly.GetName().Version;
         return version?.ToString() ?? "0.0.0.0";
@@ -49,4 +57,49 @@ public static class AppInfo
     /// Version formatée pour affichage dans l'UI (ex: "v1.0.0").
     /// </summary>
     public static string GetDisplayVersion() => $"v{GetShortVersion()}";
+
+    private static string? TryGetClickOnceVersion()
+    {
+        // IMPORTANT: reflection only (System.Deployment n'est pas dispo sur Linux).
+        try
+        {
+            var deploymentType = Type.GetType(
+                "System.Deployment.Application.ApplicationDeployment, System.Deployment",
+                throwOnError: false);
+            if (deploymentType == null)
+            {
+                return null;
+            }
+
+            var isNetworkDeployedProp = deploymentType.GetProperty(
+                "IsNetworkDeployed",
+                BindingFlags.Public | BindingFlags.Static);
+            var isNetworkDeployed =
+                isNetworkDeployedProp?.PropertyType == typeof(bool) &&
+                (bool)(isNetworkDeployedProp.GetValue(null) ?? false);
+            if (!isNetworkDeployed)
+            {
+                return null;
+            }
+
+            var currentDeploymentProp = deploymentType.GetProperty(
+                "CurrentDeployment",
+                BindingFlags.Public | BindingFlags.Static);
+            var currentDeployment = currentDeploymentProp?.GetValue(null);
+            if (currentDeployment == null)
+            {
+                return null;
+            }
+
+            var currentVersionProp = currentDeployment.GetType().GetProperty(
+                "CurrentVersion",
+                BindingFlags.Public | BindingFlags.Instance);
+            var version = currentVersionProp?.GetValue(currentDeployment) as Version;
+            return version?.ToString();
+        }
+        catch
+        {
+            return null;
+        }
+    }
 }
