@@ -103,7 +103,7 @@
 
                     <TextBox x:Name="ShortcutsBox"
                              Visibility="{Binding ShowShortcuts, Converter={StaticResource BoolToVis}}"
-                             Text="{Binding ShortcutsText}"
+                             Text="{Binding ShortcutsText, Mode=OneWay}"
                              Style="{StaticResource InputTextBox}"
                              IsReadOnly="True"
                              IsReadOnlyCaretVisible="True"
