@@ -68,13 +68,14 @@ public sealed class GameTableOpener : IGameTableOpener
         var tableView = new GameRoomView();
 
         GameTableBindings? bindings = null;
+        GameRoomViewModel? tableVm = null;
 
         Task Start()
         {
             // Feedback immédiat (même si le backend met du temps à répondre).
             foreach (var line in GameHistoryMessageSplitter.Split("Démarrage demandé."))
             {
-                tableVm.History.Entries.Add(line);
+                tableVm?.History.Entries.Add(line);
             }
             return session.SendCommandAsync("room.start", payload: null);
         }
@@ -90,7 +91,7 @@ public sealed class GameTableOpener : IGameTableOpener
         Task TogglePrivacy() => bindings?.TogglePrivacyAsync() ?? Task.CompletedTask;
         Task ToggleRole() => bindings?.ToggleRoleAsync() ?? Task.CompletedTask;
 
-        var tableVm = new GameRoomViewModel(
+        var vm = new GameRoomViewModel(
             game,
             onStart: Start,
             onReset: Reset,
@@ -118,11 +119,12 @@ public sealed class GameTableOpener : IGameTableOpener
             onTogglePrivacy: TogglePrivacy,
             onToggleRole: ToggleRole,
             dialogs: _dialogs);
+        tableVm = vm;
 
         var createdMessage = $"Table de {game.Name} créée. Ajoutez des bots et commencez à jouer.";
         foreach (var line in GameHistoryMessageSplitter.Split(createdMessage))
         {
-            tableVm.History.Entries.Add(line);
+            vm.History.Entries.Add(line);
         }
         _gameAnnouncements.Info(createdMessage);
 
@@ -131,7 +133,7 @@ public sealed class GameTableOpener : IGameTableOpener
             game: game,
             session: session,
             tableView: tableView,
-            tableVm: tableVm,
+            tableVm: vm,
             announcements: _announcements,
             createGamePlayVm: () => CreateGamePlayViewModel(session, game));
         bindings.Attach();
@@ -139,7 +141,7 @@ public sealed class GameTableOpener : IGameTableOpener
 
         // Les détails techniques (status/gameType/privacy/max) ne vont pas dans l'historique : trop verbeux.
 
-        tableView.DataContext = tableVm;
+        tableView.DataContext = vm;
         _navigation.Show(tableView);
     }
 

@@ -96,5 +96,9 @@ export class AdminWsRegistrar implements OnModuleInit {
     this.registry.register('admin.bots.name.delete', (s, p) =>
       this.handler.botNameDelete(s, p),
     );
+
+    this.registry.register('admin.perf.snapshot', (s, p) =>
+      this.handler.perfSnapshot(s, p),
+    );
   }
 }

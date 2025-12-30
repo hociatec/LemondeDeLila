@@ -1,5 +1,6 @@
 import { Module, Global } from '@nestjs/common';
 import { GameLoggerService } from './game-logger.service';
+import { PerfMetricsService } from './perf-metrics.service';
 
 /**
  * Global module for game logging
@@ -7,7 +8,7 @@ import { GameLoggerService } from './game-logger.service';
  */
 @Global()
 @Module({
-  providers: [GameLoggerService],
-  exports: [GameLoggerService],
+  providers: [GameLoggerService, PerfMetricsService],
+  exports: [GameLoggerService, PerfMetricsService],
 })
 export class GameLoggerModule {}

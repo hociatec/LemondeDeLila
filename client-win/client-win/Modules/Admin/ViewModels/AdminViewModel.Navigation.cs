@@ -94,6 +94,12 @@ public sealed partial class AdminViewModel
             return AdminNavResult.Moved;
         }
 
+        if (_page == AdminPage.Perf)
+        {
+            BuildRoot();
+            return AdminNavResult.Moved;
+        }
+
         if (_page == AdminPage.Logs)
         {
             BuildRoot();
@@ -126,6 +132,7 @@ public sealed partial class AdminViewModel
         Items.Add(new AdminMenuItem("Envoyer un message global", tag: "broadcast"));
         Items.Add(new AdminMenuItem("Mises à jour client", tag: "clientUpdates"));
         Items.Add(new AdminMenuItem("Gérer les rôles", tag: "rolesDefinitions"));
+        Items.Add(new AdminMenuItem("Diagnostics latence (rooms/bots/parties)", tag: "perf"));
         Items.Add(new AdminMenuItem("Consulter les logs", tag: "logs"));
         SelectedItem = Items.FirstOrDefault();
         Status = "Entrée : sélectionner. Échap : retour.";

@@ -11,6 +11,7 @@ import { WsAuthPayload } from '../../../common/interfaces/ws-auth-payload';
 import { GameSingleActionDto } from '../dto/game-action.dto';
 import { playingLog } from '../../../common/utils/playing-logger';
 import { WsJwtAuthService } from '../../../common/ws/ws-jwt-auth.service';
+import { PerfMetricsService } from '../../../common/services/perf-metrics.service';
 
 type IncomingPayload = { type?: string; payload?: any };
 type GameClient = {
@@ -48,6 +49,7 @@ export class GameGateway
   constructor(
     private readonly engine: GameEngineService,
     private readonly auth: WsJwtAuthService,
+    private readonly perf: PerfMetricsService,
   ) {
     this.engine.setBroadcaster((gameType, roomId, state) =>
       this.broadcastState(gameType, roomId, state),
@@ -200,15 +202,30 @@ export class GameGateway
   private async handleJoin(client: WebSocket, meta: GameClient, payload: any) {
     const roomId = Number(payload?.roomId ?? payload?.room ?? 0);
     const gameType = String(payload?.gameType ?? '');
-    await this.engine.checkReadAccess(roomId, meta.userId);
-    const state = await this.engine.getStateForUser(
-      roomId,
-      gameType,
-      meta.userId,
+    const receivedAtMs = Date.now();
+    const traceId =
+      typeof payload?._trace?.id === 'string' ? payload._trace.id : null;
+    const sentAtMs =
+      typeof payload?._trace?.sentAtMs === 'number' ? payload._trace.sentAtMs : null;
+    const clientToServerMs =
+      typeof sentAtMs === 'number' && Number.isFinite(sentAtMs)
+        ? Math.max(0, receivedAtMs - sentAtMs)
+        : null;
+    await this.perf.measure(
+      'ws.game.join.total',
+      async () => {
+        await this.engine.checkReadAccess(roomId, meta.userId);
+        const state = await this.engine.getStateForUser(
+          roomId,
+          gameType,
+          meta.userId,
+        );
+        this.setRoom(meta, roomId, gameType, client);
+        playingLog('ws.game.join', { userId: meta.userId, roomId, gameType });
+        this.safeSend(client, { type: 'game.state', payload: state });
+      },
+      { roomId, userId: meta.userId, gameType, traceId, clientToServerMs },
     );
-    this.setRoom(meta, roomId, gameType, client);
-    playingLog('ws.game.join', { userId: meta.userId, roomId, gameType });
-    this.safeSend(client, { type: 'game.state', payload: state });
   }
 
   private async handleState(client: WebSocket, meta: GameClient, payload: any) {
@@ -218,18 +235,33 @@ export class GameGateway
       this.sendError(client, 'Parametres jeu manquants', 'game.state');
       return;
     }
-    await this.engine.checkReadAccess(roomId, meta.userId);
-    const state = await this.engine.getStateForUser(
-      roomId,
-      gameType,
-      meta.userId,
+    const receivedAtMs = Date.now();
+    const traceId =
+      typeof payload?._trace?.id === 'string' ? payload._trace.id : null;
+    const sentAtMs =
+      typeof payload?._trace?.sentAtMs === 'number' ? payload._trace.sentAtMs : null;
+    const clientToServerMs =
+      typeof sentAtMs === 'number' && Number.isFinite(sentAtMs)
+        ? Math.max(0, receivedAtMs - sentAtMs)
+        : null;
+    await this.perf.measure(
+      'ws.game.state.total',
+      async () => {
+        await this.engine.checkReadAccess(roomId, meta.userId);
+        const state = await this.engine.getStateForUser(
+          roomId,
+          gameType,
+          meta.userId,
+        );
+        playingLog('ws.game.state.request', {
+          userId: meta.userId,
+          roomId,
+          gameType,
+        });
+        this.safeSend(client, { type: 'game.state', payload: state });
+      },
+      { roomId, userId: meta.userId, gameType, traceId, clientToServerMs },
     );
-    playingLog('ws.game.state.request', {
-      userId: meta.userId,
-      roomId,
-      gameType,
-    });
-    this.safeSend(client, { type: 'game.state', payload: state });
   }
 
   private async handleTurn(client: WebSocket, meta: GameClient, payload: any) {
@@ -240,39 +272,56 @@ export class GameGateway
       return;
     }
 
-    await this.engine.checkReadAccess(roomId, meta.userId);
-    const state = await this.engine.getStateForUser(
-      roomId,
-      gameType,
-      meta.userId,
+    const receivedAtMs = Date.now();
+    const traceId =
+      typeof payload?._trace?.id === 'string' ? payload._trace.id : null;
+    const sentAtMs =
+      typeof payload?._trace?.sentAtMs === 'number' ? payload._trace.sentAtMs : null;
+    const clientToServerMs =
+      typeof sentAtMs === 'number' && Number.isFinite(sentAtMs)
+        ? Math.max(0, receivedAtMs - sentAtMs)
+        : null;
+    await this.perf.measure(
+      'ws.game.turn.total',
+      async () => {
+        await this.engine.checkReadAccess(roomId, meta.userId);
+        const state = await this.engine.getStateForUser(
+          roomId,
+          gameType,
+          meta.userId,
+        );
+
+        const currentPlayerId = state?.turn?.currentPlayerId ?? null;
+        const players = Array.isArray(state?.players) ? state.players : [];
+        const current =
+          players.find((p: any) => p?.id === currentPlayerId) ?? null;
+
+        const payloadOut: TurnInfoPayload = {
+          roomId,
+          gameType,
+          turnIndex:
+            typeof state?.turnIndex === 'number' ? state.turnIndex : null,
+          currentPlayerId:
+            typeof currentPlayerId === 'number' ? currentPlayerId : null,
+          currentPlayerUsername:
+            typeof current?.username === 'string' ? current.username : null,
+          status: typeof state?.status === 'string' ? state.status : null,
+          phase: typeof state?.phase === 'string' ? state.phase : null,
+        };
+
+        playingLog('ws.game.turn.request', {
+          userId: meta.userId,
+          roomId,
+          gameType,
+          currentPlayerId: payloadOut.currentPlayerId,
+          currentPlayerUsername: payloadOut.currentPlayerUsername,
+          turnIndex: payloadOut.turnIndex,
+        });
+
+        this.safeSend(client, { type: 'game.turn', payload: payloadOut });
+      },
+      { roomId, userId: meta.userId, gameType, traceId, clientToServerMs },
     );
-
-    const currentPlayerId = state?.turn?.currentPlayerId ?? null;
-    const players = Array.isArray(state?.players) ? state.players : [];
-    const current = players.find((p: any) => p?.id === currentPlayerId) ?? null;
-
-    const payloadOut: TurnInfoPayload = {
-      roomId,
-      gameType,
-      turnIndex: typeof state?.turnIndex === 'number' ? state.turnIndex : null,
-      currentPlayerId:
-        typeof currentPlayerId === 'number' ? currentPlayerId : null,
-      currentPlayerUsername:
-        typeof current?.username === 'string' ? current.username : null,
-      status: typeof state?.status === 'string' ? state.status : null,
-      phase: typeof state?.phase === 'string' ? state.phase : null,
-    };
-
-    playingLog('ws.game.turn.request', {
-      userId: meta.userId,
-      roomId,
-      gameType,
-      currentPlayerId: payloadOut.currentPlayerId,
-      currentPlayerUsername: payloadOut.currentPlayerUsername,
-      turnIndex: payloadOut.turnIndex,
-    });
-
-    this.safeSend(client, { type: 'game.turn', payload: payloadOut });
   }
 
   private async handleActions(meta: GameClient, payload: any) {
@@ -281,18 +330,33 @@ export class GameGateway
     if (!roomId || !gameType) {
       return;
     }
-    await this.engine.checkAccess(roomId, meta.userId);
-    const actions: GameSingleActionDto[] = Array.isArray(payload?.actions)
-      ? payload.actions
-      : [];
-    playingLog('ws.game.actions', {
-      userId: meta.userId,
-      roomId,
-      gameType,
-      count: actions.length,
-    });
-    // `GameEngineService` broadcast déjà via `setBroadcaster(...)` (pour inclure aussi `botThinking`).
-    await this.engine.applyActions(roomId, gameType, actions, meta.userId);
+    const receivedAtMs = Date.now();
+    const traceId =
+      typeof payload?._trace?.id === 'string' ? payload._trace.id : null;
+    const sentAtMs =
+      typeof payload?._trace?.sentAtMs === 'number' ? payload._trace.sentAtMs : null;
+    const clientToServerMs =
+      typeof sentAtMs === 'number' && Number.isFinite(sentAtMs)
+        ? Math.max(0, receivedAtMs - sentAtMs)
+        : null;
+    await this.perf.measure(
+      'ws.game.actions.total',
+      async () => {
+        await this.engine.checkAccess(roomId, meta.userId);
+        const actions: GameSingleActionDto[] = Array.isArray(payload?.actions)
+          ? payload.actions
+          : [];
+        playingLog('ws.game.actions', {
+          userId: meta.userId,
+          roomId,
+          gameType,
+          count: actions.length,
+        });
+        // `GameEngineService` broadcast déjà via `setBroadcaster(...)` (pour inclure aussi `botThinking`).
+        await this.engine.applyActions(roomId, gameType, actions, meta.userId);
+      },
+      { roomId, userId: meta.userId, gameType, traceId, clientToServerMs },
+    );
   }
 
   private async handleBot(meta: GameClient, payload: any) {
@@ -301,10 +365,20 @@ export class GameGateway
     if (!roomId || !gameType) {
       return;
     }
-    // Seul le proprietaire de la table (ou un role privilegie cote RoomService) peut forcer le bot.
-    await this.engine.checkAccess(roomId, meta.userId, true);
-    await this.engine.playBotTurn(roomId, gameType);
-    playingLog('ws.game.bot.play', { userId: meta.userId, roomId, gameType });
+    await this.perf.measure(
+      'ws.game.bot.play.total',
+      async () => {
+        // Seul le proprietaire de la table (ou un role privilegie cote RoomService) peut forcer le bot.
+        await this.engine.checkAccess(roomId, meta.userId, true);
+        await this.engine.playBotTurn(roomId, gameType);
+        playingLog('ws.game.bot.play', {
+          userId: meta.userId,
+          roomId,
+          gameType,
+        });
+      },
+      { roomId, userId: meta.userId, gameType },
+    );
   }
 
   private broadcastState(gameType: string, roomId: number, state: any): void {

@@ -36,7 +36,13 @@ public sealed class RoomSession : IAsyncDisposable
     public async Task SendCommandAsync(string type, object? payload = null, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(type)) throw new ArgumentException("type requis", nameof(type));
-        var msg = JsonSerializer.Serialize(new { type, payload = payload ?? new { } }, _json);
+        var merged = ToDictionary(payload);
+        merged["_trace"] = new
+        {
+            id = Guid.NewGuid().ToString("N"),
+            sentAtMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+        };
+        var msg = JsonSerializer.Serialize(new { type, payload = merged }, _json);
         await _socket.SendAsync(msg, cancellationToken).ConfigureAwait(false);
     }
 
@@ -141,6 +147,39 @@ public sealed class RoomSession : IAsyncDisposable
         catch (Exception ex)
         {
             Log.Debug(ex, "RoomSession: ignore message parse error");
+        }
+    }
+
+    private static Dictionary<string, object?> ToDictionary(object? payload)
+    {
+        if (payload is Dictionary<string, object?> dict)
+        {
+            return new Dictionary<string, object?>(dict, StringComparer.OrdinalIgnoreCase);
+        }
+
+        if (payload is IDictionary<string, object?> idict)
+        {
+            return new Dictionary<string, object?>(idict, StringComparer.OrdinalIgnoreCase);
+        }
+
+        try
+        {
+            var element = JsonSerializer.SerializeToElement(payload ?? new { }, _json);
+            if (element.ValueKind != JsonValueKind.Object)
+            {
+                return new Dictionary<string, object?>();
+            }
+
+            var output = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+            foreach (var prop in element.EnumerateObject())
+            {
+                output[prop.Name] = prop.Value.Clone();
+            }
+            return output;
+        }
+        catch
+        {
+            return new Dictionary<string, object?>();
         }
     }
 }

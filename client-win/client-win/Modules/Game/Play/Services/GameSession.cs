@@ -90,8 +90,9 @@ public sealed class GameSession : IAsyncDisposable
             return;
         }
 
+        var trace = new { id = Guid.NewGuid().ToString("N"), sentAtMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() };
         var join = JsonSerializer.Serialize(
-            new { type = "game.join", payload = new { roomId = RoomId, gameType = GameType } },
+            new { type = "game.join", payload = new { roomId = RoomId, gameType = GameType, _trace = trace } },
             _json);
         await TrySendAsync(join, cancellationToken).ConfigureAwait(false);
     }
@@ -104,8 +105,9 @@ public sealed class GameSession : IAsyncDisposable
             return;
         }
 
+        var trace = new { id = Guid.NewGuid().ToString("N"), sentAtMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() };
         var msg = JsonSerializer.Serialize(
-            new { type = "game.state", payload = new { roomId = RoomId, gameType = GameType } },
+            new { type = "game.state", payload = new { roomId = RoomId, gameType = GameType, _trace = trace } },
             _json);
         await TrySendAsync(msg, cancellationToken).ConfigureAwait(false);
     }
@@ -118,8 +120,9 @@ public sealed class GameSession : IAsyncDisposable
             return;
         }
 
+        var trace = new { id = Guid.NewGuid().ToString("N"), sentAtMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() };
         var msg = JsonSerializer.Serialize(
-            new { type = "game.turn", payload = new { roomId = RoomId, gameType = GameType } },
+            new { type = "game.turn", payload = new { roomId = RoomId, gameType = GameType, _trace = trace } },
             _json);
         await TrySendAsync(msg, cancellationToken).ConfigureAwait(false);
     }
@@ -132,6 +135,7 @@ public sealed class GameSession : IAsyncDisposable
             return;
         }
 
+        var trace = new { id = Guid.NewGuid().ToString("N"), sentAtMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() };
         actions ??= Array.Empty<GameClientAction>();
         var msg = JsonSerializer.Serialize(
             new
@@ -141,7 +145,8 @@ public sealed class GameSession : IAsyncDisposable
                 {
                     roomId = RoomId,
                     gameType = GameType,
-                    actions
+                    actions,
+                    _trace = trace
                 }
             },
             _json);

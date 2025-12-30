@@ -151,6 +151,8 @@ public static class WsMessageTypes
         public const string BotNameCreate = "admin.bots.name.create";
         public const string BotNameUpdate = "admin.bots.name.update";
         public const string BotNameDelete = "admin.bots.name.delete";
+
+        public const string PerfSnapshot = "admin.perf.snapshot";
     }
 
     /// <summary>

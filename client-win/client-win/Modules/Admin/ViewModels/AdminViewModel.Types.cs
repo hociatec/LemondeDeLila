@@ -30,7 +30,8 @@ internal enum AdminPage
     Logs,
     RoleDefinitions,
     RoleDefinitionActions,
-    RoleDefinitionForm
+    RoleDefinitionForm,
+    Perf
 }
 
 public sealed record PermissionModuleDescriptor(string ModuleId, string DisplayName, string Description);

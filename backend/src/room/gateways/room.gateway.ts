@@ -14,6 +14,7 @@ import { WsJwtAuthService } from '../../common/ws/ws-jwt-auth.service';
 import { WsSignatureService } from '../../common/ws/ws-signature.service';
 import type { RoomPlayer } from '../dto/room-response.dto';
 import { CatalogService } from '../../catalog/services/catalog.service';
+import { PerfMetricsService } from '../../common/services/perf-metrics.service';
 
 type AuthedClient = {
   socket: WebSocket;
@@ -47,6 +48,7 @@ export class RoomGateway
     private readonly auth: WsJwtAuthService,
     private readonly signature: WsSignatureService,
     private readonly catalog: CatalogService,
+    private readonly perf: PerfMetricsService,
   ) {
     // Permet au backend (ex: moteur de jeu) de notifier les clients room sans dépendre du Gateway.
     this.roomsService.setRealtimeNotifier(async (roomId: number) => {
@@ -334,40 +336,67 @@ export class RoomGateway
   ) {
     const type = payload?.type;
     const data = payload?.payload ?? {};
+    const receivedAtMs = Date.now();
     switch (type) {
       case 'room.leave':
         await this.handleRoomLeave(client, meta);
         break;
       case 'room.start':
-        await this.handleRoomStart(meta);
+        await this.handleRoomStart(meta, data, receivedAtMs);
         break;
       case 'room.reset':
-        await this.handleRoomReset(meta);
+        await this.handleRoomReset(meta, data, receivedAtMs);
         break;
       case 'room.set-role':
         await this.handleSetRole(client, meta, data);
         break;
       case 'room.toggle-privacy':
-        await this.handleTogglePrivacy(meta);
+        await this.handleTogglePrivacy(meta, data, receivedAtMs);
         break;
       case 'room.info':
         await this.handleRoomInfo(client, meta);
         break;
       case 'bot.add':
-        await this.handleBotAdd(meta, data);
+        await this.handleBotAdd(meta, data, receivedAtMs);
         break;
       case 'bot.remove':
-        await this.handleBotRemove(meta, data);
+        await this.handleBotRemove(meta, data, receivedAtMs);
         break;
       case 'room.create':
-        await this.handleRoomCreate(client, meta, data);
+        await this.handleRoomCreate(client, meta, data, receivedAtMs);
         break;
       case 'room.join':
-        await this.handleRoomJoin(client, meta, data);
+        await this.handleRoomJoin(client, meta, data, receivedAtMs);
         break;
       default:
         break;
     }
+  }
+
+  private extractTraceMeta(
+    payload: any,
+    receivedAtMs: number,
+  ): { traceId: string | null; clientToServerMs: number | null } {
+    const traceId =
+      payload && typeof payload === 'object'
+        ? (payload?._trace?.id as string | undefined)
+        : undefined;
+    const sentAtMs =
+      payload && typeof payload === 'object'
+        ? (payload?._trace?.sentAtMs as number | undefined)
+        : undefined;
+
+    const id =
+      typeof traceId === 'string' && traceId.trim().length > 0
+        ? traceId.trim()
+        : null;
+
+    const c2s =
+      typeof sentAtMs === 'number' && Number.isFinite(sentAtMs)
+        ? Math.max(0, receivedAtMs - sentAtMs)
+        : null;
+
+    return { traceId: id, clientToServerMs: c2s };
   }
 
   private async handleRoomInfo(client: WebSocket, meta: ClientMeta) {
@@ -460,60 +489,115 @@ export class RoomGateway
     }
   }
 
-  private async handleRoomStart(meta: AuthedClient) {
-    await this.roomsService.startRoom(meta.roomId, meta.userId);
-    await this.broadcast(meta.roomId, 'state-updated', { roomId: meta.roomId });
-    await this.sendRoomState(meta.roomId);
-  }
-
-  private async handleRoomReset(meta: AuthedClient) {
-    await this.roomsService.resetRoom(meta.roomId, meta.userId);
-    await this.broadcast(meta.roomId, 'state-updated', { roomId: meta.roomId });
-    await this.sendRoomState(meta.roomId);
-  }
-
-  private async handleTogglePrivacy(meta: AuthedClient) {
-    await this.roomsService.togglePrivacy(meta.roomId, meta.userId);
-    const state = await this.roomsService.getRoomPayload(meta.roomId);
-    await this.broadcast(meta.roomId, 'room.privacy', {
-      isPrivate: state.room.isPrivate,
-      room: state.room,
-    });
-  }
-
-  private async handleBotAdd(meta: AuthedClient, payload: any) {
-    const bot = await this.botService.addBot(meta.roomId, meta.userId);
-    await this.roomsService.invalidateRoomPayloadCache(meta.roomId);
-    await this.broadcast(meta.roomId, 'bot.added', {
-      roomId: meta.roomId,
-      bot: { id: bot.id, name: bot.name },
-    });
-    await this.sendRoomState(meta.roomId);
-  }
-
-  private async handleBotRemove(meta: AuthedClient, payload: any) {
-    let botId = Number(payload?.botId ?? payload?.id ?? -1);
-    if (!Number.isFinite(botId) || botId <= 0) {
-      const state = await this.roomsService.getRoomPayload(meta.roomId);
-      const bots = state?.room?.bots ?? [];
-      const last = bots.length > 0 ? bots[bots.length - 1] : null;
-      if (!last?.id) {
-        throw new Error('Aucun bot à retirer');
-      }
-      botId = Number(last.id);
-    }
-    const bot = await this.botService.removeBot(
-      meta.roomId,
-      meta.userId,
-      botId,
+  private async handleRoomStart(
+    meta: AuthedClient,
+    payload: any,
+    receivedAtMs: number,
+  ) {
+    const trace = this.extractTraceMeta(payload, receivedAtMs);
+    await this.perf.measure(
+      'ws.room.start.total',
+      async () => {
+        await this.roomsService.startRoom(meta.roomId, meta.userId);
+        await this.broadcast(meta.roomId, 'state-updated', { roomId: meta.roomId });
+        await this.sendRoomState(meta.roomId);
+      },
+      { roomId: meta.roomId, userId: meta.userId, ...trace },
     );
-    await this.roomsService.invalidateRoomPayloadCache(meta.roomId);
-    await this.broadcast(meta.roomId, 'bot.removed', {
-      roomId: meta.roomId,
-      bot: { id: bot.id, name: bot.name },
-      botId,
-    });
-    await this.sendRoomState(meta.roomId);
+  }
+
+  private async handleRoomReset(
+    meta: AuthedClient,
+    payload: any,
+    receivedAtMs: number,
+  ) {
+    const trace = this.extractTraceMeta(payload, receivedAtMs);
+    await this.perf.measure(
+      'ws.room.reset.total',
+      async () => {
+        await this.roomsService.resetRoom(meta.roomId, meta.userId);
+        await this.broadcast(meta.roomId, 'state-updated', { roomId: meta.roomId });
+        await this.sendRoomState(meta.roomId);
+      },
+      { roomId: meta.roomId, userId: meta.userId, ...trace },
+    );
+  }
+
+  private async handleTogglePrivacy(
+    meta: AuthedClient,
+    payload: any,
+    receivedAtMs: number,
+  ) {
+    const trace = this.extractTraceMeta(payload, receivedAtMs);
+    await this.perf.measure(
+      'ws.room.togglePrivacy.total',
+      async () => {
+        await this.roomsService.togglePrivacy(meta.roomId, meta.userId);
+        const state = await this.roomsService.getRoomPayload(meta.roomId);
+        await this.broadcast(meta.roomId, 'room.privacy', {
+          isPrivate: state.room.isPrivate,
+          room: state.room,
+        });
+      },
+      { roomId: meta.roomId, userId: meta.userId, ...trace },
+    );
+  }
+
+  private async handleBotAdd(
+    meta: AuthedClient,
+    payload: any,
+    receivedAtMs: number,
+  ) {
+    const trace = this.extractTraceMeta(payload, receivedAtMs);
+    await this.perf.measure(
+      'ws.room.bot.add.total',
+      async () => {
+        const bot = await this.botService.addBot(meta.roomId, meta.userId);
+        await this.roomsService.invalidateRoomPayloadCache(meta.roomId);
+        await this.broadcast(meta.roomId, 'bot.added', {
+          roomId: meta.roomId,
+          bot: { id: bot.id, name: bot.name },
+        });
+        await this.sendRoomState(meta.roomId);
+      },
+      { roomId: meta.roomId, userId: meta.userId, ...trace },
+    );
+  }
+
+  private async handleBotRemove(
+    meta: AuthedClient,
+    payload: any,
+    receivedAtMs: number,
+  ) {
+    const trace = this.extractTraceMeta(payload, receivedAtMs);
+    await this.perf.measure(
+      'ws.room.bot.remove.total',
+      async () => {
+        let botId = Number(payload?.botId ?? payload?.id ?? -1);
+        if (!Number.isFinite(botId) || botId <= 0) {
+          const state = await this.roomsService.getRoomPayload(meta.roomId);
+          const bots = state?.room?.bots ?? [];
+          const last = bots.length > 0 ? bots[bots.length - 1] : null;
+          if (!last?.id) {
+            throw new Error('Aucun bot à retirer');
+          }
+          botId = Number(last.id);
+        }
+        const bot = await this.botService.removeBot(
+          meta.roomId,
+          meta.userId,
+          botId,
+        );
+        await this.roomsService.invalidateRoomPayloadCache(meta.roomId);
+        await this.broadcast(meta.roomId, 'bot.removed', {
+          roomId: meta.roomId,
+          bot: { id: bot.id, name: bot.name },
+          botId,
+        });
+        await this.sendRoomState(meta.roomId);
+      },
+      { roomId: meta.roomId, userId: meta.userId, ...trace },
+    );
   }
 
   private async handleSetRole(
@@ -579,136 +663,159 @@ export class RoomGateway
     client: WebSocket,
     meta: ClientMeta,
     payload: any,
+    receivedAtMs: number,
   ) {
-    const startedAt = Date.now();
-    const gameType =
-      typeof payload?.gameType === 'string' ? payload.gameType : '';
-    const name = typeof payload?.name === 'string' ? payload.name : null;
-    const maxPlayersRaw = payload?.maxPlayers ?? payload?.max ?? null;
-    const maxPlayers =
-      typeof maxPlayersRaw === 'number'
-        ? maxPlayersRaw
-        : Number.isFinite(parseInt(maxPlayersRaw, 10))
-          ? parseInt(maxPlayersRaw, 10)
-          : null;
-    const isPrivate =
-      typeof payload?.isPrivate === 'boolean' ? payload.isPrivate : false;
-    const room = await this.roomsService.createRoom(
-      meta.userId,
-      gameType,
-      name,
-      maxPlayers,
-      isPrivate,
-    );
+    const trace = this.extractTraceMeta(payload, receivedAtMs);
+    await this.perf.measure(
+      'ws.room.create.total',
+      async () => {
+        const gameType =
+          typeof payload?.gameType === 'string' ? payload.gameType : '';
+        const name = typeof payload?.name === 'string' ? payload.name : null;
+        const maxPlayersRaw = payload?.maxPlayers ?? payload?.max ?? null;
+        const maxPlayers =
+          typeof maxPlayersRaw === 'number'
+            ? maxPlayersRaw
+            : Number.isFinite(parseInt(maxPlayersRaw, 10))
+              ? parseInt(maxPlayersRaw, 10)
+              : null;
+        const isPrivate =
+          typeof payload?.isPrivate === 'boolean' ? payload.isPrivate : false;
+        const room = await this.roomsService.createRoom(
+          meta.userId,
+          gameType,
+          name,
+          maxPlayers,
+          isPrivate,
+        );
 
-    const previousRoomId = meta.roomId;
-    if (previousRoomId !== room.id) {
-      const previousSet = this.rooms.get(previousRoomId);
-      if (previousSet) {
-        previousSet.delete(client);
-        if (previousSet.size === 0) {
-          this.rooms.delete(previousRoomId);
-        }
-      }
-      if (!this.rooms.has(room.id)) {
-        this.rooms.set(room.id, new Set());
-      }
-      this.rooms.get(room.id)!.add(client);
-    }
-    meta.roomId = room.id;
-    meta.role = 'participant';
-
-    const manifest = await this.catalog.getGame(room.gameType);
-    const state = {
-      manifest: manifest
-        ? {
-            id: manifest.id,
-            name: manifest.name,
-            minPlayers: manifest.minPlayers ?? 2,
-            maxPlayers: manifest.maxPlayers ?? room.maxPlayers,
+        const previousRoomId = meta.roomId;
+        if (previousRoomId !== room.id) {
+          const previousSet = this.rooms.get(previousRoomId);
+          if (previousSet) {
+            previousSet.delete(client);
+            if (previousSet.size === 0) {
+              this.rooms.delete(previousRoomId);
+            }
           }
-        : null,
-      room: {
-        id: room.id,
-        name: room.name,
-        isPrivate: room.isPrivate,
-        maxPlayers: room.maxPlayers,
-        status: room.status,
-        gameType: room.gameType,
-        startedAt: room.startedAt ? room.startedAt.toISOString() : null,
-        counts: { players: 1, spectators: 0 },
-        owner: { id: meta.userId, username: meta.username },
-        players: [{ id: meta.userId, username: meta.username } satisfies RoomPlayer],
-        spectators: [],
-        bots: [],
+          if (!this.rooms.has(room.id)) {
+            this.rooms.set(room.id, new Set());
+          }
+          this.rooms.get(room.id)!.add(client);
+        }
+        meta.roomId = room.id;
+        meta.role = 'participant';
+
+        const manifest = await this.catalog.getGame(room.gameType);
+        const state = {
+          manifest: manifest
+            ? {
+                id: manifest.id,
+                name: manifest.name,
+                minPlayers: manifest.minPlayers ?? 2,
+                maxPlayers: manifest.maxPlayers ?? room.maxPlayers,
+              }
+            : null,
+          room: {
+            id: room.id,
+            name: room.name,
+            isPrivate: room.isPrivate,
+            maxPlayers: room.maxPlayers,
+            status: room.status,
+            gameType: room.gameType,
+            startedAt: room.startedAt ? room.startedAt.toISOString() : null,
+            counts: { players: 1, spectators: 0 },
+            owner: { id: meta.userId, username: meta.username },
+            players: [
+              {
+                id: meta.userId,
+                username: meta.username,
+              } satisfies RoomPlayer,
+            ],
+            spectators: [],
+            bots: [],
+          },
+          generatedAt: new Date().toISOString(),
+        };
+        const message = { type: 'room.created', roomId: room.id, payload: state };
+        if (previousRoomId > 0) {
+          await this.broadcast(
+            previousRoomId,
+            message.type,
+            message.payload ?? state,
+            room.id,
+          );
+        }
+        await this.roomsService.primeRoomPayloadCache(room.id, state);
+        this.safeSend(client, message);
+        await this.sendRoomState(room.id);
       },
-      generatedAt: new Date().toISOString(),
-    };
-    const message = { type: 'room.created', roomId: room.id, payload: state };
-    if (previousRoomId > 0) {
-      await this.broadcast(
-        previousRoomId,
-        message.type,
-        message.payload ?? state,
-        room.id,
-      );
-    }
-    await this.roomsService.primeRoomPayloadCache(room.id, state);
-    this.safeSend(client, message);
-    await this.sendRoomState(room.id);
-    const elapsedMs = Date.now() - startedAt;
-    if (elapsedMs >= 1500) {
-      this.logger.warn(
-        `room.create lent: ${elapsedMs}ms (userId=${meta.userId}, roomId=${room.id}, gameType=${room.gameType})`,
-      );
-    }
+      {
+        userId: meta.userId,
+        roomId: meta.roomId,
+        gameType: payload?.gameType ?? null,
+        ...trace,
+      },
+    );
   }
 
-  private async handleRoomJoin(client: WebSocket, meta: ClientMeta, payload: any) {
-    const roomId = Number(payload?.roomId ?? payload?.room ?? 0);
-    const spectatorRaw = payload?.spectator;
-    const spectator =
-      spectatorRaw === true ||
-      spectatorRaw === 1 ||
-      spectatorRaw === '1' ||
-      spectatorRaw === 'true' ||
-      spectatorRaw === 'yes' ||
-      spectatorRaw === 'y';
+  private async handleRoomJoin(
+    client: WebSocket,
+    meta: ClientMeta,
+    payload: any,
+    receivedAtMs: number,
+  ) {
+    const trace = this.extractTraceMeta(payload, receivedAtMs);
+    await this.perf.measure(
+      'ws.room.join.total',
+      async () => {
+        const roomId = Number(payload?.roomId ?? payload?.room ?? 0);
+        const spectatorRaw = payload?.spectator;
+        const spectator =
+          spectatorRaw === true ||
+          spectatorRaw === 1 ||
+          spectatorRaw === '1' ||
+          spectatorRaw === 'true' ||
+          spectatorRaw === 'yes' ||
+          spectatorRaw === 'y';
 
-    if (!Number.isFinite(roomId) || roomId <= 0) {
-      throw new Error('roomId invalide');
-    }
-
-    if (spectator) {
-      const allowed = await this.canSpectate(roomId, meta.userId);
-      if (!allowed) {
-        client.close(4003, 'Spectateur non autorise sur cette table');
-        return;
-      }
-    }
-
-    if (!spectator) {
-      await this.roomsService.joinRoom(roomId, meta.userId);
-    }
-
-    const previousRoomId = meta.roomId;
-    if (previousRoomId !== roomId) {
-      const previousSet = this.rooms.get(previousRoomId);
-      if (previousSet) {
-        previousSet.delete(client);
-        if (previousSet.size === 0) {
-          this.rooms.delete(previousRoomId);
+        if (!Number.isFinite(roomId) || roomId <= 0) {
+          throw new Error('roomId invalide');
         }
-      }
-      if (!this.rooms.has(roomId)) {
-        this.rooms.set(roomId, new Set());
-      }
-      this.rooms.get(roomId)!.add(client);
-    }
 
-    meta.roomId = roomId;
-    meta.role = spectator ? 'spectator' : 'participant';
-    await this.sendRoomState(roomId);
+        if (spectator) {
+          const allowed = await this.canSpectate(roomId, meta.userId);
+          if (!allowed) {
+            client.close(4003, 'Spectateur non autorise sur cette table');
+            return;
+          }
+        }
+
+        if (!spectator) {
+          await this.roomsService.joinRoom(roomId, meta.userId);
+        }
+
+        const previousRoomId = meta.roomId;
+        if (previousRoomId !== roomId) {
+          const previousSet = this.rooms.get(previousRoomId);
+          if (previousSet) {
+            previousSet.delete(client);
+            if (previousSet.size === 0) {
+              this.rooms.delete(previousRoomId);
+            }
+          }
+          if (!this.rooms.has(roomId)) {
+            this.rooms.set(roomId, new Set());
+          }
+          this.rooms.get(roomId)!.add(client);
+        }
+
+        meta.roomId = roomId;
+        meta.role = spectator ? 'spectator' : 'participant';
+        await this.sendRoomState(roomId);
+      },
+      { userId: meta.userId, roomId: payload?.roomId ?? payload?.room ?? null, ...trace },
+    );
   }
 
   private extractParams(client: WebSocket, args: any[]) {

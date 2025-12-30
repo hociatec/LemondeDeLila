@@ -15,6 +15,7 @@ import { CatalogService } from '../../catalog/services/catalog.service';
 import { RoleDefinitionsService } from '../services/role-definitions.service';
 import { BotService } from '../../bot/services/bot.service';
 import { BotSettingsService } from '../../game/modules/bot/services/bot-settings.service';
+import { PerfMetricsService } from '../../common/services/perf-metrics.service';
 import * as fs from 'fs';
 import * as path from 'path';
 import {
@@ -58,6 +59,7 @@ export class AdminWsHandler {
     private readonly roleDefinitions: RoleDefinitionsService,
     private readonly bots: BotService,
     private readonly botSettings: BotSettingsService,
+    private readonly perf: PerfMetricsService,
     @InjectRepository(User) private readonly userRepo: Repository<User>,
   ) {}
 
@@ -327,6 +329,14 @@ export class AdminWsHandler {
         })),
       },
     };
+  }
+
+  async perfSnapshot(session: WsSession, payload: any) {
+    requireAdmin(session);
+    const windowSeconds =
+      payload && typeof payload === 'object' ? payload.windowSeconds : undefined;
+    const snapshot = this.perf.snapshot({ windowSeconds });
+    return { type: 'admin.perf.snapshot', payload: snapshot };
   }
 
   async roleDefinitionCreate(session: WsSession, payload: any) {

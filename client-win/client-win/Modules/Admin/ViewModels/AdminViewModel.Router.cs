@@ -56,6 +56,11 @@ public sealed partial class AdminViewModel
                     ShowLogs();
                     return;
                 }
+                if (tag is string perf && perf == "perf")
+                {
+                    await LoadPerfAsync().ConfigureAwait(true);
+                    return;
+                }
             }
 
             if (_page == AdminPage.Games && tag is string gamesAction && gamesAction == "games.categories")
@@ -214,6 +219,11 @@ public sealed partial class AdminViewModel
             if (_page == AdminPage.Logs && tag is string logTag && logTag == "logs.download")
             {
                 await DownloadLogsAsync().ConfigureAwait(true);
+                return;
+            }
+            if (_page == AdminPage.Perf && tag is string perfTag && perfTag == "perf.refresh")
+            {
+                await LoadPerfAsync().ConfigureAwait(true);
                 return;
             }
             if (_page == AdminPage.RoleDefinitions)
