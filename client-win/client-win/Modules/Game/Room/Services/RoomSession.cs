@@ -179,11 +179,11 @@ public sealed class RoomSession : IAsyncDisposable
 
             var message = action switch
             {
-                "room.start" => "Démarrage en cours.",
-                "room.reset" => "Réinitialisation en cours.",
-                "bot.add" => "Ajout du bot en cours.",
-                "bot.remove" => "Retrait du bot en cours.",
-                "room.toggle-privacy" => "Changement de visibilité en cours.",
+                "room.start" => "Démarrage.",
+                "room.reset" => "Réinitialisation.",
+                "bot.add" => "Ajout du bot.",
+                "bot.remove" => "Retrait du bot.",
+                "room.toggle-privacy" => "Changement de visibilité.",
                 _ => string.Empty
             };
 
