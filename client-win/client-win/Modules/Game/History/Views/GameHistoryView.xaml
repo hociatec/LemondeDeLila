@@ -53,17 +53,7 @@
                      AutomationProperties.HelpText="Historique en lecture seule. Naviguez comme dans un document (flèches, PageUp/PageDown, sélection, etc.)."
                      MinHeight="200" />
 
-            <!-- Live region (UIA) : annonce les nouvelles lignes sans déplacer le focus -->
-            <TextBlock Grid.Row="2"
-                       Text="{Binding LastAnnouncement}"
-                       AutomationProperties.Name="{Binding LastAnnouncement}"
-                       AutomationProperties.AutomationId="HistoryLiveRegion"
-                       AutomationProperties.LiveSetting="Polite"
-                       IsHitTestVisible="False"
-                       Focusable="False"
-                       Height="1"
-                       Opacity="0.01" />
+            <!-- UIA notifications are emitted from code-behind on new entries -->
         </Grid>
     </Border>
 </UserControl>
-

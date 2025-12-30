@@ -659,7 +659,6 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
             foreach (var msg in presented.newLogMessages)
             {
                 MessageReceived?.Invoke(msg);
-                _announcementRouter.TryAnnounceLogMessage(msg);
             }
 
             if (state != null)

@@ -13,7 +13,6 @@ public sealed class GameHistoryViewModel : ObservableObject
 {
     private const int MaxEntries = 400;
     private string _displayText = string.Empty;
-    private string _lastAnnouncement = string.Empty;
     private bool _isPruning;
     private bool _pruneScheduled;
     private readonly Dispatcher _dispatcher;
@@ -35,12 +34,6 @@ public sealed class GameHistoryViewModel : ObservableObject
         private set => SetProperty(ref _displayText, value);
     }
 
-    public string LastAnnouncement
-    {
-        get => _lastAnnouncement;
-        private set => SetProperty(ref _lastAnnouncement, value);
-    }
-
     private void OnEntriesChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         // IMPORTANT: on ne peut pas modifier une ObservableCollection pendant son événement CollectionChanged
@@ -52,7 +45,6 @@ public sealed class GameHistoryViewModel : ObservableObject
         }
 
         RebuildDisplayText();
-        UpdateLastAnnouncement(e);
     }
 
     private void SchedulePrune()
@@ -90,39 +82,5 @@ public sealed class GameHistoryViewModel : ObservableObject
     private void RebuildDisplayText()
     {
         DisplayText = string.Join(Environment.NewLine, Entries.Where(s => !string.IsNullOrEmpty(s)));
-    }
-
-    private void UpdateLastAnnouncement(NotifyCollectionChangedEventArgs e)
-    {
-        string? next = null;
-
-        if (e.Action == NotifyCollectionChangedAction.Add && e.NewItems != null && e.NewItems.Count > 0)
-        {
-            next = e.NewItems[e.NewItems.Count - 1] as string;
-        }
-        else if (e.Action == NotifyCollectionChangedAction.Reset && Entries.Count > 0)
-        {
-            next = Entries[Entries.Count - 1];
-        }
-
-        if (string.IsNullOrWhiteSpace(next))
-        {
-            return;
-        }
-
-        // Force a UIA live-region update even if the message repeats.
-        if (string.Equals(LastAnnouncement, next, StringComparison.Ordinal))
-        {
-            LastAnnouncement = next + " ";
-            return;
-        }
-
-        if (string.Equals(LastAnnouncement, next + " ", StringComparison.Ordinal))
-        {
-            LastAnnouncement = next;
-            return;
-        }
-
-        LastAnnouncement = next;
     }
 }

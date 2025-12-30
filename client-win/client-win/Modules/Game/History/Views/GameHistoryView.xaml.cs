@@ -88,7 +88,7 @@ public partial class GameHistoryView : UserControl
         if (e.Action == NotifyCollectionChangedAction.Add && e.NewItems != null && e.NewItems.Count > 0)
         {
             var last = AppendEntries(e.NewItems.Cast<string>());
-            if (!string.IsNullOrWhiteSpace(last))
+            if (!string.IsNullOrWhiteSpace(last) && !HistoryEditor.IsKeyboardFocusWithin)
             {
                 AnnounceToScreenReader(last);
             }
