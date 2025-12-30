@@ -224,12 +224,6 @@ public sealed partial class AdminViewModel
                     await LoadChatAsync().ConfigureAwait(true);
                     return;
                 }
-                if (tag is string t0 && t0 == "chat.includeDeleted.toggle")
-                {
-                    _chatIncludeDeleted = !_chatIncludeDeleted;
-                    await LoadChatAsync().ConfigureAwait(true);
-                    return;
-                }
                 if (tag is string t2 && t2 == "chat.clear")
                 {
                     await ClearChatAsync().ConfigureAwait(true);

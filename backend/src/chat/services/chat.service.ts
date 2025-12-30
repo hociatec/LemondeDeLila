@@ -87,9 +87,9 @@ export class ChatService {
       .orderBy('m.createdAt', 'DESC')
       .take(Math.min(Math.max(limit, 1), 1000));
 
-    if (!includeDeleted) {
-      qb.where({ deletedAt: IsNull() });
-    }
+    // NOTE: on garde le paramètre includeDeleted pour compatibilité protocolaire,
+    // mais côté produit la suppression est définitive (pas de corbeille).
+    if (!includeDeleted) qb.where({ deletedAt: IsNull() });
 
     const rows = await qb.getMany();
     return rows.reverse();
@@ -98,23 +98,16 @@ export class ChatService {
   async adminDeleteMessage(messageId: string): Promise<boolean> {
     const id = (messageId || '').trim();
     if (!id) return false;
-    const msg = await this.messages.findOne({
-      where: { messageId: id },
-    });
-    if (!msg) return false;
-    if (msg.deletedAt) return true;
-    msg.deletedAt = new Date();
-    await this.messages.save(msg);
-    return true;
+    const res = await this.messages.delete({ messageId: id });
+    return (res.affected ?? 0) > 0;
   }
 
   async adminClearAll(): Promise<number> {
-    const now = new Date();
+    // Suppression définitive.
     const res = await this.messages
       .createQueryBuilder()
-      .update(ChatMessage)
-      .set({ deletedAt: now })
-      .where('deletedAt IS NULL')
+      .delete()
+      .from(ChatMessage)
       .execute();
     return res.affected ?? 0;
   }
