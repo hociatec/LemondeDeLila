@@ -76,6 +76,7 @@
                          x:Name="HistoryBox"
                          Text="{Binding HistoryText, Mode=OneWay}"
                          IsReadOnly="True"
+                         IsReadOnlyCaretVisible="True"
                          AcceptsReturn="True"
                          TextWrapping="Wrap"
                          VerticalScrollBarVisibility="Auto"
