@@ -33,6 +33,27 @@ public sealed partial class AdminViewModel
             return;
         }
 
+        if (action == "bots.name.toggle")
+        {
+            var prompt = bot.Enabled
+                ? $"Désactiver le bot {bot.Name} ?"
+                : $"Activer le bot {bot.Name} ?";
+            var ok = await _dialogs.Confirm("Bots", prompt).ConfigureAwait(true);
+            if (ok != true)
+            {
+                return;
+            }
+        }
+
+        if (action == "bots.name.delete")
+        {
+            var ok = await _dialogs.Confirm("Suppression", $"Supprimer le bot {bot.Name} ?").ConfigureAwait(true);
+            if (ok != true)
+            {
+                return;
+            }
+        }
+
         IsBusy = true;
         try
         {
@@ -40,10 +61,12 @@ public sealed partial class AdminViewModel
             if (action == "bots.name.toggle")
             {
                 response = await _admin.UpdateBotNameAsync(bot.Id, enabled: !bot.Enabled).ConfigureAwait(true);
+                await _dialogs.ShowInfo("Bots", bot.Enabled ? $"Bot {bot.Name} désactivé." : $"Bot {bot.Name} activé.").ConfigureAwait(true);
             }
             else if (action == "bots.name.delete")
             {
                 response = await _admin.DeleteBotNameAsync(bot.Id).ConfigureAwait(true);
+                await _dialogs.ShowInfo("Suppression", $"Bot {bot.Name} supprimé.").ConfigureAwait(true);
             }
             else
             {

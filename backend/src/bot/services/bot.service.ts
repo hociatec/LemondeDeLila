@@ -82,14 +82,14 @@ export class BotService {
 
   async updateBotName(
     id: number,
-    update: { name?: string; enabled?: boolean },
+    update: { name?: string | null; enabled?: boolean | null },
   ): Promise<BotName> {
     const botName = await this.botNames.findOne({ where: { id } });
     if (!botName) {
       throw new NotFoundException('Bot introuvable');
     }
 
-    if (update.name !== undefined) {
+    if (update.name != null) {
       const sanitized = this.sanitizeName(update.name);
       if (!sanitized) {
         throw new BadRequestException('Nom requis');
@@ -103,7 +103,7 @@ export class BotService {
       }
     }
 
-    if (update.enabled !== undefined) {
+    if (update.enabled != null) {
       botName.enabled = Boolean(update.enabled);
     }
 

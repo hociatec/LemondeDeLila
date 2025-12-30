@@ -39,6 +39,7 @@ public sealed partial class AdminViewModel : ObservableObject
     private int _botTurnDelayMs = 4000;
     private string _botNameFormMode = string.Empty;
     private int _botNameFormId;
+    private string _botNameFormOriginalName = string.Empty;
     private AdminRoleDefinitionDto[] _loadedRoleDefinitions = Array.Empty<AdminRoleDefinitionDto>();
     private AdminRoleDefinitionDto? _selectedRoleDefinition;
     private string _roleDefinitionFormMode = string.Empty;

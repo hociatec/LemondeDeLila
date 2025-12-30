@@ -12,6 +12,7 @@ public sealed partial class AdminViewModel
         _page = AdminPage.BotNameForm;
         _botNameFormMode = mode;
         _botNameFormId = bot?.Id ?? 0;
+        _botNameFormOriginalName = bot?.Name ?? string.Empty;
         Title = mode == "create" ? "Créer un bot" : $"Renommer {bot?.Name}";
         Details = mode == "create" ? "Nom affiché dans les tables." : $"ID : {bot?.Id}";
         TextInputLabel = "Nom";
@@ -85,10 +86,19 @@ public sealed partial class AdminViewModel
             if (string.Equals(_botNameFormMode, "edit", StringComparison.OrdinalIgnoreCase) && _botNameFormId > 0)
             {
                 response = await _admin.UpdateBotNameAsync(_botNameFormId, name: name).ConfigureAwait(true);
+                if (!string.Equals(_botNameFormOriginalName, name, StringComparison.Ordinal))
+                {
+                    await _dialogs.ShowInfo("Bots", $"Bot renommé : {_botNameFormOriginalName} → {name}.").ConfigureAwait(true);
+                }
+                else
+                {
+                    await _dialogs.ShowInfo("Bots", $"Bot {_botNameFormOriginalName} mis à jour.").ConfigureAwait(true);
+                }
             }
             else
             {
                 response = await _admin.CreateBotNameAsync(name, enabled: true).ConfigureAwait(true);
+                await _dialogs.ShowInfo("Bots", $"Bot créé : {name}.").ConfigureAwait(true);
             }
 
             _loadedBotNames = (response.Names ?? new()).ToArray();

@@ -71,9 +71,21 @@ public sealed partial class AdminService
     public async Task<AdminBotNamesListResponseDto> UpdateBotNameAsync(int id, string? name = null, bool? enabled = null, CancellationToken cancellationToken = default)
     {
         var token = EnsureAuth();
+        var payload = new System.Collections.Generic.Dictionary<string, object?>
+        {
+            ["id"] = id
+        };
+        if (name != null)
+        {
+            payload["name"] = name;
+        }
+        if (enabled != null)
+        {
+            payload["enabled"] = enabled;
+        }
         var response = await _ws.RequestAsync<AdminBotNamesListResponseDto>(
             WsMessageTypes.Admin.BotNameUpdate,
-            new { id, name, enabled },
+            payload,
             token,
             cancellationToken).ConfigureAwait(false);
         if (!response.Success || response.Payload == null)
@@ -98,4 +110,3 @@ public sealed partial class AdminService
         return response.Payload;
     }
 }
-
