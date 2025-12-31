@@ -165,10 +165,39 @@ public sealed class MenuRouterStub : IMenuRouter
                         list.SelectedIndex = 0;
                     }
 
-                    list.UpdateLayout();
-                    list.ScrollIntoView(list.SelectedItem ?? list.Items[list.SelectedIndex]);
-                    list.Focus();
-                    System.Windows.Input.Keyboard.Focus(list);
+                    void FocusSelectedItem()
+                    {
+                        list.UpdateLayout();
+                        list.ScrollIntoView(list.SelectedItem ?? list.Items[list.SelectedIndex]);
+                        if (list.ItemContainerGenerator.ContainerFromIndex(list.SelectedIndex) is ListBoxItem item)
+                        {
+                            item.Focus();
+                            System.Windows.Input.Keyboard.Focus(item);
+                            return;
+                        }
+
+                        list.Focus();
+                        System.Windows.Input.Keyboard.Focus(list);
+                    }
+
+                    if (list.ItemContainerGenerator.Status == System.Windows.Controls.Primitives.GeneratorStatus.ContainersGenerated)
+                    {
+                        FocusSelectedItem();
+                        return;
+                    }
+
+                    EventHandler? handler = null;
+                    handler = (_, __) =>
+                    {
+                        if (list.ItemContainerGenerator.Status != System.Windows.Controls.Primitives.GeneratorStatus.ContainersGenerated)
+                        {
+                            return;
+                        }
+
+                        list.ItemContainerGenerator.StatusChanged -= handler;
+                        FocusSelectedItem();
+                    };
+                    list.ItemContainerGenerator.StatusChanged += handler;
                     return;
                 }
 

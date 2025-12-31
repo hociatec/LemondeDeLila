@@ -189,7 +189,7 @@ public sealed class MenuRouter : IMenuRouter
     private static void RestoreFocusAfterBackNavigation(UserControl target)
     {
         // Accessibilité: quand on revient au menu précédent via Échap,
-        // remettre le focus sur la liste (NVDA annonce alors "<titre> list", comportement identique au menu principal).
+        // remettre le focus sur l'élément sélectionné (NVDA annonce le libellé, comme lors de la navigation au clavier).
         var dispatcher = target.Dispatcher;
         dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.ApplicationIdle, new Action(() =>
         {
@@ -212,11 +212,39 @@ public sealed class MenuRouter : IMenuRouter
                         list.SelectedIndex = 0;
                     }
 
-                    list.UpdateLayout();
-                    list.ScrollIntoView(list.SelectedItem ?? list.Items[list.SelectedIndex]);
-                    // Focus sur la ListBox (pas sur l'item) pour garder l'annonce "… list" cohérente.
-                    list.Focus();
-                    System.Windows.Input.Keyboard.Focus(list);
+                    void FocusSelectedItem()
+                    {
+                        list.UpdateLayout();
+                        list.ScrollIntoView(list.SelectedItem ?? list.Items[list.SelectedIndex]);
+                        if (list.ItemContainerGenerator.ContainerFromIndex(list.SelectedIndex) is System.Windows.Controls.ListBoxItem item)
+                        {
+                            item.Focus();
+                            System.Windows.Input.Keyboard.Focus(item);
+                            return;
+                        }
+
+                        list.Focus();
+                        System.Windows.Input.Keyboard.Focus(list);
+                    }
+
+                    if (list.ItemContainerGenerator.Status == System.Windows.Controls.Primitives.GeneratorStatus.ContainersGenerated)
+                    {
+                        FocusSelectedItem();
+                        return;
+                    }
+
+                    EventHandler? handler = null;
+                    handler = (_, __) =>
+                    {
+                        if (list.ItemContainerGenerator.Status != System.Windows.Controls.Primitives.GeneratorStatus.ContainersGenerated)
+                        {
+                            return;
+                        }
+
+                        list.ItemContainerGenerator.StatusChanged -= handler;
+                        FocusSelectedItem();
+                    };
+                    list.ItemContainerGenerator.StatusChanged += handler;
                     return;
                 }
 
