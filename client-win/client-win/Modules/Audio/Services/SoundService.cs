@@ -12,13 +12,18 @@ namespace client_win.Modules.Audio.Services;
 
 public sealed class SoundService : ISoundService, IDisposable
 {
-    private sealed record SoundEntry(string RelativePath, Func<bool> IsEnabled, Func<double> Volume);
+    private sealed record SoundEntry(
+        string DefaultRelativePath,
+        Func<string?>? OverridePath,
+        Func<bool> IsEnabled,
+        Func<double> Volume);
 
     private readonly IOptionsService _options;
     private readonly Dispatcher _dispatcher;
     private readonly ILogger<SoundService> _logger;
     private readonly object _gate = new();
     private readonly Dictionary<SoundId, MediaPlayer> _players = new();
+    private readonly Dictionary<SoundId, string> _loadedPaths = new();
     private readonly Dictionary<SoundId, long> _lastPlayTicks = new();
     private readonly Dictionary<SoundId, SoundEntry> _sounds;
 
@@ -34,19 +39,23 @@ public sealed class SoundService : ISoundService, IDisposable
         _sounds = new Dictionary<SoundId, SoundEntry>
         {
             [SoundId.ChatMessageSent] = new SoundEntry(
-                RelativePath: Path.Combine("Assets", "Sounds", "envoimsgtchat.mp3"),
+                DefaultRelativePath: Path.Combine("Assets", "Sounds", "envoimsgtchat.mp3"),
+                OverridePath: null,
                 IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundChatMessages,
                 Volume: () => Clamp01(_options.Current.SoundChatMessagesVolume / 100.0)),
             [SoundId.ChatMessageReceived] = new SoundEntry(
-                RelativePath: Path.Combine("Assets", "Sounds", "receptionmsgtchat.mp3"),
+                DefaultRelativePath: Path.Combine("Assets", "Sounds", "receptionmsgtchat.mp3"),
+                OverridePath: null,
                 IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundChatMessages,
                 Volume: () => Clamp01(_options.Current.SoundChatMessagesVolume / 100.0)),
             [SoundId.RoomOpened] = new SoundEntry(
-                RelativePath: Path.Combine("Assets", "Sounds", "roomopened.mp3"),
+                DefaultRelativePath: Path.Combine("Assets", "Sounds", "roomopened.mp3"),
+                OverridePath: () => _options.Current.SoundRoomOpenedPath,
                 IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundSelect,
                 Volume: () => Clamp01(_options.Current.SoundSelectVolume / 100.0)),
             [SoundId.RoomExit] = new SoundEntry(
-                RelativePath: Path.Combine("Assets", "Sounds", "roomexit.mp3"),
+                DefaultRelativePath: Path.Combine("Assets", "Sounds", "roomexit.mp3"),
+                OverridePath: () => _options.Current.SoundRoomExitPath,
                 IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundSelect,
                 Volume: () => Clamp01(_options.Current.SoundSelectVolume / 100.0)),
         };
@@ -58,7 +67,7 @@ public sealed class SoundService : ISoundService, IDisposable
         {
             foreach (var (sound, entry) in _sounds)
             {
-                var filePath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, entry.RelativePath));
+                var filePath = ResolveFilePath(entry);
                 if (!File.Exists(filePath))
                 {
                     _logger.LogDebug("Sound file missing: {Path}", filePath);
@@ -69,30 +78,7 @@ public sealed class SoundService : ISoundService, IDisposable
                 {
                     lock (_gate)
                     {
-                        if (_players.ContainsKey(sound))
-                        {
-                            continue;
-                        }
-
-                        var player = new MediaPlayer();
-                        player.MediaFailed += (_, args) =>
-                        {
-                            _logger.LogWarning(
-                                "Sound preload failed ({Sound}): {Error}",
-                                sound,
-                                args.ErrorException?.Message ?? "unknown error");
-                            lock (_gate)
-                            {
-                                if (_players.TryGetValue(sound, out var existing) && ReferenceEquals(existing, player))
-                                {
-                                    _players.Remove(sound);
-                                }
-                            }
-                            try { player.Close(); } catch { /* ignore */ }
-                        };
-
-                        player.Open(new Uri(filePath, UriKind.Absolute));
-                        _players[sound] = player;
+                        EnsurePlayerLoaded(sound, filePath);
                     }
                 }
                 catch (Exception ex)
@@ -133,7 +119,7 @@ public sealed class SoundService : ISoundService, IDisposable
             _lastPlayTicks[sound] = now;
         }
 
-        var filePath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, entry.RelativePath));
+        var filePath = ResolveFilePath(entry);
         if (!File.Exists(filePath))
         {
             _logger.LogDebug("Sound file missing: {Path}", filePath);
@@ -147,27 +133,8 @@ public sealed class SoundService : ISoundService, IDisposable
                 MediaPlayer player;
                 lock (_gate)
                 {
-                    if (!_players.TryGetValue(sound, out player!))
-                    {
-                        player = new MediaPlayer();
-                        player.MediaFailed += (_, args) =>
-                        {
-                            _logger.LogWarning(
-                                "Sound playback failed ({Sound}): {Error}",
-                                sound,
-                                args.ErrorException?.Message ?? "unknown error");
-                            lock (_gate)
-                            {
-                                if (_players.TryGetValue(sound, out var existing) && ReferenceEquals(existing, player))
-                                {
-                                    _players.Remove(sound);
-                                }
-                            }
-                            try { player.Close(); } catch { /* ignore */ }
-                        };
-                        player.Open(new Uri(filePath, UriKind.Absolute));
-                        _players[sound] = player;
-                    }
+                    EnsurePlayerLoaded(sound, filePath);
+                    player = _players[sound];
                 }
 
                 player.Volume = entry.Volume();
@@ -200,8 +167,69 @@ public sealed class SoundService : ISoundService, IDisposable
                 try { p.Close(); } catch { /* ignore */ }
             }
             _players.Clear();
+            _loadedPaths.Clear();
             _lastPlayTicks.Clear();
         }
+    }
+
+    private string ResolveFilePath(SoundEntry entry)
+    {
+        var overridePath = entry.OverridePath?.Invoke();
+        if (!string.IsNullOrWhiteSpace(overridePath))
+        {
+            try
+            {
+                var candidate = Path.GetFullPath(overridePath);
+                if (File.Exists(candidate))
+                {
+                    return candidate;
+                }
+            }
+            catch
+            {
+                // ignore
+            }
+        }
+
+        return Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, entry.DefaultRelativePath));
+    }
+
+    private void EnsurePlayerLoaded(SoundId sound, string absolutePath)
+    {
+        if (_players.TryGetValue(sound, out var existing) &&
+            _loadedPaths.TryGetValue(sound, out var loaded) &&
+            string.Equals(loaded, absolutePath, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        if (_players.TryGetValue(sound, out var old))
+        {
+            try { old.Close(); } catch { /* ignore */ }
+            _players.Remove(sound);
+        }
+        _loadedPaths.Remove(sound);
+
+        var player = new MediaPlayer();
+        player.MediaFailed += (_, args) =>
+        {
+            _logger.LogWarning(
+                "Sound playback failed ({Sound}): {Error}",
+                sound,
+                args.ErrorException?.Message ?? "unknown error");
+            lock (_gate)
+            {
+                if (_players.TryGetValue(sound, out var current) && ReferenceEquals(current, player))
+                {
+                    _players.Remove(sound);
+                    _loadedPaths.Remove(sound);
+                }
+            }
+            try { player.Close(); } catch { /* ignore */ }
+        };
+        player.Open(new Uri(absolutePath, UriKind.Absolute));
+        _players[sound] = player;
+        _loadedPaths[sound] = absolutePath;
     }
 
     private static double Clamp01(double v)

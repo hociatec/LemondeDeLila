@@ -71,6 +71,45 @@ public sealed partial class AdminViewModel
                     await LoadPerfAsync().ConfigureAwait(true);
                     return;
                 }
+                if (tag is string sounds && sounds == "sounds")
+                {
+                    BuildSounds();
+                    return;
+                }
+            }
+
+            if (_page == AdminPage.Sounds && tag is string soundsTag && soundsTag == "sounds.table")
+            {
+                BuildSoundsTable();
+                return;
+            }
+
+            if (_page == AdminPage.SoundsTable && tag is string tableSound)
+            {
+                if (tableSound == "sounds.table.enter")
+                {
+                    BuildSoundDetails(Modules.Audio.Models.SoundId.RoomOpened);
+                    return;
+                }
+                if (tableSound == "sounds.table.exit")
+                {
+                    BuildSoundDetails(Modules.Audio.Models.SoundId.RoomExit);
+                    return;
+                }
+            }
+
+            if (_page == AdminPage.SoundDetails && tag is string soundAction && _soundDetailsId.HasValue)
+            {
+                if (soundAction == "sound.preview")
+                {
+                    _sounds.Play(_soundDetailsId.Value);
+                    return;
+                }
+                if (soundAction == "sound.change")
+                {
+                    await ChangeSoundAsync(_soundDetailsId.Value).ConfigureAwait(true);
+                    return;
+                }
             }
 
             if (_page == AdminPage.Games && tag is string gamesAction && gamesAction == "games.categories")

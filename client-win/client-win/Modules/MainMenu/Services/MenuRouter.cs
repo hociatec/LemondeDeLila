@@ -27,6 +27,7 @@ using client_win.Modules.Admin.Services;
 using client_win.Modules.About.ViewModels;
 using client_win.Modules.About.Views;
 using client_win.Modules.Updates;
+using client_win.Modules.Audio.Services;
 
 namespace client_win.Modules.MainMenu.Services;
 
@@ -50,11 +51,13 @@ public sealed class MenuRouter : IMenuRouter
     private readonly IDialogService _dialogs;
     private readonly IClientUpdatePublisher _publisher;
     private readonly ClientConfiguration _config;
+    private readonly ISoundService _sounds;
 
     public MenuRouter(
         ILogger<MenuRouter> logger,
         ClientConfiguration config,
         IOptionsService options,
+        ISoundService sounds,
         IChatLauncher chat,
         ICatalogService catalog,
         INavigationService navigation,
@@ -70,6 +73,7 @@ public sealed class MenuRouter : IMenuRouter
         _logger = logger;
         _config = config;
         _options = options;
+        _sounds = sounds;
         _chat = chat;
         _catalog = catalog;
         _navigation = navigation;
@@ -206,7 +210,7 @@ public sealed class MenuRouter : IMenuRouter
 
         var previous = _navigation.CurrentView;
         var view = new AdminView();
-        var vm = new AdminViewModel(_admin, _config, _publisher, _dialogs, onClose: () =>
+        var vm = new AdminViewModel(_admin, _config, _publisher, _dialogs, _options, _sounds, onClose: () =>
         {
             if (previous != null)
             {

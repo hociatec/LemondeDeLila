@@ -16,6 +16,10 @@ public sealed class OptionsState
     public int SoundSelectVolume { get; set; } = 50;
     public int SoundChatMessagesVolume { get; set; } = 50;
 
+    // Overrides de sons (stockés dans AppData), pour permettre la personnalisation sans casser ClickOnce.
+    public string? SoundRoomOpenedPath { get; set; }
+    public string? SoundRoomExitPath { get; set; }
+
     public bool ChatEnabled { get; set; } = true;
     public bool ConfirmChatExit { get; set; }
 

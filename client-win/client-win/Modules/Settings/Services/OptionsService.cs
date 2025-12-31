@@ -169,6 +169,8 @@ public sealed class OptionsService : IOptionsService
         SoundChatMessages = source.SoundChatMessages,
         SoundChatMessagesVolume = source.SoundChatMessagesVolume,
         MusicVolume = source.MusicVolume,
+        SoundRoomOpenedPath = source.SoundRoomOpenedPath,
+        SoundRoomExitPath = source.SoundRoomExitPath,
         ChatEnabled = source.ChatEnabled,
         ConfirmChatExit = source.ConfirmChatExit,
         StayConnected = source.StayConnected,

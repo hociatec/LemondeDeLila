@@ -7,6 +7,8 @@ using System.Windows.Threading;
 using client_win.Core;
 using client_win.Modules.Admin.Dtos;
 using client_win.Modules.Admin.Services;
+using client_win.Modules.Audio.Services;
+using client_win.Modules.Settings.Services;
 using client_win.Modules.Config;
 using client_win.Modules.Shell.Services;
 using client_win.Modules.Updates;
@@ -85,13 +87,24 @@ public sealed partial class AdminViewModel : ObservableObject
     private int _logLines = 200;
     private string _logFilter = string.Empty;
     private readonly IClientUpdatePublisher _publisher;
+    private readonly IOptionsService _options;
+    private readonly ISoundService _sounds;
 
-    public AdminViewModel(IAdminService admin, ClientConfiguration config, IClientUpdatePublisher publisher, IDialogService dialogs, Action onClose)
+    public AdminViewModel(
+        IAdminService admin,
+        ClientConfiguration config,
+        IClientUpdatePublisher publisher,
+        IDialogService dialogs,
+        IOptionsService options,
+        ISoundService sounds,
+        Action onClose)
     {
         _admin = admin ?? throw new ArgumentNullException(nameof(admin));
         _config = config ?? throw new ArgumentNullException(nameof(config));
         _publisher = publisher ?? throw new ArgumentNullException(nameof(publisher));
         _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
+        _options = options ?? throw new ArgumentNullException(nameof(options));
+        _sounds = sounds ?? throw new ArgumentNullException(nameof(sounds));
         _close = onClose ?? (() => { });
         _dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
 

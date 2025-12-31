@@ -38,7 +38,10 @@ internal enum AdminPage
     RoleDefinitions,
     RoleDefinitionActions,
     RoleDefinitionForm,
-    Perf
+    Perf,
+    Sounds,
+    SoundsTable,
+    SoundDetails
 }
 
 public sealed record PermissionModuleDescriptor(string ModuleId, string DisplayName, string Description);
