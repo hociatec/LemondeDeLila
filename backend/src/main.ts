@@ -107,6 +107,19 @@ async function bootstrap() {
   writeUpdatesLandingPage(updatesDir);
   app.use(
     '/updates/client-win',
+    // ClickOnce manifeste utilise souvent des chemins Windows (backslashes).
+    // Si le client demande des URLs contenant "\" ou "%5C", normaliser vers "/" pour éviter
+    // des 404 qui se traduisent côté ClickOnce par "Des fichiers manquent".
+    (req: any, _res: any, next: any) => {
+      try {
+        if (typeof req?.url === 'string' && (req.url.includes('\\') || /%5c/i.test(req.url))) {
+          req.url = req.url.replace(/%5c/gi, '/').replace(/\\/g, '/');
+        }
+      } catch {
+        // ignore
+      }
+      next();
+    },
     express.static(updatesDir, {
       setHeaders: (res, filePath) => {
         const ext = path.extname(filePath).toLowerCase();
