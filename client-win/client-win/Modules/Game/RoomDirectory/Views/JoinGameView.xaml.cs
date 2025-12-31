@@ -12,6 +12,7 @@ public partial class JoinGameView : UserControl
 {
     private INotifyCollectionChanged? _roomsObservable;
     private int _lastRoomsCount = -1;
+    private Window? _hostWindow;
 
     public JoinGameView()
     {
@@ -23,6 +24,8 @@ public partial class JoinGameView : UserControl
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
         HookRoomsCollection(DataContext as JoinGameViewModel);
+        HookWindowEscape();
+        HookEmptyVisibility();
         FocusAfterLoad();
     }
 
@@ -33,6 +36,8 @@ public partial class JoinGameView : UserControl
 
     private void OnUnloaded(object sender, RoutedEventArgs e)
     {
+        UnhookWindowEscape();
+        UnhookEmptyVisibility();
         HookRoomsCollection(null);
     }
 
@@ -122,6 +127,17 @@ public partial class JoinGameView : UserControl
             DispatcherPriority.Input,
             new Action(() =>
             {
+                // S'assure que le focus est bien dans la vue (sinon Échap / NVDA peuvent ne rien capter).
+                try
+                {
+                    Focus();
+                    Keyboard.Focus(this);
+                }
+                catch
+                {
+                    // ignore
+                }
+
                 if (DataContext is JoinGameViewModel vm && vm.Rooms.Count == 0)
                 {
                     if (EmptyOnlyText != null && EmptyOnlyText.IsVisible)
@@ -133,6 +149,48 @@ public partial class JoinGameView : UserControl
                 }
 
                 FocusWhenContainersGenerated();
+            }));
+    }
+
+    private void HookEmptyVisibility()
+    {
+        if (EmptyOnlyText == null)
+        {
+            return;
+        }
+        EmptyOnlyText.IsVisibleChanged -= OnEmptyOnlyTextIsVisibleChanged;
+        EmptyOnlyText.IsVisibleChanged += OnEmptyOnlyTextIsVisibleChanged;
+    }
+
+    private void UnhookEmptyVisibility()
+    {
+        if (EmptyOnlyText == null)
+        {
+            return;
+        }
+        EmptyOnlyText.IsVisibleChanged -= OnEmptyOnlyTextIsVisibleChanged;
+    }
+
+    private void OnEmptyOnlyTextIsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+    {
+        if (EmptyOnlyText == null || EmptyOnlyText.IsVisible != true)
+        {
+            return;
+        }
+
+        _ = Dispatcher.BeginInvoke(
+            DispatcherPriority.Input,
+            new Action(() =>
+            {
+                try
+                {
+                    EmptyOnlyText.Focus();
+                    Keyboard.Focus(EmptyOnlyText);
+                }
+                catch
+                {
+                    // ignore
+                }
             }));
     }
 
@@ -209,5 +267,56 @@ public partial class JoinGameView : UserControl
                 // Assure un focus "utile" pour lecteurs d'écran quand la liste devient vide ou se remplit.
                 FocusWhenContainersGenerated();
             }));
+    }
+
+    private void HookWindowEscape()
+    {
+        try
+        {
+            var win = Window.GetWindow(this);
+            if (win == null || ReferenceEquals(_hostWindow, win))
+            {
+                return;
+            }
+            UnhookWindowEscape();
+            _hostWindow = win;
+            _hostWindow.PreviewKeyDown += OnWindowPreviewKeyDown;
+        }
+        catch
+        {
+            // ignore
+        }
+    }
+
+    private void UnhookWindowEscape()
+    {
+        try
+        {
+            if (_hostWindow != null)
+            {
+                _hostWindow.PreviewKeyDown -= OnWindowPreviewKeyDown;
+            }
+        }
+        catch
+        {
+            // ignore
+        }
+        finally
+        {
+            _hostWindow = null;
+        }
+    }
+
+    private void OnWindowPreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key != Key.Escape)
+        {
+            return;
+        }
+        if (DataContext is JoinGameViewModel vm && vm.CloseCommand.CanExecute(null))
+        {
+            e.Handled = true;
+            vm.CloseCommand.Execute(null);
+        }
     }
 }

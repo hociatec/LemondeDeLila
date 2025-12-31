@@ -7,7 +7,8 @@
              d:DesignHeight="720" d:DesignWidth="1280"
              Loaded="OnLoaded"
              KeyDown="OnKeyDown"
-             PreviewKeyDown="OnPreviewKeyDown">
+             PreviewKeyDown="OnPreviewKeyDown"
+             Focusable="True">
     <UserControl.InputBindings>
         <KeyBinding Key="Escape" Command="{Binding CloseCommand}" />
     </UserControl.InputBindings>
@@ -58,7 +59,7 @@
         </Style>
     </UserControl.Resources>
 
-    <Grid Background="{StaticResource ShellBackground}" FocusManager.IsFocusScope="True">
+    <Grid Background="{StaticResource ShellBackground}" FocusManager.IsFocusScope="True" Focusable="True">
         <Grid.RowDefinitions>
             <RowDefinition Height="80" />
             <RowDefinition Height="*" />
@@ -152,7 +153,9 @@
                  IsTabStop="True"
                  Visibility="Collapsed"
                  AutomationProperties.Name="Aucune table à rejoindre"
-                 AutomationProperties.LiveSetting="Assertive">
+                 AutomationProperties.HelpText="Aucune table publique disponible. Appuyez sur Échap pour revenir au menu."
+                 AutomationProperties.LiveSetting="Assertive"
+                 PreviewKeyDown="OnPreviewKeyDown">
             <TextBox.Style>
                 <Style TargetType="TextBox">
                     <Setter Property="Visibility" Value="Collapsed" />
