@@ -7,6 +7,9 @@
              d:DesignHeight="720" d:DesignWidth="1280"
              Loaded="OnLoaded"
              KeyDown="OnKeyDown">
+    <UserControl.InputBindings>
+        <KeyBinding Key="Escape" Command="{Binding CloseCommand}" />
+    </UserControl.InputBindings>
     <UserControl.Resources>
         <SolidColorBrush x:Key="ShellBackground" Color="#0B111A" />
         <SolidColorBrush x:Key="PanelBrush" Color="#12263C" />
