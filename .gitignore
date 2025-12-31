@@ -43,6 +43,11 @@ logs/
 logsse.txt
 
 ###############################
+# Runtime data (backend)
+###############################
+backend/data/client-updates/
+
+###############################
 # System files
 ###############################
 .DS_Store

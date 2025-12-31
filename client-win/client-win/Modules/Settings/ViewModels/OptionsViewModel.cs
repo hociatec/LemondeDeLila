@@ -317,28 +317,15 @@ public sealed class OptionsViewModel : ObservableObject
             {
                 msg += $"\nDernière version : {_lastUpdateInfo!.LatestVersion!.Trim()}";
             }
-
-            var confirm = await _dialogs.Confirm(
-                    "Mise à jour",
-                    msg + "\n\nInstaller maintenant ?",
-                    okText: "Mettre à jour",
-                    cancelText: "Plus tard")
+            UpdateStatus = "Mise à jour : action requise.";
+            _ = await ClientUpdateCoordinator.PromptAsync(
+                    _dialogs,
+                    title: "Mise à jour",
+                    message: msg + "\n\nMettre à jour maintenant ?",
+                    clickOnceUrl: url,
+                    reason: "options",
+                    deDupKey: $"options:{_lastUpdateInfo?.LatestVersion}")
                 .ConfigureAwait(true);
-
-            if (confirm != true)
-            {
-                UpdateStatus = "Mise à jour ignorée.";
-                return;
-            }
-
-            UpdateStatus = "Installation de la mise à jour...";
-            await ClientUpdateInstaller
-                .InstallLatestAsync(_dialogs, url, reason: "options")
-                .ConfigureAwait(true);
-
-            // L'installation ClickOnce se termine au redémarrage, et le fallback lance l'installateur.
-            // Dans tous les cas, on ferme l'app pour laisser Windows appliquer la mise à jour.
-            Environment.Exit(0);
         }
         catch (OperationCanceledException)
         {

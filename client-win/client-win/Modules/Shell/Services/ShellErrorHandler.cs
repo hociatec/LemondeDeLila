@@ -188,22 +188,14 @@ public sealed class ShellErrorHandler : IDisposable
         }
         msg += "\n\nMettre à jour maintenant ?";
 
-        var wantUpdate = await _dialogs.Confirm(
-                "Mise à jour requise",
-                msg,
-                okText: "Mettre à jour",
-                cancelText: "OK")
-            .ConfigureAwait(false) == true;
-
-        if (!wantUpdate)
-        {
-            return;
-        }
-
-        await ClientUpdateInstaller
-            .InstallLatestAsync(_dialogs, url, reason: "shell-required")
+        _ = await ClientUpdateCoordinator.PromptAsync(
+                _dialogs,
+                title: "Mise à jour requise",
+                message: msg,
+                clickOnceUrl: url,
+                reason: "shell-required",
+                deDupKey: $"shell-required:{min}")
             .ConfigureAwait(false);
-        Environment.Exit(0);
     }
 
     private sealed class ClientVersionInfo

@@ -8,18 +8,11 @@ namespace client_win.Modules.Updates;
 
 public static class ClientUpdateStartupPrompt
 {
-    private static readonly SemaphoreSlim Gate = new(1, 1);
-
     public static async Task<bool> CheckAndPromptAsync(
         ClientConfiguration config,
         IDialogService dialogs,
         CancellationToken cancellationToken = default)
     {
-        if (!await Gate.WaitAsync(0, cancellationToken).ConfigureAwait(true))
-        {
-            return true;
-        }
-
         try
         {
             var info = await ClientUpdateApi.GetAsync(config, cancellationToken).ConfigureAwait(true);
@@ -44,24 +37,16 @@ public static class ClientUpdateStartupPrompt
                     msg += $"\n\n{info.Message.Trim()}";
                 }
 
-                // UX unifiée: OK = continuer, Mettre à jour = lancer ClickOnce.
-                var wantUpdate = await dialogs.Confirm(
-                        "Mise à jour requise",
-                        msg + "\n\nMettre à jour maintenant ?",
-                        okText: "Mettre à jour",
-                        cancelText: "OK")
-                    .ConfigureAwait(true) == true;
-
-                if (!wantUpdate)
-                {
-                    return true;
-                }
-
-                await ClientUpdateInstaller
-                    .InstallLatestAsync(dialogs, info.Url, reason: "startup-required", cancellationToken)
+                _ = await ClientUpdateCoordinator.PromptAsync(
+                        dialogs,
+                        title: "Mise à jour requise",
+                        message: msg + "\n\nMettre à jour maintenant ?",
+                        clickOnceUrl: info.Url,
+                        reason: "startup-required",
+                        deDupKey: $"startup-required:{info.MinRequiredVersion}:{info.LatestVersion}",
+                        cancellationToken: cancellationToken)
                     .ConfigureAwait(true);
-                Environment.Exit(0);
-                return false;
+                return true;
             }
 
             if (info.UpdateAvailable == true)
@@ -77,23 +62,16 @@ public static class ClientUpdateStartupPrompt
                     msg += $"\n\n{info.Message.Trim()}";
                 }
 
-                var wantUpdate = await dialogs.Confirm(
-                        "Mise à jour disponible",
-                        msg + "\n\nMettre à jour maintenant ?",
-                        okText: "Mettre à jour",
-                        cancelText: "OK")
-                    .ConfigureAwait(true) == true;
-
-                if (!wantUpdate)
-                {
-                    return true;
-                }
-
-                await ClientUpdateInstaller
-                    .InstallLatestAsync(dialogs, info.Url, reason: "startup-available", cancellationToken)
+                _ = await ClientUpdateCoordinator.PromptAsync(
+                        dialogs,
+                        title: "Mise à jour disponible",
+                        message: msg + "\n\nMettre à jour maintenant ?",
+                        clickOnceUrl: info.Url,
+                        reason: "startup-available",
+                        deDupKey: $"startup-available:{info.LatestVersion}",
+                        cancellationToken: cancellationToken)
                     .ConfigureAwait(true);
-                Environment.Exit(0);
-                return false;
+                return true;
             }
 
             return true;
@@ -101,10 +79,6 @@ public static class ClientUpdateStartupPrompt
         catch
         {
             return true;
-        }
-        finally
-        {
-            Gate.Release();
         }
     }
 }

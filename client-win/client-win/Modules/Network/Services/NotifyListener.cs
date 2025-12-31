@@ -27,7 +27,6 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
     private readonly IRoomDirectoryClient _rooms;
     private readonly IGameTableOpener _tables;
     private readonly INavigationService _navigation;
-    private readonly SemaphoreSlim _updateGate = new(1, 1);
 
     private IWebSocketConnection? _ws;
     private bool _started;
@@ -186,11 +185,6 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
 
     private async Task HandleClientUpdateRequiredAsync(string message, string minRequiredVersion, string url)
     {
-        if (!await _updateGate.WaitAsync(0).ConfigureAwait(false))
-        {
-            return;
-        }
-
         try
         {
             var msg = string.IsNullOrWhiteSpace(message)
@@ -207,22 +201,14 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
                 msg += $"\nVotre version : {current.Trim()}";
             }
 
-            var wantUpdate = await _dialogs.Confirm(
-                    "Mise à jour requise",
-                    msg + "\n\nMettre à jour maintenant ?",
-                    okText: "Mettre à jour",
-                    cancelText: "OK")
-                .ConfigureAwait(true) == true;
-
-            if (!wantUpdate)
-            {
-                return;
-            }
-
-            await ClientUpdateInstaller
-                .InstallLatestAsync(_dialogs, url, reason: "notify-required")
+            _ = await ClientUpdateCoordinator.PromptAsync(
+                    _dialogs,
+                    title: "Mise à jour requise",
+                    message: msg + "\n\nMettre à jour maintenant ?",
+                    clickOnceUrl: url,
+                    reason: "notify-required",
+                    deDupKey: $"notify-required:{minRequiredVersion}")
                 .ConfigureAwait(true);
-            Environment.Exit(0);
         }
         catch (Exception ex)
         {
@@ -236,10 +222,6 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
                 // ignore
             }
             Environment.Exit(0);
-        }
-        finally
-        {
-            _updateGate.Release();
         }
     }
 
@@ -382,11 +364,6 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
 
     private async Task HandleClientUpdateAvailableAsync(string message, string version)
     {
-        if (!await _updateGate.WaitAsync(0).ConfigureAwait(false))
-        {
-            return;
-        }
-
         try
         {
             var msg = string.IsNullOrWhiteSpace(message)
@@ -398,30 +375,20 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
                 msg += $"\nVersion annoncée : {version.Trim()}";
             }
 
-            var confirm = await _dialogs.Confirm(
-                    "Mise à jour",
-                    msg + "\n\nInstaller maintenant ?",
-                    okText: "Mettre à jour",
-                    cancelText: "OK")
-                .ConfigureAwait(true);
-            if (confirm != true)
-            {
-                return;
-            }
-
             Log.Information("Mise à jour acceptée (notify): version={Version}", version?.Trim());
-            await ClientUpdateInstaller
-                .InstallLatestAsync(_dialogs, updatesBaseUrl: null, reason: "notify-available")
+            _ = await ClientUpdateCoordinator.PromptAsync(
+                    _dialogs,
+                    title: "Mise à jour disponible",
+                    message: msg + "\n\nMettre à jour maintenant ?",
+                    clickOnceUrl: null,
+                    reason: "notify-available",
+                    deDupKey: $"notify-available:{version}")
                 .ConfigureAwait(true);
         }
         catch (Exception ex)
         {
             Log.Warning(ex, "Erreur lors de la mise à jour client (notify).");
             await _dialogs.ShowError("Mise à jour", ex.Message).ConfigureAwait(true);
-        }
-        finally
-        {
-            _updateGate.Release();
         }
     }
 
@@ -445,6 +412,5 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         await StopAsync().ConfigureAwait(false);
-        _updateGate.Dispose();
     }
 }
