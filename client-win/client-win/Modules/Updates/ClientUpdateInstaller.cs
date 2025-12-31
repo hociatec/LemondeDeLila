@@ -26,8 +26,38 @@ public static class ClientUpdateInstaller
         // - ne jamais ouvrir une page web
         // - lancer ClickOnce via dfshim (même si Windows aurait ouvert un navigateur)
         // - en cas d'installation ClickOnce existante, utiliser UpdateLocation quand possible (répare aussi les fichiers manquants)
-        var baseUrl = NormalizeBaseUrl(updatesBaseUrl ?? TryGetCurrentDeploymentUpdateLocation() ?? DefaultBaseUrl);
-        var applicationUrl = await TryResolveApplicationUrlAsync(baseUrl, cancellationToken).ConfigureAwait(true);
+        string? applicationUrl = null;
+        string? lastTriedBaseUrl = null;
+
+        foreach (var raw in new[]
+                 {
+                     // Priorité: l'UpdateLocation ClickOnce de l'installation courante (le plus fiable).
+                     TryGetCurrentDeploymentUpdateLocation(),
+                     // Ensuite: l'URL fournie par le serveur (peut être absente ou non-ClickOnce).
+                     updatesBaseUrl,
+                     // Enfin: fallback stable.
+                     DefaultBaseUrl
+                 })
+        {
+            var baseUrl = NormalizeBaseUrl(raw);
+            if (string.IsNullOrWhiteSpace(baseUrl))
+            {
+                continue;
+            }
+
+            if (string.Equals(baseUrl, lastTriedBaseUrl, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+            lastTriedBaseUrl = baseUrl;
+
+            applicationUrl = await TryResolveApplicationUrlAsync(baseUrl, cancellationToken).ConfigureAwait(true);
+            if (!string.IsNullOrWhiteSpace(applicationUrl))
+            {
+                break;
+            }
+        }
+
         if (string.IsNullOrWhiteSpace(applicationUrl))
         {
             await dialogs
@@ -133,9 +163,23 @@ public static class ClientUpdateInstaller
         }
     }
 
-    private static string NormalizeBaseUrl(string? url)
+    private static string? NormalizeBaseUrl(string? url)
     {
-        var candidate = string.IsNullOrWhiteSpace(url) ? DefaultBaseUrl : url.Trim();
+        if (string.IsNullOrWhiteSpace(url))
+        {
+            return null;
+        }
+
+        var candidate = url.Trim();
+
+        // Certains endpoints renvoient un lien de téléchargement (zip/exe). On les ignore ici:
+        // l'updater doit impérativement partir d'un .application ou d'un dossier ClickOnce.
+        if (candidate.EndsWith(".zip", StringComparison.OrdinalIgnoreCase) ||
+            candidate.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
         if (!candidate.EndsWith("/", StringComparison.Ordinal) &&
             !candidate.EndsWith(".application", StringComparison.OrdinalIgnoreCase))
         {
