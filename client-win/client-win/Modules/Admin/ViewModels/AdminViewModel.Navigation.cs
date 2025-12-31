@@ -132,15 +132,15 @@ public sealed partial class AdminViewModel
             return AdminNavResult.Moved;
         }
 
-        if (_page is AdminPage.ChatAccess or AdminPage.ChatAccessUserActions or AdminPage.ChatAccessBanForm)
-        {
-            _ = LoadChatAccessAsync();
-            return AdminNavResult.Moved;
-        }
-
         if (_page is AdminPage.Games or AdminPage.Users or AdminPage.Broadcast or AdminPage.ClientUpdates)
         {
             BuildRoot();
+            return AdminNavResult.Moved;
+        }
+
+        if (_page == AdminPage.UserChatBanForm && _selectedUser != null)
+        {
+            BuildUserActions(_selectedUser);
             return AdminNavResult.Moved;
         }
 
@@ -180,7 +180,6 @@ public sealed partial class AdminViewModel
         Items.Add(new AdminMenuItem("Gérer les bots", tag: "bots"));
         Items.Add(new AdminMenuItem("Gérer les utilisateurs", tag: "users"));
         Items.Add(new AdminMenuItem("Tchat (modération)", tag: "chat"));
-        Items.Add(new AdminMenuItem("Tchat (accès)", tag: "chatAccess"));
         Items.Add(new AdminMenuItem("Envoyer un message global", tag: "broadcast"));
         Items.Add(new AdminMenuItem("Mises à jour client", tag: "clientUpdates"));
         Items.Add(new AdminMenuItem("Gérer les rôles", tag: "rolesDefinitions"));

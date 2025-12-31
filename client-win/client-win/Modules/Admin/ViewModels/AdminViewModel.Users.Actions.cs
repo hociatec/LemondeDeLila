@@ -1,4 +1,5 @@
 using System.Linq;
+using System;
 using System.Threading.Tasks;
 using client_win.Modules.Admin.Dtos;
 
@@ -6,6 +7,12 @@ namespace client_win.Modules.Admin.ViewModels;
 
 public sealed partial class AdminViewModel
 {
+    private static bool IsUserBannedNow(AdminUserDto user) =>
+        user.BannedUntil.HasValue && user.BannedUntil.Value.ToUniversalTime() > DateTime.UtcNow;
+
+    private static bool IsUserChatBannedNow(AdminUserDto user) =>
+        user.ChatBannedUntil.HasValue && user.ChatBannedUntil.Value.ToUniversalTime() > DateTime.UtcNow;
+
     private void BuildUserActions(AdminUserDto user)
     {
         _page = AdminPage.UserActions;
@@ -16,8 +23,25 @@ public sealed partial class AdminViewModel
         IsAdditionalPermissionsVisible = false;
         IsSecondaryInputVisible = false;
         Items.Clear();
-        Items.Add(new AdminMenuItem("Bannir", tag: "ban"));
-        Items.Add(new AdminMenuItem("Débannir", tag: "unban"));
+
+        if (IsUserBannedNow(user))
+        {
+            Items.Add(new AdminMenuItem("Débannir", tag: "unban"));
+        }
+        else
+        {
+            Items.Add(new AdminMenuItem("Bannir", tag: "ban"));
+        }
+
+        if (IsUserChatBannedNow(user))
+        {
+            Items.Add(new AdminMenuItem("Rétablir l'accès au tchat", tag: "chat.unban"));
+        }
+        else
+        {
+            Items.Add(new AdminMenuItem("Révoquer l'accès au tchat", tag: "chat.ban"));
+        }
+
         Items.Add(new AdminMenuItem("Supprimer", tag: "delete"));
         Items.Add(new AdminMenuItem("Modifier les rôles", tag: "roles"));
         SelectedItem = Items.FirstOrDefault();
@@ -41,6 +65,23 @@ public sealed partial class AdminViewModel
             await _admin.UnbanUserAsync(user.Id).ConfigureAwait(true);
             await LoadUsersAsync().ConfigureAwait(true);
             await _dialogs.ShowInfo("Déban", $"{user.Username} est débanni.").ConfigureAwait(true);
+            return;
+        }
+        if (action == "chat.ban")
+        {
+            BuildUserChatBanForm(user);
+            return;
+        }
+        if (action == "chat.unban")
+        {
+            var ok = await _admin.UnbanUserFromChatAsync(user.Id).ConfigureAwait(true);
+            if (!ok)
+            {
+                await _dialogs.ShowError("Tchat", "Déban tchat impossible.").ConfigureAwait(true);
+                return;
+            }
+            await LoadUsersAsync().ConfigureAwait(true);
+            await _dialogs.ShowInfo("Tchat", $"{user.Username} a récupéré l'accès au tchat.").ConfigureAwait(true);
             return;
         }
         if (action == "delete")
