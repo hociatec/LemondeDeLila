@@ -142,6 +142,21 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
             {
                 _catalog.InvalidateCache();
             }
+            else if (string.Equals(type, "client.update.available", StringComparison.OrdinalIgnoreCase))
+            {
+                var payload = root.TryGetProperty("payload", out var p) ? p : default;
+                var message = payload.ValueKind != JsonValueKind.Undefined && payload.TryGetProperty("message", out var m)
+                    ? (m.GetString() ?? string.Empty)
+                    : string.Empty;
+                var version = payload.ValueKind != JsonValueKind.Undefined && payload.TryGetProperty("version", out var v)
+                    ? (v.GetString() ?? string.Empty)
+                    : string.Empty;
+                var url = payload.ValueKind != JsonValueKind.Undefined && payload.TryGetProperty("url", out var u)
+                    ? (u.GetString() ?? string.Empty)
+                    : string.Empty;
+
+                _ = HandleClientUpdateAvailableAsync(message, version, url);
+            }
             else if (string.Equals(type, "client.update.required", StringComparison.OrdinalIgnoreCase))
             {
                 var payload = root.TryGetProperty("payload", out var p) ? p : default;
@@ -209,6 +224,43 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
             try
             {
                 await _dialogs.ShowError("Mise à jour requise", ex.Message).ConfigureAwait(true);
+            }
+            catch
+            {
+                // ignore
+            }
+            Environment.Exit(0);
+        }
+    }
+
+    private async Task HandleClientUpdateAvailableAsync(string message, string version, string url)
+    {
+        try
+        {
+            var msg = string.IsNullOrWhiteSpace(message)
+                ? "Une mise à jour du client est disponible et va être installée automatiquement."
+                : message.Trim();
+
+            if (!string.IsNullOrWhiteSpace(version))
+            {
+                msg += $"\n\nDernière version : {version.Trim()}";
+            }
+
+            await ClientUpdateCoordinator.EnforceAsync(
+                    _dialogs,
+                    title: "Mise à jour",
+                    message: msg + "\n\nLancement de la mise à jour…",
+                    clickOnceUrl: url,
+                    reason: "notify-available",
+                    deDupKey: $"notify-available:{version}")
+                .ConfigureAwait(true);
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "Erreur lors de la mise à jour client (notify-available).");
+            try
+            {
+                await _dialogs.ShowError("Mise à jour", ex.Message).ConfigureAwait(true);
             }
             catch
             {
