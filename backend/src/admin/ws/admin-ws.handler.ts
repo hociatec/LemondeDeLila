@@ -264,6 +264,7 @@ export class AdminWsHandler {
       olderThanMinutes: dto.olderThanMinutes,
       limit: dto.limit,
       dryRun: dto.dryRun === true,
+      excludeActivePlayers: true,
     });
     return { type: 'admin.rooms.cleanup', payload: res };
   }

@@ -19,6 +19,7 @@ import { RoomInviteService } from '../services/room-invite.service';
 import { ClientUpdatesService } from '../../client-updates/client-updates.service';
 import { isVersionLower } from '../../common/utils/version.utils';
 import { WsTicketAuthService } from '../../common/ws/ws-ticket-auth.service';
+import { RoomRealtimeTrackerService } from '../services/room-realtime-tracker.service';
 
 type AuthedClient = {
   socket: WebSocket;
@@ -56,6 +57,7 @@ export class RoomGateway
     private readonly invites: RoomInviteService,
     private readonly clientUpdates: ClientUpdatesService,
     private readonly wsTickets: WsTicketAuthService,
+    private readonly realtimeTracker: RoomRealtimeTrackerService,
   ) {
     // Permet au backend (ex: moteur de jeu) de notifier les clients room sans dépendre du Gateway.
     this.roomsService.setRealtimeNotifier(async (roomId: number) => {
@@ -154,6 +156,9 @@ export class RoomGateway
       this.rooms.set(targetRoomId, new Set());
     }
     this.rooms.get(targetRoomId)!.add(client);
+    if (targetRoomId > 0 && this.clients.get(client)?.role === 'participant') {
+      this.realtimeTracker.registerPlayer(targetRoomId);
+    }
 
     // Heartbeat : ping régulier pour maintenir la connexion et détecter les resets silencieux.
     this.lastPong.set(client, Date.now());
@@ -219,6 +224,9 @@ export class RoomGateway
       }
     }
     if (meta) {
+      if (meta.roomId > 0 && meta.role === 'participant') {
+        this.realtimeTracker.unregisterPlayer(meta.roomId);
+      }
       const set = this.rooms.get(meta.roomId);
       let remainingConnections = 0;
       if (set) {

@@ -18,6 +18,8 @@ import { StatsModule } from '../stats/stats.module';
 import { ClientUpdatesModule } from '../client-updates/client-updates.module';
 import { PublicRoomDirectoryService } from './services/public-room-directory.service';
 import { PublicRoomDirectoryBinder } from './services/public-room-directory.binder';
+import { RoomRealtimeTrackerService } from './services/room-realtime-tracker.service';
+import { RoomAutoCleanupService } from './services/room-auto-cleanup.service';
 
 @Module({
   imports: [
@@ -35,6 +37,8 @@ import { PublicRoomDirectoryBinder } from './services/public-room-directory.bind
     RoomInviteService,
     PublicRoomDirectoryService,
     PublicRoomDirectoryBinder,
+    RoomRealtimeTrackerService,
+    RoomAutoCleanupService,
     RoomDirectoryWsHandler,
     RoomWsRegistrar,
   ],

@@ -19,6 +19,7 @@ import { OPEN_ROOM_STATUSES } from '../constants/room-status.constants';
 import { CatalogService } from '../../catalog/services/catalog.service';
 import { GameStatsService } from '../../stats/services/game-stats.service';
 import type { Redis } from 'ioredis';
+import { RoomRealtimeTrackerService } from './room-realtime-tracker.service';
 
 @Injectable()
 export class RoomService {
@@ -66,6 +67,7 @@ export class RoomService {
     olderThanMinutes?: number;
     limit?: number;
     dryRun?: boolean;
+    excludeActivePlayers?: boolean;
   }): Promise<{
     matched: number;
     deleted: number;
@@ -74,6 +76,7 @@ export class RoomService {
     const includePrivate = opts?.includePrivate === true;
     const includeStarted = opts?.includeStarted === true;
     const dryRun = opts?.dryRun === true;
+    const excludeActivePlayers = opts?.excludeActivePlayers !== false;
     const limit = Math.min(Math.max(1, opts?.limit ?? 1000), 5000);
 
     const qb = this.rooms
@@ -111,23 +114,35 @@ export class RoomService {
       .map((r: any) => Number(r?.room_id ?? r?.id ?? 0))
       .filter((id) => Number.isFinite(id) && id > 0);
 
+    const filteredRoomIds = excludeActivePlayers
+      ? roomIds.filter((id) => !this.realtimeTracker.hasActivePlayers(id))
+      : roomIds;
+
     if (dryRun) {
-      return { matched: roomIds.length, deleted: 0, roomIds };
+      return {
+        matched: filteredRoomIds.length,
+        deleted: 0,
+        roomIds: filteredRoomIds,
+      };
     }
 
-    if (roomIds.length === 0) {
+    if (filteredRoomIds.length === 0) {
       return { matched: 0, deleted: 0, roomIds: [] };
     }
 
     // Deleting the room cascades to participants/bots (FK onDelete: CASCADE).
-    await this.rooms.delete(roomIds);
-    for (const id of roomIds) {
+    await this.rooms.delete(filteredRoomIds);
+    for (const id of filteredRoomIds) {
       await this.invalidateRoomPayloadCache(id);
       this.notifyDirectoryChanged(id, 'deleted');
     }
     this.presenceService.broadcastPresence();
 
-    return { matched: roomIds.length, deleted: roomIds.length, roomIds };
+    return {
+      matched: filteredRoomIds.length,
+      deleted: filteredRoomIds.length,
+      roomIds: filteredRoomIds,
+    };
   }
 
   private notifyDirectoryChanged(roomId: number, reason: string) {
@@ -148,6 +163,7 @@ export class RoomService {
     private readonly presenceService: PresenceService,
     private readonly catalog: CatalogService,
     private readonly stats: GameStatsService,
+    private readonly realtimeTracker: RoomRealtimeTrackerService,
     private readonly config: ConfigService,
   ) {}
 
