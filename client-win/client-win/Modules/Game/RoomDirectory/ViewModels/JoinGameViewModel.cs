@@ -144,7 +144,7 @@ public sealed class JoinGameViewModel : ObservableObject, IDisposable
             }
             else
             {
-                Status = "Aucune partie créée.";
+                Status = "Aucune table à rejoindre.";
             }
         }
         catch (Exception ex)

@@ -76,7 +76,6 @@
 
                 <DockPanel Grid.Row="0" LastChildFill="False" Margin="0 0 0 12">
                     <TextBlock Text="Tables disponibles" Foreground="White" FontSize="18" DockPanel.Dock="Left" />
-                    <Button Content="Rafraîchir" Command="{Binding RefreshCommand}" DockPanel.Dock="Right" Margin="12,0,0,0" />
                 </DockPanel>
 
                 <Grid Grid.Row="1">
@@ -128,13 +127,13 @@
                             </Style>
                         </Border.Style>
                         <TextBlock x:Name="EmptyStateText"
-                                   Text="Aucune partie créée."
+                                   Text="Aucune table à rejoindre."
                                    Foreground="#C6D6F0"
                                    FontSize="16"
                                    TextAlignment="Center"
                                    TextWrapping="Wrap"
                                    Focusable="True"
-                                   AutomationProperties.Name="Aucune partie créée"
+                                   AutomationProperties.Name="Aucune table à rejoindre"
                                    AutomationProperties.LiveSetting="Polite" />
                     </Border>
                 </Grid>
