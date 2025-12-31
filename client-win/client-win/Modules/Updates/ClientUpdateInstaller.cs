@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Net.Http;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -214,6 +216,16 @@ public static class ClientUpdateInstaller
         {
             // https://learn.microsoft.com/en-us/visualstudio/deployment/clickonce-security-and-deployment
             // rundll32 dfshim.dll,ShOpenVerbApplication <url>
+            // IMPORTANT: ClickOnce peut échouer si on lance l'installateur alors que l'app est encore en train de se fermer
+            // (fichiers en cours d'utilisation). On lance donc un petit "launcher" PowerShell qui attend la fin du process,
+            // puis lance dfshim. Ça évite le cas "Impossible de démarrer l'application" au premier essai.
+            var pid = Environment.ProcessId;
+            var launcherStarted = TryLaunchClickOnceAfterExit(pid, applicationUrl);
+            if (launcherStarted)
+            {
+                return true;
+            }
+
             var args = $"dfshim.dll,ShOpenVerbApplication \"{applicationUrl}\"";
 
             // Évite les cas où rundll32 n'est pas résolu dans le PATH (sinon on retombe sur un fallback navigateur).
@@ -227,6 +239,52 @@ public static class ClientUpdateInstaller
             {
                 FileName = rundll32,
                 Arguments = args,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                WindowStyle = ProcessWindowStyle.Hidden,
+            };
+            Process.Start(psi);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static bool TryLaunchClickOnceAfterExit(int pid, string applicationUrl)
+    {
+        try
+        {
+            if (pid <= 0 || string.IsNullOrWhiteSpace(applicationUrl))
+            {
+                return false;
+            }
+
+            var windowsDir = Environment.GetFolderPath(Environment.SpecialFolder.Windows) ?? string.Empty;
+            var psPath = Path.Combine(windowsDir, "System32", "WindowsPowerShell", "v1.0", "powershell.exe");
+            if (string.IsNullOrWhiteSpace(windowsDir) || !File.Exists(psPath))
+            {
+                return false;
+            }
+
+            var safeUrl = applicationUrl.Replace("\"", "\\\"");
+            var scriptLines = new List<string>
+            {
+                "$ErrorActionPreference = 'SilentlyContinue'",
+                $"$pid = {pid}",
+                "try { (Get-Process -Id $pid -ErrorAction Stop).WaitForExit() } catch { }",
+                "$rundll32 = Join-Path $env:SystemRoot 'System32\\rundll32.exe'",
+                $"$args = 'dfshim.dll,ShOpenVerbApplication \"{safeUrl}\"'",
+                "Start-Process -FilePath $rundll32 -ArgumentList $args -WindowStyle Hidden",
+            };
+            var script = string.Join(";", scriptLines);
+            var encoded = Convert.ToBase64String(Encoding.Unicode.GetBytes(script));
+
+            var psi = new ProcessStartInfo
+            {
+                FileName = psPath,
+                Arguments = $"-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -EncodedCommand {encoded}",
                 UseShellExecute = false,
                 CreateNoWindow = true,
                 WindowStyle = ProcessWindowStyle.Hidden,
