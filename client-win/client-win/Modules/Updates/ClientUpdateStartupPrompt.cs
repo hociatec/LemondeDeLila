@@ -28,12 +28,6 @@ public static class ClientUpdateStartupPrompt
                 return true;
             }
 
-            // On ne spam pas si le serveur ne sait pas comparer.
-            if (info.UpdateAvailable != true && info.UpdateRequired != true)
-            {
-                return true;
-            }
-
             if (info.UpdateRequired == true)
             {
                 var msg = "Une mise à jour du client est requise pour continuer.";
@@ -70,8 +64,9 @@ public static class ClientUpdateStartupPrompt
                 return false;
             }
 
-            // Update disponible (non bloquant): on repropose à chaque lancement tant que ce n'est pas à jour.
+            if (info.UpdateAvailable == true)
             {
+                // Update disponible: politique actuelle = forcer la mise à jour dès l'ouverture.
                 var msg = "Une mise à jour du client est disponible.";
                 if (!string.IsNullOrWhiteSpace(info.LatestVersion))
                 {
@@ -86,17 +81,21 @@ public static class ClientUpdateStartupPrompt
                         "Mise à jour",
                         msg + "\n\nInstaller maintenant ?",
                         okText: "Mettre à jour",
-                        cancelText: "Plus tard")
+                        cancelText: "Quitter")
                     .ConfigureAwait(true);
 
-                if (confirm == true)
+                if (confirm != true)
                 {
-                    await ClientUpdateInstaller
-                        .InstallLatestAsync(dialogs, info.Url, reason: "startup-available", cancellationToken)
-                        .ConfigureAwait(true);
+                    // Politique: on force la mise à jour dès l'ouverture (évite les états "semi à jour").
                     Environment.Exit(0);
                     return false;
                 }
+
+                await ClientUpdateInstaller
+                    .InstallLatestAsync(dialogs, info.Url, reason: "startup-available", cancellationToken)
+                    .ConfigureAwait(true);
+                Environment.Exit(0);
+                return false;
             }
 
             return true;
@@ -111,4 +110,3 @@ public static class ClientUpdateStartupPrompt
         }
     }
 }
-
