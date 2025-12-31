@@ -290,6 +290,17 @@ public static class AppBootstrapper
 
         var provider = services.BuildServiceProvider();
 
+        // Précharger les sons (réduit la latence au premier déclenchement).
+        // Best-effort: ne doit jamais empêcher le démarrage.
+        try
+        {
+            provider.GetRequiredService<ISoundService>().PreloadAll();
+        }
+        catch
+        {
+            // ignore
+        }
+
         Log.Information("AppHost créé avec succès. Version: {Version}", AppInfo.GetDisplayVersion());
 
         return new AppHost(

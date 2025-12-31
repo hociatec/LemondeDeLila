@@ -45,7 +45,71 @@ public sealed class SoundService : ISoundService, IDisposable
                 RelativePath: Path.Combine("Assets", "Sounds", "roomopened.mp3"),
                 IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundSelect,
                 Volume: () => Clamp01(_options.Current.SoundSelectVolume / 100.0)),
+            [SoundId.RoomExit] = new SoundEntry(
+                RelativePath: Path.Combine("Assets", "Sounds", "roomexit.mp3"),
+                IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundSelect,
+                Volume: () => Clamp01(_options.Current.SoundSelectVolume / 100.0)),
         };
+    }
+
+    public void PreloadAll()
+    {
+        void PreloadOnUiThread()
+        {
+            foreach (var (sound, entry) in _sounds)
+            {
+                var filePath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, entry.RelativePath));
+                if (!File.Exists(filePath))
+                {
+                    _logger.LogDebug("Sound file missing: {Path}", filePath);
+                    continue;
+                }
+
+                try
+                {
+                    lock (_gate)
+                    {
+                        if (_players.ContainsKey(sound))
+                        {
+                            continue;
+                        }
+
+                        var player = new MediaPlayer();
+                        player.MediaFailed += (_, args) =>
+                        {
+                            _logger.LogWarning(
+                                "Sound preload failed ({Sound}): {Error}",
+                                sound,
+                                args.ErrorException?.Message ?? "unknown error");
+                            lock (_gate)
+                            {
+                                if (_players.TryGetValue(sound, out var existing) && ReferenceEquals(existing, player))
+                                {
+                                    _players.Remove(sound);
+                                }
+                            }
+                            try { player.Close(); } catch { /* ignore */ }
+                        };
+
+                        player.Open(new Uri(filePath, UriKind.Absolute));
+                        _players[sound] = player;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogDebug(ex, "Sound preload error ({Sound})", sound);
+                }
+            }
+        }
+
+        if (_dispatcher.CheckAccess())
+        {
+            PreloadOnUiThread();
+        }
+        else
+        {
+            _ = _dispatcher.BeginInvoke((Action)PreloadOnUiThread, DispatcherPriority.Background);
+        }
     }
 
     public void Play(SoundId sound)

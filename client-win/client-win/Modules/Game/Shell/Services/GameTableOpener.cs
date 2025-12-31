@@ -155,6 +155,7 @@ public sealed class GameTableOpener : IGameTableOpener
             onReset: Reset,
             onQuit: async () =>
             {
+                _sounds.Play(SoundId.RoomExit);
                 try
                 {
                     if (bindings != null)
