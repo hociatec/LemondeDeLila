@@ -68,12 +68,20 @@ export class WsJwtAuthService {
       10,
     );
     try {
-      const payload = jwt.verify(token, secret, {
+      const verifyOptions: jwt.VerifyOptions = {
         algorithms: ['HS256'],
         issuer,
-        audience,
         clockTolerance,
-      }) as StrictWsAuthPayload;
+      };
+      if (audience) {
+        verifyOptions.audience = audience;
+      }
+
+      const payload = jwt.verify(
+        token,
+        secret,
+        verifyOptions,
+      ) as StrictWsAuthPayload;
 
       if (!payload || typeof payload !== 'object') {
         throw new UnauthorizedException('Token invalide');

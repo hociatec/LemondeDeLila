@@ -101,13 +101,18 @@ export class UserAuthService {
         id: user.id,
       },
       this.jwtSecret,
-      {
-        algorithm: 'HS256',
-        expiresIn: this.jwtExpiresIn,
-        issuer: this.jwtIssuer,
-        audience: this.jwtAudience,
-        subject: String(user.id),
-      },
+      (() => {
+        const options: jwt.SignOptions = {
+          algorithm: 'HS256',
+          expiresIn: this.jwtExpiresIn,
+          issuer: this.jwtIssuer,
+          subject: String(user.id),
+        };
+        if (this.jwtAudience) {
+          options.audience = this.jwtAudience;
+        }
+        return options;
+      })(),
     );
     return { token };
   }
