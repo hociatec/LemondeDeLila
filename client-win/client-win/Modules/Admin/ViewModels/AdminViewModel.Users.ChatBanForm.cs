@@ -46,7 +46,7 @@ public sealed partial class AdminViewModel
         try
         {
             await _admin.BanUserFromChatAsync(user.Id, reason: _chatBanReason, durationDays: days).ConfigureAwait(true);
-            await LoadUsersAsync().ConfigureAwait(true);
+            await LoadUsersAsync(selectUserId: user.Id).ConfigureAwait(true);
             await _dialogs.ShowInfo("Tchat", $"{user.Username} n'a plus accès au tchat.").ConfigureAwait(true);
         }
         finally
@@ -55,4 +55,3 @@ public sealed partial class AdminViewModel
         }
     }
 }
-

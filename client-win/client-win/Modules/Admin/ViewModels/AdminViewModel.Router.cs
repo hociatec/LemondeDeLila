@@ -221,11 +221,6 @@ public sealed partial class AdminViewModel
                 BuildUserActions(user);
                 return;
             }
-            if (_page == AdminPage.Users && tag is string userTag && userTag == "filters")
-            {
-                ShowFilterReminder();
-                return;
-            }
 
             if (_page == AdminPage.UserActions && _selectedUser != null && tag is string act)
             {

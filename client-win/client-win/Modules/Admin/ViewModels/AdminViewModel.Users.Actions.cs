@@ -63,7 +63,7 @@ public sealed partial class AdminViewModel
         if (action == "unban")
         {
             await _admin.UnbanUserAsync(user.Id).ConfigureAwait(true);
-            await LoadUsersAsync().ConfigureAwait(true);
+            await LoadUsersAsync(selectUserId: user.Id).ConfigureAwait(true);
             await _dialogs.ShowInfo("Déban", $"{user.Username} est débanni.").ConfigureAwait(true);
             return;
         }
@@ -80,7 +80,7 @@ public sealed partial class AdminViewModel
                 await _dialogs.ShowError("Tchat", "Déban tchat impossible.").ConfigureAwait(true);
                 return;
             }
-            await LoadUsersAsync().ConfigureAwait(true);
+            await LoadUsersAsync(selectUserId: user.Id).ConfigureAwait(true);
             await _dialogs.ShowInfo("Tchat", $"{user.Username} a récupéré l'accès au tchat.").ConfigureAwait(true);
             return;
         }
@@ -129,7 +129,7 @@ public sealed partial class AdminViewModel
         try
         {
             await _admin.BanUserAsync(user.Id, reason, days).ConfigureAwait(true);
-            await LoadUsersAsync().ConfigureAwait(true);
+            await LoadUsersAsync(selectUserId: user.Id).ConfigureAwait(true);
             await _dialogs.ShowInfo("Ban", $"{user.Username} est banni pendant {days} jour(s).").ConfigureAwait(true);
         }
         finally

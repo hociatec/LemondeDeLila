@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using client_win.Modules.Admin.Dtos;
 
 namespace client_win.Modules.Admin.ViewModels;
 
@@ -15,7 +16,7 @@ public sealed partial class AdminViewModel
         await LoadUsersAsync().ConfigureAwait(true);
     }
 
-    private async Task LoadUsersAsync()
+    private async Task LoadUsersAsync(int? selectUserId = null)
     {
         if (IsBusy)
         {
@@ -74,7 +75,6 @@ public sealed partial class AdminViewModel
             _dispatcher.Invoke(() =>
             {
                 Items.Clear();
-                Items.Add(new AdminMenuItem("Filtres utilisateurs (Entrée pour plus d'infos)", tag: "filters"));
                 foreach (var user in _loadedUsers.OrderBy(u => u.Username))
                 {
                     var roles = user.Roles != null && user.Roles.Count > 0 ? string.Join(',', user.Roles) : "ROLE_USER";
@@ -85,8 +85,10 @@ public sealed partial class AdminViewModel
                 {
                     Items.Add(new AdminMenuItem("Aucun utilisateur."));
                 }
-                SelectedItem = Items.FirstOrDefault();
-                Status = $"Affichage {Items.Count} / {res.Total} utilisateurs. Entrée : actions. Échap : retour.";
+                SelectedItem = selectUserId.HasValue
+                    ? Items.FirstOrDefault(i => i.Tag is AdminUserDto u && u.Id == selectUserId.Value) ?? Items.FirstOrDefault()
+                    : Items.FirstOrDefault();
+                Status = $"Affichage {Math.Min(_loadedUsers.Length, res.Total)} / {res.Total} utilisateurs. Entrée : actions. Échap : retour.";
                 UpdateFilterVisibility();
             });
         }
@@ -105,7 +107,6 @@ public sealed partial class AdminViewModel
         IsAdditionalPermissionsVisible = false;
         IsSecondaryInputVisible = false;
         Items.Clear();
-        Items.Add(new AdminMenuItem("Filtres utilisateurs (Entrée pour plus d'infos)", tag: "filters"));
         foreach (var user in _loadedUsers.OrderBy(u => u.Username))
         {
             var roles = user.Roles != null && user.Roles.Count > 0 ? string.Join(',', user.Roles) : "ROLE_USER";
@@ -118,13 +119,6 @@ public sealed partial class AdminViewModel
         }
         SelectedItem = Items.FirstOrDefault();
         Status = "Entrée : actions. Échap : retour.";
-        UpdateFilterVisibility();
-    }
-
-    private void ShowFilterReminder()
-    {
-        Status = "Utilise les champs de filtres en haut (recherche/role/statut/dates) puis Appliquer.";
-        Details = "Les filtres modèrent la liste d'utilisateurs. Appuie sur Appliquer pour recharger.";
         UpdateFilterVisibility();
     }
 }
