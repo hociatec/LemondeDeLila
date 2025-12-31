@@ -38,6 +38,28 @@ export class BotService {
     return this.bots.save(bot);
   }
 
+  /**
+   * Ajout système d'un bot (sans droits owner) pour maintenir une table jouable.
+   * - Autorisé même si la table a démarré
+   * - Respecte maxPlayers (humains actifs + bots)
+   */
+  async addBotSystem(roomId: number): Promise<RoomBot> {
+    const room = await this.rooms.findOne({ where: { id: roomId } });
+    if (!room) {
+      throw new NotFoundException('Table introuvable');
+    }
+
+    const humans = await this.countActiveHumans(room.id);
+    const botsCount = await this.countBots(room.id);
+    if (humans + botsCount >= room.maxPlayers) {
+      throw new BadRequestException('Table pleine');
+    }
+
+    const name = await this.pickName(room.id);
+    const bot = this.bots.create({ room, name });
+    return this.bots.save(bot);
+  }
+
   async removeBot(
     roomId: number,
     userId: number,

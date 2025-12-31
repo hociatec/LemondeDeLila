@@ -44,6 +44,13 @@ public sealed class RoomAnnouncements : IRoomAnnouncements
         Announced?.Invoke(new(RoomAnnouncementKind.Polite, message));
     }
 
+    public void OwnerChanged(string username)
+    {
+        var name = (username ?? string.Empty).Trim();
+        var message = name.Length == 0 ? "Propriétaire : aucun." : $"Nouveau propriétaire : {name}.";
+        Announced?.Invoke(new(RoomAnnouncementKind.Polite, message));
+    }
+
     public void ShortcutKey(string key)
     {
         if (string.IsNullOrWhiteSpace(key)) return;

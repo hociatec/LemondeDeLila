@@ -43,6 +43,8 @@ internal sealed class GameTableBindings : IAsyncDisposable
 
     private string? _lastStatus;
     private Dictionary<int, (string Username, bool Spectator)> _participants = new();
+    private Dictionary<int, string> _botsById = new();
+    private int _ownerId = 0;
 
     public GameTableBindings(
         Dispatcher dispatcher,
@@ -143,6 +145,8 @@ internal sealed class GameTableBindings : IAsyncDisposable
         {
             UpdateGameTitle(payload);
             TrackParticipants(payload.Room);
+            TrackBots(payload.Room);
+            TrackOwner(payload.Room);
 
             var nextStatus = payload.Room?.Status;
             var wasStarted = string.Equals(_lastStatus, "started", StringComparison.OrdinalIgnoreCase);
@@ -223,6 +227,8 @@ internal sealed class GameTableBindings : IAsyncDisposable
     private void SeedParticipants(RoomDto? room)
     {
         _participants = BuildParticipants(room);
+        _botsById = BuildBots(room);
+        _ownerId = room?.Owner?.Id ?? 0;
     }
 
     private void TrackParticipants(RoomDto room)
@@ -274,6 +280,62 @@ internal sealed class GameTableBindings : IAsyncDisposable
             var name = (s.Username ?? string.Empty).Trim();
             if (name.Length == 0) continue;
             output[s.Id] = (name, Spectator: true);
+        }
+
+        return output;
+    }
+
+    private void TrackBots(RoomDto room)
+    {
+        var next = BuildBots(room);
+
+        foreach (var (id, name) in next)
+        {
+            if (_botsById.ContainsKey(id))
+            {
+                continue;
+            }
+            _announcements.BotJoined(name);
+        }
+
+        foreach (var (id, name) in _botsById)
+        {
+            if (next.ContainsKey(id))
+            {
+                continue;
+            }
+            _announcements.BotLeft(name);
+        }
+
+        _botsById = next;
+    }
+
+    private void TrackOwner(RoomDto room)
+    {
+        var nextOwnerId = room.Owner?.Id ?? 0;
+        if (nextOwnerId == _ownerId)
+        {
+            return;
+        }
+
+        _ownerId = nextOwnerId;
+        _announcements.OwnerChanged(room.Owner?.Username ?? string.Empty);
+    }
+
+    private static Dictionary<int, string> BuildBots(RoomDto? room)
+    {
+        var output = new Dictionary<int, string>();
+        if (room == null)
+        {
+            return output;
+        }
+
+        foreach (var b in room.Bots ?? new List<RoomBotDto>())
+        {
+            if (b == null || b.Id <= 0) continue;
+            var name = (b.Name ?? string.Empty).Trim();
+            if (name.Length == 0) continue;
+            output[b.Id] = name;
         }
 
         return output;

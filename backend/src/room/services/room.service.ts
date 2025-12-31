@@ -219,6 +219,36 @@ export class RoomService {
         // best effort
       }
     }
+
+    // Si le propriétaire quitte, transférer immédiatement au premier joueur humain restant.
+    // (On le fait même en preserveRoom=true pour éviter d'avoir une table sans propriétaire.)
+    if (participant && room.owner && room.owner.id === userId) {
+      const next = await this.participants.findOne({
+        where: { room: { id: room.id }, leftAt: IsNull() },
+        relations: ['user'],
+        order: { joinedAt: 'ASC' },
+      });
+      room.owner = next?.user ?? null;
+      await this.rooms.save(room);
+      await this.invalidateRoomPayloadCache(room.id);
+    }
+
+    // Remplacer un joueur humain par un bot quand la table est démarrée.
+    // Objectif: éviter de poursuivre une partie avec moins de joueurs.
+    const started =
+      String(room.status ?? '').toLowerCase() === 'started' || Boolean(room.startedAt);
+    if (participant && started) {
+      try {
+        const activeHumans = await this.countActiveHumans(room.id);
+        if (activeHumans > 0) {
+          await this.botService.addBotSystem(room.id);
+          await this.invalidateRoomPayloadCache(room.id);
+        }
+      } catch {
+        // best effort: pas bloquant si aucun nom dispo / table pleine
+      }
+    }
+
     if (opts?.preserveRoom) {
       this.presenceService.broadcastPresence();
       return room;
@@ -247,20 +277,7 @@ export class RoomService {
       this.presenceService.broadcastPresence();
       return null;
     }
-    if (room.owner && room.owner.id === userId) {
-      const next = await this.participants.findOne({
-        where: { room: { id: room.id }, leftAt: IsNull() },
-        relations: ['user'],
-        order: { joinedAt: 'ASC' },
-      });
-      if (next?.user) {
-        room.owner = next.user;
-        await this.rooms.save(room);
-      } else {
-        room.owner = null;
-        await this.rooms.save(room);
-      }
-    }
+    // (Le transfert de propriétaire est géré plus haut, avant preserveRoom.)
 
     // Broadcast la mise à jour de présence en temps réel
     this.presenceService.broadcastPresence();
