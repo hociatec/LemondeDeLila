@@ -41,7 +41,11 @@ import { WsTicketModule } from './common/ws/ws-ticket.module';
         DB_USER: Joi.string().default('root'),
         DB_PASSWORD: Joi.string().allow('', null).default(''),
         DB_NAME: Joi.string().default('le_monde_de_lila'),
-        JWT_SECRET: Joi.string().min(12).required(),
+        // JWT: strict (HS256 only) + secret long.
+        JWT_SECRET: Joi.string().min(32).required(),
+        JWT_ISSUER: Joi.string().default('le-monde-de-lila'),
+        JWT_AUDIENCE: Joi.string().optional(),
+        JWT_CLOCK_TOLERANCE_SECONDS: Joi.number().default(10),
         JWT_EXPIRES_IN: Joi.string().default('12h'),
         SESSION_STORE_REDIS_URL: Joi.string().uri().optional(),
         GAME_ENGINE_STATE_REDIS_URL: Joi.string().uri().optional(),
@@ -57,7 +61,8 @@ import { WsTicketModule } from './common/ws/ws-ticket.module';
         ENABLE_PROTOTYPE_GAMES: Joi.string().optional(),
         CLIENT_UPDATES_DIR: Joi.string().optional(),
         CLIENT_UPDATES_PUBLIC_URL: Joi.string().uri().optional(),
-        WS_TICKET_SECRET: Joi.string().min(12).optional(),
+        // WS tickets must have their own secret (do not reuse JWT_SECRET).
+        WS_TICKET_SECRET: Joi.string().min(32).required(),
         WS_TICKET_TTL_SECONDS: Joi.number().default(60),
         WS_SHARED_SECRET: Joi.string().optional(),
         REALTIME_WS_SECRET: Joi.string().optional(),

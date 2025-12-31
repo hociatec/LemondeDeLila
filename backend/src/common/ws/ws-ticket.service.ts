@@ -71,10 +71,7 @@ export class WsTicketService {
 
   private getSecret(): string {
     const secret =
-      this.config.get<string>('WS_TICKET_SECRET') ||
-      this.config.get<string>('JWT_SECRET') ||
-      process.env.WS_TICKET_SECRET ||
-      process.env.JWT_SECRET;
+      this.config.get<string>('WS_TICKET_SECRET') || process.env.WS_TICKET_SECRET;
     if (!secret) {
       throw new UnauthorizedException('Configuration WS manquante');
     }
@@ -93,4 +90,3 @@ export class WsTicketService {
     return Math.max(10, Math.min(300, ttl));
   }
 }
-

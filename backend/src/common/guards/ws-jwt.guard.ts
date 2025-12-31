@@ -8,6 +8,8 @@ import { ConfigService } from '@nestjs/config';
 import * as jwt from 'jsonwebtoken';
 import { WsAuthPayload } from '../interfaces/ws-auth-payload';
 
+type StrictWsAuthPayload = WsAuthPayload & jwt.JwtPayload;
+
 @Injectable()
 export class WsJwtGuard implements CanActivate {
   constructor(private readonly config: ConfigService) {}
@@ -77,8 +79,39 @@ export class WsJwtGuard implements CanActivate {
     if (!secret) {
       throw new UnauthorizedException('Configuration JWT manquante');
     }
+    const issuer = this.config.get<string>('JWT_ISSUER', 'le-monde-de-lila');
+    const audienceRaw = this.config.get<string>('JWT_AUDIENCE');
+    const audience =
+      audienceRaw && typeof audienceRaw === 'string' && audienceRaw.trim()
+        ? audienceRaw.trim()
+        : undefined;
+    const clockTolerance = this.config.get<number>(
+      'JWT_CLOCK_TOLERANCE_SECONDS',
+      10,
+    );
     try {
-      return jwt.verify(token, secret) as WsAuthPayload;
+      const payload = jwt.verify(token, secret, {
+        algorithms: ['HS256'],
+        issuer,
+        audience,
+        clockTolerance,
+      }) as StrictWsAuthPayload;
+
+      if (!payload || typeof payload !== 'object') {
+        throw new UnauthorizedException('Token invalide');
+      }
+      if (
+        typeof payload.sub !== 'string' ||
+        !payload.sub.trim() ||
+        typeof payload.exp !== 'number' ||
+        typeof payload.iat !== 'number'
+      ) {
+        throw new UnauthorizedException('Token invalide');
+      }
+      if (!Number.isFinite(payload.id) || (payload.id as number) <= 0) {
+        throw new UnauthorizedException('Token invalide');
+      }
+      return payload;
     } catch {
       throw new UnauthorizedException('Token invalide');
     }

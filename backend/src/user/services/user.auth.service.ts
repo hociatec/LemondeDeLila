@@ -15,6 +15,8 @@ import { User } from '../entities/user.entity';
 export class UserAuthService {
   private readonly jwtSecret: string;
   private readonly jwtExpiresIn: string;
+  private readonly jwtIssuer: string;
+  private readonly jwtAudience: string | undefined;
 
   constructor(
     @InjectRepository(User) private readonly users: Repository<User>,
@@ -28,6 +30,9 @@ export class UserAuthService {
     }
     this.jwtSecret = secret;
     this.jwtExpiresIn = this.config.get<string>('JWT_EXPIRES_IN', '12h');
+    this.jwtIssuer = this.config.get<string>('JWT_ISSUER', 'le-monde-de-lila');
+    const aud = this.config.get<string>('JWT_AUDIENCE');
+    this.jwtAudience = aud && aud.trim() ? aud.trim() : undefined;
   }
 
   async register(
@@ -99,7 +104,8 @@ export class UserAuthService {
       {
         algorithm: 'HS256',
         expiresIn: this.jwtExpiresIn,
-        issuer: 'le-monde-de-lila',
+        issuer: this.jwtIssuer,
+        audience: this.jwtAudience,
         subject: String(user.id),
       },
     );
