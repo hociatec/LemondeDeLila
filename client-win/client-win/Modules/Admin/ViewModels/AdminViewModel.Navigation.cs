@@ -7,6 +7,16 @@ public sealed partial class AdminViewModel
 {
     public AdminNavResult HandleEscape()
     {
+        // Admin "Rooms" uses the generic EditText page for settings, so we need
+        // to route Escape back to Rooms (not Games).
+        if (_page == AdminPage.EditText &&
+            !string.IsNullOrWhiteSpace(_currentEditMode) &&
+            _currentEditMode.StartsWith("rooms.", StringComparison.OrdinalIgnoreCase))
+        {
+            BuildRooms();
+            return AdminNavResult.Moved;
+        }
+
         if (_page is AdminPage.UserActions or AdminPage.BanForm)
         {
             ShowUsers();
