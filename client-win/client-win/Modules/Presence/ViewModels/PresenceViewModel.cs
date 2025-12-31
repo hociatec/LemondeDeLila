@@ -284,6 +284,9 @@ public sealed class PresenceViewModel : ObservableObject
             {
                 var res = await _rooms.InviteSendAsync(roomId.Value, player.Id, CancellationToken.None).ConfigureAwait(true);
                 Details = res;
+                // L'utilisateur veut revenir directement dans la table après l'envoi,
+                // pour éviter une double activation accidentelle sur l'item "Inviter".
+                _close();
             }
             finally
             {
