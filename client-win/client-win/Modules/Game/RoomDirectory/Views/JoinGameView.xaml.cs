@@ -127,29 +127,25 @@ public partial class JoinGameView : UserControl
             DispatcherPriority.Input,
             new Action(() =>
             {
-                // S'assure que le focus est bien dans la vue (sinon Échap / NVDA peuvent ne rien capter).
-                try
-                {
-                    Focus();
-                    Keyboard.Focus(this);
-                }
-                catch
-                {
-                    // ignore
-                }
-
-                if (DataContext is JoinGameViewModel vm && vm.Rooms.Count == 0)
-                {
-                    if (EmptyOnlyText != null && EmptyOnlyText.IsVisible)
-                    {
-                        EmptyOnlyText.Focus();
-                        Keyboard.Focus(EmptyOnlyText);
-                        return;
-                    }
-                }
-
-                FocusWhenContainersGenerated();
+                FocusEmptyOrList();
             }));
+    }
+
+    private void FocusEmptyOrList()
+    {
+        // Calqué sur MessagingView: si la liste est vide, focus sur le texte vide
+        // (NVDA annonce plus fiablement un focus sur un élément simple).
+        if (DataContext is JoinGameViewModel vm && vm.Rooms.Count == 0)
+        {
+            if (EmptyOnlyText != null && EmptyOnlyText.IsVisible)
+            {
+                EmptyOnlyText.Focus();
+                Keyboard.Focus(EmptyOnlyText);
+                return;
+            }
+        }
+
+        FocusWhenContainersGenerated();
     }
 
     private void HookEmptyVisibility()
@@ -265,7 +261,7 @@ public partial class JoinGameView : UserControl
             new Action(() =>
             {
                 // Assure un focus "utile" pour lecteurs d'écran quand la liste devient vide ou se remplit.
-                FocusWhenContainersGenerated();
+                FocusEmptyOrList();
             }));
     }
 
