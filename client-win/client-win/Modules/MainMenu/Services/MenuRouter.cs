@@ -250,6 +250,7 @@ public sealed class MenuRouter : IMenuRouter
             if (previous != null)
             {
                 _navigation.Show(previous);
+                RestoreFocusAfterBackNavigation(previous);
             }
         });
         view.DataContext = vm;

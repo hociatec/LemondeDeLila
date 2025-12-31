@@ -1,5 +1,7 @@
+using System;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using Microsoft.Extensions.Logging;
 using client_win.Modules.Chat.Services;
 using client_win.Modules.Catalog.Services;
@@ -114,6 +116,7 @@ public sealed class MenuRouterStub : IMenuRouter
             if (previous != null)
             {
                 _navigation.Show(previous);
+                RestoreFocusAfterBackNavigation(previous);
             }
         });
         view.DataContext = vm;
@@ -135,5 +138,42 @@ public sealed class MenuRouterStub : IMenuRouter
     {
         _logger.LogInformation(message);
         return Task.FromResult(message);
+    }
+
+    private static void RestoreFocusAfterBackNavigation(UserControl target)
+    {
+        var dispatcher = target.Dispatcher;
+        dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Input, new Action(() =>
+        {
+            try
+            {
+                if (target.FindName("ItemsList") is ListBox list)
+                {
+                    if (list.Items.Count == 0)
+                    {
+                        list.Focus();
+                        return;
+                    }
+
+                    if (list.SelectedIndex < 0)
+                    {
+                        list.SelectedIndex = 0;
+                    }
+
+                    list.UpdateLayout();
+                    list.ScrollIntoView(list.SelectedItem ?? list.Items[list.SelectedIndex]);
+                    list.Focus();
+                    System.Windows.Input.Keyboard.Focus(list);
+                    return;
+                }
+
+                target.Focus();
+                System.Windows.Input.Keyboard.Focus(target);
+            }
+            catch
+            {
+                // ignore
+            }
+        }));
     }
 }
