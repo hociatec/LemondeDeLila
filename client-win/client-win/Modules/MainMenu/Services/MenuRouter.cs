@@ -108,6 +108,7 @@ public sealed class MenuRouter : IMenuRouter
             if (previous != null)
             {
                 _navigation.Show(previous);
+                RestoreFocusAfterBackNavigation(previous);
             }
         },
         openGame: game => _tables.OpenAsync(game, previous ?? catalogView));
@@ -129,6 +130,7 @@ public sealed class MenuRouter : IMenuRouter
             if (previous != null)
             {
                 _navigation.Show(previous);
+                RestoreFocusAfterBackNavigation(previous);
             }
         }, openLeaderboard: async () => { await OpenLeaderboard().ConfigureAwait(true); });
         view.DataContext = vm;
@@ -148,6 +150,7 @@ public sealed class MenuRouter : IMenuRouter
             if (previous != null)
             {
                 _navigation.Show(previous);
+                RestoreFocusAfterBackNavigation(previous);
             }
         });
         view.DataContext = vm;
@@ -273,6 +276,7 @@ public sealed class MenuRouter : IMenuRouter
             if (previous != null)
             {
                 _navigation.Show(previous);
+                RestoreFocusAfterBackNavigation(previous);
             }
         });
         view.DataContext = vm;
@@ -292,6 +296,7 @@ public sealed class MenuRouter : IMenuRouter
             if (previous != null)
             {
                 _navigation.Show(previous);
+                RestoreFocusAfterBackNavigation(previous);
             }
         });
         view.DataContext = vm;
@@ -311,6 +316,7 @@ public sealed class MenuRouter : IMenuRouter
             if (previous != null)
             {
                 _navigation.Show(previous);
+                RestoreFocusAfterBackNavigation(previous);
             }
         });
         view.DataContext = vm;

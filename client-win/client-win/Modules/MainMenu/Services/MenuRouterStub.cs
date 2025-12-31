@@ -65,6 +65,7 @@ public sealed class MenuRouterStub : IMenuRouter
             if (previous != null)
             {
                 _navigation.Show(previous);
+                RestoreFocusAfterBackNavigation(previous);
             }
         },
         openGame: game => _tables.OpenAsync(game, previous ?? catalogView));
@@ -93,6 +94,7 @@ public sealed class MenuRouterStub : IMenuRouter
                 if (previous != null)
                 {
                     _navigation.Show(previous);
+                    RestoreFocusAfterBackNavigation(previous);
                 }
             });
         view.DataContext = vm;
