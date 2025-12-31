@@ -6,7 +6,8 @@
              mc:Ignorable="d"
              d:DesignHeight="720" d:DesignWidth="1280"
              Loaded="OnLoaded"
-             KeyDown="OnKeyDown">
+             KeyDown="OnKeyDown"
+             PreviewKeyDown="OnPreviewKeyDown">
     <UserControl.InputBindings>
         <KeyBinding Key="Escape" Command="{Binding CloseCommand}" />
     </UserControl.InputBindings>
@@ -133,22 +134,27 @@
             </Grid>
         </Border>
 
-        <TextBlock x:Name="EmptyOnlyText"
-                   Grid.Row="1"
-                   Text="Aucune table à rejoindre."
-                   Foreground="#C6D6F0"
-                   FontSize="20"
-                   FontWeight="SemiBold"
-                   HorizontalAlignment="Center"
-                   VerticalAlignment="Center"
-                   TextAlignment="Center"
-                   TextWrapping="Wrap"
-                   Focusable="True"
-                   Visibility="Collapsed"
-                   AutomationProperties.Name="Aucune table à rejoindre"
-                   AutomationProperties.LiveSetting="Polite">
-            <TextBlock.Style>
-                <Style TargetType="TextBlock">
+        <TextBox x:Name="EmptyOnlyText"
+                 Grid.Row="1"
+                 Text="Aucune table à rejoindre."
+                 Foreground="#C6D6F0"
+                 FontSize="20"
+                 FontWeight="SemiBold"
+                 Background="Transparent"
+                 BorderThickness="0"
+                 IsReadOnly="True"
+                 IsReadOnlyCaretVisible="False"
+                 HorizontalAlignment="Center"
+                 VerticalAlignment="Center"
+                 TextAlignment="Center"
+                 TextWrapping="Wrap"
+                 Focusable="True"
+                 IsTabStop="True"
+                 Visibility="Collapsed"
+                 AutomationProperties.Name="Aucune table à rejoindre"
+                 AutomationProperties.LiveSetting="Assertive">
+            <TextBox.Style>
+                <Style TargetType="TextBox">
                     <Setter Property="Visibility" Value="Collapsed" />
                     <Style.Triggers>
                         <DataTrigger Binding="{Binding Rooms.Count}" Value="0">
@@ -156,8 +162,8 @@
                         </DataTrigger>
                     </Style.Triggers>
                 </Style>
-            </TextBlock.Style>
-        </TextBlock>
+            </TextBox.Style>
+        </TextBox>
 
         <Border Grid.Row="2" Background="#0C1523" Padding="12 8" Focusable="False"
                 AutomationProperties.LiveSetting="Polite">

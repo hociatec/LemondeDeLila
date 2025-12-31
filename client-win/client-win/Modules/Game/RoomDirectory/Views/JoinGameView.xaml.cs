@@ -22,8 +22,8 @@ public partial class JoinGameView : UserControl
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
-        FocusWhenContainersGenerated();
         HookRoomsCollection(DataContext as JoinGameViewModel);
+        FocusAfterLoad();
     }
 
     private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
@@ -45,6 +45,21 @@ public partial class JoinGameView : UserControl
                 e.Handled = true;
                 vm.CloseCommand.Execute(null);
             }
+        }
+    }
+
+    private void OnPreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key != Key.Escape)
+        {
+            return;
+        }
+
+        // Preview => fiable même si un contrôle enfant absorbe KeyDown.
+        if (DataContext is JoinGameViewModel vm && vm.CloseCommand.CanExecute(null))
+        {
+            e.Handled = true;
+            vm.CloseCommand.Execute(null);
         }
     }
 
@@ -101,6 +116,26 @@ public partial class JoinGameView : UserControl
         }
     }
 
+    private void FocusAfterLoad()
+    {
+        _ = Dispatcher.BeginInvoke(
+            DispatcherPriority.Input,
+            new Action(() =>
+            {
+                if (DataContext is JoinGameViewModel vm && vm.Rooms.Count == 0)
+                {
+                    if (EmptyOnlyText != null && EmptyOnlyText.IsVisible)
+                    {
+                        EmptyOnlyText.Focus();
+                        Keyboard.Focus(EmptyOnlyText);
+                        return;
+                    }
+                }
+
+                FocusWhenContainersGenerated();
+            }));
+    }
+
     private void FocusWhenContainersGenerated()
     {
         if (RoomsList == null)
@@ -108,8 +143,13 @@ public partial class JoinGameView : UserControl
             return;
         }
 
-        if (RoomsList.HasItems &&
-            RoomsList.ItemContainerGenerator.Status == System.Windows.Controls.Primitives.GeneratorStatus.ContainersGenerated)
+        if (!RoomsList.HasItems)
+        {
+            _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusFirstItem));
+            return;
+        }
+
+        if (RoomsList.ItemContainerGenerator.Status == System.Windows.Controls.Primitives.GeneratorStatus.ContainersGenerated)
         {
             _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusFirstItem));
             return;
