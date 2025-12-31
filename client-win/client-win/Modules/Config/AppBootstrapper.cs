@@ -33,7 +33,6 @@ using client_win.Modules.Messaging.Services;
 using client_win.Modules.Social.Services;
 using client_win.Modules.Stats.Services;
 using client_win.Modules.Admin.Services;
-using client_win.Modules.Network.Services;
 using client_win.Modules.Leaderboard.Services;
 using client_win.Modules.Game.Play.Services;
 using client_win.Modules.Game.Room.Services;
