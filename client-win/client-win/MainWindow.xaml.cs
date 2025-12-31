@@ -20,6 +20,7 @@ using client_win.Modules.Presence.Services;
 using client_win.Modules.Updates;
 using client_win.Modules.Settings.Services;
 using System.ComponentModel;
+using client_win.Modules.Shell.Services;
 
 namespace client_win
 {
@@ -37,6 +38,7 @@ namespace client_win
         private readonly IPresenceMonitor _presence;
         private readonly IPresenceLauncher _presenceUi;
         private readonly IOptionsService _options;
+        private readonly IHomeViewAccessor _homeAccessor;
         private bool _exitConfirmed;
         private bool _exitPromptOpen;
 
@@ -53,6 +55,7 @@ namespace client_win
             _presence = _host.Services.GetRequiredService<IPresenceMonitor>();
             _presenceUi = _host.Services.GetRequiredService<IPresenceLauncher>();
             _options = _host.Services.GetRequiredService<IOptionsService>();
+            _homeAccessor = _host.Services.GetRequiredService<IHomeViewAccessor>();
 
             _homeViewModel = _host.CreateHomeViewModel(OnNavigateToMainMenu, Close);
 
@@ -173,6 +176,7 @@ namespace client_win
             _ = _presence.StartAsync();
             var menuVm = _host.CreateMainMenuViewModel(user, OnLogoutRequested);
             var menuView = new MainMenuView { DataContext = menuVm };
+            _homeAccessor.HomeView = menuView;
             _navigation.Show(menuView);
         }
 
@@ -183,6 +187,7 @@ namespace client_win
             _host.Session.Clear();
             _navigation.ClearUser();
             Title = "Le Monde de Lila";
+            _homeAccessor.HomeView = null;
             _navigation.Show(_homeView);
         }
 

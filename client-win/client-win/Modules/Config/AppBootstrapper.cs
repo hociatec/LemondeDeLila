@@ -140,6 +140,7 @@ public static class AppBootstrapper
         // Enregistrement des services UI
         services.AddSingleton(rootHost);
         services.AddSingleton<INavigationService>(_ => new NavigationService(rootHost));
+        services.AddSingleton<Modules.Shell.Services.IHomeViewAccessor, Modules.Shell.Services.HomeViewAccessor>();
         services.AddSingleton<IDialogService, WpfDialogService>();
         services.AddSingleton<IScreenReaderAnnouncer>(screenReaderAnnouncer);
         services.AddTransient<IRoomAnnouncements, RoomAnnouncements>();

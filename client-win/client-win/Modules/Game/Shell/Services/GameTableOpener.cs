@@ -33,6 +33,7 @@ public sealed class GameTableOpener : IGameTableOpener
     private readonly IGameAnnouncements _gameAnnouncements;
     private readonly IPresenceMonitor _presence;
     private readonly ISoundService _sounds;
+    private readonly IHomeViewAccessor _home;
 
     public GameTableOpener(
         ILogger<GameTableOpener> logger,
@@ -44,7 +45,8 @@ public sealed class GameTableOpener : IGameTableOpener
         IRoomAnnouncements announcements,
         IGameAnnouncements gameAnnouncements,
         IPresenceMonitor presence,
-        ISoundService sounds)
+        ISoundService sounds,
+        IHomeViewAccessor home)
     {
         _logger = logger;
         _rooms = rooms;
@@ -56,6 +58,7 @@ public sealed class GameTableOpener : IGameTableOpener
         _gameAnnouncements = gameAnnouncements;
         _presence = presence ?? throw new ArgumentNullException(nameof(presence));
         _sounds = sounds ?? throw new ArgumentNullException(nameof(sounds));
+        _home = home ?? throw new ArgumentNullException(nameof(home));
     }
 
     public async Task OpenAsync(CatalogGame game, UserControl returnView)
@@ -153,7 +156,7 @@ public sealed class GameTableOpener : IGameTableOpener
         Action<client_win.Modules.Network.WebSockets.WebSocketState>? onRoomConnectionStateChanged = null;
         var isExiting = 0;
 
-        async Task ExitToReturnViewAsync(string? reason = null)
+        async Task ExitToHomeAsync(string? reason = null)
         {
             if (Interlocked.Exchange(ref isExiting, 1) == 1)
             {
@@ -184,13 +187,14 @@ public sealed class GameTableOpener : IGameTableOpener
                 _ = _presence.SetHomeAsync();
 
                 // Navigation + éventuel message : toujours sur le thread UI.
+                var target = _home.HomeView ?? returnView;
                 if (!dispatcher.CheckAccess())
                 {
-                    await dispatcher.InvokeAsync(() => _navigation.Show(returnView), DispatcherPriority.Normal);
+                    await dispatcher.InvokeAsync(() => _navigation.Show(target), DispatcherPriority.Normal);
                 }
                 else
                 {
-                    _navigation.Show(returnView);
+                    _navigation.Show(target);
                 }
 
                 if (!string.IsNullOrWhiteSpace(reason))
@@ -232,7 +236,7 @@ public sealed class GameTableOpener : IGameTableOpener
             onQuit: async () =>
             {
                 _sounds.Play(SoundId.RoomExit);
-                await ExitToReturnViewAsync().ConfigureAwait(true);
+                await ExitToHomeAsync().ConfigureAwait(true);
             },
             onAddBot: AddBot,
             onRemoveBot: RemoveBot,
@@ -276,7 +280,7 @@ public sealed class GameTableOpener : IGameTableOpener
             if (state is client_win.Modules.Network.WebSockets.WebSocketState.Disconnected or
                 client_win.Modules.Network.WebSockets.WebSocketState.Error)
             {
-                _ = ExitToReturnViewAsync("Connexion à la table interrompue.");
+                _ = ExitToHomeAsync("Connexion à la table interrompue.");
             }
         };
         session.ConnectionStateChanged += onRoomConnectionStateChanged;
