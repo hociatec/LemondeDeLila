@@ -22,6 +22,14 @@ public static class ClientUpdateInstaller
     {
         _ = reason;
 
+        // 1) Si l'app est déjà une installation ClickOnce, tenter une mise à jour silencieuse "in-place".
+        // Objectif: éviter toute UI ClickOnce ("Voulez-vous mettre à jour maintenant ?") et les cas où dfshim
+        // ouvre une fenêtre système.
+        if (TryUpdateCurrentDeploymentSilently())
+        {
+            return true;
+        }
+
         // Objectif: mise à jour uniforme et robuste:
         // - ne jamais ouvrir une page web
         // - lancer ClickOnce via dfshim (même si Windows aurait ouvert un navigateur)
@@ -341,5 +349,66 @@ public static class ClientUpdateInstaller
         }
 
         return null;
+    }
+
+    private static bool TryUpdateCurrentDeploymentSilently()
+    {
+        try
+        {
+            var deploymentType = Type.GetType(
+                "System.Deployment.Application.ApplicationDeployment, System.Deployment",
+                throwOnError: false);
+            if (deploymentType == null) return false;
+
+            var isNetworkDeployedProp = deploymentType.GetProperty(
+                "IsNetworkDeployed",
+                BindingFlags.Public | BindingFlags.Static);
+            var isNetworkDeployed = isNetworkDeployedProp?.GetValue(null) as bool? ?? false;
+            if (!isNetworkDeployed) return false;
+
+            var currentDeploymentProp = deploymentType.GetProperty(
+                "CurrentDeployment",
+                BindingFlags.Public | BindingFlags.Static);
+            var current = currentDeploymentProp?.GetValue(null);
+            if (current == null) return false;
+
+            // CheckForUpdate() -> bool (si dispo)
+            try
+            {
+                var checkMethod = current.GetType().GetMethod(
+                    "CheckForUpdate",
+                    BindingFlags.Public | BindingFlags.Instance,
+                    binder: null,
+                    types: Type.EmptyTypes,
+                    modifiers: null);
+                if (checkMethod != null)
+                {
+                    var available = checkMethod.Invoke(current, null) as bool? ?? false;
+                    if (!available)
+                    {
+                        return false;
+                    }
+                }
+            }
+            catch
+            {
+                // Si la vérification échoue, tenter Update() quand même (best-effort).
+            }
+
+            var updateMethod = current.GetType().GetMethod(
+                "Update",
+                BindingFlags.Public | BindingFlags.Instance,
+                binder: null,
+                types: Type.EmptyTypes,
+                modifiers: null);
+            if (updateMethod == null) return false;
+
+            updateMethod.Invoke(current, null);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
     }
 }

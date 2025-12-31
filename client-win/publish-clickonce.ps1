@@ -32,6 +32,10 @@ Write-Host "Publication ClickOnce -> $PublishDir"
 
 $msbuildProps = @(
     "/p:PublishProfile=ClickOnce",
+    "/p:UpdateEnabled=true",
+    "/p:UpdateMode=Background",
+    "/p:UpdateInterval=0",
+    "/p:UpdateIntervalUnits=Days",
     "/p:PublishDir=$PublishDir\"
 )
 

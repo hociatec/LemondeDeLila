@@ -93,6 +93,10 @@ jobs:
             /p:PublishUrl="$baseUrl" `
             /p:InstallUrl="$baseUrl" `
             /p:UpdateUrl="$baseUrl" `
+            /p:UpdateEnabled=true `
+            /p:UpdateMode=Background `
+            /p:UpdateInterval=0 `
+            /p:UpdateIntervalUnits=Days `
             /p:ApplicationVersion="$ver4" `
             /p:Version="$ver4" `
             /p:AssemblyVersion="$ver4" `
