@@ -262,8 +262,10 @@ public sealed class GameSession : IAsyncDisposable
 
     private async Task KeepAliveLoopAsync(TimeSpan interval, CancellationToken cancellationToken)
     {
-        // On utilise une requête légère qui garde la connexion "active" côté serveur.
-        // Le serveur doit compter cette activité comme un signe de vie (voir gateway ws/game).
+        // IMPORTANT: ne pas utiliser `game.state` en keep-alive.
+        // `game.state` passe par la queue de mutations côté serveur (même clé roomId/gameType)
+        // et peut donc retarder `game.actions` => impression de latence sur les raccourcis.
+        // On envoie un ping léger: le serveur compte l'activité via `on message`.
         using var timer = new PeriodicTimer(interval);
 
         while (!cancellationToken.IsCancellationRequested)
@@ -288,9 +290,8 @@ public sealed class GameSession : IAsyncDisposable
 
             try
             {
-                using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-                cts.CancelAfter(TimeSpan.FromSeconds(5));
-                await RequestStateAsync(cts.Token).ConfigureAwait(false);
+                var ping = JsonSerializer.Serialize(new { type = "game.ping", payload = new { } }, _json);
+                await TrySendAsync(ping, cancellationToken).ConfigureAwait(false);
             }
             catch
             {

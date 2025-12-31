@@ -183,6 +183,12 @@ export class GameGateway
         case 'game.join':
           await this.handleJoin(client, meta, payload);
           break;
+        case 'game.ping':
+          this.safeSend(client, {
+            type: 'game.pong',
+            payload: { serverTimeMs: Date.now() },
+          });
+          break;
         case 'game.state':
           await this.handleState(client, meta, payload);
           break;
