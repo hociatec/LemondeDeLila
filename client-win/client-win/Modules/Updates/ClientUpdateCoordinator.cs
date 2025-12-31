@@ -45,19 +45,6 @@ public static class ClientUpdateCoordinator
             _lastKey = key.Length > 0 ? key : null;
             _lastShownAtUtc = DateTime.UtcNow;
 
-            // Mise à jour obligatoire: on informe puis on lance ClickOnce. Pas de bouton "Ignorer".
-            try
-            {
-                await dialogs.ShowInfo(
-                        string.IsNullOrWhiteSpace(title) ? "Mise à jour requise" : title,
-                        (message ?? string.Empty).Trim())
-                    .ConfigureAwait(true);
-            }
-            catch
-            {
-                // Best-effort
-            }
-
             var started = await ClientUpdateInstaller
                 .InstallLatestAsync(dialogs, clickOnceUrl, reason, cancellationToken)
                 .ConfigureAwait(true);
