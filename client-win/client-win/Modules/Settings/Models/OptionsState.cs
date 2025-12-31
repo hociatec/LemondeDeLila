@@ -19,6 +19,10 @@ public sealed class OptionsState
     // Overrides de sons (stockés dans AppData), pour permettre la personnalisation sans casser ClickOnce.
     public string? SoundRoomOpenedPath { get; set; }
     public string? SoundRoomExitPath { get; set; }
+    public string? SoundChatMessageSentPath { get; set; }
+    public string? SoundChatMessageReceivedPath { get; set; }
+    public string? SoundPrivateMessageSentPath { get; set; }
+    public string? SoundPrivateMessageReceivedPath { get; set; }
 
     public bool ChatEnabled { get; set; } = true;
     public bool ConfirmChatExit { get; set; }

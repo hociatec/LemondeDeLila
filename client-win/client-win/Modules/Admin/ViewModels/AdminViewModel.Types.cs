@@ -39,6 +39,8 @@ internal enum AdminPage
     Perf,
     Sounds,
     SoundsTable,
+    SoundsChat,
+    SoundsPrivateMessages,
     SoundDetails
 }
 

@@ -4,6 +4,8 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Diagnostics;
 using client_win.Core;
+using client_win.Modules.Audio.Models;
+using client_win.Modules.Audio.Services;
 using client_win.Modules.Config;
 using client_win.Modules.Catalog.Services;
 using client_win.Modules.Network.WebSockets;
@@ -27,6 +29,7 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
     private readonly IRoomDirectoryClient _rooms;
     private readonly IGameTableOpener _tables;
     private readonly INavigationService _navigation;
+    private readonly ISoundService _sounds;
 
     private IWebSocketConnection? _ws;
     private bool _started;
@@ -40,7 +43,8 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
         IDialogService dialogs,
         IRoomDirectoryClient rooms,
         IGameTableOpener tables,
-        INavigationService navigation)
+        INavigationService navigation,
+        ISoundService sounds)
     {
         _config = config ?? throw new ArgumentNullException(nameof(config));
         _session = session ?? throw new ArgumentNullException(nameof(session));
@@ -51,6 +55,7 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
         _rooms = rooms ?? throw new ArgumentNullException(nameof(rooms));
         _tables = tables ?? throw new ArgumentNullException(nameof(tables));
         _navigation = navigation ?? throw new ArgumentNullException(nameof(navigation));
+        _sounds = sounds ?? throw new ArgumentNullException(nameof(sounds));
     }
 
     public async Task StartAsync(CancellationToken cancellationToken = default)
@@ -335,6 +340,13 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
                 return;
             }
 
+            var fromId = payload.TryGetProperty("from", out var fromObj) &&
+                         fromObj.ValueKind == JsonValueKind.Object &&
+                         fromObj.TryGetProperty("id", out var idProp) &&
+                         idProp.ValueKind == JsonValueKind.Number
+                ? idProp.GetInt32()
+                : 0;
+
             string fromName = "inconnu";
             if (payload.TryGetProperty("from", out var from) && from.ValueKind == JsonValueKind.Object &&
                 from.TryGetProperty("username", out var u) && u.ValueKind == JsonValueKind.String)
@@ -355,6 +367,12 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
             }
 
             _screenReader.AnnouncePolite(text.Trim());
+
+            var me = _session.CurrentUser;
+            if (me == null || fromId <= 0 || fromId != me.UserId)
+            {
+                _sounds.Play(SoundId.PrivateMessageReceived);
+            }
         }
         catch
         {

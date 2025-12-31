@@ -156,9 +156,29 @@ public sealed partial class AdminViewModel
             return AdminNavResult.Moved;
         }
 
+        if (_page is AdminPage.SoundsChat or AdminPage.SoundsPrivateMessages)
+        {
+            BuildSounds();
+            return AdminNavResult.Moved;
+        }
+
         if (_page == AdminPage.SoundDetails)
         {
-            BuildSoundsTable();
+            switch (_soundDetailsReturnPage)
+            {
+                case AdminPage.SoundsTable:
+                    BuildSoundsTable();
+                    break;
+                case AdminPage.SoundsChat:
+                    BuildSoundsChat();
+                    break;
+                case AdminPage.SoundsPrivateMessages:
+                    BuildSoundsPrivateMessages();
+                    break;
+                default:
+                    BuildSounds();
+                    break;
+            }
             return AdminNavResult.Moved;
         }
 

@@ -12,6 +12,7 @@ namespace client_win.Modules.Admin.ViewModels;
 public sealed partial class AdminViewModel
 {
     private SoundId? _soundDetailsId;
+    private AdminPage _soundDetailsReturnPage = AdminPage.Sounds;
 
     private void BuildSounds()
     {
@@ -23,6 +24,8 @@ public sealed partial class AdminViewModel
         IsAdditionalPermissionsVisible = false;
         Items.Clear();
         Items.Add(new AdminMenuItem("Table", tag: "sounds.table"));
+        Items.Add(new AdminMenuItem("Tchat", tag: "sounds.chat"));
+        Items.Add(new AdminMenuItem("Messages privés", tag: "sounds.private"));
         SelectedItem = Items.FirstOrDefault();
         Status = "Entrée : sélectionner. Échap : retour.";
         UpdateFilterVisibility();
@@ -44,19 +47,62 @@ public sealed partial class AdminViewModel
         UpdateFilterVisibility();
     }
 
+    private void BuildSoundsChat()
+    {
+        _page = AdminPage.SoundsChat;
+        Title = "Administration - Sons - Tchat";
+        Details = "Choisir un son lié au tchat.";
+        IsTextInputVisible = false;
+        IsSecondaryInputVisible = false;
+        IsAdditionalPermissionsVisible = false;
+        Items.Clear();
+        Items.Add(new AdminMenuItem("Envoi d'un message", tag: "sounds.chat.sent"));
+        Items.Add(new AdminMenuItem("Réception d'un message", tag: "sounds.chat.received"));
+        SelectedItem = Items.FirstOrDefault();
+        Status = "Entrée : sélectionner. Échap : retour.";
+        UpdateFilterVisibility();
+    }
+
+    private void BuildSoundsPrivateMessages()
+    {
+        _page = AdminPage.SoundsPrivateMessages;
+        Title = "Administration - Sons - Messages privés";
+        Details = "Choisir un son lié aux messages privés.";
+        IsTextInputVisible = false;
+        IsSecondaryInputVisible = false;
+        IsAdditionalPermissionsVisible = false;
+        Items.Clear();
+        Items.Add(new AdminMenuItem("Envoi d'un message privé", tag: "sounds.private.sent"));
+        Items.Add(new AdminMenuItem("Réception d'un message privé", tag: "sounds.private.received"));
+        SelectedItem = Items.FirstOrDefault();
+        Status = "Entrée : sélectionner. Échap : retour.";
+        UpdateFilterVisibility();
+    }
+
     private void BuildSoundDetails(SoundId sound)
     {
         _page = AdminPage.SoundDetails;
         _soundDetailsId = sound;
-
-        var (title, current) = sound switch
+        _soundDetailsReturnPage = sound switch
         {
-            SoundId.RoomOpened => ("Entrer dans une table", _options.Current.SoundRoomOpenedPath),
-            SoundId.RoomExit => ("Quitter une table", _options.Current.SoundRoomExitPath),
-            _ => (sound.ToString(), null)
+            SoundId.RoomOpened or SoundId.RoomExit => AdminPage.SoundsTable,
+            SoundId.ChatMessageSent or SoundId.ChatMessageReceived => AdminPage.SoundsChat,
+            SoundId.PrivateMessageSent or SoundId.PrivateMessageReceived => AdminPage.SoundsPrivateMessages,
+            _ => AdminPage.Sounds
         };
 
-        Title = $"Administration - Sons - Table - {title}";
+        var (group, title, current) = sound switch
+        {
+            SoundId.RoomOpened => ("Table", "Entrer dans une table", _options.Current.SoundRoomOpenedPath),
+            SoundId.RoomExit => ("Table", "Quitter une table", _options.Current.SoundRoomExitPath),
+            SoundId.ChatMessageSent => ("Tchat", "Envoi d'un message", _options.Current.SoundChatMessageSentPath),
+            SoundId.ChatMessageReceived => ("Tchat", "Réception d'un message", _options.Current.SoundChatMessageReceivedPath),
+            SoundId.PrivateMessageSent => ("Messages privés", "Envoi d'un message privé", _options.Current.SoundPrivateMessageSentPath),
+            SoundId.PrivateMessageReceived => ("Messages privés", "Réception d'un message privé", _options.Current.SoundPrivateMessageReceivedPath),
+            _ => ("Sons", sound.ToString(), null)
+        };
+
+        Title = $"Administration - Sons - {group} - {title}";
         Details = string.IsNullOrWhiteSpace(current)
             ? "Son par défaut (Assets)."
             : $"Son personnalisé : {current}";
@@ -110,6 +156,10 @@ public sealed partial class AdminViewModel
         {
             SoundId.RoomOpened => "roomopened.mp3",
             SoundId.RoomExit => "roomexit.mp3",
+            SoundId.ChatMessageSent => "envoimsgtchat.mp3",
+            SoundId.ChatMessageReceived => "receptionmsgtchat.mp3",
+            SoundId.PrivateMessageSent => "msgprivateenvoi.mp3",
+            SoundId.PrivateMessageReceived => "msgprivatereceve.mp3",
             _ => $"{sound.ToString().ToLowerInvariant()}.mp3"
         };
 
@@ -139,6 +189,18 @@ public sealed partial class AdminViewModel
             case SoundId.RoomExit:
                 _options.Current.SoundRoomExitPath = dest;
                 break;
+            case SoundId.ChatMessageSent:
+                _options.Current.SoundChatMessageSentPath = dest;
+                break;
+            case SoundId.ChatMessageReceived:
+                _options.Current.SoundChatMessageReceivedPath = dest;
+                break;
+            case SoundId.PrivateMessageSent:
+                _options.Current.SoundPrivateMessageSentPath = dest;
+                break;
+            case SoundId.PrivateMessageReceived:
+                _options.Current.SoundPrivateMessageReceivedPath = dest;
+                break;
         }
         _options.Update(_options.Current);
 
@@ -149,4 +211,3 @@ public sealed partial class AdminViewModel
         _sounds.Play(sound);
     }
 }
-

@@ -84,10 +84,23 @@ public sealed partial class AdminViewModel
                 }
             }
 
-            if (_page == AdminPage.Sounds && tag is string soundsTag && soundsTag == "sounds.table")
+            if (_page == AdminPage.Sounds && tag is string soundsTag)
             {
-                BuildSoundsTable();
-                return;
+                if (soundsTag == "sounds.table")
+                {
+                    BuildSoundsTable();
+                    return;
+                }
+                if (soundsTag == "sounds.chat")
+                {
+                    BuildSoundsChat();
+                    return;
+                }
+                if (soundsTag == "sounds.private")
+                {
+                    BuildSoundsPrivateMessages();
+                    return;
+                }
             }
 
             if (_page == AdminPage.SoundsTable && tag is string tableSound)
@@ -100,6 +113,34 @@ public sealed partial class AdminViewModel
                 if (tableSound == "sounds.table.exit")
                 {
                     BuildSoundDetails(Modules.Audio.Models.SoundId.RoomExit);
+                    return;
+                }
+            }
+
+            if (_page == AdminPage.SoundsChat && tag is string chatSound)
+            {
+                if (chatSound == "sounds.chat.sent")
+                {
+                    BuildSoundDetails(Modules.Audio.Models.SoundId.ChatMessageSent);
+                    return;
+                }
+                if (chatSound == "sounds.chat.received")
+                {
+                    BuildSoundDetails(Modules.Audio.Models.SoundId.ChatMessageReceived);
+                    return;
+                }
+            }
+
+            if (_page == AdminPage.SoundsPrivateMessages && tag is string pmSound)
+            {
+                if (pmSound == "sounds.private.sent")
+                {
+                    BuildSoundDetails(Modules.Audio.Models.SoundId.PrivateMessageSent);
+                    return;
+                }
+                if (pmSound == "sounds.private.received")
+                {
+                    BuildSoundDetails(Modules.Audio.Models.SoundId.PrivateMessageReceived);
                     return;
                 }
             }

@@ -40,12 +40,22 @@ public sealed class SoundService : ISoundService, IDisposable
         {
             [SoundId.ChatMessageSent] = new SoundEntry(
                 DefaultRelativePath: Path.Combine("Assets", "Sounds", "envoimsgtchat.mp3"),
-                OverridePath: null,
+                OverridePath: () => _options.Current.SoundChatMessageSentPath,
                 IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundChatMessages,
                 Volume: () => Clamp01(_options.Current.SoundChatMessagesVolume / 100.0)),
             [SoundId.ChatMessageReceived] = new SoundEntry(
                 DefaultRelativePath: Path.Combine("Assets", "Sounds", "receptionmsgtchat.mp3"),
-                OverridePath: null,
+                OverridePath: () => _options.Current.SoundChatMessageReceivedPath,
+                IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundChatMessages,
+                Volume: () => Clamp01(_options.Current.SoundChatMessagesVolume / 100.0)),
+            [SoundId.PrivateMessageSent] = new SoundEntry(
+                DefaultRelativePath: Path.Combine("Assets", "Sounds", "msgprivateenvoi.mp3"),
+                OverridePath: () => _options.Current.SoundPrivateMessageSentPath,
+                IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundChatMessages,
+                Volume: () => Clamp01(_options.Current.SoundChatMessagesVolume / 100.0)),
+            [SoundId.PrivateMessageReceived] = new SoundEntry(
+                DefaultRelativePath: Path.Combine("Assets", "Sounds", "msgprivatereceve.mp3"),
+                OverridePath: () => _options.Current.SoundPrivateMessageReceivedPath,
                 IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundChatMessages,
                 Volume: () => Clamp01(_options.Current.SoundChatMessagesVolume / 100.0)),
             [SoundId.RoomOpened] = new SoundEntry(

@@ -4,6 +4,8 @@ public enum SoundId
 {
     ChatMessageSent,
     ChatMessageReceived,
+    PrivateMessageSent,
+    PrivateMessageReceived,
     RoomOpened,
     RoomExit,
 }
