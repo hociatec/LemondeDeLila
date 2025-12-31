@@ -31,6 +31,13 @@ public static class RoomShortcuts
         ICommand quitCommand)
     {
         yield return new ShortcutDefinition(
+            new KeyGesture(Key.Escape),
+            quitCommand,
+            description: "Retour menu précédent",
+            code: RoomShortcutCodes.Quit,
+            availableInGame: true);
+
+        yield return new ShortcutDefinition(
             'x',
             resetCommand,
             description: "Reinitialiser la table",

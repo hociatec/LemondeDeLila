@@ -172,7 +172,7 @@ public sealed class GameZoneHostViewModel : ObservableObject
     {
         var confirm = await _dialogs.Confirm(
                 "Quitter la table",
-                "Voulez-vous quitter la table et revenir au menu principal ?")
+                "Voulez-vous quitter la table et revenir au menu précédent ?")
             .ConfigureAwait(true);
 
         if (confirm != true)

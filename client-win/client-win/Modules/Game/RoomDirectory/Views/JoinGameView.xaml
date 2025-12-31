@@ -77,39 +77,67 @@
                 <DockPanel Grid.Row="0" LastChildFill="False" Margin="0 0 0 12">
                     <TextBlock Text="Tables disponibles" Foreground="White" FontSize="18" DockPanel.Dock="Left" />
                     <Button Content="Rafraîchir" Command="{Binding RefreshCommand}" DockPanel.Dock="Right" Margin="12,0,0,0" />
-                    <Button Content="Retour" Command="{Binding CloseCommand}" DockPanel.Dock="Right" />
                 </DockPanel>
 
-                <ListBox x:Name="RoomsList"
-                         Grid.Row="1"
-                         ItemsSource="{Binding Rooms}"
-                         SelectedItem="{Binding SelectedRoom, Mode=TwoWay}"
-                         SelectionMode="Single"
-                         VirtualizingStackPanel.IsVirtualizing="False"
-                         PreviewKeyDown="OnListPreviewKeyDown"
-                         KeyDown="OnListKeyDown"
-                         AutomationProperties.LabeledBy="{Binding ElementName=TitleText}">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="240" />
-                                    <ColumnDefinition Width="160" />
-                                </Grid.ColumnDefinitions>
-                                <StackPanel Grid.Column="0" Orientation="Vertical">
-                                    <TextBlock Text="{Binding Name}" FontSize="16" Foreground="White" />
-                                    <TextBlock Text="{Binding GameType}" Foreground="#9CB2D1" FontSize="12" />
-                                </StackPanel>
-                                <TextBlock Grid.Column="1" Text="{Binding OwnerUsername, TargetNullValue=—}" Foreground="#C6D6F0" VerticalAlignment="Center" />
-                                <TextBlock Grid.Column="2"
-                                           Foreground="#C6D6F0"
-                                           VerticalAlignment="Center"
-                                           Text="{Binding Slots}" />
-                            </Grid>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
+                <Grid Grid.Row="1">
+                    <ListBox x:Name="RoomsList"
+                             ItemsSource="{Binding Rooms}"
+                             SelectedItem="{Binding SelectedRoom, Mode=TwoWay}"
+                             SelectionMode="Single"
+                             VirtualizingStackPanel.IsVirtualizing="False"
+                             PreviewKeyDown="OnListPreviewKeyDown"
+                             KeyDown="OnListKeyDown"
+                             AutomationProperties.LabeledBy="{Binding ElementName=TitleText}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="240" />
+                                        <ColumnDefinition Width="160" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0" Orientation="Vertical">
+                                        <TextBlock Text="{Binding Name}" FontSize="16" Foreground="White" />
+                                        <TextBlock Text="{Binding GameType}" Foreground="#9CB2D1" FontSize="12" />
+                                    </StackPanel>
+                                    <TextBlock Grid.Column="1" Text="{Binding OwnerUsername, TargetNullValue=—}" Foreground="#C6D6F0" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="2"
+                                               Foreground="#C6D6F0"
+                                               VerticalAlignment="Center"
+                                               Text="{Binding Slots}" />
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                    <Border Background="#0B111A"
+                            CornerRadius="10"
+                            Padding="16"
+                            Visibility="Collapsed"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            MaxWidth="640">
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Rooms.Count}" Value="0">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <TextBlock x:Name="EmptyStateText"
+                                   Text="Aucune partie créée."
+                                   Foreground="#C6D6F0"
+                                   FontSize="16"
+                                   TextAlignment="Center"
+                                   TextWrapping="Wrap"
+                                   Focusable="True"
+                                   AutomationProperties.Name="Aucune partie créée"
+                                   AutomationProperties.LiveSetting="Polite" />
+                    </Border>
+                </Grid>
             </Grid>
         </Border>
 

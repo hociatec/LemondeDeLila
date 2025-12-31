@@ -26,7 +26,6 @@ public sealed partial class AdminViewModel
         Items.Add(new AdminMenuItem("Auto-cleanup: régler âge max (minutes)", tag: "rooms.settings.olderThan"));
         Items.Add(new AdminMenuItem("Auto-cleanup: régler interval (secondes)", tag: "rooms.settings.interval"));
         Items.Add(new AdminMenuItem("Auto-cleanup: régler limite (max rooms)", tag: "rooms.settings.limit"));
-        Items.Add(new AdminMenuItem("Retour", tag: "back"));
         SelectedItem = Items.FirstOrDefault();
         Status = "Entrée : sélectionner. Échap : retour.";
         UpdateFilterVisibility();

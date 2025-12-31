@@ -46,6 +46,7 @@ logsse.txt
 # Runtime data (backend)
 ###############################
 backend/data/client-updates/
+backend/data/room-maintenance.json
 
 ###############################
 # System files

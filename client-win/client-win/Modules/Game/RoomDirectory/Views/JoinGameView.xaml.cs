@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Specialized;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -9,14 +10,30 @@ namespace client_win.Modules.Game.RoomDirectory.Views;
 
 public partial class JoinGameView : UserControl
 {
+    private INotifyCollectionChanged? _roomsObservable;
+    private int _lastRoomsCount = -1;
+
     public JoinGameView()
     {
         InitializeComponent();
+        DataContextChanged += OnDataContextChanged;
+        Unloaded += OnUnloaded;
     }
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
         FocusWhenContainersGenerated();
+        HookRoomsCollection(DataContext as JoinGameViewModel);
+    }
+
+    private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+    {
+        HookRoomsCollection(DataContext as JoinGameViewModel);
+    }
+
+    private void OnUnloaded(object sender, RoutedEventArgs e)
+    {
+        HookRoomsCollection(null);
     }
 
     private void OnKeyDown(object sender, KeyEventArgs e)
@@ -57,6 +74,13 @@ public partial class JoinGameView : UserControl
     {
         if (RoomsList == null || RoomsList.Items.Count == 0)
         {
+            if (EmptyStateText != null && EmptyStateText.IsVisible)
+            {
+                EmptyStateText.Focus();
+                Keyboard.Focus(EmptyStateText);
+                return;
+            }
+
             RoomsList?.Focus();
             return;
         }
@@ -104,5 +128,46 @@ public partial class JoinGameView : UserControl
         };
         RoomsList.ItemContainerGenerator.StatusChanged += handler;
     }
-}
 
+    private void HookRoomsCollection(JoinGameViewModel? vm)
+    {
+        if (_roomsObservable != null)
+        {
+            _roomsObservable.CollectionChanged -= OnRoomsCollectionChanged;
+            _roomsObservable = null;
+        }
+
+        if (vm == null)
+        {
+            _lastRoomsCount = -1;
+            return;
+        }
+
+        _roomsObservable = vm.Rooms;
+        _roomsObservable.CollectionChanged += OnRoomsCollectionChanged;
+        _lastRoomsCount = vm.Rooms.Count;
+    }
+
+    private void OnRoomsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        if (DataContext is not JoinGameViewModel vm)
+        {
+            return;
+        }
+
+        var current = vm.Rooms.Count;
+        if (current == _lastRoomsCount)
+        {
+            return;
+        }
+        _lastRoomsCount = current;
+
+        _ = Dispatcher.BeginInvoke(
+            DispatcherPriority.Input,
+            new Action(() =>
+            {
+                // Assure un focus "utile" pour lecteurs d'écran quand la liste devient vide ou se remplit.
+                FocusWhenContainersGenerated();
+            }));
+    }
+}
