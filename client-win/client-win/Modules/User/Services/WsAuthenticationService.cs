@@ -28,8 +28,7 @@ public sealed class WsAuthenticationService : IAuthenticationService
         _ws = ws ?? throw new ArgumentNullException(nameof(ws));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _errorBus = errorBus;
-        // Si aucun validateur fourni, en crée un sans validation (mode dev)
-        _validator = validator ?? new JwtTokenValidator(null, strictMode: false);
+        _validator = validator ?? new JwtTokenValidator();
     }
 
     public async Task<LoginResult> LoginAsync(string username, SecureString password, bool rememberMe)

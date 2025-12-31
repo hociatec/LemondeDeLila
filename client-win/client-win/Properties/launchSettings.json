@@ -3,9 +3,7 @@
     "client-win": {
       "commandName": "Project",
       "environmentVariables": {
-        "DOTNET_ENVIRONMENT": "Development",
-        "JWT_STRICT_MODE": "false",
-        "JWT_SECRET": "change-me-in-prod"
+        "DOTNET_ENVIRONMENT": "Development"
       }
     }
   }

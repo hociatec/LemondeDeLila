@@ -98,14 +98,6 @@ public static class AppBootstrapper
         var networkConfig = NetworkConfiguration.Load();
         Log.Information("Configuration réseau: {NetworkConfig}", networkConfig);
 
-        // 4. Validation sécurité (prod/staging)
-        bool jwtStrictMode = string.Equals(
-            Environment.GetEnvironmentVariable("JWT_STRICT_MODE"),
-            "true",
-            StringComparison.OrdinalIgnoreCase);
-        ProductionValidator.ValidateProductionRequirements(environment, config, jwtStrictMode);
-        ProductionValidator.LogConfiguration(config, jwtStrictMode);
-
         // 4. Créer services d'infrastructure
         var errors = new ErrorBus();
         var crashReporter = new CrashReporter(appDataPath);
@@ -160,8 +152,9 @@ public static class AppBootstrapper
             sp.GetRequiredService<Modules.Network.Services.IWsTicketProvider>(),
             errors));
 
-        // JWT avec strict mode (déjà calculé plus haut)
-        services.AddSingleton<JwtTokenValidator>(_ => new JwtTokenValidator(config.JwtSecret, jwtStrictMode));
+        // JWT: le client ne doit jamais contenir de secret de signature.
+        // On décode uniquement le token pour en extraire userId/username/exp.
+        services.AddSingleton<JwtTokenValidator>(_ => new JwtTokenValidator());
 
         // Services d'authentification
         services.AddSingleton<WsAuthenticationService>(sp => new WsAuthenticationService(

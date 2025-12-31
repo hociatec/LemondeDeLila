@@ -22,7 +22,6 @@ public sealed class ClientConfiguration
     private const string DefaultWsGame = "wss://ws.lilas.hociatec.fr/ws/game";
 
     public string ApplicationName { get; }
-    public string? JwtSecret { get; }
     public Uri HttpBase { get; }
     public Uri ApiGatewayWs { get; }
     public Uri RealtimeGatewayWs { get; }
@@ -30,8 +29,8 @@ public sealed class ClientConfiguration
     public Uri NotifyGatewayWs { get; }
     public Uri GameGatewayWs { get; }
 
-    private ClientConfiguration(string applicationName,
-        string? jwtSecret,
+    private ClientConfiguration(
+        string applicationName,
         Uri httpBase,
         Uri apiGatewayWs,
         Uri realtimeGatewayWs,
@@ -40,7 +39,6 @@ public sealed class ClientConfiguration
         Uri gameGatewayWs)
     {
         ApplicationName = applicationName;
-        JwtSecret = jwtSecret;
         HttpBase = httpBase;
         ApiGatewayWs = apiGatewayWs;
         RealtimeGatewayWs = realtimeGatewayWs;
@@ -71,7 +69,6 @@ public sealed class ClientConfiguration
         Uri presenceGateway;
         Uri notifyGateway;
         Uri gameGateway;
-        string? jwtSecret = Normalize(Environment.GetEnvironmentVariable("JWT_SECRET"));
         var environment = EnvironmentDetector.GetEnvironment();
 
         try
@@ -110,7 +107,7 @@ public sealed class ClientConfiguration
 
         Validate(new[] { apiGateway, realtimeGateway, presenceGateway, notifyGateway, gameGateway }, httpBase);
 
-        var config = new ClientConfiguration(appName, jwtSecret, httpBase, apiGateway, realtimeGateway, presenceGateway, notifyGateway, gameGateway);
+        var config = new ClientConfiguration(appName, httpBase, apiGateway, realtimeGateway, presenceGateway, notifyGateway, gameGateway);
 
         // Log de la configuration finale (masquer les secrets)
         Log.Information("Configuration réseau chargée:");
@@ -121,7 +118,6 @@ public sealed class ClientConfiguration
         Log.Information("  - WebSocket Presence: {PresenceGateway}", presenceGateway);
         Log.Information("  - WebSocket Notify: {NotifyGateway}", notifyGateway);
         Log.Information("  - WebSocket Game: {GameGateway}", gameGateway);
-        Log.Information("  - JWT Secret: {HasJwtSecret}", string.IsNullOrWhiteSpace(jwtSecret) ? "non défini" : "*****");
 
         return config;
     }

@@ -9,25 +9,16 @@ param(
     [switch]$HotReload = $false
 )
 
-$hasJwt = -not [string]::IsNullOrWhiteSpace($env:JWT_SECRET)
-
 # Par défaut, on force un environnement de dev pour les lancements locaux.
-# (En prod, définir explicitement DOTNET_ENVIRONMENT=Production + JWT_STRICT_MODE=true + secrets robustes.)
+# (En prod, définir explicitement DOTNET_ENVIRONMENT=Production.)
 if ([string]::IsNullOrWhiteSpace($env:DOTNET_ENVIRONMENT)) {
     $env:DOTNET_ENVIRONMENT = "Development"
-}
-if ([string]::IsNullOrWhiteSpace($env:JWT_STRICT_MODE)) {
-    $env:JWT_STRICT_MODE = "false"
 }
 if ([string]::IsNullOrWhiteSpace($env:LOG_PATH)) {
     $env:LOG_PATH = Join-Path $PSScriptRoot "client\\log"
 }
 if ([string]::IsNullOrWhiteSpace($env:LOG_LEVEL)) {
     $env:LOG_LEVEL = "Debug"
-}
-
-if (-not $hasJwt) {
-    $env:JWT_SECRET = "change-me-in-prod"
 }
 
 New-Item -ItemType Directory -Force -Path $env:LOG_PATH | Out-Null
