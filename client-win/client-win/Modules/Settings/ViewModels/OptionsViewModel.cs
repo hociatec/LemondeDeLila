@@ -1,11 +1,8 @@
 using System;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Input;
 using client_win.Core;
 using client_win.Modules.Config;
 using client_win.Modules.Settings.Models;
-using client_win.Modules.Updates;
 using client_win.Modules.Shell.Services;
 
 namespace client_win.Modules.Settings.ViewModels;
@@ -13,13 +10,8 @@ namespace client_win.Modules.Settings.ViewModels;
 public sealed class OptionsViewModel : ObservableObject
 {
     private OptionsState _state;
-    private string _updateStatus = "Aucune vérification en cours.";
-    private string _currentVersion;
-    private bool _canCheckUpdates = true;
-    private bool _canInstallUpdates;
     private readonly ClientConfiguration? _config;
     private readonly IDialogService? _dialogs;
-    private ClientUpdateInfo? _lastUpdateInfo;
 
     public OptionsViewModel(
         OptionsState state,
@@ -31,12 +23,8 @@ public sealed class OptionsViewModel : ObservableObject
         _state = state ?? throw new ArgumentNullException(nameof(state));
         _config = config;
         _dialogs = dialogs;
-        _currentVersion = AppInfo.GetShortVersion();
         SaveCommand = new RelayCommand(onSave);
         CancelCommand = new RelayCommand(onCancel);
-        CheckUpdateCommand = new AsyncRelayCommand(HandleCheckUpdateAsync, () => CanCheckUpdates);
-        InstallUpdateCommand = new AsyncRelayCommand(HandleInstallUpdateAsync, () => CanInstallUpdates);
-        _canInstallUpdates = false;
     }
 
     public bool MuteAll
@@ -182,42 +170,6 @@ public sealed class OptionsViewModel : ObservableObject
         set => Update(() => _state.ExtraDescriptions, v => _state.ExtraDescriptions = v, value);
     }
 
-    public string CurrentVersion
-    {
-        get => _currentVersion;
-        set => SetProperty(ref _currentVersion, value);
-    }
-
-    public string UpdateStatus
-    {
-        get => _updateStatus;
-        set => SetProperty(ref _updateStatus, value);
-    }
-
-    public bool CanCheckUpdates
-    {
-        get => _canCheckUpdates;
-        private set
-        {
-            if (SetProperty(ref _canCheckUpdates, value))
-            {
-                (CheckUpdateCommand as RelayCommand)?.RaiseCanExecuteChanged();
-            }
-        }
-    }
-
-    public bool CanInstallUpdates
-    {
-        get => _canInstallUpdates;
-        private set
-        {
-            if (SetProperty(ref _canInstallUpdates, value))
-            {
-                (InstallUpdateCommand as RelayCommand)?.RaiseCanExecuteChanged();
-            }
-        }
-    }
-
     public bool IsVolumeEnabled => !MuteAll;
     public bool IsAppLaunchVolumeEnabled => IsVolumeEnabled && SoundAppLaunch;
     public bool IsBackgroundVolumeEnabled => IsVolumeEnabled && SoundBackground;
@@ -227,119 +179,11 @@ public sealed class OptionsViewModel : ObservableObject
 
     public ICommand SaveCommand { get; }
     public ICommand CancelCommand { get; }
-    public ICommand CheckUpdateCommand { get; }
-    public ICommand InstallUpdateCommand { get; }
 
     public OptionsState ToState()
     {
-        _state.CurrentVersion = _currentVersion;
+        _state.CurrentVersion = AppInfo.GetShortVersion();
         return _state;
-    }
-
-    private async Task HandleCheckUpdateAsync()
-    {
-        CanCheckUpdates = false;
-        CanInstallUpdates = false;
-
-        try
-        {
-            if (_config == null)
-            {
-                UpdateStatus = "Impossible de vérifier les mises à jour (configuration manquante).";
-                return;
-            }
-
-            UpdateStatus = "Vérification des mises à jour...";
-            var info = await ClientUpdateApi.GetAsync(_config).ConfigureAwait(true);
-            _lastUpdateInfo = info;
-            if (info == null)
-            {
-                UpdateStatus = "Impossible de contacter le serveur de mise à jour.";
-                return;
-            }
-
-            CurrentVersion = AppInfo.GetShortVersion();
-
-            if (info.UpdateRequired == true)
-            {
-                UpdateStatus = $"Mise à jour requise (min: {info.MinRequiredVersion ?? "inconnue"}).";
-                CanInstallUpdates = true;
-                return;
-            }
-
-            if (info.UpdateAvailable == true)
-            {
-                UpdateStatus = $"Mise à jour disponible (dernière: {info.LatestVersion ?? "inconnue"}).";
-                CanInstallUpdates = true;
-                return;
-            }
-
-            UpdateStatus = "Vous êtes à jour.";
-        }
-        catch (OperationCanceledException)
-        {
-            UpdateStatus = "Vérification annulée (timeout).";
-        }
-        catch (Exception ex)
-        {
-            UpdateStatus = $"Erreur lors de la vérification: {ex.Message}";
-        }
-        finally
-        {
-            CanCheckUpdates = true;
-        }
-    }
-
-    private async Task HandleInstallUpdateAsync()
-    {
-        CanCheckUpdates = false;
-        CanInstallUpdates = false;
-
-        try
-        {
-            if (_dialogs == null)
-            {
-                UpdateStatus = "Impossible de lancer la mise à jour (dialogues indisponibles).";
-                return;
-            }
-
-            var url = _lastUpdateInfo?.Url;
-            var msg = "Une mise à jour du client est disponible.";
-            if (_lastUpdateInfo?.UpdateRequired == true)
-            {
-                msg = "Une mise à jour du client est requise pour continuer.";
-            }
-            if (!string.IsNullOrWhiteSpace(_lastUpdateInfo?.MinRequiredVersion))
-            {
-                msg += $"\n\nVersion minimale requise : {_lastUpdateInfo!.MinRequiredVersion!.Trim()}";
-            }
-            if (!string.IsNullOrWhiteSpace(_lastUpdateInfo?.LatestVersion))
-            {
-                msg += $"\nDernière version : {_lastUpdateInfo!.LatestVersion!.Trim()}";
-            }
-            UpdateStatus = "Mise à jour : action requise.";
-            _ = await ClientUpdateCoordinator.PromptAsync(
-                    _dialogs,
-                    title: "Mise à jour",
-                    message: msg + "\n\nMettre à jour maintenant ?",
-                    clickOnceUrl: url,
-                    reason: "options",
-                    deDupKey: $"options:{_lastUpdateInfo?.LatestVersion}")
-                .ConfigureAwait(true);
-        }
-        catch (OperationCanceledException)
-        {
-            UpdateStatus = "Installation annulée (timeout).";
-        }
-        catch (Exception ex)
-        {
-            UpdateStatus = $"Erreur lors de l'installation: {ex.Message}";
-        }
-        finally
-        {
-            CanCheckUpdates = true;
-            CanInstallUpdates = false;
-        }
     }
 
     private bool Update<T>(Func<T> getter, Action<T> setter, T value)

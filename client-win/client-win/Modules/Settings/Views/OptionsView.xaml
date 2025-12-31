@@ -112,16 +112,6 @@
                     </StackPanel>
                     </ScrollViewer>
                 </TabItem>
-                <TabItem Header="Mises à jour">
-                    <StackPanel Margin="8">
-                        <TextBlock Text="{Binding CurrentVersion, StringFormat=Version actuelle : {0}}" Foreground="White" />
-                        <TextBlock Text="{Binding UpdateStatus}" Foreground="{StaticResource HighlightBrush}" TextWrapping="Wrap" Margin="0 6 0 6" />
-                        <StackPanel Orientation="Horizontal">
-                            <Button Content="Vérifier les mises à jour" Command="{Binding CheckUpdateCommand}" IsEnabled="{Binding CanCheckUpdates}" />
-                            <Button Content="Installer la mise à jour" Command="{Binding InstallUpdateCommand}" IsEnabled="{Binding CanInstallUpdates}" />
-                        </StackPanel>
-                    </StackPanel>
-                </TabItem>
             </TabControl>
         </Border>
 

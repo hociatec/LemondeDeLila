@@ -186,9 +186,9 @@ public sealed class ShellErrorHandler : IDisposable
         {
             msg += $"\n\nVersion minimale requise : {min}";
         }
-        msg += "\n\nMettre à jour maintenant ?";
+        msg += "\n\nLancement de la mise à jour…";
 
-        _ = await ClientUpdateCoordinator.PromptAsync(
+        await ClientUpdateCoordinator.EnforceAsync(
                 _dialogs,
                 title: "Mise à jour requise",
                 message: msg,

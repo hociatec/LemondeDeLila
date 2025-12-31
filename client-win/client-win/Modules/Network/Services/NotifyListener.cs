@@ -142,18 +142,6 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
             {
                 _catalog.InvalidateCache();
             }
-            else if (string.Equals(type, "client.update.available", StringComparison.OrdinalIgnoreCase))
-            {
-                var payload = root.TryGetProperty("payload", out var p) ? p : default;
-                var message = payload.ValueKind != JsonValueKind.Undefined && payload.TryGetProperty("message", out var m)
-                    ? (m.GetString() ?? string.Empty)
-                    : string.Empty;
-                var version = payload.ValueKind != JsonValueKind.Undefined && payload.TryGetProperty("version", out var v)
-                    ? (v.GetString() ?? string.Empty)
-                    : string.Empty;
-
-                _ = HandleClientUpdateAvailableAsync(message, version);
-            }
             else if (string.Equals(type, "client.update.required", StringComparison.OrdinalIgnoreCase))
             {
                 var payload = root.TryGetProperty("payload", out var p) ? p : default;
@@ -206,10 +194,10 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
                 msg += $"\nVotre version : {current.Trim()}";
             }
 
-            _ = await ClientUpdateCoordinator.PromptAsync(
+            await ClientUpdateCoordinator.EnforceAsync(
                     _dialogs,
                     title: "Mise à jour requise",
-                    message: msg + "\n\nMettre à jour maintenant ?",
+                    message: msg + "\n\nLancement de la mise à jour…",
                     clickOnceUrl: url,
                     reason: "notify-required",
                     deDupKey: $"notify-required:{minRequiredVersion}")
@@ -377,36 +365,6 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
         catch
         {
             // ignore
-        }
-    }
-
-    private async Task HandleClientUpdateAvailableAsync(string message, string version)
-    {
-        try
-        {
-            var msg = string.IsNullOrWhiteSpace(message)
-                ? "Une mise à jour du client est disponible."
-                : message.Trim();
-
-            if (!string.IsNullOrWhiteSpace(version))
-            {
-                msg += $"\nVersion annoncée : {version.Trim()}";
-            }
-
-            Log.Information("Mise à jour acceptée (notify): version={Version}", version?.Trim());
-            _ = await ClientUpdateCoordinator.PromptAsync(
-                    _dialogs,
-                    title: "Mise à jour disponible",
-                    message: msg + "\n\nMettre à jour maintenant ?",
-                    clickOnceUrl: null,
-                    reason: "notify-available",
-                    deDupKey: $"notify-available:{version}")
-                .ConfigureAwait(true);
-        }
-        catch (Exception ex)
-        {
-            Log.Warning(ex, "Erreur lors de la mise à jour client (notify).");
-            await _dialogs.ShowError("Mise à jour", ex.Message).ConfigureAwait(true);
         }
     }
 

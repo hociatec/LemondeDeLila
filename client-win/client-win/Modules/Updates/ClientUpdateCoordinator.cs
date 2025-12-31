@@ -16,6 +16,64 @@ public static class ClientUpdateCoordinator
     private static DateTime _lastShownAtUtc = DateTime.MinValue;
     private static readonly TimeSpan Cooldown = TimeSpan.FromSeconds(5);
 
+    public static async Task EnforceAsync(
+        IDialogService dialogs,
+        string title,
+        string message,
+        string? clickOnceUrl,
+        string reason,
+        string? deDupKey = null,
+        CancellationToken cancellationToken = default)
+    {
+        if (dialogs == null) throw new ArgumentNullException(nameof(dialogs));
+
+        var key = (deDupKey ?? string.Empty).Trim();
+        if (key.Length > 0 &&
+            string.Equals(_lastKey, key, StringComparison.Ordinal) &&
+            DateTime.UtcNow - _lastShownAtUtc < Cooldown)
+        {
+            return;
+        }
+
+        if (!await Gate.WaitAsync(0, cancellationToken).ConfigureAwait(true))
+        {
+            return;
+        }
+
+        try
+        {
+            _lastKey = key.Length > 0 ? key : null;
+            _lastShownAtUtc = DateTime.UtcNow;
+
+            // Mise à jour obligatoire: on informe puis on lance ClickOnce. Pas de bouton "Ignorer".
+            try
+            {
+                await dialogs.ShowInfo(
+                        string.IsNullOrWhiteSpace(title) ? "Mise à jour requise" : title,
+                        (message ?? string.Empty).Trim())
+                    .ConfigureAwait(true);
+            }
+            catch
+            {
+                // Best-effort
+            }
+
+            var started = await ClientUpdateInstaller
+                .InstallLatestAsync(dialogs, clickOnceUrl, reason, cancellationToken)
+                .ConfigureAwait(true);
+
+            // Dans tous les cas: ne pas laisser l'utilisateur continuer si le serveur exige une MAJ.
+            // Si ClickOnce démarre, l'installation se termine au redémarrage.
+            // Si ça échoue, l'utilisateur doit corriger (réinstaller/publier) puis relancer.
+            _ = started;
+            Environment.Exit(0);
+        }
+        finally
+        {
+            Gate.Release();
+        }
+    }
+
     public static async Task<bool> PromptAsync(
         IDialogService dialogs,
         string title,
@@ -75,4 +133,3 @@ public static class ClientUpdateCoordinator
         }
     }
 }
-
