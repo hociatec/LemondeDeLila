@@ -118,11 +118,15 @@ export class RoomGateway
               if (!isPrivate) {
                 role = 'spectator';
               } else {
+                // Important: envoyer un message d'erreur avant de fermer la socket,
+                // pour que le client puisse afficher un dialogue explicite (ex: table privée).
+                await this.sendError(client, reason);
                 client.close(4003, reason);
                 return;
               }
             }
           } catch {
+            await this.sendError(client, reason);
             client.close(4003, reason);
             return;
           }
