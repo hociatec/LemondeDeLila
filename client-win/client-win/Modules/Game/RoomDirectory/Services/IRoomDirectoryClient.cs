@@ -65,4 +65,12 @@ public sealed class PublicRoomListItem
     public string? OwnerUsername { get; }
 
     public string Slots => $"{PlayersCount + BotsCount}/{MaxPlayers}";
+
+    public override string ToString()
+    {
+        var owner = string.IsNullOrWhiteSpace(OwnerUsername) ? "—" : OwnerUsername;
+        var title = string.IsNullOrWhiteSpace(Name) ? $"Table #{Id}" : Name;
+        var game = string.IsNullOrWhiteSpace(GameType) ? "unknown" : GameType;
+        return $"{title} • {game} • {Slots} • {owner}";
+    }
 }
