@@ -188,10 +188,13 @@ public sealed class MenuRouter : IMenuRouter
         // Accessibilité: quand on revient au menu précédent via Échap,
         // remettre le focus sur la liste (NVDA annonce alors "<titre> list", comportement identique au menu principal).
         var dispatcher = target.Dispatcher;
-        dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Input, new Action(() =>
+        dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.ApplicationIdle, new Action(() =>
         {
             try
             {
+                target.UpdateLayout();
+                System.Windows.Input.Keyboard.ClearFocus();
+
                 // MainMenu / Stats / Leaderboard utilisent souvent "ItemsList".
                 if (target.FindName("ItemsList") is System.Windows.Controls.ListBox list)
                 {

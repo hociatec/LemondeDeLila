@@ -143,10 +143,13 @@ public sealed class MenuRouterStub : IMenuRouter
     private static void RestoreFocusAfterBackNavigation(UserControl target)
     {
         var dispatcher = target.Dispatcher;
-        dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Input, new Action(() =>
+        dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.ApplicationIdle, new Action(() =>
         {
             try
             {
+                target.UpdateLayout();
+                System.Windows.Input.Keyboard.ClearFocus();
+
                 if (target.FindName("ItemsList") is ListBox list)
                 {
                     if (list.Items.Count == 0)
