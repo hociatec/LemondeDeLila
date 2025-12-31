@@ -8,3 +8,16 @@ public sealed class AdminRoomsCleanupResponseDto
     public int Deleted { get; set; }
     public int[] RoomIds { get; set; } = Array.Empty<int>();
 }
+
+public sealed class AdminRoomMaintenanceSettingsDto
+{
+    public bool AutoCleanupEnabled { get; set; }
+    public int AutoCleanupOlderThanMinutes { get; set; }
+    public int AutoCleanupIntervalSeconds { get; set; }
+    public int AutoCleanupLimit { get; set; }
+
+    public override string ToString()
+    {
+        return $"enabled={AutoCleanupEnabled} olderThan={AutoCleanupOlderThanMinutes}m interval={AutoCleanupIntervalSeconds}s limit={AutoCleanupLimit}";
+    }
+}

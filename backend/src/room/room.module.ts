@@ -20,6 +20,7 @@ import { PublicRoomDirectoryService } from './services/public-room-directory.ser
 import { PublicRoomDirectoryBinder } from './services/public-room-directory.binder';
 import { RoomRealtimeTrackerService } from './services/room-realtime-tracker.service';
 import { RoomAutoCleanupService } from './services/room-auto-cleanup.service';
+import { RoomMaintenanceSettingsService } from './services/room-maintenance-settings.service';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { RoomAutoCleanupService } from './services/room-auto-cleanup.service';
     PublicRoomDirectoryService,
     PublicRoomDirectoryBinder,
     RoomRealtimeTrackerService,
+    RoomMaintenanceSettingsService,
     RoomAutoCleanupService,
     RoomDirectoryWsHandler,
     RoomWsRegistrar,

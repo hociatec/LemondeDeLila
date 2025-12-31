@@ -62,4 +62,12 @@ public interface IAdminService
         bool includeStarted = false,
         int? olderThanMinutes = null,
         CancellationToken cancellationToken = default);
+
+    Task<AdminRoomMaintenanceSettingsDto> GetRoomMaintenanceSettingsAsync(CancellationToken cancellationToken = default);
+    Task<AdminRoomMaintenanceSettingsDto> UpdateRoomMaintenanceSettingsAsync(
+        bool? autoCleanupEnabled = null,
+        int? autoCleanupOlderThanMinutes = null,
+        int? autoCleanupIntervalSeconds = null,
+        int? autoCleanupLimit = null,
+        CancellationToken cancellationToken = default);
 }

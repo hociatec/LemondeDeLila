@@ -97,11 +97,48 @@ public sealed partial class AdminViewModel
                     await CleanupPublicRoomsAsync().ConfigureAwait(true);
                     return;
                 }
+                if (roomsAction == "rooms.settings.refresh")
+                {
+                    await RefreshRoomSettingsAsync().ConfigureAwait(true);
+                    return;
+                }
+                if (roomsAction == "rooms.settings.toggle")
+                {
+                    await ToggleAutoCleanupAsync().ConfigureAwait(true);
+                    return;
+                }
+                if (roomsAction == "rooms.settings.olderThan")
+                {
+                    PushReturnFocus();
+                    var current = _roomSettings?.AutoCleanupOlderThanMinutes ?? 60;
+                    BuildRoomsSettingEdit("Auto-cleanup", "Âge max (minutes)", current.ToString(), mode: "rooms.settings.olderThan");
+                    return;
+                }
+                if (roomsAction == "rooms.settings.interval")
+                {
+                    PushReturnFocus();
+                    var current = _roomSettings?.AutoCleanupIntervalSeconds ?? 300;
+                    BuildRoomsSettingEdit("Auto-cleanup", "Interval (secondes)", current.ToString(), mode: "rooms.settings.interval");
+                    return;
+                }
+                if (roomsAction == "rooms.settings.limit")
+                {
+                    PushReturnFocus();
+                    var current = _roomSettings?.AutoCleanupLimit ?? 1000;
+                    BuildRoomsSettingEdit("Auto-cleanup", "Limite (max rooms)", current.ToString(), mode: "rooms.settings.limit");
+                    return;
+                }
                 if (roomsAction == "back")
                 {
                     BuildRoot();
                     return;
                 }
+            }
+
+            if (_page == AdminPage.EditText && tag is string submitRooms && submitRooms == "rooms.settings.submit")
+            {
+                await SubmitRoomsSettingEditAsync().ConfigureAwait(true);
+                return;
             }
 
             if (_page == AdminPage.Sounds && tag is string soundsTag)

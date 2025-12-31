@@ -19,6 +19,7 @@ import { PerfMetricsService } from '../../common/services/perf-metrics.service';
 import { ClientUpdatesService } from '../../client-updates/client-updates.service';
 import { ChatService } from '../../chat/services/chat.service';
 import { RoomService } from '../../room/services/room.service';
+import { RoomMaintenanceSettingsService } from '../../room/services/room-maintenance-settings.service';
 import * as fs from 'fs';
 import * as path from 'path';
 import {
@@ -54,6 +55,7 @@ import {
   AdminUserRolesWsDto,
 } from './admin-ws.dto';
 import { AdminRoomsCleanupWsDto } from './admin-rooms-cleanup.dto';
+import { AdminRoomsSettingsUpdateWsDto, AdminRoomsSettingsGetWsDto } from './admin-rooms-settings.dto';
 
 @Injectable()
 export class AdminWsHandler {
@@ -73,6 +75,7 @@ export class AdminWsHandler {
     private readonly botSettings: BotSettingsService,
     private readonly perf: PerfMetricsService,
     private readonly rooms: RoomService,
+    private readonly roomSettings: RoomMaintenanceSettingsService,
     @InjectRepository(User) private readonly userRepo: Repository<User>,
   ) {}
 
@@ -267,6 +270,27 @@ export class AdminWsHandler {
       excludeActivePlayers: true,
     });
     return { type: 'admin.rooms.cleanup', payload: res };
+  }
+
+  async roomsSettingsGet(session: WsSession, payload: any) {
+    requireAdmin(session);
+    this.validator.validate(AdminRoomsSettingsGetWsDto, payload ?? {});
+    return { type: 'admin.rooms.settings.get', payload: this.roomSettings.get() };
+  }
+
+  async roomsSettingsUpdate(session: WsSession, payload: any) {
+    requireAdmin(session);
+    const dto = this.validator.validate(AdminRoomsSettingsUpdateWsDto, payload);
+    const updated = this.roomSettings.update({
+      autoCleanupEnabled:
+        typeof dto.autoCleanupEnabled === 'boolean'
+          ? dto.autoCleanupEnabled
+          : undefined,
+      autoCleanupOlderThanMinutes: dto.autoCleanupOlderThanMinutes ?? undefined,
+      autoCleanupIntervalSeconds: dto.autoCleanupIntervalSeconds ?? undefined,
+      autoCleanupLimit: dto.autoCleanupLimit ?? undefined,
+    });
+    return { type: 'admin.rooms.settings.update', payload: updated };
   }
 
   async botsNamesList(session: WsSession, payload: any) {

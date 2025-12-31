@@ -34,4 +34,49 @@ public sealed partial class AdminService
 
         return res.Payload;
     }
+
+    public async Task<AdminRoomMaintenanceSettingsDto> GetRoomMaintenanceSettingsAsync(CancellationToken cancellationToken = default)
+    {
+        var token = EnsureAuth();
+        var res = await _ws.RequestAsync<AdminRoomMaintenanceSettingsDto>(
+            WsMessageTypes.Admin.RoomsSettingsGet,
+            new { },
+            token,
+            cancellationToken).ConfigureAwait(false);
+
+        if (!res.Success || res.Payload == null)
+        {
+            throw new InvalidOperationException(res.Error ?? "Lecture des paramètres rooms impossible.");
+        }
+
+        return res.Payload;
+    }
+
+    public async Task<AdminRoomMaintenanceSettingsDto> UpdateRoomMaintenanceSettingsAsync(
+        bool? autoCleanupEnabled = null,
+        int? autoCleanupOlderThanMinutes = null,
+        int? autoCleanupIntervalSeconds = null,
+        int? autoCleanupLimit = null,
+        CancellationToken cancellationToken = default)
+    {
+        var token = EnsureAuth();
+        var res = await _ws.RequestAsync<AdminRoomMaintenanceSettingsDto>(
+            WsMessageTypes.Admin.RoomsSettingsUpdate,
+            new
+            {
+                autoCleanupEnabled,
+                autoCleanupOlderThanMinutes,
+                autoCleanupIntervalSeconds,
+                autoCleanupLimit
+            },
+            token,
+            cancellationToken).ConfigureAwait(false);
+
+        if (!res.Success || res.Payload == null)
+        {
+            throw new InvalidOperationException(res.Error ?? "Mise à jour des paramètres rooms impossible.");
+        }
+
+        return res.Payload;
+    }
 }

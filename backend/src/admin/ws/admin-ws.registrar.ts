@@ -123,5 +123,12 @@ export class AdminWsRegistrar implements OnModuleInit {
     this.registry.register('admin.rooms.cleanup', (s, p) =>
       this.handler.roomsCleanup(s, p),
     );
+
+    this.registry.register('admin.rooms.settings.get', (s, p) =>
+      this.handler.roomsSettingsGet(s, p),
+    );
+    this.registry.register('admin.rooms.settings.update', (s, p) =>
+      this.handler.roomsSettingsUpdate(s, p),
+    );
   }
 }

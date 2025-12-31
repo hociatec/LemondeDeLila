@@ -162,6 +162,8 @@ public static class WsMessageTypes
         public const string PerfSnapshot = "admin.perf.snapshot";
 
         public const string RoomsCleanup = "admin.rooms.cleanup";
+        public const string RoomsSettingsGet = "admin.rooms.settings.get";
+        public const string RoomsSettingsUpdate = "admin.rooms.settings.update";
     }
 
     public static class Rooms
