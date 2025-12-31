@@ -291,23 +291,50 @@ export class ClientUpdatesService {
       maxBuffer: 50 * 1024 * 1024,
     });
 
-    // Atomic-ish swap
-    const targetDir = this.getTargetDir();
+    // Swap atomique via symlink (évite les fenêtres 404 pendant une publication).
+    const targetDir = this.getTargetDir(); // path stable servi par express.static
     const parent = path.dirname(targetDir);
-    const backupDir = path.join(parent, `client-win.backup.${Date.now()}`);
-    await fs.promises.mkdir(parent, { recursive: true });
+    const releasesDir = path.join(parent, 'client-win.releases');
+    await fs.promises.mkdir(releasesDir, { recursive: true });
 
-    const targetExists = fs.existsSync(targetDir);
-    if (targetExists) {
-      await fs.promises.rename(targetDir, backupDir);
-    }
-    await fs.promises.rename(stagingDir, targetDir);
+    const ensureTargetSymlink = async (): Promise<string | null> => {
+      try {
+        const st = await fs.promises.lstat(targetDir);
+        if (st.isSymbolicLink()) {
+          const link = await fs.promises.readlink(targetDir);
+          return path.isAbsolute(link) ? link : path.resolve(parent, link);
+        }
+        // Convert existing folder to a first release.
+        if (st.isDirectory()) {
+          const initial = path.join(releasesDir, `initial.${Date.now()}`);
+          await fs.promises.rename(targetDir, initial);
+          await fs.promises.symlink(initial, targetDir);
+          return initial;
+        }
+      } catch {
+        // missing: create empty release and link
+        const initial = path.join(releasesDir, `initial.${Date.now()}`);
+        await fs.promises.mkdir(initial, { recursive: true });
+        try {
+          await fs.promises.symlink(initial, targetDir);
+        } catch {
+          // If created concurrently, ignore.
+        }
+        return initial;
+      }
+      return null;
+    };
 
-    await this.ensureLegacyAliases(targetDir);
+    const previousTarget = await ensureTargetSymlink();
+
+    const newReleaseDir = path.join(releasesDir, `release.${Date.now()}`);
+    await fs.promises.rename(stagingDir, newReleaseDir);
+
+    await this.ensureLegacyAliases(newReleaseDir);
 
     // Keep a stable downloadable artifact for clients (no need to keep the original upload name).
     try {
-      const zipDest = path.join(targetDir, this.latestZipName);
+      const zipDest = path.join(newReleaseDir, this.latestZipName);
       await fs.promises.copyFile(zipPath, zipDest);
     } catch {
       // Best-effort: the extracted folder is still served, but the "client-win.zip" URL won't work.
@@ -315,16 +342,51 @@ export class ClientUpdatesService {
 
     // Provide a stable /updates/client-win/ landing page even without nginx directory listing.
     try {
-      await this.writeLandingPage(targetDir);
+      await this.writeLandingPage(newReleaseDir);
     } catch {
       // Best-effort
     }
 
-    // Cleanup backup best-effort
-    if (targetExists) {
-      fs.promises.rm(backupDir, { recursive: true, force: true }).catch(() => {
+    // Atomically repoint symlink.
+    try {
+      const tmpLink = `${targetDir}.next`;
+      try {
+        await fs.promises.unlink(tmpLink);
+      } catch {
         /* ignore */
+      }
+      await fs.promises.symlink(newReleaseDir, tmpLink);
+      await fs.promises.rename(tmpLink, targetDir);
+    } catch {
+      // If we can't swap, we still keep the extracted release directory on disk.
+    }
+
+    // Best-effort cleanup: keep last 3 releases + current.
+    try {
+      const entries = await fs.promises.readdir(releasesDir, {
+        withFileTypes: true,
       });
+      const dirs = entries
+        .filter((e) => e.isDirectory())
+        .map((e) => e.name)
+        .filter((n) => n.startsWith('release.') || n.startsWith('initial.'))
+        .sort()
+        .reverse();
+      const keep = new Set(dirs.slice(0, 3));
+      if (previousTarget) {
+        keep.add(path.basename(previousTarget));
+      }
+      keep.add(path.basename(newReleaseDir));
+      for (const d of dirs) {
+        if (keep.has(d)) continue;
+        fs.promises
+          .rm(path.join(releasesDir, d), { recursive: true, force: true })
+          .catch(() => {
+            /* ignore */
+          });
+      }
+    } catch {
+      // ignore
     }
 
     fs.promises.rm(baseTmp, { recursive: true, force: true }).catch(() => {

@@ -113,7 +113,17 @@ public static class ClientUpdateInstaller
         {
             using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(8) };
 
-            var appXml = await http.GetStringAsync(applicationUrl, cancellationToken).ConfigureAwait(false);
+            string appXml;
+            try
+            {
+                appXml = await http.GetStringAsync(applicationUrl, cancellationToken).ConfigureAwait(false);
+            }
+            catch (HttpRequestException)
+            {
+                // Publication ClickOnce peut faire un swap: petit retry pour éviter un faux 404 transitoire.
+                await Task.Delay(600, cancellationToken).ConfigureAwait(false);
+                appXml = await http.GetStringAsync(applicationUrl, cancellationToken).ConfigureAwait(false);
+            }
             appXml = appXml.Replace("\uFEFF", string.Empty, StringComparison.Ordinal);
 
             var dep = Regex.Match(
