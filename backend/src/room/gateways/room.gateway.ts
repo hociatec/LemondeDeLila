@@ -156,9 +156,11 @@ export class RoomGateway
       this.rooms.set(targetRoomId, new Set());
     }
     this.rooms.get(targetRoomId)!.add(client);
-    if (targetRoomId > 0 && this.clients.get(client)?.role === 'participant') {
-      this.realtimeTracker.registerPlayer(targetRoomId);
-    }
+    const initialMeta = this.clients.get(client);
+    this.realtimeTracker.setSocketParticipantRoom(
+      client,
+      initialMeta?.role === 'participant' ? initialMeta.roomId : null,
+    );
 
     // Heartbeat : ping régulier pour maintenir la connexion et détecter les resets silencieux.
     this.lastPong.set(client, Date.now());
@@ -202,6 +204,7 @@ export class RoomGateway
 
   async handleDisconnect(client: WebSocket) {
     const meta = this.clients.get(client);
+    this.realtimeTracker.clearSocket(client);
     this.clients.delete(client);
     const hb = this.heartbeats.get(client);
     if (hb) {
@@ -224,9 +227,6 @@ export class RoomGateway
       }
     }
     if (meta) {
-      if (meta.roomId > 0 && meta.role === 'participant') {
-        this.realtimeTracker.unregisterPlayer(meta.roomId);
-      }
       const set = this.rooms.get(meta.roomId);
       let remainingConnections = 0;
       if (set) {
@@ -485,6 +485,7 @@ export class RoomGateway
     if (!Number.isFinite(roomId) || roomId <= 0) {
       return;
     }
+    this.realtimeTracker.setSocketParticipantRoom(client, null);
 
     const set = this.rooms.get(roomId);
     let remainingConnections = 0;
@@ -695,6 +696,11 @@ export class RoomGateway
       meta.role = 'participant';
     }
 
+    this.realtimeTracker.setSocketParticipantRoom(
+      client,
+      meta.role === 'participant' ? meta.roomId : null,
+    );
+
     this.safeSend(client, {
       type: 'room.role',
       roomId: meta.roomId,
@@ -755,6 +761,7 @@ export class RoomGateway
         }
         meta.roomId = room.id;
         meta.role = 'participant';
+        this.realtimeTracker.setSocketParticipantRoom(client, room.id);
 
         const manifest = await this.catalog.getGame(room.gameType);
         const state = {
@@ -862,6 +869,10 @@ export class RoomGateway
 
         meta.roomId = roomId;
         meta.role = spectator ? 'spectator' : 'participant';
+        this.realtimeTracker.setSocketParticipantRoom(
+          client,
+          meta.role === 'participant' ? meta.roomId : null,
+        );
         await this.sendRoomState(roomId);
       },
       { userId: meta.userId, roomId: payload?.roomId ?? payload?.room ?? null, ...trace },

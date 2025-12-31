@@ -44,6 +44,6 @@ import { RoomMaintenanceSettingsService } from './services/room-maintenance-sett
     RoomDirectoryWsHandler,
     RoomWsRegistrar,
   ],
-  exports: [RoomService],
+  exports: [RoomService, RoomMaintenanceSettingsService],
 })
 export class RoomModule {}
