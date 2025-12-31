@@ -147,12 +147,24 @@ public sealed class MessagingViewModel : ObservableObject
         IsBusy = true;
         try
         {
+            var previousId = SelectedMessage?.Id;
             BoxMessages.Clear();
             var items = await _service.GetBoxAsync(box).ConfigureAwait(true);
             foreach (var item in items.OrderByDescending(m => m.CreatedAt))
             {
                 BoxMessages.Add(item);
             }
+
+            if (!string.IsNullOrWhiteSpace(previousId))
+            {
+                SelectedMessage = BoxMessages.FirstOrDefault(m => string.Equals(m.Id, previousId, StringComparison.OrdinalIgnoreCase))
+                                 ?? BoxMessages.FirstOrDefault();
+            }
+            else
+            {
+                SelectedMessage = BoxMessages.FirstOrDefault();
+            }
+
             var boxName = box switch
             {
                 MessagingBox.Inbox => "inbox",

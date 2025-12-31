@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -19,10 +21,12 @@ public partial class MessagingView : UserControl
     }
 
     private MessagingScreen _currentScreen = MessagingScreen.Menu;
+    private MessagingViewModel? _vm;
 
     public MessagingView()
     {
         InitializeComponent();
+        DataContextChanged += OnDataContextChanged;
     }
 
     private async void OnLoaded(object sender, RoutedEventArgs e)
@@ -40,6 +44,59 @@ public partial class MessagingView : UserControl
             }
             ShowScreen(MessagingScreen.Menu);
         }, DispatcherPriority.Input);
+    }
+
+    private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+    {
+        DetachVmHandlers();
+        _vm = DataContext as MessagingViewModel;
+        AttachVmHandlers();
+    }
+
+    private void AttachVmHandlers()
+    {
+        if (_vm == null)
+        {
+            return;
+        }
+
+        _vm.BoxMessages.CollectionChanged += OnBoxMessagesChanged;
+        _vm.PropertyChanged += OnVmPropertyChanged;
+    }
+
+    private void DetachVmHandlers()
+    {
+        if (_vm == null)
+        {
+            return;
+        }
+
+        _vm.BoxMessages.CollectionChanged -= OnBoxMessagesChanged;
+        _vm.PropertyChanged -= OnVmPropertyChanged;
+        _vm = null;
+    }
+
+    private void OnVmPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (_currentScreen != MessagingScreen.List)
+        {
+            return;
+        }
+
+        if (e.PropertyName == nameof(MessagingViewModel.SelectedBox))
+        {
+            _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusMessagesWhenReady));
+        }
+    }
+
+    private void OnBoxMessagesChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        if (_currentScreen != MessagingScreen.List)
+        {
+            return;
+        }
+
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusMessagesWhenReady));
     }
 
     private void OnRootKeyDown(object sender, KeyEventArgs e)
@@ -120,11 +177,7 @@ public partial class MessagingView : UserControl
                     FocusListItem(MenuList);
                     break;
                 case MessagingScreen.List:
-                    if (MessagesList.Items.Count > 0 && MessagesList.SelectedIndex < 0)
-                    {
-                        MessagesList.SelectedIndex = 0;
-                    }
-                    FocusMessageList();
+                    FocusMessagesWhenReady();
                     break;
                 case MessagingScreen.Detail:
                     DetailBody.Focus();
@@ -157,15 +210,41 @@ public partial class MessagingView : UserControl
         listBox.Focus();
     }
 
-    private void FocusMessageList()
+    private void FocusMessagesWhenReady()
     {
+        if (!MessagesList.IsVisible)
+        {
+            return;
+        }
+
         if (MessagesList.Items.Count == 0)
         {
             EmptyMessagesText.Focus();
             return;
         }
 
-        FocusListItem(MessagesList);
+        if (MessagesList.SelectedIndex < 0)
+        {
+            MessagesList.SelectedIndex = 0;
+        }
+
+        if (MessagesList.ItemContainerGenerator.Status == System.Windows.Controls.Primitives.GeneratorStatus.ContainersGenerated)
+        {
+            FocusListItem(MessagesList);
+            return;
+        }
+
+        EventHandler? handler = null;
+        handler = (_, __) =>
+        {
+            if (MessagesList.ItemContainerGenerator.Status != System.Windows.Controls.Primitives.GeneratorStatus.ContainersGenerated)
+            {
+                return;
+            }
+            MessagesList.ItemContainerGenerator.StatusChanged -= handler;
+            FocusListItem(MessagesList);
+        };
+        MessagesList.ItemContainerGenerator.StatusChanged += handler;
     }
 
     private void OnMenuKeyDown(object sender, KeyEventArgs e)
