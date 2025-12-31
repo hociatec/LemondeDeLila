@@ -4,12 +4,15 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using client_win.Modules.Admin.Dtos;
+using System.Windows.Threading;
 
 namespace client_win.Modules.Admin.ViewModels;
 
 public sealed partial class AdminViewModel
 {
     private sealed record ChatDayTag(DateTime DayLocalDate);
+    private DispatcherTimer? _chatAutoRefreshTimer;
+    private DateTime _lastChatAutoRefreshUtc = DateTime.MinValue;
 
     private async Task LoadChatAsync()
     {
@@ -40,7 +43,6 @@ public sealed partial class AdminViewModel
         IsSecondaryInputVisible = false;
 
         Items.Clear();
-        Items.Add(new AdminMenuItem("Rafraîchir", tag: "chat.refresh"));
         Items.Add(new AdminMenuItem("Réinitialiser le tchat (supprimer tous les messages)", tag: "chat.clear"));
 
         var days = _loadedChatMessages
@@ -54,6 +56,8 @@ public sealed partial class AdminViewModel
             Items.Add(new AdminMenuItem("Aucun message."));
             SelectedItem = Items.FirstOrDefault();
             Status = "Échap : retour.";
+            EnsureChatAutoRefresh();
+            RestoreFocusIfAny();
             return;
         }
 
@@ -65,6 +69,8 @@ public sealed partial class AdminViewModel
 
         SelectedItem = Items.FirstOrDefault(i => i.Tag is ChatDayTag) ?? Items.FirstOrDefault();
         Status = "Entrée : ouvrir le jour. Échap : retour.";
+        EnsureChatAutoRefresh();
+        RestoreFocusIfAny();
     }
 
     private void BuildChatDayMessages(DateTime dayLocalDate)
@@ -94,6 +100,8 @@ public sealed partial class AdminViewModel
             Items.Add(new AdminMenuItem("Aucun message pour ce jour."));
             SelectedItem = Items.FirstOrDefault();
             Status = "Échap : retour.";
+            EnsureChatAutoRefresh();
+            RestoreFocusIfAny();
             return;
         }
 
@@ -109,6 +117,8 @@ public sealed partial class AdminViewModel
 
         SelectedItem = Items.FirstOrDefault(i => i.Tag is AdminChatMessageDto) ?? Items.FirstOrDefault();
         Status = "Entrée : actions. Échap : retour.";
+        EnsureChatAutoRefresh();
+        RestoreFocusIfAny();
     }
 
     private void BuildChatMessageActions(AdminChatMessageDto message)
@@ -243,6 +253,89 @@ public sealed partial class AdminViewModel
         if (day.HasValue)
         {
             BuildChatDayMessages(day.Value);
+        }
+    }
+
+    private void EnsureChatAutoRefresh()
+    {
+        if (_chatAutoRefreshTimer != null)
+        {
+            if (!_chatAutoRefreshTimer.IsEnabled)
+            {
+                _chatAutoRefreshTimer.Start();
+            }
+            return;
+        }
+
+        _chatAutoRefreshTimer = new DispatcherTimer(DispatcherPriority.Background, _dispatcher)
+        {
+            Interval = TimeSpan.FromSeconds(5)
+        };
+        _chatAutoRefreshTimer.Tick += async (_, _) =>
+        {
+            try
+            {
+                await AutoRefreshChatIfVisibleAsync().ConfigureAwait(true);
+            }
+            catch
+            {
+                // ignore
+            }
+        };
+        _chatAutoRefreshTimer.Start();
+    }
+
+    private async Task AutoRefreshChatIfVisibleAsync()
+    {
+        if (IsBusy) return;
+        if (_page is not (AdminPage.Chat or AdminPage.ChatDay)) return;
+        if (DateTime.UtcNow - _lastChatAutoRefreshUtc < TimeSpan.FromSeconds(4)) return;
+
+        _lastChatAutoRefreshUtc = DateTime.UtcNow;
+
+        var selectedTag = SelectedItem?.Tag;
+        DateTime? selectedDay = null;
+        string? selectedMessageId = null;
+
+        if (_page == AdminPage.Chat)
+        {
+            if (selectedTag is ChatDayTag dayTag)
+            {
+                selectedDay = dayTag.DayLocalDate;
+            }
+        }
+        else if (_page == AdminPage.ChatDay)
+        {
+            selectedDay = _selectedChatDay;
+            if (selectedTag is AdminChatMessageDto m)
+            {
+                selectedMessageId = m.Id;
+            }
+        }
+
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        var latest = await _admin.GetChatMessagesAsync(limit: 200, includeDeleted: false, cts.Token).ConfigureAwait(true);
+        _loadedChatMessages = latest ?? Array.Empty<AdminChatMessageDto>();
+
+        if (_page == AdminPage.Chat)
+        {
+            BuildChatDaysMenu();
+            if (selectedDay.HasValue)
+            {
+                SelectedItem = Items.FirstOrDefault(i => i.Tag is ChatDayTag t && t.DayLocalDate == selectedDay.Value)
+                               ?? SelectedItem;
+            }
+            return;
+        }
+
+        if (_page == AdminPage.ChatDay && selectedDay.HasValue)
+        {
+            BuildChatDayMessages(selectedDay.Value);
+            if (!string.IsNullOrWhiteSpace(selectedMessageId))
+            {
+                SelectedItem = Items.FirstOrDefault(i => i.Tag is AdminChatMessageDto msg && string.Equals(msg.Id, selectedMessageId, StringComparison.OrdinalIgnoreCase))
+                               ?? SelectedItem;
+            }
         }
     }
 }

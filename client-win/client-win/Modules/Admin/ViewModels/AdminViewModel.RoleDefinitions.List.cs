@@ -53,6 +53,7 @@ public sealed partial class AdminViewModel
         }
         SelectedItem = Items.FirstOrDefault();
         Status = "Entrée : actions sur le rôle. Échap : retour.";
+        RestoreFocusIfAny();
     }
 
     private void BuildRoleDefinitionActions(AdminRoleDefinitionDto definition)

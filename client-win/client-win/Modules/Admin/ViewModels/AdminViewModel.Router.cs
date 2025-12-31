@@ -115,6 +115,7 @@ public sealed partial class AdminViewModel
 
             if (_page == AdminPage.Games && tag is AdminGameDto game)
             {
+                PushReturnFocus();
                 BuildGameActions(game);
                 return;
             }
@@ -181,6 +182,7 @@ public sealed partial class AdminViewModel
                 }
                 if (tag is AdminBotNameDto botName)
                 {
+                    PushReturnFocus();
                     BuildBotNameActions(botName);
                     return;
                 }
@@ -218,6 +220,7 @@ public sealed partial class AdminViewModel
 
             if (_page == AdminPage.Users && tag is AdminUserDto user)
             {
+                PushReturnFocus();
                 BuildUserActions(user);
                 return;
             }
@@ -254,11 +257,6 @@ public sealed partial class AdminViewModel
 
             if (_page == AdminPage.Chat)
             {
-                if (tag is string t && t == "chat.refresh")
-                {
-                    await LoadChatAsync().ConfigureAwait(true);
-                    return;
-                }
                 if (tag is string t2 && t2 == "chat.clear")
                 {
                     await ClearChatAsync().ConfigureAwait(true);
@@ -266,11 +264,13 @@ public sealed partial class AdminViewModel
                 }
                 if (tag is ChatDayTag day)
                 {
+                    PushReturnFocus();
                     BuildChatDayMessages(day.DayLocalDate);
                     return;
                 }
                 if (tag is AdminChatMessageDto msg)
                 {
+                    PushReturnFocus();
                     BuildChatMessageActions(msg);
                     return;
                 }
@@ -285,6 +285,7 @@ public sealed partial class AdminViewModel
                 }
                 if (tag is AdminChatMessageDto msgDay)
                 {
+                    PushReturnFocus();
                     BuildChatMessageActions(msgDay);
                     return;
                 }

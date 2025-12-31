@@ -90,6 +90,7 @@ public sealed partial class AdminViewModel
                     : Items.FirstOrDefault();
                 Status = $"Affichage {Math.Min(_loadedUsers.Length, res.Total)} / {res.Total} utilisateurs. Entrée : actions. Échap : retour.";
                 UpdateFilterVisibility();
+                RestoreFocusIfAny();
             });
         }
         finally
@@ -120,5 +121,6 @@ public sealed partial class AdminViewModel
         SelectedItem = Items.FirstOrDefault();
         Status = "Entrée : actions. Échap : retour.";
         UpdateFilterVisibility();
+        RestoreFocusIfAny();
     }
 }

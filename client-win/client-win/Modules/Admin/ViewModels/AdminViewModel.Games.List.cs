@@ -37,6 +37,7 @@ public sealed partial class AdminViewModel
                 }
                 SelectedItem = Items.FirstOrDefault();
                 Status = "Entrée : options du jeu. Échap : retour.";
+                RestoreFocusIfAny();
             });
         }
         finally
@@ -66,6 +67,7 @@ public sealed partial class AdminViewModel
         SelectedItem = Items.FirstOrDefault();
         Status = "Entrée : options du jeu. Échap : retour.";
         UpdateFilterVisibility();
+        RestoreFocusIfAny();
     }
 
     private void BuildGameActions(AdminGameDto game)
