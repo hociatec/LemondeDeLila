@@ -100,6 +100,12 @@ public sealed partial class AdminViewModel
             return AdminNavResult.Moved;
         }
 
+        if (_page == AdminPage.Rooms)
+        {
+            BuildRoot();
+            return AdminNavResult.Moved;
+        }
+
         if (_page == AdminPage.Logs)
         {
             BuildRoot();
@@ -199,6 +205,7 @@ public sealed partial class AdminViewModel
         Items.Add(new AdminMenuItem("Gérer les jeux", tag: "games"));
         Items.Add(new AdminMenuItem("Gérer les bots", tag: "bots"));
         Items.Add(new AdminMenuItem("Gérer les utilisateurs", tag: "users"));
+        Items.Add(new AdminMenuItem("Rooms / tables", tag: "rooms"));
         Items.Add(new AdminMenuItem("Tchat (modération)", tag: "chat"));
         Items.Add(new AdminMenuItem("Envoyer un message global", tag: "broadcast"));
         Items.Add(new AdminMenuItem("Mises à jour client", tag: "clientUpdates"));

@@ -56,6 +56,80 @@ export class RoomService {
     }
   }
 
+  /**
+   * Admin: deletes rooms matching criteria (use with caution).
+   * Intended to purge stale "open" rooms that still appear in the public directory.
+   */
+  async adminCleanupRooms(opts?: {
+    includePrivate?: boolean;
+    includeStarted?: boolean;
+    olderThanMinutes?: number;
+    limit?: number;
+    dryRun?: boolean;
+  }): Promise<{
+    matched: number;
+    deleted: number;
+    roomIds: number[];
+  }> {
+    const includePrivate = opts?.includePrivate === true;
+    const includeStarted = opts?.includeStarted === true;
+    const dryRun = opts?.dryRun === true;
+    const limit = Math.min(Math.max(1, opts?.limit ?? 1000), 5000);
+
+    const qb = this.rooms
+      .createQueryBuilder('room')
+      .select(['room.id'])
+      .orderBy('room.id', 'ASC');
+
+    if (!includePrivate) {
+      qb.where('room.is_private = :isPrivate', { isPrivate: false });
+    } else {
+      qb.where('1=1');
+    }
+
+    if (!includeStarted) {
+      qb.andWhere('room.started_at IS NULL');
+      const statuses = OPEN_ROOM_STATUSES.map((s) => s.toLowerCase());
+      qb.andWhere('LOWER(room.status) IN (:...statuses)', { statuses });
+    }
+
+    const olderThanMinutes =
+      typeof opts?.olderThanMinutes === 'number' &&
+      Number.isFinite(opts.olderThanMinutes) &&
+      opts.olderThanMinutes > 0
+        ? Math.floor(opts.olderThanMinutes)
+        : null;
+    if (olderThanMinutes) {
+      const cutoff = new Date(Date.now() - olderThanMinutes * 60_000);
+      qb.andWhere('room.created_at < :cutoff', { cutoff });
+    }
+
+    qb.limit(limit);
+
+    const rows = await qb.getRawMany<{ room_id: number }>();
+    const roomIds = rows
+      .map((r: any) => Number(r?.room_id ?? r?.id ?? 0))
+      .filter((id) => Number.isFinite(id) && id > 0);
+
+    if (dryRun) {
+      return { matched: roomIds.length, deleted: 0, roomIds };
+    }
+
+    if (roomIds.length === 0) {
+      return { matched: 0, deleted: 0, roomIds: [] };
+    }
+
+    // Deleting the room cascades to participants/bots (FK onDelete: CASCADE).
+    await this.rooms.delete(roomIds);
+    for (const id of roomIds) {
+      await this.invalidateRoomPayloadCache(id);
+      this.notifyDirectoryChanged(id, 'deleted');
+    }
+    this.presenceService.broadcastPresence();
+
+    return { matched: roomIds.length, deleted: roomIds.length, roomIds };
+  }
+
   private notifyDirectoryChanged(roomId: number, reason: string) {
     try {
       void this.directoryNotifier?.(roomId, reason);

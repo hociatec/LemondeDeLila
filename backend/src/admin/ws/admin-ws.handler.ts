@@ -18,6 +18,7 @@ import { BotSettingsService } from '../../game/modules/bot/services/bot-settings
 import { PerfMetricsService } from '../../common/services/perf-metrics.service';
 import { ClientUpdatesService } from '../../client-updates/client-updates.service';
 import { ChatService } from '../../chat/services/chat.service';
+import { RoomService } from '../../room/services/room.service';
 import * as fs from 'fs';
 import * as path from 'path';
 import {
@@ -52,6 +53,7 @@ import {
   AdminUserIdWsDto,
   AdminUserRolesWsDto,
 } from './admin-ws.dto';
+import { AdminRoomsCleanupWsDto } from './admin-rooms-cleanup.dto';
 
 @Injectable()
 export class AdminWsHandler {
@@ -70,6 +72,7 @@ export class AdminWsHandler {
     private readonly bots: BotService,
     private readonly botSettings: BotSettingsService,
     private readonly perf: PerfMetricsService,
+    private readonly rooms: RoomService,
     @InjectRepository(User) private readonly userRepo: Repository<User>,
   ) {}
 
@@ -247,6 +250,22 @@ export class AdminWsHandler {
       type: 'admin.roles.definitions',
       payload: { definitions },
     };
+  }
+
+  async roomsCleanup(session: WsSession, payload: any) {
+    requireAdmin(session);
+    const dto = this.validator.validate(AdminRoomsCleanupWsDto, payload);
+    if (dto.confirm !== true) {
+      throw new BadRequestException('Confirmation requise.');
+    }
+    const res = await this.rooms.adminCleanupRooms({
+      includePrivate: dto.includePrivate === true,
+      includeStarted: dto.includeStarted === true,
+      olderThanMinutes: dto.olderThanMinutes,
+      limit: dto.limit,
+      dryRun: dto.dryRun === true,
+    });
+    return { type: 'admin.rooms.cleanup', payload: res };
   }
 
   async botsNamesList(session: WsSession, payload: any) {

@@ -56,4 +56,10 @@ public interface IAdminService
     Task<AdminBotSettingsDto> UpdateBotSettingsAsync(int botTurnDelayMs, CancellationToken cancellationToken = default);
 
     Task<AdminPerfSnapshotDto> GetPerfSnapshotAsync(int? windowSeconds = null, CancellationToken cancellationToken = default);
+
+    Task<AdminRoomsCleanupResponseDto> CleanupRoomsAsync(
+        bool includePrivate = false,
+        bool includeStarted = false,
+        int? olderThanMinutes = null,
+        CancellationToken cancellationToken = default);
 }

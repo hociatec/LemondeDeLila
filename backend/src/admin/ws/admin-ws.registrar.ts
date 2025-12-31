@@ -119,5 +119,9 @@ export class AdminWsRegistrar implements OnModuleInit {
     this.registry.register('admin.perf.snapshot', (s, p) =>
       this.handler.perfSnapshot(s, p),
     );
+
+    this.registry.register('admin.rooms.cleanup', (s, p) =>
+      this.handler.roomsCleanup(s, p),
+    );
   }
 }

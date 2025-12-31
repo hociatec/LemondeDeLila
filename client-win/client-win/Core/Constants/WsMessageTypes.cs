@@ -160,6 +160,8 @@ public static class WsMessageTypes
         public const string BotNameDelete = "admin.bots.name.delete";
 
         public const string PerfSnapshot = "admin.perf.snapshot";
+
+        public const string RoomsCleanup = "admin.rooms.cleanup";
     }
 
     public static class Rooms

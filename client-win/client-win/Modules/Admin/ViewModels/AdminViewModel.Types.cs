@@ -10,6 +10,7 @@ public enum AdminNavResult
 internal enum AdminPage
 {
     Root,
+    Rooms,
     Games,
     GameCategories,
     GameCategoryForm,

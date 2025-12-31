@@ -82,6 +82,26 @@ public sealed partial class AdminViewModel
                     BuildSounds();
                     return;
                 }
+                if (tag is string rooms && rooms == "rooms")
+                {
+                    PushReturnFocus();
+                    BuildRooms();
+                    return;
+                }
+            }
+
+            if (_page == AdminPage.Rooms && tag is string roomsAction)
+            {
+                if (roomsAction == "rooms.cleanup.public")
+                {
+                    await CleanupPublicRoomsAsync().ConfigureAwait(true);
+                    return;
+                }
+                if (roomsAction == "back")
+                {
+                    BuildRoot();
+                    return;
+                }
             }
 
             if (_page == AdminPage.Sounds && tag is string soundsTag)
