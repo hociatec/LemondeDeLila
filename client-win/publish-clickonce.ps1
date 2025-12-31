@@ -9,7 +9,10 @@ param(
     [string]$BaseUrl,
 
     [ValidateSet("Debug", "Release")]
-    [string]$Configuration = "Release"
+    [string]$Configuration = "Release",
+
+    # Version ClickOnce (ex: 1.2.0.0). Si non fourni, utilise la version du .csproj.
+    [string]$Version
 )
 
 Set-StrictMode -Version Latest
@@ -38,6 +41,40 @@ $msbuildProps = @(
     "/p:UpdateIntervalUnits=Days",
     "/p:PublishDir=$PublishDir\"
 )
+
+function Normalize-Version4([string]$v) {
+    $raw = ($v ?? "").Trim()
+    if ([string]::IsNullOrWhiteSpace($raw)) { return $null }
+    $parts = $raw.Split(".") | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne "" }
+    if ($parts.Length -lt 1 -or $parts.Length -gt 4) { return $null }
+    foreach ($p in $parts) {
+        if ($p -notmatch '^\d+$') { return $null }
+    }
+    while ($parts.Length -lt 4) { $parts += "0" }
+    return ($parts -join ".")
+}
+
+function Get-Project-Version([string]$csprojPath) {
+    try {
+        [xml]$xml = Get-Content $csprojPath
+        $v = $xml.Project.PropertyGroup.Version | Select-Object -First 1
+        return ($v ?? "").Trim()
+    } catch {
+        return ""
+    }
+}
+
+$verBase = if (-not [string]::IsNullOrWhiteSpace($Version)) { $Version } else { (Get-Project-Version $project) }
+$ver4 = Normalize-Version4 $verBase
+if (-not [string]::IsNullOrWhiteSpace($ver4)) {
+    Write-Host "Version ClickOnce -> $ver4"
+    $msbuildProps += @(
+        "/p:ApplicationVersion=$ver4",
+        "/p:Version=$ver4",
+        "/p:AssemblyVersion=$ver4",
+        "/p:FileVersion=$ver4"
+    )
+}
 
 if (-not [string]::IsNullOrWhiteSpace($BaseUrl)) {
     if (-not $BaseUrl.EndsWith('/')) { $BaseUrl = "$BaseUrl/" }
