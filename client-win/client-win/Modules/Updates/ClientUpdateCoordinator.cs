@@ -45,6 +45,20 @@ public static class ClientUpdateCoordinator
             _lastKey = key.Length > 0 ? key : null;
             _lastShownAtUtc = DateTime.UtcNow;
 
+            // Enforced update: user must acknowledge (no "Ignorer").
+            // This blocks the UI until OK, then we start the installer and exit.
+            try
+            {
+                await dialogs.ShowInfo(
+                        string.IsNullOrWhiteSpace(title) ? "Mise à jour" : title,
+                        (message ?? string.Empty).Trim())
+                    .ConfigureAwait(true);
+            }
+            catch
+            {
+                // ignore dialog failures; still enforce update attempt
+            }
+
             var started = await ClientUpdateInstaller
                 .InstallLatestAsync(dialogs, clickOnceUrl, reason, cancellationToken)
                 .ConfigureAwait(true);
