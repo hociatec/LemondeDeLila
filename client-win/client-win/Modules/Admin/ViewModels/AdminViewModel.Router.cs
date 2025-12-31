@@ -91,6 +91,11 @@ public sealed partial class AdminViewModel
                     BuildSoundsTable();
                     return;
                 }
+                if (soundsTag == "sounds.invitations")
+                {
+                    BuildSoundsInvitations();
+                    return;
+                }
                 if (soundsTag == "sounds.chat")
                 {
                     BuildSoundsChat();
@@ -99,6 +104,20 @@ public sealed partial class AdminViewModel
                 if (soundsTag == "sounds.private")
                 {
                     BuildSoundsPrivateMessages();
+                    return;
+                }
+            }
+
+            if (_page == AdminPage.SoundsInvitations && tag is string inviteSound)
+            {
+                if (inviteSound == "sounds.invite.sent")
+                {
+                    BuildSoundDetails(Modules.Audio.Models.SoundId.InvitationSent);
+                    return;
+                }
+                if (inviteSound == "sounds.invite.received")
+                {
+                    BuildSoundDetails(Modules.Audio.Models.SoundId.InvitationReceived);
                     return;
                 }
             }

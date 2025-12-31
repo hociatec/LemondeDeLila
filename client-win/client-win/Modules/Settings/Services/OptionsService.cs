@@ -172,6 +172,8 @@ public sealed class OptionsService : IOptionsService
         SoundRoomOpenedPath = source.SoundRoomOpenedPath,
         SoundRoomJoinedPath = source.SoundRoomJoinedPath,
         SoundRoomExitPath = source.SoundRoomExitPath,
+        SoundInvitationSentPath = source.SoundInvitationSentPath,
+        SoundInvitationReceivedPath = source.SoundInvitationReceivedPath,
         SoundChatMessageSentPath = source.SoundChatMessageSentPath,
         SoundChatMessageReceivedPath = source.SoundChatMessageReceivedPath,
         SoundPrivateMessageSentPath = source.SoundPrivateMessageSentPath,

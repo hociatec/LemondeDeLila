@@ -369,6 +369,7 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
             }
 
             _screenReader.AnnouncePolite($"Invitation reçue de {fromName}.");
+            _sounds.Play(SoundId.InvitationReceived);
 
             var confirm = await _dialogs.Confirm(
                     "Invitation",

@@ -20,6 +20,8 @@ public sealed class OptionsState
     public string? SoundRoomOpenedPath { get; set; }
     public string? SoundRoomJoinedPath { get; set; }
     public string? SoundRoomExitPath { get; set; }
+    public string? SoundInvitationSentPath { get; set; }
+    public string? SoundInvitationReceivedPath { get; set; }
     public string? SoundChatMessageSentPath { get; set; }
     public string? SoundChatMessageReceivedPath { get; set; }
     public string? SoundPrivateMessageSentPath { get; set; }
