@@ -74,10 +74,10 @@ public partial class JoinGameView : UserControl
     {
         if (RoomsList == null || RoomsList.Items.Count == 0)
         {
-            if (EmptyStateText != null && EmptyStateText.IsVisible)
+            if (EmptyOnlyText != null && EmptyOnlyText.IsVisible)
             {
-                EmptyStateText.Focus();
-                Keyboard.Focus(EmptyStateText);
+                EmptyOnlyText.Focus();
+                Keyboard.Focus(EmptyOnlyText);
                 return;
             }
 
