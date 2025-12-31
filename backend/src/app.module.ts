@@ -23,6 +23,7 @@ import { NotificationModule } from './notification/notification.module';
 import { GameLoggerModule } from './common/services/game-logger.module';
 import { HealthModule } from './health/health.module';
 import { ClientUpdatesModule } from './client-updates/client-updates.module';
+import { WsTicketModule } from './common/ws/ws-ticket.module';
 
 @Module({
   imports: [
@@ -56,6 +57,10 @@ import { ClientUpdatesModule } from './client-updates/client-updates.module';
         ENABLE_PROTOTYPE_GAMES: Joi.string().optional(),
         CLIENT_UPDATES_DIR: Joi.string().optional(),
         CLIENT_UPDATES_PUBLIC_URL: Joi.string().uri().optional(),
+        WS_TICKET_SECRET: Joi.string().min(12).optional(),
+        WS_TICKET_TTL_SECONDS: Joi.number().default(60),
+        WS_SHARED_SECRET: Joi.string().optional(),
+        REALTIME_WS_SECRET: Joi.string().optional(),
       }),
     }),
     ThrottlerModule.forRootAsync({
@@ -107,6 +112,7 @@ import { ClientUpdatesModule } from './client-updates/client-updates.module';
     AdminModule,
     HealthModule,
     ClientUpdatesModule,
+    WsTicketModule,
   ],
   providers: [
     {

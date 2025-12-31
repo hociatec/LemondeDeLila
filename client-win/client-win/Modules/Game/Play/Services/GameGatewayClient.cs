@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using client_win.Modules.Config;
+using client_win.Modules.Network.Services;
 using client_win.Modules.Network.WebSockets;
 using client_win.Modules.User.Services;
 using Serilog;
@@ -14,15 +15,18 @@ public sealed class GameGatewayClient : IGameGatewayClient
     private readonly ClientConfiguration _config;
     private readonly ISessionService _session;
     private readonly Func<IWebSocketConnection> _socketFactory;
+    private readonly IWsTicketProvider _tickets;
 
     public GameGatewayClient(
         ClientConfiguration config,
         ISessionService session,
-        Func<IWebSocketConnection> socketFactory)
+        Func<IWebSocketConnection> socketFactory,
+        IWsTicketProvider tickets)
     {
         _config = config ?? throw new ArgumentNullException(nameof(config));
         _session = session ?? throw new ArgumentNullException(nameof(session));
         _socketFactory = socketFactory ?? throw new ArgumentNullException(nameof(socketFactory));
+        _tickets = tickets ?? throw new ArgumentNullException(nameof(tickets));
     }
 
     public async Task<GameSession> ConnectAsync(
@@ -41,7 +45,7 @@ public sealed class GameGatewayClient : IGameGatewayClient
         }
 
         var socket = _socketFactory();
-        var headers = BuildHeaders(_config.SharedSecret);
+        var headers = await BuildHeadersAsync(cancellationToken).ConfigureAwait(false);
 
         Log.Debug("Connexion au game WS roomId={RoomId} gameType={GameType}", roomId, gameType);
 
@@ -55,15 +59,16 @@ public sealed class GameGatewayClient : IGameGatewayClient
         return session;
     }
 
-    private static IDictionary<string, string>? BuildHeaders(string? sharedSecret)
+    private async Task<IDictionary<string, string>?> BuildHeadersAsync(CancellationToken cancellationToken)
     {
-        if (string.IsNullOrWhiteSpace(sharedSecret))
+        var ticket = await _tickets.GetTicketAsync("game", cancellationToken).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(ticket))
         {
             return null;
         }
         return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
-            ["x-lila-ws-signature"] = sharedSecret
+            ["x-lila-ws-ticket"] = ticket
         };
     }
 }

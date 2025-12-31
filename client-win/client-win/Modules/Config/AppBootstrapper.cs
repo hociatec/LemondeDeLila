@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Serilog;
 using client_win.Modules.Error;
 using client_win.Modules.Network;
+using client_win.Modules.Network.Services;
 using client_win.Modules.Home.ViewModels;
 using client_win.Modules.MainMenu.ViewModels;
 using client_win.Modules.User.Services;
@@ -156,7 +157,7 @@ public static class AppBootstrapper
 
         services.AddSingleton<WsRequestClient>(sp => new WsRequestClient(
             sp.GetRequiredService<PersistentWsClient>(),
-            config.SharedSecret,
+            sp.GetRequiredService<Modules.Network.Services.IWsTicketProvider>(),
             errors));
 
         // JWT avec strict mode (déjà calculé plus haut)
@@ -174,6 +175,7 @@ public static class AppBootstrapper
             errors));
 
         services.AddSingleton<ISessionService, SessionService>();
+        services.AddSingleton<IWsTicketProvider, WsTicketProvider>();
 
         services.AddSingleton<IClientUpdatePublisher, ClientUpdatePublisher>();
 
@@ -205,7 +207,8 @@ public static class AppBootstrapper
             new RoomGatewayClient(
                 sp.GetRequiredService<ClientConfiguration>(),
                 sp.GetRequiredService<ISessionService>(),
-                () => sp.GetRequiredService<IWebSocketConnection>()));
+                () => sp.GetRequiredService<IWebSocketConnection>(),
+                sp.GetRequiredService<Modules.Network.Services.IWsTicketProvider>()));
 
         services.AddSingleton<Modules.Game.RoomDirectory.Services.IRoomDirectoryClient>(sp =>
             new Modules.Game.RoomDirectory.Services.RoomDirectoryClient(
@@ -216,14 +219,16 @@ public static class AppBootstrapper
             new GameGatewayClient(
                 sp.GetRequiredService<ClientConfiguration>(),
                 sp.GetRequiredService<ISessionService>(),
-                () => sp.GetRequiredService<IWebSocketConnection>()));
+                () => sp.GetRequiredService<IWebSocketConnection>(),
+                sp.GetRequiredService<Modules.Network.Services.IWsTicketProvider>()));
 
         services.AddSingleton<Modules.Presence.Services.IPresenceMonitor>(sp =>
             new Modules.Presence.Services.PresenceMonitor(
                 sp.GetRequiredService<ClientConfiguration>(),
                 sp.GetRequiredService<ISessionService>(),
                 () => sp.GetRequiredService<IWebSocketConnection>(),
-                sp.GetRequiredService<Dispatcher>()));
+                sp.GetRequiredService<Dispatcher>(),
+                sp.GetRequiredService<Modules.Network.Services.IWsTicketProvider>()));
 
         services.AddSingleton<Modules.TextPrompts.Services.ITextPromptService, Modules.TextPrompts.Services.TextPromptService>();
 
@@ -242,7 +247,8 @@ public static class AppBootstrapper
                 sp.GetRequiredService<IOptionsService>(),
                 sp.GetRequiredService<ISessionService>(),
                 sp.GetRequiredService<Dispatcher>(),
-                sp.GetRequiredService<ISoundService>()));
+                sp.GetRequiredService<ISoundService>(),
+                sp.GetRequiredService<Modules.Network.Services.IWsTicketProvider>()));
 
         services.AddSingleton<IViewFactory<ChatWindow>, ChatWindowFactory>();
         services.AddSingleton<IChatLauncher, ChatLauncher>();
@@ -279,6 +285,7 @@ public static class AppBootstrapper
                 sp.GetRequiredService<ClientConfiguration>(),
                 sp.GetRequiredService<ISessionService>(),
                 () => sp.GetRequiredService<IWebSocketConnection>(),
+                sp.GetRequiredService<Modules.Network.Services.IWsTicketProvider>(),
                 sp.GetRequiredService<IScreenReaderAnnouncer>(),
                 sp.GetRequiredService<Modules.Catalog.Services.ICatalogService>(),
                 sp.GetRequiredService<IDialogService>(),
@@ -360,7 +367,7 @@ public static class AppBootstrapper
         try
         {
             Modules.Network.Services.WsConnectionTester
-                .TestAsync(config.ApiGatewayWs, config.SharedSecret, errors, cts.Token)
+                .TestAsync(config.ApiGatewayWs, errors, cts.Token)
                 .GetAwaiter().GetResult();
         }
         catch

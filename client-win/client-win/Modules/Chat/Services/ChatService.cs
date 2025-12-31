@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 using client_win.Modules.Chat.Models;
+using client_win.Modules.Network.Services;
 using client_win.Modules.Network.WebSockets;
 using client_win.Modules.Audio.Models;
 using client_win.Modules.Audio.Services;
@@ -25,6 +26,7 @@ public sealed class ChatService : IChatService
     private readonly ISessionService _session;
     private readonly Dispatcher _dispatcher;
     private readonly ISoundService _sounds;
+    private readonly IWsTicketProvider _tickets;
     private readonly HashSet<string> _seenMessageKeys = new(StringComparer.Ordinal);
 
     public ObservableCollection<ChatMessage> Messages { get; } = new();
@@ -41,13 +43,15 @@ public sealed class ChatService : IChatService
         IOptionsService options,
         ISessionService session,
         Dispatcher dispatcher,
-        ISoundService sounds)
+        ISoundService sounds,
+        IWsTicketProvider tickets)
     {
         _client = new ChatClient(endpoint, transport);
         _options = options ?? throw new ArgumentNullException(nameof(options));
         _session = session ?? throw new ArgumentNullException(nameof(session));
         _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
         _sounds = sounds ?? throw new ArgumentNullException(nameof(sounds));
+        _tickets = tickets ?? throw new ArgumentNullException(nameof(tickets));
 
         _client.StateChanged += s => _ = _dispatcher.InvokeAsync(() => UpdateState(s), DispatcherPriority.Background);
         _client.ErrorReceived += msg => _ = _dispatcher.InvokeAsync(() => SetStatus(msg, isError: true), DispatcherPriority.Background);
@@ -112,7 +116,11 @@ public sealed class ChatService : IChatService
 
         try
         {
-            await _client.ConnectAsync(user.Token, cancellationToken).ConfigureAwait(false);
+            var ticket = await _tickets.GetTicketAsync("presence", cancellationToken).ConfigureAwait(false);
+            var headers = string.IsNullOrWhiteSpace(ticket)
+                ? null
+                : new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { ["x-lila-ws-ticket"] = ticket };
+            await _client.ConnectAsync(user.Token, headers, cancellationToken).ConfigureAwait(false);
             // Attendre que la connexion soit réellement stable (évite un "flash" si le serveur refuse aussitôt: ban, etc.)
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             cts.CancelAfter(TimeSpan.FromSeconds(2));

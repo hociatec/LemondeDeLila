@@ -1,4 +1,5 @@
 using Serilog;
+using System.Collections.Generic;
 
 namespace client_win.Modules.Config;
 
@@ -45,16 +46,6 @@ public static class ProductionValidator
             }
         }
 
-        // 2. Vérifier le secret WS (résolu depuis env OU client.properties).
-        if (string.IsNullOrWhiteSpace(config.SharedSecret))
-        {
-            errors.Add("network.ws.secret (ou env NETWORK_WS_SECRET/WS_SHARED_SECRET) est requis.");
-        }
-        else if (config.SharedSecret.Length < 16)
-        {
-            errors.Add("NETWORK_WS_SECRET/WS_SHARED_SECRET doit contenir au moins 16 caractères.");
-        }
-
         // Si des erreurs ont été détectées, on fail
         if (errors.Count > 0)
         {
@@ -81,7 +72,6 @@ public static class ProductionValidator
         Log.Information("Environnement: {Environment}", environment);
         Log.Information("JWT Strict Mode: {JwtStrictMode}", jwtStrictMode);
         Log.Information("JWT Secret: {JwtSecret}", string.IsNullOrWhiteSpace(config.JwtSecret) ? "(non défini)" : "*****");
-        Log.Information("WS Shared Secret: {WsSecret}", string.IsNullOrWhiteSpace(config.SharedSecret) ? "(non défini)" : "*****");
         Log.Information("=================================");
     }
 }

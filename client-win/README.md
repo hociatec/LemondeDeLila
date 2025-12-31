@@ -17,7 +17,7 @@ En mode dev, si aucun fichier n’existe, un template est copié dans :
 - `network.ws.notify` — ex: `wss://ws.lilas.hociatec.fr/ws/notify`
 - `network.ws.presence` — ex: `wss://ws.lilas.hociatec.fr/presence` (le client ajoute `?context=chat`)
 
-Le secret `network.ws.secret` doit correspondre au backend (`WS_SHARED_SECRET`).
+Le client n'a pas besoin de secret partagé : il récupère automatiquement un ticket WS court via l'API HTTP, puis l'envoie lors de la connexion WebSocket.
 
 ## Mises à jour sans redistribuer aux testeurs
 

@@ -18,6 +18,7 @@ import { PerfMetricsService } from '../../common/services/perf-metrics.service';
 import { RoomInviteService } from '../services/room-invite.service';
 import { ClientUpdatesService } from '../../client-updates/client-updates.service';
 import { isVersionLower } from '../../common/utils/version.utils';
+import { WsTicketAuthService } from '../../common/ws/ws-ticket-auth.service';
 
 type AuthedClient = {
   socket: WebSocket;
@@ -54,6 +55,7 @@ export class RoomGateway
     private readonly perf: PerfMetricsService,
     private readonly invites: RoomInviteService,
     private readonly clientUpdates: ClientUpdatesService,
+    private readonly wsTickets: WsTicketAuthService,
   ) {
     // Permet au backend (ex: moteur de jeu) de notifier les clients room sans dépendre du Gateway.
     this.roomsService.setRealtimeNotifier(async (roomId: number) => {
@@ -68,11 +70,10 @@ export class RoomGateway
   }
 
   async handleConnection(client: WebSocket, ...args: any[]) {
-    if (!this.signature.validate(client, args)) {
-      this.logger.warn(
-        'Connexion WS refusée: signature manquante ou invalide.',
-      );
-      client.close(4403, 'signature temps reel requise');
+    // WS ticket (short-lived) required.
+    if (!this.wsTickets.validate(client, args, 'room')) {
+      this.logger.warn('Connexion WS refusée: ticket manquant ou invalide.');
+      client.close(4403, 'ws ticket requis');
       return;
     }
     const clientVersion = this.auth.extractClientVersion(client, args);

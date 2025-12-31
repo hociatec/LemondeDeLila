@@ -13,6 +13,7 @@ import {
 } from '../services/presence.service';
 import { WsAuthPayload } from '../../common/interfaces/ws-auth-payload';
 import { WsJwtAuthService } from '../../common/ws/ws-jwt-auth.service';
+import { WsTicketAuthService } from '../../common/ws/ws-ticket-auth.service';
 
 @WebSocketGateway({
   path: '/presence',
@@ -28,6 +29,7 @@ export class PresenceGateway
   constructor(
     private readonly presence: PresenceService,
     private readonly auth: WsJwtAuthService,
+    private readonly wsTickets: WsTicketAuthService,
     config: ConfigService,
   ) {
     const secret = config.get<string>('JWT_SECRET');
@@ -42,6 +44,10 @@ export class PresenceGateway
     const payload = this.resolveAuth(client, args);
     if (!payload || !payload.id || !payload.username) {
       client.close(4001, 'auth required');
+      return;
+    }
+    if (!this.wsTickets.validate(client, args, 'presence')) {
+      client.close(4403, 'ws ticket requis');
       return;
     }
     const context = this.resolveContext(client, args);

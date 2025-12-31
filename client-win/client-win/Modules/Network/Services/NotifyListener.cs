@@ -10,6 +10,7 @@ using client_win.Modules.Audio.Models;
 using client_win.Modules.Audio.Services;
 using client_win.Modules.Config;
 using client_win.Modules.Catalog.Services;
+using client_win.Modules.Network.Services;
 using client_win.Modules.Network.WebSockets;
 using client_win.Modules.Shell.Services;
 using client_win.Modules.User.Services;
@@ -25,6 +26,7 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
     private readonly ClientConfiguration _config;
     private readonly ISessionService _session;
     private readonly Func<IWebSocketConnection> _wsFactory;
+    private readonly IWsTicketProvider _tickets;
     private readonly IScreenReaderAnnouncer _screenReader;
     private readonly ICatalogService _catalog;
     private readonly IDialogService _dialogs;
@@ -40,6 +42,7 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
         ClientConfiguration config,
         ISessionService session,
         Func<IWebSocketConnection> wsFactory,
+        IWsTicketProvider tickets,
         IScreenReaderAnnouncer screenReader,
         ICatalogService catalog,
         IDialogService dialogs,
@@ -51,6 +54,7 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
         _config = config ?? throw new ArgumentNullException(nameof(config));
         _session = session ?? throw new ArgumentNullException(nameof(session));
         _wsFactory = wsFactory ?? throw new ArgumentNullException(nameof(wsFactory));
+        _tickets = tickets ?? throw new ArgumentNullException(nameof(tickets));
         _screenReader = screenReader ?? throw new ArgumentNullException(nameof(screenReader));
         _catalog = catalog ?? throw new ArgumentNullException(nameof(catalog));
         _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
@@ -76,7 +80,8 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
 
         try
         {
-            await _ws.ConnectAsync(_config.NotifyGatewayWs, token, headers: null, cancellationToken).ConfigureAwait(false);
+            var headers = await BuildHeadersAsync(cancellationToken).ConfigureAwait(false);
+            await _ws.ConnectAsync(_config.NotifyGatewayWs, token, headers: headers, cancellationToken).ConfigureAwait(false);
             Log.Information("Connexion WS notify établie.");
 
             // Handshake version: permet au serveur de proposer la MAJ à chaque connexion.
@@ -502,5 +507,18 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         await StopAsync().ConfigureAwait(false);
+    }
+
+    private async Task<System.Collections.Generic.IDictionary<string, string>?> BuildHeadersAsync(CancellationToken cancellationToken)
+    {
+        var ticket = await _tickets.GetTicketAsync("notify", cancellationToken).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(ticket))
+        {
+            return null;
+        }
+        return new System.Collections.Generic.Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["x-lila-ws-ticket"] = ticket
+        };
     }
 }

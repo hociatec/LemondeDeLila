@@ -9,8 +9,6 @@ param(
     [switch]$HotReload = $false
 )
 
-$hasNetwork = -not [string]::IsNullOrWhiteSpace($env:NETWORK_WS_SECRET)
-$hasWs = -not [string]::IsNullOrWhiteSpace($env:WS_SHARED_SECRET)
 $hasJwt = -not [string]::IsNullOrWhiteSpace($env:JWT_SECRET)
 
 # Par défaut, on force un environnement de dev pour les lancements locaux.
@@ -28,12 +26,6 @@ if ([string]::IsNullOrWhiteSpace($env:LOG_LEVEL)) {
     $env:LOG_LEVEL = "Debug"
 }
 
-if (-not $hasNetwork) {
-    $env:NETWORK_WS_SECRET = "remote-ws-shared-secret-2025"
-}
-if (-not $hasWs) {
-    $env:WS_SHARED_SECRET = $env:NETWORK_WS_SECRET
-}
 if (-not $hasJwt) {
     $env:JWT_SECRET = "change-me-in-prod"
 }

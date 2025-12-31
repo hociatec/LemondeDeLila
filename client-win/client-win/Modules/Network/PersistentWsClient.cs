@@ -40,7 +40,7 @@ public sealed class PersistentWsClient : IAsyncDisposable
 
     private ClientWebSocket? _socket;
     private string? _currentToken;
-    private string? _currentSignature;
+    private string? _currentWsTicket;
     private CancellationTokenSource? _receiveCts;
     private Task? _receiveLoop;
     private bool _isDisposed;
@@ -107,14 +107,14 @@ public sealed class PersistentWsClient : IAsyncDisposable
         }
     }
 
-    public async Task<string> SendAsync(string type, object payload, string? token, string? signature, CancellationToken cancellationToken = default)
+    public async Task<string> SendAsync(string type, object payload, string? token, string? wsTicket, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(type))
         {
             throw new ArgumentException("type requis", nameof(type));
         }
 
-        var socket = await EnsureConnectedAsync(token, signature, cancellationToken).ConfigureAwait(false);
+        var socket = await EnsureConnectedAsync(token, wsTicket, cancellationToken).ConfigureAwait(false);
         string requestId = Guid.NewGuid().ToString("N");
         var tcs = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
         _pending[requestId] = tcs;
@@ -146,7 +146,7 @@ public sealed class PersistentWsClient : IAsyncDisposable
         return await tcs.Task.ConfigureAwait(false);
     }
 
-    private async Task<ClientWebSocket> EnsureConnectedAsync(string? token, string? signature, CancellationToken cancellationToken)
+    private async Task<ClientWebSocket> EnsureConnectedAsync(string? token, string? wsTicket, CancellationToken cancellationToken)
     {
         // Vérifier circuit breaker
         CheckCircuitBreaker();
@@ -156,7 +156,7 @@ public sealed class PersistentWsClient : IAsyncDisposable
             if (_socket != null &&
                 _socket.State == WebSocketState.Open &&
                 string.Equals(_currentToken, token, StringComparison.Ordinal) &&
-                string.Equals(_currentSignature, signature, StringComparison.Ordinal))
+                string.Equals(_currentWsTicket, wsTicket, StringComparison.Ordinal))
             {
                 return _socket;
             }
@@ -190,9 +190,9 @@ public sealed class PersistentWsClient : IAsyncDisposable
                 {
                     socket.Options.SetRequestHeader("Authorization", $"Bearer {token}");
                 }
-                if (!string.IsNullOrWhiteSpace(signature))
+                if (!string.IsNullOrWhiteSpace(wsTicket))
                 {
-                    socket.Options.SetRequestHeader("x-lila-ws-signature", signature);
+                    socket.Options.SetRequestHeader("x-lila-ws-ticket", wsTicket);
                 }
                 socket.Options.SetRequestHeader("x-lila-client-version", AppInfo.GetShortVersion());
 
@@ -205,7 +205,7 @@ public sealed class PersistentWsClient : IAsyncDisposable
                 {
                     _socket = socket;
                     _currentToken = token;
-                    _currentSignature = signature;
+                    _currentWsTicket = wsTicket;
                     _receiveCts = new CancellationTokenSource();
 
                     // Observe la tâche pour éviter UnobservedTaskException
@@ -479,7 +479,7 @@ public sealed class PersistentWsClient : IAsyncDisposable
             }
 
             _currentToken = null;
-            _currentSignature = null;
+            _currentWsTicket = null;
 
             // THREAD SAFETY: Créer un snapshot des requêtes pendantes dans le lock
             // avant de nettoyer le dictionnaire. Ceci évite les race conditions

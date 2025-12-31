@@ -10,6 +10,7 @@ import { WsJwtAuthService } from '../../common/ws/ws-jwt-auth.service';
 import { NotificationService } from '../services/notification.service';
 import { ClientUpdatesService } from '../../client-updates/client-updates.service';
 import { isVersionGreater, isVersionLower } from '../../common/utils/version.utils';
+import { WsTicketAuthService } from '../../common/ws/ws-ticket-auth.service';
 
 type ClientMeta = { userId: number; socket: WebSocket; origin: string | null };
 
@@ -27,6 +28,7 @@ export class NotificationGateway
     private readonly auth: WsJwtAuthService,
     private readonly notifications: NotificationService,
     private readonly clientUpdates: ClientUpdatesService,
+    private readonly wsTickets: WsTicketAuthService,
   ) {}
 
   private extractOriginFromWsArgs(args: any[]): string | null {
@@ -54,6 +56,10 @@ export class NotificationGateway
     const user = this.auth.tryVerify(token);
     if (!user?.id) {
       client.close(4001, 'auth required');
+      return;
+    }
+    if (!this.wsTickets.validate(client, args, 'notify')) {
+      client.close(4403, 'ws ticket requis');
       return;
     }
 

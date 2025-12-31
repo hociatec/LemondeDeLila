@@ -14,6 +14,7 @@ import { WsJwtAuthService } from '../../../common/ws/ws-jwt-auth.service';
 import { PerfMetricsService } from '../../../common/services/perf-metrics.service';
 import { ClientUpdatesService } from '../../../client-updates/client-updates.service';
 import { isVersionLower } from '../../../common/utils/version.utils';
+import { WsTicketAuthService } from '../../../common/ws/ws-ticket-auth.service';
 
 type IncomingPayload = { type?: string; payload?: any };
 type GameClient = {
@@ -53,6 +54,7 @@ export class GameGateway
     private readonly auth: WsJwtAuthService,
     private readonly perf: PerfMetricsService,
     private readonly clientUpdates: ClientUpdatesService,
+    private readonly wsTickets: WsTicketAuthService,
   ) {
     this.engine.setBroadcaster((gameType, roomId, state) =>
       this.broadcastState(gameType, roomId, state),
@@ -79,6 +81,10 @@ export class GameGateway
     const auth = this.resolveAuth(client, args);
     if (!auth?.id) {
       client.close(4001, 'auth required');
+      return;
+    }
+    if (!this.wsTickets.validate(client, args, 'game')) {
+      client.close(4403, 'ws ticket requis');
       return;
     }
     this.clients.set(client, {

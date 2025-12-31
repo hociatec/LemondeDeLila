@@ -19,6 +19,7 @@ public sealed class RoomSession : IAsyncDisposable
         GameType = gameType ?? string.Empty;
         _socket = socket ?? throw new ArgumentNullException(nameof(socket));
         _socket.MessageReceived += OnRawMessage;
+        _socket.StateChanged += OnStateChanged;
         _socket.Error += _ => { };
     }
 
@@ -30,6 +31,7 @@ public sealed class RoomSession : IAsyncDisposable
     public event Action<RoomPayloadDto>? RoomUpdated;
     public event Action<string>? RawMessageReceived;
     public event Action<string>? ErrorReceived;
+    public event Action<WebSocketState>? ConnectionStateChanged;
 
     public Task CloseAsync() => _socket.CloseAsync();
 
@@ -64,7 +66,20 @@ public sealed class RoomSession : IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         _socket.MessageReceived -= OnRawMessage;
+        _socket.StateChanged -= OnStateChanged;
         await _socket.DisposeAsync().ConfigureAwait(false);
+    }
+
+    private void OnStateChanged(WebSocketState state)
+    {
+        try
+        {
+            ConnectionStateChanged?.Invoke(state);
+        }
+        catch
+        {
+            // Best-effort (ne pas casser la boucle WS si un handler client échoue).
+        }
     }
 
     private void OnRawMessage(string raw)

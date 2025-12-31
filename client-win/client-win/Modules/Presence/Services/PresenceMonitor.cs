@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 using client_win.Modules.Config;
+using client_win.Modules.Network.Services;
 using client_win.Modules.Network.WebSockets;
 using client_win.Modules.Presence.Models;
 using client_win.Modules.User.Services;
@@ -20,6 +21,7 @@ public sealed class PresenceMonitor : IPresenceMonitor, IAsyncDisposable
     private readonly ISessionService _session;
     private readonly Func<IWebSocketConnection> _wsFactory;
     private readonly Dispatcher _dispatcher;
+    private readonly IWsTicketProvider _tickets;
 
     private IWebSocketConnection? _ws;
     private bool _started;
@@ -34,12 +36,14 @@ public sealed class PresenceMonitor : IPresenceMonitor, IAsyncDisposable
         ClientConfiguration config,
         ISessionService session,
         Func<IWebSocketConnection> wsFactory,
-        Dispatcher dispatcher)
+        Dispatcher dispatcher,
+        IWsTicketProvider tickets)
     {
         _config = config ?? throw new ArgumentNullException(nameof(config));
         _session = session ?? throw new ArgumentNullException(nameof(session));
         _wsFactory = wsFactory ?? throw new ArgumentNullException(nameof(wsFactory));
         _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
+        _tickets = tickets ?? throw new ArgumentNullException(nameof(tickets));
         Players = new ObservableCollection<PresencePlayer>();
     }
 
@@ -77,7 +81,8 @@ public sealed class PresenceMonitor : IPresenceMonitor, IAsyncDisposable
 
         try
         {
-            await _ws.ConnectAsync(_config.PresenceGatewayWs, token, headers: null, cancellationToken).ConfigureAwait(false);
+            var headers = await BuildHeadersAsync(cancellationToken).ConfigureAwait(false);
+            await _ws.ConnectAsync(_config.PresenceGatewayWs, token, headers: headers, cancellationToken).ConfigureAwait(false);
             Log.Information("Connexion WS presence établie.");
             await SendPendingContextAsync(cancellationToken).ConfigureAwait(false);
         }
@@ -253,5 +258,18 @@ public sealed class PresenceMonitor : IPresenceMonitor, IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         await StopAsync().ConfigureAwait(false);
+    }
+
+    private async Task<IDictionary<string, string>?> BuildHeadersAsync(CancellationToken cancellationToken)
+    {
+        var ticket = await _tickets.GetTicketAsync("presence", cancellationToken).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(ticket))
+        {
+            return null;
+        }
+        return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["x-lila-ws-ticket"] = ticket
+        };
     }
 }

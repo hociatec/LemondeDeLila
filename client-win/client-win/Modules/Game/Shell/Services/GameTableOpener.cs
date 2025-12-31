@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -149,6 +150,67 @@ public sealed class GameTableOpener : IGameTableOpener
         var tableView = new GameRoomView();
 
         GameTableBindings? bindings = null;
+        Action<client_win.Modules.Network.WebSockets.WebSocketState>? onRoomConnectionStateChanged = null;
+        var isExiting = 0;
+
+        async Task ExitToReturnViewAsync(string? reason = null)
+        {
+            if (Interlocked.Exchange(ref isExiting, 1) == 1)
+            {
+                return;
+            }
+
+            try
+            {
+                if (onRoomConnectionStateChanged != null)
+                {
+                    session.ConnectionStateChanged -= onRoomConnectionStateChanged;
+                    onRoomConnectionStateChanged = null;
+                }
+
+                try
+                {
+                    if (bindings != null)
+                    {
+                        await bindings.DisposeAsync().ConfigureAwait(true);
+                        bindings = null;
+                    }
+                }
+                catch
+                {
+                    // Best-effort; le backend ferme la table quand la dernière connexion sort.
+                }
+
+                _ = _presence.SetHomeAsync();
+
+                // Navigation + éventuel message : toujours sur le thread UI.
+                if (!dispatcher.CheckAccess())
+                {
+                    await dispatcher.InvokeAsync(() => _navigation.Show(returnView), DispatcherPriority.Normal);
+                }
+                else
+                {
+                    _navigation.Show(returnView);
+                }
+
+                if (!string.IsNullOrWhiteSpace(reason))
+                {
+                    try
+                    {
+                        await _dialogs.ShowInfo("Table", reason.Trim()).ConfigureAwait(true);
+                    }
+                    catch
+                    {
+                        // ignore
+                    }
+                }
+            }
+            finally
+            {
+                // Autorise une future sortie si cette instance est réutilisée (par prudence).
+                Interlocked.Exchange(ref isExiting, 0);
+            }
+        }
 
         Task Start() => session.SendCommandAsync("room.start", payload: null);
         Task Reset() => session.SendCommandAsync("room.reset", payload: null);
@@ -170,21 +232,7 @@ public sealed class GameTableOpener : IGameTableOpener
             onQuit: async () =>
             {
                 _sounds.Play(SoundId.RoomExit);
-                try
-                {
-                    if (bindings != null)
-                    {
-                        await bindings.DisposeAsync().ConfigureAwait(true);
-                        bindings = null;
-                    }
-                }
-                catch
-                {
-                    // Best-effort; le backend ferme la table quand la dernière connexion sort.
-                }
-
-                _ = _presence.SetHomeAsync();
-                _navigation.Show(returnView);
+                await ExitToReturnViewAsync().ConfigureAwait(true);
             },
             onAddBot: AddBot,
             onRemoveBot: RemoveBot,
@@ -220,6 +268,18 @@ public sealed class GameTableOpener : IGameTableOpener
 
         tableView.DataContext = vm;
         _navigation.Show(tableView);
+
+        // Si le WS room est fermé (ex: table supprimée / serveur coupe la connexion),
+        // revenir automatiquement à la vue de retour au lieu de laisser l'utilisateur sur un écran "mort".
+        onRoomConnectionStateChanged = state =>
+        {
+            if (state is client_win.Modules.Network.WebSockets.WebSocketState.Disconnected or
+                client_win.Modules.Network.WebSockets.WebSocketState.Error)
+            {
+                _ = ExitToReturnViewAsync("Connexion à la table interrompue.");
+            }
+        };
+        session.ConnectionStateChanged += onRoomConnectionStateChanged;
     }
 
     private GamePlayViewModel CreateGamePlayViewModel(RoomSession room, CatalogGame game)

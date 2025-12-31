@@ -16,6 +16,7 @@ import { WsRouteRegistry } from '../../common/ws/ws-route-registry.service';
 import { WsJwtAuthService } from '../../common/ws/ws-jwt-auth.service';
 import { ClientUpdatesService } from '../../client-updates/client-updates.service';
 import { isVersionLower } from '../../common/utils/version.utils';
+import { WsTicketAuthService } from '../../common/ws/ws-ticket-auth.service';
 
 type IncomingMessage = {
   type?: string;
@@ -47,12 +48,21 @@ export class RealtimeApiGateway
     private readonly auth: WsJwtAuthService,
     @Inject(SESSION_STORE) private readonly sessionStore: SessionStateStore,
     private readonly clientUpdates: ClientUpdatesService,
+    private readonly wsTickets: WsTicketAuthService,
   ) {}
 
   async handleConnection(client: WebSocket, ...args: any[]) {
     const connectionId = randomUUID();
     const clientVersion = this.auth.extractClientVersion(client, args);
     const token = this.auth.extractToken(client, args);
+    if (!this.wsTickets.validateIfTokenPresent(client, args, 'api', Boolean(token))) {
+      try {
+        client.close(4403, 'ws ticket requis');
+      } catch {
+        /* ignore */
+      }
+      return;
+    }
     const session: ClientSession = {
       socket: client,
       user: null,

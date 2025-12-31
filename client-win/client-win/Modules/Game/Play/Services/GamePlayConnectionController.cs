@@ -86,6 +86,21 @@ internal sealed class GamePlayConnectionController : IAsyncDisposable
             // ignore
         }
 
+        // Empêcher des InvokeAsync tardifs après la sortie de la table.
+        // (Sinon la loop peut continuer un instant et toucher le VM après navigation.)
+        var loop = _reconnectLoop;
+        if (loop != null)
+        {
+            try
+            {
+                await loop.ConfigureAwait(false);
+            }
+            catch
+            {
+                // ignore
+            }
+        }
+
         var session = _getSession();
         _setSession(null);
         if (session != null)

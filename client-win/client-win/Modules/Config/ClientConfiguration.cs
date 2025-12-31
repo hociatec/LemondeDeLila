@@ -20,7 +20,6 @@ public sealed class ClientConfiguration
     private const string DefaultWsPresence = "wss://ws.lilas.hociatec.fr/presence";
     private const string DefaultWsNotify = "wss://ws.lilas.hociatec.fr/ws/notify";
     private const string DefaultWsGame = "wss://ws.lilas.hociatec.fr/ws/game";
-    private const string DefaultWsSharedSecret = "remote-ws-shared-secret-2025";
 
     public string ApplicationName { get; }
     public string? JwtSecret { get; }
@@ -30,7 +29,6 @@ public sealed class ClientConfiguration
     public Uri PresenceGatewayWs { get; }
     public Uri NotifyGatewayWs { get; }
     public Uri GameGatewayWs { get; }
-    public string? SharedSecret { get; }
 
     private ClientConfiguration(string applicationName,
         string? jwtSecret,
@@ -39,8 +37,7 @@ public sealed class ClientConfiguration
         Uri realtimeGatewayWs,
         Uri presenceGatewayWs,
         Uri notifyGatewayWs,
-        Uri gameGatewayWs,
-        string? sharedSecret)
+        Uri gameGatewayWs)
     {
         ApplicationName = applicationName;
         JwtSecret = jwtSecret;
@@ -50,7 +47,6 @@ public sealed class ClientConfiguration
         PresenceGatewayWs = presenceGatewayWs;
         NotifyGatewayWs = notifyGatewayWs;
         GameGatewayWs = gameGatewayWs;
-        SharedSecret = sharedSecret;
     }
 
     public static ClientConfiguration Load(string? pathOverride = null)
@@ -75,9 +71,6 @@ public sealed class ClientConfiguration
         Uri presenceGateway;
         Uri notifyGateway;
         Uri gameGateway;
-        string? sharedSecret = Normalize(Environment.GetEnvironmentVariable("NETWORK_WS_SECRET") ??
-                                         Environment.GetEnvironmentVariable("WS_SHARED_SECRET") ??
-                                         (properties.TryGetValue("network.ws.secret", out var s) ? s : null));
         string? jwtSecret = Normalize(Environment.GetEnvironmentVariable("JWT_SECRET"));
         var environment = EnvironmentDetector.GetEnvironment();
 
@@ -109,21 +102,15 @@ public sealed class ClientConfiguration
             }
         }
 
-        if (string.IsNullOrWhiteSpace(sharedSecret) && environment == EnvironmentDetector.AppEnvironment.Development)
-        {
-            Log.Warning("Aucun secret WebSocket détecté - utilisation du secret par défaut ({Secret}).", DefaultWsSharedSecret);
-            sharedSecret = DefaultWsSharedSecret;
-        }
-
         apiGateway = UpgradeToSecureWs(apiGateway, httpBase);
         realtimeGateway = UpgradeToSecureWs(realtimeGateway, httpBase);
         presenceGateway = UpgradeToSecureWs(presenceGateway, httpBase);
         notifyGateway = UpgradeToSecureWs(notifyGateway, httpBase);
         gameGateway = UpgradeToSecureWs(gameGateway, httpBase);
 
-        Validate(new[] { apiGateway, realtimeGateway, presenceGateway, notifyGateway, gameGateway }, httpBase, sharedSecret);
+        Validate(new[] { apiGateway, realtimeGateway, presenceGateway, notifyGateway, gameGateway }, httpBase);
 
-        var config = new ClientConfiguration(appName, jwtSecret, httpBase, apiGateway, realtimeGateway, presenceGateway, notifyGateway, gameGateway, sharedSecret);
+        var config = new ClientConfiguration(appName, jwtSecret, httpBase, apiGateway, realtimeGateway, presenceGateway, notifyGateway, gameGateway);
 
         // Log de la configuration finale (masquer les secrets)
         Log.Information("Configuration réseau chargée:");
@@ -134,7 +121,6 @@ public sealed class ClientConfiguration
         Log.Information("  - WebSocket Presence: {PresenceGateway}", presenceGateway);
         Log.Information("  - WebSocket Notify: {NotifyGateway}", notifyGateway);
         Log.Information("  - WebSocket Game: {GameGateway}", gameGateway);
-        Log.Information("  - Shared Secret: {HasSecret}", string.IsNullOrWhiteSpace(sharedSecret) ? "non défini" : "*****");
         Log.Information("  - JWT Secret: {HasJwtSecret}", string.IsNullOrWhiteSpace(jwtSecret) ? "non défini" : "*****");
 
         return config;
@@ -441,10 +427,8 @@ public sealed class ClientConfiguration
         return wsUri;
     }
 
-    private static void Validate(IEnumerable<Uri> wsUris, Uri httpBase, string? sharedSecret)
+    private static void Validate(IEnumerable<Uri> wsUris, Uri httpBase)
     {
-        var environment = EnvironmentDetector.GetEnvironment();
-
         if (httpBase.Scheme != Uri.UriSchemeHttp && httpBase.Scheme != Uri.UriSchemeHttps)
         {
             throw new ConfigValidationException("Le schéma HTTP doit être http ou https.");
@@ -459,19 +443,6 @@ public sealed class ClientConfiguration
             {
                 throw new ConfigValidationException("Configuration incohérente : HTTPs demandé mais WebSocket non sécurisé.");
             }
-        }
-
-        if (string.IsNullOrWhiteSpace(sharedSecret))
-        {
-            if (environment == EnvironmentDetector.AppEnvironment.Development)
-            {
-                // En dev, on autorise le secret par défaut pour coller à la configuration backend
-                Log.Warning("Aucun secret WebSocket défini. Utilisation du secret par défaut ({Secret}).", DefaultWsSharedSecret);
-                sharedSecret = DefaultWsSharedSecret;
-                return;
-            }
-
-            throw new ConfigValidationException("Le secret partagé (NETWORK_WS_SECRET ou WS_SHARED_SECRET) est requis pour la sécurité de la connexion WebSocket. Veuillez le définir dans les variables d'environnement ou dans le fichier client.properties.");
         }
     }
 }

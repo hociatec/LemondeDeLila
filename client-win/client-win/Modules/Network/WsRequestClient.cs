@@ -2,6 +2,7 @@ using System;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using client_win.Modules.Network.Services;
 using Serilog;
 
 namespace client_win.Modules.Network;
@@ -12,14 +13,14 @@ namespace client_win.Modules.Network;
 public sealed class WsRequestClient
 {
     private readonly PersistentWsClient _client;
-    private readonly string? _sharedSecret;
+    private readonly IWsTicketProvider _tickets;
     private readonly Modules.Error.ErrorBus? _errorBus;
     private static readonly JsonSerializerOptions _deserializeOptions = new(JsonSerializerDefaults.Web);
 
-    public WsRequestClient(PersistentWsClient client, string? sharedSecret, Modules.Error.ErrorBus? errorBus = null)
+    public WsRequestClient(PersistentWsClient client, IWsTicketProvider tickets, Modules.Error.ErrorBus? errorBus = null)
     {
         _client = client ?? throw new ArgumentNullException(nameof(client));
-        _sharedSecret = sharedSecret;
+        _tickets = tickets ?? throw new ArgumentNullException(nameof(tickets));
         _errorBus = errorBus;
     }
 
@@ -29,7 +30,10 @@ public sealed class WsRequestClient
         try
         {
             Log.Debug("WS request: {Type}", type);
-            raw = await _client.SendAsync(type, payload, token, _sharedSecret, cancellationToken).ConfigureAwait(false);
+            var wsTicket = string.IsNullOrWhiteSpace(token)
+                ? null
+                : await _tickets.GetTicketAsync("api", cancellationToken).ConfigureAwait(false);
+            raw = await _client.SendAsync(type, payload, token, wsTicket, cancellationToken).ConfigureAwait(false);
         }
         catch (TaskCanceledException tex)
         {

@@ -28,7 +28,8 @@ sudo mysql < backend/tools/sql/create-db-user.mysql.sql
 
 ### Sécurisation WS
 
-Définissez un secret partagé (`WS_SHARED_SECRET`) dans votre `.env` et fournissez la même valeur au client (`config/client.properties` → `network.ws.secret` ou variable `NETWORK_WS_SECRET`). Lorsque ce secret est configuré, les connexions `/ws` non signées sont fermées immédiatement.
+Le backend peut exiger un **ticket WebSocket court** (émis via `GET /ws/ticket?scope=...`) et envoyé par le client dans `x-lila-ws-ticket`.
+Ce mécanisme remplace le secret partagé statique côté client (déconseillé).
 
 ### Variables d’environnement clés
 
@@ -38,7 +39,9 @@ Définissez un secret partagé (`WS_SHARED_SECRET`) dans votre `.env` et fournis
 | `GAME_ENGINE_STATE_REDIS_URL` | Redis utilisé pour persister l’état des parties (requis pour la reprise après crash). |
 | `SESSION_STORE_REDIS_URL` | Redis pour les sessions WS/API, notifications et présence (peuvent avoir leurs URL dédiées). |
 | `NOTIFICATION_REDIS_URL`, `PRESENCE_REDIS_URL` | (Optionnel) Redis distincts pour partager les flux de notifications/presence entre plusieurs instances. |
-| `WS_SHARED_SECRET` | Secret partagé avec le client pour autoriser l'accès aux WebSocket `/ws`. Laisser vide pour désactiver (déconseillé en prod). |
+| `WS_TICKET_SECRET` | Secret serveur pour signer les tickets WS courts (ne jamais l’exposer au client). |
+| `WS_TICKET_TTL_SECONDS` | Durée de vie des tickets WS en secondes (ex: 60). |
+| `WS_SHARED_SECRET` | Legacy : ancien secret partagé côté client pour `/ws` (compat clients anciens uniquement). |
 | `DATABASE_URL` | Optionnel : connexion MySQL complète (`mysql://user:pwd@host:3306/db`). Sinon utiliser `DB_HOST`, `DB_USER`, etc. |
 | `CORS_ORIGINS` | Liste d’origines autorisées (séparées par des virgules). Laisser vide pour autoriser tout en dev. |
 | `RATE_LIMIT_TTL` / `RATE_LIMIT_COUNT` | Fenêtre (s) et nombre de requêtes maximum pour le throttling global. |

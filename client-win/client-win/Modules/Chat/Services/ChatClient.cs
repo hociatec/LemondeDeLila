@@ -36,7 +36,13 @@ public sealed class ChatClient : IAsyncDisposable
     public async Task ConnectAsync(string token, CancellationToken cancellationToken = default)
     {
         _cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        await _transport.ConnectAsync(_endpoint, token, cancellationToken: _cts.Token).ConfigureAwait(false);
+        await ConnectAsync(token, headers: null, cancellationToken: cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task ConnectAsync(string token, IDictionary<string, string>? headers, CancellationToken cancellationToken = default)
+    {
+        _cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        await _transport.ConnectAsync(_endpoint, token, headers: headers, cancellationToken: _cts.Token).ConfigureAwait(false);
     }
 
     public async Task SendMessageAsync(string text, CancellationToken cancellationToken = default)

@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using client_win.Modules.Config;
+using client_win.Modules.Network.Services;
 using client_win.Modules.Network.WebSockets;
 using client_win.Modules.User.Services;
 using Serilog;
@@ -16,12 +17,18 @@ public sealed class RoomGatewayClient : IRoomGatewayClient
     private readonly ClientConfiguration _config;
     private readonly ISessionService _session;
     private readonly Func<IWebSocketConnection> _socketFactory;
+    private readonly IWsTicketProvider _tickets;
 
-    public RoomGatewayClient(ClientConfiguration config, ISessionService session, Func<IWebSocketConnection> socketFactory)
+    public RoomGatewayClient(
+        ClientConfiguration config,
+        ISessionService session,
+        Func<IWebSocketConnection> socketFactory,
+        IWsTicketProvider tickets)
     {
         _config = config ?? throw new ArgumentNullException(nameof(config));
         _session = session ?? throw new ArgumentNullException(nameof(session));
         _socketFactory = socketFactory ?? throw new ArgumentNullException(nameof(socketFactory));
+        _tickets = tickets ?? throw new ArgumentNullException(nameof(tickets));
     }
 
     public async Task<RoomSession> CreateAndConnectAsync(string gameType, CancellationToken cancellationToken = default)
@@ -38,11 +45,11 @@ public sealed class RoomGatewayClient : IRoomGatewayClient
         }
 
         var socket = _socketFactory();
-        var uri = BuildRoomUri(_config.RealtimeGatewayWs, token, roomId: 0);
-        var headers = BuildHeaders(_config.SharedSecret);
+        var uri = BuildRoomUri(_config.RealtimeGatewayWs, roomId: 0);
+        var headers = await BuildHeadersAsync(cancellationToken).ConfigureAwait(false);
 
         Log.Information("WS room.create: connexion à {Endpoint}", uri);
-        await socket.ConnectAsync(uri, token: null, headers: headers, cancellationToken: cancellationToken).ConfigureAwait(false);
+        await socket.ConnectAsync(uri, token: token, headers: headers, cancellationToken: cancellationToken).ConfigureAwait(false);
 
         var created = await WaitRoomCreatedAsync(socket, gameType, cancellationToken).ConfigureAwait(false);
         var roomId = created.RoomId;
@@ -78,11 +85,11 @@ public sealed class RoomGatewayClient : IRoomGatewayClient
         }
 
         var socket = _socketFactory();
-        var uri = BuildRoomUri(_config.RealtimeGatewayWs, token, roomId, spectator);
-        var headers = BuildHeaders(_config.SharedSecret);
+        var uri = BuildRoomUri(_config.RealtimeGatewayWs, roomId, spectator);
+        var headers = await BuildHeadersAsync(cancellationToken).ConfigureAwait(false);
 
         Log.Information("WS room.connect: connexion à {Endpoint}", uri);
-        await socket.ConnectAsync(uri, token: null, headers: headers, cancellationToken: cancellationToken).ConfigureAwait(false);
+        await socket.ConnectAsync(uri, token: token, headers: headers, cancellationToken: cancellationToken).ConfigureAwait(false);
 
         var initial = await WaitRoomStateAsync(socket, cancellationToken).ConfigureAwait(false);
         var payload = initial.Payload;
@@ -163,7 +170,7 @@ public sealed class RoomGatewayClient : IRoomGatewayClient
             if (state is WebSocketState.Error or WebSocketState.Disconnected)
             {
                 tcs.TrySetException(new InvalidOperationException(
-                    "Connexion WebSocket fermée pendant la création de table. Vérifiez network.ws.secret et la connectivité WS."));
+                    "Connexion WebSocket fermée pendant la création de table. Vérifiez la connectivité WS."));
             }
         }
 
@@ -259,7 +266,7 @@ public sealed class RoomGatewayClient : IRoomGatewayClient
             if (state is WebSocketState.Error or WebSocketState.Disconnected)
             {
                 tcs.TrySetException(new InvalidOperationException(
-                    "Connexion WebSocket fermée pendant la connexion à la table. Vérifiez network.ws.secret et la connectivité WS."));
+                    "Connexion WebSocket fermée pendant la connexion à la table. Vérifiez la connectivité WS."));
             }
         }
 
@@ -289,7 +296,7 @@ public sealed class RoomGatewayClient : IRoomGatewayClient
         }
     }
 
-    private static Uri BuildRoomUri(Uri baseWs, string token, int roomId, bool spectator = false)
+    private static Uri BuildRoomUri(Uri baseWs, int roomId, bool spectator = false)
     {
         var builder = new UriBuilder(baseWs);
         var query = new List<string>();
@@ -297,7 +304,6 @@ public sealed class RoomGatewayClient : IRoomGatewayClient
         {
             query.Add(builder.Query.TrimStart('?'));
         }
-        query.Add($"token={Uri.EscapeDataString(token)}");
         if (roomId > 0)
         {
             query.Add($"room={roomId}");
@@ -310,15 +316,16 @@ public sealed class RoomGatewayClient : IRoomGatewayClient
         return builder.Uri;
     }
 
-    private static IDictionary<string, string>? BuildHeaders(string? sharedSecret)
+    private async Task<IDictionary<string, string>?> BuildHeadersAsync(CancellationToken cancellationToken)
     {
-        if (string.IsNullOrWhiteSpace(sharedSecret))
+        var ticket = await _tickets.GetTicketAsync("room", cancellationToken).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(ticket))
         {
             return null;
         }
         return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
-            ["x-lila-ws-signature"] = sharedSecret
+            ["x-lila-ws-ticket"] = ticket
         };
     }
 }

@@ -12,13 +12,9 @@ namespace client_win.Modules.Network.Services;
 /// </summary>
 public static class WsConnectionTester
 {
-    public static async Task TestAsync(Uri endpoint, string? signature, Modules.Error.ErrorBus? errors, CancellationToken cancellationToken)
+    public static async Task TestAsync(Uri endpoint, Modules.Error.ErrorBus? errors, CancellationToken cancellationToken)
     {
         using var socket = new ClientWebSocket();
-        if (!string.IsNullOrWhiteSpace(signature))
-        {
-            socket.Options.SetRequestHeader("x-lila-ws-signature", signature);
-        }
         try
         {
             socket.Options.KeepAliveInterval = TimeSpan.FromSeconds(10);
@@ -27,7 +23,7 @@ public static class WsConnectionTester
         catch (Exception ex)
         {
             errors?.Publish(new Modules.Error.AppError(
-                "Impossible de se connecter au serveur WS (vérifie port/secret).",
+                "Impossible de se connecter au serveur WS (vérifie l'URL et la connectivité).",
                 Modules.Error.ErrorSeverity.Error,
                 context: WsMessageTypes.ErrorContext.WsConnect,
                 detail: ex.Message));
