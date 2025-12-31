@@ -188,16 +188,15 @@ public sealed class ShellErrorHandler : IDisposable
         }
         msg += "\n\nMettre à jour maintenant ?";
 
-        var confirm = await _dialogs.Confirm(
+        var wantUpdate = await _dialogs.Confirm(
                 "Mise à jour requise",
                 msg,
                 okText: "Mettre à jour",
-                cancelText: "Quitter")
-            .ConfigureAwait(false);
+                cancelText: "OK")
+            .ConfigureAwait(false) == true;
 
-        if (confirm != true)
+        if (!wantUpdate)
         {
-            Environment.Exit(0);
             return;
         }
 

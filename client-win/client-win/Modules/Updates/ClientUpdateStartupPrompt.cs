@@ -44,17 +44,17 @@ public static class ClientUpdateStartupPrompt
                     msg += $"\n\n{info.Message.Trim()}";
                 }
 
-                var confirm = await dialogs.Confirm(
+                // UX unifiée: OK = continuer, Mettre à jour = lancer ClickOnce.
+                var wantUpdate = await dialogs.Confirm(
                         "Mise à jour requise",
-                        msg + "\n\nInstaller maintenant ?",
+                        msg + "\n\nMettre à jour maintenant ?",
                         okText: "Mettre à jour",
-                        cancelText: "Quitter")
-                    .ConfigureAwait(true);
+                        cancelText: "OK")
+                    .ConfigureAwait(true) == true;
 
-                if (confirm != true)
+                if (!wantUpdate)
                 {
-                    Environment.Exit(0);
-                    return false;
+                    return true;
                 }
 
                 await ClientUpdateInstaller
@@ -66,7 +66,7 @@ public static class ClientUpdateStartupPrompt
 
             if (info.UpdateAvailable == true)
             {
-                // Update disponible: politique actuelle = forcer la mise à jour dès l'ouverture.
+                // Update disponible: OK = continuer, Mettre à jour = lancer ClickOnce.
                 var msg = "Une mise à jour du client est disponible.";
                 if (!string.IsNullOrWhiteSpace(info.LatestVersion))
                 {
@@ -77,18 +77,16 @@ public static class ClientUpdateStartupPrompt
                     msg += $"\n\n{info.Message.Trim()}";
                 }
 
-                var confirm = await dialogs.Confirm(
-                        "Mise à jour",
-                        msg + "\n\nInstaller maintenant ?",
+                var wantUpdate = await dialogs.Confirm(
+                        "Mise à jour disponible",
+                        msg + "\n\nMettre à jour maintenant ?",
                         okText: "Mettre à jour",
-                        cancelText: "Quitter")
-                    .ConfigureAwait(true);
+                        cancelText: "OK")
+                    .ConfigureAwait(true) == true;
 
-                if (confirm != true)
+                if (!wantUpdate)
                 {
-                    // Politique: on force la mise à jour dès l'ouverture (évite les états "semi à jour").
-                    Environment.Exit(0);
-                    return false;
+                    return true;
                 }
 
                 await ClientUpdateInstaller

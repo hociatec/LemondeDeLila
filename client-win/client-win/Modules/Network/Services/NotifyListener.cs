@@ -207,16 +207,15 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
                 msg += $"\nVotre version : {current.Trim()}";
             }
 
-            var confirm = await _dialogs.Confirm(
+            var wantUpdate = await _dialogs.Confirm(
                     "Mise à jour requise",
                     msg + "\n\nMettre à jour maintenant ?",
                     okText: "Mettre à jour",
-                    cancelText: "Quitter")
-                .ConfigureAwait(true);
+                    cancelText: "OK")
+                .ConfigureAwait(true) == true;
 
-            if (confirm != true)
+            if (!wantUpdate)
             {
-                Environment.Exit(0);
                 return;
             }
 
@@ -403,7 +402,7 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
                     "Mise à jour",
                     msg + "\n\nInstaller maintenant ?",
                     okText: "Mettre à jour",
-                    cancelText: "Plus tard")
+                    cancelText: "OK")
                 .ConfigureAwait(true);
             if (confirm != true)
             {
