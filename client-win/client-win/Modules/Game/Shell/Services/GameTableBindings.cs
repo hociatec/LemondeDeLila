@@ -13,6 +13,8 @@ using client_win.Modules.Game.Room.Input;
 using client_win.Modules.Game.Room.Services;
 using client_win.Modules.Game.Shell.ViewModels;
 using client_win.Modules.Game.Shell.Views;
+using client_win.Modules.Audio.Models;
+using client_win.Modules.Audio.Services;
 using client_win.Modules.Shell.Services;
 
 namespace client_win.Modules.Game.Shell.Services;
@@ -26,6 +28,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
     private readonly GameRoomViewModel _tableVm;
     private readonly IRoomAnnouncements _announcements;
     private readonly IGameHistorySink _history;
+    private readonly ISoundService _sounds;
 
     private readonly RoomBotCommands _bots;
     private readonly RoomPrivacyCommands _privacy;
@@ -53,6 +56,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
         GameRoomView tableView,
         GameRoomViewModel tableVm,
         IRoomAnnouncements announcements,
+        ISoundService sounds,
         Func<GamePlayViewModel> createGamePlayVm)
     {
         _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
@@ -61,6 +65,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
         _tableView = tableView ?? throw new ArgumentNullException(nameof(tableView));
         _tableVm = tableVm ?? throw new ArgumentNullException(nameof(tableVm));
         _announcements = announcements ?? throw new ArgumentNullException(nameof(announcements));
+        _sounds = sounds ?? throw new ArgumentNullException(nameof(sounds));
         _createGamePlayVm = createGamePlayVm ?? throw new ArgumentNullException(nameof(createGamePlayVm));
         _history = new GameHistorySink(_dispatcher, _tableVm.History);
 
@@ -231,6 +236,8 @@ internal sealed class GameTableBindings : IAsyncDisposable
             }
 
             _announcements.PlayerJoined(info.Username, info.Spectator);
+            // Son d'entrée: utilisé aussi quand un joueur rejoint une table existante.
+            _sounds.Play(SoundId.RoomOpened);
         }
 
         foreach (var (id, info) in _participants)

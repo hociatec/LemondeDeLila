@@ -254,10 +254,7 @@ public sealed class GameTableOpener : IGameTableOpener
             vm.History.Entries.Add(line);
         }
         _gameAnnouncements.Info(createdMessage);
-        if (isNew)
-        {
-            _sounds.Play(SoundId.RoomOpened);
-        }
+        _sounds.Play(SoundId.RoomOpened);
 
         bindings = new GameTableBindings(
             dispatcher: dispatcher,
@@ -266,6 +263,7 @@ public sealed class GameTableOpener : IGameTableOpener
             tableView: tableView,
             tableVm: vm,
             announcements: _announcements,
+            sounds: _sounds,
             createGamePlayVm: () => CreateGamePlayViewModel(session, game));
         bindings.Attach();
         bindings.InitializeFromLastState();
