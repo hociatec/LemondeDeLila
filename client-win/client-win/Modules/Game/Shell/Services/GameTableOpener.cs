@@ -13,6 +13,8 @@ using client_win.Modules.Game.Play.ViewModels;
 using client_win.Modules.Game.Room.Services;
 using client_win.Modules.Game.Shell.ViewModels;
 using client_win.Modules.Game.Shell.Views;
+using client_win.Modules.Audio.Models;
+using client_win.Modules.Audio.Services;
 using client_win.Modules.Presence.Services;
 using client_win.Modules.Shell.Services;
 
@@ -29,6 +31,7 @@ public sealed class GameTableOpener : IGameTableOpener
     private readonly IRoomAnnouncements _announcements;
     private readonly IGameAnnouncements _gameAnnouncements;
     private readonly IPresenceMonitor _presence;
+    private readonly ISoundService _sounds;
 
     public GameTableOpener(
         ILogger<GameTableOpener> logger,
@@ -39,7 +42,8 @@ public sealed class GameTableOpener : IGameTableOpener
         IScreenReaderAnnouncer screenReader,
         IRoomAnnouncements announcements,
         IGameAnnouncements gameAnnouncements,
-        IPresenceMonitor presence)
+        IPresenceMonitor presence,
+        ISoundService sounds)
     {
         _logger = logger;
         _rooms = rooms;
@@ -50,6 +54,7 @@ public sealed class GameTableOpener : IGameTableOpener
         _announcements = announcements;
         _gameAnnouncements = gameAnnouncements;
         _presence = presence ?? throw new ArgumentNullException(nameof(presence));
+        _sounds = sounds ?? throw new ArgumentNullException(nameof(sounds));
     }
 
     public async Task OpenAsync(CatalogGame game, UserControl returnView)
@@ -182,6 +187,10 @@ public sealed class GameTableOpener : IGameTableOpener
             vm.History.Entries.Add(line);
         }
         _gameAnnouncements.Info(createdMessage);
+        if (isNew)
+        {
+            _sounds.Play(SoundId.RoomOpened);
+        }
 
         bindings = new GameTableBindings(
             dispatcher: dispatcher,

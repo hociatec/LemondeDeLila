@@ -41,6 +41,10 @@ public sealed class SoundService : ISoundService, IDisposable
                 RelativePath: Path.Combine("Assets", "Sounds", "receptionmsgtchat.mp3"),
                 IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundChatMessages,
                 Volume: () => Clamp01(_options.Current.SoundChatMessagesVolume / 100.0)),
+            [SoundId.RoomOpened] = new SoundEntry(
+                RelativePath: Path.Combine("Assets", "Sounds", "roomopened.mp3"),
+                IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundSelect,
+                Volume: () => Clamp01(_options.Current.SoundSelectVolume / 100.0)),
         };
     }
 
