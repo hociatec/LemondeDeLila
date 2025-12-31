@@ -236,8 +236,8 @@ internal sealed class GameTableBindings : IAsyncDisposable
             }
 
             _announcements.PlayerJoined(info.Username, info.Spectator);
-            // Son d'entrée: utilisé aussi quand un joueur rejoint une table existante.
-            _sounds.Play(SoundId.RoomOpened);
+            // Son quand un joueur rejoint la table.
+            _sounds.Play(SoundId.RoomJoined);
         }
 
         foreach (var (id, info) in _participants)

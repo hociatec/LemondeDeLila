@@ -41,6 +41,7 @@ public sealed partial class AdminViewModel
         IsAdditionalPermissionsVisible = false;
         Items.Clear();
         Items.Add(new AdminMenuItem("Entrer dans une table", tag: "sounds.table.enter"));
+        Items.Add(new AdminMenuItem("Rejoindre une table", tag: "sounds.table.join"));
         Items.Add(new AdminMenuItem("Quitter une table", tag: "sounds.table.exit"));
         SelectedItem = Items.FirstOrDefault();
         Status = "Entrée : sélectionner. Échap : retour.";
@@ -85,7 +86,7 @@ public sealed partial class AdminViewModel
         _soundDetailsId = sound;
         _soundDetailsReturnPage = sound switch
         {
-            SoundId.RoomOpened or SoundId.RoomExit => AdminPage.SoundsTable,
+            SoundId.RoomOpened or SoundId.RoomJoined or SoundId.RoomExit => AdminPage.SoundsTable,
             SoundId.ChatMessageSent or SoundId.ChatMessageReceived => AdminPage.SoundsChat,
             SoundId.PrivateMessageSent or SoundId.PrivateMessageReceived => AdminPage.SoundsPrivateMessages,
             _ => AdminPage.Sounds
@@ -94,6 +95,7 @@ public sealed partial class AdminViewModel
         var (group, title, current) = sound switch
         {
             SoundId.RoomOpened => ("Table", "Entrer dans une table", _options.Current.SoundRoomOpenedPath),
+            SoundId.RoomJoined => ("Table", "Rejoindre une table", _options.Current.SoundRoomJoinedPath),
             SoundId.RoomExit => ("Table", "Quitter une table", _options.Current.SoundRoomExitPath),
             SoundId.ChatMessageSent => ("Tchat", "Envoi d'un message", _options.Current.SoundChatMessageSentPath),
             SoundId.ChatMessageReceived => ("Tchat", "Réception d'un message", _options.Current.SoundChatMessageReceivedPath),
@@ -155,6 +157,7 @@ public sealed partial class AdminViewModel
         string destName = sound switch
         {
             SoundId.RoomOpened => "roomopened.mp3",
+            SoundId.RoomJoined => "roomjoined.mp3",
             SoundId.RoomExit => "roomexit.mp3",
             SoundId.ChatMessageSent => "envoimsgtchat.mp3",
             SoundId.ChatMessageReceived => "receptionmsgtchat.mp3",
@@ -185,6 +188,9 @@ public sealed partial class AdminViewModel
         {
             case SoundId.RoomOpened:
                 _options.Current.SoundRoomOpenedPath = dest;
+                break;
+            case SoundId.RoomJoined:
+                _options.Current.SoundRoomJoinedPath = dest;
                 break;
             case SoundId.RoomExit:
                 _options.Current.SoundRoomExitPath = dest;

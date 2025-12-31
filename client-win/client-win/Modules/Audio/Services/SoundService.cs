@@ -63,6 +63,11 @@ public sealed class SoundService : ISoundService, IDisposable
                 OverridePath: () => _options.Current.SoundRoomOpenedPath,
                 IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundSelect,
                 Volume: () => Clamp01(_options.Current.SoundSelectVolume / 100.0)),
+            [SoundId.RoomJoined] = new SoundEntry(
+                DefaultRelativePath: Path.Combine("Assets", "Sounds", "roomopened.mp3"),
+                OverridePath: () => _options.Current.SoundRoomJoinedPath,
+                IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundSelect,
+                Volume: () => Clamp01(_options.Current.SoundSelectVolume / 100.0)),
             [SoundId.RoomExit] = new SoundEntry(
                 DefaultRelativePath: Path.Combine("Assets", "Sounds", "roomexit.mp3"),
                 OverridePath: () => _options.Current.SoundRoomExitPath,

@@ -110,6 +110,11 @@ public sealed partial class AdminViewModel
                     BuildSoundDetails(Modules.Audio.Models.SoundId.RoomOpened);
                     return;
                 }
+                if (tableSound == "sounds.table.join")
+                {
+                    BuildSoundDetails(Modules.Audio.Models.SoundId.RoomJoined);
+                    return;
+                }
                 if (tableSound == "sounds.table.exit")
                 {
                     BuildSoundDetails(Modules.Audio.Models.SoundId.RoomExit);

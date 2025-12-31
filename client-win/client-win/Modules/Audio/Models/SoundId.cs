@@ -7,5 +7,6 @@ public enum SoundId
     PrivateMessageSent,
     PrivateMessageReceived,
     RoomOpened,
+    RoomJoined,
     RoomExit,
 }

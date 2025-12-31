@@ -254,7 +254,7 @@ public sealed class GameTableOpener : IGameTableOpener
             vm.History.Entries.Add(line);
         }
         _gameAnnouncements.Info(createdMessage);
-        _sounds.Play(SoundId.RoomOpened);
+        _sounds.Play(isNew ? SoundId.RoomOpened : SoundId.RoomJoined);
 
         bindings = new GameTableBindings(
             dispatcher: dispatcher,
