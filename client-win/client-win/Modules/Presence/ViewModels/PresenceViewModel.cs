@@ -306,23 +306,19 @@ public sealed class PresenceViewModel : ObservableObject
 
         if (string.Equals(tag, TagMessage, StringComparison.OrdinalIgnoreCase))
         {
-            var subject = await _prompts.PromptAsync(
+            var draft = await _prompts.PromptPrivateMessageAsync(
                 title: $"Message à {player.Username}",
-                label: "Sujet",
-                initialText: string.Empty).ConfigureAwait(true);
-            if (string.IsNullOrWhiteSpace(subject))
+                subjectLabel: "Sujet",
+                messageLabel: "Message",
+                initialSubject: string.Empty,
+                initialMessage: string.Empty).ConfigureAwait(true);
+            if (draft == null)
             {
                 return;
             }
 
-            var text = await _prompts.PromptAsync(
-                title: $"Message à {player.Username}",
-                label: "Message",
-                initialText: string.Empty).ConfigureAwait(true);
-            if (string.IsNullOrWhiteSpace(text))
-            {
-                return;
-            }
+            var subject = draft.Value.Subject;
+            var text = draft.Value.Message;
 
             IsBusy = true;
             try

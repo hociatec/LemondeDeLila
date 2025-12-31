@@ -35,5 +35,46 @@ public sealed class TextPromptService : ITextPromptService
             return string.IsNullOrWhiteSpace(text) ? null : text;
         }).Task;
     }
-}
 
+    public Task<(string Subject, string Message)?> PromptPrivateMessageAsync(
+        string title,
+        string subjectLabel,
+        string messageLabel,
+        string initialSubject,
+        string initialMessage)
+    {
+        return Application.Current.Dispatcher.InvokeAsync(() =>
+        {
+            var owner = Application.Current?.MainWindow;
+            var vm = new PrivateMessagePromptWindowModel
+            {
+                Title = string.IsNullOrWhiteSpace(title) ? "Message privé" : title.Trim(),
+                SubjectLabel = string.IsNullOrWhiteSpace(subjectLabel) ? "Sujet" : subjectLabel.Trim(),
+                MessageLabel = string.IsNullOrWhiteSpace(messageLabel) ? "Message" : messageLabel.Trim(),
+                Subject = initialSubject ?? string.Empty,
+                Message = initialMessage ?? string.Empty
+            };
+
+            var w = new PrivateMessagePromptWindow
+            {
+                Owner = owner,
+                DataContext = vm
+            };
+
+            bool? result = w.ShowDialog();
+            if (result != true)
+            {
+                return ((string Subject, string Message)?)null;
+            }
+
+            var subject = (w.Result?.Subject ?? string.Empty).Trim();
+            var message = (w.Result?.Message ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(subject) || string.IsNullOrWhiteSpace(message))
+            {
+                return ((string Subject, string Message)?)null;
+            }
+
+            return (subject, message);
+        }).Task;
+    }
+}
