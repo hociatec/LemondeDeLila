@@ -132,6 +132,20 @@ public sealed class GameTableOpener : IGameTableOpener
             .ConfigureAwait(true);
 
         var dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
+        if (!dispatcher.CheckAccess())
+        {
+            await dispatcher.InvokeAsync(
+                () => OpenSessionUi(session, game, returnView, isNew),
+                DispatcherPriority.Normal);
+            return;
+        }
+
+        OpenSessionUi(session, game, returnView, isNew);
+    }
+
+    private void OpenSessionUi(RoomSession session, CatalogGame game, UserControl returnView, bool isNew)
+    {
+        var dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
         var tableView = new GameRoomView();
 
         GameTableBindings? bindings = null;
