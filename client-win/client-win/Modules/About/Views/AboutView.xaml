@@ -127,14 +127,6 @@
                              HorizontalScrollBarVisibility="Disabled"
                              AutomationProperties.Name="Raccourcis" />
 
-                    <TextBlock Grid.Row="1"
-                               Visibility="{Binding ShowInfo, Converter={StaticResource BoolToVis}}"
-                               Text="{Binding UpdateCheckStatus}"
-                               Foreground="{StaticResource HighlightBrush}"
-                               FontSize="14"
-                               TextWrapping="Wrap"
-                               Margin="0,12,0,0"
-                               AutomationProperties.LiveSetting="Polite" />
                 </Grid>
 
                 <TextBlock Grid.Row="1"

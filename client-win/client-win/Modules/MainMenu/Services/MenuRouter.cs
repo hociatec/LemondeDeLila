@@ -229,7 +229,7 @@ public sealed class MenuRouter : IMenuRouter
 
         var previous = _navigation.CurrentView;
         var view = new AboutView();
-        var vm = new AboutViewModel(_config, _dialogs, _publisher, onClose: () =>
+        var vm = new AboutViewModel(_config, _dialogs, onClose: () =>
         {
             if (previous != null)
             {

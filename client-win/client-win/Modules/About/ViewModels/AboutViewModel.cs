@@ -2,11 +2,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Json;
 using System.Text;
-using System.Text.Json.Serialization;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
@@ -14,7 +10,6 @@ using client_win.Core;
 using client_win.Core.Constants;
 using client_win.Modules.Config;
 using client_win.Modules.Shell.Services;
-using client_win.Modules.Updates;
 
 namespace client_win.Modules.About.ViewModels;
 
@@ -31,7 +26,6 @@ public sealed class AboutViewModel : ObservableObject
     private readonly Dispatcher _dispatcher;
     private readonly ClientConfiguration _config;
     private readonly IDialogService _dialogs;
-    private readonly IClientUpdatePublisher _publisher;
     private AboutPage _page = AboutPage.Root;
     private string _title = "À propos";
     private string _status = "Entrée : sélectionner. Échap : retour.";
@@ -41,33 +35,25 @@ public sealed class AboutViewModel : ObservableObject
 
     private string _appName = AppConstants.AppName;
     private string _currentVersion = AppInfo.GetShortVersion();
-    private string _serverVersion = "Inconnue";
-    private string _serverPublishedAt = "Inconnue";
     private string _localUpdatedAt = "Inconnue";
-    private string _updateCheckStatus = "Aucune vérification en cours.";
 
     private readonly AsyncRelayCommand _activateCommand;
-    private readonly AsyncRelayCommand _checkUpdatesCommand;
 
     private const string TagShortcuts = "shortcuts";
     private const string TagInfo = "info";
-    private const string TagCheckUpdates = "checkUpdates";
 
     public AboutViewModel(
         ClientConfiguration config,
         IDialogService dialogs,
-        IClientUpdatePublisher publisher,
         Action onClose)
     {
         _config = config ?? throw new ArgumentNullException(nameof(config));
         _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
-        _publisher = publisher ?? throw new ArgumentNullException(nameof(publisher));
         _close = onClose ?? (() => { });
         _dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
 
         Items = new ObservableCollection<AboutMenuItem>();
         _activateCommand = new AsyncRelayCommand(ActivateSelectedAsync);
-        _checkUpdatesCommand = new AsyncRelayCommand(CheckUpdatesAsync, () => !IsBusy);
 
         RefreshLocalInfo();
         BuildRoot();
@@ -106,13 +92,9 @@ public sealed class AboutViewModel : ObservableObject
         {
             if (SetProperty(ref _isBusy, value))
             {
-                _checkUpdatesCommand.RaiseCanExecuteChanged();
-                OnPropertyChanged(nameof(CanCheckUpdates));
             }
         }
     }
-
-    public bool CanCheckUpdates => !IsBusy;
 
     public bool ShowItemsList => _page is AboutPage.Root or AboutPage.Info;
     public bool ShowShortcuts => _page == AboutPage.Shortcuts;
@@ -130,34 +112,15 @@ public sealed class AboutViewModel : ObservableObject
         private set => SetProperty(ref _currentVersion, value);
     }
 
-    public string ServerVersion
-    {
-        get => _serverVersion;
-        private set => SetProperty(ref _serverVersion, value);
-    }
-
-    public string ServerPublishedAt
-    {
-        get => _serverPublishedAt;
-        private set => SetProperty(ref _serverPublishedAt, value);
-    }
-
     public string LocalUpdatedAt
     {
         get => _localUpdatedAt;
         private set => SetProperty(ref _localUpdatedAt, value);
     }
 
-    public string UpdateCheckStatus
-    {
-        get => _updateCheckStatus;
-        private set => SetProperty(ref _updateCheckStatus, value);
-    }
-
     public string ShortcutsText => BuildShortcutsText();
 
     public AsyncRelayCommand ActivateCommand => _activateCommand;
-    public AsyncRelayCommand CheckUpdatesCommand => _checkUpdatesCommand;
 
     public AboutNavResult HandleEscape()
     {
@@ -211,44 +174,39 @@ public sealed class AboutViewModel : ObservableObject
 
         Title = "Informations sur l'application";
         Details = string.Empty;
-        Status = "Flèches : lire. Entrée : rechercher une mise à jour. Échap : retour.";
+        Status = "Flèches : lire. Échap : retour.";
 
         RefreshLocalInfo();
-        _ = CheckUpdatesAsync();
     }
 
-    private async Task ActivateSelectedAsync()
+    private Task ActivateSelectedAsync()
     {
         if (IsBusy)
         {
-            return;
+            return Task.CompletedTask;
         }
 
         var selected = SelectedItem;
         if (selected?.Tag is not string tag)
         {
-            return;
+            return Task.CompletedTask;
         }
 
         if (_page == AboutPage.Root &&
             string.Equals(tag, TagShortcuts, StringComparison.OrdinalIgnoreCase))
         {
             BuildShortcuts();
-            return;
+            return Task.CompletedTask;
         }
 
         if (_page == AboutPage.Root &&
             string.Equals(tag, TagInfo, StringComparison.OrdinalIgnoreCase))
         {
             BuildInfo();
-            return;
+            return Task.CompletedTask;
         }
 
-        if (_page == AboutPage.Info &&
-            string.Equals(tag, TagCheckUpdates, StringComparison.OrdinalIgnoreCase))
-        {
-            await CheckUpdatesAsync().ConfigureAwait(true);
-        }
+        return Task.CompletedTask;
     }
 
     private void RebuildInfoItems()
@@ -265,9 +223,6 @@ public sealed class AboutViewModel : ObservableObject
         Items.Add(new AboutMenuItem($"Nom : {AppName}"));
         Items.Add(new AboutMenuItem($"Version actuelle : {CurrentVersion}"));
         Items.Add(new AboutMenuItem($"Dernière mise à jour locale : {LocalUpdatedAt}"));
-        Items.Add(new AboutMenuItem($"Version serveur : {ServerVersion}"));
-        Items.Add(new AboutMenuItem($"Date de publication serveur : {ServerPublishedAt}"));
-        Items.Add(new AboutMenuItem("Rechercher une mise à jour", tag: TagCheckUpdates));
 
         if (!string.IsNullOrWhiteSpace(previousTag))
         {
@@ -327,104 +282,6 @@ public sealed class AboutViewModel : ObservableObject
         RebuildInfoItems();
     }
 
-    private async Task CheckUpdatesAsync()
-    {
-        if (IsBusy)
-        {
-            return;
-        }
-
-        IsBusy = true;
-        UpdateCheckStatus = "Recherche de mise à jour...";
-        try
-        {
-            var current = AppInfo.GetShortVersion();
-            var endpoint = new Uri(_config.HttpBase, $"../client/version?current={Uri.EscapeDataString(current)}");
-            using var http = new HttpClient();
-            var dto = await http.GetFromJsonAsync<ClientVersionDto>(endpoint, CancellationToken.None).ConfigureAwait(true);
-
-            var serverVer = dto?.Version?.Trim();
-            ServerVersion = string.IsNullOrWhiteSpace(serverVer) ? "Inconnue" : serverVer!;
-
-            if (!string.IsNullOrWhiteSpace(dto?.PublishedAt))
-            {
-                if (DateTime.TryParse(dto!.PublishedAt, out var parsed))
-                {
-                    ServerPublishedAt = parsed.ToLocalTime().ToString("dd/MM/yyyy HH:mm");
-                }
-                else
-                {
-                    ServerPublishedAt = dto!.PublishedAt!;
-                }
-            }
-            else
-            {
-                ServerPublishedAt = "Inconnue";
-            }
-
-            var isAvailable = dto?.UpdateAvailable;
-            if (isAvailable == null)
-            {
-                // Fallback (ancien backend): comparaison côté client.
-                var parsedCurrent = TryParseVersion(CurrentVersion);
-                var parsedAvailable = TryParseVersion(ServerVersion);
-                isAvailable = parsedCurrent != null && parsedAvailable != null && parsedAvailable > parsedCurrent;
-            }
-
-            if (isAvailable == true)
-            {
-                UpdateCheckStatus = $"Mise à jour disponible : {ServerVersion}. Redémarre l'application pour l'appliquer.";
-            }
-            else if (ServerVersion == "Inconnue")
-            {
-                UpdateCheckStatus = "Impossible de connaître la version serveur.";
-            }
-            else
-            {
-                UpdateCheckStatus = "Vous êtes à jour.";
-            }
-
-            RebuildInfoItems();
-        }
-        catch (Exception ex)
-        {
-            UpdateCheckStatus = $"Erreur vérification : {ex.Message}";
-            await _dialogs.ShowError("Mises à jour", ex.Message).ConfigureAwait(true);
-        }
-        finally
-        {
-            IsBusy = false;
-        }
-    }
-
-    private static Version? TryParseVersion(string? value)
-    {
-        var raw = (value ?? string.Empty).Trim();
-        if (string.IsNullOrWhiteSpace(raw))
-        {
-            return null;
-        }
-
-        // Accepte "1.0.12" ou "1.0.12.0"
-        var parts = raw.Split('.', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-        if (parts.Length is < 1 or > 4)
-        {
-            return null;
-        }
-
-        int[] nums = new int[4];
-        for (int i = 0; i < parts.Length; i++)
-        {
-            if (!int.TryParse(parts[i], out var n) || n < 0)
-            {
-                return null;
-            }
-            nums[i] = n;
-        }
-
-        return new Version(nums[0], nums[1], nums[2], nums[3]);
-    }
-
     private string BuildShortcutsText()
     {
         var sb = new StringBuilder();
@@ -466,17 +323,5 @@ public sealed class AboutViewModel : ObservableObject
         Root,
         Shortcuts,
         Info
-    }
-
-    private sealed class ClientVersionDto
-    {
-        [JsonPropertyName("version")]
-        public string? Version { get; set; }
-
-        [JsonPropertyName("publishedAt")]
-        public string? PublishedAt { get; set; }
-
-        [JsonPropertyName("updateAvailable")]
-        public bool? UpdateAvailable { get; set; }
     }
 }
