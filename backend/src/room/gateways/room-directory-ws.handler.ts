@@ -144,8 +144,21 @@ export class RoomDirectoryWsHandler {
       };
     }
     const existingInvite = this.invites.findActive(room.id, dto.userId);
-    const invite =
-      existingInvite ?? this.invites.create(room.id, user.id, dto.userId);
+    if (existingInvite) {
+      // Une invitation est déjà en attente pour ce joueur : éviter les doublons (notification + spam).
+      return {
+        type: 'rooms.invite.sent',
+        payload: {
+          invitationId: existingInvite.id,
+          roomId: room.id,
+          userId: dto.userId,
+          pending: true,
+          expiresAt: existingInvite.expiresAt,
+        },
+      };
+    }
+
+    const invite = this.invites.create(room.id, user.id, dto.userId);
     this.notifications.notifyUser(dto.userId, 'rooms.invite.received', {
       invitationId: invite.id,
       room: {

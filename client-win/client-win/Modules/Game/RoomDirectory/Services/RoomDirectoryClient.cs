@@ -38,6 +38,11 @@ public sealed class RoomDirectoryClient : IRoomDirectoryClient
             return "Le joueur est déjà dans la table.";
         }
 
+        if (res.Payload?.Pending == true)
+        {
+            return "Invitation déjà envoyée (en attente).";
+        }
+
         if (!string.IsNullOrWhiteSpace(res.Payload?.InvitationId))
         {
             return "Invitation envoyée.";
@@ -84,6 +89,9 @@ public sealed class RoomDirectoryClient : IRoomDirectoryClient
 
         [JsonPropertyName("alreadyInRoom")]
         public bool AlreadyInRoom { get; set; }
+
+        [JsonPropertyName("pending")]
+        public bool Pending { get; set; }
     }
 
     private sealed class InviteRespondPayload
