@@ -25,6 +25,7 @@ import { OPEN_ROOM_STATUSES } from '../constants/room-status.constants';
 import { buildPublicRoomList } from '../utils/room-directory.utils';
 import { CatalogService } from '../../catalog/services/catalog.service';
 import { PublicRoomDirectoryService } from '../services/public-room-directory.service';
+import { RoomRealtimeTrackerService } from '../services/room-realtime-tracker.service';
 
 @Injectable()
 export class RoomDirectoryWsHandler {
@@ -35,6 +36,7 @@ export class RoomDirectoryWsHandler {
     private readonly notifications: NotificationService,
     private readonly catalog: CatalogService,
     private readonly directory: PublicRoomDirectoryService,
+    private readonly realtimeTracker: RoomRealtimeTrackerService,
     @InjectRepository(Room) private readonly roomRepo: Repository<Room>,
     @InjectRepository(RoomParticipant)
     private readonly participantRepo: Repository<RoomParticipant>,
@@ -70,10 +72,13 @@ export class RoomDirectoryWsHandler {
       qb.andWhere('room.gameType = :gameType', { gameType: dto.gameType });
     }
     const rooms = await qb.getMany();
-    const { items, groups } = buildPublicRoomList(rooms, {
+    // Option recommandée: n'afficher que les tables où au moins 1 joueur (participant) est réellement connecté.
+    const activeRoomIds = new Set(this.realtimeTracker.getActivePlayerRoomIds());
+    const activeRooms = rooms.filter((r) => activeRoomIds.has(r.id));
+    const built = buildPublicRoomList(activeRooms, {
       allowedGameTypes: allowed,
     });
-    return { type: 'rooms.public.listed', payload: { items, groups } };
+    return { type: 'rooms.public.listed', payload: built };
   }
 
   async joinPublic(session: WsSession, payload: any) {
