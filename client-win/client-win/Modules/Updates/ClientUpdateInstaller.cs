@@ -71,6 +71,13 @@ public static class ClientUpdateInstaller
 
         try
         {
+            var validationError = await TryValidateClickOnceServerAsync(applicationUrl, cancellationToken).ConfigureAwait(true);
+            if (!string.IsNullOrWhiteSpace(validationError))
+            {
+                await dialogs.ShowError("Mise à jour", validationError).ConfigureAwait(true);
+                return false;
+            }
+
             // Prefer dfshim to force ClickOnce handler (évite les cas où Windows ouvre le navigateur / télécharge au lieu d'installer).
             if (TryLaunchClickOnce(applicationUrl))
             {
@@ -82,7 +89,7 @@ public static class ClientUpdateInstaller
                     "Mise à jour",
                     "Impossible de lancer ClickOnce automatiquement sur ce poste.\n\n" +
                     "Cause probable : composant ClickOnce manquant/corrompu, ou association .application absente.\n\n" +
-                    "Réinstalle le client via l'installateur ClickOnce, puis relance.")
+                    "Action: réinstalle le client via l'installateur ClickOnce, puis relance.")
                 .ConfigureAwait(true);
             return false;
         }
@@ -93,6 +100,93 @@ public static class ClientUpdateInstaller
                     $"Impossible de lancer l'installateur ClickOnce.\n\n{ex.GetType().Name}: {ex.Message}")
                 .ConfigureAwait(true);
             return false;
+        }
+    }
+
+    private static async Task<string?> TryValidateClickOnceServerAsync(
+        string applicationUrl,
+        CancellationToken cancellationToken)
+    {
+        // But: éviter le message ClickOnce générique "fichiers manquants" en détectant
+        // l'incohérence côté serveur avant de lancer dfshim.
+        try
+        {
+            using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(8) };
+
+            var appXml = await http.GetStringAsync(applicationUrl, cancellationToken).ConfigureAwait(false);
+            appXml = appXml.Replace("\uFEFF", string.Empty, StringComparison.Ordinal);
+
+            var dep = Regex.Match(
+                appXml,
+                "dependentAssembly[^>]*codebase\\s*=\\s*\"(?<codebase>[^\"]+)\"",
+                RegexOptions.IgnoreCase);
+            var depCodebase = dep.Success ? dep.Groups["codebase"].Value : null;
+            if (string.IsNullOrWhiteSpace(depCodebase))
+            {
+                return
+                    "Mise à jour ClickOnce impossible.\n\n" +
+                    "Le manifeste ClickOnce (.application) est invalide (dépendance manquante).\n\n" +
+                    $"URL: {applicationUrl}";
+            }
+
+            // Le manifest met souvent des backslashes Windows: normaliser vers "/" pour l'URL.
+            depCodebase = depCodebase.Replace('\\', '/');
+            var manifestUrl = new Uri(new Uri(applicationUrl), depCodebase).ToString();
+
+            var manifestXml = await http.GetStringAsync(manifestUrl, cancellationToken).ConfigureAwait(false);
+            manifestXml = manifestXml.Replace("\uFEFF", string.Empty, StringComparison.Ordinal);
+
+            // On vérifie qu'une partie des fichiers référencés est disponible.
+            // Si ClickOnce voit des 404 ici, il affiche "Des fichiers manquent".
+            var baseDir = manifestUrl.Substring(0, manifestUrl.LastIndexOf('/') + 1);
+
+            var fileMatches = Regex.Matches(manifestXml, "file[^>]*name\\s*=\\s*\"(?<name>[^\"]+)\"", RegexOptions.IgnoreCase);
+            var missing = new System.Collections.Generic.List<string>();
+
+            foreach (Match m in fileMatches)
+            {
+                var name = (m.Groups["name"].Value ?? string.Empty).Trim();
+                if (string.IsNullOrWhiteSpace(name)) continue;
+                name = name.Replace('\\', '/');
+
+                var url = new Uri(new Uri(baseDir), name).ToString();
+                try
+                {
+                    using var res = await http.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    if (!res.IsSuccessStatusCode)
+                    {
+                        missing.Add(name);
+                        if (missing.Count >= 12) break;
+                    }
+                }
+                catch
+                {
+                    missing.Add(name);
+                    if (missing.Count >= 12) break;
+                }
+            }
+
+            if (missing.Count > 0)
+            {
+                var lines = string.Join("\n", missing.ConvertAll(x => $"- {x}"));
+                return
+                    "Mise à jour ClickOnce impossible.\n\n" +
+                    "Le serveur est publié mais incomplet : ClickOnce ne trouve pas certains fichiers.\n\n" +
+                    "Action: relance la publication ClickOnce (GitHub Actions) ou republie côté serveur.\n\n" +
+                    $"Fichiers manquants (extrait):\n{lines}";
+            }
+
+            return null;
+        }
+        catch (Exception ex)
+        {
+            // Ne bloque pas la mise à jour si la validation échoue (réseau instable),
+            // mais on préfère un message clair si l'accès aux manifests est impossible.
+            return
+                "Mise à jour ClickOnce impossible.\n\n" +
+                "Impossible de valider les fichiers de mise à jour sur le serveur.\n\n" +
+                $"Détail: {ex.GetType().Name}: {ex.Message}\n" +
+                $"URL: {applicationUrl}";
         }
     }
 
