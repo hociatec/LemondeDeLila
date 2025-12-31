@@ -22,6 +22,7 @@ public sealed class JoinGameViewModel : ObservableObject, IDisposable
     private IDisposable? _refreshSubscription;
     private bool _isDisposed;
     private bool _subscribed;
+    private bool _subscriptionSupported = true;
     private bool _isBusy;
     private string _status = "Chargement des tables...";
     private PublicRoomListItem? _selected;
@@ -82,18 +83,39 @@ public sealed class JoinGameViewModel : ObservableObject, IDisposable
             Status = "Récupération des tables publiques...";
 
             PublicRoomsListedResult listed;
-            if (!_subscribed)
+            if (!_subscribed && _subscriptionSupported)
             {
-                listed = await _rooms.PublicSubscribeAsync().ConfigureAwait(true);
-                _subscribed = true;
-
-                _refreshSubscription = _rooms.OnPublicRefresh(() =>
+                try
                 {
-                    // Reçu depuis un thread réseau; rebasculer sur UI.
-                    _ = _dispatcher.BeginInvoke(
-                        DispatcherPriority.Background,
-                        new Action(() => _ = RefreshCommand.ExecuteAsync(null)));
-                });
+                    listed = await _rooms.PublicSubscribeAsync().ConfigureAwait(true);
+                    _subscribed = true;
+
+                    _refreshSubscription = _rooms.OnPublicRefresh(() =>
+                    {
+                        // Reçu depuis un thread réseau; rebasculer sur UI.
+                        _ = _dispatcher.BeginInvoke(
+                            DispatcherPriority.Background,
+                            new Action(() => _ = RefreshCommand.ExecuteAsync(null)));
+                    });
+                }
+                catch (Exception ex)
+                {
+                    // Compat: si le serveur n'est pas encore à jour, il répond "Type de message inconnu".
+                    // On repasse en mode "liste uniquement" (rafraîchissement manuel).
+                    var msg = (ex.Message ?? string.Empty).Trim();
+                    if (msg.Contains("Type de message inconnu", StringComparison.OrdinalIgnoreCase) ||
+                        msg.Contains("message inconnu", StringComparison.OrdinalIgnoreCase))
+                    {
+                        _subscriptionSupported = false;
+                        Status = "Serveur non à jour (rooms.public.subscribe indisponible). Rafraîchissement manuel.";
+                    }
+                    else
+                    {
+                        Status = $"Abonnement temps réel échoué : {msg}";
+                    }
+
+                    listed = await _rooms.PublicListAsync().ConfigureAwait(true);
+                }
             }
             else
             {
@@ -109,7 +131,16 @@ public sealed class JoinGameViewModel : ObservableObject, IDisposable
             if (Rooms.Count > 0)
             {
                 SelectedRoom ??= Rooms[0];
-                Status = "Entrée : rejoindre la table sélectionnée. Échap : retour.";
+                if (_subscribed)
+                {
+                    Status = "Entrée : rejoindre la table sélectionnée. (Temps réel) Échap : retour.";
+                }
+                else
+                {
+                    Status = _subscriptionSupported
+                        ? "Entrée : rejoindre la table sélectionnée. Échap : retour."
+                        : "Entrée : rejoindre la table sélectionnée. (Rafraîchissement manuel) Échap : retour.";
+                }
             }
             else
             {

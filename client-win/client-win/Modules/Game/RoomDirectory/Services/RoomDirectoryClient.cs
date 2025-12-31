@@ -121,7 +121,11 @@ public sealed class RoomDirectoryClient : IRoomDirectoryClient
             token,
             cancellationToken).ConfigureAwait(false);
 
-        if (!res.Success || res.Payload?.Items == null)
+        if (!res.Success)
+        {
+            throw new InvalidOperationException(res.Error ?? "Liste des tables publiques impossible.");
+        }
+        if (res.Payload?.Items == null)
         {
             return new PublicRoomsListedResult(Array.Empty<PublicRoomListItem>());
         }
@@ -148,7 +152,11 @@ public sealed class RoomDirectoryClient : IRoomDirectoryClient
             token,
             cancellationToken).ConfigureAwait(false);
 
-        if (!res.Success || res.Payload?.Items == null)
+        if (!res.Success)
+        {
+            throw new InvalidOperationException(res.Error ?? "Abonnement aux tables publiques impossible.");
+        }
+        if (res.Payload?.Items == null)
         {
             return new PublicRoomsListedResult(Array.Empty<PublicRoomListItem>());
         }
