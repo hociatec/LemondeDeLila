@@ -189,6 +189,7 @@ public sealed partial class AdminViewModel
         SelectedItem = Items.FirstOrDefault();
         Status = "Entrée : sélectionner. Échap : retour.";
         UpdateFilterVisibility();
+        RestoreFocusIfAny();
     }
 
     private void UpdateFilterVisibility()

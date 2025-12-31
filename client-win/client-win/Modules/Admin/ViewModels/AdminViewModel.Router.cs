@@ -18,56 +18,67 @@ public sealed partial class AdminViewModel
             {
                 if (tag is string rootCategories && rootCategories == "categories")
                 {
+                    PushReturnFocus();
                     await LoadCategoriesAsync(AdminPage.Root).ConfigureAwait(true);
                     return;
                 }
                 if (tag is string s && s == "games")
                 {
+                    PushReturnFocus();
                     await LoadGamesAsync().ConfigureAwait(true);
                     return;
                 }
                 if (tag is string bots && bots == "bots")
                 {
+                    PushReturnFocus();
                     await LoadBotsAsync().ConfigureAwait(true);
                     return;
                 }
                 if (tag is string s2 && s2 == "users")
                 {
+                    PushReturnFocus();
                     await LoadUsersAsync().ConfigureAwait(true);
                     return;
                 }
                 if (tag is string chat && chat == "chat")
                 {
+                    PushReturnFocus();
                     await LoadChatAsync().ConfigureAwait(true);
                     return;
                 }
                 if (tag is string s3 && s3 == "broadcast")
                 {
+                    PushReturnFocus();
                     BuildBroadcast();
                     return;
                 }
                 if (tag is string cu && cu == "clientUpdates")
                 {
+                    PushReturnFocus();
                     BuildClientUpdates();
                     return;
                 }
                 if (tag is string s4 && s4 == "rolesDefinitions")
                 {
+                    PushReturnFocus();
                     await LoadRoleDefinitionsAsync().ConfigureAwait(true);
                     return;
                 }
                 if (tag is string s5 && s5 == "logs")
                 {
+                    PushReturnFocus();
                     ShowLogs();
                     return;
                 }
                 if (tag is string perf && perf == "perf")
                 {
+                    PushReturnFocus();
                     await LoadPerfAsync().ConfigureAwait(true);
                     return;
                 }
                 if (tag is string sounds && sounds == "sounds")
                 {
+                    PushReturnFocus();
                     BuildSounds();
                     return;
                 }
