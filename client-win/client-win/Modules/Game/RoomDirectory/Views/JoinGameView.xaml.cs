@@ -13,6 +13,7 @@ public partial class JoinGameView : UserControl
     private INotifyCollectionChanged? _roomsObservable;
     private int _lastRoomsCount = -1;
     private Window? _hostWindow;
+    private bool _isActive;
 
     public JoinGameView()
     {
@@ -23,6 +24,7 @@ public partial class JoinGameView : UserControl
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
+        _isActive = true;
         HookRoomsCollection(DataContext as JoinGameViewModel);
         HookWindowEscape();
         HookEmptyVisibility();
@@ -36,6 +38,7 @@ public partial class JoinGameView : UserControl
 
     private void OnUnloaded(object sender, RoutedEventArgs e)
     {
+        _isActive = false;
         UnhookWindowEscape();
         UnhookEmptyVisibility();
         HookRoomsCollection(null);
@@ -127,6 +130,10 @@ public partial class JoinGameView : UserControl
             DispatcherPriority.Input,
             new Action(() =>
             {
+                if (!_isActive || !IsVisible)
+                {
+                    return;
+                }
                 FocusEmptyOrList();
             }));
     }
@@ -180,6 +187,10 @@ public partial class JoinGameView : UserControl
             {
                 try
                 {
+                    if (!_isActive || !IsVisible)
+                    {
+                        return;
+                    }
                     EmptyOnlyText.Focus();
                     Keyboard.Focus(EmptyOnlyText);
                 }
@@ -244,6 +255,11 @@ public partial class JoinGameView : UserControl
 
     private void OnRoomsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
+        if (!_isActive || !IsVisible)
+        {
+            return;
+        }
+
         if (DataContext is not JoinGameViewModel vm)
         {
             return;
@@ -261,6 +277,10 @@ public partial class JoinGameView : UserControl
             new Action(() =>
             {
                 // Assure un focus "utile" pour lecteurs d'écran quand la liste devient vide ou se remplit.
+                if (!_isActive || !IsVisible)
+                {
+                    return;
+                }
                 FocusEmptyOrList();
             }));
     }
@@ -306,6 +326,10 @@ public partial class JoinGameView : UserControl
     private void OnWindowPreviewKeyDown(object sender, KeyEventArgs e)
     {
         if (e.Key != Key.Escape)
+        {
+            return;
+        }
+        if (!_isActive || !IsVisible)
         {
             return;
         }
