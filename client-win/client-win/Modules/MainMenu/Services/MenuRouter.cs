@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using Microsoft.Extensions.Logging;
 using client_win.Modules.Admin.ViewModels;
 using client_win.Modules.Admin.Views;
@@ -173,12 +174,60 @@ public sealed class MenuRouter : IMenuRouter
                 if (previous != null)
                 {
                     _navigation.Show(previous);
+                    RestoreFocusAfterBackNavigation(previous);
                 }
             });
         view.DataContext = vm;
         _navigation.Show(view);
 
         return Task.FromResult("Liste des tables publiques ouverte.");
+    }
+
+    private static void RestoreFocusAfterBackNavigation(UserControl target)
+    {
+        // Accessibilité: quand on revient au menu précédent via Échap,
+        // remettre le focus sur l'item sélectionné de la liste (NVDA annonce alors l'élément).
+        var dispatcher = target.Dispatcher;
+        dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Input, new Action(() =>
+        {
+            try
+            {
+                // MainMenu / Stats / Leaderboard utilisent souvent "ItemsList".
+                if (target.FindName("ItemsList") is System.Windows.Controls.ListBox list)
+                {
+                    if (list.Items.Count == 0)
+                    {
+                        list.Focus();
+                        return;
+                    }
+
+                    if (list.SelectedIndex < 0)
+                    {
+                        list.SelectedIndex = 0;
+                    }
+
+                    list.UpdateLayout();
+                    list.ScrollIntoView(list.SelectedItem ?? list.Items[list.SelectedIndex]);
+                    if (list.ItemContainerGenerator.ContainerFromIndex(list.SelectedIndex) is System.Windows.Controls.ListBoxItem item)
+                    {
+                        item.Focus();
+                        System.Windows.Input.Keyboard.Focus(item);
+                        return;
+                    }
+
+                    list.Focus();
+                    return;
+                }
+
+                // Fallback: focus sur la vue.
+                target.Focus();
+                System.Windows.Input.Keyboard.Focus(target);
+            }
+            catch
+            {
+                // ignore
+            }
+        }));
     }
 
     public async Task<string> OpenChat()
