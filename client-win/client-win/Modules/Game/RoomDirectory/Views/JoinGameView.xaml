@@ -8,7 +8,8 @@
              Loaded="OnLoaded"
              KeyDown="OnKeyDown"
              PreviewKeyDown="OnPreviewKeyDown"
-             Focusable="True">
+             Focusable="True"
+             AutomationProperties.Name="Rejoindre une partie">
     <UserControl.InputBindings>
         <KeyBinding Key="Escape" Command="{Binding CloseCommand}" />
     </UserControl.InputBindings>
@@ -67,30 +68,12 @@
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
-            <StackPanel.Style>
-                <Style TargetType="StackPanel">
-                    <Style.Triggers>
-                        <DataTrigger Binding="{Binding Rooms.Count}" Value="0">
-                            <Setter Property="Visibility" Value="Collapsed" />
-                        </DataTrigger>
-                    </Style.Triggers>
-                </Style>
-            </StackPanel.Style>
             <TextBlock x:Name="TitleText" Text="Rejoindre une partie" FontSize="28" FontWeight="SemiBold" Foreground="White" />
             <TextBlock Text="Tables publiques ouvertes (temps réel)" Foreground="#9CB2D1" FontSize="14" HorizontalAlignment="Center" Margin="0,4,0,0" />
         </StackPanel>
 
         <Border Grid.Row="1" Background="{StaticResource PanelBrush}" CornerRadius="12"
                 Margin="24" Padding="24">
-            <Border.Style>
-                <Style TargetType="Border">
-                    <Style.Triggers>
-                        <DataTrigger Binding="{Binding Rooms.Count}" Value="0">
-                            <Setter Property="Visibility" Value="Collapsed" />
-                        </DataTrigger>
-                    </Style.Triggers>
-                </Style>
-            </Border.Style>
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
