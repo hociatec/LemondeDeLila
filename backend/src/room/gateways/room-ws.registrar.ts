@@ -22,6 +22,12 @@ export class RoomWsRegistrar implements OnModuleInit {
     this.registry.register('rooms.public.spectate', (session, payload) =>
       this.handler.spectatePublic(session, payload),
     );
+    this.registry.register('rooms.public.subscribe', (session, payload) =>
+      this.handler.subscribePublic(session, payload),
+    );
+    this.registry.register('rooms.public.unsubscribe', (session) =>
+      this.handler.unsubscribePublic(session),
+    );
     this.registry.register('rooms.invite.send', (session, payload) =>
       this.handler.inviteSend(session, payload),
     );

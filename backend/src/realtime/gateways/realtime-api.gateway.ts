@@ -17,6 +17,7 @@ import { WsJwtAuthService } from '../../common/ws/ws-jwt-auth.service';
 import { ClientUpdatesService } from '../../client-updates/client-updates.service';
 import { isVersionLower } from '../../common/utils/version.utils';
 import { WsTicketAuthService } from '../../common/ws/ws-ticket-auth.service';
+import { WsApiHubService } from '../../common/ws/ws-api-hub.service';
 
 type IncomingMessage = {
   type?: string;
@@ -49,13 +50,21 @@ export class RealtimeApiGateway
     @Inject(SESSION_STORE) private readonly sessionStore: SessionStateStore,
     private readonly clientUpdates: ClientUpdatesService,
     private readonly wsTickets: WsTicketAuthService,
+    private readonly hub: WsApiHubService,
   ) {}
 
   async handleConnection(client: WebSocket, ...args: any[]) {
     const connectionId = randomUUID();
     const clientVersion = this.auth.extractClientVersion(client, args);
     const token = this.auth.extractToken(client, args);
-    if (!this.wsTickets.validateIfTokenPresent(client, args, 'api', Boolean(token))) {
+    if (
+      !this.wsTickets.validateIfTokenPresent(
+        client,
+        args,
+        'api',
+        Boolean(token),
+      )
+    ) {
       try {
         client.close(4403, 'ws ticket requis');
       } catch {
@@ -79,6 +88,7 @@ export class RealtimeApiGateway
       }
     }
     this.clients.set(client, session);
+    this.hub.register(connectionId, client);
 
     // IMPORTANT: attacher les handlers AVANT tout `await`.
     // Sinon, un client qui envoie un message immédiatement après le handshake (cas fréquent)
@@ -105,6 +115,7 @@ export class RealtimeApiGateway
     this.clients.delete(client);
     if (session) {
       this.sessionStore.delete(session.connectionId).catch(() => {});
+      this.hub.unregister(session.connectionId);
     }
   }
 

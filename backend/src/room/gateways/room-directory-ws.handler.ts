@@ -24,6 +24,7 @@ import { RoomInviteService } from '../services/room-invite.service';
 import { OPEN_ROOM_STATUSES } from '../constants/room-status.constants';
 import { buildPublicRoomList } from '../utils/room-directory.utils';
 import { CatalogService } from '../../catalog/services/catalog.service';
+import { PublicRoomDirectoryService } from '../services/public-room-directory.service';
 
 @Injectable()
 export class RoomDirectoryWsHandler {
@@ -33,6 +34,7 @@ export class RoomDirectoryWsHandler {
     private readonly invites: RoomInviteService,
     private readonly notifications: NotificationService,
     private readonly catalog: CatalogService,
+    private readonly directory: PublicRoomDirectoryService,
     @InjectRepository(Room) private readonly roomRepo: Repository<Room>,
     @InjectRepository(RoomParticipant)
     private readonly participantRepo: Repository<RoomParticipant>,
@@ -115,6 +117,20 @@ export class RoomDirectoryWsHandler {
       type: 'rooms.public.spectated',
       payload: { roomId: dto.roomId, room: state.room },
     };
+  }
+
+  async subscribePublic(session: WsSession, payload: any) {
+    requireUser(session);
+    const dto = this.validator.validate(RoomsPublicListDto, payload);
+    this.directory.subscribe(session.connectionId, dto.gameType ?? null);
+    const listed = await this.listPublic(session, payload);
+    return { type: 'rooms.public.subscribed', payload: listed.payload };
+  }
+
+  async unsubscribePublic(session: WsSession) {
+    requireUser(session);
+    this.directory.unsubscribe(session.connectionId);
+    return { type: 'rooms.public.unsubscribed', payload: { ok: true } };
   }
 
   async inviteSend(session: WsSession, payload: any) {
@@ -219,12 +235,16 @@ export class RoomDirectoryWsHandler {
     if (started) {
       // Table déjà démarrée : l'invité rejoint en spectateur (même table privée).
       this.invites.consume(dto.invitationId, { keep: true });
-      this.notifications.notifyUser(invite.fromUserId, 'rooms.invite.responded', {
-        invitationId: dto.invitationId,
-        roomId: invite.roomId,
-        accepted: true,
-        by: { id: user.id, username: user.username },
-      });
+      this.notifications.notifyUser(
+        invite.fromUserId,
+        'rooms.invite.responded',
+        {
+          invitationId: dto.invitationId,
+          roomId: invite.roomId,
+          accepted: true,
+          by: { id: user.id, username: user.username },
+        },
+      );
       return {
         type: 'rooms.invite.accepted',
         payload: { roomId: invite.roomId, room: current.room, spectator: true },

@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,11 +13,13 @@ public sealed class RoomDirectoryClient : IRoomDirectoryClient
 {
     private readonly WsRequestClient _ws;
     private readonly ISessionService _session;
+    private readonly Modules.Network.PersistentWsClient _transport;
 
-    public RoomDirectoryClient(WsRequestClient ws, ISessionService session)
+    public RoomDirectoryClient(WsRequestClient ws, ISessionService session, Modules.Network.PersistentWsClient transport)
     {
         _ws = ws ?? throw new ArgumentNullException(nameof(ws));
         _session = session ?? throw new ArgumentNullException(nameof(session));
+        _transport = transport ?? throw new ArgumentNullException(nameof(transport));
     }
 
     public async Task<string> InviteSendAsync(int roomId, int userId, CancellationToken cancellationToken = default)
@@ -107,5 +110,162 @@ public sealed class RoomDirectoryClient : IRoomDirectoryClient
 
         [JsonPropertyName("spectator")]
         public bool Spectator { get; set; }
+    }
+
+    public async Task<PublicRoomsListedResult> PublicListAsync(string? gameType = null, CancellationToken cancellationToken = default)
+    {
+        var token = _session.CurrentUser?.Token;
+        var res = await _ws.RequestAsync<PublicRoomsListedPayload>(
+            WsMessageTypes.Rooms.PublicList,
+            string.IsNullOrWhiteSpace(gameType) ? new { } : new { gameType },
+            token,
+            cancellationToken).ConfigureAwait(false);
+
+        if (!res.Success || res.Payload?.Items == null)
+        {
+            return new PublicRoomsListedResult(Array.Empty<PublicRoomListItem>());
+        }
+
+        return new PublicRoomsListedResult(res.Payload.Items
+            .Select(i => new PublicRoomListItem(
+                id: i.Id,
+                name: i.Name ?? string.Empty,
+                gameType: i.GameType ?? string.Empty,
+                status: i.Status ?? string.Empty,
+                maxPlayers: i.MaxPlayers,
+                playersCount: i.PlayersCount,
+                botsCount: i.BotsCount,
+                ownerUsername: i.Owner?.Username))
+            .ToArray());
+    }
+
+    public async Task<PublicRoomsListedResult> PublicSubscribeAsync(string? gameType = null, CancellationToken cancellationToken = default)
+    {
+        var token = _session.CurrentUser?.Token;
+        var res = await _ws.RequestAsync<PublicRoomsListedPayload>(
+            WsMessageTypes.Rooms.PublicSubscribe,
+            string.IsNullOrWhiteSpace(gameType) ? new { } : new { gameType },
+            token,
+            cancellationToken).ConfigureAwait(false);
+
+        if (!res.Success || res.Payload?.Items == null)
+        {
+            return new PublicRoomsListedResult(Array.Empty<PublicRoomListItem>());
+        }
+
+        return new PublicRoomsListedResult(res.Payload.Items
+            .Select(i => new PublicRoomListItem(
+                id: i.Id,
+                name: i.Name ?? string.Empty,
+                gameType: i.GameType ?? string.Empty,
+                status: i.Status ?? string.Empty,
+                maxPlayers: i.MaxPlayers,
+                playersCount: i.PlayersCount,
+                botsCount: i.BotsCount,
+                ownerUsername: i.Owner?.Username))
+            .ToArray());
+    }
+
+    public async Task<bool> PublicUnsubscribeAsync(CancellationToken cancellationToken = default)
+    {
+        var token = _session.CurrentUser?.Token;
+        var res = await _ws.RequestAsync<OkPayload>(
+            WsMessageTypes.Rooms.PublicUnsubscribe,
+            new { },
+            token,
+            cancellationToken).ConfigureAwait(false);
+        return res.Success && res.Payload?.Ok == true;
+    }
+
+    public IDisposable OnPublicRefresh(Action onRefresh)
+    {
+        if (onRefresh == null) throw new ArgumentNullException(nameof(onRefresh));
+        void Handler(string raw)
+        {
+            try
+            {
+                var parsed = System.Text.Json.JsonDocument.Parse(raw);
+                var root = parsed.RootElement;
+                if (!root.TryGetProperty("type", out var typeProp) || typeProp.ValueKind != System.Text.Json.JsonValueKind.String)
+                {
+                    return;
+                }
+                var type = typeProp.GetString() ?? string.Empty;
+                if (!string.Equals(type, "rooms.public.refresh", StringComparison.OrdinalIgnoreCase))
+                {
+                    return;
+                }
+                onRefresh();
+            }
+            catch
+            {
+                // ignore
+            }
+        }
+
+        _transport.UnmatchedMessageReceived += Handler;
+        return new Unsubscriber(() => _transport.UnmatchedMessageReceived -= Handler);
+    }
+
+    private sealed class PublicRoomsListedPayload
+    {
+        [JsonPropertyName("items")]
+        public PublicRoomListItemPayload[]? Items { get; set; }
+    }
+
+    private sealed class PublicRoomListItemPayload
+    {
+        [JsonPropertyName("id")]
+        public int Id { get; set; }
+
+        [JsonPropertyName("name")]
+        public string? Name { get; set; }
+
+        [JsonPropertyName("gameType")]
+        public string? GameType { get; set; }
+
+        [JsonPropertyName("status")]
+        public string? Status { get; set; }
+
+        [JsonPropertyName("maxPlayers")]
+        public int MaxPlayers { get; set; }
+
+        [JsonPropertyName("playersCount")]
+        public int PlayersCount { get; set; }
+
+        [JsonPropertyName("botsCount")]
+        public int BotsCount { get; set; }
+
+        [JsonPropertyName("owner")]
+        public OwnerPayload? Owner { get; set; }
+    }
+
+    private sealed class OwnerPayload
+    {
+        [JsonPropertyName("username")]
+        public string? Username { get; set; }
+    }
+
+    private sealed class OkPayload
+    {
+        [JsonPropertyName("ok")]
+        public bool Ok { get; set; }
+    }
+
+    private sealed class Unsubscriber : IDisposable
+    {
+        private readonly Action _dispose;
+        private int _disposed;
+
+        public Unsubscriber(Action dispose)
+        {
+            _dispose = dispose ?? throw new ArgumentNullException(nameof(dispose));
+        }
+
+        public void Dispose()
+        {
+            if (System.Threading.Interlocked.Exchange(ref _disposed, 1) == 1) return;
+            _dispose();
+        }
     }
 }

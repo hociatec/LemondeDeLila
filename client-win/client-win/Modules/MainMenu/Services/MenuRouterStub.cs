@@ -6,11 +6,14 @@ using client_win.Modules.Catalog.Services;
 using client_win.Modules.Catalog.ViewModels;
 using client_win.Modules.Catalog.Views;
 using client_win.Modules.Game.Shell.Services;
+using client_win.Modules.Game.RoomDirectory.Services;
 using client_win.Modules.Messaging.Services;
 using client_win.Modules.Messaging.ViewModels;
 using client_win.Modules.Messaging.Views;
 using client_win.Modules.Settings.Services;
 using client_win.Modules.Shell.Services;
+using client_win.Modules.Game.RoomDirectory.ViewModels;
+using client_win.Modules.Game.RoomDirectory.Views;
 
 namespace client_win.Modules.MainMenu.Services;
 
@@ -26,6 +29,7 @@ public sealed class MenuRouterStub : IMenuRouter
     private readonly INavigationService _navigation;
     private readonly IMessagingService _messaging;
     private readonly IGameTableOpener _tables;
+    private readonly IRoomDirectoryClient _roomDirectory;
 
     public MenuRouterStub(
         ILogger<MenuRouterStub> logger,
@@ -34,7 +38,8 @@ public sealed class MenuRouterStub : IMenuRouter
         ICatalogService catalog,
         INavigationService navigation,
         IMessagingService messaging,
-        IGameTableOpener tables)
+        IGameTableOpener tables,
+        IRoomDirectoryClient roomDirectory)
     {
         _logger = logger;
         _options = options;
@@ -43,6 +48,7 @@ public sealed class MenuRouterStub : IMenuRouter
         _navigation = navigation;
         _messaging = messaging;
         _tables = tables;
+        _roomDirectory = roomDirectory;
     }
 
     public Task<string> OpenCatalog()
@@ -66,7 +72,27 @@ public sealed class MenuRouterStub : IMenuRouter
 
     public Task<string> OpenLeaderboard() => LogAndReturn("Classement (stub)");
 
-    public Task<string> JoinGame() => LogAndReturn("Rejoindre une partie (stub)");
+    public Task<string> JoinGame()
+    {
+        var previous = _navigation.CurrentView;
+        var view = new JoinGameView();
+        JoinGameViewModel? vm = null;
+        vm = new JoinGameViewModel(
+            rooms: _roomDirectory,
+            tables: _tables,
+            returnView: previous ?? view,
+            onClose: () =>
+            {
+                try { vm?.Dispose(); } catch { /* ignore */ }
+                if (previous != null)
+                {
+                    _navigation.Show(previous);
+                }
+            });
+        view.DataContext = vm;
+        _navigation.Show(view);
+        return Task.FromResult("Liste des tables publiques ouverte.");
+    }
 
     public async Task<string> OpenChat()
     {

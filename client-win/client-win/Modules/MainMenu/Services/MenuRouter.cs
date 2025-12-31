@@ -28,6 +28,9 @@ using client_win.Modules.About.ViewModels;
 using client_win.Modules.About.Views;
 using client_win.Modules.Updates;
 using client_win.Modules.Audio.Services;
+using client_win.Modules.Game.RoomDirectory.Services;
+using client_win.Modules.Game.RoomDirectory.ViewModels;
+using client_win.Modules.Game.RoomDirectory.Views;
 
 namespace client_win.Modules.MainMenu.Services;
 
@@ -45,6 +48,7 @@ public sealed class MenuRouter : IMenuRouter
     private readonly IMessagingService _messaging;
     private readonly ISocialService _social;
     private readonly IGameTableOpener _tables;
+    private readonly IRoomDirectoryClient _roomDirectory;
     private readonly IStatsService _stats;
     private readonly ILeaderboardService _leaderboard;
     private readonly IAdminService _admin;
@@ -64,6 +68,7 @@ public sealed class MenuRouter : IMenuRouter
         IMessagingService messaging,
         ISocialService social,
         IGameTableOpener tables,
+        IRoomDirectoryClient roomDirectory,
         IStatsService stats,
         ILeaderboardService leaderboard,
         IAdminService admin,
@@ -80,6 +85,7 @@ public sealed class MenuRouter : IMenuRouter
         _messaging = messaging;
         _social = social;
         _tables = tables;
+        _roomDirectory = roomDirectory;
         _stats = stats;
         _leaderboard = leaderboard;
         _admin = admin;
@@ -148,8 +154,27 @@ public sealed class MenuRouter : IMenuRouter
 
     public Task<string> JoinGame()
     {
-        _logger.LogInformation("Fonction JoinGame non disponible (module Game retiré)");
-        return Task.FromResult("Fonction JoinGame non disponible.");
+        _logger.LogInformation("Ouverture du navigateur de tables publiques");
+
+        var previous = _navigation.CurrentView;
+        var view = new JoinGameView();
+        JoinGameViewModel? vm = null;
+        vm = new JoinGameViewModel(
+            rooms: _roomDirectory,
+            tables: _tables,
+            returnView: previous ?? view,
+            onClose: () =>
+            {
+                try { vm?.Dispose(); } catch { /* ignore */ }
+                if (previous != null)
+                {
+                    _navigation.Show(previous);
+                }
+            });
+        view.DataContext = vm;
+        _navigation.Show(view);
+
+        return Task.FromResult("Liste des tables publiques ouverte.");
     }
 
     public async Task<string> OpenChat()

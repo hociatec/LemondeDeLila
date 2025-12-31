@@ -206,7 +206,8 @@ public static class AppBootstrapper
         services.AddSingleton<Modules.Game.RoomDirectory.Services.IRoomDirectoryClient>(sp =>
             new Modules.Game.RoomDirectory.Services.RoomDirectoryClient(
                 sp.GetRequiredService<WsRequestClient>(),
-                sp.GetRequiredService<ISessionService>()));
+                sp.GetRequiredService<ISessionService>(),
+                sp.GetRequiredService<PersistentWsClient>()));
 
         services.AddSingleton<IGameGatewayClient>(sp =>
             new GameGatewayClient(

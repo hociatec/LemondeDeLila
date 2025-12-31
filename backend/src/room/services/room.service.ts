@@ -23,6 +23,10 @@ import type { Redis } from 'ioredis';
 @Injectable()
 export class RoomService {
   private realtimeNotifier?: (roomId: number) => Promise<void> | void;
+  private directoryNotifier?: (
+    roomId: number,
+    reason: string,
+  ) => Promise<void> | void;
   private readonly logger = new Logger(RoomService.name);
   private redis: Redis | null = null;
   private readonly roomPayloadRedisPrefix = 'room:payload:';
@@ -35,9 +39,26 @@ export class RoomService {
     this.realtimeNotifier = fn;
   }
 
+  /**
+   * Hook optionnel pour notifier la "liste des tables publiques" (set par PublicRoomDirectoryBinder).
+   */
+  setDirectoryNotifier(
+    fn: (roomId: number, reason: string) => Promise<void> | void,
+  ): void {
+    this.directoryNotifier = fn;
+  }
+
   async notifyRoomStateUpdated(roomId: number): Promise<void> {
     try {
       await this.realtimeNotifier?.(roomId);
+    } catch {
+      // best effort
+    }
+  }
+
+  private notifyDirectoryChanged(roomId: number, reason: string) {
+    try {
+      void this.directoryNotifier?.(roomId, reason);
     } catch {
       // best effort
     }
@@ -56,7 +77,10 @@ export class RoomService {
     private readonly config: ConfigService,
   ) {}
 
-  async primeRoomPayloadCache(roomId: number, payload: RoomPayload): Promise<void> {
+  async primeRoomPayloadCache(
+    roomId: number,
+    payload: RoomPayload,
+  ): Promise<void> {
     await this.persistRoomPayload(roomId, payload);
   }
 
@@ -122,6 +146,7 @@ export class RoomService {
       return room;
     });
     await this.invalidateRoomPayloadCache(room.id);
+    this.notifyDirectoryChanged(room.id, 'created');
     const elapsedMs = Date.now() - startedAt;
     if (elapsedMs >= 1500) {
       const now = Date.now();
@@ -186,6 +211,7 @@ export class RoomService {
 
     // Broadcast la mise à jour de présence en temps réel
     this.presenceService.broadcastPresence();
+    this.notifyDirectoryChanged(room.id, 'joined');
 
     return room;
   }
@@ -236,7 +262,8 @@ export class RoomService {
     // Remplacer un joueur humain par un bot quand la table est démarrée.
     // Objectif: éviter de poursuivre une partie avec moins de joueurs.
     const started =
-      String(room.status ?? '').toLowerCase() === 'started' || Boolean(room.startedAt);
+      String(room.status ?? '').toLowerCase() === 'started' ||
+      Boolean(room.startedAt);
     if (participant && started) {
       try {
         const activeHumans = await this.countActiveHumans(room.id);
@@ -251,6 +278,7 @@ export class RoomService {
 
     if (opts?.preserveRoom) {
       this.presenceService.broadcastPresence();
+      this.notifyDirectoryChanged(room.id, 'left');
       return room;
     }
 
@@ -275,12 +303,14 @@ export class RoomService {
       await this.invalidateRoomPayloadCache(room.id);
       // Broadcast la mise à jour de présence en temps réel
       this.presenceService.broadcastPresence();
+      this.notifyDirectoryChanged(room.id, 'deleted');
       return null;
     }
     // (Le transfert de propriétaire est géré plus haut, avant preserveRoom.)
 
     // Broadcast la mise à jour de présence en temps réel
     this.presenceService.broadcastPresence();
+    this.notifyDirectoryChanged(room.id, 'left');
 
     return room;
   }
@@ -291,6 +321,7 @@ export class RoomService {
     room.isPrivate = !room.isPrivate;
     await this.rooms.save(room);
     await this.invalidateRoomPayloadCache(room.id);
+    this.notifyDirectoryChanged(room.id, 'privacy');
     return room;
   }
 
@@ -306,6 +337,7 @@ export class RoomService {
     room.startedAt = room.startedAt ?? new Date();
     await this.rooms.save(room);
     await this.invalidateRoomPayloadCache(room.id);
+    this.notifyDirectoryChanged(room.id, 'started');
 
     try {
       const activeParticipants = await this.participants.find({
@@ -349,6 +381,7 @@ export class RoomService {
     room.startedAt = null;
     await this.rooms.save(room);
     await this.invalidateRoomPayloadCache(room.id);
+    this.notifyDirectoryChanged(room.id, 'reset');
     return room;
   }
 
@@ -362,6 +395,7 @@ export class RoomService {
     room.startedAt = null;
     await this.rooms.save(room);
     await this.invalidateRoomPayloadCache(room.id);
+    this.notifyDirectoryChanged(room.id, 'reset');
     return room;
   }
 
@@ -504,7 +538,9 @@ export class RoomService {
     }
   }
 
-  private async getCachedRoomPayload(roomId: number): Promise<RoomPayload | null> {
+  private async getCachedRoomPayload(
+    roomId: number,
+  ): Promise<RoomPayload | null> {
     if (!this.redis) {
       this.ensureRedisInitialized();
     }

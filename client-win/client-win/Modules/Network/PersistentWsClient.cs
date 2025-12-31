@@ -46,6 +46,8 @@ public sealed class PersistentWsClient : IAsyncDisposable
     private bool _isDisposed;
     private bool _isPausedByNetwork;
 
+    public event Action<string>? UnmatchedMessageReceived;
+
     // Surcharge explicite pour DI (évite les erreurs d'appariement d'arguments nommés/optionnels)
     public PersistentWsClient(
         Uri endpoint,
@@ -372,7 +374,15 @@ public sealed class PersistentWsClient : IAsyncDisposable
                 }
                 else
                 {
-                    Log.Debug("Réponse pour requestId {RequestId} reçue mais pas de pending task trouvée", requestId);
+                    // Message "push" (subscription) ou réponse tardive : ne pas jeter, on le propage.
+                    try
+                    {
+                        UnmatchedMessageReceived?.Invoke(doc.RootElement.GetRawText());
+                    }
+                    catch
+                    {
+                        // ignore
+                    }
                 }
             }
             catch (OperationCanceledException)

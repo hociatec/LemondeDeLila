@@ -166,6 +166,9 @@ public static class WsMessageTypes
     {
         public const string InviteSend = "rooms.invite.send";
         public const string InviteRespond = "rooms.invite.respond";
+        public const string PublicList = "rooms.public.list";
+        public const string PublicSubscribe = "rooms.public.subscribe";
+        public const string PublicUnsubscribe = "rooms.public.unsubscribe";
     }
 
     /// <summary>

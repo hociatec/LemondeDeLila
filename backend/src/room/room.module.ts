@@ -16,6 +16,8 @@ import { RoomWsRegistrar } from './gateways/room-ws.registrar';
 import { CatalogModule } from '../catalog/catalog.module';
 import { StatsModule } from '../stats/stats.module';
 import { ClientUpdatesModule } from '../client-updates/client-updates.module';
+import { PublicRoomDirectoryService } from './services/public-room-directory.service';
+import { PublicRoomDirectoryBinder } from './services/public-room-directory.binder';
 
 @Module({
   imports: [
@@ -31,6 +33,8 @@ import { ClientUpdatesModule } from '../client-updates/client-updates.module';
     RoomService,
     RoomGateway,
     RoomInviteService,
+    PublicRoomDirectoryService,
+    PublicRoomDirectoryBinder,
     RoomDirectoryWsHandler,
     RoomWsRegistrar,
   ],
