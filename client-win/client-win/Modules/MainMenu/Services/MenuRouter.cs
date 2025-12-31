@@ -186,7 +186,7 @@ public sealed class MenuRouter : IMenuRouter
     private static void RestoreFocusAfterBackNavigation(UserControl target)
     {
         // Accessibilité: quand on revient au menu précédent via Échap,
-        // remettre le focus sur l'item sélectionné de la liste (NVDA annonce alors l'élément).
+        // remettre le focus sur la liste (NVDA annonce alors "<titre> list", comportement identique au menu principal).
         var dispatcher = target.Dispatcher;
         dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Input, new Action(() =>
         {
@@ -208,14 +208,9 @@ public sealed class MenuRouter : IMenuRouter
 
                     list.UpdateLayout();
                     list.ScrollIntoView(list.SelectedItem ?? list.Items[list.SelectedIndex]);
-                    if (list.ItemContainerGenerator.ContainerFromIndex(list.SelectedIndex) is System.Windows.Controls.ListBoxItem item)
-                    {
-                        item.Focus();
-                        System.Windows.Input.Keyboard.Focus(item);
-                        return;
-                    }
-
+                    // Focus sur la ListBox (pas sur l'item) pour garder l'annonce "… list" cohérente.
                     list.Focus();
+                    System.Windows.Input.Keyboard.Focus(list);
                     return;
                 }
 
