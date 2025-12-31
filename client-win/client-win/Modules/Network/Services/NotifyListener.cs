@@ -3,6 +3,8 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using System.Threading;
 using System.Diagnostics;
+using System.Windows;
+using System.Windows.Input;
 using client_win.Core;
 using client_win.Modules.Audio.Models;
 using client_win.Modules.Audio.Services;
@@ -272,6 +274,61 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
 
     private async Task HandleRoomInviteReceivedAsync(JsonElement root)
     {
+        void RestoreFocus()
+        {
+            try
+            {
+                var view = _navigation.CurrentView;
+                if (view == null)
+                {
+                    return;
+                }
+
+                var dispatcher = Application.Current?.Dispatcher;
+                if (dispatcher == null)
+                {
+                    return;
+                }
+
+                dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.ApplicationIdle, new Action(() =>
+                {
+                    try
+                    {
+                        var window = Window.GetWindow(view) ?? Application.Current?.MainWindow;
+                        try
+                        {
+                            window?.Activate();
+                        }
+                        catch
+                        {
+                            // ignore
+                        }
+
+                        if (!view.IsKeyboardFocusWithin)
+                        {
+                            try
+                            {
+                                Keyboard.Focus(view);
+                            }
+                            catch
+                            {
+                                // ignore
+                            }
+                        }
+                        view.MoveFocus(new TraversalRequest(FocusNavigationDirection.First));
+                    }
+                    catch
+                    {
+                        // ignore
+                    }
+                }));
+            }
+            catch
+            {
+                // ignore
+            }
+        }
+
         try
         {
             if (!root.TryGetProperty("payload", out var payload) || payload.ValueKind != JsonValueKind.Object)
@@ -318,11 +375,13 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
 
             if (!accept)
             {
+                RestoreFocus();
                 return;
             }
             if (!res.Accepted && res.Expired)
             {
                 await _dialogs.ShowInfo("Invitation", "Invitation expirée.").ConfigureAwait(true);
+                RestoreFocus();
                 return;
             }
 
@@ -330,6 +389,7 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
             if (effectiveRoomId <= 0)
             {
                 await _dialogs.ShowInfo("Invitation", "Invitation acceptée, mais roomId indisponible.").ConfigureAwait(true);
+                RestoreFocus();
                 return;
             }
 
@@ -337,6 +397,7 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
             if (returnView == null)
             {
                 await _dialogs.ShowInfo("Invitation", "Impossible d'ouvrir la table (vue courante indisponible).").ConfigureAwait(true);
+                RestoreFocus();
                 return;
             }
 
@@ -345,6 +406,7 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
         catch (Exception ex)
         {
             await _dialogs.ShowError("Invitation", ex.Message).ConfigureAwait(true);
+            RestoreFocus();
         }
     }
 
