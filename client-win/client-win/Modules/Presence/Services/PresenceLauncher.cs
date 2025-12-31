@@ -51,6 +51,10 @@ public sealed class PresenceLauncher : IPresenceLauncher
                     joinRoom: roomId => JoinRoomAsync(roomId),
                     onClose: () => _ = CloseAsync());
             }
+            if (_view.DataContext is PresenceViewModel vm)
+            {
+                vm.ResetForOpen();
+            }
 
             _navigation.Show(_view);
             _view.Focus();

@@ -116,6 +116,16 @@ public sealed class PresenceViewModel : ObservableObject
 
     public AsyncRelayCommand ActivateCommand { get; }
 
+    public void ResetForOpen()
+    {
+        _page = PresencePage.Players;
+        _selectedPlayer = null;
+        SelectedItem = null;
+        Title = BuildTitle();
+        Status = "Flèches : naviguer. Entrée : sélectionner. Échap : fermer.";
+        RebuildPlayers();
+    }
+
     public void HandleEscape()
     {
         if (_page == PresencePage.PlayerActions)
