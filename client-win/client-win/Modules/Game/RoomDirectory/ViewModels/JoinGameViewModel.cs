@@ -66,7 +66,7 @@ public sealed class JoinGameViewModel : ObservableObject, IDisposable
     }
 
     public ICommand CloseCommand { get; }
-    public ICommand RefreshCommand { get; }
+    public AsyncRelayCommand RefreshCommand { get; }
     public AsyncRelayCommand JoinSelectedCommand { get; }
 
     private async Task RefreshAsync()

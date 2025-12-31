@@ -20,7 +20,6 @@ using client_win.Modules.Presence.Services;
 using client_win.Modules.Updates;
 using client_win.Modules.Settings.Services;
 using System.ComponentModel;
-using client_win.Modules.Shell.Services;
 
 namespace client_win
 {
