@@ -303,6 +303,8 @@ public sealed class PresenceViewModel : ObservableObject
                 await _dialogs.ShowInfo("Rejoindre", "Le joueur n'est pas dans une table.").ConfigureAwait(true);
                 return;
             }
+            // Fermer la présence avant d'ouvrir la table pour éviter les doubles activations accidentelles.
+            _close();
             await _joinRoom(roomId.Value).ConfigureAwait(true);
             return;
         }
