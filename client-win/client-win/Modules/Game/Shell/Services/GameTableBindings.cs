@@ -105,21 +105,9 @@ internal sealed class GameTableBindings : IAsyncDisposable
         };
         _session.ErrorReceived += _onSessionError;
 
-        _bots.BotAdded += name =>
-        {
-            _dispatcher.InvokeAsync(() =>
-            {
-                _announcements.BotJoined(name);
-            }, DispatcherPriority.Background);
-        };
-
-        _bots.BotRemoved += name =>
-        {
-            _dispatcher.InvokeAsync(() =>
-            {
-                _announcements.BotLeft(name);
-            }, DispatcherPriority.Background);
-        };
+        // IMPORTANT:
+        // Les ajouts/retraits de bots sont déjà reflétés par `room.updated`.
+        // On laisse TrackBots() gérer l'annonce pour éviter les doublons dans l'historique.
 
         _privacy.PrivacyChanged += isPrivate =>
         {
