@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Specialized;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Threading;
@@ -41,6 +42,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
     private Action<string>? _onGameMessage;
 
     private string? _lastStatus;
+    private Dictionary<int, (string Username, bool Spectator)> _participants = new();
 
     public GameTableBindings(
         Dispatcher dispatcher,
@@ -75,6 +77,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
     public void Attach()
     {
         _lastStatus = _session.LastRoomState?.Room?.Status;
+        SeedParticipants(_session.LastRoomState?.Room);
 
         _onAnnounced = announcement =>
         {
@@ -139,6 +142,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
         _onRoomUpdated = payload =>
         {
             UpdateGameTitle(payload);
+            TrackParticipants(payload.Room);
 
             var nextStatus = payload.Room?.Status;
             var wasStarted = string.Equals(_lastStatus, "started", StringComparison.OrdinalIgnoreCase);
@@ -214,6 +218,65 @@ internal sealed class GameTableBindings : IAsyncDisposable
             EnsureGamePlayLoaded();
             SyncGameplayShortcuts();
         }
+    }
+
+    private void SeedParticipants(RoomDto? room)
+    {
+        _participants = BuildParticipants(room);
+    }
+
+    private void TrackParticipants(RoomDto room)
+    {
+        var next = BuildParticipants(room);
+
+        foreach (var (id, info) in next)
+        {
+            if (_participants.ContainsKey(id))
+            {
+                continue;
+            }
+
+            _announcements.PlayerJoined(info.Username, info.Spectator);
+        }
+
+        foreach (var (id, info) in _participants)
+        {
+            if (next.ContainsKey(id))
+            {
+                continue;
+            }
+
+            _announcements.PlayerLeft(info.Username, info.Spectator);
+        }
+
+        _participants = next;
+    }
+
+    private static Dictionary<int, (string Username, bool Spectator)> BuildParticipants(RoomDto? room)
+    {
+        var output = new Dictionary<int, (string Username, bool Spectator)>();
+        if (room == null)
+        {
+            return output;
+        }
+
+        foreach (var p in room.Players ?? new List<RoomUserDto>())
+        {
+            if (p == null || p.Id <= 0) continue;
+            var name = (p.Username ?? string.Empty).Trim();
+            if (name.Length == 0) continue;
+            output[p.Id] = (name, Spectator: false);
+        }
+
+        foreach (var s in room.Spectators ?? new List<RoomUserDto>())
+        {
+            if (s == null || s.Id <= 0) continue;
+            var name = (s.Username ?? string.Empty).Trim();
+            if (name.Length == 0) continue;
+            output[s.Id] = (name, Spectator: true);
+        }
+
+        return output;
     }
 
     private static bool IsGameplayShortcut(ShortcutDefinition shortcut)

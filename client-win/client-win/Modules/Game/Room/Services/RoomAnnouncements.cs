@@ -28,6 +28,22 @@ public sealed class RoomAnnouncements : IRoomAnnouncements
         Announced?.Invoke(new(RoomAnnouncementKind.Polite, message));
     }
 
+    public void PlayerJoined(string username, bool spectator)
+    {
+        if (string.IsNullOrWhiteSpace(username)) return;
+        var role = spectator ? " (spectateur)" : string.Empty;
+        var message = $"{username.Trim()} a rejoint la table.{role}";
+        Announced?.Invoke(new(RoomAnnouncementKind.Polite, message));
+    }
+
+    public void PlayerLeft(string username, bool spectator)
+    {
+        if (string.IsNullOrWhiteSpace(username)) return;
+        var role = spectator ? " (spectateur)" : string.Empty;
+        var message = $"{username.Trim()} a quitté la table.{role}";
+        Announced?.Invoke(new(RoomAnnouncementKind.Polite, message));
+    }
+
     public void ShortcutKey(string key)
     {
         if (string.IsNullOrWhiteSpace(key)) return;
