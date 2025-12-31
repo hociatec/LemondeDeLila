@@ -48,8 +48,6 @@ public sealed class JoinGameViewModel : ObservableObject, IDisposable
         RefreshCommand = new AsyncRelayCommand(RefreshAsync);
         JoinSelectedCommand = new AsyncRelayCommand(JoinSelectedAsync);
 
-        _screenReader.AnnouncePolite("Rejoindre une partie.");
-
         _dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() => RefreshCommand.Execute(null)));
     }
 
