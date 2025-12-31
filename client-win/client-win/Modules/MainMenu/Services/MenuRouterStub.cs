@@ -30,10 +30,12 @@ public sealed class MenuRouterStub : IMenuRouter
     private readonly IMessagingService _messaging;
     private readonly IGameTableOpener _tables;
     private readonly IRoomDirectoryClient _roomDirectory;
+    private readonly IScreenReaderAnnouncer _screenReader;
 
     public MenuRouterStub(
         ILogger<MenuRouterStub> logger,
         IOptionsService options,
+        IScreenReaderAnnouncer screenReader,
         IChatLauncher chat,
         ICatalogService catalog,
         INavigationService navigation,
@@ -43,6 +45,7 @@ public sealed class MenuRouterStub : IMenuRouter
     {
         _logger = logger;
         _options = options;
+        _screenReader = screenReader;
         _chat = chat;
         _catalog = catalog;
         _navigation = navigation;
@@ -80,6 +83,7 @@ public sealed class MenuRouterStub : IMenuRouter
         vm = new JoinGameViewModel(
             rooms: _roomDirectory,
             tables: _tables,
+            screenReader: _screenReader,
             returnView: previous ?? view,
             onClose: () =>
             {

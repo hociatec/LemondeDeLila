@@ -56,12 +56,14 @@ public sealed class MenuRouter : IMenuRouter
     private readonly IClientUpdatePublisher _publisher;
     private readonly ClientConfiguration _config;
     private readonly ISoundService _sounds;
+    private readonly IScreenReaderAnnouncer _screenReader;
 
     public MenuRouter(
         ILogger<MenuRouter> logger,
         ClientConfiguration config,
         IOptionsService options,
         ISoundService sounds,
+        IScreenReaderAnnouncer screenReader,
         IChatLauncher chat,
         ICatalogService catalog,
         INavigationService navigation,
@@ -79,6 +81,7 @@ public sealed class MenuRouter : IMenuRouter
         _config = config;
         _options = options;
         _sounds = sounds;
+        _screenReader = screenReader;
         _chat = chat;
         _catalog = catalog;
         _navigation = navigation;
@@ -162,6 +165,7 @@ public sealed class MenuRouter : IMenuRouter
         vm = new JoinGameViewModel(
             rooms: _roomDirectory,
             tables: _tables,
+            screenReader: _screenReader,
             returnView: previous ?? view,
             onClose: () =>
             {

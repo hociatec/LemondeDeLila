@@ -9,6 +9,7 @@ using System.Windows.Threading;
 using client_win.Core;
 using client_win.Modules.Game.RoomDirectory.Services;
 using client_win.Modules.Game.Shell.Services;
+using client_win.Modules.Shell.Services;
 
 namespace client_win.Modules.Game.RoomDirectory.ViewModels;
 
@@ -16,6 +17,7 @@ public sealed class JoinGameViewModel : ObservableObject, IDisposable
 {
     private readonly IRoomDirectoryClient _rooms;
     private readonly IGameTableOpener _tables;
+    private readonly IScreenReaderAnnouncer _screenReader;
     private readonly Action _close;
     private readonly Dispatcher _dispatcher;
     private readonly UserControl _returnView;
@@ -26,15 +28,18 @@ public sealed class JoinGameViewModel : ObservableObject, IDisposable
     private bool _isBusy;
     private string _status = "Chargement des tables...";
     private PublicRoomListItem? _selected;
+    private bool _lastEmptyAnnounced;
 
     public JoinGameViewModel(
         IRoomDirectoryClient rooms,
         IGameTableOpener tables,
+        IScreenReaderAnnouncer screenReader,
         UserControl returnView,
         Action onClose)
     {
         _rooms = rooms ?? throw new ArgumentNullException(nameof(rooms));
         _tables = tables ?? throw new ArgumentNullException(nameof(tables));
+        _screenReader = screenReader ?? throw new ArgumentNullException(nameof(screenReader));
         _returnView = returnView ?? throw new ArgumentNullException(nameof(returnView));
         _close = onClose ?? (() => { });
         _dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
@@ -130,6 +135,7 @@ public sealed class JoinGameViewModel : ObservableObject, IDisposable
 
             if (Rooms.Count > 0)
             {
+                _lastEmptyAnnounced = false;
                 SelectedRoom ??= Rooms[0];
                 if (_subscribed)
                 {
@@ -145,6 +151,11 @@ public sealed class JoinGameViewModel : ObservableObject, IDisposable
             else
             {
                 Status = "Aucune table à rejoindre.";
+                if (!_lastEmptyAnnounced)
+                {
+                    _lastEmptyAnnounced = true;
+                    _screenReader.AnnouncePolite("Aucune table à rejoindre.");
+                }
             }
         }
         catch (Exception ex)
