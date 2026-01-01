@@ -182,6 +182,18 @@ namespace client_win
             _ = _host.Services.GetRequiredService<IRemoteSoundCache>().RefreshAsync();
             _ = _notify.StartAsync();
             _ = _presence.StartAsync();
+            // Warm-up WS room to avoid cold handshake latency when creating/joining a table.
+            try
+            {
+                using var warmCts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+                _ = _host.Services
+                    .GetRequiredService<Modules.Game.Room.Services.IRoomGatewayClient>()
+                    .WarmUpAsync(warmCts.Token);
+            }
+            catch
+            {
+                // ignore (best-effort)
+            }
             var menuVm = _host.CreateMainMenuViewModel(user, OnLogoutRequested);
             var menuView = new MainMenuView { DataContext = menuVm };
             _homeAccessor.HomeView = menuView;
