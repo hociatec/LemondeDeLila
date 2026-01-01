@@ -209,27 +209,11 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
     {
         try
         {
-            var msg = string.IsNullOrWhiteSpace(message)
-                ? "Une mise à jour du client est requise pour continuer."
-                : message.Trim();
-
-            var current = AppInfo.GetShortVersion();
-            if (!string.IsNullOrWhiteSpace(minRequiredVersion))
-            {
-                msg += $"\n\nVersion minimale requise : {minRequiredVersion.Trim()}";
-            }
-            if (!string.IsNullOrWhiteSpace(current))
-            {
-                msg += $"\nVotre version : {current.Trim()}";
-            }
-
-            await ClientUpdateCoordinator.EnforceAsync(
+            await Updates.ClientUpdateManager.HandleRequiredFromNotifyAsync(
                     _dialogs,
-                    title: "Mise à jour requise",
-                    message: msg + "\n\nLancement de la mise à jour…",
-                    clickOnceUrl: url,
-                    reason: "notify-required",
-                    deDupKey: $"notify-required:{minRequiredVersion}")
+                    message,
+                    minRequiredVersion,
+                    url)
                 .ConfigureAwait(true);
         }
         catch (Exception ex)
@@ -251,22 +235,11 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
     {
         try
         {
-            var msg = string.IsNullOrWhiteSpace(message)
-                ? "Une mise à jour du client est disponible et va être installée automatiquement."
-                : message.Trim();
-
-            if (!string.IsNullOrWhiteSpace(version))
-            {
-                msg += $"\n\nDernière version : {version.Trim()}";
-            }
-
-            await ClientUpdateCoordinator.EnforceAsync(
+            await Updates.ClientUpdateManager.HandleAvailableFromNotifyAsync(
                     _dialogs,
-                    title: "Mise à jour",
-                    message: msg + "\n\nLancement de la mise à jour…",
-                    clickOnceUrl: url,
-                    reason: "notify-available",
-                    deDupKey: $"notify-available:{version}")
+                    message,
+                    version,
+                    url)
                 .ConfigureAwait(true);
         }
         catch (Exception ex)

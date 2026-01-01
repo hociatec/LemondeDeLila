@@ -177,50 +177,9 @@ public sealed class ShellErrorHandler : IDisposable
 
     private async Task ShowUpdateRequiredDialogAsync(AppError err)
     {
-        var info = await TryGetClientVersionInfoAsync().ConfigureAwait(false);
-        var url = info?.Url ?? "https://api.lilas.hociatec.fr/updates/client-win/";
-        var min = info?.MinRequiredVersion;
-
-        var msg = (err.Message ?? string.Empty).Trim();
-        if (!string.IsNullOrWhiteSpace(min) && msg.IndexOf("version minimale", StringComparison.OrdinalIgnoreCase) < 0)
-        {
-            msg += $"\n\nVersion minimale requise : {min}";
-        }
-        msg += "\n\nLancement de la mise à jour…";
-
-        await ClientUpdateCoordinator.EnforceAsync(
-                _dialogs,
-                title: "Mise à jour requise",
-                message: msg,
-                clickOnceUrl: url,
-                reason: "shell-required",
-                deDupKey: $"shell-required:{min}")
+        await Updates.ClientUpdateManager
+            .HandleRequiredFromErrorAsync(_config, _dialogs, err.Message)
             .ConfigureAwait(false);
-    }
-
-    private sealed class ClientVersionInfo
-    {
-        public string? Url { get; set; }
-        public string? MinRequiredVersion { get; set; }
-    }
-
-    private async Task<ClientVersionInfo?> TryGetClientVersionInfoAsync()
-    {
-        try
-        {
-            var endpoint = new Uri(_config.HttpBase, "../client/version");
-            using var http = new HttpClient();
-            var json = await http.GetStringAsync(endpoint).ConfigureAwait(false);
-            using var doc = JsonDocument.Parse(json);
-            var root = doc.RootElement;
-            var url = root.TryGetProperty("url", out var u) ? u.GetString() : null;
-            var min = root.TryGetProperty("minRequiredVersion", out var m) ? m.GetString() : null;
-            return new ClientVersionInfo { Url = url, MinRequiredVersion = min };
-        }
-        catch
-        {
-            return null;
-        }
     }
 
     private static void TryOpenUrl(string url)
