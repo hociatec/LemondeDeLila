@@ -1,24 +1,30 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { WsRouteRegistry } from '../../common/ws/ws-route-registry.service';
-import { AdminWsHandler } from './admin-ws.handler';
 import { AdminRoomsWsHandler } from './admin-rooms-ws.handler';
 import { AdminChatWsHandler } from './admin-chat-ws.handler';
 import { AdminUsersWsHandler } from './admin-users-ws.handler';
 import { AdminGamesWsHandler } from './admin-games-ws.handler';
 import { AdminBotsWsHandler } from './admin-bots-ws.handler';
 import { AdminRolesWsHandler } from './admin-roles-ws.handler';
+import { AdminLogsWsHandler } from './admin-logs-ws.handler';
+import { AdminBroadcastWsHandler } from './admin-broadcast-ws.handler';
+import { AdminClientUpdatesWsHandler } from './admin-client-updates-ws.handler';
+import { AdminPerfWsHandler } from './admin-perf-ws.handler';
 
 @Injectable()
 export class AdminWsRegistrar implements OnModuleInit {
   constructor(
     private readonly registry: WsRouteRegistry,
-    private readonly handler: AdminWsHandler,
     private readonly rooms: AdminRoomsWsHandler,
     private readonly chat: AdminChatWsHandler,
     private readonly users: AdminUsersWsHandler,
     private readonly games: AdminGamesWsHandler,
     private readonly bots: AdminBotsWsHandler,
     private readonly roles: AdminRolesWsHandler,
+    private readonly logs: AdminLogsWsHandler,
+    private readonly broadcast: AdminBroadcastWsHandler,
+    private readonly clientUpdates: AdminClientUpdatesWsHandler,
+    private readonly perf: AdminPerfWsHandler,
   ) {}
 
   onModuleInit() {
@@ -79,18 +85,18 @@ export class AdminWsRegistrar implements OnModuleInit {
       this.roles.roleDefinitionDelete(s, p),
     );
     this.registry.register('admin.logs.download', (s, p) =>
-      this.handler.logsDownload(s, p),
+      this.logs.logsDownload(s, p),
     );
 
     this.registry.register('admin.broadcast', (s, p) =>
-      this.handler.broadcast(s, p),
+      this.broadcast.broadcast(s, p),
     );
 
     this.registry.register('admin.client.update.announce', (s, p) =>
-      this.handler.clientUpdateAnnounce(s, p),
+      this.clientUpdates.clientUpdateAnnounce(s, p),
     );
     this.registry.register('admin.client.update.forceLatest', (s, p) =>
-      this.handler.clientUpdateForceLatest(s, p),
+      this.clientUpdates.clientUpdateForceLatest(s, p),
     );
 
     this.registry.register('admin.chat.messages', (s, p) =>
@@ -129,7 +135,7 @@ export class AdminWsRegistrar implements OnModuleInit {
     );
 
     this.registry.register('admin.perf.snapshot', (s, p) =>
-      this.handler.perfSnapshot(s, p),
+      this.perf.perfSnapshot(s, p),
     );
 
     this.registry.register('admin.rooms.cleanup', (s, p) =>

@@ -126,6 +126,13 @@ export class AdminChatClearWsDto {
   _noop?: boolean;
 }
 
+export class AdminPerfSnapshotWsDto {
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  windowSeconds?: number;
+}
+
 export class AdminChatBanWsDto extends AdminUserIdWsDto {
   @IsOptional()
   @IsString()

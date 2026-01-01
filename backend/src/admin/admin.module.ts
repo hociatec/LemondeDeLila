@@ -6,7 +6,6 @@ import { RoleDefinitionsService } from './services/role-definitions.service';
 import { AdminUsersController } from './controllers/admin-users.controller';
 import { HttpJwtGuard } from '../common/guards/http-jwt.guard';
 import { AdminRoleGuard } from '../common/guards/admin-role.guard';
-import { AdminWsHandler } from './ws/admin-ws.handler';
 import { AdminWsRegistrar } from './ws/admin-ws.registrar';
 import { AdminRoomsWsHandler } from './ws/admin-rooms-ws.handler';
 import { AdminChatWsHandler } from './ws/admin-chat-ws.handler';
@@ -14,6 +13,10 @@ import { AdminUsersWsHandler } from './ws/admin-users-ws.handler';
 import { AdminGamesWsHandler } from './ws/admin-games-ws.handler';
 import { AdminBotsWsHandler } from './ws/admin-bots-ws.handler';
 import { AdminRolesWsHandler } from './ws/admin-roles-ws.handler';
+import { AdminLogsWsHandler } from './ws/admin-logs-ws.handler';
+import { AdminBroadcastWsHandler } from './ws/admin-broadcast-ws.handler';
+import { AdminClientUpdatesWsHandler } from './ws/admin-client-updates-ws.handler';
+import { AdminPerfWsHandler } from './ws/admin-perf-ws.handler';
 import { ValidationModule } from '../common/validation/validation.module';
 import { GameRegistryModule } from '../game/engine/game-registry.module';
 import { NotificationModule } from '../notification/notification.module';
@@ -46,13 +49,16 @@ import { AdminCatalogInvalidationService } from './services/admin-catalog-invali
     RoleDefinitionsService,
     HttpJwtGuard,
     AdminRoleGuard,
-    AdminWsHandler,
     AdminRoomsWsHandler,
     AdminChatWsHandler,
     AdminUsersWsHandler,
     AdminGamesWsHandler,
     AdminBotsWsHandler,
     AdminRolesWsHandler,
+    AdminLogsWsHandler,
+    AdminBroadcastWsHandler,
+    AdminClientUpdatesWsHandler,
+    AdminPerfWsHandler,
     AdminWsRegistrar,
   ],
 })

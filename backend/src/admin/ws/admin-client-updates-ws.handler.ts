@@ -1,4 +1,3 @@
-import { ConfigService } from '@nestjs/config';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -7,107 +6,20 @@ import type { WsSession } from '../../common/ws/ws-route-registry.service';
 import { PayloadValidationService } from '../../common/validation/payload-validation.service';
 import { NotificationService } from '../../notification/services/notification.service';
 import { User } from '../../user/entities/user.entity';
-import { PerfMetricsService } from '../../common/services/perf-metrics.service';
 import { ClientUpdatesService } from '../../client-updates/client-updates.service';
-import { AdminCatalogInvalidationService } from '../services/admin-catalog-invalidation.service';
-import * as fs from 'fs';
-import * as path from 'path';
 import {
-  AdminBroadcastWsDto,
   AdminClientUpdateAnnounceWsDto,
   AdminClientUpdateForceLatestWsDto,
-  AdminLogsDownloadWsDto,
 } from './admin-ws.dto';
 
 @Injectable()
-export class AdminWsHandler {
+export class AdminClientUpdatesWsHandler {
   constructor(
     private readonly validator: PayloadValidationService,
     private readonly notifications: NotificationService,
     private readonly clientUpdates: ClientUpdatesService,
-    private readonly config: ConfigService,
-    private readonly perf: PerfMetricsService,
-    private readonly catalogInvalidation: AdminCatalogInvalidationService,
     @InjectRepository(User) private readonly userRepo: Repository<User>,
   ) {}
-
-  async perfSnapshot(session: WsSession, payload: any) {
-    requireAdmin(session);
-    const windowSeconds =
-      payload && typeof payload === 'object' ? payload.windowSeconds : undefined;
-    const snapshot = this.perf.snapshot({ windowSeconds });
-    return { type: 'admin.perf.snapshot', payload: snapshot };
-  }
-
-
-  async logsDownload(session: WsSession, payload: any) {
-    requireAdmin(session);
-    const dto = this.validator.validate(AdminLogsDownloadWsDto, payload ?? {}) as AdminLogsDownloadWsDto;
-    const linesCount = dto.lines ?? 200;
-    const filter = dto.filter?.trim() ?? '';
-    const logDir = this.config.get<string>('LOG_DIR') ?? 'log';
-    const resolvedDir = path.resolve(logDir);
-    let entries: string[];
-    try {
-      entries = await fs.promises.readdir(resolvedDir);
-    } catch {
-      throw new BadRequestException('Répertoire de logs introuvable');
-    }
-    const candidates = await Promise.all(
-      entries
-        .filter((entry) => entry.toLowerCase().endsWith('.log'))
-        .map(async (entry) => ({
-          entry,
-          stat: await fs.promises.stat(path.join(resolvedDir, entry)),
-        })),
-    );
-    if (!candidates.length) {
-      throw new BadRequestException('Aucun fichier log disponible');
-    }
-    candidates.sort((a, b) => b.stat.mtimeMs - a.stat.mtimeMs);
-    const latest = candidates[0];
-    const content = await fs.promises.readFile(
-      path.join(resolvedDir, latest.entry),
-      'utf-8',
-    );
-    const lines = content.split(/\r?\n/);
-    const filtered = filter
-      ? lines.filter((line) => line.includes(filter))
-      : lines;
-    const tail = filtered.slice(-linesCount);
-    return {
-      type: 'admin.logs.download',
-      payload: {
-        file: latest.entry,
-        lines: tail,
-        total: filtered.length,
-      },
-    };
-  }
-
-  async broadcast(session: WsSession, payload: any) {
-    const admin = requireAdmin(session);
-    const dto = this.validator.validate(AdminBroadcastWsDto, payload);
-    const message = dto.message.trim();
-
-    const ids = await this.userRepo
-      .createQueryBuilder('u')
-      .select(['u.id'])
-      .getMany();
-
-    const payloadOut = {
-      message,
-      fromUserId: admin.id,
-      fromUsername: admin.username,
-      timestamp: new Date().toISOString(),
-    };
-
-    await Promise.all(
-      ids.map((u) => this.notifications.notifyUser(u.id, 'admin.broadcast', payloadOut)),
-    );
-
-    return { type: 'admin.broadcast', payload: { delivered: ids.length } };
-  }
 
   async clientUpdateAnnounce(session: WsSession, payload: any) {
     const admin = requireAdmin(session);
@@ -146,7 +58,10 @@ export class AdminWsHandler {
 
   async clientUpdateForceLatest(session: WsSession, payload: any) {
     const admin = requireAdmin(session);
-    const dto = this.validator.validate(AdminClientUpdateForceLatestWsDto, payload ?? {});
+    const dto = this.validator.validate(
+      AdminClientUpdateForceLatestWsDto,
+      payload ?? {},
+    );
 
     const latest = await this.clientUpdates.getLatest();
     const latestVersion = latest?.version?.trim() || null;
@@ -199,3 +114,4 @@ export class AdminWsHandler {
     };
   }
 }
+
