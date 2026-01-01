@@ -27,7 +27,7 @@ public static class ClientUpdateInstaller
         // 1) Si l'app est déjà une installation ClickOnce, tenter une mise à jour silencieuse "in-place".
         // Objectif: éviter toute UI ClickOnce ("Voulez-vous mettre à jour maintenant ?") et les cas où dfshim
         // ouvre une fenêtre système.
-        if (TryUpdateCurrentDeploymentSilently())
+        if (await TryUpdateCurrentDeploymentSilentlyAsync(cancellationToken).ConfigureAwait(true))
         {
             return true;
         }
@@ -409,7 +409,19 @@ public static class ClientUpdateInstaller
         return null;
     }
 
-    private static bool TryUpdateCurrentDeploymentSilently()
+    private static Task<bool> TryUpdateCurrentDeploymentSilentlyAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            return Task.Run(TryUpdateCurrentDeploymentSilentlyCore, cancellationToken);
+        }
+        catch
+        {
+            return Task.FromResult(false);
+        }
+    }
+
+    private static bool TryUpdateCurrentDeploymentSilentlyCore()
     {
         try
         {

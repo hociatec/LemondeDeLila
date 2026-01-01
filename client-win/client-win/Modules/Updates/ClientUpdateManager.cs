@@ -9,6 +9,8 @@ namespace client_win.Modules.Updates;
 
 public static class ClientUpdateManager
 {
+    private const string RestartHint = "\n\nSi l'application ne se relance pas automatiquement après la mise à jour, relance-la.";
+
     public static async Task<bool> CheckAtStartupAsync(
         ClientConfiguration config,
         IDialogService dialogs,
@@ -49,7 +51,7 @@ public static class ClientUpdateManager
         return ClientUpdateCoordinator.EnforceAsync(
             dialogs,
             title: "Mise à jour requise",
-            message: msg + "\n\nLancement de la mise à jour…",
+            message: msg + "\n\nLancement de la mise à jour…" + RestartHint,
             clickOnceUrl: url,
             reason: "notify-required",
             deDupKey: $"notify-required:{minRequiredVersion}",
@@ -75,7 +77,7 @@ public static class ClientUpdateManager
         return ClientUpdateCoordinator.EnforceAsync(
             dialogs,
             title: "Mise à jour",
-            message: msg + "\n\nLancement de la mise à jour…",
+            message: msg + "\n\nLancement de la mise à jour…" + RestartHint,
             clickOnceUrl: url,
             reason: "notify-available",
             deDupKey: $"notify-available:{latestVersion}",
@@ -103,7 +105,7 @@ public static class ClientUpdateManager
         {
             msg += $"\n\nVersion minimale requise : {min.Trim()}";
         }
-        msg += "\n\nLancement de la mise à jour…";
+        msg += "\n\nLancement de la mise à jour…" + RestartHint;
 
         await ClientUpdateCoordinator.EnforceAsync(
                 dialogs,
@@ -146,7 +148,7 @@ public static class ClientUpdateManager
             await ClientUpdateCoordinator.EnforceAsync(
                     dialogs,
                     title: "Mise à jour requise",
-                    message: msg + "\n\nLancement de la mise à jour…",
+                    message: msg + "\n\nLancement de la mise à jour…" + RestartHint,
                     clickOnceUrl: info.Url,
                     reason: $"{source}-required",
                     deDupKey: $"{source}-required:{info.MinRequiredVersion}:{info.LatestVersion}",
@@ -170,7 +172,7 @@ public static class ClientUpdateManager
             await ClientUpdateCoordinator.EnforceAsync(
                     dialogs,
                     title: "Mise à jour",
-                    message: msg + "\n\nLancement de la mise à jour…",
+                    message: msg + "\n\nLancement de la mise à jour…" + RestartHint,
                     clickOnceUrl: info.Url,
                     reason: $"{source}-available",
                     deDupKey: $"{source}-available:{info.LatestVersion}",
@@ -182,4 +184,3 @@ public static class ClientUpdateManager
         return true;
     }
 }
-
