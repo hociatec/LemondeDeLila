@@ -33,6 +33,8 @@ import { BugReportsModule } from './bug-reports/bug-reports.module';
     GameLoggerModule,
     ConfigModule.forRoot({
       isGlobal: true,
+      // In production we rely on systemd-provided environment variables; avoid loading a local .env file.
+      ignoreEnvFile: process.env.NODE_ENV === 'production',
       validationSchema: Joi.object({
         NODE_ENV: Joi.string()
           .valid('development', 'production', 'test')

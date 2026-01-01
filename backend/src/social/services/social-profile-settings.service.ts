@@ -13,9 +13,8 @@ type StoredSocialProfileSettings = Partial<SocialProfileSettings>;
 export class SocialProfileSettingsService {
   private readonly settingsPath: string;
 
-  constructor(rootDir?: string) {
-    const base = rootDir || process.cwd();
-    this.settingsPath = path.resolve(base, 'data', 'social-profile-settings.json');
+  constructor() {
+    this.settingsPath = path.resolve(process.cwd(), 'data', 'social-profile-settings.json');
   }
 
   private defaults(): SocialProfileSettings {
@@ -63,4 +62,3 @@ export class SocialProfileSettingsService {
     return next;
   }
 }
-
