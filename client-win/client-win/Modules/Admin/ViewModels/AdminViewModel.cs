@@ -16,6 +16,7 @@ using client_win.Modules.Updates;
 using client_win.Modules.User.Services;
 using client_win.Modules.Game.Shell.Services;
 using client_win.Modules.Game.RoomDirectory.Services;
+using client_win.Modules.Network.Services;
 
 namespace client_win.Modules.Admin.ViewModels;
 
@@ -97,11 +98,13 @@ public sealed partial class AdminViewModel : ObservableObject
     private readonly IRemoteSoundCache _remoteSounds;
     private readonly IGameTableOpener _tables;
     private readonly IRoomDirectoryClient _roomDirectory;
+    private readonly IApiCapabilitiesService _apiCapabilities;
     private readonly UserControl _returnView;
 
     public AdminViewModel(
         IAdminService admin,
         IRoomDirectoryClient roomDirectory,
+        IApiCapabilitiesService apiCapabilities,
         ClientConfiguration config,
         IClientUpdatePublisher publisher,
         IDialogService dialogs,
@@ -115,6 +118,7 @@ public sealed partial class AdminViewModel : ObservableObject
     {
         _admin = admin ?? throw new ArgumentNullException(nameof(admin));
         _roomDirectory = roomDirectory ?? throw new ArgumentNullException(nameof(roomDirectory));
+        _apiCapabilities = apiCapabilities ?? throw new ArgumentNullException(nameof(apiCapabilities));
         _config = config ?? throw new ArgumentNullException(nameof(config));
         _publisher = publisher ?? throw new ArgumentNullException(nameof(publisher));
         _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));

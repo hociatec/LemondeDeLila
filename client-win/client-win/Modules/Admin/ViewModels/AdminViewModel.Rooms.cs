@@ -80,6 +80,29 @@ public sealed partial class AdminViewModel
         try
         {
             IsBusy = true;
+            var caps = await _apiCapabilities.GetAsync().ConfigureAwait(true);
+            if (!caps.SupportsAdminRoomsList)
+            {
+                // Compat / feature gating: éviter d'envoyer un message WS non supporté.
+                var fallback = await _roomDirectory.PublicListAsync().ConfigureAwait(true);
+                _roomsForAdmin = (fallback.Items ?? Array.Empty<PublicRoomListItem>())
+                    .Select(r => new AdminRoomListItemDto
+                    {
+                        Id = r.Id,
+                        Name = r.Name,
+                        GameType = r.GameType,
+                        Status = r.Status,
+                        IsPrivate = false,
+                        MaxPlayers = r.MaxPlayers,
+                        PlayersCount = r.PlayersCount,
+                        BotsCount = r.BotsCount,
+                        OwnerUsername = r.OwnerUsername,
+                        ActivePlayers = 0
+                    })
+                    .ToArray();
+                return;
+            }
+
             var listed = await _admin.ListRoomsAsync(includePrivate: true, includeStarted: true).ConfigureAwait(true);
             _roomsForAdmin = listed.Items ?? Array.Empty<AdminRoomListItemDto>();
         }
@@ -142,6 +165,29 @@ public sealed partial class AdminViewModel
         try
         {
             IsBusy = true;
+            var caps = await _apiCapabilities.GetAsync().ConfigureAwait(true);
+            if (!caps.SupportsAdminRoomsList)
+            {
+                var fallback = await _roomDirectory.PublicListAsync().ConfigureAwait(true);
+                _roomsForAdmin = (fallback.Items ?? Array.Empty<PublicRoomListItem>())
+                    .Select(r => new AdminRoomListItemDto
+                    {
+                        Id = r.Id,
+                        Name = r.Name,
+                        GameType = r.GameType,
+                        Status = r.Status,
+                        IsPrivate = false,
+                        MaxPlayers = r.MaxPlayers,
+                        PlayersCount = r.PlayersCount,
+                        BotsCount = r.BotsCount,
+                        OwnerUsername = r.OwnerUsername,
+                        ActivePlayers = 0
+                    })
+                    .ToArray();
+                BuildRoomsJoinSilent();
+                return;
+            }
+
             // Joinable only: éviter les "tables fantômes" et ne proposer que des tables ouvertes
             // avec au moins un joueur connecté.
             var listed = await _admin.ListRoomsAsync(
@@ -199,6 +245,12 @@ public sealed partial class AdminViewModel
     private async Task OpenRoomsDestroyAsync()
     {
         PushReturnFocus();
+        var caps = await _apiCapabilities.GetAsync().ConfigureAwait(true);
+        if (!caps.SupportsAdminRoomsDestroy)
+        {
+            await _dialogs.ShowError("Rooms", "Suppression admin indisponible sur ce serveur.").ConfigureAwait(true);
+            return;
+        }
         await RefreshAdminRoomsListAsync().ConfigureAwait(true);
         BuildRoomsDestroy();
     }

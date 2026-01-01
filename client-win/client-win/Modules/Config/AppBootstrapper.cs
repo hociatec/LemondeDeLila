@@ -152,6 +152,12 @@ public static class AppBootstrapper
             sp.GetRequiredService<Modules.Network.Services.IWsTicketProvider>(),
             errors));
 
+        services.AddSingleton<Modules.Network.Services.IApiCapabilitiesService>(sp =>
+            new Modules.Network.Services.ApiCapabilitiesService(
+                sp.GetRequiredService<WsRequestClient>(),
+                sp.GetRequiredService<ISessionService>(),
+                sp.GetRequiredService<PersistentWsClient>()));
+
         // JWT: le client ne doit jamais contenir de secret de signature.
         // On décode uniquement le token pour en extraire userId/username/exp.
         services.AddSingleton<JwtTokenValidator>(_ => new JwtTokenValidator());
