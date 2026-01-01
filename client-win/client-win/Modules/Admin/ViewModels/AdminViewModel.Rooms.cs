@@ -2,12 +2,14 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using client_win.Modules.Admin.Dtos;
+using client_win.Modules.Game.RoomDirectory.Services;
 
 namespace client_win.Modules.Admin.ViewModels;
 
 public sealed partial class AdminViewModel
 {
     private AdminRoomMaintenanceSettingsDto? _roomSettings;
+    private PublicRoomListItem[] _publicJoinableRooms = Array.Empty<PublicRoomListItem>();
 
     private void BuildRooms()
     {
@@ -21,7 +23,7 @@ public sealed partial class AdminViewModel
         IsAdditionalPermissionsVisible = false;
         Items.Clear();
         Items.Add(new AdminMenuItem("Nettoyer les rooms (supprime les tables publiques non démarrées)", tag: "rooms.cleanup.public"));
-        Items.Add(new AdminMenuItem("Intégrer une room (id, sans avertir, public ou privé)", tag: "rooms.join.silent"));
+        Items.Add(new AdminMenuItem("Intégrer une room (liste des tables publiques, silencieux)", tag: "rooms.join.silent"));
         Items.Add(new AdminMenuItem("Rafraîchir paramètres (relit la configuration côté serveur)", tag: "rooms.settings.refresh"));
         Items.Add(new AdminMenuItem("Auto-cleanup: activer/désactiver (nettoyage automatique)", tag: "rooms.settings.toggle"));
         Items.Add(new AdminMenuItem("Auto-cleanup: régler âge max (minutes) (supprime au-delà de cet âge)", tag: "rooms.settings.olderThan"));
@@ -35,32 +37,89 @@ public sealed partial class AdminViewModel
 
     private void BuildRoomsJoinSilent()
     {
-        _page = AdminPage.EditText;
+        _page = AdminPage.RoomsJoinSilent;
         Title = "Intégrer une room";
         Items.Clear();
-        Items.Add(new AdminMenuItem("Valider", tag: "rooms.join.silent.submit"));
-        SelectedItem = Items.FirstOrDefault();
-        TextInputLabel = "ID de la room";
-        TextInput = string.Empty;
-        SecondaryInputLabel = string.Empty;
-        SecondaryInput = string.Empty;
-        IsTextInputVisible = true;
+        Items.Add(new AdminMenuItem("Rafraîchir la liste", tag: "rooms.join.silent.refresh"));
+
+        var listed = _publicJoinableRooms ?? Array.Empty<PublicRoomListItem>();
+        if (listed.Length == 0)
+        {
+            Items.Add(new AdminMenuItem("Aucune table publique disponible", tag: null));
+            SelectedItem = Items.FirstOrDefault();
+            Details = "Aucune table publique à intégrer.";
+            Status = "Échap : retour.";
+        }
+        else
+        {
+            foreach (var room in listed.OrderByDescending(r => r.Id))
+            {
+                Items.Add(new AdminMenuItem(room.ToString(), tag: $"rooms.join.silent.open:{room.Id}"));
+            }
+
+            SelectedItem = Items.FirstOrDefault(i => i.Tag is string s && s.StartsWith("rooms.join.silent.open:", StringComparison.OrdinalIgnoreCase))
+                          ?? Items.FirstOrDefault();
+            Details = "Sélectionnez une table publique à intégrer en mode silencieux (spectateur).";
+            Status = "Entrée : intégrer la table sélectionnée. Échap : retour.";
+        }
+
+        IsTextInputVisible = false;
         IsSecondaryInputVisible = false;
-        Details = "Rejoint la room en mode silencieux (spectateur) sans notifier les autres joueurs.";
-        Status = "Saisissez l'ID puis Entrée pour valider. Échap : retour.";
-        _currentEditMode = "rooms.join.silent";
+        IsAdditionalPermissionsVisible = false;
+        UpdateFilterVisibility();
+        RestoreFocusIfAny();
     }
 
-    private async Task SubmitRoomsJoinSilentAsync()
+    private async Task RefreshRoomsJoinSilentListAsync()
     {
-        var raw = (TextInput ?? string.Empty).Trim();
-        if (!int.TryParse(raw, out var roomId) || roomId <= 0)
+        if (IsBusy)
         {
-            await _dialogs.ShowError("Rooms", "ID invalide.").ConfigureAwait(true);
             return;
         }
 
-        await _tables.OpenExistingAsync(roomId, _returnView, spectator: true, silent: true).ConfigureAwait(true);
+        try
+        {
+            IsBusy = true;
+            _publicJoinableRooms = (await _roomDirectory.PublicListAsync().ConfigureAwait(true)).Items;
+            BuildRoomsJoinSilent();
+        }
+        catch (Exception ex)
+        {
+            await _dialogs.ShowError("Rooms", ex.Message).ConfigureAwait(true);
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private async Task OpenRoomsJoinSilentAsync()
+    {
+        PushReturnFocus();
+        await RefreshRoomsJoinSilentListAsync().ConfigureAwait(true);
+    }
+
+    private async Task JoinSilentOpenSelectedAsync(int roomId)
+    {
+        if (roomId <= 0)
+        {
+            return;
+        }
+
+        if (IsBusy)
+        {
+            return;
+        }
+
+        try
+        {
+            IsBusy = true;
+            await _tables.OpenExistingAsync(roomId, _returnView, spectator: true, silent: true).ConfigureAwait(true);
+        }
+        finally
+        {
+            IsBusy = false;
+        }
     }
 
     private async Task RefreshRoomSettingsAsync()

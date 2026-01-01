@@ -11,6 +11,7 @@ internal enum AdminPage
 {
     Root,
     Rooms,
+    RoomsJoinSilent,
     Games,
     GameCategories,
     GameCategoryForm,

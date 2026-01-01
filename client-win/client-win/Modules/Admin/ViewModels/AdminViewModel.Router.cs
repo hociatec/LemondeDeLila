@@ -99,8 +99,7 @@ public sealed partial class AdminViewModel
                 }
                 if (roomsAction == "rooms.join.silent")
                 {
-                    PushReturnFocus();
-                    BuildRoomsJoinSilent();
+                    await OpenRoomsJoinSilentAsync().ConfigureAwait(true);
                     return;
                 }
                 if (roomsAction == "rooms.settings.refresh")
@@ -147,10 +146,21 @@ public sealed partial class AdminViewModel
                 return;
             }
 
-            if (_page == AdminPage.EditText && tag is string submitJoin && submitJoin == "rooms.join.silent.submit")
+            if (_page == AdminPage.RoomsJoinSilent && tag is string joinTag)
             {
-                await SubmitRoomsJoinSilentAsync().ConfigureAwait(true);
-                return;
+                if (joinTag == "rooms.join.silent.refresh")
+                {
+                    await RefreshRoomsJoinSilentListAsync().ConfigureAwait(true);
+                    return;
+                }
+
+                const string prefix = "rooms.join.silent.open:";
+                if (joinTag.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) &&
+                    int.TryParse(joinTag.Substring(prefix.Length), out var roomId))
+                {
+                    await JoinSilentOpenSelectedAsync(roomId).ConfigureAwait(true);
+                    return;
+                }
             }
 
             if (_page == AdminPage.Sounds && tag is string soundsTag)
