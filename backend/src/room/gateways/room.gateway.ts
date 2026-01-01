@@ -264,6 +264,10 @@ export class RoomGateway
       if (initialMeta?.silent) {
         await this.sendRoomStateToClient(client, targetRoomId, {
           includeRealtimePlayers: true,
+          includeHiddenSelf: {
+            userId: initialMeta.userId,
+            username: initialMeta.username,
+          },
         });
       } else {
         await this.sendRoomState(targetRoomId);
@@ -363,12 +367,22 @@ export class RoomGateway
   private async sendRoomStateToClient(
     client: WebSocket,
     roomId: number,
-    opts?: { includeRealtimePlayers?: boolean },
+    opts?: {
+      includeRealtimePlayers?: boolean;
+      includeHiddenSelf?: { userId: number; username: string };
+    },
   ) {
     try {
       const payload = await this.roomsService.getRoomPayload(roomId);
       payload.room.spectators = this.listSpectators(roomId);
       payload.room.counts.spectators = payload.room.spectators.length;
+      if (opts?.includeHiddenSelf) {
+        payload.room.spectators.push({
+          id: opts.includeHiddenSelf.userId,
+          username: opts.includeHiddenSelf.username,
+        });
+        payload.room.counts.spectators = payload.room.spectators.length;
+      }
       if (opts?.includeRealtimePlayers) {
         const connected = this.listConnectedPlayers(roomId);
         const merged = new Map<number, string>();
@@ -1035,6 +1049,7 @@ export class RoomGateway
 	        if (effectiveSilent) {
 	          await this.sendRoomStateToClient(client, roomId, {
 	            includeRealtimePlayers: true,
+              includeHiddenSelf: { userId: meta.userId, username: meta.username },
 	          });
 	        } else {
 	          await this.sendRoomState(roomId);
