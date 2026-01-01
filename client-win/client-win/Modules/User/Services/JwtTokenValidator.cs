@@ -1,7 +1,9 @@
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
+using System.Net.Http;
 using System.Security.Cryptography;
+using System.Text.Json;
 using client_win.Modules.Config;
 using client_win.Core.Constants;
 using Microsoft.IdentityModel.Tokens;
@@ -17,6 +19,9 @@ public sealed class JwtTokenValidator
 {
     private readonly ClientConfiguration _config;
     private readonly EnvironmentDetector.AppEnvironment _environment;
+
+    private static readonly object JwksGate = new();
+    private static (RsaSecurityKey Key, DateTime CachedAtUtc)? _jwksCache;
 
     public JwtTokenValidator(ClientConfiguration config)
     {
@@ -50,14 +55,20 @@ public sealed class JwtTokenValidator
 
         if (string.IsNullOrWhiteSpace(publicKeyPath) || !File.Exists(publicKeyPath))
         {
+            var jwksKey = TryGetSigningKeyFromJwks();
+            if (jwksKey != null)
+            {
+                return ValidateWithKey(handler, token, jwksKey);
+            }
+
             // In production/staging we fail closed: a missing public key would mean we cannot verify signatures.
             if (_environment != EnvironmentDetector.AppEnvironment.Development)
             {
-                Log.Error("JWT signature verification is required but public key is missing. Path={Path}", publicKeyPath ?? "(null)");
+                Log.Error("JWT signature verification is required but public key/JWKS is missing. Path={Path}", publicKeyPath ?? "(null)");
                 throw new Microsoft.IdentityModel.Tokens.SecurityTokenException("Clé publique JWT manquante (signature non vérifiable)");
             }
 
-            Log.Warning("JWT signature not verified (missing public key). Development mode only. Path={Path}", publicKeyPath ?? "(null)");
+            Log.Warning("JWT signature not verified (missing public key + JWKS). Development mode only. Path={Path}", publicKeyPath ?? "(null)");
             return DecodeAndValidateLifetimeOnly(handler, token);
         }
 
@@ -65,6 +76,11 @@ public sealed class JwtTokenValidator
         rsa.ImportFromPem(File.ReadAllText(publicKeyPath));
         var signingKey = new RsaSecurityKey(rsa);
 
+        return ValidateWithKey(handler, token, signingKey);
+    }
+
+    private JwtSecurityToken ValidateWithKey(JwtSecurityTokenHandler handler, string token, SecurityKey signingKey)
+    {
         var parameters = new TokenValidationParameters
         {
             ValidateIssuerSigningKey = true,
@@ -86,6 +102,95 @@ public sealed class JwtTokenValidator
             throw new Microsoft.IdentityModel.Tokens.SecurityTokenException("Token invalide");
         }
         return jwt;
+    }
+
+    private RsaSecurityKey? TryGetSigningKeyFromJwks()
+    {
+        if (_environment == EnvironmentDetector.AppEnvironment.Development)
+        {
+            // En dev, si la clé n'est pas packagée, on préfère garder le flux existant (mode permissif).
+            return null;
+        }
+
+        lock (JwksGate)
+        {
+            if (_jwksCache.HasValue && DateTime.UtcNow - _jwksCache.Value.CachedAtUtc < TimeSpan.FromHours(6))
+            {
+                return _jwksCache.Value.Key;
+            }
+        }
+
+        try
+        {
+            using var http = new HttpClient();
+            var jwksUri = new Uri(_config.HttpBase, "../.well-known/jwks.json");
+            var json = http.GetStringAsync(jwksUri).GetAwaiter().GetResult();
+            var jwks = JsonSerializer.Deserialize<JwksDto>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            var key = jwks?.GetFirstRsaKey();
+            if (key == null)
+            {
+                return null;
+            }
+
+            lock (JwksGate)
+            {
+                _jwksCache = (key, DateTime.UtcNow);
+            }
+            return key;
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "JWKS fetch failed; cannot verify JWT signature.");
+            return null;
+        }
+    }
+
+    private sealed class JwksDto
+    {
+        public JwkKeyDto[]? Keys { get; set; }
+
+        public RsaSecurityKey? GetFirstRsaKey()
+        {
+            if (Keys == null || Keys.Length == 0)
+            {
+                return null;
+            }
+
+            foreach (var k in Keys)
+            {
+                if (k == null) continue;
+                if (!string.Equals(k.Kty, "RSA", StringComparison.OrdinalIgnoreCase)) continue;
+                if (!string.IsNullOrWhiteSpace(k.Use) && !string.Equals(k.Use, "sig", StringComparison.OrdinalIgnoreCase)) continue;
+                if (!string.IsNullOrWhiteSpace(k.Alg) && !string.Equals(k.Alg, "RS256", StringComparison.OrdinalIgnoreCase)) continue;
+                if (string.IsNullOrWhiteSpace(k.N) || string.IsNullOrWhiteSpace(k.E)) continue;
+
+                using var rsa = RSA.Create();
+                rsa.ImportParameters(new RSAParameters
+                {
+                    Modulus = Base64UrlEncoder.DecodeBytes(k.N),
+                    Exponent = Base64UrlEncoder.DecodeBytes(k.E),
+                });
+
+                var key = new RsaSecurityKey(rsa);
+                if (!string.IsNullOrWhiteSpace(k.Kid))
+                {
+                    key.KeyId = k.Kid;
+                }
+                return key;
+            }
+
+            return null;
+        }
+    }
+
+    private sealed class JwkKeyDto
+    {
+        public string? Kty { get; set; }
+        public string? Use { get; set; }
+        public string? Alg { get; set; }
+        public string? Kid { get; set; }
+        public string? N { get; set; }
+        public string? E { get; set; }
     }
 
     private static JwtSecurityToken DecodeAndValidateLifetimeOnly(JwtSecurityTokenHandler handler, string token)
