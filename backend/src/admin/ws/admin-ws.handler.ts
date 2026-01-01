@@ -281,6 +281,7 @@ export class AdminWsHandler {
       limit: dto.limit,
       includePrivate: dto.includePrivate !== false,
       includeStarted: dto.includeStarted === true,
+      joinableOnly: dto.joinableOnly === true,
     });
     return { type: 'admin.rooms.list', payload: res };
   }

@@ -134,7 +134,32 @@ public sealed partial class AdminViewModel
     private async Task OpenRoomsJoinSilentAsync()
     {
         PushReturnFocus();
-        await RefreshAdminRoomsListAsync().ConfigureAwait(true);
+        if (IsBusy)
+        {
+            return;
+        }
+
+        try
+        {
+            IsBusy = true;
+            // Joinable only: éviter les "tables fantômes" et ne proposer que des tables ouvertes
+            // avec au moins un joueur connecté.
+            var listed = await _admin.ListRoomsAsync(
+                includePrivate: true,
+                includeStarted: false,
+                joinableOnly: true,
+                limit: 200).ConfigureAwait(true);
+            _roomsForAdmin = listed.Items ?? Array.Empty<AdminRoomListItemDto>();
+        }
+        catch (Exception ex)
+        {
+            await _dialogs.ShowError("Rooms", ex.Message).ConfigureAwait(true);
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+
         BuildRoomsJoinSilent();
     }
 

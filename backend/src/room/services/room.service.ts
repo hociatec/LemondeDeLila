@@ -105,6 +105,7 @@ export class RoomService {
     limit?: number;
     includePrivate?: boolean;
     includeStarted?: boolean;
+    joinableOnly?: boolean;
   }): Promise<{
     items: Array<{
       id: number;
@@ -120,7 +121,8 @@ export class RoomService {
     }>;
   }> {
     const includePrivate = opts?.includePrivate !== false;
-    const includeStarted = opts?.includeStarted === true;
+    const joinableOnly = opts?.joinableOnly === true;
+    const includeStarted = joinableOnly ? false : opts?.includeStarted === true;
     const limit = Math.min(Math.max(1, opts?.limit ?? 200), 1000);
 
     const qb = this.rooms
@@ -147,19 +149,31 @@ export class RoomService {
     }
 
     const rooms = await qb.getMany();
+    const items = rooms.map((r) => ({
+      id: r.id,
+      name: r.name ?? '',
+      gameType: r.gameType ?? '',
+      status: r.status ?? '',
+      isPrivate: Boolean(r.isPrivate),
+      maxPlayers: Number(r.maxPlayers ?? 0) || 0,
+      playersCount: r.participants?.length ?? 0,
+      botsCount: r.bots?.length ?? 0,
+      ownerUsername: r.owner?.username ?? null,
+      activePlayers: this.realtimeTracker.countActivePlayers(r.id),
+    }));
+
+    if (!joinableOnly) {
+      return { items };
+    }
+
+    const openStatuses = new Set(
+      OPEN_ROOM_STATUSES.map((s) => (s ?? '').toLowerCase()),
+    );
     return {
-      items: rooms.map((r) => ({
-        id: r.id,
-        name: r.name ?? '',
-        gameType: r.gameType ?? '',
-        status: r.status ?? '',
-        isPrivate: Boolean(r.isPrivate),
-        maxPlayers: Number(r.maxPlayers ?? 0) || 0,
-        playersCount: r.participants?.length ?? 0,
-        botsCount: r.bots?.length ?? 0,
-        ownerUsername: r.owner?.username ?? null,
-        activePlayers: this.realtimeTracker.countActivePlayers(r.id),
-      })),
+      items: items.filter((r) => {
+        const status = (r.status ?? '').toLowerCase();
+        return openStatuses.has(status) && r.activePlayers > 0;
+      }),
     };
   }
 

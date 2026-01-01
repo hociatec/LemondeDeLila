@@ -66,6 +66,7 @@ public interface IAdminService
     Task<AdminRoomsListResponseDto> ListRoomsAsync(
         bool includePrivate = true,
         bool includeStarted = true,
+        bool joinableOnly = false,
         int limit = 200,
         CancellationToken cancellationToken = default);
 

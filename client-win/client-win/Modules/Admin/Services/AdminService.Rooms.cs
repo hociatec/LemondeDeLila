@@ -83,6 +83,7 @@ public sealed partial class AdminService
     public async Task<AdminRoomsListResponseDto> ListRoomsAsync(
         bool includePrivate = true,
         bool includeStarted = true,
+        bool joinableOnly = false,
         int limit = 200,
         CancellationToken cancellationToken = default)
     {
@@ -93,6 +94,7 @@ public sealed partial class AdminService
             {
                 includePrivate,
                 includeStarted,
+                joinableOnly,
                 limit
             },
             token,
