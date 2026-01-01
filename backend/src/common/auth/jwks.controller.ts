@@ -40,4 +40,10 @@ export class JwksController {
   jwksUnderApi() {
     return this.jwks();
   }
+
+  // Some reverse proxies block /.well-known/* entirely (403). Provide a non-standard alias under /api.
+  @Get('api/jwks.json')
+  jwksApiAlias() {
+    return this.jwks();
+  }
 }
