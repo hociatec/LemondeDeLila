@@ -63,6 +63,12 @@ public interface IAdminService
         int? olderThanMinutes = null,
         CancellationToken cancellationToken = default);
 
+    Task<AdminRoomsListResponseDto> ListRoomsAsync(
+        bool includePrivate = true,
+        bool includeStarted = true,
+        int limit = 200,
+        CancellationToken cancellationToken = default);
+
     Task<AdminRoomsDestroyResponseDto> DestroyRoomAsync(int roomId, CancellationToken cancellationToken = default);
 
     Task<AdminRoomMaintenanceSettingsDto> GetRoomMaintenanceSettingsAsync(CancellationToken cancellationToken = default);

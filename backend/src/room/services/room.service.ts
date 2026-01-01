@@ -98,6 +98,72 @@ export class RoomService {
   }
 
   /**
+   * Admin: list rooms (public and/or private), optionally including started rooms.
+   * Intended for maintenance tooling in the admin UI.
+   */
+  async adminListRooms(opts?: {
+    limit?: number;
+    includePrivate?: boolean;
+    includeStarted?: boolean;
+  }): Promise<{
+    items: Array<{
+      id: number;
+      name: string;
+      gameType: string;
+      status: string;
+      isPrivate: boolean;
+      maxPlayers: number;
+      playersCount: number;
+      botsCount: number;
+      ownerUsername: string | null;
+      activePlayers: number;
+    }>;
+  }> {
+    const includePrivate = opts?.includePrivate !== false;
+    const includeStarted = opts?.includeStarted === true;
+    const limit = Math.min(Math.max(1, opts?.limit ?? 200), 1000);
+
+    const qb = this.rooms
+      .createQueryBuilder('room')
+      .leftJoinAndSelect('room.owner', 'owner')
+      .leftJoinAndSelect(
+        'room.participants',
+        'participant',
+        'participant.leftAt IS NULL',
+      )
+      .leftJoinAndSelect('participant.user', 'participantUser')
+      .leftJoinAndSelect('room.bots', 'bot')
+      .orderBy('room.id', 'DESC')
+      .limit(limit);
+
+    if (!includePrivate) {
+      qb.where('room.isPrivate = :isPrivate', { isPrivate: false });
+    } else {
+      qb.where('1=1');
+    }
+
+    if (!includeStarted) {
+      qb.andWhere('room.startedAt IS NULL');
+    }
+
+    const rooms = await qb.getMany();
+    return {
+      items: rooms.map((r) => ({
+        id: r.id,
+        name: r.name ?? '',
+        gameType: r.gameType ?? '',
+        status: r.status ?? '',
+        isPrivate: Boolean(r.isPrivate),
+        maxPlayers: Number(r.maxPlayers ?? 0) || 0,
+        playersCount: r.participants?.length ?? 0,
+        botsCount: r.bots?.length ?? 0,
+        ownerUsername: r.owner?.username ?? null,
+        activePlayers: this.realtimeTracker.countActivePlayers(r.id),
+      })),
+    };
+  }
+
+  /**
    * Admin: deletes rooms matching criteria (use with caution).
    * Intended to purge stale "open" rooms that still appear in the public directory.
    */

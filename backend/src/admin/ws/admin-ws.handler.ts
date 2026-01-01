@@ -56,6 +56,7 @@ import {
 } from './admin-ws.dto';
 import { AdminRoomsCleanupWsDto } from './admin-rooms-cleanup.dto';
 import { AdminRoomsDestroyWsDto } from './admin-rooms-destroy.dto';
+import { AdminRoomsListWsDto } from './admin-rooms-list.dto';
 import { AdminRoomsSettingsUpdateWsDto, AdminRoomsSettingsGetWsDto } from './admin-rooms-settings.dto';
 
 @Injectable()
@@ -271,6 +272,17 @@ export class AdminWsHandler {
       excludeActivePlayers: true,
     });
     return { type: 'admin.rooms.cleanup', payload: res };
+  }
+
+  async roomsList(session: WsSession, payload: any) {
+    requireAdmin(session);
+    const dto = this.validator.validate(AdminRoomsListWsDto, payload ?? {});
+    const res = await this.rooms.adminListRooms({
+      limit: dto.limit,
+      includePrivate: dto.includePrivate !== false,
+      includeStarted: dto.includeStarted === true,
+    });
+    return { type: 'admin.rooms.list', payload: res };
   }
 
   async roomsDestroy(session: WsSession, payload: any) {

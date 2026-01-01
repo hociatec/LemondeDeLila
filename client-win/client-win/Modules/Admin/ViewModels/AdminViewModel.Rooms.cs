@@ -10,6 +10,7 @@ public sealed partial class AdminViewModel
 {
     private AdminRoomMaintenanceSettingsDto? _roomSettings;
     private PublicRoomListItem[] _publicJoinableRooms = Array.Empty<PublicRoomListItem>();
+    private AdminRoomListItemDto[] _roomsForAdmin = Array.Empty<AdminRoomListItemDto>();
 
     private void BuildRooms()
     {
@@ -105,12 +106,12 @@ public sealed partial class AdminViewModel
         Title = "Détruire une room";
         Items.Clear();
 
-        var listed = _publicJoinableRooms ?? Array.Empty<PublicRoomListItem>();
+        var listed = _roomsForAdmin ?? Array.Empty<AdminRoomListItemDto>();
         if (listed.Length == 0)
         {
-            Items.Add(new AdminMenuItem("Aucune table publique disponible", tag: null));
+            Items.Add(new AdminMenuItem("Aucune table disponible", tag: null));
             SelectedItem = Items.FirstOrDefault();
-            Details = "Aucune table publique à détruire.";
+            Details = "Aucune table à détruire.";
             Status = "Échap : retour.";
         }
         else
@@ -121,7 +122,7 @@ public sealed partial class AdminViewModel
             }
 
             SelectedItem = Items.FirstOrDefault();
-            Details = "Détruit la table sélectionnée (même si des joueurs sont dessus).";
+            Details = "Détruit la table sélectionnée (publique/privée, même si des joueurs sont dessus).";
             Status = "Entrée : détruire la table sélectionnée. Échap : retour.";
         }
 
@@ -135,7 +136,8 @@ public sealed partial class AdminViewModel
     private async Task OpenRoomsDestroyAsync()
     {
         PushReturnFocus();
-        await RefreshRoomsJoinSilentListAsync().ConfigureAwait(true);
+        var listed = await _admin.ListRoomsAsync(includePrivate: true, includeStarted: true).ConfigureAwait(true);
+        _roomsForAdmin = listed.Items ?? Array.Empty<AdminRoomListItemDto>();
         BuildRoomsDestroy();
     }
 
@@ -162,7 +164,8 @@ public sealed partial class AdminViewModel
             IsBusy = true;
             var res = await _admin.DestroyRoomAsync(roomId).ConfigureAwait(true);
             await _dialogs.ShowInfo("Rooms", $"Room #{res.RoomId} détruite.").ConfigureAwait(true);
-            _publicJoinableRooms = (await _roomDirectory.PublicListAsync().ConfigureAwait(true)).Items;
+            var listed = await _admin.ListRoomsAsync(includePrivate: true, includeStarted: true).ConfigureAwait(true);
+            _roomsForAdmin = listed.Items ?? Array.Empty<AdminRoomListItemDto>();
             BuildRoomsDestroy();
         }
         catch (Exception ex)

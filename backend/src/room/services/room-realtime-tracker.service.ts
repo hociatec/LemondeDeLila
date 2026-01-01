@@ -56,4 +56,8 @@ export class RoomRealtimeTrackerService {
   hasActivePlayers(roomId: number): boolean {
     return (this.activePlayerSocketsByRoomId.get(roomId) ?? 0) > 0;
   }
+
+  countActivePlayers(roomId: number): number {
+    return this.activePlayerSocketsByRoomId.get(roomId) ?? 0;
+  }
 }

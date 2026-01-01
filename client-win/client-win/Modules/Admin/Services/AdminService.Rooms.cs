@@ -80,6 +80,32 @@ public sealed partial class AdminService
         return res.Payload;
     }
 
+    public async Task<AdminRoomsListResponseDto> ListRoomsAsync(
+        bool includePrivate = true,
+        bool includeStarted = true,
+        int limit = 200,
+        CancellationToken cancellationToken = default)
+    {
+        var token = EnsureAuth();
+        var res = await _ws.RequestAsync<AdminRoomsListResponseDto>(
+            WsMessageTypes.Admin.RoomsList,
+            new
+            {
+                includePrivate,
+                includeStarted,
+                limit
+            },
+            token,
+            cancellationToken).ConfigureAwait(false);
+
+        if (!res.Success || res.Payload == null)
+        {
+            throw new InvalidOperationException(res.Error ?? "Liste des rooms impossible.");
+        }
+
+        return res.Payload;
+    }
+
     public async Task<AdminRoomsDestroyResponseDto> DestroyRoomAsync(int roomId, CancellationToken cancellationToken = default)
     {
         var token = EnsureAuth();
