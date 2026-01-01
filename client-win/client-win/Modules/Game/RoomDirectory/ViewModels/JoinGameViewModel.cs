@@ -21,6 +21,7 @@ public sealed class JoinGameViewModel : ObservableObject, IDisposable
     private readonly Action _close;
     private readonly Dispatcher _dispatcher;
     private readonly UserControl _returnView;
+    private readonly DispatcherTimer _autoRefreshTimer;
     private IDisposable? _refreshSubscription;
     private bool _isDisposed;
     private bool _subscribed;
@@ -47,6 +48,19 @@ public sealed class JoinGameViewModel : ObservableObject, IDisposable
         CloseCommand = new RelayCommand(_close);
         RefreshCommand = new AsyncRelayCommand(RefreshAsync);
         JoinSelectedCommand = new AsyncRelayCommand(JoinSelectedAsync);
+
+        _autoRefreshTimer = new DispatcherTimer(DispatcherPriority.Background, _dispatcher)
+        {
+            Interval = TimeSpan.FromSeconds(10)
+        };
+        _autoRefreshTimer.Tick += (_, __) =>
+        {
+            if (!IsBusy)
+            {
+                _ = RefreshCommand.ExecuteAsync(null);
+            }
+        };
+        _autoRefreshTimer.Start();
 
         _dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() => RefreshCommand.Execute(null)));
     }
@@ -88,20 +102,20 @@ public sealed class JoinGameViewModel : ObservableObject, IDisposable
             Status = "Récupération des tables publiques...";
 
             PublicRoomsListedResult listed;
-            if (!_subscribed && _subscriptionSupported)
+            if (_subscriptionSupported)
             {
                 try
                 {
+                    // (Re)s'abonner à chaque refresh: la connexion WS peut être recréée,
+                    // ce qui change l'identifiant de connexion côté serveur et invalide l'abonnement.
                     listed = await _rooms.PublicSubscribeAsync().ConfigureAwait(true);
                     _subscribed = true;
 
-                    _refreshSubscription = _rooms.OnPublicRefresh(() =>
-                    {
+                    _refreshSubscription ??= _rooms.OnPublicRefresh(() =>
                         // Reçu depuis un thread réseau; rebasculer sur UI.
                         _ = _dispatcher.BeginInvoke(
                             DispatcherPriority.Background,
-                            new Action(() => _ = RefreshCommand.ExecuteAsync(null)));
-                    });
+                            new Action(() => _ = RefreshCommand.ExecuteAsync(null))));
                 }
                 catch (Exception ex)
                 {
@@ -203,6 +217,7 @@ public sealed class JoinGameViewModel : ObservableObject, IDisposable
 
         try
         {
+            _autoRefreshTimer.Stop();
             _refreshSubscription?.Dispose();
         }
         catch
