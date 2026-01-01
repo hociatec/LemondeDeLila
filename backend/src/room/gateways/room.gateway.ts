@@ -143,7 +143,7 @@ export class RoomGateway
     if (targetRoomId > 0) {
       const effectiveSilent = Boolean(silent);
       if (effectiveSilent && !isAdmin) {
-        client.close(4003, 'Mode silencieux réservé aux admins');
+        client.close(4003, 'Mode caché réservé aux admins');
         return;
       }
 
@@ -262,7 +262,9 @@ export class RoomGateway
 
     if (targetRoomId > 0) {
       if (initialMeta?.silent) {
-        await this.sendRoomStateToClient(client, targetRoomId);
+        await this.sendRoomStateToClient(client, targetRoomId, {
+          includeRealtimePlayers: true,
+        });
       } else {
         await this.sendRoomState(targetRoomId);
       }
@@ -358,11 +360,29 @@ export class RoomGateway
     }
   }
 
-  private async sendRoomStateToClient(client: WebSocket, roomId: number) {
+  private async sendRoomStateToClient(
+    client: WebSocket,
+    roomId: number,
+    opts?: { includeRealtimePlayers?: boolean },
+  ) {
     try {
       const payload = await this.roomsService.getRoomPayload(roomId);
       payload.room.spectators = this.listSpectators(roomId);
       payload.room.counts.spectators = payload.room.spectators.length;
+      if (opts?.includeRealtimePlayers) {
+        const connected = this.listConnectedPlayers(roomId);
+        const merged = new Map<number, string>();
+        for (const p of payload.room.players ?? []) {
+          merged.set(p.id, p.username);
+        }
+        for (const p of connected) {
+          merged.set(p.id, p.username);
+        }
+        payload.room.players = Array.from(merged.entries()).map(
+          ([id, username]) => ({ id, username }),
+        );
+        payload.room.counts.players = payload.room.players.length;
+      }
       this.safeSend(client, { type: 'room.updated', roomId, payload });
     } catch (err) {
       await this.sendError(client, (err as Error).message || 'Erreur table');
@@ -937,13 +957,20 @@ export class RoomGateway
 	          spectatorRaw === 'yes' ||
 	          spectatorRaw === 'y';
 	        const silentRaw = payload?.silent;
+	        const hiddenRaw = payload?.hidden;
 	        const silent =
 	          silentRaw === true ||
 	          silentRaw === 1 ||
 	          silentRaw === '1' ||
 	          silentRaw === 'true' ||
 	          silentRaw === 'yes' ||
-	          silentRaw === 'y';
+	          silentRaw === 'y' ||
+	          hiddenRaw === true ||
+	          hiddenRaw === 1 ||
+	          hiddenRaw === '1' ||
+	          hiddenRaw === 'true' ||
+	          hiddenRaw === 'yes' ||
+	          hiddenRaw === 'y';
 
 	        if (!Number.isFinite(roomId) || roomId <= 0) {
 	          throw new Error('roomId invalide');
@@ -951,7 +978,7 @@ export class RoomGateway
 
 	        const effectiveSilent = Boolean(silent);
 	        if (effectiveSilent && !meta.isAdmin) {
-	          client.close(4003, 'Mode silencieux réservé aux admins');
+	          client.close(4003, 'Mode caché réservé aux admins');
 	          return;
 	        }
 
@@ -1006,7 +1033,9 @@ export class RoomGateway
 	          meta.role === 'participant' && meta.silent !== true ? meta.roomId : null,
 	        );
 	        if (effectiveSilent) {
-	          await this.sendRoomStateToClient(client, roomId);
+	          await this.sendRoomStateToClient(client, roomId, {
+	            includeRealtimePlayers: true,
+	          });
 	        } else {
 	          await this.sendRoomState(roomId);
 	        }
@@ -1038,11 +1067,16 @@ export class RoomGateway
 	        spectateRaw === 'yes' ||
 	        spectateRaw === 'y';
 	      const silentRaw = (url.searchParams.get('silent') || '').toLowerCase();
+	      const hiddenRaw = (url.searchParams.get('hidden') || '').toLowerCase();
 	      silent =
 	        silentRaw === '1' ||
 	        silentRaw === 'true' ||
 	        silentRaw === 'yes' ||
-	        silentRaw === 'y';
+	        silentRaw === 'y' ||
+	        hiddenRaw === '1' ||
+	        hiddenRaw === 'true' ||
+	        hiddenRaw === 'yes' ||
+	        hiddenRaw === 'y';
 	    } catch {
 	      roomId = 0;
 	    }
@@ -1071,6 +1105,20 @@ export class RoomGateway
     for (const meta of this.clients.values()) {
       if (meta.roomId !== roomId) continue;
       if (meta.role !== 'spectator') continue;
+      if (meta.silent) continue;
+      unique.set(meta.userId, meta.username || `User ${meta.userId}`);
+    }
+    return Array.from(unique.entries()).map(([id, username]) => ({
+      id,
+      username,
+    }));
+  }
+
+  private listConnectedPlayers(roomId: number): RoomPlayer[] {
+    const unique = new Map<number, string>();
+    for (const meta of this.clients.values()) {
+      if (meta.roomId !== roomId) continue;
+      if (meta.role !== 'participant') continue;
       if (meta.silent) continue;
       unique.set(meta.userId, meta.username || `User ${meta.userId}`);
     }

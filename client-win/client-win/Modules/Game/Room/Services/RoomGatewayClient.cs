@@ -318,7 +318,8 @@ public sealed class RoomGatewayClient : IRoomGatewayClient
             }
             if (silent)
             {
-                query.Add("silent=1");
+                // Admin hidden join (backward compat: server still accepts `silent=1` too).
+                query.Add("hidden=1");
             }
         }
         builder.Query = string.Join("&", query);
