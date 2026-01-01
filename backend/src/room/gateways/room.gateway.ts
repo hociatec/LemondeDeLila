@@ -262,9 +262,7 @@ export class RoomGateway
 
     if (targetRoomId > 0) {
       if (initialMeta?.silent) {
-        await this.sendRoomStateToClient(client, targetRoomId, {
-          useRealtimeRoster: true,
-        });
+        await this.sendRoomStateToClient(client, targetRoomId);
       } else {
         await this.sendRoomState(targetRoomId);
       }
@@ -360,19 +358,11 @@ export class RoomGateway
     }
   }
 
-  private async sendRoomStateToClient(
-    client: WebSocket,
-    roomId: number,
-    opts?: { useRealtimeRoster?: boolean },
-  ) {
+  private async sendRoomStateToClient(client: WebSocket, roomId: number) {
     try {
       const payload = await this.roomsService.getRoomPayload(roomId);
       payload.room.spectators = this.listSpectators(roomId);
       payload.room.counts.spectators = payload.room.spectators.length;
-      if (opts?.useRealtimeRoster === true) {
-        payload.room.players = this.listConnectedPlayers(roomId);
-        payload.room.counts.players = payload.room.players.length;
-      }
       this.safeSend(client, { type: 'room.updated', roomId, payload });
     } catch (err) {
       await this.sendError(client, (err as Error).message || 'Erreur table');
@@ -1081,21 +1071,6 @@ export class RoomGateway
     for (const meta of this.clients.values()) {
       if (meta.roomId !== roomId) continue;
       if (meta.role !== 'spectator') continue;
-      if (meta.silent) continue;
-      unique.set(meta.userId, meta.username || `User ${meta.userId}`);
-    }
-    return Array.from(unique.entries()).map(([id, username]) => ({
-      id,
-      username,
-    }));
-  }
-
-  private listConnectedPlayers(roomId: number): RoomPlayer[] {
-    const unique = new Map<number, string>();
-    for (const meta of this.clients.values()) {
-      if (meta.roomId !== roomId) continue;
-      if (meta.role !== 'participant') continue;
-      // Defensive: silent mode is spectator-only, but keep the check.
       if (meta.silent) continue;
       unique.set(meta.userId, meta.username || `User ${meta.userId}`);
     }
