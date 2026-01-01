@@ -3,9 +3,12 @@ import * as crypto from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
 import { SOUND_KEYS, SoundKey, SoundManifest, SoundManifestEntry } from './sounds.types';
+import { NotificationService } from '../notification/services/notification.service';
 
 @Injectable()
 export class SoundsService {
+  constructor(private readonly notifications: NotificationService) {}
+
   private dataRoot() {
     return path.resolve(process.cwd(), 'data', 'sounds');
   }
@@ -108,6 +111,13 @@ export class SoundsService {
     };
     await this.writeManifest(next);
 
+    await this.notifications.notifyAll('sounds.updated', {
+      soundId,
+      sha256,
+      url: entry.url,
+      updatedAt: next.updatedAt,
+    });
+
     return entry;
   }
 
@@ -123,6 +133,13 @@ export class SoundsService {
     } as SoundManifest;
     delete next.sounds[soundId];
     await this.writeManifest(next);
+
+    await this.notifications.notifyAll('sounds.updated', {
+      soundId,
+      sha256: null,
+      url: null,
+      updatedAt: next.updatedAt,
+    });
     return { ok: true };
   }
 

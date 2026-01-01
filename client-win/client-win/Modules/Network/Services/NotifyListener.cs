@@ -34,6 +34,7 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
     private readonly IGameTableOpener _tables;
     private readonly INavigationService _navigation;
     private readonly ISoundService _sounds;
+    private readonly IRemoteSoundCache _remoteSounds;
 
     private IWebSocketConnection? _ws;
     private bool _started;
@@ -49,7 +50,8 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
         IRoomDirectoryClient rooms,
         IGameTableOpener tables,
         INavigationService navigation,
-        ISoundService sounds)
+        ISoundService sounds,
+        IRemoteSoundCache remoteSounds)
     {
         _config = config ?? throw new ArgumentNullException(nameof(config));
         _session = session ?? throw new ArgumentNullException(nameof(session));
@@ -62,6 +64,7 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
         _tables = tables ?? throw new ArgumentNullException(nameof(tables));
         _navigation = navigation ?? throw new ArgumentNullException(nameof(navigation));
         _sounds = sounds ?? throw new ArgumentNullException(nameof(sounds));
+        _remoteSounds = remoteSounds ?? throw new ArgumentNullException(nameof(remoteSounds));
     }
 
     public async Task StartAsync(CancellationToken cancellationToken = default)
@@ -190,6 +193,10 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
             else if (string.Equals(type, "messaging.new", StringComparison.OrdinalIgnoreCase))
             {
                 HandleMessagingNew(root);
+            }
+            else if (string.Equals(type, "sounds.updated", StringComparison.OrdinalIgnoreCase))
+            {
+                _ = _remoteSounds.RefreshAsync();
             }
         }
         catch (Exception ex)

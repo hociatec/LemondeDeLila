@@ -292,7 +292,8 @@ public static class AppBootstrapper
                 sp.GetRequiredService<Modules.Game.RoomDirectory.Services.IRoomDirectoryClient>(),
                 sp.GetRequiredService<Modules.Game.Shell.Services.IGameTableOpener>(),
                 sp.GetRequiredService<INavigationService>(),
-                sp.GetRequiredService<ISoundService>()));
+                sp.GetRequiredService<ISoundService>(),
+                sp.GetRequiredService<IRemoteSoundCache>()));
 
         services.AddTransient<IMenuRouter, MenuRouter>();
 

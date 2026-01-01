@@ -50,8 +50,24 @@ export class NotificationService implements OnModuleDestroy {
     this.dispatchToLocal(userId, type, payload);
   }
 
+  // Broadcast to all connected users.
+  // Implementation detail: userId=0 is treated as a "global" event and dispatched to every socket.
+  async notifyAll(type: string, payload: any) {
+    await this.transport.publish({
+      userId: 0,
+      type,
+      payload,
+      origin: this.instanceId,
+    });
+    this.dispatchToAllLocal(type, payload);
+  }
+
   private handleExternalEvent(event: NotificationEvent) {
     if (event.origin === this.instanceId) {
+      return;
+    }
+    if (event.userId === 0) {
+      this.dispatchToAllLocal(event.type, event.payload);
       return;
     }
     this.dispatchToLocal(event.userId, event.type, event.payload);
@@ -83,6 +99,35 @@ export class NotificationService implements OnModuleDestroy {
     }
     if (targets.size === 0) {
       this.socketsByUserId.delete(userId);
+    }
+  }
+
+  private dispatchToAllLocal(type: string, payload: any) {
+    const message = JSON.stringify({ type, payload });
+    for (const [userId, targets] of Array.from(this.socketsByUserId.entries())) {
+      for (const socket of Array.from(targets)) {
+        if (socket.readyState !== WebSocket.OPEN) {
+          targets.delete(socket);
+          continue;
+        }
+        try {
+          socket.send(message);
+        } catch (err) {
+          this.logger.debug(
+            `Echec envoi notification userId=${userId}`,
+            err as Error,
+          );
+          targets.delete(socket);
+          try {
+            socket.close();
+          } catch {
+            /* ignore */
+          }
+        }
+      }
+      if (targets.size === 0) {
+        this.socketsByUserId.delete(userId);
+      }
     }
   }
 }
