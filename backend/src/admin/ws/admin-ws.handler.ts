@@ -18,8 +18,6 @@ import { BotSettingsService } from '../../game/modules/bot/services/bot-settings
 import { PerfMetricsService } from '../../common/services/perf-metrics.service';
 import { ClientUpdatesService } from '../../client-updates/client-updates.service';
 import { ChatService } from '../../chat/services/chat.service';
-import { RoomService } from '../../room/services/room.service';
-import { RoomMaintenanceSettingsService } from '../../room/services/room-maintenance-settings.service';
 import * as fs from 'fs';
 import * as path from 'path';
 import {
@@ -54,10 +52,6 @@ import {
   AdminUserIdWsDto,
   AdminUserRolesWsDto,
 } from './admin-ws.dto';
-import { AdminRoomsCleanupWsDto } from './admin-rooms-cleanup.dto';
-import { AdminRoomsDestroyWsDto } from './admin-rooms-destroy.dto';
-import { AdminRoomsListWsDto } from './admin-rooms-list.dto';
-import { AdminRoomsSettingsUpdateWsDto, AdminRoomsSettingsGetWsDto } from './admin-rooms-settings.dto';
 
 @Injectable()
 export class AdminWsHandler {
@@ -76,8 +70,6 @@ export class AdminWsHandler {
     private readonly bots: BotService,
     private readonly botSettings: BotSettingsService,
     private readonly perf: PerfMetricsService,
-    private readonly rooms: RoomService,
-    private readonly roomSettings: RoomMaintenanceSettingsService,
     @InjectRepository(User) private readonly userRepo: Repository<User>,
   ) {}
 
@@ -257,65 +249,7 @@ export class AdminWsHandler {
     };
   }
 
-  async roomsCleanup(session: WsSession, payload: any) {
-    requireAdmin(session);
-    const dto = this.validator.validate(AdminRoomsCleanupWsDto, payload);
-    if (dto.confirm !== true) {
-      throw new BadRequestException('Confirmation requise.');
-    }
-    const res = await this.rooms.adminCleanupRooms({
-      includePrivate: dto.includePrivate === true,
-      includeStarted: dto.includeStarted === true,
-      olderThanMinutes: dto.olderThanMinutes,
-      limit: dto.limit,
-      dryRun: dto.dryRun === true,
-      excludeActivePlayers: true,
-    });
-    return { type: 'admin.rooms.cleanup', payload: res };
-  }
-
-  async roomsList(session: WsSession, payload: any) {
-    requireAdmin(session);
-    const dto = this.validator.validate(AdminRoomsListWsDto, payload ?? {});
-    const res = await this.rooms.adminListRooms({
-      limit: dto.limit,
-      includePrivate: dto.includePrivate !== false,
-      includeStarted: dto.includeStarted === true,
-      joinableOnly: dto.joinableOnly === true,
-    });
-    return { type: 'admin.rooms.list', payload: res };
-  }
-
-  async roomsDestroy(session: WsSession, payload: any) {
-    requireAdmin(session);
-    const dto = this.validator.validate(AdminRoomsDestroyWsDto, payload);
-    if (dto.confirm !== true) {
-      throw new BadRequestException('Confirmation requise.');
-    }
-    const res = await this.rooms.adminDestroyRoom(dto.roomId);
-    return { type: 'admin.rooms.destroy', payload: res };
-  }
-
-  async roomsSettingsGet(session: WsSession, payload: any) {
-    requireAdmin(session);
-    this.validator.validate(AdminRoomsSettingsGetWsDto, payload ?? {});
-    return { type: 'admin.rooms.settings.get', payload: this.roomSettings.get() };
-  }
-
-  async roomsSettingsUpdate(session: WsSession, payload: any) {
-    requireAdmin(session);
-    const dto = this.validator.validate(AdminRoomsSettingsUpdateWsDto, payload);
-    const updated = this.roomSettings.update({
-      autoCleanupEnabled:
-        typeof dto.autoCleanupEnabled === 'boolean'
-          ? dto.autoCleanupEnabled
-          : undefined,
-      autoCleanupOlderThanMinutes: dto.autoCleanupOlderThanMinutes ?? undefined,
-      autoCleanupIntervalSeconds: dto.autoCleanupIntervalSeconds ?? undefined,
-      autoCleanupLimit: dto.autoCleanupLimit ?? undefined,
-    });
-    return { type: 'admin.rooms.settings.update', payload: updated };
-  }
+  // Rooms WS endpoints were extracted to AdminRoomsWsHandler.
 
   async botsNamesList(session: WsSession, payload: any) {
     requireAdmin(session);

@@ -8,6 +8,7 @@ import { HttpJwtGuard } from '../common/guards/http-jwt.guard';
 import { AdminRoleGuard } from '../common/guards/admin-role.guard';
 import { AdminWsHandler } from './ws/admin-ws.handler';
 import { AdminWsRegistrar } from './ws/admin-ws.registrar';
+import { AdminRoomsWsHandler } from './ws/admin-rooms-ws.handler';
 import { ValidationModule } from '../common/validation/validation.module';
 import { GameRegistryModule } from '../game/engine/game-registry.module';
 import { NotificationModule } from '../notification/notification.module';
@@ -39,6 +40,7 @@ import { RoomModule } from '../room/room.module';
     HttpJwtGuard,
     AdminRoleGuard,
     AdminWsHandler,
+    AdminRoomsWsHandler,
     AdminWsRegistrar,
   ],
 })

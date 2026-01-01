@@ -1,12 +1,14 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { WsRouteRegistry } from '../../common/ws/ws-route-registry.service';
 import { AdminWsHandler } from './admin-ws.handler';
+import { AdminRoomsWsHandler } from './admin-rooms-ws.handler';
 
 @Injectable()
 export class AdminWsRegistrar implements OnModuleInit {
   constructor(
     private readonly registry: WsRouteRegistry,
     private readonly handler: AdminWsHandler,
+    private readonly rooms: AdminRoomsWsHandler,
   ) {}
 
   onModuleInit() {
@@ -121,22 +123,22 @@ export class AdminWsRegistrar implements OnModuleInit {
     );
 
     this.registry.register('admin.rooms.cleanup', (s, p) =>
-      this.handler.roomsCleanup(s, p),
+      this.rooms.roomsCleanup(s, p),
     );
 
     this.registry.register('admin.rooms.list', (s, p) =>
-      this.handler.roomsList(s, p),
+      this.rooms.roomsList(s, p),
     );
 
     this.registry.register('admin.rooms.destroy', (s, p) =>
-      this.handler.roomsDestroy(s, p),
+      this.rooms.roomsDestroy(s, p),
     );
 
     this.registry.register('admin.rooms.settings.get', (s, p) =>
-      this.handler.roomsSettingsGet(s, p),
+      this.rooms.roomsSettingsGet(s, p),
     );
     this.registry.register('admin.rooms.settings.update', (s, p) =>
-      this.handler.roomsSettingsUpdate(s, p),
+      this.rooms.roomsSettingsUpdate(s, p),
     );
   }
 }
