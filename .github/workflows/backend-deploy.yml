@@ -1,0 +1,22 @@
+name: Backend - Deploy (manual)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.1.0
+        with:
+          host: ${{ secrets.BACKEND_SSH_HOST }}
+          username: ${{ secrets.BACKEND_SSH_USER }}
+          key: ${{ secrets.BACKEND_SSH_KEY }}
+          port: ${{ secrets.BACKEND_SSH_PORT || 22 }}
+          script: |
+            set -euo pipefail
+            cd "${{ secrets.BACKEND_WORKDIR }}"
+            chmod +x ./deploy-prod.sh
+            SERVICE_NAME="${{ secrets.BACKEND_SERVICE_NAME }}" ./deploy-prod.sh
+
