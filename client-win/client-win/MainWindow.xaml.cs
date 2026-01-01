@@ -149,16 +149,20 @@ namespace client_win
             // CORRECTION: Ajout de try-catch pour éviter crash silencieux avec async void
             try
             {
-                // Vérifie les MAJ dès le lancement (même avant login) et repropose à chaque ouverture si pas à jour.
-                var shouldContinue = await ClientUpdateStartupPrompt
-                    .CheckAndPromptAsync(_host.Configuration, _dialogs)
-                    .ConfigureAwait(true);
+                // Laisse l'UI se charger et exécute en parallèle:
+                // - init écran d'accueil
+                // - check mise à jour (peut fermer l'app si requis)
+                var initTask = _homeViewModel.InitializeAsync();
+                var updateTask = ClientUpdateStartupPrompt
+                    .CheckAndPromptAsync(_host.Configuration, _dialogs);
+
+                var shouldContinue = await updateTask.ConfigureAwait(true);
                 if (!shouldContinue)
                 {
                     return;
                 }
 
-                await _homeViewModel.InitializeAsync();
+                await initTask.ConfigureAwait(true);
             }
             catch (Exception ex)
             {

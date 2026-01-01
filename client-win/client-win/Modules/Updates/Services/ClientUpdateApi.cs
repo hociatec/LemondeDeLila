@@ -3,6 +3,7 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Threading.Tasks;
 using client_win.Core;
 using client_win.Modules.Config;
 
@@ -20,23 +21,50 @@ public sealed class ClientUpdateInfo
 
 public static class ClientUpdateApi
 {
+    private static readonly HttpClient Http = new()
+    {
+        Timeout = TimeSpan.FromSeconds(4)
+    };
+
+    private static readonly SemaphoreSlim Gate = new(1, 1);
+    private static ClientUpdateInfo? _cache;
+    private static DateTime _cacheAtUtc = DateTime.MinValue;
+    private static readonly TimeSpan CacheTtl = TimeSpan.FromSeconds(20);
+
     public static async Task<ClientUpdateInfo?> GetAsync(ClientConfiguration config, CancellationToken cancellationToken = default)
     {
         try
         {
-            var current = AppInfo.GetShortVersion()?.Trim();
-            var endpoint = new Uri(config.HttpBase, $"../client/version?current={Uri.EscapeDataString(current ?? string.Empty)}");
-            using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(6) };
-            using var response = await http.GetAsync(endpoint, cancellationToken).ConfigureAwait(false);
-            if (!response.IsSuccessStatusCode)
+            var cached = _cache;
+            if (cached != null && DateTime.UtcNow - _cacheAtUtc < CacheTtl)
             {
-                return null;
+                return cached;
             }
+
+            await Gate.WaitAsync(cancellationToken).ConfigureAwait(false);
+            try
+            {
+                cached = _cache;
+                if (cached != null && DateTime.UtcNow - _cacheAtUtc < CacheTtl)
+                {
+                    return cached;
+                }
+
+                var current = AppInfo.GetShortVersion()?.Trim();
+                var endpoint = new Uri(
+                    config.HttpBase,
+                    $"../client/version?current={Uri.EscapeDataString(current ?? string.Empty)}");
+                using var response = await Http.GetAsync(endpoint, cancellationToken)
+                    .ConfigureAwait(false);
+                if (!response.IsSuccessStatusCode)
+                {
+                    return null;
+                }
 
             var json = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
             using var doc = JsonDocument.Parse(json);
             var root = doc.RootElement;
-            return new ClientUpdateInfo
+            var info = new ClientUpdateInfo
             {
                 LatestVersion = root.TryGetProperty("version", out var v) ? v.GetString() : null,
                 Message = root.TryGetProperty("message", out var m) ? m.GetString() : null,
@@ -45,6 +73,14 @@ public static class ClientUpdateApi
                 UpdateAvailable = root.TryGetProperty("updateAvailable", out var a) && a.ValueKind != JsonValueKind.Null ? a.GetBoolean() : null,
                 UpdateRequired = root.TryGetProperty("updateRequired", out var r) && r.ValueKind != JsonValueKind.Null ? r.GetBoolean() : null,
             };
+            _cache = info;
+            _cacheAtUtc = DateTime.UtcNow;
+            return info;
+            }
+            finally
+            {
+                Gate.Release();
+            }
         }
         catch
         {
@@ -52,4 +88,3 @@ public static class ClientUpdateApi
         }
     }
 }
-
