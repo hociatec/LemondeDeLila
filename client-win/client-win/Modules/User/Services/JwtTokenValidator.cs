@@ -72,9 +72,7 @@ public sealed class JwtTokenValidator
             return DecodeAndValidateLifetimeOnly(handler, token);
         }
 
-        using var rsa = RSA.Create();
-        rsa.ImportFromPem(File.ReadAllText(publicKeyPath));
-        var signingKey = new RsaSecurityKey(rsa);
+        var signingKey = CreateRsaPublicKeyFromPem(File.ReadAllText(publicKeyPath));
 
         return ValidateWithKey(handler, token, signingKey);
     }
@@ -102,6 +100,14 @@ public sealed class JwtTokenValidator
             throw new Microsoft.IdentityModel.Tokens.SecurityTokenException("Token invalide");
         }
         return jwt;
+    }
+
+    private static RsaSecurityKey CreateRsaPublicKeyFromPem(string pem)
+    {
+        using var rsa = RSA.Create();
+        rsa.ImportFromPem(pem);
+        var parameters = rsa.ExportParameters(false);
+        return new RsaSecurityKey(parameters);
     }
 
     private RsaSecurityKey? TryGetSigningKeyFromJwks()
@@ -188,14 +194,14 @@ public sealed class JwtTokenValidator
                 if (!string.IsNullOrWhiteSpace(k.Alg) && !string.Equals(k.Alg, "RS256", StringComparison.OrdinalIgnoreCase)) continue;
                 if (string.IsNullOrWhiteSpace(k.N) || string.IsNullOrWhiteSpace(k.E)) continue;
 
-                using var rsa = RSA.Create();
-                rsa.ImportParameters(new RSAParameters
+                var parameters = new RSAParameters
                 {
                     Modulus = Base64UrlEncoder.DecodeBytes(k.N),
                     Exponent = Base64UrlEncoder.DecodeBytes(k.E),
-                });
+                };
 
-                var key = new RsaSecurityKey(rsa);
+                // Important: use RSAParameters (not an RSA instance) so the key can't be disposed unexpectedly.
+                var key = new RsaSecurityKey(parameters);
                 if (!string.IsNullOrWhiteSpace(k.Kid))
                 {
                     key.KeyId = k.Kid;
