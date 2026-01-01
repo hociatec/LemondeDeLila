@@ -77,6 +77,17 @@ public partial class AdminView : UserControl
             return;
         }
 
+        // Aligner la sélection WPF avec la sélection VM pour éviter de "repartir au début"
+        // lors des retours (Échap) où SelectedIndex peut être temporairement incohérent.
+        if (DataContext is AdminViewModel vm && vm.SelectedItem != null)
+        {
+            var desiredIndex = ItemsList.Items.IndexOf(vm.SelectedItem);
+            if (desiredIndex >= 0 && desiredIndex != ItemsList.SelectedIndex)
+            {
+                ItemsList.SelectedIndex = desiredIndex;
+            }
+        }
+
         if (ItemsList.SelectedIndex < 0)
         {
             // La sélection VM peut arriver avant que WPF n'ait propagé SelectedIndex.

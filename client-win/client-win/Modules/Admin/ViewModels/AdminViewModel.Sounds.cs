@@ -47,6 +47,7 @@ public sealed partial class AdminViewModel
         SelectedItem = Items.FirstOrDefault();
         Status = "Entrée : sélectionner. Échap : retour.";
         UpdateFilterVisibility();
+        RestoreFocusIfAny();
     }
 
     private void BuildSoundsTable()
@@ -64,6 +65,7 @@ public sealed partial class AdminViewModel
         SelectedItem = Items.FirstOrDefault();
         Status = "Entrée : sélectionner. Échap : retour.";
         UpdateFilterVisibility();
+        RestoreFocusIfAny();
     }
 
     private void BuildSoundsChat()
@@ -80,6 +82,7 @@ public sealed partial class AdminViewModel
         SelectedItem = Items.FirstOrDefault();
         Status = "Entrée : sélectionner. Échap : retour.";
         UpdateFilterVisibility();
+        RestoreFocusIfAny();
     }
 
     private void BuildSoundsPrivateMessages()
@@ -96,6 +99,7 @@ public sealed partial class AdminViewModel
         SelectedItem = Items.FirstOrDefault();
         Status = "Entrée : sélectionner. Échap : retour.";
         UpdateFilterVisibility();
+        RestoreFocusIfAny();
     }
 
     private void BuildSoundDetails(SoundId sound)

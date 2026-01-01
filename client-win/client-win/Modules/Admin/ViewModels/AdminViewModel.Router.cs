@@ -173,11 +173,13 @@ public sealed partial class AdminViewModel
             {
                 if (inviteSound == "sounds.invite.sent")
                 {
+                    PushReturnFocus();
                     BuildSoundDetails(Modules.Audio.Models.SoundId.InvitationSent);
                     return;
                 }
                 if (inviteSound == "sounds.invite.received")
                 {
+                    PushReturnFocus();
                     BuildSoundDetails(Modules.Audio.Models.SoundId.InvitationReceived);
                     return;
                 }
@@ -187,16 +189,19 @@ public sealed partial class AdminViewModel
             {
                 if (tableSound == "sounds.table.enter")
                 {
+                    PushReturnFocus();
                     BuildSoundDetails(Modules.Audio.Models.SoundId.RoomOpened);
                     return;
                 }
                 if (tableSound == "sounds.table.join")
                 {
+                    PushReturnFocus();
                     BuildSoundDetails(Modules.Audio.Models.SoundId.RoomJoined);
                     return;
                 }
                 if (tableSound == "sounds.table.exit")
                 {
+                    PushReturnFocus();
                     BuildSoundDetails(Modules.Audio.Models.SoundId.RoomExit);
                     return;
                 }
@@ -206,11 +211,13 @@ public sealed partial class AdminViewModel
             {
                 if (chatSound == "sounds.chat.sent")
                 {
+                    PushReturnFocus();
                     BuildSoundDetails(Modules.Audio.Models.SoundId.ChatMessageSent);
                     return;
                 }
                 if (chatSound == "sounds.chat.received")
                 {
+                    PushReturnFocus();
                     BuildSoundDetails(Modules.Audio.Models.SoundId.ChatMessageReceived);
                     return;
                 }
@@ -220,11 +227,13 @@ public sealed partial class AdminViewModel
             {
                 if (pmSound == "sounds.private.sent")
                 {
+                    PushReturnFocus();
                     BuildSoundDetails(Modules.Audio.Models.SoundId.PrivateMessageSent);
                     return;
                 }
                 if (pmSound == "sounds.private.received")
                 {
+                    PushReturnFocus();
                     BuildSoundDetails(Modules.Audio.Models.SoundId.PrivateMessageReceived);
                     return;
                 }
