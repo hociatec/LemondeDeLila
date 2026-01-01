@@ -34,4 +34,12 @@ export class WsRouteRegistry {
   get(type: string): WsRouteHandler | undefined {
     return this.routes.get(type);
   }
+
+  has(type: string): boolean {
+    return this.routes.has(type);
+  }
+
+  listTypes(): string[] {
+    return Array.from(this.routes.keys()).sort((a, b) => a.localeCompare(b));
+  }
 }

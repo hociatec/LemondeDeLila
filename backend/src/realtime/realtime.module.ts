@@ -4,6 +4,7 @@ import { RealtimeApiGateway } from './gateways/realtime-api.gateway';
 import { SESSION_STORE } from '../common/session/session-store.interface';
 import { RedisSessionStore } from '../common/session/redis-session-store';
 import { ClientUpdatesModule } from '../client-updates/client-updates.module';
+import { ApiCapabilitiesWsRegistrar } from './ws/api-capabilities.registrar';
 
 @Module({
   imports: [ClientUpdatesModule],
@@ -24,6 +25,7 @@ import { ClientUpdatesModule } from '../client-updates/client-updates.module';
       },
     },
     RealtimeApiGateway,
+    ApiCapabilitiesWsRegistrar,
   ],
 })
 export class RealtimeModule {}
