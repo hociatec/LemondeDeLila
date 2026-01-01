@@ -20,6 +20,13 @@ import { ClientUpdatesService } from '../../client-updates/client-updates.servic
 import { isVersionLower } from '../../common/utils/version.utils';
 import { WsTicketAuthService } from '../../common/ws/ws-ticket-auth.service';
 import { RoomRealtimeTrackerService } from '../services/room-realtime-tracker.service';
+import { extractRoomWsParams } from './room-ws-params';
+import {
+  addHiddenSelf,
+  listConnectedPlayers,
+  listVisibleSpectators,
+  mergePlayers,
+} from './room-roster';
 
 type AuthedClient = {
   socket: WebSocket;
@@ -131,7 +138,7 @@ export class RoomGateway
         return;
       }
     }
-    const { token, roomId, spectator, silent } = this.extractParams(client, args);
+    const { token, roomId, spectator, silent } = extractRoomWsParams(client, args);
     const payload = this.auth.tryVerify(token);
     if (!payload?.id) {
       client.close(4001, 'auth required');
@@ -356,7 +363,7 @@ export class RoomGateway
   private async sendRoomState(roomId: number) {
     try {
       const payload = await this.roomsService.getRoomPayload(roomId);
-      payload.room.spectators = this.listSpectators(roomId);
+      payload.room.spectators = listVisibleSpectators(this.clients.values(), roomId);
       payload.room.counts.spectators = payload.room.spectators.length;
       await this.broadcast(roomId, 'room.updated', payload);
     } catch {
@@ -374,27 +381,15 @@ export class RoomGateway
   ) {
     try {
       const payload = await this.roomsService.getRoomPayload(roomId);
-      payload.room.spectators = this.listSpectators(roomId);
+      payload.room.spectators = listVisibleSpectators(this.clients.values(), roomId);
       payload.room.counts.spectators = payload.room.spectators.length;
       if (opts?.includeHiddenSelf) {
-        payload.room.spectators.push({
-          id: opts.includeHiddenSelf.userId,
-          username: opts.includeHiddenSelf.username,
-        });
+        payload.room.spectators = addHiddenSelf(payload.room.spectators, opts.includeHiddenSelf);
         payload.room.counts.spectators = payload.room.spectators.length;
       }
       if (opts?.includeRealtimePlayers) {
-        const connected = this.listConnectedPlayers(roomId);
-        const merged = new Map<number, string>();
-        for (const p of payload.room.players ?? []) {
-          merged.set(p.id, p.username);
-        }
-        for (const p of connected) {
-          merged.set(p.id, p.username);
-        }
-        payload.room.players = Array.from(merged.entries()).map(
-          ([id, username]) => ({ id, username }),
-        );
+        const connected = listConnectedPlayers(this.clients.values(), roomId);
+        payload.room.players = mergePlayers(payload.room.players, connected);
         payload.room.counts.players = payload.room.players.length;
       }
       this.safeSend(client, { type: 'room.updated', roomId, payload });
@@ -591,7 +586,7 @@ export class RoomGateway
     }
 
     const state = await this.roomsService.getRoomPayload(roomId);
-    state.room.spectators = this.listSpectators(roomId);
+    state.room.spectators = listVisibleSpectators(this.clients.values(), roomId);
     state.room.counts.spectators = state.room.spectators.length;
 
     const gameName = state.manifest?.name || state.room.gameType || 'Jeu';
@@ -657,7 +652,7 @@ export class RoomGateway
 
     try {
       const payload = await this.roomsService.getRoomPayload(roomId);
-      payload.room.spectators = this.listSpectators(roomId);
+      payload.room.spectators = listVisibleSpectators(this.clients.values(), roomId);
       payload.room.counts.spectators = payload.room.spectators.length;
       this.safeSend(client, { type: 'room.left', roomId, payload });
     } catch {
@@ -1059,100 +1054,16 @@ export class RoomGateway
 	    );
 	  }
 
-	  private extractParams(client: WebSocket, args: any[]) {
-	    const request: any =
-	      (args && args[0]) || (client as any).upgradeReq || (client as any).req;
-	    const urlCandidate = (client as any).url || request?.url || '';
-	    let roomId = 0;
-	    let token: string | null = null;
-	    let spectator = false;
-	    let silent = false;
-	    try {
-	      const url = new URL(urlCandidate, 'ws://localhost');
-	      token = url.searchParams.get('token');
-	      roomId = Number(url.searchParams.get('room') || 0);
-	      const spectateRaw = (
-	        url.searchParams.get('spectator') ||
-	        url.searchParams.get('spectate') ||
-	        ''
-	      ).toLowerCase();
-	      spectator =
-	        spectateRaw === '1' ||
-	        spectateRaw === 'true' ||
-	        spectateRaw === 'yes' ||
-	        spectateRaw === 'y';
-	      const silentRaw = (url.searchParams.get('silent') || '').toLowerCase();
-	      const hiddenRaw = (url.searchParams.get('hidden') || '').toLowerCase();
-	      silent =
-	        silentRaw === '1' ||
-	        silentRaw === 'true' ||
-	        silentRaw === 'yes' ||
-	        silentRaw === 'y' ||
-	        hiddenRaw === '1' ||
-	        hiddenRaw === 'true' ||
-	        hiddenRaw === 'yes' ||
-	        hiddenRaw === 'y';
-	    } catch {
-	      roomId = 0;
-	    }
-    if (!token) {
-      token =
-        this.extractBearer((client as any).handshakeHeaders) ||
-        this.extractBearer(request?.headers);
-    }
-	    return { token, roomId, spectator, silent };
-	  }
-
-  private extractBearer(headers: any): string | null {
-    if (!headers) return null;
-    const authHeader = headers.authorization || headers.Authorization;
-    if (authHeader && typeof authHeader === 'string') {
-      const parts = authHeader.split(' ');
-      if (parts.length === 2 && parts[0].toLowerCase() === 'bearer') {
-        return parts[1];
-      }
-    }
-    return null;
-  }
-
-  private listSpectators(roomId: number): RoomPlayer[] {
-    const unique = new Map<number, string>();
-    for (const meta of this.clients.values()) {
-      if (meta.roomId !== roomId) continue;
-      if (meta.role !== 'spectator') continue;
-      if (meta.silent) continue;
-      unique.set(meta.userId, meta.username || `User ${meta.userId}`);
-    }
-    return Array.from(unique.entries()).map(([id, username]) => ({
-      id,
-      username,
-    }));
-  }
-
-  private listConnectedPlayers(roomId: number): RoomPlayer[] {
-    const unique = new Map<number, string>();
-    for (const meta of this.clients.values()) {
-      if (meta.roomId !== roomId) continue;
-      if (meta.role !== 'participant') continue;
-      if (meta.silent) continue;
-      unique.set(meta.userId, meta.username || `User ${meta.userId}`);
-    }
-    return Array.from(unique.entries()).map(([id, username]) => ({
-      id,
-      username,
-    }));
-  }
-
-	  private isAdmin(roles?: string[] | null): boolean {
-	    if (!roles || roles.length === 0) return false;
-	    return roles.some((r) => {
-	      const v = (r || '').trim().toLowerCase();
+  private isAdmin(roles?: string[] | null): boolean {
+    if (!roles || roles.length === 0) return false;
+    return roles.some((r) => {
+      const v = (r || '').trim().toLowerCase();
 	      return v === 'role_admin' || v === 'admin' || v === 'administrator';
 	    });
 	  }
 
   private countSpectators(roomId: number): number {
-    return this.listSpectators(roomId).length;
+    return listVisibleSpectators(this.clients.values(), roomId).length;
   }
 
   private async canSpectate(roomId: number, userId: number): Promise<boolean> {
