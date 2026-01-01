@@ -23,6 +23,7 @@ using client_win.Modules.Settings.Services;
 using System.ComponentModel;
 using client_win.Modules.Audio.Services;
 using client_win.Core.Accessibility;
+using client_win.Modules.Audio.Models;
 
 namespace client_win
 {
@@ -206,10 +207,9 @@ namespace client_win
             _homeAccessor.HomeView = menuView;
             _navigation.Show(menuView);
 
-            // Musique de fond du menu principal (configurable côté admin via sons globaux).
-            var sounds = _host.Services.GetRequiredService<ISoundService>();
-            sounds.StopLoop(Modules.Audio.Models.SoundId.TavernAmbience);
-            sounds.StartLoop(Modules.Audio.Models.SoundId.MainMenuMusic);
+            // Musique de fond du menu principal :
+            // laisser le son de connexion se terminer avant de démarrer la boucle (meilleure UX).
+            _ = StartMainMenuMusicAfterConnectAsync();
         }
 
         private void OnLogoutRequested()
@@ -265,7 +265,7 @@ namespace client_win
                 sounds.StopLoop(Modules.Audio.Models.SoundId.TavernAmbience);
                 if (view is MainMenuView)
                 {
-                    sounds.StartLoop(Modules.Audio.Models.SoundId.MainMenuMusic);
+                    _ = StartMainMenuMusicAfterConnectAsync();
                 }
                 else if (view is Modules.Catalog.Views.CatalogView)
                 {
@@ -276,6 +276,38 @@ namespace client_win
             {
                 // ignore (best-effort)
             }
+        }
+
+        private async Task StartMainMenuMusicAfterConnectAsync()
+        {
+            var revision = Volatile.Read(ref _soundInitRevision);
+            var sounds = _host.Services.GetRequiredService<ISoundService>();
+
+            try
+            {
+                // Attendre que le son "connexion" (s'il joue) se termine.
+                await sounds.WaitForSoundToEndAsync(SoundId.ClientConnected, TimeSpan.FromSeconds(4)).ConfigureAwait(false);
+            }
+            catch
+            {
+                // ignore
+            }
+
+            await Dispatcher.InvokeAsync(() =>
+            {
+                // Annulé si navigation/déconnexion entre temps.
+                if (revision != Volatile.Read(ref _soundInitRevision))
+                {
+                    return;
+                }
+                if (_navigation.CurrentView is not MainMenuView)
+                {
+                    return;
+                }
+
+                sounds.StopLoop(SoundId.TavernAmbience);
+                sounds.StartLoop(SoundId.MainMenuMusic);
+            }, DispatcherPriority.Background);
         }
 
         protected override async void OnClosed(EventArgs e)

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Threading.Tasks;
 using System.Windows.Threading;
 using System.Windows.Media;
 using client_win.Modules.Audio.Models;
@@ -30,6 +31,7 @@ public sealed class SoundService : ISoundService, IDisposable
     private readonly HashSet<SoundId> _looping = new();
     private readonly Dictionary<SoundId, MediaPlayer> _loopPlayers = new();
     private readonly Dictionary<SoundId, EventHandler> _loopHandlers = new();
+    private readonly Dictionary<SoundId, TaskCompletionSource<bool>> _playEndSignals = new();
 
     // Avoid audio spam when a burst of messages happens (e.g. history replay, reconnect).
     private static readonly long MinIntervalTicks = Stopwatch.Frequency / 12; // ~83ms
@@ -196,20 +198,48 @@ public sealed class SoundService : ISoundService, IDisposable
             try
             {
                 MediaPlayer player;
+                TaskCompletionSource<bool> tcs;
                 lock (_gate)
                 {
                     EnsurePlayerLoaded(sound, filePath);
                     player = _players[sound];
+
+                    tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+                    _playEndSignals[sound] = tcs;
                 }
 
                 player.Volume = entry.Volume();
                 player.Stop();
                 player.Position = TimeSpan.Zero;
                 player.Play();
+
+                // Signal end for waiters (best-effort).
+                EventHandler? ended = null;
+                ended = (_, _) =>
+                {
+                    try { player.MediaEnded -= ended; } catch { /* ignore */ }
+                    lock (_gate)
+                    {
+                        if (_playEndSignals.TryGetValue(sound, out var current) && ReferenceEquals(current, tcs))
+                        {
+                            _playEndSignals.Remove(sound);
+                        }
+                    }
+                    tcs.TrySetResult(true);
+                };
+                player.MediaEnded += ended;
             }
             catch (Exception ex)
             {
                 _logger.LogDebug(ex, "Sound playback error ({Sound})", sound);
+                lock (_gate)
+                {
+                    if (_playEndSignals.TryGetValue(sound, out var tcs))
+                    {
+                        _playEndSignals.Remove(sound);
+                        tcs.TrySetResult(true);
+                    }
+                }
             }
         }
 
@@ -220,6 +250,29 @@ public sealed class SoundService : ISoundService, IDisposable
         else
         {
             _ = _dispatcher.BeginInvoke((Action)PlayOnUiThread, DispatcherPriority.Background);
+        }
+    }
+
+    public async Task WaitForSoundToEndAsync(SoundId sound, TimeSpan timeout)
+    {
+        TaskCompletionSource<bool>? tcs = null;
+        lock (_gate)
+        {
+            _playEndSignals.TryGetValue(sound, out tcs);
+        }
+
+        if (tcs == null)
+        {
+            return;
+        }
+
+        try
+        {
+            await Task.WhenAny(tcs.Task, Task.Delay(timeout)).ConfigureAwait(false);
+        }
+        catch
+        {
+            // ignore
         }
     }
 
@@ -360,6 +413,15 @@ public sealed class SoundService : ISoundService, IDisposable
             {
                 try { player.Stop(); } catch { /* ignore */ }
             }
+
+            lock (_gate)
+            {
+                if (_playEndSignals.TryGetValue(sound, out var tcs))
+                {
+                    _playEndSignals.Remove(sound);
+                    tcs.TrySetResult(true);
+                }
+            }
         }
 
         if (_dispatcher.CheckAccess())
@@ -379,6 +441,11 @@ public sealed class SoundService : ISoundService, IDisposable
             _looping.Clear();
             _loopPlayers.Clear();
             _loopHandlers.Clear();
+            foreach (var tcs in _playEndSignals.Values)
+            {
+                tcs.TrySetResult(true);
+            }
+            _playEndSignals.Clear();
             foreach (var p in _players.Values)
             {
                 try { p.Close(); } catch { /* ignore */ }
