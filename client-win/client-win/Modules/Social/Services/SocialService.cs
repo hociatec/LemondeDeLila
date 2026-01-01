@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using client_win.Core.Constants;
+using client_win.Modules.Audio.Models;
+using client_win.Modules.Audio.Services;
 using client_win.Modules.Error;
 using client_win.Modules.Network;
 using client_win.Modules.Social.Models;
@@ -15,12 +17,14 @@ public sealed class SocialService : ISocialService
 {
     private readonly WsRequestClient _ws;
     private readonly ISessionService _session;
+    private readonly ISoundService _sounds;
     private readonly ErrorBus? _errors;
 
-    public SocialService(WsRequestClient ws, ISessionService session, ErrorBus? errors = null)
+    public SocialService(WsRequestClient ws, ISessionService session, ISoundService sounds, ErrorBus? errors = null)
     {
         _ws = ws ?? throw new ArgumentNullException(nameof(ws));
         _session = session ?? throw new ArgumentNullException(nameof(session));
+        _sounds = sounds ?? throw new ArgumentNullException(nameof(sounds));
         _errors = errors;
     }
 
@@ -71,6 +75,10 @@ public sealed class SocialService : ISocialService
             _session.CurrentUser?.Token,
             cancellationToken).ConfigureAwait(false);
 
+        if (response.Success)
+        {
+            _sounds.Play(SoundId.FriendInvitationSent);
+        }
         return response.Success;
     }
 

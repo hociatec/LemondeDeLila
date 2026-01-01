@@ -6,6 +6,8 @@ public enum SoundId
     ChatMessageReceived,
     PrivateMessageSent,
     PrivateMessageReceived,
+    FriendInvitationSent,
+    FriendInvitationReceived,
     InvitationSent,
     InvitationReceived,
     RoomOpened,

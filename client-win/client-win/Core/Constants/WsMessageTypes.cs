@@ -161,11 +161,21 @@ public static class WsMessageTypes
 
         public const string PerfSnapshot = "admin.perf.snapshot";
 
+        public const string ProfileSettingsGet = "admin.profile.settings.get";
+        public const string ProfileSettingsUpdate = "admin.profile.settings.update";
+
         public const string RoomsCleanup = "admin.rooms.cleanup";
         public const string RoomsList = "admin.rooms.list";
         public const string RoomsDestroy = "admin.rooms.destroy";
         public const string RoomsSettingsGet = "admin.rooms.settings.get";
         public const string RoomsSettingsUpdate = "admin.rooms.settings.update";
+
+        public const string BugReportsCreate = "admin.bugReports.create";
+        public const string BugReportsList = "admin.bugReports.list";
+        public const string BugReportsGet = "admin.bugReports.get";
+        public const string BugReportsUpdate = "admin.bugReports.update";
+        public const string BugReportsUpdateStatus = "admin.bugReports.updateStatus";
+        public const string BugReportsDelete = "admin.bugReports.delete";
     }
 
     public static class Rooms

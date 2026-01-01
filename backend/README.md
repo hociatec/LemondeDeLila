@@ -12,11 +12,21 @@ Plateforme NestJS qui gère les salons, le moteur de jeux, la messagerie et la p
 ## Installation locale
 
 ```bash
-cp .env.example .env          # renseigner JWT_SECRET + URLs Redis
+cp .env.example .env          # renseigner JWT_* + URLs Redis
 npm ci
 npm run migration:run:dev     # crée/maj le schéma MySQL local
 npm run start:dev             # API + gateways en mode watch
 ```
+
+### Générer des clés JWT RS256
+
+```bash
+./tools/jwt/generate-rsa-keys.sh
+```
+
+- Serveur: pointer `JWT_PRIVATE_KEY_PATH` et `JWT_PUBLIC_KEY_PATH` vers `backend/keys/jwt-*.pem`
+- Client WPF: copier `backend/keys/jwt-public.pem` vers `config/jwt-signing-public.pem` et définir `jwt.signature.publicKey` dans `client.properties`
+- Endpoint JWKS (clé publique): `GET /.well-known/jwks.json`
 
 ### Mise en place MySQL (dev)
 
@@ -35,7 +45,10 @@ Ce mécanisme remplace le secret partagé statique côté client (déconseillé)
 
 | Variable | Description |
 | --- | --- |
-| `JWT_SECRET` | Clé de signature des JWT. Obligatoire, aucune valeur par défaut en dehors du `.env.example`. |
+| `JWT_ALGORITHM` | `RS256` (recommandé) ou `HS256` (legacy). Si absent, le backend déduit le mode selon la présence de clés RSA. |
+| `JWT_PRIVATE_KEY_PATH` / `JWT_PRIVATE_KEY_PEM` | (RS256) Clé privée PEM pour signer les tokens. Ne jamais exposer au client. |
+| `JWT_PUBLIC_KEY_PATH` / `JWT_PUBLIC_KEY_PEM` | (RS256) Clé publique PEM pour vérifier les tokens. Peut être distribuée aux clients. |
+| `JWT_SECRET` | (HS256 legacy) Secret partagé pour signer/vérifier. Ne jamais l’embarquer dans un client. |
 | `GAME_ENGINE_STATE_REDIS_URL` | Redis utilisé pour persister l’état des parties (requis pour la reprise après crash). |
 | `SESSION_STORE_REDIS_URL` | Redis pour les sessions WS/API, notifications et présence (peuvent avoir leurs URL dédiées). |
 | `NOTIFICATION_REDIS_URL`, `PRESENCE_REDIS_URL` | (Optionnel) Redis distincts pour partager les flux de notifications/presence entre plusieurs instances. |

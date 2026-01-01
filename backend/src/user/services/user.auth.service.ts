@@ -10,10 +10,15 @@ import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
 import { ConfigService } from '@nestjs/config';
 import { User } from '../entities/user.entity';
+import {
+  getJwtAlgorithm,
+  requireJwtSigningKey,
+} from '../../common/auth/jwt-config';
 
 @Injectable()
 export class UserAuthService {
-  private readonly jwtSecret: string;
+  private readonly jwtSigningKey: string;
+  private readonly jwtAlgorithm: jwt.Algorithm;
   private readonly jwtExpiresIn: string;
   private readonly jwtIssuer: string;
   private readonly jwtAudience: string | undefined;
@@ -22,13 +27,8 @@ export class UserAuthService {
     @InjectRepository(User) private readonly users: Repository<User>,
     private readonly config: ConfigService,
   ) {
-    const secret = this.config.get<string>('JWT_SECRET');
-    if (!secret || !secret.trim()) {
-      throw new Error(
-        'JWT_SECRET doit être défini pour signer les tokens (voir .env).',
-      );
-    }
-    this.jwtSecret = secret;
+    this.jwtSigningKey = requireJwtSigningKey(this.config);
+    this.jwtAlgorithm = getJwtAlgorithm(this.config);
     this.jwtExpiresIn = this.config.get<string>('JWT_EXPIRES_IN', '12h');
     this.jwtIssuer = this.config.get<string>('JWT_ISSUER', 'le-monde-de-lila');
     const aud = this.config.get<string>('JWT_AUDIENCE');
@@ -100,10 +100,10 @@ export class UserAuthService {
         email: user.email,
         id: user.id,
       },
-      this.jwtSecret,
+      this.jwtSigningKey,
       (() => {
         const options: jwt.SignOptions = {
-          algorithm: 'HS256',
+          algorithm: this.jwtAlgorithm,
           expiresIn: this.jwtExpiresIn,
           issuer: this.jwtIssuer,
           subject: String(user.id),

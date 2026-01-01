@@ -342,4 +342,13 @@ public partial class MessagingView : UserControl
 
         ShowScreen(MessagingScreen.Detail);
     }
+
+    private void OnReplyClick(object sender, RoutedEventArgs e)
+    {
+        // The button's Command (ReplyCommand) prepares the compose fields.
+        // We only need to switch the UI to the compose screen.
+        _ = Dispatcher.BeginInvoke(
+            DispatcherPriority.Input,
+            new Action(() => ShowScreen(MessagingScreen.Compose)));
+    }
 }

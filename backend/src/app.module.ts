@@ -25,6 +25,8 @@ import { HealthModule } from './health/health.module';
 import { ClientUpdatesModule } from './client-updates/client-updates.module';
 import { SoundsModule } from './sounds/sounds.module';
 import { WsTicketModule } from './common/ws/ws-ticket.module';
+import { JwksModule } from './common/auth/jwks.module';
+import { BugReportsModule } from './bug-reports/bug-reports.module';
 
 @Module({
   imports: [
@@ -42,8 +44,15 @@ import { WsTicketModule } from './common/ws/ws-ticket.module';
         DB_USER: Joi.string().default('root'),
         DB_PASSWORD: Joi.string().allow('', null).default(''),
         DB_NAME: Joi.string().default('le_monde_de_lila'),
-        // JWT: strict (HS256 only) + secret long.
-        JWT_SECRET: Joi.string().min(32).required(),
+        // JWT:
+        // - HS256 (legacy): shared secret (never ship it to clients)
+        // - RS256 (recommended): private key on server, public key distributable to clients
+        JWT_ALGORITHM: Joi.string().valid('HS256', 'RS256').optional(),
+        JWT_SECRET: Joi.string().min(32).optional(),
+        JWT_PRIVATE_KEY_PEM: Joi.string().optional(),
+        JWT_PUBLIC_KEY_PEM: Joi.string().optional(),
+        JWT_PRIVATE_KEY_PATH: Joi.string().optional(),
+        JWT_PUBLIC_KEY_PATH: Joi.string().optional(),
         JWT_ISSUER: Joi.string().default('le-monde-de-lila'),
         JWT_AUDIENCE: Joi.string().optional(),
         JWT_CLOCK_TOLERANCE_SECONDS: Joi.number().default(10),
@@ -67,6 +76,35 @@ import { WsTicketModule } from './common/ws/ws-ticket.module';
         WS_TICKET_TTL_SECONDS: Joi.number().default(60),
         WS_SHARED_SECRET: Joi.string().optional(),
         REALTIME_WS_SECRET: Joi.string().optional(),
+      }).custom((env, helpers) => {
+        const alg = ((env.JWT_ALGORITHM as string | undefined) || '').toUpperCase();
+        const hasRsa =
+          !!env.JWT_PRIVATE_KEY_PEM ||
+          !!env.JWT_PRIVATE_KEY_PATH ||
+          !!env.JWT_PUBLIC_KEY_PEM ||
+          !!env.JWT_PUBLIC_KEY_PATH;
+        const effectiveAlg = alg === 'HS256' || alg === 'RS256' ? alg : hasRsa ? 'RS256' : 'HS256';
+
+        if (effectiveAlg === 'HS256') {
+          if (!env.JWT_SECRET) {
+            return helpers.error('any.custom', {
+              message: 'JWT_SECRET est requis en mode HS256',
+            });
+          }
+          return env;
+        }
+
+        if (!env.JWT_PRIVATE_KEY_PEM && !env.JWT_PRIVATE_KEY_PATH) {
+          return helpers.error('any.custom', {
+            message: 'JWT_PRIVATE_KEY_PEM ou JWT_PRIVATE_KEY_PATH est requis en mode RS256',
+          });
+        }
+        if (!env.JWT_PUBLIC_KEY_PEM && !env.JWT_PUBLIC_KEY_PATH) {
+          return helpers.error('any.custom', {
+            message: 'JWT_PUBLIC_KEY_PEM ou JWT_PUBLIC_KEY_PATH est requis en mode RS256',
+          });
+        }
+        return env;
       }),
     }),
     ThrottlerModule.forRootAsync({
@@ -120,6 +158,8 @@ import { WsTicketModule } from './common/ws/ws-ticket.module';
     ClientUpdatesModule,
     SoundsModule,
     WsTicketModule,
+    JwksModule,
+    BugReportsModule,
   ],
   providers: [
     {

@@ -10,6 +10,8 @@ import { AdminLogsWsHandler } from './admin-logs-ws.handler';
 import { AdminBroadcastWsHandler } from './admin-broadcast-ws.handler';
 import { AdminClientUpdatesWsHandler } from './admin-client-updates-ws.handler';
 import { AdminPerfWsHandler } from './admin-perf-ws.handler';
+import { AdminProfileWsHandler } from './admin-profile-ws.handler';
+import { AdminBugReportsWsHandler } from './admin-bug-reports-ws.handler';
 
 @Injectable()
 export class AdminWsRegistrar implements OnModuleInit {
@@ -25,6 +27,8 @@ export class AdminWsRegistrar implements OnModuleInit {
     private readonly broadcast: AdminBroadcastWsHandler,
     private readonly clientUpdates: AdminClientUpdatesWsHandler,
     private readonly perf: AdminPerfWsHandler,
+    private readonly profile: AdminProfileWsHandler,
+    private readonly bugReports: AdminBugReportsWsHandler,
   ) {}
 
   onModuleInit() {
@@ -113,6 +117,32 @@ export class AdminWsRegistrar implements OnModuleInit {
     );
     this.registry.register('admin.chat.unban', (s, p) =>
       this.chat.chatUnban(s, p),
+    );
+
+    this.registry.register('admin.profile.settings.get', (s, p) =>
+      this.profile.profileSettingsGet(s, p),
+    );
+    this.registry.register('admin.profile.settings.update', (s, p) =>
+      this.profile.profileSettingsUpdate(s, p),
+    );
+
+    this.registry.register('admin.bugReports.create', (s, p) =>
+      this.bugReports.create(s, p),
+    );
+    this.registry.register('admin.bugReports.list', (s, p) =>
+      this.bugReports.list(s, p),
+    );
+    this.registry.register('admin.bugReports.get', (s, p) =>
+      this.bugReports.get(s, p),
+    );
+    this.registry.register('admin.bugReports.update', (s, p) =>
+      this.bugReports.update(s, p),
+    );
+    this.registry.register('admin.bugReports.updateStatus', (s, p) =>
+      this.bugReports.updateStatus(s, p),
+    );
+    this.registry.register('admin.bugReports.delete', (s, p) =>
+      this.bugReports.delete(s, p),
     );
 
     this.registry.register('admin.bots.names.list', (s, p) =>

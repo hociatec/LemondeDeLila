@@ -75,13 +75,15 @@ public sealed partial class AdminViewModel
             _dispatcher.Invoke(() =>
             {
                 Items.Clear();
+                Items.Add(new AdminMenuItem("Gestion profil", tag: "users.profile"));
+                Items.Add(new AdminMenuItem("—", tag: "separator"));
                 foreach (var user in _loadedUsers.OrderBy(u => u.Username))
                 {
                     var roles = user.Roles != null && user.Roles.Count > 0 ? string.Join(',', user.Roles) : "ROLE_USER";
                     var banned = user.BannedUntil.HasValue ? $"Banni (jusqu'au {user.BannedUntil:dd/MM/yyyy})" : "Actif";
                     Items.Add(new AdminMenuItem($"{user.Username} (id {user.Id}) - {roles} - {banned}", tag: user));
                 }
-                if (Items.Count == 0)
+                if (_loadedUsers.Length == 0)
                 {
                     Items.Add(new AdminMenuItem("Aucun utilisateur."));
                 }
@@ -108,13 +110,15 @@ public sealed partial class AdminViewModel
         IsAdditionalPermissionsVisible = false;
         IsSecondaryInputVisible = false;
         Items.Clear();
+        Items.Add(new AdminMenuItem("Gestion profil", tag: "users.profile"));
+        Items.Add(new AdminMenuItem("—", tag: "separator"));
         foreach (var user in _loadedUsers.OrderBy(u => u.Username))
         {
             var roles = user.Roles != null && user.Roles.Count > 0 ? string.Join(',', user.Roles) : "ROLE_USER";
             var banned = user.BannedUntil.HasValue ? $"Banni (jusqu'au {user.BannedUntil:dd/MM/yyyy})" : "Actif";
             Items.Add(new AdminMenuItem($"{user.Username} (id {user.Id}) - {roles} - {banned}", tag: user));
         }
-        if (Items.Count == 0)
+        if (_loadedUsers.Length == 0)
         {
             Items.Add(new AdminMenuItem("Aucun utilisateur."));
         }

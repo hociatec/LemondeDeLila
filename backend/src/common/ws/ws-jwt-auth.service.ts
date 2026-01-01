@@ -3,6 +3,10 @@ import { ConfigService } from '@nestjs/config';
 import * as jwt from 'jsonwebtoken';
 import type { WsAuthPayload } from '../interfaces/ws-auth-payload';
 import type { WebSocket } from 'ws';
+import {
+  getJwtVerifyAlgorithms,
+  requireJwtVerifyKey,
+} from '../auth/jwt-config';
 
 type StrictWsAuthPayload = WsAuthPayload & jwt.JwtPayload;
 
@@ -56,7 +60,7 @@ export class WsJwtAuthService {
   }
 
   verify(token: string): WsAuthPayload {
-    const secret = this.requireSecret();
+    const key = requireJwtVerifyKey(this.config);
     const issuer = this.config.get<string>('JWT_ISSUER', 'le-monde-de-lila');
     const audienceRaw = this.config.get<string>('JWT_AUDIENCE');
     const audience =
@@ -69,7 +73,7 @@ export class WsJwtAuthService {
     );
     try {
       const verifyOptions: jwt.VerifyOptions = {
-        algorithms: ['HS256'],
+        algorithms: getJwtVerifyAlgorithms(this.config),
         issuer,
         clockTolerance,
       };
@@ -79,7 +83,7 @@ export class WsJwtAuthService {
 
       const payload = jwt.verify(
         token,
-        secret,
+        key,
         verifyOptions,
       ) as StrictWsAuthPayload;
 
@@ -134,14 +138,5 @@ export class WsJwtAuthService {
     } catch {
       return null;
     }
-  }
-
-  private requireSecret(): string {
-    const secret =
-      this.config.get<string>('JWT_SECRET') || process.env.JWT_SECRET;
-    if (!secret) {
-      throw new UnauthorizedException('Configuration JWT manquante');
-    }
-    return secret;
   }
 }

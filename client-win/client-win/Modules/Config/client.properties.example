@@ -14,3 +14,9 @@ updates.root.dir=.
 updates.signature.publicKey=./config/update-signing-public.pem
 # updates.auth.token is intentionally unset; provide via env LILA_UPDATE_TOKEN or UPDATES_AUTH_TOKEN
 # updates.signature.algorithm=SHA256withRSA
+
+# JWT signature verification (RS256):
+# Public key PEM used to verify the server-issued JWT locally (safe to ship in the client).
+jwt.issuer=le-monde-de-lila
+# jwt.audience=
+jwt.signature.publicKey=./config/jwt-signing-public.pem

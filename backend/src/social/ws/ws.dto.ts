@@ -30,7 +30,7 @@ export class SocialProfileGetDto {
 export class SocialProfileUpdateDto {
   @IsOptional()
   @IsString()
-  @MaxLength(500)
+  @MaxLength(5000)
   bio?: string;
 
   @IsOptional()

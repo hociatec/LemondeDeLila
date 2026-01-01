@@ -10,10 +10,10 @@ public interface IApiCapabilitiesService
 
 public sealed class ApiCapabilities
 {
+    public bool IsAdmin { get; init; }
     public bool SupportsAdminRoomsList { get; init; }
     public bool SupportsAdminRoomsDestroy { get; init; }
     public bool SupportsAdminRoomsCleanup { get; init; }
     public int RoutesCount { get; init; }
     public string GeneratedAt { get; init; } = string.Empty;
 }
-

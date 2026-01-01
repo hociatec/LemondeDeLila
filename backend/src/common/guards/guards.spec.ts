@@ -1,6 +1,7 @@
 import { ExecutionContext } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as jwt from 'jsonwebtoken';
+import { generateKeyPairSync } from 'crypto';
 import { HttpJwtGuard } from './http-jwt.guard';
 import { WsJwtGuard } from './ws-jwt.guard';
 
@@ -58,5 +59,33 @@ describe('Auth guards', () => {
 
     expect(guard.canActivate(context)).toBe(true);
     expect(client.user).toMatchObject({ id: 42 });
+  });
+
+  it('HttpJwtGuard supports RS256 with public key', () => {
+    const { publicKey, privateKey } = generateKeyPairSync('rsa', {
+      modulusLength: 2048,
+    });
+    const publicKeyPem = publicKey.export({ type: 'spki', format: 'pem' });
+    const privateKeyPem = privateKey.export({ type: 'pkcs8', format: 'pem' });
+
+    const rsaConfig = new ConfigService({
+      JWT_PUBLIC_KEY_PEM: publicKeyPem,
+      JWT_PRIVATE_KEY_PEM: privateKeyPem,
+      JWT_ISSUER: issuer,
+    });
+    const guard = new HttpJwtGuard(rsaConfig);
+
+    const token = jwt.sign({ username: 'lila' }, privateKeyPem, {
+      algorithm: 'RS256',
+      issuer,
+      subject: '1',
+      expiresIn: '1h',
+    });
+
+    const request: any = { headers: { authorization: `Bearer ${token}` } };
+    const context = createHttpContext(request);
+
+    expect(guard.canActivate(context)).toBe(true);
+    expect(request.user).toMatchObject({ username: 'lila' });
   });
 });

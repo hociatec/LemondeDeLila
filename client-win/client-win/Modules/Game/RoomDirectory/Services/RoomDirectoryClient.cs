@@ -4,6 +4,8 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using client_win.Core.Constants;
+using client_win.Modules.Audio.Models;
+using client_win.Modules.Audio.Services;
 using client_win.Modules.Network;
 using client_win.Modules.User.Services;
 
@@ -13,12 +15,14 @@ public sealed class RoomDirectoryClient : IRoomDirectoryClient
 {
     private readonly WsRequestClient _ws;
     private readonly ISessionService _session;
+    private readonly ISoundService _sounds;
     private readonly Modules.Network.PersistentWsClient _transport;
 
-    public RoomDirectoryClient(WsRequestClient ws, ISessionService session, Modules.Network.PersistentWsClient transport)
+    public RoomDirectoryClient(WsRequestClient ws, ISessionService session, ISoundService sounds, Modules.Network.PersistentWsClient transport)
     {
         _ws = ws ?? throw new ArgumentNullException(nameof(ws));
         _session = session ?? throw new ArgumentNullException(nameof(session));
+        _sounds = sounds ?? throw new ArgumentNullException(nameof(sounds));
         _transport = transport ?? throw new ArgumentNullException(nameof(transport));
     }
 
@@ -43,11 +47,13 @@ public sealed class RoomDirectoryClient : IRoomDirectoryClient
 
         if (res.Payload?.Pending == true)
         {
+            _sounds.Play(SoundId.InvitationSent);
             return "Invitation déjà envoyée (en attente).";
         }
 
         if (!string.IsNullOrWhiteSpace(res.Payload?.InvitationId))
         {
+            _sounds.Play(SoundId.InvitationSent);
             return "Invitation envoyée.";
         }
 

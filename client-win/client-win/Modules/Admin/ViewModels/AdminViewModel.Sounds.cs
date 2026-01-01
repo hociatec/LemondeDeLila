@@ -26,7 +26,7 @@ public sealed partial class AdminViewModel
         IsAdditionalPermissionsVisible = false;
         Items.Clear();
         Items.Add(new AdminMenuItem("Table", tag: "sounds.table"));
-        Items.Add(new AdminMenuItem("Invitations", tag: "sounds.invitations"));
+        Items.Add(new AdminMenuItem("Amis", tag: "sounds.invitations"));
         Items.Add(new AdminMenuItem("Tchat", tag: "sounds.chat"));
         Items.Add(new AdminMenuItem("Messages privés", tag: "sounds.private"));
         SelectedItem = Items.FirstOrDefault();
@@ -38,14 +38,14 @@ public sealed partial class AdminViewModel
     private void BuildSoundsInvitations()
     {
         _page = AdminPage.SoundsInvitations;
-        Title = "Administration - Sons - Invitations";
-        Details = "Choisir un son lié aux invitations.";
+        Title = "Administration - Sons - Amis";
+        Details = "Choisir un son lié aux demandes d'amis.";
         IsTextInputVisible = false;
         IsSecondaryInputVisible = false;
         IsAdditionalPermissionsVisible = false;
         Items.Clear();
-        Items.Add(new AdminMenuItem("Invitation envoyée", tag: "sounds.invite.sent"));
-        Items.Add(new AdminMenuItem("Invitation reçue", tag: "sounds.invite.received"));
+        Items.Add(new AdminMenuItem("Demande d'ami envoyée", tag: "sounds.friend.invite.sent"));
+        Items.Add(new AdminMenuItem("Demande d'ami reçue", tag: "sounds.friend.invite.received"));
         SelectedItem = Items.FirstOrDefault();
         Status = "Entrée : sélectionner. Échap : retour.";
         UpdateFilterVisibility();
@@ -56,7 +56,7 @@ public sealed partial class AdminViewModel
     {
         _page = AdminPage.SoundsTable;
         Title = "Administration - Sons - Table";
-        Details = "Choisir un son lié aux tables.";
+        Details = "Choisir un son lié aux tables (entrée/sortie/invitations).";
         IsTextInputVisible = false;
         IsSecondaryInputVisible = false;
         IsAdditionalPermissionsVisible = false;
@@ -64,6 +64,8 @@ public sealed partial class AdminViewModel
         Items.Add(new AdminMenuItem("Entrer dans une table", tag: "sounds.table.enter"));
         Items.Add(new AdminMenuItem("Rejoindre une table", tag: "sounds.table.join"));
         Items.Add(new AdminMenuItem("Quitter une table", tag: "sounds.table.exit"));
+        Items.Add(new AdminMenuItem("Invitation à une table envoyée", tag: "sounds.table.invite.sent"));
+        Items.Add(new AdminMenuItem("Invitation à une table reçue", tag: "sounds.table.invite.received"));
         SelectedItem = Items.FirstOrDefault();
         Status = "Entrée : sélectionner. Échap : retour.";
         UpdateFilterVisibility();
@@ -111,9 +113,10 @@ public sealed partial class AdminViewModel
         _soundDetailsReturnPage = sound switch
         {
             SoundId.RoomOpened or SoundId.RoomJoined or SoundId.RoomExit => AdminPage.SoundsTable,
-            SoundId.InvitationSent or SoundId.InvitationReceived => AdminPage.SoundsInvitations,
+            SoundId.InvitationSent or SoundId.InvitationReceived => AdminPage.SoundsTable,
             SoundId.ChatMessageSent or SoundId.ChatMessageReceived => AdminPage.SoundsChat,
             SoundId.PrivateMessageSent or SoundId.PrivateMessageReceived => AdminPage.SoundsPrivateMessages,
+            SoundId.FriendInvitationSent or SoundId.FriendInvitationReceived => AdminPage.SoundsInvitations,
             _ => AdminPage.Sounds
         };
 
@@ -122,8 +125,10 @@ public sealed partial class AdminViewModel
             SoundId.RoomOpened => ("Table", "Entrer dans une table", _options.Current.SoundRoomOpenedPath),
             SoundId.RoomJoined => ("Table", "Rejoindre une table", _options.Current.SoundRoomJoinedPath),
             SoundId.RoomExit => ("Table", "Quitter une table", _options.Current.SoundRoomExitPath),
-            SoundId.InvitationSent => ("Invitations", "Invitation envoyée", _options.Current.SoundInvitationSentPath),
-            SoundId.InvitationReceived => ("Invitations", "Invitation reçue", _options.Current.SoundInvitationReceivedPath),
+            SoundId.InvitationSent => ("Table", "Invitation à une table envoyée", _options.Current.SoundInvitationSentPath),
+            SoundId.InvitationReceived => ("Table", "Invitation à une table reçue", _options.Current.SoundInvitationReceivedPath),
+            SoundId.FriendInvitationSent => ("Amis", "Demande d'ami envoyée", _options.Current.SoundFriendInvitationSentPath),
+            SoundId.FriendInvitationReceived => ("Amis", "Demande d'ami reçue", _options.Current.SoundFriendInvitationReceivedPath),
             SoundId.ChatMessageSent => ("Tchat", "Envoi d'un message", _options.Current.SoundChatMessageSentPath),
             SoundId.ChatMessageReceived => ("Tchat", "Réception d'un message", _options.Current.SoundChatMessageReceivedPath),
             SoundId.PrivateMessageSent => ("Messages privés", "Envoi d'un message privé", _options.Current.SoundPrivateMessageSentPath),

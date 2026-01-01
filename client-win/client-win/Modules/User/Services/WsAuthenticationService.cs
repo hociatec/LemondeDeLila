@@ -22,13 +22,13 @@ public sealed class WsAuthenticationService : IAuthenticationService
     public WsAuthenticationService(
         WsRequestClient ws,
         ILogger<WsAuthenticationService> logger,
-        Modules.Error.ErrorBus? errorBus = null,
-        JwtTokenValidator? validator = null)
+        Modules.Error.ErrorBus? errorBus,
+        JwtTokenValidator validator)
     {
         _ws = ws ?? throw new ArgumentNullException(nameof(ws));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _errorBus = errorBus;
-        _validator = validator ?? new JwtTokenValidator();
+        _validator = validator ?? throw new ArgumentNullException(nameof(validator));
     }
 
     public async Task<LoginResult> LoginAsync(string username, SecureString password, bool rememberMe)

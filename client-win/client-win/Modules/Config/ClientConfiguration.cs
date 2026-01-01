@@ -28,6 +28,9 @@ public sealed class ClientConfiguration
     public Uri PresenceGatewayWs { get; }
     public Uri NotifyGatewayWs { get; }
     public Uri GameGatewayWs { get; }
+    public string JwtIssuer { get; }
+    public string? JwtAudience { get; }
+    public string? JwtSignaturePublicKeyPath { get; }
 
     private ClientConfiguration(
         string applicationName,
@@ -36,7 +39,10 @@ public sealed class ClientConfiguration
         Uri realtimeGatewayWs,
         Uri presenceGatewayWs,
         Uri notifyGatewayWs,
-        Uri gameGatewayWs)
+        Uri gameGatewayWs,
+        string jwtIssuer,
+        string? jwtAudience,
+        string? jwtSignaturePublicKeyPath)
     {
         ApplicationName = applicationName;
         HttpBase = httpBase;
@@ -45,6 +51,9 @@ public sealed class ClientConfiguration
         PresenceGatewayWs = presenceGatewayWs;
         NotifyGatewayWs = notifyGatewayWs;
         GameGatewayWs = gameGatewayWs;
+        JwtIssuer = jwtIssuer;
+        JwtAudience = jwtAudience;
+        JwtSignaturePublicKeyPath = jwtSignaturePublicKeyPath;
     }
 
     public static ClientConfiguration Load(string? pathOverride = null)
@@ -107,7 +116,21 @@ public sealed class ClientConfiguration
 
         Validate(new[] { apiGateway, realtimeGateway, presenceGateway, notifyGateway, gameGateway }, httpBase);
 
-        var config = new ClientConfiguration(appName, httpBase, apiGateway, realtimeGateway, presenceGateway, notifyGateway, gameGateway);
+        string jwtIssuer = Get(properties, "jwt.issuer", "le-monde-de-lila");
+        string? jwtAudience = Normalize(Get(properties, "jwt.audience", string.Empty));
+        string? jwtPublicKeyPath = ResolveOptionalPath(Get(properties, "jwt.signature.publicKey", string.Empty));
+
+        var config = new ClientConfiguration(
+            appName,
+            httpBase,
+            apiGateway,
+            realtimeGateway,
+            presenceGateway,
+            notifyGateway,
+            gameGateway,
+            jwtIssuer,
+            jwtAudience,
+            jwtPublicKeyPath);
 
         // Log de la configuration finale (masquer les secrets)
         Log.Information("Configuration réseau chargée:");
@@ -118,6 +141,10 @@ public sealed class ClientConfiguration
         Log.Information("  - WebSocket Presence: {PresenceGateway}", presenceGateway);
         Log.Information("  - WebSocket Notify: {NotifyGateway}", notifyGateway);
         Log.Information("  - WebSocket Game: {GameGateway}", gameGateway);
+        if (!string.IsNullOrWhiteSpace(jwtPublicKeyPath))
+        {
+            Log.Information("  - JWT signature public key: {JwtPublicKey}", jwtPublicKeyPath);
+        }
 
         return config;
     }
@@ -264,6 +291,23 @@ public sealed class ClientConfiguration
         }
         var trimmed = candidate.Trim();
         return trimmed.Length == 0 ? null : trimmed;
+    }
+
+    private static string? ResolveOptionalPath(string? candidate)
+    {
+        var value = Normalize(candidate);
+        if (value == null)
+        {
+            return null;
+        }
+
+        // Allow relative paths in client.properties (resolved against the app base dir).
+        if (!Path.IsPathRooted(value))
+        {
+            value = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, value));
+        }
+
+        return value;
     }
 
     private static void TryMigrateDevAppDataConfig(string appDataPath, string? packagedTemplatePath)

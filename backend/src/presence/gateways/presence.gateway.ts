@@ -4,7 +4,6 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { ConfigService } from '@nestjs/config';
 import { Logger } from '@nestjs/common';
 import { Server, WebSocket } from 'ws';
 import {
@@ -30,14 +29,8 @@ export class PresenceGateway
     private readonly presence: PresenceService,
     private readonly auth: WsJwtAuthService,
     private readonly wsTickets: WsTicketAuthService,
-    config: ConfigService,
   ) {
-    const secret = config.get<string>('JWT_SECRET');
-    if (!secret) {
-      throw new Error(
-        'JWT_SECRET doit être défini pour le WebSocket de présence.',
-      );
-    }
+    // Auth JWT is handled by WsJwtAuthService (RS256/HS256 depending on configuration).
   }
 
   async handleConnection(client: WebSocket, ...args: any[]) {

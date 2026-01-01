@@ -17,6 +17,14 @@ public partial class MainMenuView : UserControl
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
         FocusWhenContainersGenerated();
+        if (DataContext is MainMenuViewModel vm)
+        {
+            _ = Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(async () =>
+            {
+                await vm.RefreshAdminVisibilityCommand.ExecuteAsync(null).ConfigureAwait(true);
+                FocusWhenContainersGenerated();
+            }));
+        }
     }
 
     private void OnKeyDown(object sender, KeyEventArgs e)
@@ -103,4 +111,3 @@ public partial class MainMenuView : UserControl
         ItemsList.ItemContainerGenerator.StatusChanged += handler;
     }
 }
-

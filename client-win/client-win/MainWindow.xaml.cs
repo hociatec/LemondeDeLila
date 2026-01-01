@@ -22,6 +22,7 @@ using client_win.Modules.Updates;
 using client_win.Modules.Settings.Services;
 using System.ComponentModel;
 using client_win.Modules.Audio.Services;
+using client_win.Core.Accessibility;
 
 namespace client_win
 {
@@ -49,6 +50,7 @@ namespace client_win
         {
             InitializeComponent();
             _host = AppBootstrapper.Build(RootHost);
+            SpaceKeyAnnouncer.Initialize(_host.Services.GetRequiredService<IScreenReaderAnnouncer>());
             _errorBus = _host.Errors;
             _wsConnection = _host.WsClient;
             _dialogs = _host.Dialogs;

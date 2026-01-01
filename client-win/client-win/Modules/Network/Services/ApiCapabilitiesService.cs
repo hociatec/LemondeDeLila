@@ -55,6 +55,7 @@ public sealed class ApiCapabilitiesService : IApiCapabilitiesService, IDisposabl
 
         var capabilities = new ApiCapabilities
         {
+            IsAdmin = res.Success && res.Payload?.IsAdmin == true,
             SupportsAdminRoomsList = res.Success && res.Payload?.Features?.GetValueOrDefault("admin.rooms.list") == true,
             SupportsAdminRoomsDestroy = res.Success && res.Payload?.Features?.GetValueOrDefault("admin.rooms.destroy") == true,
             SupportsAdminRoomsCleanup = res.Success && res.Payload?.Features?.GetValueOrDefault("admin.rooms.cleanup") == true,
@@ -87,6 +88,9 @@ public sealed class ApiCapabilitiesService : IApiCapabilitiesService, IDisposabl
 
     private sealed class ApiCapabilitiesPayload
     {
+        [JsonPropertyName("isAdmin")]
+        public bool IsAdmin { get; set; }
+
         [JsonPropertyName("features")]
         public Dictionary<string, bool>? Features { get; set; }
 
@@ -97,4 +101,3 @@ public sealed class ApiCapabilitiesService : IApiCapabilitiesService, IDisposabl
         public string? GeneratedAt { get; set; }
     }
 }
-

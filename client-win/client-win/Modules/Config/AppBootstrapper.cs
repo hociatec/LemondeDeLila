@@ -158,9 +158,9 @@ public static class AppBootstrapper
                 sp.GetRequiredService<ISessionService>(),
                 sp.GetRequiredService<PersistentWsClient>()));
 
-        // JWT: le client ne doit jamais contenir de secret de signature.
-        // On décode uniquement le token pour en extraire userId/username/exp.
-        services.AddSingleton<JwtTokenValidator>(_ => new JwtTokenValidator());
+        // JWT: validation locale via clé publique (RS256). Ne jamais embarquer de secret (HS256).
+        services.AddSingleton<JwtTokenValidator>(sp => new JwtTokenValidator(
+            sp.GetRequiredService<ClientConfiguration>()));
 
         // Services d'authentification
         services.AddSingleton<WsAuthenticationService>(sp => new WsAuthenticationService(
@@ -219,6 +219,7 @@ public static class AppBootstrapper
             new Modules.Game.RoomDirectory.Services.RoomDirectoryClient(
                 sp.GetRequiredService<WsRequestClient>(),
                 sp.GetRequiredService<ISessionService>(),
+                sp.GetRequiredService<ISoundService>(),
                 sp.GetRequiredService<PersistentWsClient>()));
 
         services.AddSingleton<IGameGatewayClient>(sp =>
@@ -263,12 +264,14 @@ public static class AppBootstrapper
             new MessagingService(
                 sp.GetRequiredService<WsRequestClient>(),
                 sp.GetRequiredService<ISessionService>(),
+                sp.GetRequiredService<ISoundService>(),
                 errors));
 
         services.AddSingleton<ISocialService>(sp =>
             new SocialService(
                 sp.GetRequiredService<WsRequestClient>(),
                 sp.GetRequiredService<ISessionService>(),
+                sp.GetRequiredService<ISoundService>(),
                 errors));
 
         services.AddSingleton<IStatsService>(sp =>
@@ -448,6 +451,7 @@ public sealed class AppHost : IAsyncDisposable
         new(user,
             Services.GetRequiredService<Modules.MainMenu.Services.IMenuRouter>(),
             Services.GetRequiredService<Modules.Catalog.Services.ICatalogService>(),
+            Services.GetRequiredService<Modules.Network.Services.IApiCapabilitiesService>(),
             logout);
 
     public async ValueTask DisposeAsync()

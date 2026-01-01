@@ -82,10 +82,90 @@ public sealed partial class AdminViewModel
                     BuildSounds();
                     return;
                 }
+                if (tag is string bugReports && bugReports == "bugReports")
+                {
+                    PushReturnFocus();
+                    await LoadBugReportsAsync().ConfigureAwait(true);
+                    return;
+                }
                 if (tag is string rooms && rooms == "rooms")
                 {
                     PushReturnFocus();
                     BuildRooms();
+                    return;
+                }
+            }
+
+            if (_page == AdminPage.BugReports && tag is string bugListAction)
+            {
+                if (bugListAction == "bugReports.create")
+                {
+                    PushReturnFocus();
+                    BuildBugReportCreate();
+                    return;
+                }
+                if (bugListAction == "bugReports.refresh")
+                {
+                    await LoadBugReportsAsync().ConfigureAwait(true);
+                    return;
+                }
+            }
+
+            if (_page == AdminPage.BugReports && tag is AdminBugReportDto report)
+            {
+                PushReturnFocus();
+                BuildBugReportDetails(report);
+                return;
+            }
+
+            if (_page == AdminPage.BugReportCreate && tag is string bugCreateAction && bugCreateAction == "bugReports.submit")
+            {
+                await SubmitBugReportAsync().ConfigureAwait(true);
+                return;
+            }
+
+            if (_page == AdminPage.BugReportDetails && tag is string bugDetailsAction)
+            {
+                if (bugDetailsAction == "bugReports.details.refresh" && _selectedBugReport != null)
+                {
+                    var refreshed = await _admin.GetBugReportAsync(_selectedBugReport.Id).ConfigureAwait(true);
+                    _selectedBugReport = refreshed;
+                    BuildBugReportDetails(refreshed);
+                    return;
+                }
+                if (bugDetailsAction == "bugReports.edit" && _selectedBugReport != null)
+                {
+                    PushReturnFocus();
+                    BuildBugReportEdit(_selectedBugReport);
+                    return;
+                }
+                if (bugDetailsAction == "bugReports.delete")
+                {
+                    await DeleteBugReportAsync().ConfigureAwait(true);
+                    return;
+                }
+                if (bugDetailsAction == "bugReports.status.pending")
+                {
+                    await UpdateBugReportStatusAsync("pending").ConfigureAwait(true);
+                    return;
+                }
+                if (bugDetailsAction == "bugReports.status.in_progress")
+                {
+                    await UpdateBugReportStatusAsync("in_progress").ConfigureAwait(true);
+                    return;
+                }
+                if (bugDetailsAction == "bugReports.status.done")
+                {
+                    await UpdateBugReportStatusAsync("done").ConfigureAwait(true);
+                    return;
+                }
+            }
+
+            if (_page == AdminPage.BugReportEdit && tag is string bugEditAction)
+            {
+                if (bugEditAction == "bugReports.edit.submit")
+                {
+                    await SubmitBugReportEditAsync().ConfigureAwait(true);
                     return;
                 }
             }
@@ -203,16 +283,16 @@ public sealed partial class AdminViewModel
 
             if (_page == AdminPage.SoundsInvitations && tag is string inviteSound)
             {
-                if (inviteSound == "sounds.invite.sent")
+                if (inviteSound == "sounds.friend.invite.sent" || inviteSound == "sounds.invite.sent")
                 {
                     PushReturnFocus();
-                    BuildSoundDetails(Modules.Audio.Models.SoundId.InvitationSent);
+                    BuildSoundDetails(Modules.Audio.Models.SoundId.FriendInvitationSent);
                     return;
                 }
-                if (inviteSound == "sounds.invite.received")
+                if (inviteSound == "sounds.friend.invite.received" || inviteSound == "sounds.invite.received")
                 {
                     PushReturnFocus();
-                    BuildSoundDetails(Modules.Audio.Models.SoundId.InvitationReceived);
+                    BuildSoundDetails(Modules.Audio.Models.SoundId.FriendInvitationReceived);
                     return;
                 }
             }
@@ -235,6 +315,18 @@ public sealed partial class AdminViewModel
                 {
                     PushReturnFocus();
                     BuildSoundDetails(Modules.Audio.Models.SoundId.RoomExit);
+                    return;
+                }
+                if (tableSound == "sounds.table.invite.sent")
+                {
+                    PushReturnFocus();
+                    BuildSoundDetails(Modules.Audio.Models.SoundId.InvitationSent);
+                    return;
+                }
+                if (tableSound == "sounds.table.invite.received")
+                {
+                    PushReturnFocus();
+                    BuildSoundDetails(Modules.Audio.Models.SoundId.InvitationReceived);
                     return;
                 }
             }
@@ -396,6 +488,13 @@ public sealed partial class AdminViewModel
                 return;
             }
 
+            if (_page == AdminPage.Users && tag is string usersTag && usersTag == "users.profile")
+            {
+                PushReturnFocus();
+                BuildUsersProfileMenu();
+                return;
+            }
+
             if (_page == AdminPage.Users && tag is AdminUserDto user)
             {
                 PushReturnFocus();
@@ -424,6 +523,19 @@ public sealed partial class AdminViewModel
             if (_page == AdminPage.UserChatBanForm && _selectedUser != null && tag is string chatBanTag && chatBanTag == "userChatBan.submit")
             {
                 await SubmitUserChatBanAsync(_selectedUser).ConfigureAwait(true);
+                return;
+            }
+
+            if (_page == AdminPage.UsersProfile && tag is string profileMenuTag && profileMenuTag == "users.profile.bio")
+            {
+                PushReturnFocus();
+                await OpenProfileBioSettingsAsync().ConfigureAwait(true);
+                return;
+            }
+
+            if (_page == AdminPage.UsersProfileBioSettings && tag is string profileTag && profileTag == "users.profile.submit")
+            {
+                await SubmitProfileSettingsAsync().ConfigureAwait(true);
                 return;
             }
 

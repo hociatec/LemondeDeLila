@@ -4,8 +4,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using client_win.Core;
-using client_win.Modules.Audio.Models;
-using client_win.Modules.Audio.Services;
 using client_win.Modules.Game.RoomDirectory.Services;
 using client_win.Modules.Messaging.Services;
 using client_win.Modules.Presence.Models;
@@ -30,7 +28,6 @@ public sealed class PresenceViewModel : ObservableObject
     private readonly ITextPromptService _prompts;
     private readonly ISessionService _session;
     private readonly IDialogService _dialogs;
-    private readonly ISoundService _sounds;
     private readonly Action _close;
     private readonly Func<int, Task> _joinRoom;
 
@@ -53,7 +50,6 @@ public sealed class PresenceViewModel : ObservableObject
         ITextPromptService prompts,
         ISessionService session,
         IDialogService dialogs,
-        ISoundService sounds,
         Func<int, Task> joinRoom,
         Action onClose)
     {
@@ -63,7 +59,6 @@ public sealed class PresenceViewModel : ObservableObject
         _prompts = prompts ?? throw new ArgumentNullException(nameof(prompts));
         _session = session ?? throw new ArgumentNullException(nameof(session));
         _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
-        _sounds = sounds ?? throw new ArgumentNullException(nameof(sounds));
         _joinRoom = joinRoom ?? throw new ArgumentNullException(nameof(joinRoom));
         _close = onClose ?? (() => { });
 
@@ -294,12 +289,6 @@ public sealed class PresenceViewModel : ObservableObject
             {
                 var res = await _rooms.InviteSendAsync(roomId.Value, player.Id, CancellationToken.None).ConfigureAwait(true);
                 Details = res;
-                if (!string.IsNullOrWhiteSpace(res) &&
-                    res.Contains("envoy", StringComparison.OrdinalIgnoreCase) &&
-                    !res.Contains("impossible", StringComparison.OrdinalIgnoreCase))
-                {
-                    _sounds.Play(SoundId.InvitationSent);
-                }
                 // L'utilisateur veut revenir directement dans la table après l'envoi,
                 // pour éviter une double activation accidentelle sur l'item "Inviter".
                 _close();
@@ -346,10 +335,6 @@ public sealed class PresenceViewModel : ObservableObject
             {
                 var msg = await _messaging.SendAsync(player.Id, text.Trim(), subject: subject.Trim()).ConfigureAwait(false);
                 Details = msg != null ? "Message envoyé." : "Envoi impossible.";
-                if (msg != null)
-                {
-                    _sounds.Play(SoundId.PrivateMessageSent);
-                }
             }
             finally
             {

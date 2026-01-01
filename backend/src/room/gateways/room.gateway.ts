@@ -61,7 +61,6 @@ export class RoomGateway
     private readonly roomsService: RoomService,
     @Inject(forwardRef(() => BotService))
     private readonly botService: BotService,
-    config: ConfigService,
     private readonly auth: WsJwtAuthService,
     private readonly signature: WsSignatureService,
     private readonly catalog: CatalogService,
@@ -83,10 +82,7 @@ export class RoomGateway
       this.forceDisconnectRoomClients(roomId);
     });
 
-    const secret = config.get<string>('JWT_SECRET');
-    if (!secret) {
-      throw new Error('JWT_SECRET doit être défini pour le WS room');
-    }
+    // Auth JWT is handled by WsJwtAuthService (RS256/HS256 depending on configuration).
   }
 
   private forceDisconnectRoomClients(roomId: number): void {

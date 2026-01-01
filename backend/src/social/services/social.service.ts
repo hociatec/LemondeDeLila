@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { NotificationService } from '../../notification/services/notification.service';
 import { User } from '../../user/entities/user.entity';
+import { SocialProfileSettingsService } from './social-profile-settings.service';
 import {
   SocialProfile,
   SocialProfileVisibility,
@@ -28,6 +29,7 @@ export class SocialService {
     @InjectRepository(User)
     private readonly users: Repository<User>,
     private readonly notifications: NotificationService,
+    private readonly profileSettings: SocialProfileSettingsService,
   ) {}
 
   async listFriends(userId: number) {
@@ -278,7 +280,16 @@ export class SocialService {
   async updateProfile(userId: number, bio?: string, visibility?: string) {
     const profile = await this.ensureProfile(userId);
     if (typeof bio === 'string') {
-      profile.bio = bio.trim();
+      const trimmed = bio.trim();
+      const length = trimmed.length;
+      const settings = this.profileSettings.get();
+      if (length < settings.bioMinLength || length > settings.bioMaxLength) {
+        throw new HttpException(
+          `Bio invalide (longueur ${length}). Requis: ${settings.bioMinLength}-${settings.bioMaxLength} caractères.`,
+          400,
+        );
+      }
+      profile.bio = trimmed;
     }
     if (typeof visibility === 'string') {
       const normalized = visibility

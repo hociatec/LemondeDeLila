@@ -47,6 +47,11 @@ logsse.txt
 ###############################
 backend/data/client-updates/
 backend/data/room-maintenance.json
+backend/data/social-profile-settings.json
+backend/data/bug-reports.json
+backend/data/sounds/
+backend/keys/
+backend/.env
 
 ###############################
 # System files

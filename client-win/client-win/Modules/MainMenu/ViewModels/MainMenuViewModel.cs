@@ -1,10 +1,9 @@
 using System;
-using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Collections.ObjectModel;
-using System.Text.Json;
 using System.Windows.Input;
 using client_win.Core;
+using client_win.Modules.Network.Services;
 using client_win.Modules.Catalog.Services;
 using client_win.Modules.MainMenu.Services;
 using client_win.Modules.User.Models;
@@ -17,19 +16,26 @@ public sealed class MainMenuViewModel : ObservableObject
     private readonly AuthenticatedUser _user;
     private readonly IMenuRouter _router;
     private readonly ICatalogService _catalog;
+    private readonly IApiCapabilitiesService _capabilities;
     private readonly Action? _logout;
     private string _statusMessage = "Prêt.";
     private bool _isAdminVisible;
     private bool _isBusy;
     private MainMenuItem? _selectedItem;
 
-    public MainMenuViewModel(AuthenticatedUser user, IMenuRouter router, ICatalogService catalog, Action? logout = null)
+    public MainMenuViewModel(
+        AuthenticatedUser user,
+        IMenuRouter router,
+        ICatalogService catalog,
+        IApiCapabilitiesService capabilities,
+        Action? logout = null)
     {
         _user = user ?? throw new ArgumentNullException(nameof(user));
         _router = router ?? throw new ArgumentNullException(nameof(router));
         _catalog = catalog ?? throw new ArgumentNullException(nameof(catalog));
+        _capabilities = capabilities ?? throw new ArgumentNullException(nameof(capabilities));
         _logout = logout;
-        _isAdminVisible = HasAdminRole(user.Token);
+        _isAdminVisible = false;
 
         OpenCatalogCommand = new AsyncRelayCommand(
             async () =>
@@ -67,6 +73,10 @@ public sealed class MainMenuViewModel : ObservableObject
 
         Items = new ObservableCollection<MainMenuItem>();
         ActivateCommand = new AsyncRelayCommand(ActivateSelectedAsync);
+        RefreshAdminVisibilityCommand = new AsyncRelayCommand(RefreshAdminVisibilityAsync, onException: ex =>
+        {
+            Log.Error(ex, "Erreur lors de la détection des droits admin");
+        });
         BuildMenuItems();
     }
 
@@ -106,6 +116,7 @@ public sealed class MainMenuViewModel : ObservableObject
     }
 
     public AsyncRelayCommand ActivateCommand { get; }
+    public AsyncRelayCommand RefreshAdminVisibilityCommand { get; }
 
     private void SetStatus(string text) => StatusMessage = text;
 
@@ -121,16 +132,65 @@ public sealed class MainMenuViewModel : ObservableObject
         Items.Add(new MainMenuItem("Livre des contes", tag: StatsCommand));
         Items.Add(new MainMenuItem("À propos", tag: AboutCommand));
 
-        if (_isAdminVisible)
-        {
-            Items.Add(new MainMenuItem("Administration", tag: AdminCommand));
-        }
-
         Items.Add(new MainMenuItem("Options", tag: OptionsCommand));
         Items.Add(new MainMenuItem("Déconnexion", tag: LogoutCommand));
 
         SelectedItem = Items.FirstOrDefault();
         StatusMessage = "Entrée : sélectionner.";
+    }
+
+    private async Task RefreshAdminVisibilityAsync()
+    {
+        var capabilities = await _capabilities.GetAsync().ConfigureAwait(true);
+        var shouldShowAdmin = capabilities.IsAdmin;
+
+        if (shouldShowAdmin == _isAdminVisible)
+        {
+            return;
+        }
+
+        IsAdminVisible = shouldShowAdmin;
+        UpsertAdminMenuItem();
+    }
+
+    private void UpsertAdminMenuItem()
+    {
+        const string adminLabel = "Administration";
+        var existing = Items.FirstOrDefault(i => string.Equals(i.Label, adminLabel, StringComparison.Ordinal));
+
+        if (_isAdminVisible)
+        {
+            if (existing != null)
+            {
+                return;
+            }
+
+            var optionsIndex = Items
+                .Select((item, index) => (item, index))
+                .FirstOrDefault(x => string.Equals(x.item.Label, "Options", StringComparison.Ordinal))
+                .index;
+
+            if (optionsIndex <= 0 || optionsIndex >= Items.Count)
+            {
+                Items.Add(new MainMenuItem(adminLabel, tag: AdminCommand));
+                return;
+            }
+
+            Items.Insert(optionsIndex, new MainMenuItem(adminLabel, tag: AdminCommand));
+            return;
+        }
+
+        if (existing == null)
+        {
+            return;
+        }
+
+        var wasSelected = ReferenceEquals(SelectedItem, existing);
+        Items.Remove(existing);
+        if (wasSelected)
+        {
+            SelectedItem = Items.FirstOrDefault();
+        }
     }
 
     private async Task ActivateSelectedAsync()
@@ -165,78 +225,4 @@ public sealed class MainMenuViewModel : ObservableObject
             _isBusy = false;
         }
     }
-
-    private bool HasAdminRole(string token)
-    {
-        if (string.IsNullOrWhiteSpace(token))
-        {
-            return false;
-        }
-        try
-        {
-            var handler = new JwtSecurityTokenHandler();
-            var jwt = handler.ReadJwtToken(token);
-            var roleClaims = jwt.Claims.Where(c =>
-                string.Equals(c.Type, "roles", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(c.Type, "role", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(c.Type, "http://schemas.microsoft.com/ws/2008/06/identity/claims/role", StringComparison.OrdinalIgnoreCase));
-
-            foreach (var claim in roleClaims)
-            {
-                var raw = (claim.Value ?? string.Empty).Trim();
-                if (string.IsNullOrWhiteSpace(raw))
-                {
-                    continue;
-                }
-
-                // Backend uses roles as a JSON array in the JWT payload (ex: ["ROLE_ADMIN"]).
-                if (raw.StartsWith("[", StringComparison.Ordinal))
-                {
-                    try
-                    {
-                        using var doc = JsonDocument.Parse(raw);
-                        if (doc.RootElement.ValueKind == JsonValueKind.Array)
-                        {
-                            foreach (var el in doc.RootElement.EnumerateArray())
-                            {
-                                var role = el.ValueKind == JsonValueKind.String ? (el.GetString() ?? string.Empty) : string.Empty;
-                                if (IsAdminRole(role))
-                                {
-                                    return true;
-                                }
-                            }
-                            continue;
-                        }
-                    }
-                    catch
-                    {
-                        // fallback below
-                    }
-                }
-
-                var roles = raw.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
-                foreach (var role in roles)
-                {
-                    var cleaned = role.Trim().Trim('"', '\'', '[', ']', ' ');
-                    if (IsAdminRole(cleaned))
-                    {
-                        return true;
-                    }
-                }
-            }
-        }
-        catch
-        {
-            // JUSTIFICATION: Erreur attendue lors du parsing du JWT
-            // Causes possibles: token malformé, format JWT invalide, claims manquants
-            // RECOVERY: Traiter comme non-admin (comportement sécurisé par défaut)
-            // Principe du "fail-safe" : en cas de doute, pas d'accès admin
-            return false;
-        }
-        return false;
-    }
-
-    private static bool IsAdminRole(string role) =>
-        string.Equals(role, "ROLE_ADMIN", StringComparison.OrdinalIgnoreCase) ||
-        string.Equals(role, "admin", StringComparison.OrdinalIgnoreCase);
 }

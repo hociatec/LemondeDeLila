@@ -2,7 +2,6 @@ using System;
 using System.Threading.Tasks;
 using System.Windows;
 using client_win.Modules.Game.Shell.Services;
-using client_win.Modules.Audio.Services;
 using client_win.Modules.Presence.ViewModels;
 using client_win.Modules.Presence.Views;
 using client_win.Modules.Shell.Services;
@@ -47,7 +46,6 @@ public sealed class PresenceLauncher : IPresenceLauncher
                     prompts: _services.GetRequiredService<Modules.TextPrompts.Services.ITextPromptService>(),
                     session: _session,
                     dialogs: _services.GetRequiredService<IDialogService>(),
-                    sounds: _services.GetRequiredService<ISoundService>(),
                     joinRoom: roomId => JoinRoomAsync(roomId),
                     onClose: () => _ = CloseAsync());
             }

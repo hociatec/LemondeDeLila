@@ -3,6 +3,8 @@ export const SOUND_KEYS = [
   'ChatMessageReceived',
   'PrivateMessageSent',
   'PrivateMessageReceived',
+  'FriendInvitationSent',
+  'FriendInvitationReceived',
   'InvitationSent',
   'InvitationReceived',
   'RoomOpened',
@@ -24,4 +26,3 @@ export type SoundManifest = {
   updatedAt: string; // ISO
   sounds: Partial<Record<SoundKey, SoundManifestEntry>>;
 };
-

@@ -7,6 +7,10 @@ import {
 import { ConfigService } from '@nestjs/config';
 import * as jwt from 'jsonwebtoken';
 import { WsAuthPayload } from '../interfaces/ws-auth-payload';
+import {
+  getJwtVerifyAlgorithms,
+  requireJwtVerifyKey,
+} from '../auth/jwt-config';
 
 type StrictWsAuthPayload = WsAuthPayload & jwt.JwtPayload;
 
@@ -75,10 +79,7 @@ export class WsJwtGuard implements CanActivate {
     if (!token) {
       throw new UnauthorizedException('Token manquant');
     }
-    const secret = this.config.get<string>('JWT_SECRET');
-    if (!secret) {
-      throw new UnauthorizedException('Configuration JWT manquante');
-    }
+    const key = requireJwtVerifyKey(this.config);
     const issuer = this.config.get<string>('JWT_ISSUER', 'le-monde-de-lila');
     const audienceRaw = this.config.get<string>('JWT_AUDIENCE');
     const audience =
@@ -91,7 +92,7 @@ export class WsJwtGuard implements CanActivate {
     );
     try {
       const verifyOptions: jwt.VerifyOptions = {
-        algorithms: ['HS256'],
+        algorithms: getJwtVerifyAlgorithms(this.config),
         issuer,
         clockTolerance,
       };
@@ -101,7 +102,7 @@ export class WsJwtGuard implements CanActivate {
 
       const payload = jwt.verify(
         token,
-        secret,
+        key,
         verifyOptions,
       ) as StrictWsAuthPayload;
 

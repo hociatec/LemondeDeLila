@@ -79,4 +79,17 @@ public interface IAdminService
         int? autoCleanupIntervalSeconds = null,
         int? autoCleanupLimit = null,
         CancellationToken cancellationToken = default);
+
+    Task<AdminProfileSettingsDto> GetProfileSettingsAsync(CancellationToken cancellationToken = default);
+    Task<AdminProfileSettingsDto> UpdateProfileSettingsAsync(
+        int? bioMinLength = null,
+        int? bioMaxLength = null,
+        CancellationToken cancellationToken = default);
+
+    Task<AdminBugReportsListResponseDto> ListBugReportsAsync(CancellationToken cancellationToken = default);
+    Task<AdminBugReportDto> CreateBugReportAsync(string subject, string content, CancellationToken cancellationToken = default);
+    Task<AdminBugReportDto> GetBugReportAsync(string id, CancellationToken cancellationToken = default);
+    Task<AdminBugReportDto> UpdateBugReportAsync(string id, string? subject = null, string? content = null, CancellationToken cancellationToken = default);
+    Task<AdminBugReportDto> UpdateBugReportStatusAsync(string id, string status, CancellationToken cancellationToken = default);
+    Task<bool> DeleteBugReportAsync(string id, CancellationToken cancellationToken = default);
 }

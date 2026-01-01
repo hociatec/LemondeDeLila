@@ -17,9 +17,15 @@ public sealed partial class AdminViewModel
             return AdminNavResult.Moved;
         }
 
-        if (_page is AdminPage.UserActions or AdminPage.BanForm)
+        if (_page is AdminPage.UserActions or AdminPage.BanForm or AdminPage.UsersProfile)
         {
             ShowUsers();
+            return AdminNavResult.Moved;
+        }
+
+        if (_page is AdminPage.UsersProfileBioSettings)
+        {
+            BuildUsersProfileMenu();
             return AdminNavResult.Moved;
         }
 
@@ -107,6 +113,31 @@ public sealed partial class AdminViewModel
         if (_page == AdminPage.Perf)
         {
             BuildRoot();
+            return AdminNavResult.Moved;
+        }
+
+        if (_page == AdminPage.BugReports)
+        {
+            BuildRoot();
+            return AdminNavResult.Moved;
+        }
+
+        if (_page == AdminPage.BugReportEdit)
+        {
+            if (_selectedBugReport != null)
+            {
+                BuildBugReportDetails(_selectedBugReport);
+            }
+            else
+            {
+                BuildBugReports();
+            }
+            return AdminNavResult.Moved;
+        }
+
+        if (_page is AdminPage.BugReportCreate or AdminPage.BugReportDetails)
+        {
+            BuildBugReports();
             return AdminNavResult.Moved;
         }
 
@@ -239,6 +270,7 @@ public sealed partial class AdminViewModel
         Items.Add(new AdminMenuItem("Mises à jour client", tag: "clientUpdates"));
         Items.Add(new AdminMenuItem("Gérer les rôles", tag: "rolesDefinitions"));
         Items.Add(new AdminMenuItem("Gérer les sons (application)", tag: "sounds"));
+        Items.Add(new AdminMenuItem("Rapports de bug", tag: "bugReports"));
         Items.Add(new AdminMenuItem("Diagnostics latence (rooms/bots/parties)", tag: "perf"));
         Items.Add(new AdminMenuItem("Consulter les logs", tag: "logs"));
         SelectedItem = Items.FirstOrDefault();

@@ -29,6 +29,8 @@ internal enum AdminPage
     UserActions,
     BanForm,
     UserChatBanForm,
+    UsersProfile,
+    UsersProfileBioSettings,
     Chat,
     ChatDay,
     ChatMessageActions,
@@ -45,7 +47,11 @@ internal enum AdminPage
     SoundsInvitations,
     SoundsChat,
     SoundsPrivateMessages,
-    SoundDetails
+    SoundDetails,
+    BugReports,
+    BugReportCreate,
+    BugReportDetails,
+    BugReportEdit
 }
 
 public sealed record PermissionModuleDescriptor(string ModuleId, string DisplayName, string Description);

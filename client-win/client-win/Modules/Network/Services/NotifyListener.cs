@@ -194,6 +194,10 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
             {
                 HandleMessagingNew(root);
             }
+            else if (string.Equals(type, "social.friend.requested", StringComparison.OrdinalIgnoreCase))
+            {
+                HandleFriendRequested(root);
+            }
             else if (string.Equals(type, "sounds.updated", StringComparison.OrdinalIgnoreCase))
             {
                 _ = _remoteSounds.RefreshAsync();
@@ -461,6 +465,25 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
             {
                 _sounds.Play(SoundId.PrivateMessageReceived);
             }
+        }
+        catch
+        {
+            // ignore
+        }
+    }
+
+    private void HandleFriendRequested(JsonElement root)
+    {
+        try
+        {
+            if (!root.TryGetProperty("payload", out var payload) || payload.ValueKind != JsonValueKind.Object)
+            {
+                return;
+            }
+
+            // Backend sends only requesterId; keep it generic client-side.
+            _screenReader.AnnouncePolite("Nouvelle demande d'ami.");
+            _sounds.Play(SoundId.FriendInvitationReceived);
         }
         catch
         {

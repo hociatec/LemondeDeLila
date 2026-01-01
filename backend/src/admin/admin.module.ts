@@ -28,6 +28,10 @@ import { ClientUpdatesModule } from '../client-updates/client-updates.module';
 import { ChatModule } from '../chat/chat.module';
 import { RoomModule } from '../room/room.module';
 import { AdminCatalogInvalidationService } from './services/admin-catalog-invalidation.service';
+import { SocialModule } from '../social/social.module';
+import { AdminProfileWsHandler } from './ws/admin-profile-ws.handler';
+import { BugReportsModule } from '../bug-reports/bug-reports.module';
+import { AdminBugReportsWsHandler } from './ws/admin-bug-reports-ws.handler';
 
 @Module({
   imports: [
@@ -41,6 +45,8 @@ import { AdminCatalogInvalidationService } from './services/admin-catalog-invali
     RoomBotModule,
     GameBotModule,
     RoomModule,
+    SocialModule,
+    BugReportsModule,
   ],
   controllers: [AdminUsersController],
   providers: [
@@ -59,6 +65,8 @@ import { AdminCatalogInvalidationService } from './services/admin-catalog-invali
     AdminBroadcastWsHandler,
     AdminClientUpdatesWsHandler,
     AdminPerfWsHandler,
+    AdminProfileWsHandler,
+    AdminBugReportsWsHandler,
     AdminWsRegistrar,
   ],
 })

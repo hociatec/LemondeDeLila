@@ -6,6 +6,8 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using client_win.Core.Constants;
+using client_win.Modules.Audio.Models;
+using client_win.Modules.Audio.Services;
 using client_win.Modules.Error;
 using client_win.Modules.Messaging.Models;
 using client_win.Modules.Network;
@@ -20,13 +22,15 @@ public sealed class MessagingService : IMessagingService
 {
     private readonly WsRequestClient _ws;
     private readonly ISessionService _session;
+    private readonly ISoundService _sounds;
     private readonly ErrorBus? _errors;
     private static readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web);
 
-    public MessagingService(WsRequestClient ws, ISessionService session, ErrorBus? errors = null)
+    public MessagingService(WsRequestClient ws, ISessionService session, ISoundService sounds, ErrorBus? errors = null)
     {
         _ws = ws ?? throw new ArgumentNullException(nameof(ws));
         _session = session ?? throw new ArgumentNullException(nameof(session));
+        _sounds = sounds ?? throw new ArgumentNullException(nameof(sounds));
         _errors = errors;
     }
 
@@ -115,6 +119,7 @@ public sealed class MessagingService : IMessagingService
             return null;
         }
 
+        _sounds.Play(SoundId.PrivateMessageSent);
         return MapMessage(response.Payload.Message);
     }
 
