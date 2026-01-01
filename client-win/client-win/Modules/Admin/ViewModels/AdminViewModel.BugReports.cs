@@ -85,7 +85,6 @@ public sealed partial class AdminViewModel
         Items.Clear();
 
         Items.Add(new AdminMenuItem("Nouveau rapport", tag: "bugReports.create"));
-        Items.Add(new AdminMenuItem("Rafraîchir", tag: "bugReports.refresh"));
 
         if (_loadedBugReports.Length == 0)
         {
@@ -172,14 +171,14 @@ public sealed partial class AdminViewModel
         _selectedBugReport = report;
 
         Title = "Rapport de bug";
-        var status = report.Status switch
+        var statusLine = report.Status switch
         {
-            AdminBugReportStatus.InProgress => "En cours",
-            AdminBugReportStatus.Done => "Terminé",
-            _ => "En attente"
+            AdminBugReportStatus.InProgress => "Statut: En cours\n",
+            AdminBugReportStatus.Done => "Statut: Terminé\n",
+            _ => string.Empty
         };
         Details =
-            $"Statut: {status}\n" +
+            statusLine +
             $"Par: {report.CreatedByUsername} (id {report.CreatedByUserId})\n" +
             $"Créé: {report.CreatedAt}\n" +
             $"Maj: {report.UpdatedAt}\n" +
@@ -192,10 +191,18 @@ public sealed partial class AdminViewModel
         Items.Clear();
         Items.Add(new AdminMenuItem("Modifier", tag: "bugReports.edit"));
         Items.Add(new AdminMenuItem("Supprimer", tag: "bugReports.delete"));
-        Items.Add(new AdminMenuItem("Passer en: En attente", tag: "bugReports.status.pending"));
-        Items.Add(new AdminMenuItem("Passer en: En cours", tag: "bugReports.status.in_progress"));
-        Items.Add(new AdminMenuItem("Passer en: Terminé", tag: "bugReports.status.done"));
-        Items.Add(new AdminMenuItem("Rafraîchir", tag: "bugReports.details.refresh"));
+        if (report.Status != AdminBugReportStatus.Pending)
+        {
+            Items.Add(new AdminMenuItem("Passer en: En attente", tag: "bugReports.status.pending"));
+        }
+        if (report.Status != AdminBugReportStatus.InProgress)
+        {
+            Items.Add(new AdminMenuItem("Passer en: En cours", tag: "bugReports.status.in_progress"));
+        }
+        if (report.Status != AdminBugReportStatus.Done)
+        {
+            Items.Add(new AdminMenuItem("Passer en: Terminé", tag: "bugReports.status.done"));
+        }
         SelectedItem = Items.FirstOrDefault();
         Status = "Entrée : action. Échap : retour.";
         UpdateFilterVisibility();

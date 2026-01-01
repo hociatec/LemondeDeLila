@@ -104,11 +104,6 @@ public sealed partial class AdminViewModel
                     BuildBugReportCreate();
                     return;
                 }
-                if (bugListAction == "bugReports.refresh")
-                {
-                    await LoadBugReportsAsync().ConfigureAwait(true);
-                    return;
-                }
             }
 
             if (_page == AdminPage.BugReports && tag is AdminBugReportDto report)
@@ -126,13 +121,6 @@ public sealed partial class AdminViewModel
 
             if (_page == AdminPage.BugReportDetails && tag is string bugDetailsAction)
             {
-                if (bugDetailsAction == "bugReports.details.refresh" && _selectedBugReport != null)
-                {
-                    var refreshed = await _admin.GetBugReportAsync(_selectedBugReport.Id).ConfigureAwait(true);
-                    _selectedBugReport = refreshed;
-                    BuildBugReportDetails(refreshed);
-                    return;
-                }
                 if (bugDetailsAction == "bugReports.edit" && _selectedBugReport != null)
                 {
                     PushReturnFocus();

@@ -1,6 +1,7 @@
 using System;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Threading;
 using client_win.Modules.Admin.ViewModels;
 
@@ -20,6 +21,7 @@ public partial class AdminView : UserControl
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
         AttachViewModel(DataContext as AdminViewModel);
+        AttachItemsKeyNavigation();
         FocusWhenContainersGenerated();
         FocusBestInputIfVisible();
     }
@@ -47,6 +49,58 @@ public partial class AdminView : UserControl
     {
         FocusWhenContainersGenerated();
         FocusBestInputIfVisible();
+    }
+
+    private void AttachItemsKeyNavigation()
+    {
+        if (ItemsList == null)
+        {
+            return;
+        }
+
+        ItemsList.PreviewKeyDown -= OnItemsListPreviewKeyDown;
+        ItemsList.PreviewKeyDown += OnItemsListPreviewKeyDown;
+    }
+
+    private void OnItemsListPreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Handled || e.Key != Key.Tab)
+        {
+            return;
+        }
+
+        if (DataContext is not AdminViewModel vm)
+        {
+            return;
+        }
+
+        if (!vm.IsTextInputVisible && !vm.IsSecondaryInputVisible)
+        {
+            return;
+        }
+
+        // When a form is visible, allow Tab/Shift+Tab from the actions list to jump back to inputs.
+        // This avoids getting "stuck" on the Validate item.
+        var wantSecondaryFirst = Keyboard.Modifiers.HasFlag(ModifierKeys.Shift);
+        if (wantSecondaryFirst && vm.IsSecondaryInputVisible)
+        {
+            InputsView?.SecondaryInputTextBox?.Focus();
+            e.Handled = true;
+            return;
+        }
+
+        if (vm.IsTextInputVisible)
+        {
+            InputsView?.PrimaryInputBox?.Focus();
+            e.Handled = true;
+            return;
+        }
+
+        if (vm.IsSecondaryInputVisible)
+        {
+            InputsView?.SecondaryInputTextBox?.Focus();
+            e.Handled = true;
+        }
     }
 
     private void FocusBestInputIfVisible()
