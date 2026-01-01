@@ -48,6 +48,7 @@ public sealed class PersistentWsClient : IAsyncDisposable
 
     public event Action<string>? UnmatchedMessageReceived;
     public event Action? Connected;
+    public event Action<string>? Disconnected;
 
     // Surcharge explicite pour DI (évite les erreurs d'appariement d'arguments nommés/optionnels)
     public PersistentWsClient(
@@ -336,6 +337,7 @@ public sealed class PersistentWsClient : IAsyncDisposable
                         Log.Information("WebSocket fermé par le serveur: {Status} - {Description}",
                             socket.CloseStatus, socket.CloseStatusDescription);
                         PublishCloseAsErrorIfNeeded(socket.CloseStatus, socket.CloseStatusDescription);
+                        FireDisconnected($"close {socket.CloseStatus} {socket.CloseStatusDescription}".Trim());
                         FailAllPending($"Connexion WS fermée par le serveur ({socket.CloseStatus} - {socket.CloseStatusDescription}).");
                         await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "closing", cancellationToken).ConfigureAwait(false);
                         return;
@@ -409,6 +411,7 @@ public sealed class PersistentWsClient : IAsyncDisposable
                     context: WsMessageTypes.ErrorContext.WsReceive,
                     detail: ex.Message));
 
+                FireDisconnected(ex.Message);
                 await ResetSocketAsync().ConfigureAwait(false);
 
                 // NOTE: Au lieu de return (qui terminait définitivement la loop),
@@ -421,6 +424,18 @@ public sealed class PersistentWsClient : IAsyncDisposable
 
         Log.Debug("Receive loop terminée (cancelled: {Cancelled}, state: {State})",
             cancellationToken.IsCancellationRequested, socket.State);
+    }
+
+    private void FireDisconnected(string? reason)
+    {
+        try
+        {
+            Disconnected?.Invoke(string.IsNullOrWhiteSpace(reason) ? "disconnected" : reason.Trim());
+        }
+        catch
+        {
+            // ignore
+        }
     }
 
     private void PublishCloseAsErrorIfNeeded(WebSocketCloseStatus? status, string? description)

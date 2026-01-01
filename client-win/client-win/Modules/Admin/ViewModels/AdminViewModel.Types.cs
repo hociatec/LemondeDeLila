@@ -45,6 +45,7 @@ internal enum AdminPage
     Sounds,
     SoundsTable,
     SoundsInvitations,
+    SoundsConnection,
     SoundsChat,
     SoundsPrivateMessages,
     SoundDetails,

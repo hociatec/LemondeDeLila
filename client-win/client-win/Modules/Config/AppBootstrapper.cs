@@ -312,7 +312,16 @@ public static class AppBootstrapper
         // Best-effort: ne doit jamais empêcher le démarrage.
         try
         {
-            provider.GetRequiredService<ISoundService>().PreloadAll();
+            var sounds = provider.GetRequiredService<ISoundService>();
+            sounds.PreloadAll();
+
+            // Son de démarrage (si activé dans Options).
+            sounds.Play(Modules.Audio.Models.SoundId.ClientOpened);
+
+            // Sons de connexion/déconnexion au WS API (si activé).
+            var ws = provider.GetRequiredService<PersistentWsClient>();
+            ws.Connected += () => sounds.Play(Modules.Audio.Models.SoundId.ClientConnected);
+            ws.Disconnected += _ => sounds.Play(Modules.Audio.Models.SoundId.ClientDisconnected);
         }
         catch
         {

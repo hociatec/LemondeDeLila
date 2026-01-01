@@ -1,4 +1,7 @@
 export const SOUND_KEYS = [
+  'ClientOpened',
+  'ClientConnected',
+  'ClientDisconnected',
   'ChatMessageSent',
   'ChatMessageReceived',
   'PrivateMessageSent',

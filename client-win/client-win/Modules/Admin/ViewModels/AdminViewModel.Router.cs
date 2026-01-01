@@ -243,6 +243,12 @@ public sealed partial class AdminViewModel
 
             if (_page == AdminPage.Sounds && tag is string soundsTag)
             {
+                if (soundsTag == "sounds.connection")
+                {
+                    PushReturnFocus();
+                    BuildSoundsConnection();
+                    return;
+                }
                 if (soundsTag == "sounds.table")
                 {
                     PushReturnFocus();
@@ -281,6 +287,28 @@ public sealed partial class AdminViewModel
                 {
                     PushReturnFocus();
                     BuildSoundDetails(Modules.Audio.Models.SoundId.FriendInvitationReceived);
+                    return;
+                }
+            }
+
+            if (_page == AdminPage.SoundsConnection && tag is string connSound)
+            {
+                if (connSound == "sounds.client.opened")
+                {
+                    PushReturnFocus();
+                    BuildSoundDetails(Modules.Audio.Models.SoundId.ClientOpened);
+                    return;
+                }
+                if (connSound == "sounds.client.connected")
+                {
+                    PushReturnFocus();
+                    BuildSoundDetails(Modules.Audio.Models.SoundId.ClientConnected);
+                    return;
+                }
+                if (connSound == "sounds.client.disconnected")
+                {
+                    PushReturnFocus();
+                    BuildSoundDetails(Modules.Audio.Models.SoundId.ClientDisconnected);
                     return;
                 }
             }

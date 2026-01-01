@@ -40,6 +40,21 @@ public sealed class SoundService : ISoundService, IDisposable
 
         _sounds = new Dictionary<SoundId, SoundEntry>
         {
+            [SoundId.ClientOpened] = new SoundEntry(
+                DefaultRelativePath: Path.Combine("Assets", "Sounds", "roomopened.mp3"),
+                OverridePath: () => _options.Current.SoundClientOpenedPath,
+                IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundAppLaunch,
+                Volume: () => Clamp01(_options.Current.SoundAppLaunchVolume / 100.0)),
+            [SoundId.ClientConnected] = new SoundEntry(
+                DefaultRelativePath: Path.Combine("Assets", "Sounds", "roomjoined.mp3"),
+                OverridePath: () => _options.Current.SoundClientConnectedPath,
+                IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundNavigate,
+                Volume: () => Clamp01(_options.Current.SoundNavigateVolume / 100.0)),
+            [SoundId.ClientDisconnected] = new SoundEntry(
+                DefaultRelativePath: Path.Combine("Assets", "Sounds", "roomexit.mp3"),
+                OverridePath: () => _options.Current.SoundClientDisconnectedPath,
+                IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundNavigate,
+                Volume: () => Clamp01(_options.Current.SoundNavigateVolume / 100.0)),
             [SoundId.ChatMessageSent] = new SoundEntry(
                 DefaultRelativePath: Path.Combine("Assets", "Sounds", "envoimsgtchat.mp3"),
                 OverridePath: () => _options.Current.SoundChatMessageSentPath,

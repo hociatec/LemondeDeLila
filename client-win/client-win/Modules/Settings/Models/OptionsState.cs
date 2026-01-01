@@ -28,6 +28,9 @@ public sealed class OptionsState
     public string? SoundChatMessageReceivedPath { get; set; }
     public string? SoundPrivateMessageSentPath { get; set; }
     public string? SoundPrivateMessageReceivedPath { get; set; }
+    public string? SoundClientOpenedPath { get; set; }
+    public string? SoundClientConnectedPath { get; set; }
+    public string? SoundClientDisconnectedPath { get; set; }
 
     public bool ChatEnabled { get; set; } = true;
     public bool ConfirmChatExit { get; set; }

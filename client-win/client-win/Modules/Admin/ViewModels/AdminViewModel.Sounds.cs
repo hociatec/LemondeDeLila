@@ -25,10 +25,29 @@ public sealed partial class AdminViewModel
         IsSecondaryInputVisible = false;
         IsAdditionalPermissionsVisible = false;
         Items.Clear();
+        Items.Add(new AdminMenuItem("Connexion", tag: "sounds.connection"));
         Items.Add(new AdminMenuItem("Table", tag: "sounds.table"));
         Items.Add(new AdminMenuItem("Amis", tag: "sounds.invitations"));
         Items.Add(new AdminMenuItem("Tchat", tag: "sounds.chat"));
         Items.Add(new AdminMenuItem("Messages privés", tag: "sounds.private"));
+        SelectedItem = Items.FirstOrDefault();
+        Status = "Entrée : sélectionner. Échap : retour.";
+        UpdateFilterVisibility();
+        RestoreFocusIfAny();
+    }
+
+    private void BuildSoundsConnection()
+    {
+        _page = AdminPage.SoundsConnection;
+        Title = "Administration - Sons - Connexion";
+        Details = "Choisir un son lié au démarrage et à la connexion au serveur.";
+        IsTextInputVisible = false;
+        IsSecondaryInputVisible = false;
+        IsAdditionalPermissionsVisible = false;
+        Items.Clear();
+        Items.Add(new AdminMenuItem("Ouverture du client", tag: "sounds.client.opened"));
+        Items.Add(new AdminMenuItem("Connexion au serveur", tag: "sounds.client.connected"));
+        Items.Add(new AdminMenuItem("Déconnexion du serveur", tag: "sounds.client.disconnected"));
         SelectedItem = Items.FirstOrDefault();
         Status = "Entrée : sélectionner. Échap : retour.";
         UpdateFilterVisibility();
@@ -112,6 +131,7 @@ public sealed partial class AdminViewModel
         _soundDetailsId = sound;
         _soundDetailsReturnPage = sound switch
         {
+            SoundId.ClientOpened or SoundId.ClientConnected or SoundId.ClientDisconnected => AdminPage.SoundsConnection,
             SoundId.RoomOpened or SoundId.RoomJoined or SoundId.RoomExit => AdminPage.SoundsTable,
             SoundId.InvitationSent or SoundId.InvitationReceived => AdminPage.SoundsTable,
             SoundId.ChatMessageSent or SoundId.ChatMessageReceived => AdminPage.SoundsChat,
@@ -122,6 +142,9 @@ public sealed partial class AdminViewModel
 
         var (group, title, current) = sound switch
         {
+            SoundId.ClientOpened => ("Connexion", "Ouverture du client", _options.Current.SoundClientOpenedPath),
+            SoundId.ClientConnected => ("Connexion", "Connexion au serveur", _options.Current.SoundClientConnectedPath),
+            SoundId.ClientDisconnected => ("Connexion", "Déconnexion du serveur", _options.Current.SoundClientDisconnectedPath),
             SoundId.RoomOpened => ("Table", "Entrer dans une table", _options.Current.SoundRoomOpenedPath),
             SoundId.RoomJoined => ("Table", "Rejoindre une table", _options.Current.SoundRoomJoinedPath),
             SoundId.RoomExit => ("Table", "Quitter une table", _options.Current.SoundRoomExitPath),
