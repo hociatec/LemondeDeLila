@@ -234,6 +234,9 @@ public sealed partial class AdminViewModel
                 case AdminPage.SoundsTable:
                     BuildSoundsTable();
                     break;
+                case AdminPage.SoundsInvitations:
+                    BuildSoundsInvitations();
+                    break;
                 case AdminPage.SoundsChat:
                     BuildSoundsChat();
                     break;
