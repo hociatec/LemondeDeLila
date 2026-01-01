@@ -21,8 +21,8 @@ public sealed class JoinGameViewModel : ObservableObject, IDisposable
     private readonly Action _close;
     private readonly Dispatcher _dispatcher;
     private readonly UserControl _returnView;
-    private readonly DispatcherTimer _autoRefreshTimer;
     private IDisposable? _refreshSubscription;
+    private IDisposable? _transportSubscription;
     private bool _isDisposed;
     private bool _subscribed;
     private bool _subscriptionSupported = true;
@@ -49,18 +49,14 @@ public sealed class JoinGameViewModel : ObservableObject, IDisposable
         RefreshCommand = new AsyncRelayCommand(RefreshAsync);
         JoinSelectedCommand = new AsyncRelayCommand(JoinSelectedAsync);
 
-        _autoRefreshTimer = new DispatcherTimer(DispatcherPriority.Background, _dispatcher)
+        _transportSubscription = _rooms.OnTransportConnected(() =>
         {
-            Interval = TimeSpan.FromSeconds(10)
-        };
-        _autoRefreshTimer.Tick += (_, __) =>
-        {
-            if (!IsBusy)
-            {
-                _ = RefreshCommand.ExecuteAsync(null);
-            }
-        };
-        _autoRefreshTimer.Start();
+            // Si le WS "api" est recréé, l'abonnement côté serveur est perdu (connectionId change).
+            // On relance un refresh pour se ré-abonner sans forcer l'utilisateur à relancer le client.
+            _ = _dispatcher.BeginInvoke(
+                DispatcherPriority.Background,
+                new Action(() => _ = RefreshCommand.ExecuteAsync(null)));
+        });
 
         _dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() => RefreshCommand.Execute(null)));
     }
@@ -106,8 +102,6 @@ public sealed class JoinGameViewModel : ObservableObject, IDisposable
             {
                 try
                 {
-                    // (Re)s'abonner à chaque refresh: la connexion WS peut être recréée,
-                    // ce qui change l'identifiant de connexion côté serveur et invalide l'abonnement.
                     listed = await _rooms.PublicSubscribeAsync().ConfigureAwait(true);
                     _subscribed = true;
 
@@ -217,14 +211,15 @@ public sealed class JoinGameViewModel : ObservableObject, IDisposable
 
         try
         {
-            _autoRefreshTimer.Stop();
             _refreshSubscription?.Dispose();
+            _transportSubscription?.Dispose();
         }
         catch
         {
             // ignore
         }
         _refreshSubscription = null;
+        _transportSubscription = null;
 
         if (_subscribed)
         {

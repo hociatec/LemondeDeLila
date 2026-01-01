@@ -215,6 +215,25 @@ public sealed class RoomDirectoryClient : IRoomDirectoryClient
         return new Unsubscriber(() => _transport.UnmatchedMessageReceived -= Handler);
     }
 
+    public IDisposable OnTransportConnected(Action onConnected)
+    {
+        if (onConnected == null) throw new ArgumentNullException(nameof(onConnected));
+        void Handler()
+        {
+            try
+            {
+                onConnected();
+            }
+            catch
+            {
+                // ignore
+            }
+        }
+
+        _transport.Connected += Handler;
+        return new Unsubscriber(() => _transport.Connected -= Handler);
+    }
+
     private sealed class PublicRoomsListedPayload
     {
         [JsonPropertyName("items")]

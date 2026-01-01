@@ -47,6 +47,7 @@ public sealed class PersistentWsClient : IAsyncDisposable
     private bool _isPausedByNetwork;
 
     public event Action<string>? UnmatchedMessageReceived;
+    public event Action? Connected;
 
     // Surcharge explicite pour DI (évite les erreurs d'appariement d'arguments nommés/optionnels)
     public PersistentWsClient(
@@ -224,6 +225,15 @@ public sealed class PersistentWsClient : IAsyncDisposable
                                 detail: task.Exception.InnerException?.Message ?? task.Exception.Message));
                         }
                     }, TaskContinuationOptions.OnlyOnFaulted);
+                }
+
+                try
+                {
+                    Connected?.Invoke();
+                }
+                catch
+                {
+                    // ignore
                 }
 
                 // Connexion réussie - reset circuit breaker

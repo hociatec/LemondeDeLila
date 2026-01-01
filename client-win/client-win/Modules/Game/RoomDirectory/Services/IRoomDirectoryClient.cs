@@ -13,6 +13,7 @@ public interface IRoomDirectoryClient
     Task<PublicRoomsListedResult> PublicSubscribeAsync(string? gameType = null, CancellationToken cancellationToken = default);
     Task<bool> PublicUnsubscribeAsync(CancellationToken cancellationToken = default);
     IDisposable OnPublicRefresh(Action onRefresh);
+    IDisposable OnTransportConnected(Action onConnected);
 }
 
 public sealed class RoomInviteRespondResult
