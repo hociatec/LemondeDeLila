@@ -24,6 +24,7 @@ using System.ComponentModel;
 using client_win.Modules.Audio.Services;
 using client_win.Core.Accessibility;
 using client_win.Modules.Audio.Models;
+using System.Windows.Threading;
 
 namespace client_win
 {

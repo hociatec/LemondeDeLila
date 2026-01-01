@@ -16,7 +16,6 @@ using client_win.Modules.Settings.Services;
 using client_win.Modules.Shell.Services;
 using client_win.Modules.Game.RoomDirectory.ViewModels;
 using client_win.Modules.Game.RoomDirectory.Views;
-using client_win.Modules.Catalog.Views;
 using client_win.Modules.MainMenu.Views;
 using client_win.Modules.Audio.Models;
 

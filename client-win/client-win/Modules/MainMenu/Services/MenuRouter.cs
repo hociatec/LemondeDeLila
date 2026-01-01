@@ -34,7 +34,6 @@ using client_win.Modules.Game.RoomDirectory.ViewModels;
 using client_win.Modules.Game.RoomDirectory.Views;
 using client_win.Modules.User.Services;
 using client_win.Modules.Network.Services;
-using client_win.Modules.Catalog.Views;
 using client_win.Modules.MainMenu.Views;
 
 namespace client_win.Modules.MainMenu.Services;
