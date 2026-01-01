@@ -34,9 +34,9 @@ public sealed class RemoteSoundCache : IRemoteSoundCache
         }
     }
 
-    public async Task RefreshAsync(CancellationToken cancellationToken = default)
+    public async Task RefreshAsync(bool force = false, CancellationToken cancellationToken = default)
     {
-        if (DateTime.UtcNow - _lastRefreshUtc < TimeSpan.FromMinutes(2))
+        if (!force && DateTime.UtcNow - _lastRefreshUtc < TimeSpan.FromMinutes(2))
         {
             return;
         }

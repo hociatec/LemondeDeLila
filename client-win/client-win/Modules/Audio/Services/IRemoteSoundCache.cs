@@ -7,6 +7,5 @@ namespace client_win.Modules.Audio.Services;
 public interface IRemoteSoundCache
 {
     string? TryGetPath(SoundId sound);
-    Task RefreshAsync(CancellationToken cancellationToken = default);
+    Task RefreshAsync(bool force = false, CancellationToken cancellationToken = default);
 }
-

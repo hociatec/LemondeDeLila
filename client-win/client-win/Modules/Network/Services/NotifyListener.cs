@@ -10,9 +10,11 @@ using client_win.Modules.Audio.Models;
 using client_win.Modules.Audio.Services;
 using client_win.Modules.Config;
 using client_win.Modules.Catalog.Services;
+using client_win.Modules.Catalog.Views;
 using client_win.Modules.Network.Services;
 using client_win.Modules.Network.WebSockets;
 using client_win.Modules.Shell.Services;
+using client_win.Modules.MainMenu.Views;
 using client_win.Modules.User.Services;
 using client_win.Modules.Updates;
 using client_win.Modules.Game.RoomDirectory.Services;
@@ -200,12 +202,40 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
             }
             else if (string.Equals(type, "sounds.updated", StringComparison.OrdinalIgnoreCase))
             {
-                _ = _remoteSounds.RefreshAsync();
+                _ = HandleSoundsUpdatedAsync();
             }
         }
         catch (Exception ex)
         {
             Log.Debug(ex, "Message notify invalide.");
+        }
+    }
+
+    private async Task HandleSoundsUpdatedAsync()
+    {
+        try
+        {
+            await _remoteSounds.RefreshAsync(force: true).ConfigureAwait(false);
+
+            // Recharge les paths et les players (best-effort).
+            _sounds.PreloadAll();
+
+            // Réapplique l'ambiance/musique selon la vue courante.
+            var view = _navigation.CurrentView;
+            _sounds.StopLoop(SoundId.MainMenuMusic);
+            _sounds.StopLoop(SoundId.TavernAmbience);
+            if (view is CatalogView)
+            {
+                _sounds.StartLoop(SoundId.TavernAmbience);
+            }
+            else if (view is MainMenuView)
+            {
+                _sounds.StartLoop(SoundId.MainMenuMusic);
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Debug(ex, "Sounds updated handling failed");
         }
     }
 
