@@ -254,6 +254,7 @@ export class ClientUpdatesService {
   }
 
   private async assertZipSafe(zipPath: string) {
+    await this.assertUnzipAvailable();
     const { stdout } = await execFileAsync('unzip', ['-Z1', zipPath], {
       timeout: 60_000,
       maxBuffer: 50 * 1024 * 1024,
@@ -273,6 +274,20 @@ export class ClientUpdatesService {
       ) {
         throw new Error(`Archive invalide (entrée non sûre): ${entry}`);
       }
+    }
+  }
+
+  private async assertUnzipAvailable() {
+    try {
+      await execFileAsync('unzip', ['-v'], { timeout: 10_000 });
+    } catch (err: any) {
+      const msg = typeof err?.message === 'string' ? err.message : '';
+      if (msg.includes('ENOENT')) {
+        throw new Error(
+          'Dépendance manquante: commande "unzip" introuvable (installez le paquet unzip).',
+        );
+      }
+      throw err;
     }
   }
 

@@ -3,6 +3,7 @@ import { ClientUpdatesController } from './controllers/client-updates.controller
 import { AdminClientUpdatesController } from './controllers/admin-client-updates.controller';
 import { CiClientUpdatesController } from './controllers/ci-client-updates.controller';
 import { ClientUpdatesService } from './services/client-updates.service';
+import { ClientUpdatesUploadService } from './services/client-updates-upload.service';
 import { HttpJwtGuard } from '../common/guards/http-jwt.guard';
 import { AdminRoleGuard } from '../common/guards/admin-role.guard';
 import { ClientUpdatesUploadTokenGuard } from './guards/client-updates-upload-token.guard';
@@ -15,6 +16,7 @@ import { ClientUpdatesUploadTokenGuard } from './guards/client-updates-upload-to
   ],
   providers: [
     ClientUpdatesService,
+    ClientUpdatesUploadService,
     HttpJwtGuard,
     AdminRoleGuard,
     ClientUpdatesUploadTokenGuard,
