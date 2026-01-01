@@ -8,7 +8,6 @@ network.ws.api=wss://ws.lilas.hociatec.fr/ws/api
 network.ws.game=wss://ws.lilas.hociatec.fr/ws/game
 # Notifications (mode spectateur/admin)
 network.ws.notify=wss://ws.lilas.hociatec.fr/ws/notify
-app.version=1.0.9
 updates.check.url=https://api.lilas.hociatec.fr/client/version
 updates.root.dir=.
 updates.signature.publicKey=./config/update-signing-public.pem

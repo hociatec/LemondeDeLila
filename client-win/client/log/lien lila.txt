@@ -1,1 +1,0 @@
-- https://api.lilas.hociatec.fr/updates/client-win/setup.exe

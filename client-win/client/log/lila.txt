@@ -1,2 +1,0 @@
-mettre son audio lors de l'envoi et réception de message dans le tchat
-quand on s'inscrit lorsqu'on valide mettre une boite de dialogue succès ou échèque.
