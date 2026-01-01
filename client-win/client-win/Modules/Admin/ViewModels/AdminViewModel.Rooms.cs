@@ -2,14 +2,12 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using client_win.Modules.Admin.Dtos;
-using client_win.Modules.Game.RoomDirectory.Services;
 
 namespace client_win.Modules.Admin.ViewModels;
 
 public sealed partial class AdminViewModel
 {
     private AdminRoomMaintenanceSettingsDto? _roomSettings;
-    private PublicRoomListItem[] _publicJoinableRooms = Array.Empty<PublicRoomListItem>();
     private AdminRoomListItemDto[] _roomsForAdmin = Array.Empty<AdminRoomListItemDto>();
 
     private void BuildRooms()
@@ -24,8 +22,8 @@ public sealed partial class AdminViewModel
         IsAdditionalPermissionsVisible = false;
         Items.Clear();
         Items.Add(new AdminMenuItem("Nettoyer les rooms (supprime les tables publiques non démarrées)", tag: "rooms.cleanup.public"));
-        Items.Add(new AdminMenuItem("Intégrer une room (liste des tables publiques, silencieux)", tag: "rooms.join.silent"));
-        Items.Add(new AdminMenuItem("Détruire une room (force, liste des tables publiques)", tag: "rooms.destroy"));
+        Items.Add(new AdminMenuItem("Intégrer une room (liste des tables, public/privé, silencieux)", tag: "rooms.join.silent"));
+        Items.Add(new AdminMenuItem("Détruire une room (force, public/privé)", tag: "rooms.destroy"));
         Items.Add(new AdminMenuItem("Rafraîchir paramètres (relit la configuration côté serveur)", tag: "rooms.settings.refresh"));
         Items.Add(new AdminMenuItem("Auto-cleanup: activer/désactiver (nettoyage automatique)", tag: "rooms.settings.toggle"));
         Items.Add(new AdminMenuItem("Auto-cleanup: régler âge max (minutes) (supprime au-delà de cet âge)", tag: "rooms.settings.olderThan"));
@@ -43,12 +41,12 @@ public sealed partial class AdminViewModel
         Title = "Intégrer une room";
         Items.Clear();
 
-        var listed = _publicJoinableRooms ?? Array.Empty<PublicRoomListItem>();
+        var listed = _roomsForAdmin ?? Array.Empty<AdminRoomListItemDto>();
         if (listed.Length == 0)
         {
-            Items.Add(new AdminMenuItem("Aucune table publique disponible", tag: null));
+            Items.Add(new AdminMenuItem("Aucune table disponible", tag: null));
             SelectedItem = Items.FirstOrDefault();
-            Details = "Aucune table publique à intégrer.";
+            Details = "Aucune table à intégrer.";
             Status = "Échap : retour.";
         }
         else
@@ -60,7 +58,7 @@ public sealed partial class AdminViewModel
 
             SelectedItem = Items.FirstOrDefault(i => i.Tag is string s && s.StartsWith("rooms.join.silent.open:", StringComparison.OrdinalIgnoreCase))
                           ?? Items.FirstOrDefault();
-            Details = "Sélectionnez une table publique à intégrer en mode silencieux (spectateur).";
+            Details = "Sélectionnez une table (publique/privée) à intégrer en mode silencieux (admin invisible, non listé).";
             Status = "Entrée : intégrer la table sélectionnée. Échap : retour.";
         }
 
@@ -71,7 +69,7 @@ public sealed partial class AdminViewModel
         RestoreFocusIfAny();
     }
 
-    private async Task RefreshRoomsJoinSilentListAsync()
+    private async Task RefreshAdminRoomsListAsync()
     {
         if (IsBusy)
         {
@@ -81,8 +79,8 @@ public sealed partial class AdminViewModel
         try
         {
             IsBusy = true;
-            _publicJoinableRooms = (await _roomDirectory.PublicListAsync().ConfigureAwait(true)).Items;
-            BuildRoomsJoinSilent();
+            var listed = await _admin.ListRoomsAsync(includePrivate: true, includeStarted: true).ConfigureAwait(true);
+            _roomsForAdmin = listed.Items ?? Array.Empty<AdminRoomListItemDto>();
         }
         catch (Exception ex)
         {
@@ -97,7 +95,8 @@ public sealed partial class AdminViewModel
     private async Task OpenRoomsJoinSilentAsync()
     {
         PushReturnFocus();
-        await RefreshRoomsJoinSilentListAsync().ConfigureAwait(true);
+        await RefreshAdminRoomsListAsync().ConfigureAwait(true);
+        BuildRoomsJoinSilent();
     }
 
     private void BuildRoomsDestroy()
@@ -136,8 +135,7 @@ public sealed partial class AdminViewModel
     private async Task OpenRoomsDestroyAsync()
     {
         PushReturnFocus();
-        var listed = await _admin.ListRoomsAsync(includePrivate: true, includeStarted: true).ConfigureAwait(true);
-        _roomsForAdmin = listed.Items ?? Array.Empty<AdminRoomListItemDto>();
+        await RefreshAdminRoomsListAsync().ConfigureAwait(true);
         BuildRoomsDestroy();
     }
 
@@ -164,8 +162,7 @@ public sealed partial class AdminViewModel
             IsBusy = true;
             var res = await _admin.DestroyRoomAsync(roomId).ConfigureAwait(true);
             await _dialogs.ShowInfo("Rooms", $"Room #{res.RoomId} détruite.").ConfigureAwait(true);
-            var listed = await _admin.ListRoomsAsync(includePrivate: true, includeStarted: true).ConfigureAwait(true);
-            _roomsForAdmin = listed.Items ?? Array.Empty<AdminRoomListItemDto>();
+            await RefreshAdminRoomsListAsync().ConfigureAwait(true);
             BuildRoomsDestroy();
         }
         catch (Exception ex)
@@ -193,7 +190,8 @@ public sealed partial class AdminViewModel
         try
         {
             IsBusy = true;
-            await _tables.OpenExistingAsync(roomId, _returnView, spectator: true, silent: true).ConfigureAwait(true);
+            // Mode silencieux admin = non notifié / non listé côté serveur.
+            await _tables.OpenExistingAsync(roomId, _returnView, spectator: false, silent: true).ConfigureAwait(true);
         }
         finally
         {
