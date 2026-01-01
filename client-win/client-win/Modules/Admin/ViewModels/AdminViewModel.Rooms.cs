@@ -40,7 +40,6 @@ public sealed partial class AdminViewModel
         _page = AdminPage.RoomsJoinSilent;
         Title = "Intégrer une room";
         Items.Clear();
-        Items.Add(new AdminMenuItem("Rafraîchir la liste", tag: "rooms.join.silent.refresh"));
 
         var listed = _publicJoinableRooms ?? Array.Empty<PublicRoomListItem>();
         if (listed.Length == 0)

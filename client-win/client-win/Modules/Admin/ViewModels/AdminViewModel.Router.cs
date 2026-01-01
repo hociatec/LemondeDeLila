@@ -148,12 +148,6 @@ public sealed partial class AdminViewModel
 
             if (_page == AdminPage.RoomsJoinSilent && tag is string joinTag)
             {
-                if (joinTag == "rooms.join.silent.refresh")
-                {
-                    await RefreshRoomsJoinSilentListAsync().ConfigureAwait(true);
-                    return;
-                }
-
                 const string prefix = "rooms.join.silent.open:";
                 if (joinTag.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) &&
                     int.TryParse(joinTag.Substring(prefix.Length), out var roomId))
