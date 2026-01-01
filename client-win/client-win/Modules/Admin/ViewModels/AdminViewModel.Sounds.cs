@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
 using Microsoft.Win32;
@@ -280,10 +281,49 @@ public sealed partial class AdminViewModel
         if (!resp.IsSuccessStatusCode)
         {
             var body = await resp.Content.ReadAsStringAsync().ConfigureAwait(true);
-            await _dialogs.ShowError("Sons", $"Upload échoué ({(int)resp.StatusCode}) : {body}").ConfigureAwait(true);
+            var message = TryExtractApiErrorMessage(body) ?? body;
+            await _dialogs.ShowError("Sons", $"Upload échoué ({(int)resp.StatusCode}) : {message}").ConfigureAwait(true);
             return;
         }
 
         await _dialogs.ShowInfo("Sons", "Son global mis à jour (serveur).").ConfigureAwait(true);
+    }
+
+    private static string? TryExtractApiErrorMessage(string? body)
+    {
+        if (string.IsNullOrWhiteSpace(body))
+        {
+            return null;
+        }
+
+        try
+        {
+            using var doc = JsonDocument.Parse(body);
+            if (doc.RootElement.ValueKind != JsonValueKind.Object)
+            {
+                return null;
+            }
+
+            if (!doc.RootElement.TryGetProperty("message", out var message))
+            {
+                return null;
+            }
+
+            return message.ValueKind switch
+            {
+                JsonValueKind.String => message.GetString(),
+                JsonValueKind.Array => string.Join(
+                    " ",
+                    message.EnumerateArray()
+                        .Where(e => e.ValueKind == JsonValueKind.String)
+                        .Select(e => e.GetString())
+                        .Where(s => !string.IsNullOrWhiteSpace(s))),
+                _ => null
+            };
+        }
+        catch
+        {
+            return null;
+        }
     }
 }
