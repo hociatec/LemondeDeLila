@@ -127,6 +127,8 @@ public sealed class JwtTokenValidator
             {
                 // Non-standard alias (some reverse proxies block /.well-known/*).
                 new Uri(_config.HttpBase, "jwks.json"),
+                // If the reverse proxy strips /api before forwarding.
+                new Uri(_config.HttpBase, "../jwks.json"),
                 // Prefer /api/.well-known when HttpBase ends with /api/ and the reverse proxy only exposes /api/*
                 new Uri(_config.HttpBase, ".well-known/jwks.json"),
                 // Fallback to the standards path at the origin root.

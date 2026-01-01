@@ -46,4 +46,10 @@ export class JwksController {
   jwksApiAlias() {
     return this.jwks();
   }
+
+  // Some reverse proxies strip /api before forwarding (proxy_pass .../). Provide a root alias too.
+  @Get('jwks.json')
+  jwksRootAlias() {
+    return this.jwks();
+  }
 }
