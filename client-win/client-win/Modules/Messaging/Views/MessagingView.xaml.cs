@@ -212,19 +212,43 @@ public partial class MessagingView : UserControl
         doc.Blocks.Clear();
 
         // IMPORTANT (NVDA):
-        // Un paragraphe par ligne peut provoquer des lectures en double sur certaines transitions (lignes vides, etc.).
-        // On crée un seul paragraphe avec des LineBreak pour une navigation plus stable "comme un document".
-        var p = new Paragraph { Margin = new Thickness(0) };
+        // Les lignes vides dans RichTextBox peuvent provoquer des lectures en double sur certains libellés.
+        // On garde une structure "document" en paragraphes (espacement via Margin) plutôt qu'avec des lignes vides.
         var lines = text.Split('\n');
-        for (int i = 0; i < lines.Length; i++)
+        if (lines.Length == 0)
         {
-            p.Inlines.Add(new Run(lines[i]));
-            if (i < lines.Length - 1)
+            return;
+        }
+
+        string subjectLine = lines.Length > 0 ? lines[0] : string.Empty;
+        string deLine = lines.Length > 1 ? lines[1] : string.Empty;
+        string aLine = lines.Length > 2 ? lines[2] : string.Empty;
+        string contenuLine = lines.Length > 3 ? lines[3] : string.Empty;
+        var bodyLines = lines.Length > 4 ? lines[4..] : Array.Empty<string>();
+
+        doc.Blocks.Add(new Paragraph(new Run(subjectLine)) { Margin = new Thickness(0) });
+
+        var pMeta = new Paragraph { Margin = new Thickness(0, 10, 0, 0) };
+        pMeta.Inlines.Add(new Run(deLine));
+        pMeta.Inlines.Add(new LineBreak());
+        pMeta.Inlines.Add(new Run(aLine));
+        doc.Blocks.Add(pMeta);
+
+        var pBody = new Paragraph { Margin = new Thickness(0, 10, 0, 0) };
+        pBody.Inlines.Add(new Run(contenuLine));
+        if (bodyLines.Length > 0)
+        {
+            pBody.Inlines.Add(new LineBreak());
+        }
+        for (int i = 0; i < bodyLines.Length; i++)
+        {
+            pBody.Inlines.Add(new Run(bodyLines[i]));
+            if (i < bodyLines.Length - 1)
             {
-                p.Inlines.Add(new LineBreak());
+                pBody.Inlines.Add(new LineBreak());
             }
         }
-        doc.Blocks.Add(p);
+        doc.Blocks.Add(pBody);
 
         // Positionner le caret au début pour une lecture cohérente.
         try

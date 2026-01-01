@@ -601,10 +601,8 @@ public sealed class MessagingViewModel : ObservableObject
 
         return
             $"Sujet: {subject}\n" +
-            "\n" +
             $"De: {sender}\n" +
             $"À: {recipient}\n" +
-            "\n" +
             "Contenu:\n" +
             body;
     }
