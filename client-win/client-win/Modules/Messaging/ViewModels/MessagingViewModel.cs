@@ -16,7 +16,6 @@ public sealed class MessagingViewModel : ObservableObject
     private readonly Action _onClose;
     private MessagingBox _selectedBox = MessagingBox.Inbox;
     private MessagingMessage? _selectedMessage;
-    private readonly ObservableCollection<string> _selectedMessageDetailLines;
     private MessagingUser? _conversationUser;
     private string _inputText = string.Empty;
     private string _searchQuery = string.Empty;
@@ -34,7 +33,6 @@ public sealed class MessagingViewModel : ObservableObject
 
         BoxMessages = new ObservableCollection<MessagingMessage>();
         ConversationMessages = new ObservableCollection<MessagingMessage>();
-        _selectedMessageDetailLines = new ObservableCollection<string>();
 
         OpenConversationCommand = new AsyncRelayCommand(OpenConversationAsync);
         SendCommand = new AsyncRelayCommand(SendAsync);
@@ -48,7 +46,6 @@ public sealed class MessagingViewModel : ObservableObject
 
     public ObservableCollection<MessagingMessage> BoxMessages { get; }
     public ObservableCollection<MessagingMessage> ConversationMessages { get; }
-    public ObservableCollection<string> SelectedMessageDetailLines => _selectedMessageDetailLines;
 
     public MessagingBox SelectedBox
     {
@@ -69,31 +66,12 @@ public sealed class MessagingViewModel : ObservableObject
         {
             if (SetProperty(ref _selectedMessage, value))
             {
-                RefreshSelectedMessageDetail();
+                OnPropertyChanged(nameof(SelectedMessageDetailText));
             }
         }
     }
 
     public string SelectedMessageDetailText => FormatMessageDetail(_selectedMessage);
-
-    private void RefreshSelectedMessageDetail()
-    {
-        OnPropertyChanged(nameof(SelectedMessageDetailText));
-        _selectedMessageDetailLines.Clear();
-
-        var text = SelectedMessageDetailText;
-        if (string.IsNullOrEmpty(text))
-        {
-            return;
-        }
-
-        // Découpe conservatrice pour un rendu stable + navigation flèche haut/bas (NVDA).
-        var normalized = text.Replace("\r\n", "\n", StringComparison.Ordinal);
-        foreach (var line in normalized.Split('\n'))
-        {
-            _selectedMessageDetailLines.Add(line);
-        }
-    }
 
     public MessagingUser? ConversationUser
     {

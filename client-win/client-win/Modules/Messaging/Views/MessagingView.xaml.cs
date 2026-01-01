@@ -3,6 +3,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Threading;
 using client_win.Modules.Messaging.Models;
@@ -62,6 +63,7 @@ public partial class MessagingView : UserControl
 
         _vm.BoxMessages.CollectionChanged += OnBoxMessagesChanged;
         _vm.PropertyChanged += OnVmPropertyChanged;
+        UpdateDetailDocument();
     }
 
     private void DetachVmHandlers()
@@ -78,6 +80,12 @@ public partial class MessagingView : UserControl
 
     private void OnVmPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
+        if (e.PropertyName == nameof(MessagingViewModel.SelectedMessage) ||
+            e.PropertyName == nameof(MessagingViewModel.SelectedMessageDetailText))
+        {
+            _ = Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(UpdateDetailDocument));
+        }
+
         if (_currentScreen != MessagingScreen.List)
         {
             return;
@@ -180,6 +188,7 @@ public partial class MessagingView : UserControl
                     FocusMessagesWhenReady();
                     break;
                 case MessagingScreen.Detail:
+                    UpdateDetailDocument();
                     DetailDocument.Focus();
                     break;
                 case MessagingScreen.Compose:
@@ -187,6 +196,36 @@ public partial class MessagingView : UserControl
                     break;
             }
         }, DispatcherPriority.Input);
+    }
+
+    private void UpdateDetailDocument()
+    {
+        if (_vm == null || DetailDocument == null)
+        {
+            return;
+        }
+
+        var text = _vm.SelectedMessageDetailText ?? string.Empty;
+        text = text.Replace("\r\n", "\n", StringComparison.Ordinal);
+
+        var doc = DetailDocument.Document;
+        doc.Blocks.Clear();
+
+        // Un paragraphe par ligne pour une navigation "document" propre (flèches haut/bas).
+        foreach (var line in text.Split('\n'))
+        {
+            doc.Blocks.Add(new Paragraph(new Run(line)) { Margin = new Thickness(0) });
+        }
+
+        // Positionner le caret au début pour une lecture cohérente.
+        try
+        {
+            DetailDocument.CaretPosition = doc.ContentStart;
+        }
+        catch
+        {
+            // ignore
+        }
     }
 
     private static void FocusListItem(ListBox listBox)

@@ -246,35 +246,21 @@
                                 </Style>
                             </StackPanel.Style>
 
-                            <ListBox x:Name="DetailDocument"
-                                     ItemsSource="{Binding SelectedMessageDetailLines}"
-                                     SelectionMode="Single"
-                                     VerticalContentAlignment="Top"
-                                     MinHeight="320"
-                                     Focusable="True"
-                                     IsTabStop="True"
-                                     AutomationProperties.Name="Détail du message (lecture)"
-                                     ScrollViewer.VerticalScrollBarVisibility="Auto"
-                                     ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-                                <ListBox.Resources>
-                                    <Style TargetType="ListBox">
-                                        <Setter Property="Background" Value="#0A1827" />
-                                        <Setter Property="BorderBrush" Value="#284C75" />
-                                        <Setter Property="BorderThickness" Value="2" />
-                                    </Style>
-                                    <Style TargetType="ListBoxItem">
-                                        <Setter Property="Padding" Value="10 2" />
-                                        <Setter Property="Foreground" Value="White" />
-                                        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
-                                    </Style>
-                                </ListBox.Resources>
-                                <ListBox.ItemTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding}"
-                                                   TextWrapping="Wrap" />
-                                    </DataTemplate>
-                                </ListBox.ItemTemplate>
-                            </ListBox>
+                            <RichTextBox x:Name="DetailDocument"
+                                         IsReadOnly="True"
+                                         IsReadOnlyCaretVisible="True"
+                                         IsDocumentEnabled="True"
+                                         Focusable="True"
+                                         IsTabStop="True"
+                                         MinHeight="320"
+                                         Background="#0A1827"
+                                         Foreground="White"
+                                         BorderBrush="#284C75"
+                                         BorderThickness="2"
+                                         Padding="10"
+                                         VerticalScrollBarVisibility="Auto"
+                                         HorizontalScrollBarVisibility="Disabled"
+                                         AutomationProperties.Name="Détail du message (lecture)" />
                         </StackPanel>
 
 	                        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
