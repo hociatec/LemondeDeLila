@@ -22,6 +22,7 @@ public sealed class WsTicketProvider : IWsTicketProvider, IDisposable
         _config = config ?? throw new ArgumentNullException(nameof(config));
         _session = session ?? throw new ArgumentNullException(nameof(session));
         _http = new HttpClient();
+        _http.Timeout = TimeSpan.FromSeconds(6);
     }
 
     public async Task<string?> GetTicketAsync(string scope, CancellationToken cancellationToken = default)
@@ -88,4 +89,3 @@ public sealed class WsTicketProvider : IWsTicketProvider, IDisposable
         public bool IsValid() => DateTimeOffset.UtcNow < ValidUntil && !string.IsNullOrWhiteSpace(Ticket);
     }
 }
-

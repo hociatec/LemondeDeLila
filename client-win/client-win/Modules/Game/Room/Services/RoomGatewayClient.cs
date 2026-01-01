@@ -44,14 +44,27 @@ public sealed class RoomGatewayClient : IRoomGatewayClient
             throw new ArgumentException("gameType requis", nameof(gameType));
         }
 
+        var startedAt = DateTime.UtcNow;
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+        using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeout.Token);
+
         var socket = _socketFactory();
         var uri = BuildRoomUri(_config.RealtimeGatewayWs, roomId: 0);
-        var headers = await BuildHeadersAsync(cancellationToken).ConfigureAwait(false);
 
+        var headersStartedAt = DateTime.UtcNow;
+        var headers = await BuildHeadersAsync(linked.Token).ConfigureAwait(false);
+        Log.Information(
+            "WS room.create: ticket+headers en {ElapsedMs}ms",
+            (DateTime.UtcNow - headersStartedAt).TotalMilliseconds);
+
+        var connectStartedAt = DateTime.UtcNow;
         Log.Information("WS room.create: connexion à {Endpoint}", uri);
-        await socket.ConnectAsync(uri, token: token, headers: headers, cancellationToken: cancellationToken).ConfigureAwait(false);
+        await socket.ConnectAsync(uri, token: token, headers: headers, cancellationToken: linked.Token).ConfigureAwait(false);
+        Log.Information(
+            "WS room.create: handshake WS en {ElapsedMs}ms",
+            (DateTime.UtcNow - connectStartedAt).TotalMilliseconds);
 
-        var created = await WaitRoomCreatedAsync(socket, gameType, cancellationToken).ConfigureAwait(false);
+        var created = await WaitRoomCreatedAsync(socket, gameType, linked.Token).ConfigureAwait(false);
         var roomId = created.RoomId;
         if (roomId <= 0)
         {
@@ -63,6 +76,10 @@ public sealed class RoomGatewayClient : IRoomGatewayClient
         Log.Information("Connexion à la room WS (réutilisation socket) roomId={RoomId}", roomId);
         var session = new RoomSession(roomId, gameType, socket);
         session.LastRoomState = created.Payload;
+        Log.Information(
+            "WS room.create: create+connect total {ElapsedMs}ms (roomId={RoomId})",
+            (DateTime.UtcNow - startedAt).TotalMilliseconds,
+            roomId);
         return session;
     }
 

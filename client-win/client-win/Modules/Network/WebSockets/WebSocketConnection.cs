@@ -28,6 +28,11 @@ public sealed class WebSocketConnection : IWebSocketConnection
         await CloseAsync().ConfigureAwait(false);
 
         _socket = new ClientWebSocket();
+        // IMPORTANT: sur certains postes Windows, la détection automatique de proxy (WinHTTP) peut
+        // ajouter plusieurs secondes de latence au handshake WebSocket. Le serveur est public
+        // et n'a pas vocation à passer par un proxy : on désactive donc le proxy par défaut.
+        // (Si besoin un jour: rendre configurable via client.properties.)
+        _socket.Options.Proxy = null;
         _socket.Options.KeepAliveInterval = DefaultKeepAliveInterval;
         if (!string.IsNullOrWhiteSpace(token))
         {
