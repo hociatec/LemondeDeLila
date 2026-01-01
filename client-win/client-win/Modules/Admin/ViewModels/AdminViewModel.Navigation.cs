@@ -166,6 +166,12 @@ public sealed partial class AdminViewModel
             return AdminNavResult.Moved;
         }
 
+        if (_page == AdminPage.SoundsInvitations)
+        {
+            BuildSounds();
+            return AdminNavResult.Moved;
+        }
+
         if (_page == AdminPage.SoundsTable)
         {
             BuildSounds();

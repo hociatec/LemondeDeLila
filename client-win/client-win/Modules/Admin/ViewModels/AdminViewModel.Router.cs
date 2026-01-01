@@ -145,21 +145,25 @@ public sealed partial class AdminViewModel
             {
                 if (soundsTag == "sounds.table")
                 {
+                    PushReturnFocus();
                     BuildSoundsTable();
                     return;
                 }
                 if (soundsTag == "sounds.invitations")
                 {
+                    PushReturnFocus();
                     BuildSoundsInvitations();
                     return;
                 }
                 if (soundsTag == "sounds.chat")
                 {
+                    PushReturnFocus();
                     BuildSoundsChat();
                     return;
                 }
                 if (soundsTag == "sounds.private")
                 {
+                    PushReturnFocus();
                     BuildSoundsPrivateMessages();
                     return;
                 }
