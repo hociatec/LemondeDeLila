@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using client_win.Modules.Admin.Dtos;
+using client_win.Modules.Game.RoomDirectory.Services;
 
 namespace client_win.Modules.Admin.ViewModels;
 
@@ -84,7 +85,45 @@ public sealed partial class AdminViewModel
         }
         catch (Exception ex)
         {
-            await _dialogs.ShowError("Rooms", ex.Message).ConfigureAwait(true);
+            var msg = (ex.Message ?? string.Empty).Trim();
+            if (msg.Contains("Type de message inconnu", StringComparison.OrdinalIgnoreCase) ||
+                msg.Contains("message inconnu", StringComparison.OrdinalIgnoreCase) ||
+                msg.Contains("admin.rooms.list", StringComparison.OrdinalIgnoreCase))
+            {
+                // Compat: si le serveur n'est pas encore à jour, on retombe sur la liste publique.
+                // (Les tables privées ne sont pas accessibles sans support serveur.)
+                try
+                {
+                    var fallback = await _roomDirectory.PublicListAsync().ConfigureAwait(true);
+                    _roomsForAdmin = (fallback.Items ?? Array.Empty<PublicRoomListItem>())
+                        .Select(r => new AdminRoomListItemDto
+                        {
+                            Id = r.Id,
+                            Name = r.Name,
+                            GameType = r.GameType,
+                            Status = r.Status,
+                            IsPrivate = false,
+                            MaxPlayers = r.MaxPlayers,
+                            PlayersCount = r.PlayersCount,
+                            BotsCount = r.BotsCount,
+                            OwnerUsername = r.OwnerUsername,
+                            ActivePlayers = 0
+                        })
+                        .ToArray();
+
+                    await _dialogs.ShowInfo(
+                        "Rooms",
+                        "Serveur non à jour (admin.rooms.list indisponible). Affichage limité aux tables publiques.")
+                        .ConfigureAwait(true);
+                }
+                catch (Exception fallbackEx)
+                {
+                    await _dialogs.ShowError("Rooms", fallbackEx.Message).ConfigureAwait(true);
+                }
+                return;
+            }
+
+            await _dialogs.ShowError("Rooms", msg.Length == 0 ? ex.GetType().Name : msg).ConfigureAwait(true);
         }
         finally
         {
