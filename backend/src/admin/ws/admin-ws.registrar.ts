@@ -2,6 +2,7 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import { WsRouteRegistry } from '../../common/ws/ws-route-registry.service';
 import { AdminWsHandler } from './admin-ws.handler';
 import { AdminRoomsWsHandler } from './admin-rooms-ws.handler';
+import { AdminChatWsHandler } from './admin-chat-ws.handler';
 
 @Injectable()
 export class AdminWsRegistrar implements OnModuleInit {
@@ -9,6 +10,7 @@ export class AdminWsRegistrar implements OnModuleInit {
     private readonly registry: WsRouteRegistry,
     private readonly handler: AdminWsHandler,
     private readonly rooms: AdminRoomsWsHandler,
+    private readonly chat: AdminChatWsHandler,
   ) {}
 
   onModuleInit() {
@@ -84,19 +86,19 @@ export class AdminWsRegistrar implements OnModuleInit {
     );
 
     this.registry.register('admin.chat.messages', (s, p) =>
-      this.handler.chatMessages(s, p),
+      this.chat.chatMessages(s, p),
     );
     this.registry.register('admin.chat.delete', (s, p) =>
-      this.handler.chatDelete(s, p),
+      this.chat.chatDelete(s, p),
     );
     this.registry.register('admin.chat.clear', (s, p) =>
-      this.handler.chatClear(s, p),
+      this.chat.chatClear(s, p),
     );
     this.registry.register('admin.chat.ban', (s, p) =>
-      this.handler.chatBan(s, p),
+      this.chat.chatBan(s, p),
     );
     this.registry.register('admin.chat.unban', (s, p) =>
-      this.handler.chatUnban(s, p),
+      this.chat.chatUnban(s, p),
     );
 
     this.registry.register('admin.bots.names.list', (s, p) =>
