@@ -21,6 +21,7 @@ using client_win.Modules.Presence.Views;
 using client_win.Modules.Updates;
 using client_win.Modules.Settings.Services;
 using System.ComponentModel;
+using client_win.Modules.Audio.Services;
 
 namespace client_win
 {
@@ -178,6 +179,7 @@ namespace client_win
             // si l'utilisateur ouvre le catalogue immédiatement.
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(8));
             _ = _host.Services.GetRequiredService<Modules.Catalog.Services.ICatalogService>().PreloadAsync(cts.Token);
+            _ = _host.Services.GetRequiredService<IRemoteSoundCache>().RefreshAsync();
             _ = _notify.StartAsync();
             _ = _presence.StartAsync();
             var menuVm = _host.CreateMainMenuViewModel(user, OnLogoutRequested);

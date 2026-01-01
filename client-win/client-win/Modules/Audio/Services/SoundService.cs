@@ -19,6 +19,7 @@ public sealed class SoundService : ISoundService, IDisposable
         Func<double> Volume);
 
     private readonly IOptionsService _options;
+    private readonly IRemoteSoundCache? _remote;
     private readonly Dispatcher _dispatcher;
     private readonly ILogger<SoundService> _logger;
     private readonly object _gate = new();
@@ -30,9 +31,10 @@ public sealed class SoundService : ISoundService, IDisposable
     // Avoid audio spam when a burst of messages happens (e.g. history replay, reconnect).
     private static readonly long MinIntervalTicks = Stopwatch.Frequency / 12; // ~83ms
 
-    public SoundService(IOptionsService options, Dispatcher dispatcher, ILogger<SoundService> logger)
+    public SoundService(IOptionsService options, IRemoteSoundCache? remote, Dispatcher dispatcher, ILogger<SoundService> logger)
     {
         _options = options ?? throw new ArgumentNullException(nameof(options));
+        _remote = remote;
         _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
@@ -92,7 +94,7 @@ public sealed class SoundService : ISoundService, IDisposable
         {
             foreach (var (sound, entry) in _sounds)
             {
-                var filePath = ResolveFilePath(entry);
+                var filePath = ResolveFilePath(sound, entry);
                 if (!File.Exists(filePath))
                 {
                     _logger.LogDebug("Sound file missing: {Path}", filePath);
@@ -144,7 +146,7 @@ public sealed class SoundService : ISoundService, IDisposable
             _lastPlayTicks[sound] = now;
         }
 
-        var filePath = ResolveFilePath(entry);
+        var filePath = ResolveFilePath(sound, entry);
         if (!File.Exists(filePath))
         {
             _logger.LogDebug("Sound file missing: {Path}", filePath);
@@ -217,6 +219,28 @@ public sealed class SoundService : ISoundService, IDisposable
         }
 
         return Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, entry.DefaultRelativePath));
+    }
+
+    private string ResolveFilePath(SoundId sound, SoundEntry entry)
+    {
+        var remotePath = _remote?.TryGetPath(sound);
+        if (!string.IsNullOrWhiteSpace(remotePath))
+        {
+            try
+            {
+                var candidate = Path.GetFullPath(remotePath);
+                if (File.Exists(candidate))
+                {
+                    return candidate;
+                }
+            }
+            catch
+            {
+                // ignore
+            }
+        }
+
+        return ResolveFilePath(entry);
     }
 
     private void EnsurePlayerLoaded(SoundId sound, string absolutePath)

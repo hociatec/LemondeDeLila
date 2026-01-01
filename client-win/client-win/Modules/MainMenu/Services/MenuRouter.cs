@@ -32,6 +32,7 @@ using client_win.Modules.Audio.Services;
 using client_win.Modules.Game.RoomDirectory.Services;
 using client_win.Modules.Game.RoomDirectory.ViewModels;
 using client_win.Modules.Game.RoomDirectory.Views;
+using client_win.Modules.User.Services;
 
 namespace client_win.Modules.MainMenu.Services;
 
@@ -58,6 +59,8 @@ public sealed class MenuRouter : IMenuRouter
     private readonly ClientConfiguration _config;
     private readonly ISoundService _sounds;
     private readonly IScreenReaderAnnouncer _screenReader;
+    private readonly ISessionService _session;
+    private readonly IRemoteSoundCache _remoteSounds;
 
     public MenuRouter(
         ILogger<MenuRouter> logger,
@@ -65,6 +68,8 @@ public sealed class MenuRouter : IMenuRouter
         IOptionsService options,
         ISoundService sounds,
         IScreenReaderAnnouncer screenReader,
+        ISessionService session,
+        IRemoteSoundCache remoteSounds,
         IChatLauncher chat,
         ICatalogService catalog,
         INavigationService navigation,
@@ -83,6 +88,8 @@ public sealed class MenuRouter : IMenuRouter
         _options = options;
         _sounds = sounds;
         _screenReader = screenReader;
+        _session = session;
+        _remoteSounds = remoteSounds;
         _chat = chat;
         _catalog = catalog;
         _navigation = navigation;
@@ -319,7 +326,7 @@ public sealed class MenuRouter : IMenuRouter
 
         var previous = _navigation.CurrentView;
         var view = new AdminView();
-        var vm = new AdminViewModel(_admin, _config, _publisher, _dialogs, _options, _sounds, onClose: () =>
+        var vm = new AdminViewModel(_admin, _config, _publisher, _dialogs, _options, _sounds, _session, _remoteSounds, onClose: () =>
         {
             if (previous != null)
             {

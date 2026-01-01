@@ -1,6 +1,8 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using System.Windows;
 using Microsoft.Win32;
@@ -178,75 +180,61 @@ public sealed partial class AdminViewModel
             await _dialogs.ShowError("Sons", "Fichier introuvable.").ConfigureAwait(true);
             return;
         }
+        await UploadSoundToServerAsync(sound, src).ConfigureAwait(true);
+        await _remoteSounds.RefreshAsync().ConfigureAwait(true);
 
-        string destName = sound switch
-        {
-            SoundId.RoomOpened => "roomopened.mp3",
-            SoundId.RoomJoined => "roomjoined.mp3",
-            SoundId.RoomExit => "roomexit.mp3",
-            SoundId.InvitationSent => "invitationenvoyer.mp3",
-            SoundId.InvitationReceived => "invitationrecu.mp3",
-            SoundId.ChatMessageSent => "envoimsgtchat.mp3",
-            SoundId.ChatMessageReceived => "receptionmsgtchat.mp3",
-            SoundId.PrivateMessageSent => "msgprivateenvoi.mp3",
-            SoundId.PrivateMessageReceived => "msgprivatereceve.mp3",
-            _ => $"{sound.ToString().ToLowerInvariant()}.mp3"
-        };
+        Details = "Son global (serveur).";
+        _sounds.Play(sound);
+    }
 
-        var appData = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            AppConstants.AppDataFolderName);
-        var soundsDir = Path.Combine(appData, "sounds");
-        Directory.CreateDirectory(soundsDir);
-        var dest = Path.Combine(soundsDir, destName);
-
-        try
+    private async Task UploadSoundToServerAsync(SoundId sound, string filePath)
+    {
+        var jwt = _session.CurrentUser?.Token;
+        if (string.IsNullOrWhiteSpace(jwt))
         {
-            File.Copy(src, dest, overwrite: true);
-        }
-        catch (Exception ex)
-        {
-            await _dialogs.ShowError("Sons", $"Impossible de copier le fichier : {ex.Message}").ConfigureAwait(true);
+            await _dialogs.ShowError("Sons", "Connexion requise.").ConfigureAwait(true);
             return;
         }
 
-        // Persister dans les options (survit aux mises à jour ClickOnce).
-        switch (sound)
+        var endpoint = new Uri(_config.HttpBase, $"admin/sounds/{Uri.EscapeDataString(sound.ToString())}");
+
+        byte[] bytes;
+        try
         {
-            case SoundId.RoomOpened:
-                _options.Current.SoundRoomOpenedPath = dest;
-                break;
-            case SoundId.RoomJoined:
-                _options.Current.SoundRoomJoinedPath = dest;
-                break;
-            case SoundId.RoomExit:
-                _options.Current.SoundRoomExitPath = dest;
-                break;
-            case SoundId.InvitationSent:
-                _options.Current.SoundInvitationSentPath = dest;
-                break;
-            case SoundId.InvitationReceived:
-                _options.Current.SoundInvitationReceivedPath = dest;
-                break;
-            case SoundId.ChatMessageSent:
-                _options.Current.SoundChatMessageSentPath = dest;
-                break;
-            case SoundId.ChatMessageReceived:
-                _options.Current.SoundChatMessageReceivedPath = dest;
-                break;
-            case SoundId.PrivateMessageSent:
-                _options.Current.SoundPrivateMessageSentPath = dest;
-                break;
-            case SoundId.PrivateMessageReceived:
-                _options.Current.SoundPrivateMessageReceivedPath = dest;
-                break;
+            bytes = await File.ReadAllBytesAsync(filePath).ConfigureAwait(true);
         }
-        _options.Update(_options.Current);
+        catch (Exception ex)
+        {
+            await _dialogs.ShowError("Sons", $"Impossible de lire le fichier : {ex.Message}").ConfigureAwait(true);
+            return;
+        }
 
-        Details = $"Son personnalisé : {dest}";
+        using var http = new HttpClient();
+        http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwt);
 
-        // Recharge les players si besoin et donne un aperçu.
-        _sounds.PreloadAll();
-        _sounds.Play(sound);
+        using var form = new MultipartFormDataContent();
+        var fileContent = new ByteArrayContent(bytes);
+        fileContent.Headers.ContentType = new MediaTypeHeaderValue("audio/mpeg");
+        form.Add(fileContent, "file", Path.GetFileName(filePath));
+
+        HttpResponseMessage resp;
+        try
+        {
+            resp = await http.PostAsync(endpoint, form).ConfigureAwait(true);
+        }
+        catch (Exception ex)
+        {
+            await _dialogs.ShowError("Sons", $"Upload impossible : {ex.Message}").ConfigureAwait(true);
+            return;
+        }
+
+        if (!resp.IsSuccessStatusCode)
+        {
+            var body = await resp.Content.ReadAsStringAsync().ConfigureAwait(true);
+            await _dialogs.ShowError("Sons", $"Upload échoué ({(int)resp.StatusCode}) : {body}").ConfigureAwait(true);
+            return;
+        }
+
+        await _dialogs.ShowInfo("Sons", "Son global mis à jour (serveur).").ConfigureAwait(true);
     }
 }

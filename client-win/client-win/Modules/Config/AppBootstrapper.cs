@@ -181,9 +181,15 @@ public static class AppBootstrapper
 
         services.AddSingleton<Dispatcher>(_ => Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher);
 
+        services.AddSingleton<IRemoteSoundCache>(sp =>
+            new RemoteSoundCache(
+                sp.GetRequiredService<ClientConfiguration>(),
+                sp.GetRequiredService<ILogger<RemoteSoundCache>>()));
+
         services.AddSingleton<ISoundService>(sp =>
             new SoundService(
                 sp.GetRequiredService<IOptionsService>(),
+                sp.GetRequiredService<IRemoteSoundCache>(),
                 sp.GetRequiredService<Dispatcher>(),
                 sp.GetRequiredService<ILogger<SoundService>>()));
 

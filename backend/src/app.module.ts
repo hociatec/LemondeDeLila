@@ -23,6 +23,7 @@ import { NotificationModule } from './notification/notification.module';
 import { GameLoggerModule } from './common/services/game-logger.module';
 import { HealthModule } from './health/health.module';
 import { ClientUpdatesModule } from './client-updates/client-updates.module';
+import { SoundsModule } from './sounds/sounds.module';
 import { WsTicketModule } from './common/ws/ws-ticket.module';
 
 @Module({
@@ -117,6 +118,7 @@ import { WsTicketModule } from './common/ws/ws-ticket.module';
     AdminModule,
     HealthModule,
     ClientUpdatesModule,
+    SoundsModule,
     WsTicketModule,
   ],
   providers: [

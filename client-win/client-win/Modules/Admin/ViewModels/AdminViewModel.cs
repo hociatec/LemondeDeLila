@@ -12,6 +12,7 @@ using client_win.Modules.Settings.Services;
 using client_win.Modules.Config;
 using client_win.Modules.Shell.Services;
 using client_win.Modules.Updates;
+using client_win.Modules.User.Services;
 
 namespace client_win.Modules.Admin.ViewModels;
 
@@ -89,6 +90,8 @@ public sealed partial class AdminViewModel : ObservableObject
     private readonly IClientUpdatePublisher _publisher;
     private readonly IOptionsService _options;
     private readonly ISoundService _sounds;
+    private readonly ISessionService _session;
+    private readonly IRemoteSoundCache _remoteSounds;
 
     public AdminViewModel(
         IAdminService admin,
@@ -97,6 +100,8 @@ public sealed partial class AdminViewModel : ObservableObject
         IDialogService dialogs,
         IOptionsService options,
         ISoundService sounds,
+        ISessionService session,
+        IRemoteSoundCache remoteSounds,
         Action onClose)
     {
         _admin = admin ?? throw new ArgumentNullException(nameof(admin));
@@ -105,6 +110,8 @@ public sealed partial class AdminViewModel : ObservableObject
         _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
         _options = options ?? throw new ArgumentNullException(nameof(options));
         _sounds = sounds ?? throw new ArgumentNullException(nameof(sounds));
+        _session = session ?? throw new ArgumentNullException(nameof(session));
+        _remoteSounds = remoteSounds ?? throw new ArgumentNullException(nameof(remoteSounds));
         _close = onClose ?? (() => { });
         _dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
 
