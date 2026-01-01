@@ -60,7 +60,9 @@ public sealed class MenuRouterStub : IMenuRouter
     {
         var previous = _navigation.CurrentView;
         var catalogView = new CatalogView();
-        var vm = new CatalogViewModel(_catalog, onClose: () =>
+        var vm = new CatalogViewModel(
+            _catalog,
+            onClose: () =>
         {
             if (previous != null)
             {
@@ -68,7 +70,9 @@ public sealed class MenuRouterStub : IMenuRouter
                 RestoreFocusAfterBackNavigation(previous);
             }
         },
-        openGame: game => _tables.OpenAsync(game, previous ?? catalogView));
+            openGame: game => _tables.OpenAsync(game, catalogView),
+            joinGame: JoinGame,
+            openStoryBook: OpenStats);
         catalogView.DataContext = vm;
         _navigation.Show(catalogView);
         return Task.FromResult("Catalogue ouvert.");

@@ -161,7 +161,7 @@ public sealed class GameTableOpener : IGameTableOpener
         Action<client_win.Modules.Network.WebSockets.WebSocketState>? onRoomConnectionStateChanged = null;
         var isExiting = 0;
 
-        async Task ExitToHomeAsync(string? reason = null)
+        async Task ExitToTavernAsync(string? reason = null)
         {
             if (Interlocked.Exchange(ref isExiting, 1) == 1)
             {
@@ -192,7 +192,7 @@ public sealed class GameTableOpener : IGameTableOpener
                 _ = _presence.SetHomeAsync();
 
                 // Navigation + éventuel message : toujours sur le thread UI.
-                var target = _home.HomeView ?? returnView;
+                var target = returnView;
                 if (!dispatcher.CheckAccess())
                 {
                     await dispatcher.InvokeAsync(() => _navigation.Show(target), DispatcherPriority.Normal);
@@ -241,7 +241,7 @@ public sealed class GameTableOpener : IGameTableOpener
             onQuit: async () =>
             {
                 _sounds.Play(SoundId.RoomExit);
-                await ExitToHomeAsync().ConfigureAwait(true);
+                await ExitToTavernAsync().ConfigureAwait(true);
             },
             onAddBot: AddBot,
             onRemoveBot: RemoveBot,
@@ -283,7 +283,7 @@ public sealed class GameTableOpener : IGameTableOpener
             if (state is client_win.Modules.Network.WebSockets.WebSocketState.Disconnected or
                 client_win.Modules.Network.WebSockets.WebSocketState.Error)
             {
-                _ = ExitToHomeAsync("Connexion à la table interrompue.");
+                _ = ExitToTavernAsync("Connexion à la table interrompue.");
             }
         };
         session.ConnectionStateChanged += onRoomConnectionStateChanged;

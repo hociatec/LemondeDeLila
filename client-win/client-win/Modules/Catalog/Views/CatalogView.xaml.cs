@@ -33,7 +33,7 @@ public partial class CatalogView : UserControl
         }
         if (e.Key == System.Windows.Input.Key.Escape && DataContext is CatalogViewModel vm)
         {
-            var inCategoriesColumn = CategoriesList?.IsKeyboardFocusWithin == true;
+            var inCategoriesColumn = CategoriesList?.IsKeyboardFocusWithin == true || ActionsList?.IsKeyboardFocusWithin == true;
             var inSubCategoriesColumn = SubCategoriesList?.IsKeyboardFocusWithin == true;
             var result = vm.HandleEscape(inCategoriesColumn, inSubCategoriesColumn);
             e.Handled = true;
@@ -45,8 +45,52 @@ public partial class CatalogView : UserControl
         }
     }
 
+    private void OnActionsKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key is Key.Enter or Key.Return)
+        {
+            if (ActionsList?.SelectedItem is CatalogViewModel.CatalogActionItem action &&
+                action.Command?.CanExecute(null) == true)
+            {
+                e.Handled = true;
+                action.Command.Execute(null);
+            }
+            return;
+        }
+
+        if (e.Key == Key.Down &&
+            ActionsList != null &&
+            CategoriesList != null &&
+            ActionsList.SelectedIndex >= 0 &&
+            ActionsList.SelectedIndex == ActionsList.Items.Count - 1)
+        {
+            e.Handled = true;
+            FocusFirstItem(CategoriesList);
+        }
+    }
+
     private void OnCategoriesKeyDown(object sender, KeyEventArgs e)
     {
+        if (e.Key == Key.Up &&
+            CategoriesList != null &&
+            ActionsList != null &&
+            ActionsList.Items.Count > 0 &&
+            CategoriesList.SelectedIndex <= 0)
+        {
+            e.Handled = true;
+            ActionsList.SelectedIndex = Math.Max(0, ActionsList.Items.Count - 1);
+            ActionsList.UpdateLayout();
+            if (ActionsList.ItemContainerGenerator.ContainerFromIndex(ActionsList.SelectedIndex) is ListBoxItem item)
+            {
+                item.Focus();
+            }
+            else
+            {
+                ActionsList.Focus();
+            }
+            return;
+        }
+
         if ((e.Key != Key.Enter && e.Key != Key.Return) || DataContext is not CatalogViewModel vm)
         {
             return;

@@ -247,7 +247,7 @@
                             </StackPanel.Style>
 
                             <TextBox x:Name="DetailDocument"
-                                     Text="{Binding SelectedMessageDetailText}"
+                                     Text="{Binding SelectedMessageDetailText, Mode=OneWay}"
                                      IsReadOnly="True"
                                      IsReadOnlyCaretVisible="True"
                                      TextWrapping="Wrap"

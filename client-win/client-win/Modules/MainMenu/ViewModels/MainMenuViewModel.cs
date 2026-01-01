@@ -125,11 +125,9 @@ public sealed class MainMenuViewModel : ObservableObject
         Items.Clear();
 
         Items.Add(new MainMenuItem("Entrée dans la taverne", tag: OpenCatalogCommand));
-        Items.Add(new MainMenuItem("Rejoindre une partie", tag: JoinGameCommand));
         Items.Add(new MainMenuItem("Messagerie", tag: MessagingCommand));
         Items.Add(new MainMenuItem("Tchat", tag: ChatCommand));
         Items.Add(new MainMenuItem("Social", tag: SocialCommand));
-        Items.Add(new MainMenuItem("Livre des contes", tag: StatsCommand));
         Items.Add(new MainMenuItem("À propos", tag: AboutCommand));
 
         Items.Add(new MainMenuItem("Options", tag: OptionsCommand));

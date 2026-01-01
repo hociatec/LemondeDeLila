@@ -597,7 +597,7 @@ public sealed class MessagingViewModel : ObservableObject
         var subject = string.IsNullOrWhiteSpace(message.Subject) ? "Sans sujet" : message.Subject.Trim();
         var sender = message.Sender?.Username ?? "inconnu";
         var recipient = message.Recipient?.Username ?? "inconnu";
-        var body = message.Text ?? string.Empty;
+        var body = NormalizeBody(message.Text);
 
         return
             $"Sujet: {subject}\n" +
@@ -607,6 +607,47 @@ public sealed class MessagingViewModel : ObservableObject
             "\n" +
             "Contenu:\n" +
             body;
+    }
+
+    private static string NormalizeBody(string? rawText)
+    {
+        var body = rawText ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(body))
+        {
+            return string.Empty;
+        }
+
+        // Certains messages historiques ont été stockés avec des en-têtes ("De:", "Contenu:") déjà présents
+        // dans le corps, ce qui provoque des doublons dans l'affichage du détail.
+        // On ne "nettoie" que si le texte ressemble clairement à un détail pré-formaté.
+        var sample = body.Length > 300 ? body[..300] : body;
+        var looksFormatted =
+            sample.Contains("Contenu:", StringComparison.OrdinalIgnoreCase) &&
+            (sample.TrimStart().StartsWith("Sujet:", StringComparison.OrdinalIgnoreCase) ||
+             sample.TrimStart().StartsWith("De:", StringComparison.OrdinalIgnoreCase));
+
+        if (!looksFormatted)
+        {
+            return body;
+        }
+
+        var idx = body.IndexOf("Contenu:", StringComparison.OrdinalIgnoreCase);
+        if (idx < 0)
+        {
+            return body;
+        }
+
+        var after = body[(idx + "Contenu:".Length)..];
+        if (after.StartsWith("\r\n", StringComparison.Ordinal))
+        {
+            after = after[2..];
+        }
+        else if (after.StartsWith("\n", StringComparison.Ordinal))
+        {
+            after = after[1..];
+        }
+
+        return after.TrimStart('\r', '\n');
     }
 
     private void ReplaceMessage(MessagingMessage updated)

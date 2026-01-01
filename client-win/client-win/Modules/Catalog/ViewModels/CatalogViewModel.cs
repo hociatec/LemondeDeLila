@@ -25,6 +25,8 @@ public enum CatalogEscapeResult
 /// </summary>
 public sealed class CatalogViewModel : ObservableObject
 {
+    public sealed record CatalogActionItem(string Label, ICommand Command);
+
     private readonly ICatalogService _service;
     private readonly Func<CatalogGame, Task> _openGame;
     private readonly Action _close;
@@ -37,7 +39,12 @@ public sealed class CatalogViewModel : ObservableObject
     private bool _isBusy;
     private int _selectionRevision;
 
-    public CatalogViewModel(ICatalogService service, Action onClose, Func<CatalogGame, Task> openGame)
+    public CatalogViewModel(
+        ICatalogService service,
+        Action onClose,
+        Func<CatalogGame, Task> openGame,
+        Func<Task<string>>? joinGame = null,
+        Func<Task<string>>? openStoryBook = null)
     {
         _service = service ?? throw new ArgumentNullException(nameof(service));
         _openGame = openGame ?? throw new ArgumentNullException(nameof(openGame));
@@ -45,11 +52,27 @@ public sealed class CatalogViewModel : ObservableObject
         _dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
         CloseCommand = new RelayCommand(_close);
         RefreshCommand = new AsyncRelayCommand(LoadAsync);
+
+        if (joinGame != null)
+        {
+            Actions.Add(new CatalogActionItem(
+                "Rejoindre une partie",
+                new AsyncRelayCommand(async () => Status = await joinGame().ConfigureAwait(true))));
+        }
+        if (openStoryBook != null)
+        {
+            Actions.Add(new CatalogActionItem(
+                "Livre des contes",
+                new AsyncRelayCommand(async () => Status = await openStoryBook().ConfigureAwait(true))));
+        }
+
         Status = "Chargement du catalogue...";
         // IMPORTANT: ne pas muter les collections pendant que WPF est en train de mesurer/générer les conteneurs
         // (sinon ItemsControl peut lever ItemContainerGenerator.Verify()).
         _dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() => RefreshCommand.Execute(null)));
     }
+
+    public ObservableCollection<CatalogActionItem> Actions { get; } = new();
 
     public ObservableCollection<CatalogCategory> Shelves { get; } = new();
     public ObservableCollection<CatalogCategory> SubShelves { get; } = new();
