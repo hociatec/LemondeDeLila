@@ -211,11 +211,20 @@ public partial class MessagingView : UserControl
         var doc = DetailDocument.Document;
         doc.Blocks.Clear();
 
-        // Un paragraphe par ligne pour une navigation "document" propre (flèches haut/bas).
-        foreach (var line in text.Split('\n'))
+        // IMPORTANT (NVDA):
+        // Un paragraphe par ligne peut provoquer des lectures en double sur certaines transitions (lignes vides, etc.).
+        // On crée un seul paragraphe avec des LineBreak pour une navigation plus stable "comme un document".
+        var p = new Paragraph { Margin = new Thickness(0) };
+        var lines = text.Split('\n');
+        for (int i = 0; i < lines.Length; i++)
         {
-            doc.Blocks.Add(new Paragraph(new Run(line)) { Margin = new Thickness(0) });
+            p.Inlines.Add(new Run(lines[i]));
+            if (i < lines.Length - 1)
+            {
+                p.Inlines.Add(new LineBreak());
+            }
         }
+        doc.Blocks.Add(p);
 
         // Positionner le caret au début pour une lecture cohérente.
         try
