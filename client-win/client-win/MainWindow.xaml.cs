@@ -43,6 +43,7 @@ namespace client_win
         private readonly IHomeViewAccessor _homeAccessor;
         private bool _exitConfirmed;
         private bool _exitPromptOpen;
+        private int _soundInitRevision;
 
         public INavigationService Navigation => _navigation;
 
@@ -185,7 +186,7 @@ namespace client_win
             // si l'utilisateur ouvre le catalogue immédiatement.
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(8));
             _ = _host.Services.GetRequiredService<Modules.Catalog.Services.ICatalogService>().PreloadAsync(cts.Token);
-            _ = _host.Services.GetRequiredService<IRemoteSoundCache>().RefreshAsync();
+            _ = EnsureSoundsReadyAndApplyLoopsAsync();
             _ = _notify.StartAsync();
             _ = _presence.StartAsync();
             // Warm-up WS room to avoid cold handshake latency when creating/joining a table.
@@ -213,6 +214,7 @@ namespace client_win
 
         private void OnLogoutRequested()
         {
+            Interlocked.Increment(ref _soundInitRevision);
             _ = _notify.StopAsync();
             _ = _presence.StopAsync();
             try
@@ -230,6 +232,50 @@ namespace client_win
             Title = "Le Monde de Lila";
             _homeAccessor.HomeView = null;
             _navigation.Show(_homeView);
+        }
+
+        private async Task EnsureSoundsReadyAndApplyLoopsAsync()
+        {
+            var revision = Interlocked.Increment(ref _soundInitRevision);
+            var remote = _host.Services.GetRequiredService<IRemoteSoundCache>();
+            var sounds = _host.Services.GetRequiredService<ISoundService>();
+
+            try
+            {
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(12));
+                await remote.RefreshAsync(force: true, cancellationToken: cts.Token).ConfigureAwait(false);
+            }
+            catch
+            {
+                // ignore (best-effort)
+            }
+
+            if (revision != Volatile.Read(ref _soundInitRevision))
+            {
+                return;
+            }
+
+            try
+            {
+                sounds.PreloadAll();
+
+                // Rejouer la boucle selon la vue courante pour prendre en compte les sons distants nouvellement téléchargés.
+                var view = _navigation.CurrentView;
+                sounds.StopLoop(Modules.Audio.Models.SoundId.MainMenuMusic);
+                sounds.StopLoop(Modules.Audio.Models.SoundId.TavernAmbience);
+                if (view is MainMenuView)
+                {
+                    sounds.StartLoop(Modules.Audio.Models.SoundId.MainMenuMusic);
+                }
+                else if (view is Modules.Catalog.Views.CatalogView)
+                {
+                    sounds.StartLoop(Modules.Audio.Models.SoundId.TavernAmbience);
+                }
+            }
+            catch
+            {
+                // ignore (best-effort)
+            }
         }
 
         protected override async void OnClosed(EventArgs e)
