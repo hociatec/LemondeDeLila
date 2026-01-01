@@ -66,6 +66,55 @@ public sealed class PublicRoomListItem
 
     public string Slots => $"{PlayersCount + BotsCount}/{MaxPlayers}";
 
+    // Libellé destiné aux lecteurs d'écran : mettre en avant le jeu, puis les infos utiles.
+    public string A11yLabel
+    {
+        get
+        {
+            var game = NormalizeForSpeech(GameType);
+            if (string.IsNullOrWhiteSpace(game))
+            {
+                game = NormalizeForSpeech(Name);
+            }
+            if (string.IsNullOrWhiteSpace(game))
+            {
+                game = $"Table {Id}";
+            }
+
+            var owner = NormalizeForSpeech(OwnerUsername);
+            var status = NormalizeForSpeech(Status);
+            var parts = new System.Collections.Generic.List<string>(capacity: 3);
+            if (!string.IsNullOrWhiteSpace(owner))
+            {
+                parts.Add(owner);
+            }
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                parts.Add(status);
+            }
+            parts.Add(Slots);
+
+            return parts.Count == 0 ? game : $"{game} ({string.Join(", ", parts)})";
+        }
+    }
+
+    private static string NormalizeForSpeech(string? value)
+    {
+        var s = (value ?? string.Empty).Trim();
+        if (s.Length == 0)
+        {
+            return string.Empty;
+        }
+
+        // Evite que NVDA épelle des slugs: "panier-express" -> "panier express"
+        s = s.Replace('-', ' ').Replace('_', ' ');
+        while (s.Contains("  ", StringComparison.Ordinal))
+        {
+            s = s.Replace("  ", " ", StringComparison.Ordinal);
+        }
+        return s.Trim();
+    }
+
     public override string ToString()
     {
         var owner = string.IsNullOrWhiteSpace(OwnerUsername) ? "—" : OwnerUsername;
