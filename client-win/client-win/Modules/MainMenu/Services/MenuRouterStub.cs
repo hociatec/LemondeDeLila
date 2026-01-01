@@ -16,6 +16,9 @@ using client_win.Modules.Settings.Services;
 using client_win.Modules.Shell.Services;
 using client_win.Modules.Game.RoomDirectory.ViewModels;
 using client_win.Modules.Game.RoomDirectory.Views;
+using client_win.Modules.Catalog.Views;
+using client_win.Modules.MainMenu.Views;
+using client_win.Modules.Audio.Models;
 
 namespace client_win.Modules.MainMenu.Services;
 
@@ -33,11 +36,13 @@ public sealed class MenuRouterStub : IMenuRouter
     private readonly IGameTableOpener _tables;
     private readonly IRoomDirectoryClient _roomDirectory;
     private readonly IScreenReaderAnnouncer _screenReader;
+    private readonly Modules.Audio.Services.ISoundService? _sounds;
 
     public MenuRouterStub(
         ILogger<MenuRouterStub> logger,
         IOptionsService options,
         IScreenReaderAnnouncer screenReader,
+        Modules.Audio.Services.ISoundService sounds,
         IChatLauncher chat,
         ICatalogService catalog,
         INavigationService navigation,
@@ -48,6 +53,7 @@ public sealed class MenuRouterStub : IMenuRouter
         _logger = logger;
         _options = options;
         _screenReader = screenReader;
+        _sounds = sounds;
         _chat = chat;
         _catalog = catalog;
         _navigation = navigation;
@@ -60,6 +66,8 @@ public sealed class MenuRouterStub : IMenuRouter
     {
         var previous = _navigation.CurrentView;
         var catalogView = new CatalogView();
+        StopBackgroundLoops();
+        _sounds?.StartLoop(SoundId.TavernAmbience);
         var vm = new CatalogViewModel(
             _catalog,
             onClose: () =>
@@ -69,10 +77,24 @@ public sealed class MenuRouterStub : IMenuRouter
                 _navigation.Show(previous);
                 RestoreFocusAfterBackNavigation(previous);
             }
+
+            StartLoopForView(previous);
         },
-            openGame: game => _tables.OpenAsync(game, catalogView),
-            joinGame: JoinGame,
-            openStoryBook: OpenStats);
+            openGame: async game =>
+            {
+                StopBackgroundLoops();
+                await _tables.OpenAsync(game, catalogView).ConfigureAwait(true);
+            },
+            joinGame: async () =>
+            {
+                StopBackgroundLoops();
+                return await JoinGame().ConfigureAwait(true);
+            },
+            openStoryBook: async () =>
+            {
+                StopBackgroundLoops();
+                return await OpenStats().ConfigureAwait(true);
+            });
         catalogView.DataContext = vm;
         _navigation.Show(catalogView);
         return Task.FromResult("Catalogue ouvert.");
@@ -85,6 +107,7 @@ public sealed class MenuRouterStub : IMenuRouter
     public Task<string> JoinGame()
     {
         var previous = _navigation.CurrentView;
+        StopBackgroundLoops();
         var view = new JoinGameView();
         JoinGameViewModel? vm = null;
         vm = new JoinGameViewModel(
@@ -100,6 +123,8 @@ public sealed class MenuRouterStub : IMenuRouter
                     _navigation.Show(previous);
                     RestoreFocusAfterBackNavigation(previous);
                 }
+
+                StartLoopForView(previous);
             });
         view.DataContext = vm;
         _navigation.Show(view);
@@ -110,12 +135,16 @@ public sealed class MenuRouterStub : IMenuRouter
     {
         var owner = Application.Current?.MainWindow;
         if (owner == null) return "Fenêtre principale indisponible.";
-        return await _chat.OpenAsync(owner);
+        StopBackgroundLoops();
+        var status = await _chat.OpenAsync(owner).ConfigureAwait(true);
+        StartLoopForView(_navigation.CurrentView);
+        return status;
     }
 
     public Task<string> OpenMessaging()
     {
         var previous = _navigation.CurrentView;
+        StopBackgroundLoops();
         var view = new MessagingView();
         var vm = new MessagingViewModel(_messaging, onClose: () =>
         {
@@ -124,10 +153,36 @@ public sealed class MenuRouterStub : IMenuRouter
                 _navigation.Show(previous);
                 RestoreFocusAfterBackNavigation(previous);
             }
+
+            StartLoopForView(previous);
         });
         view.DataContext = vm;
         _navigation.Show(view);
         return Task.FromResult("Messagerie ouverte.");
+    }
+
+    private void StopBackgroundLoops()
+    {
+        _sounds?.StopLoop(SoundId.MainMenuMusic);
+        _sounds?.StopLoop(SoundId.TavernAmbience);
+    }
+
+    private void StartLoopForView(UserControl? view)
+    {
+        StopBackgroundLoops();
+        if (_sounds == null)
+        {
+            return;
+        }
+
+        if (view is CatalogView)
+        {
+            _sounds.StartLoop(SoundId.TavernAmbience);
+        }
+        else if (view is MainMenuView)
+        {
+            _sounds.StartLoop(SoundId.MainMenuMusic);
+        }
     }
 
     public Task<string> OpenSocial() => LogAndReturn("Social (stub)");

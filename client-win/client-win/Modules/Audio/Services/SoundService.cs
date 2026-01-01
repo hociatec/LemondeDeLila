@@ -27,6 +27,9 @@ public sealed class SoundService : ISoundService, IDisposable
     private readonly Dictionary<SoundId, string> _loadedPaths = new();
     private readonly Dictionary<SoundId, long> _lastPlayTicks = new();
     private readonly Dictionary<SoundId, SoundEntry> _sounds;
+    private readonly HashSet<SoundId> _looping = new();
+    private readonly Dictionary<SoundId, MediaPlayer> _loopPlayers = new();
+    private readonly Dictionary<SoundId, EventHandler> _loopHandlers = new();
 
     // Avoid audio spam when a burst of messages happens (e.g. history replay, reconnect).
     private static readonly long MinIntervalTicks = Stopwatch.Frequency / 12; // ~83ms
@@ -55,6 +58,16 @@ public sealed class SoundService : ISoundService, IDisposable
                 OverridePath: () => _options.Current.SoundClientDisconnectedPath,
                 IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundNavigate,
                 Volume: () => Clamp01(_options.Current.SoundNavigateVolume / 100.0)),
+            [SoundId.MainMenuMusic] = new SoundEntry(
+                DefaultRelativePath: Path.Combine("Assets", "Sounds", "roomopened.mp3"),
+                OverridePath: null,
+                IsEnabled: () => !_options.Current.MuteAll,
+                Volume: () => 0.25),
+            [SoundId.TavernAmbience] = new SoundEntry(
+                DefaultRelativePath: Path.Combine("Assets", "Sounds", "roomopened.mp3"),
+                OverridePath: null,
+                IsEnabled: () => !_options.Current.MuteAll,
+                Volume: () => 0.20),
             [SoundId.ChatMessageSent] = new SoundEntry(
                 DefaultRelativePath: Path.Combine("Assets", "Sounds", "envoimsgtchat.mp3"),
                 OverridePath: () => _options.Current.SoundChatMessageSentPath,
@@ -210,10 +223,162 @@ public sealed class SoundService : ISoundService, IDisposable
         }
     }
 
+    public void StartLoop(SoundId sound)
+    {
+        if (!_sounds.TryGetValue(sound, out var entry))
+        {
+            return;
+        }
+        if (!entry.IsEnabled())
+        {
+            StopLoop(sound);
+            return;
+        }
+
+        var filePath = ResolveFilePath(sound, entry);
+        if (!File.Exists(filePath))
+        {
+            _logger.LogDebug("Loop sound file missing: {Path}", filePath);
+            return;
+        }
+
+        void StartOnUiThread()
+        {
+            MediaPlayer player;
+            EventHandler handler;
+
+            lock (_gate)
+            {
+                EnsurePlayerLoaded(sound, filePath);
+                player = _players[sound];
+
+                if (_loopPlayers.TryGetValue(sound, out var previousPlayer) && !ReferenceEquals(previousPlayer, player))
+                {
+                    if (_loopHandlers.TryGetValue(sound, out var previousHandler))
+                    {
+                        try { previousPlayer.MediaEnded -= previousHandler; } catch { /* ignore */ }
+                    }
+                    _loopPlayers.Remove(sound);
+                    _loopHandlers.Remove(sound);
+                    _looping.Remove(sound);
+                }
+
+                if (_looping.Contains(sound))
+                {
+                    try
+                    {
+                        player.Volume = entry.Volume();
+                        player.Play();
+                    }
+                    catch
+                    {
+                        // ignore
+                    }
+                    return;
+                }
+
+                handler = (_, _) =>
+                {
+                    lock (_gate)
+                    {
+                        if (!_looping.Contains(sound))
+                        {
+                            return;
+                        }
+                    }
+
+                    try
+                    {
+                        player.Position = TimeSpan.Zero;
+                        player.Play();
+                    }
+                    catch
+                    {
+                        // ignore
+                    }
+                };
+
+                _looping.Add(sound);
+                _loopPlayers[sound] = player;
+                _loopHandlers[sound] = handler;
+                player.MediaEnded += handler;
+            }
+
+            try
+            {
+                player.Volume = entry.Volume();
+                player.Stop();
+                player.Position = TimeSpan.Zero;
+                player.Play();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug(ex, "Loop sound start failed ({Sound})", sound);
+            }
+        }
+
+        if (_dispatcher.CheckAccess())
+        {
+            StartOnUiThread();
+        }
+        else
+        {
+            _ = _dispatcher.BeginInvoke((Action)StartOnUiThread, DispatcherPriority.Background);
+        }
+    }
+
+    public void StopLoop(SoundId sound)
+    {
+        void StopOnUiThread()
+        {
+            MediaPlayer? player = null;
+            EventHandler? handler = null;
+
+            lock (_gate)
+            {
+                _looping.Remove(sound);
+
+                if (_loopPlayers.TryGetValue(sound, out var p))
+                {
+                    player = p;
+                    _loopPlayers.Remove(sound);
+                }
+
+                if (_loopHandlers.TryGetValue(sound, out var h))
+                {
+                    handler = h;
+                    _loopHandlers.Remove(sound);
+                }
+            }
+
+            if (player != null && handler != null)
+            {
+                try { player.MediaEnded -= handler; } catch { /* ignore */ }
+            }
+
+            if (player != null)
+            {
+                try { player.Stop(); } catch { /* ignore */ }
+            }
+        }
+
+        if (_dispatcher.CheckAccess())
+        {
+            StopOnUiThread();
+        }
+        else
+        {
+            _ = _dispatcher.BeginInvoke((Action)StopOnUiThread, DispatcherPriority.Background);
+        }
+    }
+
     public void Dispose()
     {
         lock (_gate)
         {
+            _looping.Clear();
+            _loopPlayers.Clear();
+            _loopHandlers.Clear();
             foreach (var p in _players.Values)
             {
                 try { p.Close(); } catch { /* ignore */ }

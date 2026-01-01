@@ -5,6 +5,8 @@ public enum SoundId
     ClientOpened,
     ClientConnected,
     ClientDisconnected,
+    MainMenuMusic,
+    TavernAmbience,
     ChatMessageSent,
     ChatMessageReceived,
     PrivateMessageSent,

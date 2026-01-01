@@ -227,6 +227,12 @@ public sealed partial class AdminViewModel
             return AdminNavResult.Moved;
         }
 
+        if (_page == AdminPage.SoundsAmbience)
+        {
+            BuildSounds();
+            return AdminNavResult.Moved;
+        }
+
         if (_page is AdminPage.SoundsChat or AdminPage.SoundsPrivateMessages)
         {
             BuildSounds();
@@ -245,6 +251,9 @@ public sealed partial class AdminViewModel
                     break;
                 case AdminPage.SoundsConnection:
                     BuildSoundsConnection();
+                    break;
+                case AdminPage.SoundsAmbience:
+                    BuildSoundsAmbience();
                     break;
                 case AdminPage.SoundsChat:
                     BuildSoundsChat();

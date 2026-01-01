@@ -204,12 +204,27 @@ namespace client_win
             var menuView = new MainMenuView { DataContext = menuVm };
             _homeAccessor.HomeView = menuView;
             _navigation.Show(menuView);
+
+            // Musique de fond du menu principal (configurable côté admin via sons globaux).
+            var sounds = _host.Services.GetRequiredService<ISoundService>();
+            sounds.StopLoop(Modules.Audio.Models.SoundId.TavernAmbience);
+            sounds.StartLoop(Modules.Audio.Models.SoundId.MainMenuMusic);
         }
 
         private void OnLogoutRequested()
         {
             _ = _notify.StopAsync();
             _ = _presence.StopAsync();
+            try
+            {
+                var sounds = _host.Services.GetRequiredService<ISoundService>();
+                sounds.StopLoop(Modules.Audio.Models.SoundId.MainMenuMusic);
+                sounds.StopLoop(Modules.Audio.Models.SoundId.TavernAmbience);
+            }
+            catch
+            {
+                // ignore
+            }
             _host.Session.Clear();
             _navigation.ClearUser();
             Title = "Le Monde de Lila";

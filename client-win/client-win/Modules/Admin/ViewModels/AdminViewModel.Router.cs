@@ -249,6 +249,12 @@ public sealed partial class AdminViewModel
                     BuildSoundsConnection();
                     return;
                 }
+                if (soundsTag == "sounds.ambience")
+                {
+                    PushReturnFocus();
+                    BuildSoundsAmbience();
+                    return;
+                }
                 if (soundsTag == "sounds.table")
                 {
                     PushReturnFocus();
@@ -271,6 +277,22 @@ public sealed partial class AdminViewModel
                 {
                     PushReturnFocus();
                     BuildSoundsPrivateMessages();
+                    return;
+                }
+            }
+
+            if (_page == AdminPage.SoundsAmbience && tag is string ambienceSound)
+            {
+                if (ambienceSound == "sounds.ambience.menu")
+                {
+                    PushReturnFocus();
+                    BuildSoundDetails(Modules.Audio.Models.SoundId.MainMenuMusic);
+                    return;
+                }
+                if (ambienceSound == "sounds.ambience.tavern")
+                {
+                    PushReturnFocus();
+                    BuildSoundDetails(Modules.Audio.Models.SoundId.TavernAmbience);
                     return;
                 }
             }

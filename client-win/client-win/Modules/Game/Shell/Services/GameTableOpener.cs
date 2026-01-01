@@ -16,8 +16,10 @@ using client_win.Modules.Game.Shell.ViewModels;
 using client_win.Modules.Game.Shell.Views;
 using client_win.Modules.Audio.Models;
 using client_win.Modules.Audio.Services;
+using client_win.Modules.Catalog.Views;
 using client_win.Modules.Presence.Services;
 using client_win.Modules.Shell.Services;
+using client_win.Modules.MainMenu.Views;
 
 namespace client_win.Modules.Game.Shell.Services;
 
@@ -200,6 +202,25 @@ public sealed class GameTableOpener : IGameTableOpener
                 else
                 {
                     _navigation.Show(target);
+                }
+
+                // Réactive l'ambiance/musique si on revient vers un écran qui en a une.
+                try
+                {
+                    _sounds.StopLoop(SoundId.MainMenuMusic);
+                    _sounds.StopLoop(SoundId.TavernAmbience);
+                    if (target is CatalogView)
+                    {
+                        _sounds.StartLoop(SoundId.TavernAmbience);
+                    }
+                    else if (target is MainMenuView)
+                    {
+                        _sounds.StartLoop(SoundId.MainMenuMusic);
+                    }
+                }
+                catch
+                {
+                    // ignore
                 }
 
                 if (!string.IsNullOrWhiteSpace(reason))

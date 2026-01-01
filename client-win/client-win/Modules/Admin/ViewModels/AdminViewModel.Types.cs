@@ -43,6 +43,7 @@ internal enum AdminPage
     RoleDefinitionForm,
     Perf,
     Sounds,
+    SoundsAmbience,
     SoundsTable,
     SoundsInvitations,
     SoundsConnection,

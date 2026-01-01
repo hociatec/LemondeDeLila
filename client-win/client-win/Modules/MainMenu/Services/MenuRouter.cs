@@ -34,6 +34,8 @@ using client_win.Modules.Game.RoomDirectory.ViewModels;
 using client_win.Modules.Game.RoomDirectory.Views;
 using client_win.Modules.User.Services;
 using client_win.Modules.Network.Services;
+using client_win.Modules.Catalog.Views;
+using client_win.Modules.MainMenu.Views;
 
 namespace client_win.Modules.MainMenu.Services;
 
@@ -114,6 +116,8 @@ public sealed class MenuRouter : IMenuRouter
 
         var previous = _navigation.CurrentView;
         var catalogView = new CatalogView();
+        StopBackgroundLoops();
+        _sounds.StartLoop(Modules.Audio.Models.SoundId.TavernAmbience);
         var vm = new CatalogViewModel(
             _catalog,
             onClose: () =>
@@ -123,10 +127,24 @@ public sealed class MenuRouter : IMenuRouter
                 _navigation.Show(previous);
                 RestoreFocusAfterBackNavigation(previous);
             }
+
+            StartLoopForView(previous);
         },
-            openGame: game => _tables.OpenAsync(game, catalogView),
-            joinGame: JoinGame,
-            openStoryBook: OpenStats);
+            openGame: async game =>
+            {
+                StopBackgroundLoops();
+                await _tables.OpenAsync(game, catalogView).ConfigureAwait(true);
+            },
+            joinGame: async () =>
+            {
+                StopBackgroundLoops();
+                return await JoinGame().ConfigureAwait(true);
+            },
+            openStoryBook: async () =>
+            {
+                StopBackgroundLoops();
+                return await OpenStats().ConfigureAwait(true);
+            });
 
         catalogView.DataContext = vm;
         _navigation.Show(catalogView);
@@ -139,6 +157,7 @@ public sealed class MenuRouter : IMenuRouter
         _logger.LogInformation("Ouverture du livre des contes");
 
         var previous = _navigation.CurrentView;
+        StopBackgroundLoops();
         var view = new StatsView();
         var vm = new StatsViewModel(_stats, onClose: () =>
         {
@@ -147,6 +166,8 @@ public sealed class MenuRouter : IMenuRouter
                 _navigation.Show(previous);
                 RestoreFocusAfterBackNavigation(previous);
             }
+
+            StartLoopForView(previous);
         }, openLeaderboard: async () => { await OpenLeaderboard().ConfigureAwait(true); });
         view.DataContext = vm;
         _navigation.Show(view);
@@ -159,6 +180,7 @@ public sealed class MenuRouter : IMenuRouter
         _logger.LogInformation("Ouverture du classement");
 
         var previous = _navigation.CurrentView;
+        StopBackgroundLoops();
         var view = new LeaderboardView();
         var vm = new LeaderboardViewModel(_leaderboard, onClose: () =>
         {
@@ -167,6 +189,8 @@ public sealed class MenuRouter : IMenuRouter
                 _navigation.Show(previous);
                 RestoreFocusAfterBackNavigation(previous);
             }
+
+            StartLoopForView(previous);
         });
         view.DataContext = vm;
         _navigation.Show(view);
@@ -179,6 +203,7 @@ public sealed class MenuRouter : IMenuRouter
         _logger.LogInformation("Ouverture du navigateur de tables publiques");
 
         var previous = _navigation.CurrentView;
+        StopBackgroundLoops();
         var view = new JoinGameView();
         JoinGameViewModel? vm = null;
         vm = new JoinGameViewModel(
@@ -194,6 +219,8 @@ public sealed class MenuRouter : IMenuRouter
                     _navigation.Show(previous);
                     RestoreFocusAfterBackNavigation(previous);
                 }
+
+                StartLoopForView(previous);
             });
         view.DataContext = vm;
         _navigation.Show(view);
@@ -285,7 +312,10 @@ public sealed class MenuRouter : IMenuRouter
             return "Fenêtre principale indisponible.";
         }
 
-        return await _chat.OpenAsync(owner);
+        StopBackgroundLoops();
+        var status = await _chat.OpenAsync(owner).ConfigureAwait(true);
+        StartLoopForView(_navigation.CurrentView);
+        return status;
     }
 
     public Task<string> OpenMessaging()
@@ -293,6 +323,7 @@ public sealed class MenuRouter : IMenuRouter
         _logger.LogInformation("Ouverture de la messagerie");
 
         var previous = _navigation.CurrentView;
+        StopBackgroundLoops();
         var view = new MessagingView();
         var vm = new MessagingViewModel(_messaging, onClose: () =>
         {
@@ -301,6 +332,8 @@ public sealed class MenuRouter : IMenuRouter
                 _navigation.Show(previous);
                 RestoreFocusAfterBackNavigation(previous);
             }
+
+            StartLoopForView(previous);
         });
         view.DataContext = vm;
         _navigation.Show(view);
@@ -313,6 +346,7 @@ public sealed class MenuRouter : IMenuRouter
         _logger.LogInformation("Ouverture du réseau social");
 
         var previous = _navigation.CurrentView;
+        StopBackgroundLoops();
         var view = new SocialView();
         var vm = new SocialViewModel(_social, onClose: () =>
         {
@@ -321,6 +355,8 @@ public sealed class MenuRouter : IMenuRouter
                 _navigation.Show(previous);
                 RestoreFocusAfterBackNavigation(previous);
             }
+
+            StartLoopForView(previous);
         });
         view.DataContext = vm;
         _navigation.Show(view);
@@ -333,6 +369,7 @@ public sealed class MenuRouter : IMenuRouter
         _logger.LogInformation("Ouverture du panneau d'administration");
 
         var previous = _navigation.CurrentView;
+        StopBackgroundLoops();
         var view = new AdminView();
         var vm = new AdminViewModel(_admin, _roomDirectory, _apiCapabilities, _config, _publisher, _dialogs, _options, _sounds, _session, _remoteSounds, _tables, view, onClose: () =>
         {
@@ -341,6 +378,8 @@ public sealed class MenuRouter : IMenuRouter
                 _navigation.Show(previous);
                 RestoreFocusAfterBackNavigation(previous);
             }
+
+            StartLoopForView(previous);
         });
         view.DataContext = vm;
         _navigation.Show(view);
@@ -353,6 +392,7 @@ public sealed class MenuRouter : IMenuRouter
         _logger.LogInformation("Ouverture de la page À propos");
 
         var previous = _navigation.CurrentView;
+        StopBackgroundLoops();
         var view = new AboutView();
         var vm = new AboutViewModel(_config, _dialogs, onClose: () =>
         {
@@ -361,6 +401,8 @@ public sealed class MenuRouter : IMenuRouter
                 _navigation.Show(previous);
                 RestoreFocusAfterBackNavigation(previous);
             }
+
+            StartLoopForView(previous);
         });
         view.DataContext = vm;
         _navigation.Show(view);
@@ -371,7 +413,8 @@ public sealed class MenuRouter : IMenuRouter
     public Task<string> OpenOptions()
     {
         _logger.LogInformation("Ouverture des options");
-        return _options.OpenAsync();
+        StopBackgroundLoops();
+        return OpenOptionsAndRestoreAsync();
     }
 
     public Task<string> Logout()
@@ -379,5 +422,31 @@ public sealed class MenuRouter : IMenuRouter
         _logger.LogInformation("Déconnexion demandée par l'utilisateur");
         // La déconnexion est gérée par le MainMenuViewModel
         return Task.FromResult("Déconnexion en cours...");
+    }
+
+    private async Task<string> OpenOptionsAndRestoreAsync()
+    {
+        var status = await _options.OpenAsync().ConfigureAwait(true);
+        StartLoopForView(_navigation.CurrentView);
+        return status;
+    }
+
+    private void StopBackgroundLoops()
+    {
+        _sounds.StopLoop(Modules.Audio.Models.SoundId.MainMenuMusic);
+        _sounds.StopLoop(Modules.Audio.Models.SoundId.TavernAmbience);
+    }
+
+    private void StartLoopForView(UserControl? view)
+    {
+        StopBackgroundLoops();
+        if (view is CatalogView)
+        {
+            _sounds.StartLoop(Modules.Audio.Models.SoundId.TavernAmbience);
+        }
+        else if (view is MainMenuView)
+        {
+            _sounds.StartLoop(Modules.Audio.Models.SoundId.MainMenuMusic);
+        }
     }
 }
