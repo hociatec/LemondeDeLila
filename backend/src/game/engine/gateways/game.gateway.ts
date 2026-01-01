@@ -12,7 +12,7 @@ import { GameSingleActionDto } from '../dto/game-action.dto';
 import { playingLog } from '../../../common/utils/playing-logger';
 import { WsJwtAuthService } from '../../../common/ws/ws-jwt-auth.service';
 import { PerfMetricsService } from '../../../common/services/perf-metrics.service';
-import { ClientUpdatesService } from '../../../client-updates/client-updates.service';
+import { ClientUpdatesService } from '../../../client-updates/services/client-updates.service';
 import { isVersionLower } from '../../../common/utils/version.utils';
 import { WsTicketAuthService } from '../../../common/ws/ws-ticket-auth.service';
 

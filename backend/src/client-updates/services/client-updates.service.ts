@@ -4,7 +4,7 @@ import * as path from 'path';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
 import { Injectable } from '@nestjs/common';
-import { parseVersion } from '../common/utils/version.utils';
+import { parseVersion } from '../../common/utils/version.utils';
 
 const execFileAsync = promisify(execFile);
 

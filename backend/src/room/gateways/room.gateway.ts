@@ -16,7 +16,7 @@ import type { RoomPlayer } from '../dto/room-response.dto';
 import { CatalogService } from '../../catalog/services/catalog.service';
 import { PerfMetricsService } from '../../common/services/perf-metrics.service';
 import { RoomInviteService } from '../services/room-invite.service';
-import { ClientUpdatesService } from '../../client-updates/client-updates.service';
+import { ClientUpdatesService } from '../../client-updates/services/client-updates.service';
 import { isVersionLower } from '../../common/utils/version.utils';
 import { WsTicketAuthService } from '../../common/ws/ws-ticket-auth.service';
 import { RoomRealtimeTrackerService } from '../services/room-realtime-tracker.service';

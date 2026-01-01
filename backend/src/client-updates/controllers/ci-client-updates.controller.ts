@@ -14,13 +14,16 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import { randomUUID } from 'crypto';
-import { HttpJwtGuard } from '../common/guards/http-jwt.guard';
-import { AdminRoleGuard } from '../common/guards/admin-role.guard';
-import { ClientUpdatesService } from './client-updates.service';
+import { ClientUpdatesService } from '../services/client-updates.service';
+import { ClientUpdatesUploadTokenGuard } from '../guards/client-updates-upload-token.guard';
 
-@Controller('api/admin/client-updates')
-@UseGuards(HttpJwtGuard, AdminRoleGuard)
-export class AdminClientUpdatesController {
+/**
+ * CI-only endpoints secured by a shared token (no JWT).
+ * Intended for GitHub Actions publishing.
+ */
+@Controller('api/ci/client-updates')
+@UseGuards(ClientUpdatesUploadTokenGuard)
+export class CiClientUpdatesController {
   constructor(private readonly updates: ClientUpdatesService) {}
 
   private uploadsRoot() {
@@ -48,10 +51,7 @@ export class AdminClientUpdatesController {
       limits: { fileSize: 600 * 1024 * 1024 }, // 600MB
     }),
   )
-  async upload(
-    @UploadedFile() file?: any,
-    @Body() body?: any,
-  ) {
+  async upload(@UploadedFile() file?: any, @Body() body?: any) {
     if (!file?.path) {
       throw new BadRequestException('Fichier manquant (champ "file").');
     }
@@ -91,7 +91,6 @@ export class AdminClientUpdatesController {
     }
   }
 
-  // Chunked upload to stay under nginx client_max_body_size (default 20m on this server).
   @Post('upload/init')
   async init(@Body() body?: any) {
     const uploadId = randomUUID();
@@ -135,15 +134,15 @@ export class AdminClientUpdatesController {
       storage: diskStorage({
         destination: (_req, _file, cb) => cb(null, os.tmpdir()),
         filename: (_req, file, cb) =>
-          cb(null, `lila-client-update-chunk-${Date.now()}-${file.originalname}`),
+          cb(
+            null,
+            `lila-client-update-chunk-${Date.now()}-${file.originalname}`,
+          ),
       }),
       limits: { fileSize: 15 * 1024 * 1024 }, // keep < 20m
     }),
   )
-  async chunk(
-    @UploadedFile() file?: any,
-    @Body() body?: any,
-  ) {
+  async chunk(@UploadedFile() file?: any, @Body() body?: any) {
     const uploadId = typeof body?.uploadId === 'string' ? body.uploadId : '';
     const indexRaw = typeof body?.index === 'string' ? body.index : '';
     const index = Number.parseInt(indexRaw, 10);

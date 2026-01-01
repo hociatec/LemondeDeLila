@@ -8,7 +8,7 @@ import {
 import { Server, WebSocket } from 'ws';
 import { WsJwtAuthService } from '../../common/ws/ws-jwt-auth.service';
 import { NotificationService } from '../services/notification.service';
-import { ClientUpdatesService } from '../../client-updates/client-updates.service';
+import { ClientUpdatesService } from '../../client-updates/services/client-updates.service';
 import { isVersionGreater, isVersionLower } from '../../common/utils/version.utils';
 import { WsTicketAuthService } from '../../common/ws/ws-ticket-auth.service';
 

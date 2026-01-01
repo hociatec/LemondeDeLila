@@ -14,7 +14,7 @@ import {
 } from '../../common/session/session-store.interface';
 import { WsRouteRegistry } from '../../common/ws/ws-route-registry.service';
 import { WsJwtAuthService } from '../../common/ws/ws-jwt-auth.service';
-import { ClientUpdatesService } from '../../client-updates/client-updates.service';
+import { ClientUpdatesService } from '../../client-updates/services/client-updates.service';
 import { isVersionLower } from '../../common/utils/version.utils';
 import { WsTicketAuthService } from '../../common/ws/ws-ticket-auth.service';
 import { WsApiHubService } from '../../common/ws/ws-api-hub.service';

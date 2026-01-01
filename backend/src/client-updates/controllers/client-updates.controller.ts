@@ -1,6 +1,6 @@
 import { Controller, Get, Query, Req } from '@nestjs/common';
-import { ClientUpdatesService } from './client-updates.service';
-import { isVersionGreater, isVersionLower } from '../common/utils/version.utils';
+import { ClientUpdatesService } from '../services/client-updates.service';
+import { isVersionGreater, isVersionLower } from '../../common/utils/version.utils';
 import type { Request, Response } from 'express';
 
 @Controller()

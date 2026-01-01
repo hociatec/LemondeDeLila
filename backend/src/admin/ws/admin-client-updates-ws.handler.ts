@@ -6,7 +6,7 @@ import type { WsSession } from '../../common/ws/ws-route-registry.service';
 import { PayloadValidationService } from '../../common/validation/payload-validation.service';
 import { NotificationService } from '../../notification/services/notification.service';
 import { User } from '../../user/entities/user.entity';
-import { ClientUpdatesService } from '../../client-updates/client-updates.service';
+import { ClientUpdatesService } from '../../client-updates/services/client-updates.service';
 import {
   AdminClientUpdateAnnounceWsDto,
   AdminClientUpdateForceLatestWsDto,
@@ -114,4 +114,3 @@ export class AdminClientUpdatesWsHandler {
     };
   }
 }
-

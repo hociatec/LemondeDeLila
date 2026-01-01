@@ -31,4 +31,3 @@ export class ClientUpdatesUploadTokenGuard implements CanActivate {
     return true;
   }
 }
-
