@@ -9,6 +9,12 @@ public sealed class AdminRoomsCleanupResponseDto
     public int[] RoomIds { get; set; } = Array.Empty<int>();
 }
 
+public sealed class AdminRoomsDestroyResponseDto
+{
+    public bool Ok { get; set; }
+    public int RoomId { get; set; }
+}
+
 public sealed class AdminRoomMaintenanceSettingsDto
 {
     public bool AutoCleanupEnabled { get; set; }

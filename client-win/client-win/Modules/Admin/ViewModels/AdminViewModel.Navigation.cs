@@ -122,6 +122,12 @@ public sealed partial class AdminViewModel
             return AdminNavResult.Moved;
         }
 
+        if (_page == AdminPage.RoomsDestroy)
+        {
+            BuildRooms();
+            return AdminNavResult.Moved;
+        }
+
         if (_page == AdminPage.Logs)
         {
             BuildRoot();

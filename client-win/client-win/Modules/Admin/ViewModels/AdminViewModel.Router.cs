@@ -102,6 +102,11 @@ public sealed partial class AdminViewModel
                     await OpenRoomsJoinSilentAsync().ConfigureAwait(true);
                     return;
                 }
+                if (roomsAction == "rooms.destroy")
+                {
+                    await OpenRoomsDestroyAsync().ConfigureAwait(true);
+                    return;
+                }
                 if (roomsAction == "rooms.settings.refresh")
                 {
                     await RefreshRoomSettingsAsync().ConfigureAwait(true);
@@ -153,6 +158,17 @@ public sealed partial class AdminViewModel
                     int.TryParse(joinTag.Substring(prefix.Length), out var roomId))
                 {
                     await JoinSilentOpenSelectedAsync(roomId).ConfigureAwait(true);
+                    return;
+                }
+            }
+
+            if (_page == AdminPage.RoomsDestroy && tag is string destroyTag)
+            {
+                const string prefix = "rooms.destroy.open:";
+                if (destroyTag.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) &&
+                    int.TryParse(destroyTag.Substring(prefix.Length), out var roomId))
+                {
+                    await DestroyRoomAsync(roomId).ConfigureAwait(true);
                     return;
                 }
             }

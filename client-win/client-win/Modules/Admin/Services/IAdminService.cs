@@ -63,6 +63,8 @@ public interface IAdminService
         int? olderThanMinutes = null,
         CancellationToken cancellationToken = default);
 
+    Task<AdminRoomsDestroyResponseDto> DestroyRoomAsync(int roomId, CancellationToken cancellationToken = default);
+
     Task<AdminRoomMaintenanceSettingsDto> GetRoomMaintenanceSettingsAsync(CancellationToken cancellationToken = default);
     Task<AdminRoomMaintenanceSettingsDto> UpdateRoomMaintenanceSettingsAsync(
         bool? autoCleanupEnabled = null,

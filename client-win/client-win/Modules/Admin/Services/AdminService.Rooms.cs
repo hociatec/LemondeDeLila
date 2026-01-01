@@ -79,4 +79,25 @@ public sealed partial class AdminService
 
         return res.Payload;
     }
+
+    public async Task<AdminRoomsDestroyResponseDto> DestroyRoomAsync(int roomId, CancellationToken cancellationToken = default)
+    {
+        var token = EnsureAuth();
+        var res = await _ws.RequestAsync<AdminRoomsDestroyResponseDto>(
+            WsMessageTypes.Admin.RoomsDestroy,
+            new
+            {
+                confirm = true,
+                roomId
+            },
+            token,
+            cancellationToken).ConfigureAwait(false);
+
+        if (!res.Success || res.Payload == null)
+        {
+            throw new InvalidOperationException(res.Error ?? "Suppression de la room impossible.");
+        }
+
+        return res.Payload;
+    }
 }

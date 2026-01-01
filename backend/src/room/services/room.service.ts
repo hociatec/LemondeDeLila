@@ -24,6 +24,7 @@ import { RoomRealtimeTrackerService } from './room-realtime-tracker.service';
 @Injectable()
 export class RoomService {
   private realtimeNotifier?: (roomId: number) => Promise<void> | void;
+  private roomDeletedNotifier?: (roomId: number) => Promise<void> | void;
   private directoryNotifier?: (
     roomId: number,
     reason: string,
@@ -41,6 +42,14 @@ export class RoomService {
   }
 
   /**
+   * Hook optionnel pour notifier les clients d'une suppression forcée de table (set par RoomGateway).
+   * Permet à l'admin d'effacer une room même avec des joueurs connectés, en les renvoyant à l'accueil.
+   */
+  setRoomDeletedNotifier(fn: (roomId: number) => Promise<void> | void): void {
+    this.roomDeletedNotifier = fn;
+  }
+
+  /**
    * Hook optionnel pour notifier la "liste des tables publiques" (set par PublicRoomDirectoryBinder).
    */
   setDirectoryNotifier(
@@ -55,6 +64,37 @@ export class RoomService {
     } catch {
       // best effort
     }
+  }
+
+  /**
+   * Admin: force delete a room, even if there are active players.
+   * The RoomGateway (if present) will disconnect clients for that room.
+   */
+  async adminDestroyRoom(roomId: number): Promise<{ ok: true; roomId: number }> {
+    const id =
+      typeof roomId === 'number' && Number.isFinite(roomId) && roomId > 0
+        ? Math.floor(roomId)
+        : 0;
+    if (id <= 0) {
+      throw new BadRequestException('roomId invalide.');
+    }
+
+    const existing = await this.rooms.findOne({ where: { id }, select: ['id'] });
+    if (!existing) {
+      throw new NotFoundException('Room introuvable.');
+    }
+
+    try {
+      await this.roomDeletedNotifier?.(id);
+    } catch {
+      // best effort
+    }
+
+    await this.rooms.delete(id);
+    await this.invalidateRoomPayloadCache(id);
+    this.notifyDirectoryChanged(id, 'deleted');
+    this.presenceService.broadcastPresence();
+    return { ok: true, roomId: id };
   }
 
   /**

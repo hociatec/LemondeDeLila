@@ -24,6 +24,7 @@ public sealed partial class AdminViewModel
         Items.Clear();
         Items.Add(new AdminMenuItem("Nettoyer les rooms (supprime les tables publiques non démarrées)", tag: "rooms.cleanup.public"));
         Items.Add(new AdminMenuItem("Intégrer une room (liste des tables publiques, silencieux)", tag: "rooms.join.silent"));
+        Items.Add(new AdminMenuItem("Détruire une room (force, liste des tables publiques)", tag: "rooms.destroy"));
         Items.Add(new AdminMenuItem("Rafraîchir paramètres (relit la configuration côté serveur)", tag: "rooms.settings.refresh"));
         Items.Add(new AdminMenuItem("Auto-cleanup: activer/désactiver (nettoyage automatique)", tag: "rooms.settings.toggle"));
         Items.Add(new AdminMenuItem("Auto-cleanup: régler âge max (minutes) (supprime au-delà de cet âge)", tag: "rooms.settings.olderThan"));
@@ -96,6 +97,82 @@ public sealed partial class AdminViewModel
     {
         PushReturnFocus();
         await RefreshRoomsJoinSilentListAsync().ConfigureAwait(true);
+    }
+
+    private void BuildRoomsDestroy()
+    {
+        _page = AdminPage.RoomsDestroy;
+        Title = "Détruire une room";
+        Items.Clear();
+
+        var listed = _publicJoinableRooms ?? Array.Empty<PublicRoomListItem>();
+        if (listed.Length == 0)
+        {
+            Items.Add(new AdminMenuItem("Aucune table publique disponible", tag: null));
+            SelectedItem = Items.FirstOrDefault();
+            Details = "Aucune table publique à détruire.";
+            Status = "Échap : retour.";
+        }
+        else
+        {
+            foreach (var room in listed.OrderByDescending(r => r.Id))
+            {
+                Items.Add(new AdminMenuItem(room.ToString(), tag: $"rooms.destroy.open:{room.Id}"));
+            }
+
+            SelectedItem = Items.FirstOrDefault();
+            Details = "Détruit la table sélectionnée (même si des joueurs sont dessus).";
+            Status = "Entrée : détruire la table sélectionnée. Échap : retour.";
+        }
+
+        IsTextInputVisible = false;
+        IsSecondaryInputVisible = false;
+        IsAdditionalPermissionsVisible = false;
+        UpdateFilterVisibility();
+        RestoreFocusIfAny();
+    }
+
+    private async Task OpenRoomsDestroyAsync()
+    {
+        PushReturnFocus();
+        await RefreshRoomsJoinSilentListAsync().ConfigureAwait(true);
+        BuildRoomsDestroy();
+    }
+
+    private async Task DestroyRoomAsync(int roomId)
+    {
+        if (roomId <= 0 || IsBusy)
+        {
+            return;
+        }
+
+        var ok = await _dialogs.Confirm(
+            "Détruire la room",
+            $"Détruire la table #{roomId} ?\n\nAttention : si des joueurs sont sur la table, ils seront renvoyés à l'accueil et la table sera supprimée.",
+            okText: "Détruire",
+            cancelText: "Annuler").ConfigureAwait(true);
+
+        if (ok != true)
+        {
+            return;
+        }
+
+        try
+        {
+            IsBusy = true;
+            var res = await _admin.DestroyRoomAsync(roomId).ConfigureAwait(true);
+            await _dialogs.ShowInfo("Rooms", $"Room #{res.RoomId} détruite.").ConfigureAwait(true);
+            _publicJoinableRooms = (await _roomDirectory.PublicListAsync().ConfigureAwait(true)).Items;
+            BuildRoomsDestroy();
+        }
+        catch (Exception ex)
+        {
+            await _dialogs.ShowError("Rooms", ex.Message).ConfigureAwait(true);
+        }
+        finally
+        {
+            IsBusy = false;
+        }
     }
 
     private async Task JoinSilentOpenSelectedAsync(int roomId)

@@ -70,10 +70,48 @@ export class RoomGateway
       await this.sendRoomState(roomId);
     });
 
+    // Permet à l'admin (via RoomService) de forcer la suppression d'une room
+    // en déconnectant tous les clients WS connectés à cette table.
+    this.roomsService.setRoomDeletedNotifier(async (roomId: number) => {
+      this.forceDisconnectRoomClients(roomId);
+    });
+
     const secret = config.get<string>('JWT_SECRET');
     if (!secret) {
       throw new Error('JWT_SECRET doit être défini pour le WS room');
     }
+  }
+
+  private forceDisconnectRoomClients(roomId: number): void {
+    const targets = this.rooms.get(roomId);
+    const silentTargets = this.silentRooms.get(roomId);
+
+    const all: WebSocket[] = [];
+    if (targets) all.push(...Array.from(targets));
+    if (silentTargets) all.push(...Array.from(silentTargets));
+
+    for (const socket of all) {
+      try {
+        this.safeSend(socket, { type: 'room.deleted', roomId });
+      } catch {
+        // ignore
+      }
+
+      // Important: retirer avant close pour éviter handleDisconnect/leaveRoom en cascade.
+      this.realtimeTracker.clearSocket(socket);
+      this.clients.delete(socket);
+      targets?.delete(socket);
+      silentTargets?.delete(socket);
+
+      try {
+        socket.close();
+      } catch {
+        /* ignore */
+      }
+    }
+
+    if (targets?.size === 0) this.rooms.delete(roomId);
+    if (silentTargets?.size === 0) this.silentRooms.delete(roomId);
   }
 
   async handleConnection(client: WebSocket, ...args: any[]) {
