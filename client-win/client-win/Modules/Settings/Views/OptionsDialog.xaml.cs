@@ -9,9 +9,22 @@ namespace client_win.Modules.Settings.Views;
 
 public partial class OptionsDialog : Window
 {
+    private bool _didInitialFocus;
+
     public OptionsDialog()
     {
         InitializeComponent();
+    }
+
+    private void OnLoaded(object sender, RoutedEventArgs e)
+    {
+        if (_didInitialFocus)
+        {
+            return;
+        }
+        _didInitialFocus = true;
+
+        Dispatcher.BeginInvoke((Action)(() => CategoryList?.Focus()), System.Windows.Threading.DispatcherPriority.Input);
     }
 
     private void OnSaveClicked(object sender, RoutedEventArgs e)
@@ -46,7 +59,19 @@ public partial class OptionsDialog : Window
                 slider.Value = e.Key == Key.Up
                     ? Math.Min(slider.Maximum, slider.Value + delta)
                     : Math.Max(slider.Minimum, slider.Value - delta);
+                return;
             }
+        }
+
+        if (e.Key != Key.Escape)
+        {
+            return;
+        }
+
+        if (DataContext is OptionsViewModel vm && vm.CancelCommand?.CanExecute(null) == true)
+        {
+            e.Handled = true;
+            vm.CancelCommand.Execute(null);
         }
     }
 

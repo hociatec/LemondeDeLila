@@ -12,6 +12,7 @@ public sealed class OptionsViewModel : ObservableObject
     private OptionsState _state;
     private readonly ClientConfiguration? _config;
     private readonly IDialogService? _dialogs;
+    private string _selectedCategory = "Général";
 
     public OptionsViewModel(
         OptionsState state,
@@ -27,6 +28,22 @@ public sealed class OptionsViewModel : ObservableObject
         CancelCommand = new RelayCommand(onCancel);
     }
 
+    public string[] Categories { get; } = ["Général", "Sons", "Tchat"];
+
+    public string SelectedCategory
+    {
+        get => _selectedCategory;
+        set
+        {
+            if (_selectedCategory == value)
+            {
+                return;
+            }
+            _selectedCategory = value;
+            OnPropertyChanged();
+        }
+    }
+
     public bool MuteAll
     {
         get => _state.MuteAll;
@@ -36,7 +53,6 @@ public sealed class OptionsViewModel : ObservableObject
             {
                 OnPropertyChanged(nameof(IsVolumeEnabled));
                 OnPropertyChanged(nameof(IsAppLaunchVolumeEnabled));
-                OnPropertyChanged(nameof(IsBackgroundVolumeEnabled));
                 OnPropertyChanged(nameof(IsNavigateVolumeEnabled));
                 OnPropertyChanged(nameof(IsSelectVolumeEnabled));
                 OnPropertyChanged(nameof(IsChatMessagesVolumeEnabled));
@@ -58,18 +74,6 @@ public sealed class OptionsViewModel : ObservableObject
             if (Update(() => _state.SoundAppLaunch, v => _state.SoundAppLaunch = v, value))
             {
                 OnPropertyChanged(nameof(IsAppLaunchVolumeEnabled));
-            }
-        }
-    }
-
-    public bool SoundBackground
-    {
-        get => _state.SoundBackground;
-        set
-        {
-            if (Update(() => _state.SoundBackground, v => _state.SoundBackground = v, value))
-            {
-                OnPropertyChanged(nameof(IsBackgroundVolumeEnabled));
             }
         }
     }
@@ -110,23 +114,12 @@ public sealed class OptionsViewModel : ObservableObject
         }
     }
 
-    public int MusicVolume
-    {
-        get => _state.MusicVolume;
-        set => Update(() => _state.MusicVolume, v => _state.MusicVolume = v, value);
-    }
-
     public int SoundAppLaunchVolume
     {
         get => _state.SoundAppLaunchVolume;
         set => Update(() => _state.SoundAppLaunchVolume, v => _state.SoundAppLaunchVolume = v, value);
     }
 
-    public int SoundBackgroundVolume
-    {
-        get => _state.SoundBackgroundVolume;
-        set => Update(() => _state.SoundBackgroundVolume, v => _state.SoundBackgroundVolume = v, value);
-    }
 
     public int SoundNavigateVolume
     {
@@ -158,21 +151,8 @@ public sealed class OptionsViewModel : ObservableObject
         set => Update(() => _state.ConfirmChatExit, v => _state.ConfirmChatExit = v, value);
     }
 
-    public bool StayConnected
-    {
-        get => _state.StayConnected;
-        set => Update(() => _state.StayConnected, v => _state.StayConnected = v, value);
-    }
-
-    public bool ExtraDescriptions
-    {
-        get => _state.ExtraDescriptions;
-        set => Update(() => _state.ExtraDescriptions, v => _state.ExtraDescriptions = v, value);
-    }
-
     public bool IsVolumeEnabled => !MuteAll;
     public bool IsAppLaunchVolumeEnabled => IsVolumeEnabled && SoundAppLaunch;
-    public bool IsBackgroundVolumeEnabled => IsVolumeEnabled && SoundBackground;
     public bool IsNavigateVolumeEnabled => IsVolumeEnabled && SoundNavigate;
     public bool IsSelectVolumeEnabled => IsVolumeEnabled && SoundSelect;
     public bool IsChatMessagesVolumeEnabled => IsVolumeEnabled && SoundChatMessages;

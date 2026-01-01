@@ -27,7 +27,7 @@ public partial class OptionsView : UserControl
 
         Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
         {
-            FirstFocusable?.Focus();
+            CategoryList?.Focus();
         }));
     }
 

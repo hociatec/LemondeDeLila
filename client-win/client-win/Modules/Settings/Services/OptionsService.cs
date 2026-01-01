@@ -160,15 +160,12 @@ public sealed class OptionsService : IOptionsService
         ConfirmExit = source.ConfirmExit,
         SoundAppLaunch = source.SoundAppLaunch,
         SoundAppLaunchVolume = source.SoundAppLaunchVolume,
-        SoundBackground = source.SoundBackground,
-        SoundBackgroundVolume = source.SoundBackgroundVolume,
         SoundNavigate = source.SoundNavigate,
         SoundNavigateVolume = source.SoundNavigateVolume,
         SoundSelect = source.SoundSelect,
         SoundSelectVolume = source.SoundSelectVolume,
         SoundChatMessages = source.SoundChatMessages,
         SoundChatMessagesVolume = source.SoundChatMessagesVolume,
-        MusicVolume = source.MusicVolume,
         SoundRoomOpenedPath = source.SoundRoomOpenedPath,
         SoundRoomJoinedPath = source.SoundRoomJoinedPath,
         SoundRoomExitPath = source.SoundRoomExitPath,
@@ -185,8 +182,6 @@ public sealed class OptionsService : IOptionsService
         SoundClientDisconnectedPath = source.SoundClientDisconnectedPath,
         ChatEnabled = source.ChatEnabled,
         ConfirmChatExit = source.ConfirmChatExit,
-        StayConnected = source.StayConnected,
-        ExtraDescriptions = source.ExtraDescriptions,
         CurrentVersion = source.CurrentVersion
     };
 }

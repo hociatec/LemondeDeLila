@@ -25,8 +25,39 @@
             <Setter Property="Margin" Value="8 0 0 0" />
             <Setter Property="FontSize" Value="15" />
         </Style>
-        <Style TargetType="TabItem">
+        <Style TargetType="ListBox">
+            <Setter Property="Background" Value="#0F1D2D" />
+            <Setter Property="BorderBrush" Value="#244A75" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="White" />
             <Setter Property="FontSize" Value="16" />
+        </Style>
+        <Style TargetType="ListBoxItem">
+            <Setter Property="Padding" Value="12 10" />
+            <Setter Property="Margin" Value="0 0 0 6" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border x:Name="Bd"
+                                Background="Transparent"
+                                CornerRadius="8"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#1C3B5E" />
+                                <Setter Property="Foreground" Value="{StaticResource HighlightBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource HighlightBrush}" />
+                                <Setter TargetName="Bd" Property="BorderThickness" Value="1" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
     </UserControl.Resources>
 
@@ -40,79 +71,115 @@
 
         <StackPanel Grid.Row="0" Orientation="Vertical" Margin="24 20 24 12">
             <TextBlock Text="Options" FontSize="28" FontWeight="SemiBold" Foreground="White" />
-            <TextBlock Text="Volume, tchat, général, mises à jour" Foreground="#9CB2D1" />
+            <TextBlock Text="Général, sons, tchat" Foreground="#9CB2D1" />
         </StackPanel>
 
         <Border Grid.Row="1" Background="{StaticResource PanelBrush}" CornerRadius="12" Padding="16" Margin="24 0 24 16">
-            <TabControl AutomationProperties.Name="Onglets des options"
-                        KeyboardNavigation.TabNavigation="Cycle">
-                <TabItem Header="Volume">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto">
-                    <StackPanel Margin="8">
-                        <CheckBox x:Name="FirstFocusable" Content="Désactiver tous les sons" IsChecked="{Binding MuteAll}" />
-                        <CheckBox Content="Demander confirmation à la fermeture" IsChecked="{Binding ConfirmExit}" />
-                        <TextBlock Text="{Binding MusicVolume, StringFormat=Musique : {0}%}" Foreground="White" Margin="0 10 0 2" />
-                        <Slider Minimum="0" Maximum="100"
-                                Value="{Binding MusicVolume, UpdateSourceTrigger=PropertyChanged}"
-                                IsEnabled="{Binding IsVolumeEnabled}"
-                                AutomationProperties.Name="Volume musique"
-                                AutomationProperties.HelpText="De 0 à 100. Utilisez les flèches haut et bas pour ajuster." />
-                        <CheckBox Content="Son d'entrée dans la taverne" IsChecked="{Binding SoundAppLaunch}" />
-                        <TextBlock Text="{Binding SoundAppLaunchVolume, StringFormat=Volume entrée : {0}%}" Foreground="#9CB2D1" Margin="0 2 0 2" />
-                        <Slider Minimum="0" Maximum="100"
-                                Value="{Binding SoundAppLaunchVolume, UpdateSourceTrigger=PropertyChanged}"
-                                IsEnabled="{Binding IsAppLaunchVolumeEnabled}"
-                                AutomationProperties.Name="Volume son d'entrée"
-                                AutomationProperties.HelpText="De 0 à 100. Utilisez les flèches haut et bas pour ajuster." />
-                        <CheckBox Content="Ambiance de taverne en fond" IsChecked="{Binding SoundBackground}" />
-                        <TextBlock Text="{Binding SoundBackgroundVolume, StringFormat=Volume ambiance : {0}%}" Foreground="#9CB2D1" Margin="0 2 0 2" />
-                        <Slider Minimum="0" Maximum="100"
-                                Value="{Binding SoundBackgroundVolume, UpdateSourceTrigger=PropertyChanged}"
-                                IsEnabled="{Binding IsBackgroundVolumeEnabled}"
-                                AutomationProperties.Name="Volume ambiance"
-                                AutomationProperties.HelpText="De 0 à 100. Utilisez les flèches haut et bas pour ajuster." />
-                        <CheckBox Content="Son lors de la navigation" IsChecked="{Binding SoundNavigate}" />
-                        <TextBlock Text="{Binding SoundNavigateVolume, StringFormat=Volume navigation : {0}%}" Foreground="#9CB2D1" Margin="0 2 0 2" />
-                        <Slider Minimum="0" Maximum="100"
-                                Value="{Binding SoundNavigateVolume, UpdateSourceTrigger=PropertyChanged}"
-                                IsEnabled="{Binding IsNavigateVolumeEnabled}"
-                                AutomationProperties.Name="Volume navigation"
-                                AutomationProperties.HelpText="De 0 à 100. Utilisez les flèches haut et bas pour ajuster." />
-                        <CheckBox Content="Son lors de la sélection" IsChecked="{Binding SoundSelect}" />
-                        <TextBlock Text="{Binding SoundSelectVolume, StringFormat=Volume sélection : {0}%}" Foreground="#9CB2D1" Margin="0 2 0 2" />
-                        <Slider Minimum="0" Maximum="100"
-                                Value="{Binding SoundSelectVolume, UpdateSourceTrigger=PropertyChanged}"
-                                IsEnabled="{Binding IsSelectVolumeEnabled}"
-                                AutomationProperties.Name="Volume sélection"
-                                AutomationProperties.HelpText="De 0 à 100. Utilisez les flèches haut et bas pour ajuster." />
-                    </StackPanel>
-                    </ScrollViewer>
-                </TabItem>
-                <TabItem Header="Tchat">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto">
-                    <StackPanel Margin="8">
-                        <CheckBox Content="Activer le tchat global" IsChecked="{Binding ChatEnabled}" />
-                        <CheckBox Content="Demander confirmation avant de fermer le tchat" IsChecked="{Binding ConfirmChatExit}" />
-                        <Separator Margin="0 10 0 10" />
-                        <CheckBox Content="Son pour les messages du tchat (envoi/réception)" IsChecked="{Binding SoundChatMessages}" />
-                        <TextBlock Text="{Binding SoundChatMessagesVolume, StringFormat=Volume tchat : {0}%}" Foreground="#9CB2D1" Margin="0 2 0 2" />
-                        <Slider Minimum="0" Maximum="100"
-                                Value="{Binding SoundChatMessagesVolume, UpdateSourceTrigger=PropertyChanged}"
-                                IsEnabled="{Binding IsChatMessagesVolumeEnabled}"
-                                AutomationProperties.Name="Volume tchat"
-                                AutomationProperties.HelpText="De 0 à 100. Utilisez les flèches haut et bas pour ajuster." />
-                    </StackPanel>
-                    </ScrollViewer>
-                </TabItem>
-                <TabItem Header="Général">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto">
-                    <StackPanel Margin="8">
-                        <CheckBox Content="Rester connecté automatiquement" IsChecked="{Binding StayConnected}" />
-                        <CheckBox Content="Descriptions complémentaires (accessibilité)" IsChecked="{Binding ExtraDescriptions}" />
-                    </StackPanel>
-                    </ScrollViewer>
-                </TabItem>
-            </TabControl>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="260" />
+                    <ColumnDefinition Width="16" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <ListBox x:Name="CategoryList"
+                         Grid.Column="0"
+                         ItemsSource="{Binding Categories}"
+                         SelectedItem="{Binding SelectedCategory}"
+                         AutomationProperties.Name="Catégories des options"
+                         KeyboardNavigation.TabNavigation="Once" />
+
+                <ContentControl Grid.Column="2">
+                    <ContentControl.Style>
+                        <Style TargetType="ContentControl">
+                            <Setter Property="Content">
+                                <Setter.Value>
+                                    <TextBlock Text="Sélectionnez une catégorie." Foreground="#9CB2D1" />
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding SelectedCategory}" Value="Général">
+                                    <Setter Property="Content">
+                                        <Setter.Value>
+                                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                                <StackPanel Margin="8">
+                                                    <TextBlock Text="Général" FontSize="22" Foreground="White" />
+                                                    <TextBlock Text="Comportement général du client." Foreground="#9CB2D1" Margin="0 2 0 10" />
+                                                    <CheckBox Content="Demander confirmation à la fermeture" IsChecked="{Binding ConfirmExit}" />
+                                                </StackPanel>
+                                            </ScrollViewer>
+                                        </Setter.Value>
+                                    </Setter>
+                                </DataTrigger>
+
+                                <DataTrigger Binding="{Binding SelectedCategory}" Value="Sons">
+                                    <Setter Property="Content">
+                                        <Setter.Value>
+                                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                                <StackPanel Margin="8">
+                                                    <TextBlock Text="Sons" FontSize="22" Foreground="White" />
+                                                    <TextBlock Text="Volumes et activation des sons du client." Foreground="#9CB2D1" Margin="0 2 0 10" />
+
+                                                    <CheckBox Content="Désactiver tous les sons" IsChecked="{Binding MuteAll}" />
+
+                                                    <Separator Margin="0 10 0 10" />
+
+                                                    <CheckBox Content="Son à l'ouverture du client" IsChecked="{Binding SoundAppLaunch}" />
+                                                    <TextBlock Text="{Binding SoundAppLaunchVolume, StringFormat=Volume ouverture : {0}%}" Foreground="#9CB2D1" Margin="0 2 0 2" />
+                                                    <Slider Minimum="0" Maximum="100"
+                                                            Value="{Binding SoundAppLaunchVolume, UpdateSourceTrigger=PropertyChanged}"
+                                                            IsEnabled="{Binding IsAppLaunchVolumeEnabled}"
+                                                            AutomationProperties.Name="Volume ouverture"
+                                                            AutomationProperties.HelpText="De 0 à 100. Utilisez les flèches haut et bas pour ajuster." />
+
+                                                    <CheckBox Content="Sons de navigation (connexion / déconnexion)" IsChecked="{Binding SoundNavigate}" Margin="0 12 0 6" />
+                                                    <TextBlock Text="{Binding SoundNavigateVolume, StringFormat=Volume navigation : {0}%}" Foreground="#9CB2D1" Margin="0 2 0 2" />
+                                                    <Slider Minimum="0" Maximum="100"
+                                                            Value="{Binding SoundNavigateVolume, UpdateSourceTrigger=PropertyChanged}"
+                                                            IsEnabled="{Binding IsNavigateVolumeEnabled}"
+                                                            AutomationProperties.Name="Volume navigation"
+                                                            AutomationProperties.HelpText="De 0 à 100. Utilisez les flèches haut et bas pour ajuster." />
+
+                                                    <CheckBox Content="Sons de sélection (invitations / tables)" IsChecked="{Binding SoundSelect}" Margin="0 12 0 6" />
+                                                    <TextBlock Text="{Binding SoundSelectVolume, StringFormat=Volume sélection : {0}%}" Foreground="#9CB2D1" Margin="0 2 0 2" />
+                                                    <Slider Minimum="0" Maximum="100"
+                                                            Value="{Binding SoundSelectVolume, UpdateSourceTrigger=PropertyChanged}"
+                                                            IsEnabled="{Binding IsSelectVolumeEnabled}"
+                                                            AutomationProperties.Name="Volume sélection"
+                                                            AutomationProperties.HelpText="De 0 à 100. Utilisez les flèches haut et bas pour ajuster." />
+
+                                                    <CheckBox Content="Sons des messages (tchat et privés)" IsChecked="{Binding SoundChatMessages}" Margin="0 12 0 6" />
+                                                    <TextBlock Text="{Binding SoundChatMessagesVolume, StringFormat=Volume messages : {0}%}" Foreground="#9CB2D1" Margin="0 2 0 2" />
+                                                    <Slider Minimum="0" Maximum="100"
+                                                            Value="{Binding SoundChatMessagesVolume, UpdateSourceTrigger=PropertyChanged}"
+                                                            IsEnabled="{Binding IsChatMessagesVolumeEnabled}"
+                                                            AutomationProperties.Name="Volume messages"
+                                                            AutomationProperties.HelpText="De 0 à 100. Utilisez les flèches haut et bas pour ajuster." />
+                                                </StackPanel>
+                                            </ScrollViewer>
+                                        </Setter.Value>
+                                    </Setter>
+                                </DataTrigger>
+
+                                <DataTrigger Binding="{Binding SelectedCategory}" Value="Tchat">
+                                    <Setter Property="Content">
+                                        <Setter.Value>
+                                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                                <StackPanel Margin="8">
+                                                    <TextBlock Text="Tchat" FontSize="22" Foreground="White" />
+                                                    <TextBlock Text="Activation et fermeture du tchat." Foreground="#9CB2D1" Margin="0 2 0 10" />
+                                                    <CheckBox Content="Activer le tchat global" IsChecked="{Binding ChatEnabled}" />
+                                                    <CheckBox Content="Demander confirmation avant de fermer le tchat" IsChecked="{Binding ConfirmChatExit}" />
+                                                </StackPanel>
+                                            </ScrollViewer>
+                                        </Setter.Value>
+                                    </Setter>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ContentControl.Style>
+                </ContentControl>
+            </Grid>
         </Border>
 
         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="24 0 24 20">
