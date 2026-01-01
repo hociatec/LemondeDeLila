@@ -255,10 +255,36 @@ public sealed class SoundService : ISoundService, IDisposable
 
     public async Task WaitForSoundToEndAsync(SoundId sound, TimeSpan timeout)
     {
-        TaskCompletionSource<bool>? tcs = null;
+        if (timeout <= TimeSpan.Zero)
+        {
+            return;
+        }
+
+        // Le son peut démarrer légèrement après l'appel (ex: event WS Connected),
+        // donc on attend un court délai qu'il "commence" avant de considérer qu'il n'y a rien à attendre.
+        var sw = Stopwatch.StartNew();
+        TaskCompletionSource<bool>? tcs;
         lock (_gate)
         {
             _playEndSignals.TryGetValue(sound, out tcs);
+        }
+
+        var startWaitMs = Math.Min(1500, (int)Math.Max(0, timeout.TotalMilliseconds));
+        while (tcs == null && sw.ElapsedMilliseconds < startWaitMs)
+        {
+            try
+            {
+                await Task.Delay(50).ConfigureAwait(false);
+            }
+            catch
+            {
+                return;
+            }
+
+            lock (_gate)
+            {
+                _playEndSignals.TryGetValue(sound, out tcs);
+            }
         }
 
         if (tcs == null)
@@ -266,9 +292,15 @@ public sealed class SoundService : ISoundService, IDisposable
             return;
         }
 
+        var remaining = timeout - sw.Elapsed;
+        if (remaining <= TimeSpan.Zero)
+        {
+            return;
+        }
+
         try
         {
-            await Task.WhenAny(tcs.Task, Task.Delay(timeout)).ConfigureAwait(false);
+            await Task.WhenAny(tcs.Task, Task.Delay(remaining)).ConfigureAwait(false);
         }
         catch
         {

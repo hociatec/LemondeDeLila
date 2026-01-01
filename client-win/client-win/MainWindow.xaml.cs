@@ -286,6 +286,10 @@ namespace client_win
 
             try
             {
+                // Ne pas laisser une ancienne boucle couvrir le son de connexion.
+                sounds.StopLoop(SoundId.MainMenuMusic);
+                sounds.StopLoop(SoundId.TavernAmbience);
+
                 // Attendre que le son "connexion" (s'il joue) se termine.
                 await sounds.WaitForSoundToEndAsync(SoundId.ClientConnected, TimeSpan.FromSeconds(4)).ConfigureAwait(false);
             }
