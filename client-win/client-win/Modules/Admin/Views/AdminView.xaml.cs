@@ -79,7 +79,21 @@ public partial class AdminView : UserControl
 
         if (ItemsList.SelectedIndex < 0)
         {
-            ItemsList.SelectedIndex = 0;
+            // La sélection VM peut arriver avant que WPF n'ait propagé SelectedIndex.
+            // Dans ce cas, retrouver l'index depuis SelectedItem côté VM pour éviter de repartir au début.
+            if (DataContext is AdminViewModel vm && vm.SelectedItem != null)
+            {
+                var idx = ItemsList.Items.IndexOf(vm.SelectedItem);
+                if (idx >= 0)
+                {
+                    ItemsList.SelectedIndex = idx;
+                }
+            }
+
+            if (ItemsList.SelectedIndex < 0)
+            {
+                ItemsList.SelectedIndex = 0;
+            }
         }
 
         ItemsList.UpdateLayout();

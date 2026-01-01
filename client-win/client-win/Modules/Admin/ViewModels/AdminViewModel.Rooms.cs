@@ -12,20 +12,20 @@ public sealed partial class AdminViewModel
     private void BuildRooms()
     {
         _page = AdminPage.Rooms;
-        Title = "Rooms / tables";
+        Title = "Gérer les rooms";
         Details = _roomSettings == null
-            ? "Outils de maintenance pour les tables (rooms)."
+            ? "Outils de maintenance pour les rooms (tables)."
             : $"Auto-cleanup: {_roomSettings}";
         IsTextInputVisible = false;
         IsSecondaryInputVisible = false;
         IsAdditionalPermissionsVisible = false;
         Items.Clear();
-        Items.Add(new AdminMenuItem("Nettoyer les rooms (tables publiques ouvertes)", tag: "rooms.cleanup.public"));
-        Items.Add(new AdminMenuItem("Rafraîchir paramètres", tag: "rooms.settings.refresh"));
-        Items.Add(new AdminMenuItem("Auto-cleanup: activer/désactiver", tag: "rooms.settings.toggle"));
-        Items.Add(new AdminMenuItem("Auto-cleanup: régler âge max (minutes)", tag: "rooms.settings.olderThan"));
-        Items.Add(new AdminMenuItem("Auto-cleanup: régler interval (secondes)", tag: "rooms.settings.interval"));
-        Items.Add(new AdminMenuItem("Auto-cleanup: régler limite (max rooms)", tag: "rooms.settings.limit"));
+        Items.Add(new AdminMenuItem("Nettoyer les rooms (supprime les tables publiques non démarrées)", tag: "rooms.cleanup.public"));
+        Items.Add(new AdminMenuItem("Rafraîchir paramètres (relit la configuration côté serveur)", tag: "rooms.settings.refresh"));
+        Items.Add(new AdminMenuItem("Auto-cleanup: activer/désactiver (nettoyage automatique)", tag: "rooms.settings.toggle"));
+        Items.Add(new AdminMenuItem("Auto-cleanup: régler âge max (minutes) (supprime au-delà de cet âge)", tag: "rooms.settings.olderThan"));
+        Items.Add(new AdminMenuItem("Auto-cleanup: régler interval (secondes) (fréquence du nettoyage)", tag: "rooms.settings.interval"));
+        Items.Add(new AdminMenuItem("Auto-cleanup: régler limite (max rooms) (limite de rooms conservées)", tag: "rooms.settings.limit"));
         SelectedItem = Items.FirstOrDefault();
         Status = "Entrée : sélectionner. Échap : retour.";
         UpdateFilterVisibility();
