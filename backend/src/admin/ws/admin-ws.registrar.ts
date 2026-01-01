@@ -5,6 +5,7 @@ import { AdminRoomsWsHandler } from './admin-rooms-ws.handler';
 import { AdminChatWsHandler } from './admin-chat-ws.handler';
 import { AdminUsersWsHandler } from './admin-users-ws.handler';
 import { AdminGamesWsHandler } from './admin-games-ws.handler';
+import { AdminBotsWsHandler } from './admin-bots-ws.handler';
 
 @Injectable()
 export class AdminWsRegistrar implements OnModuleInit {
@@ -15,6 +16,7 @@ export class AdminWsRegistrar implements OnModuleInit {
     private readonly chat: AdminChatWsHandler,
     private readonly users: AdminUsersWsHandler,
     private readonly games: AdminGamesWsHandler,
+    private readonly bots: AdminBotsWsHandler,
   ) {}
 
   onModuleInit() {
@@ -106,22 +108,22 @@ export class AdminWsRegistrar implements OnModuleInit {
     );
 
     this.registry.register('admin.bots.names.list', (s, p) =>
-      this.handler.botsNamesList(s, p),
+      this.bots.botsNamesList(s, p),
     );
     this.registry.register('admin.bots.settings.get', (s, p) =>
-      this.handler.botSettingsGet(s, p),
+      this.bots.botSettingsGet(s, p),
     );
     this.registry.register('admin.bots.settings.update', (s, p) =>
-      this.handler.botSettingsUpdate(s, p),
+      this.bots.botSettingsUpdate(s, p),
     );
     this.registry.register('admin.bots.name.create', (s, p) =>
-      this.handler.botNameCreate(s, p),
+      this.bots.botNameCreate(s, p),
     );
     this.registry.register('admin.bots.name.update', (s, p) =>
-      this.handler.botNameUpdate(s, p),
+      this.bots.botNameUpdate(s, p),
     );
     this.registry.register('admin.bots.name.delete', (s, p) =>
-      this.handler.botNameDelete(s, p),
+      this.bots.botNameDelete(s, p),
     );
 
     this.registry.register('admin.perf.snapshot', (s, p) =>
