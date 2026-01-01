@@ -21,20 +21,30 @@ public static class EnvironmentDetector
     public static AppEnvironment GetEnvironment()
     {
         // 1. Vérifier variables d'environnement explicites
-        var envVar = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT")
+        var envVar = Environment.GetEnvironmentVariable("LILA_ENV")
+                     ?? Environment.GetEnvironmentVariable("LILA_ENVIRONMENT")
+                     ?? Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT")
                      ?? Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")
                      ?? Environment.GetEnvironmentVariable("APP_ENVIRONMENT");
 
         if (!string.IsNullOrWhiteSpace(envVar))
         {
-            if (envVar.Equals("Production", StringComparison.OrdinalIgnoreCase))
+            if (envVar.Equals("Production", StringComparison.OrdinalIgnoreCase) ||
+                envVar.Equals("Prod", StringComparison.OrdinalIgnoreCase))
                 return AppEnvironment.Production;
 
             if (envVar.Equals("Staging", StringComparison.OrdinalIgnoreCase))
                 return AppEnvironment.Staging;
 
-            if (envVar.Equals("Development", StringComparison.OrdinalIgnoreCase))
+            if (envVar.Equals("Development", StringComparison.OrdinalIgnoreCase) ||
+                envVar.Equals("Dev", StringComparison.OrdinalIgnoreCase))
                 return AppEnvironment.Development;
+
+            // Valeurs courantes en minuscules
+            var v = envVar.Trim().ToLowerInvariant();
+            if (v is "production" or "prod") return AppEnvironment.Production;
+            if (v is "staging" or "stage") return AppEnvironment.Staging;
+            if (v is "development" or "dev") return AppEnvironment.Development;
         }
 
         // 2. Si debugger attaché → Development
