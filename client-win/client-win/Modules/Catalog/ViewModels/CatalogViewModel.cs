@@ -25,7 +25,10 @@ public enum CatalogEscapeResult
 /// </summary>
 public sealed class CatalogViewModel : ObservableObject
 {
-    public sealed record CatalogActionItem(string Label, ICommand Command);
+    public sealed record CatalogActionItem(string Label, ICommand Command)
+    {
+        public override string ToString() => Label;
+    }
 
     private readonly ICatalogService _service;
     private readonly Func<CatalogGame, Task> _openGame;
