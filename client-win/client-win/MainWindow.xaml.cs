@@ -17,6 +17,7 @@ using System.Threading;
 using client_win.Modules.Network.Services;
 using System.Windows.Input;
 using client_win.Modules.Presence.Services;
+using client_win.Modules.Presence.Views;
 using client_win.Modules.Updates;
 using client_win.Modules.Settings.Services;
 using System.ComponentModel;
@@ -130,6 +131,12 @@ namespace client_win
             else if (isCtrl && key == Key.U)
             {
                 e.Handled = true;
+                // Empêche d'ouvrir "Présence" depuis "Présence" (sinon boucle et peut figer l'UI).
+                if (_navigation.CurrentView is PresenceView)
+                {
+                    return;
+                }
+
                 _ = _presenceUi.OpenAsync(this);
             }
         }
