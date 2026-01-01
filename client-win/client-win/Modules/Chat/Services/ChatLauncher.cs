@@ -20,6 +20,7 @@ public sealed class ChatLauncher : IChatLauncher
     private ChatView? _view;
     private System.Windows.Controls.UserControl? _previousView;
     private bool _isCleaningUp;
+    private bool _isOpening;
 
     public ChatLauncher(IChatService chat, IDialogService dialogs, IOptionsService options, INavigationService navigation)
     {
@@ -37,24 +38,6 @@ public sealed class ChatLauncher : IChatLauncher
             return "Tchat désactivé.";
         }
 
-        bool opened = await _chat.OpenAsync().ConfigureAwait(false);
-        if (!opened)
-        {
-            var err = _chat.LastServerError;
-            var message = err?.Message ?? _chat.StatusMessage ?? "Connexion tchat échouée.";
-            if (!string.IsNullOrWhiteSpace(err?.Reason))
-            {
-                message += $"\n\nMotif : {err!.Reason}";
-            }
-            if (err?.Until is DateTime until)
-            {
-                message += $"\nJusqu'au : {until.ToLocalTime():dd/MM/yyyy HH:mm}";
-            }
-
-            await _dialogs.ShowError("Tchat", message).ConfigureAwait(true);
-            return "Connexion tchat échouée.";
-        }
-
         await Application.Current.Dispatcher.InvokeAsync(() =>
         {
             if (_view == null)
@@ -67,7 +50,56 @@ public sealed class ChatLauncher : IChatLauncher
             _view.Focus();
         });
 
-        return "Tchat ouvert.";
+        _ = EnsureChatConnectionAsync();
+        return "Ouverture du tchat...";
+    }
+
+    private async Task EnsureChatConnectionAsync()
+    {
+        if (_isOpening)
+        {
+            return;
+        }
+
+        _isOpening = true;
+        try
+        {
+            bool opened = await _chat.OpenAsync().ConfigureAwait(false);
+            if (opened)
+            {
+                return;
+            }
+
+            var err = _chat.LastServerError;
+            var message = err?.Message ?? _chat.StatusMessage ?? "Connexion tchat échouée.";
+            if (!string.IsNullOrWhiteSpace(err?.Reason))
+            {
+                message += $"\n\nMotif : {err!.Reason}";
+            }
+            if (err?.Until is DateTime until)
+            {
+                message += $"\nJusqu'au : {until.ToLocalTime():dd/MM/yyyy HH:mm}";
+            }
+
+            await _dialogs.ShowError("Tchat", message).ConfigureAwait(true);
+            await ReturnToPreviousViewAsync().ConfigureAwait(true);
+            await CleanupAfterCloseAsync().ConfigureAwait(false);
+        }
+        finally
+        {
+            _isOpening = false;
+        }
+    }
+
+    private async Task ReturnToPreviousViewAsync()
+    {
+        await Application.Current.Dispatcher.InvokeAsync(() =>
+        {
+            if (_previousView != null)
+            {
+                _navigation.Show(_previousView);
+            }
+        });
     }
 
     public async Task CloseAsync()
@@ -86,13 +118,7 @@ public sealed class ChatLauncher : IChatLauncher
             }
         }
 
-        await Application.Current.Dispatcher.InvokeAsync(() =>
-        {
-            if (_previousView != null)
-            {
-                _navigation.Show(_previousView);
-            }
-        });
+        await ReturnToPreviousViewAsync().ConfigureAwait(true);
         await CleanupAfterCloseAsync();
     }
 
