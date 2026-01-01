@@ -21,6 +21,7 @@ public sealed partial class AdminViewModel
         IsAdditionalPermissionsVisible = false;
         Items.Clear();
         Items.Add(new AdminMenuItem("Nettoyer les rooms (supprime les tables publiques non démarrées)", tag: "rooms.cleanup.public"));
+        Items.Add(new AdminMenuItem("Intégrer une room (id, sans avertir, public ou privé)", tag: "rooms.join.silent"));
         Items.Add(new AdminMenuItem("Rafraîchir paramètres (relit la configuration côté serveur)", tag: "rooms.settings.refresh"));
         Items.Add(new AdminMenuItem("Auto-cleanup: activer/désactiver (nettoyage automatique)", tag: "rooms.settings.toggle"));
         Items.Add(new AdminMenuItem("Auto-cleanup: régler âge max (minutes) (supprime au-delà de cet âge)", tag: "rooms.settings.olderThan"));
@@ -30,6 +31,36 @@ public sealed partial class AdminViewModel
         Status = "Entrée : sélectionner. Échap : retour.";
         UpdateFilterVisibility();
         RestoreFocusIfAny();
+    }
+
+    private void BuildRoomsJoinSilent()
+    {
+        _page = AdminPage.EditText;
+        Title = "Intégrer une room";
+        Items.Clear();
+        Items.Add(new AdminMenuItem("Valider", tag: "rooms.join.silent.submit"));
+        SelectedItem = Items.FirstOrDefault();
+        TextInputLabel = "ID de la room";
+        TextInput = string.Empty;
+        SecondaryInputLabel = string.Empty;
+        SecondaryInput = string.Empty;
+        IsTextInputVisible = true;
+        IsSecondaryInputVisible = false;
+        Details = "Rejoint la room en mode silencieux (spectateur) sans notifier les autres joueurs.";
+        Status = "Saisissez l'ID puis Entrée pour valider. Échap : retour.";
+        _currentEditMode = "rooms.join.silent";
+    }
+
+    private async Task SubmitRoomsJoinSilentAsync()
+    {
+        var raw = (TextInput ?? string.Empty).Trim();
+        if (!int.TryParse(raw, out var roomId) || roomId <= 0)
+        {
+            await _dialogs.ShowError("Rooms", "ID invalide.").ConfigureAwait(true);
+            return;
+        }
+
+        await _tables.OpenExistingAsync(roomId, _returnView, spectator: true, silent: true).ConfigureAwait(true);
     }
 
     private async Task RefreshRoomSettingsAsync()

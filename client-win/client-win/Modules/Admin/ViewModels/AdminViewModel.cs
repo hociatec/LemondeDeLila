@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Threading;
 using client_win.Core;
 using client_win.Modules.Admin.Dtos;
@@ -13,6 +14,7 @@ using client_win.Modules.Config;
 using client_win.Modules.Shell.Services;
 using client_win.Modules.Updates;
 using client_win.Modules.User.Services;
+using client_win.Modules.Game.Shell.Services;
 
 namespace client_win.Modules.Admin.ViewModels;
 
@@ -92,6 +94,8 @@ public sealed partial class AdminViewModel : ObservableObject
     private readonly ISoundService _sounds;
     private readonly ISessionService _session;
     private readonly IRemoteSoundCache _remoteSounds;
+    private readonly IGameTableOpener _tables;
+    private readonly UserControl _returnView;
 
     public AdminViewModel(
         IAdminService admin,
@@ -102,6 +106,8 @@ public sealed partial class AdminViewModel : ObservableObject
         ISoundService sounds,
         ISessionService session,
         IRemoteSoundCache remoteSounds,
+        IGameTableOpener tables,
+        UserControl returnView,
         Action onClose)
     {
         _admin = admin ?? throw new ArgumentNullException(nameof(admin));
@@ -112,6 +118,8 @@ public sealed partial class AdminViewModel : ObservableObject
         _sounds = sounds ?? throw new ArgumentNullException(nameof(sounds));
         _session = session ?? throw new ArgumentNullException(nameof(session));
         _remoteSounds = remoteSounds ?? throw new ArgumentNullException(nameof(remoteSounds));
+        _tables = tables ?? throw new ArgumentNullException(nameof(tables));
+        _returnView = returnView ?? throw new ArgumentNullException(nameof(returnView));
         _close = onClose ?? (() => { });
         _dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
 

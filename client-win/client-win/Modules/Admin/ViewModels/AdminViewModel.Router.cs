@@ -97,6 +97,12 @@ public sealed partial class AdminViewModel
                     await CleanupPublicRoomsAsync().ConfigureAwait(true);
                     return;
                 }
+                if (roomsAction == "rooms.join.silent")
+                {
+                    PushReturnFocus();
+                    BuildRoomsJoinSilent();
+                    return;
+                }
                 if (roomsAction == "rooms.settings.refresh")
                 {
                     await RefreshRoomSettingsAsync().ConfigureAwait(true);
@@ -138,6 +144,12 @@ public sealed partial class AdminViewModel
             if (_page == AdminPage.EditText && tag is string submitRooms && submitRooms == "rooms.settings.submit")
             {
                 await SubmitRoomsSettingEditAsync().ConfigureAwait(true);
+                return;
+            }
+
+            if (_page == AdminPage.EditText && tag is string submitJoin && submitJoin == "rooms.join.silent.submit")
+            {
+                await SubmitRoomsJoinSilentAsync().ConfigureAwait(true);
                 return;
             }
 

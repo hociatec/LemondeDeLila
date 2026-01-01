@@ -9,4 +9,5 @@ public interface IGameTableOpener
     Task OpenAsync(CatalogGame game, UserControl returnView);
     Task OpenExistingAsync(int roomId, UserControl returnView);
     Task OpenExistingAsync(int roomId, UserControl returnView, bool spectator);
+    Task OpenExistingAsync(int roomId, UserControl returnView, bool spectator, bool silent);
 }

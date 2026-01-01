@@ -73,6 +73,11 @@ public sealed class RoomGatewayClient : IRoomGatewayClient
 
     public async Task<RoomSession> ConnectAsync(int roomId, bool spectator, CancellationToken cancellationToken = default)
     {
+        return await ConnectAsync(roomId, spectator, silent: false, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<RoomSession> ConnectAsync(int roomId, bool spectator, bool silent, CancellationToken cancellationToken = default)
+    {
         var user = _session.CurrentUser;
         var token = user?.Token;
         if (string.IsNullOrWhiteSpace(token))
@@ -85,7 +90,7 @@ public sealed class RoomGatewayClient : IRoomGatewayClient
         }
 
         var socket = _socketFactory();
-        var uri = BuildRoomUri(_config.RealtimeGatewayWs, roomId, spectator);
+        var uri = BuildRoomUri(_config.RealtimeGatewayWs, roomId, spectator, silent);
         var headers = await BuildHeadersAsync(cancellationToken).ConfigureAwait(false);
 
         Log.Information("WS room.connect: connexion à {Endpoint}", uri);
@@ -296,7 +301,7 @@ public sealed class RoomGatewayClient : IRoomGatewayClient
         }
     }
 
-    private static Uri BuildRoomUri(Uri baseWs, int roomId, bool spectator = false)
+    private static Uri BuildRoomUri(Uri baseWs, int roomId, bool spectator = false, bool silent = false)
     {
         var builder = new UriBuilder(baseWs);
         var query = new List<string>();
@@ -310,6 +315,10 @@ public sealed class RoomGatewayClient : IRoomGatewayClient
             if (spectator)
             {
                 query.Add("spectator=1");
+            }
+            if (silent)
+            {
+                query.Add("silent=1");
             }
         }
         builder.Query = string.Join("&", query);
