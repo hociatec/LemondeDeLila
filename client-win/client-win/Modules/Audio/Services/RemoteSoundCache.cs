@@ -85,13 +85,20 @@ public sealed class RemoteSoundCache : IRemoteSoundCache
 
     private async Task<string?> EnsureCachedAsync(SoundId soundId, RemoteSoundManifestEntryDto entry, CancellationToken cancellationToken)
     {
+        var sha256 = entry.Sha256;
+        var url = entry.Url;
+        if (string.IsNullOrWhiteSpace(sha256) || string.IsNullOrWhiteSpace(url))
+        {
+            return null;
+        }
+
         var cacheDir = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             AppConstants.AppDataFolderName,
             "sounds-cache");
         Directory.CreateDirectory(cacheDir);
 
-        var fileName = $"{soundId}-{entry.Sha256}.mp3";
+        var fileName = $"{soundId}-{sha256}.mp3";
         var destPath = Path.Combine(cacheDir, fileName);
         if (File.Exists(destPath))
         {
@@ -102,9 +109,15 @@ public sealed class RemoteSoundCache : IRemoteSoundCache
         try
         {
             using var http = new HttpClient();
-            var uri = Uri.TryCreate(entry.Url, UriKind.Absolute, out var abs)
-                ? abs
-                : new Uri(_config.HttpBase, ".." + entry.Url.Trim());
+            Uri uri;
+            if (Uri.TryCreate(url, UriKind.Absolute, out var abs) && abs != null)
+            {
+                uri = abs;
+            }
+            else
+            {
+                uri = new Uri(_config.HttpBase, ".." + url.Trim());
+            }
 
             await using var response = await http.GetStreamAsync(uri, cancellationToken).ConfigureAwait(false);
             await using (var fs = File.Create(tmpPath))
@@ -133,4 +146,3 @@ public sealed class RemoteSoundCache : IRemoteSoundCache
         public string? Url { get; set; }
     }
 }
-

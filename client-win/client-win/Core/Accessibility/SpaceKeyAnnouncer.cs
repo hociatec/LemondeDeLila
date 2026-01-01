@@ -1,4 +1,5 @@
 using System;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
@@ -56,4 +57,3 @@ public static class SpaceKeyAnnouncer
         _announcer?.AnnounceAssertive("espace");
     }
 }
-
