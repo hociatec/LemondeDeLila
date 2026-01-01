@@ -424,11 +424,6 @@ public sealed partial class AdminViewModel
 
             if (_page == AdminPage.ChatDay)
             {
-                if (tag is string back && back == "chat.day.back")
-                {
-                    BuildChatDaysMenu();
-                    return;
-                }
                 if (tag is AdminChatMessageDto msgDay)
                 {
                     PushReturnFocus();
