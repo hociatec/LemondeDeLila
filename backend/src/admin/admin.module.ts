@@ -10,6 +10,7 @@ import { AdminWsHandler } from './ws/admin-ws.handler';
 import { AdminWsRegistrar } from './ws/admin-ws.registrar';
 import { AdminRoomsWsHandler } from './ws/admin-rooms-ws.handler';
 import { AdminChatWsHandler } from './ws/admin-chat-ws.handler';
+import { AdminUsersWsHandler } from './ws/admin-users-ws.handler';
 import { ValidationModule } from '../common/validation/validation.module';
 import { GameRegistryModule } from '../game/engine/game-registry.module';
 import { NotificationModule } from '../notification/notification.module';
@@ -43,6 +44,7 @@ import { RoomModule } from '../room/room.module';
     AdminWsHandler,
     AdminRoomsWsHandler,
     AdminChatWsHandler,
+    AdminUsersWsHandler,
     AdminWsRegistrar,
   ],
 })

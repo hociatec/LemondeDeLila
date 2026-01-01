@@ -3,6 +3,7 @@ import { WsRouteRegistry } from '../../common/ws/ws-route-registry.service';
 import { AdminWsHandler } from './admin-ws.handler';
 import { AdminRoomsWsHandler } from './admin-rooms-ws.handler';
 import { AdminChatWsHandler } from './admin-chat-ws.handler';
+import { AdminUsersWsHandler } from './admin-users-ws.handler';
 
 @Injectable()
 export class AdminWsRegistrar implements OnModuleInit {
@@ -11,23 +12,24 @@ export class AdminWsRegistrar implements OnModuleInit {
     private readonly handler: AdminWsHandler,
     private readonly rooms: AdminRoomsWsHandler,
     private readonly chat: AdminChatWsHandler,
+    private readonly users: AdminUsersWsHandler,
   ) {}
 
   onModuleInit() {
     this.registry.register('admin.users.list', (s, p) =>
-      this.handler.usersList(s, p),
+      this.users.usersList(s, p),
     );
     this.registry.register('admin.users.get', (s, p) =>
-      this.handler.usersGet(s, p),
+      this.users.usersGet(s, p),
     );
     this.registry.register('admin.users.ban', (s, p) =>
-      this.handler.usersBan(s, p),
+      this.users.usersBan(s, p),
     );
     this.registry.register('admin.users.unban', (s, p) =>
-      this.handler.usersUnban(s, p),
+      this.users.usersUnban(s, p),
     );
     this.registry.register('admin.users.delete', (s, p) =>
-      this.handler.usersDelete(s, p),
+      this.users.usersDelete(s, p),
     );
 
     this.registry.register('admin.games.list', (s) => this.handler.gamesList(s));
@@ -56,7 +58,7 @@ export class AdminWsRegistrar implements OnModuleInit {
       this.handler.rolesList(s, p),
     );
     this.registry.register('admin.users.roles', (s, p) =>
-      this.handler.usersUpdateRoles(s, p),
+      this.users.usersUpdateRoles(s, p),
     );
     this.registry.register('admin.roles.definitions', (s) =>
       this.handler.rolesDefinitionsList(s),
