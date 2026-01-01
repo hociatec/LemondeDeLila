@@ -180,7 +180,7 @@ public partial class MessagingView : UserControl
                     FocusMessagesWhenReady();
                     break;
                 case MessagingScreen.Detail:
-                    DetailBody.Focus();
+                    DetailDocument.Focus();
                     break;
                 case MessagingScreen.Compose:
                     ComposePanel.FocusFirstField();

@@ -62,8 +62,16 @@ public sealed class MessagingViewModel : ObservableObject
     public MessagingMessage? SelectedMessage
     {
         get => _selectedMessage;
-        set => SetProperty(ref _selectedMessage, value);
+        set
+        {
+            if (SetProperty(ref _selectedMessage, value))
+            {
+                OnPropertyChanged(nameof(SelectedMessageDetailText));
+            }
+        }
     }
+
+    public string SelectedMessageDetailText => FormatMessageDetail(_selectedMessage);
 
     public MessagingUser? ConversationUser
     {
@@ -577,6 +585,28 @@ public sealed class MessagingViewModel : ObservableObject
 
         // Passer en mode composition
         IsComposeMode = true;
+    }
+
+    private static string FormatMessageDetail(MessagingMessage? message)
+    {
+        if (message == null)
+        {
+            return string.Empty;
+        }
+
+        var subject = string.IsNullOrWhiteSpace(message.Subject) ? "Sans sujet" : message.Subject.Trim();
+        var sender = message.Sender?.Username ?? "inconnu";
+        var recipient = message.Recipient?.Username ?? "inconnu";
+        var body = message.Text ?? string.Empty;
+
+        return
+            $"Sujet: {subject}\n" +
+            "\n" +
+            $"De: {sender}\n" +
+            $"À: {recipient}\n" +
+            "\n" +
+            "Contenu:\n" +
+            body;
     }
 
     private void ReplaceMessage(MessagingMessage updated)
