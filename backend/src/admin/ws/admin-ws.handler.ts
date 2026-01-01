@@ -5,17 +5,14 @@ import { Repository } from 'typeorm';
 import { requireAdmin } from '../../common/ws/ws-auth';
 import type { WsSession } from '../../common/ws/ws-route-registry.service';
 import { PayloadValidationService } from '../../common/validation/payload-validation.service';
-import { GameRegistryService } from '../../game/engine/services/game-registry.service';
-import { GameCatalogOverridesService } from '../../game/engine/services/game-catalog-overrides.service';
-import { GameCategoriesService } from '../../game/engine/services/game-categories.service';
 import { NotificationService } from '../../notification/services/notification.service';
 import { User } from '../../user/entities/user.entity';
-import { CatalogService } from '../../catalog/services/catalog.service';
 import { RoleDefinitionsService } from '../services/role-definitions.service';
 import { BotService } from '../../bot/services/bot.service';
 import { BotSettingsService } from '../../game/modules/bot/services/bot-settings.service';
 import { PerfMetricsService } from '../../common/services/perf-metrics.service';
 import { ClientUpdatesService } from '../../client-updates/client-updates.service';
+import { AdminCatalogInvalidationService } from '../services/admin-catalog-invalidation.service';
 import * as fs from 'fs';
 import * as path from 'path';
 import {
@@ -28,13 +25,6 @@ import {
   AdminBroadcastWsDto,
   AdminClientUpdateAnnounceWsDto,
   AdminClientUpdateForceLatestWsDto,
-  AdminGameCategoryAssignWsDto,
-  AdminGameCategoryCreateWsDto,
-  AdminGameCategoryUpdateWsDto,
-  AdminGameCategoriesListWsDto,
-  AdminGameResetWsDto,
-  AdminGameSetEnabledWsDto,
-  AdminGameUpdateWsDto,
   AdminLogsDownloadWsDto,
   AdminRoleDefinitionCreateWsDto,
   AdminRoleDefinitionDeleteWsDto,
@@ -46,133 +36,16 @@ import {
 export class AdminWsHandler {
   constructor(
     private readonly validator: PayloadValidationService,
-    private readonly registry: GameRegistryService,
-    private readonly overrides: GameCatalogOverridesService,
-    private readonly categories: GameCategoriesService,
     private readonly notifications: NotificationService,
     private readonly clientUpdates: ClientUpdatesService,
-    private readonly catalog: CatalogService,
     private readonly config: ConfigService,
     private readonly roleDefinitions: RoleDefinitionsService,
     private readonly bots: BotService,
     private readonly botSettings: BotSettingsService,
     private readonly perf: PerfMetricsService,
+    private readonly catalogInvalidation: AdminCatalogInvalidationService,
     @InjectRepository(User) private readonly userRepo: Repository<User>,
   ) {}
-
-  private async notifyCatalogInvalidated(adminId: number) {
-    const ids = await this.userRepo
-      .createQueryBuilder('u')
-      .select(['u.id'])
-      .getMany();
-
-    await Promise.all(
-      ids.map((u) =>
-        this.notifications.notifyUser(u.id, 'catalog.invalidate', {
-          byUserId: adminId,
-          timestamp: new Date().toISOString(),
-        }),
-      ),
-    );
-  }
-
-  private buildCategoriesPayload() {
-    return {
-      categories: this.categories.getCategories(),
-      assignments: this.categories.listAssignments(),
-    };
-  }
-
-  private async refreshCatalog(adminId: number) {
-    this.registry.invalidateCache();
-    await this.catalog.clearCache();
-    await this.notifyCatalogInvalidated(adminId);
-  }
-
-  async gamesList(session: WsSession) {
-    requireAdmin(session);
-    const games = await this.registry.listGames({
-      includeDisabledOverrides: true,
-    });
-    const payload = games
-      .map((g) => {
-        const ov = this.overrides.getGameOverride(g.id);
-        const enabled = ov?.enabled !== false;
-        const categoryId = this.categories.getAssignment(g.id);
-        return {
-          id: g.id,
-          name: g.name,
-          category: g.category,
-          categoryId: categoryId ?? undefined,
-          subcategory: g.subcategory,
-          description: g.description,
-          minPlayers: g.minPlayers,
-          maxPlayers: g.maxPlayers,
-          enabled,
-        };
-      })
-      .sort((a, b) => a.name.localeCompare(b.name, 'fr'));
-    return { type: 'admin.games.list', payload: { games: payload } };
-  }
-
-  async gamesCategoriesList(session: WsSession, payload: any) {
-    requireAdmin(session);
-    this.validator.validate(AdminGameCategoriesListWsDto, payload ?? {});
-    return { type: 'admin.games.categories', payload: this.buildCategoriesPayload() };
-  }
-
-  async gamesCategoryCreate(session: WsSession, payload: any) {
-    const admin = requireAdmin(session);
-    const dto = this.validator.validate(AdminGameCategoryCreateWsDto, payload);
-    await this.categories.createCategory(dto.name, dto.parentId ?? null);
-    await this.refreshCatalog(admin.id);
-    return { type: 'admin.games.categories', payload: this.buildCategoriesPayload() };
-  }
-
-  async gamesCategoryUpdate(session: WsSession, payload: any) {
-    const admin = requireAdmin(session);
-    const dto = this.validator.validate(AdminGameCategoryUpdateWsDto, payload);
-    await this.categories.updateCategory(dto.id, {
-      name: dto.name,
-      parentId: dto.parentId ?? null,
-    });
-    await this.refreshCatalog(admin.id);
-    return { type: 'admin.games.categories', payload: this.buildCategoriesPayload() };
-  }
-
-  async gamesCategoryAssign(session: WsSession, payload: any) {
-    const admin = requireAdmin(session);
-    const dto = this.validator.validate(AdminGameCategoryAssignWsDto, payload);
-    await this.categories.assignCategory(dto.gameType, dto.categoryId ?? null);
-    await this.refreshCatalog(admin.id);
-    return { type: 'admin.games.category.assign', payload: this.buildCategoriesPayload() };
-  }
-
-  async gamesSetEnabled(session: WsSession, payload: any) {
-    const admin = requireAdmin(session);
-    const dto = this.validator.validate(AdminGameSetEnabledWsDto, payload) as AdminGameSetEnabledWsDto;
-    await this.overrides.setEnabled(dto.gameType, dto.enabled);
-    this.registry.invalidateCache();
-    await this.catalog.clearCache();
-    await this.notifyCatalogInvalidated(admin.id);
-    return { type: 'admin.games.setEnabled', payload: { ok: true } };
-  }
-
-  async gamesUpdate(session: WsSession, payload: any) {
-    const admin = requireAdmin(session);
-    const dto = this.validator.validate(AdminGameUpdateWsDto, payload) as AdminGameUpdateWsDto;
-    await this.overrides.updateGameOverride(dto.gameType, {
-      enabled: dto.enabled,
-      minPlayers: dto.minPlayers,
-      maxPlayers: dto.maxPlayers,
-      name: dto.name,
-      description: dto.description,
-    });
-    this.registry.invalidateCache();
-    await this.catalog.clearCache();
-    await this.notifyCatalogInvalidated(admin.id);
-    return { type: 'admin.games.update', payload: { ok: true } };
-  }
 
   async rolesList(session: WsSession, payload: any) {
     requireAdmin(session);
@@ -306,7 +179,7 @@ export class AdminWsHandler {
       description: dto.description,
       permissions: dto.permissions,
     });
-    await this.notifyCatalogInvalidated(admin.id);
+    await this.catalogInvalidation.notifyCatalogInvalidated(admin.id);
     const definitions = await this.roleDefinitions.list();
     return {
       type: 'admin.roles.definitions',
@@ -322,7 +195,7 @@ export class AdminWsHandler {
       description: dto.description,
       permissions: dto.permissions,
     });
-    await this.notifyCatalogInvalidated(admin.id);
+    await this.catalogInvalidation.notifyCatalogInvalidated(admin.id);
     const definitions = await this.roleDefinitions.list();
     return {
       type: 'admin.roles.definitions',
@@ -334,22 +207,12 @@ export class AdminWsHandler {
     const admin = requireAdmin(session);
     const dto = this.validator.validate(AdminRoleDefinitionDeleteWsDto, payload);
     await this.roleDefinitions.delete(dto.name);
-    await this.notifyCatalogInvalidated(admin.id);
+    await this.catalogInvalidation.notifyCatalogInvalidated(admin.id);
     const definitions = await this.roleDefinitions.list();
     return {
       type: 'admin.roles.definitions',
       payload: { definitions },
     };
-  }
-
-  async gamesReset(session: WsSession, payload: any) {
-    const admin = requireAdmin(session);
-    const dto = this.validator.validate(AdminGameResetWsDto, payload) as AdminGameResetWsDto;
-    await this.overrides.clearGameOverride(dto.gameType);
-    this.registry.invalidateCache();
-    await this.catalog.clearCache();
-    await this.notifyCatalogInvalidated(admin.id);
-    return { type: 'admin.games.reset', payload: { ok: true } };
   }
 
   async logsDownload(session: WsSession, payload: any) {

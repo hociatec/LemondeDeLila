@@ -11,6 +11,7 @@ import { AdminWsRegistrar } from './ws/admin-ws.registrar';
 import { AdminRoomsWsHandler } from './ws/admin-rooms-ws.handler';
 import { AdminChatWsHandler } from './ws/admin-chat-ws.handler';
 import { AdminUsersWsHandler } from './ws/admin-users-ws.handler';
+import { AdminGamesWsHandler } from './ws/admin-games-ws.handler';
 import { ValidationModule } from '../common/validation/validation.module';
 import { GameRegistryModule } from '../game/engine/game-registry.module';
 import { NotificationModule } from '../notification/notification.module';
@@ -21,6 +22,7 @@ import { RoleDefinitionEntity } from './entities/role-definition.entity';
 import { ClientUpdatesModule } from '../client-updates/client-updates.module';
 import { ChatModule } from '../chat/chat.module';
 import { RoomModule } from '../room/room.module';
+import { AdminCatalogInvalidationService } from './services/admin-catalog-invalidation.service';
 
 @Module({
   imports: [
@@ -37,6 +39,7 @@ import { RoomModule } from '../room/room.module';
   ],
   controllers: [AdminUsersController],
   providers: [
+    AdminCatalogInvalidationService,
     AdminUsersService,
     RoleDefinitionsService,
     HttpJwtGuard,
@@ -45,6 +48,7 @@ import { RoomModule } from '../room/room.module';
     AdminRoomsWsHandler,
     AdminChatWsHandler,
     AdminUsersWsHandler,
+    AdminGamesWsHandler,
     AdminWsRegistrar,
   ],
 })

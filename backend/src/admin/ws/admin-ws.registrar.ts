@@ -4,6 +4,7 @@ import { AdminWsHandler } from './admin-ws.handler';
 import { AdminRoomsWsHandler } from './admin-rooms-ws.handler';
 import { AdminChatWsHandler } from './admin-chat-ws.handler';
 import { AdminUsersWsHandler } from './admin-users-ws.handler';
+import { AdminGamesWsHandler } from './admin-games-ws.handler';
 
 @Injectable()
 export class AdminWsRegistrar implements OnModuleInit {
@@ -13,6 +14,7 @@ export class AdminWsRegistrar implements OnModuleInit {
     private readonly rooms: AdminRoomsWsHandler,
     private readonly chat: AdminChatWsHandler,
     private readonly users: AdminUsersWsHandler,
+    private readonly games: AdminGamesWsHandler,
   ) {}
 
   onModuleInit() {
@@ -32,27 +34,27 @@ export class AdminWsRegistrar implements OnModuleInit {
       this.users.usersDelete(s, p),
     );
 
-    this.registry.register('admin.games.list', (s) => this.handler.gamesList(s));
+    this.registry.register('admin.games.list', (s) => this.games.gamesList(s));
     this.registry.register('admin.games.setEnabled', (s, p) =>
-      this.handler.gamesSetEnabled(s, p),
+      this.games.gamesSetEnabled(s, p),
     );
     this.registry.register('admin.games.update', (s, p) =>
-      this.handler.gamesUpdate(s, p),
+      this.games.gamesUpdate(s, p),
     );
     this.registry.register('admin.games.reset', (s, p) =>
-      this.handler.gamesReset(s, p),
+      this.games.gamesReset(s, p),
     );
     this.registry.register('admin.games.categories', (s, p) =>
-      this.handler.gamesCategoriesList(s, p),
+      this.games.gamesCategoriesList(s, p),
     );
     this.registry.register('admin.games.category.create', (s, p) =>
-      this.handler.gamesCategoryCreate(s, p),
+      this.games.gamesCategoryCreate(s, p),
     );
     this.registry.register('admin.games.category.update', (s, p) =>
-      this.handler.gamesCategoryUpdate(s, p),
+      this.games.gamesCategoryUpdate(s, p),
     );
     this.registry.register('admin.games.category.assign', (s, p) =>
-      this.handler.gamesCategoryAssign(s, p),
+      this.games.gamesCategoryAssign(s, p),
     );
     this.registry.register('admin.roles.list', (s, p) =>
       this.handler.rolesList(s, p),

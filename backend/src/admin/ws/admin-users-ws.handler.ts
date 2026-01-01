@@ -1,14 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { CatalogService } from '../../catalog/services/catalog.service';
 import { requireAdmin } from '../../common/ws/ws-auth';
 import type { WsSession } from '../../common/ws/ws-route-registry.service';
 import { PayloadValidationService } from '../../common/validation/payload-validation.service';
-import { GameRegistryService } from '../../game/engine/services/game-registry.service';
-import { NotificationService } from '../../notification/services/notification.service';
-import { User } from '../../user/entities/user.entity';
 import { AdminUsersService } from '../services/admin-users.service';
+import { AdminCatalogInvalidationService } from '../services/admin-catalog-invalidation.service';
 import {
   AdminBanUserWsDto,
   AdminListUsersWsDto,
@@ -21,27 +16,8 @@ export class AdminUsersWsHandler {
   constructor(
     private readonly validator: PayloadValidationService,
     private readonly users: AdminUsersService,
-    private readonly registry: GameRegistryService,
-    private readonly notifications: NotificationService,
-    private readonly catalog: CatalogService,
-    @InjectRepository(User) private readonly userRepo: Repository<User>,
+    private readonly catalogInvalidation: AdminCatalogInvalidationService,
   ) {}
-
-  private async notifyCatalogInvalidated(adminId: number) {
-    const ids = await this.userRepo
-      .createQueryBuilder('u')
-      .select(['u.id'])
-      .getMany();
-
-    await Promise.all(
-      ids.map((u) =>
-        this.notifications.notifyUser(u.id, 'catalog.invalidate', {
-          byUserId: adminId,
-          timestamp: new Date().toISOString(),
-        }),
-      ),
-    );
-  }
 
   async usersList(session: WsSession, payload: any) {
     requireAdmin(session);
@@ -87,10 +63,7 @@ export class AdminUsersWsHandler {
     const admin = requireAdmin(session);
     const dto = this.validator.validate(AdminUserRolesWsDto, payload);
     const user = await this.users.update(dto.id, { roles: dto.roles });
-    await this.catalog.clearCache();
-    this.registry.invalidateCache();
-    await this.notifyCatalogInvalidated(admin.id);
+    await this.catalogInvalidation.invalidateCatalogAndNotify(admin.id);
     return { type: 'admin.users.rolesUpdated', payload: { user } };
   }
 }
-
