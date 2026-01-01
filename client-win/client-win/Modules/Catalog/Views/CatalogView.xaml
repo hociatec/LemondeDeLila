@@ -51,7 +51,10 @@
                                             BorderBrush="{TemplateBinding BorderBrush}"
                                             BorderThickness="{TemplateBinding BorderThickness}"
                                             CornerRadius="6">
-                                        <ContentPresenter />
+                                        <ContentPresenter Content="{TemplateBinding Content}"
+                                                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                          ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
+                                                          ContentStringFormat="{TemplateBinding ContentStringFormat}" />
                                     </Border>
                                     <ControlTemplate.Triggers>
                                         <Trigger Property="IsMouseOver" Value="True">

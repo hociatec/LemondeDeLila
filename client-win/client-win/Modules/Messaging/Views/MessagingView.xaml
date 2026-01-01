@@ -246,19 +246,35 @@
                                 </Style>
                             </StackPanel.Style>
 
-                            <TextBox x:Name="DetailDocument"
-                                     Text="{Binding SelectedMessageDetailText, Mode=OneWay}"
-                                     IsReadOnly="True"
-                                     IsReadOnlyCaretVisible="True"
-                                     TextWrapping="Wrap"
-                                     AcceptsReturn="True"
-                                     VerticalScrollBarVisibility="Auto"
-                                     HorizontalScrollBarVisibility="Disabled"
-                                     Style="{StaticResource InputTextBox}"
+                            <ListBox x:Name="DetailDocument"
+                                     ItemsSource="{Binding SelectedMessageDetailLines}"
+                                     SelectionMode="Single"
+                                     VerticalContentAlignment="Top"
                                      MinHeight="320"
                                      Focusable="True"
                                      IsTabStop="True"
-                                     AutomationProperties.Name="Détail du message (lecture)" />
+                                     AutomationProperties.Name="Détail du message (lecture)"
+                                     ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                     ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                                <ListBox.Resources>
+                                    <Style TargetType="ListBox">
+                                        <Setter Property="Background" Value="#0A1827" />
+                                        <Setter Property="BorderBrush" Value="#284C75" />
+                                        <Setter Property="BorderThickness" Value="2" />
+                                    </Style>
+                                    <Style TargetType="ListBoxItem">
+                                        <Setter Property="Padding" Value="10 2" />
+                                        <Setter Property="Foreground" Value="White" />
+                                        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                                    </Style>
+                                </ListBox.Resources>
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding}"
+                                                   TextWrapping="Wrap" />
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
                         </StackPanel>
 
 	                        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
