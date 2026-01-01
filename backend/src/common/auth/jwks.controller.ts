@@ -34,5 +34,10 @@ export class JwksController {
       ],
     };
   }
-}
 
+  // Some deployments proxy only /api/* to the backend. Provide a compatible path as well.
+  @Get('api/.well-known/jwks.json')
+  jwksUnderApi() {
+    return this.jwks();
+  }
+}

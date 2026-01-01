@@ -123,14 +123,34 @@ public sealed class JwtTokenValidator
         try
         {
             using var http = new HttpClient();
-            var jwksUri = new Uri(_config.HttpBase, "../.well-known/jwks.json");
-            var json = http.GetStringAsync(jwksUri).GetAwaiter().GetResult();
-            var jwks = JsonSerializer.Deserialize<JwksDto>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-            var key = jwks?.GetFirstRsaKey();
-            if (key == null)
+            var jwksUris = new[]
             {
-                return null;
+                // Prefer /api/.well-known when HttpBase ends with /api/ and the reverse proxy only exposes /api/*
+                new Uri(_config.HttpBase, ".well-known/jwks.json"),
+                // Fallback to the standards path at the origin root.
+                new Uri(_config.HttpBase, "../.well-known/jwks.json"),
+            };
+
+            RsaSecurityKey? key = null;
+            foreach (var jwksUri in jwksUris)
+            {
+                try
+                {
+                    var json = http.GetStringAsync(jwksUri).GetAwaiter().GetResult();
+                    var jwks = JsonSerializer.Deserialize<JwksDto>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    key = jwks?.GetFirstRsaKey();
+                    if (key != null)
+                    {
+                        break;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Debug(ex, "JWKS fetch failed ({Uri})", jwksUri);
+                }
             }
+
+            if (key == null) return null;
 
             lock (JwksGate)
             {
