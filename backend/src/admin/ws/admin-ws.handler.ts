@@ -7,7 +7,6 @@ import type { WsSession } from '../../common/ws/ws-route-registry.service';
 import { PayloadValidationService } from '../../common/validation/payload-validation.service';
 import { NotificationService } from '../../notification/services/notification.service';
 import { User } from '../../user/entities/user.entity';
-import { RoleDefinitionsService } from '../services/role-definitions.service';
 import { PerfMetricsService } from '../../common/services/perf-metrics.service';
 import { ClientUpdatesService } from '../../client-updates/client-updates.service';
 import { AdminCatalogInvalidationService } from '../services/admin-catalog-invalidation.service';
@@ -18,10 +17,6 @@ import {
   AdminClientUpdateAnnounceWsDto,
   AdminClientUpdateForceLatestWsDto,
   AdminLogsDownloadWsDto,
-  AdminRoleDefinitionCreateWsDto,
-  AdminRoleDefinitionDeleteWsDto,
-  AdminRoleDefinitionUpdateWsDto,
-  AdminRolesListWsDto,
 } from './admin-ws.dto';
 
 @Injectable()
@@ -31,35 +26,10 @@ export class AdminWsHandler {
     private readonly notifications: NotificationService,
     private readonly clientUpdates: ClientUpdatesService,
     private readonly config: ConfigService,
-    private readonly roleDefinitions: RoleDefinitionsService,
     private readonly perf: PerfMetricsService,
     private readonly catalogInvalidation: AdminCatalogInvalidationService,
     @InjectRepository(User) private readonly userRepo: Repository<User>,
   ) {}
-
-  async rolesList(session: WsSession, payload: any) {
-    requireAdmin(session);
-    this.validator.validate(AdminRolesListWsDto, payload ?? {});
-    const definitions = await this.roleDefinitions.list();
-    return {
-      type: 'admin.roles.list',
-      payload: {
-        roles: definitions.map((d) => d.name),
-        definitions,
-      },
-    };
-  }
-
-  async rolesDefinitionsList(session: WsSession) {
-    requireAdmin(session);
-    const definitions = await this.roleDefinitions.list();
-    return {
-      type: 'admin.roles.definitions',
-      payload: { definitions },
-    };
-  }
-
-  // Rooms WS endpoints were extracted to AdminRoomsWsHandler.
 
   async perfSnapshot(session: WsSession, payload: any) {
     requireAdmin(session);
@@ -69,49 +39,6 @@ export class AdminWsHandler {
     return { type: 'admin.perf.snapshot', payload: snapshot };
   }
 
-  async roleDefinitionCreate(session: WsSession, payload: any) {
-    const admin = requireAdmin(session);
-    const dto = this.validator.validate(AdminRoleDefinitionCreateWsDto, payload);
-    await this.roleDefinitions.create({
-      name: dto.name,
-      description: dto.description,
-      permissions: dto.permissions,
-    });
-    await this.catalogInvalidation.notifyCatalogInvalidated(admin.id);
-    const definitions = await this.roleDefinitions.list();
-    return {
-      type: 'admin.roles.definitions',
-      payload: { definitions },
-    };
-  }
-
-  async roleDefinitionUpdate(session: WsSession, payload: any) {
-    const admin = requireAdmin(session);
-    const dto = this.validator.validate(AdminRoleDefinitionUpdateWsDto, payload);
-    await this.roleDefinitions.update(dto.name, {
-      name: dto.newName,
-      description: dto.description,
-      permissions: dto.permissions,
-    });
-    await this.catalogInvalidation.notifyCatalogInvalidated(admin.id);
-    const definitions = await this.roleDefinitions.list();
-    return {
-      type: 'admin.roles.definitions',
-      payload: { definitions },
-    };
-  }
-
-  async roleDefinitionDelete(session: WsSession, payload: any) {
-    const admin = requireAdmin(session);
-    const dto = this.validator.validate(AdminRoleDefinitionDeleteWsDto, payload);
-    await this.roleDefinitions.delete(dto.name);
-    await this.catalogInvalidation.notifyCatalogInvalidated(admin.id);
-    const definitions = await this.roleDefinitions.list();
-    return {
-      type: 'admin.roles.definitions',
-      payload: { definitions },
-    };
-  }
 
   async logsDownload(session: WsSession, payload: any) {
     requireAdmin(session);

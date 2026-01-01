@@ -13,6 +13,7 @@ import { AdminChatWsHandler } from './ws/admin-chat-ws.handler';
 import { AdminUsersWsHandler } from './ws/admin-users-ws.handler';
 import { AdminGamesWsHandler } from './ws/admin-games-ws.handler';
 import { AdminBotsWsHandler } from './ws/admin-bots-ws.handler';
+import { AdminRolesWsHandler } from './ws/admin-roles-ws.handler';
 import { ValidationModule } from '../common/validation/validation.module';
 import { GameRegistryModule } from '../game/engine/game-registry.module';
 import { NotificationModule } from '../notification/notification.module';
@@ -51,6 +52,7 @@ import { AdminCatalogInvalidationService } from './services/admin-catalog-invali
     AdminUsersWsHandler,
     AdminGamesWsHandler,
     AdminBotsWsHandler,
+    AdminRolesWsHandler,
     AdminWsRegistrar,
   ],
 })

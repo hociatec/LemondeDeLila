@@ -6,6 +6,7 @@ import { AdminChatWsHandler } from './admin-chat-ws.handler';
 import { AdminUsersWsHandler } from './admin-users-ws.handler';
 import { AdminGamesWsHandler } from './admin-games-ws.handler';
 import { AdminBotsWsHandler } from './admin-bots-ws.handler';
+import { AdminRolesWsHandler } from './admin-roles-ws.handler';
 
 @Injectable()
 export class AdminWsRegistrar implements OnModuleInit {
@@ -17,6 +18,7 @@ export class AdminWsRegistrar implements OnModuleInit {
     private readonly users: AdminUsersWsHandler,
     private readonly games: AdminGamesWsHandler,
     private readonly bots: AdminBotsWsHandler,
+    private readonly roles: AdminRolesWsHandler,
   ) {}
 
   onModuleInit() {
@@ -59,22 +61,22 @@ export class AdminWsRegistrar implements OnModuleInit {
       this.games.gamesCategoryAssign(s, p),
     );
     this.registry.register('admin.roles.list', (s, p) =>
-      this.handler.rolesList(s, p),
+      this.roles.rolesList(s, p),
     );
     this.registry.register('admin.users.roles', (s, p) =>
       this.users.usersUpdateRoles(s, p),
     );
     this.registry.register('admin.roles.definitions', (s) =>
-      this.handler.rolesDefinitionsList(s),
+      this.roles.rolesDefinitionsList(s),
     );
     this.registry.register('admin.roles.create', (s, p) =>
-      this.handler.roleDefinitionCreate(s, p),
+      this.roles.roleDefinitionCreate(s, p),
     );
     this.registry.register('admin.roles.update', (s, p) =>
-      this.handler.roleDefinitionUpdate(s, p),
+      this.roles.roleDefinitionUpdate(s, p),
     );
     this.registry.register('admin.roles.delete', (s, p) =>
-      this.handler.roleDefinitionDelete(s, p),
+      this.roles.roleDefinitionDelete(s, p),
     );
     this.registry.register('admin.logs.download', (s, p) =>
       this.handler.logsDownload(s, p),
