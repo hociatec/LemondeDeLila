@@ -63,7 +63,7 @@
 
                 <TextBox x:Name="DetailsBox"
                          Grid.Row="2"
-                         Text="{Binding Details}"
+                         Text="{Binding Details, Mode=OneWay}"
                          Foreground="#BFD0E6"
                          FontSize="14"
                          TextWrapping="Wrap"
