@@ -8,9 +8,11 @@ import {
 } from './services/notification-transport';
 import { ClientUpdatesModule } from '../client-updates/client-updates.module';
 import { RedisClientFactory } from '../common/redis/redis-client.factory';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { SocialRelationship } from '../social/entities/social-relationship.entity';
 
 @Module({
-  imports: [ConfigModule, ClientUpdatesModule],
+  imports: [ConfigModule, ClientUpdatesModule, TypeOrmModule.forFeature([SocialRelationship])],
   providers: [
     {
       provide: NotificationTransport,

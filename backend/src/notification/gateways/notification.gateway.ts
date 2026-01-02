@@ -11,6 +11,9 @@ import { NotificationService } from '../services/notification.service';
 import { ClientUpdatesService } from '../../client-updates/services/client-updates.service';
 import { isVersionGreater, isVersionLower } from '../../common/utils/version.utils';
 import { WsTicketAuthService } from '../../common/ws/ws-ticket-auth.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { SocialRelationship } from '../../social/entities/social-relationship.entity';
 
 type ClientMeta = { userId: number; socket: WebSocket; origin: string | null };
 
@@ -23,12 +26,15 @@ export class NotificationGateway
 
   private readonly logger = new Logger(NotificationGateway.name);
   private readonly clients = new Map<WebSocket, ClientMeta>();
+  private readonly socketCountsByUserId = new Map<number, number>();
 
   constructor(
     private readonly auth: WsJwtAuthService,
     private readonly notifications: NotificationService,
     private readonly clientUpdates: ClientUpdatesService,
     private readonly wsTickets: WsTicketAuthService,
+    @InjectRepository(SocialRelationship)
+    private readonly relationships: Repository<SocialRelationship>,
   ) {}
 
   private extractOriginFromWsArgs(args: any[]): string | null {
@@ -97,12 +103,18 @@ export class NotificationGateway
     } catch {
       // ignore
     }
+
+    const prevCount = this.socketCountsByUserId.get(user.id) ?? 0;
     this.clients.set(client, {
       userId: user.id,
       socket: client,
       origin: this.extractOriginFromWsArgs(args),
     });
     this.notifications.register(user.id, client);
+    this.socketCountsByUserId.set(user.id, prevCount + 1);
+    if (prevCount === 0) {
+      void this.notifyFriendsPresence(user.id, user.username, true);
+    }
     client.on('error', () => client.close());
     client.on('message', (data) => this.onClientMessage(client, data));
     this.safeSend(client, {
@@ -116,6 +128,59 @@ export class NotificationGateway
     this.clients.delete(client);
     if (meta) {
       this.notifications.unregister(meta.userId, client);
+
+      const prevCount = this.socketCountsByUserId.get(meta.userId) ?? 0;
+      const nextCount = Math.max(0, prevCount - 1);
+      if (nextCount === 0) {
+        this.socketCountsByUserId.delete(meta.userId);
+        void this.notifyFriendsPresence(meta.userId, null, false);
+      } else {
+        this.socketCountsByUserId.set(meta.userId, nextCount);
+      }
+    }
+  }
+
+  private async notifyFriendsPresence(
+    userId: number,
+    username: string | null | undefined,
+    isOnline: boolean,
+  ): Promise<void> {
+    if (!userId) return;
+
+    try {
+      const relations = await this.relationships.find({
+        where: [
+          { requester: { id: userId }, status: 'accepted' },
+          { addressee: { id: userId }, status: 'accepted' },
+        ],
+      });
+
+      const friendIds = relations
+        .map((relation) =>
+          relation.requester?.id === userId
+            ? relation.addressee?.id
+            : relation.requester?.id,
+        )
+        .filter(
+          (id): id is number =>
+            typeof id === 'number' && id > 0 && id !== userId,
+        );
+
+      if (friendIds.length === 0) return;
+
+      const type = isOnline
+        ? 'social.friend.connected'
+        : 'social.friend.disconnected';
+      const payload = {
+        userId,
+        username: String(username || '').trim() || `user#${userId}`,
+      };
+
+      await Promise.all(
+        friendIds.map((fid) => this.notifications.notifyUser(fid, type, payload)),
+      );
+    } catch (err) {
+      this.logger.debug('Friend notify failed', err as Error);
     }
   }
 

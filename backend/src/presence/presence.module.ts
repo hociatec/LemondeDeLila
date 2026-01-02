@@ -8,7 +8,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { RoomParticipant } from '../room/entities/room-participant.entity';
 import { Room } from '../room/entities/room.entity';
 import { User } from '../user/entities/user.entity';
-import { SocialRelationship } from '../social/entities/social-relationship.entity';
 import {
   PresenceTransport,
   RedisPresenceTransport,
@@ -20,7 +19,7 @@ import { RedisClientFactory } from '../common/redis/redis-client.factory';
     ConfigModule,
     ChatModule,
     NotificationModule,
-    TypeOrmModule.forFeature([RoomParticipant, Room, User, SocialRelationship]),
+    TypeOrmModule.forFeature([RoomParticipant, Room, User]),
   ],
   providers: [
     {
