@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
@@ -45,10 +46,32 @@ public sealed class PersistentWsClient : IAsyncDisposable
     private Task? _receiveLoop;
     private bool _isDisposed;
     private bool _isPausedByNetwork;
+    private HashSet<string>? _supportedWsTypes;
 
     public event Action<string>? UnmatchedMessageReceived;
     public event Action? Connected;
     public event Action<string>? Disconnected;
+
+    public void SetSupportedWsTypes(IEnumerable<string>? wsTypes)
+    {
+        if (wsTypes == null)
+        {
+            lock (_sync)
+            {
+                _supportedWsTypes = null;
+            }
+            return;
+        }
+
+        var set = new HashSet<string>(
+            wsTypes.Where(t => !string.IsNullOrWhiteSpace(t)).Select(t => t.Trim()),
+            StringComparer.OrdinalIgnoreCase);
+
+        lock (_sync)
+        {
+            _supportedWsTypes = set.Count > 0 ? set : null;
+        }
+    }
 
     // Surcharge explicite pour DI (évite les erreurs d'appariement d'arguments nommés/optionnels)
     public PersistentWsClient(
@@ -116,6 +139,22 @@ public sealed class PersistentWsClient : IAsyncDisposable
         if (string.IsNullOrWhiteSpace(type))
         {
             throw new ArgumentException("type requis", nameof(type));
+        }
+
+        // If we know the server capabilities, avoid sending unsupported messages.
+        // Keep api.capabilities always allowed so we can bootstrap the capabilities cache.
+        if (!string.Equals(type, "api.capabilities", StringComparison.OrdinalIgnoreCase))
+        {
+            HashSet<string>? supported;
+            lock (_sync)
+            {
+                supported = _supportedWsTypes;
+            }
+
+            if (supported != null && !supported.Contains(type))
+            {
+                throw new NotSupportedException($"WS route non supportée par le serveur: {type}");
+            }
         }
 
         var socket = await EnsureConnectedAsync(token, wsTicket, cancellationToken).ConfigureAwait(false);
@@ -515,6 +554,7 @@ public sealed class PersistentWsClient : IAsyncDisposable
 
             _currentToken = null;
             _currentWsTicket = null;
+            _supportedWsTypes = null;
 
             // THREAD SAFETY: Créer un snapshot des requêtes pendantes dans le lock
             // avant de nettoyer le dictionnaire. Ceci évite les race conditions

@@ -7,9 +7,11 @@ export class RedisPubSubTransport<TEvent> {
   constructor(
     private readonly url: string,
     private readonly channel: string,
+    private readonly createClient: (url: string, name: string) => Redis = (url, _name) =>
+      new Redis(url, { lazyConnect: true }),
   ) {
-    this.publisher = new Redis(this.url, { lazyConnect: true });
-    this.subscriber = new Redis(this.url, { lazyConnect: true });
+    this.publisher = this.createClient(this.url, `pubsub:${this.channel}:pub`);
+    this.subscriber = this.createClient(this.url, `pubsub:${this.channel}:sub`);
   }
 
   async connect(): Promise<void> {

@@ -10,6 +10,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using client_win.Core.Network;
 using client_win.Modules.Config;
 using client_win.Modules.User.Services;
 using Microsoft.Extensions.Logging;
@@ -39,8 +40,9 @@ public sealed class ClientUpdatePublisher : IClientUpdatePublisher
         {
             // HttpBase ends with "/api/" so "../client/version" resolves to "/client/version".
             var endpoint = new Uri(_config.HttpBase, "../client/version");
-            using var http = new HttpClient();
-            var payload = await http.GetFromJsonAsync<ClientVersionDto>(endpoint, cancellationToken).ConfigureAwait(false);
+            var payload = await HttpClientProvider.Shared
+                .GetFromJsonAsync<ClientVersionDto>(endpoint, cancellationToken)
+                .ConfigureAwait(false);
             return string.IsNullOrWhiteSpace(payload?.Version) ? null : payload!.Version!.Trim();
         }
         catch (Exception ex)
@@ -455,18 +457,17 @@ public sealed class ClientUpdatePublisher : IClientUpdatePublisher
         var chunkEndpoint = new Uri(_config.HttpBase, "admin/client-updates/upload/chunk");
         var completeEndpoint = new Uri(_config.HttpBase, "admin/client-updates/upload/complete");
 
-        using var http = new HttpClient();
-        http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwt);
+        using var initReq = new HttpRequestMessage(HttpMethod.Post, initEndpoint);
+        initReq.Headers.Authorization = new AuthenticationHeaderValue("Bearer", jwt);
+        initReq.Content = JsonContent.Create(new
+        {
+            version = string.IsNullOrWhiteSpace(version) ? null : version.Trim(),
+            message = string.IsNullOrWhiteSpace(message) ? null : message.Trim(),
+            totalBytes = new FileInfo(zipPath).Length
+        });
 
-        var initResponse = await http.PostAsJsonAsync(
-                initEndpoint,
-                new
-                {
-                    version = string.IsNullOrWhiteSpace(version) ? null : version.Trim(),
-                    message = string.IsNullOrWhiteSpace(message) ? null : message.Trim(),
-                    totalBytes = new FileInfo(zipPath).Length
-                },
-                cancellationToken)
+        var initResponse = await HttpClientProvider.Shared
+            .SendAsync(initReq, cancellationToken)
             .ConfigureAwait(true);
 
         if (!initResponse.IsSuccessStatusCode)
@@ -512,7 +513,12 @@ public sealed class ClientUpdatePublisher : IClientUpdatePublisher
             chunkContent.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
             form.Add(chunkContent, "file", $"chunk-{index}.bin");
 
-            var chunkResp = await http.PostAsync(chunkEndpoint, form, cancellationToken).ConfigureAwait(true);
+            using var chunkReq = new HttpRequestMessage(HttpMethod.Post, chunkEndpoint);
+            chunkReq.Headers.Authorization = new AuthenticationHeaderValue("Bearer", jwt);
+            chunkReq.Content = form;
+            var chunkResp = await HttpClientProvider.Shared
+                .SendAsync(chunkReq, cancellationToken)
+                .ConfigureAwait(true);
             if (!chunkResp.IsSuccessStatusCode)
             {
                 var body = await chunkResp.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(true);
@@ -522,10 +528,11 @@ public sealed class ClientUpdatePublisher : IClientUpdatePublisher
             index++;
         }
 
-        var completeResp = await http.PostAsJsonAsync(
-                completeEndpoint,
-                new { uploadId },
-                cancellationToken)
+        using var completeReq = new HttpRequestMessage(HttpMethod.Post, completeEndpoint);
+        completeReq.Headers.Authorization = new AuthenticationHeaderValue("Bearer", jwt);
+        completeReq.Content = JsonContent.Create(new { uploadId });
+        var completeResp = await HttpClientProvider.Shared
+            .SendAsync(completeReq, cancellationToken)
             .ConfigureAwait(true);
 
         if (!completeResp.IsSuccessStatusCode)

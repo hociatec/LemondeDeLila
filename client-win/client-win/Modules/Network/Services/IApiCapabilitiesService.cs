@@ -15,5 +15,6 @@ public sealed class ApiCapabilities
     public bool SupportsAdminRoomsDestroy { get; init; }
     public bool SupportsAdminRoomsCleanup { get; init; }
     public int RoutesCount { get; init; }
+    public string[] WsTypes { get; init; } = [];
     public string GeneratedAt { get; init; } = string.Empty;
 }

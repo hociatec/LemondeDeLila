@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
@@ -53,6 +54,16 @@ public sealed class ApiCapabilitiesService : IApiCapabilitiesService, IDisposabl
             token,
             cancellationToken).ConfigureAwait(false);
 
+        var wsTypes = res.Success && res.Payload?.WsTypes != null
+            ? res.Payload.WsTypes
+                .Where(t => !string.IsNullOrWhiteSpace(t))
+                .Select(t => t.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray()
+            : Array.Empty<string>();
+
+        _transport.SetSupportedWsTypes(wsTypes);
+
         var capabilities = new ApiCapabilities
         {
             IsAdmin = res.Success && res.Payload?.IsAdmin == true,
@@ -60,6 +71,7 @@ public sealed class ApiCapabilitiesService : IApiCapabilitiesService, IDisposabl
             SupportsAdminRoomsDestroy = res.Success && res.Payload?.Features?.GetValueOrDefault("admin.rooms.destroy") == true,
             SupportsAdminRoomsCleanup = res.Success && res.Payload?.Features?.GetValueOrDefault("admin.rooms.cleanup") == true,
             RoutesCount = res.Payload?.RoutesCount ?? 0,
+            WsTypes = wsTypes,
             GeneratedAt = res.Payload?.GeneratedAt ?? string.Empty
         };
 
@@ -96,6 +108,9 @@ public sealed class ApiCapabilitiesService : IApiCapabilitiesService, IDisposabl
 
         [JsonPropertyName("routesCount")]
         public int RoutesCount { get; set; }
+
+        [JsonPropertyName("wsTypes")]
+        public string[]? WsTypes { get; set; }
 
         [JsonPropertyName("generatedAt")]
         public string? GeneratedAt { get; set; }

@@ -10,6 +10,7 @@ export class ApiCapabilitiesWsRegistrar implements OnModuleInit {
       // Keep this payload stable: clients can use it to avoid sending unsupported WS messages.
       const roles = Array.isArray(session.user?.roles) ? session.user!.roles : [];
       const isAdmin = roles.includes('ROLE_ADMIN') || roles.includes('admin');
+      const wsTypes = this.registry.listTypes();
       return {
         type: 'api.capabilities',
         payload: {
@@ -20,6 +21,7 @@ export class ApiCapabilitiesWsRegistrar implements OnModuleInit {
             'admin.rooms.cleanup': this.registry.has('admin.rooms.cleanup'),
           },
           routesCount: this.registry.listTypes().length,
+          wsTypes,
           generatedAt: new Date().toISOString(),
         },
       };

@@ -125,7 +125,9 @@ export class UserAuthService {
   private readonly _banReasonWhitespace = /\s+/g;
   private sanitizeBanReason(reason: string | null | undefined): string | null {
     if (!reason) return null;
-    const normalized = String(reason).replace(this._banReasonWhitespace, ' ').trim();
+    const normalized = String(reason)
+      .replace(this._banReasonWhitespace, ' ')
+      .trim();
     return normalized ? normalized : null;
   }
 

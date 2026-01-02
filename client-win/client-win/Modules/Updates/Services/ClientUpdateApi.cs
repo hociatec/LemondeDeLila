@@ -3,8 +3,8 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Threading.Tasks;
 using client_win.Core;
+using client_win.Core.Network;
 using client_win.Modules.Config;
 
 namespace client_win.Modules.Updates;
@@ -21,11 +21,6 @@ public sealed class ClientUpdateInfo
 
 public static class ClientUpdateApi
 {
-    private static readonly HttpClient Http = new()
-    {
-        Timeout = TimeSpan.FromSeconds(4)
-    };
-
     private static readonly SemaphoreSlim Gate = new(1, 1);
     private static ClientUpdateInfo? _cache;
     private static DateTime _cacheAtUtc = DateTime.MinValue;
@@ -54,7 +49,12 @@ public static class ClientUpdateApi
                 var endpoint = new Uri(
                     config.HttpBase,
                     $"../client/version?current={Uri.EscapeDataString(current ?? string.Empty)}");
-                using var response = await Http.GetAsync(endpoint, cancellationToken)
+
+                using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                cts.CancelAfter(TimeSpan.FromSeconds(4));
+
+                using var response = await HttpClientProvider.Shared
+                    .GetAsync(endpoint, cts.Token)
                     .ConfigureAwait(false);
                 if (!response.IsSuccessStatusCode)
                 {

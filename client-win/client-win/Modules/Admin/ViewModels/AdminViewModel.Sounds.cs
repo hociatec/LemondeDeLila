@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using Microsoft.Win32;
 using client_win.Core.Constants;
+using client_win.Core.Network;
 using client_win.Modules.Audio.Models;
 
 namespace client_win.Modules.Admin.ViewModels;
@@ -259,9 +260,6 @@ public sealed partial class AdminViewModel
             return;
         }
 
-        using var http = new HttpClient();
-        http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwt);
-
         using var form = new MultipartFormDataContent();
         var fileContent = new ByteArrayContent(bytes);
         fileContent.Headers.ContentType = new MediaTypeHeaderValue("audio/mpeg");
@@ -270,7 +268,10 @@ public sealed partial class AdminViewModel
         HttpResponseMessage resp;
         try
         {
-            resp = await http.PostAsync(endpoint, form).ConfigureAwait(true);
+            using var req = new HttpRequestMessage(HttpMethod.Post, endpoint);
+            req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", jwt);
+            req.Content = form;
+            resp = await HttpClientProvider.Shared.SendAsync(req).ConfigureAwait(true);
         }
         catch (Exception ex)
         {

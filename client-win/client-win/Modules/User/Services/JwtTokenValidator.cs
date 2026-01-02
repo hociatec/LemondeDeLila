@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 using System.Text.Json;
 using client_win.Modules.Config;
 using client_win.Core.Constants;
+using client_win.Core.Network;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
 
@@ -128,7 +129,6 @@ public sealed class JwtTokenValidator
 
         try
         {
-            using var http = new HttpClient();
             var jwksUris = new[]
             {
                 // Non-standard alias (some reverse proxies block /.well-known/*).
@@ -146,7 +146,11 @@ public sealed class JwtTokenValidator
             {
                 try
                 {
-                    var json = http.GetStringAsync(jwksUri).GetAwaiter().GetResult();
+                    using var cts = new System.Threading.CancellationTokenSource(TimeSpan.FromSeconds(6));
+                    using var req = new HttpRequestMessage(HttpMethod.Get, jwksUri);
+                    using var res = HttpClientProvider.Shared.SendAsync(req, cts.Token).GetAwaiter().GetResult();
+                    res.EnsureSuccessStatusCode();
+                    var json = res.Content.ReadAsStringAsync(cts.Token).GetAwaiter().GetResult();
                     var jwks = JsonSerializer.Deserialize<JwksDto>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                     key = jwks?.GetFirstRsaKey();
                     if (key != null)

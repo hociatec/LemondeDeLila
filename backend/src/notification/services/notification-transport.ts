@@ -1,4 +1,5 @@
 import { RedisPubSubTransport } from '../../common/pubsub/redis-pubsub.transport';
+import { RedisClientFactory } from '../../common/redis/redis-client.factory';
 
 export type NotificationEvent = {
   userId: number;
@@ -19,11 +20,12 @@ export abstract class NotificationTransport {
 export class RedisNotificationTransport extends NotificationTransport {
   private readonly transport: RedisPubSubTransport<NotificationEvent>;
 
-  constructor(url: string) {
+  constructor(url: string, redisFactory?: RedisClientFactory) {
     super();
     this.transport = new RedisPubSubTransport<NotificationEvent>(
       url,
       'notifications',
+      redisFactory ? (u, name) => redisFactory.create(u, name, { lazyConnect: true }) : undefined,
     );
   }
 

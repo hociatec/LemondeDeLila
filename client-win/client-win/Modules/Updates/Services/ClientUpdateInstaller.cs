@@ -8,6 +8,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using client_win.Core.Network;
 using client_win.Modules.Shell.Services;
 
 namespace client_win.Modules.Updates;
@@ -121,18 +122,22 @@ public static class ClientUpdateInstaller
         // l'incohérence côté serveur avant de lancer dfshim.
         try
         {
-            using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(8) };
+            var http = HttpClientProvider.Shared;
 
             string appXml;
             try
             {
-                appXml = await http.GetStringAsync(applicationUrl, cancellationToken).ConfigureAwait(false);
+                using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                cts.CancelAfter(TimeSpan.FromSeconds(8));
+                appXml = await http.GetStringAsync(applicationUrl, cts.Token).ConfigureAwait(false);
             }
             catch (HttpRequestException)
             {
                 // Publication ClickOnce peut faire un swap: petit retry pour éviter un faux 404 transitoire.
                 await Task.Delay(600, cancellationToken).ConfigureAwait(false);
-                appXml = await http.GetStringAsync(applicationUrl, cancellationToken).ConfigureAwait(false);
+                using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                cts.CancelAfter(TimeSpan.FromSeconds(8));
+                appXml = await http.GetStringAsync(applicationUrl, cts.Token).ConfigureAwait(false);
             }
             appXml = appXml.Replace("\uFEFF", string.Empty, StringComparison.Ordinal);
 
@@ -369,8 +374,10 @@ public static class ClientUpdateInstaller
         // 1) Index HTML (généré côté serveur) -> lien .application
         try
         {
-            using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(6) };
-            var html = await http.GetStringAsync(baseUrl, cancellationToken).ConfigureAwait(false);
+            var http = HttpClientProvider.Shared;
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            cts.CancelAfter(TimeSpan.FromSeconds(6));
+            var html = await http.GetStringAsync(baseUrl, cts.Token).ConfigureAwait(false);
 
             // href="LeMondeDeLila.application" (ou autre)
             var rx = new Regex("href\\s*=\\s*\"(?<href>[^\"]+\\.application)\"", RegexOptions.IgnoreCase);
@@ -392,8 +399,10 @@ public static class ClientUpdateInstaller
             try
             {
                 var url = new Uri(new Uri(baseUrl), name).ToString();
-                using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(4) };
-                using var res = await http.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
+                var http = HttpClientProvider.Shared;
+                using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                cts.CancelAfter(TimeSpan.FromSeconds(4));
+                using var res = await http.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cts.Token)
                     .ConfigureAwait(false);
                 if (res.IsSuccessStatusCode)
                 {

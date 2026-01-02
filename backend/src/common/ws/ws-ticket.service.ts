@@ -70,8 +70,7 @@ export class WsTicketService {
   }
 
   private getSecret(): string {
-    const secret =
-      this.config.get<string>('WS_TICKET_SECRET') || process.env.WS_TICKET_SECRET;
+    const secret = this.config.get<string>('WS_TICKET_SECRET');
     if (!secret) {
       throw new UnauthorizedException('Configuration WS manquante');
     }
@@ -79,12 +78,7 @@ export class WsTicketService {
   }
 
   private getTtlSeconds(): number {
-    const raw =
-      this.config.get<number>('WS_TICKET_TTL_SECONDS') ??
-      (process.env.WS_TICKET_TTL_SECONDS
-        ? parseInt(process.env.WS_TICKET_TTL_SECONDS, 10)
-        : null);
-
+    const raw = this.config.get<number>('WS_TICKET_TTL_SECONDS');
     const ttl = typeof raw === 'number' && Number.isFinite(raw) ? raw : 60;
     // Keep it short-lived.
     return Math.max(10, Math.min(300, ttl));

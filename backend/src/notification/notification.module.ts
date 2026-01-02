@@ -7,14 +7,15 @@ import {
   RedisNotificationTransport,
 } from './services/notification-transport';
 import { ClientUpdatesModule } from '../client-updates/client-updates.module';
+import { RedisClientFactory } from '../common/redis/redis-client.factory';
 
 @Module({
   imports: [ConfigModule, ClientUpdatesModule],
   providers: [
     {
       provide: NotificationTransport,
-      inject: [ConfigService],
-      useFactory: async (config: ConfigService) => {
+      inject: [ConfigService, RedisClientFactory],
+      useFactory: async (config: ConfigService, redisFactory: RedisClientFactory) => {
         const redisUrl =
           config.get<string>('NOTIFICATION_REDIS_URL') ||
           config.get<string>('SESSION_STORE_REDIS_URL');
@@ -23,7 +24,7 @@ import { ClientUpdatesModule } from '../client-updates/client-updates.module';
             'NOTIFICATION_REDIS_URL ou SESSION_STORE_REDIS_URL doit être défini pour les notifications.',
           );
         }
-        const transport = new RedisNotificationTransport(redisUrl);
+        const transport = new RedisNotificationTransport(redisUrl, redisFactory);
         await transport.connect();
         return transport;
       },

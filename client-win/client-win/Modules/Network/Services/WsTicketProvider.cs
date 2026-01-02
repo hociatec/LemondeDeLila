@@ -5,24 +5,22 @@ using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using client_win.Core.Network;
 using client_win.Modules.Config;
 using client_win.Modules.User.Services;
 
 namespace client_win.Modules.Network.Services;
 
-public sealed class WsTicketProvider : IWsTicketProvider, IDisposable
+public sealed class WsTicketProvider : IWsTicketProvider
 {
     private readonly ClientConfiguration _config;
     private readonly ISessionService _session;
-    private readonly HttpClient _http;
     private readonly ConcurrentDictionary<string, CachedTicket> _cache = new(StringComparer.OrdinalIgnoreCase);
 
     public WsTicketProvider(ClientConfiguration config, ISessionService session)
     {
         _config = config ?? throw new ArgumentNullException(nameof(config));
         _session = session ?? throw new ArgumentNullException(nameof(session));
-        _http = new HttpClient();
-        _http.Timeout = TimeSpan.FromSeconds(6);
     }
 
     public async Task<string?> GetTicketAsync(string scope, CancellationToken cancellationToken = default)
@@ -50,9 +48,13 @@ public sealed class WsTicketProvider : IWsTicketProvider, IDisposable
 
         using var req = new HttpRequestMessage(HttpMethod.Get, ticketUri);
         req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        req.Headers.Add("x-lila-client-version", client_win.Core.AppInfo.GetShortVersion());
 
-        using var res = await _http.SendAsync(req, cancellationToken).ConfigureAwait(false);
+        using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeoutCts.CancelAfter(TimeSpan.FromSeconds(6));
+
+        using var res = await HttpClientProvider.Shared
+            .SendAsync(req, timeoutCts.Token)
+            .ConfigureAwait(false);
         var json = await res.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         res.EnsureSuccessStatusCode();
 
@@ -77,11 +79,6 @@ public sealed class WsTicketProvider : IWsTicketProvider, IDisposable
         var validUntil = DateTimeOffset.UtcNow.AddSeconds(Math.Max(5, expiresInSeconds - 5));
         _cache[scope] = new CachedTicket(ticket, validUntil);
         return ticket;
-    }
-
-    public void Dispose()
-    {
-        _http.Dispose();
     }
 
     private readonly record struct CachedTicket(string Ticket, DateTimeOffset ValidUntil)

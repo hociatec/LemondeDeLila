@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using client_win.Core.Constants;
+using client_win.Core.Network;
 using client_win.Modules.Audio.Models;
 using client_win.Modules.Config;
 using Microsoft.Extensions.Logging;
@@ -44,9 +45,13 @@ public sealed class RemoteSoundCache : IRemoteSoundCache
 
         try
         {
-            using var http = new HttpClient();
             var endpoint = new Uri(_config.HttpBase, "sounds/manifest");
-            var json = await http.GetStringAsync(endpoint, cancellationToken).ConfigureAwait(false);
+            using var req = new HttpRequestMessage(HttpMethod.Get, endpoint);
+            using var res = await HttpClientProvider.Shared
+                .SendAsync(req, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
+                .ConfigureAwait(false);
+            res.EnsureSuccessStatusCode();
+            var json = await res.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
             var manifest = JsonSerializer.Deserialize<RemoteSoundManifestDto>(json, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
@@ -108,7 +113,6 @@ public sealed class RemoteSoundCache : IRemoteSoundCache
         var tmpPath = destPath + ".tmp";
         try
         {
-            using var http = new HttpClient();
             Uri uri;
             if (Uri.TryCreate(url, UriKind.Absolute, out var abs) && abs != null)
             {
@@ -119,7 +123,12 @@ public sealed class RemoteSoundCache : IRemoteSoundCache
                 uri = new Uri(_config.HttpBase, ".." + url.Trim());
             }
 
-            await using var response = await http.GetStreamAsync(uri, cancellationToken).ConfigureAwait(false);
+            using var req = new HttpRequestMessage(HttpMethod.Get, uri);
+            using var res = await HttpClientProvider.Shared
+                .SendAsync(req, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
+                .ConfigureAwait(false);
+            res.EnsureSuccessStatusCode();
+            await using var response = await res.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             await using (var fs = File.Create(tmpPath))
             {
                 await response.CopyToAsync(fs, cancellationToken).ConfigureAwait(false);

@@ -1,8 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
+﻿import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { RoomPayload } from '../../../room/dto/room-response.dto';
 import { GameStateEntity } from '../../core/entities/game-state.entity';
 import type { Redis } from 'ioredis';
+import { RedisClientFactory } from '../../../common/redis/redis-client.factory';
 
 @Injectable()
 export class GameEngineStateStore {
@@ -11,7 +12,10 @@ export class GameEngineStateStore {
   private readonly logger = new Logger(GameEngineStateStore.name);
   private readonly redisPrefix = 'game:state:';
 
-  constructor(private readonly config: ConfigService) {
+  constructor(
+    private readonly config: ConfigService,
+    private readonly redisFactory: RedisClientFactory,
+  ) {
     const redisUrl =
       this.config.get<string>('GAME_ENGINE_STATE_REDIS_URL') ??
       this.config.get<string>('SESSION_STORE_REDIS_URL') ??
@@ -20,7 +24,7 @@ export class GameEngineStateStore {
       this.initializeRedis(redisUrl);
     } else {
       this.logger.warn(
-        'GAME_ENGINE_STATE_REDIS_URL non défini : fallback en mémoire (non persistant).',
+        'GAME_ENGINE_STATE_REDIS_URL non dÃ©fini : fallback en mÃ©moire (non persistant).',
       );
     }
   }
@@ -48,7 +52,7 @@ export class GameEngineStateStore {
       this.states.set(key, parsed);
       return parsed;
     } catch (error) {
-      this.logger.error('Impossible de restaurer un état depuis Redis', error, {
+      this.logger.error('Impossible de restaurer un Ã©tat depuis Redis', error, {
         key,
       });
       return undefined;
@@ -72,7 +76,7 @@ export class GameEngineStateStore {
       try {
         await this.redis.del(this.redisKey(key));
       } catch (error) {
-        this.logger.error('Impossible de supprimer un état Redis', error, {
+        this.logger.error('Impossible de supprimer un Ã©tat Redis', error, {
           key,
         });
       }
@@ -102,21 +106,12 @@ export class GameEngineStateStore {
     }
     return { ...state, status: payloadStatus };
   }
-
   private initializeRedis(url: string): void {
     try {
-      const RedisCtor = require('ioredis');
-      const redisInstance = new RedisCtor(url);
-      redisInstance.on('error', (error: Error) => {
-        this.logger.error('Erreur Redis (state store)', error);
-      });
-      this.redis = redisInstance;
-      this.logger.log(`GameEngineStateStore connecté à Redis (${url}).`);
+      this.redis = this.redisFactory.create(url, 'game-engine-state-store');
+      this.logger.log("GameEngineStateStore connecté à Redis.");
     } catch (error) {
-      this.logger.error(
-        `Impossible d'initialiser Redis pour GameEngineStateStore (${url})`,
-        error as Error,
-      );
+      this.logger.error("Impossible d'initialiser Redis pour GameEngineStateStore", error instanceof Error ? error.stack : String(error));
       this.redis = null;
     }
   }
@@ -138,7 +133,7 @@ export class GameEngineStateStore {
         60 * 60 * 24,
       );
     } catch (error) {
-      this.logger.error('Impossible de persister un état Redis', error, {
+      this.logger.error('Impossible de persister un Ã©tat Redis', error, {
         key,
       });
     }

@@ -6,10 +6,14 @@ import {
   HealthCheckError,
 } from '@nestjs/terminus';
 import Redis from 'ioredis';
+import { RedisClientFactory } from '../common/redis/redis-client.factory';
 
 @Injectable()
 export class RedisHealthIndicator extends HealthIndicator {
-  constructor(private readonly config: ConfigService) {
+  constructor(
+    private readonly config: ConfigService,
+    private readonly redisFactory: RedisClientFactory,
+  ) {
     super();
   }
 
@@ -25,7 +29,8 @@ export class RedisHealthIndicator extends HealthIndicator {
 
     let client: Redis | null = null;
     try {
-      client = new Redis(url);
+      client = this.redisFactory.create(url, 'health:redis', { lazyConnect: true });
+      await client.connect();
       await client.ping();
       await client.quit();
       return this.getStatus(key, true);

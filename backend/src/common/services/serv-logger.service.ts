@@ -107,7 +107,9 @@ export class ServLoggerService implements LoggerService {
     logFilePath: string | null;
   } {
     // Le backend tourne généralement depuis `backend/`, donc `../log/serv.log` pointe sur la racine du repo.
-    const enabledRaw = (process.env.LOG_FILES_ENABLED || '').toLowerCase().trim();
+    const enabledRaw = (process.env.LOG_FILES_ENABLED || '')
+      .toLowerCase()
+      .trim();
     const enabled =
       enabledRaw === ''
         ? true

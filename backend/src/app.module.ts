@@ -27,10 +27,12 @@ import { SoundsModule } from './sounds/sounds.module';
 import { WsTicketModule } from './common/ws/ws-ticket.module';
 import { JwksModule } from './common/auth/jwks.module';
 import { BugReportsModule } from './bug-reports/bug-reports.module';
+import { RedisModule } from './common/redis/redis.module';
 
 @Module({
   imports: [
     GameLoggerModule,
+    RedisModule,
     ConfigModule.forRoot({
       isGlobal: true,
       // In production we rely on systemd-provided environment variables; avoid loading a local .env file.
@@ -80,7 +82,9 @@ import { BugReportsModule } from './bug-reports/bug-reports.module';
         WS_SHARED_SECRET: Joi.string().optional(),
         REALTIME_WS_SECRET: Joi.string().optional(),
       }).custom((env, helpers) => {
-        const nodeEnv = ((env.NODE_ENV as string | undefined) || 'development').toLowerCase();
+        const nodeEnv = (
+          (env.NODE_ENV as string | undefined) || 'development'
+        ).toLowerCase();
         if (nodeEnv === 'production') {
           if (!env.SESSION_STORE_REDIS_URL) {
             return helpers.error('any.custom', {
@@ -94,13 +98,16 @@ import { BugReportsModule } from './bug-reports/bug-reports.module';
           }
         }
 
-        const alg = ((env.JWT_ALGORITHM as string | undefined) || '').toUpperCase();
+        const alg = (
+          (env.JWT_ALGORITHM as string | undefined) || ''
+        ).toUpperCase();
         const hasRsa =
           !!env.JWT_PRIVATE_KEY_PEM ||
           !!env.JWT_PRIVATE_KEY_PATH ||
           !!env.JWT_PUBLIC_KEY_PEM ||
           !!env.JWT_PUBLIC_KEY_PATH;
-        const effectiveAlg = alg === 'HS256' || alg === 'RS256' ? alg : hasRsa ? 'RS256' : 'HS256';
+        const effectiveAlg =
+          alg === 'HS256' || alg === 'RS256' ? alg : hasRsa ? 'RS256' : 'HS256';
 
         if (effectiveAlg === 'HS256') {
           if (!env.JWT_SECRET) {
@@ -113,12 +120,14 @@ import { BugReportsModule } from './bug-reports/bug-reports.module';
 
         if (!env.JWT_PRIVATE_KEY_PEM && !env.JWT_PRIVATE_KEY_PATH) {
           return helpers.error('any.custom', {
-            message: 'JWT_PRIVATE_KEY_PEM ou JWT_PRIVATE_KEY_PATH est requis en mode RS256',
+            message:
+              'JWT_PRIVATE_KEY_PEM ou JWT_PRIVATE_KEY_PATH est requis en mode RS256',
           });
         }
         if (!env.JWT_PUBLIC_KEY_PEM && !env.JWT_PUBLIC_KEY_PATH) {
           return helpers.error('any.custom', {
-            message: 'JWT_PUBLIC_KEY_PEM ou JWT_PUBLIC_KEY_PATH est requis en mode RS256',
+            message:
+              'JWT_PUBLIC_KEY_PEM ou JWT_PUBLIC_KEY_PATH est requis en mode RS256',
           });
         }
         return env;

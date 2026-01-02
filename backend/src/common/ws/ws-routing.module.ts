@@ -3,9 +3,11 @@ import { WsRouteRegistry } from './ws-route-registry.service';
 import { WsJwtAuthService } from './ws-jwt-auth.service';
 import { WsSignatureService } from './ws-signature.service';
 import { WsApiHubService } from './ws-api-hub.service';
+import { WsCapabilitiesController } from './ws-capabilities.controller';
 
 @Global()
 @Module({
+  controllers: [WsCapabilitiesController],
   providers: [
     WsRouteRegistry,
     WsJwtAuthService,

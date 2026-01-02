@@ -14,7 +14,6 @@ const bootstrapLogger = new Logger('bootstrap');
 
 function buildUpdatesLandingPageHtml(updatesDir: string): string {
   try {
-
     const entries = fs.readdirSync(updatesDir, { withFileTypes: true });
     const application = entries
       .filter((e) => e.isFile())
@@ -137,7 +136,10 @@ async function bootstrap() {
     },
     (req: any, _res: any, next: any) => {
       try {
-        if (typeof req?.url === 'string' && (req.url.includes('\\') || /%5c/i.test(req.url))) {
+        if (
+          typeof req?.url === 'string' &&
+          (req.url.includes('\\') || /%5c/i.test(req.url))
+        ) {
           req.url = req.url.replace(/%5c/gi, '/').replace(/\\/g, '/');
         }
       } catch {
@@ -166,9 +168,16 @@ async function bootstrap() {
         .map((origin) => origin.trim())
         .filter(Boolean)
     : null;
-  const nodeEnv = (config.get<string>('NODE_ENV') || 'development').toLowerCase();
+  const nodeEnv = (
+    config.get<string>('NODE_ENV') || 'development'
+  ).toLowerCase();
   app.enableCors({
-    origin: origins && origins.length > 0 ? origins : nodeEnv === 'production' ? false : true,
+    origin:
+      origins && origins.length > 0
+        ? origins
+        : nodeEnv === 'production'
+          ? false
+          : true,
     credentials: origins && origins.length > 0,
   });
   app.useWebSocketAdapter(new LilaWsAdapter(app));

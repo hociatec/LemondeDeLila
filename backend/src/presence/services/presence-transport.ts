@@ -1,5 +1,6 @@
 import { RedisPubSubTransport } from '../../common/pubsub/redis-pubsub.transport';
 import { PresenceBroadcastPlayer } from './presence.service';
+import { RedisClientFactory } from '../../common/redis/redis-client.factory';
 
 export type PresenceEvent = {
   players: Array<Omit<PresenceBroadcastPlayer, 'contextLocked'>>;
@@ -16,11 +17,12 @@ export abstract class PresenceTransport {
 export class RedisPresenceTransport extends PresenceTransport {
   private readonly transport: RedisPubSubTransport<PresenceEvent>;
 
-  constructor(url: string) {
+  constructor(url: string, redisFactory?: RedisClientFactory) {
     super();
     this.transport = new RedisPubSubTransport<PresenceEvent>(
       url,
       'presence-updates',
+      redisFactory ? (u, name) => redisFactory.create(u, name, { lazyConnect: true }) : undefined,
     );
   }
 

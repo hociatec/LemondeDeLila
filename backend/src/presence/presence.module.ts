@@ -11,6 +11,7 @@ import {
   PresenceTransport,
   RedisPresenceTransport,
 } from './services/presence-transport';
+import { RedisClientFactory } from '../common/redis/redis-client.factory';
 
 @Module({
   imports: [
@@ -21,8 +22,8 @@ import {
   providers: [
     {
       provide: PresenceTransport,
-      inject: [ConfigService],
-      useFactory: async (config: ConfigService) => {
+      inject: [ConfigService, RedisClientFactory],
+      useFactory: async (config: ConfigService, redisFactory: RedisClientFactory) => {
         const redisUrl =
           config.get<string>('PRESENCE_REDIS_URL') ||
           config.get<string>('SESSION_STORE_REDIS_URL');
@@ -31,7 +32,7 @@ import {
             'PRESENCE_REDIS_URL ou SESSION_STORE_REDIS_URL doit être défini pour la présence.',
           );
         }
-        const transport = new RedisPresenceTransport(redisUrl);
+        const transport = new RedisPresenceTransport(redisUrl, redisFactory);
         await transport.connect();
         return transport;
       },

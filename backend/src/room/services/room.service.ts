@@ -20,6 +20,7 @@ import { CatalogService } from '../../catalog/services/catalog.service';
 import { GameStatsService } from '../../stats/services/game-stats.service';
 import type { Redis } from 'ioredis';
 import { RoomRealtimeTrackerService } from './room-realtime-tracker.service';
+import { RedisClientFactory } from '../../common/redis/redis-client.factory';
 
 @Injectable()
 export class RoomService {
@@ -70,7 +71,9 @@ export class RoomService {
    * Admin: force delete a room, even if there are active players.
    * The RoomGateway (if present) will disconnect clients for that room.
    */
-  async adminDestroyRoom(roomId: number): Promise<{ ok: true; roomId: number }> {
+  async adminDestroyRoom(
+    roomId: number,
+  ): Promise<{ ok: true; roomId: number }> {
     const id =
       typeof roomId === 'number' && Number.isFinite(roomId) && roomId > 0
         ? Math.floor(roomId)
@@ -79,7 +82,10 @@ export class RoomService {
       throw new BadRequestException('roomId invalide.');
     }
 
-    const existing = await this.rooms.findOne({ where: { id }, select: ['id'] });
+    const existing = await this.rooms.findOne({
+      where: { id },
+      select: ['id'],
+    });
     if (!existing) {
       throw new NotFoundException('Room introuvable.');
     }
@@ -285,6 +291,7 @@ export class RoomService {
     private readonly stats: GameStatsService,
     private readonly realtimeTracker: RoomRealtimeTrackerService,
     private readonly config: ConfigService,
+    private readonly redisFactory: RedisClientFactory,
   ) {}
 
   async primeRoomPayloadCache(
@@ -735,12 +742,7 @@ export class RoomService {
       null;
     if (!redisUrl) return;
     try {
-      const RedisCtor = require('ioredis');
-      const redisInstance = new RedisCtor(redisUrl);
-      redisInstance.on('error', (error: Error) => {
-        this.logger.error('Erreur Redis (room payload cache)', error);
-      });
-      this.redis = redisInstance;
+      this.redis = this.redisFactory.create(redisUrl, 'room-payload-cache');
     } catch {
       this.redis = null;
     }

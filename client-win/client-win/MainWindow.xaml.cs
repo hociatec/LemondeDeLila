@@ -203,6 +203,18 @@ namespace client_win
             {
                 // ignore (best-effort)
             }
+
+            // Capabilities (best-effort): allow the client to avoid unsupported WS routes.
+            try
+            {
+                _ = _host.Services
+                    .GetRequiredService<Modules.Network.Services.IApiCapabilitiesService>()
+                    .GetAsync();
+            }
+            catch
+            {
+                // ignore
+            }
             var menuVm = _host.CreateMainMenuViewModel(user, OnLogoutRequested);
             var menuView = new MainMenuView { DataContext = menuVm };
             _homeAccessor.HomeView = menuView;

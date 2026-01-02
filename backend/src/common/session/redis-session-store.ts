@@ -2,16 +2,14 @@ import type {
   SessionState,
   SessionStateStore,
 } from './session-store.interface';
+import Redis from 'ioredis';
 
 export class RedisSessionStore implements SessionStateStore {
-  private readonly redis: any;
+  private readonly redis: Redis;
   private readonly prefix = 'ws:session:';
 
   constructor(redisUrl: string) {
-    // Optional dependency: only required when Redis is enabled.
-
-    const RedisCtor = require('ioredis');
-    this.redis = new RedisCtor(redisUrl);
+    this.redis = new Redis(redisUrl);
   }
 
   async save(connectionId: string, state: SessionState): Promise<void> {
