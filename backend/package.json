@@ -8,6 +8,7 @@
   "scripts": {
     "build": "nest build",
     "create:game": "node commands/create-game.cjs",
+    "service:restart": "node commands/restart-service.cjs",
     "verify:dist": "node commands/verify-dist-games.cjs",
     "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js",
     "migration:generate": "npm run typeorm -- migration:generate -d src/data-source.ts src/migrations/auto",

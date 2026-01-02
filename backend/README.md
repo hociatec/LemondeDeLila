@@ -86,7 +86,7 @@ NODE_ENV=production node dist/main
 1. `git pull --ff-only`
 2. `npm ci && npm run build`
 3. `npm run migration:run`
-4. `sudo systemctl restart lila-backend.service` (adapter le nom du service)
+4. `sudo npm run service:restart -- lila-backend` (ou `sudo systemctl restart lila-backend.service`)
 
 Personnalisez ce script selon votre stack (pm2, Docker, etc.) en conservant les étapes build+migrations.
 
