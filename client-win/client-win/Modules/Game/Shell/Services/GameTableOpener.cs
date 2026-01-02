@@ -315,6 +315,7 @@ public sealed class GameTableOpener : IGameTableOpener
         return new GamePlayViewModel(
             connect: ct => _games.ConnectAsync(room.RoomId, game.Id, ct),
             dialogs: _dialogs,
+            sounds: _sounds,
             announcements: _gameAnnouncements);
     }
 

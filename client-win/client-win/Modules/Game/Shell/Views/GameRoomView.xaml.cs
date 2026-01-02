@@ -1,4 +1,6 @@
 using System;
+using System.Linq;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
@@ -112,6 +114,23 @@ public partial class GameRoomView : UserControl
 
     private void OnPreviewKeyDown(object sender, KeyEventArgs e)
     {
+        if (e.Key == Key.Escape && DataContext is ViewModels.GameRoomViewModel vm && vm.GameZone.IsStarted)
+        {
+            e.Handled = true;
+
+            var shortcuts = vm.GameZone.Shortcuts
+                .Where(s => s?.Command != null)
+                .ToList();
+
+            GameActionMenuWindow.ShowAndExecute(
+                owner: Window.GetWindow(this) ?? Application.Current?.MainWindow,
+                title: $"Menu — {vm.GameZone.Title}",
+                shortcuts: shortcuts);
+
+            Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusGameZone));
+            return;
+        }
+
         if (e.Key != Key.Tab)
         {
             return;

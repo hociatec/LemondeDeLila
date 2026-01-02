@@ -175,6 +175,8 @@ public sealed class OptionsService : IOptionsService
         SoundFriendDisconnectedPath = source.SoundFriendDisconnectedPath,
         SoundFriendInvitationSentPath = source.SoundFriendInvitationSentPath,
         SoundFriendInvitationReceivedPath = source.SoundFriendInvitationReceivedPath,
+        SoundGameVictoryPath = source.SoundGameVictoryPath,
+        SoundGameDefeatPath = source.SoundGameDefeatPath,
         SoundChatMessageSentPath = source.SoundChatMessageSentPath,
         SoundChatMessageReceivedPath = source.SoundChatMessageReceivedPath,
         SoundPrivateMessageSentPath = source.SoundPrivateMessageSentPath,

@@ -12,6 +12,8 @@ export const SOUND_KEYS = [
   'FriendDisconnected',
   'FriendInvitationSent',
   'FriendInvitationReceived',
+  'GameVictory',
+  'GameDefeat',
   'InvitationSent',
   'InvitationReceived',
   'RoomOpened',

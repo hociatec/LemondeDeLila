@@ -15,6 +15,8 @@ public enum SoundId
     FriendDisconnected,
     FriendInvitationSent,
     FriendInvitationReceived,
+    GameVictory,
+    GameDefeat,
     InvitationSent,
     InvitationReceived,
     RoomOpened,

@@ -448,6 +448,18 @@ public sealed partial class AdminViewModel
 
             if (_page == AdminPage.SoundsTable && tag is string tableSound)
             {
+                if (tableSound == "sounds.game.victory")
+                {
+                    PushReturnFocus();
+                    BuildSoundDetails(Modules.Audio.Models.SoundId.GameVictory);
+                    return;
+                }
+                if (tableSound == "sounds.game.defeat")
+                {
+                    PushReturnFocus();
+                    BuildSoundDetails(Modules.Audio.Models.SoundId.GameDefeat);
+                    return;
+                }
                 if (tableSound == "sounds.table.enter")
                 {
                     PushReturnFocus();

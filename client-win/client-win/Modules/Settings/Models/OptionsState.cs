@@ -23,6 +23,8 @@ public sealed class OptionsState
     public string? SoundFriendDisconnectedPath { get; set; }
     public string? SoundFriendInvitationSentPath { get; set; }
     public string? SoundFriendInvitationReceivedPath { get; set; }
+    public string? SoundGameVictoryPath { get; set; }
+    public string? SoundGameDefeatPath { get; set; }
     public string? SoundChatMessageSentPath { get; set; }
     public string? SoundChatMessageReceivedPath { get; set; }
     public string? SoundPrivateMessageSentPath { get; set; }

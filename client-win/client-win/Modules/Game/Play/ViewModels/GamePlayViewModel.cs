@@ -10,6 +10,8 @@ using System.Windows.Input;
 using System.Windows.Threading;
 using client_win.Core;
 using client_win.Core.Input;
+using client_win.Modules.Audio.Models;
+using client_win.Modules.Audio.Services;
 using client_win.Modules.Game.Play.Dtos;
 using client_win.Modules.Game.Play.Services;
 using client_win.Modules.Shell.Services;
@@ -21,6 +23,7 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
 {
     private readonly Dispatcher _dispatcher;
     private readonly IDialogService _dialogs;
+    private readonly ISoundService _sounds;
     private readonly Func<CancellationToken, Task<GameSession>> _connect;
     private readonly IGameAnnouncements? _announcements;
     private readonly GamePlayActionDispatcher _actions = new();
@@ -67,10 +70,12 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
     public GamePlayViewModel(
         Func<CancellationToken, Task<GameSession>> connect,
         IDialogService dialogs,
+        ISoundService sounds,
         IGameAnnouncements? announcements = null)
     {
         _connect = connect ?? throw new ArgumentNullException(nameof(connect));
         _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
+        _sounds = sounds ?? throw new ArgumentNullException(nameof(sounds));
         _announcements = announcements;
         _dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
         _choices = new GamePlayChoicesViewModel(_actions);
@@ -677,6 +682,12 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
                 _choices.UpdateFromState(state, _viewerPlayerId, CanStartAskCardSelection);
             }
 
+            if (!string.Equals(previousStatus, "finished", StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(nextStatus, "finished", StringComparison.OrdinalIgnoreCase))
+            {
+                TryPlayEndgameSound(state, _viewerPlayerId);
+            }
+
             IsBotThinking = presented.isBotThinking;
             StateSummary = presented.stateSummary;
             PendingText = presented.pendingText;
@@ -695,6 +706,52 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
                 TryAnnounceTurnFromState(state);
             }
         }, DispatcherPriority.Background);
+    }
+
+    private void TryPlayEndgameSound(GameStateDto state, int? viewerPlayerId)
+    {
+        if (state == null || viewerPlayerId == null || viewerPlayerId.Value <= 0)
+        {
+            return;
+        }
+
+        var winnerId = TryExtractWinnerPlayerId(state);
+        if (winnerId == null)
+        {
+            return;
+        }
+
+        if (winnerId.Value == viewerPlayerId.Value)
+        {
+            _sounds.Play(SoundId.GameVictory);
+            return;
+        }
+
+        _sounds.Play(SoundId.GameDefeat);
+    }
+
+    private static int? TryExtractWinnerPlayerId(GameStateDto state)
+    {
+        // Best-effort: games may store winner info in metadata under various keys.
+        static int? ReadWinnerId(JsonElement element)
+        {
+            if (element.ValueKind != JsonValueKind.Object)
+            {
+                return null;
+            }
+
+            foreach (var key in new[] { "winnerPlayerId", "winnerId", "winner_id" })
+            {
+                if (element.TryGetProperty(key, out var prop) && prop.ValueKind == JsonValueKind.Number)
+                {
+                    try { return prop.GetInt32(); } catch { /* ignore */ }
+                }
+            }
+
+            return null;
+        }
+
+        return ReadWinnerId(state.Metadata) ?? ReadWinnerId(state.Extras);
     }
 
     private void TryAnnounceTurnFromState(GameStateDto state)

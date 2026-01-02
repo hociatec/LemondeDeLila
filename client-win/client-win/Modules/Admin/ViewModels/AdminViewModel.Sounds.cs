@@ -97,11 +97,13 @@ public sealed partial class AdminViewModel
     {
         _page = AdminPage.SoundsTable;
         Title = "Administration - Sons - Table";
-        Details = "Choisir un son lié aux tables (entrée/sortie/invitations).";
+        Details = "Choisir un son lié aux tables et à la partie (entrée/sortie, invit, victoire/défaite).";
         IsTextInputVisible = false;
         IsSecondaryInputVisible = false;
         IsAdditionalPermissionsVisible = false;
         Items.Clear();
+        Items.Add(new AdminMenuItem("Victoire (fin de partie)", tag: "sounds.game.victory"));
+        Items.Add(new AdminMenuItem("Défaite (fin de partie)", tag: "sounds.game.defeat"));
         Items.Add(new AdminMenuItem("Entrer dans une table", tag: "sounds.table.enter"));
         Items.Add(new AdminMenuItem("Rejoindre une table", tag: "sounds.table.join"));
         Items.Add(new AdminMenuItem("Quitter une table", tag: "sounds.table.exit"));
@@ -155,7 +157,7 @@ public sealed partial class AdminViewModel
         {
             SoundId.ClientOpened or SoundId.ClientConnected or SoundId.ClientDisconnected => AdminPage.SoundsConnection,
             SoundId.MainMenuMusic or SoundId.TavernAmbience => AdminPage.SoundsAmbience,
-            SoundId.RoomOpened or SoundId.RoomJoined or SoundId.RoomExit => AdminPage.SoundsTable,
+            SoundId.GameVictory or SoundId.GameDefeat or SoundId.RoomOpened or SoundId.RoomJoined or SoundId.RoomExit => AdminPage.SoundsTable,
             SoundId.InvitationSent or SoundId.InvitationReceived => AdminPage.SoundsTable,
             SoundId.ChatMessageSent or SoundId.ChatMessageReceived => AdminPage.SoundsChat,
             SoundId.PrivateMessageSent or SoundId.PrivateMessageReceived => AdminPage.SoundsPrivateMessages,
@@ -170,6 +172,8 @@ public sealed partial class AdminViewModel
             SoundId.ClientDisconnected => ("Connexion", "Déconnexion du serveur", _options.Current.SoundClientDisconnectedPath),
             SoundId.MainMenuMusic => ("Ambiance", "Musique du menu principal", null),
             SoundId.TavernAmbience => ("Ambiance", "Ambiance de la taverne", null),
+            SoundId.GameVictory => ("Table", "Victoire (fin de partie)", _options.Current.SoundGameVictoryPath),
+            SoundId.GameDefeat => ("Table", "Défaite (fin de partie)", _options.Current.SoundGameDefeatPath),
             SoundId.RoomOpened => ("Table", "Entrer dans une table", _options.Current.SoundRoomOpenedPath),
             SoundId.RoomJoined => ("Table", "Rejoindre une table", _options.Current.SoundRoomJoinedPath),
             SoundId.RoomExit => ("Table", "Quitter une table", _options.Current.SoundRoomExitPath),
