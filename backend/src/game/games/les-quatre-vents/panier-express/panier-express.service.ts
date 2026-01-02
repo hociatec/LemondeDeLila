@@ -655,10 +655,12 @@ export class PanierExpressService extends AbstractGameService {
       laps,
     };
     const nextState: GameStateEntity = { ...ensured, metadata: nextMeta };
-    const plural = Math.abs(roll) > 1 ? 'cases' : 'case';
+    const abs = Math.abs(roll);
+    const plural = abs > 1 ? 'cases' : 'case';
+    const verb = roll < 0 ? 'recule' : 'avance';
     return this.core.appendLog(
       nextState,
-      `${this.utils.playerName(state, playerId)} avance de ${roll} ${plural} sur ${this.tileLabel(tile)}`,
+      `${this.utils.playerName(state, playerId)} ${verb} de ${abs} ${plural} sur ${this.tileLabel(tile)}`,
     );
   }
 
