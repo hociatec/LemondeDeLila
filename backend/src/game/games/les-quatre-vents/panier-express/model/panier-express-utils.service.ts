@@ -11,6 +11,21 @@ import { PanierExpressPlayer } from './panier-express-state.entity';
  */
 @Injectable()
 export class PanierExpressUtils {
+  private static readonly COURSE_LABELS: Record<string, string> = {
+    cepe: 'cèpe',
+    'celeri-branche': 'céleri-branche',
+    chataigne: 'châtaigne',
+    clementine: 'clémentine',
+    echalote: 'échalote',
+    epinard: 'épinard',
+    feve: 'fève',
+    mais: 'maïs',
+    mure: 'mûre',
+    nefle: 'nèfle',
+    patisson: 'pâtisson',
+    peche: 'pêche',
+  };
+
   playerName(state: GameStateEntity, playerId: number): string {
     const player = state.players?.find((p) => p.id === playerId);
     const username =
@@ -134,6 +149,19 @@ export class PanierExpressUtils {
     const idx = copy.findIndex((v) => v === value);
     if (idx >= 0) copy.splice(idx, 1);
     return copy;
+  }
+
+  formatCourseLabel(courseId: unknown): string {
+    const raw = typeof courseId === 'string' ? courseId.trim() : '';
+    if (!raw) return '';
+    return PanierExpressUtils.COURSE_LABELS[raw] ?? raw;
+  }
+
+  formatCourseLabels(list: Iterable<unknown> | null | undefined): string[] {
+    if (!list) return [];
+    return Array.from(list)
+      .map((v) => this.formatCourseLabel(v))
+      .filter((s) => s.length > 0);
   }
 
   getTileLabel(tile: any): string {

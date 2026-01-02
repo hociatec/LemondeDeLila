@@ -68,10 +68,13 @@ export class PanierExpressExchangeService {
     }
 
     const offer = result.offer;
-    const takeText = offer.take ? `"${offer.take}"` : 'aucune carte';
+    const giveLabel = this.utils.formatCourseLabel(offer.give);
+    const takeLabel =
+      offer.take != null ? this.utils.formatCourseLabel(offer.take) : null;
+    const takeText = takeLabel != null ? `"${takeLabel}"` : 'aucune carte';
     return this.core.appendLog(
       result.state,
-      `[Panier Express] ${offer.initiatorUsername} propose un échange à ${offer.targetUsername} : il donne "${offer.give}" et recevra ${takeText}.`,
+      `[Panier Express] ${offer.initiatorUsername} propose un échange à ${offer.targetUsername} : il donne "${giveLabel}" et recevra ${takeText}.`,
     );
   }
 
@@ -89,10 +92,13 @@ export class PanierExpressExchangeService {
     }
 
     const offer = result.offer;
+    const giveLabel = this.utils.formatCourseLabel(offer.give);
+    const takeLabel =
+      offer.take != null ? this.utils.formatCourseLabel(offer.take) : null;
     if (offer.bonusRequested) {
       const after = this.core.appendLog(
         result.state,
-        `[Panier Express] Échange accepté : ${offer.initiatorUsername} donne "${offer.give}" à ${offer.targetUsername}. ${offer.targetUsername} n'a aucune carte et perd 2 tours.`,
+        `[Panier Express] Échange accepté : ${offer.initiatorUsername} donne "${giveLabel}" à ${offer.targetUsername}. ${offer.targetUsername} n'a aucune carte et perd 2 tours.`,
       );
       return this.drawSvc.drawCourse(after, offer.initiatorPlayerId, 'bonus');
     }
@@ -108,7 +114,7 @@ export class PanierExpressExchangeService {
 
     return this.core.appendLog(
       result.state,
-      `[Panier Express] Échange accepté : ${offer.initiatorUsername} donne "${offer.give}" et reçoit "${offer.take}" de ${offer.targetUsername}.`,
+      `[Panier Express] Échange accepté : ${offer.initiatorUsername} donne "${giveLabel}" et reçoit "${takeLabel ?? ''}" de ${offer.targetUsername}.`,
     );
   }
 
@@ -431,7 +437,7 @@ export class PanierExpressExchangeService {
       if (!choices.length) {
         return this.core.appendLog(
           { ...state, metadata },
-          `[Panier Express] �%change stratǸgique : aucun joueur disponible.`,
+          `[Panier Express] Échange stratégique : aucun joueur disponible.`,
         );
       }
 
@@ -446,7 +452,7 @@ export class PanierExpressExchangeService {
           type: 'pick',
           playerId,
           blocking: true,
-          label: "Choisissez un joueur pour l'Ǹchange stratǸgique, puis EntrǸe.",
+          label: "Choisissez un joueur pour l'échange stratégique, puis Entrée.",
           choices,
           data: { kind: 'exchange.strategique.choose_target', exchangeId, targets },
         } as any,
@@ -703,9 +709,10 @@ export class PanierExpressExchangeService {
         const nextBasket = this.utils.removeOne(basket, card);
         return { ...p, basket: nextBasket };
       });
+      const cardLabel = this.utils.formatCourseLabel(card);
       return this.core.appendLog(
         addToDiscardState({ ...state, players, metadata: updatedMeta }, card),
-        `[Panier Express] Défausse aléatoire : ${this.utils.playerName(state, playerId)} défausse "${card}".`,
+        `[Panier Express] Défausse aléatoire : ${this.utils.playerName(state, playerId)} défausse "${cardLabel}".`,
       );
     }
 

@@ -13,6 +13,7 @@ import type {
   PanierExpressMetadata,
   PanierExpressTile,
 } from '../model/panier-express-state.entity';
+import { PanierExpressUtils } from '../model/panier-express-utils.service';
 import { PANIER_EXPRESS_PHASES } from '../definitions/rules.definition';
 import { PANIER_EXPRESS_VICTORY } from '../definitions/victory.definition';
 import { BasePresenterService } from '../../../../engine/abstract/base-presenter.service';
@@ -43,6 +44,10 @@ export class PanierExpressPresenterService extends BasePresenterService {
   // Référence au pending quiz pour le partager entre les méthodes
   private pendingQuizRef: QuizQuestion | undefined;
   private rawPendingRef: PendingState | null = null;
+
+  constructor(private readonly utils: PanierExpressUtils) {
+    super();
+  }
 
   exposeState(params: {
     state: GameStateEntity;
@@ -216,7 +221,7 @@ export class PanierExpressPresenterService extends BasePresenterService {
           ? exchangePending.giveChoices
           : [];
         const choices = giveChoices
-          .map((c: any) => sanitizeText(String(c)))
+          .map((c: any) => this.utils.formatCourseLabel(sanitizeText(String(c))))
           .filter((c: string) => c.length > 0);
         const targetUsername = sanitizeText(
           String(exchangePending.targetUsername ?? ''),
@@ -241,10 +246,12 @@ export class PanierExpressPresenterService extends BasePresenterService {
         const initiator = sanitizeText(
           String(exchangePending.initiatorUsername ?? ''),
         );
-        const give = sanitizeText(String(exchangePending.give ?? ''));
+        const give = this.utils.formatCourseLabel(
+          sanitizeText(String(exchangePending.give ?? '')),
+        );
         const take =
           exchangePending.take != null
-            ? sanitizeText(String(exchangePending.take))
+            ? this.utils.formatCourseLabel(sanitizeText(String(exchangePending.take)))
             : '';
         const question = take
           ? `${initiator} vous propose un échange : il vous donne "${give}" et vous lui donnez "${take}". (A = accepter, R = refuser)`
@@ -264,7 +271,17 @@ export class PanierExpressPresenterService extends BasePresenterService {
       params.rawPending.type &&
       params.rawPending.type !== 'quiz'
     ) {
-      return params.rawPending;
+      const anyPending = params.rawPending as any;
+      const rawChoices = Array.isArray(anyPending.choices) ? anyPending.choices : null;
+      if (!rawChoices) {
+        return params.rawPending;
+      }
+      return {
+        ...anyPending,
+        choices: rawChoices
+          .map((c: any) => this.utils.formatCourseLabel(sanitizeText(String(c))))
+          .filter((c: string) => c.length > 0),
+      };
     }
     return null;
   }
@@ -283,7 +300,7 @@ export class PanierExpressPresenterService extends BasePresenterService {
           ? [pendingQuiz.answer]
           : [];
     const choices = rawChoices
-      .map((choice) => sanitizeText(String(choice)))
+      .map((choice) => this.utils.formatCourseLabel(sanitizeText(String(choice))))
       .filter((choice) => choice.length > 0);
     if (!question && choices.length === 0) {
       return null;
@@ -307,9 +324,9 @@ export class PanierExpressPresenterService extends BasePresenterService {
       username: typeof player.username === 'string' ? player.username : null,
       isBot: player?.isBot === true,
       pawn: typeof player.pawn === 'string' ? player.pawn : null,
-      shoppingList: this.toStringArray(player.shoppingList),
-      basket: this.toStringArray(player.basket),
-      inventory: this.toStringArray(player.inventory),
+      shoppingList: this.utils.formatCourseLabels(this.toStringArray(player.shoppingList)),
+      basket: this.utils.formatCourseLabels(this.toStringArray(player.basket)),
+      inventory: this.utils.formatCourseLabels(this.toStringArray(player.inventory)),
     };
   }
 

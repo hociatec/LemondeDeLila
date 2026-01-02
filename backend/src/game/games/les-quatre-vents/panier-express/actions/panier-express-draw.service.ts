@@ -69,9 +69,10 @@ export class PanierExpressDrawService {
     };
     const nextState: GameStateEntity = { ...state, players, metadata: nextMeta as any };
     const standLabel = this.resolveStandLabel(meta, playerId, resolvedStandId);
+    const courseLabel = this.utils.formatCourseLabel(card);
     const logged = this.core.appendLog(
       nextState,
-      `[Panier Express] ${this.utils.playerName(state, playerId)} pioche "${card}" au stand ${standLabel}`,
+      `[Panier Express] ${this.utils.playerName(state, playerId)} pioche "${courseLabel}" au stand ${standLabel}`,
     );
 
     const playerView = players.find((p) => p.id === playerId);
