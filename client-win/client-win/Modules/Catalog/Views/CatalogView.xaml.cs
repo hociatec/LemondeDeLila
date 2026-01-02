@@ -17,11 +17,8 @@ public partial class CatalogView : UserControl
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
-        CategoriesList.ItemContainerGenerator.StatusChanged += OnCategoriesContainersStatusChanged;
-        Dispatcher.BeginInvoke(DispatcherPriority.Input, () =>
-        {
-            FocusFirstItem(CategoriesList);
-        });
+        // À l'entrée dans la taverne, le focus doit d'abord être sur les actions.
+        Dispatcher.BeginInvoke(DispatcherPriority.Input, () => FocusWhenContainersGenerated(ActionsList));
     }
 
     private void OnKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
@@ -240,15 +237,6 @@ public partial class CatalogView : UserControl
         else
         {
             listBox.Focus();
-        }
-    }
-
-    private void OnCategoriesContainersStatusChanged(object? sender, EventArgs e)
-    {
-        if (CategoriesList?.ItemContainerGenerator.Status == System.Windows.Controls.Primitives.GeneratorStatus.ContainersGenerated)
-        {
-            FocusFirstItem(CategoriesList);
-            CategoriesList.ItemContainerGenerator.StatusChanged -= OnCategoriesContainersStatusChanged;
         }
     }
 
