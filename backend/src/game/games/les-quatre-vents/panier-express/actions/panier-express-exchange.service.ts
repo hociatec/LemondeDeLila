@@ -168,6 +168,19 @@ export class PanierExpressExchangeService {
           return p;
         }),
       };
+      next = {
+        ...next,
+        metadata: {
+          ...(next.metadata as any),
+          lastObtainedCourse: {
+            ...(((next.metadata as any)?.lastObtainedCourse ?? {}) as Record<
+              number,
+              string | null
+            >),
+            [initiatorPlayerId]: stolen,
+          },
+        },
+      };
 
       return this.core.appendLog(
         next,
@@ -194,6 +207,45 @@ export class PanierExpressExchangeService {
           state,
           initiatorPlayerId,
         )} échange son panier avec ${this.utils.playerName(state, targetPlayerId)}.`,
+      );
+    }
+
+    if (kind === 'echange-force') {
+      const initiator = (state.players ?? []).find(
+        (p) => p.id === initiatorPlayerId,
+      ) as any;
+      const target = (state.players ?? []).find(
+        (p) => p.id === targetPlayerId,
+      ) as any;
+      const initiatorInv = this.utils.toStringArray(initiator?.inventory);
+      const targetInv = this.utils.toStringArray(target?.inventory);
+      if (!initiatorInv.length || !targetInv.length) {
+        return this.core.appendLog(
+          state,
+          `[Panier Express] Échange forcé : inventaire vide.`,
+        );
+      }
+
+      let next: GameStateEntity = state;
+      const metaRng = this.random.createMetaRng((next.metadata as any) ?? {});
+      const pickA = this.random.pickOne(metaRng.getMeta() as any, initiatorInv);
+      next = { ...next, metadata: pickA.meta as any };
+      const aCard = String(pickA.value ?? '').trim();
+      const pickB = this.random.pickOne((next.metadata as any) ?? {}, targetInv);
+      next = { ...next, metadata: pickB.meta as any };
+      const bCard = String(pickB.value ?? '').trim();
+
+      if (aCard) next = removeFromInventoryState(this.utils, next, initiatorPlayerId, aCard);
+      if (bCard) next = removeFromInventoryState(this.utils, next, targetPlayerId, bCard);
+      if (aCard) next = addCardToPlayerState(this.utils, next, targetPlayerId, aCard);
+      if (bCard) next = addCardToPlayerState(this.utils, next, initiatorPlayerId, bCard);
+
+      return this.core.appendLog(
+        next,
+        `[Panier Express] Échange forcé : échange au hasard entre ${this.utils.playerName(
+          state,
+          initiatorPlayerId,
+        )} et ${this.utils.playerName(state, targetPlayerId)}.`,
       );
     }
 
@@ -253,7 +305,9 @@ export class PanierExpressExchangeService {
     // Certaines cartes d'échange ont des effets directs / choix spécifiques.
     // On utilise `pending: pick` pour les cartes nécessitant un choix simple, sinon fallback sur l'échange interactif.
     if (
-      ['vol-discret', 'chariot-echange', 'echange-impose'].includes(resolvedCard)
+      ['vol-discret', 'chariot-echange', 'echange-impose', 'echange-force'].includes(
+        resolvedCard,
+      )
     ) {
       const targets = (state.players ?? [])
         .filter((p) => p.id !== playerId)
@@ -279,6 +333,352 @@ export class PanierExpressExchangeService {
       };
     }
 
+    if (resolvedCard === 'troc-rapide') {
+      const players = state.players ?? [];
+      if (players.length < 2) {
+        return this.core.appendLog(
+          { ...state, metadata },
+          `[Panier Express] Troc rapide : aucun joueur disponible.`,
+        );
+      }
+      const idx = players.findIndex((p) => p.id === playerId);
+      const targetPlayerId = Number(
+        players[(idx - 1 + players.length) % players.length]?.id,
+      );
+      const me = (state.players ?? []).find((p) => p.id === playerId) as any;
+      const inv = this.utils.toStringArray(me?.inventory);
+      if (!inv.length) {
+        return this.core.appendLog(
+          { ...state, metadata },
+          `[Panier Express] Troc rapide : inventaire vide.`,
+        );
+      }
+      return {
+        ...state,
+        metadata,
+        pending: {
+          type: 'pick',
+          playerId,
+          blocking: true,
+          label: `Choisissez une carte à échanger avec ${this.utils.playerName(state, targetPlayerId)}, puis Entrée.`,
+          choices: inv,
+          data: { kind: 'exchange.troc_rapide.choose_give', targetPlayerId },
+        } as any,
+      };
+    }
+
+    if (resolvedCard === 'troc-fruit-legume') {
+      const targets = (state.players ?? [])
+        .filter((p) => p.id !== playerId)
+        .map((p) => ({ playerId: p.id, username: p.username }));
+      const choices = targets
+        .map((t) => String(t.username ?? ''))
+        .filter((v) => v.length > 0);
+      if (!choices.length) {
+        return this.core.appendLog(
+          { ...state, metadata },
+          `[Panier Express] Troc fruit/légume : aucun joueur disponible.`,
+        );
+      }
+      return {
+        ...state,
+        metadata,
+        pending: {
+          type: 'pick',
+          playerId,
+          blocking: true,
+          label: 'Choisissez un joueur pour le troc, puis Entrée.',
+          choices,
+          data: { kind: 'exchange.troc_fruit_legume.choose_target', targets },
+        } as any,
+      };
+    }
+
+    if (resolvedCard === 'echange-saison') {
+      const targets = (state.players ?? [])
+        .filter((p) => p.id !== playerId)
+        .map((p) => ({ playerId: p.id, username: p.username }));
+      const choices = targets
+        .map((t) => String(t.username ?? ''))
+        .filter((v) => v.length > 0);
+      if (!choices.length) {
+        return this.core.appendLog(
+          { ...state, metadata },
+          `[Panier Express] Échange de saison : aucun joueur disponible.`,
+        );
+      }
+      return {
+        ...state,
+        metadata,
+        pending: {
+          type: 'pick',
+          playerId,
+          blocking: true,
+          label: 'Choisissez un joueur pour l’échange de saison, puis Entrée.',
+          choices,
+          data: { kind: 'exchange.echange_saison.choose_target', targets },
+        } as any,
+      };
+    }
+
+    if (resolvedCard === 'echange-strategique') {
+      const targets = (state.players ?? [])
+        .filter((p) => p.id !== playerId)
+        .map((p) => ({ playerId: p.id, username: p.username }));
+      const choices = targets
+        .map((t) => String(t.username ?? ''))
+        .filter((v) => v.length > 0);
+      if (!choices.length) {
+        return this.core.appendLog(
+          { ...state, metadata },
+          `[Panier Express] Échange stratégique : aucun joueur disponible.`,
+        );
+      }
+      return {
+        ...state,
+        metadata,
+        pending: {
+          type: 'pick',
+          playerId,
+          blocking: true,
+          label: "Choisissez un joueur pour l'échange stratégique, puis Entrée.",
+          choices,
+          data: { kind: 'exchange.strategique.choose_target', targets },
+        } as any,
+      };
+    }
+
+    if (resolvedCard === 'marche-noir') {
+      const me = (state.players ?? []).find((p) => p.id === playerId) as any;
+      const cards = [
+        ...this.utils.toStringArray(me?.inventory),
+        ...this.utils.toStringArray(me?.basket),
+      ];
+      if (!cards.length) {
+        return this.core.appendLog(
+          { ...state, metadata },
+          `[Panier Express] Marché noir : aucune carte à défausser.`,
+        );
+      }
+      return {
+        ...state,
+        metadata,
+        pending: {
+          type: 'pick',
+          playerId,
+          blocking: true,
+          label: 'Choisissez une carte à défausser, puis Entrée.',
+          choices: cards,
+          data: { kind: 'exchange.marche_noir.discard' },
+        } as any,
+      };
+    }
+
+    if (resolvedCard === 'echange-devant' || resolvedCard === 'echange-derriere') {
+      const players = state.players ?? [];
+      if (players.length < 2) {
+        return this.core.appendLog(
+          { ...state, metadata },
+          `[Panier Express] ${resolvedCard} : aucun joueur disponible.`,
+        );
+      }
+      const idx = players.findIndex((p) => p.id === playerId);
+      const targetPlayerId = Number(
+        players[
+          resolvedCard === 'echange-devant'
+            ? (idx + 1) % players.length
+            : (idx - 1 + players.length) % players.length
+        ]?.id,
+      );
+      const me = (state.players ?? []).find((p) => p.id === playerId) as any;
+      const target = (state.players ?? []).find((p) => p.id === targetPlayerId) as any;
+      const myInv = this.utils.toStringArray(me?.inventory);
+      const theirInv = this.utils.toStringArray(target?.inventory);
+      if (!myInv.length || !theirInv.length) {
+        return this.core.appendLog(
+          { ...state, metadata },
+          `[Panier Express] ${resolvedCard} : inventaire vide.`,
+        );
+      }
+      let next: GameStateEntity = { ...state, metadata };
+      const metaRng = this.random.createMetaRng((next.metadata as any) ?? {});
+      const pickA = this.random.pickOne(metaRng.getMeta() as any, myInv);
+      next = { ...next, metadata: pickA.meta as any };
+      const aCard = String(pickA.value ?? '').trim();
+      const pickB = this.random.pickOne((next.metadata as any) ?? {}, theirInv);
+      next = { ...next, metadata: pickB.meta as any };
+      const bCard = String(pickB.value ?? '').trim();
+      if (aCard) next = removeFromInventoryState(this.utils, next, playerId, aCard);
+      if (bCard) next = removeFromInventoryState(this.utils, next, targetPlayerId, bCard);
+      if (aCard) next = addCardToPlayerState(this.utils, next, targetPlayerId, aCard);
+      if (bCard) next = addCardToPlayerState(this.utils, next, playerId, bCard);
+      return this.core.appendLog(
+        next,
+        `[Panier Express] ${resolvedCard} : échange au hasard avec ${this.utils.playerName(state, targetPlayerId)}.`,
+      );
+    }
+
+    if (resolvedCard === 'panier-mixe') {
+      const metaAny = metadata as any;
+      const positions = (metaAny.positions ?? {}) as Record<number, number>;
+      const tiles = Array.isArray(metaAny.tiles) ? metaAny.tiles : [];
+      const total = tiles.length || 1;
+      const others = (state.players ?? []).filter((p) => p.id !== playerId);
+      if (!others.length) {
+        return this.core.appendLog(
+          { ...state, metadata },
+          `[Panier Express] Panier mixé : aucun joueur disponible.`,
+        );
+      }
+      const mePos = positions[playerId] ?? 0;
+      let targetPlayerId = others[0].id;
+      let bestDist = Number.POSITIVE_INFINITY;
+      others.forEach((p) => {
+        const pos = positions[p.id] ?? 0;
+        const forward = (pos - mePos + total) % total;
+        const backward = (mePos - pos + total) % total;
+        const dist = Math.min(forward, backward);
+        if (dist < bestDist) {
+          bestDist = dist;
+          targetPlayerId = p.id;
+        }
+      });
+      const me = (state.players ?? []).find((p) => p.id === playerId) as any;
+      const target = (state.players ?? []).find((p) => p.id === targetPlayerId) as any;
+      const aInv = this.utils.toStringArray(me?.inventory);
+      const bInv = this.utils.toStringArray(target?.inventory);
+      const combined = [...aInv, ...bInv];
+      if (!combined.length) {
+        return this.core.appendLog(
+          { ...state, metadata },
+          `[Panier Express] Panier mixé : aucun inventaire à mélanger.`,
+        );
+      }
+      const shuffled = this.random.shuffle((metadata as any) ?? {}, combined);
+      let next: GameStateEntity = { ...state, metadata: shuffled.meta as any };
+      next = setInventoryState(this.utils, next, playerId, []);
+      next = setInventoryState(this.utils, next, targetPlayerId, []);
+
+      const half = Math.floor(shuffled.values.length / 2);
+      const aCards = shuffled.values.slice(0, half);
+      const bCards = shuffled.values.slice(half, half * 2);
+      const leftover = shuffled.values.slice(half * 2);
+
+      aCards.forEach((c) => {
+        next = addCardToPlayerState(this.utils, next, playerId, c);
+      });
+      bCards.forEach((c) => {
+        next = addCardToPlayerState(this.utils, next, targetPlayerId, c);
+      });
+      leftover.forEach((c) => {
+        next = addToDiscardState(next, c);
+      });
+
+      return this.core.appendLog(
+        next,
+        `[Panier Express] Panier mixé : mélange avec ${this.utils.playerName(state, targetPlayerId)}.`,
+      );
+    }
+
+    if (resolvedCard === 'echange-masque') {
+      const eligible = (state.players ?? []).filter((p: any) =>
+        this.utils.toStringArray(p.inventory).length > 0,
+      );
+      if (eligible.length < 2) {
+        return this.core.appendLog(
+          { ...state, metadata },
+          `[Panier Express] Échange masqué : pas assez de joueurs avec des cartes.`,
+        );
+      }
+      const shuffledPlayers = this.random.shuffle(
+        (metadata as any) ?? {},
+        eligible.map((p) => p.id),
+      );
+      let next: GameStateEntity = { ...state, metadata: shuffledPlayers.meta as any };
+      const pickedByPlayer: Record<number, string> = {};
+      for (const pid of shuffledPlayers.values) {
+        const inv = this.utils.toStringArray(
+          (next.players ?? []).find((p: any) => p.id === pid)?.inventory,
+        );
+        const pick = this.random.pickOne((next.metadata as any) ?? {}, inv);
+        next = { ...next, metadata: pick.meta as any };
+        const card = String(pick.value ?? '').trim();
+        if (!card) continue;
+        pickedByPlayer[pid] = card;
+        next = removeFromInventoryState(this.utils, next, pid, card);
+      }
+      const ids = shuffledPlayers.values;
+      for (let i = 0; i < ids.length; i += 1) {
+        const giverId = ids[i]!;
+        const receiverId = ids[(i + 1) % ids.length]!;
+        const card = pickedByPlayer[giverId];
+        if (card) {
+          next = addCardToPlayerState(this.utils, next, receiverId, card);
+        }
+      }
+      return this.core.appendLog(next, `[Panier Express] Échange masqué : échange réalisé.`);
+    }
+
+    if (resolvedCard === 'panier-collectif') {
+      const players = state.players ?? [];
+      const contributors: number[] = [];
+      let pot: string[] = [];
+      let next: GameStateEntity = { ...state, metadata };
+
+      for (const p of players) {
+        const inv = this.utils.toStringArray((p as any).inventory);
+        if (!inv.length) continue;
+        const pick = this.random.pickOne((next.metadata as any) ?? {}, inv);
+        next = { ...next, metadata: pick.meta as any };
+        const card = String(pick.value ?? '').trim();
+        if (!card) continue;
+        contributors.push(p.id);
+        pot.push(card);
+        next = removeFromInventoryState(this.utils, next, p.id, card);
+      }
+      if (!pot.length || contributors.length < 2) {
+        return this.core.appendLog(
+          next,
+          `[Panier Express] Panier collectif : pas assez de cartes dans le pot.`,
+        );
+      }
+      const shuffledPot = this.random.shuffle((next.metadata as any) ?? {}, pot);
+      next = { ...next, metadata: shuffledPot.meta as any };
+      pot = shuffledPot.values;
+      for (let i = 0; i < contributors.length; i += 1) {
+        next = addCardToPlayerState(this.utils, next, contributors[i]!, pot[i]!);
+      }
+      return this.core.appendLog(next, `[Panier Express] Panier collectif : redistribution effectuée.`);
+    }
+
+    if (resolvedCard === 'echange-simultane') {
+      const players = state.players ?? [];
+      if (players.length < 2) {
+        return this.core.appendLog(
+          { ...state, metadata },
+          `[Panier Express] Échange simultané : aucun joueur disponible.`,
+        );
+      }
+      let next: GameStateEntity = { ...state, metadata };
+      const toPass: Array<{ from: number; card: string }> = [];
+      for (const p of players) {
+        const inv = this.utils.toStringArray((p as any).inventory);
+        if (!inv.length) continue;
+        const pick = this.random.pickOne((next.metadata as any) ?? {}, inv);
+        next = { ...next, metadata: pick.meta as any };
+        const card = String(pick.value ?? '').trim();
+        if (!card) continue;
+        toPass.push({ from: p.id, card });
+        next = removeFromInventoryState(this.utils, next, p.id, card);
+      }
+      for (const entry of toPass) {
+        const idx = players.findIndex((p) => p.id === entry.from);
+        const targetId = players[(idx + 1) % players.length]!.id;
+        next = addCardToPlayerState(this.utils, next, targetId, entry.card);
+      }
+      return this.core.appendLog(next, `[Panier Express] Échange simultané : cartes passées au joueur suivant.`);
+    }
+
     if (resolvedCard === 'defausse-aleatoire') {
       const basket = this.utils.toStringArray(
         (state.players ?? []).find((p) => p.id === playerId)?.basket,
@@ -299,7 +699,7 @@ export class PanierExpressExchangeService {
         return { ...p, basket: nextBasket };
       });
       return this.core.appendLog(
-        { ...state, players, metadata: updatedMeta },
+        addToDiscardState({ ...state, players, metadata: updatedMeta }, card),
         `[Panier Express] Défausse aléatoire : ${this.utils.playerName(state, playerId)} défausse "${card}".`,
       );
     }
@@ -328,12 +728,11 @@ export class PanierExpressExchangeService {
       return started.state;
     }
 
-    const moved = this.movePlayer(state, playerId, -5, metadata);
     const reason =
       started.kind === 'no_targets'
         ? `[Panier Express] Aucun joueur disponible pour un échange (${resolvedCard}).`
-        : `[Panier Express] Pas d'échange possible (${resolvedCard}) : ${this.utils.playerName(state, playerId)} recule de 5 cases.`;
-    return this.core.appendLog(moved, reason);
+        : `[Panier Express] Pas d'échange possible (${resolvedCard}).`;
+    return this.core.appendLog({ ...state, metadata }, reason);
   }
 
   private adapter(): InteractiveExchangeAdapter {
@@ -354,11 +753,7 @@ export class PanierExpressExchangeService {
         return { ...state, players };
       },
       addCardToPlayer: (state, playerId, card) => {
-        const players = (state.players ?? []).map((p: any) => {
-          if (p.id !== playerId) return p;
-          return addCardToPlayer(this.utils, p, card);
-        });
-        return { ...state, players };
+        return addCardToPlayerState(this.utils, state, playerId, card);
       },
       setSkipTurns: (state, playerId, turns) =>
         setSkipTurns(state, playerId, turns),
@@ -413,6 +808,81 @@ function addCardToPlayer(
     return { ...player, basket: [card, ...basket], inventory };
   }
   return { ...player, inventory: [card, ...inventory], basket };
+}
+
+function addCardToPlayerState(
+  utils: PanierExpressUtils,
+  state: GameStateEntity,
+  playerId: number,
+  card: string,
+): GameStateEntity {
+  const trimmed = String(card ?? '').trim();
+  if (!trimmed) return state;
+  const players = (state.players ?? []).map((p: any) => {
+    if (p.id !== playerId) return p;
+    return addCardToPlayer(utils, p, trimmed);
+  });
+  const meta = (state.metadata ?? {}) as any;
+  return {
+    ...state,
+    players,
+    metadata: {
+      ...meta,
+      lastObtainedCourse: {
+        ...(meta?.lastObtainedCourse ?? {}),
+        [playerId]: trimmed,
+      },
+    },
+  };
+}
+
+function removeFromInventoryState(
+  utils: PanierExpressUtils,
+  state: GameStateEntity,
+  playerId: number,
+  card: string,
+): GameStateEntity {
+  const trimmed = String(card ?? '').trim();
+  if (!trimmed) return state;
+  const players = (state.players ?? []).map((p: any) => {
+    if (p.id !== playerId) return p;
+    const inv = utils.toStringArray(p.inventory);
+    return { ...p, inventory: removeOne(inv, trimmed) };
+  });
+  return { ...state, players };
+}
+
+function setInventoryState(
+  utils: PanierExpressUtils,
+  state: GameStateEntity,
+  playerId: number,
+  inventory: string[],
+): GameStateEntity {
+  const nextInv = utils.toStringArray(inventory);
+  const players = (state.players ?? []).map((p: any) => {
+    if (p.id !== playerId) return p;
+    return { ...p, inventory: nextInv };
+  });
+  return { ...state, players };
+}
+
+function addToDiscardState(state: GameStateEntity, card: string): GameStateEntity {
+  const trimmed = String(card ?? '').trim();
+  if (!trimmed) return state;
+  const meta = (state.metadata ?? {}) as any;
+  const current = Array.isArray(meta?.discards?.courses)
+    ? meta.discards.courses.map((v: any) => String(v))
+    : [];
+  return {
+    ...state,
+    metadata: {
+      ...meta,
+      discards: {
+        ...(meta?.discards ?? {}),
+        courses: [...current, trimmed],
+      },
+    },
+  };
 }
 
 function setSkipTurns(

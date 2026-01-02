@@ -22,6 +22,13 @@ export class PanierExpressDrawService {
     standId?: string,
   ): GameStateEntity {
     const meta = state.metadata as PanierExpressMetadata;
+    const noDraw = (meta as any)?.statuses?.noDrawCourses?.[playerId] ?? 0;
+    if (noDraw > 0) {
+      return this.core.appendLog(
+        state,
+        `[Panier Express] ${this.utils.playerName(state, playerId)} ne peut pas piocher de carte ce tour-ci.`,
+      );
+    }
     const decks = meta.decks ?? this.setup.buildDeckPool(state);
     let metaAfter: PanierExpressMetadata = { ...meta, decks };
 
@@ -50,7 +57,17 @@ export class PanierExpressDrawService {
       return { ...player, inventory: [...inventory, card], basket };
     });
 
-    const nextState: GameStateEntity = { ...state, players, metadata };
+    const nextMeta: PanierExpressMetadata = {
+      ...(metadata as any),
+      lastObtainedCourse: {
+        ...(((metadata as any)?.lastObtainedCourse ?? {}) as Record<
+          number,
+          string | null
+        >),
+        [playerId]: card,
+      },
+    };
+    const nextState: GameStateEntity = { ...state, players, metadata: nextMeta as any };
     const standLabel = this.resolveStandLabel(meta, playerId, resolvedStandId);
     const logged = this.core.appendLog(
       nextState,

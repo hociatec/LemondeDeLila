@@ -157,36 +157,65 @@ public sealed class PersistentWsClient : IAsyncDisposable
             }
         }
 
-        var socket = await EnsureConnectedAsync(token, wsTicket, cancellationToken).ConfigureAwait(false);
-        string requestId = Guid.NewGuid().ToString("N");
-        var tcs = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
-        _pending[requestId] = tcs;
-
-        var message = new
+        // NOTE: le socket peut être disposé par la receive loop (ResetSocketAsync)
+        // pendant un envoi, ce qui provoque un ObjectDisposedException/SslStream disposed.
+        // On fait un retry best-effort en forçant un reset puis une reconnexion.
+        for (int attempt = 1; attempt <= 2; attempt++)
         {
-            type,
-            requestId,
-            payload
-        };
+            var socket = await EnsureConnectedAsync(token, wsTicket, cancellationToken).ConfigureAwait(false);
+            string requestId = Guid.NewGuid().ToString("N");
+            var tcs = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+            _pending[requestId] = tcs;
 
-        Log.Debug("WS -> {Type} ({RequestId})", type, requestId);
-        byte[] buffer = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message, _serializerOptions));
-        using var sendCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        sendCts.CancelAfter(_sendTimeout);
-        try
-        {
-            await socket.SendAsync(buffer, WebSocketMessageType.Text, true, sendCts.Token).ConfigureAwait(false);
+            var message = new
+            {
+                type,
+                requestId,
+                payload
+            };
+
+            Log.Debug("WS -> {Type} ({RequestId}) [attempt {Attempt}]", type, requestId, attempt);
+            byte[] buffer = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message, _serializerOptions));
+            try
+            {
+                using var sendCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                sendCts.CancelAfter(_sendTimeout);
+                await socket.SendAsync(buffer, WebSocketMessageType.Text, true, sendCts.Token).ConfigureAwait(false);
+
+                using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                timeoutCts.CancelAfter(_receiveTimeout);
+                using var registration = timeoutCts.Token.Register(() => tcs.TrySetCanceled(timeoutCts.Token));
+                return await tcs.Task.ConfigureAwait(false);
+            }
+            catch (Exception ex) when (attempt < 2 && !cancellationToken.IsCancellationRequested && IsRetryableTransportException(ex))
+            {
+                _pending.TryRemove(requestId, out _);
+                Log.Warning(ex, "WS send failed (retry): {Type}", type);
+                await ResetSocketAsync().ConfigureAwait(false);
+                continue;
+            }
+            catch
+            {
+                _pending.TryRemove(requestId, out _);
+                throw;
+            }
         }
-        catch
-        {
-            _pending.TryRemove(requestId, out _);
-            throw;
-        }
 
-        using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        timeoutCts.CancelAfter(_receiveTimeout);
-        using var registration = timeoutCts.Token.Register(() => tcs.TrySetCanceled(timeoutCts.Token));
-        return await tcs.Task.ConfigureAwait(false);
+        // Unreachable: the loop returns or throws.
+        throw new InvalidOperationException("WS send failed after retries.");
+    }
+
+    private static bool IsRetryableTransportException(Exception ex)
+    {
+        if (ex is ObjectDisposedException) return true;
+        if (ex is WebSocketException) return true;
+        if (ex is IOException) return true;
+        if (ex is InvalidOperationException ioe &&
+            ioe.Message.Contains("WebSocket", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+        return false;
     }
 
     private async Task<ClientWebSocket> EnsureConnectedAsync(string? token, string? wsTicket, CancellationToken cancellationToken)

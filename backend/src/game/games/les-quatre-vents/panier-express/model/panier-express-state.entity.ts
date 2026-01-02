@@ -8,16 +8,35 @@ import type { InteractiveExchangePending } from '../../../../modules/exchange/mo
  * Types des tuiles Panier Express
  */
 export type PanierExpressTile =
-  | { id: string; type: 'start' }
-  | { id: string; type: 'rest' }
-  | { id: string; type: 'stand'; standId: string }
-  | { id: string; type: 'event' }
-  | { id: string; type: 'exchange' }
-  | { id: string; type: 'quiz' }
-  | { id: string; type: 'move'; delta: number }
-  | { id: string; type: 'skip'; turns?: number }
-  | { id: string; type: 'bonus_course' }
-  | { id: string; type: 'move_to_stand' };
+  | { id: string; type: 'start'; label?: string; description?: string }
+  | { id: string; type: 'rest'; label?: string; description?: string }
+  | {
+      id: string;
+      type: 'stand';
+      standId: string;
+      label?: string;
+      description?: string;
+    }
+  | { id: string; type: 'event'; label?: string; description?: string }
+  | { id: string; type: 'exchange'; label?: string; description?: string }
+  | { id: string; type: 'quiz'; label?: string; description?: string }
+  | {
+      id: string;
+      type: 'move';
+      delta: number;
+      label?: string;
+      description?: string;
+    }
+  | {
+      id: string;
+      type: 'move_choice';
+      delta: number;
+      label?: string;
+      description?: string;
+    }
+  | { id: string; type: 'skip'; turns?: number; label?: string; description?: string }
+  | { id: string; type: 'bonus_course'; label?: string; description?: string }
+  | { id: string; type: 'move_to_stand'; label?: string; description?: string };
 
 /**
  * Deck pool Panier Express
@@ -75,6 +94,7 @@ export type PanierExpressMetadata = {
   botProfile: BotProfile;
   movementDirection?: 1 | -1;
   movementDirectionOwnerId?: number | null;
+  lastObtainedCourse?: Record<number, string | null>;
   discards?: {
     courses?: string[];
   };
@@ -82,5 +102,7 @@ export type PanierExpressMetadata = {
     skipTurn: Record<number, number>;
     keepTurn?: Record<number, number>;
     revealInventory?: Record<number, number>;
+    revealShoppingList?: Record<number, number>;
+    noDrawCourses?: Record<number, number>;
   };
 };

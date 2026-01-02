@@ -1,0 +1,25 @@
+Cartes shopping list (22)
+
+
+Carte 1 : Pommes, Concombres, Abricots, Fleurs de courgettes et Mangues.
+Carte 2 : Betteraves, Salades, Fraises, Pois chiches, Oignons.
+Carte 3 : Celeris branches, Oranges, Amandes, Tomates, Kakis.
+Carte 4 : Patates douces, Cèpes, Choux, Figues, Poires.
+Carte 5 : Maïs, Nashis, Fanes de radis, Papayes, Radis.
+Carte 6 : Epinards, Framboises, Lentilles, Laitues, Fenouils.
+Carte 7 : Citrons, Noisettes, Aubergines, Coings, Ignames.
+Carte 8 : Champignons de Paris, Navets, Prunes, Pêches, Asperges.
+Carte 9 : Kiwanos, Pousses de bambous, Kiwis, Pommes de terres, Mâches.
+Carte 10 : Cerises, Haricots secs, Courgettes, Roquettes, Pamplemousses.
+Carte 11 : Noix, Poivrons, Mandarines, Amarantes, Pleurotes.
+Carte 12 : Topinambours, Raisins, Bananes, Fèves, Nèfles.
+Carte 13 : Feuilles de basilics, Ananas, Carottes, Cressons, Mûres.
+Carte 14 : Pois cassés, Ails, Panais, Bergamotes, Noix de cocos.
+Carte 15 : Patissons, Clémentines, Gonbos, Shiitakes, Salsifis.
+Carte 16 : Jujubes, Melons, Pois gourmands, Nectarines, Jeunes pousses d'ortie.
+Carte 17 : Litchis, Rutabagas, Blettes, Cassis, Lupins.
+Carte 18 : Echalotes, Feuilles de moutardes, Cumquats, Châtaignes, Haricots verts.
+Carte 19 : Physalis, Taros, Girolles, Poireaux, Sorbes.
+Carte 20 : Pommes, Maïs, Kiwanos, Feuilles de basilics, Litchis.
+Carte 21 : Betteraves, Epinards, Cerises, Pois cassés, Echalotes.
+Carte 22 : Celeris branches, Citrons, Noix, Poivrons, Clémentines.

@@ -2,189 +2,268 @@
   "version": 1,
   "tiles": [
     {
-      "id": "start",
-      "type": "start"
+      "id": "case-1-entree",
+      "type": "start",
+      "label": "Entr\u00e9e du march\u00e9",
+      "description": "Case de d\u00e9part."
     },
     {
-      "id": "stand-fruitier",
+      "id": "case-2-stand-fruitier",
       "type": "stand",
-      "standId": "fruitier"
+      "standId": "fruitier",
+      "label": "Stand Fruitier",
+      "description": "Piochez 1 carte Courses."
     },
     {
-      "id": "event-1",
-      "type": "event"
+      "id": "case-3-evenement",
+      "type": "event",
+      "label": "\u00c9v\u00e9nement",
+      "description": "Piochez 1 carte \u00c9v\u00e9nement et appliquez son effet."
     },
     {
-      "id": "stand-maraicher",
+      "id": "case-4-stand-maraicher",
       "type": "stand",
-      "standId": "maraicher"
+      "standId": "maraicher",
+      "label": "Stand Mara\u00eecher",
+      "description": "Piochez 1 carte Courses."
     },
     {
-      "id": "exchange-1",
-      "type": "exchange"
+      "id": "case-5-echange",
+      "type": "exchange",
+      "label": "\u00c9change",
+      "description": "Piochez 1 carte \u00c9change et suivez son effet."
     },
     {
-      "id": "stand-bio-fruits",
+      "id": "case-6-stand-bio",
       "type": "stand",
-      "standId": "bio-fruits"
+      "standId": "bio-fruits",
+      "label": "Stand Bio",
+      "description": "Piochez 1 carte Courses."
     },
     {
-      "id": "move-plus-1",
+      "id": "case-7-avance-1",
       "type": "move",
-      "delta": 1
+      "delta": 1,
+      "label": "Avance",
+      "description": "Avancez d'1 case."
     },
     {
-      "id": "stand-primeur-1",
+      "id": "case-8-stand-primeur",
       "type": "stand",
-      "standId": "primeur"
+      "standId": "primeur",
+      "label": "Stand Primeur",
+      "description": "Piochez 1 carte Courses."
     },
     {
-      "id": "skip-1",
-      "type": "skip",
-      "turns": 1
+      "id": "case-9-repos",
+      "type": "rest",
+      "label": "Repos",
+      "description": "Aucun effet."
     },
     {
-      "id": "stand-fruits-exotiques",
+      "id": "case-10-stand-fruits-exotiques",
       "type": "stand",
-      "standId": "fruits-exotiques"
+      "standId": "fruits-exotiques",
+      "label": "Stand Fruits Exotiques",
+      "description": "Piochez 1 carte Courses."
     },
     {
-      "id": "exchange-2",
-      "type": "exchange"
+      "id": "case-11-echange",
+      "type": "exchange",
+      "label": "\u00c9change",
+      "description": "Piochez 1 carte \u00c9change et suivez son effet."
     },
     {
-      "id": "stand-legumes-racines",
+      "id": "case-12-stand-legumes-racines",
       "type": "stand",
-      "standId": "legumes-racines"
+      "standId": "legumes-racines",
+      "label": "Stand L\u00e9gumes Racines",
+      "description": "Piochez 1 carte Courses."
     },
     {
-      "id": "move-minus-2",
+      "id": "case-13-recule-2",
       "type": "move",
-      "delta": -2
+      "delta": -2,
+      "label": "Recule",
+      "description": "Reculez de 2 cases."
     },
     {
-      "id": "stand-legumes-feuilles",
+      "id": "case-14-stand-legumes-feuilles",
       "type": "stand",
-      "standId": "legumes-feuilles"
+      "standId": "legumes-feuilles",
+      "label": "Stand L\u00e9gumes Feuilles",
+      "description": "Piochez 1 carte Courses."
     },
     {
-      "id": "quiz-1",
-      "type": "quiz"
+      "id": "case-15-mini-quiz",
+      "type": "quiz",
+      "label": "Mini Quiz",
+      "description": "Si r\u00e9ponse correcte : 1 carte Courses bonus."
     },
     {
-      "id": "stand-fruits-rouges",
+      "id": "case-16-stand-fruits-rouges",
       "type": "stand",
-      "standId": "fruits-rouges"
+      "standId": "fruits-rouges",
+      "label": "Stand Fruits Rouges",
+      "description": "Piochez 1 carte Courses."
     },
     {
-      "id": "event-2",
-      "type": "event"
+      "id": "case-17-evenement",
+      "type": "event",
+      "label": "\u00c9v\u00e9nement",
+      "description": "Piochez 1 carte \u00c9v\u00e9nement et appliquez son effet."
     },
     {
-      "id": "stand-legumes-secs",
+      "id": "case-18-stand-legumes-secs",
       "type": "stand",
-      "standId": "legumes-secs"
+      "standId": "legumes-secs",
+      "label": "Stand L\u00e9gumes Secs",
+      "description": "Piochez 1 carte Courses."
     },
     {
-      "id": "exchange-3",
-      "type": "exchange"
+      "id": "case-19-echange",
+      "type": "exchange",
+      "label": "\u00c9change",
+      "description": "Piochez 1 carte \u00c9change et suivez son effet."
     },
     {
-      "id": "stand-bio-2",
+      "id": "case-20-stand-bio",
       "type": "stand",
-      "standId": "bio-legumes"
+      "standId": "bio-legumes",
+      "label": "Stand Bio",
+      "description": "Piochez 1 carte Courses."
     },
     {
-      "id": "stand-au-choix",
-      "type": "move_to_stand"
+      "id": "case-21-stand-au-choix",
+      "type": "move_choice",
+      "delta": 2,
+      "label": "Stand au choix",
+      "description": "Choisissez : avancez ou reculez de 2 cases."
     },
     {
-      "id": "stand-primeur-special",
+      "id": "case-22-stand-primeur-special",
       "type": "stand",
-      "standId": "primeur-special"
+      "standId": "primeur-special",
+      "label": "Stand Primeur Sp\u00e9cial",
+      "description": "Piochez 1 carte Courses."
     },
     {
-      "id": "bonus-course-1",
-      "type": "bonus_course"
+      "id": "case-23-courses-supplementaires",
+      "type": "bonus_course",
+      "label": "Courses suppl\u00e9mentaires",
+      "description": "Piochez 1 carte Courses bonus."
     },
     {
-      "id": "stand-agrumes",
+      "id": "case-24-stand-agrumes",
       "type": "stand",
-      "standId": "agrumes"
+      "standId": "agrumes",
+      "label": "Stand des Agrumes",
+      "description": "Piochez 1 carte Courses."
     },
     {
-      "id": "skip-2",
-      "type": "skip",
-      "turns": 1
+      "id": "case-25-repos",
+      "type": "rest",
+      "label": "Repos",
+      "description": "Aucun effet."
     },
     {
-      "id": "stand-fruits-secs",
+      "id": "case-26-stand-fruits-secs",
       "type": "stand",
-      "standId": "fruits-secs"
+      "standId": "fruits-secs",
+      "label": "Stand Fruits Secs",
+      "description": "Piochez 1 carte Courses."
     },
     {
-      "id": "exchange-4",
-      "type": "exchange"
+      "id": "case-27-troc-improvise",
+      "type": "exchange",
+      "label": "Troc improvis\u00e9",
+      "description": "Piochez 1 carte \u00c9change et suivez son effet."
     },
     {
-      "id": "stand-legumes-ete",
+      "id": "case-28-stand-legumes-ete",
       "type": "stand",
-      "standId": "legumes-ete"
+      "standId": "legumes-ete",
+      "label": "Stand L\u00e9gumes d'\u00e9t\u00e9",
+      "description": "Piochez 1 carte Courses."
     },
     {
-      "id": "move-minus-3",
+      "id": "case-29-meteo",
       "type": "move",
-      "delta": -3
+      "delta": -3,
+      "label": "M\u00e9t\u00e9o",
+      "description": "Reculez de 3 cases."
     },
     {
-      "id": "stand-fruits-hiver",
+      "id": "case-30-stand-fruits-hiver",
       "type": "stand",
-      "standId": "fruits-hiver"
+      "standId": "fruits-hiver",
+      "label": "Stand Fruits d'hiver",
+      "description": "Piochez 1 carte Courses."
     },
     {
-      "id": "exchange-5",
-      "type": "exchange"
+      "id": "case-31-echange",
+      "type": "exchange",
+      "label": "\u00c9change",
+      "description": "Piochez 1 carte \u00c9change et suivez son effet."
     },
     {
-      "id": "stand-legumes-exotiques",
+      "id": "case-32-stand-legumes-exotiques",
       "type": "stand",
-      "standId": "legumes-exotiques"
+      "standId": "legumes-exotiques",
+      "label": "Stand L\u00e9gumes Exotiques",
+      "description": "Piochez 1 carte Courses."
     },
     {
-      "id": "quiz-2",
-      "type": "quiz"
+      "id": "case-33-mini-quiz",
+      "type": "quiz",
+      "label": "Mini Quiz",
+      "description": "Si r\u00e9ponse correcte : 1 carte Courses bonus."
     },
     {
-      "id": "stand-champignons",
+      "id": "case-34-stand-champignons",
       "type": "stand",
-      "standId": "champignons"
+      "standId": "champignons",
+      "label": "Stand des Champignons",
+      "description": "Piochez 1 carte Courses."
     },
     {
-      "id": "move-plus-2",
+      "id": "case-35-energie",
       "type": "move",
-      "delta": 2
+      "delta": 2,
+      "label": "\u00c9nergie",
+      "description": "Avancez de 2 cases."
     },
     {
-      "id": "stand-primeur-3",
+      "id": "case-36-stand-primeur-hivernal",
       "type": "stand",
-      "standId": "primeur-hivernal"
+      "standId": "primeur-hivernal",
+      "label": "Stand Primeur Hivernal",
+      "description": "Piochez 1 carte Courses."
     },
     {
-      "id": "event-3",
-      "type": "event"
+      "id": "case-37-evenement",
+      "type": "event",
+      "label": "\u00c9v\u00e9nement",
+      "description": "Piochez 1 carte \u00c9v\u00e9nement et appliquez son effet."
     },
     {
-      "id": "stand-maraicher-2",
+      "id": "case-38-stand-maraicher-automne",
       "type": "stand",
-      "standId": "maraicher-automne"
+      "standId": "maraicher-automne",
+      "label": "Stand Mara\u00eecher d'automne",
+      "description": "Piochez 1 carte Courses."
     },
     {
-      "id": "exchange-6",
-      "type": "exchange"
+      "id": "case-39-echange-libre",
+      "type": "exchange",
+      "label": "\u00c9change libre",
+      "description": "Piochez 1 carte \u00c9change et suivez son effet."
     },
     {
-      "id": "rest-3",
-      "type": "rest"
+      "id": "case-40-repos",
+      "type": "rest",
+      "label": "Repos",
+      "description": "Aucun effet."
     }
   ]
 }

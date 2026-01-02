@@ -1,0 +1,44 @@
+Règles du jeu - Panier Express !
+
+ 
+Introduction
+Bienvenue au cœur du marché ! Les étals défilent devant vous, les marchands annoncent leurs meilleures offres et le temps presse… Votre panier est encore vide, mais votre shopping list est prête ! Dans Panier Express, vous parcourez les allées du marché pour dénicher les bons produits, gérer les imprévus et parfois échanger avec les autres joueurs. Entre promotions surprises, stands fermés et petits défis fruités, chaque partie est différente. Serez-vous le plus rapide à remplir votre panier et à valider vos achats avant les autres ? À vos marques… prêts… lancez la partie !
+ 
+But du jeu
+Votre objectif est d’être le premier joueur à réunir les 5 fruits ou légumes indiqués sur votre shopping list, puis de revenir à l’entrée du marché afin de valider vos achats.
+ 
+Éléments du jeu
+1. Un plateau de marché
+2. Un pion par joueur
+3. Un dé
+4. Des cartes
+a) Shopping list
+b) Courses
+c) Événement
+d) Échange
+e) Quiz Fruité
+ 
+Mise en place
+1. Choisissez votre pion ; celui-ci est automatiquement placé à l’entrée du marché.
+2. Vous recevez 1 shopping list, visible par tous.
+3. Les cartes Courses, Événement, Échange et Quiz Fruité sont automatiquement mélangées.
+4. Le chef de table commence la partie. Le jeu se poursuit ensuite dans le sens d’arrivée des joueurs.
+ 
+Déroulement d’un tour
+À votre tour :
+1. Lancez le dé
+2. Votre pion avance automatiquement du nombre de cases indiqué.
+3. Appliquez l’effet de la case sur laquelle vous arrivez :
+a) Case Stand
+Piochez automatiquement une carte Courses. Si l’aliment correspond à votre shopping list, il est ajouté à votre panier. Sinon, conservez-le dans votre inventaire afin de l’échanger plus tard.
+b) Case Événement
+Piochez une carte Événement. Appliquez immédiatement son effet.
+c) Case Échange
+Piochez une carte échange et suivez son effet.
+d) Case Quiz Fruité
+Une question à choix multiple vous est posée. Si vous avez la bonne réponse, gagnez 1 carte Courses supplémentaire sinon rien ne se passe.
+ 
+Fin de la partie
+Une fois les cinq ingrédients de votre shopping list réuni, vous devez obligatoirement revenir à l'entrée du marché afin de valider votre panier.
+Pour se faire, vous devez arriver pile sur la case de départ. Dans le cas contraire, vous poursuivez votre tour.
+Le premier joueur à valider ses achats remporte la partie.

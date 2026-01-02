@@ -122,14 +122,14 @@ export class PanierExpressPresenterService extends BasePresenterService {
               ? v
               : {
                   ...v,
-                  shoppingList: [],
+                  shoppingList: v.shoppingList,
                   basket: [],
                   inventory: (reveal as any)?.[v.id] > 0 ? v.inventory : [],
                 },
           )
         : playerViews.map((v) => ({
             ...v,
-            shoppingList: [],
+            shoppingList: v.shoppingList,
             basket: [],
             inventory: (reveal as any)?.[v.id] > 0 ? v.inventory : [],
           }));
