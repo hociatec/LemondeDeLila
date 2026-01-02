@@ -23,20 +23,30 @@ public sealed class GameHistorySink : IGameHistorySink
             return;
         }
 
-        _dispatcher.InvokeAsync(
-            () =>
+        void AddNow()
+        {
+            foreach (var part in parts)
             {
-                foreach (var part in parts)
+                var cleaned = (part ?? string.Empty).Trim();
+                if (string.IsNullOrWhiteSpace(cleaned))
                 {
-                    var cleaned = (part ?? string.Empty).Trim();
-                    if (string.IsNullOrWhiteSpace(cleaned))
-                    {
-                        continue;
-                    }
-
-                    _history.Entries.Add(cleaned);
+                    continue;
                 }
-            },
-            DispatcherPriority.Background);
+
+                _history.Entries.Add(cleaned);
+            }
+        }
+
+        // IMPORTANT:
+        // Si on est déjà sur le thread UI (cas normal: update de game.state),
+        // ajouter immédiatement pour préserver l'ordre des annonces (historique avant interface).
+        if (_dispatcher.CheckAccess())
+        {
+            AddNow();
+        }
+        else
+        {
+            _dispatcher.InvokeAsync(AddNow, DispatcherPriority.Background);
+        }
     }
 }

@@ -13,7 +13,7 @@ public sealed partial class AdminViewModel
 
     private static int ClampChatModerationLimit(int limit)
     {
-        if (limit < 20) return 20;
+        if (limit < 1) return 1;
         if (limit > 2000) return 2000;
         return limit;
     }
@@ -279,7 +279,7 @@ public sealed partial class AdminViewModel
         SelectedItem = Items.FirstOrDefault();
 
         IsTextInputVisible = true;
-        TextInputLabel = "Charger les X derniers messages (20 à 2000)";
+        TextInputLabel = "Charger les X derniers messages (1 à 2000)";
         TextInput = GetChatModerationLimit().ToString();
 
         IsSecondaryInputVisible = false;

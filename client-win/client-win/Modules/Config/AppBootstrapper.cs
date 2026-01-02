@@ -315,7 +315,7 @@ public static class AppBootstrapper
         {
             var sounds = provider.GetRequiredService<ISoundService>();
             var dispatcher = provider.GetRequiredService<Dispatcher>();
-            sounds.Preload(Modules.Audio.Models.SoundId.ClientOpened, warmUp: true);
+            sounds.Preload(Modules.Audio.Models.SoundId.ClientOpened);
 
             // Son de démarrage (si activé dans Options).
             sounds.Play(Modules.Audio.Models.SoundId.ClientOpened);
@@ -327,7 +327,7 @@ public static class AppBootstrapper
             {
                 sounds.Preload(Modules.Audio.Models.SoundId.ClientConnected, warmUp: true);
                 sounds.Preload(Modules.Audio.Models.SoundId.ClientDisconnected, warmUp: true);
-            }), DispatcherPriority.Loaded);
+            }), DispatcherPriority.Send);
 
             // Précharge le reste en arrière-plan pour ne pas bloquer le rendu initial.
             _ = dispatcher.BeginInvoke((Action)(() => sounds.PreloadAll()), DispatcherPriority.Background);

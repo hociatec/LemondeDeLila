@@ -635,6 +635,17 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
 
         _dispatcher.InvokeAsync(() =>
         {
+            var presented = _presenter.Present(state!);
+
+            // IMPORTANT:
+            // Annoncer d'abord les nouvelles lignes d'historique (ordre serveur),
+            // puis seulement ensuite appliquer les changements d'interface (ex: liste de choix),
+            // sinon NVDA lit le contrôle (ex: "Échange") avant le message "Case 11: Échange ...".
+            foreach (var msg in presented.newLogMessages)
+            {
+                MessageReceived?.Invoke(msg);
+            }
+
             var nextStatus = state?.Status ?? string.Empty;
             var previousStatus = _lastGameStatus ?? string.Empty;
             _lastGameStatus = nextStatus;
@@ -650,8 +661,6 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
                 _choices.UpdateFromState(state, _viewerPlayerId, CanStartAskCardSelection);
             }
 
-            var presented = _presenter.Present(state!);
-
             IsBotThinking = presented.isBotThinking;
             StateSummary = presented.stateSummary;
             PendingText = presented.pendingText;
@@ -664,11 +673,6 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
             }
 
             RefreshCanExecute();
-
-            foreach (var msg in presented.newLogMessages)
-            {
-                MessageReceived?.Invoke(msg);
-            }
 
             if (state != null)
             {

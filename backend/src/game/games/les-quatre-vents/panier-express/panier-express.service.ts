@@ -2445,6 +2445,7 @@ export class PanierExpressService extends AbstractGameService {
     };
 
     if (kind === 'exchange.strategique.choose_target') {
+      const exchangeId = (pending?.data as any)?.exchangeId ?? null;
       const targets = Array.isArray(pending?.data?.targets)
         ? pending.data.targets
         : [];
@@ -2466,12 +2467,13 @@ export class PanierExpressService extends AbstractGameService {
           blocking: true,
           label: 'Choisissez la carte à recevoir (inventaire adverse), puis Entrée.',
           choices: targetInv,
-          data: { kind: 'exchange.strategique.choose_take', targetPlayerId, takeChoices: targetInv },
+          data: { kind: 'exchange.strategique.choose_take', exchangeId, targetPlayerId, takeChoices: targetInv },
         } as any,
       };
     }
 
     if (kind === 'exchange.strategique.choose_take') {
+      const exchangeId = (pending?.data as any)?.exchangeId ?? null;
       const targetPlayerId = Number(pending?.data?.targetPlayerId);
       const takeChoices = Array.isArray(pending?.data?.takeChoices)
         ? pending.data.takeChoices.map((v: any) => String(v))
@@ -2489,12 +2491,13 @@ export class PanierExpressService extends AbstractGameService {
           blocking: true,
           label: 'Choisissez la carte à offrir (inventaire), puis Entrée.',
           choices: myInv,
-          data: { kind: 'exchange.strategique.choose_give', targetPlayerId, take },
+          data: { kind: 'exchange.strategique.choose_give', exchangeId, targetPlayerId, take },
         } as any,
       };
     }
 
     if (kind === 'exchange.strategique.choose_give') {
+      const exchangeId = (pending?.data as any)?.exchangeId ?? null;
       const targetPlayerId = Number(pending?.data?.targetPlayerId);
       const take = String(pending?.data?.take ?? '').trim();
       const give = String(choices[index] ?? '').trim();
@@ -2507,7 +2510,7 @@ export class PanierExpressService extends AbstractGameService {
           blocking: true,
           label: `Échange stratégique : accepter l'échange ?`,
           choices: ['Accepter', 'Refuser'],
-          data: { kind: 'exchange.strategique.confirm', initiatorId: actorId, targetPlayerId, give, take },
+          data: { kind: 'exchange.strategique.confirm', exchangeId, initiatorId: actorId, targetPlayerId, give, take },
         } as any,
       };
     }
@@ -2517,11 +2520,36 @@ export class PanierExpressService extends AbstractGameService {
       const targetPlayerId = Number(pending?.data?.targetPlayerId);
       const give = String(pending?.data?.give ?? '').trim();
       const take = String(pending?.data?.take ?? '').trim();
+      const exchangeId = (pending?.data as any)?.exchangeId ?? null;
       if (!Number.isFinite(initiatorId) || !Number.isFinite(targetPlayerId) || !give || !take) {
+        return clearPending(state);
+      }
+
+      const meta = this.getMetadata(state) as any;
+      const alreadyResolved = Array.isArray(meta?.actionLog)
+        ? meta.actionLog.some(
+            (e: any) =>
+              e?.type === 'exchange' &&
+              e?.payload?.kind === 'exchange.strategique.confirm' &&
+              exchangeId != null &&
+              e?.payload?.exchangeId === exchangeId,
+          )
+        : false;
+
+      if (alreadyResolved) {
         return clearPending(state);
       }
       let next = clearPending(state);
       const accepted = index === 0;
+      next = this.appendActionLog(next, actorId, 'exchange', {
+        kind: 'exchange.strategique.confirm',
+        exchangeId,
+        initiatorId,
+        targetPlayerId,
+        accepted,
+        give,
+        take,
+      });
       if (accepted) {
         const removedGive = removeCourseFromPlayer(next, initiatorId, give);
         next = removedGive.state;

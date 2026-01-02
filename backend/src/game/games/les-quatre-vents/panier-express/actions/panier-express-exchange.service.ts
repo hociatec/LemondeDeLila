@@ -377,7 +377,7 @@ export class PanierExpressExchangeService {
       if (!choices.length) {
         return this.core.appendLog(
           { ...state, metadata },
-          `[Panier Express] Troc fruit/légume : aucun joueur disponible.`,
+          `[Panier Express] Troc fruit/l?gume : aucun joueur disponible.`,
         );
       }
       return {
@@ -387,7 +387,7 @@ export class PanierExpressExchangeService {
           type: 'pick',
           playerId,
           blocking: true,
-          label: 'Choisissez un joueur pour le troc, puis Entrée.',
+          label: 'Choisissez un joueur pour le troc, puis Entr?e.',
           choices,
           data: { kind: 'exchange.troc_fruit_legume.choose_target', targets },
         } as any,
@@ -431,19 +431,24 @@ export class PanierExpressExchangeService {
       if (!choices.length) {
         return this.core.appendLog(
           { ...state, metadata },
-          `[Panier Express] Échange stratégique : aucun joueur disponible.`,
+          `[Panier Express] �%change stratǸgique : aucun joueur disponible.`,
         );
       }
+
+      const exchangeIdOut = this.random.nextInt(metadata as any, 1_000_000_000);
+      const nextMetadata = exchangeIdOut.meta as any;
+      const exchangeId = exchangeIdOut.value;
+
       return {
         ...state,
-        metadata,
+        metadata: nextMetadata,
         pending: {
           type: 'pick',
           playerId,
           blocking: true,
-          label: "Choisissez un joueur pour l'échange stratégique, puis Entrée.",
+          label: "Choisissez un joueur pour l'Ǹchange stratǸgique, puis EntrǸe.",
           choices,
-          data: { kind: 'exchange.strategique.choose_target', targets },
+          data: { kind: 'exchange.strategique.choose_target', exchangeId, targets },
         } as any,
       };
     }

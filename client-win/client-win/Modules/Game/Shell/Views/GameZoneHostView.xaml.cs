@@ -18,16 +18,18 @@ public partial class GameZoneHostView : UserControl
     {
         if (GameZoneHost?.Content is System.Windows.FrameworkElement contentRoot)
         {
-            if (contentRoot.Focusable && contentRoot.Focus())
-            {
-                Keyboard.Focus(contentRoot);
-                return;
-            }
-
+            // Priorité: focus sur un enfant réellement interactif (ex: liste de choix).
+            // Fallback: focus sur le root seulement s'il n'y a rien d'autre.
             if (contentRoot.MoveFocus(new TraversalRequest(FocusNavigationDirection.First)))
             {
                 return;
             }
+        }
+
+        if (GameZoneFocusAnchor?.Focus() == true)
+        {
+            Keyboard.Focus(GameZoneFocusAnchor);
+            return;
         }
 
         GameZoneEmptyAnchor?.Focus();

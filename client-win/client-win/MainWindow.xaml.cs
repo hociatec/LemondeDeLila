@@ -189,7 +189,10 @@ namespace client_win
             try
             {
                 var sounds = _host.Services.GetRequiredService<ISoundService>();
-                Dispatcher.BeginInvoke(() => sounds.Play(SoundId.ClientConnected), DispatcherPriority.Send);
+                // Éviter le BeginInvoke ici: on est déjà sur le thread UI, et ça ajoute une latence perceptible.
+                // Précharger + warm-up pour réduire au maximum la latence du tout premier play.
+                sounds.Preload(SoundId.ClientConnected, warmUp: true);
+                sounds.Play(SoundId.ClientConnected);
             }
             catch
             {
@@ -281,6 +284,10 @@ namespace client_win
 
             try
             {
+                // Éviter de recharger les MediaPlayer pendant que le son "connexion" joue,
+                // sinon un refresh des sons distants peut couper la lecture en cours.
+                await sounds.WaitForSoundToEndAsync(SoundId.ClientConnected, TimeSpan.FromSeconds(4)).ConfigureAwait(false);
+
                 sounds.PreloadAll();
 
                 // Rejouer la boucle selon la vue courante pour prendre en compte les sons distants nouvellement téléchargés.

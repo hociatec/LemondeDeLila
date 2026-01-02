@@ -121,18 +121,39 @@ public partial class GameRoomView : UserControl
         // WPF peut "absorber" la navigation quand le focus est dans un TextBox (historique) ou sur un ContentControl vide.
         // Ici on force explicitement le basculement Zone de jeu <-> Historique pour garantir l'accessibilité.
         // On laisse WPF gérer la navigation interne aux contrôles (futurs contrôles de jeu).
+        e.Handled = true;
+
         var shift = (Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift;
+
+        if (HistoryHost?.IsKeyboardFocusWithin == true)
+        {
+            FocusGameZone();
+            return;
+        }
+
+        if (GameZoneHost?.IsKeyboardFocusWithin == true)
+        {
+            if (shift)
+            {
+                FocusGameZone();
+                return;
+            }
+
+            FocusHistory();
+            return;
+        }
+
+        if (shift)
+        {
+            FocusGameZone();
+            return;
+        }
+
+        FocusHistory();
 
         // Ne pas intercepter Tab quand le focus est déjà dans la zone de jeu : elle délègue (Tab -> Historique).
         // Ici on ne force Tab vers la zone de jeu que si l'utilisateur n'est ni dans l'historique ni dans la zone de jeu.
-        if (!shift &&
-            Root?.IsKeyboardFocusWithin == true &&
-            HistoryHost?.IsKeyboardFocusWithin != true &&
-            GameZoneHost?.IsKeyboardFocusWithin != true)
-        {
-            e.Handled = true;
-            FocusGameZone();
-        }
+        return;
     }
 
     private void OnHistoryTabNavigationRequested(object? sender, TabNavigationRequestedEventArgs e)

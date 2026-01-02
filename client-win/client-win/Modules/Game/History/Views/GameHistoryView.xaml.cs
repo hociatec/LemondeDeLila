@@ -289,7 +289,18 @@ public partial class GameHistoryView : UserControl
         }
 
         _announceQueue.Enqueue(cleaned);
-        EnsureAnnouncePump();
+
+        // Annoncer le premier message immédiatement (sans attendre le tick du timer),
+        // pour garder l'ordre "historique -> interface" quand un changement d'UI survient juste après.
+        if (_announceQueue.Count == 1)
+        {
+            PumpAnnouncements();
+        }
+
+        if (_announceQueue.Count > 0)
+        {
+            EnsureAnnouncePump();
+        }
     }
 
     private void EnsureAnnouncePump()

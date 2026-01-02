@@ -13,8 +13,8 @@
           Loaded="OnLoaded"
           PreviewKeyDown="OnPreviewKeyDown"
           behaviors:ShortcutBindingsBehavior.Shortcuts="{Binding GameZone.Shortcuts}"
-          KeyboardNavigation.TabNavigation="Continue"
-          KeyboardNavigation.ControlTabNavigation="Continue">
+          KeyboardNavigation.TabNavigation="Cycle"
+          KeyboardNavigation.ControlTabNavigation="Cycle">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />

@@ -27,6 +27,7 @@ public sealed class SoundService : ISoundService, IDisposable
     private readonly Dictionary<SoundId, MediaPlayer> _players = new();
     private readonly Dictionary<SoundId, string> _loadedPaths = new();
     private readonly Dictionary<SoundId, long> _lastPlayTicks = new();
+    private readonly Dictionary<SoundId, int> _playGeneration = new();
     private readonly HashSet<SoundId> _opened = new();
     private readonly Dictionary<SoundId, SoundEntry> _sounds;
     private readonly HashSet<SoundId> _looping = new();
@@ -146,7 +147,7 @@ public sealed class SoundService : ISoundService, IDisposable
                 {
                     lock (_gate)
                     {
-                        EnsurePlayerLoaded(sound, filePath);
+                        EnsurePlayerLoaded(sound, filePath, canInterruptPlayback: false);
                     }
                 }
                 catch (Exception ex)
@@ -185,10 +186,12 @@ public sealed class SoundService : ISoundService, IDisposable
             try
             {
                 MediaPlayer player;
+                int generationSnapshot;
                 lock (_gate)
                 {
-                    EnsurePlayerLoaded(sound, filePath);
+                    EnsurePlayerLoaded(sound, filePath, canInterruptPlayback: false);
                     player = _players[sound];
+                    _playGeneration.TryGetValue(sound, out generationSnapshot);
                 }
 
                 if (!warmUp)
@@ -197,22 +200,54 @@ public sealed class SoundService : ISoundService, IDisposable
                 }
 
                 // Warm-up best-effort: encourage Media Foundation to decode/buffer before the first real playback.
-                void WarmUp()
+                void WarmUp(int expectedGeneration)
                 {
+                    bool IsStillCurrent()
+                    {
+                        lock (_gate)
+                        {
+                            return _playGeneration.TryGetValue(sound, out var current) ? current == expectedGeneration : expectedGeneration == 0;
+                        }
+                    }
+
+                    if (!IsStillCurrent())
+                    {
+                        return;
+                    }
+
+                    var previousVolume = player.Volume;
+                    var previousMuted = player.IsMuted;
                     try
                     {
-                        var previousVolume = player.Volume;
+                        if (!IsStillCurrent())
+                        {
+                            return;
+                        }
+
+                        // Utiliser IsMuted plutôt que Volume=0 pour éviter un "blip" audible selon le timing du moteur audio.
+                        player.IsMuted = true;
                         player.Volume = 0;
                         player.Stop();
                         player.Position = TimeSpan.Zero;
                         player.Play();
-                        player.Pause();
-                        player.Position = TimeSpan.Zero;
-                        player.Volume = previousVolume;
+                        if (IsStillCurrent())
+                        {
+                            player.Pause();
+                            player.Position = TimeSpan.Zero;
+                        }
                     }
                     catch
                     {
                         // ignore (best-effort)
+                    }
+                    finally
+                    {
+                        // Ne pas écraser une lecture réelle qui aurait démarré pendant le warm-up.
+                        if (IsStillCurrent())
+                        {
+                            try { player.Volume = previousVolume; } catch { /* ignore */ }
+                            try { player.IsMuted = previousMuted; } catch { /* ignore */ }
+                        }
                     }
                 }
 
@@ -224,7 +259,7 @@ public sealed class SoundService : ISoundService, IDisposable
 
                 if (alreadyOpened)
                 {
-                    WarmUp();
+                    WarmUp(generationSnapshot);
                     return;
                 }
 
@@ -232,7 +267,7 @@ public sealed class SoundService : ISoundService, IDisposable
                 opened = (_, _) =>
                 {
                     try { player.MediaOpened -= opened; } catch { /* ignore */ }
-                    WarmUp();
+                    WarmUp(generationSnapshot);
                 };
                 player.MediaOpened += opened;
             }
@@ -271,6 +306,7 @@ public sealed class SoundService : ISoundService, IDisposable
                 return;
             }
             _lastPlayTicks[sound] = now;
+            _playGeneration[sound] = _playGeneration.TryGetValue(sound, out var current) ? current + 1 : 1;
         }
 
         var filePath = ResolveFilePath(sound, entry);
@@ -288,7 +324,7 @@ public sealed class SoundService : ISoundService, IDisposable
                 TaskCompletionSource<bool> tcs;
                 lock (_gate)
                 {
-                    EnsurePlayerLoaded(sound, filePath);
+                    EnsurePlayerLoaded(sound, filePath, canInterruptPlayback: true);
                     player = _players[sound];
 
                     tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -297,6 +333,7 @@ public sealed class SoundService : ISoundService, IDisposable
 
                 void StartPlayback()
                 {
+                    player.IsMuted = false;
                     player.Volume = entry.Volume();
                     player.Stop();
                     player.Position = TimeSpan.Zero;
@@ -446,7 +483,7 @@ public sealed class SoundService : ISoundService, IDisposable
 
             lock (_gate)
             {
-                EnsurePlayerLoaded(sound, filePath);
+                EnsurePlayerLoaded(sound, filePath, canInterruptPlayback: true);
                 player = _players[sound];
 
                 if (_loopPlayers.TryGetValue(sound, out var previousPlayer) && !ReferenceEquals(previousPlayer, player))
@@ -597,6 +634,7 @@ public sealed class SoundService : ISoundService, IDisposable
             _players.Clear();
             _loadedPaths.Clear();
             _lastPlayTicks.Clear();
+            _playGeneration.Clear();
             _opened.Clear();
         }
     }
@@ -645,11 +683,16 @@ public sealed class SoundService : ISoundService, IDisposable
         return ResolveFilePath(entry);
     }
 
-    private void EnsurePlayerLoaded(SoundId sound, string absolutePath)
+    private void EnsurePlayerLoaded(SoundId sound, string absolutePath, bool canInterruptPlayback)
     {
         if (_players.TryGetValue(sound, out var existing) &&
             _loadedPaths.TryGetValue(sound, out var loaded) &&
             string.Equals(loaded, absolutePath, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        if (!canInterruptPlayback && _playEndSignals.ContainsKey(sound))
         {
             return;
         }
