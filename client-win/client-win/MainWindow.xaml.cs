@@ -301,7 +301,7 @@ namespace client_win
         private void TryPlayClientDisconnectedSound(ISoundService sounds)
         {
             // Évite les doubles lectures si un transport déclenche aussi le son (ex: WS disconnect) au même moment.
-            const long minGapTicks = (long)(Stopwatch.Frequency * 0.9);
+            var minGapTicks = (long)(Stopwatch.Frequency * 0.9);
             var now = Stopwatch.GetTimestamp();
             var prev = Interlocked.Read(ref _lastClientDisconnectedSoundTicks);
             if (prev != 0 && (now - prev) < minGapTicks)
