@@ -25,3 +25,4 @@ jwt.signature.publicKey=./config/jwt-signing-public.pem
 # admin.maintenance.token=CHANGE_ME
 # Option 2: env var (prioritaire)
 # CLIENT_ADMIN_MAINTENANCE_TOKEN=CHANGE_ME
+# ADMIN_MAINTENANCE_TOKEN=CHANGE_ME

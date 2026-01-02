@@ -90,7 +90,7 @@ export class GameRegistryService {
       ? withOverrides
       : withOverrides.filter((d: any) => d.enabled !== false);
 
-    // Cache: on conserve la liste brute (handler + FS), les overrides sont appliquÃ©s Ã  la volÃ©e.
+    // Cache: on conserve la liste brute (handler + FS), les overrides sont appliqués à la volée.
     this.cachedDefinitions = merged;
     this.cachedAtMs = Date.now();
     return filtered.map((d: any) => {

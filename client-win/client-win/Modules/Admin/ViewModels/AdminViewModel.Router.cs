@@ -288,7 +288,7 @@ public sealed partial class AdminViewModel
                 {
                     PushReturnFocus();
                     var current = _roomSettings?.AutoCleanupOlderThanMinutes ?? 60;
-                    BuildRoomsSettingEdit("Auto-cleanup", "Ã‚ge max (minutes)", current.ToString(), mode: "rooms.settings.olderThan");
+                    BuildRoomsSettingEdit("Auto-cleanup", "Âge max (minutes)", current.ToString(), mode: "rooms.settings.olderThan");
                     return;
                 }
                 if (roomsAction == "rooms.settings.interval")
@@ -737,7 +737,7 @@ public sealed partial class AdminViewModel
                     if (uid > 0)
                     {
                         await _admin.UnbanUserFromChatAsync(uid).ConfigureAwait(true);
-                        await _dialogs.ShowInfo("Tchat", "Utilisateur dÃ©banni du tchat.").ConfigureAwait(true);
+                        await _dialogs.ShowInfo("Tchat", "Utilisateur débanni du tchat.").ConfigureAwait(true);
                         await ReloadChatModerationAsync().ConfigureAwait(true);
                     }
                     return;

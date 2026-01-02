@@ -13,16 +13,21 @@ public sealed class AdminMaintenanceHttpService : IAdminMaintenanceHttpService
 {
     private readonly ClientConfiguration _config;
     private readonly IApiHttpClient _apiHttp;
+    private readonly IAdminMaintenanceTokenStore _tokenStore;
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNameCaseInsensitive = true
     };
 
-    public AdminMaintenanceHttpService(ClientConfiguration config, IApiHttpClient apiHttp)
+    public AdminMaintenanceHttpService(
+        ClientConfiguration config,
+        IApiHttpClient apiHttp,
+        IAdminMaintenanceTokenStore tokenStore)
     {
         _config = config ?? throw new ArgumentNullException(nameof(config));
         _apiHttp = apiHttp ?? throw new ArgumentNullException(nameof(apiHttp));
+        _tokenStore = tokenStore ?? throw new ArgumentNullException(nameof(tokenStore));
     }
 
     public async Task<AdminMaintenanceStartDeployResponse> StartDeployAsync(CancellationToken cancellationToken = default)
@@ -60,12 +65,14 @@ public sealed class AdminMaintenanceHttpService : IAdminMaintenanceHttpService
         var token = (_config.AdminMaintenanceToken ?? string.Empty).Trim();
         if (token.Length == 0)
         {
-            throw new InvalidOperationException(
-                "Token de maintenance manquant. Configurez 'admin.maintenance.token' dans client.properties (ou CLIENT_ADMIN_MAINTENANCE_TOKEN).");
+            token = (_tokenStore.TryLoad() ?? string.Empty).Trim();
         }
 
         var req = new HttpRequestMessage(method, uri);
-        req.Headers.TryAddWithoutValidation("x-admin-maintenance-token", token);
+        if (token.Length > 0)
+        {
+            req.Headers.TryAddWithoutValidation("x-admin-maintenance-token", token);
+        }
         return req;
     }
 
@@ -93,4 +100,3 @@ public sealed class AdminMaintenanceHttpService : IAdminMaintenanceHttpService
         }
     }
 }
-

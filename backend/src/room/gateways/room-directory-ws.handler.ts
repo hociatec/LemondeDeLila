@@ -115,7 +115,7 @@ export class RoomDirectoryWsHandler {
     const state = await this.rooms.getRoomPayload(dto.roomId);
     if (state.room.isPrivate) {
       throw new ForbiddenException(
-        'Spectateurs interdits sur les tables privÇ¸es',
+        'Spectateurs interdits sur les tables privées',
       );
     }
     return {

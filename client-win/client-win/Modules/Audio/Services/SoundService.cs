@@ -308,8 +308,8 @@ public sealed class SoundService : ISoundService, IDisposable
         long now = Stopwatch.GetTimestamp();
         lock (_gate)
         {
-            // Au dÃ©marrage, il peut arriver que ClientOpened (son d'ouverture) et ClientConnected (connexion rapide/auto-login)
-            // soient jouÃ©s Ã  quelques centaines de ms d'intervalle, ce qui donne une impression de "double lancement".
+            // Au démarrage, il peut arriver que ClientOpened (son d'ouverture) et ClientConnected (connexion rapide/auto-login)
+            // soient joués à quelques centaines de ms d'intervalle, ce qui donne une impression de "double lancement".
             // Dans ce cas, on supprime le son "connexion" si on vient de jouer "ouverture".
             if (sound == SoundId.ClientConnected &&
                 _lastPlayTicks.TryGetValue(SoundId.ClientOpened, out var lastOpened) &&

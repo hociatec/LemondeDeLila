@@ -9,6 +9,88 @@ namespace client_win.Modules.Admin.ViewModels;
 
 public sealed partial class AdminViewModel
 {
+    private bool HasMaintenanceTokenConfigured()
+    {
+        return !string.IsNullOrWhiteSpace(_config.AdminMaintenanceToken) || _maintenanceTokenStore.HasToken();
+    }
+
+    private static bool LooksLikeTokenError(Exception ex)
+    {
+        var msg = (ex.Message ?? string.Empty).Trim();
+        if (msg.Length == 0) return false;
+        return msg.Contains("Token de maintenance", StringComparison.OrdinalIgnoreCase) ||
+               msg.Contains("Maintenance non configurée", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private async Task<bool> EnsureMaintenanceTokenAsync(bool promptIfMissing = true)
+    {
+        if (HasMaintenanceTokenConfigured())
+        {
+            return true;
+        }
+
+        if (!promptIfMissing)
+        {
+            return false;
+        }
+
+        await _dialogs.ShowInfo(
+                "Maintenance",
+                "Le serveur demande un token de maintenance (barrière supplémentaire pour déployer).\n\n" +
+                "Saisissez-le une fois : il sera mémorisé (chiffré) pour ce compte Windows.")
+            .ConfigureAwait(true);
+
+        var token = await _secretPrompts
+            .PromptSecretAsync("Maintenance", "Token de maintenance")
+            .ConfigureAwait(true);
+
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            return false;
+        }
+
+        try
+        {
+            _maintenanceTokenStore.Save(token);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            await _dialogs.ShowError("Maintenance", "Impossible d'enregistrer le token: " + ex.Message).ConfigureAwait(true);
+            return false;
+        }
+    }
+
+    private async Task<bool> EnsureMaintenanceTokenOrUpdateAsync(Exception ex)
+    {
+        if (!LooksLikeTokenError(ex))
+        {
+            return false;
+        }
+
+        // Token manquant: demander une saisie.
+        if ((ex.Message ?? string.Empty).Contains("manquant", StringComparison.OrdinalIgnoreCase))
+        {
+            return await EnsureMaintenanceTokenAsync(promptIfMissing: true).ConfigureAwait(true);
+        }
+
+        // Token invalide: proposer de le remplacer.
+        var confirmed = await _dialogs
+            .Confirm(
+                "Maintenance",
+                "Le token de maintenance est invalide.\n\nVoulez-vous le ressaisir ?",
+                okText: "Ressaisir",
+                cancelText: "Annuler")
+            .ConfigureAwait(true);
+        if (confirmed != true)
+        {
+            return false;
+        }
+
+        _maintenanceTokenStore.Clear();
+        return await EnsureMaintenanceTokenAsync(promptIfMissing: true).ConfigureAwait(true);
+    }
+
     private void BuildMaintenance()
     {
         _page = AdminPage.Maintenance;
@@ -41,6 +123,12 @@ public sealed partial class AdminViewModel
 
         try
         {
+            if (!await EnsureMaintenanceTokenAsync(promptIfMissing: true).ConfigureAwait(true))
+            {
+                Status = "Maintenance: token requis";
+                return;
+            }
+
             IsBusy = true;
             Status = "Maintenance: chargement…";
 
@@ -57,6 +145,11 @@ public sealed partial class AdminViewModel
         }
         catch (Exception ex)
         {
+            if (await EnsureMaintenanceTokenOrUpdateAsync(ex).ConfigureAwait(true))
+            {
+                await RefreshMaintenanceAsync().ConfigureAwait(true);
+                return;
+            }
             await _dialogs.ShowError("Maintenance", ex.Message).ConfigureAwait(true);
         }
         finally
@@ -74,6 +167,12 @@ public sealed partial class AdminViewModel
 
         try
         {
+            if (!await EnsureMaintenanceTokenAsync(promptIfMissing: true).ConfigureAwait(true))
+            {
+                Status = "Maintenance: token requis";
+                return;
+            }
+
             IsBusy = true;
             Status = "Maintenance: logs…";
 
@@ -84,6 +183,11 @@ public sealed partial class AdminViewModel
         }
         catch (Exception ex)
         {
+            if (await EnsureMaintenanceTokenOrUpdateAsync(ex).ConfigureAwait(true))
+            {
+                await RefreshMaintenanceLogsAsync().ConfigureAwait(true);
+                return;
+            }
             await _dialogs.ShowError("Maintenance", ex.Message).ConfigureAwait(true);
         }
         finally
@@ -101,6 +205,12 @@ public sealed partial class AdminViewModel
 
         try
         {
+            if (!await EnsureMaintenanceTokenAsync(promptIfMissing: true).ConfigureAwait(true))
+            {
+                Status = "Maintenance: token requis";
+                return;
+            }
+
             IsBusy = true;
             Status = "Maintenance: status service…";
 
@@ -113,6 +223,11 @@ public sealed partial class AdminViewModel
         }
         catch (Exception ex)
         {
+            if (await EnsureMaintenanceTokenOrUpdateAsync(ex).ConfigureAwait(true))
+            {
+                await RefreshMaintenanceServiceStatusAsync().ConfigureAwait(true);
+                return;
+            }
             await _dialogs.ShowError("Maintenance", ex.Message).ConfigureAwait(true);
         }
         finally
@@ -125,6 +240,12 @@ public sealed partial class AdminViewModel
     {
         if (IsBusy)
         {
+            return;
+        }
+
+        if (!await EnsureMaintenanceTokenAsync(promptIfMissing: true).ConfigureAwait(true))
+        {
+            Status = "Déploiement: token requis";
             return;
         }
 
@@ -206,6 +327,11 @@ public sealed partial class AdminViewModel
         }
         catch (Exception ex)
         {
+            if (await EnsureMaintenanceTokenOrUpdateAsync(ex).ConfigureAwait(true))
+            {
+                await DeployBackendAsync().ConfigureAwait(true);
+                return;
+            }
             await _dialogs.ShowError("Maintenance", ex.Message).ConfigureAwait(true);
         }
         finally

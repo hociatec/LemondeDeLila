@@ -126,7 +126,8 @@ public sealed class ClientConfiguration
             (properties.TryGetValue("admin.maintenance.token", out var maintenanceToken)
                 ? Normalize(maintenanceToken)
                 : null)
-            ?? Normalize(Environment.GetEnvironmentVariable("CLIENT_ADMIN_MAINTENANCE_TOKEN"));
+            ?? Normalize(Environment.GetEnvironmentVariable("CLIENT_ADMIN_MAINTENANCE_TOKEN"))
+            ?? Normalize(Environment.GetEnvironmentVariable("ADMIN_MAINTENANCE_TOKEN"));
 
         var config = new ClientConfiguration(
             appName,

@@ -8,15 +8,17 @@ export class AdminMaintenanceGuard implements CanActivate {
     }
 
     const request = context.switchToHttp().getRequest();
-    const token = String(request?.headers?.['x-admin-maintenance-token'] || '').trim();
-    const expected = String(process.env.ADMIN_MAINTENANCE_TOKEN || '').trim();
+    if (this.isTokenRequired()) {
+      const token = String(request?.headers?.['x-admin-maintenance-token'] || '').trim();
+      const expected = String(process.env.ADMIN_MAINTENANCE_TOKEN || '').trim();
 
-    if (!expected) {
-      throw new ForbiddenException('Maintenance non configurée (token manquant)');
-    }
+      if (!expected) {
+        throw new ForbiddenException('Maintenance non configurée (token manquant)');
+      }
 
-    if (!token || token !== expected) {
-      throw new ForbiddenException('Token de maintenance invalide');
+      if (!token || token !== expected) {
+        throw new ForbiddenException('Token de maintenance invalide');
+      }
     }
 
     const ipAllowlist = this.getIpAllowlist();
@@ -33,6 +35,14 @@ export class AdminMaintenanceGuard implements CanActivate {
   private isEnabled(): boolean {
     const raw = String(process.env.ADMIN_MAINTENANCE_ENABLED || '').trim().toLowerCase();
     return raw === '1' || raw === 'true' || raw === 'yes';
+  }
+
+  private isTokenRequired(): boolean {
+    const raw = String(process.env.ADMIN_MAINTENANCE_REQUIRE_TOKEN || '')
+      .trim()
+      .toLowerCase();
+    if (!raw) return true; // default: required
+    return !(raw === '0' || raw === 'false' || raw === 'no');
   }
 
   private getIpAllowlist(): string[] {

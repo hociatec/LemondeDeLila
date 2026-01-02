@@ -24,7 +24,7 @@ export class GameEngineStateStore {
       this.initializeRedis(redisUrl);
     } else {
       this.logger.warn(
-        'GAME_ENGINE_STATE_REDIS_URL non dÃ©fini : fallback en mÃ©moire (non persistant).',
+        'GAME_ENGINE_STATE_REDIS_URL non défini : fallback en mémoire (non persistant).',
       );
     }
   }
@@ -52,7 +52,7 @@ export class GameEngineStateStore {
       this.states.set(key, parsed);
       return parsed;
     } catch (error) {
-      this.logger.error('Impossible de restaurer un Ã©tat depuis Redis', error, {
+      this.logger.error('Impossible de restaurer un état depuis Redis', error, {
         key,
       });
       return undefined;
@@ -76,7 +76,7 @@ export class GameEngineStateStore {
       try {
         await this.redis.del(this.redisKey(key));
       } catch (error) {
-        this.logger.error('Impossible de supprimer un Ã©tat Redis', error, {
+        this.logger.error('Impossible de supprimer un état Redis', error, {
           key,
         });
       }
@@ -133,7 +133,7 @@ export class GameEngineStateStore {
         60 * 60 * 24,
       );
     } catch (error) {
-      this.logger.error('Impossible de persister un Ã©tat Redis', error, {
+      this.logger.error('Impossible de persister un état Redis', error, {
         key,
       });
     }

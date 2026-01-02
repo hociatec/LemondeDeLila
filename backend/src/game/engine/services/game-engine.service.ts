@@ -240,9 +240,9 @@ export class GameEngineService {
         return marked;
       }
 
-      // Cas spÃ©cial : la room a Ã©tÃ© reset (startedAt remis Ã  null) puis relancÃ©e,
-      // mais le moteur n'a pas "vu" la transition setup->started (ex: aucun WS game connectÃ©).
-      // On force la reconstruction si startedAt a changÃ©.
+      // Cas spécial : la room a été reset (startedAt remis à null) puis relancée,
+      // mais le moteur n'a pas "vu" la transition setup->started (ex: aucun WS game connecté).
+      // On force la reconstruction si startedAt a changé.
       if (
         previousStatus === 'started' &&
         nextStatus === 'started' &&
@@ -517,8 +517,8 @@ export class GameEngineService {
     await this.scheduleBotTurn(roomId, gameType, marked);
     this.broadcaster?.(gameType, roomId, marked);
 
-    // Fin de partie : remettre la room en "setup" (comme le raccourci X) et rÇ¸initialiser l'Ç¸tat du jeu
-    // pour permettre de relancer immÇ¸diatement.
+    // Fin de partie : remettre la room en "setup" (comme le raccourci X) et réinitialiser l'état du jeu
+    // pour permettre de relancer immédiatement.
     if ((marked.status || '').toLowerCase() === 'finished') {
       try {
         await this.stats.finalizeFinished(roomId, marked);

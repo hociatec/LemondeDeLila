@@ -258,7 +258,7 @@ describe('PanierExpressService', () => {
     base.turn = { currentPlayerId: 1, direction: 1 };
     base.turnIndex = 0;
 
-    // Simule un tirage chanceux : 3 cartes ont dÇ¸jÇÿ Ç¸tÇ¸ sorties du deck au moment de l'offre.
+    // Simule un tirage chanceux : 3 cartes ont déjà été sorties du deck au moment de l'offre.
     (base.metadata.decks as any)['courses-bonus'] = { deck: ['banane'], discards: [] };
     base.pending = {
       type: 'pick',

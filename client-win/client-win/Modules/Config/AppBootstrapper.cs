@@ -177,6 +177,7 @@ public static class AppBootstrapper
         services.AddSingleton<IWsTicketProvider, WsTicketProvider>();
         services.AddSingleton<client_win.Core.Network.IApiHttpClient, client_win.Core.Network.ApiHttpClient>();
         services.AddSingleton<client_win.Modules.Admin.Services.IAdminMaintenanceHttpService, client_win.Modules.Admin.Services.AdminMaintenanceHttpService>();
+        services.AddSingleton<client_win.Modules.Admin.Services.IAdminMaintenanceTokenStore, client_win.Modules.Admin.Services.AdminMaintenanceTokenStore>();
 
         services.AddSingleton<IClientUpdatePublisher, ClientUpdatePublisher>();
 
@@ -240,6 +241,7 @@ public static class AppBootstrapper
                 sp.GetRequiredService<Modules.Network.Services.IWsTicketProvider>()));
 
         services.AddSingleton<Modules.TextPrompts.Services.ITextPromptService, Modules.TextPrompts.Services.TextPromptService>();
+        services.AddSingleton<Modules.TextPrompts.Services.ISecretPromptService, Modules.TextPrompts.Services.SecretPromptService>();
 
         services.AddSingleton<Modules.Presence.Services.IPresenceLauncher>(sp =>
             new Modules.Presence.Services.PresenceLauncher(
@@ -318,8 +320,8 @@ public static class AppBootstrapper
             var remoteSounds = provider.GetRequiredService<IRemoteSoundCache>();
             var dispatcher = provider.GetRequiredService<Dispatcher>();
 
-            // Essayer de rÃ©cupÃ©rer les sons configurÃ©s par l'admin avant le son de dÃ©marrage,
-            // pour que ClientOpened utilise le son serveur dÃ¨s le premier lancement.
+            // Essayer de récupérer les sons configurés par l'admin avant le son de démarrage,
+            // pour que ClientOpened utilise le son serveur dès le premier lancement.
             try
             {
                 using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
@@ -330,7 +332,7 @@ public static class AppBootstrapper
             }
             catch
             {
-                // ignore - utilisera le son local par dÃ©faut si indisponible
+                // ignore - utilisera le son local par défaut si indisponible
             }
             sounds.Preload(Modules.Audio.Models.SoundId.ClientOpened);
 

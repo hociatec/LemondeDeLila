@@ -17,6 +17,7 @@ using client_win.Modules.User.Services;
 using client_win.Modules.Game.Shell.Services;
 using client_win.Modules.Game.RoomDirectory.Services;
 using client_win.Modules.Network.Services;
+using client_win.Modules.TextPrompts.Services;
 
 namespace client_win.Modules.Admin.ViewModels;
 
@@ -24,6 +25,8 @@ public sealed partial class AdminViewModel : ObservableObject
 {
     private readonly IAdminService _admin;
     private readonly IAdminMaintenanceHttpService _maintenance;
+    private readonly IAdminMaintenanceTokenStore _maintenanceTokenStore;
+    private readonly ISecretPromptService _secretPrompts;
     private readonly IDialogService _dialogs;
     private readonly Action _close;
     private readonly Dispatcher _dispatcher;
@@ -105,6 +108,8 @@ public sealed partial class AdminViewModel : ObservableObject
     public AdminViewModel(
         IAdminService admin,
         IAdminMaintenanceHttpService maintenance,
+        IAdminMaintenanceTokenStore maintenanceTokenStore,
+        ISecretPromptService secretPrompts,
         IRoomDirectoryClient roomDirectory,
         IApiCapabilitiesService apiCapabilities,
         ClientConfiguration config,
@@ -120,6 +125,8 @@ public sealed partial class AdminViewModel : ObservableObject
     {
         _admin = admin ?? throw new ArgumentNullException(nameof(admin));
         _maintenance = maintenance ?? throw new ArgumentNullException(nameof(maintenance));
+        _maintenanceTokenStore = maintenanceTokenStore ?? throw new ArgumentNullException(nameof(maintenanceTokenStore));
+        _secretPrompts = secretPrompts ?? throw new ArgumentNullException(nameof(secretPrompts));
         _roomDirectory = roomDirectory ?? throw new ArgumentNullException(nameof(roomDirectory));
         _apiCapabilities = apiCapabilities ?? throw new ArgumentNullException(nameof(apiCapabilities));
         _config = config ?? throw new ArgumentNullException(nameof(config));

@@ -35,6 +35,7 @@ using client_win.Modules.Game.RoomDirectory.Views;
 using client_win.Modules.User.Services;
 using client_win.Modules.Network.Services;
 using client_win.Modules.MainMenu.Views;
+using client_win.Modules.TextPrompts.Services;
 
 namespace client_win.Modules.MainMenu.Services;
 
@@ -57,6 +58,8 @@ public sealed class MenuRouter : IMenuRouter
     private readonly ILeaderboardService _leaderboard;
     private readonly IAdminService _admin;
     private readonly IAdminMaintenanceHttpService _adminMaintenance;
+    private readonly IAdminMaintenanceTokenStore _maintenanceTokenStore;
+    private readonly ISecretPromptService _secretPrompts;
     private readonly IDialogService _dialogs;
     private readonly IClientUpdatePublisher _publisher;
     private readonly ClientConfiguration _config;
@@ -86,6 +89,8 @@ public sealed class MenuRouter : IMenuRouter
         ILeaderboardService leaderboard,
         IAdminService admin,
         IAdminMaintenanceHttpService adminMaintenance,
+        IAdminMaintenanceTokenStore maintenanceTokenStore,
+        ISecretPromptService secretPrompts,
         IDialogService dialogs,
         IClientUpdatePublisher publisher)
     {
@@ -108,6 +113,8 @@ public sealed class MenuRouter : IMenuRouter
         _leaderboard = leaderboard;
         _admin = admin;
         _adminMaintenance = adminMaintenance;
+        _maintenanceTokenStore = maintenanceTokenStore;
+        _secretPrompts = secretPrompts;
         _dialogs = dialogs;
         _publisher = publisher;
     }
@@ -373,7 +380,7 @@ public sealed class MenuRouter : IMenuRouter
         var previous = _navigation.CurrentView;
         StopBackgroundLoops();
         var view = new AdminView();
-        var vm = new AdminViewModel(_admin, _adminMaintenance, _roomDirectory, _apiCapabilities, _config, _publisher, _dialogs, _options, _sounds, _session, _remoteSounds, _tables, view, onClose: () =>
+        var vm = new AdminViewModel(_admin, _adminMaintenance, _maintenanceTokenStore, _secretPrompts, _roomDirectory, _apiCapabilities, _config, _publisher, _dialogs, _options, _sounds, _session, _remoteSounds, _tables, view, onClose: () =>
         {
             if (previous != null)
             {

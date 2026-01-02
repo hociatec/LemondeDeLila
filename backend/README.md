@@ -92,14 +92,15 @@ Personnalisez ce script selon votre stack (pm2, Docker, etc.) en conservant les 
 
 ## Maintenance (admin)
 
-Le backend expose (optionnellement) des endpoints admin pour d‚clencher un d‚ploiement **via systemd** (build + migrations + restart).
+Le backend expose (optionnellement) des endpoints admin pour déclencher un déploiement **via systemd** (build + migrations + restart).
 
 Variables :
 
 - `ADMIN_MAINTENANCE_ENABLED=true` : active les endpoints.
 - `ADMIN_MAINTENANCE_TOKEN=...` : secret requis via header `x-admin-maintenance-token`.
+- `ADMIN_MAINTENANCE_REQUIRE_TOKEN=false` : (optionnel) désactive l'exigence du token (le JWT admin reste requis).
 - `ADMIN_MAINTENANCE_ALLOWED_IPS=1.2.3.4,5.6.7.8` : (optionnel) allowlist IP.
-- `ADMIN_MAINTENANCE_DEPLOY_UNIT=lila-backend-deploy.service` : (optionnel) unit systemd de d‚ploiement.
+- `ADMIN_MAINTENANCE_DEPLOY_UNIT=lila-backend-deploy.service` : (optionnel) unit systemd de déploiement.
 - `ADMIN_MAINTENANCE_BACKEND_SERVICE=lila-backend.service` : (optionnel) service backend.
 
 Endpoints :
