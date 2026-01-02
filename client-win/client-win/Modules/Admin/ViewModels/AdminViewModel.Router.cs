@@ -70,7 +70,7 @@ public sealed partial class AdminViewModel
                     ShowLogs();
                     return;
                 }
-                if (tag is string maintenance && maintenance == "maintenance.deploy")
+                if (tag is string maintenanceAction && maintenanceAction == "maintenance.deploy")
                 {
                     await DeployBackendAsync().ConfigureAwait(true);
                     return;
@@ -81,7 +81,7 @@ public sealed partial class AdminViewModel
                     await LoadPerfAsync().ConfigureAwait(true);
                     return;
                 }
-                if (tag is string maintenance && maintenance == "maintenance")
+                if (tag is string maintenanceNav && maintenanceNav == "maintenance")
                 {
                     PushReturnFocus();
                     BuildMaintenance();
@@ -767,6 +767,9 @@ public sealed partial class AdminViewModel
                 await SubmitChatSettingsAsync().ConfigureAwait(true);
                 return;
             }
+
+            if (_page == AdminPage.Maintenance && tag is string maintenanceTag)
+            {
                 if (maintenanceTag == "maintenance.refresh")
                 {
                     await RefreshMaintenanceAsync().ConfigureAwait(true);
@@ -853,4 +856,3 @@ public sealed partial class AdminViewModel
         }
     }
 }
-

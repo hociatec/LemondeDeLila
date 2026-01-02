@@ -9,6 +9,118 @@ namespace client_win.Modules.Admin.ViewModels;
 
 public sealed partial class AdminViewModel
 {
+    private void BuildMaintenance()
+    {
+        _page = AdminPage.Maintenance;
+        Title = "Maintenance";
+        Details = string.Empty;
+        Items.Clear();
+        Items.Add(new AdminMenuItem("Rafraîchir (status + logs)", tag: "maintenance.refresh"));
+        Items.Add(new AdminMenuItem("Logs du déploiement", tag: "maintenance.logs"));
+        Items.Add(new AdminMenuItem("Status service backend", tag: "maintenance.service.status"));
+        SelectedItem = Items.FirstOrDefault();
+
+        PreferDetailsFocus = true;
+        IsTextInputVisible = false;
+        TextInputLabel = string.Empty;
+        TextInput = string.Empty;
+        IsSecondaryInputVisible = false;
+        SecondaryInputLabel = string.Empty;
+        SecondaryInput = string.Empty;
+        Status = "Entrée : exécuter l'action sélectionnée. Échap : retour.";
+
+        _ = RefreshMaintenanceAsync();
+    }
+
+    private async Task RefreshMaintenanceAsync()
+    {
+        if (IsBusy)
+        {
+            return;
+        }
+
+        try
+        {
+            IsBusy = true;
+            Status = "Maintenance: chargement…";
+
+            var backend = await _maintenance.GetBackendServiceStatusAsync().ConfigureAwait(true);
+            var deploy = await _maintenance.GetDeployStatusAsync().ConfigureAwait(true);
+            var logs = await _maintenance.GetDeployLogsAsync(200).ConfigureAwait(true);
+
+            Details =
+                "Backend:\n" + FormatDeployStatus(backend) +
+                "\n\nDéploiement:\n" + FormatDeployStatus(deploy) +
+                "\n\nLogs (tail):\n" + TailLines(logs.Logs, 80);
+
+            Status = "Maintenance: OK";
+        }
+        catch (Exception ex)
+        {
+            await _dialogs.ShowError("Maintenance", ex.Message).ConfigureAwait(true);
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private async Task RefreshMaintenanceLogsAsync()
+    {
+        if (IsBusy)
+        {
+            return;
+        }
+
+        try
+        {
+            IsBusy = true;
+            Status = "Maintenance: logs…";
+
+            var logs = await _maintenance.GetDeployLogsAsync(500).ConfigureAwait(true);
+            Details = TailLines(logs.Logs, 200);
+            PreferDetailsFocus = true;
+            Status = "Maintenance: logs OK";
+        }
+        catch (Exception ex)
+        {
+            await _dialogs.ShowError("Maintenance", ex.Message).ConfigureAwait(true);
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private async Task RefreshMaintenanceServiceStatusAsync()
+    {
+        if (IsBusy)
+        {
+            return;
+        }
+
+        try
+        {
+            IsBusy = true;
+            Status = "Maintenance: status service…";
+
+            var backend = await _maintenance.GetBackendServiceStatusAsync().ConfigureAwait(true);
+            var message = FormatDeployStatus(backend);
+            Details = "Backend:\n" + message;
+            PreferDetailsFocus = true;
+            await _dialogs.ShowInfo("Maintenance", message).ConfigureAwait(true);
+            Status = "Maintenance: status OK";
+        }
+        catch (Exception ex)
+        {
+            await _dialogs.ShowError("Maintenance", ex.Message).ConfigureAwait(true);
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
     private async Task DeployBackendAsync()
     {
         if (IsBusy)
@@ -167,4 +279,3 @@ public sealed partial class AdminViewModel
         return string.Join("\n", lines.Skip(lines.Length - maxLines)).Trim();
     }
 }
-
