@@ -120,7 +120,9 @@ namespace client_win
 
                     if (isLoggedIn)
                     {
-                        await PlayClientDisconnectedSoundAndWaitAsync(TimeSpan.FromMilliseconds(650)).ConfigureAwait(true);
+                        // L'app va se fermer: laisser le temps au son de se terminer (avec un plafond)
+                        // sinon MediaPlayer est coupé par Shutdown.
+                        await PlayClientDisconnectedSoundAndWaitAsync(TimeSpan.FromSeconds(4)).ConfigureAwait(true);
                     }
 
                     _exitConfirmed = true;
