@@ -171,7 +171,7 @@ public sealed partial class AdminViewModel
         {
             if (_selectedBugReport != null)
             {
-                BuildBugReportComments(_selectedBugReport);
+                BuildBugReportDetails(_selectedBugReport);
             }
             else
             {

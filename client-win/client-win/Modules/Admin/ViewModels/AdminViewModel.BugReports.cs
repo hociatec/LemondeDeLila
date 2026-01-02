@@ -49,6 +49,7 @@ public sealed partial class AdminViewModel
             return;
         }
 
+        PreferDetailsFocus = false;
         _page = AdminPage.BugReports;
         Title = "Rapports de bug";
         Details = string.Empty;
@@ -79,6 +80,7 @@ public sealed partial class AdminViewModel
 
     private void BuildBugReports()
     {
+        PreferDetailsFocus = false;
         _page = AdminPage.BugReports;
         Title = "Rapports de bug";
         IsTextInputVisible = false;
@@ -98,16 +100,16 @@ public sealed partial class AdminViewModel
             Items.Add(new AdminMenuItem($"En cours ({_loadedBugReports.Count(r => r.Status == AdminBugReportStatus.InProgress)})", tag: "bugReports.list.in_progress"));
             Items.Add(new AdminMenuItem($"\u00C0 tester ({_loadedBugReports.Count(r => r.Status == AdminBugReportStatus.ToTest)})", tag: "bugReports.list.to_test"));
             Items.Add(new AdminMenuItem($"Termin\u00E9 ({_loadedBugReports.Count(r => r.Status == AdminBugReportStatus.Done)})", tag: "bugReports.list.done"));
-            Items.Add(new AdminMenuItem($"Refus\u00E9 ({_loadedBugReports.Count(r => r.Status == AdminBugReportStatus.Rejected)})", tag: "bugReports.list.rejected"));
+            Items.Add(new AdminMenuItem($"Refus\u00E9 ({_loadedBugReports.Count(r => r.Status == AdminBugReportStatus.Refused)})", tag: "bugReports.list.refused"));
 
-            var sorted = Array.Empty<AdminBugReportDto>()
+            var sorted = _loadedBugReports
                 .OrderBy(r => r.Status switch
                 {
                     AdminBugReportStatus.Done => 0,
                     AdminBugReportStatus.InProgress => 1,
                     AdminBugReportStatus.Pending => 2,
                     AdminBugReportStatus.ToTest => 3,
-                    AdminBugReportStatus.Rejected => 4,
+                    AdminBugReportStatus.Refused => 4,
                     _ => 99
                 })
                 .ToArray();
@@ -121,7 +123,7 @@ public sealed partial class AdminViewModel
                     AdminBugReportStatus.InProgress => "En cours",
                     AdminBugReportStatus.Done => "Terminé",
                     AdminBugReportStatus.ToTest => "\u00C0 tester",
-                    AdminBugReportStatus.Rejected => "Refus\u00E9",
+                    AdminBugReportStatus.Refused => "Refus\u00E9",
                     _ => "En attente"
                 };
                 if (!string.Equals(currentSection, status, StringComparison.Ordinal))
@@ -142,6 +144,7 @@ public sealed partial class AdminViewModel
 
     private void BuildBugReportsStatusReports(AdminBugReportStatus status)
     {
+        PreferDetailsFocus = false;
         _page = AdminPage.BugReportsStatusReports;
         _bugReportsListStatus = status;
 
@@ -150,7 +153,7 @@ public sealed partial class AdminViewModel
             AdminBugReportStatus.InProgress => "En cours",
             AdminBugReportStatus.ToTest => "\u00C0 tester",
             AdminBugReportStatus.Done => "Termin\u00E9",
-            AdminBugReportStatus.Rejected => "Refus\u00E9",
+            AdminBugReportStatus.Refused => "Refus\u00E9",
             _ => "En attente"
         };
 
@@ -183,6 +186,7 @@ public sealed partial class AdminViewModel
 
     private void BuildBugReportCreate()
     {
+        PreferDetailsFocus = false;
         _page = AdminPage.BugReportCreate;
         Title = "Rapport de bug - Nouveau";
         Details = "Renseignez le sujet et le contenu, puis Valider.";
@@ -237,6 +241,7 @@ public sealed partial class AdminViewModel
 
     private void BuildBugReportDetails(AdminBugReportDto report)
     {
+        PreferDetailsFocus = false;
         _page = AdminPage.BugReportDetails;
         _selectedBugReport = report;
 
@@ -246,7 +251,7 @@ public sealed partial class AdminViewModel
             AdminBugReportStatus.InProgress => "Statut: En cours\n",
             AdminBugReportStatus.Done => "Statut: Terminé\n",
             AdminBugReportStatus.ToTest => "Statut: \u00C0 tester\n",
-            AdminBugReportStatus.Rejected => "Statut: Refus\u00E9\n",
+            AdminBugReportStatus.Refused => "Statut: Refus\u00E9\n",
             _ => string.Empty
         };
         Details =
@@ -262,7 +267,7 @@ public sealed partial class AdminViewModel
         IsAdditionalPermissionsVisible = false;
         Items.Clear();
         Items.Add(new AdminMenuItem("Consulter", tag: "bugReports.consult"));
-        Items.Add(new AdminMenuItem("Commentaires", tag: "bugReports.comments"));
+        Items.Add(new AdminMenuItem("Ajouter un commentaire", tag: "bugReports.comments.add"));
         Items.Add(new AdminMenuItem("Modifier", tag: "bugReports.edit"));
         Items.Add(new AdminMenuItem("Supprimer", tag: "bugReports.delete"));
         if (report.Status != AdminBugReportStatus.Pending)
@@ -281,6 +286,10 @@ public sealed partial class AdminViewModel
         {
             Items.Add(new AdminMenuItem("Passer en: Terminé", tag: "bugReports.status.done"));
         }
+        if (report.Status != AdminBugReportStatus.Refused)
+        {
+            Items.Add(new AdminMenuItem("Passer en: Refus\u00E9", tag: "bugReports.status.refused"));
+        }
         SelectedItem = Items.FirstOrDefault();
         Status = "Entrée : action. Échap : retour.";
         UpdateFilterVisibility();
@@ -294,6 +303,7 @@ public sealed partial class AdminViewModel
             return;
         }
 
+        PreferDetailsFocus = true;
         _page = AdminPage.BugReportConsult;
         _selectedBugReport = report;
         Title = "Rapport - Consultation";
@@ -325,6 +335,7 @@ public sealed partial class AdminViewModel
 
     private void BuildBugReportConsult(AdminBugReportDto report)
     {
+        PreferDetailsFocus = true;
         _page = AdminPage.BugReportConsult;
         _selectedBugReport = report;
 
@@ -332,16 +343,16 @@ public sealed partial class AdminViewModel
         var statusLine = report.Status switch
         {
             AdminBugReportStatus.InProgress => "Statut: En cours\n",
-            AdminBugReportStatus.Done => "Statut: TerminÇ¸\n",
+            AdminBugReportStatus.Done => "Statut: Terminé\n",
             AdminBugReportStatus.ToTest => "Statut: \u00C0 tester\n",
-            AdminBugReportStatus.Rejected => "Statut: Refus\u00E9\n",
+            AdminBugReportStatus.Refused => "Statut: Refus\u00E9\n",
             _ => string.Empty
         };
 
         var header =
             statusLine +
             $"Par: {report.CreatedByUsername} (id {report.CreatedByUserId})\n" +
-            $"CrÇ¸Ç¸: {report.CreatedAt}\n" +
+            $"Créé: {report.CreatedAt}\n" +
             $"Maj: {report.UpdatedAt}\n" +
             $"Sujet: {report.Subject}\n\n" +
             $"{report.Content}";
@@ -372,6 +383,7 @@ public sealed partial class AdminViewModel
             return;
         }
 
+        PreferDetailsFocus = false;
         _page = AdminPage.BugReportComments;
         _selectedBugReport = report;
         Title = "Rapport - Commentaires";
@@ -403,6 +415,7 @@ public sealed partial class AdminViewModel
 
     private void BuildBugReportComments(AdminBugReportDto report)
     {
+        PreferDetailsFocus = false;
         _page = AdminPage.BugReportComments;
         _selectedBugReport = report;
 
@@ -428,9 +441,9 @@ public sealed partial class AdminViewModel
         Items.Clear();
         Items.Add(new AdminMenuItem("Ajouter un commentaire", tag: "bugReports.comments.add"));
         Items.Add(new AdminMenuItem("Rafraîchir", tag: "bugReports.comments.refresh"));
-        if (report.Status != AdminBugReportStatus.Rejected)
+        if (report.Status != AdminBugReportStatus.Refused)
         {
-            Items.Add(new AdminMenuItem("Passer en: Refus\u00E9", tag: "bugReports.status.rejected"));
+            Items.Add(new AdminMenuItem("Passer en: Refus\u00E9", tag: "bugReports.status.refused"));
         }
         SelectedItem = Items.FirstOrDefault();
         Status = "Entrée : action. Échap : retour.";
@@ -440,6 +453,7 @@ public sealed partial class AdminViewModel
 
     private void BuildBugReportCommentCreate(AdminBugReportDto report)
     {
+        PreferDetailsFocus = false;
         _page = AdminPage.BugReportCommentCreate;
         _selectedBugReport = report;
 
@@ -481,7 +495,7 @@ public sealed partial class AdminViewModel
             IsBusy = true;
             await _admin.AddBugReportCommentAsync(report.Id, content).ConfigureAwait(true);
             await _dialogs.ShowInfo("Commentaire", "Commentaire ajouté.").ConfigureAwait(true);
-            await LoadBugReportCommentsAsync(report).ConfigureAwait(true);
+            await LoadBugReportConsultAsync(report).ConfigureAwait(true);
         }
         catch (Exception ex)
         {
@@ -495,6 +509,7 @@ public sealed partial class AdminViewModel
 
     private void BuildBugReportEdit(AdminBugReportDto report)
     {
+        PreferDetailsFocus = false;
         _page = AdminPage.BugReportEdit;
         _selectedBugReport = report;
 

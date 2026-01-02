@@ -4,6 +4,17 @@ import { Repository } from 'typeorm';
 import { randomUUID } from 'crypto';
 import { BugReportEntity, BugReportStatus } from './entities/bug-report.entity';
 
+function normalizeBugReportStatus(status: BugReportStatus): BugReportStatus {
+  // legacy alias
+  if (status === 'rejected') return 'refused';
+  return status;
+}
+
+function normalizeBugReportEntityStatus(report: BugReportEntity): BugReportEntity {
+  report.status = normalizeBugReportStatus(report.status);
+  return report;
+}
+
 @Injectable()
 export class BugReportsService {
   constructor(
@@ -11,14 +22,17 @@ export class BugReportsService {
     private readonly repo: Repository<BugReportEntity>,
   ) {}
 
-  list(): Promise<BugReportEntity[]> {
-    return this.repo.find({ order: { createdAt: 'DESC' } });
+  async list(): Promise<BugReportEntity[]> {
+    const items = await this.repo.find({ order: { createdAt: 'DESC' } });
+    return items.map(normalizeBugReportEntityStatus);
   }
 
-  get(id: string): Promise<BugReportEntity | null> {
+  async get(id: string): Promise<BugReportEntity | null> {
     const key = (id || '').trim();
-    if (!key) return Promise.resolve(null);
-    return this.repo.findOne({ where: { id: key } });
+    if (!key) return null;
+    const report = await this.repo.findOne({ where: { id: key } });
+    if (!report) return null;
+    return normalizeBugReportEntityStatus(report);
   }
 
   async create(input: {
@@ -57,7 +71,7 @@ export class BugReportsService {
   async updateStatus(id: string, status: BugReportStatus): Promise<BugReportEntity | null> {
     const current = await this.get(id);
     if (!current) return null;
-    current.status = status;
+    current.status = normalizeBugReportStatus(status);
     return this.repo.save(current);
   }
 
@@ -68,4 +82,3 @@ export class BugReportsService {
     return Boolean(res.affected && res.affected > 0);
   }
 }
-

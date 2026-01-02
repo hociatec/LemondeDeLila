@@ -12,6 +12,7 @@ export type BugReportStatus =
   | 'in_progress'
   | 'to_test'
   | 'done'
+  | 'refused'
   | 'rejected';
 
 @Entity({ name: 'bug_reports' })
@@ -42,4 +43,3 @@ export class BugReportEntity {
   @Column({ name: 'created_by_username', type: 'varchar', length: 100 })
   createdByUsername!: string;
 }
-

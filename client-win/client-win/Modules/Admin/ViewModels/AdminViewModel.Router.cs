@@ -128,10 +128,10 @@ public sealed partial class AdminViewModel
                     BuildBugReportsStatusReports(AdminBugReportStatus.Done);
                     return;
                 }
-                if (bugListAction == "bugReports.list.rejected")
+                if (bugListAction == "bugReports.list.refused")
                 {
                     PushReturnFocus();
-                    BuildBugReportsStatusReports(AdminBugReportStatus.Rejected);
+                    BuildBugReportsStatusReports(AdminBugReportStatus.Refused);
                     return;
                 }
             }
@@ -170,10 +170,10 @@ public sealed partial class AdminViewModel
                     await LoadBugReportConsultAsync(_selectedBugReport).ConfigureAwait(true);
                     return;
                 }
-                if (bugDetailsAction == "bugReports.comments" && _selectedBugReport != null)
+                if (bugDetailsAction == "bugReports.comments.add" && _selectedBugReport != null)
                 {
                     PushReturnFocus();
-                    await LoadBugReportCommentsAsync(_selectedBugReport).ConfigureAwait(true);
+                    BuildBugReportCommentCreate(_selectedBugReport);
                     return;
                 }
                 if (bugDetailsAction == "bugReports.delete")
@@ -201,9 +201,9 @@ public sealed partial class AdminViewModel
                     await UpdateBugReportStatusAsync("to_test").ConfigureAwait(true);
                     return;
                 }
-                if (bugDetailsAction == "bugReports.status.rejected")
+                if (bugDetailsAction == "bugReports.status.refused")
                 {
-                    await UpdateBugReportStatusAsync("rejected").ConfigureAwait(true);
+                    await UpdateBugReportStatusAsync("refused").ConfigureAwait(true);
                     return;
                 }
             }
@@ -228,6 +228,11 @@ public sealed partial class AdminViewModel
                 if (bugCommentsAction == "bugReports.comments.refresh" && _selectedBugReport != null)
                 {
                     await LoadBugReportCommentsAsync(_selectedBugReport).ConfigureAwait(true);
+                    return;
+                }
+                if (bugCommentsAction == "bugReports.status.refused")
+                {
+                    await UpdateBugReportStatusAsync("refused").ConfigureAwait(true);
                     return;
                 }
             }

@@ -24,6 +24,7 @@ public partial class AdminView : UserControl
         AttachItemsKeyNavigation();
         FocusWhenContainersGenerated();
         FocusBestInputIfVisible();
+        FocusDetailsIfPreferred();
     }
 
     private void AttachViewModel(AdminViewModel? vm)
@@ -49,6 +50,7 @@ public partial class AdminView : UserControl
     {
         FocusWhenContainersGenerated();
         FocusBestInputIfVisible();
+        FocusDetailsIfPreferred();
     }
 
     private void AttachItemsKeyNavigation()
@@ -120,6 +122,29 @@ public partial class AdminView : UserControl
             {
                 InputsView?.SecondaryInputTextBox?.Focus();
             }
+        }));
+    }
+
+    private void FocusDetailsIfPreferred()
+    {
+        if (DataContext is not AdminViewModel vm)
+        {
+            return;
+        }
+        if (!vm.PreferDetailsFocus)
+        {
+            return;
+        }
+
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
+        {
+            if (DetailsBox == null)
+            {
+                return;
+            }
+            DetailsBox.Focus();
+            DetailsBox.CaretIndex = 0;
+            DetailsBox.ScrollToHome();
         }));
     }
 

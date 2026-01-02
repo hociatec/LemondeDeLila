@@ -186,6 +186,13 @@ public sealed partial class AdminViewModel : ObservableObject
         private set => SetProperty(ref _details, value);
     }
 
+    public bool PreferDetailsFocus
+    {
+        get => _preferDetailsFocus;
+        private set => SetProperty(ref _preferDetailsFocus, value);
+    }
+    private bool _preferDetailsFocus;
+
     public bool IsBusy
     {
         get => _isBusy;
