@@ -34,6 +34,8 @@ public sealed class PersistentWsClient : IAsyncDisposable
     private readonly NetworkStateMonitor? _networkMonitor;
     private readonly ConcurrentDictionary<string, TaskCompletionSource<string>> _pending = new();
     private readonly object _sync = new();
+    private readonly SemaphoreSlim _connectGate = new(1, 1);
+    private readonly SemaphoreSlim _sendGate = new(1, 1);
 
     // Circuit breaker
     private int _consecutiveFailures;
@@ -180,12 +182,29 @@ public sealed class PersistentWsClient : IAsyncDisposable
             {
                 using var sendCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
                 sendCts.CancelAfter(_sendTimeout);
-                await socket.SendAsync(buffer, WebSocketMessageType.Text, true, sendCts.Token).ConfigureAwait(false);
+                await _sendGate.WaitAsync(sendCts.Token).ConfigureAwait(false);
+                try
+                {
+                    await socket.SendAsync(buffer, WebSocketMessageType.Text, true, sendCts.Token).ConfigureAwait(false);
+                }
+                finally
+                {
+                    try { _sendGate.Release(); } catch { }
+                }
 
                 using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
                 timeoutCts.CancelAfter(_receiveTimeout);
                 using var registration = timeoutCts.Token.Register(() => tcs.TrySetCanceled(timeoutCts.Token));
                 return await tcs.Task.ConfigureAwait(false);
+            }
+            catch (TaskCanceledException ex) when (attempt < 2 && !cancellationToken.IsCancellationRequested)
+            {
+                // Peut arriver si la connexion est réinitialisée en parallèle (ResetSocketAsync)
+                // et annule les pending avant l'expiration du vrai timeout.
+                _pending.TryRemove(requestId, out _);
+                Log.Warning(ex, "WS request canceled (retry): {Type}", type);
+                await ResetSocketAsync().ConfigureAwait(false);
+                continue;
             }
             catch (Exception ex) when (attempt < 2 && !cancellationToken.IsCancellationRequested && IsRetryableTransportException(ex))
             {
@@ -220,6 +239,9 @@ public sealed class PersistentWsClient : IAsyncDisposable
 
     private async Task<ClientWebSocket> EnsureConnectedAsync(string? token, string? wsTicket, CancellationToken cancellationToken)
     {
+        await _connectGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
         // Vérifier circuit breaker
         CheckCircuitBreaker();
 
@@ -334,6 +356,11 @@ public sealed class PersistentWsClient : IAsyncDisposable
 
         Log.Error(lastException, "✗ Impossible de se connecter au serveur WebSocket après {Attempts} tentatives", maxAttempts);
         throw new InvalidOperationException("Impossible de se connecter au serveur WebSocket.", lastException);
+        }
+        finally
+        {
+            try { _connectGate.Release(); } catch { }
+        }
     }
 
     private void CheckCircuitBreaker()
