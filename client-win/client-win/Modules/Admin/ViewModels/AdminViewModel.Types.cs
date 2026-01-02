@@ -35,6 +35,7 @@ internal enum AdminPage
     ChatDay,
     ChatMessageActions,
     ChatBanForm,
+    ChatSettings,
     Broadcast,
     ClientUpdates,
     Logs,

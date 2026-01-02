@@ -11,6 +11,25 @@ public sealed partial class AdminViewModel
 {
     private sealed record ChatDayTag(DateTime DayLocalDate);
 
+    private static int ClampChatModerationLimit(int limit)
+    {
+        if (limit < 20) return 20;
+        if (limit > 2000) return 2000;
+        return limit;
+    }
+
+    private int GetChatModerationLimit()
+    {
+        try
+        {
+            return ClampChatModerationLimit(_options.Current.AdminChatModerationLoadLimit);
+        }
+        catch
+        {
+            return 200;
+        }
+    }
+
     private async Task LoadChatAsync()
     {
         if (IsBusy) return;
@@ -20,7 +39,8 @@ public sealed partial class AdminViewModel
             Status = "Chargement des messages...";
 
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-            _loadedChatMessages = await _admin.GetChatMessagesAsync(limit: 200, includeDeleted: false, cts.Token).ConfigureAwait(true);
+            var limit = GetChatModerationLimit();
+            _loadedChatMessages = await _admin.GetChatMessagesAsync(limit: limit, includeDeleted: false, cts.Token).ConfigureAwait(true);
             BuildChatDaysMenu();
         }
         finally
@@ -41,6 +61,7 @@ public sealed partial class AdminViewModel
 
         Items.Clear();
         Items.Add(new AdminMenuItem("Réinitialiser le tchat (supprimer tous les messages)", tag: "chat.clear"));
+        Items.Add(new AdminMenuItem($"Messages chargés: {GetChatModerationLimit()} (modifier)", tag: "chat.settings.limit"));
 
         var days = _loadedChatMessages
             .Select(m => m.CreatedAt.ToLocalTime().Date)
@@ -246,5 +267,49 @@ public sealed partial class AdminViewModel
         {
             BuildChatDayMessages(day.Value);
         }
+    }
+
+    private void BuildChatSettings()
+    {
+        _page = AdminPage.ChatSettings;
+        Title = "Tchat (modération) : paramètres";
+        Details = "Configurer l'affichage de la modération (côté client admin).";
+        Items.Clear();
+        Items.Add(new AdminMenuItem("Valider", tag: "chat.settings.submit"));
+        SelectedItem = Items.FirstOrDefault();
+
+        IsTextInputVisible = true;
+        TextInputLabel = "Charger les X derniers messages (20 à 2000)";
+        TextInput = GetChatModerationLimit().ToString();
+
+        IsSecondaryInputVisible = false;
+        SecondaryInputLabel = string.Empty;
+        SecondaryInput = string.Empty;
+
+        Status = "Entrée : valider. Échap : retour.";
+        RestoreFocusIfAny();
+    }
+
+    private async Task SubmitChatSettingsAsync()
+    {
+        var raw = (TextInput ?? string.Empty).Trim();
+        if (!int.TryParse(raw, out var parsed))
+        {
+            await _dialogs.ShowError("Tchat", "Valeur invalide.").ConfigureAwait(true);
+            return;
+        }
+
+        var limit = ClampChatModerationLimit(parsed);
+        try
+        {
+            _options.Current.AdminChatModerationLoadLimit = limit;
+            _options.Update(_options.Current);
+        }
+        catch
+        {
+            // ignore (best-effort)
+        }
+
+        await ReloadChatModerationAsync().ConfigureAwait(true);
     }
 }

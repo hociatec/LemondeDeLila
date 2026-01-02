@@ -590,6 +590,12 @@ public sealed partial class AdminViewModel
                     await ClearChatAsync().ConfigureAwait(true);
                     return;
                 }
+                if (tag is string tSettings && tSettings == "chat.settings.limit")
+                {
+                    PushReturnFocus();
+                    BuildChatSettings();
+                    return;
+                }
                 if (tag is ChatDayTag day)
                 {
                     PushReturnFocus();
@@ -654,6 +660,12 @@ public sealed partial class AdminViewModel
             if (_page == AdminPage.ChatBanForm && _selectedChatMessage != null && tag is string banSubmit && banSubmit == "chat.ban.submit")
             {
                 await SubmitChatBanAsync(_selectedChatMessage).ConfigureAwait(true);
+                return;
+            }
+
+            if (_page == AdminPage.ChatSettings && tag is string chatSettingsSubmit && chatSettingsSubmit == "chat.settings.submit")
+            {
+                await SubmitChatSettingsAsync().ConfigureAwait(true);
                 return;
             }
 

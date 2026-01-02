@@ -171,6 +171,12 @@ public sealed partial class AdminViewModel
             return AdminNavResult.Moved;
         }
 
+        if (_page is AdminPage.ChatSettings)
+        {
+            BuildChatDaysMenu();
+            return AdminNavResult.Moved;
+        }
+
         if (_page is AdminPage.ChatDay)
         {
             BuildChatDaysMenu();

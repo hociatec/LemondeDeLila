@@ -182,6 +182,7 @@ public sealed class OptionsService : IOptionsService
         SoundClientDisconnectedPath = source.SoundClientDisconnectedPath,
         ChatEnabled = source.ChatEnabled,
         ConfirmChatExit = source.ConfirmChatExit,
+        AdminChatModerationLoadLimit = source.AdminChatModerationLoadLimit,
         CurrentVersion = source.CurrentVersion
     };
 }

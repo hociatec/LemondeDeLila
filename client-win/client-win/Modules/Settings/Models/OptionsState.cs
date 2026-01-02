@@ -31,6 +31,7 @@ public sealed class OptionsState
 
     public bool ChatEnabled { get; set; } = true;
     public bool ConfirmChatExit { get; set; }
+    public int AdminChatModerationLoadLimit { get; set; } = 200;
 
     public string CurrentVersion { get; set; } = "unknown";
 }
