@@ -1,38 +1,35 @@
 {
   "version": 1,
   "quizzes": [
-    {
-      "id": "quiz-vitamine-c",
-      "question": "Quel fruit contient le plus de vitamine C ?",
-      "answer": "kiwi",
-      "choices": [
-        "kiwi",
-        "citron",
-        "ananas",
-        "melon"
-      ]
-    },
-    {
-      "id": "quiz-legume-fruit",
-      "question": "Quel légume est en réalité un fruit ?",
-      "answer": "tomate",
-      "choices": [
-        "tomate",
-        "carotte",
-        "fraise",
-        "avocat"
-      ]
-    },
-    {
-      "id": "quiz-graines-exterieur",
-      "question": "Quel fruit a ses graines à l'extérieur ?",
-      "answer": "fraise",
-      "choices": [
-        "fraise",
-        "kiwi",
-        "raisin",
-        "banane"
-      ]
-    }
+    { "id": "quiz-01", "question": "Quel fruit contient le plus de vitamine C ?", "answer": "kiwi", "choices": ["banane", "kiwi", "pomme"] },
+    { "id": "quiz-02", "question": "Quel legume est en realite un fruit ?", "answer": "tomate", "choices": ["carotte", "brocoli", "tomate"] },
+    { "id": "quiz-03", "question": "Quel fruit a ses graines a l'exterieur ?", "answer": "fraise", "choices": ["cerise", "fraise", "raisin"] },
+    { "id": "quiz-04", "question": "Quel fruit est connu comme le \"roi des fruits\" en Asie ?", "answer": "durian", "choices": ["durian", "mangue", "ananas"] },
+    { "id": "quiz-05", "question": "Quelle est la couleur naturelle de la carotte originelle ?", "answer": "violet", "choices": ["orange", "jaune", "violet"] },
+    { "id": "quiz-06", "question": "Quel fruit est aussi appele \"pomme cannelle\" ?", "answer": "pomme", "choices": ["prune", "pomme", "poire"] },
+    { "id": "quiz-07", "question": "Quel legume peut etre blanc, vert ou violet et ressemble a un petit arbre ?", "answer": "brocoli", "choices": ["brocoli", "artichaut", "chou-fleur"] },
+    { "id": "quiz-08", "question": "Quel fruit est souvent utilise pour faire du guacamole ?", "answer": "avocat", "choices": ["concombre", "courgette", "avocat"] },
+    { "id": "quiz-09", "question": "Quel fruit a un nom qui signifie \"peche sauvage\" en japonais ?", "answer": "kaki", "choices": ["kaki", "yuzu", "litchi"] },
+    { "id": "quiz-10", "question": "Quel fruit tropical est compose principalement d'eau et tres rafraichissant ?", "answer": "pasteque", "choices": ["ananas", "pasteque", "mangue"] },
+    { "id": "quiz-11", "question": "Quel legume est utilise pour faire des frites ?", "answer": "pomme-de-terre", "choices": ["carotte", "pomme-de-terre", "navet"] },
+    { "id": "quiz-12", "question": "Quel fruit est connu pour etre riche en antioxydants et souvent rouge fonce ?", "answer": "grenade", "choices": ["grenade", "cerise", "groseille"] },
+    { "id": "quiz-13", "question": "Quel fruit exotique a une peau piquante et une chair jaune ?", "answer": "ananas", "choices": ["litchi", "ananas", "fruit-du-dragon"] },
+    { "id": "quiz-14", "question": "Quel legume vert est souvent utilise dans les salades et a un gout legerement poivre ?", "answer": "roquette", "choices": ["roquette", "epinard", "laitue"] },
+    { "id": "quiz-15", "question": "Quel fruit est souvent associe a Halloween ?", "answer": "citrouille", "choices": ["pasteque", "citrouille", "pomme"] },
+    { "id": "quiz-16", "question": "Quel legume est une racine orange souvent croquee crue ?", "answer": "carotte", "choices": ["carotte", "navet", "radis"] },
+    { "id": "quiz-17", "question": "Quel fruit peut etre jaune, vert ou rouge et est souvent mange en tranches ?", "answer": "pomme", "choices": ["poire", "pomme", "peche"] },
+    { "id": "quiz-18", "question": "Quel fruit a une peau rugueuse et une chair orange sucree ?", "answer": "mangue", "choices": ["papaye", "orange", "mangue"] },
+    { "id": "quiz-19", "question": "Quel legume est souvent utilise pour faire une soupe appelee \"veloute\" ?", "answer": "potiron", "choices": ["potiron", "courgette", "concombre"] },
+    { "id": "quiz-20", "question": "Quel fruit est considere comme un symbole de paix dans certaines cultures ?", "answer": "olive", "choices": ["grenade", "olive", "pomme"] },
+    { "id": "quiz-21", "question": "Quel fruit est le plus consomme au monde ?", "answer": "banane", "choices": ["banane", "pomme", "orange"] },
+    { "id": "quiz-22", "question": "Quel legume est souvent marine pour faire des pickles ?", "answer": "concombre", "choices": ["carotte", "chou-fleur", "concombre"] },
+    { "id": "quiz-23", "question": "Quel fruit est petit, bleu et utilise dans les muffins et les tartes ?", "answer": "myrtille", "choices": ["myrtille", "groseille", "cassis"] },
+    { "id": "quiz-24", "question": "Quel legume est utilise dans la cuisine italienne pour faire des lasagnes ?", "answer": "aubergine", "choices": ["aubergine", "courgette", "poivron"] },
+    { "id": "quiz-25", "question": "Quel fruit est celebre pour son utilisation dans le cidre ?", "answer": "pomme", "choices": ["poire", "cerise", "pomme"] },
+    { "id": "quiz-26", "question": "Quel legume est souvent appele \"Trompette de la mort\" ?", "answer": "champignon", "choices": ["aubergine", "piment", "champignon"] },
+    { "id": "quiz-27", "question": "Quel fruit est rond, orange et a une peau epaisse et rugueuse ?", "answer": "orange", "choices": ["mandarine", "orange", "pamplemousse"] },
+    { "id": "quiz-28", "question": "Quel legume a des feuilles vertes et est souvent utilise dans les salades ?", "answer": "laitue", "choices": ["laitue", "epinard", "chou-fleur"] },
+    { "id": "quiz-29", "question": "Quel fruit exotique a une chair blanche et des graines noires ?", "answer": "fruit-de-la-passion", "choices": ["kiwi", "fruit-du-dragon", "fruit-de-la-passion"] },
+    { "id": "quiz-30", "question": "Quel legume est souvent utilise pour faire des chips ?", "answer": "pomme-de-terre", "choices": ["pomme-de-terre", "panais", "topinambour"] }
   ]
 }

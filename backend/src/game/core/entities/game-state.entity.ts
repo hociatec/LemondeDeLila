@@ -18,6 +18,7 @@ export type PlayerStateEntity = {
   basket?: unknown[];
   inventory?: unknown[];
   shoppingList?: unknown[];
+  pawn?: string;
 };
 
 export type PendingState = {

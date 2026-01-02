@@ -184,6 +184,7 @@ export class PanierExpressService extends AbstractGameService {
         : baseMeta.decks,
     };
     const shoppingDeck = this.extractShoppingLists(metadata);
+    const pawns = this.setup.pawns();
     const hydratedPlayers = players.map((p, idx) => {
       const username = (p.username ?? '').toLowerCase();
       const isBot = p.isBot === true || username.includes('bot');
@@ -192,6 +193,12 @@ export class PanierExpressService extends AbstractGameService {
       const list: string[] = hasList
         ? this.toStringArray(p.shoppingList)
         : (shoppingDeck[idx] ?? this.buildShoppingList());
+      const pawn =
+        typeof (p as any)?.pawn === 'string' && String((p as any).pawn).trim()
+          ? String((p as any).pawn).trim()
+          : pawns.length
+            ? pawns[idx % pawns.length]
+            : undefined;
       return {
         ...p,
         isBot,
@@ -202,6 +209,7 @@ export class PanierExpressService extends AbstractGameService {
           ? p.inventory.map((item) => String(item))
           : [],
         shoppingList: list,
+        pawn,
       };
     });
     const positions: Record<number, number> = {};
@@ -573,6 +581,8 @@ export class PanierExpressService extends AbstractGameService {
     switch (tile.type) {
       case 'start':
         return 'depart';
+      case 'rest':
+        return 'repos';
       case 'stand':
         return `stand ${this.standLabel(tile.standId)}`;
       case 'event':
@@ -633,6 +643,9 @@ export class PanierExpressService extends AbstractGameService {
   }
 
   private registerTileHandlers(): void {
+    this.tileRegistry.register('rest', (s) =>
+      this.core.appendLog(s, `[Panier Express] Repos : rien ne se passe.`),
+    );
     this.tileRegistry.register('stand', (s, ctx) =>
       this.standEffects.applyStand('stand', s, {
         playerId: ctx.playerId,

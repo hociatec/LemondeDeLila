@@ -17,6 +17,7 @@ import {
   PanierExpressCoursesJsonV1,
   PanierExpressEventsJsonV1,
   PanierExpressExchangesJsonV1,
+  PanierExpressPawnsJsonV1,
   PanierExpressQuizzesJsonV1,
   PanierExpressShoppingListsJsonV1,
   PanierExpressStandsJsonV1,
@@ -111,6 +112,18 @@ export class PanierExpressSetupService {
       validators: [
         this.contentLoader.validators.version(1),
         this.contentLoader.validators.arrayField('lists', 1),
+      ],
+    });
+  }
+
+  private loadPawns(): PanierExpressPawnsJsonV1 {
+    return this.contentLoader.loadContent<PanierExpressPawnsJsonV1>({
+      gameType: 'panier-express',
+      baseDir: __dirname,
+      filename: 'pawns.json',
+      validators: [
+        this.contentLoader.validators.version(1),
+        this.contentLoader.validators.arrayField('pawns', 1),
       ],
     });
   }
@@ -252,6 +265,13 @@ export class PanierExpressSetupService {
       return seededShuffle(normalized, seed, 'panier-express:quizzes');
     }
     return this.decks.shuffle(normalized);
+  }
+
+  pawns(): string[] {
+    return this.loadPawns()
+      .pawns.map((v) => String(v))
+      .map((v) => v.trim())
+      .filter((v) => v.length > 0);
   }
 
   /**

@@ -9,6 +9,7 @@ import type { InteractiveExchangePending } from '../../../../modules/exchange/mo
  */
 export type PanierExpressTile =
   | { id: string; type: 'start' }
+  | { id: string; type: 'rest' }
   | { id: string; type: 'stand'; standId: string }
   | { id: string; type: 'event' }
   | { id: string; type: 'exchange' }
@@ -47,6 +48,7 @@ export interface PanierExpressPlayer extends Omit<
   shoppingList: string[];
   basket: string[];
   inventory: string[];
+  pawn?: string;
 }
 
 /**

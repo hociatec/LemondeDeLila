@@ -24,9 +24,9 @@
       "type": "exchange"
     },
     {
-      "id": "stand-bio-1",
+      "id": "stand-bio-fruits",
       "type": "stand",
-      "standId": "bio"
+      "standId": "bio-fruits"
     },
     {
       "id": "move-plus-1",
@@ -92,16 +92,16 @@
     {
       "id": "stand-bio-2",
       "type": "stand",
-      "standId": "bio"
+      "standId": "bio-legumes"
     },
     {
-      "id": "move-to-stand",
+      "id": "stand-au-choix",
       "type": "move_to_stand"
     },
     {
-      "id": "stand-primeur-2",
+      "id": "stand-primeur-special",
       "type": "stand",
-      "standId": "primeur"
+      "standId": "primeur-special"
     },
     {
       "id": "bonus-course-1",
@@ -167,7 +167,7 @@
     {
       "id": "stand-primeur-3",
       "type": "stand",
-      "standId": "primeur"
+      "standId": "primeur-hivernal"
     },
     {
       "id": "event-3",
@@ -176,15 +176,15 @@
     {
       "id": "stand-maraicher-2",
       "type": "stand",
-      "standId": "maraicher"
+      "standId": "maraicher-automne"
     },
     {
       "id": "exchange-6",
       "type": "exchange"
     },
     {
-      "id": "arrival",
-      "type": "start"
+      "id": "rest-3",
+      "type": "rest"
     }
   ]
 }

@@ -21,6 +21,7 @@ type PanierExpressPlayerView = {
   id: number;
   username: string | null;
   isBot: boolean;
+  pawn: string | null;
   shoppingList: string[];
   basket: string[];
   inventory: string[];
@@ -28,7 +29,7 @@ type PanierExpressPlayerView = {
 
 type PanierExpressPlayerSummary = Pick<
   PanierExpressPlayerView,
-  'id' | 'username' | 'isBot' | 'shoppingList' | 'basket' | 'inventory'
+  'id' | 'username' | 'isBot' | 'pawn' | 'shoppingList' | 'basket' | 'inventory'
 >;
 
 type PendingQuizPayload = {
@@ -128,10 +129,11 @@ export class PanierExpressPresenterService extends BasePresenterService {
           }));
 
     const players = sanitizedViews.map(
-      ({ id, username, isBot, shoppingList, basket, inventory }) => ({
+      ({ id, username, isBot, pawn, shoppingList, basket, inventory }) => ({
         id,
         username,
         isBot,
+        pawn,
         shoppingList,
         basket,
         inventory,
@@ -297,6 +299,7 @@ export class PanierExpressPresenterService extends BasePresenterService {
       id: player.id,
       username: typeof player.username === 'string' ? player.username : null,
       isBot: player?.isBot === true,
+      pawn: typeof player.pawn === 'string' ? player.pawn : null,
       shoppingList: this.toStringArray(player.shoppingList),
       basket: this.toStringArray(player.basket),
       inventory: this.toStringArray(player.inventory),

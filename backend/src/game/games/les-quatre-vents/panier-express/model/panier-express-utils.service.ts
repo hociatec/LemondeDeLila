@@ -42,6 +42,7 @@ export class PanierExpressUtils {
       shoppingList: this.toStringArray(player.shoppingList),
       basket: this.toStringArray(player.basket),
       inventory: this.toStringArray(player.inventory),
+      pawn: typeof player.pawn === 'string' ? player.pawn : undefined,
     };
   }
 
@@ -141,6 +142,8 @@ export class PanierExpressUtils {
     switch (tile.type) {
       case 'start':
         return 'départ';
+      case 'rest':
+        return 'repos';
       case 'stand':
         return `stand ${tile.standId ?? 'inconnu'}`;
       case 'event':

@@ -41,3 +41,8 @@ export type PanierExpressShoppingListsJsonV1 = {
   version: 1;
   lists: string[][];
 };
+
+export type PanierExpressPawnsJsonV1 = {
+  version: 1;
+  pawns: string[];
+};
