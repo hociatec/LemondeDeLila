@@ -18,6 +18,7 @@ import { GameCategoryAssignmentEntity } from '../game/engine/entities/game-categ
 import { GameCatalogOverrideEntity } from '../game/engine/entities/game-catalog-override.entity';
 import { BotSettingsEntity } from '../game/modules/bot/entities/bot-settings.entity';
 import { BugReportEntity } from '../bug-reports/entities/bug-report.entity';
+import { BugReportCommentEntity } from '../bug-reports/entities/bug-report-comment.entity';
 
 export const ORM_ENTITIES = [
   User,
@@ -40,4 +41,5 @@ export const ORM_ENTITIES = [
   GameCatalogOverrideEntity,
   BotSettingsEntity,
   BugReportEntity,
+  BugReportCommentEntity,
 ];

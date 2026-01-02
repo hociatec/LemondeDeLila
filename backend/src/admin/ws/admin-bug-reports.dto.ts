@@ -41,6 +41,6 @@ export class AdminBugReportUpdateWsDto extends AdminBugReportIdWsDto {
 
 export class AdminBugReportUpdateStatusWsDto extends AdminBugReportIdWsDto {
   @IsString()
-  @IsIn(['pending', 'in_progress', 'to_test', 'done', 'rejected'])
-  status!: 'pending' | 'in_progress' | 'to_test' | 'done' | 'rejected';
+  @IsIn(['pending', 'in_progress', 'to_test', 'done', 'refused', 'rejected'])
+  status!: 'pending' | 'in_progress' | 'to_test' | 'done' | 'refused' | 'rejected';
 }
