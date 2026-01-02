@@ -739,16 +739,17 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
         }
 
         // Best-effort: games may store winner info in metadata under various keys.
-        static int? ReadWinnerId(JsonElement element)
+        static int? ReadWinnerId(System.Text.Json.JsonElement element)
         {
-            if (element.ValueKind != JsonValueKind.Object)
+            if (element.ValueKind != System.Text.Json.JsonValueKind.Object)
             {
                 return null;
             }
 
             foreach (var key in new[] { "winnerPlayerId", "winnerId", "winner_id" })
             {
-                if (element.TryGetProperty(key, out var prop) && prop.ValueKind == JsonValueKind.Number)
+                if (element.TryGetProperty(key, out var prop) &&
+                    prop.ValueKind == System.Text.Json.JsonValueKind.Number)
                 {
                     try { return prop.GetInt32(); } catch { /* ignore */ }
                 }
