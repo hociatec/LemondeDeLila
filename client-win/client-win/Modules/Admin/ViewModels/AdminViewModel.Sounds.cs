@@ -282,7 +282,7 @@ public sealed partial class AdminViewModel
         if (!resp.IsSuccessStatusCode)
         {
             var body = await resp.Content.ReadAsStringAsync().ConfigureAwait(true);
-            var message = TryExtractApiErrorMessage(body) ?? body;
+            var message = ApiErrorParser.TryExtractMessage(body) ?? body;
             await _dialogs.ShowError("Sons", $"Upload échoué ({(int)resp.StatusCode}) : {message}").ConfigureAwait(true);
             return;
         }
@@ -290,41 +290,4 @@ public sealed partial class AdminViewModel
         await _dialogs.ShowInfo("Sons", "Son global mis à jour (serveur).").ConfigureAwait(true);
     }
 
-    private static string? TryExtractApiErrorMessage(string? body)
-    {
-        if (string.IsNullOrWhiteSpace(body))
-        {
-            return null;
-        }
-
-        try
-        {
-            using var doc = JsonDocument.Parse(body);
-            if (doc.RootElement.ValueKind != JsonValueKind.Object)
-            {
-                return null;
-            }
-
-            if (!doc.RootElement.TryGetProperty("message", out var message))
-            {
-                return null;
-            }
-
-            return message.ValueKind switch
-            {
-                JsonValueKind.String => message.GetString(),
-                JsonValueKind.Array => string.Join(
-                    " ",
-                    message.EnumerateArray()
-                        .Where(e => e.ValueKind == JsonValueKind.String)
-                        .Select(e => e.GetString())
-                        .Where(s => !string.IsNullOrWhiteSpace(s))),
-                _ => null
-            };
-        }
-        catch
-        {
-            return null;
-        }
-    }
 }

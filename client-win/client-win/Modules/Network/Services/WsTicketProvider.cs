@@ -15,12 +15,14 @@ public sealed class WsTicketProvider : IWsTicketProvider
 {
     private readonly ClientConfiguration _config;
     private readonly ISessionService _session;
+    private readonly IApiHttpClient _apiHttp;
     private readonly ConcurrentDictionary<string, CachedTicket> _cache = new(StringComparer.OrdinalIgnoreCase);
 
-    public WsTicketProvider(ClientConfiguration config, ISessionService session)
+    public WsTicketProvider(ClientConfiguration config, ISessionService session, IApiHttpClient apiHttp)
     {
         _config = config ?? throw new ArgumentNullException(nameof(config));
         _session = session ?? throw new ArgumentNullException(nameof(session));
+        _apiHttp = apiHttp ?? throw new ArgumentNullException(nameof(apiHttp));
     }
 
     public async Task<string?> GetTicketAsync(string scope, CancellationToken cancellationToken = default)
@@ -49,11 +51,7 @@ public sealed class WsTicketProvider : IWsTicketProvider
         using var req = new HttpRequestMessage(HttpMethod.Get, ticketUri);
         req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-        using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        timeoutCts.CancelAfter(TimeSpan.FromSeconds(6));
-
-        using var res = await HttpClientProvider.Shared
-            .SendAsync(req, timeoutCts.Token)
+        using var res = await _apiHttp.SendAsync(req, TimeSpan.FromSeconds(6), cancellationToken)
             .ConfigureAwait(false);
         var json = await res.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         res.EnsureSuccessStatusCode();
