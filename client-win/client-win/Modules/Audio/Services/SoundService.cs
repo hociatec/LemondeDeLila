@@ -99,6 +99,16 @@ public sealed class SoundService : ISoundService, IDisposable
                 OverridePath: () => _options.Current.SoundPrivateMessageReceivedPath,
                 IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundChatMessages,
                 Volume: () => Clamp01(_options.Current.SoundChatMessagesVolume / 100.0)),
+            [SoundId.FriendConnected] = new SoundEntry(
+                DefaultRelativePath: Path.Combine("Assets", "Sounds", "invitationrecu.mp3"),
+                OverridePath: () => _options.Current.SoundFriendConnectedPath,
+                IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundChatMessages,
+                Volume: () => Clamp01(_options.Current.SoundChatMessagesVolume / 100.0)),
+            [SoundId.FriendDisconnected] = new SoundEntry(
+                DefaultRelativePath: Path.Combine("Assets", "Sounds", "roomexit.mp3"),
+                OverridePath: () => _options.Current.SoundFriendDisconnectedPath,
+                IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundChatMessages,
+                Volume: () => Clamp01(_options.Current.SoundChatMessagesVolume / 100.0)),
             [SoundId.FriendInvitationSent] = new SoundEntry(
                 DefaultRelativePath: Path.Combine("Assets", "Sounds", "invitationenvoyer.mp3"),
                 OverridePath: () => _options.Current.SoundFriendInvitationSentPath,

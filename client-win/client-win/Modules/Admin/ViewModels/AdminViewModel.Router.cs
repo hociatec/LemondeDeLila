@@ -398,6 +398,18 @@ public sealed partial class AdminViewModel
 
             if (_page == AdminPage.SoundsInvitations && tag is string inviteSound)
             {
+                if (inviteSound == "sounds.friend.connected")
+                {
+                    PushReturnFocus();
+                    BuildSoundDetails(Modules.Audio.Models.SoundId.FriendConnected);
+                    return;
+                }
+                if (inviteSound == "sounds.friend.disconnected")
+                {
+                    PushReturnFocus();
+                    BuildSoundDetails(Modules.Audio.Models.SoundId.FriendDisconnected);
+                    return;
+                }
                 if (inviteSound == "sounds.friend.invite.sent" || inviteSound == "sounds.invite.sent")
                 {
                     PushReturnFocus();

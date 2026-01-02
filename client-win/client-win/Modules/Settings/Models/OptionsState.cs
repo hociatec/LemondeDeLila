@@ -19,6 +19,8 @@ public sealed class OptionsState
     public string? SoundRoomExitPath { get; set; }
     public string? SoundInvitationSentPath { get; set; }
     public string? SoundInvitationReceivedPath { get; set; }
+    public string? SoundFriendConnectedPath { get; set; }
+    public string? SoundFriendDisconnectedPath { get; set; }
     public string? SoundFriendInvitationSentPath { get; set; }
     public string? SoundFriendInvitationReceivedPath { get; set; }
     public string? SoundChatMessageSentPath { get; set; }

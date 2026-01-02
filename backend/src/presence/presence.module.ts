@@ -1,12 +1,14 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ChatModule } from '../chat/chat.module';
+import { NotificationModule } from '../notification/notification.module';
 import { PresenceGateway } from './gateways/presence.gateway';
 import { PresenceService } from './services/presence.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RoomParticipant } from '../room/entities/room-participant.entity';
 import { Room } from '../room/entities/room.entity';
 import { User } from '../user/entities/user.entity';
+import { SocialRelationship } from '../social/entities/social-relationship.entity';
 import {
   PresenceTransport,
   RedisPresenceTransport,
@@ -17,7 +19,8 @@ import { RedisClientFactory } from '../common/redis/redis-client.factory';
   imports: [
     ConfigModule,
     ChatModule,
-    TypeOrmModule.forFeature([RoomParticipant, Room, User]),
+    NotificationModule,
+    TypeOrmModule.forFeature([RoomParticipant, Room, User, SocialRelationship]),
   ],
   providers: [
     {

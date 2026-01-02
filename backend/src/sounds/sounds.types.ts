@@ -8,6 +8,8 @@ export const SOUND_KEYS = [
   'ChatMessageReceived',
   'PrivateMessageSent',
   'PrivateMessageReceived',
+  'FriendConnected',
+  'FriendDisconnected',
   'FriendInvitationSent',
   'FriendInvitationReceived',
   'InvitationSent',

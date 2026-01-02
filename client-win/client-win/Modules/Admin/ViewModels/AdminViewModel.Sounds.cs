@@ -78,11 +78,13 @@ public sealed partial class AdminViewModel
     {
         _page = AdminPage.SoundsInvitations;
         Title = "Administration - Sons - Amis";
-        Details = "Choisir un son lié aux demandes d'amis.";
+        Details = "Choisir un son lié aux amis (présence, demandes).";
         IsTextInputVisible = false;
         IsSecondaryInputVisible = false;
         IsAdditionalPermissionsVisible = false;
         Items.Clear();
+        Items.Add(new AdminMenuItem("Ami connecté", tag: "sounds.friend.connected"));
+        Items.Add(new AdminMenuItem("Ami déconnecté", tag: "sounds.friend.disconnected"));
         Items.Add(new AdminMenuItem("Demande d'ami envoyée", tag: "sounds.friend.invite.sent"));
         Items.Add(new AdminMenuItem("Demande d'ami reçue", tag: "sounds.friend.invite.received"));
         SelectedItem = Items.FirstOrDefault();
@@ -157,7 +159,7 @@ public sealed partial class AdminViewModel
             SoundId.InvitationSent or SoundId.InvitationReceived => AdminPage.SoundsTable,
             SoundId.ChatMessageSent or SoundId.ChatMessageReceived => AdminPage.SoundsChat,
             SoundId.PrivateMessageSent or SoundId.PrivateMessageReceived => AdminPage.SoundsPrivateMessages,
-            SoundId.FriendInvitationSent or SoundId.FriendInvitationReceived => AdminPage.SoundsInvitations,
+            SoundId.FriendConnected or SoundId.FriendDisconnected or SoundId.FriendInvitationSent or SoundId.FriendInvitationReceived => AdminPage.SoundsInvitations,
             _ => AdminPage.Sounds
         };
 
@@ -173,6 +175,8 @@ public sealed partial class AdminViewModel
             SoundId.RoomExit => ("Table", "Quitter une table", _options.Current.SoundRoomExitPath),
             SoundId.InvitationSent => ("Table", "Invitation à une table envoyée", _options.Current.SoundInvitationSentPath),
             SoundId.InvitationReceived => ("Table", "Invitation à une table reçue", _options.Current.SoundInvitationReceivedPath),
+            SoundId.FriendConnected => ("Amis", "Ami connecté", _options.Current.SoundFriendConnectedPath),
+            SoundId.FriendDisconnected => ("Amis", "Ami déconnecté", _options.Current.SoundFriendDisconnectedPath),
             SoundId.FriendInvitationSent => ("Amis", "Demande d'ami envoyée", _options.Current.SoundFriendInvitationSentPath),
             SoundId.FriendInvitationReceived => ("Amis", "Demande d'ami reçue", _options.Current.SoundFriendInvitationReceivedPath),
             SoundId.ChatMessageSent => ("Tchat", "Envoi d'un message", _options.Current.SoundChatMessageSentPath),

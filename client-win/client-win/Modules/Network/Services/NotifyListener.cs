@@ -200,6 +200,14 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
             {
                 HandleFriendRequested(root);
             }
+            else if (string.Equals(type, "social.friend.connected", StringComparison.OrdinalIgnoreCase))
+            {
+                HandleFriendPresence(root, connected: true);
+            }
+            else if (string.Equals(type, "social.friend.disconnected", StringComparison.OrdinalIgnoreCase))
+            {
+                HandleFriendPresence(root, connected: false);
+            }
             else if (string.Equals(type, "sounds.updated", StringComparison.OrdinalIgnoreCase))
             {
                 _ = HandleSoundsUpdatedAsync();
@@ -514,6 +522,43 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
             // Backend sends only requesterId; keep it generic client-side.
             _screenReader.AnnouncePolite("Nouvelle demande d'ami.");
             _sounds.Play(SoundId.FriendInvitationReceived);
+        }
+        catch
+        {
+            // ignore
+        }
+    }
+
+    private void HandleFriendPresence(JsonElement root, bool connected)
+    {
+        try
+        {
+            if (!root.TryGetProperty("payload", out var payload) || payload.ValueKind != JsonValueKind.Object)
+            {
+                return;
+            }
+
+            var id = payload.TryGetProperty("userId", out var uid) && uid.ValueKind == JsonValueKind.Number
+                ? uid.GetInt32()
+                : 0;
+            var name = payload.TryGetProperty("username", out var u) && u.ValueKind == JsonValueKind.String
+                ? (u.GetString() ?? string.Empty)
+                : string.Empty;
+
+            if (id <= 0)
+            {
+                return;
+            }
+
+            var me = _session.CurrentUser;
+            if (me != null && me.UserId == id)
+            {
+                return;
+            }
+
+            var label = string.IsNullOrWhiteSpace(name) ? $"Ami #{id}" : name.Trim();
+            _screenReader.AnnouncePolite(connected ? $"{label} s'est connecté." : $"{label} s'est déconnecté.");
+            _sounds.Play(connected ? SoundId.FriendConnected : SoundId.FriendDisconnected);
         }
         catch
         {

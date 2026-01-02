@@ -9,6 +9,8 @@ import { RoomParticipant } from '../../room/entities/room-participant.entity';
 import { In, IsNull, Repository } from 'typeorm';
 import { PresenceEvent, PresenceTransport } from './presence-transport';
 import { User } from '../../user/entities/user.entity';
+import { SocialRelationship } from '../../social/entities/social-relationship.entity';
+import { NotificationService } from '../../notification/services/notification.service';
 
 export type PresenceConnectionContext = 'home' | 'chat' | 'table';
 type PresenceActivity = 'home' | 'chat' | 'table';
@@ -34,6 +36,7 @@ type PresencePublicPlayer = Omit<PresenceBroadcastPlayer, 'contextLocked'>;
 export class PresenceService implements OnModuleDestroy {
   private readonly logger = new Logger(PresenceService.name);
   private readonly clients = new Map<WebSocket, PresenceClient>();
+  private readonly socketCountsByUserId = new Map<number, number>();
   private heartbeatTimer: ReturnType<typeof setInterval> | null = null;
   private readonly pingIntervalMs = 30_000;
   private readonly pingTimeoutMs = 10_000;
@@ -51,6 +54,9 @@ export class PresenceService implements OnModuleDestroy {
     private readonly participants: Repository<RoomParticipant>,
     @InjectRepository(User)
     private readonly users: Repository<User>,
+    @InjectRepository(SocialRelationship)
+    private readonly relationships: Repository<SocialRelationship>,
+    private readonly notifications: NotificationService,
     private readonly transport: PresenceTransport,
   ) {
     this.transport
@@ -69,6 +75,7 @@ export class PresenceService implements OnModuleDestroy {
     user: WsAuthPayload,
     context: PresenceConnectionContext = 'home',
   ) {
+    const prevCount = this.socketCountsByUserId.get(user.id) ?? 0;
     this.clients.set(socket, {
       socket,
       user,
@@ -76,13 +83,72 @@ export class PresenceService implements OnModuleDestroy {
       contextLocked: false,
       roomHint: null,
     });
+    this.socketCountsByUserId.set(user.id, prevCount + 1);
     this.ensureHeartbeat();
+
+    // Notify friends only on first local connection for this user.
+    if (prevCount === 0) {
+      void this.notifyFriendsPresence(user.id, user.username, true);
+    }
   }
 
   unregister(socket: WebSocket) {
+    const client = this.clients.get(socket);
     this.clients.delete(socket);
+
+    // Notify friends only on last local disconnection for this user.
+    if (client?.user?.id) {
+      const userId = client.user.id;
+      const prevCount = this.socketCountsByUserId.get(userId) ?? 0;
+      const nextCount = Math.max(0, prevCount - 1);
+      if (nextCount === 0) {
+        this.socketCountsByUserId.delete(userId);
+        void this.notifyFriendsPresence(userId, client.user.username, false);
+      } else {
+        this.socketCountsByUserId.set(userId, nextCount);
+      }
+    }
+
     if (this.clients.size === 0) {
       this.stopHeartbeat();
+    }
+  }
+
+  private async notifyFriendsPresence(
+    userId: number,
+    username: string,
+    isOnline: boolean,
+  ): Promise<void> {
+    if (!userId) return;
+
+    try {
+      const relations = await this.relationships.find({
+        where: [
+          { requester: { id: userId }, status: 'accepted' },
+          { addressee: { id: userId }, status: 'accepted' },
+        ],
+      });
+
+      const friendIds = relations
+        .map((relation) =>
+          relation.requester?.id === userId
+            ? relation.addressee?.id
+            : relation.requester?.id,
+        )
+        .filter((id): id is number => typeof id === 'number' && id > 0 && id !== userId);
+
+      if (friendIds.length === 0) return;
+
+      const type = isOnline
+        ? 'social.friend.connected'
+        : 'social.friend.disconnected';
+      const payload = { userId, username: String(username || '').trim() || `user#${userId}` };
+
+      await Promise.all(
+        friendIds.map((fid) => this.notifications.notifyUser(fid, type, payload)),
+      );
+    } catch (err) {
+      this.logger.debug('Friend presence notify failed', err as Error);
     }
   }
 
