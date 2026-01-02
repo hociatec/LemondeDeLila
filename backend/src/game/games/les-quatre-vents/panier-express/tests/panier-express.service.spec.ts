@@ -2,12 +2,14 @@ import { Test } from '@nestjs/testing';
 import { PanierExpressService } from '../panier-express.service';
 import { PanierExpressModule } from '../panier-express.module';
 import { PanierExpressExchangeService } from '../actions/panier-express-exchange.service';
+import { PanierExpressPhaseService } from '../phases/panier-express-phase.service';
 import { nextRngInt } from '../../../../../common/utils/seeded-rng';
 
 // Tests unitaires ciblés Panier Express (pioche stand/bonus, échange, quiz, flux de tour, bot, presenter).
 describe('PanierExpressService', () => {
   let service: PanierExpressService;
   let exchangeSvc: PanierExpressExchangeService;
+  let phaseSvc: PanierExpressPhaseService;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -15,6 +17,7 @@ describe('PanierExpressService', () => {
     }).compile();
     service = moduleRef.get(PanierExpressService);
     exchangeSvc = moduleRef.get(PanierExpressExchangeService);
+    phaseSvc = moduleRef.get(PanierExpressPhaseService);
   });
 
   it('expose un état initial avec decks et tuiles', () => {
@@ -362,7 +365,13 @@ describe('PanierExpressService', () => {
         { id: 2, username: 'B', inventory: ['poire'] },
       ],
       status: 'running',
-      pending: {\n        type: 'exchange',\n        playerId: 1,\n        card: 'exchange',\n        step: 'choose_target',\n        targets: [{ targetPlayerId: 2, targetUsername: 'B' }],\n      },
+      pending: {
+        type: 'exchange',
+        playerId: 1,
+        card: 'exchange',
+        step: 'choose_target',
+        targets: [{ targetPlayerId: 2, targetUsername: 'B' }],
+      },
     } as any);
     state.turn = { currentPlayerId: 1, direction: 1 };
     state.turnIndex = 0;
@@ -408,7 +417,15 @@ describe('PanierExpressService', () => {
         { id: 2, username: 'B', inventory: ['poire'] },
       ],
       status: 'running',
-    } as any);\n    state.metadata = {\n      ...(state.metadata ?? {}),\n      rng: { seed: 123, counter: 0 },\n    };\n\n    const pendingState = exchangeSvc.applyExchange(state, 1);\n    const chosenTarget = exchangeSvc.chooseTarget(pendingState as any, 1, 2);\n    const after = exchangeSvc.chooseGive(chosenTarget as any, 1, 'pomme');
+    } as any);
+    state.metadata = {
+      ...(state.metadata ?? {}),
+      rng: { seed: 123, counter: 0 },
+    };
+
+    const pendingState = exchangeSvc.applyExchange(state, 1);
+    const chosenTarget = exchangeSvc.chooseTarget(pendingState as any, 1, 2);
+    const after = exchangeSvc.chooseGive(chosenTarget as any, 1, 'pomme');
     const a = (after.players as any[]).find((p) => p.id === 1);
     const b = (after.players as any[]).find((p) => p.id === 2);
     expect(a.inventory).toContain('poire');
@@ -439,9 +456,95 @@ describe('PanierExpressService', () => {
       ],
       status: 'running',
     } as any);
-    const pending = exchangeSvc.applyExchange(base, 1);\n    const after = exchangeSvc.chooseTarget(pending as any, 2, 1);
+    const pending = exchangeSvc.applyExchange(base, 1);
+    const after = exchangeSvc.chooseTarget(pending as any, 2, 1);
     expect(after.pending?.playerId).toBe(1);
   });
+
+  it("ne propose pas de roll quand un pending bloquant concerne un autre joueur", () => {
+    const state: any = service.hydrateInitialState({
+      players: [
+        { id: 1, username: 'A' },
+        { id: 2, username: 'B' },
+      ],
+      status: 'started',
+      pending: {
+        type: 'pick',
+        playerId: 2,
+        blocking: true,
+        label: 'Choix',
+        choices: ['x'],
+        data: { kind: 'exchange.impose.choose_card', initiatorId: 1, cards: ['x'] },
+      },
+    } as any);
+    state.turn = { currentPlayerId: 1, direction: 1 };
+    state.turnIndex = 0;
+
+    const actions = service.getAvailableActions(state, 1);
+    expect(actions.some((a: any) => String(a.type).toLowerCase() === 'roll')).toBe(false);
+    expect(actions.length).toBe(0);
+  });
+
+  it("rejette le roll si une action bloquante est en attente", () => {
+    const state: any = service.hydrateInitialState({
+      players: [
+        { id: 1, username: 'A' },
+        { id: 2, username: 'B' },
+      ],
+      status: 'started',
+      pending: {
+        type: 'pick',
+        playerId: 2,
+        blocking: true,
+        label: 'Choix',
+        choices: ['x'],
+        data: { kind: 'exchange.impose.choose_card', initiatorId: 1, cards: ['x'] },
+      },
+    } as any);
+    state.turn = { currentPlayerId: 1, direction: 1 };
+    state.turnIndex = 0;
+
+    expect(() =>
+      service.validateAction(
+        state,
+        { type: 'roll', payload: {}, meta: { actorId: 1 } } as any,
+        1,
+      ),
+    ).toThrow();
+  });
+
+  it('décrémente les statuts temporaires au changement de tour', () => {
+    const state: any = service.hydrateInitialState({
+      players: [
+        { id: 1, username: 'A' },
+        { id: 2, username: 'B' },
+      ],
+      status: 'started',
+    } as any);
+    state.turn = { currentPlayerId: 1, direction: 1 };
+    state.turnIndex = 0;
+    state.metadata.statuses.noDrawCourses = { 1: 1 };
+    state.metadata.statuses.revealInventory = { 1: 1 };
+
+    const after = phaseSvc.advanceTurn(state);
+    expect(after.metadata.statuses.noDrawCourses?.[1] ?? 0).toBe(0);
+    expect(after.metadata.statuses.revealInventory?.[1] ?? 0).toBe(0);
+  });
+
+  it("conserve la direction de mouvement au changement de tour", () => {
+    const state: any = service.hydrateInitialState({
+      players: [
+        { id: 1, username: 'A' },
+        { id: 2, username: 'B' },
+      ],
+      status: 'started',
+    } as any);
+    state.turn = { currentPlayerId: 1, direction: -1 };
+    state.turnIndex = 0;
+    state.metadata.movementDirection = -1;
+    state.metadata.movementDirectionOwnerId = 1;
+
+    const after = phaseSvc.advanceTurn(state);
+    expect(after.turn.direction).toBe(-1);
+  });
 });
-
-

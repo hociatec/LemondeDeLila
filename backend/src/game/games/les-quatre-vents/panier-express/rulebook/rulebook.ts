@@ -29,6 +29,15 @@ export function getAvailableActions(
 ): GameSingleActionDto[] {
   if ((state.status || '').toLowerCase() === 'finished') return [];
   const rawPending = state.pending as any;
+  if (
+    rawPending &&
+    rawPending.blocking &&
+    typeof rawPending.playerId === 'number' &&
+    rawPending.playerId !== playerId
+  ) {
+    // Une action bloquante est en attente pour un autre joueur : personne d'autre ne peut jouer.
+    return [];
+  }
   if (rawPending && rawPending.type === 'pick' && rawPending.playerId === playerId) {
     const choices = Array.isArray(rawPending.choices) ? rawPending.choices : [];
     return choices.map((_, index: number) => ({
@@ -144,6 +153,42 @@ export function validateAction(
   const rawType = String(action?.type ?? '').trim();
   const normalizedType = rawType.toLowerCase();
   const type = rawType as PanierExpressActionType;
+  const pendingAny = state.pending as any;
+  const hasBlockingPending = Boolean(pendingAny?.blocking);
+  const pendingPlayerId =
+    typeof pendingAny?.playerId === 'number' ? pendingAny.playerId : null;
+
+  if (hasBlockingPending) {
+    const allowedWhileBlocking = new Set<string>([
+      'pick_choice',
+      'exchange_choose_target',
+      'exchange_choose_give',
+      'exchange_accept',
+      'exchange_refuse',
+    ]);
+    const isAllowed = allowedWhileBlocking.has(normalizedType);
+    if (!isAllowed) {
+      if (actorId != null && pendingPlayerId != null && actorId !== pendingPlayerId) {
+        throw new PlayerActionError('Une action est déjà en attente.', {
+          gameType: 'panier-express',
+          playerId: actorId,
+          currentPlayerId: state.turn?.currentPlayerId ?? null,
+        });
+      }
+      if (normalizedType === 'roll' || normalizedType === 'roll_dice') {
+        if (actorId != null) {
+          throw new PlayerActionError("Vous devez d'abord résoudre l'action en attente.", {
+            gameType: 'panier-express',
+            playerId: actorId,
+          });
+        }
+        throw new GameValidationError("Action impossible: une action est en attente.", {
+          gameType: 'panier-express',
+          action: rawType,
+        });
+      }
+    }
+  }
   if (
     !PANIER_EXPRESS_GAME.actions.includes(type) &&
     !PANIER_EXPRESS_GAME.actions.includes(normalizedType as any)
@@ -274,6 +319,18 @@ export function validateAction(
           playerId: actorId,
         });
       }
+    }
+    if (hasBlockingPending) {
+      if (actorId != null) {
+        throw new PlayerActionError("Vous devez d'abord résoudre l'action en attente.", {
+          gameType: 'panier-express',
+          playerId: actorId,
+        });
+      }
+      throw new GameValidationError("Action impossible: une action est en attente.", {
+        gameType: 'panier-express',
+        action: rawType,
+      });
     }
     return { ...action, type, payload: {} };
   }

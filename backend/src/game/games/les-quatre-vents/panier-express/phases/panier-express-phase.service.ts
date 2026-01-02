@@ -42,6 +42,55 @@ export class PanierExpressPhaseService {
         ? (state.players ?? []).findIndex((p) => p.id === currentId)
         : state.turnIndex;
     const next = this.turns.advanceTurn(state);
+
+    const meta = this.getMetadata(next);
+    const statuses: any = meta.statuses ?? {};
+
+    const decrementMap = (input: Record<number, number> | undefined) => {
+      const out: Record<number, number> = {};
+      Object.entries(input ?? {}).forEach(([pid, val]) => {
+        const nextVal = Math.max(0, Number(val) - 1);
+        if (nextVal > 0) out[Number(pid)] = nextVal;
+      });
+      return out;
+    };
+
+    const revealInventory = decrementMap(statuses.revealInventory);
+    const revealShoppingList = decrementMap(statuses.revealShoppingList);
+    const noDrawCourses = decrementMap(statuses.noDrawCourses);
+
+    let movementDirection: 1 | -1 = meta.movementDirection === -1 ? -1 : 1;
+    let movementDirectionOwnerId =
+      typeof meta.movementDirectionOwnerId === 'number'
+        ? meta.movementDirectionOwnerId
+        : null;
+    if (
+      movementDirection === -1 &&
+      movementDirectionOwnerId != null &&
+      (next.turn?.currentPlayerId ?? null) === movementDirectionOwnerId
+    ) {
+      movementDirection = 1;
+      movementDirectionOwnerId = null;
+    }
+
+    const withMeta: GameStateEntity = {
+      ...next,
+      metadata: {
+        ...(next.metadata as any),
+        movementDirection,
+        movementDirectionOwnerId,
+        statuses: {
+          ...statuses,
+          revealInventory,
+          revealShoppingList,
+          noDrawCourses,
+        },
+      } as any,
+      turn: {
+        ...(next.turn ?? { currentPlayerId: null, direction: 1 }),
+        direction: movementDirection,
+      },
+    };
     playingLog('panier.advanceTurn', {
       roomId: (state.metadata as any)?.roomId ?? null,
       gameType: (state.metadata as any)?.gameType ?? null,
@@ -49,11 +98,11 @@ export class PanierExpressPhaseService {
       type: 'advance_turn',
       currentId,
       currentIndex,
-      nextTurnIndex: next.turnIndex,
-      nextCurrentPlayerId: next.turn?.currentPlayerId ?? null,
-      skipTurn: (next.metadata as any)?.statuses?.skipTurn ?? {},
+      nextTurnIndex: withMeta.turnIndex,
+      nextCurrentPlayerId: withMeta.turn?.currentPlayerId ?? null,
+      skipTurn: (withMeta.metadata as any)?.statuses?.skipTurn ?? {},
     });
-    return next;
+    return withMeta;
   }
 
   private applyVictory(state: GameStateEntity): GameStateEntity {

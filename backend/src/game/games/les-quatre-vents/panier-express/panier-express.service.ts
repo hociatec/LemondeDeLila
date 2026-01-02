@@ -1927,23 +1927,25 @@ export class PanierExpressService extends AbstractGameService {
     const kind = String(pending?.data?.kind ?? '').trim();
 
     const updatePlayer = (
+      base: GameStateEntity,
       playerId: number,
       updater: (player: any) => any,
     ): GameStateEntity => {
-      const players = (state.players ?? []).map((p: any) =>
+      const players = (base.players ?? []).map((p: any) =>
         p.id === playerId ? updater(p) : p,
       );
-      return { ...state, players };
+      return { ...base, players };
     };
 
     const removeCourseFromPlayer = (
+      base: GameStateEntity,
       playerId: number,
       card: string,
     ): { state: GameStateEntity; removed: boolean } => {
       const trimmed = String(card ?? '').trim();
-      if (!trimmed) return { state, removed: false };
+      if (!trimmed) return { state: base, removed: false };
       let removed = false;
-      const updated = updatePlayer(playerId, (p: any) => {
+      const updated = updatePlayer(base, playerId, (p: any) => {
         const basket = this.utils.toStringArray(p.basket);
         const inventory = this.utils.toStringArray(p.inventory);
         if (basket.includes(trimmed)) {
@@ -1959,11 +1961,15 @@ export class PanierExpressService extends AbstractGameService {
       return { state: updated, removed };
     };
 
-    const discardCourse = (playerId: number, card: string): GameStateEntity => {
+    const discardCourse = (
+      base: GameStateEntity,
+      playerId: number,
+      card: string,
+    ): GameStateEntity => {
       const trimmed = String(card ?? '').trim();
-      if (!trimmed) return state;
-      const removed = removeCourseFromPlayer(playerId, trimmed);
-      if (!removed.removed) return state;
+      if (!trimmed) return base;
+      const removed = removeCourseFromPlayer(base, playerId, trimmed);
+      if (!removed.removed) return base;
       const currentMeta = this.getMetadata(removed.state);
       const nextMeta: PanierExpressMetadata = {
         ...currentMeta,
@@ -1975,10 +1981,14 @@ export class PanierExpressService extends AbstractGameService {
       return { ...removed.state, metadata: nextMeta };
     };
 
-    const addCourseToPlayer = (playerId: number, card: string): GameStateEntity => {
+    const addCourseToPlayer = (
+      base: GameStateEntity,
+      playerId: number,
+      card: string,
+    ): GameStateEntity => {
       const trimmed = String(card ?? '').trim();
-      if (!trimmed) return state;
-      const next = updatePlayer(playerId, (p: any) => {
+      if (!trimmed) return base;
+      const next = updatePlayer(base, playerId, (p: any) => {
         const list = this.utils.toStringArray(p.shoppingList);
         const basket = this.utils.toStringArray(p.basket);
         const inventory = this.utils.toStringArray(p.inventory);
@@ -2011,7 +2021,7 @@ export class PanierExpressService extends AbstractGameService {
         : [];
       const chosen = cards[index] ?? '';
       let next = clearPending(state);
-      next = addCourseToPlayer(actorId, chosen);
+      next = addCourseToPlayer(next, actorId, chosen);
       next = this.core.appendLog(
         next,
         `[Panier Express] Tirage chanceux : ${this.utils.playerName(
@@ -2032,7 +2042,7 @@ export class PanierExpressService extends AbstractGameService {
         : [];
       const chosen = cards[index] ?? '';
       let next = clearPending(state);
-      next = discardCourse(actorId, chosen);
+      next = discardCourse(next, actorId, chosen);
       next = this.core.appendLog(
         next,
         `[Panier Express] ${this.utils.playerName(
@@ -2085,10 +2095,10 @@ export class PanierExpressService extends AbstractGameService {
       }
 
       let next = clearPending(state);
-      const removed = removeCourseFromPlayer(actorId, give);
+      const removed = removeCourseFromPlayer(next, actorId, give);
       next = removed.state;
       if (removed.removed) {
-        next = addCourseToPlayer(targetPlayerId, give);
+        next = addCourseToPlayer(next, targetPlayerId, give);
       }
       next = this.core.appendLog(
         next,
@@ -2131,10 +2141,10 @@ export class PanierExpressService extends AbstractGameService {
       next = { ...next, metadata: picked.meta as any };
       const stolen = String(picked.value ?? '').trim();
       if (stolen) {
-        const removed = removeCourseFromPlayer(targetPlayerId, stolen);
+        const removed = removeCourseFromPlayer(next, targetPlayerId, stolen);
         next = removed.state;
         if (removed.removed) {
-          next = addCourseToPlayer(actorId, stolen);
+          next = addCourseToPlayer(next, actorId, stolen);
         }
       }
       next = this.core.appendLog(
@@ -2194,12 +2204,12 @@ export class PanierExpressService extends AbstractGameService {
       const take = String(picked.value ?? '').trim();
       if (!take) return this.phaseFlow.advanceTurn(next);
 
-      const removedGive = removeCourseFromPlayer(actorId, give);
+      const removedGive = removeCourseFromPlayer(next, actorId, give);
       next = removedGive.state;
-      const removedTake = removeCourseFromPlayer(targetPlayerId, take);
+      const removedTake = removeCourseFromPlayer(next, targetPlayerId, take);
       next = removedTake.state;
-      if (removedGive.removed) next = addCourseToPlayer(targetPlayerId, give);
-      if (removedTake.removed) next = addCourseToPlayer(actorId, take);
+      if (removedGive.removed) next = addCourseToPlayer(next, targetPlayerId, give);
+      if (removedTake.removed) next = addCourseToPlayer(next, actorId, take);
 
       next = this.core.appendLog(
         next,
@@ -2224,10 +2234,10 @@ export class PanierExpressService extends AbstractGameService {
       if (!Number.isFinite(targetPlayerId) || !card) return clearPending(state);
 
       let next = clearPending(state);
-      const removed = removeCourseFromPlayer(targetPlayerId, card);
+      const removed = removeCourseFromPlayer(next, targetPlayerId, card);
       next = removed.state;
       if (removed.removed) {
-        next = addCourseToPlayer(actorId, card);
+        next = addCourseToPlayer(next, actorId, card);
       }
 
       const me = (next.players ?? []).find((p: any) => p.id === actorId) as any;
@@ -2238,10 +2248,10 @@ export class PanierExpressService extends AbstractGameService {
         next = { ...next, metadata: picked.meta as any };
         const give = String(picked.value ?? '').trim();
         if (give) {
-          const removedGive = removeCourseFromPlayer(actorId, give);
+          const removedGive = removeCourseFromPlayer(next, actorId, give);
           next = removedGive.state;
           if (removedGive.removed) {
-            next = addCourseToPlayer(targetPlayerId, give);
+            next = addCourseToPlayer(next, targetPlayerId, give);
           }
         }
       }
@@ -2274,10 +2284,10 @@ export class PanierExpressService extends AbstractGameService {
       const giverId = Number(order[giverIndex]);
       const receiverId = Number(order[(giverIndex + 1) % order.length]);
 
-      const removed = removeCourseFromPlayer(giverId, give);
+      const removed = removeCourseFromPlayer(next, giverId, give);
       next = removed.state;
       if (removed.removed) {
-        next = addCourseToPlayer(receiverId, give);
+        next = addCourseToPlayer(next, receiverId, give);
       }
 
       let nextCursor = (giverIndex + 1) % order.length;
@@ -2328,7 +2338,7 @@ export class PanierExpressService extends AbstractGameService {
       const pid = Number(order[currentIndex]);
 
       if (chosen) {
-        next = discardCourse(pid, chosen);
+        next = discardCourse(next, pid, chosen);
       }
       next = this.drawBonusCourse(next, pid);
 
@@ -2396,12 +2406,12 @@ export class PanierExpressService extends AbstractGameService {
       const picked = this.random.pickOne(metaRng.getMeta() as any, targetInv);
       next = { ...next, metadata: picked.meta as any };
       const take = String(picked.value ?? '').trim();
-      const removedGive = removeCourseFromPlayer(actorId, give);
+      const removedGive = removeCourseFromPlayer(next, actorId, give);
       next = removedGive.state;
-      const removedTake = removeCourseFromPlayer(targetPlayerId, take);
+      const removedTake = removeCourseFromPlayer(next, targetPlayerId, take);
       next = removedTake.state;
-      if (removedGive.removed) next = addCourseToPlayer(targetPlayerId, give);
-      if (removedTake.removed) next = addCourseToPlayer(actorId, take);
+      if (removedGive.removed) next = addCourseToPlayer(next, targetPlayerId, give);
+      if (removedTake.removed) next = addCourseToPlayer(next, actorId, take);
       next = this.core.appendLog(
         next,
         `[Panier Express] Troc rapide : ${this.utils.playerName(state, actorId)} donne "${give}" et reçoit "${take}".`,
@@ -2513,12 +2523,12 @@ export class PanierExpressService extends AbstractGameService {
       let next = clearPending(state);
       const accepted = index === 0;
       if (accepted) {
-        const removedGive = removeCourseFromPlayer(initiatorId, give);
+        const removedGive = removeCourseFromPlayer(next, initiatorId, give);
         next = removedGive.state;
-        const removedTake = removeCourseFromPlayer(actorId, take);
+        const removedTake = removeCourseFromPlayer(next, actorId, take);
         next = removedTake.state;
-        if (removedGive.removed) next = addCourseToPlayer(actorId, give);
-        if (removedTake.removed) next = addCourseToPlayer(initiatorId, take);
+        if (removedGive.removed) next = addCourseToPlayer(next, actorId, give);
+        if (removedTake.removed) next = addCourseToPlayer(next, initiatorId, take);
         next = this.core.appendLog(
           next,
           `[Panier Express] Échange stratégique : accepté (${this.utils.playerName(state, initiatorId)} ⇄ ${this.utils.playerName(state, actorId)}).`,
@@ -2575,12 +2585,12 @@ export class PanierExpressService extends AbstractGameService {
       const picked = this.random.pickOne(metaRng.getMeta() as any, vegCards);
       next = { ...next, metadata: picked.meta as any };
       const take = String(picked.value ?? '').trim();
-      const removedGive = removeCourseFromPlayer(actorId, give);
+      const removedGive = removeCourseFromPlayer(next, actorId, give);
       next = removedGive.state;
-      const removedTake = removeCourseFromPlayer(targetPlayerId, take);
+      const removedTake = removeCourseFromPlayer(next, targetPlayerId, take);
       next = removedTake.state;
-      if (removedGive.removed) next = addCourseToPlayer(targetPlayerId, give);
-      if (removedTake.removed) next = addCourseToPlayer(actorId, take);
+      if (removedGive.removed) next = addCourseToPlayer(next, targetPlayerId, give);
+      if (removedTake.removed) next = addCourseToPlayer(next, actorId, take);
       next = this.core.appendLog(next, `[Panier Express] Troc fruit/légume : échange effectué.`);
       return this.phaseFlow.advanceTurn(next);
     }
@@ -2632,12 +2642,12 @@ export class PanierExpressService extends AbstractGameService {
       const picked = this.random.pickOne(metaRng.getMeta() as any, winterVegCards);
       next = { ...next, metadata: picked.meta as any };
       const take = String(picked.value ?? '').trim();
-      const removedGive = removeCourseFromPlayer(actorId, give);
+      const removedGive = removeCourseFromPlayer(next, actorId, give);
       next = removedGive.state;
-      const removedTake = removeCourseFromPlayer(targetPlayerId, take);
+      const removedTake = removeCourseFromPlayer(next, targetPlayerId, take);
       next = removedTake.state;
-      if (removedGive.removed) next = addCourseToPlayer(targetPlayerId, give);
-      if (removedTake.removed) next = addCourseToPlayer(actorId, take);
+      if (removedGive.removed) next = addCourseToPlayer(next, targetPlayerId, give);
+      if (removedTake.removed) next = addCourseToPlayer(next, actorId, take);
       next = this.core.appendLog(next, `[Panier Express] Échange de saison : échange effectué.`);
       return this.phaseFlow.advanceTurn(next);
     }
@@ -2646,7 +2656,7 @@ export class PanierExpressService extends AbstractGameService {
       const chosen = String(choices[index] ?? '').trim();
       let next = clearPending(state);
       if (chosen) {
-        next = discardCourse(actorId, chosen);
+        next = discardCourse(next, actorId, chosen);
       }
       next = this.core.appendLog(
         next,
@@ -2680,10 +2690,10 @@ export class PanierExpressService extends AbstractGameService {
       if (!Number.isFinite(initiatorId) || !give) return clearPending(state);
       let next = clearPending(state);
       // Target gives chosen card to initiator; initiator gives a random card back (best-effort).
-      const removed = removeCourseFromPlayer(actorId, give);
+      const removed = removeCourseFromPlayer(next, actorId, give);
       next = removed.state;
       if (removed.removed) {
-        next = addCourseToPlayer(initiatorId, give);
+        next = addCourseToPlayer(next, initiatorId, give);
       }
       try {
         const initiator = (next.players ?? []).find((p: any) => p.id === initiatorId) as any;
@@ -2694,10 +2704,10 @@ export class PanierExpressService extends AbstractGameService {
           next = { ...next, metadata: picked.meta as any };
           const back = String(picked.value ?? '').trim();
           if (back) {
-            const removedBack = removeCourseFromPlayer(initiatorId, back);
+            const removedBack = removeCourseFromPlayer(next, initiatorId, back);
             next = removedBack.state;
             if (removedBack.removed) {
-              next = addCourseToPlayer(actorId, back);
+              next = addCourseToPlayer(next, actorId, back);
             }
           }
         }
