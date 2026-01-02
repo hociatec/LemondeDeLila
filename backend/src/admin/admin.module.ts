@@ -70,4 +70,10 @@ import { AdminBugReportsWsHandler } from './ws/admin-bug-reports-ws.handler';
     AdminWsRegistrar,
   ],
 })
-export class AdminModule {}
+export class AdminModule {
+  // Force eager instantiation of the WS registrar so its `onModuleInit()` runs and
+  // admin WS message types get registered in the global `WsRouteRegistry`.
+  constructor(private readonly wsRegistrar: AdminWsRegistrar) {
+    void this.wsRegistrar;
+  }
+}

@@ -1,6 +1,11 @@
-import 'dotenv/config';
 import { DataSource } from 'typeorm';
 import { ORM_ENTITIES } from './database/entities';
+
+const isProd = process.env.NODE_ENV === 'production';
+if (!isProd) {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  require('dotenv/config');
+}
 
 const {
   DATABASE_URL,
@@ -25,7 +30,6 @@ const base = DATABASE_URL
       database: DB_NAME,
     };
 
-const isProd = process.env.NODE_ENV === 'production';
 const migrations = [isProd ? 'dist/migrations/*.js' : 'src/migrations/*.ts'];
 
 export default new DataSource({
