@@ -76,6 +76,12 @@ public sealed partial class AdminViewModel
                     await LoadPerfAsync().ConfigureAwait(true);
                     return;
                 }
+                if (tag is string maintenance && maintenance == "maintenance")
+                {
+                    PushReturnFocus();
+                    BuildMaintenance();
+                    return;
+                }
                 if (tag is string sounds && sounds == "sounds")
                 {
                     PushReturnFocus();
@@ -755,6 +761,30 @@ public sealed partial class AdminViewModel
             {
                 await SubmitChatSettingsAsync().ConfigureAwait(true);
                 return;
+            }
+
+            if (_page == AdminPage.Maintenance && tag is string maintenanceTag)
+            {
+                if (maintenanceTag == "maintenance.deploy")
+                {
+                    await TriggerMaintenanceDeployAsync().ConfigureAwait(true);
+                    return;
+                }
+                if (maintenanceTag == "maintenance.refresh")
+                {
+                    await RefreshMaintenanceAsync().ConfigureAwait(true);
+                    return;
+                }
+                if (maintenanceTag == "maintenance.logs")
+                {
+                    await RefreshMaintenanceLogsAsync().ConfigureAwait(true);
+                    return;
+                }
+                if (maintenanceTag == "maintenance.service.status")
+                {
+                    await RefreshMaintenanceServiceStatusAsync().ConfigureAwait(true);
+                    return;
+                }
             }
 
             if (_page == AdminPage.ClientUpdates && tag is string buildTag && buildTag == "clientUpdate.buildUpload")

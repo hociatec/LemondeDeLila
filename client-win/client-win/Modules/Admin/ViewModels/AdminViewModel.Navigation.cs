@@ -255,7 +255,7 @@ public sealed partial class AdminViewModel
             return AdminNavResult.Moved;
         }
 
-        if (_page is AdminPage.Games or AdminPage.Users or AdminPage.Broadcast or AdminPage.ClientUpdates)
+        if (_page is AdminPage.Games or AdminPage.Users or AdminPage.Broadcast or AdminPage.ClientUpdates or AdminPage.Maintenance)
         {
             BuildRoot();
             return AdminNavResult.Moved;
@@ -357,6 +357,7 @@ public sealed partial class AdminViewModel
         Items.Add(new AdminMenuItem("Gérer les sons (application)", tag: "sounds"));
         Items.Add(new AdminMenuItem("Rapports de bug", tag: "bugReports"));
         Items.Add(new AdminMenuItem("Diagnostics latence (rooms/bots/parties)", tag: "perf"));
+        Items.Add(new AdminMenuItem("Maintenance serveur (build/migrations/restart)", tag: "maintenance"));
         Items.Add(new AdminMenuItem("Consulter les logs", tag: "logs"));
         SelectedItem = Items.FirstOrDefault();
         Status = "Entrée : sélectionner. Échap : retour.";

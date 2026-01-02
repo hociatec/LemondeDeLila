@@ -19,3 +19,7 @@ updates.signature.publicKey=./config/update-signing-public.pem
 jwt.issuer=le-monde-de-lila
 # jwt.audience=
 jwt.signature.publicKey=./config/jwt-signing-public.pem
+
+# Administration (optionnel, pour fonctions de maintenance serveur)
+# Token envoyÇ¸ via header `x-admin-maintenance-token` pour dÇ¸clencher un dÇ¸ploiement backend.
+# admin.maintenance.token=

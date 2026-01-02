@@ -10,6 +10,7 @@ public enum AdminNavResult
 internal enum AdminPage
 {
     Root,
+    Maintenance,
     Rooms,
     RoomsJoinSilent,
     RoomsDestroy,

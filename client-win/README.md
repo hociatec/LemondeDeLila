@@ -44,12 +44,14 @@ Notes :
 Le client (compte admin) propose maintenant :
 - **Compiler + uploader la mise à jour (admin)** : compile le client WPF en ClickOnce sur le PC Windows, zipe la publication, et upload vers le backend (`POST /api/admin/client-updates/upload`).
 - **Proposer une mise à jour client** : notifie tous les clients connectés pour leur proposer d'installer.
+- **Maintenance serveur (build/migrations/restart)** : déclenche un déploiement backend via systemd (si activé côté serveur).
 
 Pré-requis :
 - Le repo source doit être présent sur le PC Windows admin (ou définir `LILA_CLIENT_PROJECT` vers `client-win.csproj`).
 - Définir côté serveur Linux :
   - (optionnel) `CLIENT_UPDATES_DIR` = dossier où extraire la publication ClickOnce. Par défaut: `backend/data/client-updates/client-win` (créé automatiquement).
   - (optionnel) `CLIENT_UPDATES_PUBLIC_URL` = URL publique (ex: `https://api.lilas.hociatec.fr/updates/client-win/`)
+- Pour la maintenance serveur : configurer `admin.maintenance.token` dans `config/client.properties`, et activer/configurer les variables `ADMIN_MAINTENANCE_*` côté backend.
 - Sur le PC Windows admin (si l'URL change) : `LILA_CLICKONCE_BASEURL` = URL ClickOnce (ex: `https://api.lilas.hociatec.fr/updates/client-win/`).
 
 Notes :
