@@ -314,7 +314,23 @@ public static class AppBootstrapper
         try
         {
             var sounds = provider.GetRequiredService<ISoundService>();
+            var remoteSounds = provider.GetRequiredService<IRemoteSoundCache>();
             var dispatcher = provider.GetRequiredService<Dispatcher>();
+
+            // Essayer de rÃ©cupÃ©rer les sons configurÃ©s par l'admin avant le son de dÃ©marrage,
+            // pour que ClientOpened utilise le son serveur dÃ¨s le premier lancement.
+            try
+            {
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
+                remoteSounds
+                    .RefreshAsync(force: true, cancellationToken: cts.Token)
+                    .GetAwaiter()
+                    .GetResult();
+            }
+            catch
+            {
+                // ignore - utilisera le son local par dÃ©faut si indisponible
+            }
             sounds.Preload(Modules.Audio.Models.SoundId.ClientOpened);
 
             // Son de démarrage (si activé dans Options).

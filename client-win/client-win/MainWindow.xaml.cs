@@ -191,8 +191,14 @@ namespace client_win
             {
                 var remote = _host.Services.GetRequiredService<IRemoteSoundCache>();
                 // Timeout court (1 seconde) pour ne pas bloquer l'UX si le serveur est lent.
-                using var soundRefreshCts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
-                await remote.RefreshAsync(force: true, cancellationToken: soundRefreshCts.Token).ConfigureAwait(true);
+                var soundRefreshCts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
+                _ = remote
+                    .RefreshAsync(force: true, cancellationToken: soundRefreshCts.Token)
+                    .ContinueWith(
+                        _ => soundRefreshCts.Dispose(),
+                        CancellationToken.None,
+                        TaskContinuationOptions.ExecuteSynchronously,
+                        TaskScheduler.Default);
             }
             catch
             {
