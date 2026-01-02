@@ -14,7 +14,7 @@ type BroadcastUser = {
 @Injectable()
 export class ChatService {
   private static readonly DEFAULT_HISTORY_LIMIT = 200;
-  private static readonly CACHE_LIMIT = 500;
+  private static readonly CACHE_LIMIT = 2000;
   private historyCache: Array<Record<string, unknown>> | null = null;
 
   constructor(
@@ -67,7 +67,7 @@ export class ChatService {
       .leftJoinAndSelect('m.user', 'user')
       .where('m.deletedAt IS NULL')
       .orderBy('m.createdAt', 'DESC')
-      .take(Math.min(Math.max(limit, 1), 500));
+      .take(Math.min(Math.max(limit, 1), ChatService.CACHE_LIMIT));
 
     if (since) {
       qb.andWhere('m.createdAt >= :since', { since });
@@ -117,7 +117,7 @@ export class ChatService {
       .createQueryBuilder('m')
       .leftJoinAndSelect('m.user', 'user')
       .orderBy('m.createdAt', 'DESC')
-      .take(Math.min(Math.max(limit, 1), 1000));
+      .take(Math.min(Math.max(limit, 1), ChatService.CACHE_LIMIT));
 
     // NOTE: on garde le paramètre includeDeleted pour compatibilité protocolaire,
     // mais côté produit la suppression est définitive (pas de corbeille).
@@ -156,7 +156,7 @@ export class ChatService {
 
   private async ensureHistoryCache(): Promise<void> {
     if (this.historyCache !== null) return;
-    const rows = await this.getRecentMessages(ChatService.DEFAULT_HISTORY_LIMIT);
+    const rows = await this.getRecentMessages(ChatService.CACHE_LIMIT);
     this.historyCache = this.normalizeMany(rows);
   }
 

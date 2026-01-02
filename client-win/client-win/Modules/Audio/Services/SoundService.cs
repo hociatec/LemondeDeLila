@@ -53,8 +53,8 @@ public sealed class SoundService : ISoundService, IDisposable
                 IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundAppLaunch,
                 Volume: () => Clamp01(_options.Current.SoundAppLaunchVolume / 100.0)),
             [SoundId.ClientConnected] = new SoundEntry(
-                // NOTE: `roomjoined.mp3` n'existe pas dans le repo; garder un fallback existant.
-                DefaultRelativePath: Path.Combine("Assets", "Sounds", "roomopened.mp3"),
+                // Son court et distinct pour rendre la connexion perceptible.
+                DefaultRelativePath: Path.Combine("Assets", "Sounds", "invitationrecu.mp3"),
                 OverridePath: () => _options.Current.SoundClientConnectedPath,
                 IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundNavigate,
                 Volume: () => Clamp01(_options.Current.SoundNavigateVolume / 100.0)),
@@ -64,11 +64,17 @@ public sealed class SoundService : ISoundService, IDisposable
                 IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundNavigate,
                 Volume: () => Clamp01(_options.Current.SoundNavigateVolume / 100.0)),
             [SoundId.MainMenuMusic] = new SoundEntry(
+                // PLACEHOLDER: Ce fichier par défaut n'est pas approprié pour une musique de fond.
+                // L'administrateur doit uploader une vraie musique de menu via l'interface admin.
+                // Le son uploadé sera automatiquement utilisé via RemoteSoundCache.
                 DefaultRelativePath: Path.Combine("Assets", "Sounds", "roomopened.mp3"),
                 OverridePath: null,
                 IsEnabled: () => !_options.Current.MuteAll,
                 Volume: () => 0.25),
             [SoundId.TavernAmbience] = new SoundEntry(
+                // PLACEHOLDER: Ce fichier par défaut n'est pas approprié pour une ambiance de taverne.
+                // L'administrateur doit uploader une vraie ambiance via l'interface admin.
+                // Le son uploadé sera automatiquement utilisé via RemoteSoundCache.
                 DefaultRelativePath: Path.Combine("Assets", "Sounds", "roomopened.mp3"),
                 OverridePath: null,
                 IsEnabled: () => !_options.Current.MuteAll,

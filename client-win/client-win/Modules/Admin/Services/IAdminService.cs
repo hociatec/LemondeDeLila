@@ -33,6 +33,8 @@ public interface IAdminService
     Task<(int delivered, string minRequiredVersion)> ForceClientUpdateLatestAsync(string? message = null, CancellationToken cancellationToken = default);
 
     Task<AdminChatMessageDto[]> GetChatMessagesAsync(int limit = 200, bool includeDeleted = false, CancellationToken cancellationToken = default);
+    Task<AdminChatSettingsDto> GetChatSettingsAsync(CancellationToken cancellationToken = default);
+    Task<AdminChatSettingsDto> UpdateChatSettingsAsync(int chatHistoryLimit, CancellationToken cancellationToken = default);
     Task<bool> DeleteChatMessageAsync(string messageId, CancellationToken cancellationToken = default);
     Task<int> ClearChatAsync(CancellationToken cancellationToken = default);
     Task<AdminChatBanResponseDto> BanUserFromChatAsync(int userId, string? reason = null, int? durationDays = null, CancellationToken cancellationToken = default);

@@ -1,8 +1,6 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import * as fs from 'fs';
-import * as path from 'path';
 import { RoleDefinitionEntity } from '../entities/role-definition.entity';
 
 export interface RoleDefinition {
@@ -15,19 +13,11 @@ export interface RoleDefinition {
 export class RoleDefinitionsService implements OnModuleInit {
   private readonly logger = new Logger(RoleDefinitionsService.name);
   private cache: RoleDefinition[] | null = null;
-  private _filePath: string | null = null;
 
   constructor(
     @InjectRepository(RoleDefinitionEntity)
     private readonly repo: Repository<RoleDefinitionEntity>,
   ) {}
-
-  private get filePath(): string {
-    if (!this._filePath) {
-      this._filePath = path.resolve(process.cwd(), 'data', 'role-definitions.json');
-    }
-    return this._filePath;
-  }
 
   async onModuleInit(): Promise<void> {
     await this.ensureSeeded();
@@ -128,27 +118,11 @@ export class RoleDefinitionsService implements OnModuleInit {
     ];
   }
 
-  private tryLoadFromJson(): RoleDefinition[] | null {
-    try {
-      if (!fs.existsSync(this.filePath)) return null;
-      const raw = fs.readFileSync(this.filePath, 'utf-8');
-      const parsed = JSON.parse(raw.replace(/^\uFEFF/, '')) as RoleDefinition[];
-      return Array.isArray(parsed) ? parsed : null;
-    } catch (error) {
-      this.logger.warn(
-        `Impossible de charger role-definitions depuis JSON (${this.filePath}): ${(error as Error).message}`,
-      );
-      return null;
-    }
-  }
-
   private async ensureSeeded(): Promise<void> {
     const count = await this.repo.count();
     if (count > 0) return;
 
-    const fromFile = this.tryLoadFromJson();
-    const definitions =
-      fromFile && fromFile.length > 0 ? fromFile : this.getDefaultDefinitions();
+    const definitions = this.getDefaultDefinitions();
 
     await this.repo.save(
       definitions

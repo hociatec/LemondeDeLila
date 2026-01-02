@@ -179,11 +179,26 @@ namespace client_win
             }
         }
 
-        private void OnNavigateToMainMenu(AuthenticatedUser user)
+        private async void OnNavigateToMainMenu(AuthenticatedUser user)
         {
             Title = $"Le Monde de Lila - Connecté en tant que {user.Username}";
             _navigation.SetUser(new UserContext(user.Username, user.Token));
             _host.Session.SetUser(user);
+
+            // Rafraîchir le cache des sons distants avant de jouer le son de connexion
+            // pour s'assurer d'utiliser le son uploadé par l'admin (si disponible).
+            try
+            {
+                var remote = _host.Services.GetRequiredService<IRemoteSoundCache>();
+                // Timeout court (1 seconde) pour ne pas bloquer l'UX si le serveur est lent.
+                using var soundRefreshCts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
+                await remote.RefreshAsync(force: true, cancellationToken: soundRefreshCts.Token).ConfigureAwait(true);
+            }
+            catch
+            {
+                // ignore - utilisera le son par défaut local
+            }
+
             // Son "connexion réussie" au moment exact où l'authentification est validée.
             // (Le transport WS peut se connecter avant/après, ce qui donne une latence perceptible.)
             try
@@ -270,7 +285,8 @@ namespace client_win
             try
             {
                 using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(12));
-                await remote.RefreshAsync(force: true, cancellationToken: cts.Token).ConfigureAwait(false);
+                // Ne pas forcer le refresh s'il vient d'être fait dans OnNavigateToMainMenu
+                await remote.RefreshAsync(force: false, cancellationToken: cts.Token).ConfigureAwait(false);
             }
             catch
             {

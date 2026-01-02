@@ -1,8 +1,6 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import * as fs from 'fs';
-import * as path from 'path';
 import type { GameDefinition } from '../interfaces/game-rules-adapter.interface';
 import { GameCatalogOverrideEntity } from '../entities/game-catalog-override.entity';
 
@@ -14,31 +12,26 @@ export type GameCatalogOverride = {
   description?: string;
 };
 
-type OverridesFile = {
+type OverridesRoot = {
   games: Record<string, GameCatalogOverride>;
 };
 
 @Injectable()
 export class GameCatalogOverridesService implements OnModuleInit {
   private readonly logger = new Logger(GameCatalogOverridesService.name);
-  private readonly filePath: string;
-  private cache: OverridesFile | null = null;
+  private cache: OverridesRoot | null = null;
 
   constructor(
     @InjectRepository(GameCatalogOverrideEntity)
     private readonly repo: Repository<GameCatalogOverrideEntity>,
-  ) {
-    const cwd = process.cwd();
-    this.filePath = path.resolve(cwd, 'data', 'game-overrides.json');
-  }
+  ) {}
 
   async onModuleInit(): Promise<void> {
     await this.ensureLoaded();
   }
 
-  getOverrides(): OverridesFile {
-    if (this.cache) return this.cache;
-    return { games: {} };
+  getOverrides(): OverridesRoot {
+    return this.cache ?? { games: {} };
   }
 
   getGameOverride(gameType: string): GameCatalogOverride | null {
@@ -91,10 +84,11 @@ export class GameCatalogOverridesService implements OnModuleInit {
       ...(root.games[gameType] ?? {}),
       ...update,
     };
-    // Nettoyage: chaînes vides => suppression du champ
+
     if (typeof next.name === 'string' && !next.name.trim()) delete next.name;
     if (typeof next.description === 'string' && !next.description.trim())
       delete next.description;
+
     root.games[gameType] = next;
     await this.repo.save({
       gameType,
@@ -119,56 +113,26 @@ export class GameCatalogOverridesService implements OnModuleInit {
     this.cache = root;
   }
 
-  private tryLoadFromJson(): OverridesFile {
-    try {
-      if (!fs.existsSync(this.filePath)) {
-        return { games: {} };
-      }
-      const raw = fs.readFileSync(this.filePath, 'utf-8');
-      const parsed = JSON.parse(raw.replace(/^\uFEFF/, '')) as OverridesFile;
-      if (!parsed || typeof parsed !== 'object') return { games: {} };
-      if (!parsed.games || typeof parsed.games !== 'object') return { games: {} };
-      return { games: parsed.games };
-    } catch (err) {
-      this.logger.warn(
-        `Impossible de charger les overrides catalogue (${this.filePath}): ${
-          (err as Error).message
-        }`,
-      );
-      return { games: {} };
-    }
-  }
-
   private async ensureLoaded(): Promise<void> {
     if (this.cache) return;
 
-    const rows = await this.repo.find();
-    if (rows.length === 0) {
-      const imported = this.tryLoadFromJson();
-      this.cache = { games: imported.games ?? {} };
-      for (const [gameType, ov] of Object.entries(this.cache.games)) {
-        await this.repo.save({
-          gameType,
-          enabled: typeof ov.enabled === 'boolean' ? ov.enabled : null,
-          minPlayers: typeof ov.minPlayers === 'number' ? ov.minPlayers : null,
-          maxPlayers: typeof ov.maxPlayers === 'number' ? ov.maxPlayers : null,
-          name: typeof ov.name === 'string' ? ov.name : null,
-          description: typeof ov.description === 'string' ? ov.description : null,
-        });
+    try {
+      const rows = await this.repo.find();
+      const games: Record<string, GameCatalogOverride> = {};
+      for (const row of rows) {
+        games[row.gameType] = {
+          enabled: typeof row.enabled === 'boolean' ? row.enabled : undefined,
+          minPlayers: typeof row.minPlayers === 'number' ? row.minPlayers : undefined,
+          maxPlayers: typeof row.maxPlayers === 'number' ? row.maxPlayers : undefined,
+          name: row.name ?? undefined,
+          description: row.description ?? undefined,
+        };
       }
-      return;
+      this.cache = { games };
+    } catch (error) {
+      this.logger.warn(`Impossible de charger les overrides catalogue: ${(error as Error).message}`);
+      this.cache = { games: {} };
     }
-
-    const games: Record<string, GameCatalogOverride> = {};
-    for (const row of rows) {
-      games[row.gameType] = {
-        enabled: typeof row.enabled === 'boolean' ? row.enabled : undefined,
-        minPlayers: typeof row.minPlayers === 'number' ? row.minPlayers : undefined,
-        maxPlayers: typeof row.maxPlayers === 'number' ? row.maxPlayers : undefined,
-        name: row.name ?? undefined,
-        description: row.description ?? undefined,
-      };
-    }
-    this.cache = { games };
   }
 }
+

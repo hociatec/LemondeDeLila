@@ -1,6 +1,7 @@
-import { Injectable } from '@nestjs/common';
-import * as fs from 'fs';
-import * as path from 'path';
+import { Injectable, OnModuleInit } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { RoomMaintenanceSettingsEntity } from '../entities/room-maintenance-settings.entity';
 
 export type RoomMaintenanceSettings = {
   autoCleanupEnabled: boolean;
@@ -9,14 +10,17 @@ export type RoomMaintenanceSettings = {
   autoCleanupLimit: number;
 };
 
-type StoredRoomMaintenanceSettings = Partial<RoomMaintenanceSettings>;
-
 @Injectable()
-export class RoomMaintenanceSettingsService {
-  private readonly settingsPath: string;
+export class RoomMaintenanceSettingsService implements OnModuleInit {
+  private cache: RoomMaintenanceSettings | null = null;
 
-  constructor() {
-    this.settingsPath = path.resolve(process.cwd(), 'data', 'room-maintenance.json');
+  constructor(
+    @InjectRepository(RoomMaintenanceSettingsEntity)
+    private readonly repo: Repository<RoomMaintenanceSettingsEntity>,
+  ) {}
+
+  async onModuleInit(): Promise<void> {
+    await this.ensureSeeded();
   }
 
   private defaults(): RoomMaintenanceSettings {
@@ -69,28 +73,46 @@ export class RoomMaintenanceSettingsService {
   }
 
   get(): RoomMaintenanceSettings {
-    const base = this.defaults();
-    try {
-      if (!fs.existsSync(this.settingsPath)) {
-        return base;
-      }
-      const raw = fs.readFileSync(this.settingsPath, 'utf-8').replace(/^\uFEFF/, '');
-      const parsed = JSON.parse(raw) as StoredRoomMaintenanceSettings;
-      return this.normalize({ ...base, ...parsed });
-    } catch {
-      return base;
-    }
+    return this.cache ?? this.defaults();
   }
 
-  update(patch: Partial<RoomMaintenanceSettings>): RoomMaintenanceSettings {
+  async update(patch: Partial<RoomMaintenanceSettings>): Promise<RoomMaintenanceSettings> {
+    await this.ensureSeeded();
     const current = this.get();
     const next = this.normalize({ ...current, ...patch });
-    try {
-      fs.mkdirSync(path.dirname(this.settingsPath), { recursive: true });
-      fs.writeFileSync(this.settingsPath, JSON.stringify(next, null, 2), 'utf-8');
-    } catch {
-      // best effort: still return computed settings
-    }
+    await this.repo.save({
+      id: 1,
+      autoCleanupEnabled: next.autoCleanupEnabled,
+      autoCleanupIntervalSeconds: next.autoCleanupIntervalSeconds,
+      autoCleanupOlderThanMinutes: next.autoCleanupOlderThanMinutes,
+      autoCleanupLimit: next.autoCleanupLimit,
+    });
+    this.cache = next;
     return next;
+  }
+
+  private async ensureSeeded(): Promise<void> {
+    if (this.cache) return;
+
+    const existing = await this.repo.findOne({ where: { id: 1 } });
+    if (existing) {
+      this.cache = this.normalize({
+        autoCleanupEnabled: existing.autoCleanupEnabled,
+        autoCleanupIntervalSeconds: existing.autoCleanupIntervalSeconds,
+        autoCleanupOlderThanMinutes: existing.autoCleanupOlderThanMinutes,
+        autoCleanupLimit: existing.autoCleanupLimit,
+      });
+      return;
+    }
+
+    const seed = this.defaults();
+    await this.repo.insert({
+      id: 1,
+      autoCleanupEnabled: seed.autoCleanupEnabled,
+      autoCleanupIntervalSeconds: seed.autoCleanupIntervalSeconds,
+      autoCleanupOlderThanMinutes: seed.autoCleanupOlderThanMinutes,
+      autoCleanupLimit: seed.autoCleanupLimit,
+    });
+    this.cache = seed;
   }
 }

@@ -25,6 +25,40 @@ public sealed partial class AdminService
         return response.Payload.Messages ?? Array.Empty<AdminChatMessageDto>();
     }
 
+    public async Task<AdminChatSettingsDto> GetChatSettingsAsync(CancellationToken cancellationToken = default)
+    {
+        var token = EnsureAuth();
+        var res = await _ws.RequestAsync<AdminChatSettingsDto>(
+            WsMessageTypes.Admin.ChatSettingsGet,
+            new { _noop = true },
+            token,
+            cancellationToken).ConfigureAwait(false);
+
+        if (!res.Success || res.Payload == null)
+        {
+            throw new InvalidOperationException(res.Error ?? "Lecture des parametres tchat impossible.");
+        }
+
+        return res.Payload;
+    }
+
+    public async Task<AdminChatSettingsDto> UpdateChatSettingsAsync(int chatHistoryLimit, CancellationToken cancellationToken = default)
+    {
+        var token = EnsureAuth();
+        var res = await _ws.RequestAsync<AdminChatSettingsDto>(
+            WsMessageTypes.Admin.ChatSettingsUpdate,
+            new { chatHistoryLimit },
+            token,
+            cancellationToken).ConfigureAwait(false);
+
+        if (!res.Success || res.Payload == null)
+        {
+            throw new InvalidOperationException(res.Error ?? "Mise a jour des parametres tchat impossible.");
+        }
+
+        return res.Payload;
+    }
+
     public async Task<bool> DeleteChatMessageAsync(string messageId, CancellationToken cancellationToken = default)
     {
         var token = EnsureAuth();

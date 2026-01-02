@@ -5,12 +5,15 @@ import { requireAdmin } from '../../common/ws/ws-auth';
 import type { WsSession } from '../../common/ws/ws-route-registry.service';
 import { PayloadValidationService } from '../../common/validation/payload-validation.service';
 import { ChatService } from '../../chat/services/chat.service';
+import { ChatSettingsService } from '../../chat/services/chat-settings.service';
 import { User } from '../../user/entities/user.entity';
 import {
   AdminChatBanWsDto,
   AdminChatClearWsDto,
   AdminChatDeleteWsDto,
   AdminChatMessagesWsDto,
+  AdminChatSettingsGetWsDto,
+  AdminChatSettingsUpdateWsDto,
   AdminChatUnbanWsDto,
 } from './admin-ws.dto';
 
@@ -19,6 +22,7 @@ export class AdminChatWsHandler {
   constructor(
     private readonly validator: PayloadValidationService,
     private readonly chat: ChatService,
+    private readonly chatSettings: ChatSettingsService,
     @InjectRepository(User) private readonly userRepo: Repository<User>,
   ) {}
 
@@ -26,7 +30,7 @@ export class AdminChatWsHandler {
     requireAdmin(session);
     const dto = this.validator.validate(AdminChatMessagesWsDto, payload);
     const rows = await this.chat.adminListMessages(
-      dto.limit ?? 200,
+      dto.limit ?? this.chatSettings.getChatHistoryLimit(),
       dto.includeDeleted ?? false,
     );
     const messages = rows.map((m) => ({
@@ -50,6 +54,21 @@ export class AdminChatWsHandler {
       },
     }));
     return { type: 'admin.chat.messages', payload: { messages } };
+  }
+
+  async chatSettingsGet(session: WsSession, payload: any) {
+    requireAdmin(session);
+    this.validator.validate(AdminChatSettingsGetWsDto, payload ?? {});
+    return { type: 'admin.chat.settings.get', payload: this.chatSettings.getSettings() };
+  }
+
+  async chatSettingsUpdate(session: WsSession, payload: any) {
+    requireAdmin(session);
+    const dto = this.validator.validate(AdminChatSettingsUpdateWsDto, payload);
+    const updated = await this.chatSettings.updateSettings({
+      chatHistoryLimit: dto.chatHistoryLimit,
+    });
+    return { type: 'admin.chat.settings.update', payload: updated };
   }
 
   async chatDelete(session: WsSession, payload: any) {

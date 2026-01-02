@@ -71,7 +71,7 @@ export class AdminRoomsWsHandler {
   async roomsSettingsUpdate(session: WsSession, payload: any) {
     requireAdmin(session);
     const dto = this.validator.validate(AdminRoomsSettingsUpdateWsDto, payload);
-    const updated = this.roomSettings.update({
+    const updated = await this.roomSettings.update({
       autoCleanupEnabled:
         typeof dto.autoCleanupEnabled === 'boolean'
           ? dto.autoCleanupEnabled

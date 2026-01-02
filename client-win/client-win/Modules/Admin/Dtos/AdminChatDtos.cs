@@ -9,6 +9,12 @@ public sealed class AdminChatMessagesResponseDto
     public AdminChatMessageDto[] Messages { get; set; } = Array.Empty<AdminChatMessageDto>();
 }
 
+public sealed class AdminChatSettingsDto
+{
+    [JsonPropertyName("chatHistoryLimit")]
+    public int ChatHistoryLimit { get; set; }
+}
+
 public sealed class AdminChatMessageDto
 {
     [JsonPropertyName("id")]

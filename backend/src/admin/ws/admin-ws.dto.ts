@@ -9,6 +9,7 @@ import {
   IsOptional,
   IsPositive,
   IsString,
+  Max,
   MaxLength,
   Min,
   MinLength,
@@ -111,6 +112,19 @@ export class AdminChatMessagesWsDto {
   @IsOptional()
   @IsBoolean()
   includeDeleted?: boolean;
+}
+
+export class AdminChatSettingsGetWsDto {
+  @IsOptional()
+  @IsBoolean()
+  _noop?: boolean;
+}
+
+export class AdminChatSettingsUpdateWsDto {
+  @IsInt()
+  @Min(1)
+  @Max(2000)
+  chatHistoryLimit!: number;
 }
 
 export class AdminChatDeleteWsDto {

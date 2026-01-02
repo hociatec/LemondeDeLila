@@ -1,20 +1,24 @@
-import { Injectable } from '@nestjs/common';
-import * as fs from 'fs';
-import * as path from 'path';
+import { Injectable, OnModuleInit } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { SocialProfileSettingsEntity } from '../entities/social-profile-settings.entity';
 
 export type SocialProfileSettings = {
   bioMinLength: number;
   bioMaxLength: number;
 };
 
-type StoredSocialProfileSettings = Partial<SocialProfileSettings>;
-
 @Injectable()
-export class SocialProfileSettingsService {
-  private readonly settingsPath: string;
+export class SocialProfileSettingsService implements OnModuleInit {
+  private cache: SocialProfileSettings | null = null;
 
-  constructor() {
-    this.settingsPath = path.resolve(process.cwd(), 'data', 'social-profile-settings.json');
+  constructor(
+    @InjectRepository(SocialProfileSettingsEntity)
+    private readonly repo: Repository<SocialProfileSettingsEntity>,
+  ) {}
+
+  async onModuleInit(): Promise<void> {
+    await this.ensureSeeded();
   }
 
   private defaults(): SocialProfileSettings {
@@ -35,30 +39,40 @@ export class SocialProfileSettingsService {
   }
 
   get(): SocialProfileSettings {
-    const base = this.defaults();
-    try {
-      if (!fs.existsSync(this.settingsPath)) {
-        return base;
-      }
-      const raw = fs
-        .readFileSync(this.settingsPath, 'utf-8')
-        .replace(/^\uFEFF/, '');
-      const parsed = JSON.parse(raw) as StoredSocialProfileSettings;
-      return this.normalize({ ...base, ...parsed });
-    } catch {
-      return base;
-    }
+    return this.cache ?? this.defaults();
   }
 
-  update(patch: Partial<SocialProfileSettings>): SocialProfileSettings {
+  async update(patch: Partial<SocialProfileSettings>): Promise<SocialProfileSettings> {
+    await this.ensureSeeded();
     const current = this.get();
     const next = this.normalize({ ...current, ...patch });
-    try {
-      fs.mkdirSync(path.dirname(this.settingsPath), { recursive: true });
-      fs.writeFileSync(this.settingsPath, JSON.stringify(next, null, 2), 'utf-8');
-    } catch {
-      // best effort
-    }
+    await this.repo.save({
+      id: 1,
+      bioMinLength: next.bioMinLength,
+      bioMaxLength: next.bioMaxLength,
+    });
+    this.cache = next;
     return next;
+  }
+
+  private async ensureSeeded(): Promise<void> {
+    if (this.cache) return;
+
+    const existing = await this.repo.findOne({ where: { id: 1 } });
+    if (existing) {
+      this.cache = this.normalize({
+        bioMinLength: existing.bioMinLength,
+        bioMaxLength: existing.bioMaxLength,
+      });
+      return;
+    }
+
+    const seed = this.defaults();
+    await this.repo.insert({
+      id: 1,
+      bioMinLength: seed.bioMinLength,
+      bioMaxLength: seed.bioMaxLength,
+    });
+    this.cache = seed;
   }
 }

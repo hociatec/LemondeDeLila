@@ -21,10 +21,11 @@ import { PublicRoomDirectoryBinder } from './services/public-room-directory.bind
 import { RoomRealtimeTrackerService } from './services/room-realtime-tracker.service';
 import { RoomAutoCleanupService } from './services/room-auto-cleanup.service';
 import { RoomMaintenanceSettingsService } from './services/room-maintenance-settings.service';
+import { RoomMaintenanceSettingsEntity } from './entities/room-maintenance-settings.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Room, RoomParticipant, RoomBot, User]),
+    TypeOrmModule.forFeature([Room, RoomParticipant, RoomBot, RoomMaintenanceSettingsEntity, User]),
     forwardRef(() => BotModule),
     forwardRef(() => PresenceModule),
     NotificationModule,

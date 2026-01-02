@@ -24,7 +24,7 @@ export class AdminProfileWsHandler {
   async profileSettingsUpdate(session: WsSession, payload: any) {
     requireAdmin(session);
     const dto = this.validator.validate(AdminProfileSettingsUpdateWsDto, payload);
-    const updated = this.settings.update({
+    const updated = await this.settings.update({
       bioMinLength: dto.bioMinLength,
       bioMaxLength: dto.bioMaxLength,
     });

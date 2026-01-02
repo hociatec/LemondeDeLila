@@ -106,6 +106,12 @@ export class AdminWsRegistrar implements OnModuleInit {
     this.registry.register('admin.chat.messages', (s, p) =>
       this.chat.chatMessages(s, p),
     );
+    this.registry.register('admin.chat.settings.get', (s, p) =>
+      this.chat.chatSettingsGet(s, p),
+    );
+    this.registry.register('admin.chat.settings.update', (s, p) =>
+      this.chat.chatSettingsUpdate(s, p),
+    );
     this.registry.register('admin.chat.delete', (s, p) =>
       this.chat.chatDelete(s, p),
     );

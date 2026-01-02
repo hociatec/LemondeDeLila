@@ -3,6 +3,7 @@ import { WebSocket } from 'ws';
 import { randomUUID } from 'crypto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ChatService } from '../../chat/services/chat.service';
+import { ChatSettingsService } from '../../chat/services/chat-settings.service';
 import { WsAuthPayload } from '../../common/interfaces/ws-auth-payload';
 import { RoomParticipant } from '../../room/entities/room-participant.entity';
 import { In, IsNull, Repository } from 'typeorm';
@@ -45,6 +46,7 @@ export class PresenceService implements OnModuleDestroy {
 
   constructor(
     private readonly chat: ChatService,
+    private readonly chatSettings: ChatSettingsService,
     @InjectRepository(RoomParticipant)
     private readonly participants: Repository<RoomParticipant>,
     @InjectRepository(User)
@@ -242,9 +244,10 @@ export class PresenceService implements OnModuleDestroy {
 
   async sendHistory(to: WebSocket) {
     try {
+      const limit = this.chatSettings.getChatHistoryLimit();
       const payload = {
         type: 'chat-history',
-        messages: await this.chat.getRecentNormalizedMessages(),
+        messages: await this.chat.getRecentNormalizedMessages(limit),
       };
       to.send(JSON.stringify(payload));
     } catch (err) {
