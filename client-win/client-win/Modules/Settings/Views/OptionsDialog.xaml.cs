@@ -24,7 +24,7 @@ public partial class OptionsDialog : Window
         }
         _didInitialFocus = true;
 
-        Dispatcher.BeginInvoke((Action)(() => CategoryList?.Focus()), System.Windows.Threading.DispatcherPriority.Input);
+        Dispatcher.BeginInvoke((Action)(() => FocusFirstItem(CategoryList)), System.Windows.Threading.DispatcherPriority.Input);
     }
 
     private void OnSaveClicked(object sender, RoutedEventArgs e)
@@ -89,5 +89,34 @@ public partial class OptionsDialog : Window
             current = parent ?? LogicalTreeHelper.GetParent(current);
         }
         return null;
+    }
+
+    private static void FocusFirstItem(ListBox? listBox)
+    {
+        if (listBox == null)
+        {
+            return;
+        }
+
+        if (listBox.Items.Count == 0)
+        {
+            listBox.Focus();
+            return;
+        }
+
+        if (listBox.SelectedIndex < 0)
+        {
+            listBox.SelectedIndex = 0;
+        }
+
+        listBox.UpdateLayout();
+        if (listBox.ItemContainerGenerator.ContainerFromIndex(listBox.SelectedIndex) is ListBoxItem item)
+        {
+            item.Focus();
+        }
+        else
+        {
+            listBox.Focus();
+        }
     }
 }

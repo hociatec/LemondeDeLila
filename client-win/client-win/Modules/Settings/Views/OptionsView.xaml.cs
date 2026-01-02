@@ -27,7 +27,7 @@ public partial class OptionsView : UserControl
 
         Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
         {
-            CategoryList?.Focus();
+            FocusFirstItem(CategoryList);
         }));
     }
 
@@ -78,5 +78,34 @@ public partial class OptionsView : UserControl
             current = parent ?? LogicalTreeHelper.GetParent(current);
         }
         return null;
+    }
+
+    private static void FocusFirstItem(ListBox? listBox)
+    {
+        if (listBox == null)
+        {
+            return;
+        }
+
+        if (listBox.Items.Count == 0)
+        {
+            listBox.Focus();
+            return;
+        }
+
+        if (listBox.SelectedIndex < 0)
+        {
+            listBox.SelectedIndex = 0;
+        }
+
+        listBox.UpdateLayout();
+        if (listBox.ItemContainerGenerator.ContainerFromIndex(listBox.SelectedIndex) is ListBoxItem item)
+        {
+            item.Focus();
+        }
+        else
+        {
+            listBox.Focus();
+        }
     }
 }
