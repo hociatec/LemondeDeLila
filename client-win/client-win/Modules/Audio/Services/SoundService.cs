@@ -297,21 +297,14 @@ public sealed class SoundService : ISoundService, IDisposable
 
                 void StartPlayback()
                 {
-                    try
-                    {
-                        player.Volume = entry.Volume();
-                        player.Stop();
-                        player.Position = TimeSpan.Zero;
-                        player.Play();
-                    }
-                    catch
-                    {
-                        // ignore
-                    }
+                    player.Volume = entry.Volume();
+                    player.Stop();
+                    player.Position = TimeSpan.Zero;
+                    player.Play();
                 }
 
-                // MediaPlayer.Open is async; when it's the first sound, MediaOpened can happen noticeably later.
-                // Best-effort: if not opened yet, start as soon as MediaOpened fires (avoids "lost" early Play calls).
+                // MediaPlayer.Open est async; si le média n'est pas encore ouvert,
+                // démarrer uniquement lorsque MediaOpened arrive (sinon risque de double-play au moment de l'ouverture).
                 bool alreadyOpened;
                 lock (_gate)
                 {
@@ -319,7 +312,7 @@ public sealed class SoundService : ISoundService, IDisposable
                 }
                 if (alreadyOpened)
                 {
-                    StartPlayback();
+                    try { StartPlayback(); } catch { /* ignore */ }
                 }
                 else
                 {
@@ -327,12 +320,9 @@ public sealed class SoundService : ISoundService, IDisposable
                     opened = (_, _) =>
                     {
                         try { player.MediaOpened -= opened; } catch { /* ignore */ }
-                        StartPlayback();
+                        try { StartPlayback(); } catch { /* ignore */ }
                     };
                     player.MediaOpened += opened;
-
-                    // Also try immediately (in case it's already opened but we missed the event).
-                    StartPlayback();
                 }
 
                 // Signal end for waiters (best-effort).
