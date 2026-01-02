@@ -57,16 +57,22 @@ export class RealtimeApiGateway
     const connectionId = randomUUID();
     const clientVersion = this.auth.extractClientVersion(client, args);
     const token = this.auth.extractToken(client, args);
-    if (
-      !this.wsTickets.validateIfTokenPresent(
-        client,
-        args,
-        'api',
-        Boolean(token),
-      )
-    ) {
+    const ticketValidation = this.wsTickets.validateIfTokenPresentDetailed(
+      client,
+      args,
+      'api',
+      Boolean(token),
+    );
+    if (!ticketValidation.ok) {
+      this.logger.warn(
+        `Connexion WS refusée (ticket) reason=${ticketValidation.reason} hasToken=${Boolean(token)} clientVersion=${clientVersion ?? 'n/a'} connectionId=${connectionId}`,
+      );
       try {
-        client.close(4403, 'ws ticket requis');
+        const reason =
+          ticketValidation.reason === 'missing_ticket'
+            ? 'ws ticket requis'
+            : 'ws ticket invalide';
+        client.close(4403, reason);
       } catch {
         /* ignore */
       }

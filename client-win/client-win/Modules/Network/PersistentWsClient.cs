@@ -249,8 +249,7 @@ public sealed class PersistentWsClient : IAsyncDisposable
         {
             if (_socket != null &&
                 _socket.State == WebSocketState.Open &&
-                string.Equals(_currentToken, token, StringComparison.Ordinal) &&
-                string.Equals(_currentWsTicket, wsTicket, StringComparison.Ordinal))
+                string.Equals(_currentToken, token, StringComparison.Ordinal))
             {
                 return _socket;
             }

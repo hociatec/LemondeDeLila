@@ -16,6 +16,12 @@ public sealed class WsRequestClient
     private readonly IWsTicketProvider _tickets;
     private readonly Modules.Error.ErrorBus? _errorBus;
     private static readonly JsonSerializerOptions _deserializeOptions = new(JsonSerializerDefaults.Web);
+    private static readonly TimeSpan[] _ticketRetryDelays =
+    [
+        TimeSpan.FromMilliseconds(120),
+        TimeSpan.FromMilliseconds(250),
+        TimeSpan.FromMilliseconds(400),
+    ];
 
     public WsRequestClient(PersistentWsClient client, IWsTicketProvider tickets, Modules.Error.ErrorBus? errorBus = null)
     {
@@ -30,10 +36,15 @@ public sealed class WsRequestClient
         try
         {
             Log.Debug("WS request: {Type}", type);
-            var wsTicket = string.IsNullOrWhiteSpace(token)
-                ? null
-                : await _tickets.GetTicketAsync("api", cancellationToken).ConfigureAwait(false);
+            var wsTicket = await GetApiTicketOrThrowAsync(token, cancellationToken).ConfigureAwait(false);
             raw = await _client.SendAsync(type, payload, token, wsTicket, cancellationToken).ConfigureAwait(false);
+        }
+        catch (InvalidOperationException ioex) when (string.Equals(ioex.Message, "ws.ticket.missing", StringComparison.Ordinal))
+        {
+            var message = $"Impossible d'obtenir un ticket WebSocket (requete '{type}'). Reessayez dans quelques secondes.";
+            _errorBus?.Publish(new Modules.Error.AppError(message, Modules.Error.ErrorSeverity.Error, context: type, detail: "ticket_missing"));
+            Log.Warning("WS ticket missing for request: {Type}", type);
+            return WsResponse<TPayload>.Fail(type, message);
         }
         catch (TaskCanceledException tex)
         {
@@ -72,6 +83,32 @@ public sealed class WsRequestClient
             data = payloadNode.Deserialize<TPayload>(_deserializeOptions);
         }
         return WsResponse<TPayload>.Ok(responseType, data, reqId);
+    }
+
+    private async Task<string?> GetApiTicketOrThrowAsync(string? token, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            return null;
+        }
+
+        for (int attempt = 0; attempt <= _ticketRetryDelays.Length; attempt++)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var wsTicket = await _tickets.GetTicketAsync("api", cancellationToken).ConfigureAwait(false);
+            if (!string.IsNullOrWhiteSpace(wsTicket))
+            {
+                return wsTicket;
+            }
+
+            if (attempt < _ticketRetryDelays.Length)
+            {
+                await Task.Delay(_ticketRetryDelays[attempt], cancellationToken).ConfigureAwait(false);
+            }
+        }
+
+        throw new InvalidOperationException("ws.ticket.missing");
     }
 }
 

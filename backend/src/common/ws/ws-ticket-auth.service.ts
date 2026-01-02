@@ -2,6 +2,10 @@ import { Injectable } from '@nestjs/common';
 import type { WebSocket } from 'ws';
 import { WsTicketScope, WsTicketService } from './ws-ticket.service';
 
+export type WsTicketValidationResult =
+  | { ok: true; reason: 'not_required' | 'ok'; ticketPresent: boolean }
+  | { ok: false; reason: 'missing_ticket' | 'invalid_ticket'; ticketPresent: boolean };
+
 @Injectable()
 export class WsTicketAuthService {
   constructor(private readonly tickets: WsTicketService) {}
@@ -37,6 +41,29 @@ export class WsTicketAuthService {
       return true;
     }
     return this.validate(client, args, scope);
+  }
+
+  validateIfTokenPresentDetailed(
+    client: WebSocket,
+    args: any[],
+    scope: WsTicketScope,
+    hasUserToken: boolean,
+  ): WsTicketValidationResult {
+    if (!hasUserToken) {
+      return { ok: true, reason: 'not_required', ticketPresent: false };
+    }
+
+    const ticket = this.extractTicket(client, args);
+    if (!ticket) {
+      return { ok: false, reason: 'missing_ticket', ticketPresent: false };
+    }
+
+    try {
+      this.tickets.verify(ticket, scope);
+      return { ok: true, reason: 'ok', ticketPresent: true };
+    } catch {
+      return { ok: false, reason: 'invalid_ticket', ticketPresent: true };
+    }
   }
 
   private extractTicket(client: WebSocket, args: any[]): string | null {
