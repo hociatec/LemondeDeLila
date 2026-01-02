@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Windows;
 using client_win.Modules.Config;
 using client_win.Modules.Error;
@@ -46,6 +47,7 @@ namespace client_win
         private bool _exitConfirmed;
         private bool _exitPromptOpen;
         private int _soundInitRevision;
+        private long _lastClientDisconnectedSoundTicks;
 
         public INavigationService Navigation => _navigation;
 
@@ -80,7 +82,10 @@ namespace client_win
             {
                 return;
             }
-            if (!_options.Current.ConfirmExit)
+
+            var isLoggedIn = _host?.Session?.CurrentUser != null;
+            var shouldConfirm = _options.Current.ConfirmExit;
+            if (!shouldConfirm && !isLoggedIn)
             {
                 return;
             }
@@ -99,21 +104,31 @@ namespace client_win
             {
                 try
                 {
-                    var ok = await _dialogs.Confirm(
-                            "Quitter",
-                            "Voulez-vous vraiment quitter Le Monde de Lila ?",
-                            okText: "Quitter",
-                            cancelText: "Annuler")
-                        .ConfigureAwait(true);
-                    if (ok == true)
+                    if (shouldConfirm)
                     {
-                        _exitConfirmed = true;
-                        Application.Current.Shutdown();
+                        var ok = await _dialogs.Confirm(
+                                "Quitter",
+                                "Voulez-vous vraiment quitter Le Monde de Lila ?",
+                                okText: "Quitter",
+                                cancelText: "Annuler")
+                            .ConfigureAwait(true);
+                        if (ok != true)
+                        {
+                            return;
+                        }
                     }
+
+                    if (isLoggedIn)
+                    {
+                        await PlayClientDisconnectedSoundAndWaitAsync(TimeSpan.FromMilliseconds(650)).ConfigureAwait(true);
+                    }
+
+                    _exitConfirmed = true;
+                    Application.Current.Shutdown();
                 }
                 catch
                 {
-                    // En cas de problème de dialogue, ne pas bloquer la fermeture.
+                    // En cas de problème de dialogue/son, ne pas bloquer la fermeture.
                     _exitConfirmed = true;
                     Application.Current.Shutdown();
                 }
@@ -268,6 +283,7 @@ namespace client_win
             try
             {
                 var sounds = _host.Services.GetRequiredService<ISoundService>();
+                TryPlayClientDisconnectedSound(sounds);
                 sounds.StopLoop(Modules.Audio.Models.SoundId.MainMenuMusic);
                 sounds.StopLoop(Modules.Audio.Models.SoundId.TavernAmbience);
             }
@@ -280,6 +296,44 @@ namespace client_win
             Title = "Le Monde de Lila";
             _homeAccessor.HomeView = null;
             _navigation.Show(_homeView);
+        }
+
+        private void TryPlayClientDisconnectedSound(ISoundService sounds)
+        {
+            // Évite les doubles lectures si un transport déclenche aussi le son (ex: WS disconnect) au même moment.
+            const long minGapTicks = (long)(Stopwatch.Frequency * 0.9);
+            var now = Stopwatch.GetTimestamp();
+            var prev = Interlocked.Read(ref _lastClientDisconnectedSoundTicks);
+            if (prev != 0 && (now - prev) < minGapTicks)
+            {
+                return;
+            }
+
+            Interlocked.Exchange(ref _lastClientDisconnectedSoundTicks, now);
+
+            try
+            {
+                sounds.Preload(SoundId.ClientDisconnected);
+                sounds.Play(SoundId.ClientDisconnected);
+            }
+            catch
+            {
+                // ignore
+            }
+        }
+
+        private async Task PlayClientDisconnectedSoundAndWaitAsync(TimeSpan timeout)
+        {
+            try
+            {
+                var sounds = _host.Services.GetRequiredService<ISoundService>();
+                TryPlayClientDisconnectedSound(sounds);
+                await sounds.WaitForSoundToEndAsync(SoundId.ClientDisconnected, timeout).ConfigureAwait(false);
+            }
+            catch
+            {
+                // ignore
+            }
         }
 
         private async Task EnsureSoundsReadyAndApplyLoopsAsync()
