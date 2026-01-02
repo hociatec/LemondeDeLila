@@ -101,39 +101,6 @@ public sealed partial class AdminViewModel
             Items.Add(new AdminMenuItem($"\u00C0 tester ({_loadedBugReports.Count(r => r.Status == AdminBugReportStatus.ToTest)})", tag: "bugReports.list.to_test"));
             Items.Add(new AdminMenuItem($"Termin\u00E9 ({_loadedBugReports.Count(r => r.Status == AdminBugReportStatus.Done)})", tag: "bugReports.list.done"));
             Items.Add(new AdminMenuItem($"Refus\u00E9 ({_loadedBugReports.Count(r => r.Status == AdminBugReportStatus.Refused)})", tag: "bugReports.list.refused"));
-
-            var sorted = _loadedBugReports
-                .OrderBy(r => r.Status switch
-                {
-                    AdminBugReportStatus.Done => 0,
-                    AdminBugReportStatus.InProgress => 1,
-                    AdminBugReportStatus.Pending => 2,
-                    AdminBugReportStatus.ToTest => 3,
-                    AdminBugReportStatus.Refused => 4,
-                    _ => 99
-                })
-                .ToArray();
-
-            string? currentSection = null;
-
-            foreach (var r in sorted)
-            {
-                var status = r.Status switch
-                {
-                    AdminBugReportStatus.InProgress => "En cours",
-                    AdminBugReportStatus.Done => "Terminé",
-                    AdminBugReportStatus.ToTest => "\u00C0 tester",
-                    AdminBugReportStatus.Refused => "Refus\u00E9",
-                    _ => "En attente"
-                };
-                if (!string.Equals(currentSection, status, StringComparison.Ordinal))
-                {
-                    currentSection = status;
-                    Items.Add(new AdminMenuItem(status));
-                }
-                var subject = string.IsNullOrWhiteSpace(r.Subject) ? "(sans sujet)" : r.Subject.Trim();
-                Items.Add(new AdminMenuItem($"  {subject}", tag: r));
-            }
         }
 
         SelectedItem = Items.FirstOrDefault();
