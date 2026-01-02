@@ -27,6 +27,7 @@ public sealed class SoundService : ISoundService, IDisposable
     private readonly Dictionary<SoundId, MediaPlayer> _players = new();
     private readonly Dictionary<SoundId, string> _loadedPaths = new();
     private readonly Dictionary<SoundId, long> _lastPlayTicks = new();
+    private readonly HashSet<SoundId> _opened = new();
     private readonly Dictionary<SoundId, SoundEntry> _sounds;
     private readonly HashSet<SoundId> _looping = new();
     private readonly Dictionary<SoundId, MediaPlayer> _loopPlayers = new();
@@ -165,6 +166,92 @@ public sealed class SoundService : ISoundService, IDisposable
         }
     }
 
+    public void Preload(SoundId sound, bool warmUp = false)
+    {
+        if (!_sounds.TryGetValue(sound, out var entry))
+        {
+            return;
+        }
+
+        var filePath = ResolveFilePath(sound, entry);
+        if (!File.Exists(filePath))
+        {
+            _logger.LogDebug("Sound file missing: {Path}", filePath);
+            return;
+        }
+
+        void PreloadOnUiThread()
+        {
+            try
+            {
+                MediaPlayer player;
+                lock (_gate)
+                {
+                    EnsurePlayerLoaded(sound, filePath);
+                    player = _players[sound];
+                }
+
+                if (!warmUp)
+                {
+                    return;
+                }
+
+                // Warm-up best-effort: encourage Media Foundation to decode/buffer before the first real playback.
+                void WarmUp()
+                {
+                    try
+                    {
+                        var previousVolume = player.Volume;
+                        player.Volume = 0;
+                        player.Stop();
+                        player.Position = TimeSpan.Zero;
+                        player.Play();
+                        player.Pause();
+                        player.Position = TimeSpan.Zero;
+                        player.Volume = previousVolume;
+                    }
+                    catch
+                    {
+                        // ignore (best-effort)
+                    }
+                }
+
+                bool alreadyOpened;
+                lock (_gate)
+                {
+                    alreadyOpened = _opened.Contains(sound);
+                }
+
+                if (alreadyOpened)
+                {
+                    WarmUp();
+                    return;
+                }
+
+                EventHandler? opened = null;
+                opened = (_, _) =>
+                {
+                    try { player.MediaOpened -= opened; } catch { /* ignore */ }
+                    WarmUp();
+                };
+                player.MediaOpened += opened;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug(ex, "Sound preload error ({Sound})", sound);
+            }
+        }
+
+        if (_dispatcher.CheckAccess())
+        {
+            PreloadOnUiThread();
+        }
+        else
+        {
+            _ = _dispatcher.BeginInvoke((Action)PreloadOnUiThread, DispatcherPriority.Background);
+        }
+    }
+
     public void Play(SoundId sound)
     {
         if (!_sounds.TryGetValue(sound, out var entry))
@@ -208,10 +295,45 @@ public sealed class SoundService : ISoundService, IDisposable
                     _playEndSignals[sound] = tcs;
                 }
 
-                player.Volume = entry.Volume();
-                player.Stop();
-                player.Position = TimeSpan.Zero;
-                player.Play();
+                void StartPlayback()
+                {
+                    try
+                    {
+                        player.Volume = entry.Volume();
+                        player.Stop();
+                        player.Position = TimeSpan.Zero;
+                        player.Play();
+                    }
+                    catch
+                    {
+                        // ignore
+                    }
+                }
+
+                // MediaPlayer.Open is async; when it's the first sound, MediaOpened can happen noticeably later.
+                // Best-effort: if not opened yet, start as soon as MediaOpened fires (avoids "lost" early Play calls).
+                bool alreadyOpened;
+                lock (_gate)
+                {
+                    alreadyOpened = _opened.Contains(sound);
+                }
+                if (alreadyOpened)
+                {
+                    StartPlayback();
+                }
+                else
+                {
+                    EventHandler? opened = null;
+                    opened = (_, _) =>
+                    {
+                        try { player.MediaOpened -= opened; } catch { /* ignore */ }
+                        StartPlayback();
+                    };
+                    player.MediaOpened += opened;
+
+                    // Also try immediately (in case it's already opened but we missed the event).
+                    StartPlayback();
+                }
 
                 // Signal end for waiters (best-effort).
                 EventHandler? ended = null;
@@ -485,6 +607,7 @@ public sealed class SoundService : ISoundService, IDisposable
             _players.Clear();
             _loadedPaths.Clear();
             _lastPlayTicks.Clear();
+            _opened.Clear();
         }
     }
 
@@ -547,8 +670,19 @@ public sealed class SoundService : ISoundService, IDisposable
             _players.Remove(sound);
         }
         _loadedPaths.Remove(sound);
+        _opened.Remove(sound);
 
         var player = new MediaPlayer();
+        player.MediaOpened += (_, _) =>
+        {
+            lock (_gate)
+            {
+                if (_players.TryGetValue(sound, out var current) && ReferenceEquals(current, player))
+                {
+                    _opened.Add(sound);
+                }
+            }
+        };
         player.MediaFailed += (_, args) =>
         {
             _logger.LogWarning(
@@ -561,6 +695,7 @@ public sealed class SoundService : ISoundService, IDisposable
                 {
                     _players.Remove(sound);
                     _loadedPaths.Remove(sound);
+                    _opened.Remove(sound);
                 }
             }
             try { player.Close(); } catch { /* ignore */ }

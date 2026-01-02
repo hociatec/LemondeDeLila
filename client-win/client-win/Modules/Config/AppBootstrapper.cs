@@ -107,10 +107,10 @@ public static class AppBootstrapper
 
         // Pare-chocs global: évite les fermetures WPF sur exception non gérée.
         GlobalExceptionShield.Initialize(errors, crashReporter, screenReaderAnnouncer);
-        // 5. Test de connectivité optionnel
+        // 5. Test de connectivité optionnel (ne doit pas bloquer l'affichage du client).
         if (testConnectivity && ShouldTestConnectivity())
         {
-            TryTestConnectivity(config, errors);
+            StartConnectivityTestInBackground(config, errors);
         }
 
         // 6. Configuration DI avec Serilog
@@ -309,20 +309,32 @@ public static class AppBootstrapper
 
         var provider = services.BuildServiceProvider();
 
-        // Précharger les sons (réduit la latence au premier déclenchement).
+        // Préparer le son de démarrage et lancer le reste en arrière-plan (réduit la latence sans ralentir le démarrage).
         // Best-effort: ne doit jamais empêcher le démarrage.
         try
         {
             var sounds = provider.GetRequiredService<ISoundService>();
-            sounds.PreloadAll();
+            var dispatcher = provider.GetRequiredService<Dispatcher>();
+            sounds.Preload(Modules.Audio.Models.SoundId.ClientOpened, warmUp: true);
+            sounds.Preload(Modules.Audio.Models.SoundId.ClientConnected, warmUp: true);
+            sounds.Preload(Modules.Audio.Models.SoundId.ClientDisconnected, warmUp: true);
 
             // Son de démarrage (si activé dans Options).
             sounds.Play(Modules.Audio.Models.SoundId.ClientOpened);
 
+            // Précharge le reste en arrière-plan pour ne pas bloquer le rendu initial.
+            _ = dispatcher.BeginInvoke((Action)(() => sounds.PreloadAll()), DispatcherPriority.Background);
+
             // Sons de connexion/déconnexion au WS API (si activé).
             var ws = provider.GetRequiredService<PersistentWsClient>();
-            ws.Connected += () => sounds.Play(Modules.Audio.Models.SoundId.ClientConnected);
-            ws.Disconnected += _ => sounds.Play(Modules.Audio.Models.SoundId.ClientDisconnected);
+            ws.Connected += () =>
+                dispatcher.BeginInvoke(
+                    (Action)(() => sounds.Play(Modules.Audio.Models.SoundId.ClientConnected)),
+                    DispatcherPriority.Send);
+            ws.Disconnected += _ =>
+                dispatcher.BeginInvoke(
+                    (Action)(() => sounds.Play(Modules.Audio.Models.SoundId.ClientDisconnected)),
+                    DispatcherPriority.Send);
         }
         catch
         {
@@ -381,19 +393,22 @@ public static class AppBootstrapper
                !string.Equals(flag, "false", StringComparison.OrdinalIgnoreCase);
     }
 
-    private static void TryTestConnectivity(ClientConfiguration config, ErrorBus errors)
+    private static void StartConnectivityTestInBackground(ClientConfiguration config, ErrorBus errors)
     {
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-        try
+        _ = Task.Run(async () =>
         {
-            Modules.Network.Services.WsConnectionTester
-                .TestAsync(config.ApiGatewayWs, errors, cts.Token)
-                .GetAwaiter().GetResult();
-        }
-        catch
-        {
-            // Erreur déjà publiée dans ErrorBus ou timeout atteint.
-        }
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            try
+            {
+                await Modules.Network.Services.WsConnectionTester
+                    .TestAsync(config.ApiGatewayWs, errors, cts.Token)
+                    .ConfigureAwait(false);
+            }
+            catch
+            {
+                // Erreur déjà publiée dans ErrorBus ou timeout atteint.
+            }
+        });
     }
 
     private static Uri BuildPresenceEndpoint(ClientConfiguration config)
