@@ -1,13 +1,22 @@
 [Unit]
-Description=Le Monde de Lila - Deploy backend (build + migrations + restart)
+Description=Le Monde de Lila - backend deploy (triggered by admin API)
 After=network.target
 
 [Service]
 Type=oneshot
-WorkingDirectory=/home/ubuntu/lemondeDeLila/backend
-ExecStart=/usr/local/sbin/lila-backend-deploy.sh
-TimeoutStartSec=1800
 
-[Install]
-WantedBy=multi-user.target
+# Path to the repo on the server (required).
+Environment=LILA_REPO_DIR=/opt/lemondeDeLila
+
+# systemd unit running the backend.
+Environment=BACKEND_SERVICE=lila-backend.service
+
+# User owning the repo (git/npm/build/migrations run as this user).
+Environment=DEPLOY_USER=backend
+
+ExecStart=/usr/local/sbin/lila-backend-deploy.sh
+
+# Write logs to journald (consumed via journalctl -u lila-backend-deploy.service)
+StandardOutput=journal
+StandardError=journal
 

@@ -45,11 +45,10 @@ export class AdminMaintenanceGuard implements CanActivate {
   }
 
   private getRequestIp(request: any): string | null {
-    const ip = String(request?.ip || '').trim();
-    if (ip) return ip;
     const forwarded = String(request?.headers?.['x-forwarded-for'] || '').trim();
-    if (!forwarded) return null;
-    return forwarded.split(',')[0]?.trim() || null;
+    const ip = forwarded ? forwarded.split(',')[0]?.trim() : String(request?.ip || '').trim();
+    if (!ip) return null;
+    // Normalize "::ffff:1.2.3.4" style addresses.
+    return ip.startsWith('::ffff:') ? ip.slice('::ffff:'.length) : ip;
   }
 }
-

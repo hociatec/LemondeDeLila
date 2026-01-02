@@ -31,6 +31,7 @@ public sealed class ClientConfiguration
     public string JwtIssuer { get; }
     public string? JwtAudience { get; }
     public string? JwtSignaturePublicKeyPath { get; }
+    public string? AdminMaintenanceToken { get; }
 
     private ClientConfiguration(
         string applicationName,
@@ -42,7 +43,8 @@ public sealed class ClientConfiguration
         Uri gameGatewayWs,
         string jwtIssuer,
         string? jwtAudience,
-        string? jwtSignaturePublicKeyPath)
+        string? jwtSignaturePublicKeyPath,
+        string? adminMaintenanceToken)
     {
         ApplicationName = applicationName;
         HttpBase = httpBase;
@@ -54,6 +56,7 @@ public sealed class ClientConfiguration
         JwtIssuer = jwtIssuer;
         JwtAudience = jwtAudience;
         JwtSignaturePublicKeyPath = jwtSignaturePublicKeyPath;
+        AdminMaintenanceToken = adminMaintenanceToken;
     }
 
     public static ClientConfiguration Load(string? pathOverride = null)
@@ -119,6 +122,11 @@ public sealed class ClientConfiguration
         string jwtIssuer = Get(properties, "jwt.issuer", "le-monde-de-lila");
         string? jwtAudience = Normalize(Get(properties, "jwt.audience", string.Empty));
         string? jwtPublicKeyPath = ResolveOptionalPath(Get(properties, "jwt.signature.publicKey", string.Empty));
+        string? adminMaintenanceToken =
+            (properties.TryGetValue("admin.maintenance.token", out var maintenanceToken)
+                ? Normalize(maintenanceToken)
+                : null)
+            ?? Normalize(Environment.GetEnvironmentVariable("CLIENT_ADMIN_MAINTENANCE_TOKEN"));
 
         var config = new ClientConfiguration(
             appName,
@@ -130,7 +138,8 @@ public sealed class ClientConfiguration
             gameGateway,
             jwtIssuer,
             jwtAudience,
-            jwtPublicKeyPath);
+            jwtPublicKeyPath,
+            adminMaintenanceToken);
 
         // Log de la configuration finale (masquer les secrets)
         Log.Information("Configuration réseau chargée:");

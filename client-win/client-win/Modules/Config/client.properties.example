@@ -19,3 +19,9 @@ updates.signature.publicKey=./config/update-signing-public.pem
 jwt.issuer=le-monde-de-lila
 # jwt.audience=
 jwt.signature.publicKey=./config/jwt-signing-public.pem
+
+# Admin maintenance (déploiement backend via /api/admin/maintenance/*)
+# Option 1: config file (plaintext)
+# admin.maintenance.token=CHANGE_ME
+# Option 2: env var (prioritaire)
+# CLIENT_ADMIN_MAINTENANCE_TOKEN=CHANGE_ME

@@ -1,0 +1,13 @@
+# Example sudoers drop-in for the backend service user.
+#
+# Install: /etc/sudoers.d/lila-backend-maintenance
+# Validate: visudo -cf /etc/sudoers.d/lila-backend-maintenance
+#
+# Adjust user name if your backend service runs as a different user.
+
+User_Alias LILA_BACKEND = backend
+
+Cmnd_Alias LILA_MAINT_SYSTEMCTL = /bin/systemctl start --no-block lila-backend-deploy.service, /bin/systemctl show lila-backend-deploy.service *, /bin/systemctl show lila-backend.service *
+Cmnd_Alias LILA_MAINT_JOURNALCTL = /bin/journalctl -u lila-backend-deploy.service *
+
+LILA_BACKEND ALL=(root) NOPASSWD: LILA_MAINT_SYSTEMCTL, LILA_MAINT_JOURNALCTL

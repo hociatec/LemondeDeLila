@@ -56,6 +56,7 @@ public sealed class MenuRouter : IMenuRouter
     private readonly IStatsService _stats;
     private readonly ILeaderboardService _leaderboard;
     private readonly IAdminService _admin;
+    private readonly IAdminMaintenanceHttpService _adminMaintenance;
     private readonly IDialogService _dialogs;
     private readonly IClientUpdatePublisher _publisher;
     private readonly ClientConfiguration _config;
@@ -84,6 +85,7 @@ public sealed class MenuRouter : IMenuRouter
         IStatsService stats,
         ILeaderboardService leaderboard,
         IAdminService admin,
+        IAdminMaintenanceHttpService adminMaintenance,
         IDialogService dialogs,
         IClientUpdatePublisher publisher)
     {
@@ -105,6 +107,7 @@ public sealed class MenuRouter : IMenuRouter
         _stats = stats;
         _leaderboard = leaderboard;
         _admin = admin;
+        _adminMaintenance = adminMaintenance;
         _dialogs = dialogs;
         _publisher = publisher;
     }
@@ -370,7 +373,7 @@ public sealed class MenuRouter : IMenuRouter
         var previous = _navigation.CurrentView;
         StopBackgroundLoops();
         var view = new AdminView();
-        var vm = new AdminViewModel(_admin, _roomDirectory, _apiCapabilities, _config, _publisher, _dialogs, _options, _sounds, _session, _remoteSounds, _tables, view, onClose: () =>
+        var vm = new AdminViewModel(_admin, _adminMaintenance, _roomDirectory, _apiCapabilities, _config, _publisher, _dialogs, _options, _sounds, _session, _remoteSounds, _tables, view, onClose: () =>
         {
             if (previous != null)
             {

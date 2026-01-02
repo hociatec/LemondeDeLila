@@ -70,6 +70,11 @@ public sealed partial class AdminViewModel
                     ShowLogs();
                     return;
                 }
+                if (tag is string maintenance && maintenance == "maintenance.deploy")
+                {
+                    await DeployBackendAsync().ConfigureAwait(true);
+                    return;
+                }
                 if (tag is string perf && perf == "perf")
                 {
                     PushReturnFocus();

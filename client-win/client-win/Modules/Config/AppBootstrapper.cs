@@ -176,6 +176,7 @@ public static class AppBootstrapper
         services.AddSingleton<ISessionService, SessionService>();
         services.AddSingleton<IWsTicketProvider, WsTicketProvider>();
         services.AddSingleton<client_win.Core.Network.IApiHttpClient, client_win.Core.Network.ApiHttpClient>();
+        services.AddSingleton<client_win.Modules.Admin.Services.IAdminMaintenanceHttpService, client_win.Modules.Admin.Services.AdminMaintenanceHttpService>();
 
         services.AddSingleton<IClientUpdatePublisher, ClientUpdatePublisher>();
 
