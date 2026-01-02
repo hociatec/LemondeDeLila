@@ -334,10 +334,6 @@ public static class AppBootstrapper
 
             // Sons de connexion/déconnexion au WS API (si activé).
             var ws = provider.GetRequiredService<PersistentWsClient>();
-            ws.Connected += () =>
-                dispatcher.BeginInvoke(
-                    (Action)(() => sounds.Play(Modules.Audio.Models.SoundId.ClientConnected)),
-                    DispatcherPriority.Send);
             ws.Disconnected += _ =>
                 dispatcher.BeginInvoke(
                     (Action)(() => sounds.Play(Modules.Audio.Models.SoundId.ClientDisconnected)),

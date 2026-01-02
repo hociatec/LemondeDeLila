@@ -184,6 +184,17 @@ namespace client_win
             Title = $"Le Monde de Lila - Connecté en tant que {user.Username}";
             _navigation.SetUser(new UserContext(user.Username, user.Token));
             _host.Session.SetUser(user);
+            // Son "connexion réussie" au moment exact où l'authentification est validée.
+            // (Le transport WS peut se connecter avant/après, ce qui donne une latence perceptible.)
+            try
+            {
+                var sounds = _host.Services.GetRequiredService<ISoundService>();
+                Dispatcher.BeginInvoke(() => sounds.Play(SoundId.ClientConnected), DispatcherPriority.Send);
+            }
+            catch
+            {
+                // ignore
+            }
             // Précharge le catalogue dès la connexion (best-effort) pour éviter un blocage
             // si l'utilisateur ouvre le catalogue immédiatement.
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(8));
