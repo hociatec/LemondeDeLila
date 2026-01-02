@@ -53,7 +53,8 @@ public sealed class SoundService : ISoundService, IDisposable
                 IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundAppLaunch,
                 Volume: () => Clamp01(_options.Current.SoundAppLaunchVolume / 100.0)),
             [SoundId.ClientConnected] = new SoundEntry(
-                DefaultRelativePath: Path.Combine("Assets", "Sounds", "roomjoined.mp3"),
+                // NOTE: `roomjoined.mp3` n'existe pas dans le repo; garder un fallback existant.
+                DefaultRelativePath: Path.Combine("Assets", "Sounds", "roomopened.mp3"),
                 OverridePath: () => _options.Current.SoundClientConnectedPath,
                 IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundNavigate,
                 Volume: () => Clamp01(_options.Current.SoundNavigateVolume / 100.0)),

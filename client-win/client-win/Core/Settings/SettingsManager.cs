@@ -68,7 +68,12 @@ public sealed class SettingsManager<T> where T : class, new()
             }
 
             var json = File.ReadAllText(_filePath);
-            var settings = JsonSerializer.Deserialize<T>(json);
+            var options = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                PropertyNameCaseInsensitive = true,
+            };
+            var settings = JsonSerializer.Deserialize<T>(json, options);
 
             if (settings == null)
             {
