@@ -360,7 +360,7 @@ public sealed partial class AdminViewModel
         IsAdditionalPermissionsVisible = false;
         Items.Clear();
         SelectedItem = null;
-        Status = "Entr\u00E9e : action. \u00C9chap : retour.";
+        Status = "\u00C9chap : retour.";
         UpdateFilterVisibility();
         RestoreFocusIfAny();
     }

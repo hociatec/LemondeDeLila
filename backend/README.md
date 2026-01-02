@@ -90,6 +90,27 @@ NODE_ENV=production node dist/main
 
 Personnalisez ce script selon votre stack (pm2, Docker, etc.) en conservant les étapes build+migrations.
 
+## Maintenance (admin)
+
+Le backend expose (optionnellement) des endpoints admin pour d‚clencher un d‚ploiement **via systemd** (build + migrations + restart).
+
+Variables :
+
+- `ADMIN_MAINTENANCE_ENABLED=true` : active les endpoints.
+- `ADMIN_MAINTENANCE_TOKEN=...` : secret requis via header `x-admin-maintenance-token`.
+- `ADMIN_MAINTENANCE_ALLOWED_IPS=1.2.3.4,5.6.7.8` : (optionnel) allowlist IP.
+- `ADMIN_MAINTENANCE_DEPLOY_UNIT=lila-backend-deploy.service` : (optionnel) unit systemd de d‚ploiement.
+- `ADMIN_MAINTENANCE_BACKEND_SERVICE=lila-backend.service` : (optionnel) service backend.
+
+Endpoints :
+
+- `POST /api/admin/maintenance/deploy`
+- `GET /api/admin/maintenance/deploy/status`
+- `GET /api/admin/maintenance/deploy/logs?tail=200`
+- `GET /api/admin/maintenance/service/status`
+
+Des templates systemd/sudoers sont fournis dans `backend/tools/systemd/`.
+
 ## Notes moteur de jeu
 
 - Le moteur conserve désormais les états des parties dans Redis (`GAME_ENGINE_STATE_REDIS_URL`). Sans cette variable, un message d’avertissement est émis et la persistance retombe en mémoire (à n’utiliser qu’en dev).

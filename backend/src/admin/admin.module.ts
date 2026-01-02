@@ -33,6 +33,9 @@ import { AdminProfileWsHandler } from './ws/admin-profile-ws.handler';
 import { BugReportsModule } from '../bug-reports/bug-reports.module';
 import { AdminBugReportsWsHandler } from './ws/admin-bug-reports-ws.handler';
 import { AdminBugReportCommentsWsHandler } from './ws/admin-bug-report-comments-ws.handler';
+import { AdminMaintenanceController } from './controllers/admin-maintenance.controller';
+import { AdminMaintenanceGuard } from './guards/admin-maintenance.guard';
+import { AdminMaintenanceService } from './services/admin-maintenance.service';
 
 @Module({
   imports: [
@@ -49,13 +52,15 @@ import { AdminBugReportCommentsWsHandler } from './ws/admin-bug-report-comments-
     SocialModule,
     BugReportsModule,
   ],
-  controllers: [AdminUsersController],
+  controllers: [AdminUsersController, AdminMaintenanceController],
   providers: [
     AdminCatalogInvalidationService,
     AdminUsersService,
     RoleDefinitionsService,
     HttpJwtGuard,
     AdminRoleGuard,
+    AdminMaintenanceGuard,
+    AdminMaintenanceService,
     AdminRoomsWsHandler,
     AdminChatWsHandler,
     AdminUsersWsHandler,

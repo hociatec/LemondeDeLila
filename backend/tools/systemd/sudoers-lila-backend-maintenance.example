@@ -1,0 +1,12 @@
+# Exemple: autoriser UNIQUEMENT le déclenchement/lecture du deploy unit depuis l'utilisateur qui exécute le backend.
+# À copier vers: /etc/sudoers.d/lila-backend-maintenance (via visudo -f)
+#
+# Remplacer `www-data` par l'utilisateur du service NestJS.
+
+Cmnd_Alias LILA_MAINTENANCE = /bin/systemctl start --no-block lila-backend-deploy.service, \
+  /bin/systemctl show lila-backend-deploy.service --no-pager --property=Id,ActiveState,SubState,Result,ExecMainStatus,ExecMainCode,ExecMainStartTimestamp,ExecMainExitTimestamp, \
+  /bin/systemctl show lila-backend.service --no-pager --property=Id,ActiveState,SubState,Result,ExecMainStatus,ExecMainCode,ExecMainStartTimestamp,ExecMainExitTimestamp, \
+  /bin/journalctl -u lila-backend-deploy.service --no-pager -o short-iso -n 2000
+
+www-data ALL=(root) NOPASSWD: LILA_MAINTENANCE
+

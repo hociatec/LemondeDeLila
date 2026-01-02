@@ -1,0 +1,13 @@
+[Unit]
+Description=Le Monde de Lila - Deploy backend (build + migrations + restart)
+After=network.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/ubuntu/lemondeDeLila/backend
+ExecStart=/usr/local/sbin/lila-backend-deploy.sh
+TimeoutStartSec=1800
+
+[Install]
+WantedBy=multi-user.target
+
