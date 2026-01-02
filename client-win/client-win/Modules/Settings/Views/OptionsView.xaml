@@ -89,7 +89,10 @@
                          AutomationProperties.Name="Catégories des options"
                          KeyboardNavigation.TabNavigation="Once" />
 
-                <ContentControl Grid.Column="2">
+                <ContentControl Grid.Column="2"
+                                Focusable="False"
+                                IsTabStop="False"
+                                KeyboardNavigation.TabNavigation="Continue">
                     <ContentControl.Style>
                         <Style TargetType="ContentControl">
                             <Setter Property="Content">
@@ -101,7 +104,10 @@
                                 <DataTrigger Binding="{Binding SelectedCategory}" Value="Général">
                                     <Setter Property="Content">
                                         <Setter.Value>
-                                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                            <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                                          Focusable="False"
+                                                          IsTabStop="False"
+                                                          KeyboardNavigation.TabNavigation="Continue">
                                                 <StackPanel Margin="8">
                                                     <TextBlock Text="Général" FontSize="22" Foreground="White" />
                                                     <TextBlock Text="Comportement général du client." Foreground="#9CB2D1" Margin="0 2 0 10" />
@@ -115,7 +121,10 @@
                                 <DataTrigger Binding="{Binding SelectedCategory}" Value="Sons">
                                     <Setter Property="Content">
                                         <Setter.Value>
-                                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                            <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                                          Focusable="False"
+                                                          IsTabStop="False"
+                                                          KeyboardNavigation.TabNavigation="Continue">
                                                 <StackPanel Margin="8">
                                                     <TextBlock Text="Sons" FontSize="22" Foreground="White" />
                                                     <TextBlock Text="Volumes et activation des sons du client." Foreground="#9CB2D1" Margin="0 2 0 10" />
@@ -174,7 +183,10 @@
                                 <DataTrigger Binding="{Binding SelectedCategory}" Value="Tchat">
                                     <Setter Property="Content">
                                         <Setter.Value>
-                                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                            <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                                          Focusable="False"
+                                                          IsTabStop="False"
+                                                          KeyboardNavigation.TabNavigation="Continue">
                                                 <StackPanel Margin="8">
                                                     <TextBlock Text="Tchat" FontSize="22" Foreground="White" />
                                                     <TextBlock Text="Activation et fermeture du tchat." Foreground="#9CB2D1" Margin="0 2 0 10" />
