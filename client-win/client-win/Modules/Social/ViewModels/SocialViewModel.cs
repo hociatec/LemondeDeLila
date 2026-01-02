@@ -36,6 +36,7 @@ public sealed class SocialViewModel : ObservableObject
     private SocialFriendRequest? _selectedOutgoingRequest;
     private SocialUser? _selectedBlockedUser;
     private SocialUser? _selectedSearchUser;
+    private SocialSection? _pendingSection;
 
     public SocialViewModel(ISocialService service, Action? onClose = null)
     {
@@ -213,6 +214,7 @@ public sealed class SocialViewModel : ObservableObject
     {
         if (IsBusy)
         {
+            _pendingSection = section;
             return;
         }
 
@@ -248,13 +250,21 @@ public sealed class SocialViewModel : ObservableObject
         finally
         {
             IsBusy = false;
+
+            var pending = _pendingSection;
+            _pendingSection = null;
+            if (pending.HasValue && pending.Value != section)
+            {
+                await LoadSectionAsync(pending.Value).ConfigureAwait(true);
+            }
         }
     }
 
     private async Task LoadFriendsAsync()
     {
+        var friends = await _service.GetFriendsAsync().ConfigureAwait(true);
         Friends.Clear();
-        foreach (var friend in await _service.GetFriendsAsync().ConfigureAwait(true))
+        foreach (var friend in friends)
         {
             Friends.Add(friend);
         }
@@ -263,8 +273,9 @@ public sealed class SocialViewModel : ObservableObject
 
     private async Task LoadIncomingRequestsAsync()
     {
+        var requests = await _service.GetRequestsAsync("incoming").ConfigureAwait(true);
         IncomingRequests.Clear();
-        foreach (var request in await _service.GetRequestsAsync("incoming").ConfigureAwait(true))
+        foreach (var request in requests)
         {
             IncomingRequests.Add(request);
         }
@@ -273,8 +284,9 @@ public sealed class SocialViewModel : ObservableObject
 
     private async Task LoadOutgoingRequestsAsync()
     {
+        var requests = await _service.GetRequestsAsync("outgoing").ConfigureAwait(true);
         OutgoingRequests.Clear();
-        foreach (var request in await _service.GetRequestsAsync("outgoing").ConfigureAwait(true))
+        foreach (var request in requests)
         {
             OutgoingRequests.Add(request);
         }
@@ -283,8 +295,9 @@ public sealed class SocialViewModel : ObservableObject
 
     private async Task LoadBlockedAsync()
     {
+        var blocked = await _service.GetBlockedAsync().ConfigureAwait(true);
         BlockedUsers.Clear();
-        foreach (var user in await _service.GetBlockedAsync().ConfigureAwait(true))
+        foreach (var user in blocked)
         {
             BlockedUsers.Add(user);
         }

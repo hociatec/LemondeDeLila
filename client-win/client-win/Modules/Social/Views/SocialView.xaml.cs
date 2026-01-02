@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -64,17 +65,17 @@ public partial class SocialView : UserControl
     {
         if (e.Key == Key.Enter)
         {
-            ActivateMenuSelection();
+            _ = ActivateMenuSelectionAsync();
             e.Handled = true;
         }
     }
 
     private void OnMenuClick(object sender, MouseButtonEventArgs e)
     {
-        ActivateMenuSelection();
+        _ = ActivateMenuSelectionAsync();
     }
 
-    private void ActivateMenuSelection()
+    private async Task ActivateMenuSelectionAsync()
     {
         if (DataContext is not SocialViewModel vm || MenuList.SelectedItem is not ListBoxItem item)
         {
@@ -88,22 +89,22 @@ public partial class SocialView : UserControl
             case "friends":
                 vm.SelectedSection = SocialSection.Friends;
                 SetScreen(SocialScreen.Section);
-                FocusSection(vm.SelectedSection);
+                await FocusSectionWhenReadyAsync(vm.SelectedSection).ConfigureAwait(true);
                 break;
             case "incoming":
                 vm.SelectedSection = SocialSection.IncomingRequests;
                 SetScreen(SocialScreen.Section);
-                FocusSection(vm.SelectedSection);
+                await FocusSectionWhenReadyAsync(vm.SelectedSection).ConfigureAwait(true);
                 break;
             case "outgoing":
                 vm.SelectedSection = SocialSection.OutgoingRequests;
                 SetScreen(SocialScreen.Section);
-                FocusSection(vm.SelectedSection);
+                await FocusSectionWhenReadyAsync(vm.SelectedSection).ConfigureAwait(true);
                 break;
             case "blocked":
                 vm.SelectedSection = SocialSection.Blocked;
                 SetScreen(SocialScreen.Section);
-                FocusSection(vm.SelectedSection);
+                await FocusSectionWhenReadyAsync(vm.SelectedSection).ConfigureAwait(true);
                 break;
             case "search":
                 vm.SelectedSection = SocialSection.Search;
@@ -116,6 +117,24 @@ public partial class SocialView : UserControl
                 FocusSection(vm.SelectedSection);
                 break;
         }
+    }
+
+    private async Task FocusSectionWhenReadyAsync(SocialSection section)
+    {
+        if (DataContext is not SocialViewModel vm)
+        {
+            FocusSection(section);
+            return;
+        }
+
+        // Évite de mettre le focus sur les textes "Aucun ..." pendant le chargement (les listes sont vidées puis remplies).
+        var start = DateTime.UtcNow;
+        while (vm.IsBusy && (DateTime.UtcNow - start).TotalMilliseconds < 4000)
+        {
+            await Task.Delay(25).ConfigureAwait(true);
+        }
+
+        FocusSection(section);
     }
 
     private void SetScreen(SocialScreen screen)

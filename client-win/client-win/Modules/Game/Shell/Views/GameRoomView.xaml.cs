@@ -12,6 +12,8 @@ public partial class GameRoomView : UserControl
 {
     private ViewModels.GameRoomViewModel? _vm;
     private Action? _focusRequestedHandler;
+    private bool _didHookTabCapture;
+    private KeyEventHandler? _tabCaptureHandler;
 
     public GameRoomView()
     {
@@ -26,6 +28,7 @@ public partial class GameRoomView : UserControl
 
     private void OnLoaded(object sender, System.Windows.RoutedEventArgs e)
     {
+        HookTabCapture();
         HookHistoryTabDelegation();
         HookGameZoneTabDelegation();
         HookFocusRequests(DataContext as ViewModels.GameRoomViewModel);
@@ -44,6 +47,31 @@ public partial class GameRoomView : UserControl
     private void OnUnloaded(object sender, System.Windows.RoutedEventArgs e)
     {
         HookFocusRequests(null);
+        UnhookTabCapture();
+    }
+
+    private void HookTabCapture()
+    {
+        if (_didHookTabCapture)
+        {
+            return;
+        }
+        _didHookTabCapture = true;
+
+        _tabCaptureHandler = OnPreviewKeyDown;
+        AddHandler(Keyboard.PreviewKeyDownEvent, _tabCaptureHandler, handledEventsToo: true);
+    }
+
+    private void UnhookTabCapture()
+    {
+        if (!_didHookTabCapture || _tabCaptureHandler == null)
+        {
+            return;
+        }
+
+        RemoveHandler(Keyboard.PreviewKeyDownEvent, _tabCaptureHandler);
+        _tabCaptureHandler = null;
+        _didHookTabCapture = false;
     }
 
     private void HookFocusRequests(ViewModels.GameRoomViewModel? vm)

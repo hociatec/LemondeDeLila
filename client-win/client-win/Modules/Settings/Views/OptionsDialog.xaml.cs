@@ -10,6 +10,7 @@ namespace client_win.Modules.Settings.Views;
 public partial class OptionsDialog : Window
 {
     private bool _didInitialFocus;
+    private bool _didHookFocusRetention;
 
     public OptionsDialog()
     {
@@ -18,6 +19,8 @@ public partial class OptionsDialog : Window
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
+        HookCheckboxFocusRetention();
+
         if (_didInitialFocus)
         {
             return;
@@ -73,6 +76,37 @@ public partial class OptionsDialog : Window
             e.Handled = true;
             vm.CancelCommand.Execute(null);
         }
+    }
+
+    private void HookCheckboxFocusRetention()
+    {
+        if (_didHookFocusRetention)
+        {
+            return;
+        }
+        _didHookFocusRetention = true;
+
+        AddHandler(CheckBox.CheckedEvent, new RoutedEventHandler(OnAnyCheckboxToggled), handledEventsToo: true);
+        AddHandler(CheckBox.UncheckedEvent, new RoutedEventHandler(OnAnyCheckboxToggled), handledEventsToo: true);
+    }
+
+    private void OnAnyCheckboxToggled(object sender, RoutedEventArgs e)
+    {
+        if (e.OriginalSource is not CheckBox checkbox)
+        {
+            return;
+        }
+
+        _ = Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Input, new Action(() =>
+        {
+            if (!checkbox.IsEnabled || !checkbox.IsVisible)
+            {
+                return;
+            }
+
+            checkbox.Focus();
+            Keyboard.Focus(checkbox);
+        }));
     }
 
     private static T? FindAncestorOrSelf<T>(DependencyObject? start) where T : DependencyObject

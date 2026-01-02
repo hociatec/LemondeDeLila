@@ -11,7 +11,6 @@
     <Grid x:Name="Root"
           Background="#0F1D2D"
           Loaded="OnLoaded"
-          PreviewKeyDown="OnPreviewKeyDown"
           behaviors:ShortcutBindingsBehavior.Shortcuts="{Binding GameZone.Shortcuts}"
           KeyboardNavigation.TabNavigation="Cycle"
           KeyboardNavigation.ControlTabNavigation="Cycle">
