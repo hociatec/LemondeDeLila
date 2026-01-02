@@ -40,7 +40,7 @@ public partial class OptionsView : UserControl
             {
                 e.Handled = true;
                 var delta = slider.SmallChange;
-                if (delta <= 0)
+                if (delta < 1)
                 {
                     delta = 1;
                 }

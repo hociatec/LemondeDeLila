@@ -52,7 +52,7 @@ public partial class OptionsDialog : Window
             {
                 e.Handled = true;
                 var delta = slider.SmallChange;
-                if (delta <= 0)
+                if (delta < 1)
                 {
                     delta = 1;
                 }

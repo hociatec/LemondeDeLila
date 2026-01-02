@@ -130,6 +130,10 @@
                                                     <TextBlock Text="{Binding SoundAmbienceVolume, StringFormat=Volume ambiance : {0}%}" Foreground="#9CB2D1" Margin="0 2 0 2" />
                                                     <Slider Minimum="0" Maximum="100"
                                                             Value="{Binding SoundAmbienceVolume, UpdateSourceTrigger=PropertyChanged}"
+                                                            SmallChange="1"
+                                                            LargeChange="10"
+                                                            IsSnapToTickEnabled="True"
+                                                            TickFrequency="1"
                                                             IsEnabled="{Binding IsAmbienceVolumeEnabled}"
                                                             AutomationProperties.Name="Volume ambiance"
                                                             AutomationProperties.HelpText="De 0 à 100. Utilisez les flèches haut et bas pour ajuster." />
@@ -140,6 +144,10 @@
                                                     <TextBlock Text="{Binding SoundAppLaunchVolume, StringFormat=Volume ouverture : {0}%}" Foreground="#9CB2D1" Margin="0 2 0 2" />
                                                     <Slider Minimum="0" Maximum="100"
                                                             Value="{Binding SoundAppLaunchVolume, UpdateSourceTrigger=PropertyChanged}"
+                                                            SmallChange="1"
+                                                            LargeChange="10"
+                                                            IsSnapToTickEnabled="True"
+                                                            TickFrequency="1"
                                                             IsEnabled="{Binding IsAppLaunchVolumeEnabled}"
                                                             AutomationProperties.Name="Volume ouverture"
                                                             AutomationProperties.HelpText="De 0 à 100. Utilisez les flèches haut et bas pour ajuster." />
@@ -148,6 +156,10 @@
                                                     <TextBlock Text="{Binding SoundNavigateVolume, StringFormat=Volume navigation : {0}%}" Foreground="#9CB2D1" Margin="0 2 0 2" />
                                                     <Slider Minimum="0" Maximum="100"
                                                             Value="{Binding SoundNavigateVolume, UpdateSourceTrigger=PropertyChanged}"
+                                                            SmallChange="1"
+                                                            LargeChange="10"
+                                                            IsSnapToTickEnabled="True"
+                                                            TickFrequency="1"
                                                             IsEnabled="{Binding IsNavigateVolumeEnabled}"
                                                             AutomationProperties.Name="Volume navigation"
                                                             AutomationProperties.HelpText="De 0 à 100. Utilisez les flèches haut et bas pour ajuster." />
@@ -156,6 +168,10 @@
                                                     <TextBlock Text="{Binding SoundSelectVolume, StringFormat=Volume sélection : {0}%}" Foreground="#9CB2D1" Margin="0 2 0 2" />
                                                     <Slider Minimum="0" Maximum="100"
                                                             Value="{Binding SoundSelectVolume, UpdateSourceTrigger=PropertyChanged}"
+                                                            SmallChange="1"
+                                                            LargeChange="10"
+                                                            IsSnapToTickEnabled="True"
+                                                            TickFrequency="1"
                                                             IsEnabled="{Binding IsSelectVolumeEnabled}"
                                                             AutomationProperties.Name="Volume sélection"
                                                             AutomationProperties.HelpText="De 0 à 100. Utilisez les flèches haut et bas pour ajuster." />
@@ -164,6 +180,10 @@
                                                     <TextBlock Text="{Binding SoundChatMessagesVolume, StringFormat=Volume messages : {0}%}" Foreground="#9CB2D1" Margin="0 2 0 2" />
                                                     <Slider Minimum="0" Maximum="100"
                                                             Value="{Binding SoundChatMessagesVolume, UpdateSourceTrigger=PropertyChanged}"
+                                                            SmallChange="1"
+                                                            LargeChange="10"
+                                                            IsSnapToTickEnabled="True"
+                                                            TickFrequency="1"
                                                             IsEnabled="{Binding IsChatMessagesVolumeEnabled}"
                                                             AutomationProperties.Name="Volume messages"
                                                             AutomationProperties.HelpText="De 0 à 100. Utilisez les flèches haut et bas pour ajuster." />
