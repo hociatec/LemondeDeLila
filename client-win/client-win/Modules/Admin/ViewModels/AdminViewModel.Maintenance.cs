@@ -1,8 +1,6 @@
 using System;
 using System.Linq;
 using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text.Json;
 using System.Threading.Tasks;
 using client_win.Core.Network;
 using client_win.Modules.Admin.Dtos;
@@ -11,226 +9,162 @@ namespace client_win.Modules.Admin.ViewModels;
 
 public sealed partial class AdminViewModel
 {
-    private AdminMaintenanceUnitStatusDto? _maintenanceDeployStatus;
-    private AdminMaintenanceUnitStatusDto? _maintenanceServiceStatus;
-    private AdminMaintenanceLogsDto? _maintenanceLogs;
-
-    private void BuildMaintenance()
+    private async Task DeployBackendAsync()
     {
-        _page = AdminPage.Maintenance;
-        Title = "Administration - Maintenance";
-        Details = string.IsNullOrWhiteSpace(_config.AdminMaintenanceToken)
-            ? "Maintenance serveur (build + migrations + restart).\n\nConfiguration requise côté client : admin.maintenance.token dans config/client.properties."
-            : "Maintenance serveur (build + migrations + restart).";
-
-        IsTextInputVisible = false;
-        IsSecondaryInputVisible = false;
-        IsAdditionalPermissionsVisible = false;
-        Items.Clear();
-        Items.Add(new AdminMenuItem("Déployer backend (build + migrations + restart)", tag: "maintenance.deploy"));
-        Items.Add(new AdminMenuItem("Rafraîchir status (deploy)", tag: "maintenance.refresh"));
-        Items.Add(new AdminMenuItem("Rafraîchir logs (deploy)", tag: "maintenance.logs"));
-        Items.Add(new AdminMenuItem("Status service backend", tag: "maintenance.service.status"));
-        SelectedItem = Items.FirstOrDefault();
-        Status = "Entrée : sélectionner. Échap : retour.";
-        UpdateFilterVisibility();
-        RestoreFocusIfAny();
-    }
-
-    private async Task TriggerMaintenanceDeployAsync()
-    {
-        if (IsBusy) return;
-
-        if (string.IsNullOrWhiteSpace(_config.AdminMaintenanceToken))
-        {
-            await _dialogs.ShowError("Maintenance", "Token manquant. Configure `admin.maintenance.token` dans `config/client.properties`.").ConfigureAwait(true);
-            return;
-        }
-
-        var confirm = await _dialogs.Confirm(
-                "Maintenance",
-                "Déclencher un déploiement serveur (build + migrations + restart) ?\n\nAttention : le backend va redémarrer et couper les connexions.",
-                okText: "Déployer",
-                cancelText: "Annuler")
-            .ConfigureAwait(true);
-
-        if (confirm != true)
+        if (IsBusy)
         {
             return;
         }
 
-        IsBusy = true;
+        var confirmed = await _dialogs.Confirm(
+            "Maintenance",
+            "Déclencher le déploiement backend (git pull + build + migrations + restart) ?\n\n" +
+            "Note: le redémarrage coupe momentanément la connexion, le client va retry automatiquement.",
+            okText: "Déployer",
+            cancelText: "Annuler").ConfigureAwait(true);
+
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        AdminMaintenanceUnitStatusResponse? lastDeployStatus = null;
+        string? lastLogs = null;
+
         try
         {
-            await SendMaintenanceAsync<AdminMaintenanceDeployResponseDto>(HttpMethod.Post, "admin/maintenance/deploy").ConfigureAwait(true);
-            Status = "Déploiement déclenché. Le serveur peut redémarrer pendant quelques secondes…";
+            IsBusy = true;
+            Status = "Déploiement: démarrage…";
+            Details = string.Empty;
 
-            // Best effort polling (le restart peut faire échouer temporairement les requêtes).
-            for (int i = 0; i < 30; i++)
+            await _maintenance.StartDeployAsync().ConfigureAwait(true);
+
+            var deadline = DateTimeOffset.UtcNow.AddMinutes(4);
+            var attempt = 0;
+
+            while (DateTimeOffset.UtcNow < deadline)
             {
-                await Task.Delay(TimeSpan.FromSeconds(2)).ConfigureAwait(true);
+                attempt++;
                 try
                 {
-                    await RefreshMaintenanceAsync().ConfigureAwait(true);
-                    var result = _maintenanceDeployStatus?.Result;
-                    if (!string.IsNullOrWhiteSpace(result) &&
-                        (string.Equals(result, "success", StringComparison.OrdinalIgnoreCase) ||
-                         string.Equals(result, "failed", StringComparison.OrdinalIgnoreCase)))
+                    lastDeployStatus = await _maintenance.GetDeployStatusAsync().ConfigureAwait(true);
+                    var logs = await _maintenance.GetDeployLogsAsync(200).ConfigureAwait(true);
+                    lastLogs = logs.Logs;
+
+                    Status = FormatDeployStatus(lastDeployStatus);
+                    Details = BuildDeployDetails(lastDeployStatus, lastLogs);
+
+                    if (IsDeployFinished(lastDeployStatus))
                     {
                         break;
                     }
+
+                    await Task.Delay(TimeSpan.FromSeconds(2)).ConfigureAwait(true);
                 }
-                catch
+                catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
                 {
-                    // ignore: serveur en redémarrage / connexion coupée
+                    Status = "Déploiement: attente du serveur (restart)…";
+                    await Task.Delay(RetryStrategy.CalculateDelay(attempt, baseDelayMs: 750, maxDelayMs: 5000))
+                        .ConfigureAwait(true);
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            await _dialogs.ShowError("Maintenance", ex.Message).ConfigureAwait(true);
-        }
-        finally
-        {
-            IsBusy = false;
-        }
-    }
 
-    private async Task RefreshMaintenanceAsync()
-    {
-        if (IsBusy) return;
-        IsBusy = true;
-        try
-        {
-            _maintenanceDeployStatus = await SendMaintenanceAsync<AdminMaintenanceUnitStatusDto>(HttpMethod.Get, "admin/maintenance/deploy/status").ConfigureAwait(true);
-            _maintenanceLogs = await SendMaintenanceAsync<AdminMaintenanceLogsDto>(HttpMethod.Get, "admin/maintenance/deploy/logs?tail=200").ConfigureAwait(true);
-
-            Details = BuildMaintenanceDetails(_maintenanceDeployStatus, _maintenanceLogs);
-        }
-        catch (Exception ex)
-        {
-            await _dialogs.ShowError("Maintenance", ex.Message).ConfigureAwait(true);
-        }
-        finally
-        {
-            IsBusy = false;
-        }
-    }
-
-    private async Task RefreshMaintenanceLogsAsync()
-    {
-        if (IsBusy) return;
-        IsBusy = true;
-        try
-        {
-            _maintenanceLogs = await SendMaintenanceAsync<AdminMaintenanceLogsDto>(HttpMethod.Get, "admin/maintenance/deploy/logs?tail=200").ConfigureAwait(true);
-            Details = BuildMaintenanceDetails(_maintenanceDeployStatus, _maintenanceLogs);
-        }
-        catch (Exception ex)
-        {
-            await _dialogs.ShowError("Maintenance", ex.Message).ConfigureAwait(true);
-        }
-        finally
-        {
-            IsBusy = false;
-        }
-    }
-
-    private async Task RefreshMaintenanceServiceStatusAsync()
-    {
-        if (IsBusy) return;
-        IsBusy = true;
-        try
-        {
-            _maintenanceServiceStatus = await SendMaintenanceAsync<AdminMaintenanceUnitStatusDto>(HttpMethod.Get, "admin/maintenance/service/status").ConfigureAwait(true);
-            Details = BuildMaintenanceDetails(_maintenanceDeployStatus, _maintenanceLogs, _maintenanceServiceStatus);
-        }
-        catch (Exception ex)
-        {
-            await _dialogs.ShowError("Maintenance", ex.Message).ConfigureAwait(true);
-        }
-        finally
-        {
-            IsBusy = false;
-        }
-    }
-
-    private string BuildMaintenanceDetails(
-        AdminMaintenanceUnitStatusDto? deployStatus,
-        AdminMaintenanceLogsDto? deployLogs,
-        AdminMaintenanceUnitStatusDto? backendServiceStatus = null)
-    {
-        string FormatUnit(AdminMaintenanceUnitStatusDto? s, string title)
-        {
-            if (s == null) return $"{title}: (non chargé)";
-            return $"{title}: {s.Unit}\n" +
-                   $"- Active: {s.ActiveState} / {s.SubState}\n" +
-                   $"- Result: {s.Result}\n" +
-                   $"- ExecMainStatus: {s.ExecMainStatus} ({s.ExecMainCode})\n" +
-                   $"- Start: {s.ExecMainStartTimestamp}\n" +
-                   $"- Exit: {s.ExecMainExitTimestamp}";
-        }
-
-        var text = "Maintenance serveur (build + migrations + restart)\n\n" +
-                   FormatUnit(deployStatus, "Deploy") +
-                   "\n\n" +
-                   (backendServiceStatus == null ? string.Empty : (FormatUnit(backendServiceStatus, "Service") + "\n\n"));
-
-        if (deployLogs != null && !string.IsNullOrWhiteSpace(deployLogs.Logs))
-        {
-            text += $"Logs (tail={deployLogs.Tail})\n{deployLogs.Logs}";
-        }
-        else
-        {
-            text += "Logs: (vide)";
-        }
-
-        return text;
-    }
-
-    private async Task<T> SendMaintenanceAsync<T>(HttpMethod method, string relativePath)
-    {
-        var jwt = _session.CurrentUser?.Token;
-        if (string.IsNullOrWhiteSpace(jwt))
-        {
-            throw new InvalidOperationException("Connexion requise.");
-        }
-
-        var maintenanceToken = _config.AdminMaintenanceToken;
-        if (string.IsNullOrWhiteSpace(maintenanceToken))
-        {
-            throw new InvalidOperationException("Token de maintenance manquant (admin.maintenance.token).");
-        }
-
-        var endpoint = new Uri(_config.HttpBase, relativePath);
-
-        HttpResponseMessage resp;
-        using (var req = new HttpRequestMessage(method, endpoint))
-        {
-            req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", jwt);
-            req.Headers.TryAddWithoutValidation("x-admin-maintenance-token", maintenanceToken);
-            resp = await HttpClientProvider.Shared.SendAsync(req).ConfigureAwait(true);
-        }
-
-        var body = await resp.Content.ReadAsStringAsync().ConfigureAwait(true);
-        if (!resp.IsSuccessStatusCode)
-        {
-            var message = ApiErrorParser.TryExtractMessage(body) ?? body;
-            throw new InvalidOperationException($"Erreur maintenance ({(int)resp.StatusCode}) : {message}");
-        }
-
-        try
-        {
-            var dto = JsonSerializer.Deserialize<T>(body, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-            if (dto == null)
+            if (lastDeployStatus == null)
             {
-                throw new InvalidOperationException("Réponse vide.");
+                await _dialogs.ShowError("Maintenance", "Impossible de récupérer le status du déploiement.").ConfigureAwait(true);
+                return;
             }
-            return dto;
+
+            if (!IsDeployFinished(lastDeployStatus))
+            {
+                await _dialogs.ShowError(
+                        "Maintenance",
+                        "Timeout: le déploiement n'a pas terminé à temps.\n\n" + FormatDeployStatus(lastDeployStatus))
+                    .ConfigureAwait(true);
+                return;
+            }
+
+            var backendStatus = await TryGetBackendServiceStatusAsync().ConfigureAwait(true);
+            await _dialogs.ShowInfo(
+                    "Maintenance",
+                    "Déploiement terminé.\n\n" +
+                    FormatDeployStatus(lastDeployStatus) +
+                    (backendStatus == null ? string.Empty : "\n\nBackend: " + FormatDeployStatus(backendStatus)))
+                .ConfigureAwait(true);
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException($"Réponse JSON invalide: {ex.Message}");
+            await _dialogs.ShowError("Maintenance", ex.Message).ConfigureAwait(true);
         }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private async Task<AdminMaintenanceUnitStatusResponse?> TryGetBackendServiceStatusAsync()
+    {
+        try
+        {
+            return await _maintenance.GetBackendServiceStatusAsync().ConfigureAwait(true);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static bool IsDeployFinished(AdminMaintenanceUnitStatusResponse status)
+    {
+        var active = (status.ActiveState ?? string.Empty).Trim().ToLowerInvariant();
+        var result = (status.Result ?? string.Empty).Trim().ToLowerInvariant();
+
+        if (active == "failed")
+        {
+            return true;
+        }
+
+        // Typical oneshot completion: inactive + success/failed.
+        return active == "inactive" && (result == "success" || result == "failed");
+    }
+
+    private static string FormatDeployStatus(AdminMaintenanceUnitStatusResponse status)
+    {
+        var unit = (status.Unit ?? "unknown").Trim();
+        var active = (status.ActiveState ?? "?").Trim();
+        var sub = (status.SubState ?? "?").Trim();
+        var result = (status.Result ?? "?").Trim();
+        var code = (status.ExecMainCode ?? "?").Trim();
+        var exitStatus = (status.ExecMainStatus ?? "?").Trim();
+
+        return $"{unit}: {active}/{sub} (result={result}, code={code}, status={exitStatus})";
+    }
+
+    private static string BuildDeployDetails(AdminMaintenanceUnitStatusResponse status, string? logs)
+    {
+        var tail = TailLines(logs, 40);
+        if (string.IsNullOrWhiteSpace(tail))
+        {
+            return FormatDeployStatus(status);
+        }
+        return FormatDeployStatus(status) + "\n\n" + tail;
+    }
+
+    private static string TailLines(string? text, int maxLines)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return string.Empty;
+        }
+        var lines = text
+            .Split(new[] { "\r\n", "\n" }, StringSplitOptions.None)
+            .Select(l => l.TrimEnd())
+            .ToArray();
+        if (lines.Length <= maxLines)
+        {
+            return string.Join("\n", lines).Trim();
+        }
+        return string.Join("\n", lines.Skip(lines.Length - maxLines)).Trim();
     }
 }
+

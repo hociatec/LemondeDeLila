@@ -23,6 +23,7 @@ namespace client_win.Modules.Admin.ViewModels;
 public sealed partial class AdminViewModel : ObservableObject
 {
     private readonly IAdminService _admin;
+    private readonly IAdminMaintenanceHttpService _maintenance;
     private readonly IDialogService _dialogs;
     private readonly Action _close;
     private readonly Dispatcher _dispatcher;
@@ -103,6 +104,7 @@ public sealed partial class AdminViewModel : ObservableObject
 
     public AdminViewModel(
         IAdminService admin,
+        IAdminMaintenanceHttpService maintenance,
         IRoomDirectoryClient roomDirectory,
         IApiCapabilitiesService apiCapabilities,
         ClientConfiguration config,
@@ -117,6 +119,7 @@ public sealed partial class AdminViewModel : ObservableObject
         Action onClose)
     {
         _admin = admin ?? throw new ArgumentNullException(nameof(admin));
+        _maintenance = maintenance ?? throw new ArgumentNullException(nameof(maintenance));
         _roomDirectory = roomDirectory ?? throw new ArgumentNullException(nameof(roomDirectory));
         _apiCapabilities = apiCapabilities ?? throw new ArgumentNullException(nameof(apiCapabilities));
         _config = config ?? throw new ArgumentNullException(nameof(config));

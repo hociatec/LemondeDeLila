@@ -1,16 +1,25 @@
+using System.Text.Json.Serialization;
+
 namespace client_win.Modules.Admin.Dtos;
 
-public sealed class AdminMaintenanceDeployResponseDto
+public sealed class AdminMaintenanceStartDeployResponse
 {
+    [JsonPropertyName("ok")]
     public bool Ok { get; set; }
-    public string Unit { get; set; } = string.Empty;
+
+    [JsonPropertyName("unit")]
+    public string? Unit { get; set; }
 }
 
-public sealed class AdminMaintenanceUnitStatusDto
+public sealed class AdminMaintenanceUnitStatusResponse
 {
+    [JsonPropertyName("ok")]
     public bool Ok { get; set; }
-    public string Unit { get; set; } = string.Empty;
-    public string? Id { get; set; }
+
+    [JsonPropertyName("unit")]
+    public string? Unit { get; set; }
+
+    // From systemctl show output (PascalCase fields from backend keys).
     public string? ActiveState { get; set; }
     public string? SubState { get; set; }
     public string? Result { get; set; }
@@ -20,11 +29,18 @@ public sealed class AdminMaintenanceUnitStatusDto
     public string? ExecMainExitTimestamp { get; set; }
 }
 
-public sealed class AdminMaintenanceLogsDto
+public sealed class AdminMaintenanceLogsResponse
 {
+    [JsonPropertyName("ok")]
     public bool Ok { get; set; }
-    public string Unit { get; set; } = string.Empty;
+
+    [JsonPropertyName("unit")]
+    public string? Unit { get; set; }
+
+    [JsonPropertyName("tail")]
     public int Tail { get; set; }
-    public string Logs { get; set; } = string.Empty;
+
+    [JsonPropertyName("logs")]
+    public string? Logs { get; set; }
 }
 

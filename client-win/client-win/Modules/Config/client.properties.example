@@ -20,6 +20,8 @@ jwt.issuer=le-monde-de-lila
 # jwt.audience=
 jwt.signature.publicKey=./config/jwt-signing-public.pem
 
-# Administration (optionnel, pour fonctions de maintenance serveur)
-# Token envoyÇ¸ via header `x-admin-maintenance-token` pour dÇ¸clencher un dÇ¸ploiement backend.
-# admin.maintenance.token=
+# Admin maintenance (déploiement backend via /api/admin/maintenance/*)
+# Option 1: config file (plaintext)
+# admin.maintenance.token=CHANGE_ME
+# Option 2: env var (prioritaire)
+# CLIENT_ADMIN_MAINTENANCE_TOKEN=CHANGE_ME

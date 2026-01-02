@@ -1,36 +1,45 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-LOCK_FILE="/run/lila-backend-deploy.lock"
-REPO_DIR="/home/ubuntu/lemondeDeLila"
-BACKEND_DIR="$REPO_DIR/backend"
-SERVICE_NAME="lila-backend.service"
+LILA_REPO_DIR="${LILA_REPO_DIR:-}"
+BACKEND_SERVICE="${BACKEND_SERVICE:-lila-backend.service}"
+DEPLOY_USER="${DEPLOY_USER:-backend}"
 
-mkdir -p "$(dirname "$LOCK_FILE")"
-
-exec 9>"$LOCK_FILE"
-if ! flock -n 9; then
-  echo "[deploy] already running (lock: $LOCK_FILE)" >&2
+if [[ -z "$LILA_REPO_DIR" ]]; then
+  echo "[deploy] ERROR: LILA_REPO_DIR is not set (edit the systemd unit)"
   exit 2
 fi
 
-echo "[deploy] repo: $REPO_DIR"
-echo "[deploy] backend: $BACKEND_DIR"
-echo "[deploy] service: $SERVICE_NAME"
+if [[ ! -d "$LILA_REPO_DIR" ]]; then
+  echo "[deploy] ERROR: repo dir not found: $LILA_REPO_DIR"
+  exit 2
+fi
 
-cd "$BACKEND_DIR"
+echo "[deploy] repo: $LILA_REPO_DIR"
+echo "[deploy] backend service: $BACKEND_SERVICE"
+echo "[deploy] deploy user: $DEPLOY_USER"
 
-echo "[deploy] npm ci"
-npm ci
+run_as_deploy_user() {
+  if id -u "$DEPLOY_USER" >/dev/null 2>&1; then
+    # shellcheck disable=SC2016
+    runuser -u "$DEPLOY_USER" -- "$@"
+  else
+    echo "[deploy] WARN: user '$DEPLOY_USER' not found; running as current user"
+    "$@"
+  fi
+}
 
-echo "[deploy] npm run build"
-npm run build
+cd "$LILA_REPO_DIR"
 
-echo "[deploy] npm run migration:run"
-npm run migration:run
+echo "[deploy] git pull --ff-only"
+run_as_deploy_user git pull --ff-only
 
-echo "[deploy] systemctl restart $SERVICE_NAME"
-systemctl restart "$SERVICE_NAME"
+echo "[deploy] backend: npm ci/build/migrations"
+run_as_deploy_user bash -lc "cd \"$LILA_REPO_DIR/backend\" && npm ci && npm run build && npm run migration:run"
+
+echo "[deploy] restarting systemd service: $BACKEND_SERVICE"
+systemctl restart "$BACKEND_SERVICE"
+systemctl --no-pager --full status "$BACKEND_SERVICE" || true
 
 echo "[deploy] done"
 

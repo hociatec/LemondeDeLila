@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using client_win.Modules.Admin.Dtos;
 
@@ -68,6 +68,11 @@ public sealed partial class AdminViewModel
                 {
                     PushReturnFocus();
                     ShowLogs();
+                    return;
+                }
+                if (tag is string maintenance && maintenance == "maintenance.deploy")
+                {
+                    await DeployBackendAsync().ConfigureAwait(true);
                     return;
                 }
                 if (tag is string perf && perf == "perf")
@@ -283,7 +288,7 @@ public sealed partial class AdminViewModel
                 {
                     PushReturnFocus();
                     var current = _roomSettings?.AutoCleanupOlderThanMinutes ?? 60;
-                    BuildRoomsSettingEdit("Auto-cleanup", "Âge max (minutes)", current.ToString(), mode: "rooms.settings.olderThan");
+                    BuildRoomsSettingEdit("Auto-cleanup", "Ã‚ge max (minutes)", current.ToString(), mode: "rooms.settings.olderThan");
                     return;
                 }
                 if (roomsAction == "rooms.settings.interval")
@@ -732,7 +737,7 @@ public sealed partial class AdminViewModel
                     if (uid > 0)
                     {
                         await _admin.UnbanUserFromChatAsync(uid).ConfigureAwait(true);
-                        await _dialogs.ShowInfo("Tchat", "Utilisateur débanni du tchat.").ConfigureAwait(true);
+                        await _dialogs.ShowInfo("Tchat", "Utilisateur dÃ©banni du tchat.").ConfigureAwait(true);
                         await ReloadChatModerationAsync().ConfigureAwait(true);
                     }
                     return;
@@ -762,14 +767,6 @@ public sealed partial class AdminViewModel
                 await SubmitChatSettingsAsync().ConfigureAwait(true);
                 return;
             }
-
-            if (_page == AdminPage.Maintenance && tag is string maintenanceTag)
-            {
-                if (maintenanceTag == "maintenance.deploy")
-                {
-                    await TriggerMaintenanceDeployAsync().ConfigureAwait(true);
-                    return;
-                }
                 if (maintenanceTag == "maintenance.refresh")
                 {
                     await RefreshMaintenanceAsync().ConfigureAwait(true);
@@ -856,3 +853,4 @@ public sealed partial class AdminViewModel
         }
     }
 }
+

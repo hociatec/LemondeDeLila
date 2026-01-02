@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 
 namespace client_win.Modules.Admin.ViewModels;
@@ -243,7 +243,7 @@ public sealed partial class AdminViewModel
 
         if (_page is AdminPage.ChatMessageActions or AdminPage.ChatBanForm)
         {
-            // Return to chat list (jours) ou au jour sélectionné
+            // Return to chat list (jours) ou au jour sÃ©lectionnÃ©
             if (_chatReturnPage == AdminPage.ChatDay && _selectedChatDay.HasValue)
             {
                 BuildChatDayMessages(_selectedChatDay.Value);
@@ -345,22 +345,22 @@ public sealed partial class AdminViewModel
         IsSecondaryInputVisible = false;
         IsAdditionalPermissionsVisible = false;
         Items.Clear();
-        Items.Add(new AdminMenuItem("Gérer les catégories", tag: "categories"));
-        Items.Add(new AdminMenuItem("Gérer les jeux", tag: "games"));
-        Items.Add(new AdminMenuItem("Gérer les bots", tag: "bots"));
-        Items.Add(new AdminMenuItem("Gérer les utilisateurs", tag: "users"));
-        Items.Add(new AdminMenuItem("Gérer les rooms", tag: "rooms"));
-        Items.Add(new AdminMenuItem("Tchat (modération)", tag: "chat"));
+        Items.Add(new AdminMenuItem("GÃ©rer les catÃ©gories", tag: "categories"));
+        Items.Add(new AdminMenuItem("GÃ©rer les jeux", tag: "games"));
+        Items.Add(new AdminMenuItem("GÃ©rer les bots", tag: "bots"));
+        Items.Add(new AdminMenuItem("GÃ©rer les utilisateurs", tag: "users"));
+        Items.Add(new AdminMenuItem("GÃ©rer les rooms", tag: "rooms"));
+        Items.Add(new AdminMenuItem("Tchat (modÃ©ration)", tag: "chat"));
         Items.Add(new AdminMenuItem("Envoyer un message global", tag: "broadcast"));
-        Items.Add(new AdminMenuItem("Mises à jour client", tag: "clientUpdates"));
-        Items.Add(new AdminMenuItem("Gérer les rôles", tag: "rolesDefinitions"));
-        Items.Add(new AdminMenuItem("Gérer les sons (application)", tag: "sounds"));
+        Items.Add(new AdminMenuItem("Mises Ã  jour client", tag: "clientUpdates"));
+        Items.Add(new AdminMenuItem("GÃ©rer les rÃ´les", tag: "rolesDefinitions"));
+        Items.Add(new AdminMenuItem("GÃ©rer les sons (application)", tag: "sounds"));
         Items.Add(new AdminMenuItem("Rapports de bug", tag: "bugReports"));
         Items.Add(new AdminMenuItem("Diagnostics latence (rooms/bots/parties)", tag: "perf"));
-        Items.Add(new AdminMenuItem("Maintenance serveur (build/migrations/restart)", tag: "maintenance"));
         Items.Add(new AdminMenuItem("Consulter les logs", tag: "logs"));
+        Items.Add(new AdminMenuItem("Maintenance: dÃ©ployer/redÃ©marrer le backend", tag: "maintenance.deploy"));
         SelectedItem = Items.FirstOrDefault();
-        Status = "Entrée : sélectionner. Échap : retour.";
+        Status = "EntrÃ©e : sÃ©lectionner. Ã‰chap : retour.";
         UpdateFilterVisibility();
         RestoreFocusIfAny();
     }
@@ -371,3 +371,4 @@ public sealed partial class AdminViewModel
         OnPropertyChanged(nameof(ShowLogControls));
     }
 }
+

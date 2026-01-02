@@ -122,7 +122,11 @@ public sealed class ClientConfiguration
         string jwtIssuer = Get(properties, "jwt.issuer", "le-monde-de-lila");
         string? jwtAudience = Normalize(Get(properties, "jwt.audience", string.Empty));
         string? jwtPublicKeyPath = ResolveOptionalPath(Get(properties, "jwt.signature.publicKey", string.Empty));
-        string? adminMaintenanceToken = Normalize(Get(properties, "admin.maintenance.token", string.Empty));
+        string? adminMaintenanceToken =
+            (properties.TryGetValue("admin.maintenance.token", out var maintenanceToken)
+                ? Normalize(maintenanceToken)
+                : null)
+            ?? Normalize(Environment.GetEnvironmentVariable("CLIENT_ADMIN_MAINTENANCE_TOKEN"));
 
         var config = new ClientConfiguration(
             appName,
