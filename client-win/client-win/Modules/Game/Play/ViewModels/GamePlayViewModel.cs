@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -708,7 +709,7 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
         }, DispatcherPriority.Background);
     }
 
-    private void TryPlayEndgameSound(GameStateDto state, int? viewerPlayerId)
+    private void TryPlayEndgameSound(GameStateDto? state, int? viewerPlayerId)
     {
         if (state == null || viewerPlayerId == null || viewerPlayerId.Value <= 0)
         {
@@ -730,8 +731,13 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
         _sounds.Play(SoundId.GameDefeat);
     }
 
-    private static int? TryExtractWinnerPlayerId(GameStateDto state)
+    private static int? TryExtractWinnerPlayerId(GameStateDto? state)
     {
+        if (state == null)
+        {
+            return null;
+        }
+
         // Best-effort: games may store winner info in metadata under various keys.
         static int? ReadWinnerId(JsonElement element)
         {
