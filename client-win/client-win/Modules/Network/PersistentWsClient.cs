@@ -155,7 +155,16 @@ public sealed class PersistentWsClient : IAsyncDisposable
 
             if (supported != null && !supported.Contains(type))
             {
-                throw new NotSupportedException($"WS route non supportée par le serveur: {type}");
+                // Ne pas bloquer les routes admin sur une liste de capabilities potentiellement incomplète / périmée.
+                // Exemple: backend mis à jour mais le client garde une ancienne liste en cache.
+                if (type.StartsWith("admin.", StringComparison.OrdinalIgnoreCase))
+                {
+                    Log.Warning("WS route absente des capabilities, envoi quand même (admin): {Type}", type);
+                }
+                else
+                {
+                    throw new NotSupportedException($"WS route non supportée par le serveur: {type}");
+                }
             }
         }
 
