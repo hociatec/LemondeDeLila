@@ -4,6 +4,7 @@ import type { GameStateWithActions } from '../../../../engine/dto/game-action.dt
 import { ODYSSEE_GAME } from '../definitions/odyssee.definition';
 import * as Rulebook from '../rulebook/rulebook';
 import type { OdysseeMetadata } from '../model/odyssee.types';
+import { buildOdysseeShortcuts } from '../odyssee.shortcuts';
 
 @Injectable()
 export class OdysseePresenterService {
@@ -21,7 +22,11 @@ export class OdysseePresenterService {
       extras: {
         ...(state as any).extras,
         currentPlayerView: { id: userId, username: me?.username ?? `Joueur ${userId}` },
-        shortcuts: [{ key: 'pressed P', type: 'interface', id: 'position' }],
+        shortcuts: buildOdysseeShortcuts({
+          metadata: meta as any,
+          currentPlayerId: userId,
+          started: true,
+        }),
       },
       board: {
         trackLength: meta.trackLength,

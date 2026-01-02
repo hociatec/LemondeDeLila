@@ -16,6 +16,7 @@ import type {
 import { PANIER_EXPRESS_PHASES } from '../definitions/rules.definition';
 import { PANIER_EXPRESS_VICTORY } from '../definitions/victory.definition';
 import { BasePresenterService } from '../../../../engine/abstract/base-presenter.service';
+import { buildPanierExpressShortcuts } from '../panier-express.shortcuts';
 
 type PanierExpressPlayerView = {
   id: number;
@@ -327,17 +328,11 @@ export class PanierExpressPresenterService extends BasePresenterService {
           null)
         : null;
 
-    const shortcuts: Array<{
-      key: string;
-      type: string;
-      id?: string;
-      actionType?: string;
-    }> = [
-      { key: 'pressed S', type: 'interface', id: 'shopping' },
-      { key: 'pressed B', type: 'interface', id: 'basket' },
-      { key: 'pressed I', type: 'interface', id: 'inventory' },
-      { key: 'pressed P', type: 'interface', id: 'position' },
-    ];
+    const shortcuts = buildPanierExpressShortcuts({
+      metadata: this.getMetadata(state) as PanierExpressMetadata,
+      currentPlayerId: params.currentId,
+      started: this.isStarted(state),
+    });
 
     return {
       ...baseExtras,

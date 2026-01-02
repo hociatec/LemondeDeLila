@@ -4,6 +4,7 @@ import type { GameStateWithActions } from '../../../../engine/dto/game-action.dt
 import { GALOPONS_GAME } from '../definitions/galopons.definition';
 import * as Rulebook from '../rulebook/rulebook';
 import type { GaloponsMetadata } from '../model/galopons.types';
+import { buildGaloponsShortcuts } from '../galopons.shortcuts';
 
 @Injectable()
 export class GaloponsPresenterService {
@@ -21,7 +22,11 @@ export class GaloponsPresenterService {
       extras: {
         ...(state as any).extras,
         currentPlayerView: { id: userId, username: me?.username ?? `Joueur ${userId}` },
-        shortcuts: [{ key: 'pressed P', type: 'interface', id: 'position' }],
+        shortcuts: buildGaloponsShortcuts({
+          metadata: meta as any,
+          currentPlayerId: userId,
+          started: true,
+        }),
         apples: meta.apples ?? {},
       },
       board: {

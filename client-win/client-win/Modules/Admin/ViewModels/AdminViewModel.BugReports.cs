@@ -9,6 +9,7 @@ public sealed partial class AdminViewModel
 {
     private AdminBugReportDto[] _loadedBugReports = Array.Empty<AdminBugReportDto>();
     private AdminBugReportDto? _selectedBugReport;
+    private AdminBugReportCommentDto[] _loadedBugReportComments = Array.Empty<AdminBugReportCommentDto>();
 
     private void UpsertLoadedBugReport(AdminBugReportDto report)
     {
@@ -92,7 +93,18 @@ public sealed partial class AdminViewModel
         }
         else
         {
-            foreach (var r in _loadedBugReports)
+            var sorted = _loadedBugReports
+                .OrderBy(r => r.Status switch
+                {
+                    AdminBugReportStatus.Done => 0,
+                    AdminBugReportStatus.InProgress => 1,
+                    _ => 2
+                })
+                .ToArray();
+
+            string? currentSection = null;
+
+            foreach (var r in sorted)
             {
                 var status = r.Status switch
                 {
@@ -100,8 +112,13 @@ public sealed partial class AdminViewModel
                     AdminBugReportStatus.Done => "Terminé",
                     _ => "En attente"
                 };
+                if (!string.Equals(currentSection, status, StringComparison.Ordinal))
+                {
+                    currentSection = status;
+                    Items.Add(new AdminMenuItem(status));
+                }
                 var subject = string.IsNullOrWhiteSpace(r.Subject) ? "(sans sujet)" : r.Subject.Trim();
-                Items.Add(new AdminMenuItem($"[{status}] {subject}", tag: r));
+                Items.Add(new AdminMenuItem($"  {subject}", tag: r));
             }
         }
 
@@ -189,6 +206,7 @@ public sealed partial class AdminViewModel
         IsSecondaryInputVisible = false;
         IsAdditionalPermissionsVisible = false;
         Items.Clear();
+        Items.Add(new AdminMenuItem("Commentaires", tag: "bugReports.comments"));
         Items.Add(new AdminMenuItem("Modifier", tag: "bugReports.edit"));
         Items.Add(new AdminMenuItem("Supprimer", tag: "bugReports.delete"));
         if (report.Status != AdminBugReportStatus.Pending)
@@ -207,6 +225,130 @@ public sealed partial class AdminViewModel
         Status = "Entrée : action. Échap : retour.";
         UpdateFilterVisibility();
         RestoreFocusIfAny();
+    }
+
+    private async Task LoadBugReportCommentsAsync(AdminBugReportDto report)
+    {
+        if (IsBusy)
+        {
+            return;
+        }
+
+        _page = AdminPage.BugReportComments;
+        _selectedBugReport = report;
+        Title = "Rapport - Commentaires";
+        Details = string.Empty;
+        IsTextInputVisible = false;
+        IsSecondaryInputVisible = false;
+        IsAdditionalPermissionsVisible = false;
+        Items.Clear();
+        SelectedItem = null;
+        Status = "Chargement...";
+
+        IsBusy = true;
+        try
+        {
+            var res = await _admin.ListBugReportCommentsAsync(report.Id).ConfigureAwait(true);
+            _loadedBugReportComments = (res.Items ?? new()).ToArray();
+            BuildBugReportComments(report);
+        }
+        catch (Exception ex)
+        {
+            await _dialogs.ShowError("Commentaires", ex.Message).ConfigureAwait(true);
+            BuildBugReportDetails(report);
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private void BuildBugReportComments(AdminBugReportDto report)
+    {
+        _page = AdminPage.BugReportComments;
+        _selectedBugReport = report;
+
+        Title = "Rapport - Commentaires";
+        var subject = string.IsNullOrWhiteSpace(report.Subject) ? "(sans sujet)" : report.Subject.Trim();
+
+        if (_loadedBugReportComments.Length == 0)
+        {
+            Details = $"Sujet: {subject}\n\nAucun commentaire.";
+        }
+        else
+        {
+            var lines = _loadedBugReportComments
+                .Select(c =>
+                    $"[{c.CreatedAt}] {c.CreatedByUsername} (id {c.CreatedByUserId})\n{c.Content}".TrimEnd())
+                .ToArray();
+            Details = $"Sujet: {subject}\n\n" + string.Join("\n\n---\n\n", lines);
+        }
+
+        IsTextInputVisible = false;
+        IsSecondaryInputVisible = false;
+        IsAdditionalPermissionsVisible = false;
+        Items.Clear();
+        Items.Add(new AdminMenuItem("Ajouter un commentaire", tag: "bugReports.comments.add"));
+        Items.Add(new AdminMenuItem("Rafraîchir", tag: "bugReports.comments.refresh"));
+        SelectedItem = Items.FirstOrDefault();
+        Status = "Entrée : action. Échap : retour.";
+        UpdateFilterVisibility();
+        RestoreFocusIfAny();
+    }
+
+    private void BuildBugReportCommentCreate(AdminBugReportDto report)
+    {
+        _page = AdminPage.BugReportCommentCreate;
+        _selectedBugReport = report;
+
+        Title = "Rapport - Nouveau commentaire";
+        Details = "Saisissez le commentaire, puis Valider.";
+        Items.Clear();
+        Items.Add(new AdminMenuItem("Valider / Envoyer", tag: "bugReports.comments.submit"));
+        SelectedItem = Items.FirstOrDefault();
+
+        TextInputLabel = string.Empty;
+        TextInput = string.Empty;
+        SecondaryInputLabel = "Commentaire";
+        SecondaryInput = string.Empty;
+        IsTextInputVisible = false;
+        IsSecondaryInputVisible = true;
+        IsAdditionalPermissionsVisible = false;
+        Status = "Entrée : envoyer. Échap : annuler.";
+        UpdateFilterVisibility();
+        RestoreFocusIfAny();
+    }
+
+    private async Task SubmitBugReportCommentAsync()
+    {
+        var report = _selectedBugReport;
+        if (report == null)
+        {
+            return;
+        }
+
+        var content = (SecondaryInput ?? string.Empty).Trim();
+        if (string.IsNullOrWhiteSpace(content))
+        {
+            await _dialogs.ShowError("Commentaire", "Commentaire requis.").ConfigureAwait(true);
+            return;
+        }
+
+        try
+        {
+            IsBusy = true;
+            await _admin.AddBugReportCommentAsync(report.Id, content).ConfigureAwait(true);
+            await _dialogs.ShowInfo("Commentaire", "Commentaire ajouté.").ConfigureAwait(true);
+            await LoadBugReportCommentsAsync(report).ConfigureAwait(true);
+        }
+        catch (Exception ex)
+        {
+            await _dialogs.ShowError("Commentaire", ex.Message).ConfigureAwait(true);
+        }
+        finally
+        {
+            IsBusy = false;
+        }
     }
 
     private void BuildBugReportEdit(AdminBugReportDto report)

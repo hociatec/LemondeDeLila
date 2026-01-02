@@ -135,6 +135,32 @@ public sealed partial class AdminViewModel
             return AdminNavResult.Moved;
         }
 
+        if (_page == AdminPage.BugReportComments)
+        {
+            if (_selectedBugReport != null)
+            {
+                BuildBugReportDetails(_selectedBugReport);
+            }
+            else
+            {
+                BuildBugReports();
+            }
+            return AdminNavResult.Moved;
+        }
+
+        if (_page == AdminPage.BugReportCommentCreate)
+        {
+            if (_selectedBugReport != null)
+            {
+                BuildBugReportComments(_selectedBugReport);
+            }
+            else
+            {
+                BuildBugReports();
+            }
+            return AdminNavResult.Moved;
+        }
+
         if (_page is AdminPage.BugReportCreate or AdminPage.BugReportDetails)
         {
             BuildBugReports();

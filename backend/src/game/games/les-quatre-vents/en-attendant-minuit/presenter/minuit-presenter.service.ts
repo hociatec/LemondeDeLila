@@ -4,6 +4,7 @@ import type { GameStateWithActions } from '../../../../engine/dto/game-action.dt
 import { MINUIT_GAME } from '../definitions/minuit.definition';
 import * as Rulebook from '../rulebook/rulebook';
 import type { MinuitMetadata } from '../model/minuit.types';
+import { buildMinuitShortcuts } from '../minuit.shortcuts';
 
 @Injectable()
 export class MinuitPresenterService {
@@ -31,7 +32,11 @@ export class MinuitPresenterService {
       extras: {
         ...(state as any).extras,
         currentPlayerView: { id: userId, username: me?.username ?? `Joueur ${userId}` },
-        shortcuts: [{ key: 'pressed P', type: 'interface', id: 'position' }],
+        shortcuts: buildMinuitShortcuts({
+          metadata: meta as any,
+          currentPlayerId: userId,
+          started: true,
+        }),
       },
       board: {
         tiles: Array.isArray(meta.tiles) ? meta.tiles : [],

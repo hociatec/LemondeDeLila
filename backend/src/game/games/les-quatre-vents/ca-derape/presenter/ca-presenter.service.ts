@@ -4,6 +4,7 @@ import type { GameStateWithActions } from '../../../../engine/dto/game-action.dt
 import { CA_DERAPE_GAME } from '../definitions/ca.definition';
 import * as Rulebook from '../rulebook/ca.rulebook';
 import type { CaMetadata } from '../model/ca.types';
+import { buildCaDerapeShortcuts } from '../ca-derape.shortcuts';
 
 @Injectable()
 export class CaPresenterService {
@@ -21,7 +22,11 @@ export class CaPresenterService {
       extras: {
         ...(state as any).extras,
         currentPlayerView: { id: userId, username: me?.username ?? `Joueur ${userId}` },
-        shortcuts: [{ key: 'pressed P', type: 'interface', id: 'position' }],
+        shortcuts: buildCaDerapeShortcuts({
+          metadata: meta as any,
+          currentPlayerId: userId,
+          started: true,
+        }),
       },
       board: {
         tiles: Array.isArray(meta.tiles) ? meta.tiles : [],

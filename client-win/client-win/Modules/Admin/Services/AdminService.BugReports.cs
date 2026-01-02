@@ -126,4 +126,39 @@ public sealed partial class AdminService
 
         return res.Payload.Removed;
     }
+
+    public async Task<AdminBugReportCommentsListResponseDto> ListBugReportCommentsAsync(string reportId, CancellationToken cancellationToken = default)
+    {
+        var token = EnsureAuth();
+        var res = await _ws.RequestAsync<AdminBugReportCommentsListResponseDto>(
+            WsMessageTypes.Admin.BugReportsCommentsList,
+            new { reportId },
+            token,
+            cancellationToken).ConfigureAwait(false);
+
+        if (!res.Success || res.Payload == null)
+        {
+            throw new InvalidOperationException(res.Error ?? "Chargement des commentaires impossible.");
+        }
+
+        return res.Payload;
+    }
+
+    public async Task<AdminBugReportCommentDto> AddBugReportCommentAsync(string reportId, string content, CancellationToken cancellationToken = default)
+    {
+        var token = EnsureAuth();
+        var res = await _ws.RequestAsync<AdminBugReportCommentResponseDto>(
+            WsMessageTypes.Admin.BugReportsCommentsAdd,
+            new { reportId, content },
+            token,
+            cancellationToken).ConfigureAwait(false);
+
+        var comment = res.Payload?.Comment;
+        if (!res.Success || comment == null)
+        {
+            throw new InvalidOperationException(res.Error ?? "Ajout du commentaire impossible.");
+        }
+
+        return comment;
+    }
 }

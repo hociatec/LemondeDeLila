@@ -53,6 +53,7 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
     private readonly AsyncRelayCommand _discardSelectCommand;
     private readonly AsyncRelayCommand _askCardSelectCommand;
     private readonly AsyncRelayCommand _pollutionCommand;
+    private readonly AsyncRelayCommand<string> _simpleActionFromHintCommand;
     private readonly AsyncRelayCommand _toggleShoppingCommand;
     private readonly AsyncRelayCommand _toggleStableCommand;
     private readonly AsyncRelayCommand _toggleScoreCommand;
@@ -150,6 +151,20 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
             },
             canExecute: () => HasPollution(_session?.LastState));
 
+        _simpleActionFromHintCommand = new AsyncRelayCommand<string>(
+            async actionType =>
+            {
+                if (string.IsNullOrWhiteSpace(actionType))
+                {
+                    return;
+                }
+
+                await TrySendSimpleActionAsync(actionType).ConfigureAwait(true);
+            },
+            canExecute: actionType =>
+                !string.IsNullOrWhiteSpace(actionType) &&
+                _actions.CanSendSimpleAction(_session, actionType));
+
         _toggleShoppingCommand = new AsyncRelayCommand(
             () =>
             {
@@ -234,7 +249,8 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
             drawCommand: _drawCommand,
             discardSelectCommand: _discardSelectCommand,
             askCardSelectCommand: _askCardSelectCommand,
-            pollutionCommand: _pollutionCommand);
+            pollutionCommand: _pollutionCommand,
+            simpleActionCommand: _simpleActionFromHintCommand);
 
         _connection = new GamePlayConnectionController(
             _dispatcher,
@@ -735,6 +751,7 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
         _discardSelectCommand.RaiseCanExecuteChanged();
         _askCardSelectCommand.RaiseCanExecuteChanged();
         _pollutionCommand.RaiseCanExecuteChanged();
+        _simpleActionFromHintCommand.RaiseCanExecuteChanged();
         _toggleShoppingCommand.RaiseCanExecuteChanged();
         _toggleScoreCommand.RaiseCanExecuteChanged();
         _toggleBasketCommand.RaiseCanExecuteChanged();

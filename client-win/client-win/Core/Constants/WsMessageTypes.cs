@@ -178,6 +178,8 @@ public static class WsMessageTypes
         public const string BugReportsUpdate = "admin.bugReports.update";
         public const string BugReportsUpdateStatus = "admin.bugReports.updateStatus";
         public const string BugReportsDelete = "admin.bugReports.delete";
+        public const string BugReportsCommentsList = "admin.bugReports.comments.list";
+        public const string BugReportsCommentsAdd = "admin.bugReports.comments.add";
     }
 
     public static class Rooms

@@ -127,6 +127,12 @@ public sealed partial class AdminViewModel
                     BuildBugReportEdit(_selectedBugReport);
                     return;
                 }
+                if (bugDetailsAction == "bugReports.comments" && _selectedBugReport != null)
+                {
+                    PushReturnFocus();
+                    await LoadBugReportCommentsAsync(_selectedBugReport).ConfigureAwait(true);
+                    return;
+                }
                 if (bugDetailsAction == "bugReports.delete")
                 {
                     await DeleteBugReportAsync().ConfigureAwait(true);
@@ -154,6 +160,30 @@ public sealed partial class AdminViewModel
                 if (bugEditAction == "bugReports.edit.submit")
                 {
                     await SubmitBugReportEditAsync().ConfigureAwait(true);
+                    return;
+                }
+            }
+
+            if (_page == AdminPage.BugReportComments && tag is string bugCommentsAction)
+            {
+                if (bugCommentsAction == "bugReports.comments.add" && _selectedBugReport != null)
+                {
+                    PushReturnFocus();
+                    BuildBugReportCommentCreate(_selectedBugReport);
+                    return;
+                }
+                if (bugCommentsAction == "bugReports.comments.refresh" && _selectedBugReport != null)
+                {
+                    await LoadBugReportCommentsAsync(_selectedBugReport).ConfigureAwait(true);
+                    return;
+                }
+            }
+
+            if (_page == AdminPage.BugReportCommentCreate && tag is string bugCommentCreateAction)
+            {
+                if (bugCommentCreateAction == "bugReports.comments.submit")
+                {
+                    await SubmitBugReportCommentAsync().ConfigureAwait(true);
                     return;
                 }
             }

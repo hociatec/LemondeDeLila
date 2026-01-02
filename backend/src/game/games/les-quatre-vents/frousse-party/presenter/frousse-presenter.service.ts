@@ -4,6 +4,7 @@ import type { GameStateWithActions } from '../../../../engine/dto/game-action.dt
 import { FROUSSE_GAME } from '../definitions/frousse.definition';
 import * as Rulebook from '../rulebook/rulebook';
 import type { FrousseMetadata } from '../model/frousse.types';
+import { buildFrousseShortcuts } from '../frousse.shortcuts';
 
 @Injectable()
 export class FroussePresenterService {
@@ -21,7 +22,11 @@ export class FroussePresenterService {
       extras: {
         ...(state as any).extras,
         currentPlayerView: { id: userId, username: me?.username ?? `Joueur ${userId}` },
-        shortcuts: [{ key: 'pressed P', type: 'interface', id: 'position' }],
+        shortcuts: buildFrousseShortcuts({
+          metadata: meta as any,
+          currentPlayerId: userId,
+          started: true,
+        }),
       },
       board: {
         tiles: Array.isArray(meta.tiles) ? meta.tiles : [],

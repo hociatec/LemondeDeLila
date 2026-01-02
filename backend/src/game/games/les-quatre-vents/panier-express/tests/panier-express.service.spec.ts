@@ -1,9 +1,9 @@
 import { Test } from '@nestjs/testing';
 import { PanierExpressService } from '../panier-express.service';
-import { PanierExpressModule } from '../panier-express.module';
 import { PanierExpressExchangeService } from '../actions/panier-express-exchange.service';
 import { PanierExpressPhaseService } from '../phases/panier-express-phase.service';
 import { nextRngInt } from '../../../../../common/utils/seeded-rng';
+import { createPanierExpressTestingModule } from './panier-express-test-harness';
 
 // Tests unitaires ciblés Panier Express (pioche stand/bonus, échange, quiz, flux de tour, bot, presenter).
 describe('PanierExpressService', () => {
@@ -12,9 +12,7 @@ describe('PanierExpressService', () => {
   let phaseSvc: PanierExpressPhaseService;
 
   beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({
-      imports: [PanierExpressModule],
-    }).compile();
+    const moduleRef = await createPanierExpressTestingModule();
     service = moduleRef.get(PanierExpressService);
     exchangeSvc = moduleRef.get(PanierExpressExchangeService);
     phaseSvc = moduleRef.get(PanierExpressPhaseService);
@@ -73,7 +71,7 @@ describe('PanierExpressService', () => {
       (extras.shortcuts ?? []).some(
         (s: any) => String(s?.key ?? '') === 'pressed P',
       ),
-    ).toBe(false);
+    ).toBe(true);
   });
 
   it('avancer sur un stand ajoute une carte cohérente', () => {
@@ -191,24 +189,19 @@ describe('PanierExpressService', () => {
     expect(moved.metadata.laps[1]).toBe(-1);
   });
 
-  it("décrémente le tour de plateau lors d'un recul d'échange qui repasse la case départ", () => {
+  it("ne met pas d'échange en pending si l'initiateur n'a aucune carte", () => {
     const state: any = service.hydrateInitialState({
       players: [
         { id: 1, username: 'A', inventory: [] },
-        { id: 2, username: 'B', inventory: [] },
+        { id: 2, username: 'B', inventory: ['poire'] },
       ],
       status: 'running',
     } as any);
-    state.turn = { currentPlayerId: 1, direction: 1 };
-    state.turnIndex = 0;
 
-    const meta = state.metadata;
-    meta.positions[1] = 4;
-    meta.laps[1] = 0;
+    (state.metadata.decks as any).exchanges = { deck: ['echange-amiable'], discards: [] };
 
     const after = exchangeSvc.applyExchange(state, 1);
-    expect((after.metadata as any).positions[1]).toBeGreaterThanOrEqual(0);
-    expect((after.metadata as any).laps[1]).toBe(-1);
+    expect(after.pending ?? null).toBeNull();
   });
 
   it('déclare une victoire quand un joueur a complété sa liste sur la case start', () => {
@@ -216,9 +209,9 @@ describe('PanierExpressService', () => {
       players: [
         { id: 1, username: 'A', shoppingList: ['pomme'], basket: ['pomme'] },
       ],
-      status: 'starting',
+      status: 'running',
     } as any);
-    base.metadata.positions[1] = 5; // pas start
+    base.metadata.positions[1] = 0; // start
     const afterVictory = (service as any).applyVictory(base);
     expect(afterVictory.status?.toLowerCase()).toBe('finished');
     expect(afterVictory.metadata.winnerId).toBe(1);
@@ -252,6 +245,42 @@ describe('PanierExpressService', () => {
       expect(answer).toBeDefined();
       expect(['1', '2', '3']).toContain(answer);
     });
+  });
+
+  it('tirage chanceux: remet les cartes non choisies en discard (anti-boucle bot)', () => {
+    const base: any = service.hydrateInitialState({
+      players: [
+        { id: 1, username: 'Nuggets', isBot: true, inventory: [], basket: [] },
+        { id: 2, username: 'Humain', inventory: [], basket: [] },
+      ],
+      status: 'running',
+    } as any);
+    base.turn = { currentPlayerId: 1, direction: 1 };
+    base.turnIndex = 0;
+
+    // Simule un tirage chanceux : 3 cartes ont dÇ¸jÇÿ Ç¸tÇ¸ sorties du deck au moment de l'offre.
+    (base.metadata.decks as any)['courses-bonus'] = { deck: ['banane'], discards: [] };
+    base.pending = {
+      type: 'pick',
+      playerId: 1,
+      blocking: true,
+      label: 'tirage',
+      choices: ['amande', 'noix', 'pomme'],
+      data: {
+        kind: 'event.tirage_chanceux',
+        offered: ['amande', 'noix', 'pomme'],
+      },
+    };
+
+    const after = service.applyActions(base, [
+      { type: 'pick_choice', payload: { index: 0 }, meta: { actorId: 1 } } as any,
+    ]);
+
+    const pool = (after.metadata as any)?.decks?.['courses-bonus'];
+    expect(pool).toBeTruthy();
+    expect(pool.deck).toEqual(['banane']);
+    expect(pool.discards).toEqual(['noix', 'pomme']);
+    expect(after.turn?.currentPlayerId).toBe(2);
   });
 
   it('ignore un roll fourni par le client (anti-triche)', () => {
@@ -390,24 +419,23 @@ describe('PanierExpressService', () => {
       status: 'running',
     } as any);
 
+    (state.metadata.decks as any).exchanges = { deck: ['echange-amiable'], discards: [] };
     const after = exchangeSvc.applyExchange(state, 1);
     expect(after.pending?.type).toBe('exchange');
     expect((after.pending as any)?.playerId).toBe(1);
     expect(typeof (after.pending as any)?.card).toBe('string');
   });
 
-  it("gère l'échange impossible en reculant le joueur sans pending", () => {
+  it("gère l'échange impossible sans pending", () => {
     const state: any = service.hydrateInitialState({
       players: [
-        { id: 1, username: 'A', inventory: [] },
-        { id: 2, username: 'B', inventory: [] },
+        { id: 1, username: 'A', inventory: ['pomme'] },
       ],
       status: 'running',
     } as any);
-    state.metadata.positions[1] = 5;
+    (state.metadata.decks as any).exchanges = { deck: ['echange-amiable'], discards: [] };
     const after = exchangeSvc.applyExchange(state, 1);
     expect((after as any).pending ?? null).toBeNull();
-    expect((after.metadata as any).positions[1]).not.toBe(5);
   });
 
   it('résout un échange et met à jour les inventaires', () => {
@@ -418,18 +446,17 @@ describe('PanierExpressService', () => {
       ],
       status: 'running',
     } as any);
-    state.metadata = {
-      ...(state.metadata ?? {}),
-      rng: { seed: 123, counter: 0 },
-    };
+    (state.metadata.decks as any).exchanges = { deck: ['echange-amiable'], discards: [] };
 
     const pendingState = exchangeSvc.applyExchange(state, 1);
     const chosenTarget = exchangeSvc.chooseTarget(pendingState as any, 1, 2);
-    const after = exchangeSvc.chooseGive(chosenTarget as any, 1, 'pomme');
+    const offered = exchangeSvc.chooseGive(chosenTarget as any, 1, 'pomme');
+    const after = exchangeSvc.acceptOffer(offered as any, 2);
     const a = (after.players as any[]).find((p) => p.id === 1);
     const b = (after.players as any[]).find((p) => p.id === 2);
     expect(a.inventory).toContain('poire');
     expect(a.inventory).not.toContain('pomme');
+    expect(a.inventory).toContain('banane');
     expect(b.inventory).toContain('pomme');
     expect(b.inventory).not.toContain('poire');
     expect(after.pending).toBeNull();
@@ -443,6 +470,7 @@ describe('PanierExpressService', () => {
       ],
       status: 'running',
     } as any);
+    (base.metadata.decks as any).exchanges = { deck: ['echange-amiable'], discards: [] };
     const first = exchangeSvc.applyExchange(base, 1);
     const second = exchangeSvc.applyExchange(first as any, 2);
     expect(second.pending?.playerId).toBe(1);
@@ -456,6 +484,7 @@ describe('PanierExpressService', () => {
       ],
       status: 'running',
     } as any);
+    (base.metadata.decks as any).exchanges = { deck: ['echange-amiable'], discards: [] };
     const pending = exchangeSvc.applyExchange(base, 1);
     const after = exchangeSvc.chooseTarget(pending as any, 2, 1);
     expect(after.pending?.playerId).toBe(1);

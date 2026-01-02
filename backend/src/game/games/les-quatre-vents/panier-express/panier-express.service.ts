@@ -1016,13 +1016,24 @@ export class PanierExpressService extends AbstractGameService {
         break;
       }
       case 'tirage-chanceux': {
-        const pool = (this.getMetadata(next).decks as any)?.['courses-bonus']?.deck ?? [];
-        const offered = Array.isArray(pool)
-          ? pool
-              .slice(0, 3)
-              .map((v: any) => String(v))
-              .filter((v: string) => v.length > 0)
-          : [];
+        // Tirage chanceux : proposer 3 cartes depuis le deck bonus, et les sortir du deck
+        // (sinon on repropose en boucle les mêmes cartes, surtout visible côté bot).
+        const metaNow = this.getMetadata(next) as any;
+        const metaRng = this.random.createMetaRng(metaNow);
+        const drawnCourses = this.deckPool.drawMany<string>(
+          (metaNow.decks ?? {}) as any,
+          'courses-bonus',
+          3,
+          metaRng.rng,
+        );
+        next = {
+          ...next,
+          metadata: { ...metaRng.getMeta(), decks: drawnCourses.pool as any } as any,
+        };
+
+        const offered = (drawnCourses.cards ?? [])
+          .map((v: any) => String(v))
+          .filter((v: string) => v.length > 0);
         if (!offered.length) {
           next = this.core.appendLog(next, `[Panier Express] Tirage chanceux : aucune carte disponible.`);
           next = this.appendActionLog(next, playerId, 'event', { event, effect: 'none' });
@@ -1032,7 +1043,7 @@ export class PanierExpressService extends AbstractGameService {
           label: 'Choisissez une carte (tirage chanceux), puis Entrée.',
           kind: 'event.tirage_chanceux',
           choices: offered,
-          data: { cards: offered },
+          data: { offered },
         });
         next = this.appendActionLog(next, playerId, 'event', { event, effect: 'pick' });
         break;
@@ -2016,11 +2027,31 @@ export class PanierExpressService extends AbstractGameService {
     });
 
     if (kind === 'event.tirage_chanceux') {
-      const cards = Array.isArray(pending?.data?.cards)
-        ? pending.data.cards.map((v: any) => String(v))
-        : [];
-      const chosen = cards[index] ?? '';
+      const offered = Array.isArray(pending?.data?.offered)
+        ? pending.data.offered.map((v: any) => String(v))
+        : Array.isArray(pending?.data?.cards)
+          ? pending.data.cards.map((v: any) => String(v))
+          : [];
+      const chosen = offered[index] ?? '';
       let next = clearPending(state);
+
+      // Les 3 cartes proposées ont été retirées du deck lors du tirage ; remettre les non-choisies en discard.
+      const unchosen = offered.filter((_v: string, i: number) => i !== index);
+      if (unchosen.length) {
+        const metaNow = this.getMetadata(next) as any;
+        next = {
+          ...next,
+          metadata: {
+            ...metaNow,
+            decks: this.deckPool.discardMany<string>(
+              (metaNow.decks ?? {}) as any,
+              'courses-bonus',
+              unchosen,
+            ) as any,
+          } as any,
+        };
+      }
+
       next = addCourseToPlayer(next, actorId, chosen);
       next = this.core.appendLog(
         next,

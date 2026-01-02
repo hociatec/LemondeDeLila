@@ -1,12 +1,10 @@
 import { Test } from '@nestjs/testing';
-import { PanierExpressModule } from '../panier-express.module';
 import { PanierExpressService } from '../panier-express.service';
+import { createPanierExpressTestingModule } from './panier-express-test-harness';
 
 describe('PanierExpress scenario (smoke)', () => {
   it('rolls a few turns without crashing', async () => {
-    const moduleRef = await Test.createTestingModule({
-      imports: [PanierExpressModule],
-    }).compile();
+    const moduleRef = await createPanierExpressTestingModule();
     const game = moduleRef.get(PanierExpressService);
 
     let state: any = game.hydrateInitialState({

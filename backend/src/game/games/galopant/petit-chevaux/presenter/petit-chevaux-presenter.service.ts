@@ -4,6 +4,7 @@ import type { GameStateWithActions } from '../../../../engine/dto/game-action.dt
 import * as PetitChevauxRulebook from '../rulebook/rulebook';
 import { PETIT_CHEVAUX_GAME } from '../definitions/game.definition';
 import type { PetitChevauxMetadata } from '../model/petit-chevaux-state.entity';
+import { buildPetitChevauxShortcuts } from '../petit-chevaux.shortcuts';
 
 @Injectable()
 export class PetitChevauxPresenterService {
@@ -71,10 +72,11 @@ export class PetitChevauxPresenterService {
         stable: stableLines,
         position: positionLines,
       },
-      shortcuts: [
-        { key: 'pressed S', type: 'interface', id: 'stable' },
-        { key: 'pressed P', type: 'interface', id: 'position' },
-      ],
+      shortcuts: buildPetitChevauxShortcuts({
+        metadata: meta as any,
+        currentPlayerId: userId,
+        started: true,
+      }),
     };
 
     // Ne pas exposer le pending (liste de choix) aux autres joueurs :

@@ -12,6 +12,7 @@ import { AdminClientUpdatesWsHandler } from './admin-client-updates-ws.handler';
 import { AdminPerfWsHandler } from './admin-perf-ws.handler';
 import { AdminProfileWsHandler } from './admin-profile-ws.handler';
 import { AdminBugReportsWsHandler } from './admin-bug-reports-ws.handler';
+import { AdminBugReportCommentsWsHandler } from './admin-bug-report-comments-ws.handler';
 
 @Injectable()
 export class AdminWsRegistrar implements OnModuleInit {
@@ -29,6 +30,7 @@ export class AdminWsRegistrar implements OnModuleInit {
     private readonly perf: AdminPerfWsHandler,
     private readonly profile: AdminProfileWsHandler,
     private readonly bugReports: AdminBugReportsWsHandler,
+    private readonly bugReportComments: AdminBugReportCommentsWsHandler,
   ) {}
 
   onModuleInit() {
@@ -149,6 +151,13 @@ export class AdminWsRegistrar implements OnModuleInit {
     );
     this.registry.register('admin.bugReports.delete', (s, p) =>
       this.bugReports.delete(s, p),
+    );
+
+    this.registry.register('admin.bugReports.comments.list', (s, p) =>
+      this.bugReportComments.list(s, p),
+    );
+    this.registry.register('admin.bugReports.comments.add', (s, p) =>
+      this.bugReportComments.add(s, p),
     );
 
     this.registry.register('admin.bots.names.list', (s, p) =>

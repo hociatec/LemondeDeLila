@@ -13,6 +13,7 @@ import type {
 } from '../model/dame-nature.model';
 import * as DameNatureRulebook from '../rulebook/rulebook';
 import { BasePresenterService } from '../../../../engine/abstract/base-presenter.service';
+import { buildDameNatureShortcuts } from '../dame-nature.shortcuts';
 
 @Injectable()
 export class DameNaturePresenterService extends BasePresenterService {
@@ -148,7 +149,25 @@ export class DameNaturePresenterService extends BasePresenterService {
       started,
       currentPlayerView,
     );
-    const shortcuts = this.buildShortcuts(metadata, currentPlayerId);
+    const shortcuts = buildDameNatureShortcuts({
+      metadata,
+      currentPlayerId,
+      started,
+    });
+
+    const pollution =
+      started && typeof currentPlayerId === 'number'
+        ? (metadata?.pollutionByPlayer ?? {})[String(currentPlayerId)] ?? 0
+        : 0;
+    const maxPollution = metadata?.maxPollution ?? 0;
+    const goal = metadata?.familyGoal ?? 0;
+    const booksCount = currentPlayerView?.books?.length ?? 0;
+    const score = started
+      ? [
+          `Pollution: ${pollution}/${maxPollution}`,
+          `Familles: ${booksCount}/${goal}`,
+        ]
+      : [];
 
     return {
       ...baseExtras,
@@ -158,6 +177,7 @@ export class DameNaturePresenterService extends BasePresenterService {
       hand: started ? (currentPlayerView?.hand ?? []) : [],
       handCards,
       books: started ? (currentPlayerView?.books ?? []) : [],
+      score,
       shortcuts,
       pendingAsk: metadata?.pendingAsk ?? null,
       pendingQuiz: metadata?.pendingQuiz ?? null,
@@ -192,7 +212,25 @@ export class DameNaturePresenterService extends BasePresenterService {
         ? (players.find((p) => p.id === userId) ?? null)
         : null;
     const handCards = this.buildHandCardsForUser(viewerPlayer, started);
-    const shortcuts = this.buildShortcuts(metadata, currentPlayerId);
+    const shortcuts = buildDameNatureShortcuts({
+      metadata,
+      currentPlayerId,
+      started,
+    });
+
+    const pollution =
+      started && typeof userId === 'number'
+        ? (metadata?.pollutionByPlayer ?? {})[String(userId)] ?? 0
+        : 0;
+    const maxPollution = metadata?.maxPollution ?? 0;
+    const goal = metadata?.familyGoal ?? 0;
+    const booksCount = viewerView?.books?.length ?? 0;
+    const score = started
+      ? [
+          `Pollution: ${pollution}/${maxPollution}`,
+          `Familles: ${booksCount}/${goal}`,
+        ]
+      : [];
 
     return {
       ...baseExtras,
@@ -202,6 +240,7 @@ export class DameNaturePresenterService extends BasePresenterService {
       hand: started ? (viewerView?.hand ?? []) : [],
       handCards,
       books: started ? (viewerView?.books ?? []) : [],
+      score,
       shortcuts,
       pendingAsk: metadata?.pendingAsk ?? null,
       pendingQuiz: metadata?.pendingQuiz ?? null,
@@ -320,45 +359,5 @@ export class DameNaturePresenterService extends BasePresenterService {
       }),
       {} as Record<string, { id: string; name: string }[]>,
     );
-  }
-
-  private buildShortcuts(
-    metadata: DameNatureMetadata,
-    currentPlayerId: number | null,
-  ): any[] {
-    const pendingAsk = metadata?.pendingAsk ?? null;
-    const pendingQuiz = metadata?.pendingQuiz ?? null;
-    const actionPlayerId =
-      pendingAsk?.targetId ??
-      pendingQuiz?.playerId ??
-      (typeof currentPlayerId === 'number' ? currentPlayerId : null);
-
-    const shortcuts: any[] = [
-      { key: 'pressed D', type: 'action', actionType: 'ask_card' },
-      { key: 'pressed C', type: 'interface', id: 'hand' },
-      { key: 'pressed F', type: 'interface', id: 'books' },
-    ];
-
-    if (
-      pendingAsk &&
-      actionPlayerId != null &&
-      pendingAsk.targetId === actionPlayerId
-    ) {
-      shortcuts.push({
-        key: 'pressed A',
-        type: 'action',
-        actionType: 'answer_ask_card_accept',
-      });
-      shortcuts.push({
-        key: 'pressed R',
-        type: 'action',
-        actionType: 'answer_ask_card_refuse',
-      });
-    }
-
-    // Note: Les réponses de quiz passent par les actions proposées (answer_quiz + payload.answer),
-    // pas par un raccourci "correct/wrong" (anti-triche).
-
-    return shortcuts;
   }
 }

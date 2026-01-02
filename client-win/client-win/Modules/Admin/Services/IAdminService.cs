@@ -94,4 +94,6 @@ public interface IAdminService
     Task<AdminBugReportDto> UpdateBugReportAsync(string id, string? subject = null, string? content = null, CancellationToken cancellationToken = default);
     Task<AdminBugReportDto> UpdateBugReportStatusAsync(string id, string status, CancellationToken cancellationToken = default);
     Task<bool> DeleteBugReportAsync(string id, CancellationToken cancellationToken = default);
+    Task<AdminBugReportCommentsListResponseDto> ListBugReportCommentsAsync(string reportId, CancellationToken cancellationToken = default);
+    Task<AdminBugReportCommentDto> AddBugReportCommentAsync(string reportId, string content, CancellationToken cancellationToken = default);
 }

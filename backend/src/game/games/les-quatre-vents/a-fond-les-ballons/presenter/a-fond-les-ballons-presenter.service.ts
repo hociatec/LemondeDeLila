@@ -4,6 +4,7 @@ import type { GameStateWithActions } from '../../../../engine/dto/game-action.dt
 import * as Rulebook from '../rulebook/rulebook';
 import { A_FOND_LES_BALLONS_GAME } from '../definitions/game.definition';
 import type { AFondLesBallonsMetadata } from '../model/a-fond-les-ballons-state.entity';
+import { buildAFondLesBallonsShortcuts } from '../a-fond-les-ballons.shortcuts';
 
 @Injectable()
 export class AFondLesBallonsPresenterService {
@@ -16,7 +17,11 @@ export class AFondLesBallonsPresenterService {
     const extras = {
       ...(state as any).extras,
       currentPlayerView: { id: userId, username: me?.username ?? `Joueur ${userId}` },
-      shortcuts: [{ key: 'pressed P', type: 'interface', id: 'position' }],
+      shortcuts: buildAFondLesBallonsShortcuts({
+        metadata: meta as any,
+        currentPlayerId: userId,
+        started: true,
+      }),
     };
 
     return {

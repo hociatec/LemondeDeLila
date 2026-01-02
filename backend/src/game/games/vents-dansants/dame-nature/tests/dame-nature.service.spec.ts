@@ -1,8 +1,7 @@
-import { Test } from '@nestjs/testing';
-import { DameNatureModule } from '../dame-nature.module';
 import { DameNatureService } from '../dame-nature.service';
 import { DameNatureBotService } from '../bots/dame-nature-bot.service';
 import { DameNatureSetupService } from '../setup/dame-nature-setup.service';
+import { createDameNatureTestingModule } from './dame-nature-test-harness';
 
 describe('DameNatureService', () => {
   let service: DameNatureService;
@@ -32,9 +31,7 @@ describe('DameNatureService', () => {
   });
 
   beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({
-      imports: [DameNatureModule],
-    }).compile();
+    const moduleRef = await createDameNatureTestingModule();
     service = moduleRef.get(DameNatureService);
     botService = moduleRef.get(DameNatureBotService);
     setup = moduleRef.get(DameNatureSetupService);

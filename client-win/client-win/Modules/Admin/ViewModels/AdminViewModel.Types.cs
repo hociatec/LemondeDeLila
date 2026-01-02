@@ -54,7 +54,9 @@ internal enum AdminPage
     BugReports,
     BugReportCreate,
     BugReportDetails,
-    BugReportEdit
+    BugReportEdit,
+    BugReportComments,
+    BugReportCommentCreate
 }
 
 public sealed record PermissionModuleDescriptor(string ModuleId, string DisplayName, string Description);

@@ -4,6 +4,7 @@ import type { GameStateWithActions } from '../../../../engine/dto/game-action.dt
 import * as JeuOieRulebook from '../rulebook/rulebook';
 import { JEU_OIE_GAME } from '../definitions/game.definition';
 import type { JeuOieMetadata } from '../model/jeu-oie-state.entity';
+import { buildJeuOieShortcuts } from '../jeu-oie.shortcuts';
 
 @Injectable()
 export class JeuOiePresenterService {
@@ -16,7 +17,11 @@ export class JeuOiePresenterService {
     const extras = {
       ...(state as any).extras,
       currentPlayerView: { id: userId, username: me?.username ?? `Joueur ${userId}` },
-      shortcuts: [{ key: 'pressed P', type: 'interface', id: 'position' }],
+      shortcuts: buildJeuOieShortcuts({
+        metadata: meta as any,
+        currentPlayerId: userId,
+        started: true,
+      }),
     };
 
     return {

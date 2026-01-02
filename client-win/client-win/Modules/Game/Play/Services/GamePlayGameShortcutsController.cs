@@ -14,19 +14,22 @@ internal sealed class GamePlayGameShortcutsController
     private readonly ICommand _discardSelectCommand;
     private readonly ICommand _askCardSelectCommand;
     private readonly ICommand _pollutionCommand;
+    private readonly ICommand _simpleActionCommand;
 
     internal GamePlayGameShortcutsController(
         ObservableCollection<ShortcutDefinition> shortcuts,
         ICommand drawCommand,
         ICommand discardSelectCommand,
         ICommand askCardSelectCommand,
-        ICommand pollutionCommand)
+        ICommand pollutionCommand,
+        ICommand simpleActionCommand)
     {
         _shortcuts = shortcuts ?? throw new ArgumentNullException(nameof(shortcuts));
         _drawCommand = drawCommand ?? throw new ArgumentNullException(nameof(drawCommand));
         _discardSelectCommand = discardSelectCommand ?? throw new ArgumentNullException(nameof(discardSelectCommand));
         _askCardSelectCommand = askCardSelectCommand ?? throw new ArgumentNullException(nameof(askCardSelectCommand));
         _pollutionCommand = pollutionCommand ?? throw new ArgumentNullException(nameof(pollutionCommand));
+        _simpleActionCommand = simpleActionCommand ?? throw new ArgumentNullException(nameof(simpleActionCommand));
     }
 
     internal void Sync(GameStateDto state, Func<GameStateDto, bool> canStartAskCardSelection)
@@ -59,12 +62,15 @@ internal sealed class GamePlayGameShortcutsController
             description: "Demander une carte (choisir cible + carte)");
 
         // Dame Nature: pollution (exposée dans metadata).
+        var pollutionKey = FindInterfaceShortcutKey(state, "pollution") ?? 's';
         SyncCharShortcut(
             supported: HasPollution(state),
             code: "ui.pollution",
-            key: 's',
+            key: pollutionKey,
             command: _pollutionCommand,
             description: "Pollution");
+
+        SyncActionShortcutsFromHints(state);
     }
 
     private void SyncGestureShortcut(
@@ -181,6 +187,37 @@ internal sealed class GamePlayGameShortcutsController
         return null;
     }
 
+    private static char? FindInterfaceShortcutKey(GameStateDto state, string id)
+    {
+        var hints = GamePlayExtrasParser.ExtractShortcutHints(state);
+        foreach (var hint in hints)
+        {
+            if (!string.Equals(hint.Type, "interface", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            if (!string.Equals(hint.Id, id, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            var key = hint.Key ?? string.Empty;
+            const string prefix = "pressed ";
+            if (key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+            {
+                key = key.Substring(prefix.Length).Trim();
+            }
+
+            if (key.Length == 1 && char.IsLetter(key[0]))
+            {
+                return char.ToLowerInvariant(key[0]);
+            }
+        }
+
+        return null;
+    }
+
     private static bool HasPollution(GameStateDto state)
     {
         try
@@ -201,5 +238,104 @@ internal sealed class GamePlayGameShortcutsController
         {
             return false;
         }
+    }
+
+    private void SyncActionShortcutsFromHints(GameStateDto state)
+    {
+        var hints = GamePlayExtrasParser.ExtractShortcutHints(state);
+        foreach (var hint in hints)
+        {
+            if (!string.Equals(hint.Type, "action", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            var actionType = hint.ActionType;
+            if (string.IsNullOrWhiteSpace(actionType))
+            {
+                continue;
+            }
+
+            // Déjà gérés ailleurs (raccourcis statiques ou flows dédiés).
+            if (string.Equals(actionType, "roll", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(actionType, "ROLL_DICE", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(actionType, "draw", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(actionType, "ask_card", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(actionType, "exchange_accept", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(actionType, "exchange_refuse", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(actionType, "answer_ask_card_accept", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(actionType, "answer_ask_card_refuse", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            var key = hint.Key ?? string.Empty;
+            const string prefix = "pressed ";
+            if (key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+            {
+                key = key.Substring(prefix.Length).Trim();
+            }
+
+            if (key.Length != 1 || !char.IsLetter(key[0]))
+            {
+                continue;
+            }
+
+            // Ne bind que les actions réellement "simples" (payload vide).
+            if (!HasSimpleAction(state, actionType))
+            {
+                continue;
+            }
+
+            var code = $"game.action.{actionType}".Trim();
+            UpsertOrRemoveShortcut(
+                code: code,
+                supported: true,
+                create: () => new ShortcutDefinition(
+                    char.ToLowerInvariant(key[0]),
+                    _simpleActionCommand,
+                    commandParameter: actionType,
+                    description: $"Action: {actionType}",
+                    code: code,
+                    availableInGame: true));
+        }
+    }
+
+    private static bool HasSimpleAction(GameStateDto state, string actionType)
+    {
+        if (string.IsNullOrWhiteSpace(actionType))
+        {
+            return false;
+        }
+
+        var actions = state.Actions;
+        if (actions == null || actions.Count == 0)
+        {
+            return false;
+        }
+
+        foreach (var action in actions)
+        {
+            if (!string.Equals(action.Type, actionType, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            var payload = action.Payload;
+            if (payload.ValueKind == System.Text.Json.JsonValueKind.Undefined ||
+                payload.ValueKind == System.Text.Json.JsonValueKind.Null)
+            {
+                return true;
+            }
+
+            if (payload.ValueKind == System.Text.Json.JsonValueKind.Object)
+            {
+                return !payload.EnumerateObject().Any();
+            }
+
+            return false;
+        }
+
+        return false;
     }
 }

@@ -1,12 +1,9 @@
-import { Test } from '@nestjs/testing';
-import { DameNatureModule } from '../dame-nature.module';
 import { DameNatureService } from '../dame-nature.service';
+import { createDameNatureTestingModule } from './dame-nature-test-harness';
 
 describe('DameNature scenario (smoke)', () => {
   it('plays multiple actions without crashing', async () => {
-    const moduleRef = await Test.createTestingModule({
-      imports: [DameNatureModule],
-    }).compile();
+    const moduleRef = await createDameNatureTestingModule();
     const game = moduleRef.get(DameNatureService);
 
     let state: any = game.hydrateInitialState({
