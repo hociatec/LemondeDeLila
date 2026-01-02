@@ -27,6 +27,10 @@ public sealed class PresenceMonitor : IPresenceMonitor, IAsyncDisposable
     private bool _started;
     private string _status = "Présence déconnectée.";
     private WebSocketState _state = WebSocketState.Disconnected;
+    private CancellationTokenSource? _reconnectCts;
+    private Task? _reconnectLoop;
+    private int _reconnectAttempt;
+    private int _reconnectInProgress;
 
     private string _pendingContextJson = JsonSerializer.Serialize(new { type = "presence-context", context = "home" });
     private int? _currentRoomId;
@@ -66,36 +70,27 @@ public sealed class PresenceMonitor : IPresenceMonitor, IAsyncDisposable
         }
 
         _started = true;
-        _ws = _wsFactory();
-        _ws.MessageReceived += OnMessage;
-        _ws.Error += msg =>
-        {
-            _status = $"Présence : erreur ({msg})";
-            Log.Warning("WS presence error: {Message}", msg);
-        };
-        _ws.StateChanged += state =>
-        {
-            _state = state;
-            _status = state == WebSocketState.Connected ? "Présence connectée." : "Présence déconnectée.";
-        };
+        _reconnectCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        _ = EnsureConnectedAsync(_reconnectCts.Token).ConfigureAwait(false);
 
-        try
-        {
-            var headers = await BuildHeadersAsync(cancellationToken).ConfigureAwait(false);
-            await _ws.ConnectAsync(_config.PresenceGatewayWs, token, headers: headers, cancellationToken).ConfigureAwait(false);
-            Log.Information("Connexion WS presence établie.");
-            await SendPendingContextAsync(cancellationToken).ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-            Log.Warning(ex, "Impossible de se connecter au WS presence.");
-            await StopAsync(cancellationToken).ConfigureAwait(false);
-        }
+        // Boucle de reconnexion best-effort (ex: ticket endpoint temporairement KO, coupure réseau).
+        _reconnectLoop = Task.Run(() => ReconnectLoopAsync(_reconnectCts.Token), _reconnectCts.Token);
     }
 
     public async Task StopAsync(CancellationToken cancellationToken = default)
     {
         _started = false;
+        try
+        {
+            _reconnectCts?.Cancel();
+            _reconnectCts?.Dispose();
+        }
+        catch
+        {
+            // ignore
+        }
+        _reconnectCts = null;
+
         var ws = _ws;
         _ws = null;
         if (ws != null)
@@ -158,6 +153,134 @@ public sealed class PresenceMonitor : IPresenceMonitor, IAsyncDisposable
         catch
         {
             // Best-effort
+        }
+    }
+
+    private async Task EnsureConnectedAsync(CancellationToken cancellationToken)
+    {
+        if (!_started)
+        {
+            return;
+        }
+
+        var token = _session.CurrentUser?.Token;
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            return;
+        }
+
+        // Close any previous socket before recreating.
+        var existing = _ws;
+        if (existing != null)
+        {
+            try { await existing.CloseAsync().ConfigureAwait(false); } catch { /* ignore */ }
+        }
+
+        var ws = _wsFactory();
+        _ws = ws;
+
+        ws.MessageReceived += OnMessage;
+        ws.Error += msg =>
+        {
+            _status = $"Présence : erreur ({msg})";
+            Log.Warning("WS presence error: {Message}", msg);
+        };
+        ws.StateChanged += state =>
+        {
+            _state = state;
+            if (state == WebSocketState.Connected)
+            {
+                _status = "Présence connectée.";
+                _reconnectAttempt = 0;
+                Interlocked.Exchange(ref _reconnectInProgress, 0);
+                return;
+            }
+
+            _status = "Présence déconnectée.";
+            if (_started && (state == WebSocketState.Disconnected || state == WebSocketState.Error))
+            {
+                RequestReconnect();
+            }
+        };
+
+        try
+        {
+            var headers = await BuildHeadersAsync(cancellationToken).ConfigureAwait(false);
+            await ws.ConnectAsync(_config.PresenceGatewayWs, token, headers: headers, cancellationToken).ConfigureAwait(false);
+            Log.Information("Connexion WS presence établie.");
+            await SendPendingContextAsync(cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (!cancellationToken.IsCancellationRequested)
+        {
+            _status = "Présence déconnectée.";
+            Log.Warning(ex, "Impossible de se connecter au WS presence.");
+            RequestReconnect();
+        }
+    }
+
+    private void RequestReconnect()
+    {
+        if (!_started)
+        {
+            return;
+        }
+
+        // Only one reconnect attempt at a time.
+        if (Interlocked.Exchange(ref _reconnectInProgress, 1) == 1)
+        {
+            return;
+        }
+    }
+
+    private async Task ReconnectLoopAsync(CancellationToken cancellationToken)
+    {
+        // This loop stays alive for the session; it triggers reconnect attempts when needed.
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            try
+            {
+                // If already connected, idle.
+                if (_state == WebSocketState.Connected)
+                {
+                    await Task.Delay(1000, cancellationToken).ConfigureAwait(false);
+                    continue;
+                }
+
+                if (Interlocked.CompareExchange(ref _reconnectInProgress, 0, 0) == 0)
+                {
+                    await Task.Delay(500, cancellationToken).ConfigureAwait(false);
+                    continue;
+                }
+
+                var attempt = Math.Min(6, Interlocked.Increment(ref _reconnectAttempt));
+                var delaySeconds = attempt switch
+                {
+                    1 => 1,
+                    2 => 2,
+                    3 => 5,
+                    4 => 10,
+                    5 => 20,
+                    _ => 30,
+                };
+
+                await Task.Delay(TimeSpan.FromSeconds(delaySeconds), cancellationToken).ConfigureAwait(false);
+                await EnsureConnectedAsync(cancellationToken).ConfigureAwait(false);
+
+                // EnsureConnectedAsync clears the in-progress flag on success; if not connected, keep trying.
+                if (_state != WebSocketState.Connected)
+                {
+                    Interlocked.Exchange(ref _reconnectInProgress, 1);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                return;
+            }
+            catch
+            {
+                // Best-effort: don't crash background loop.
+                await Task.Delay(2000, cancellationToken).ConfigureAwait(false);
+            }
         }
     }
 

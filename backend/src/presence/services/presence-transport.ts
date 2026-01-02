@@ -5,6 +5,7 @@ import { RedisClientFactory } from '../../common/redis/redis-client.factory';
 export type PresenceEvent = {
   players: Array<Omit<PresenceBroadcastPlayer, 'contextLocked'>>;
   origin: string | null;
+  at?: number; // epoch ms
 };
 
 export abstract class PresenceTransport {
@@ -22,7 +23,9 @@ export class RedisPresenceTransport extends PresenceTransport {
     this.transport = new RedisPubSubTransport<PresenceEvent>(
       url,
       'presence-updates',
-      redisFactory ? (u, name) => redisFactory.create(u, name, { lazyConnect: true }) : undefined,
+      redisFactory
+        ? (u, name) => redisFactory.create(u, name, { lazyConnect: true })
+        : undefined,
     );
   }
 

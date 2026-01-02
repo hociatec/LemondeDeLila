@@ -34,10 +34,15 @@ type PresencePublicPlayer = Omit<PresenceBroadcastPlayer, 'contextLocked'>;
 export class PresenceService implements OnModuleDestroy {
   private readonly logger = new Logger(PresenceService.name);
   private readonly clients = new Map<WebSocket, PresenceClient>();
+  private readonly playersByOrigin = new Map<
+    string,
+    { at: number; players: PresencePublicPlayer[] }
+  >();
   private heartbeatTimer: ReturnType<typeof setInterval> | null = null;
   private readonly pingIntervalMs = 30_000;
   private readonly pingTimeoutMs = 10_000;
   private readonly instanceId = randomUUID();
+  private readonly originTtlMs = 120_000;
   private readonly chatBanCache = new Map<
     number,
     { at: number; until: Date | null; reason: string | null }
@@ -391,9 +396,12 @@ export class PresenceService implements OnModuleDestroy {
     playersByUser: Map<number, PresenceBroadcastPlayer>,
   ): void {
     const players = this.toPublicPlayers(playersByUser);
-    this.broadcast({ type: 'presence-update', players });
+    this.playersByOrigin.set(this.instanceId, { at: Date.now(), players });
+    this.pruneOrigins();
+    const merged = this.mergePlayersFromOrigins();
+    this.broadcast({ type: 'presence-update', players: merged });
     this.transport
-      .publish({ players, origin: this.instanceId })
+      .publish({ players, origin: this.instanceId, at: Date.now() })
       .catch((err) =>
         this.logger.error('Publication presence redis échouée', err),
       );
@@ -411,11 +419,77 @@ export class PresenceService implements OnModuleDestroy {
     if (event.origin === this.instanceId) {
       return;
     }
-    this.broadcast({ type: 'presence-update', players: event.players });
+    const origin = event.origin ?? 'unknown';
+    this.playersByOrigin.set(origin, {
+      at:
+        typeof event.at === 'number' && Number.isFinite(event.at)
+          ? event.at
+          : Date.now(),
+      players: Array.isArray(event.players) ? event.players : [],
+    });
+    this.pruneOrigins();
+    const merged = this.mergePlayersFromOrigins();
+    this.broadcast({ type: 'presence-update', players: merged });
   }
 
   findClient(socket: WebSocket): PresenceClient | undefined {
     return this.clients.get(socket);
+  }
+
+  private pruneOrigins(): void {
+    const now = Date.now();
+    for (const [origin, entry] of this.playersByOrigin.entries()) {
+      if (
+        !entry ||
+        typeof entry.at !== 'number' ||
+        now - entry.at > this.originTtlMs
+      ) {
+        this.playersByOrigin.delete(origin);
+      }
+    }
+  }
+
+  private mergePlayersFromOrigins(): PresencePublicPlayer[] {
+    const combined: PresencePublicPlayer[] = [];
+    for (const entry of this.playersByOrigin.values()) {
+      combined.push(...(entry.players ?? []));
+    }
+
+    const byUser = new Map<number, PresencePublicPlayer>();
+    for (const p of combined) {
+      if (!p || typeof (p as any).id !== 'number') continue;
+      const id = (p as any).id as number;
+      if (!Number.isFinite(id) || id <= 0) continue;
+
+      const candidate: PresencePublicPlayer = {
+        id,
+        username: String((p as any).username ?? '').trim() || `user#${id}`,
+        activity:
+          (String((p as any).activity ?? 'home') as PresenceActivity) ?? 'home',
+        currentRoom: (p as any).currentRoom ?? null,
+      };
+
+      const existing = byUser.get(id);
+      if (!existing) {
+        byUser.set(id, candidate);
+        continue;
+      }
+
+      const currentScore = this.scoreActivity(existing.activity);
+      const candidateScore = this.scoreActivity(candidate.activity);
+      if (candidateScore < currentScore) {
+        byUser.set(id, candidate);
+        continue;
+      }
+
+      if (candidateScore === currentScore) {
+        if (!existing.currentRoom && candidate.currentRoom) {
+          existing.currentRoom = candidate.currentRoom;
+        }
+      }
+    }
+
+    return Array.from(byUser.values());
   }
 
   private ensureHeartbeat() {
