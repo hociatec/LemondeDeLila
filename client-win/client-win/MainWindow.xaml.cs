@@ -120,6 +120,20 @@ namespace client_win
 
                     if (isLoggedIn)
                     {
+                        // Stopper les boucles (menu/taverne) avant de jouer le son de fermeture,
+                        // sinon on entend les deux en même temps.
+                        try
+                        {
+                            Interlocked.Increment(ref _soundInitRevision);
+                            var sounds = _host.Services.GetRequiredService<ISoundService>();
+                            sounds.StopLoop(Modules.Audio.Models.SoundId.MainMenuMusic);
+                            sounds.StopLoop(Modules.Audio.Models.SoundId.TavernAmbience);
+                        }
+                        catch
+                        {
+                            // ignore
+                        }
+
                         // L'app va se fermer: laisser le temps au son de se terminer (avec un plafond)
                         // sinon MediaPlayer est coupé par Shutdown.
                         await PlayClientDisconnectedSoundAndWaitAsync(TimeSpan.FromSeconds(4)).ConfigureAwait(true);
