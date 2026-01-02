@@ -52,6 +52,10 @@ public sealed partial class AdminViewModel
         try
         {
             _maintenanceTokenStore.Save(token);
+            await _dialogs.ShowInfo(
+                    "Maintenance",
+                    "Token de maintenance enregistré.\n\nVous pouvez relancer l'action.")
+                .ConfigureAwait(true);
             return true;
         }
         catch (Exception ex)
