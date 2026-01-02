@@ -15,8 +15,6 @@ export class GameEngineStateStore {
     const redisUrl =
       this.config.get<string>('GAME_ENGINE_STATE_REDIS_URL') ??
       this.config.get<string>('SESSION_STORE_REDIS_URL') ??
-      process.env.GAME_ENGINE_STATE_REDIS_URL ??
-      process.env.SESSION_STORE_REDIS_URL ??
       null;
     if (redisUrl) {
       this.initializeRedis(redisUrl);

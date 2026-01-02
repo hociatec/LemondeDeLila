@@ -107,7 +107,22 @@ export class ServLoggerService implements LoggerService {
     logFilePath: string | null;
   } {
     // Le backend tourne généralement depuis `backend/`, donc `../log/serv.log` pointe sur la racine du repo.
-    const logDir = path.resolve(process.cwd(), '..', 'log');
+    const enabledRaw = (process.env.LOG_FILES_ENABLED || '').toLowerCase().trim();
+    const enabled =
+      enabledRaw === ''
+        ? true
+        : enabledRaw === 'true' || enabledRaw === '1' || enabledRaw === 'yes';
+    if (!enabled) {
+      return { enabled: false, logFilePath: null };
+    }
+
+    const configuredDir = (process.env.LOG_DIR || '').trim();
+    const logDir = configuredDir
+      ? path.isAbsolute(configuredDir)
+        ? configuredDir
+        : path.resolve(process.cwd(), configuredDir)
+      : path.resolve(process.cwd(), 'logs');
+
     const logFilePath = path.join(logDir, 'serv.log');
     try {
       fs.mkdirSync(logDir, { recursive: true });

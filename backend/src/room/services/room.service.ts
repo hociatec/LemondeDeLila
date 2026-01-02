@@ -732,8 +732,6 @@ export class RoomService {
     const redisUrl =
       this.config.get<string>('ROOM_PAYLOAD_REDIS_URL') ??
       this.config.get<string>('SESSION_STORE_REDIS_URL') ??
-      process.env.ROOM_PAYLOAD_REDIS_URL ??
-      process.env.SESSION_STORE_REDIS_URL ??
       null;
     if (!redisUrl) return;
     try {

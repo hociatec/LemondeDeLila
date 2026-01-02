@@ -61,6 +61,7 @@ import { BugReportsModule } from './bug-reports/bug-reports.module';
         JWT_EXPIRES_IN: Joi.string().default('12h'),
         SESSION_STORE_REDIS_URL: Joi.string().uri().optional(),
         GAME_ENGINE_STATE_REDIS_URL: Joi.string().uri().optional(),
+        ROOM_PAYLOAD_REDIS_URL: Joi.string().uri().optional(),
         CORS_ORIGINS: Joi.string().optional(),
         RATE_LIMIT_TTL: Joi.number().default(60),
         RATE_LIMIT_COUNT: Joi.number().default(120),
@@ -79,6 +80,20 @@ import { BugReportsModule } from './bug-reports/bug-reports.module';
         WS_SHARED_SECRET: Joi.string().optional(),
         REALTIME_WS_SECRET: Joi.string().optional(),
       }).custom((env, helpers) => {
+        const nodeEnv = ((env.NODE_ENV as string | undefined) || 'development').toLowerCase();
+        if (nodeEnv === 'production') {
+          if (!env.SESSION_STORE_REDIS_URL) {
+            return helpers.error('any.custom', {
+              message: 'SESSION_STORE_REDIS_URL est requis en production',
+            });
+          }
+          if (!env.GAME_ENGINE_STATE_REDIS_URL) {
+            return helpers.error('any.custom', {
+              message: 'GAME_ENGINE_STATE_REDIS_URL est requis en production',
+            });
+          }
+        }
+
         const alg = ((env.JWT_ALGORITHM as string | undefined) || '').toUpperCase();
         const hasRsa =
           !!env.JWT_PRIVATE_KEY_PEM ||

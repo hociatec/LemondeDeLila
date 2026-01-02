@@ -51,14 +51,15 @@ Ce mécanisme remplace le secret partagé statique côté client (déconseillé)
 | `JWT_SECRET` | (HS256 legacy) Secret partagé pour signer/vérifier. Ne jamais l’embarquer dans un client. |
 | `GAME_ENGINE_STATE_REDIS_URL` | Redis utilisé pour persister l’état des parties (requis pour la reprise après crash). |
 | `SESSION_STORE_REDIS_URL` | Redis pour les sessions WS/API, notifications et présence (peuvent avoir leurs URL dédiées). |
+| `ROOM_PAYLOAD_REDIS_URL` | (Optionnel) Redis pour le cache court des payloads room (sinon utilise `SESSION_STORE_REDIS_URL`). |
 | `NOTIFICATION_REDIS_URL`, `PRESENCE_REDIS_URL` | (Optionnel) Redis distincts pour partager les flux de notifications/presence entre plusieurs instances. |
 | `WS_TICKET_SECRET` | Secret serveur pour signer les tickets WS courts (ne jamais l’exposer au client). |
 | `WS_TICKET_TTL_SECONDS` | Durée de vie des tickets WS en secondes (ex: 60). |
 | `WS_SHARED_SECRET` | Legacy : ancien secret partagé côté client pour `/ws` (compat clients anciens uniquement). |
 | `DATABASE_URL` | Optionnel : connexion MySQL complète (`mysql://user:pwd@host:3306/db`). Sinon utiliser `DB_HOST`, `DB_USER`, etc. |
-| `CORS_ORIGINS` | Liste d’origines autorisées (séparées par des virgules). Laisser vide pour autoriser tout en dev. |
+| `CORS_ORIGINS` | Liste d’origines autorisées (séparées par des virgules). En production, si vide : CORS est désactivé. |
 | `RATE_LIMIT_TTL` / `RATE_LIMIT_COUNT` | Fenêtre (s) et nombre de requêtes maximum pour le throttling global. |
-| `LOG_DIR`, `LOG_FILES_ENABLED`, `LOG_LEVEL` | Contrôlent l’écriture des logs Winston (dossier, activation fichiers, niveau). |
+| `LOG_DIR`, `LOG_FILES_ENABLED`, `LOG_LEVEL` | Contrôlent l’écriture des logs Winston (dossier, activation fichiers, niveau). En container : préférer `LOG_FILES_ENABLED=false` pour loguer sur stdout. |
 
 ## Tests
 

@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -17,6 +18,7 @@ import {
 
 @Injectable()
 export class UserAuthService {
+  private readonly logger = new Logger(UserAuthService.name);
   private readonly jwtSigningKey: string;
   private readonly jwtAlgorithm: jwt.Algorithm;
   private readonly jwtExpiresIn: string;
@@ -75,7 +77,10 @@ export class UserAuthService {
       ok = await bcrypt.compare(password, normalizedHash);
     } catch (err) {
       // En cas de hash invalide ou corruption, on log et on renvoie 401 générique
-      console.error('Erreur bcrypt.compare', err);
+      this.logger.error(
+        'Erreur bcrypt.compare',
+        err instanceof Error ? err.stack : String(err),
+      );
       throw new UnauthorizedException('Identifiants invalides');
     }
     if (!ok) {

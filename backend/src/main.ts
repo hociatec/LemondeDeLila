@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { LilaWsAdapter } from './common/ws/lila-ws.adapter';
 import helmet from 'helmet';
 import compression from 'compression';
@@ -10,10 +10,10 @@ import * as express from 'express';
 import * as path from 'path';
 import * as fs from 'fs';
 
-function writeUpdatesLandingPage(updatesDir: string) {
+const bootstrapLogger = new Logger('bootstrap');
+
+function buildUpdatesLandingPageHtml(updatesDir: string): string {
   try {
-    const indexPath = path.join(updatesDir, 'index.html');
-    if (fs.existsSync(indexPath)) return;
 
     const entries = fs.readdirSync(updatesDir, { withFileTypes: true });
     const application = entries
@@ -79,9 +79,20 @@ function writeUpdatesLandingPage(updatesDir: string) {
     </div>
   </body>
 </html>`;
-    fs.writeFileSync(indexPath, html, 'utf-8');
+    return html;
   } catch {
-    // best-effort
+    return `<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Le Monde de Lila - Mise à jour</title>
+  </head>
+  <body>
+    <h1>Mise à jour du client</h1>
+    <div>Aucun package disponible pour le moment.</div>
+  </body>
+</html>`;
   }
 }
 
@@ -104,12 +115,26 @@ async function bootstrap() {
   } catch {
     /* ignore */
   }
-  writeUpdatesLandingPage(updatesDir);
+  // Landing page is generated dynamically (no filesystem writes).
   app.use(
     '/updates/client-win',
     // ClickOnce manifeste utilise souvent des chemins Windows (backslashes).
     // Si le client demande des URLs contenant "\" ou "%5C", normaliser vers "/" pour éviter
     // des 404 qui se traduisent côté ClickOnce par "Des fichiers manquent".
+    (req: any, res: any, next: any) => {
+      try {
+        const url = typeof req?.url === 'string' ? req.url : '';
+        const pathname = url.split('?')[0] || '';
+        if (pathname === '' || pathname === '/' || pathname === '/index.html') {
+          res.setHeader('Content-Type', 'text/html; charset=utf-8');
+          res.status(200).send(buildUpdatesLandingPageHtml(updatesDir));
+          return;
+        }
+      } catch {
+        // ignore (best-effort)
+      }
+      next();
+    },
     (req: any, _res: any, next: any) => {
       try {
         if (typeof req?.url === 'string' && (req.url.includes('\\') || /%5c/i.test(req.url))) {
@@ -141,9 +166,10 @@ async function bootstrap() {
         .map((origin) => origin.trim())
         .filter(Boolean)
     : null;
+  const nodeEnv = (config.get<string>('NODE_ENV') || 'development').toLowerCase();
   app.enableCors({
-    origin: origins && origins.length > 0 ? origins : true,
-    credentials: true,
+    origin: origins && origins.length > 0 ? origins : nodeEnv === 'production' ? false : true,
+    credentials: origins && origins.length > 0,
   });
   app.useWebSocketAdapter(new LilaWsAdapter(app));
   app.useGlobalPipes(
@@ -155,20 +181,12 @@ async function bootstrap() {
   );
   const port = config.get<number>('PORT', 3000);
   await app.listen(port);
-  // Ensure we have a startup marker even when logs are redirected by systemd.
-  try {
-    // eslint-disable-next-line no-console
-    console.log(`[bootstrap] listening on ${port}`);
-  } catch {
-    /* ignore */
-  }
+  bootstrapLogger.log(`listening on ${port}`);
 }
 bootstrap().catch((err) => {
-  try {
-    // eslint-disable-next-line no-console
-    console.error('[bootstrap] failed', err);
-  } catch {
-    /* ignore */
-  }
+  bootstrapLogger.error(
+    'failed',
+    err instanceof Error ? err.stack : String(err),
+  );
   process.exit(1);
 });

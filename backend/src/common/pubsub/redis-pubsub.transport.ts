@@ -1,15 +1,15 @@
-import { createClient, RedisClientType } from 'redis';
+import Redis from 'ioredis';
 
 export class RedisPubSubTransport<TEvent> {
-  private readonly publisher: RedisClientType;
-  private readonly subscriber: RedisClientType;
+  private readonly publisher: Redis;
+  private readonly subscriber: Redis;
 
   constructor(
     private readonly url: string,
     private readonly channel: string,
   ) {
-    this.publisher = createClient({ url: this.url });
-    this.subscriber = createClient({ url: this.url });
+    this.publisher = new Redis(this.url, { lazyConnect: true });
+    this.subscriber = new Redis(this.url, { lazyConnect: true });
   }
 
   async connect(): Promise<void> {
@@ -21,7 +21,8 @@ export class RedisPubSubTransport<TEvent> {
   }
 
   async subscribe(handler: (event: TEvent) => void): Promise<void> {
-    await this.subscriber.subscribe(this.channel, (message) => {
+    this.subscriber.on('message', (channel, message) => {
+      if (channel !== this.channel) return;
       try {
         const parsed = JSON.parse(message) as TEvent;
         handler(parsed);
@@ -29,6 +30,7 @@ export class RedisPubSubTransport<TEvent> {
         /* ignore malformed payloads */
       }
     });
+    await this.subscriber.subscribe(this.channel);
   }
 
   async disconnect(): Promise<void> {
