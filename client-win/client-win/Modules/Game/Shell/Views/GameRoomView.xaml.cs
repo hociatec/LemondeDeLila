@@ -180,12 +180,6 @@ public partial class GameRoomView : UserControl
 
         if (GameZoneHost?.IsKeyboardFocusWithin == true)
         {
-            if (shift)
-            {
-                FocusGameZone();
-                return;
-            }
-
             FocusHistory();
             return;
         }
