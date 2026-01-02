@@ -52,6 +52,7 @@ internal enum AdminPage
     SoundsPrivateMessages,
     SoundDetails,
     BugReports,
+    BugReportsStatusReports,
     BugReportCreate,
     BugReportDetails,
     BugReportEdit,

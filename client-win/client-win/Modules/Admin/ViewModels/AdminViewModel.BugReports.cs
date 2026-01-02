@@ -10,6 +10,7 @@ public sealed partial class AdminViewModel
     private AdminBugReportDto[] _loadedBugReports = Array.Empty<AdminBugReportDto>();
     private AdminBugReportDto? _selectedBugReport;
     private AdminBugReportCommentDto[] _loadedBugReportComments = Array.Empty<AdminBugReportCommentDto>();
+    private AdminBugReportStatus? _bugReportsListStatus;
 
     private void UpsertLoadedBugReport(AdminBugReportDto report)
     {
@@ -93,12 +94,21 @@ public sealed partial class AdminViewModel
         }
         else
         {
-            var sorted = _loadedBugReports
+            Items.Add(new AdminMenuItem($"En attente ({_loadedBugReports.Count(r => r.Status == AdminBugReportStatus.Pending)})", tag: "bugReports.list.pending"));
+            Items.Add(new AdminMenuItem($"En cours ({_loadedBugReports.Count(r => r.Status == AdminBugReportStatus.InProgress)})", tag: "bugReports.list.in_progress"));
+            Items.Add(new AdminMenuItem($"\u00C0 tester ({_loadedBugReports.Count(r => r.Status == AdminBugReportStatus.ToTest)})", tag: "bugReports.list.to_test"));
+            Items.Add(new AdminMenuItem($"Termin\u00E9 ({_loadedBugReports.Count(r => r.Status == AdminBugReportStatus.Done)})", tag: "bugReports.list.done"));
+            Items.Add(new AdminMenuItem($"Refus\u00E9 ({_loadedBugReports.Count(r => r.Status == AdminBugReportStatus.Rejected)})", tag: "bugReports.list.rejected"));
+
+            var sorted = Array.Empty<AdminBugReportDto>()
                 .OrderBy(r => r.Status switch
                 {
                     AdminBugReportStatus.Done => 0,
                     AdminBugReportStatus.InProgress => 1,
-                    _ => 2
+                    AdminBugReportStatus.Pending => 2,
+                    AdminBugReportStatus.ToTest => 3,
+                    AdminBugReportStatus.Rejected => 4,
+                    _ => 99
                 })
                 .ToArray();
 
@@ -110,6 +120,8 @@ public sealed partial class AdminViewModel
                 {
                     AdminBugReportStatus.InProgress => "En cours",
                     AdminBugReportStatus.Done => "Terminé",
+                    AdminBugReportStatus.ToTest => "\u00C0 tester",
+                    AdminBugReportStatus.Rejected => "Refus\u00E9",
                     _ => "En attente"
                 };
                 if (!string.Equals(currentSection, status, StringComparison.Ordinal))
@@ -124,6 +136,47 @@ public sealed partial class AdminViewModel
 
         SelectedItem = Items.FirstOrDefault();
         Status = "Entrée : sélectionner. Échap : retour.";
+        UpdateFilterVisibility();
+        RestoreFocusIfAny();
+    }
+
+    private void BuildBugReportsStatusReports(AdminBugReportStatus status)
+    {
+        _page = AdminPage.BugReportsStatusReports;
+        _bugReportsListStatus = status;
+
+        var title = status switch
+        {
+            AdminBugReportStatus.InProgress => "En cours",
+            AdminBugReportStatus.ToTest => "\u00C0 tester",
+            AdminBugReportStatus.Done => "Termin\u00E9",
+            AdminBugReportStatus.Rejected => "Refus\u00E9",
+            _ => "En attente"
+        };
+
+        Title = $"Rapports - {title}";
+        Details = string.Empty;
+        IsTextInputVisible = false;
+        IsSecondaryInputVisible = false;
+        IsAdditionalPermissionsVisible = false;
+        Items.Clear();
+
+        var reports = _loadedBugReports.Where(r => r.Status == status).ToArray();
+        if (reports.Length == 0)
+        {
+            Items.Add(new AdminMenuItem("Aucun rapport."));
+        }
+        else
+        {
+            foreach (var r in reports)
+            {
+                var subject = string.IsNullOrWhiteSpace(r.Subject) ? "(sans sujet)" : r.Subject.Trim();
+                Items.Add(new AdminMenuItem(subject, tag: r));
+            }
+        }
+
+        SelectedItem = Items.FirstOrDefault();
+        Status = "Entr\u00E9e : ouvrir. \u00C9chap : retour.";
         UpdateFilterVisibility();
         RestoreFocusIfAny();
     }
@@ -192,6 +245,8 @@ public sealed partial class AdminViewModel
         {
             AdminBugReportStatus.InProgress => "Statut: En cours\n",
             AdminBugReportStatus.Done => "Statut: Terminé\n",
+            AdminBugReportStatus.ToTest => "Statut: \u00C0 tester\n",
+            AdminBugReportStatus.Rejected => "Statut: Refus\u00E9\n",
             _ => string.Empty
         };
         Details =
@@ -216,6 +271,10 @@ public sealed partial class AdminViewModel
         if (report.Status != AdminBugReportStatus.InProgress)
         {
             Items.Add(new AdminMenuItem("Passer en: En cours", tag: "bugReports.status.in_progress"));
+        }
+        if (report.Status != AdminBugReportStatus.ToTest)
+        {
+            Items.Add(new AdminMenuItem("Passer en: \u00C0 tester", tag: "bugReports.status.to_test"));
         }
         if (report.Status != AdminBugReportStatus.Done)
         {
@@ -290,6 +349,10 @@ public sealed partial class AdminViewModel
         Items.Clear();
         Items.Add(new AdminMenuItem("Ajouter un commentaire", tag: "bugReports.comments.add"));
         Items.Add(new AdminMenuItem("Rafraîchir", tag: "bugReports.comments.refresh"));
+        if (report.Status != AdminBugReportStatus.Rejected)
+        {
+            Items.Add(new AdminMenuItem("Passer en: Refus\u00E9", tag: "bugReports.status.rejected"));
+        }
         SelectedItem = Items.FirstOrDefault();
         Status = "Entrée : action. Échap : retour.";
         UpdateFilterVisibility();

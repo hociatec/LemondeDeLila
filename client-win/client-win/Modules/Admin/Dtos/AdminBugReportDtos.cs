@@ -7,6 +7,8 @@ public enum AdminBugReportStatus
 {
     Pending,
     InProgress,
+    ToTest,
+    Rejected,
     Done
 }
 
@@ -28,6 +30,8 @@ public sealed class AdminBugReportDto
     public AdminBugReportStatus Status => StatusRaw switch
     {
         "in_progress" => AdminBugReportStatus.InProgress,
+        "to_test" => AdminBugReportStatus.ToTest,
+        "rejected" => AdminBugReportStatus.Rejected,
         "done" => AdminBugReportStatus.Done,
         _ => AdminBugReportStatus.Pending
     };

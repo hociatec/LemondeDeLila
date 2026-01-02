@@ -104,6 +104,43 @@ public sealed partial class AdminViewModel
                     BuildBugReportCreate();
                     return;
                 }
+                if (bugListAction == "bugReports.list.pending")
+                {
+                    PushReturnFocus();
+                    BuildBugReportsStatusReports(AdminBugReportStatus.Pending);
+                    return;
+                }
+                if (bugListAction == "bugReports.list.in_progress")
+                {
+                    PushReturnFocus();
+                    BuildBugReportsStatusReports(AdminBugReportStatus.InProgress);
+                    return;
+                }
+                if (bugListAction == "bugReports.list.to_test")
+                {
+                    PushReturnFocus();
+                    BuildBugReportsStatusReports(AdminBugReportStatus.ToTest);
+                    return;
+                }
+                if (bugListAction == "bugReports.list.done")
+                {
+                    PushReturnFocus();
+                    BuildBugReportsStatusReports(AdminBugReportStatus.Done);
+                    return;
+                }
+                if (bugListAction == "bugReports.list.rejected")
+                {
+                    PushReturnFocus();
+                    BuildBugReportsStatusReports(AdminBugReportStatus.Rejected);
+                    return;
+                }
+            }
+
+            if (_page == AdminPage.BugReportsStatusReports && tag is AdminBugReportDto reportFromStatus)
+            {
+                PushReturnFocus();
+                BuildBugReportDetails(reportFromStatus);
+                return;
             }
 
             if (_page == AdminPage.BugReports && tag is AdminBugReportDto report)
@@ -151,6 +188,16 @@ public sealed partial class AdminViewModel
                 if (bugDetailsAction == "bugReports.status.done")
                 {
                     await UpdateBugReportStatusAsync("done").ConfigureAwait(true);
+                    return;
+                }
+                if (bugDetailsAction == "bugReports.status.to_test")
+                {
+                    await UpdateBugReportStatusAsync("to_test").ConfigureAwait(true);
+                    return;
+                }
+                if (bugDetailsAction == "bugReports.status.rejected")
+                {
+                    await UpdateBugReportStatusAsync("rejected").ConfigureAwait(true);
                     return;
                 }
             }

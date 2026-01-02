@@ -7,7 +7,12 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-export type BugReportStatus = 'pending' | 'in_progress' | 'done';
+export type BugReportStatus =
+  | 'pending'
+  | 'in_progress'
+  | 'to_test'
+  | 'done'
+  | 'rejected';
 
 @Entity({ name: 'bug_reports' })
 @Index('idx_bug_reports_status', ['status'])

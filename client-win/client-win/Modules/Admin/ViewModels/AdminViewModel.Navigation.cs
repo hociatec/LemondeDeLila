@@ -122,6 +122,12 @@ public sealed partial class AdminViewModel
             return AdminNavResult.Moved;
         }
 
+        if (_page == AdminPage.BugReportsStatusReports)
+        {
+            BuildBugReports();
+            return AdminNavResult.Moved;
+        }
+
         if (_page == AdminPage.BugReportEdit)
         {
             if (_selectedBugReport != null)
@@ -161,9 +167,22 @@ public sealed partial class AdminViewModel
             return AdminNavResult.Moved;
         }
 
-        if (_page is AdminPage.BugReportCreate or AdminPage.BugReportDetails)
+        if (_page is AdminPage.BugReportCreate)
         {
             BuildBugReports();
+            return AdminNavResult.Moved;
+        }
+
+        if (_page is AdminPage.BugReportDetails)
+        {
+            if (_bugReportsListStatus.HasValue)
+            {
+                BuildBugReportsStatusReports(_bugReportsListStatus.Value);
+            }
+            else
+            {
+                BuildBugReports();
+            }
             return AdminNavResult.Moved;
         }
 
