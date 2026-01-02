@@ -52,6 +52,7 @@ public sealed class OptionsViewModel : ObservableObject
             if (Update(() => _state.MuteAll, v => _state.MuteAll = v, value))
             {
                 OnPropertyChanged(nameof(IsVolumeEnabled));
+                OnPropertyChanged(nameof(IsAmbienceVolumeEnabled));
                 OnPropertyChanged(nameof(IsAppLaunchVolumeEnabled));
                 OnPropertyChanged(nameof(IsNavigateVolumeEnabled));
                 OnPropertyChanged(nameof(IsSelectVolumeEnabled));
@@ -64,6 +65,18 @@ public sealed class OptionsViewModel : ObservableObject
     {
         get => _state.ConfirmExit;
         set => Update(() => _state.ConfirmExit, v => _state.ConfirmExit = v, value);
+    }
+
+    public bool SoundAmbience
+    {
+        get => _state.SoundAmbience;
+        set
+        {
+            if (Update(() => _state.SoundAmbience, v => _state.SoundAmbience = v, value))
+            {
+                OnPropertyChanged(nameof(IsAmbienceVolumeEnabled));
+            }
+        }
     }
 
     public bool SoundAppLaunch
@@ -120,6 +133,11 @@ public sealed class OptionsViewModel : ObservableObject
         set => Update(() => _state.SoundAppLaunchVolume, v => _state.SoundAppLaunchVolume = v, value);
     }
 
+    public int SoundAmbienceVolume
+    {
+        get => _state.SoundAmbienceVolume;
+        set => Update(() => _state.SoundAmbienceVolume, v => _state.SoundAmbienceVolume = v, value);
+    }
 
     public int SoundNavigateVolume
     {
@@ -152,6 +170,7 @@ public sealed class OptionsViewModel : ObservableObject
     }
 
     public bool IsVolumeEnabled => !MuteAll;
+    public bool IsAmbienceVolumeEnabled => IsVolumeEnabled && SoundAmbience;
     public bool IsAppLaunchVolumeEnabled => IsVolumeEnabled && SoundAppLaunch;
     public bool IsNavigateVolumeEnabled => IsVolumeEnabled && SoundNavigate;
     public bool IsSelectVolumeEnabled => IsVolumeEnabled && SoundSelect;

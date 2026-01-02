@@ -69,16 +69,16 @@ public sealed class SoundService : ISoundService, IDisposable
                 // Le son uploadé sera automatiquement utilisé via RemoteSoundCache.
                 DefaultRelativePath: Path.Combine("Assets", "Sounds", "roomopened.mp3"),
                 OverridePath: null,
-                IsEnabled: () => !_options.Current.MuteAll,
-                Volume: () => 0.25),
+                IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundAmbience,
+                Volume: () => Clamp01(_options.Current.SoundAmbienceVolume / 100.0)),
             [SoundId.TavernAmbience] = new SoundEntry(
                 // PLACEHOLDER: Ce fichier par défaut n'est pas approprié pour une ambiance de taverne.
                 // L'administrateur doit uploader une vraie ambiance via l'interface admin.
                 // Le son uploadé sera automatiquement utilisé via RemoteSoundCache.
                 DefaultRelativePath: Path.Combine("Assets", "Sounds", "roomopened.mp3"),
                 OverridePath: null,
-                IsEnabled: () => !_options.Current.MuteAll,
-                Volume: () => 0.20),
+                IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundAmbience,
+                Volume: () => Clamp01(_options.Current.SoundAmbienceVolume / 100.0)),
             [SoundId.ChatMessageSent] = new SoundEntry(
                 DefaultRelativePath: Path.Combine("Assets", "Sounds", "envoimsgtchat.mp3"),
                 OverridePath: () => _options.Current.SoundChatMessageSentPath,

@@ -4,10 +4,12 @@ public sealed class OptionsState
 {
     public bool MuteAll { get; set; } = false;
     public bool ConfirmExit { get; set; } = false;
+    public bool SoundAmbience { get; set; } = true;
     public bool SoundAppLaunch { get; set; } = true;
     public bool SoundNavigate { get; set; } = true;
     public bool SoundSelect { get; set; } = true;
     public bool SoundChatMessages { get; set; } = true;
+    public int SoundAmbienceVolume { get; set; } = 25;
     public int SoundAppLaunchVolume { get; set; } = 50;
     public int SoundNavigateVolume { get; set; } = 50;
     public int SoundSelectVolume { get; set; } = 50;
