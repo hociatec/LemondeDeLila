@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { readJsonFileWithFallback } from '../../../common/utils/mojibake';
 import { GameContentError } from '../../../common/errors/game-errors';
@@ -31,6 +32,7 @@ export interface ContentLoadConfig<T = any> {
 interface CachedContent {
   value: any;
   loadedAt: number;
+  fileMtimeMs: number | null;
 }
 
 /**
@@ -177,17 +179,16 @@ export class GameContentLoaderService {
    */
   loadContent<T = any>(config: ContentLoadConfig<T>): T {
     const cacheKey = this.buildCacheKey(config);
+    const filePath = this.buildPath(config);
+    const currentMtimeMs = this.tryGetFileMtimeMs(filePath);
 
     // Check cache
     if (this.cache.has(cacheKey)) {
       const cached = this.cache.get(cacheKey)!;
-      if (this.isCacheValid(cached, config.ttl)) {
+      if (this.isCacheValid(cached, config.ttl, currentMtimeMs)) {
         return cached.value as T;
       }
     }
-
-    // Build file path
-    const filePath = this.buildPath(config);
 
     try {
       // Load JSON with encoding fallback
@@ -203,6 +204,7 @@ export class GameContentLoaderService {
       this.cache.set(cacheKey, {
         value,
         loadedAt: Date.now(),
+        fileMtimeMs: currentMtimeMs,
       });
 
       // Log if logger provided
@@ -260,9 +262,27 @@ export class GameContentLoaderService {
    * @param ttl - Time-to-live in milliseconds (undefined = cache forever)
    * @returns True if cache is still valid
    */
-  private isCacheValid(cached: CachedContent, ttl?: number): boolean {
+  private isCacheValid(
+    cached: CachedContent,
+    ttl: number | undefined,
+    currentMtimeMs: number | null,
+  ): boolean {
+    // If the underlying file changed (e.g. deployment updated JSON assets),
+    // invalidate cache even when ttl is not set.
+    if (cached.fileMtimeMs !== currentMtimeMs) {
+      return false;
+    }
+
     if (!ttl) return true; // No TTL means cache forever
     return Date.now() - cached.loadedAt < ttl;
+  }
+
+  private tryGetFileMtimeMs(filePath: string): number | null {
+    try {
+      return fs.statSync(filePath).mtimeMs;
+    } catch {
+      return null;
+    }
   }
 
   /**
