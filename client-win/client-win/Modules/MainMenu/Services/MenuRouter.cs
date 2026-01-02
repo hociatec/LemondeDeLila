@@ -249,6 +249,79 @@ public sealed class MenuRouter : IMenuRouter
                 target.UpdateLayout();
                 System.Windows.Input.Keyboard.ClearFocus();
 
+                static bool TryFocusList(System.Windows.Controls.ListBox list)
+                {
+                    if (!list.IsVisible || !list.IsEnabled)
+                    {
+                        return false;
+                    }
+
+                    if (list.Items.Count == 0)
+                    {
+                        list.Focus();
+                        System.Windows.Input.Keyboard.Focus(list);
+                        return true;
+                    }
+
+                    if (list.SelectedIndex < 0)
+                    {
+                        list.SelectedIndex = 0;
+                    }
+
+                    void FocusSelectedItem()
+                    {
+                        list.UpdateLayout();
+                        list.ScrollIntoView(list.SelectedItem ?? list.Items[list.SelectedIndex]);
+                        if (list.ItemContainerGenerator.ContainerFromIndex(list.SelectedIndex) is System.Windows.Controls.ListBoxItem item)
+                        {
+                            item.Focus();
+                            System.Windows.Input.Keyboard.Focus(item);
+                            return;
+                        }
+
+                        list.Focus();
+                        System.Windows.Input.Keyboard.Focus(list);
+                    }
+
+                    if (list.ItemContainerGenerator.Status == System.Windows.Controls.Primitives.GeneratorStatus.ContainersGenerated)
+                    {
+                        FocusSelectedItem();
+                        return true;
+                    }
+
+                    EventHandler? handler = null;
+                    handler = (_, __) =>
+                    {
+                        if (list.ItemContainerGenerator.Status != System.Windows.Controls.Primitives.GeneratorStatus.ContainersGenerated)
+                        {
+                            return;
+                        }
+
+                        list.ItemContainerGenerator.StatusChanged -= handler;
+                        FocusSelectedItem();
+                    };
+                    list.ItemContainerGenerator.StatusChanged += handler;
+                    return true;
+                }
+
+                // Catalog (taverne): revenir sur l'action/catégorie sélectionnée (ex: "Rejoindre une partie").
+                if (target.FindName("ActionsList") is System.Windows.Controls.ListBox actions && TryFocusList(actions))
+                {
+                    return;
+                }
+                if (target.FindName("CategoriesList") is System.Windows.Controls.ListBox categories && TryFocusList(categories))
+                {
+                    return;
+                }
+                if (target.FindName("SubCategoriesList") is System.Windows.Controls.ListBox subCategories && TryFocusList(subCategories))
+                {
+                    return;
+                }
+                if (target.FindName("GamesList") is System.Windows.Controls.ListBox games && TryFocusList(games))
+                {
+                    return;
+                }
+
                 // MainMenu / Stats / Leaderboard utilisent souvent "ItemsList".
                 if (target.FindName("ItemsList") is System.Windows.Controls.ListBox list)
                 {
