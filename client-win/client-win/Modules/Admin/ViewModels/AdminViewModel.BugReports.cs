@@ -261,6 +261,7 @@ public sealed partial class AdminViewModel
         IsSecondaryInputVisible = false;
         IsAdditionalPermissionsVisible = false;
         Items.Clear();
+        Items.Add(new AdminMenuItem("Consulter", tag: "bugReports.consult"));
         Items.Add(new AdminMenuItem("Commentaires", tag: "bugReports.comments"));
         Items.Add(new AdminMenuItem("Modifier", tag: "bugReports.edit"));
         Items.Add(new AdminMenuItem("Supprimer", tag: "bugReports.delete"));
@@ -282,6 +283,84 @@ public sealed partial class AdminViewModel
         }
         SelectedItem = Items.FirstOrDefault();
         Status = "Entrée : action. Échap : retour.";
+        UpdateFilterVisibility();
+        RestoreFocusIfAny();
+    }
+
+    private async Task LoadBugReportConsultAsync(AdminBugReportDto report)
+    {
+        if (IsBusy)
+        {
+            return;
+        }
+
+        _page = AdminPage.BugReportConsult;
+        _selectedBugReport = report;
+        Title = "Rapport - Consultation";
+        Details = string.Empty;
+        IsTextInputVisible = false;
+        IsSecondaryInputVisible = false;
+        IsAdditionalPermissionsVisible = false;
+        Items.Clear();
+        SelectedItem = null;
+        Status = "Chargement...";
+
+        IsBusy = true;
+        try
+        {
+            var res = await _admin.ListBugReportCommentsAsync(report.Id).ConfigureAwait(true);
+            _loadedBugReportComments = (res.Items ?? new()).ToArray();
+            BuildBugReportConsult(report);
+        }
+        catch (Exception ex)
+        {
+            await _dialogs.ShowError("Rapport", ex.Message).ConfigureAwait(true);
+            BuildBugReportDetails(report);
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private void BuildBugReportConsult(AdminBugReportDto report)
+    {
+        _page = AdminPage.BugReportConsult;
+        _selectedBugReport = report;
+
+        Title = "Rapport - Consultation";
+        var statusLine = report.Status switch
+        {
+            AdminBugReportStatus.InProgress => "Statut: En cours\n",
+            AdminBugReportStatus.Done => "Statut: TerminÇ¸\n",
+            AdminBugReportStatus.ToTest => "Statut: \u00C0 tester\n",
+            AdminBugReportStatus.Rejected => "Statut: Refus\u00E9\n",
+            _ => string.Empty
+        };
+
+        var header =
+            statusLine +
+            $"Par: {report.CreatedByUsername} (id {report.CreatedByUserId})\n" +
+            $"CrÇ¸Ç¸: {report.CreatedAt}\n" +
+            $"Maj: {report.UpdatedAt}\n" +
+            $"Sujet: {report.Subject}\n\n" +
+            $"{report.Content}";
+
+        var commentsBlock = _loadedBugReportComments.Length == 0
+            ? "Aucun commentaire."
+            : string.Join(
+                "\n\n---\n\n",
+                _loadedBugReportComments.Select(c =>
+                    $"[{c.CreatedAt}] {c.CreatedByUsername} (id {c.CreatedByUserId})\n{c.Content}".TrimEnd()));
+
+        Details = header + "\n\n====================\nCommentaires\n\n" + commentsBlock;
+
+        IsTextInputVisible = false;
+        IsSecondaryInputVisible = false;
+        IsAdditionalPermissionsVisible = false;
+        Items.Clear();
+        SelectedItem = null;
+        Status = "Entr\u00E9e : action. \u00C9chap : retour.";
         UpdateFilterVisibility();
         RestoreFocusIfAny();
     }

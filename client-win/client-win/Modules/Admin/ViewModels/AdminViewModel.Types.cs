@@ -56,6 +56,7 @@ internal enum AdminPage
     BugReportCreate,
     BugReportDetails,
     BugReportEdit,
+    BugReportConsult,
     BugReportComments,
     BugReportCommentCreate
 }

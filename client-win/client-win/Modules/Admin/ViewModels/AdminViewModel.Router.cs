@@ -164,6 +164,12 @@ public sealed partial class AdminViewModel
                     BuildBugReportEdit(_selectedBugReport);
                     return;
                 }
+                if (bugDetailsAction == "bugReports.consult" && _selectedBugReport != null)
+                {
+                    PushReturnFocus();
+                    await LoadBugReportConsultAsync(_selectedBugReport).ConfigureAwait(true);
+                    return;
+                }
                 if (bugDetailsAction == "bugReports.comments" && _selectedBugReport != null)
                 {
                     PushReturnFocus();
