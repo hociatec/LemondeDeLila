@@ -249,7 +249,7 @@ public sealed class SoundService : ISoundService, IDisposable
         }
         else
         {
-            _ = _dispatcher.BeginInvoke((Action)PlayOnUiThread, DispatcherPriority.Background);
+            _ = _dispatcher.BeginInvoke((Action)PlayOnUiThread, DispatcherPriority.Normal);
         }
     }
 
