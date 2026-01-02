@@ -112,6 +112,7 @@ export class PanierExpressPresenterService extends BasePresenterService {
     currentPlayerId: number | null,
   ): Record<string, unknown> {
     const playerViews = this.buildPlayerViews(state);
+    const reveal = metadata?.statuses?.revealInventory ?? {};
 
     // Ne jamais exposer les listes/panier/inventaire des autres joueurs.
     const sanitizedViews: PanierExpressPlayerView[] =
@@ -119,13 +120,18 @@ export class PanierExpressPresenterService extends BasePresenterService {
         ? playerViews.map((v) =>
             v.id === currentPlayerId
               ? v
-              : { ...v, shoppingList: [], basket: [], inventory: [] },
+              : {
+                  ...v,
+                  shoppingList: [],
+                  basket: [],
+                  inventory: (reveal as any)?.[v.id] > 0 ? v.inventory : [],
+                },
           )
         : playerViews.map((v) => ({
             ...v,
             shoppingList: [],
             basket: [],
-            inventory: [],
+            inventory: (reveal as any)?.[v.id] > 0 ? v.inventory : [],
           }));
 
     const players = sanitizedViews.map(

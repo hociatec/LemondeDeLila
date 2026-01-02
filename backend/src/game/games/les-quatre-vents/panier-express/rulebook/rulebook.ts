@@ -29,6 +29,13 @@ export function getAvailableActions(
 ): GameSingleActionDto[] {
   if ((state.status || '').toLowerCase() === 'finished') return [];
   const rawPending = state.pending as any;
+  if (rawPending && rawPending.type === 'pick' && rawPending.playerId === playerId) {
+    const choices = Array.isArray(rawPending.choices) ? rawPending.choices : [];
+    return choices.map((_, index: number) => ({
+      type: 'pick_choice',
+      payload: { index },
+    }));
+  }
   if (
     rawPending &&
     rawPending.type === 'exchange' &&
@@ -149,7 +156,7 @@ export function validateAction(
   }
 
   const current = state.turn?.currentPlayerId ?? null;
-  if (type !== 'exchange_accept' && type !== 'exchange_refuse') {
+  if (type !== 'exchange_accept' && type !== 'exchange_refuse' && type !== 'pick_choice') {
     if (current != null && actorId != null && actorId !== current) {
       throw new PlayerActionError("Ce n'est pas votre tour.", {
         gameType: 'panier-express',
@@ -163,6 +170,26 @@ export function validateAction(
 
   if (type === 'ROLL_DICE' || normalizedType === 'roll_dice') {
     return { ...action, type: 'roll', payload: {} };
+  }
+
+  if (type === 'pick_choice') {
+    const pending = state.pending as any;
+    if (!pending || pending.type !== 'pick' || pending.playerId !== actorId) {
+      throw new PlayerActionError('Aucun choix en attente.', {
+        gameType: 'panier-express',
+        playerId: actorId ?? undefined,
+      });
+    }
+    const index = normalizeNumber((payload as any).index);
+    const choices = Array.isArray(pending.choices) ? pending.choices : [];
+    if (index == null || index < 0 || index >= choices.length) {
+      throw new GameValidationError('Payload invalide: index', {
+        gameType: 'panier-express',
+        playerId: actorId ?? undefined,
+        payload,
+      });
+    }
+    return { ...action, type, payload: { index } };
   }
 
   if (type === 'answer_quiz') {

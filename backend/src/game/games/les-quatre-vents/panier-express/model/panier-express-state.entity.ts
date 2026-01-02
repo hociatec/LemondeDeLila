@@ -73,7 +73,14 @@ export type PanierExpressMetadata = {
   quiz: QuizState;
   actionLog: PanierExpressActionLogEntry[];
   botProfile: BotProfile;
+  movementDirection?: 1 | -1;
+  movementDirectionOwnerId?: number | null;
+  discards?: {
+    courses?: string[];
+  };
   statuses: {
     skipTurn: Record<number, number>;
+    keepTurn?: Record<number, number>;
+    revealInventory?: Record<number, number>;
   };
 };

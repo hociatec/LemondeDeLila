@@ -10,6 +10,7 @@ export type PanierExpressActionType =
   | 'ROLL_DICE'
   | 'roll_dice'
   | 'answer_quiz'
+  | 'pick_choice'
   | 'exchange_choose_target'
   | 'exchange_choose_give'
   | 'exchange_accept'
@@ -33,6 +34,7 @@ export const PANIER_EXPRESS_GAME: GameDefinition<
     'ROLL_DICE',
     'roll_dice',
     'answer_quiz',
+    'pick_choice',
     'exchange_choose_target',
     'exchange_choose_give',
     'exchange_accept',
@@ -45,6 +47,7 @@ export const PANIER_EXPRESS_GAME: GameDefinition<
     exchange_accept: { blocking: true },
     exchange_refuse: { blocking: true },
     answer_quiz: { blocking: true },
+    pick_choice: { blocking: true },
   },
   phaseOrder: [
     { id: 'turn', kind: 'player-action' },

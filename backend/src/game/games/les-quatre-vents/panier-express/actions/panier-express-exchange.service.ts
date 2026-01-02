@@ -9,6 +9,8 @@ import { PanierExpressDrawService } from './panier-express-draw.service';
 import type { InteractiveExchangeAdapter } from '../../../../modules/exchange/model/interactive-exchange.model';
 import { defaultExchangeTargets } from '../../../../modules/exchange/model/interactive-exchange.model';
 import { InteractiveExchangeService } from '../../../../modules/exchange/services/interactive-exchange.service';
+import { PanierExpressSetupService } from '../setup/panier-express-setup.service';
+import { RandomService } from '../../../../modules/random/services/random.service';
 
 @Injectable()
 export class PanierExpressExchangeService {
@@ -18,6 +20,8 @@ export class PanierExpressExchangeService {
     private readonly deckHelper: PanierExpressDeckService,
     private readonly drawSvc: PanierExpressDrawService,
     private readonly exchangeFlow: InteractiveExchangeService,
+    private readonly setup: PanierExpressSetupService,
+    private readonly random: RandomService,
   ) {}
 
   applyExchange(state: GameStateEntity, playerId: number): GameStateEntity {
@@ -127,6 +131,107 @@ export class PanierExpressExchangeService {
     );
   }
 
+  applyExchangeCard(
+    state: GameStateEntity,
+    initiatorPlayerId: number,
+    targetPlayerId: number,
+    card: string,
+  ): GameStateEntity {
+    const kind = String(card ?? '').trim();
+    if (!kind) return state;
+
+    if (kind === 'vol-discret') {
+      const meta = (state.metadata ?? {}) as any;
+      const target = (state.players ?? []).find((p) => p.id === targetPlayerId) as any;
+      const inv = this.utils.toStringArray(target?.inventory);
+      if (!inv.length) {
+        return this.core.appendLog(
+          state,
+          `[Panier Express] Vol discret : ${this.utils.playerName(state, targetPlayerId)} n'a aucune carte.`,
+        );
+      }
+      const metaRng = this.random.createMetaRng(meta);
+      const picked = this.random.pickOne(metaRng.getMeta() as any, inv);
+      const stolen = String(picked.value ?? '').trim();
+      if (!stolen) return state;
+
+      let next: GameStateEntity = { ...state, metadata: picked.meta as any };
+      next = {
+        ...next,
+        players: (next.players ?? []).map((p: any) => {
+          if (p.id === targetPlayerId) {
+            return { ...p, inventory: removeOne(this.utils.toStringArray(p.inventory), stolen) };
+          }
+          if (p.id === initiatorPlayerId) {
+            return addCardToPlayer(this.utils, p, stolen);
+          }
+          return p;
+        }),
+      };
+
+      return this.core.appendLog(
+        next,
+        `[Panier Express] Vol discret : ${this.utils.playerName(
+          state,
+          initiatorPlayerId,
+        )} vole "${stolen}" à ${this.utils.playerName(state, targetPlayerId)}.`,
+      );
+    }
+
+    if (kind === 'chariot-echange') {
+      const initiator = (state.players ?? []).find((p) => p.id === initiatorPlayerId) as any;
+      const target = (state.players ?? []).find((p) => p.id === targetPlayerId) as any;
+      const initiatorBasket = this.utils.toStringArray(initiator?.basket);
+      const targetBasket = this.utils.toStringArray(target?.basket);
+      const players = (state.players ?? []).map((p: any) => {
+        if (p.id === initiatorPlayerId) return { ...p, basket: targetBasket };
+        if (p.id === targetPlayerId) return { ...p, basket: initiatorBasket };
+        return p;
+      });
+      return this.core.appendLog(
+        { ...state, players },
+        `[Panier Express] Chariot échangé : ${this.utils.playerName(
+          state,
+          initiatorPlayerId,
+        )} échange son panier avec ${this.utils.playerName(state, targetPlayerId)}.`,
+      );
+    }
+
+    if (kind === 'echange-impose') {
+      const target = (state.players ?? []).find((p) => p.id === targetPlayerId) as any;
+      const inv = this.utils.toStringArray(target?.inventory);
+      if (!inv.length) {
+        return this.core.appendLog(
+          state,
+          `[Panier Express] Échange imposé : ${this.utils.playerName(state, targetPlayerId)} n'a aucune carte.`,
+        );
+      }
+      return {
+        ...state,
+        pending: {
+          type: 'pick',
+          playerId: targetPlayerId,
+          blocking: true,
+          label: `Choisissez une carte à donner à ${this.utils.playerName(
+            state,
+            initiatorPlayerId,
+          )}, puis Entrée.`,
+          choices: inv,
+          data: {
+            kind: 'exchange.impose.choose_card',
+            initiatorId: initiatorPlayerId,
+            cards: inv,
+          },
+        } as any,
+      };
+    }
+
+    return this.core.appendLog(
+      state,
+      `[Panier Express] Carte d'échange non gérée : ${kind}.`,
+    );
+  }
+
   private requestExchange(
     state: GameStateEntity,
     playerId: number,
@@ -139,13 +244,65 @@ export class PanierExpressExchangeService {
       );
     }
 
-    const draw = this.deckHelper.drawWithReplenish<string>(
-      meta,
-      'exchanges',
-      () => this.defaultExchangeDeck(),
+    const draw = this.deckHelper.drawWithReplenish<string>(meta, 'exchanges', () =>
+      this.setup.exchangeCards(),
     );
     const metadata = draw.metadata;
     const resolvedCard = draw.card ?? 'exchange';
+
+    // Certaines cartes d'échange ont des effets directs / choix spécifiques.
+    // On utilise `pending: pick` pour les cartes nécessitant un choix simple, sinon fallback sur l'échange interactif.
+    if (
+      ['vol-discret', 'chariot-echange', 'echange-impose'].includes(resolvedCard)
+    ) {
+      const targets = (state.players ?? [])
+        .filter((p) => p.id !== playerId)
+        .map((p) => ({ playerId: p.id, username: p.username }));
+      const choices = targets.map((t) => String(t.username ?? '')).filter((v) => v.length > 0);
+      if (!choices.length) {
+        return this.core.appendLog(
+          { ...state, metadata },
+          `[Panier Express] Aucun joueur disponible pour ${resolvedCard}.`,
+        );
+      }
+      return {
+        ...state,
+        metadata,
+        pending: {
+          type: 'pick',
+          playerId,
+          blocking: true,
+          label: `Choisissez un joueur pour ${resolvedCard}, puis Entrée.`,
+          choices,
+          data: { kind: 'exchange.choose_target', card: resolvedCard, targets },
+        } as any,
+      };
+    }
+
+    if (resolvedCard === 'defausse-aleatoire') {
+      const basket = this.utils.toStringArray(
+        (state.players ?? []).find((p) => p.id === playerId)?.basket,
+      );
+      if (!basket.length) {
+        return this.core.appendLog(
+          { ...state, metadata },
+          `[Panier Express] Défausse aléatoire : panier vide.`,
+        );
+      }
+      const metaRng = this.random.createMetaRng(metadata as any);
+      const picked = this.random.pickOne(metaRng.getMeta() as any, basket);
+      const card = String(picked.value ?? '').trim();
+      const updatedMeta = picked.meta as any;
+      const players = (state.players ?? []).map((p: any) => {
+        if (p.id !== playerId) return p;
+        const nextBasket = this.utils.removeOne(basket, card);
+        return { ...p, basket: nextBasket };
+      });
+      return this.core.appendLog(
+        { ...state, players, metadata: updatedMeta },
+        `[Panier Express] Défausse aléatoire : ${this.utils.playerName(state, playerId)} défausse "${card}".`,
+      );
+    }
 
     const started = this.exchangeFlow.start(
       { ...state, metadata },
@@ -231,7 +388,7 @@ export class PanierExpressExchangeService {
   }
 
   private defaultExchangeDeck(): string[] {
-    return ['echange-fruit-legume', 'donne-une-carte', 'prend-au-hasard'];
+    return this.setup.exchangeCards();
   }
 }
 

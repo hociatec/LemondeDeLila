@@ -135,6 +135,20 @@ export class PanierExpressSetupService {
       .filter((v) => v.length > 0);
   }
 
+  eventCards(): string[] {
+    return this.loadEvents()
+      .events.map((v) => String(v))
+      .map((v) => v.trim())
+      .filter((v) => v.length > 0);
+  }
+
+  exchangeCards(): string[] {
+    return this.loadExchanges()
+      .exchanges.map((v) => String(v))
+      .map((v) => v.trim())
+      .filter((v) => v.length > 0);
+  }
+
   standCourseMap(): Record<string, string[]> {
     const out: Record<string, string[]> = {};
     this.loadStands().stands.forEach((s) => {

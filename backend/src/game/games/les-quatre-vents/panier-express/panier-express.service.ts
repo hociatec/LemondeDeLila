@@ -283,6 +283,8 @@ export class PanierExpressService extends AbstractGameService {
         return this.handleRoll(state, action);
       case 'answer_quiz':
         return this.handleAnswerQuiz(state, action);
+      case 'pick_choice':
+        return this.handlePickChoice(state, action);
       case 'exchange_choose_target':
         return this.handleExchangeChooseTarget(state, action);
       case 'exchange_choose_give':
@@ -349,8 +351,13 @@ export class PanierExpressService extends AbstractGameService {
       quiz: { pending: {} },
       actionLog: [],
       botProfile: 'greedy',
+      movementDirection: 1,
+      movementDirectionOwnerId: null,
+      discards: { courses: [] },
       statuses: {
         skipTurn: {},
+        keepTurn: {},
+        revealInventory: {},
       },
     };
   }
@@ -407,11 +414,39 @@ export class PanierExpressService extends AbstractGameService {
   ): PanierExpressMetadata {
     const decks = meta.decks ?? this.setup.buildDeckPool(state);
     const quiz = meta.quiz;
-    const statuses = this.mergeStatuses({ skipTurn: {} }, meta.statuses);
+    const statuses = this.mergeStatuses(
+      { skipTurn: {}, keepTurn: {}, revealInventory: {} },
+      meta.statuses,
+    );
     const positions = this.ensurePlayerPositions(meta.positions, players);
     const actionLog = Array.isArray(meta.actionLog) ? meta.actionLog : [];
     const laps = this.ensurePlayerLaps(meta.laps, players);
-    return { ...meta, decks, quiz, statuses, positions, laps, actionLog };
+    const discards: PanierExpressMetadata['discards'] = {
+      courses: Array.isArray(meta.discards?.courses)
+        ? meta.discards?.courses.map((v) => String(v))
+        : [],
+    };
+    const movementDirection =
+      meta.movementDirection === -1 || meta.movementDirection === 1
+        ? meta.movementDirection
+        : 1;
+    const movementDirectionOwnerId =
+      typeof meta.movementDirectionOwnerId === 'number'
+        ? meta.movementDirectionOwnerId
+        : null;
+
+    return {
+      ...meta,
+      decks,
+      quiz,
+      statuses,
+      positions,
+      laps,
+      actionLog,
+      discards,
+      movementDirection,
+      movementDirectionOwnerId,
+    };
   }
 
   private ensurePlayerLaps(
@@ -450,6 +485,11 @@ export class PanierExpressService extends AbstractGameService {
   ): PanierExpressMetadata['statuses'] {
     return {
       skipTurn: { ...(defaults.skipTurn ?? {}), ...(override?.skipTurn ?? {}) },
+      keepTurn: { ...(defaults.keepTurn ?? {}), ...(override?.keepTurn ?? {}) },
+      revealInventory: {
+        ...(defaults.revealInventory ?? {}),
+        ...(override?.revealInventory ?? {}),
+      },
     };
   }
 
@@ -494,6 +534,8 @@ export class PanierExpressService extends AbstractGameService {
     const meta = this.getMetadata(state) as any;
     const rng = this.random.rollDice(meta, 6);
     const roll = rng.roll;
+    const direction = state.turn?.direction === -1 ? -1 : 1;
+    const signedRoll = roll * direction;
 
     playingLog('panier.roll', {
       roomId: (state.metadata as any)?.roomId ?? null,
@@ -516,18 +558,25 @@ export class PanierExpressService extends AbstractGameService {
     next = this.appendActionLog(next, currentId, 'roll', { roll });
 
     // Orchestration : move -> resolve tile -> check blocking -> advance turn
-    next = this.movePlayer(next, currentId, roll);
+    next = this.movePlayer(next, currentId, signedRoll);
     next = this.resolveTile(next, currentId);
 
     const metaAfter = this.getMetadata(next);
     const postActions = this.getAvailableActions(next, currentId);
     const hasBlockingQuiz = Boolean(metaAfter.quiz.pending[currentId]);
+    const hasBlockingPending = Boolean(next.pending?.blocking);
     const hasBlockingExchange = postActions.some((a) =>
       ['exchange_choose_target', 'exchange_choose_give'].includes(
         (a.type || '').toLowerCase(),
       ),
     );
-    if (!hasBlockingQuiz && !hasBlockingExchange) {
+    const keepTurn = this.turnStatus.getStatus(next, currentId, 'keepTurn');
+    if (keepTurn > 0) {
+      next = this.turnStatus.setStatus(next, currentId, 'keepTurn', 0);
+      return next;
+    }
+
+    if (!hasBlockingQuiz && !hasBlockingExchange && !hasBlockingPending) {
       next = this.phaseFlow.advanceTurn(next);
     }
     return next;
@@ -709,12 +758,7 @@ export class PanierExpressService extends AbstractGameService {
       const refilled = this.deckPool.set<string>(
         meta.decks as DeckPoolState<string>,
         'events',
-        this.deckPool.shuffle([
-          'rupture-de-stock',
-          'stand-ferme',
-          'promo-surprise',
-          'orage-au-marche',
-        ]),
+        this.deckPool.shuffle([...this.setup.eventCards()]),
       );
       drawn = this.drawFromPool(
         { ...meta, decks: refilled as PanierExpressDeckPool },
@@ -727,6 +771,92 @@ export class PanierExpressService extends AbstractGameService {
     }
     const { card: event } = drawn;
     let next: GameStateEntity = { ...ensured, metadata };
+
+    const setPickPending = (params: {
+      label: string;
+      kind: string;
+      choices: string[];
+      data?: Record<string, unknown>;
+    }): GameStateEntity => {
+      return {
+        ...next,
+        pending: {
+          type: 'pick',
+          playerId,
+          blocking: true,
+          label: params.label,
+          choices: params.choices,
+          data: { kind: params.kind, ...(params.data ?? {}) },
+        },
+      } as any;
+    };
+
+    const ensureDiscardCourses = (): string[] => {
+      const metaNow = this.getMetadata(next);
+      const current = Array.isArray(metaNow.discards?.courses)
+        ? metaNow.discards?.courses.map((v) => String(v))
+        : [];
+      return current;
+    };
+
+    const addToDiscard = (card: string): void => {
+      const trimmed = String(card ?? '').trim();
+      if (!trimmed) return;
+      const current = ensureDiscardCourses();
+      const metaNow = this.getMetadata(next);
+      next = {
+        ...next,
+        metadata: {
+          ...metaNow,
+          discards: { ...metaNow.discards, courses: [...current, trimmed] },
+        },
+      };
+    };
+
+    const removeOneCourseFromPlayer = (
+      pid: number,
+      card: string,
+    ): { updated: boolean } => {
+      const trimmed = String(card ?? '').trim();
+      if (!trimmed) return { updated: false };
+      let updated = false;
+      const players = (next.players ?? []).map((p: any) => {
+        if (p.id !== pid) return p;
+        const basket = this.utils.toStringArray(p.basket);
+        const inventory = this.utils.toStringArray(p.inventory);
+        if (basket.includes(trimmed)) {
+          updated = true;
+          return { ...p, basket: this.utils.removeOne(basket, trimmed) };
+        }
+        if (inventory.includes(trimmed)) {
+          updated = true;
+          return { ...p, inventory: this.utils.removeOne(inventory, trimmed) };
+        }
+        return p;
+      });
+      next = { ...next, players };
+      return { updated };
+    };
+
+    const discardRandomCourse = (pid: number): string | null => {
+      const player = (next.players ?? []).find((p) => p.id === pid) as any;
+      if (!player) return null;
+      const basket = this.utils.toStringArray(player.basket);
+      const inventory = this.utils.toStringArray(player.inventory);
+      const cards = [...inventory, ...basket];
+      if (!cards.length) return null;
+      const metaRng = this.random.createMetaRng(this.getMetadata(next) as any);
+      const picked = this.random.pickOne(metaRng.getMeta() as any, cards);
+      next = { ...next, metadata: picked.meta as any };
+      const card = String(picked.value ?? '').trim();
+      if (!card) return null;
+      const res = removeOneCourseFromPlayer(pid, card);
+      if (res.updated) {
+        addToDiscard(card);
+        return card;
+      }
+      return null;
+    };
     switch (event) {
       case 'stand-ferme':
         next = this.turnStatus.setStatus(next, playerId, 'skipTurn', 1);
@@ -751,28 +881,281 @@ export class PanierExpressService extends AbstractGameService {
           effect: 'draw2',
         });
         break;
-      case 'orage-au-marche':
+      case 'coup-de-chance':
         next = this.core.appendLog(
           next,
-          `[Panier Express] Orage : ${this.utils.playerName(state, playerId)} recule de 2 cases.`,
+          `[Panier Express] Coup de chance : ${this.utils.playerName(state, playerId)} avance de 2 cases.`,
         );
-        next = this.applyMoveDelta(next, playerId, -2);
+        next = this.applyMoveDelta(next, playerId, 2);
         next = this.appendActionLog(next, playerId, 'event', {
           event,
           effect: 'move',
-          delta: -2,
+          delta: 2,
         });
         break;
-      case 'rupture-de-stock':
-      default:
-        next = this.core.appendLog(
-          next,
-          `[Panier Express] Rupture de stock : aucun achat ce tour.`,
-        );
+      case 'stand-exceptionnel':
+        next = this.core.appendLog(next, `[Panier Express] Stand exceptionnel : pioche 1 course bonus.`);
+        next = this.drawSvc.drawCourse(next, playerId, 'bonus');
         next = this.appendActionLog(next, playerId, 'event', {
           event,
-          effect: 'none',
+          effect: 'draw',
         });
+        break;
+      case 'fidelite-recompensee':
+        next = this.turnStatus.setStatus(next, playerId, 'keepTurn', 1);
+        next = this.core.appendLog(next, `[Panier Express] Fidélité récompensée : rejouez immédiatement.`);
+        next = this.appendActionLog(next, playerId, 'event', {
+          event,
+          effect: 'keepTurn',
+        });
+        break;
+      case 'tirage-chanceux': {
+        const pool = (this.getMetadata(next).decks as any)?.['courses-bonus']?.deck ?? [];
+        const offered = Array.isArray(pool)
+          ? pool
+              .slice(0, 3)
+              .map((v: any) => String(v))
+              .filter((v: string) => v.length > 0)
+          : [];
+        if (!offered.length) {
+          next = this.core.appendLog(next, `[Panier Express] Tirage chanceux : aucune carte disponible.`);
+          next = this.appendActionLog(next, playerId, 'event', { event, effect: 'none' });
+          break;
+        }
+        next = setPickPending({
+          label: 'Choisissez une carte (tirage chanceux), puis Entrée.',
+          kind: 'event.tirage_chanceux',
+          choices: offered,
+          data: { cards: offered },
+        });
+        next = this.appendActionLog(next, playerId, 'event', { event, effect: 'pick' });
+        break;
+      }
+      case 'producteur-genereux': {
+        next = this.drawSvc.drawCourse(next, playerId, 'bonus');
+        const me = (next.players ?? []).find((p) => p.id === playerId) as any;
+        const inv = this.utils.toStringArray(me?.inventory);
+        const targets = (next.players ?? [])
+          .filter((p) => p.id !== playerId)
+          .map((p: any) => ({ playerId: p.id, username: p.username }));
+        if (!inv.length || !targets.length) {
+          next = this.core.appendLog(next, `[Panier Express] Producteur généreux : aucun don possible.`);
+          next = this.appendActionLog(next, playerId, 'event', { event, effect: 'none' });
+          break;
+        }
+        next = setPickPending({
+          label: 'Choisissez une carte à offrir (inventaire), puis Entrée.',
+          kind: 'event.producteur_genereux.choose_card',
+          choices: inv,
+          data: { cards: inv, targets },
+        });
+        next = this.appendActionLog(next, playerId, 'event', { event, effect: 'pick' });
+        break;
+      }
+      case 'emballage-defectueux': {
+        const me = (next.players ?? []).find((p) => p.id === playerId) as any;
+        const cards = [
+          ...this.utils.toStringArray(me?.inventory),
+          ...this.utils.toStringArray(me?.basket),
+        ];
+        if (!cards.length) {
+          next = this.core.appendLog(next, `[Panier Express] Emballage défectueux : aucune carte à défausser.`);
+          next = this.appendActionLog(next, playerId, 'event', { event, effect: 'none' });
+          break;
+        }
+        next = setPickPending({
+          label: 'Choisissez une carte à défausser, puis Entrée.',
+          kind: 'event.discard',
+          choices: cards,
+          data: { cards },
+        });
+        next = this.appendActionLog(next, playerId, 'event', { event, effect: 'pick_discard' });
+        break;
+      }
+      case 'retour-en-arriere':
+        next = this.core.appendLog(next, `[Panier Express] Retour en arrière : reculez de 3 cases.`);
+        next = this.applyMoveDelta(next, playerId, -3);
+        next = this.appendActionLog(next, playerId, 'event', {
+          event,
+          effect: 'move',
+          delta: -3,
+        });
+        break;
+      case 'inspection-sanitaire':
+        next = this.turnStatus.setStatus(next, playerId, 'revealInventory', 1);
+        next = this.core.appendLog(next, `[Panier Express] Inspection sanitaire : votre inventaire est visible (1 tour).`);
+        next = this.appendActionLog(next, playerId, 'event', { event, effect: 'reveal' });
+        break;
+      case 'file-inversee': {
+        const metaNow = this.getMetadata(next);
+        next = {
+          ...next,
+          metadata: { ...metaNow, movementDirection: -1, movementDirectionOwnerId: playerId },
+          turn: { ...(next.turn ?? { currentPlayerId: playerId, direction: 1 }), direction: -1 },
+        };
+        next = this.core.appendLog(next, `[Panier Express] File inversée : les joueurs reculent jusqu'à votre prochain tour.`);
+        next = this.appendActionLog(next, playerId, 'event', { event, effect: 'reverse' });
+        break;
+      }
+      case 'don-du-maraicher':
+        next = this.core.appendLog(next, `[Panier Express] Don du maraîcher : pioche 1 course bonus.`);
+        next = this.drawSvc.drawCourse(next, playerId, 'bonus');
+        next = this.appendActionLog(next, playerId, 'event', { event, effect: 'draw' });
+        break;
+      case 'marche-anime':
+        (next.players ?? []).forEach((p: any) => {
+          next = this.drawSvc.drawCourse(next, p.id, 'bonus');
+        });
+        next = this.core.appendLog(next, `[Panier Express] Marché animé : tous les joueurs piochent 1 course.`);
+        next = this.appendActionLog(next, playerId, 'event', { event, effect: 'all_draw' });
+        break;
+      case 'journee-bio': {
+        const metaNow = this.getMetadata(next);
+        const tiles = Array.isArray(metaNow.tiles) ? metaNow.tiles : [];
+        const positions = metaNow.positions ?? {};
+        (next.players ?? []).forEach((p: any) => {
+          const pos = positions[p.id] ?? 0;
+          const tile = tiles[pos] as any;
+          if (tile?.type === 'stand' && String(tile.standId ?? '').startsWith('bio')) {
+            next = this.drawSvc.drawCourse(next, p.id, 'bonus');
+          }
+        });
+        next = this.core.appendLog(next, `[Panier Express] Journée bio : bonus pour les joueurs sur un stand Bio.`);
+        next = this.appendActionLog(next, playerId, 'event', { event, effect: 'multi_draw' });
+        break;
+      }
+      case 'intemperie-au-marche':
+        (next.players ?? []).forEach((p: any) => {
+          next = this.movePlayer(next, p.id, -1);
+        });
+        next = this.core.appendLog(next, `[Panier Express] Intempérie : tous les joueurs reculent d'une case.`);
+        next = this.appendActionLog(next, playerId, 'event', { event, effect: 'all_move', delta: -1 });
+        break;
+      case 'pause-fatigue': {
+        const metaNow = this.getMetadata(next);
+        const tiles = Array.isArray(metaNow.tiles) ? metaNow.tiles : [];
+        const index0 = Math.max(0, Math.min(tiles.length - 1, 39));
+        next = {
+          ...next,
+          metadata: {
+            ...metaNow,
+            positions: { ...(metaNow.positions ?? {}), [playerId]: index0 },
+          },
+        };
+        next = this.core.appendLog(next, `[Panier Express] Pause fatigue : avance jusqu'à la case 40.`);
+        next = this.appendActionLog(next, playerId, 'event', { event, effect: 'goto40' });
+        break;
+      }
+      case 'produit-oublie': {
+        const items = this.setup.courseItems();
+        const added = items.length ? items[0] : null;
+        if (added) {
+          next = {
+            ...next,
+            players: (next.players ?? []).map((p: any) => {
+              if (p.id !== playerId) return p;
+              const list = this.utils.toStringArray(p.shoppingList);
+              return { ...p, shoppingList: [...list, added] };
+            }),
+          };
+          next = this.core.appendLog(next, `[Panier Express] Produit oublié : +1 produit dans la liste (${added}).`);
+          next = this.appendActionLog(next, playerId, 'event', { event, effect: 'add_shopping', added });
+        }
+        break;
+      }
+      case 'offre-ephemere': {
+        const discard = ensureDiscardCourses();
+        if (!discard.length) {
+          next = this.core.appendLog(next, `[Panier Express] Offre éphémère : défausse vide.`);
+          next = this.appendActionLog(next, playerId, 'event', { event, effect: 'none' });
+          break;
+        }
+        const metaRng = this.random.createMetaRng(this.getMetadata(next) as any);
+        const picked = this.random.pickOne(metaRng.getMeta() as any, discard);
+        next = { ...next, metadata: picked.meta as any };
+        const card = String(picked.value ?? '').trim();
+        if (!card) break;
+        const remaining = discard.filter((c) => c !== card);
+        const metaNow = this.getMetadata(next);
+        next = { ...next, metadata: { ...metaNow, discards: { ...metaNow.discards, courses: remaining } } };
+        next = {
+          ...next,
+          players: (next.players ?? []).map((p: any) => {
+            if (p.id !== playerId) return p;
+            const list = this.utils.toStringArray(p.shoppingList);
+            const basket = this.utils.toStringArray(p.basket);
+            const inventory = this.utils.toStringArray(p.inventory);
+            if (list.includes(card) && !basket.includes(card)) {
+              return { ...p, basket: [...basket, card], inventory };
+            }
+            return { ...p, inventory: [...inventory, card], basket };
+          }),
+        };
+        next = this.core.appendLog(next, `[Panier Express] Offre éphémère : récupère "${card}".`);
+        next = this.appendActionLog(next, playerId, 'event', { event, effect: 'from_discard', card });
+        break;
+      }
+      case 'controle-des-inventaires': {
+        let maxId: number | null = null;
+        let max = -1;
+        (next.players ?? []).forEach((p: any) => {
+          const inv = this.utils.toStringArray(p.inventory);
+          if (inv.length > max) {
+            max = inv.length;
+            maxId = p.id;
+          }
+        });
+        if (maxId != null && max > 0) {
+          const discarded = discardRandomCourse(maxId);
+          next = this.core.appendLog(next, `[Panier Express] Contrôle des inventaires : ${this.utils.playerName(state, maxId)} défausse "${discarded}".`);
+          next = this.appendActionLog(next, playerId, 'event', { event, effect: 'max_discard', discarded, targetPlayerId: maxId });
+          break;
+        }
+        next = this.appendActionLog(next, playerId, 'event', { event, effect: 'none' });
+        break;
+      }
+      case 'stand-surprise': {
+        const metaAny = this.getMetadata(next) as any;
+        const rng = this.random.rollDice(metaAny, 6);
+        next = { ...next, metadata: rng.meta as any };
+        const roll = rng.roll;
+        const matcher =
+          roll <= 2
+            ? (id: string) => id.startsWith('bio')
+            : roll <= 4
+              ? (id: string) => id === 'fruitier'
+              : (id: string) => id.startsWith('primeur');
+        const metaNow = this.getMetadata(next);
+        const tiles = Array.isArray(metaNow.tiles) ? metaNow.tiles : [];
+        const total = tiles.length;
+        const current = metaNow.positions?.[playerId] ?? 0;
+        for (let steps = 1; steps < total; steps += 1) {
+          const idx = this.movement.moveCircular(total, current, steps);
+          const tile = tiles[idx] as any;
+          if (tile?.type === 'stand' && matcher(String(tile.standId ?? ''))) {
+            next = this.movePlayer(next, playerId, steps);
+            break;
+          }
+        }
+        next = this.resolveTile(next, playerId);
+        next = this.appendActionLog(next, playerId, 'event', { event, effect: 'move_to_nearest_stand', roll });
+        break;
+      }
+      case 'rupture-de-stock':
+      default:
+        if (event === 'erreur-de-livraison' || event === 'produit-avarie' || event === 'emballage-oublie' || event === 'chariot-perce') {
+          const discarded = discardRandomCourse(playerId);
+          next = this.core.appendLog(
+            next,
+            discarded
+              ? `[Panier Express] ${event} : ${this.utils.playerName(state, playerId)} défausse "${discarded}".`
+              : `[Panier Express] ${event} : aucune carte à défausser.`,
+          );
+          next = this.appendActionLog(next, playerId, 'event', { event, effect: 'discard_random', discarded });
+          break;
+        }
+        next = this.core.appendLog(next, `[Panier Express] ${event} : aucun effet (best-effort).`);
+        next = this.appendActionLog(next, playerId, 'event', { event, effect: 'none' });
         break;
     }
     return next;
@@ -889,6 +1272,262 @@ export class PanierExpressService extends AbstractGameService {
       `[Panier Express] ${this.utils.playerName(state, playerId)} passe son tour.`,
     );
     return this.phaseFlow.advanceTurn(logged);
+  }
+
+  private handlePickChoice(
+    state: GameStateEntity,
+    action: GameSingleActionDto,
+  ): GameStateEntity {
+    const actorId =
+      typeof (action.meta as any)?.actorId === 'number'
+        ? (action.meta as any).actorId
+        : state.turn?.currentPlayerId ?? null;
+    if (typeof actorId !== 'number') return state;
+
+    const pending = state.pending as any;
+    if (!pending || pending.type !== 'pick' || pending.playerId !== actorId) {
+      return this.core.appendLog(
+        state,
+        `[Panier Express] Choix invalide (aucun pending).`,
+      );
+    }
+
+    const index = Number(action.payload?.index);
+    const choices = Array.isArray(pending.choices) ? pending.choices : [];
+    if (!Number.isFinite(index) || index < 0 || index >= choices.length) {
+      return this.core.appendLog(state, `[Panier Express] Choix invalide.`);
+    }
+
+    const meta = this.getMetadata(state);
+    const kind = String(pending?.data?.kind ?? '').trim();
+
+    const updatePlayer = (
+      playerId: number,
+      updater: (player: any) => any,
+    ): GameStateEntity => {
+      const players = (state.players ?? []).map((p: any) =>
+        p.id === playerId ? updater(p) : p,
+      );
+      return { ...state, players };
+    };
+
+    const removeCourseFromPlayer = (
+      playerId: number,
+      card: string,
+    ): { state: GameStateEntity; removed: boolean } => {
+      const trimmed = String(card ?? '').trim();
+      if (!trimmed) return { state, removed: false };
+      let removed = false;
+      const updated = updatePlayer(playerId, (p: any) => {
+        const basket = this.utils.toStringArray(p.basket);
+        const inventory = this.utils.toStringArray(p.inventory);
+        if (basket.includes(trimmed)) {
+          removed = true;
+          return { ...p, basket: this.utils.removeOne(basket, trimmed) };
+        }
+        if (inventory.includes(trimmed)) {
+          removed = true;
+          return { ...p, inventory: this.utils.removeOne(inventory, trimmed) };
+        }
+        return p;
+      });
+      return { state: updated, removed };
+    };
+
+    const discardCourse = (playerId: number, card: string): GameStateEntity => {
+      const trimmed = String(card ?? '').trim();
+      if (!trimmed) return state;
+      const removed = removeCourseFromPlayer(playerId, trimmed);
+      if (!removed.removed) return state;
+      const nextMeta: PanierExpressMetadata = {
+        ...meta,
+        discards: {
+          ...meta.discards,
+          courses: [...(meta.discards?.courses ?? []), trimmed],
+        },
+      };
+      return {
+        ...removed.state,
+        metadata: nextMeta,
+      };
+    };
+
+    const addCourseToPlayer = (playerId: number, card: string): GameStateEntity => {
+      const trimmed = String(card ?? '').trim();
+      if (!trimmed) return state;
+      const next = updatePlayer(playerId, (p: any) => {
+        const list = this.utils.toStringArray(p.shoppingList);
+        const basket = this.utils.toStringArray(p.basket);
+        const inventory = this.utils.toStringArray(p.inventory);
+        if (list.includes(trimmed) && !basket.includes(trimmed)) {
+          return { ...p, basket: [...basket, trimmed], inventory };
+        }
+        return { ...p, inventory: [...inventory, trimmed], basket };
+      });
+      return next;
+    };
+
+    const clearPending = (s: GameStateEntity): GameStateEntity => ({
+      ...s,
+      pending: null,
+    });
+
+    if (kind === 'event.tirage_chanceux') {
+      const cards = Array.isArray(pending?.data?.cards)
+        ? pending.data.cards.map((v: any) => String(v))
+        : [];
+      const chosen = cards[index] ?? '';
+      let next = clearPending(state);
+      next = addCourseToPlayer(actorId, chosen);
+      next = this.core.appendLog(
+        next,
+        `[Panier Express] Tirage chanceux : ${this.utils.playerName(
+          state,
+          actorId,
+        )} choisit "${chosen}".`,
+      );
+      next = this.appendActionLog(next, actorId, 'event', {
+        event: 'tirage-chanceux',
+        choice: chosen,
+      });
+      return this.phaseFlow.advanceTurn(next);
+    }
+
+    if (kind === 'event.discard') {
+      const cards = Array.isArray(pending?.data?.cards)
+        ? pending.data.cards.map((v: any) => String(v))
+        : [];
+      const chosen = cards[index] ?? '';
+      let next = clearPending(state);
+      next = discardCourse(actorId, chosen);
+      next = this.core.appendLog(
+        next,
+        `[Panier Express] ${this.utils.playerName(
+          state,
+          actorId,
+        )} d\u00e9fausse "${chosen}".`,
+      );
+      next = this.appendActionLog(next, actorId, 'event', {
+        effect: 'discard',
+        card: chosen,
+      });
+      return this.phaseFlow.advanceTurn(next);
+    }
+
+    if (kind === 'event.producteur_genereux.choose_card') {
+      const cards = Array.isArray(pending?.data?.cards)
+        ? pending.data.cards.map((v: any) => String(v))
+        : [];
+      const chosen = cards[index] ?? '';
+      const targets = Array.isArray(pending?.data?.targets)
+        ? pending.data.targets
+        : [];
+      const choices = targets.map((t: any) => String(t?.username ?? '')).filter((v: string) => v.length > 0);
+      return {
+        ...state,
+        pending: {
+          type: 'pick',
+          playerId: actorId,
+          blocking: true,
+          label: 'Choisissez un joueur pour recevoir la carte.',
+          choices,
+          data: {
+            kind: 'event.producteur_genereux.choose_target',
+            give: chosen,
+            targets,
+          },
+        },
+      } as any;
+    }
+
+    if (kind === 'event.producteur_genereux.choose_target') {
+      const targets = Array.isArray(pending?.data?.targets)
+        ? pending.data.targets
+        : [];
+      const chosenTarget = targets[index];
+      const targetPlayerId = Number(chosenTarget?.playerId);
+      const give = String(pending?.data?.give ?? '').trim();
+      if (!Number.isFinite(targetPlayerId) || !give) {
+        return clearPending(state);
+      }
+
+      let next = clearPending(state);
+      const removed = removeCourseFromPlayer(actorId, give);
+      next = removed.state;
+      if (removed.removed) {
+        next = addCourseToPlayer(targetPlayerId, give);
+      }
+      next = this.core.appendLog(
+        next,
+        `[Panier Express] ${this.utils.playerName(
+          state,
+          actorId,
+        )} offre "${give}" \u00e0 ${this.utils.playerName(state, targetPlayerId)}.`,
+      );
+      next = this.appendActionLog(next, actorId, 'event', {
+        event: 'producteur-genereux',
+        give,
+        targetPlayerId,
+      });
+      return this.phaseFlow.advanceTurn(next);
+    }
+
+    if (kind === 'exchange.choose_target') {
+      const targets = Array.isArray(pending?.data?.targets)
+        ? pending.data.targets
+        : [];
+      const chosen = targets[index];
+      const targetPlayerId = Number(chosen?.playerId);
+      const card = String(pending?.data?.card ?? '').trim();
+      if (!Number.isFinite(targetPlayerId)) return clearPending(state);
+      let next = clearPending(state);
+      return this.exchangeSvc.applyExchangeCard(next, actorId, targetPlayerId, card);
+    }
+
+    if (kind === 'exchange.impose.choose_card') {
+      const initiatorId = Number(pending?.data?.initiatorId);
+      const cards = Array.isArray(pending?.data?.cards)
+        ? pending.data.cards.map((v: any) => String(v))
+        : [];
+      const give = cards[index] ?? '';
+      if (!Number.isFinite(initiatorId) || !give) return clearPending(state);
+      let next = clearPending(state);
+      // Target gives chosen card to initiator; initiator gives a random card back (best-effort).
+      const removed = removeCourseFromPlayer(actorId, give);
+      next = removed.state;
+      if (removed.removed) {
+        next = addCourseToPlayer(initiatorId, give);
+      }
+      try {
+        const initiator = (next.players ?? []).find((p: any) => p.id === initiatorId) as any;
+        const initiatorInv = this.utils.toStringArray(initiator?.inventory);
+        if (initiatorInv.length > 0) {
+          const metaRng = this.random.createMetaRng(this.getMetadata(next) as any);
+          const picked = this.random.pickOne(metaRng.getMeta() as any, initiatorInv);
+          next = { ...next, metadata: picked.meta as any };
+          const back = String(picked.value ?? '').trim();
+          if (back) {
+            const removedBack = removeCourseFromPlayer(initiatorId, back);
+            next = removedBack.state;
+            if (removedBack.removed) {
+              next = addCourseToPlayer(actorId, back);
+            }
+          }
+        }
+      } catch {
+        // ignore
+      }
+      next = this.core.appendLog(
+        next,
+        `[Panier Express] \u00c9change impos\u00e9 : ${this.utils.playerName(
+          state,
+          actorId,
+        )} donne "${give}" \u00e0 ${this.utils.playerName(state, initiatorId)}.`,
+      );
+      return this.phaseFlow.advanceTurn(next);
+    }
+
+    return clearPending(state);
   }
 
   private applyQuiz(state: GameStateEntity, playerId: number): GameStateEntity {
@@ -1064,9 +1703,34 @@ export class PanierExpressService extends AbstractGameService {
       nextCurrentPlayerId: next.currentPlayerId,
       skipTurn: next.skipTurn,
     });
+
+    const revealInventory: Record<number, number> = {};
+    Object.entries(meta.statuses?.revealInventory ?? {}).forEach(([pid, val]) => {
+      const nextVal = Math.max(0, Number(val) - 1);
+      if (nextVal > 0) {
+        revealInventory[Number(pid)] = nextVal;
+      }
+    });
+
+    let movementDirection: 1 | -1 = meta.movementDirection === -1 ? -1 : 1;
+    let movementDirectionOwnerId =
+      typeof meta.movementDirectionOwnerId === 'number'
+        ? meta.movementDirectionOwnerId
+        : null;
+    if (
+      movementDirection === -1 &&
+      movementDirectionOwnerId != null &&
+      next.currentPlayerId === movementDirectionOwnerId
+    ) {
+      movementDirection = 1;
+      movementDirectionOwnerId = null;
+    }
+
     const nextMeta: PanierExpressMetadata = {
       ...meta,
-      statuses: { ...meta.statuses, skipTurn: next.skipTurn },
+      movementDirection,
+      movementDirectionOwnerId,
+      statuses: { ...meta.statuses, skipTurn: next.skipTurn, revealInventory },
     };
     return {
       ...state,
@@ -1074,7 +1738,7 @@ export class PanierExpressService extends AbstractGameService {
       turnIndex: next.turnIndex,
       turn: {
         currentPlayerId: next.currentPlayerId,
-        direction: 1,
+        direction: movementDirection,
       },
     };
   }
