@@ -148,7 +148,10 @@ public sealed class SocialViewModel : ObservableObject
 
     public void SetProfileTargetUserId(int? userId) => _profileTargetUserId = userId;
 
-    public sealed record VisibilityOption(string Value, string Label);
+    public sealed record VisibilityOption(string Value, string Label)
+    {
+        public override string ToString() => Label;
+    }
 
     public VisibilityOption[] VisibilityOptions { get; } =
     {
