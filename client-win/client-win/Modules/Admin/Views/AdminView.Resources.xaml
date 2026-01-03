@@ -70,18 +70,6 @@
                     <Setter Property="BorderThickness" Value="1" />
                     <Setter Property="HorizontalContentAlignment" Value="Stretch" />
                     <Setter Property="FocusVisualStyle" Value="{x:Null}" />
-                    <Style.Triggers>
-                        <DataTrigger Binding="{Binding Tag}" Value="separator">
-                            <Setter Property="IsEnabled" Value="False" />
-                            <Setter Property="Focusable" Value="False" />
-                            <Setter Property="IsTabStop" Value="False" />
-                            <Setter Property="IsHitTestVisible" Value="False" />
-                            <Setter Property="Padding" Value="0" />
-                            <Setter Property="Margin" Value="0" />
-                            <Setter Property="Background" Value="Transparent" />
-                            <Setter Property="BorderThickness" Value="0" />
-                        </DataTrigger>
-                    </Style.Triggers>
                     <Setter Property="Template">
                         <Setter.Value>
                             <ControlTemplate TargetType="ListBoxItem">
@@ -106,6 +94,18 @@
                             </ControlTemplate>
                         </Setter.Value>
                     </Setter>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Tag}" Value="separator">
+                            <Setter Property="IsEnabled" Value="False" />
+                            <Setter Property="Focusable" Value="False" />
+                            <Setter Property="IsTabStop" Value="False" />
+                            <Setter Property="IsHitTestVisible" Value="False" />
+                            <Setter Property="Padding" Value="0" />
+                            <Setter Property="Margin" Value="0" />
+                            <Setter Property="Background" Value="Transparent" />
+                            <Setter Property="BorderThickness" Value="0" />
+                        </DataTrigger>
+                    </Style.Triggers>
                 </Style>
             </Setter.Value>
         </Setter>
