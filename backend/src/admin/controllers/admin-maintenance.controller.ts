@@ -16,10 +16,36 @@ import { AdminMaintenanceService } from '../services/admin-maintenance.service';
 export class AdminMaintenanceController {
   constructor(private readonly maintenance: AdminMaintenanceService) {}
 
+  @Get('health')
+  health() {
+    return this.maintenance.getHealth();
+  }
+
   @Post('deploy')
   @HttpCode(202)
   deploy() {
     return this.maintenance.startDeploy();
+  }
+
+  @Post('deploy/dry-run')
+  dryRunBuild() {
+    return this.maintenance.dryRunBuild();
+  }
+
+  @Post('migrations/run')
+  migrationsRun() {
+    return this.maintenance.runMigrations();
+  }
+
+  @Post('service/restart')
+  @HttpCode(202)
+  restartService() {
+    return this.maintenance.startRestartBackend();
+  }
+
+  @Post('systemd/daemon-reload')
+  systemdDaemonReload() {
+    return this.maintenance.daemonReload();
   }
 
   @Get('deploy/status')
@@ -37,4 +63,3 @@ export class AdminMaintenanceController {
     return this.maintenance.getBackendServiceStatus();
   }
 }
-

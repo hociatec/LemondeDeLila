@@ -358,6 +358,7 @@ public sealed partial class AdminViewModel
         Items.Add(new AdminMenuItem("Rapports de bug", tag: "bugReports"));
         Items.Add(new AdminMenuItem("Diagnostics latence (rooms/bots/parties)", tag: "perf"));
         Items.Add(new AdminMenuItem("Consulter les logs", tag: "logs"));
+        Items.Add(new AdminMenuItem("Maintenance (outils)", tag: "maintenance"));
         Items.Add(new AdminMenuItem("Maintenance: déployer/redémarrer le backend", tag: "maintenance.deploy"));
         SelectedItem = Items.FirstOrDefault();
         Status = "Entrée : sélectionner. Échap : retour.";

@@ -37,6 +37,41 @@ public sealed class AdminMaintenanceHttpService : IAdminMaintenanceHttpService
         return await ReadJsonAsync<AdminMaintenanceStartDeployResponse>(res, cancellationToken).ConfigureAwait(false);
     }
 
+    public async Task<AdminMaintenanceCommandResponse> DryRunBuildAsync(CancellationToken cancellationToken = default)
+    {
+        using var req = CreateAuthenticatedRequest(HttpMethod.Post, new Uri(_config.HttpBase, "admin/maintenance/deploy/dry-run"));
+        using var res = await _apiHttp.SendAuthenticatedAsync(req, TimeSpan.FromSeconds(60), cancellationToken).ConfigureAwait(false);
+        return await ReadJsonAsync<AdminMaintenanceCommandResponse>(res, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<AdminMaintenanceCommandResponse> RunMigrationsAsync(CancellationToken cancellationToken = default)
+    {
+        using var req = CreateAuthenticatedRequest(HttpMethod.Post, new Uri(_config.HttpBase, "admin/maintenance/migrations/run"));
+        using var res = await _apiHttp.SendAuthenticatedAsync(req, TimeSpan.FromSeconds(60), cancellationToken).ConfigureAwait(false);
+        return await ReadJsonAsync<AdminMaintenanceCommandResponse>(res, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<AdminMaintenanceRestartResponse> RestartBackendAsync(CancellationToken cancellationToken = default)
+    {
+        using var req = CreateAuthenticatedRequest(HttpMethod.Post, new Uri(_config.HttpBase, "admin/maintenance/service/restart"));
+        using var res = await _apiHttp.SendAuthenticatedAsync(req, TimeSpan.FromSeconds(8), cancellationToken).ConfigureAwait(false);
+        return await ReadJsonAsync<AdminMaintenanceRestartResponse>(res, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<AdminMaintenanceCommandResponse> DaemonReloadAsync(CancellationToken cancellationToken = default)
+    {
+        using var req = CreateAuthenticatedRequest(HttpMethod.Post, new Uri(_config.HttpBase, "admin/maintenance/systemd/daemon-reload"));
+        using var res = await _apiHttp.SendAuthenticatedAsync(req, TimeSpan.FromSeconds(15), cancellationToken).ConfigureAwait(false);
+        return await ReadJsonAsync<AdminMaintenanceCommandResponse>(res, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<AdminMaintenanceHealthResponse> GetHealthAsync(CancellationToken cancellationToken = default)
+    {
+        using var req = CreateAuthenticatedRequest(HttpMethod.Get, new Uri(_config.HttpBase, "admin/maintenance/health"));
+        using var res = await _apiHttp.SendAuthenticatedAsync(req, TimeSpan.FromSeconds(8), cancellationToken).ConfigureAwait(false);
+        return await ReadJsonAsync<AdminMaintenanceHealthResponse>(res, cancellationToken).ConfigureAwait(false);
+    }
+
     public async Task<AdminMaintenanceUnitStatusResponse> GetDeployStatusAsync(CancellationToken cancellationToken = default)
     {
         using var req = CreateAuthenticatedRequest(HttpMethod.Get, new Uri(_config.HttpBase, "admin/maintenance/deploy/status"));

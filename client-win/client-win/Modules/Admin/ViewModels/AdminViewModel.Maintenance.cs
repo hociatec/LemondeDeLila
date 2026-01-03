@@ -102,6 +102,11 @@ public sealed partial class AdminViewModel
         Details = string.Empty;
         Items.Clear();
         Items.Add(new AdminMenuItem("Rafraîchir (status + logs)", tag: "maintenance.refresh"));
+        Items.Add(new AdminMenuItem("Health check (DB + Redis)", tag: "maintenance.health"));
+        Items.Add(new AdminMenuItem("Migrations only (TypeORM)", tag: "maintenance.migrations"));
+        Items.Add(new AdminMenuItem("Restart backend (redémarrage uniquement)", tag: "maintenance.restart"));
+        Items.Add(new AdminMenuItem("Reload config (systemd daemon-reload)", tag: "maintenance.reload"));
+        Items.Add(new AdminMenuItem("Déploiement dry-run (build sans restart)", tag: "maintenance.dryrun"));
         Items.Add(new AdminMenuItem("Logs du déploiement", tag: "maintenance.logs"));
         Items.Add(new AdminMenuItem("Status service backend", tag: "maintenance.service.status"));
         SelectedItem = Items.FirstOrDefault();
@@ -116,6 +121,263 @@ public sealed partial class AdminViewModel
         Status = "Entrée : exécuter l'action sélectionnée. Échap : retour.";
 
         _ = RefreshMaintenanceAsync();
+    }
+
+    private async Task MaintenanceHealthAsync()
+    {
+        if (IsBusy)
+        {
+            return;
+        }
+
+        try
+        {
+            if (!await EnsureMaintenanceTokenAsync(promptIfMissing: true).ConfigureAwait(true))
+            {
+                Status = "Maintenance: token requis";
+                return;
+            }
+
+            IsBusy = true;
+            Status = "Maintenance: health…";
+
+            var res = await _maintenance.GetHealthAsync().ConfigureAwait(true);
+            var body = (res.Body ?? string.Empty).Trim();
+            Details = $"Health ({res.StatusCode}) — {res.Url}\n\n{body}";
+            PreferDetailsFocus = true;
+            Status = "Maintenance: health OK";
+        }
+        catch (Exception ex)
+        {
+            if (await EnsureMaintenanceTokenOrUpdateAsync(ex).ConfigureAwait(true))
+            {
+                await MaintenanceHealthAsync().ConfigureAwait(true);
+                return;
+            }
+            await _dialogs.ShowError("Maintenance", ex.Message).ConfigureAwait(true);
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private async Task MaintenanceRunMigrationsAsync()
+    {
+        if (IsBusy)
+        {
+            return;
+        }
+
+        if (!await EnsureMaintenanceTokenAsync(promptIfMissing: true).ConfigureAwait(true))
+        {
+            Status = "Maintenance: token requis";
+            return;
+        }
+
+        var confirmed = await _dialogs.Confirm(
+                "Maintenance",
+                "Exécuter les migrations uniquement (npm run migration:run) ?",
+                okText: "Exécuter",
+                cancelText: "Annuler")
+            .ConfigureAwait(true);
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        try
+        {
+            IsBusy = true;
+            Status = "Maintenance: migrations…";
+
+            var res = await _maintenance.RunMigrationsAsync().ConfigureAwait(true);
+            Details = $"Command: {res.Command}\nExit: {res.Status}\n\nSTDOUT:\n{TailLines(res.Stdout, 200)}\n\nSTDERR:\n{TailLines(res.Stderr, 80)}";
+            PreferDetailsFocus = true;
+            Status = "Maintenance: migrations OK";
+        }
+        catch (Exception ex)
+        {
+            if (await EnsureMaintenanceTokenOrUpdateAsync(ex).ConfigureAwait(true))
+            {
+                await MaintenanceRunMigrationsAsync().ConfigureAwait(true);
+                return;
+            }
+            await _dialogs.ShowError("Maintenance", ex.Message).ConfigureAwait(true);
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private async Task MaintenanceDryRunBuildAsync()
+    {
+        if (IsBusy)
+        {
+            return;
+        }
+
+        if (!await EnsureMaintenanceTokenAsync(promptIfMissing: true).ConfigureAwait(true))
+        {
+            Status = "Maintenance: token requis";
+            return;
+        }
+
+        var confirmed = await _dialogs.Confirm(
+                "Maintenance",
+                "Dry-run : compiler le backend (npm run build) sans redémarrer ?",
+                okText: "Compiler",
+                cancelText: "Annuler")
+            .ConfigureAwait(true);
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        try
+        {
+            IsBusy = true;
+            Status = "Maintenance: build…";
+
+            var res = await _maintenance.DryRunBuildAsync().ConfigureAwait(true);
+            Details = $"Command: {res.Command}\nExit: {res.Status}\n\nSTDOUT:\n{TailLines(res.Stdout, 200)}\n\nSTDERR:\n{TailLines(res.Stderr, 80)}";
+            PreferDetailsFocus = true;
+            Status = "Maintenance: build OK";
+        }
+        catch (Exception ex)
+        {
+            if (await EnsureMaintenanceTokenOrUpdateAsync(ex).ConfigureAwait(true))
+            {
+                await MaintenanceDryRunBuildAsync().ConfigureAwait(true);
+                return;
+            }
+            await _dialogs.ShowError("Maintenance", ex.Message).ConfigureAwait(true);
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private async Task MaintenanceDaemonReloadAsync()
+    {
+        if (IsBusy)
+        {
+            return;
+        }
+
+        if (!await EnsureMaintenanceTokenAsync(promptIfMissing: true).ConfigureAwait(true))
+        {
+            Status = "Maintenance: token requis";
+            return;
+        }
+
+        var confirmed = await _dialogs.Confirm(
+                "Maintenance",
+                "Recharger la configuration systemd (daemon-reload) ?\n\nNote: ceci ne redémarre pas le backend.",
+                okText: "Recharger",
+                cancelText: "Annuler")
+            .ConfigureAwait(true);
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        try
+        {
+            IsBusy = true;
+            Status = "Maintenance: reload…";
+
+            var res = await _maintenance.DaemonReloadAsync().ConfigureAwait(true);
+            Details = $"Command: {res.Command}\nExit: {res.Status}\n\nSTDOUT:\n{TailLines(res.Stdout, 80)}\n\nSTDERR:\n{TailLines(res.Stderr, 80)}";
+            PreferDetailsFocus = true;
+            Status = "Maintenance: reload OK";
+        }
+        catch (Exception ex)
+        {
+            if (await EnsureMaintenanceTokenOrUpdateAsync(ex).ConfigureAwait(true))
+            {
+                await MaintenanceDaemonReloadAsync().ConfigureAwait(true);
+                return;
+            }
+            await _dialogs.ShowError("Maintenance", ex.Message).ConfigureAwait(true);
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private async Task MaintenanceRestartBackendAsync()
+    {
+        if (IsBusy)
+        {
+            return;
+        }
+
+        if (!await EnsureMaintenanceTokenAsync(promptIfMissing: true).ConfigureAwait(true))
+        {
+            Status = "Maintenance: token requis";
+            return;
+        }
+
+        var confirmed = await _dialogs.Confirm(
+                "Maintenance",
+                "Redémarrer le backend maintenant ?\n\nNote: la connexion sera coupée quelques secondes.",
+                okText: "Redémarrer",
+                cancelText: "Annuler")
+            .ConfigureAwait(true);
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        try
+        {
+            IsBusy = true;
+            Status = "Maintenance: restart…";
+            Details = string.Empty;
+
+            // L'endpoint renvoie un ACK avant de redémarrer effectivement (planifié côté serveur).
+            _ = await _maintenance.RestartBackendAsync().ConfigureAwait(true);
+
+            var deadline = DateTimeOffset.UtcNow.AddSeconds(45);
+            var attempt = 0;
+            while (DateTimeOffset.UtcNow < deadline)
+            {
+                attempt++;
+                try
+                {
+                    var status = await _maintenance.GetBackendServiceStatusAsync().ConfigureAwait(true);
+                    Details = "Backend:\n" + FormatDeployStatus(status);
+                    PreferDetailsFocus = true;
+                    Status = "Maintenance: restart OK";
+                    return;
+                }
+                catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+                {
+                    Status = "Maintenance: attente backend…";
+                    await Task.Delay(RetryStrategy.CalculateDelay(attempt, baseDelayMs: 750, maxDelayMs: 5000))
+                        .ConfigureAwait(true);
+                }
+            }
+
+            Status = "Maintenance: restart (timeout)";
+        }
+        catch (Exception ex)
+        {
+            if (await EnsureMaintenanceTokenOrUpdateAsync(ex).ConfigureAwait(true))
+            {
+                await MaintenanceRestartBackendAsync().ConfigureAwait(true);
+                return;
+            }
+            await _dialogs.ShowError("Maintenance", ex.Message).ConfigureAwait(true);
+        }
+        finally
+        {
+            IsBusy = false;
+        }
     }
 
     private async Task RefreshMaintenanceAsync()

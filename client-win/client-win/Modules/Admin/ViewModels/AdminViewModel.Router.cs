@@ -819,6 +819,31 @@ public sealed partial class AdminViewModel
                     await RefreshMaintenanceAsync().ConfigureAwait(true);
                     return;
                 }
+                if (maintenanceTag == "maintenance.health")
+                {
+                    await MaintenanceHealthAsync().ConfigureAwait(true);
+                    return;
+                }
+                if (maintenanceTag == "maintenance.migrations")
+                {
+                    await MaintenanceRunMigrationsAsync().ConfigureAwait(true);
+                    return;
+                }
+                if (maintenanceTag == "maintenance.restart")
+                {
+                    await MaintenanceRestartBackendAsync().ConfigureAwait(true);
+                    return;
+                }
+                if (maintenanceTag == "maintenance.reload")
+                {
+                    await MaintenanceDaemonReloadAsync().ConfigureAwait(true);
+                    return;
+                }
+                if (maintenanceTag == "maintenance.dryrun")
+                {
+                    await MaintenanceDryRunBuildAsync().ConfigureAwait(true);
+                    return;
+                }
                 if (maintenanceTag == "maintenance.logs")
                 {
                     await RefreshMaintenanceLogsAsync().ConfigureAwait(true);

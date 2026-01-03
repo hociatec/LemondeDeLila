@@ -44,3 +44,37 @@ public sealed class AdminMaintenanceLogsResponse
     public string? Logs { get; set; }
 }
 
+public sealed class AdminMaintenanceCommandResponse
+{
+    public bool Ok { get; set; }
+
+    public string? Command { get; set; }
+
+    public int Status { get; set; }
+
+    public string? Stdout { get; set; }
+
+    public string? Stderr { get; set; }
+
+    public string? Error { get; set; }
+}
+
+public sealed class AdminMaintenanceRestartResponse
+{
+    public bool Ok { get; set; }
+
+    public string? Service { get; set; }
+
+    public bool Scheduled { get; set; }
+}
+
+public sealed class AdminMaintenanceHealthResponse
+{
+    public bool Ok { get; set; }
+
+    public string? Url { get; set; }
+
+    public int StatusCode { get; set; }
+
+    public string? Body { get; set; }
+}

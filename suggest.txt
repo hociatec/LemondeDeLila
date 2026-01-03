@@ -1,0 +1,47 @@
+Suggestions Admin (à compléter)
+
+Contexte
+- L’admin actuel couvre déjà : Catégories, Jeux (overrides), Bots (noms + délai), Utilisateurs, Rooms (cleanup/join silent/destroy/settings), Tchat modération, Broadcast, Mises à jour client, Rôles/permissions, Sons, Bug reports, Perf snapshot, Logs, Maintenance.
+
+Idées d’options à ajouter (prod)
+
+Rooms / Tables
+- Kick un joueur d’une room (et option ban temporaire “rejoindre cette room”).
+- Transférer le propriétaire (owner) à un autre joueur.
+- Actions “à chaud” sur la room : rename, toggle privacy, régler maxPlayers.
+- Forcer start / reset / close d’une room (avec confirmation).
+- Liste détaillée des connectés : humains, bots, spectateurs (y compris “silent” admin si besoin).
+- Diagnostics par room : latence perçue, derniers événements WS, état (started/setup), dernier owner, activité.
+
+Utilisateurs
+- Reset password (backend a déjà des routes HTTP) + “forcer déconnexion” (invalidate sessions).
+- Vérification email : marquer vérifié / renvoyer email / voir état.
+- Historique sanctions : qui a banni, quand, raison, durée, et possibilité d’annuler.
+- Recherche “activité utilisateur” : dernières rooms rejointes, derniers messages, derniers bug reports.
+
+Tchat (modération)
+- Recherche full-text (par pseudo / mot-clé / période) + export (CSV/JSON).
+- Shadowban (l’utilisateur croit envoyer, mais personne ne reçoit) + unshadowban.
+- Mots interdits / auto-modération : blacklist/whitelist, actions (delete/timeout/ban).
+- Rate-limit configurable (par utilisateur / global) et visibilité des triggers.
+- Filtre “inclure messages supprimés” + restauration éventuelle.
+
+Mises à jour client
+- Canaux de release : stable/beta (deux versions minimales possibles).
+- Rollout progressif : % d’utilisateurs, par groupe, ou par version minimale.
+- Planification (ex : annoncer à 20h, forcer à 22h) + rollback (revenir à une min version plus basse).
+- Statistiques de versions : répartition des versions connectées.
+
+Logs / Perf / Observabilité
+- Live tail des logs (WS) + filtres (module, roomId, userId, event, niveau).
+- Drilldown perf : voir les samples “perf.sample” lents avec meta (roomId/gameType) et timeline.
+- Santé infra : latence Redis/MySQL, nombre de connexions, mémoire, charge, file descriptors.
+
+Bots
+- Règles par jeu : délai bot, difficulté/stratégie, “auto-bot replace” on/off.
+- Import/export de la liste des noms (backup/restauration) + bulk enable/disable.
+
+Maintenance
+- Boutons séparés : “migrations only”, “restart only”, “health check”, “reload config”.
+- Déploiement “dry-run” : build sans redémarrage, + retour d’erreurs clair.
+
