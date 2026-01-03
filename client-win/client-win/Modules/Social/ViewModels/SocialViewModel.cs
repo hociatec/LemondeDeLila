@@ -33,6 +33,7 @@ public sealed class SocialViewModel : ObservableObject
     private SocialProfile? _profile;
     private int? _profileTargetUserId;
     private string _profileTitle = "Mon profil";
+    private SocialSection? _returnSectionFromProfile;
 
     private SocialUser? _selectedFriend;
     private SocialFriendRequest? _selectedIncomingRequest;
@@ -160,6 +161,26 @@ public sealed class SocialViewModel : ObservableObject
     }
 
     public void SetProfileTargetUserId(int? userId) => _profileTargetUserId = userId;
+
+    public void EnterOwnProfile()
+    {
+        _returnSectionFromProfile = null;
+        _profileTargetUserId = null;
+    }
+
+    public bool TryExitProfile(out SocialSection returnSection)
+    {
+        if (_returnSectionFromProfile.HasValue)
+        {
+            returnSection = _returnSectionFromProfile.Value;
+            _returnSectionFromProfile = null;
+            _profileTargetUserId = null;
+            return true;
+        }
+
+        returnSection = default;
+        return false;
+    }
 
     public sealed record VisibilityOption(string Value, string Label)
     {
@@ -366,6 +387,10 @@ public sealed class SocialViewModel : ObservableObject
             return;
         }
 
+        if (SelectedSection != SocialSection.Profile)
+        {
+            _returnSectionFromProfile = SelectedSection;
+        }
         SetProfileTargetUserId(user.Id);
         SelectedSection = SocialSection.Profile;
     }

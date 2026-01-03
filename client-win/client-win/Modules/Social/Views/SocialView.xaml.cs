@@ -51,6 +51,14 @@ public partial class SocialView : UserControl
 
         if (_currentScreen == SocialScreen.Section)
         {
+            if (vm.SelectedSection == SocialSection.Profile && vm.TryExitProfile(out var returnSection))
+            {
+                vm.SelectedSection = returnSection;
+                FocusSection(returnSection);
+                e.Handled = true;
+                return;
+            }
+
             SetScreen(SocialScreen.Menu);
             e.Handled = true;
             return;
@@ -111,7 +119,7 @@ public partial class SocialView : UserControl
                 FocusSection(vm.SelectedSection);
                 break;
             case "profile":
-                vm.SetProfileTargetUserId(null);
+                vm.EnterOwnProfile();
                 vm.SelectedSection = SocialSection.Profile;
                 SetScreen(SocialScreen.Section);
                 FocusSection(vm.SelectedSection);
@@ -184,7 +192,11 @@ public partial class SocialView : UserControl
                     SearchBox.Focus();
                     break;
                 case SocialSection.Profile:
-                    if (ProfileBioBox.IsVisible && ProfileBioBox.IsEnabled)
+                    if (ProfileHeader.IsVisible && ProfileHeader.IsEnabled)
+                    {
+                        ProfileHeader.Focus();
+                    }
+                    else if (ProfileBioBox.IsVisible && ProfileBioBox.IsEnabled)
                     {
                         ProfileBioBox.Focus();
                     }
