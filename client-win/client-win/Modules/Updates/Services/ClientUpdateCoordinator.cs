@@ -16,12 +16,15 @@ public static class ClientUpdateCoordinator
     private static DateTime _lastShownAtUtc = DateTime.MinValue;
     private static readonly TimeSpan Cooldown = TimeSpan.FromSeconds(5);
 
+    public static event Action<ClientUpdateFlowState>? FlowChanged;
+
     public static async Task EnforceAsync(
         IDialogService dialogs,
         string title,
         string message,
         string? clickOnceUrl,
         string reason,
+        bool required,
         string? deDupKey = null,
         CancellationToken cancellationToken = default)
     {
@@ -45,8 +48,10 @@ public static class ClientUpdateCoordinator
             _lastKey = key.Length > 0 ? key : null;
             _lastShownAtUtc = DateTime.UtcNow;
 
+            FlowChanged?.Invoke(new ClientUpdateFlowState(ClientUpdateFlowKind.Enforcing, required, title, message, reason));
+
             // Enforced update: user must acknowledge (no "Ignorer").
-            // This blocks the UI until OK, then we start the installer and exit.
+            // This blocks the UI until OK, then we start the installer.
             try
             {
                 await dialogs.ShowInfo(
@@ -63,11 +68,16 @@ public static class ClientUpdateCoordinator
                 .InstallLatestAsync(dialogs, clickOnceUrl, reason, cancellationToken)
                 .ConfigureAwait(true);
 
-            // Dans tous les cas: ne pas laisser l'utilisateur continuer si le serveur exige une MAJ.
-            // Si ClickOnce démarre, l'installation se termine au redémarrage.
-            // Si ça échoue, l'utilisateur doit corriger (réinstaller/publier) puis relancer.
-            _ = started;
-            Environment.Exit(0);
+            FlowChanged?.Invoke(new ClientUpdateFlowState(
+                started ? ClientUpdateFlowKind.InstallStarted : ClientUpdateFlowKind.InstallFailed,
+                required,
+                title,
+                started
+                    ? "Mise à jour lancée. Le client peut continuer, mais un redémarrage sera nécessaire pour appliquer la mise à jour."
+                    : "Impossible de lancer la mise à jour.",
+                reason));
+
+            // On ne ferme plus brutalement le client: la MAJ peut se faire en arrière-plan, et l'utilisateur pourra redémarrer quand il le souhaite.
         }
         finally
         {

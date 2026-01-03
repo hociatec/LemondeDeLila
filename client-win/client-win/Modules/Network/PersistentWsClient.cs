@@ -53,6 +53,7 @@ public sealed class PersistentWsClient : IAsyncDisposable
     public event Action<string>? UnmatchedMessageReceived;
     public event Action? Connected;
     public event Action<string>? Disconnected;
+    public event Action<int, TimeSpan>? Reconnecting;
 
     public void SetSupportedWsTypes(IEnumerable<string>? wsTypes)
     {
@@ -350,6 +351,14 @@ public sealed class PersistentWsClient : IAsyncDisposable
                 if (attempt < maxAttempts)
                 {
                     var delay = RetryStrategy.CalculateDelay(attempt, _networkConfig);
+                    try
+                    {
+                        Reconnecting?.Invoke(attempt + 1, delay);
+                    }
+                    catch
+                    {
+                        // ignore
+                    }
                     Log.Debug("Attente de {Delay}ms avant prochaine tentative...", delay.TotalMilliseconds);
                     await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
                 }
