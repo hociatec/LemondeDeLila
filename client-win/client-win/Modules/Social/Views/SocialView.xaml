@@ -840,13 +840,12 @@
 	                                    </ComboBox.Style>
 	                                </ComboBox>
 		                            </StackPanel>
-	                            <Button Content="Livre des contes"
-	                                    Command="{Binding OpenStoryBookCommand}"
-	                                    Style="{StaticResource PrimaryButton}"
-	                                    Margin="0 0 12 0"
-	                                    AutomationProperties.Name="Consulter le livre des contes">
-	                                <Button.Style>
-	                                    <Style TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+		                            <Button Content="Livre des contes"
+		                                    Command="{Binding OpenStoryBookCommand}"
+		                                    Margin="0 0 12 0"
+		                                    AutomationProperties.Name="Consulter le livre des contes">
+		                                <Button.Style>
+		                                    <Style TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
 	                                        <Setter Property="Visibility" Value="Visible" />
 	                                        <Style.Triggers>
 	                                            <MultiDataTrigger>
