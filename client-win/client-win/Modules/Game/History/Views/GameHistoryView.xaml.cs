@@ -79,7 +79,7 @@ public partial class GameHistoryView : UserControl
             // Cas important: certains messages (ex: "Table créée...") sont ajoutés avant que la vue
             // ne soit chargée et donc avant l'abonnement à CollectionChanged.
             // On annonce les dernières lignes existantes à l'attache.
-            if (!HistoryEditor.IsKeyboardFocusWithin && _viewModel.Entries.Count > 0)
+            if (_viewModel.Entries.Count > 0)
             {
                 // IMPORTANT: annoncer tout l'existant à l'attache pour éviter de "perdre" le début
                 // quand l'utilisateur arrive dans la room après que la partie a déjà poussé des logs.
@@ -116,20 +116,17 @@ public partial class GameHistoryView : UserControl
 
             // Annoncer uniquement ce qui vient d'être ajouté (et pas tout le texte),
             // en séquençant pour éviter que le lecteur d'écran ne "coupe" des messages en rafale.
-            if (!HistoryEditor.IsKeyboardFocusWithin)
-            {
-                var added = e.NewItems
-                    .Cast<string>()
-                    .Select(s => (s ?? string.Empty).Trim())
-                    .Where(s => !string.IsNullOrWhiteSpace(s))
-                    .ToList();
+            var added = e.NewItems
+                .Cast<string>()
+                .Select(s => (s ?? string.Empty).Trim())
+                .Where(s => !string.IsNullOrWhiteSpace(s))
+                .ToList();
 
-                if (added.Count > 0)
+            if (added.Count > 0)
+            {
+                foreach (var msg in added.SelectMany(SplitLines))
                 {
-                    foreach (var msg in added.SelectMany(SplitLines))
-                    {
-                        EnqueueAnnouncement(msg);
-                    }
+                    EnqueueAnnouncement(msg);
                 }
             }
 
@@ -283,12 +280,6 @@ public partial class GameHistoryView : UserControl
     {
         var cleaned = (message ?? string.Empty).Trim();
         if (string.IsNullOrWhiteSpace(cleaned))
-        {
-            return;
-        }
-
-        // Si l'utilisateur est en train de lire l'historique, ne pas interrompre.
-        if (HistoryEditor.IsKeyboardFocusWithin)
         {
             return;
         }
