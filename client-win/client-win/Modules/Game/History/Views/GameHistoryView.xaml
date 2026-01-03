@@ -15,12 +15,12 @@
             AutomationProperties.LabeledBy="{Binding ElementName=HistoryTitle}"
             AutomationProperties.Name="Historique de la partie"
             AutomationProperties.HelpText="Panneau Historique. Contient la trace des événements de la partie.">
-        <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
+	        <Grid>
+	            <Grid.RowDefinitions>
+	                <RowDefinition Height="Auto" />
+	                <RowDefinition Height="*" />
+	                <RowDefinition Height="Auto" />
+	            </Grid.RowDefinitions>
 
             <TextBlock x:Name="HistoryTitle"
                        Text="Historique"
@@ -28,8 +28,8 @@
                        FontSize="18"
                        Margin="0 0 0 12" />
 
-            <TextBox x:Name="HistoryEditor"
-                     Grid.Row="1"
+	            <TextBox x:Name="HistoryEditor"
+	                     Grid.Row="1"
                      Background="#0D1625"
                      BorderThickness="0"
                      Foreground="#C3D2EA"
@@ -50,10 +50,22 @@
                      KeyboardNavigation.TabIndex="1"
                      AutomationProperties.LabeledBy="{Binding ElementName=HistoryTitle}"
                      AutomationProperties.Name="Historique"
-                     AutomationProperties.HelpText="Historique en lecture seule. Naviguez comme dans un document (flèches, PageUp/PageDown, sélection, etc.)."
-                     MinHeight="200" />
+	                     AutomationProperties.HelpText="Historique en lecture seule. Naviguez comme dans un document (flèches, PageUp/PageDown, sélection, etc.)."
+	                     MinHeight="200" />
 
-            <!-- UIA notifications are emitted from code-behind on new entries -->
-        </Grid>
-    </Border>
-</UserControl>
+	            <!--
+	                Annonceur "live region" de secours (certains lecteurs d'écran n'annoncent pas toujours
+	                les NotificationEvent UIA). Le texte est mis à jour en code-behind.
+	                NOTE: ne pas mettre Visibility=Collapsed (sinon retiré de l'arbre d'automatisation).
+	            -->
+	            <TextBlock x:Name="A11yAnnouncer"
+	                       Grid.Row="2"
+	                       Height="0"
+	                       Width="0"
+	                       Opacity="0"
+	                       IsHitTestVisible="False"
+	                       AutomationProperties.Name="Annonceur"
+	                       AutomationProperties.LiveSetting="Polite" />
+	        </Grid>
+	    </Border>
+	</UserControl>

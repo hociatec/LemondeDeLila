@@ -14,11 +14,13 @@ namespace client_win.Modules.Game.History.Views;
 
 public partial class GameHistoryView : UserControl
 {
+    private const int AnnounceTailOnAttach = 20;
     private GameHistoryViewModel? _viewModel;
     private bool _pendingRebuild;
     private int _lastKnownEntryCount;
     private DispatcherTimer? _announceTimer;
     private readonly Queue<string> _announceQueue = new();
+    private string? _lastAnnouncedText;
 
     public GameHistoryView()
     {
@@ -80,7 +82,7 @@ public partial class GameHistoryView : UserControl
             // On annonce les dernières lignes existantes à l'attache.
             if (!HistoryEditor.IsKeyboardFocusWithin && _viewModel.Entries.Count > 0)
             {
-                var startIndex = Math.Max(0, _viewModel.Entries.Count - 5);
+                var startIndex = Math.Max(0, _viewModel.Entries.Count - AnnounceTailOnAttach);
                 for (var i = startIndex; i < _viewModel.Entries.Count; i++)
                 {
                     var line = (_viewModel.Entries[i] ?? string.Empty).Trim();
@@ -318,7 +320,7 @@ public partial class GameHistoryView : UserControl
         // en "ratent" quand plusieurs events UIA partent trop vite.
         _announceTimer = new DispatcherTimer(DispatcherPriority.Background, Dispatcher)
         {
-            Interval = TimeSpan.FromMilliseconds(80),
+            Interval = TimeSpan.FromMilliseconds(120),
         };
         _announceTimer.Tick += (_, __) => PumpAnnouncements();
         _announceTimer.Start();
@@ -342,10 +344,19 @@ public partial class GameHistoryView : UserControl
         var next = _announceQueue.Dequeue();
         try
         {
-            var peer = FrameworkElementAutomationPeer.FromElement(this) ??
-                       FrameworkElementAutomationPeer.CreatePeerForElement(this);
+            // Mise à jour du live-region de secours (plus fiable sur certains setups NVDA).
+            // Force une notification même si le texte est identique à la précédente.
+            if (string.Equals(_lastAnnouncedText, next, StringComparison.Ordinal))
+            {
+                A11yAnnouncer.Text = string.Empty;
+            }
+            A11yAnnouncer.Text = next;
+            _lastAnnouncedText = next;
+
+            var peer = FrameworkElementAutomationPeer.FromElement(A11yAnnouncer) ??
+                       FrameworkElementAutomationPeer.CreatePeerForElement(A11yAnnouncer);
             peer?.RaiseNotificationEvent(
-                AutomationNotificationKind.Other,
+                AutomationNotificationKind.ItemAdded,
                 AutomationNotificationProcessing.All,
                 next,
                 "GameHistory");
