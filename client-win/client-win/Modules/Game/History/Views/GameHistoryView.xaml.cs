@@ -20,6 +20,7 @@ public partial class GameHistoryView : UserControl
     private DispatcherTimer? _announceTimer;
     private readonly Queue<string> _announceQueue = new();
     private bool _announcerToggle;
+    private DateTime _nextAnnouncementAtUtc = DateTime.MinValue;
 
     public GameHistoryView()
     {
@@ -113,6 +114,7 @@ public partial class GameHistoryView : UserControl
     {
         StopAnnouncePump(clearQueue: true);
         _announcerToggle = false;
+        _nextAnnouncementAtUtc = DateTime.MinValue;
     }
 
     private void OnEntriesCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -326,7 +328,7 @@ public partial class GameHistoryView : UserControl
         // en "ratent" quand plusieurs events UIA partent trop vite.
         _announceTimer = new DispatcherTimer(DispatcherPriority.Background, Dispatcher)
         {
-            Interval = TimeSpan.FromMilliseconds(20),
+            Interval = TimeSpan.FromMilliseconds(50),
         };
         _announceTimer.Tick += (_, __) => PumpAnnouncements();
         _announceTimer.Start();
@@ -345,14 +347,24 @@ public partial class GameHistoryView : UserControl
             return;
         }
 
-        var next = _announceQueue.Dequeue();
+        var now = DateTime.UtcNow;
+        if (now < _nextAnnouncementAtUtc)
+        {
+            return;
+        }
+
+        // Ne pas Dequeue tant qu'on n'est pas prêt à annoncer, sinon on perd des lignes.
+        var next = _announceQueue.Peek();
         if (string.IsNullOrWhiteSpace(next))
         {
+            _announceQueue.Dequeue();
             return;
         }
 
         try
         {
+            _announceQueue.Dequeue();
+
             // Mise à jour du live-region de secours (plus fiable sur certains setups NVDA).
             // On alterne un caractère "invisible" pour forcer un changement de texte (même si le message se répète),
             // sans polluer ce que le lecteur d'écran doit prononcer (lui lit le paramètre `next`).
@@ -364,11 +376,26 @@ public partial class GameHistoryView : UserControl
             var peer = FrameworkElementAutomationPeer.FromElement(A11yAnnouncer) ??
                        FrameworkElementAutomationPeer.CreatePeerForElement(A11yAnnouncer);
             peer?.RaiseAutomationEvent(AutomationEvents.LiveRegionChanged);
+
+            _nextAnnouncementAtUtc = now + ComputeAnnouncementDelay(next);
         }
         catch
         {
             // ignore (best-effort)
         }
+    }
+
+    private static TimeSpan ComputeAnnouncementDelay(string message)
+    {
+        // NVDA ne lit pas "ligne par ligne" si on spam trop vite les LiveRegionChanged : il droppe des events.
+        // On garde donc un séquençage minimal, mais suffisamment court pour rester naturel.
+        var text = message ?? string.Empty;
+        var length = text.Length;
+
+        var ms = 90 + (length * 3);
+        if (ms < 110) ms = 110;
+        if (ms > 550) ms = 550;
+        return TimeSpan.FromMilliseconds(ms);
     }
 
     private void StopAnnouncePump(bool clearQueue)
