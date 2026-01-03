@@ -83,7 +83,10 @@ public partial class GameHistoryView : UserControl
             {
                 // IMPORTANT: annoncer tout l'existant à l'attache pour éviter de "perdre" le début
                 // quand l'utilisateur arrive dans la room après que la partie a déjà poussé des logs.
-                for (var i = 0; i < _viewModel.Entries.Count; i++)
+                // Snapshot de la taille au moment de l'attache: sinon si des logs arrivent pendant la boucle,
+                // ils peuvent être annoncés deux fois (ici + via CollectionChanged).
+                var initialCount = _viewModel.Entries.Count;
+                for (var i = 0; i < initialCount; i++)
                 {
                     var line = (_viewModel.Entries[i] ?? string.Empty).Trim();
                     if (!string.IsNullOrWhiteSpace(line))
@@ -359,11 +362,6 @@ public partial class GameHistoryView : UserControl
             var peer = FrameworkElementAutomationPeer.FromElement(A11yAnnouncer) ??
                        FrameworkElementAutomationPeer.CreatePeerForElement(A11yAnnouncer);
             peer?.RaiseAutomationEvent(AutomationEvents.LiveRegionChanged);
-            peer?.RaiseNotificationEvent(
-                AutomationNotificationKind.ItemAdded,
-                AutomationNotificationProcessing.All,
-                next,
-                "GameHistory");
         }
         catch
         {
