@@ -14,14 +14,12 @@ namespace client_win.Modules.Game.History.Views;
 
 public partial class GameHistoryView : UserControl
 {
-    private const int AnnounceMaxExistingOnAttach = 40;
-    private const int MaxBatchSize = 3;
     private GameHistoryViewModel? _viewModel;
     private bool _pendingRebuild;
     private int _lastKnownEntryCount;
     private DispatcherTimer? _announceTimer;
     private readonly Queue<string> _announceQueue = new();
-    private string? _lastAnnouncedText;
+    private bool _announcerToggle;
 
     public GameHistoryView()
     {
@@ -83,9 +81,9 @@ public partial class GameHistoryView : UserControl
             // On annonce les dernières lignes existantes à l'attache.
             if (!HistoryEditor.IsKeyboardFocusWithin && _viewModel.Entries.Count > 0)
             {
-                // Heuristique: annoncer l'intégralité si le backlog est petit, sinon les N dernières lignes.
-                var startIndex = Math.Max(0, _viewModel.Entries.Count - AnnounceMaxExistingOnAttach);
-                for (var i = startIndex; i < _viewModel.Entries.Count; i++)
+                // IMPORTANT: annoncer tout l'existant à l'attache pour éviter de "perdre" le début
+                // quand l'utilisateur arrive dans la room après que la partie a déjà poussé des logs.
+                for (var i = 0; i < _viewModel.Entries.Count; i++)
                 {
                     var line = (_viewModel.Entries[i] ?? string.Empty).Trim();
                     if (!string.IsNullOrWhiteSpace(line))
@@ -322,35 +320,10 @@ public partial class GameHistoryView : UserControl
         // en "ratent" quand plusieurs events UIA partent trop vite.
         _announceTimer = new DispatcherTimer(DispatcherPriority.Background, Dispatcher)
         {
-            Interval = TimeSpan.FromMilliseconds(180),
+            Interval = TimeSpan.FromMilliseconds(200),
         };
         _announceTimer.Tick += (_, __) => PumpAnnouncements();
         _announceTimer.Start();
-    }
-
-    private string DequeueAnnouncementBatch()
-    {
-        if (_announceQueue.Count == 0)
-        {
-            return string.Empty;
-        }
-
-        // Réduire le nombre d'events envoyés en rafale : certains lecteurs d'écran peuvent en perdre.
-        // On regroupe quelques messages quand la file est longue.
-        var take = _announceQueue.Count >= 6 ? MaxBatchSize : 1;
-        take = Math.Min(take, _announceQueue.Count);
-
-        var parts = new List<string>(capacity: take);
-        for (var i = 0; i < take; i++)
-        {
-            var next = _announceQueue.Dequeue();
-            if (!string.IsNullOrWhiteSpace(next))
-            {
-                parts.Add(next);
-            }
-        }
-
-        return string.Join(Environment.NewLine, parts);
     }
 
     private void PumpAnnouncements()
@@ -361,14 +334,14 @@ public partial class GameHistoryView : UserControl
             return;
         }
 
-        // Si l'utilisateur est en train de lire l'historique, ne pas interrompre (et ne pas backlogger).
+        // Si l'utilisateur est en train de lire l'historique, ne pas interrompre.
+        // Ne pas vider la file: on reprendra plus tard pour éviter de perdre des messages.
         if (HistoryEditor.IsKeyboardFocusWithin)
         {
-            StopAnnouncePump(clearQueue: true);
             return;
         }
 
-        var next = DequeueAnnouncementBatch();
+        var next = _announceQueue.Dequeue();
         if (string.IsNullOrWhiteSpace(next))
         {
             return;
@@ -377,13 +350,11 @@ public partial class GameHistoryView : UserControl
         try
         {
             // Mise à jour du live-region de secours (plus fiable sur certains setups NVDA).
-            // Force une notification même si le texte est identique à la précédente.
-            if (string.Equals(_lastAnnouncedText, next, StringComparison.Ordinal))
-            {
-                A11yAnnouncer.Text = string.Empty;
-            }
-            A11yAnnouncer.Text = next;
-            _lastAnnouncedText = next;
+            // On alterne un caractère "invisible" pour forcer un changement de texte (même si le message se répète),
+            // sans polluer ce que le lecteur d'écran doit prononcer (lui lit le paramètre `next`).
+            _announcerToggle = !_announcerToggle;
+            var marker = _announcerToggle ? "\u200B" : "\u200C"; // zero-width space / non-joiner
+            A11yAnnouncer.Text = $"{next}{marker}";
 
             var peer = FrameworkElementAutomationPeer.FromElement(A11yAnnouncer) ??
                        FrameworkElementAutomationPeer.CreatePeerForElement(A11yAnnouncer);
