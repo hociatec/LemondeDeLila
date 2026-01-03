@@ -26,15 +26,14 @@ public partial class SocialView : UserControl
 
     private async void OnLoaded(object sender, RoutedEventArgs e)
     {
+        // IMPORTANT (NVDA): ne pas attendre les appels async avant de placer le focus,
+        // sinon WPF peut donner le focus au premier élément Focusable (ex: "Aucun ami").
+        await Dispatcher.InvokeAsync(() => SetScreen(SocialScreen.Menu), DispatcherPriority.Input);
+
         if (DataContext is SocialViewModel vm)
         {
             await vm.InitializeAsync();
         }
-
-        await Dispatcher.InvokeAsync(() =>
-        {
-            SetScreen(SocialScreen.Menu);
-        }, DispatcherPriority.Input);
     }
 
     private void OnRootKeyDown(object sender, KeyEventArgs e)
