@@ -11,6 +11,8 @@ internal enum AdminPage
 {
     Root,
     Maintenance,
+    MaintenanceBackend,
+    MaintenanceSystemd,
     Rooms,
     RoomsJoinSilent,
     RoomsDestroy,

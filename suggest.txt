@@ -44,4 +44,3 @@ Bots
 Maintenance
 - Boutons séparés : “migrations only”, “restart only”, “health check”, “reload config”.
 - Déploiement “dry-run” : build sans redémarrage, + retour d’erreurs clair.
-

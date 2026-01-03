@@ -10,7 +10,7 @@
         <TextBlock Text="{Binding Status}"
                    Foreground="{DynamicResource HighlightBrush}"
                    FontSize="14"
+                   AutomationProperties.LiveSetting="Polite"
                    HorizontalAlignment="Center" />
     </Border>
 </UserControl>
-

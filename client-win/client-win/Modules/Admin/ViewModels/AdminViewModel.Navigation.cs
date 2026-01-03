@@ -255,6 +255,12 @@ public sealed partial class AdminViewModel
             return AdminNavResult.Moved;
         }
 
+        if (_page is AdminPage.MaintenanceBackend or AdminPage.MaintenanceSystemd)
+        {
+            BuildMaintenance();
+            return AdminNavResult.Moved;
+        }
+
         if (_page is AdminPage.Games or AdminPage.Users or AdminPage.Broadcast or AdminPage.ClientUpdates or AdminPage.Maintenance)
         {
             BuildRoot();
@@ -359,7 +365,6 @@ public sealed partial class AdminViewModel
         Items.Add(new AdminMenuItem("Diagnostics latence (rooms/bots/parties)", tag: "perf"));
         Items.Add(new AdminMenuItem("Consulter les logs", tag: "logs"));
         Items.Add(new AdminMenuItem("Maintenance (outils)", tag: "maintenance"));
-        Items.Add(new AdminMenuItem("Maintenance: déployer/redémarrer le backend", tag: "maintenance.deploy"));
         SelectedItem = Items.FirstOrDefault();
         Status = "Entrée : sélectionner. Échap : retour.";
         UpdateFilterVisibility();

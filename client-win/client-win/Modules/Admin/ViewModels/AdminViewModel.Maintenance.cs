@@ -1,8 +1,6 @@
 using System;
 using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
-using client_win.Core.Network;
 using client_win.Modules.Admin.Dtos;
 
 namespace client_win.Modules.Admin.ViewModels;
@@ -101,26 +99,57 @@ public sealed partial class AdminViewModel
         Title = "Maintenance";
         Details = string.Empty;
         Items.Clear();
-        Items.Add(new AdminMenuItem("Rafraîchir (status + logs)", tag: "maintenance.refresh"));
-        Items.Add(new AdminMenuItem("Health check (DB + Redis)", tag: "maintenance.health"));
-        Items.Add(new AdminMenuItem("Migrations only (TypeORM)", tag: "maintenance.migrations"));
-        Items.Add(new AdminMenuItem("Restart backend (redémarrage uniquement)", tag: "maintenance.restart"));
-        Items.Add(new AdminMenuItem("Reload config (systemd daemon-reload)", tag: "maintenance.reload"));
-        Items.Add(new AdminMenuItem("Déploiement dry-run (build sans restart)", tag: "maintenance.dryrun"));
-        Items.Add(new AdminMenuItem("Logs du déploiement", tag: "maintenance.logs"));
-        Items.Add(new AdminMenuItem("Status service backend", tag: "maintenance.service.status"));
+        Items.Add(new AdminMenuItem("Backend", tag: "maintenance.menu.backend"));
+        Items.Add(new AdminMenuItem("Système (systemd)", tag: "maintenance.menu.systemd"));
+        Items.Add(new AdminMenuItem("Rafraîchir (status)", tag: "maintenance.refresh"));
+        Items.Add(new AdminMenuItem("Retour", tag: "maintenance.back"));
         SelectedItem = Items.FirstOrDefault();
 
-        PreferDetailsFocus = true;
+        PreferDetailsFocus = false;
         IsTextInputVisible = false;
         TextInputLabel = string.Empty;
         TextInput = string.Empty;
         IsSecondaryInputVisible = false;
         SecondaryInputLabel = string.Empty;
         SecondaryInput = string.Empty;
-        Status = "Entrée : exécuter l'action sélectionnée. Échap : retour.";
+        Status = "Entrée : sélectionner. Échap : retour.";
+        UpdateFilterVisibility();
+        RestoreFocusIfAny();
 
         _ = RefreshMaintenanceAsync();
+    }
+
+    private void BuildMaintenanceBackendMenu()
+    {
+        _page = AdminPage.MaintenanceBackend;
+        Title = "Maintenance — Backend";
+        Items.Clear();
+        Items.Add(new AdminMenuItem("Health check (DB + Redis)", tag: "maintenance.health"));
+        Items.Add(new AdminMenuItem("Status service backend", tag: "maintenance.service.status"));
+        Items.Add(new AdminMenuItem("Retour", tag: "maintenance.back"));
+        SelectedItem = Items.FirstOrDefault();
+        PreferDetailsFocus = false;
+        IsTextInputVisible = false;
+        IsSecondaryInputVisible = false;
+        Status = "Entrée : sélectionner. Échap : retour.";
+        UpdateFilterVisibility();
+        RestoreFocusIfAny();
+    }
+
+    private void BuildMaintenanceSystemdMenu()
+    {
+        _page = AdminPage.MaintenanceSystemd;
+        Title = "Maintenance — Système";
+        Items.Clear();
+        Items.Add(new AdminMenuItem("Reload config (systemd daemon-reload)", tag: "maintenance.reload"));
+        Items.Add(new AdminMenuItem("Retour", tag: "maintenance.back"));
+        SelectedItem = Items.FirstOrDefault();
+        PreferDetailsFocus = false;
+        IsTextInputVisible = false;
+        IsSecondaryInputVisible = false;
+        Status = "Entrée : sélectionner. Échap : retour.";
+        UpdateFilterVisibility();
+        RestoreFocusIfAny();
     }
 
     private async Task MaintenanceHealthAsync()
@@ -152,104 +181,6 @@ public sealed partial class AdminViewModel
             if (await EnsureMaintenanceTokenOrUpdateAsync(ex).ConfigureAwait(true))
             {
                 await MaintenanceHealthAsync().ConfigureAwait(true);
-                return;
-            }
-            await _dialogs.ShowError("Maintenance", ex.Message).ConfigureAwait(true);
-        }
-        finally
-        {
-            IsBusy = false;
-        }
-    }
-
-    private async Task MaintenanceRunMigrationsAsync()
-    {
-        if (IsBusy)
-        {
-            return;
-        }
-
-        if (!await EnsureMaintenanceTokenAsync(promptIfMissing: true).ConfigureAwait(true))
-        {
-            Status = "Maintenance: token requis";
-            return;
-        }
-
-        var confirmed = await _dialogs.Confirm(
-                "Maintenance",
-                "Exécuter les migrations uniquement (npm run migration:run) ?",
-                okText: "Exécuter",
-                cancelText: "Annuler")
-            .ConfigureAwait(true);
-        if (confirmed != true)
-        {
-            return;
-        }
-
-        try
-        {
-            IsBusy = true;
-            Status = "Maintenance: migrations…";
-
-            var res = await _maintenance.RunMigrationsAsync().ConfigureAwait(true);
-            Details = $"Command: {res.Command}\nExit: {res.Status}\n\nSTDOUT:\n{TailLines(res.Stdout, 200)}\n\nSTDERR:\n{TailLines(res.Stderr, 80)}";
-            PreferDetailsFocus = true;
-            Status = "Maintenance: migrations OK";
-        }
-        catch (Exception ex)
-        {
-            if (await EnsureMaintenanceTokenOrUpdateAsync(ex).ConfigureAwait(true))
-            {
-                await MaintenanceRunMigrationsAsync().ConfigureAwait(true);
-                return;
-            }
-            await _dialogs.ShowError("Maintenance", ex.Message).ConfigureAwait(true);
-        }
-        finally
-        {
-            IsBusy = false;
-        }
-    }
-
-    private async Task MaintenanceDryRunBuildAsync()
-    {
-        if (IsBusy)
-        {
-            return;
-        }
-
-        if (!await EnsureMaintenanceTokenAsync(promptIfMissing: true).ConfigureAwait(true))
-        {
-            Status = "Maintenance: token requis";
-            return;
-        }
-
-        var confirmed = await _dialogs.Confirm(
-                "Maintenance",
-                "Dry-run : compiler le backend (npm run build) sans redémarrer ?",
-                okText: "Compiler",
-                cancelText: "Annuler")
-            .ConfigureAwait(true);
-        if (confirmed != true)
-        {
-            return;
-        }
-
-        try
-        {
-            IsBusy = true;
-            Status = "Maintenance: build…";
-
-            var res = await _maintenance.DryRunBuildAsync().ConfigureAwait(true);
-            Details = $"Command: {res.Command}\nExit: {res.Status}\n\nSTDOUT:\n{TailLines(res.Stdout, 200)}\n\nSTDERR:\n{TailLines(res.Stderr, 80)}";
-            PreferDetailsFocus = true;
-            Status = "Maintenance: build OK";
-        }
-        catch (Exception ex)
-        {
-            if (await EnsureMaintenanceTokenOrUpdateAsync(ex).ConfigureAwait(true))
-            {
-                await MaintenanceDryRunBuildAsync().ConfigureAwait(true);
                 return;
             }
             await _dialogs.ShowError("Maintenance", ex.Message).ConfigureAwait(true);
@@ -309,77 +240,6 @@ public sealed partial class AdminViewModel
         }
     }
 
-    private async Task MaintenanceRestartBackendAsync()
-    {
-        if (IsBusy)
-        {
-            return;
-        }
-
-        if (!await EnsureMaintenanceTokenAsync(promptIfMissing: true).ConfigureAwait(true))
-        {
-            Status = "Maintenance: token requis";
-            return;
-        }
-
-        var confirmed = await _dialogs.Confirm(
-                "Maintenance",
-                "Redémarrer le backend maintenant ?\n\nNote: la connexion sera coupée quelques secondes.",
-                okText: "Redémarrer",
-                cancelText: "Annuler")
-            .ConfigureAwait(true);
-        if (confirmed != true)
-        {
-            return;
-        }
-
-        try
-        {
-            IsBusy = true;
-            Status = "Maintenance: restart…";
-            Details = string.Empty;
-
-            // L'endpoint renvoie un ACK avant de redémarrer effectivement (planifié côté serveur).
-            _ = await _maintenance.RestartBackendAsync().ConfigureAwait(true);
-
-            var deadline = DateTimeOffset.UtcNow.AddSeconds(45);
-            var attempt = 0;
-            while (DateTimeOffset.UtcNow < deadline)
-            {
-                attempt++;
-                try
-                {
-                    var status = await _maintenance.GetBackendServiceStatusAsync().ConfigureAwait(true);
-                    Details = "Backend:\n" + FormatDeployStatus(status);
-                    PreferDetailsFocus = true;
-                    Status = "Maintenance: restart OK";
-                    return;
-                }
-                catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
-                {
-                    Status = "Maintenance: attente backend…";
-                    await Task.Delay(RetryStrategy.CalculateDelay(attempt, baseDelayMs: 750, maxDelayMs: 5000))
-                        .ConfigureAwait(true);
-                }
-            }
-
-            Status = "Maintenance: restart (timeout)";
-        }
-        catch (Exception ex)
-        {
-            if (await EnsureMaintenanceTokenOrUpdateAsync(ex).ConfigureAwait(true))
-            {
-                await MaintenanceRestartBackendAsync().ConfigureAwait(true);
-                return;
-            }
-            await _dialogs.ShowError("Maintenance", ex.Message).ConfigureAwait(true);
-        }
-        finally
-        {
-            IsBusy = false;
-        }
-    }
-
     private async Task RefreshMaintenanceAsync()
     {
         if (IsBusy)
@@ -399,13 +259,7 @@ public sealed partial class AdminViewModel
             Status = "Maintenance: chargement…";
 
             var backend = await _maintenance.GetBackendServiceStatusAsync().ConfigureAwait(true);
-            var deploy = await _maintenance.GetDeployStatusAsync().ConfigureAwait(true);
-            var logs = await _maintenance.GetDeployLogsAsync(200).ConfigureAwait(true);
-
-            Details =
-                "Backend:\n" + FormatDeployStatus(backend) +
-                "\n\nDéploiement:\n" + FormatDeployStatus(deploy) +
-                "\n\nLogs (tail):\n" + TailLines(logs.Logs, 80);
+            Details = "Backend:\n" + FormatDeployStatus(backend);
 
             Status = "Maintenance: OK";
         }
@@ -414,44 +268,6 @@ public sealed partial class AdminViewModel
             if (await EnsureMaintenanceTokenOrUpdateAsync(ex).ConfigureAwait(true))
             {
                 await RefreshMaintenanceAsync().ConfigureAwait(true);
-                return;
-            }
-            await _dialogs.ShowError("Maintenance", ex.Message).ConfigureAwait(true);
-        }
-        finally
-        {
-            IsBusy = false;
-        }
-    }
-
-    private async Task RefreshMaintenanceLogsAsync()
-    {
-        if (IsBusy)
-        {
-            return;
-        }
-
-        try
-        {
-            if (!await EnsureMaintenanceTokenAsync(promptIfMissing: true).ConfigureAwait(true))
-            {
-                Status = "Maintenance: token requis";
-                return;
-            }
-
-            IsBusy = true;
-            Status = "Maintenance: logs…";
-
-            var logs = await _maintenance.GetDeployLogsAsync(500).ConfigureAwait(true);
-            Details = TailLines(logs.Logs, 200);
-            PreferDetailsFocus = true;
-            Status = "Maintenance: logs OK";
-        }
-        catch (Exception ex)
-        {
-            if (await EnsureMaintenanceTokenOrUpdateAsync(ex).ConfigureAwait(true))
-            {
-                await RefreshMaintenanceLogsAsync().ConfigureAwait(true);
                 return;
             }
             await _dialogs.ShowError("Maintenance", ex.Message).ConfigureAwait(true);
@@ -502,136 +318,6 @@ public sealed partial class AdminViewModel
         }
     }
 
-    private async Task DeployBackendAsync()
-    {
-        if (IsBusy)
-        {
-            return;
-        }
-
-        if (!await EnsureMaintenanceTokenAsync(promptIfMissing: true).ConfigureAwait(true))
-        {
-            Status = "Déploiement: token requis";
-            return;
-        }
-
-        var confirmed = await _dialogs.Confirm(
-            "Maintenance",
-            "Déclencher le déploiement backend (git pull + build + migrations + restart) ?\n\n" +
-            "Note: le redémarrage coupe momentanément la connexion, le client va retry automatiquement.",
-            okText: "Déployer",
-            cancelText: "Annuler").ConfigureAwait(true);
-
-        if (confirmed != true)
-        {
-            return;
-        }
-
-        AdminMaintenanceUnitStatusResponse? lastDeployStatus = null;
-        string? lastLogs = null;
-
-        try
-        {
-            IsBusy = true;
-            Status = "Déploiement: démarrage…";
-            Details = string.Empty;
-
-            await _maintenance.StartDeployAsync().ConfigureAwait(true);
-
-            var deadline = DateTimeOffset.UtcNow.AddMinutes(4);
-            var attempt = 0;
-
-            while (DateTimeOffset.UtcNow < deadline)
-            {
-                attempt++;
-                try
-                {
-                    lastDeployStatus = await _maintenance.GetDeployStatusAsync().ConfigureAwait(true);
-                    var logs = await _maintenance.GetDeployLogsAsync(200).ConfigureAwait(true);
-                    lastLogs = logs.Logs;
-
-                    Status = FormatDeployStatus(lastDeployStatus);
-                    Details = BuildDeployDetails(lastDeployStatus, lastLogs);
-
-                    if (IsDeployFinished(lastDeployStatus))
-                    {
-                        break;
-                    }
-
-                    await Task.Delay(TimeSpan.FromSeconds(2)).ConfigureAwait(true);
-                }
-                catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
-                {
-                    Status = "Déploiement: attente du serveur (restart)…";
-                    await Task.Delay(RetryStrategy.CalculateDelay(attempt, baseDelayMs: 750, maxDelayMs: 5000))
-                        .ConfigureAwait(true);
-                }
-            }
-
-            if (lastDeployStatus == null)
-            {
-                await _dialogs.ShowError("Maintenance", "Impossible de récupérer le status du déploiement.").ConfigureAwait(true);
-                return;
-            }
-
-            if (!IsDeployFinished(lastDeployStatus))
-            {
-                await _dialogs.ShowError(
-                        "Maintenance",
-                        "Timeout: le déploiement n'a pas terminé à temps.\n\n" + FormatDeployStatus(lastDeployStatus))
-                    .ConfigureAwait(true);
-                return;
-            }
-
-            var backendStatus = await TryGetBackendServiceStatusAsync().ConfigureAwait(true);
-            await _dialogs.ShowInfo(
-                    "Maintenance",
-                    "Déploiement terminé.\n\n" +
-                    FormatDeployStatus(lastDeployStatus) +
-                    (backendStatus == null ? string.Empty : "\n\nBackend: " + FormatDeployStatus(backendStatus)))
-                .ConfigureAwait(true);
-        }
-        catch (Exception ex)
-        {
-            if (await EnsureMaintenanceTokenOrUpdateAsync(ex).ConfigureAwait(true))
-            {
-                await DeployBackendAsync().ConfigureAwait(true);
-                return;
-            }
-            await _dialogs.ShowError("Maintenance", ex.Message).ConfigureAwait(true);
-        }
-        finally
-        {
-            IsBusy = false;
-        }
-    }
-
-    private async Task<AdminMaintenanceUnitStatusResponse?> TryGetBackendServiceStatusAsync()
-    {
-        try
-        {
-            return await _maintenance.GetBackendServiceStatusAsync().ConfigureAwait(true);
-        }
-        catch
-        {
-            return null;
-        }
-    }
-
-    private static bool IsDeployFinished(AdminMaintenanceUnitStatusResponse status)
-    {
-        var active = (status.ActiveState ?? string.Empty).Trim().ToLowerInvariant();
-        var result = (status.Result ?? string.Empty).Trim().ToLowerInvariant();
-
-        if (active == "failed")
-        {
-            return true;
-        }
-
-        // Typical oneshot completion: inactive + success/failed.
-        return active == "inactive" && (result == "success" || result == "failed");
-    }
-
     private static string FormatDeployStatus(AdminMaintenanceUnitStatusResponse status)
     {
         var unit = (status.Unit ?? "unknown").Trim();
@@ -642,16 +328,6 @@ public sealed partial class AdminViewModel
         var exitStatus = (status.ExecMainStatus ?? "?").Trim();
 
         return $"{unit}: {active}/{sub} (result={result}, code={code}, status={exitStatus})";
-    }
-
-    private static string BuildDeployDetails(AdminMaintenanceUnitStatusResponse status, string? logs)
-    {
-        var tail = TailLines(logs, 40);
-        if (string.IsNullOrWhiteSpace(tail))
-        {
-            return FormatDeployStatus(status);
-        }
-        return FormatDeployStatus(status) + "\n\n" + tail;
     }
 
     private static string TailLines(string? text, int maxLines)

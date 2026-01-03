@@ -70,11 +70,6 @@ public sealed partial class AdminViewModel
                     ShowLogs();
                     return;
                 }
-                if (tag is string maintenanceAction && maintenanceAction == "maintenance.deploy")
-                {
-                    await DeployBackendAsync().ConfigureAwait(true);
-                    return;
-                }
                 if (tag is string perf && perf == "perf")
                 {
                     PushReturnFocus();
@@ -812,47 +807,65 @@ public sealed partial class AdminViewModel
                 return;
             }
 
-            if (_page == AdminPage.Maintenance && tag is string maintenanceTag)
+            if (_page is AdminPage.Maintenance or AdminPage.MaintenanceBackend or AdminPage.MaintenanceSystemd && tag is string maintenanceTag)
             {
-                if (maintenanceTag == "maintenance.refresh")
+                if (_page == AdminPage.Maintenance)
                 {
-                    await RefreshMaintenanceAsync().ConfigureAwait(true);
-                    return;
+                    if (maintenanceTag == "maintenance.menu.backend")
+                    {
+                        PushReturnFocus();
+                        BuildMaintenanceBackendMenu();
+                        return;
+                    }
+                    if (maintenanceTag == "maintenance.menu.systemd")
+                    {
+                        PushReturnFocus();
+                        BuildMaintenanceSystemdMenu();
+                        return;
+                    }
+                    if (maintenanceTag == "maintenance.refresh")
+                    {
+                        await RefreshMaintenanceAsync().ConfigureAwait(true);
+                        return;
+                    }
+                    if (maintenanceTag == "maintenance.back")
+                    {
+                        BuildRoot();
+                        return;
+                    }
                 }
-                if (maintenanceTag == "maintenance.health")
+
+                if (_page == AdminPage.MaintenanceBackend)
                 {
-                    await MaintenanceHealthAsync().ConfigureAwait(true);
-                    return;
+                    if (maintenanceTag == "maintenance.health")
+                    {
+                        await MaintenanceHealthAsync().ConfigureAwait(true);
+                        return;
+                    }
+                    if (maintenanceTag == "maintenance.service.status")
+                    {
+                        await RefreshMaintenanceServiceStatusAsync().ConfigureAwait(true);
+                        return;
+                    }
+                    if (maintenanceTag == "maintenance.back")
+                    {
+                        BuildMaintenance();
+                        return;
+                    }
                 }
-                if (maintenanceTag == "maintenance.migrations")
+
+                if (_page == AdminPage.MaintenanceSystemd)
                 {
-                    await MaintenanceRunMigrationsAsync().ConfigureAwait(true);
-                    return;
-                }
-                if (maintenanceTag == "maintenance.restart")
-                {
-                    await MaintenanceRestartBackendAsync().ConfigureAwait(true);
-                    return;
-                }
-                if (maintenanceTag == "maintenance.reload")
-                {
-                    await MaintenanceDaemonReloadAsync().ConfigureAwait(true);
-                    return;
-                }
-                if (maintenanceTag == "maintenance.dryrun")
-                {
-                    await MaintenanceDryRunBuildAsync().ConfigureAwait(true);
-                    return;
-                }
-                if (maintenanceTag == "maintenance.logs")
-                {
-                    await RefreshMaintenanceLogsAsync().ConfigureAwait(true);
-                    return;
-                }
-                if (maintenanceTag == "maintenance.service.status")
-                {
-                    await RefreshMaintenanceServiceStatusAsync().ConfigureAwait(true);
-                    return;
+                    if (maintenanceTag == "maintenance.reload")
+                    {
+                        await MaintenanceDaemonReloadAsync().ConfigureAwait(true);
+                        return;
+                    }
+                    if (maintenanceTag == "maintenance.back")
+                    {
+                        BuildMaintenance();
+                        return;
+                    }
                 }
             }
 

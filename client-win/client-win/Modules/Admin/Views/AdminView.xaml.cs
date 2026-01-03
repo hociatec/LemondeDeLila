@@ -21,6 +21,7 @@ public partial class AdminView : UserControl
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
         AttachViewModel(DataContext as AdminViewModel);
+        AttachRootTabSuppression();
         AttachItemsKeyNavigation();
         FocusWhenContainersGenerated();
         FocusBestInputIfVisible();
@@ -62,6 +63,31 @@ public partial class AdminView : UserControl
 
         ItemsList.PreviewKeyDown -= OnItemsListPreviewKeyDown;
         ItemsList.PreviewKeyDown += OnItemsListPreviewKeyDown;
+    }
+
+    private void AttachRootTabSuppression()
+    {
+        PreviewKeyDown -= OnPreviewKeyDown;
+        PreviewKeyDown += OnPreviewKeyDown;
+    }
+
+    private void OnPreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Handled || e.Key != Key.Tab)
+        {
+            return;
+        }
+
+        if (DataContext is not AdminViewModel vm)
+        {
+            return;
+        }
+
+        if (vm.IsRootMenu)
+        {
+            // Dans le menu principal admin, éviter Tab/Maj+Tab qui déplace le focus hors de la liste.
+            e.Handled = true;
+        }
     }
 
     private void OnItemsListPreviewKeyDown(object sender, KeyEventArgs e)

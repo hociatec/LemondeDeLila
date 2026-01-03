@@ -169,6 +169,8 @@ public sealed partial class AdminViewModel : ObservableObject
 
     public event Action? NavigationChanged;
 
+    public bool IsRootMenu => _page == AdminPage.Root;
+
     public ObservableCollection<AdminMenuItem> Items { get; }
 
     public AdminMenuItem? SelectedItem
