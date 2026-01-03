@@ -328,7 +328,7 @@ public partial class GameHistoryView : UserControl
         // en "ratent" quand plusieurs events UIA partent trop vite.
         _announceTimer = new DispatcherTimer(DispatcherPriority.Background, Dispatcher)
         {
-            Interval = TimeSpan.FromMilliseconds(200),
+            Interval = TimeSpan.FromMilliseconds(75),
         };
         _announceTimer.Tick += (_, __) => PumpAnnouncements();
         _announceTimer.Start();
@@ -383,10 +383,16 @@ public partial class GameHistoryView : UserControl
 
     private static TimeSpan ComputeAnnouncementDelay(string message)
     {
-        var length = message?.Length ?? 0;
-        var ms = 500 + (length * 20);
-        if (ms < 800) ms = 800;
-        if (ms > 5000) ms = 5000;
+        var text = message ?? string.Empty;
+        var length = text.Length;
+        var words = text.Split(new[] { ' ', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).Length;
+
+        // Vise un débit "naturel" sans perdre d'annonces :
+        // - court message => faible latence
+        // - long message => plus de marge
+        var ms = 180 + (words * 120) + (length * 6);
+        if (ms < 250) ms = 250;
+        if (ms > 1600) ms = 1600;
         return TimeSpan.FromMilliseconds(ms);
     }
 
