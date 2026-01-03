@@ -346,6 +346,7 @@ public partial class GameHistoryView : UserControl
             _announcerToggle = !_announcerToggle;
             var marker = _announcerToggle ? "\u200B" : "\u200C"; // zero-width space / non-joiner
             A11yAnnouncer.Text = $"{next}{marker}";
+            AutomationProperties.SetName(A11yAnnouncer, next);
 
             var peer = FrameworkElementAutomationPeer.FromElement(A11yAnnouncer) ??
                        FrameworkElementAutomationPeer.CreatePeerForElement(A11yAnnouncer);

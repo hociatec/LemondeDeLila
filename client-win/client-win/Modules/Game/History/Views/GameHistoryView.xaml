@@ -58,15 +58,14 @@
 	                les NotificationEvent UIA). Le texte est mis à jour en code-behind.
 	                NOTE: ne pas mettre Visibility=Collapsed (sinon retiré de l'arbre d'automatisation).
 	            -->
-		            <TextBlock x:Name="A11yAnnouncer"
-		                       Grid.Row="2"
-		                       Height="1"
-		                       Width="1"
-		                       Opacity="0"
-		                       IsHitTestVisible="False"
-		                       AutomationProperties.IsOffscreenBehavior="Onscreen"
-		                       AutomationProperties.Name=""
-		                       AutomationProperties.LiveSetting="Polite" />
-	        </Grid>
-	    </Border>
-	</UserControl>
+			            <TextBlock x:Name="A11yAnnouncer"
+			                       Grid.Row="2"
+			                       Height="1"
+			                       Width="1"
+			                       Opacity="0"
+			                       IsHitTestVisible="False"
+			                       AutomationProperties.IsOffscreenBehavior="Onscreen"
+			                       AutomationProperties.LiveSetting="Polite" />
+		        </Grid>
+		    </Border>
+		</UserControl>
