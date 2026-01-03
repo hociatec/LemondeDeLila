@@ -12,7 +12,7 @@ import { BotService } from '../../bot/services/bot.service';
 import { Inject, Logger, forwardRef } from '@nestjs/common';
 import { WsJwtAuthService } from '../../common/ws/ws-jwt-auth.service';
 import { WsSignatureService } from '../../common/ws/ws-signature.service';
-import type { RoomPlayer } from '../dto/room-response.dto';
+import type { RoomPayload, RoomPlayer } from '../dto/room-response.dto';
 import { CatalogService } from '../../catalog/services/catalog.service';
 import { PerfMetricsService } from '../../common/services/perf-metrics.service';
 import { RoomInviteService } from '../services/room-invite.service';
@@ -379,12 +379,39 @@ export class RoomGateway
   private async sendRoomState(roomId: number) {
     try {
       const payload = await this.roomsService.getRoomPayload(roomId);
-      payload.room.spectators = listVisibleSpectators(this.clients.values(), roomId);
-      payload.room.counts.spectators = payload.room.spectators.length;
+      this.applySpectators(roomId, payload);
       await this.broadcast(roomId, 'room.updated', payload);
     } catch {
       /* la table a peut-être été supprimée, on ignore */
     }
+  }
+
+  private applySpectators(roomId: number, payload: RoomPayload): void {
+    payload.room.spectators = listVisibleSpectators(this.clients.values(), roomId);
+    payload.room.counts.spectators = payload.room.spectators.length;
+  }
+
+  private async broadcastRoomPayload(
+    roomId: number,
+    payload: RoomPayload,
+  ): Promise<void> {
+    this.applySpectators(roomId, payload);
+    await this.broadcast(roomId, 'room.updated', payload);
+  }
+
+  private async tryUpdateRoomPayload(
+    roomId: number,
+    updater: (payload: RoomPayload) => RoomPayload | null,
+  ): Promise<boolean> {
+    const updated = await this.roomsService.updateRoomPayloadCache(
+      roomId,
+      updater,
+    );
+    if (!updated) {
+      return false;
+    }
+    await this.broadcastRoomPayload(roomId, updated);
+    return true;
   }
 
   private async sendRoomStateToClient(
@@ -397,8 +424,7 @@ export class RoomGateway
   ) {
     try {
       const payload = await this.roomsService.getRoomPayload(roomId);
-      payload.room.spectators = listVisibleSpectators(this.clients.values(), roomId);
-      payload.room.counts.spectators = payload.room.spectators.length;
+      this.applySpectators(roomId, payload);
       if (opts?.includeHiddenSelf) {
         payload.room.spectators = addHiddenSelf(payload.room.spectators, opts.includeHiddenSelf);
         payload.room.counts.spectators = payload.room.spectators.length;
@@ -797,9 +823,24 @@ export class RoomGateway
     await this.perf.measure(
       'ws.room.start.total',
       async () => {
-        await this.roomsService.startRoom(meta.roomId, meta.userId);
+        const room = await this.roomsService.startRoom(
+          meta.roomId,
+          meta.userId,
+          false,
+        );
         await this.broadcast(meta.roomId, 'state-updated', { roomId: meta.roomId });
-        await this.sendRoomState(meta.roomId);
+        const updated = await this.tryUpdateRoomPayload(meta.roomId, (payload) => {
+          payload.room.status = room.status;
+          payload.room.startedAt = room.startedAt
+            ? room.startedAt.toISOString()
+            : new Date().toISOString();
+          payload.generatedAt = new Date().toISOString();
+          return payload;
+        });
+        if (!updated) {
+          await this.roomsService.invalidateRoomPayloadCache(meta.roomId);
+          await this.sendRoomState(meta.roomId);
+        }
       },
       { roomId: meta.roomId, userId: meta.userId, ...trace },
     );
@@ -814,9 +855,22 @@ export class RoomGateway
     await this.perf.measure(
       'ws.room.reset.total',
       async () => {
-        await this.roomsService.resetRoom(meta.roomId, meta.userId);
+        const room = await this.roomsService.resetRoom(
+          meta.roomId,
+          meta.userId,
+          false,
+        );
         await this.broadcast(meta.roomId, 'state-updated', { roomId: meta.roomId });
-        await this.sendRoomState(meta.roomId);
+        const updated = await this.tryUpdateRoomPayload(meta.roomId, (payload) => {
+          payload.room.status = room.status;
+          payload.room.startedAt = null;
+          payload.generatedAt = new Date().toISOString();
+          return payload;
+        });
+        if (!updated) {
+          await this.roomsService.invalidateRoomPayloadCache(meta.roomId);
+          await this.sendRoomState(meta.roomId);
+        }
       },
       { roomId: meta.roomId, userId: meta.userId, ...trace },
     );
@@ -831,8 +885,23 @@ export class RoomGateway
     await this.perf.measure(
       'ws.room.togglePrivacy.total',
       async () => {
-        await this.roomsService.togglePrivacy(meta.roomId, meta.userId);
-        const state = await this.roomsService.getRoomPayload(meta.roomId);
+        const room = await this.roomsService.togglePrivacy(
+          meta.roomId,
+          meta.userId,
+          false,
+        );
+        let state = await this.roomsService.updateRoomPayloadCache(
+          meta.roomId,
+          (payload) => {
+            payload.room.isPrivate = room.isPrivate;
+            payload.generatedAt = new Date().toISOString();
+            return payload;
+          },
+        );
+        if (!state) {
+          await this.roomsService.invalidateRoomPayloadCache(meta.roomId);
+          state = await this.roomsService.getRoomPayload(meta.roomId);
+        }
         await this.broadcast(meta.roomId, 'room.privacy', {
           isPrivate: state.room.isPrivate,
           room: state.room,
@@ -852,12 +921,22 @@ export class RoomGateway
       'ws.room.bot.add.total',
       async () => {
         const bot = await this.botService.addBot(meta.roomId, meta.userId);
-        await this.roomsService.invalidateRoomPayloadCache(meta.roomId);
         await this.broadcast(meta.roomId, 'bot.added', {
           roomId: meta.roomId,
           bot: { id: bot.id, name: bot.name },
         });
-        await this.sendRoomState(meta.roomId);
+        const updated = await this.tryUpdateRoomPayload(meta.roomId, (payload) => {
+          payload.room.bots = payload.room.bots ?? [];
+          if (!payload.room.bots.some((b) => b.id === bot.id)) {
+            payload.room.bots.push({ id: bot.id, name: bot.name });
+          }
+          payload.generatedAt = new Date().toISOString();
+          return payload;
+        });
+        if (!updated) {
+          await this.roomsService.invalidateRoomPayloadCache(meta.roomId);
+          await this.sendRoomState(meta.roomId);
+        }
       },
       { roomId: meta.roomId, userId: meta.userId, ...trace },
     );
@@ -874,9 +953,7 @@ export class RoomGateway
       async () => {
         let botId = Number(payload?.botId ?? payload?.id ?? -1);
         if (!Number.isFinite(botId) || botId <= 0) {
-          const state = await this.roomsService.getRoomPayload(meta.roomId);
-          const bots = state?.room?.bots ?? [];
-          const last = bots.length > 0 ? bots[bots.length - 1] : null;
+          const last = await this.botService.getLastBotForRoom(meta.roomId);
           if (!last?.id) {
             throw new Error('Aucun bot à retirer');
           }
@@ -887,13 +964,22 @@ export class RoomGateway
           meta.userId,
           botId,
         );
-        await this.roomsService.invalidateRoomPayloadCache(meta.roomId);
         await this.broadcast(meta.roomId, 'bot.removed', {
           roomId: meta.roomId,
           bot: { id: bot.id, name: bot.name },
           botId,
         });
-        await this.sendRoomState(meta.roomId);
+        const updated = await this.tryUpdateRoomPayload(meta.roomId, (payload) => {
+          payload.room.bots = (payload.room.bots ?? []).filter(
+            (b) => b.id !== bot.id,
+          );
+          payload.generatedAt = new Date().toISOString();
+          return payload;
+        });
+        if (!updated) {
+          await this.roomsService.invalidateRoomPayloadCache(meta.roomId);
+          await this.sendRoomState(meta.roomId);
+        }
       },
       { roomId: meta.roomId, userId: meta.userId, ...trace },
     );
@@ -991,6 +1077,7 @@ export class RoomGateway
           name,
           maxPlayers,
           isPrivate,
+          false,
         );
 
         const previousRoomId = meta.roomId;
@@ -1055,7 +1142,7 @@ export class RoomGateway
         }
         await this.roomsService.primeRoomPayloadCache(room.id, state);
         this.safeSend(client, message);
-        await this.sendRoomState(room.id);
+        await this.broadcastRoomPayload(room.id, state);
       },
       {
         userId: meta.userId,

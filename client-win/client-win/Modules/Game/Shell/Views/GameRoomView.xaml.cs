@@ -27,7 +27,7 @@ public partial class GameRoomView : UserControl
         HookGameZoneTabDelegation();
     }
 
-    public void RequestFocusGameZone() => FocusGameZone();
+    public void RequestFocusGameZone() => RequestFocusGameZoneDeferred();
 
     public void SetScreenReader(IScreenReaderAnnouncer? screenReader)
     {
@@ -184,7 +184,7 @@ public partial class GameRoomView : UserControl
                 title: $"Menu — {vm.GameZone.Title}",
                 shortcuts: shortcuts);
 
-            Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusGameZone));
+            RequestFocusGameZoneDeferred();
             return;
         }
 
@@ -282,6 +282,23 @@ public partial class GameRoomView : UserControl
         {
             zone.FocusGameZone();
         }
+    }
+
+    private void RequestFocusGameZoneDeferred()
+    {
+        try
+        {
+            (Window.GetWindow(this) ?? Application.Current?.MainWindow)?.Activate();
+        }
+        catch
+        {
+            // ignore
+        }
+
+        // Le retour de focus après un ShowDialog / une navigation peut être "en retard" :
+        // on demande un focus immédiat puis un second passage à l'idle pour fiabiliser.
+        Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusGameZone));
+        Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(FocusGameZone));
     }
 
     private void FocusHistory()

@@ -33,7 +33,7 @@ export class RoomService {
   private readonly logger = new Logger(RoomService.name);
   private redis: Redis | null = null;
   private readonly roomPayloadRedisPrefix = 'room:payload:';
-  private readonly roomPayloadTtlSeconds = 3;
+  private readonly roomPayloadTtlSeconds: number;
 
   /**
    * Hook optionnel pour notifier les clients WS room (set par RoomGateway).
@@ -292,7 +292,14 @@ export class RoomService {
     private readonly realtimeTracker: RoomRealtimeTrackerService,
     private readonly config: ConfigService,
     private readonly redisFactory: RedisClientFactory,
-  ) {}
+  ) {
+    const ttlCandidate = Number(
+      this.config.get('ROOM_PAYLOAD_CACHE_TTL_SECONDS') ?? 15,
+    );
+    const ttl =
+      Number.isFinite(ttlCandidate) && ttlCandidate >= 1 ? ttlCandidate : 15;
+    this.roomPayloadTtlSeconds = Math.min(ttl, 3600);
+  }
 
   async primeRoomPayloadCache(
     roomId: number,
@@ -313,12 +320,38 @@ export class RoomService {
     }
   }
 
+  async updateRoomPayloadCache(
+    roomId: number,
+    updater: (payload: RoomPayload) => RoomPayload | null,
+  ): Promise<RoomPayload | null> {
+    if (!this.redis) {
+      this.ensureRedisInitialized();
+    }
+    if (!this.redis) return null;
+
+    try {
+      const cached = await this.getCachedRoomPayload(roomId);
+      if (!cached) {
+        return null;
+      }
+      const next = updater(cached);
+      if (!next) {
+        return null;
+      }
+      await this.persistRoomPayload(roomId, next);
+      return next;
+    } catch {
+      return null;
+    }
+  }
+
   async createRoom(
     userId: number,
     gameType: string,
     name?: string | null,
     maxPlayers?: number | null,
     isPrivate = false,
+    invalidateCache = true,
   ): Promise<Room> {
     const startedAt = Date.now();
     const owner = await this.requireUser(userId);
@@ -362,7 +395,9 @@ export class RoomService {
 
       return room;
     });
-    await this.invalidateRoomPayloadCache(room.id);
+    if (invalidateCache) {
+      await this.invalidateRoomPayloadCache(room.id);
+    }
     this.notifyDirectoryChanged(room.id, 'created');
     const elapsedMs = Date.now() - startedAt;
     if (elapsedMs >= 1500) {
@@ -537,17 +572,27 @@ export class RoomService {
     return room;
   }
 
-  async togglePrivacy(roomId: number, userId: number): Promise<Room> {
+  async togglePrivacy(
+    roomId: number,
+    userId: number,
+    invalidateCache = true,
+  ): Promise<Room> {
     const room = await this.requireRoom(roomId);
     this.ensureOwner(room, userId);
     room.isPrivate = !room.isPrivate;
     await this.rooms.save(room);
-    await this.invalidateRoomPayloadCache(room.id);
+    if (invalidateCache) {
+      await this.invalidateRoomPayloadCache(room.id);
+    }
     this.notifyDirectoryChanged(room.id, 'privacy');
     return room;
   }
 
-  async startRoom(roomId: number, userId: number): Promise<Room> {
+  async startRoom(
+    roomId: number,
+    userId: number,
+    invalidateCache = true,
+  ): Promise<Room> {
     const room = await this.requireRoom(roomId);
     this.ensureOwner(room, userId);
     const humans = await this.countActiveHumans(room.id);
@@ -558,7 +603,9 @@ export class RoomService {
     room.status = 'started';
     room.startedAt = room.startedAt ?? new Date();
     await this.rooms.save(room);
-    await this.invalidateRoomPayloadCache(room.id);
+    if (invalidateCache) {
+      await this.invalidateRoomPayloadCache(room.id);
+    }
     this.notifyDirectoryChanged(room.id, 'started');
 
     try {
@@ -584,7 +631,11 @@ export class RoomService {
     return room;
   }
 
-  async resetRoom(roomId: number, userId: number): Promise<Room> {
+  async resetRoom(
+    roomId: number,
+    userId: number,
+    invalidateCache = true,
+  ): Promise<Room> {
     const room = await this.requireRoom(roomId);
     const known = await this.catalog.getGame(room.gameType);
     if (!known) {
@@ -602,7 +653,9 @@ export class RoomService {
     room.status = 'setup';
     room.startedAt = null;
     await this.rooms.save(room);
-    await this.invalidateRoomPayloadCache(room.id);
+    if (invalidateCache) {
+      await this.invalidateRoomPayloadCache(room.id);
+    }
     this.notifyDirectoryChanged(room.id, 'reset');
     return room;
   }

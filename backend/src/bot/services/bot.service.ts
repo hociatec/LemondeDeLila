@@ -14,13 +14,21 @@ import { BotName } from '../entities/bot-name.entity';
 
 @Injectable()
 export class BotService {
+  private cachedEnabledNames: { values: string[]; expiresAt: number } | null =
+    null;
+  private readonly namesCacheTtlMs: number;
+
   constructor(
     @InjectRepository(RoomBot) private readonly bots: Repository<RoomBot>,
     @InjectRepository(Room) private readonly rooms: Repository<Room>,
     @InjectRepository(RoomParticipant)
     private readonly participants: Repository<RoomParticipant>,
     @InjectRepository(BotName) private readonly botNames: Repository<BotName>,
-  ) {}
+  ) {
+    const ttlCandidate = Number(process.env.BOT_NAMES_CACHE_TTL_MS ?? 30000);
+    this.namesCacheTtlMs =
+      Number.isFinite(ttlCandidate) && ttlCandidate >= 0 ? ttlCandidate : 30000;
+  }
 
   async addBot(roomId: number, userId: number): Promise<RoomBot> {
     const room = await this.requireRoomWithOwner(roomId);
@@ -28,12 +36,15 @@ export class BotService {
     if (!this.isRoomOpen(room)) {
       throw new BadRequestException('Table deja demarree');
     }
-    const humans = await this.countActiveHumans(room.id);
-    const botsCount = await this.countBots(room.id);
+    const [humans, existingBots] = await Promise.all([
+      this.countActiveHumans(room.id),
+      this.bots.find({ where: { room: { id: room.id } } }),
+    ]);
+    const botsCount = existingBots.length;
     if (humans + botsCount >= room.maxPlayers) {
       throw new BadRequestException('Table pleine');
     }
-    const name = await this.pickName(room.id);
+    const name = await this.pickName(existingBots);
     const bot = this.bots.create({ room, name });
     return this.bots.save(bot);
   }
@@ -49,13 +60,16 @@ export class BotService {
       throw new NotFoundException('Table introuvable');
     }
 
-    const humans = await this.countActiveHumans(room.id);
-    const botsCount = await this.countBots(room.id);
+    const [humans, existingBots] = await Promise.all([
+      this.countActiveHumans(room.id),
+      this.bots.find({ where: { room: { id: room.id } } }),
+    ]);
+    const botsCount = existingBots.length;
     if (humans + botsCount >= room.maxPlayers) {
       throw new BadRequestException('Table pleine');
     }
 
-    const name = await this.pickName(room.id);
+    const name = await this.pickName(existingBots);
     const bot = this.bots.create({ room, name });
     return this.bots.save(bot);
   }
@@ -80,6 +94,13 @@ export class BotService {
     return bot;
   }
 
+  async getLastBotForRoom(roomId: number): Promise<RoomBot | null> {
+    return this.bots.findOne({
+      where: { room: { id: roomId } },
+      order: { id: 'DESC' },
+    });
+  }
+
   async statsForRoom(roomId: number) {
     const total = await this.countBots(roomId);
     return { roomId, total };
@@ -99,7 +120,9 @@ export class BotService {
       throw new BadRequestException('Nom déjà utilisé');
     }
     const botName = this.botNames.create({ name: sanitized, enabled });
-    return this.botNames.save(botName);
+    const saved = await this.botNames.save(botName);
+    this.invalidateBotNamesCache();
+    return saved;
   }
 
   async updateBotName(
@@ -129,7 +152,9 @@ export class BotService {
       botName.enabled = Boolean(update.enabled);
     }
 
-    return this.botNames.save(botName);
+    const saved = await this.botNames.save(botName);
+    this.invalidateBotNamesCache();
+    return saved;
   }
 
   async deleteBotName(id: number): Promise<BotName> {
@@ -138,11 +163,11 @@ export class BotService {
       throw new NotFoundException('Bot introuvable');
     }
     await this.botNames.delete(botName.id);
+    this.invalidateBotNamesCache();
     return botName;
   }
 
-  private async pickName(roomId: number): Promise<string> {
-    const existing = await this.bots.find({ where: { room: { id: roomId } } });
+  private async pickName(existing: RoomBot[]): Promise<string> {
     const names = existing.map((b) => b.name.toLowerCase());
     return this.findAvailableName(names);
   }
@@ -165,6 +190,14 @@ export class BotService {
   }
 
   private async getEnabledNames(): Promise<string[]> {
+    const cached = this.cachedEnabledNames;
+    if (
+      cached &&
+      (this.namesCacheTtlMs === 0 || Date.now() < cached.expiresAt)
+    ) {
+      return this.shuffle(cached.values);
+    }
+
     const rows = await this.botNames.find({
       where: { enabled: true },
       order: { name: 'ASC' },
@@ -175,9 +208,29 @@ export class BotService {
         where: { enabled: true },
         order: { name: 'ASC' },
       });
-      return this.shuffle(seeded.map((r) => r.name));
+      const values = seeded.map((r) => r.name);
+      this.cachedEnabledNames = {
+        values,
+        expiresAt:
+          this.namesCacheTtlMs === 0
+            ? Number.MAX_SAFE_INTEGER
+            : Date.now() + this.namesCacheTtlMs,
+      };
+      return this.shuffle(values);
     }
-    return this.shuffle(rows.map((r) => r.name));
+    const values = rows.map((r) => r.name);
+    this.cachedEnabledNames = {
+      values,
+      expiresAt:
+        this.namesCacheTtlMs === 0
+          ? Number.MAX_SAFE_INTEGER
+          : Date.now() + this.namesCacheTtlMs,
+    };
+    return this.shuffle(values);
+  }
+
+  private invalidateBotNamesCache(): void {
+    this.cachedEnabledNames = null;
   }
 
   private async seedDefaultNames(): Promise<void> {

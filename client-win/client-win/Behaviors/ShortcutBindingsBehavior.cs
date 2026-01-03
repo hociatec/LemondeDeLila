@@ -7,7 +7,9 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Threading;
 using client_win.Core.Input;
+using client_win.Modules.Game.Shell.Views;
 
 namespace client_win.Behaviors;
 
@@ -36,6 +38,18 @@ public static class ShortcutBindingsBehavior
 
     public static bool GetDisableWhenFocusWithin(DependencyObject element) =>
         (bool)element.GetValue(DisableWhenFocusWithinProperty);
+
+    public static readonly DependencyProperty RefocusAfterExecuteProperty = DependencyProperty.RegisterAttached(
+        "RefocusAfterExecute",
+        typeof(bool),
+        typeof(ShortcutBindingsBehavior),
+        new PropertyMetadata(false));
+
+    public static void SetRefocusAfterExecute(DependencyObject element, bool value) =>
+        element.SetValue(RefocusAfterExecuteProperty, value);
+
+    public static bool GetRefocusAfterExecute(DependencyObject element) =>
+        (bool)element.GetValue(RefocusAfterExecuteProperty);
 
     private sealed class Subscription
     {
@@ -120,6 +134,7 @@ public static class ShortcutBindingsBehavior
                     return;
                 }
 
+                var shouldRefocus = GetRefocusAfterExecute(element) && IsKeyboardFocusInGameZone();
                 var key = e.Key == Key.System ? e.SystemKey : e.Key;
                 var modifiers = Keyboard.Modifiers;
 
@@ -145,6 +160,10 @@ public static class ShortcutBindingsBehavior
                                     code.StartsWith("ui.", StringComparison.OrdinalIgnoreCase) ||
                                     code.StartsWith("game.", StringComparison.OrdinalIgnoreCase);
                                 e.Handled = isGameShortcut;
+                                if (shouldRefocus)
+                                {
+                                    RequestRefocusGameZone(element);
+                                }
                             }
                             return;
                         }
@@ -189,6 +208,10 @@ public static class ShortcutBindingsBehavior
                         var code = shortcut.Code ?? string.Empty;
                         // Ne pas consommer la touche : laisser le lecteur d'écran faire l'écho clavier naturellement.
                         e.Handled = false;
+                        if (shouldRefocus)
+                        {
+                            RequestRefocusGameZone(element);
+                        }
                     }
                     return;
                 }
@@ -217,6 +240,10 @@ public static class ShortcutBindingsBehavior
                                 var code = shortcut.Code ?? string.Empty;
                                 // Ne pas consommer la touche : laisser le lecteur d'écran faire l'écho clavier naturellement.
                                 e.Handled = false;
+                                if (shouldRefocus)
+                                {
+                                    RequestRefocusGameZone(element);
+                                }
                             }
                             return;
                         }
@@ -259,6 +286,132 @@ public static class ShortcutBindingsBehavior
             int offset = key - Key.A;
             return (char)((upper ? 'A' : 'a') + offset);
         }
+        return null;
+    }
+
+    private static bool IsKeyboardFocusInGameZone()
+    {
+        var focused = Keyboard.FocusedElement as DependencyObject;
+        if (focused == null)
+        {
+            return false;
+        }
+
+        // Le focus peut être sur:
+        // - un contrôle de jeu dynamique (contenu) sous GameZoneHostView
+        // - une ancre de focus GameZoneFocusAnchor
+        // - la surface GamePlayView
+        for (DependencyObject? current = focused; current != null; current = GetParent(current))
+        {
+            if (current is GameZoneHostView)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static void RequestRefocusGameZone(UIElement element)
+    {
+        if (IsTextInputFocused())
+        {
+            return;
+        }
+
+        var weak = new WeakReference<UIElement>(element);
+        element.Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() =>
+        {
+            if (!weak.TryGetTarget(out var target))
+            {
+                return;
+            }
+
+            if (IsTextInputFocused())
+            {
+                return;
+            }
+
+            // Si l'élément n'est plus dans l'arbre visuel (navigation), ne pas forcer le focus.
+            if (target is Visual v && PresentationSource.FromVisual(v) == null)
+            {
+                return;
+            }
+
+            // Priorité: remonter sur la vue de salle et demander explicitement le focus zone de jeu.
+            if (FindAncestor<GameRoomView>(target as DependencyObject) is GameRoomView room)
+            {
+                room.RequestFocusGameZone();
+                return;
+            }
+
+            // Fallback: chercher une zone de jeu sous l'élément.
+            if (FindDescendant<GameZoneHostView>(target as DependencyObject) is GameZoneHostView zone)
+            {
+                zone.FocusGameZone();
+            }
+        }));
+    }
+
+    private static T? FindAncestor<T>(DependencyObject? current) where T : class
+    {
+        for (DependencyObject? node = current; node != null; node = GetParent(node))
+        {
+            if (node is T found)
+            {
+                return found;
+            }
+        }
+        return null;
+    }
+
+    private static T? FindDescendant<T>(DependencyObject? current) where T : class
+    {
+        if (current == null)
+        {
+            return null;
+        }
+
+        var queue = new Queue<DependencyObject>();
+        queue.Enqueue(current);
+
+        while (queue.Count > 0)
+        {
+            var node = queue.Dequeue();
+            if (node is T found)
+            {
+                return found;
+            }
+
+            int count = 0;
+            try
+            {
+                count = VisualTreeHelper.GetChildrenCount(node);
+            }
+            catch
+            {
+                // ignore
+            }
+
+            for (int i = 0; i < count; i++)
+            {
+                DependencyObject? child = null;
+                try
+                {
+                    child = VisualTreeHelper.GetChild(node, i);
+                }
+                catch
+                {
+                    // ignore
+                }
+
+                if (child != null)
+                {
+                    queue.Enqueue(child);
+                }
+            }
+        }
+
         return null;
     }
 

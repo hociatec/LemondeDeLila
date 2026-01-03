@@ -1,7 +1,10 @@
 using System;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
+using System.Windows.Threading;
 using client_win.Modules.Game.Shell.Services;
+using client_win.Modules.Game.Shell.Views;
 using client_win.Modules.Presence.ViewModels;
 using client_win.Modules.Presence.Views;
 using client_win.Modules.Shell.Services;
@@ -84,7 +87,31 @@ public sealed class PresenceLauncher : IPresenceLauncher
         {
             if (restorePrevious && _previousView != null)
             {
-                _navigation.Show(_previousView);
+                var previous = _previousView;
+                _navigation.Show(previous);
+
+                // Après un écran plein (Présence), on redonne explicitement un focus "utile" à la vue précédente.
+                // Sans ça, WPF peut laisser le focus sur le host / un élément détruit, et les raccourcis ne repartent pas.
+                _ = Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() =>
+                {
+                    try
+                    {
+                        if (previous is GameRoomView room)
+                        {
+                            room.RequestFocusGameZone();
+                            return;
+                        }
+
+                        if (!previous.IsKeyboardFocusWithin)
+                        {
+                            previous.MoveFocus(new TraversalRequest(FocusNavigationDirection.First));
+                        }
+                    }
+                    catch
+                    {
+                        // Best-effort
+                    }
+                }));
             }
             _previousView = null;
         }).Task;
