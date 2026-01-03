@@ -743,7 +743,7 @@
 	                        <StackPanel Grid.Row="2" Orientation="Vertical" Margin="0 0 0 12">
 	                            <TextBlock Text="Informations" Foreground="{StaticResource TextMuted}" FontSize="12" />
 	                            <TextBox x:Name="ProfileInfoBox"
-	                                     Text="{Binding ProfileInfoText}"
+	                                     Text="{Binding ProfileInfoText, Mode=OneWay}"
 	                                     Margin="0 6 0 0"
 	                                     Height="120"
 	                                     TextWrapping="Wrap"
