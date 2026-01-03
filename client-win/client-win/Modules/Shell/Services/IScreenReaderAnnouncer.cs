@@ -4,5 +4,5 @@ public interface IScreenReaderAnnouncer
 {
     void AnnouncePolite(string message);
     void AnnounceAssertive(string message);
+    void CancelSpeech();
 }
-

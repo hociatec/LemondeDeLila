@@ -154,6 +154,7 @@ public sealed class GameTableOpener : IGameTableOpener
     {
         var dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
         var tableView = new GameRoomView();
+        tableView.SetScreenReader(_screenReader);
 
         GameTableBindings? bindings = null;
         Action<client_win.Modules.Network.WebSockets.WebSocketState>? onRoomConnectionStateChanged = null;

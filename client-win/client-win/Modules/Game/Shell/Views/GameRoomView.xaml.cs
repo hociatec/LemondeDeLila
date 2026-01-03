@@ -6,6 +6,7 @@ using System.Windows.Input;
 using System.Windows.Threading;
 using client_win.Modules.Game.History.Views;
 using client_win.Modules.Game.Shell.ViewModels;
+using client_win.Modules.Shell.Services;
 
 namespace client_win.Modules.Game.Shell.Views;
 
@@ -15,6 +16,7 @@ public partial class GameRoomView : UserControl
     private Action? _focusRequestedHandler;
     private bool _didHookTabCapture;
     private KeyEventHandler? _tabCaptureHandler;
+    private IScreenReaderAnnouncer? _screenReader;
 
     public GameRoomView()
     {
@@ -26,6 +28,11 @@ public partial class GameRoomView : UserControl
     }
 
     public void RequestFocusGameZone() => FocusGameZone();
+
+    public void SetScreenReader(IScreenReaderAnnouncer? screenReader)
+    {
+        _screenReader = screenReader;
+    }
 
     private void OnLoaded(object sender, System.Windows.RoutedEventArgs e)
     {
@@ -158,6 +165,7 @@ public partial class GameRoomView : UserControl
             if (key is not (Key.LeftShift or Key.RightShift or Key.LeftCtrl or Key.RightCtrl or Key.LeftAlt or Key.RightAlt or Key.LWin or Key.RWin))
             {
                 HistoryHost?.CancelPendingAnnouncementsFromHost();
+                _screenReader?.CancelSpeech();
             }
         }
 

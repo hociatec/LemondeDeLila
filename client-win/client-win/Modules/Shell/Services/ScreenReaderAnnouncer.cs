@@ -23,11 +23,26 @@ public sealed class ScreenReaderAnnouncer : IScreenReaderAnnouncer, IDisposable
         }
     }
 
-    public void AnnouncePolite(string message) => Announce(message);
+    public void AnnouncePolite(string message) => Announce(message, interrupt: false);
 
-    public void AnnounceAssertive(string message) => Announce(message);
+    public void AnnounceAssertive(string message) => Announce(message, interrupt: true);
 
-    private void Announce(string message)
+    public void CancelSpeech()
+    {
+        try
+        {
+            if (_nvda?.IsRunning == true)
+            {
+                _nvda.CancelSpeech();
+            }
+        }
+        catch
+        {
+            // ignore
+        }
+    }
+
+    private void Announce(string message, bool interrupt)
     {
         if (string.IsNullOrWhiteSpace(message))
         {
@@ -39,6 +54,10 @@ public sealed class ScreenReaderAnnouncer : IScreenReaderAnnouncer, IDisposable
         {
             if (_nvda?.IsRunning == true)
             {
+                if (interrupt)
+                {
+                    _nvda.CancelSpeech();
+                }
                 _nvda.Speak(message);
             }
         }
@@ -58,12 +77,14 @@ public sealed class ScreenReaderAnnouncer : IScreenReaderAnnouncer, IDisposable
         private readonly nint _handle;
         private readonly Func<int> _testIfRunning;
         private readonly Func<string, int> _speakText;
+        private readonly Func<int>? _cancelSpeech;
 
-        private NvdaBridge(nint handle, Func<int> testIfRunning, Func<string, int> speakText)
+        private NvdaBridge(nint handle, Func<int> testIfRunning, Func<string, int> speakText, Func<int>? cancelSpeech)
         {
             _handle = handle;
             _testIfRunning = testIfRunning;
             _speakText = speakText;
+            _cancelSpeech = cancelSpeech;
         }
 
         public bool IsRunning
@@ -84,6 +105,11 @@ public sealed class ScreenReaderAnnouncer : IScreenReaderAnnouncer, IDisposable
         public void Speak(string text)
         {
             _speakText(text);
+        }
+
+        public void CancelSpeech()
+        {
+            _cancelSpeech?.Invoke();
         }
 
         public void Dispose()
@@ -138,6 +164,7 @@ public sealed class ScreenReaderAnnouncer : IScreenReaderAnnouncer, IDisposable
                     // Deux variantes existent selon les builds (java log: "controller API" vs "controller client API").
                     var test = TryGetExport(handle, new[] { "nvdaControllerClient_testIfRunning", "nvdaController_testIfRunning" });
                     var speak = TryGetExport(handle, new[] { "nvdaControllerClient_speakText", "nvdaController_speakText" });
+                    var cancel = TryGetExport(handle, new[] { "nvdaControllerClient_cancelSpeech", "nvdaController_cancelSpeech" });
                     if (test == nint.Zero || speak == nint.Zero)
                     {
                         NativeLibrary.Free(handle);
@@ -146,12 +173,18 @@ public sealed class ScreenReaderAnnouncer : IScreenReaderAnnouncer, IDisposable
 
                     var testDel = Marshal.GetDelegateForFunctionPointer<NvdaTestIfRunningDelegate>(test);
                     var speakDel = Marshal.GetDelegateForFunctionPointer<NvdaSpeakTextDelegate>(speak);
+                    Func<int>? cancelFn = null;
+                    if (cancel != nint.Zero)
+                    {
+                        var cancelDel = Marshal.GetDelegateForFunctionPointer<NvdaCancelSpeechDelegate>(cancel);
+                        cancelFn = () => cancelDel();
+                    }
 
                     Func<int> testFn = () => testDel();
                     Func<string, int> speakFn = (text) => speakDel(text);
 
                     Log.Information("NVDA controller chargé: {Path}", path);
-                    return new NvdaBridge(handle, testFn, speakFn);
+                    return new NvdaBridge(handle, testFn, speakFn, cancelFn);
                 }
                 catch
                 {
@@ -179,6 +212,8 @@ public sealed class ScreenReaderAnnouncer : IScreenReaderAnnouncer, IDisposable
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         private delegate int NvdaTestIfRunningDelegate();
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate int NvdaCancelSpeechDelegate();
     }
 }
-
