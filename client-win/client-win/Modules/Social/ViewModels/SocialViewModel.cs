@@ -412,7 +412,7 @@ public sealed class SocialViewModel : ObservableObject
 
         var canView = profile.IsOwner || profile.CanView;
         var bioLine = canView
-            ? $"Bio : {(string.IsNullOrWhiteSpace(profile.Bio) ? \"(vide)\" : profile.Bio.Trim())}"
+            ? $"Bio : {(string.IsNullOrWhiteSpace(profile.Bio) ? "(vide)" : profile.Bio.Trim())}"
             : "Bio : (profil privé)";
 
         return string.Join(Environment.NewLine, new[]
