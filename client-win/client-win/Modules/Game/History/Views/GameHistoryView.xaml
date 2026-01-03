@@ -19,7 +19,6 @@
 	            <Grid.RowDefinitions>
 	                <RowDefinition Height="Auto" />
 	                <RowDefinition Height="*" />
-	                <RowDefinition Height="Auto" />
 	            </Grid.RowDefinitions>
 
             <TextBlock x:Name="HistoryTitle"
@@ -52,20 +51,6 @@
                      AutomationProperties.Name="Historique"
 	                     AutomationProperties.HelpText="Historique en lecture seule. Naviguez comme dans un document (flèches, PageUp/PageDown, sélection, etc.)."
 	                     MinHeight="200" />
-
-	            <!--
-	                Annonceur "live region" de secours (certains lecteurs d'écran n'annoncent pas toujours
-	                les NotificationEvent UIA). Le texte est mis à jour en code-behind.
-	                NOTE: ne pas mettre Visibility=Collapsed (sinon retiré de l'arbre d'automatisation).
-	            -->
-			            <TextBlock x:Name="A11yAnnouncer"
-			                       Grid.Row="2"
-			                       Height="1"
-			                       Width="1"
-			                       Opacity="0"
-			                       IsHitTestVisible="False"
-			                       AutomationProperties.IsOffscreenBehavior="Onscreen"
-			                       AutomationProperties.LiveSetting="Polite" />
-		        </Grid>
-		    </Border>
-		</UserControl>
+	        </Grid>
+	    </Border>
+	</UserControl>

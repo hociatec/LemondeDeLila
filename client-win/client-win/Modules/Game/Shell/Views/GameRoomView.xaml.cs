@@ -1,11 +1,9 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
-using client_win.Core.Input;
 using client_win.Modules.Game.History.Views;
 using client_win.Modules.Game.Shell.ViewModels;
 
@@ -154,8 +152,6 @@ public partial class GameRoomView : UserControl
 
     private void OnPreviewKeyDown(object sender, KeyEventArgs e)
     {
-        CancelHistoryAnnouncementsOnInteraction(e);
-
         if (e.Key == Key.Escape && DataContext is ViewModels.GameRoomViewModel vm && vm.GameZone.IsStarted)
         {
             e.Handled = true;
@@ -245,144 +241,6 @@ public partial class GameRoomView : UserControl
         // Ne pas intercepter Tab quand le focus est déjà dans la zone de jeu : elle délègue (Tab -> Historique).
         // Ici on ne force Tab vers la zone de jeu que si l'utilisateur n'est ni dans l'historique ni dans la zone de jeu.
         return;
-    }
-
-    private void CancelHistoryAnnouncementsOnInteraction(KeyEventArgs e)
-    {
-        if (e == null || e.IsRepeat)
-        {
-            return;
-        }
-
-        // IMPORTANT: on annule les annonces "jeu" dès qu'il y a une interaction clavier,
-        // mais on ne doit pas annuler sur les raccourcis (jeu/table) sinon on perd des annonces.
-        if (DataContext is not GameRoomViewModel vm)
-        {
-            return;
-        }
-
-        var key = e.Key == Key.System ? e.SystemKey : e.Key;
-        if (key is Key.LeftShift or Key.RightShift or Key.LeftCtrl or Key.RightCtrl or Key.LeftAlt or Key.RightAlt or Key.LWin or Key.RWin)
-        {
-            return;
-        }
-
-        if (IsShortcutKey(e, vm.GameZone?.Shortcuts))
-        {
-            return;
-        }
-
-        HistoryHost?.CancelPendingAnnouncementsFromHost();
-    }
-
-    private static bool IsShortcutKey(KeyEventArgs e, IEnumerable<ShortcutDefinition>? shortcuts)
-    {
-        if (shortcuts == null)
-        {
-            return false;
-        }
-
-        var key = e.Key == Key.System ? e.SystemKey : e.Key;
-        var modifiers = Keyboard.Modifiers;
-
-        // 1) KeyGesture shortcuts
-        var list = shortcuts.Where(s => s != null).ToList();
-        foreach (var shortcut in list)
-        {
-            if (shortcut?.Gesture == null)
-            {
-                continue;
-            }
-
-            if (shortcut.Gesture.Key == key && shortcut.Gesture.Modifiers == modifiers)
-            {
-                return true;
-            }
-        }
-
-        // 2) Char shortcuts (lettres)
-        var typed = TryKeyToChar(key);
-        if (typed == null)
-        {
-            return false;
-        }
-
-        var hasCtrlAltWin = (modifiers & (ModifierKeys.Control | ModifierKeys.Alt | ModifierKeys.Windows)) != ModifierKeys.None;
-        if (hasCtrlAltWin)
-        {
-            return false;
-        }
-
-        foreach (var shortcut in list)
-        {
-            if (shortcut?.Key == null)
-            {
-                continue;
-            }
-
-            if (shortcut.Key.Value == typed.Value)
-            {
-                return true;
-            }
-        }
-
-        // Fallback insensible à la casse uniquement si une distinction explicite n'existe pas (b/B).
-        if (char.IsLetter(typed.Value))
-        {
-            var lower = char.ToLowerInvariant(typed.Value);
-            var upperExactExists = list.Any(s => s.Key == char.ToUpperInvariant(lower));
-            var lowerExactExists = list.Any(s => s.Key == lower);
-            if (!(upperExactExists && lowerExactExists))
-            {
-                foreach (var shortcut in list)
-                {
-                    if (shortcut?.Key == null)
-                    {
-                        continue;
-                    }
-
-                    if (!char.IsLetter(shortcut.Key.Value))
-                    {
-                        continue;
-                    }
-
-                    if (char.ToLowerInvariant(shortcut.Key.Value) == lower)
-                    {
-                        return true;
-                    }
-                }
-            }
-        }
-
-        return false;
-    }
-
-    private static char? TryKeyToChar(Key key)
-    {
-        if (key >= Key.A && key <= Key.Z)
-        {
-            var shift = (Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift;
-            var capsLock = Keyboard.IsKeyToggled(Key.CapsLock);
-            var upper = shift ^ capsLock;
-
-            var offset = key - Key.A;
-            var c = (char)('a' + offset);
-            return upper ? char.ToUpperInvariant(c) : c;
-        }
-
-        if (key >= Key.D0 && key <= Key.D9)
-        {
-            var offset = key - Key.D0;
-            return (char)('0' + offset);
-        }
-
-        if (key >= Key.NumPad0 && key <= Key.NumPad9)
-        {
-            var offset = key - Key.NumPad0;
-            return (char)('0' + offset);
-        }
-
-        return null;
     }
 
     private void OnHistoryTabNavigationRequested(object? sender, TabNavigationRequestedEventArgs e)
