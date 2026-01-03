@@ -18,10 +18,14 @@ public partial class SocialView : UserControl
 
     private SocialScreen _currentScreen = SocialScreen.Menu;
     private int _lastMenuIndex = -1;
+    private SocialViewModel? _focusVm;
+    private Action? _profileFocusHandler;
 
     public SocialView()
     {
         InitializeComponent();
+        DataContextChanged += OnDataContextChanged;
+        Unloaded += OnUnloaded;
     }
 
     private async void OnLoaded(object sender, RoutedEventArgs e)
@@ -32,8 +36,46 @@ public partial class SocialView : UserControl
 
         if (DataContext is SocialViewModel vm)
         {
+            HookProfileFocusRequests(vm);
             await vm.InitializeAsync();
         }
+    }
+
+    private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+    {
+        HookProfileFocusRequests(DataContext as SocialViewModel);
+    }
+
+    private void OnUnloaded(object sender, RoutedEventArgs e)
+    {
+        HookProfileFocusRequests(null);
+    }
+
+    private void HookProfileFocusRequests(SocialViewModel? vm)
+    {
+        if (_focusVm != null && _profileFocusHandler != null)
+        {
+            _focusVm.ProfileFocusRequested -= _profileFocusHandler;
+        }
+
+        _focusVm = vm;
+        _profileFocusHandler = null;
+
+        if (_focusVm == null)
+        {
+            return;
+        }
+
+        _profileFocusHandler = () =>
+        {
+            Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
+            {
+                SetScreen(SocialScreen.Section);
+                FocusSection(SocialSection.Profile);
+            }));
+        };
+
+        _focusVm.ProfileFocusRequested += _profileFocusHandler;
     }
 
     private void OnRootKeyDown(object sender, KeyEventArgs e)

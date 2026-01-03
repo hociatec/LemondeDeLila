@@ -36,6 +36,8 @@ public sealed class SocialViewModel : ObservableObject
     private string _profileInfoText = string.Empty;
     private SocialSection? _returnSectionFromProfile;
 
+    public event Action? ProfileFocusRequested;
+
     private SocialUser? _selectedFriend;
     private SocialFriendRequest? _selectedIncomingRequest;
     private SocialFriendRequest? _selectedOutgoingRequest;
@@ -412,7 +414,7 @@ public sealed class SocialViewModel : ObservableObject
         var canView = profile.IsOwner || profile.CanView;
         var bioLine = canView
             ? $"Bio : {(string.IsNullOrWhiteSpace(profile.Bio) ? "(vide)" : profile.Bio.Trim())}"
-            : "Bio : (profil privé)";
+            : null;
 
         return string.Join(Environment.NewLine, new[]
         {
@@ -437,6 +439,7 @@ public sealed class SocialViewModel : ObservableObject
         }
         SetProfileTargetUserId(user.Id);
         SelectedSection = SocialSection.Profile;
+        ProfileFocusRequested?.Invoke();
     }
 
     private async Task OpenStoryBookAsync()
