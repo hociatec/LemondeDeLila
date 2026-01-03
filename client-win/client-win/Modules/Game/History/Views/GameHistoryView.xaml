@@ -60,10 +60,11 @@
 	            -->
 	            <TextBlock x:Name="A11yAnnouncer"
 	                       Grid.Row="2"
-	                       Height="0"
-	                       Width="0"
+	                       Height="1"
+	                       Width="1"
 	                       Opacity="0"
 	                       IsHitTestVisible="False"
+	                       AutomationProperties.IsOffscreenBehavior="Onscreen"
 	                       AutomationProperties.Name="Annonceur"
 	                       AutomationProperties.LiveSetting="Polite" />
 	        </Grid>

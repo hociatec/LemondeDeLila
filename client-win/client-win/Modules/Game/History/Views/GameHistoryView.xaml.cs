@@ -14,7 +14,8 @@ namespace client_win.Modules.Game.History.Views;
 
 public partial class GameHistoryView : UserControl
 {
-    private const int AnnounceTailOnAttach = 20;
+    private const int AnnounceMaxExistingOnAttach = 40;
+    private const int MaxBatchSize = 3;
     private GameHistoryViewModel? _viewModel;
     private bool _pendingRebuild;
     private int _lastKnownEntryCount;
@@ -82,7 +83,8 @@ public partial class GameHistoryView : UserControl
             // On annonce les dernières lignes existantes à l'attache.
             if (!HistoryEditor.IsKeyboardFocusWithin && _viewModel.Entries.Count > 0)
             {
-                var startIndex = Math.Max(0, _viewModel.Entries.Count - AnnounceTailOnAttach);
+                // Heuristique: annoncer l'intégralité si le backlog est petit, sinon les N dernières lignes.
+                var startIndex = Math.Max(0, _viewModel.Entries.Count - AnnounceMaxExistingOnAttach);
                 for (var i = startIndex; i < _viewModel.Entries.Count; i++)
                 {
                     var line = (_viewModel.Entries[i] ?? string.Empty).Trim();
@@ -320,10 +322,35 @@ public partial class GameHistoryView : UserControl
         // en "ratent" quand plusieurs events UIA partent trop vite.
         _announceTimer = new DispatcherTimer(DispatcherPriority.Background, Dispatcher)
         {
-            Interval = TimeSpan.FromMilliseconds(120),
+            Interval = TimeSpan.FromMilliseconds(180),
         };
         _announceTimer.Tick += (_, __) => PumpAnnouncements();
         _announceTimer.Start();
+    }
+
+    private string DequeueAnnouncementBatch()
+    {
+        if (_announceQueue.Count == 0)
+        {
+            return string.Empty;
+        }
+
+        // Réduire le nombre d'events envoyés en rafale : certains lecteurs d'écran peuvent en perdre.
+        // On regroupe quelques messages quand la file est longue.
+        var take = _announceQueue.Count >= 6 ? MaxBatchSize : 1;
+        take = Math.Min(take, _announceQueue.Count);
+
+        var parts = new List<string>(capacity: take);
+        for (var i = 0; i < take; i++)
+        {
+            var next = _announceQueue.Dequeue();
+            if (!string.IsNullOrWhiteSpace(next))
+            {
+                parts.Add(next);
+            }
+        }
+
+        return string.Join(Environment.NewLine, parts);
     }
 
     private void PumpAnnouncements()
@@ -341,7 +368,12 @@ public partial class GameHistoryView : UserControl
             return;
         }
 
-        var next = _announceQueue.Dequeue();
+        var next = DequeueAnnouncementBatch();
+        if (string.IsNullOrWhiteSpace(next))
+        {
+            return;
+        }
+
         try
         {
             // Mise à jour du live-region de secours (plus fiable sur certains setups NVDA).
@@ -355,6 +387,7 @@ public partial class GameHistoryView : UserControl
 
             var peer = FrameworkElementAutomationPeer.FromElement(A11yAnnouncer) ??
                        FrameworkElementAutomationPeer.CreatePeerForElement(A11yAnnouncer);
+            peer?.RaiseAutomationEvent(AutomationEvents.LiveRegionChanged);
             peer?.RaiseNotificationEvent(
                 AutomationNotificationKind.ItemAdded,
                 AutomationNotificationProcessing.All,
