@@ -414,14 +414,9 @@ public partial class GameHistoryView : UserControl
 
     private bool IsUserInteracting()
     {
-        // 1) Si le focus est dans l'historique, l'utilisateur est potentiellement en lecture "document":
-        // on abandonne les annonces en attente pour éviter de parler "par-dessus".
-        if (HistoryEditor.IsKeyboardFocusWithin)
-        {
-            return true;
-        }
-
-        // 2) Sinon, suspendre brièvement après toute interaction (écho clavier NVDA, navigation, etc.).
+        // Suspendre brièvement après une interaction (navigation NVDA, lecture document, etc.).
+        // IMPORTANT: ne pas bloquer uniquement parce que l'historique a le focus, sinon les retours d'actions
+        // (raccourcis de jeu) peuvent être perdus si l'utilisateur garde le focus dans le panneau.
         var last = _lastUserInteractionAtUtc;
         if (last == DateTime.MinValue)
         {
@@ -447,6 +442,20 @@ public partial class GameHistoryView : UserControl
 
         var key = e.Key == Key.System ? e.SystemKey : e.Key;
         if (key is Key.LeftShift or Key.RightShift or Key.LeftCtrl or Key.RightCtrl or Key.LeftAlt or Key.RightAlt or Key.LWin or Key.RWin)
+        {
+            return;
+        }
+
+        // Ne pas traiter les raccourcis "lettres/chiffres" comme une interaction qui annule les annonces,
+        // sinon un enchaînement rapide (ex: 't' puis 't') peut faire "perdre" la première annonce.
+        // On annule uniquement sur les touches de navigation/lecture (qui signifient que l'utilisateur reprend la main).
+        var isNavigationKey =
+            key is Key.Up or Key.Down or Key.Left or Key.Right
+            or Key.PageUp or Key.PageDown or Key.Home or Key.End
+            or Key.Tab or Key.Escape
+            or Key.Enter;
+
+        if (!isNavigationKey)
         {
             return;
         }
