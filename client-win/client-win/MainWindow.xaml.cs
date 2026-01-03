@@ -56,6 +56,7 @@ namespace client_win
             InitializeComponent();
             _host = AppBootstrapper.Build(RootHost);
             SpaceKeyAnnouncer.Initialize(_host.Services.GetRequiredService<IScreenReaderAnnouncer>());
+            ShortcutKeyAnnouncer.Initialize(_host.Services.GetRequiredService<IScreenReaderAnnouncer>());
             _errorBus = _host.Errors;
             _wsConnection = _host.WsClient;
             _dialogs = _host.Dialogs;

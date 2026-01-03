@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using client_win.Core.Accessibility;
 using client_win.Core.Input;
 
 namespace client_win.Behaviors;
@@ -190,6 +191,10 @@ public static class ShortcutBindingsBehavior
                         var isGameShortcut = code.StartsWith("ui.", StringComparison.OrdinalIgnoreCase) ||
                                              code.StartsWith("game.", StringComparison.OrdinalIgnoreCase);
                         e.Handled = isGameShortcut || typed.Value is 'w' or 'W' or 'i' or 'I';
+                        if (e.Handled)
+                        {
+                            ShortcutKeyAnnouncer.Announce(typed.Value);
+                        }
                     }
                     return;
                 }
@@ -219,6 +224,10 @@ public static class ShortcutBindingsBehavior
                                 var isGameShortcut = code.StartsWith("ui.", StringComparison.OrdinalIgnoreCase) ||
                                                      code.StartsWith("game.", StringComparison.OrdinalIgnoreCase);
                                 e.Handled = isGameShortcut || typed.Value is 'w' or 'W' or 'i' or 'I';
+                                if (e.Handled)
+                                {
+                                    ShortcutKeyAnnouncer.Announce(typed.Value);
+                                }
                             }
                             return;
                         }
