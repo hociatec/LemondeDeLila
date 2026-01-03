@@ -718,17 +718,6 @@
             </Grid>
         </Grid>
 
-        <!-- Live-region de secours pour annonces NVDA (ex: "Aucun ami" à l'ouverture). -->
-	        <TextBlock x:Name="A11yAnnouncer"
-	                   Grid.Row="1"
-	                   Height="1"
-	                   Width="1"
-	                   Opacity="0"
-	                   IsHitTestVisible="False"
-	                   AutomationProperties.IsOffscreenBehavior="Onscreen"
-	                   AutomationProperties.Name=""
-	                   AutomationProperties.LiveSetting="Polite" />
-
         <Border Grid.Row="2"
                 Background="#0A1523"
                 BorderBrush="#1A2F47"
