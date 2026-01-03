@@ -269,21 +269,37 @@
                                 </TextBlock.Style>
                             </TextBlock>
 
-                            <ListBox x:Name="FriendsList"
-                                     ItemsSource="{Binding Friends}"
-                                     SelectedItem="{Binding SelectedFriend, Mode=TwoWay}"
-                                     ItemContainerStyle="{StaticResource ListItem}"
-                                     Style="{StaticResource ListBoxBase}"
-                                     AutomationProperties.Name="Liste des amis">
-                                <ListBox.ItemTemplate>
-                                    <DataTemplate>
-                                        <StackPanel>
-                                            <TextBlock Text="{Binding Username}" FontSize="14" FontWeight="SemiBold" />
-                                            <TextBlock Text="{Binding Since, StringFormat=Depuis: {0:dd/MM/yyyy}}" Foreground="{StaticResource TextMuted}" FontSize="12" />
-                                        </StackPanel>
-                                    </DataTemplate>
-                                </ListBox.ItemTemplate>
-                            </ListBox>
+	                        <ListBox x:Name="FriendsList"
+	                                 ItemsSource="{Binding Friends}"
+	                                 SelectedItem="{Binding SelectedFriend, Mode=TwoWay}"
+	                                 ItemContainerStyle="{StaticResource ListItem}"
+	                                 Style="{StaticResource ListBoxBase}"
+	                                 AutomationProperties.Name="Liste des amis">
+	                            <ListBox.ItemTemplate>
+	                                <DataTemplate>
+	                                    <Grid>
+	                                        <Grid.ColumnDefinitions>
+	                                            <ColumnDefinition Width="*" />
+	                                            <ColumnDefinition Width="Auto" />
+	                                        </Grid.ColumnDefinitions>
+	                                        <StackPanel Grid.Column="0">
+	                                            <TextBlock Text="{Binding Username}" FontSize="14" FontWeight="SemiBold" />
+	                                            <TextBlock Text="{Binding Since, StringFormat=Depuis: {0:dd/MM/yyyy}}"
+	                                                       Foreground="{StaticResource TextMuted}"
+	                                                       FontSize="12" />
+	                                        </StackPanel>
+	                                        <Button Grid.Column="1"
+	                                                Content="Profil"
+	                                                Command="{Binding DataContext.ViewFriendProfileCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+	                                                CommandParameter="{Binding}"
+	                                                Style="{StaticResource PrimaryButton}"
+	                                                Margin="12 0 0 0"
+	                                                Padding="10 6"
+	                                                AutomationProperties.Name="{Binding Username, StringFormat=Consulter le profil de {0}}" />
+	                                    </Grid>
+	                                </DataTemplate>
+	                            </ListBox.ItemTemplate>
+	                        </ListBox>
                         </Grid>
 
                         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0 12 0 0">
@@ -672,11 +688,11 @@
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
-                        <TextBlock Text="Mon profil"
-                                   Foreground="{StaticResource HighlightBrush}"
-                                   FontSize="16"
-                                   FontWeight="Bold"
-                                   Margin="0 0 0 12" />
+	                        <TextBlock Text="{Binding ProfileTitle}"
+	                                   Foreground="{StaticResource HighlightBrush}"
+	                                   FontSize="16"
+	                                   FontWeight="Bold"
+	                                   Margin="0 0 0 12" />
 
                         <TextBlock Grid.Row="1"
                                    Text="{Binding Profile.User.Username, TargetNullValue=Profil}"
@@ -686,33 +702,63 @@
                                    Margin="0 0 0 12" />
 
                         <TextBlock Grid.Row="2" Text="Bio" Foreground="{StaticResource TextMuted}" FontSize="12" />
-                        <TextBox x:Name="ProfileBioBox"
-                                 Grid.Row="3"
-                                 Text="{Binding ProfileBio, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                 Height="120"
-                                 TextWrapping="Wrap"
-                                 AcceptsReturn="True"
-                                 Margin="0 6 0 12"
-                                 Style="{StaticResource InputTextBox}"
-                                 AutomationProperties.Name="Bio du profil" />
+	                        <TextBox x:Name="ProfileBioBox"
+	                                 Grid.Row="3"
+	                                 Text="{Binding ProfileBio, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+	                                 Height="120"
+	                                 TextWrapping="Wrap"
+	                                 AcceptsReturn="True"
+	                                 Margin="0 6 0 12"
+	                                 AutomationProperties.Name="Bio du profil">
+	                            <TextBox.Style>
+	                                <Style TargetType="TextBox" BasedOn="{StaticResource InputTextBox}">
+	                                    <Setter Property="IsReadOnly" Value="False" />
+	                                    <Style.Triggers>
+	                                        <DataTrigger Binding="{Binding Profile.IsOwner}" Value="False">
+	                                            <Setter Property="IsReadOnly" Value="True" />
+	                                        </DataTrigger>
+	                                    </Style.Triggers>
+	                                </Style>
+	                            </TextBox.Style>
+	                        </TextBox>
 
                         <StackPanel Grid.Row="4" Orientation="Horizontal" VerticalAlignment="Center">
                             <StackPanel Orientation="Vertical" Margin="0 0 16 0">
                                 <TextBlock Text="Visibilité" Foreground="{StaticResource TextMuted}" FontSize="12" />
-                                <ComboBox x:Name="VisibilityBox"
-                                          Width="160"
-                                          ItemsSource="{Binding VisibilityOptions}"
-                                          DisplayMemberPath="Label"
-                                          SelectedValuePath="Value"
-                                          SelectedValue="{Binding ProfileVisibility, Mode=TwoWay}"
-                                          Style="{StaticResource InputComboBox}"
-                                          AutomationProperties.Name="Visibilité du profil" />
-                            </StackPanel>
-                            <Button Content="Enregistrer"
-                                    Command="{Binding UpdateProfileCommand}"
-                                    Style="{StaticResource PrimaryButton}"
-                                    AutomationProperties.Name="Mettre a jour le profil" />
-                        </StackPanel>
+	                                <ComboBox x:Name="VisibilityBox"
+	                                          Width="160"
+	                                          ItemsSource="{Binding VisibilityOptions}"
+	                                          DisplayMemberPath="Label"
+	                                          SelectedValuePath="Value"
+	                                          SelectedValue="{Binding ProfileVisibility, Mode=TwoWay}"
+	                                          AutomationProperties.Name="Visibilité du profil">
+	                                    <ComboBox.Style>
+	                                        <Style TargetType="ComboBox" BasedOn="{StaticResource InputComboBox}">
+	                                            <Setter Property="IsEnabled" Value="True" />
+	                                            <Style.Triggers>
+	                                                <DataTrigger Binding="{Binding Profile.IsOwner}" Value="False">
+	                                                    <Setter Property="IsEnabled" Value="False" />
+	                                                </DataTrigger>
+	                                            </Style.Triggers>
+	                                        </Style>
+	                                    </ComboBox.Style>
+	                                </ComboBox>
+	                            </StackPanel>
+	                            <Button Content="Enregistrer"
+	                                    Command="{Binding UpdateProfileCommand}"
+	                                    AutomationProperties.Name="Mettre a jour le profil">
+	                                <Button.Style>
+	                                    <Style TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+	                                        <Setter Property="Visibility" Value="Visible" />
+	                                        <Style.Triggers>
+	                                            <DataTrigger Binding="{Binding Profile.IsOwner}" Value="False">
+	                                                <Setter Property="Visibility" Value="Collapsed" />
+	                                            </DataTrigger>
+	                                        </Style.Triggers>
+	                                    </Style>
+	                                </Button.Style>
+	                            </Button>
+	                        </StackPanel>
                     </Grid>
                 </Border>
             </Grid>

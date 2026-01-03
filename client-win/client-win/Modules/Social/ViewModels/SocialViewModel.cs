@@ -30,6 +30,8 @@ public sealed class SocialViewModel : ObservableObject
     private string _profileBio = string.Empty;
     private string _profileVisibility = "public";
     private SocialProfile? _profile;
+    private int? _profileTargetUserId;
+    private string _profileTitle = "Mon profil";
 
     private SocialUser? _selectedFriend;
     private SocialFriendRequest? _selectedIncomingRequest;
@@ -58,6 +60,7 @@ public sealed class SocialViewModel : ObservableObject
         SendRequestCommand = new AsyncRelayCommand(SendRequestAsync, () => SelectedSearchUser != null && !IsBusy);
         SearchCommand = new AsyncRelayCommand(SearchAsync, () => !IsBusy);
         UpdateProfileCommand = new AsyncRelayCommand(UpdateProfileAsync, () => !IsBusy);
+        ViewFriendProfileCommand = new AsyncRelayCommand<SocialUser>(ViewFriendProfileAsync, user => user != null && !IsBusy);
         RefreshCommand = new AsyncRelayCommand(RefreshAsync, () => !IsBusy);
         CloseCommand = new RelayCommand(HandleClose);
 
@@ -79,6 +82,7 @@ public sealed class SocialViewModel : ObservableObject
     public ICommand SendRequestCommand { get; }
     public ICommand SearchCommand { get; }
     public ICommand UpdateProfileCommand { get; }
+    public AsyncRelayCommand<SocialUser> ViewFriendProfileCommand { get; }
     public ICommand RefreshCommand { get; }
     public ICommand CloseCommand { get; }
 
@@ -135,6 +139,14 @@ public sealed class SocialViewModel : ObservableObject
         get => _profile;
         private set => SetProperty(ref _profile, value);
     }
+
+    public string ProfileTitle
+    {
+        get => _profileTitle;
+        private set => SetProperty(ref _profileTitle, value);
+    }
+
+    public void SetProfileTargetUserId(int? userId) => _profileTargetUserId = userId;
 
     public sealed record VisibilityOption(string Value, string Label);
 
@@ -306,17 +318,29 @@ public sealed class SocialViewModel : ObservableObject
 
     private async Task LoadProfileAsync()
     {
-        Profile = await _service.GetProfileAsync().ConfigureAwait(true);
+        Profile = await _service.GetProfileAsync(_profileTargetUserId).ConfigureAwait(true);
         if (Profile != null)
         {
             ProfileBio = Profile.Bio;
             ProfileVisibility = Profile.Visibility;
-            Status = "Profil chargé.";
+            ProfileTitle = Profile.IsOwner ? "Mon profil" : "Profil";
+            Status = Profile.IsOwner ? "Profil chargé." : "Profil chargé (lecture seule).";
         }
         else
         {
             Status = "Profil indisponible.";
         }
+    }
+
+    private async Task ViewFriendProfileAsync(SocialUser? user)
+    {
+        if (user == null)
+        {
+            return;
+        }
+
+        SetProfileTargetUserId(user.Id);
+        SelectedSection = SocialSection.Profile;
     }
 
     private async Task AcceptRequestAsync()

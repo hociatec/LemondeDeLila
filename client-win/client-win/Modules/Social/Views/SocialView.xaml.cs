@@ -111,6 +111,7 @@ public partial class SocialView : UserControl
                 FocusSection(vm.SelectedSection);
                 break;
             case "profile":
+                vm.SetProfileTargetUserId(null);
                 vm.SelectedSection = SocialSection.Profile;
                 SetScreen(SocialScreen.Section);
                 FocusSection(vm.SelectedSection);
