@@ -109,6 +109,8 @@ public sealed partial class AdminViewModel
         Items.Add(new AdminMenuItem("Quitter une table", tag: "sounds.table.exit"));
         Items.Add(new AdminMenuItem("Invitation à une table envoyée", tag: "sounds.table.invite.sent"));
         Items.Add(new AdminMenuItem("Invitation à une table reçue", tag: "sounds.table.invite.received"));
+        Items.Add(new AdminMenuItem("Tchat de table : message envoyé", tag: "sounds.table.chat.sent"));
+        Items.Add(new AdminMenuItem("Tchat de table : message reçu", tag: "sounds.table.chat.received"));
         SelectedItem = Items.FirstOrDefault();
         Status = "Entrée : sélectionner. Échap : retour.";
         UpdateFilterVisibility();
@@ -149,11 +151,15 @@ public sealed partial class AdminViewModel
         RestoreFocusIfAny();
     }
 
-    private void BuildSoundDetails(SoundId sound)
+    private void BuildSoundDetails(
+        SoundId sound,
+        AdminPage? returnPageOverride = null,
+        string? groupOverride = null,
+        string? titleOverride = null)
     {
         _page = AdminPage.SoundDetails;
         _soundDetailsId = sound;
-        _soundDetailsReturnPage = sound switch
+        _soundDetailsReturnPage = returnPageOverride ?? sound switch
         {
             SoundId.ClientOpened or SoundId.ClientConnected or SoundId.ClientDisconnected => AdminPage.SoundsConnection,
             SoundId.MainMenuMusic or SoundId.TavernAmbience => AdminPage.SoundsAmbience,
@@ -189,6 +195,16 @@ public sealed partial class AdminViewModel
             SoundId.PrivateMessageReceived => ("Messages privés", "Réception d'un message privé", _options.Current.SoundPrivateMessageReceivedPath),
             _ => ("Sons", sound.ToString(), null)
         };
+
+        if (!string.IsNullOrWhiteSpace(groupOverride))
+        {
+            group = groupOverride;
+        }
+
+        if (!string.IsNullOrWhiteSpace(titleOverride))
+        {
+            title = titleOverride;
+        }
 
         Title = $"Administration - Sons - {group} - {title}";
         Details = string.IsNullOrWhiteSpace(current)

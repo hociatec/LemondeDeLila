@@ -490,6 +490,26 @@ public sealed partial class AdminViewModel
                     BuildSoundDetails(Modules.Audio.Models.SoundId.InvitationReceived);
                     return;
                 }
+                if (tableSound == "sounds.table.chat.sent")
+                {
+                    PushReturnFocus();
+                    BuildSoundDetails(
+                        Modules.Audio.Models.SoundId.ChatMessageSent,
+                        returnPageOverride: AdminPage.SoundsTable,
+                        groupOverride: "Table",
+                        titleOverride: "Tchat de table - Envoi d'un message");
+                    return;
+                }
+                if (tableSound == "sounds.table.chat.received")
+                {
+                    PushReturnFocus();
+                    BuildSoundDetails(
+                        Modules.Audio.Models.SoundId.ChatMessageReceived,
+                        returnPageOverride: AdminPage.SoundsTable,
+                        groupOverride: "Table",
+                        titleOverride: "Tchat de table - Réception d'un message");
+                    return;
+                }
             }
 
             if (_page == AdminPage.SoundsChat && tag is string chatSound)
