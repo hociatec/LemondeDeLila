@@ -23,6 +23,8 @@ public sealed class StatsViewModel : ObservableObject
     private readonly Func<Task>? _openLeaderboard;
     private readonly Action _close;
     private readonly Dispatcher _dispatcher;
+    private readonly int? _targetUserId;
+    private readonly string? _targetUsername;
     private StatsPage _page = StatsPage.Root;
     private MyGameStatsDto? _selectedGame;
     private MyGameStatsDto[] _loadedGames = Array.Empty<MyGameStatsDto>();
@@ -35,12 +37,19 @@ public sealed class StatsViewModel : ObservableObject
     private const string OpenLeaderboard = "Classement";
     private const string EmptyInfo = "Aucune information encore disponible";
 
-    public StatsViewModel(IStatsService stats, Action onClose, Func<Task>? openLeaderboard = null)
+    public StatsViewModel(
+        IStatsService stats,
+        Action onClose,
+        Func<Task>? openLeaderboard = null,
+        int? targetUserId = null,
+        string? targetUsername = null)
     {
         _stats = stats ?? throw new ArgumentNullException(nameof(stats));
         _close = onClose ?? (() => { });
         _openLeaderboard = openLeaderboard;
         _dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
+        _targetUserId = targetUserId;
+        _targetUsername = targetUsername;
 
         Items = new ObservableCollection<StatsMenuItem>();
         ActivateCommand = new AsyncRelayCommand(ActivateSelectedAsync);
@@ -120,8 +129,14 @@ public sealed class StatsViewModel : ObservableObject
         Title = "Livre des contes";
         Details = string.Empty;
         Items.Clear();
-        Items.Add(new StatsMenuItem(ConsultMyStats, tag: ConsultMyStats));
-        Items.Add(new StatsMenuItem(OpenLeaderboard, tag: OpenLeaderboard));
+        var consultLabel = _targetUserId.HasValue && _targetUserId.Value > 0
+            ? $"Consulter le livre des contes de {_targetUsername ?? "cet utilisateur"}"
+            : ConsultMyStats;
+        Items.Add(new StatsMenuItem(consultLabel, tag: ConsultMyStats));
+        if (!_targetUserId.HasValue || _targetUserId.Value <= 0)
+        {
+            Items.Add(new StatsMenuItem(OpenLeaderboard, tag: OpenLeaderboard));
+        }
         SelectedItem = Items.FirstOrDefault();
         Status = "Entrée : consulter. Échap : retour.";
     }
@@ -130,7 +145,9 @@ public sealed class StatsViewModel : ObservableObject
     {
         _page = StatsPage.Games;
         _selectedGame = null;
-        Title = "Mon livre des contes";
+        Title = _targetUserId.HasValue && _targetUserId.Value > 0
+            ? $"Livre des contes de {_targetUsername ?? "cet utilisateur"}"
+            : "Mon livre des contes";
         Details = string.Empty;
         var hasStats = Items.Any(i => i.Tag is MyGameStatsDto);
         Status = hasStats ? "Choisissez un jeu. Échap : retour." : "Aucune information encore disponible. Échap : retour.";
@@ -215,32 +232,36 @@ public sealed class StatsViewModel : ObservableObject
         }
     }
 
-    private async Task LoadGamesAsync()
-    {
-        IsBusy = true;
-        Status = "Chargement...";
-        Details = string.Empty;
-        try
-        {
-            var games = await _stats.GetMyStatsAsync().ConfigureAwait(true);
-            _loadedGames = games.OrderBy(g => g.GameName).ToArray();
-            await _dispatcher.InvokeAsync(() =>
-            {
-                ShowGames();
-            }, DispatcherPriority.Background);
+	    private async Task LoadGamesAsync()
+	    {
+	        IsBusy = true;
+	        Status = "Chargement...";
+	        Details = string.Empty;
+	        try
+	        {
+	            var games = _targetUserId.HasValue && _targetUserId.Value > 0
+	                ? await _stats.GetUserStatsAsync(_targetUserId.Value).ConfigureAwait(true)
+	                : await _stats.GetMyStatsAsync().ConfigureAwait(true);
+	            _loadedGames = games.OrderBy(g => g.GameName).ToArray();
+	            await _dispatcher.InvokeAsync(() =>
+	            {
+	                ShowGames();
+	            }, DispatcherPriority.Background);
         }
         catch (Exception ex)
         {
-            await _dispatcher.InvokeAsync(() =>
-            {
-                Items.Clear();
-                Items.Add(new StatsMenuItem(EmptyInfo, tag: null));
-                _page = StatsPage.Games;
-                Title = "Mon livre des contes";
-                Details = string.Empty;
-                SelectedItem = Items.FirstOrDefault();
-                Status = $"Erreur : {ex.Message}";
-            }, DispatcherPriority.Background);
+	            await _dispatcher.InvokeAsync(() =>
+	            {
+	                Items.Clear();
+	                Items.Add(new StatsMenuItem(EmptyInfo, tag: null));
+	                _page = StatsPage.Games;
+	                Title = _targetUserId.HasValue && _targetUserId.Value > 0
+	                    ? $"Livre des contes de {_targetUsername ?? "cet utilisateur"}"
+	                    : "Mon livre des contes";
+	                Details = string.Empty;
+	                SelectedItem = Items.FirstOrDefault();
+	                Status = $"Erreur : {ex.Message}";
+	            }, DispatcherPriority.Background);
         }
         finally
         {

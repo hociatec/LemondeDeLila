@@ -8,5 +8,5 @@ namespace client_win.Modules.Stats.Services;
 public interface IStatsService
 {
     Task<IReadOnlyList<MyGameStatsDto>> GetMyStatsAsync(CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<MyGameStatsDto>> GetUserStatsAsync(int userId, CancellationToken cancellationToken = default);
 }
-

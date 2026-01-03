@@ -22,6 +22,7 @@ public enum SocialSection
 public sealed class SocialViewModel : ObservableObject
 {
     private readonly ISocialService _service;
+    private readonly Func<int, string, Task<string>>? _openStoryBook;
     private readonly Action? _onClose;
     private SocialSection _selectedSection;
     private string _status = "Chargement...";
@@ -40,9 +41,13 @@ public sealed class SocialViewModel : ObservableObject
     private SocialUser? _selectedSearchUser;
     private SocialSection? _pendingSection;
 
-    public SocialViewModel(ISocialService service, Action? onClose = null)
+    public SocialViewModel(
+        ISocialService service,
+        Func<int, string, Task<string>>? openStoryBook = null,
+        Action? onClose = null)
     {
         _service = service ?? throw new ArgumentNullException(nameof(service));
+        _openStoryBook = openStoryBook;
         _onClose = onClose;
 
         Friends = new ObservableCollection<SocialUser>();
@@ -60,7 +65,8 @@ public sealed class SocialViewModel : ObservableObject
         SendRequestCommand = new AsyncRelayCommand(SendRequestAsync, () => SelectedSearchUser != null && !IsBusy);
         SearchCommand = new AsyncRelayCommand(SearchAsync, () => !IsBusy);
         UpdateProfileCommand = new AsyncRelayCommand(UpdateProfileAsync, () => !IsBusy);
-        ViewFriendProfileCommand = new AsyncRelayCommand<SocialUser>(ViewFriendProfileAsync, user => user != null && !IsBusy);
+        ViewProfileCommand = new AsyncRelayCommand<SocialUser>(ViewProfileAsync, user => user != null && !IsBusy);
+        OpenStoryBookCommand = new AsyncRelayCommand(OpenStoryBookAsync, () => Profile != null && !IsBusy);
         RefreshCommand = new AsyncRelayCommand(RefreshAsync, () => !IsBusy);
         CloseCommand = new RelayCommand(HandleClose);
 
@@ -82,7 +88,8 @@ public sealed class SocialViewModel : ObservableObject
     public ICommand SendRequestCommand { get; }
     public ICommand SearchCommand { get; }
     public ICommand UpdateProfileCommand { get; }
-    public AsyncRelayCommand<SocialUser> ViewFriendProfileCommand { get; }
+    public AsyncRelayCommand<SocialUser> ViewProfileCommand { get; }
+    public ICommand OpenStoryBookCommand { get; }
     public ICommand RefreshCommand { get; }
     public ICommand CloseCommand { get; }
 
@@ -137,7 +144,13 @@ public sealed class SocialViewModel : ObservableObject
     public SocialProfile? Profile
     {
         get => _profile;
-        private set => SetProperty(ref _profile, value);
+        private set
+        {
+            if (SetProperty(ref _profile, value))
+            {
+                RaiseCommandStates();
+            }
+        }
     }
 
     public string ProfileTitle
@@ -326,8 +339,19 @@ public sealed class SocialViewModel : ObservableObject
         {
             ProfileBio = Profile.Bio;
             ProfileVisibility = Profile.Visibility;
-            ProfileTitle = Profile.IsOwner ? "Mon profil" : "Profil";
-            Status = Profile.IsOwner ? "Profil chargé." : "Profil chargé (lecture seule).";
+            ProfileTitle = Profile.IsOwner ? "Mon profil" : $"Profil de {Profile.User.Username}";
+            if (Profile.IsOwner)
+            {
+                Status = "Profil chargé.";
+            }
+            else if (!Profile.CanView)
+            {
+                Status = "Profil privé.";
+            }
+            else
+            {
+                Status = "Profil chargé.";
+            }
         }
         else
         {
@@ -335,7 +359,7 @@ public sealed class SocialViewModel : ObservableObject
         }
     }
 
-    private async Task ViewFriendProfileAsync(SocialUser? user)
+    private async Task ViewProfileAsync(SocialUser? user)
     {
         if (user == null)
         {
@@ -344,6 +368,47 @@ public sealed class SocialViewModel : ObservableObject
 
         SetProfileTargetUserId(user.Id);
         SelectedSection = SocialSection.Profile;
+    }
+
+    private async Task OpenStoryBookAsync()
+    {
+        if (IsBusy)
+        {
+            return;
+        }
+
+        var profile = Profile;
+        if (profile == null)
+        {
+            Status = "Profil indisponible.";
+            return;
+        }
+
+        if (!profile.IsOwner && !profile.CanView)
+        {
+            Status = "Livre des contes indisponible (profil privé).";
+            return;
+        }
+
+        if (_openStoryBook == null)
+        {
+            Status = "Livre des contes indisponible.";
+            return;
+        }
+
+        IsBusy = true;
+        try
+        {
+            Status = await _openStoryBook(profile.User.Id, profile.User.Username).ConfigureAwait(true);
+        }
+        catch (Exception ex)
+        {
+            Status = $"Erreur livre des contes: {ex.Message}";
+        }
+        finally
+        {
+            IsBusy = false;
+        }
     }
 
     private async Task AcceptRequestAsync()
@@ -521,6 +586,8 @@ public sealed class SocialViewModel : ObservableObject
         (SendRequestCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
         (SearchCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
         (UpdateProfileCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
+        ViewProfileCommand?.RaiseCanExecuteChanged();
+        (OpenStoryBookCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
         (RefreshCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
     }
 

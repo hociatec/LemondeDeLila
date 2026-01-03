@@ -41,4 +41,36 @@ public sealed class StatsService : IStatsService
 
         return response.Payload?.Games ?? new List<MyGameStatsDto>();
     }
+
+    public async Task<IReadOnlyList<MyGameStatsDto>> GetUserStatsAsync(int userId, CancellationToken cancellationToken = default)
+    {
+        var token = _session.CurrentUser?.Token;
+        var network = NetworkConfiguration.Load();
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(Math.Max(30, network.ReceiveTimeoutSeconds + 5)));
+        using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, cts.Token);
+
+        var response = await _ws.RequestAsync<UserStatsPayload>(
+            WsMessageTypes.Stats.User,
+            new { userId },
+            token,
+            linked.Token).ConfigureAwait(false);
+
+        if (!response.Success)
+        {
+            throw new InvalidOperationException(response.Error ?? "Livre des contes indisponible.");
+        }
+
+        return response.Payload?.Games ?? new List<MyGameStatsDto>();
+    }
+
+    private sealed class UserStatsPayload
+    {
+        public int UserId { get; set; }
+        public List<MyGameStatsDto>? Games { get; set; }
+    }
+
+    private sealed class MyStatsPayload
+    {
+        public List<MyGameStatsDto>? Games { get; set; }
+    }
 }

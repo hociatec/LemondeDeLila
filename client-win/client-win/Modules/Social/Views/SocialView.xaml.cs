@@ -184,7 +184,14 @@ public partial class SocialView : UserControl
                     SearchBox.Focus();
                     break;
                 case SocialSection.Profile:
-                    ProfileBioBox.Focus();
+                    if (ProfileBioBox.IsVisible && ProfileBioBox.IsEnabled)
+                    {
+                        ProfileBioBox.Focus();
+                    }
+                    else
+                    {
+                        VisibilityBox.Focus();
+                    }
                     break;
             }
         }, DispatcherPriority.Input);

@@ -11,8 +11,8 @@ export class StatsWsRegistrar implements OnModuleInit {
 
   onModuleInit() {
     this.registry.register('stats.my', (session) => this.handler.my(session));
+    this.registry.register('stats.user', (session, payload) => this.handler.user(session, payload));
     this.registry.register('leaderboard.games', () => this.handler.leaderboardGames());
     this.registry.register('leaderboard.top', (_, payload) => this.handler.leaderboardTop(payload));
   }
 }
-

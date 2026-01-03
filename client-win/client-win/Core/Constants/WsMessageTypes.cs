@@ -110,6 +110,7 @@ public static class WsMessageTypes
     public static class Stats
     {
         public const string My = "stats.my";
+        public const string User = "stats.user";
     }
 
     public static class Leaderboard

@@ -219,7 +219,8 @@ public sealed class SocialService : ISocialService
             Avatar = dto.Avatar,
             Since = dto.Since,
             CreatedAt = dto.CreatedAt,
-            BlockedAt = dto.BlockedAt
+            BlockedAt = dto.BlockedAt,
+            ProfileVisibility = dto.ProfileVisibility
         };
     }
 
@@ -243,7 +244,8 @@ public sealed class SocialService : ISocialService
             Visibility = dto.Visibility ?? "public",
             CreatedAt = dto.CreatedAt,
             UpdatedAt = dto.UpdatedAt,
-            IsOwner = dto.IsOwner
+            IsOwner = dto.IsOwner,
+            CanView = dto.CanView
         };
     }
 
@@ -285,6 +287,7 @@ public sealed class SocialService : ISocialService
         public DateTime? Since { get; set; }
         public DateTime? CreatedAt { get; set; }
         public DateTime? BlockedAt { get; set; }
+        public string? ProfileVisibility { get; set; }
     }
 
     private sealed class RequestDto
@@ -303,5 +306,6 @@ public sealed class SocialService : ISocialService
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
         public bool IsOwner { get; set; }
+        public bool CanView { get; set; }
     }
 }

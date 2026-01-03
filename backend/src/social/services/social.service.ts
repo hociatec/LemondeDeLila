@@ -274,6 +274,7 @@ export class SocialService {
       createdAt: profile.createdAt,
       updatedAt: profile.updatedAt,
       isOwner: viewerId === targetId,
+      canView,
     };
   }
 
@@ -309,20 +310,30 @@ export class SocialService {
     if (!sanitized) {
       return [];
     }
-    const users = await this.users
+    const rows = await this.users
       .createQueryBuilder('u')
-      .select(['u.id', 'u.username', 'u.avatar'])
+      .leftJoin(SocialProfile, 'p', 'p.userId = u.id')
+      .select('u.id', 'id')
+      .addSelect('u.username', 'username')
+      .addSelect('u.avatar', 'avatar')
+      .addSelect("COALESCE(p.visibility, 'public')", 'profileVisibility')
       .where('LOWER(u.username) LIKE :query', {
         query: `%${sanitized.toLowerCase()}%`,
       })
       .andWhere('u.id != :userId', { userId })
       .limit(20)
-      .getMany();
+      .getRawMany<{
+        id: number;
+        username: string;
+        avatar: string | null;
+        profileVisibility: SocialProfileVisibility;
+      }>();
 
-    return users.map((user) => ({
-      id: user.id,
-      username: user.username,
-      avatar: user.avatar ?? null,
+    return rows.map((row) => ({
+      id: row.id,
+      username: row.username,
+      avatar: row.avatar ?? null,
+      profileVisibility: row.profileVisibility ?? 'public',
     }));
   }
 

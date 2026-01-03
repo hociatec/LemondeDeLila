@@ -184,6 +184,34 @@ public sealed class MenuRouter : IMenuRouter
         return Task.FromResult("Livre des contes ouvert.");
     }
 
+    public Task<string> OpenStatsForUser(int userId, string username)
+    {
+        _logger.LogInformation("Ouverture du livre des contes de {Username} ({UserId})", username, userId);
+
+        var previous = _navigation.CurrentView;
+        StopBackgroundLoops();
+        var view = new StatsView();
+        var vm = new StatsViewModel(
+            _stats,
+            onClose: () =>
+            {
+                if (previous != null)
+                {
+                    _navigation.Show(previous);
+                    RestoreFocusAfterBackNavigation(previous);
+                }
+
+                StartLoopForView(previous);
+            },
+            openLeaderboard: async () => { await OpenLeaderboard().ConfigureAwait(true); },
+            targetUserId: userId,
+            targetUsername: username);
+        view.DataContext = vm;
+        _navigation.Show(view);
+
+        return Task.FromResult($"Livre des contes de {username} ouvert.");
+    }
+
     public Task<string> OpenLeaderboard()
     {
         _logger.LogInformation("Ouverture du classement");
@@ -430,7 +458,14 @@ public sealed class MenuRouter : IMenuRouter
         var previous = _navigation.CurrentView;
         StopBackgroundLoops();
         var view = new SocialView();
-        var vm = new SocialViewModel(_social, onClose: () =>
+        var vm = new SocialViewModel(
+            _social,
+            openStoryBook: async (userId, username) =>
+            {
+                StopBackgroundLoops();
+                return await OpenStatsForUser(userId, username).ConfigureAwait(true);
+            },
+            onClose: () =>
         {
             if (previous != null)
             {

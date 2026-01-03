@@ -10,4 +10,5 @@ public sealed class SocialProfile
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
     public bool IsOwner { get; set; }
+    public bool CanView { get; set; }
 }
