@@ -374,7 +374,7 @@ public sealed class SocialViewModel : ObservableObject
         {
             ProfileBio = Profile.Bio;
             ProfileVisibility = Profile.Visibility;
-            ProfileTitle = Profile.IsOwner ? "Mon profil" : $"Profil de {Profile.User.Username}";
+            ProfileTitle = Profile.IsOwner ? "Mon profil" : Profile.User.Username;
             ProfileInfoText = BuildProfileInfoText(Profile);
             if (Profile.IsOwner)
             {
@@ -403,7 +403,6 @@ public sealed class SocialViewModel : ObservableObject
             return string.Empty;
         }
 
-        var username = profile.User?.Username ?? string.Empty;
         var id = profile.User?.Id ?? 0;
         var visibility = profile.Visibility ?? "public";
 
@@ -417,7 +416,6 @@ public sealed class SocialViewModel : ObservableObject
 
         return string.Join(Environment.NewLine, new[]
         {
-            $"Utilisateur : {username}",
             $"ID : {id}",
             $"Visibilité : {visibility}",
             string.IsNullOrWhiteSpace(created) ? null : $"Créé : {created}",

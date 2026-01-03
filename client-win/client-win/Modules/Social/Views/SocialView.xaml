@@ -726,8 +726,6 @@
 			                                   FontSize="16"
 			                                   FontWeight="Bold"
 			                                   Margin="0 0 0 12"
-			                                   Focusable="True"
-			                                   KeyboardNavigation.IsTabStop="True"
 			                                   AutomationProperties.Name="{Binding ProfileTitle}" />
 
 		                        <TextBlock Grid.Row="1"
@@ -736,12 +734,10 @@
 		                                   FontSize="16"
 		                                   FontWeight="SemiBold"
 		                                   Margin="0 0 0 12"
-		                                   Focusable="True"
-		                                   KeyboardNavigation.IsTabStop="True"
 		                                   AutomationProperties.Name="{Binding Profile.User.Username, StringFormat=Utilisateur {0}}" />
 
 	                        <StackPanel Grid.Row="2" Orientation="Vertical" Margin="0 0 0 12">
-	                            <TextBlock Text="Informations" Foreground="{StaticResource TextMuted}" FontSize="12" />
+	                            <TextBlock x:Name="ProfileInfoLabel" Text="Informations" Foreground="{StaticResource TextMuted}" FontSize="12" />
 	                            <TextBox x:Name="ProfileInfoBox"
 	                                     Text="{Binding ProfileInfoText, Mode=OneWay}"
 	                                     Margin="0 6 0 0"
@@ -749,7 +745,13 @@
 	                                     TextWrapping="Wrap"
 	                                     AcceptsReturn="True"
 	                                     IsReadOnly="True"
+	                                     IsReadOnlyCaretVisible="True"
+	                                     SpellCheck.IsEnabled="False"
+	                                     TextBoxBase.IsUndoEnabled="False"
+	                                     VerticalScrollBarVisibility="Auto"
+	                                     HorizontalScrollBarVisibility="Disabled"
 	                                     Style="{StaticResource InputTextBox}"
+	                                     AutomationProperties.LabeledBy="{Binding ElementName=ProfileInfoLabel}"
 	                                     AutomationProperties.Name="Informations du profil" />
 	                        </StackPanel>
 

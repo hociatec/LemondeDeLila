@@ -192,11 +192,7 @@ public partial class SocialView : UserControl
                     SearchBox.Focus();
                     break;
                 case SocialSection.Profile:
-                    if (ProfileHeader.IsVisible && ProfileHeader.IsEnabled)
-                    {
-                        ProfileHeader.Focus();
-                    }
-                    else if (ProfileInfoBox.IsVisible && ProfileInfoBox.IsEnabled)
+                    if (ProfileInfoBox.IsVisible && ProfileInfoBox.IsEnabled)
                     {
                         ProfileInfoBox.Focus();
                     }
