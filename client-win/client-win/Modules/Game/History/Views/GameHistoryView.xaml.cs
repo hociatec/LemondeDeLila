@@ -328,12 +328,9 @@ public partial class GameHistoryView : UserControl
             return;
         }
 
-        // Si l'utilisateur est en train de lire l'historique, ne pas interrompre.
-        // Ne pas vider la file: on reprendra plus tard pour éviter de perdre des messages.
-        if (HistoryEditor.IsKeyboardFocusWithin)
-        {
-            return;
-        }
+        // IMPORTANT:
+        // Annoncer même si le focus est dans l'historique : l'historique est la source de vérité
+        // et chaque nouvelle ligne doit être lue par le lecteur d'écran.
 
         var next = _announceQueue.Dequeue();
         if (string.IsNullOrWhiteSpace(next))
