@@ -53,8 +53,7 @@ public sealed class RoomAnnouncements : IRoomAnnouncements
 
     public void ShortcutKey(string key)
     {
-        if (string.IsNullOrWhiteSpace(key)) return;
-        _announcer.AnnounceAssertive(key);
+        // Annonces directes désactivées: l'historique est la source unique d'annonces.
     }
 
     public void PlayersList(string message)

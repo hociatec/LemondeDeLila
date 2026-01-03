@@ -68,8 +68,6 @@ public sealed class GameTableOpener : IGameTableOpener
         if (game == null) throw new ArgumentNullException(nameof(game));
         if (returnView == null) throw new ArgumentNullException(nameof(returnView));
 
-        _screenReader.AnnouncePolite($"Création de la table {game.Name}...");
-
         RoomSession session;
         try
         {
@@ -101,8 +99,6 @@ public sealed class GameTableOpener : IGameTableOpener
     {
         if (roomId <= 0) throw new ArgumentException("roomId invalide", nameof(roomId));
         if (returnView == null) throw new ArgumentNullException(nameof(returnView));
-
-        _screenReader.AnnouncePolite($"Connexion à la table {roomId}...");
 
         RoomSession session;
         try

@@ -20,6 +20,7 @@ public partial class GameHistoryView : UserControl
     private DispatcherTimer? _announceTimer;
     private readonly Queue<string> _announceQueue = new();
     private bool _announcerToggle;
+    private DateTime _nextAnnouncementAtUtc = DateTime.MinValue;
 
     public GameHistoryView()
     {
@@ -36,6 +37,11 @@ public partial class GameHistoryView : UserControl
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
         AttachViewModel(DataContext as GameHistoryViewModel);
+        if (_announceQueue.Count > 0)
+        {
+            EnsureAnnouncePump();
+            PumpAnnouncements();
+        }
 
         Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
         {
@@ -68,6 +74,7 @@ public partial class GameHistoryView : UserControl
             _viewModel.Entries.CollectionChanged -= OnEntriesCollectionChanged;
         }
 
+        ResetAnnouncementState();
         _viewModel = next;
 
         if (_viewModel != null)
@@ -101,6 +108,13 @@ public partial class GameHistoryView : UserControl
         HistoryEditor.Clear();
         _lastKnownEntryCount = 0;
         StopAnnouncePump(clearQueue: true);
+    }
+
+    private void ResetAnnouncementState()
+    {
+        StopAnnouncePump(clearQueue: true);
+        _announcerToggle = false;
+        _nextAnnouncementAtUtc = DateTime.MinValue;
     }
 
     private void OnEntriesCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -286,9 +300,9 @@ public partial class GameHistoryView : UserControl
 
         _announceQueue.Enqueue(cleaned);
 
-        // Annoncer le premier message immédiatement (sans attendre le tick du timer),
-        // pour garder l'ordre "historique -> interface" quand un changement d'UI survient juste après.
-        if (_announceQueue.Count == 1)
+        // Annoncer le premier message immédiatement si la vue est prête,
+        // sinon laisser la pompe reprendre dès que la vue est chargée.
+        if (_announceQueue.Count == 1 && IsLoaded && DateTime.UtcNow >= _nextAnnouncementAtUtc)
         {
             PumpAnnouncements();
         }
@@ -328,9 +342,16 @@ public partial class GameHistoryView : UserControl
             return;
         }
 
-        // IMPORTANT:
-        // Annoncer même si le focus est dans l'historique : l'historique est la source de vérité
-        // et chaque nouvelle ligne doit être lue par le lecteur d'écran.
+        if (!IsLoaded || !A11yAnnouncer.IsLoaded || PresentationSource.FromVisual(A11yAnnouncer) == null)
+        {
+            return;
+        }
+
+        var now = DateTime.UtcNow;
+        if (now < _nextAnnouncementAtUtc)
+        {
+            return;
+        }
 
         var next = _announceQueue.Dequeue();
         if (string.IsNullOrWhiteSpace(next))
@@ -340,6 +361,8 @@ public partial class GameHistoryView : UserControl
 
         try
         {
+            _nextAnnouncementAtUtc = now + ComputeAnnouncementDelay(next);
+
             // Mise à jour du live-region de secours (plus fiable sur certains setups NVDA).
             // On alterne un caractère "invisible" pour forcer un changement de texte (même si le message se répète),
             // sans polluer ce que le lecteur d'écran doit prononcer (lui lit le paramètre `next`).
@@ -356,6 +379,15 @@ public partial class GameHistoryView : UserControl
         {
             // ignore (best-effort)
         }
+    }
+
+    private static TimeSpan ComputeAnnouncementDelay(string message)
+    {
+        var length = message?.Length ?? 0;
+        var ms = 500 + (length * 20);
+        if (ms < 800) ms = 800;
+        if (ms > 5000) ms = 5000;
+        return TimeSpan.FromMilliseconds(ms);
     }
 
     private void StopAnnouncePump(bool clearQueue)

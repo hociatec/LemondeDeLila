@@ -14,18 +14,7 @@ public sealed class GameAnnouncements : IGameAnnouncements
 
     public void ShortcutKey(string key)
     {
-        if (string.IsNullOrWhiteSpace(key)) return;
-
-        // Le jeu ne doit pas annoncer la touche Entrée : on laisse l'écho clavier de NVDA (et/ou les retours serveur)
-        // éviter les doublons "Entrée".
-        var trimmed = key.Trim();
-        if (trimmed.Equals("Enter", StringComparison.OrdinalIgnoreCase) ||
-            trimmed.StartsWith("Entr", StringComparison.OrdinalIgnoreCase))
-        {
-            return;
-        }
-
-        _announcer.AnnounceAssertive(key);
+        // Annonces directes désactivées: l'historique est la source unique d'annonces.
     }
 
     public void Info(string message)
