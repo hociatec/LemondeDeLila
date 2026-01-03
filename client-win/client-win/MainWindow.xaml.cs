@@ -124,10 +124,13 @@ namespace client_win
                         // sinon on entend les deux en même temps.
                         try
                         {
-                            Interlocked.Increment(ref _soundInitRevision);
-                            var sounds = _host.Services.GetRequiredService<ISoundService>();
-                            sounds.StopLoop(Modules.Audio.Models.SoundId.MainMenuMusic);
-                            sounds.StopLoop(Modules.Audio.Models.SoundId.TavernAmbience);
+                            if (_host is not null)
+                            {
+                                Interlocked.Increment(ref _soundInitRevision);
+                                var sounds = _host.Services.GetRequiredService<ISoundService>();
+                                sounds.StopLoop(Modules.Audio.Models.SoundId.MainMenuMusic);
+                                sounds.StopLoop(Modules.Audio.Models.SoundId.TavernAmbience);
+                            }
                         }
                         catch
                         {
@@ -140,13 +143,13 @@ namespace client_win
                     }
 
                     _exitConfirmed = true;
-                    Application.Current.Shutdown();
+                    Application.Current?.Shutdown();
                 }
                 catch
                 {
                     // En cas de problème de dialogue/son, ne pas bloquer la fermeture.
                     _exitConfirmed = true;
-                    Application.Current.Shutdown();
+                    Application.Current?.Shutdown();
                 }
                 finally
                 {

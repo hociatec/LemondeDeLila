@@ -54,6 +54,7 @@ public static class ClientUpdateManager
             message: msg + "\n\nLancement de la mise à jour…" + RestartHint,
             clickOnceUrl: url,
             reason: "notify-required",
+            required: true,
             deDupKey: $"notify-required:{minRequiredVersion}",
             cancellationToken: cancellationToken);
     }
@@ -80,6 +81,7 @@ public static class ClientUpdateManager
             message: msg + "\n\nLancement de la mise à jour…" + RestartHint,
             clickOnceUrl: url,
             reason: "notify-available",
+            required: false,
             deDupKey: $"notify-available:{latestVersion}",
             cancellationToken: cancellationToken);
     }
@@ -113,6 +115,7 @@ public static class ClientUpdateManager
                 message: msg,
                 clickOnceUrl: url,
                 reason: "shell-required",
+                required: true,
                 deDupKey: $"shell-required:{min}",
                 cancellationToken: cancellationToken)
             .ConfigureAwait(false);
@@ -151,6 +154,7 @@ public static class ClientUpdateManager
                     message: msg + "\n\nLancement de la mise à jour…" + RestartHint,
                     clickOnceUrl: info.Url,
                     reason: $"{source}-required",
+                    required: true,
                     deDupKey: $"{source}-required:{info.MinRequiredVersion}:{info.LatestVersion}",
                     cancellationToken: cancellationToken)
                 .ConfigureAwait(true);
@@ -175,6 +179,7 @@ public static class ClientUpdateManager
                     message: msg + "\n\nLancement de la mise à jour…" + RestartHint,
                     clickOnceUrl: info.Url,
                     reason: $"{source}-available",
+                    required: false,
                     deDupKey: $"{source}-available:{info.LatestVersion}",
                     cancellationToken: cancellationToken)
                 .ConfigureAwait(true);
