@@ -33,6 +33,7 @@ public sealed class SocialViewModel : ObservableObject
     private SocialProfile? _profile;
     private int? _profileTargetUserId;
     private string _profileTitle = "Mon profil";
+    private string _profileInfoText = string.Empty;
     private SocialSection? _returnSectionFromProfile;
 
     private SocialUser? _selectedFriend;
@@ -160,6 +161,12 @@ public sealed class SocialViewModel : ObservableObject
         private set => SetProperty(ref _profileTitle, value);
     }
 
+    public string ProfileInfoText
+    {
+        get => _profileInfoText;
+        private set => SetProperty(ref _profileInfoText, value);
+    }
+
     public void SetProfileTargetUserId(int? userId) => _profileTargetUserId = userId;
 
     public void EnterOwnProfile()
@@ -174,6 +181,13 @@ public sealed class SocialViewModel : ObservableObject
         {
             returnSection = _returnSectionFromProfile.Value;
             _returnSectionFromProfile = null;
+            _profileTargetUserId = null;
+            return true;
+        }
+
+        if (_profileTargetUserId.HasValue)
+        {
+            returnSection = SocialSection.Friends;
             _profileTargetUserId = null;
             return true;
         }
@@ -361,6 +375,7 @@ public sealed class SocialViewModel : ObservableObject
             ProfileBio = Profile.Bio;
             ProfileVisibility = Profile.Visibility;
             ProfileTitle = Profile.IsOwner ? "Mon profil" : $"Profil de {Profile.User.Username}";
+            ProfileInfoText = BuildProfileInfoText(Profile);
             if (Profile.IsOwner)
             {
                 Status = "Profil chargé.";
@@ -376,8 +391,39 @@ public sealed class SocialViewModel : ObservableObject
         }
         else
         {
+            ProfileInfoText = string.Empty;
             Status = "Profil indisponible.";
         }
+    }
+
+    private static string BuildProfileInfoText(SocialProfile profile)
+    {
+        if (profile == null)
+        {
+            return string.Empty;
+        }
+
+        var username = profile.User?.Username ?? string.Empty;
+        var id = profile.User?.Id ?? 0;
+        var visibility = profile.Visibility ?? "public";
+
+        var created = profile.CreatedAt == default ? string.Empty : profile.CreatedAt.ToString("dd/MM/yyyy HH:mm");
+        var updated = profile.UpdatedAt == default ? string.Empty : profile.UpdatedAt.ToString("dd/MM/yyyy HH:mm");
+
+        var canView = profile.IsOwner || profile.CanView;
+        var bioLine = canView
+            ? $"Bio : {(string.IsNullOrWhiteSpace(profile.Bio) ? \"(vide)\" : profile.Bio.Trim())}"
+            : "Bio : (profil privé)";
+
+        return string.Join(Environment.NewLine, new[]
+        {
+            $"Utilisateur : {username}",
+            $"ID : {id}",
+            $"Visibilité : {visibility}",
+            string.IsNullOrWhiteSpace(created) ? null : $"Créé : {created}",
+            string.IsNullOrWhiteSpace(updated) ? null : $"Mis à jour : {updated}",
+            bioLine
+        }.Where(s => !string.IsNullOrWhiteSpace(s)));
     }
 
     private async Task ViewProfileAsync(SocialUser? user)

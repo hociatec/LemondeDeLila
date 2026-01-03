@@ -742,22 +742,15 @@
 
 	                        <StackPanel Grid.Row="2" Orientation="Vertical" Margin="0 0 0 12">
 	                            <TextBlock Text="Informations" Foreground="{StaticResource TextMuted}" FontSize="12" />
-	                            <TextBlock Text="{Binding Profile.User.Username, StringFormat=Utilisateur : {0}}"
-	                                       Foreground="White"
-	                                       FontSize="13"
-	                                       Margin="0 6 0 0" />
-	                            <TextBlock Text="{Binding Profile.User.Id, StringFormat=ID : {0}}"
-	                                       Foreground="{StaticResource TextMuted}"
-	                                       FontSize="12" />
-	                            <TextBlock Text="{Binding Profile.Visibility, StringFormat=Visibilité : {0}}"
-	                                       Foreground="{StaticResource TextMuted}"
-	                                       FontSize="12" />
-	                            <TextBlock Text="{Binding Profile.CreatedAt, StringFormat=Créé : {0:dd/MM/yyyy HH:mm}}"
-	                                       Foreground="{StaticResource TextMuted}"
-	                                       FontSize="12" />
-	                            <TextBlock Text="{Binding Profile.UpdatedAt, StringFormat=Mis à jour : {0:dd/MM/yyyy HH:mm}}"
-	                                       Foreground="{StaticResource TextMuted}"
-	                                       FontSize="12" />
+	                            <TextBox x:Name="ProfileInfoBox"
+	                                     Text="{Binding ProfileInfoText}"
+	                                     Margin="0 6 0 0"
+	                                     Height="120"
+	                                     TextWrapping="Wrap"
+	                                     AcceptsReturn="True"
+	                                     IsReadOnly="True"
+	                                     Style="{StaticResource InputTextBox}"
+	                                     AutomationProperties.Name="Informations du profil" />
 	                        </StackPanel>
 
 	                        <TextBlock Grid.Row="3"

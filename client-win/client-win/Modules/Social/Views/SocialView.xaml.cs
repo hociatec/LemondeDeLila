@@ -196,6 +196,10 @@ public partial class SocialView : UserControl
                     {
                         ProfileHeader.Focus();
                     }
+                    else if (ProfileInfoBox.IsVisible && ProfileInfoBox.IsEnabled)
+                    {
+                        ProfileInfoBox.Focus();
+                    }
                     else if (ProfileBioBox.IsVisible && ProfileBioBox.IsEnabled)
                     {
                         ProfileBioBox.Focus();
