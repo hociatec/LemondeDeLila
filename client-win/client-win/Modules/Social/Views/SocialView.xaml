@@ -720,25 +720,25 @@
 	                            <RowDefinition Height="Auto" />
 	                        </Grid.RowDefinitions>
 
-		                        <TextBlock x:Name="ProfileHeader"
-		                                   Text="{Binding ProfileTitle}"
-		                                   Foreground="{StaticResource HighlightBrush}"
+			                        <TextBlock x:Name="ProfileHeader"
+			                                   Text="{Binding ProfileTitle}"
+			                                   Foreground="{StaticResource HighlightBrush}"
+			                                   FontSize="16"
+			                                   FontWeight="Bold"
+			                                   Margin="0 0 0 12"
+			                                   Focusable="True"
+			                                   KeyboardNavigation.IsTabStop="True"
+			                                   AutomationProperties.Name="{Binding ProfileTitle}" />
+
+		                        <TextBlock Grid.Row="1"
+		                                   Text="{Binding Profile.User.Username, TargetNullValue=Profil}"
+		                                   Foreground="White"
 		                                   FontSize="16"
-		                                   FontWeight="Bold"
+		                                   FontWeight="SemiBold"
 		                                   Margin="0 0 0 12"
 		                                   Focusable="True"
-		                                   IsTabStop="True"
-		                                   AutomationProperties.Name="{Binding ProfileTitle}" />
-
-	                        <TextBlock Grid.Row="1"
-	                                   Text="{Binding Profile.User.Username, TargetNullValue=Profil}"
-	                                   Foreground="White"
-	                                   FontSize="16"
-	                                   FontWeight="SemiBold"
-	                                   Margin="0 0 0 12"
-	                                   Focusable="True"
-	                                   IsTabStop="True"
-	                                   AutomationProperties.Name="{Binding Profile.User.Username, StringFormat=Utilisateur {0}}" />
+		                                   KeyboardNavigation.IsTabStop="True"
+		                                   AutomationProperties.Name="{Binding Profile.User.Username, StringFormat=Utilisateur {0}}" />
 
 	                        <StackPanel Grid.Row="2" Orientation="Vertical" Margin="0 0 0 12">
 	                            <TextBlock Text="Informations" Foreground="{StaticResource TextMuted}" FontSize="12" />
