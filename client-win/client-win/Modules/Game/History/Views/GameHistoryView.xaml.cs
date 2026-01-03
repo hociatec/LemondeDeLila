@@ -10,6 +10,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
 using client_win.Modules.Game.History.ViewModels;
+using client_win.Modules.Shell.Services;
 
 namespace client_win.Modules.Game.History.Views;
 
@@ -23,6 +24,7 @@ public partial class GameHistoryView : UserControl
     private bool _announceScheduled;
     private int _announceRunId;
     private int _forceAssertiveAnnouncements;
+    private IScreenReaderAnnouncer? _screenReader;
 
     public GameHistoryView()
     {
@@ -35,6 +37,11 @@ public partial class GameHistoryView : UserControl
     public FrameworkElement? FocusTarget => HistoryEditor;
 
     public event EventHandler<TabNavigationRequestedEventArgs>? TabNavigationRequested;
+
+    public void SetScreenReader(IScreenReaderAnnouncer? screenReader)
+    {
+        _screenReader = screenReader;
+    }
 
     public void NotifyUserInteraction()
     {
@@ -274,6 +281,15 @@ public partial class GameHistoryView : UserControl
             return;
         }
 
+        if (UseDirectSpeech())
+        {
+            foreach (var line in added)
+            {
+                AnnounceDirect(line);
+            }
+            return;
+        }
+
         foreach (var line in added)
         {
             _pendingAnnouncements.Enqueue(line);
@@ -323,24 +339,21 @@ public partial class GameHistoryView : UserControl
 
     private void Announce(string message)
     {
-        if (string.IsNullOrWhiteSpace(message))
+        var normalized = NormalizeAnnouncement(message);
+        if (string.IsNullOrWhiteSpace(normalized))
         {
             return;
         }
 
-        var assertive = _forceAssertiveAnnouncements > 0;
-        if (assertive)
-        {
-            _forceAssertiveAnnouncements = Math.Max(0, _forceAssertiveAnnouncements - 1);
-        }
+        var assertive = ConsumeAssertiveFlag();
 
         try
         {
             AutomationProperties.SetLiveSetting(
                 A11yAnnouncer,
                 assertive ? AutomationLiveSetting.Assertive : AutomationLiveSetting.Polite);
-            A11yAnnouncer.Text = message;
-            AutomationProperties.SetName(A11yAnnouncer, message);
+            A11yAnnouncer.Text = normalized;
+            AutomationProperties.SetName(A11yAnnouncer, normalized);
             var peer = FrameworkElementAutomationPeer.FromElement(A11yAnnouncer) ??
                        FrameworkElementAutomationPeer.CreatePeerForElement(A11yAnnouncer);
             peer?.RaiseAutomationEvent(AutomationEvents.LiveRegionChanged);
@@ -350,6 +363,58 @@ public partial class GameHistoryView : UserControl
             // Best-effort.
         }
     }
+
+    private void AnnounceDirect(string message)
+    {
+        if (_screenReader == null || _screenReader.IsRunning != true)
+        {
+            return;
+        }
+
+        var normalized = NormalizeAnnouncement(message);
+        if (string.IsNullOrWhiteSpace(normalized))
+        {
+            return;
+        }
+
+        if (ConsumeAssertiveFlag())
+        {
+            _screenReader.AnnounceAssertive(normalized);
+            return;
+        }
+
+        _screenReader.AnnouncePolite(normalized);
+    }
+
+    private bool ConsumeAssertiveFlag()
+    {
+        if (_forceAssertiveAnnouncements <= 0)
+        {
+            return false;
+        }
+
+        _forceAssertiveAnnouncements = Math.Max(0, _forceAssertiveAnnouncements - 1);
+        return true;
+    }
+
+    private static string NormalizeAnnouncement(string message)
+    {
+        var trimmed = (message ?? string.Empty).Trim();
+        if (trimmed.Length == 0)
+        {
+            return string.Empty;
+        }
+
+        var last = trimmed[^1];
+        if (char.IsLetterOrDigit(last))
+        {
+            return $"{trimmed}.";
+        }
+
+        return trimmed;
+    }
+
+    private bool UseDirectSpeech() => _screenReader?.IsRunning == true;
 
 }
 

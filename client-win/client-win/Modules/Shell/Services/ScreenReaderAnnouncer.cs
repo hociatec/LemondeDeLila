@@ -27,6 +27,8 @@ public sealed class ScreenReaderAnnouncer : IScreenReaderAnnouncer, IDisposable
 
     public void AnnounceAssertive(string message) => Announce(message, interrupt: true);
 
+    public bool IsRunning => _nvda?.IsRunning == true;
+
     public void CancelSpeech()
     {
         try

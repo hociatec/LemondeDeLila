@@ -32,6 +32,7 @@ public partial class GameRoomView : UserControl
     public void SetScreenReader(IScreenReaderAnnouncer? screenReader)
     {
         _screenReader = screenReader;
+        HistoryHost?.SetScreenReader(screenReader);
     }
 
     private void OnLoaded(object sender, System.Windows.RoutedEventArgs e)
