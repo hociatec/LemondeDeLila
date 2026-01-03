@@ -40,6 +40,12 @@ public partial class GameHistoryView : UserControl
 
     public event EventHandler<TabNavigationRequestedEventArgs>? TabNavigationRequested;
 
+    public void CancelPendingAnnouncementsFromHost()
+    {
+        _lastUserInteractionAtUtc = DateTime.UtcNow;
+        DropPendingAnnouncements();
+    }
+
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
         AttachViewModel(DataContext as GameHistoryViewModel);
