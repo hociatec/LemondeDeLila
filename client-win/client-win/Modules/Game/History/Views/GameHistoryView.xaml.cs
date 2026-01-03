@@ -353,10 +353,11 @@ public partial class GameHistoryView : UserControl
             return;
         }
 
-        // Si l'utilisateur est en train de naviguer/faire lire quelque chose, ne pas interrompre.
-        // On ne vide pas la file: on reprendra dès que l'utilisateur est "idle".
+        // Si l'utilisateur interagit, on ne doit pas "reprendre" plus tard :
+        // on abandonne les annonces en attente (l'historique reste consultable manuellement).
         if (IsUserInteracting())
         {
+            DropPendingAnnouncements();
             return;
         }
 
@@ -414,7 +415,7 @@ public partial class GameHistoryView : UserControl
     private bool IsUserInteracting()
     {
         // 1) Si le focus est dans l'historique, l'utilisateur est potentiellement en lecture "document":
-        // on suspend pour éviter de couper la lecture en cours.
+        // on abandonne les annonces en attente pour éviter de parler "par-dessus".
         if (HistoryEditor.IsKeyboardFocusWithin)
         {
             return true;
@@ -428,6 +429,13 @@ public partial class GameHistoryView : UserControl
         }
 
         return (DateTime.UtcNow - last) < TimeSpan.FromMilliseconds(900);
+    }
+
+    private void DropPendingAnnouncements()
+    {
+        _announceQueue.Clear();
+        StopAnnouncePump(clearQueue: false);
+        _nextAnnouncementAtUtc = DateTime.UtcNow;
     }
 
     private void OnAnyPreviewKeyDown(object sender, KeyEventArgs e)
@@ -444,11 +452,13 @@ public partial class GameHistoryView : UserControl
         }
 
         _lastUserInteractionAtUtc = DateTime.UtcNow;
+        DropPendingAnnouncements();
     }
 
     private void OnAnyPreviewMouseDown(object sender, MouseButtonEventArgs e)
     {
         _lastUserInteractionAtUtc = DateTime.UtcNow;
+        DropPendingAnnouncements();
     }
 
     private void StopAnnouncePump(bool clearQueue)
