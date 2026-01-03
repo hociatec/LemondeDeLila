@@ -29,6 +29,9 @@ public sealed class GameManifestDto
 
     [JsonPropertyName("maxPlayers")]
     public int MaxPlayers { get; set; }
+
+    [JsonPropertyName("chatEnabled")]
+    public bool ChatEnabled { get; set; } = true;
 }
 
 public sealed class RoomDto

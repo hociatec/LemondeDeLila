@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
 using client_win.Modules.Game.History.Views;
+using client_win.Modules.Game.Shell.ViewModels;
 
 namespace client_win.Modules.Game.Shell.Views;
 
@@ -124,7 +125,16 @@ public partial class GameRoomView : UserControl
 
     private void OnGameZoneTabToHistoryRequested(object? sender, EventArgs e)
     {
-        Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusHistory));
+        Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
+        {
+            if (IsChatEnabled())
+            {
+                FocusChatInput();
+                return;
+            }
+
+            FocusHistory();
+        }));
     }
 
     private void OnGameZoneStartRequested(object? sender, EventArgs e)
@@ -174,12 +184,42 @@ public partial class GameRoomView : UserControl
 
         if (HistoryHost?.IsKeyboardFocusWithin == true)
         {
+            if (shift && IsChatEnabled())
+            {
+                FocusChatInput();
+                return;
+            }
+
             FocusGameZone();
+            return;
+        }
+
+        if (ChatInput?.IsKeyboardFocusWithin == true || ChatHost?.IsKeyboardFocusWithin == true)
+        {
+            if (shift)
+            {
+                FocusGameZone();
+                return;
+            }
+
+            FocusHistory();
             return;
         }
 
         if (GameZoneHost?.IsKeyboardFocusWithin == true)
         {
+            if (shift)
+            {
+                FocusHistory();
+                return;
+            }
+
+            if (IsChatEnabled())
+            {
+                FocusChatInput();
+                return;
+            }
+
             FocusHistory();
             return;
         }
@@ -187,6 +227,12 @@ public partial class GameRoomView : UserControl
         if (shift)
         {
             FocusGameZone();
+            return;
+        }
+
+        if (IsChatEnabled())
+        {
+            FocusChatInput();
             return;
         }
 
@@ -199,9 +245,16 @@ public partial class GameRoomView : UserControl
 
     private void OnHistoryTabNavigationRequested(object? sender, TabNavigationRequestedEventArgs e)
     {
-        // La Room reste le "décideur" : ici on choisit de boucler entre Historique et Zone de jeu.
-        // Tab ou Maj+Tab depuis l'historique => retour Zone de jeu (l'autre sens est géré depuis GameZoneHost).
-        Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusGameZone));
+        Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
+        {
+            if (e.IsShiftPressed && IsChatEnabled())
+            {
+                FocusChatInput();
+                return;
+            }
+
+            FocusGameZone();
+        }));
     }
 
     private void FocusGameZone()
@@ -224,5 +277,41 @@ public partial class GameRoomView : UserControl
 
         // Fallback (ne devrait pas arriver)
         HistoryHost?.Focus();
+    }
+
+    private bool IsChatEnabled()
+    {
+        return DataContext is GameRoomViewModel vm && vm.Chat?.IsEnabled == true && ChatHost?.Visibility == Visibility.Visible;
+    }
+
+    private void FocusChatInput()
+    {
+        if (ChatInput != null && ChatHost?.Visibility == Visibility.Visible)
+        {
+            ChatInput.Focus();
+            Keyboard.Focus(ChatInput);
+            return;
+        }
+
+        FocusHistory();
+    }
+
+    private void OnChatInputPreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key != Key.Enter)
+        {
+            return;
+        }
+
+        if (DataContext is not GameRoomViewModel vm)
+        {
+            return;
+        }
+
+        if (vm.Chat.SendCommand.CanExecute(null))
+        {
+            e.Handled = true;
+            vm.Chat.SendCommand.Execute(null);
+        }
     }
 }

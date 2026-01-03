@@ -42,6 +42,14 @@ type ClientMeta = AuthedClient & {
   isAdmin: boolean;
 };
 
+type RoomChatMessage = {
+  seq: number;
+  userId: number;
+  username: string;
+  message: string;
+  createdAt: string;
+};
+
 @WebSocketGateway({ path: '/ws' })
 export class RoomGateway
   implements OnGatewayConnection<WebSocket>, OnGatewayDisconnect<WebSocket>
@@ -56,6 +64,15 @@ export class RoomGateway
   private readonly heartbeats = new Map<WebSocket, NodeJS.Timeout>();
   private readonly lastPong = new WeakMap<WebSocket, number>();
   private readonly pingIntervalMs = 25_000;
+  private readonly lastChatSentAt = new WeakMap<WebSocket, number>();
+
+  private readonly roomChat = new Map<
+    number,
+    { nextSeq: number; messages: RoomChatMessage[] }
+  >();
+  private readonly roomChatLimit = 120;
+  private readonly chatCooldownMs = 350;
+  private readonly chatMaxLength = 300;
 
   constructor(
     private readonly roomsService: RoomService,
@@ -79,6 +96,7 @@ export class RoomGateway
     // Permet à l'admin (via RoomService) de forcer la suppression d'une room
     // en déconnectant tous les clients WS connectés à cette table.
     this.roomsService.setRoomDeletedNotifier(async (roomId: number) => {
+      this.roomChat.delete(roomId);
       this.forceDisconnectRoomClients(roomId);
     });
 
@@ -275,6 +293,8 @@ export class RoomGateway
       } else {
         await this.sendRoomState(targetRoomId);
       }
+
+      await this.sendChatHistoryToClient(client, targetRoomId);
     }
   }
 
@@ -517,6 +537,12 @@ export class RoomGateway
       case 'room.leave':
         await this.handleRoomLeave(client, meta);
         break;
+      case 'room.chat.send':
+        await this.handleChatSend(client, meta, data);
+        break;
+      case 'room.chat.history':
+        await this.handleChatHistory(client, meta);
+        break;
       case 'room.start':
         await this.handleRoomStart(meta, data, receivedAtMs);
         break;
@@ -547,6 +573,102 @@ export class RoomGateway
       default:
         break;
     }
+  }
+
+  private async sendChatHistoryToClient(
+    client: WebSocket,
+    roomId: number,
+  ): Promise<void> {
+    try {
+      const enabled = await this.isRoomChatEnabled(roomId);
+      if (!enabled) return;
+      const state = this.getRoomChatState(roomId);
+      if (state.messages.length === 0) return;
+      this.safeSend(client, {
+        type: 'room.chat.history',
+        roomId,
+        payload: { messages: state.messages },
+      });
+    } catch {
+      // best effort
+    }
+  }
+
+  private getRoomChatState(roomId: number): {
+    nextSeq: number;
+    messages: RoomChatMessage[];
+  } {
+    const existing = this.roomChat.get(roomId);
+    if (existing) return existing;
+    const created = { nextSeq: 1, messages: [] as RoomChatMessage[] };
+    this.roomChat.set(roomId, created);
+    return created;
+  }
+
+  private normalizeChatMessage(raw: unknown): string {
+    if (typeof raw !== 'string') return '';
+    const trimmed = raw.replace(/\r?\n/g, ' ').trim();
+    if (!trimmed) return '';
+    if (trimmed.length <= this.chatMaxLength) return trimmed;
+    return trimmed.slice(0, this.chatMaxLength).trim();
+  }
+
+  private async isRoomChatEnabled(roomId: number): Promise<boolean> {
+    try {
+      const payload = await this.roomsService.getRoomPayload(roomId);
+      return payload?.manifest?.chatEnabled !== false;
+    } catch {
+      return false;
+    }
+  }
+
+  private async handleChatHistory(client: WebSocket, meta: ClientMeta) {
+    if (!meta.roomId || meta.roomId <= 0) {
+      await this.sendError(client, 'Vous n’êtes pas dans une table.');
+      return;
+    }
+    await this.sendChatHistoryToClient(client, meta.roomId);
+  }
+
+  private async handleChatSend(client: WebSocket, meta: ClientMeta, data: any) {
+    if (!meta.roomId || meta.roomId <= 0) {
+      await this.sendError(client, 'Vous n’êtes pas dans une table.');
+      return;
+    }
+
+    const enabled = await this.isRoomChatEnabled(meta.roomId);
+    if (!enabled) {
+      await this.sendError(client, 'Chat désactivé pour ce jeu.');
+      return;
+    }
+
+    const now = Date.now();
+    const lastAt = this.lastChatSentAt.get(client) ?? 0;
+    if (now - lastAt < this.chatCooldownMs) {
+      await this.sendError(client, 'Trop rapide. Attendez un instant.');
+      return;
+    }
+    this.lastChatSentAt.set(client, now);
+
+    const message = this.normalizeChatMessage(data?.message);
+    if (!message) {
+      return;
+    }
+
+    const state = this.getRoomChatState(meta.roomId);
+    const chatMessage: RoomChatMessage = {
+      seq: state.nextSeq++,
+      userId: meta.userId,
+      username: meta.username,
+      message,
+      createdAt: new Date().toISOString(),
+    };
+    state.messages.push(chatMessage);
+    while (state.messages.length > this.roomChatLimit) {
+      state.messages.shift();
+    }
+
+    await this.broadcast(meta.roomId, 'room.chat.message', chatMessage);
   }
 
   private extractTraceMeta(
@@ -897,6 +1019,7 @@ export class RoomGateway
                 name: manifest.name,
                 minPlayers: manifest.minPlayers ?? 2,
                 maxPlayers: manifest.maxPlayers ?? room.maxPlayers,
+                chatEnabled: manifest.chatEnabled !== false,
               }
             : null,
           room: {

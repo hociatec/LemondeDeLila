@@ -204,6 +204,10 @@ export class AdminGameUpdateWsDto {
   @IsString()
   @MaxLength(2000)
   description?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  chatEnabled?: boolean;
 }
 
 export class AdminGameResetWsDto {

@@ -76,12 +76,13 @@ public sealed partial class AdminViewModel
         _page = AdminPage.GameActions;
         _selectedGame = game;
         Title = $"Jeu : {game.Name}";
-        Details = $"Type: {game.Id}. Joueurs: {game.MinPlayers ?? 0}-{game.MaxPlayers ?? 0}. Statut: {(game.Enabled ? "actif" : "désactivé")}.";
+        Details = $"Type: {game.Id}. Joueurs: {game.MinPlayers ?? 0}-{game.MaxPlayers ?? 0}. Statut: {(game.Enabled ? "actif" : "désactivé")}. Chat: {(game.ChatEnabled ? "activé" : "désactivé")}.";
         IsTextInputVisible = false;
         IsAdditionalPermissionsVisible = false;
         IsSecondaryInputVisible = false;
         Items.Clear();
         Items.Add(new AdminMenuItem(game.Enabled ? "Désactiver" : "Activer", tag: "game.toggle"));
+        Items.Add(new AdminMenuItem(game.ChatEnabled ? "Désactiver le chat en table" : "Activer le chat en table", tag: "game.chat.toggle"));
         Items.Add(new AdminMenuItem("Modifier le nom", tag: "game.edit.name"));
         Items.Add(new AdminMenuItem("Modifier la description", tag: "game.edit.description"));
         Items.Add(new AdminMenuItem("Attribuer une catégorie", tag: "game.category.assign"));
@@ -128,6 +129,26 @@ public sealed partial class AdminViewModel
         if (action == "game.edit.players")
         {
             BuildEditPlayers(game);
+            return;
+        }
+        if (action == "game.chat.toggle")
+        {
+            IsBusy = true;
+            try
+            {
+                await _admin.UpdateGameAsync(game.Id, chatEnabled: !game.ChatEnabled).ConfigureAwait(true);
+                await LoadGamesAsync().ConfigureAwait(true);
+                var updated = _loadedGames.FirstOrDefault(g => string.Equals(g.Id, game.Id, StringComparison.OrdinalIgnoreCase));
+                if (updated != null)
+                {
+                    BuildGameActions(updated);
+                }
+                await _dialogs.ShowInfo("Jeu", $"Chat en table {(game.ChatEnabled ? "désactivé" : "activé")} pour {game.Name}.");
+            }
+            finally
+            {
+                IsBusy = false;
+            }
             return;
         }
         if (action == "game.reset")

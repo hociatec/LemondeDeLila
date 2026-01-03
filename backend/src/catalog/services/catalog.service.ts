@@ -6,6 +6,7 @@ export type CatalogGame = {
   name: string;
   minPlayers: number;
   maxPlayers: number;
+  chatEnabled: boolean;
   summary: string;
   engine: string;
   category: string;
@@ -112,6 +113,7 @@ export class CatalogService {
         name: def.name,
         minPlayers: def.minPlayers ?? 2,
         maxPlayers: def.maxPlayers ?? 6,
+        chatEnabled: typeof def.chatEnabled === 'boolean' ? def.chatEnabled : true,
         summary: def.description ?? '',
         engine: def.id,
         category,

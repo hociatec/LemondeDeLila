@@ -516,6 +516,11 @@ export class RoomService {
         activeHumans,
         bots,
       });
+      try {
+        await this.roomDeletedNotifier?.(room.id);
+      } catch {
+        // best effort
+      }
       await this.rooms.delete(room.id);
       await this.invalidateRoomPayloadCache(room.id);
       // Broadcast la mise à jour de présence en temps réel
@@ -642,6 +647,7 @@ export class RoomService {
             name: manifest.name,
             minPlayers: manifest.minPlayers ?? 2,
             maxPlayers: manifest.maxPlayers ?? room.maxPlayers,
+            chatEnabled: manifest.chatEnabled !== false,
           }
         : null,
       room: {

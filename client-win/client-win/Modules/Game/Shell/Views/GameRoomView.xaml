@@ -8,6 +8,9 @@
              xmlns:room="clr-namespace:client_win.Modules.Game.Shell.Views"
              mc:Ignorable="d"
              d:DesignHeight="720" d:DesignWidth="1280">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+    </UserControl.Resources>
     <Grid x:Name="Root"
           Background="#0F1D2D"
           Loaded="OnLoaded"
@@ -65,12 +68,48 @@
                 </Grid>
             </Border>
 
-            <history:GameHistoryView x:Name="HistoryHost"
-                                     Grid.Column="1"
-                                     DataContext="{Binding History}"
-                                     behaviors:ShortcutBindingsBehavior.DisableWhenFocusWithin="True"
-                                     IsTabStop="False"
-                                     Margin="16 0 0 0" />
+            <Grid Grid.Column="1" Margin="16 0 0 0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <Border x:Name="ChatHost"
+                        Background="#12263C"
+                        CornerRadius="12"
+                        Padding="16"
+                        Margin="0 0 0 12"
+                        Visibility="{Binding Chat.IsEnabled, Converter={StaticResource BoolToVis}}"
+                        behaviors:ShortcutBindingsBehavior.DisableWhenFocusWithin="True"
+                        AutomationProperties.Name="Chat de la table"
+                        AutomationProperties.HelpText="Zone de saisie du chat. Entrée pour envoyer.">
+                    <StackPanel>
+                        <TextBlock Text="Chat"
+                                   Foreground="White"
+                                   FontSize="16"
+                                   Margin="0 0 0 8" />
+
+                        <TextBox x:Name="ChatInput"
+                                 Text="{Binding Chat.Message, UpdateSourceTrigger=PropertyChanged}"
+                                 Background="#0D1625"
+                                 BorderThickness="0"
+                                 Foreground="#C3D2EA"
+                                 FontFamily="Segoe UI"
+                                 FontSize="13"
+                                 AcceptsReturn="False"
+                                 TextWrapping="NoWrap"
+                                 PreviewKeyDown="OnChatInputPreviewKeyDown"
+                                 AutomationProperties.Name="Message"
+                                 AutomationProperties.HelpText="Saisissez un message puis appuyez sur Entrée." />
+                    </StackPanel>
+                </Border>
+
+                <history:GameHistoryView x:Name="HistoryHost"
+                                         Grid.Row="1"
+                                         DataContext="{Binding History}"
+                                         behaviors:ShortcutBindingsBehavior.DisableWhenFocusWithin="True"
+                                         IsTabStop="False" />
+            </Grid>
         </Grid>
 
         <room:GameRoomStatusBarView Grid.Row="2" />

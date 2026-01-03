@@ -42,6 +42,12 @@ export class AdminGamesWsHandler {
       .map((g) => {
         const ov = this.overrides.getGameOverride(g.id);
         const enabled = ov?.enabled !== false;
+        const chatEnabled =
+          typeof ov?.chatEnabled === 'boolean'
+            ? ov.chatEnabled
+            : typeof g.chatEnabled === 'boolean'
+              ? g.chatEnabled
+              : true;
         const categoryId = this.categories.getAssignment(g.id);
         return {
           id: g.id,
@@ -53,6 +59,7 @@ export class AdminGamesWsHandler {
           minPlayers: g.minPlayers,
           maxPlayers: g.maxPlayers,
           enabled,
+          chatEnabled,
         };
       })
       .sort((a, b) => a.name.localeCompare(b.name, 'fr'));
@@ -127,6 +134,7 @@ export class AdminGamesWsHandler {
       maxPlayers: dto.maxPlayers,
       name: dto.name,
       description: dto.description,
+      chatEnabled: dto.chatEnabled,
     });
     await this.catalogInvalidation.invalidateCatalogAndNotify(admin.id);
     return { type: 'admin.games.update', payload: { ok: true } };
@@ -143,4 +151,3 @@ export class AdminGamesWsHandler {
     return { type: 'admin.games.reset', payload: { ok: true } };
   }
 }
-

@@ -43,5 +43,8 @@ public sealed class CatalogGame
     public string Engine { get; set; } = string.Empty;
     public List<string> Categories { get; set; } = new();
 
+    [JsonPropertyName("chatEnabled")]
+    public bool ChatEnabled { get; set; } = true;
+
     public override string ToString() => Name;
 }

@@ -240,6 +240,7 @@ public sealed class GameTableOpener : IGameTableOpener
 
         Task Start() => session.SendCommandAsync("room.start", payload: null);
         Task Reset() => session.SendCommandAsync("room.reset", payload: null);
+        Task SendChat(string message) => session.SendCommandAsync("room.chat.send", payload: new { message });
         Task AddBot() => bindings?.AddBotAsync() ?? Task.CompletedTask;
         Task RemoveBot() => bindings?.RemoveBotAsync() ?? Task.CompletedTask;
         Task AnnouncePlayers() => AnnouncePlayersAsync(session);
@@ -253,6 +254,7 @@ public sealed class GameTableOpener : IGameTableOpener
 
         var vm = new GameRoomViewModel(
             game,
+            onSendChat: SendChat,
             onStart: Start,
             onReset: Reset,
             onQuit: async () =>

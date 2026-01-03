@@ -10,6 +10,7 @@ export type GameCatalogOverride = {
   maxPlayers?: number;
   name?: string;
   description?: string;
+  chatEnabled?: boolean;
 };
 
 type OverridesRoot = {
@@ -50,6 +51,12 @@ export class GameCatalogOverridesService implements OnModuleInit {
       description: ov.description ?? def.description,
       minPlayers: typeof ov.minPlayers === 'number' ? ov.minPlayers : def.minPlayers,
       maxPlayers: typeof ov.maxPlayers === 'number' ? ov.maxPlayers : def.maxPlayers,
+      chatEnabled:
+        typeof ov.chatEnabled === 'boolean'
+          ? ov.chatEnabled
+          : typeof def.chatEnabled === 'boolean'
+            ? def.chatEnabled
+            : true,
     };
   }
 
@@ -67,6 +74,7 @@ export class GameCatalogOverridesService implements OnModuleInit {
       maxPlayers: root.games[gameType].maxPlayers ?? null,
       name: root.games[gameType].name ?? null,
       description: root.games[gameType].description ?? null,
+      chatEnabled: root.games[gameType].chatEnabled ?? null,
     });
     this.cache = root;
   }
@@ -97,6 +105,7 @@ export class GameCatalogOverridesService implements OnModuleInit {
       maxPlayers: typeof next.maxPlayers === 'number' ? next.maxPlayers : null,
       name: typeof next.name === 'string' ? next.name : null,
       description: typeof next.description === 'string' ? next.description : null,
+      chatEnabled: typeof next.chatEnabled === 'boolean' ? next.chatEnabled : null,
     });
     this.cache = root;
     return next;
@@ -126,6 +135,8 @@ export class GameCatalogOverridesService implements OnModuleInit {
           maxPlayers: typeof row.maxPlayers === 'number' ? row.maxPlayers : undefined,
           name: row.name ?? undefined,
           description: row.description ?? undefined,
+          chatEnabled:
+            typeof row.chatEnabled === 'boolean' ? row.chatEnabled : undefined,
         };
       }
       this.cache = { games };
@@ -135,4 +146,3 @@ export class GameCatalogOverridesService implements OnModuleInit {
     }
   }
 }
-

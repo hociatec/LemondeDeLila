@@ -21,7 +21,7 @@ public interface IAdminService
 
     Task<AdminGamesListResponseDto> ListGamesAsync(CancellationToken cancellationToken = default);
     Task SetGameEnabledAsync(string gameType, bool enabled, CancellationToken cancellationToken = default);
-    Task UpdateGameAsync(string gameType, bool? enabled = null, int? minPlayers = null, int? maxPlayers = null, string? name = null, string? description = null, CancellationToken cancellationToken = default);
+    Task UpdateGameAsync(string gameType, bool? enabled = null, int? minPlayers = null, int? maxPlayers = null, string? name = null, string? description = null, bool? chatEnabled = null, CancellationToken cancellationToken = default);
     Task ResetGameOverrideAsync(string gameType, CancellationToken cancellationToken = default);
     Task<AdminRolesListResponseDto> GetAvailableRolesAsync(CancellationToken cancellationToken = default);
     Task<AdminUserDto> UpdateUserRolesAsync(int userId, IEnumerable<string> roles, CancellationToken cancellationToken = default);

@@ -16,6 +16,7 @@ public sealed class GameRoomViewModel : ObservableObject
 
     public GameRoomViewModel(
         CatalogGame game,
+        Func<string, Task> onSendChat,
         Func<Task> onStart,
         Func<Task> onReset,
         Func<Task> onQuit,
@@ -33,6 +34,8 @@ public sealed class GameRoomViewModel : ObservableObject
         var title = !string.IsNullOrWhiteSpace(game.Name) ? game.Name : game.Id;
         GameZone = new GameZoneHostViewModel(title, onStart, onReset, onQuit, onAddBot, onRemoveBot, onAnnouncePlayers, onAnnounceInfo, onTogglePrivacy, onToggleRole, dialogs);
         GameZone.StatusRequested += s => Status = s;
+
+        Chat = new GameRoomChatViewModel(game.ChatEnabled, onSendChat);
     }
 
     public CatalogGame Game { get; }
@@ -40,6 +43,8 @@ public sealed class GameRoomViewModel : ObservableObject
     public GameHistoryViewModel History { get; }
 
     public GameZoneHostViewModel GameZone { get; }
+
+    public GameRoomChatViewModel Chat { get; }
 
     public string Status
     {

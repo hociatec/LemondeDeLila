@@ -360,6 +360,12 @@ export type GameDefinition = {
   maxPlayers?: number;
 
   /**
+   * Active/désactive le chat éphémère en table pour ce jeu.
+   * Par défaut: true.
+   */
+  chatEnabled?: boolean;
+
+  /**
    * Chemin vers le fichier manifest.json du jeu.
    */
   manifestPath?: string;

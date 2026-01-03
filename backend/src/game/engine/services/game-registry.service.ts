@@ -202,6 +202,7 @@ export class GameRegistryService {
         description: data.summary ?? data.description ?? '',
         minPlayers: data.minPlayers,
         maxPlayers: data.maxPlayers,
+        chatEnabled: typeof data.chatEnabled === 'boolean' ? data.chatEnabled : undefined,
         manifestPath,
         rulesPath: path.join(path.dirname(manifestPath), 'rules.md'),
       };

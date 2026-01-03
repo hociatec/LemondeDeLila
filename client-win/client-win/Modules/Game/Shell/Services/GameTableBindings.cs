@@ -34,6 +34,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
     private readonly RoomPrivacyCommands _privacy;
     private readonly RoomRoleCommands _role;
     private readonly RoomInfoCommands _info;
+    private readonly RoomChatCommands _chat;
 
     private readonly Func<GamePlayViewModel> _createGamePlayVm;
     private GamePlayViewModel? _gamePlayVm;
@@ -48,6 +49,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
     private Dictionary<int, (string Username, bool Spectator)> _participants = new();
     private Dictionary<int, string> _botsById = new();
     private int _ownerId = 0;
+    private readonly HashSet<long> _seenChatSeq = new();
 
     public GameTableBindings(
         Dispatcher dispatcher,
@@ -73,6 +75,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
         _privacy = new RoomPrivacyCommands(_session);
         _role = new RoomRoleCommands(_session);
         _info = new RoomInfoCommands(_session);
+        _chat = new RoomChatCommands(_session);
     }
 
     public Task AddBotAsync() => _bots.AddBotAsync();
@@ -85,6 +88,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
     {
         _lastStatus = _session.LastRoomState?.Room?.Status;
         SeedParticipants(_session.LastRoomState?.Room);
+        SyncChatEnabled(_session.LastRoomState?.Manifest);
 
         _onAnnounced = announcement =>
         {
@@ -109,6 +113,31 @@ internal sealed class GameTableBindings : IAsyncDisposable
             }, DispatcherPriority.Background);
         };
         _session.ErrorReceived += _onSessionError;
+
+        _chat.HistoryReceived += messages =>
+        {
+            _dispatcher.InvokeAsync(() =>
+            {
+                foreach (var msg in messages)
+                {
+                    if (msg == null) continue;
+                    if (msg.Seq > 0 && _seenChatSeq.Contains(msg.Seq)) continue;
+                    if (msg.Seq > 0) _seenChatSeq.Add(msg.Seq);
+                    _history.Add(FormatChatLine(msg));
+                }
+            }, DispatcherPriority.Background);
+        };
+
+        _chat.MessageReceived += msg =>
+        {
+            _dispatcher.InvokeAsync(() =>
+            {
+                if (msg == null) return;
+                if (msg.Seq > 0 && _seenChatSeq.Contains(msg.Seq)) return;
+                if (msg.Seq > 0) _seenChatSeq.Add(msg.Seq);
+                _history.Add(FormatChatLine(msg));
+            }, DispatcherPriority.Background);
+        };
 
         // IMPORTANT:
         // Les ajouts/retraits de bots sont déjà reflétés par `room.updated`.
@@ -137,6 +166,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
         _onRoomUpdated = payload =>
         {
             UpdateGameTitle(payload);
+            SyncChatEnabled(payload.Manifest);
             TrackParticipants(payload.Room);
             TrackBots(payload.Room);
             TrackOwner(payload.Room);
@@ -427,6 +457,28 @@ internal sealed class GameTableBindings : IAsyncDisposable
             DispatcherPriority.Background);
     }
 
+    private void SyncChatEnabled(GameManifestDto? manifest)
+    {
+        if (manifest == null)
+        {
+            return;
+        }
+
+        _dispatcher.InvokeAsync(() =>
+        {
+            _tableVm.Chat.IsEnabled = manifest.ChatEnabled;
+        }, DispatcherPriority.Background);
+    }
+
+    private static string FormatChatLine(RoomChatMessageDto msg)
+    {
+        var user = (msg.Username ?? string.Empty).Trim();
+        var text = (msg.Message ?? string.Empty).Trim();
+        if (string.IsNullOrWhiteSpace(user)) user = "Utilisateur";
+        if (string.IsNullOrWhiteSpace(text)) return $"Chat — {user} :";
+        return $"Chat — {user} : {text}";
+    }
+
     public async ValueTask DisposeAsync()
     {
         try
@@ -468,6 +520,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
             _privacy.Dispose();
             _role.Dispose();
             _info.Dispose();
+            _chat.Dispose();
 
             await _session.LeaveAsync().ConfigureAwait(true);
             await _session.DisposeAsync().ConfigureAwait(true);
