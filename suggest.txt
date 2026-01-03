@@ -42,5 +42,5 @@ Bots
 - Import/export de la liste des noms (backup/restauration) + bulk enable/disable.
 
 Maintenance
-- Boutons séparés : “migrations only”, “restart only”, “health check”, “reload config”.
-- Déploiement “dry-run” : build sans redémarrage, + retour d’erreurs clair.
+- Boutons séparés : “migrations only”, “restart only”, “health check”, “reload config”. (fait)
+- Déploiement “dry-run” : build sans redémarrage, + retour d’erreurs clair. (fait)
