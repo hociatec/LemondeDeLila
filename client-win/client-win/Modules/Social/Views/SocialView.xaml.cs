@@ -1,6 +1,8 @@
 using System;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Automation;
+using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
@@ -18,6 +20,7 @@ public partial class SocialView : UserControl
 
     private SocialScreen _currentScreen = SocialScreen.Menu;
     private int _lastMenuIndex = -1;
+    private string? _lastAnnounced;
 
     public SocialView()
     {
@@ -35,6 +38,98 @@ public partial class SocialView : UserControl
         {
             SetScreen(SocialScreen.Menu);
         }, DispatcherPriority.Input);
+
+        if (DataContext is SocialViewModel loadedVm)
+        {
+            _ = AnnounceInitialSectionStateAsync(loadedVm);
+        }
+    }
+
+    private async Task AnnounceInitialSectionStateAsync(SocialViewModel vm)
+    {
+        // Attendre la fin du chargement pour éviter de "flasher" un état vide transitoire.
+        var start = DateTime.UtcNow;
+        while (vm.IsBusy && (DateTime.UtcNow - start).TotalMilliseconds < 4000)
+        {
+            await Task.Delay(25).ConfigureAwait(true);
+        }
+
+        // Ne pas interrompre si l'utilisateur a déjà quitté l'écran menu.
+        if (_currentScreen != SocialScreen.Menu)
+        {
+            return;
+        }
+
+        var msg = BuildSectionStatus(vm);
+        if (!string.IsNullOrWhiteSpace(msg))
+        {
+            Announce(msg);
+        }
+    }
+
+    private static string BuildSectionStatus(SocialViewModel vm)
+    {
+        return vm.SelectedSection switch
+        {
+            SocialSection.Friends => vm.Friends.Count switch
+            {
+                0 => "Aucun ami.",
+                1 => "1 ami.",
+                _ => $"{vm.Friends.Count} amis.",
+            },
+            SocialSection.IncomingRequests => vm.IncomingRequests.Count switch
+            {
+                0 => "Aucune demande reçue.",
+                1 => "1 demande reçue.",
+                _ => $"{vm.IncomingRequests.Count} demandes reçues.",
+            },
+            SocialSection.OutgoingRequests => vm.OutgoingRequests.Count switch
+            {
+                0 => "Aucune demande envoyée.",
+                1 => "1 demande envoyée.",
+                _ => $"{vm.OutgoingRequests.Count} demandes envoyées.",
+            },
+            SocialSection.Blocked => vm.BlockedUsers.Count switch
+            {
+                0 => "Aucun utilisateur bloqué.",
+                1 => "1 utilisateur bloqué.",
+                _ => $"{vm.BlockedUsers.Count} utilisateurs bloqués.",
+            },
+            _ => string.Empty,
+        };
+    }
+
+    private void Announce(string message)
+    {
+        var cleaned = (message ?? string.Empty).Trim();
+        if (string.IsNullOrWhiteSpace(cleaned))
+        {
+            return;
+        }
+
+        // Force une notification même si le texte est identique à la précédente.
+        if (string.Equals(_lastAnnounced, cleaned, StringComparison.Ordinal))
+        {
+            A11yAnnouncer.Text = string.Empty;
+        }
+        A11yAnnouncer.Text = cleaned;
+        _lastAnnounced = cleaned;
+
+        try
+        {
+            var peer = FrameworkElementAutomationPeer.FromElement(A11yAnnouncer) ??
+                       FrameworkElementAutomationPeer.CreatePeerForElement(A11yAnnouncer);
+            peer?.RaiseAutomationEvent(AutomationEvents.LiveRegionChanged);
+            peer?.RaiseNotificationEvent(
+                AutomationNotificationKind.Other,
+                AutomationNotificationProcessing.All,
+                cleaned,
+                "Social");
+        }
+        catch
+        {
+            // best-effort
+        }
     }
 
     private void OnRootKeyDown(object sender, KeyEventArgs e)
