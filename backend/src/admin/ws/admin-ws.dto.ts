@@ -208,6 +208,10 @@ export class AdminGameUpdateWsDto {
   @IsOptional()
   @IsBoolean()
   chatEnabled?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  chatSoundsEnabled?: boolean;
 }
 
 export class AdminGameResetWsDto {

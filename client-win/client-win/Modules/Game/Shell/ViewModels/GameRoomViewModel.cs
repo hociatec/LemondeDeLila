@@ -36,6 +36,7 @@ public sealed class GameRoomViewModel : ObservableObject
         GameZone.StatusRequested += s => Status = s;
 
         Chat = new GameRoomChatViewModel(game.ChatEnabled, onSendChat);
+        Chat.IsSoundsEnabled = game.ChatSoundsEnabled;
     }
 
     public CatalogGame Game { get; }

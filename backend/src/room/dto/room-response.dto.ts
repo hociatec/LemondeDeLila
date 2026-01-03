@@ -6,6 +6,7 @@ export type GameManifest = {
   minPlayers: number;
   maxPlayers: number;
   chatEnabled: boolean;
+  chatSoundsEnabled: boolean;
 };
 
 export type RoomPayload = {

@@ -46,12 +46,13 @@ public sealed partial class AdminService
         string? name = null,
         string? description = null,
         bool? chatEnabled = null,
+        bool? chatSoundsEnabled = null,
         CancellationToken cancellationToken = default)
     {
         var token = EnsureAuth();
         var response = await _ws.RequestAsync<object>(
             WsMessageTypes.Admin.GamesUpdate,
-            new { gameType, enabled, minPlayers, maxPlayers, name, description, chatEnabled },
+            new { gameType, enabled, minPlayers, maxPlayers, name, description, chatEnabled, chatSoundsEnabled },
             token,
             cancellationToken).ConfigureAwait(false);
         if (!response.Success)

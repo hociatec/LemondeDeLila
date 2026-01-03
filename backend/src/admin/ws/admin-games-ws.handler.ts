@@ -48,6 +48,12 @@ export class AdminGamesWsHandler {
             : typeof g.chatEnabled === 'boolean'
               ? g.chatEnabled
               : true;
+        const chatSoundsEnabled =
+          typeof ov?.chatSoundsEnabled === 'boolean'
+            ? ov.chatSoundsEnabled
+            : typeof g.chatSoundsEnabled === 'boolean'
+              ? g.chatSoundsEnabled
+              : true;
         const categoryId = this.categories.getAssignment(g.id);
         return {
           id: g.id,
@@ -60,6 +66,7 @@ export class AdminGamesWsHandler {
           maxPlayers: g.maxPlayers,
           enabled,
           chatEnabled,
+          chatSoundsEnabled,
         };
       })
       .sort((a, b) => a.name.localeCompare(b.name, 'fr'));
@@ -135,6 +142,7 @@ export class AdminGamesWsHandler {
       name: dto.name,
       description: dto.description,
       chatEnabled: dto.chatEnabled,
+      chatSoundsEnabled: dto.chatSoundsEnabled,
     });
     await this.catalogInvalidation.invalidateCatalogAndNotify(admin.id);
     return { type: 'admin.games.update', payload: { ok: true } };

@@ -32,6 +32,9 @@ public sealed class AdminGameDto
     [JsonPropertyName("chatEnabled")]
     public bool ChatEnabled { get; set; } = true;
 
+    [JsonPropertyName("chatSoundsEnabled")]
+    public bool ChatSoundsEnabled { get; set; } = true;
+
     [JsonPropertyName("categoryId")]
     public string? CategoryId { get; set; }
 }

@@ -203,6 +203,10 @@ export class GameRegistryService {
         minPlayers: data.minPlayers,
         maxPlayers: data.maxPlayers,
         chatEnabled: typeof data.chatEnabled === 'boolean' ? data.chatEnabled : undefined,
+        chatSoundsEnabled:
+          typeof data.chatSoundsEnabled === 'boolean'
+            ? data.chatSoundsEnabled
+            : undefined,
         manifestPath,
         rulesPath: path.join(path.dirname(manifestPath), 'rules.md'),
       };

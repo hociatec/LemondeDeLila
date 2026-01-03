@@ -22,4 +22,7 @@ export class GameCatalogOverrideEntity {
 
   @Column({ name: 'chat_enabled', type: 'boolean', nullable: true })
   chatEnabled?: boolean | null;
+
+  @Column({ name: 'chat_sounds_enabled', type: 'boolean', nullable: true })
+  chatSoundsEnabled?: boolean | null;
 }

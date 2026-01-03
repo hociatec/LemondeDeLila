@@ -11,6 +11,7 @@ export type GameCatalogOverride = {
   name?: string;
   description?: string;
   chatEnabled?: boolean;
+  chatSoundsEnabled?: boolean;
 };
 
 type OverridesRoot = {
@@ -57,6 +58,12 @@ export class GameCatalogOverridesService implements OnModuleInit {
           : typeof def.chatEnabled === 'boolean'
             ? def.chatEnabled
             : true,
+      chatSoundsEnabled:
+        typeof ov.chatSoundsEnabled === 'boolean'
+          ? ov.chatSoundsEnabled
+          : typeof def.chatSoundsEnabled === 'boolean'
+            ? def.chatSoundsEnabled
+            : true,
     };
   }
 
@@ -75,6 +82,7 @@ export class GameCatalogOverridesService implements OnModuleInit {
       name: root.games[gameType].name ?? null,
       description: root.games[gameType].description ?? null,
       chatEnabled: root.games[gameType].chatEnabled ?? null,
+      chatSoundsEnabled: root.games[gameType].chatSoundsEnabled ?? null,
     });
     this.cache = root;
   }
@@ -106,6 +114,10 @@ export class GameCatalogOverridesService implements OnModuleInit {
       name: typeof next.name === 'string' ? next.name : null,
       description: typeof next.description === 'string' ? next.description : null,
       chatEnabled: typeof next.chatEnabled === 'boolean' ? next.chatEnabled : null,
+      chatSoundsEnabled:
+        typeof next.chatSoundsEnabled === 'boolean'
+          ? next.chatSoundsEnabled
+          : null,
     });
     this.cache = root;
     return next;
@@ -137,6 +149,10 @@ export class GameCatalogOverridesService implements OnModuleInit {
           description: row.description ?? undefined,
           chatEnabled:
             typeof row.chatEnabled === 'boolean' ? row.chatEnabled : undefined,
+          chatSoundsEnabled:
+            typeof row.chatSoundsEnabled === 'boolean'
+              ? row.chatSoundsEnabled
+              : undefined,
         };
       }
       this.cache = { games };

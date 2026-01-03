@@ -270,6 +270,17 @@ public sealed class GameTableOpener : IGameTableOpener
             onToggleRole: ToggleRole,
             dialogs: _dialogs);
 
+        vm.Chat.SelfUsername = _navigation.CurrentUser?.Username ?? string.Empty;
+        vm.Chat.LocalEcho = msg =>
+        {
+            var who = string.IsNullOrWhiteSpace(vm.Chat.SelfUsername) ? "Moi" : vm.Chat.SelfUsername.Trim();
+            vm.History.Entries.Add($"Chat — {who} : {msg}");
+            if (vm.Chat.IsSoundsEnabled)
+            {
+                _sounds.Play(SoundId.ChatMessageSent);
+            }
+        };
+
         var createdMessage = isNew
             ? $"Table de {game.Name} créée. Ajoutez des bots et commencez à jouer."
             : $"Table rejointe : {game.Name}.";
@@ -288,7 +299,8 @@ public sealed class GameTableOpener : IGameTableOpener
             tableVm: vm,
             announcements: _announcements,
             sounds: _sounds,
-            createGamePlayVm: () => CreateGamePlayViewModel(session, game));
+            createGamePlayVm: () => CreateGamePlayViewModel(session, game),
+            selfUsername: _navigation.CurrentUser?.Username ?? string.Empty);
         bindings.Attach();
         bindings.InitializeFromLastState();
 

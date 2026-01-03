@@ -29,6 +29,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
     private readonly IRoomAnnouncements _announcements;
     private readonly IGameHistorySink _history;
     private readonly ISoundService _sounds;
+    private readonly string _selfUsername;
 
     private readonly RoomBotCommands _bots;
     private readonly RoomPrivacyCommands _privacy;
@@ -59,7 +60,8 @@ internal sealed class GameTableBindings : IAsyncDisposable
         GameRoomViewModel tableVm,
         IRoomAnnouncements announcements,
         ISoundService sounds,
-        Func<GamePlayViewModel> createGamePlayVm)
+        Func<GamePlayViewModel> createGamePlayVm,
+        string selfUsername)
     {
         _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
         _game = game ?? throw new ArgumentNullException(nameof(game));
@@ -69,6 +71,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
         _announcements = announcements ?? throw new ArgumentNullException(nameof(announcements));
         _sounds = sounds ?? throw new ArgumentNullException(nameof(sounds));
         _createGamePlayVm = createGamePlayVm ?? throw new ArgumentNullException(nameof(createGamePlayVm));
+        _selfUsername = (selfUsername ?? string.Empty).Trim();
         _history = new GameHistorySink(_dispatcher, _tableVm.History);
 
         _bots = new RoomBotCommands(_session);
@@ -123,6 +126,10 @@ internal sealed class GameTableBindings : IAsyncDisposable
                     if (msg == null) continue;
                     if (msg.Seq > 0 && _seenChatSeq.Contains(msg.Seq)) continue;
                     if (msg.Seq > 0) _seenChatSeq.Add(msg.Seq);
+                    if (ShouldConsumeLocalEcho(msg))
+                    {
+                        continue;
+                    }
                     _history.Add(FormatChatLine(msg));
                 }
             }, DispatcherPriority.Background);
@@ -135,6 +142,12 @@ internal sealed class GameTableBindings : IAsyncDisposable
                 if (msg == null) return;
                 if (msg.Seq > 0 && _seenChatSeq.Contains(msg.Seq)) return;
                 if (msg.Seq > 0) _seenChatSeq.Add(msg.Seq);
+                if (ShouldConsumeLocalEcho(msg))
+                {
+                    return;
+                }
+
+                MaybePlayChatSound(msg);
                 _history.Add(FormatChatLine(msg));
             }, DispatcherPriority.Background);
         };
@@ -467,7 +480,40 @@ internal sealed class GameTableBindings : IAsyncDisposable
         _dispatcher.InvokeAsync(() =>
         {
             _tableVm.Chat.IsEnabled = manifest.ChatEnabled;
+            _tableVm.Chat.IsSoundsEnabled = manifest.ChatSoundsEnabled;
         }, DispatcherPriority.Background);
+    }
+
+    private bool ShouldConsumeLocalEcho(RoomChatMessageDto msg)
+    {
+        if (msg == null) return false;
+        if (string.IsNullOrWhiteSpace(_selfUsername)) return false;
+        if (!string.Equals((_selfUsername ?? string.Empty).Trim(), (msg.Username ?? string.Empty).Trim(), StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        var consumed = _tableVm.Chat.ConsumePendingEcho(msg.Message);
+        if (consumed)
+        {
+            // L'écho local a déjà ajouté la ligne + son d'envoi.
+            return true;
+        }
+        return false;
+    }
+
+    private void MaybePlayChatSound(RoomChatMessageDto msg)
+    {
+        if (_tableVm.Chat.IsSoundsEnabled != true)
+        {
+            return;
+        }
+
+        var fromSelf =
+            !string.IsNullOrWhiteSpace(_selfUsername) &&
+            string.Equals((_selfUsername ?? string.Empty).Trim(), (msg.Username ?? string.Empty).Trim(), StringComparison.OrdinalIgnoreCase);
+
+        _sounds.Play(fromSelf ? SoundId.ChatMessageSent : SoundId.ChatMessageReceived);
     }
 
     private static string FormatChatLine(RoomChatMessageDto msg)

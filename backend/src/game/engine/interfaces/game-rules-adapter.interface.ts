@@ -366,6 +366,12 @@ export type GameDefinition = {
   chatEnabled?: boolean;
 
   /**
+   * Active/désactive les sons liés au chat de table.
+   * Par défaut: true.
+   */
+  chatSoundsEnabled?: boolean;
+
+  /**
    * Chemin vers le fichier manifest.json du jeu.
    */
   manifestPath?: string;

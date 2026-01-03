@@ -1020,6 +1020,7 @@ export class RoomGateway
                 minPlayers: manifest.minPlayers ?? 2,
                 maxPlayers: manifest.maxPlayers ?? room.maxPlayers,
                 chatEnabled: manifest.chatEnabled !== false,
+                chatSoundsEnabled: manifest.chatSoundsEnabled !== false,
               }
             : null,
           room: {

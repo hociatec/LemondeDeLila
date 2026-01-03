@@ -32,6 +32,9 @@ public sealed class GameManifestDto
 
     [JsonPropertyName("chatEnabled")]
     public bool ChatEnabled { get; set; } = true;
+
+    [JsonPropertyName("chatSoundsEnabled")]
+    public bool ChatSoundsEnabled { get; set; } = true;
 }
 
 public sealed class RoomDto
