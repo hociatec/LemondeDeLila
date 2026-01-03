@@ -164,6 +164,7 @@ public partial class GameRoomView : UserControl
             var key = e.Key == Key.System ? e.SystemKey : e.Key;
             if (key is not (Key.LeftShift or Key.RightShift or Key.LeftCtrl or Key.RightCtrl or Key.LeftAlt or Key.RightAlt or Key.LWin or Key.RWin))
             {
+                HistoryHost?.NotifyUserInteraction();
                 HistoryHost?.CancelPendingAnnouncementsFromHost();
                 _screenReader?.CancelSpeech();
             }

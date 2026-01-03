@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Automation.Peers;
@@ -17,8 +18,11 @@ public partial class GameHistoryView : UserControl
     private GameHistoryViewModel? _viewModel;
     private bool _pendingRebuild;
     private int _lastKnownEntryCount;
-    private readonly List<string> _pendingAnnouncements = new();
+    private const int AnnouncementSpacingMs = 200;
+    private readonly Queue<string> _pendingAnnouncements = new();
     private bool _announceScheduled;
+    private int _announceRunId;
+    private int _forceAssertiveAnnouncements;
 
     public GameHistoryView()
     {
@@ -32,11 +36,18 @@ public partial class GameHistoryView : UserControl
 
     public event EventHandler<TabNavigationRequestedEventArgs>? TabNavigationRequested;
 
+    public void NotifyUserInteraction()
+    {
+        _forceAssertiveAnnouncements = Math.Min(_forceAssertiveAnnouncements + 1, 3);
+    }
+
     public void CancelPendingAnnouncementsFromHost()
     {
         _pendingAnnouncements.Clear();
         _announceScheduled = false;
+        _announceRunId++;
         A11yAnnouncer.Text = string.Empty;
+        AutomationProperties.SetName(A11yAnnouncer, string.Empty);
     }
 
     private void OnLoaded(object sender, RoutedEventArgs e)
@@ -86,6 +97,8 @@ public partial class GameHistoryView : UserControl
 
         _pendingAnnouncements.Clear();
         _announceScheduled = false;
+        _announceRunId++;
+        _forceAssertiveAnnouncements = 0;
         HistoryEditor.Clear();
         _lastKnownEntryCount = 0;
     }
@@ -261,7 +274,10 @@ public partial class GameHistoryView : UserControl
             return;
         }
 
-        _pendingAnnouncements.AddRange(added);
+        foreach (var line in added)
+        {
+            _pendingAnnouncements.Enqueue(line);
+        }
         ScheduleAnnouncement();
     }
 
@@ -273,23 +289,56 @@ public partial class GameHistoryView : UserControl
         }
 
         _announceScheduled = true;
-        Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(FlushAnnouncements));
+        var runId = ++_announceRunId;
+        _ = RunAnnouncementsAsync(runId);
     }
 
-    private void FlushAnnouncements()
+    private async Task RunAnnouncementsAsync(int runId)
     {
-        _announceScheduled = false;
+        while (runId == _announceRunId)
+        {
+            if (_pendingAnnouncements.Count == 0)
+            {
+                break;
+            }
 
-        if (_pendingAnnouncements.Count == 0)
+            var message = _pendingAnnouncements.Dequeue();
+            Announce(message);
+
+            try
+            {
+                await Task.Delay(AnnouncementSpacingMs).ConfigureAwait(true);
+            }
+            catch
+            {
+                // Best-effort.
+            }
+        }
+
+        if (runId == _announceRunId)
+        {
+            _announceScheduled = false;
+        }
+    }
+
+    private void Announce(string message)
+    {
+        if (string.IsNullOrWhiteSpace(message))
         {
             return;
         }
 
-        var message = string.Join(Environment.NewLine, _pendingAnnouncements);
-        _pendingAnnouncements.Clear();
+        var assertive = _forceAssertiveAnnouncements > 0;
+        if (assertive)
+        {
+            _forceAssertiveAnnouncements = Math.Max(0, _forceAssertiveAnnouncements - 1);
+        }
 
         try
         {
+            AutomationProperties.SetLiveSetting(
+                A11yAnnouncer,
+                assertive ? AutomationLiveSetting.Assertive : AutomationLiveSetting.Polite);
             A11yAnnouncer.Text = message;
             AutomationProperties.SetName(A11yAnnouncer, message);
             var peer = FrameworkElementAutomationPeer.FromElement(A11yAnnouncer) ??
