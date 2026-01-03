@@ -7,7 +7,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using client_win.Core.Accessibility;
 using client_win.Core.Input;
 
 namespace client_win.Behaviors;
@@ -188,13 +187,8 @@ public static class ShortcutBindingsBehavior
                         // Exception: certains raccourcis doivent annoncer un message immédiatement après, et l'écho clavier
                         // arrive souvent après (ordre inversé). Pour ces cas, on consomme la touche et on annonce via NVDA.
                         var code = shortcut.Code ?? string.Empty;
-                        var isGameShortcut = code.StartsWith("ui.", StringComparison.OrdinalIgnoreCase) ||
-                                             code.StartsWith("game.", StringComparison.OrdinalIgnoreCase);
-                        e.Handled = isGameShortcut || typed.Value is 'w' or 'W' or 'i' or 'I';
-                        if (e.Handled)
-                        {
-                            ShortcutKeyAnnouncer.Announce(typed.Value);
-                        }
+                        // Ne pas consommer la touche : laisser le lecteur d'écran faire l'écho clavier naturellement.
+                        e.Handled = false;
                     }
                     return;
                 }
@@ -221,13 +215,8 @@ public static class ShortcutBindingsBehavior
                             {
                                 shortcut.Command.Execute(shortcut.CommandParameter);
                                 var code = shortcut.Code ?? string.Empty;
-                                var isGameShortcut = code.StartsWith("ui.", StringComparison.OrdinalIgnoreCase) ||
-                                                     code.StartsWith("game.", StringComparison.OrdinalIgnoreCase);
-                                e.Handled = isGameShortcut || typed.Value is 'w' or 'W' or 'i' or 'I';
-                                if (e.Handled)
-                                {
-                                    ShortcutKeyAnnouncer.Announce(typed.Value);
-                                }
+                                // Ne pas consommer la touche : laisser le lecteur d'écran faire l'écho clavier naturellement.
+                                e.Handled = false;
                             }
                             return;
                         }

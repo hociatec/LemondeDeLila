@@ -20,7 +20,6 @@ public partial class GameHistoryView : UserControl
     private DispatcherTimer? _announceTimer;
     private readonly Queue<string> _announceQueue = new();
     private bool _announcerToggle;
-    private DateTime _nextAnnouncementAtUtc = DateTime.MinValue;
 
     public GameHistoryView()
     {
@@ -114,7 +113,6 @@ public partial class GameHistoryView : UserControl
     {
         StopAnnouncePump(clearQueue: true);
         _announcerToggle = false;
-        _nextAnnouncementAtUtc = DateTime.MinValue;
     }
 
     private void OnEntriesCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -302,7 +300,7 @@ public partial class GameHistoryView : UserControl
 
         // Annoncer le premier message immédiatement si la vue est prête,
         // sinon laisser la pompe reprendre dès que la vue est chargée.
-        if (_announceQueue.Count == 1 && IsLoaded && DateTime.UtcNow >= _nextAnnouncementAtUtc)
+        if (_announceQueue.Count == 1 && IsLoaded)
         {
             PumpAnnouncements();
         }
@@ -328,7 +326,7 @@ public partial class GameHistoryView : UserControl
         // en "ratent" quand plusieurs events UIA partent trop vite.
         _announceTimer = new DispatcherTimer(DispatcherPriority.Background, Dispatcher)
         {
-            Interval = TimeSpan.FromMilliseconds(30),
+            Interval = TimeSpan.FromMilliseconds(20),
         };
         _announceTimer.Tick += (_, __) => PumpAnnouncements();
         _announceTimer.Start();
@@ -347,12 +345,6 @@ public partial class GameHistoryView : UserControl
             return;
         }
 
-        var now = DateTime.UtcNow;
-        if (now < _nextAnnouncementAtUtc)
-        {
-            return;
-        }
-
         var next = _announceQueue.Dequeue();
         if (string.IsNullOrWhiteSpace(next))
         {
@@ -361,8 +353,6 @@ public partial class GameHistoryView : UserControl
 
         try
         {
-            _nextAnnouncementAtUtc = now + ComputeAnnouncementDelay(next);
-
             // Mise à jour du live-region de secours (plus fiable sur certains setups NVDA).
             // On alterne un caractère "invisible" pour forcer un changement de texte (même si le message se répète),
             // sans polluer ce que le lecteur d'écran doit prononcer (lui lit le paramètre `next`).
@@ -379,20 +369,6 @@ public partial class GameHistoryView : UserControl
         {
             // ignore (best-effort)
         }
-    }
-
-    private static TimeSpan ComputeAnnouncementDelay(string message)
-    {
-        var text = message ?? string.Empty;
-        var length = text.Length;
-        var words = text.Split(new[] { ' ', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).Length;
-
-        // Débit très réactif (les événements UIA doivent rester séquencés pour éviter des pertes),
-        // mais sans la sensation de "pause" entre chaque ligne.
-        var ms = 40 + (words * 45) + (length * 2);
-        if (ms < 60) ms = 60;
-        if (ms > 450) ms = 450;
-        return TimeSpan.FromMilliseconds(ms);
     }
 
     private void StopAnnouncePump(bool clearQueue)
