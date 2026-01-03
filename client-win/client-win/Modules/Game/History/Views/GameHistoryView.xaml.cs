@@ -21,6 +21,7 @@ public partial class GameHistoryView : UserControl
     private readonly Queue<string> _announceQueue = new();
     private bool _announcerToggle;
     private DateTime _nextAnnouncementAtUtc = DateTime.MinValue;
+    private DateTime _lastUserInteractionAtUtc = DateTime.MinValue;
 
     public GameHistoryView()
     {
@@ -28,6 +29,11 @@ public partial class GameHistoryView : UserControl
         Loaded += OnLoaded;
         Unloaded += OnUnloaded;
         DataContextChanged += OnDataContextChanged;
+
+        // IMPORTANT: si l'utilisateur interagit (navigation NVDA, flèches, Tab, etc.),
+        // on suspend temporairement les annonces pour ne pas parler "par-dessus" l'utilisateur.
+        AddHandler(Keyboard.PreviewKeyDownEvent, new KeyEventHandler(OnAnyPreviewKeyDown), handledEventsToo: true);
+        AddHandler(Mouse.PreviewMouseDownEvent, new MouseButtonEventHandler(OnAnyPreviewMouseDown), handledEventsToo: true);
     }
 
     public FrameworkElement? FocusTarget => HistoryEditor;
@@ -347,6 +353,13 @@ public partial class GameHistoryView : UserControl
             return;
         }
 
+        // Si l'utilisateur est en train de naviguer/faire lire quelque chose, ne pas interrompre.
+        // On ne vide pas la file: on reprendra dès que l'utilisateur est "idle".
+        if (IsUserInteracting())
+        {
+            return;
+        }
+
         var now = DateTime.UtcNow;
         if (now < _nextAnnouncementAtUtc)
         {
@@ -396,6 +409,46 @@ public partial class GameHistoryView : UserControl
         if (ms < 110) ms = 110;
         if (ms > 550) ms = 550;
         return TimeSpan.FromMilliseconds(ms);
+    }
+
+    private bool IsUserInteracting()
+    {
+        // 1) Si le focus est dans l'historique, l'utilisateur est potentiellement en lecture "document":
+        // on suspend pour éviter de couper la lecture en cours.
+        if (HistoryEditor.IsKeyboardFocusWithin)
+        {
+            return true;
+        }
+
+        // 2) Sinon, suspendre brièvement après toute interaction (écho clavier NVDA, navigation, etc.).
+        var last = _lastUserInteractionAtUtc;
+        if (last == DateTime.MinValue)
+        {
+            return false;
+        }
+
+        return (DateTime.UtcNow - last) < TimeSpan.FromMilliseconds(900);
+    }
+
+    private void OnAnyPreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.IsRepeat)
+        {
+            return;
+        }
+
+        var key = e.Key == Key.System ? e.SystemKey : e.Key;
+        if (key is Key.LeftShift or Key.RightShift or Key.LeftCtrl or Key.RightCtrl or Key.LeftAlt or Key.RightAlt or Key.LWin or Key.RWin)
+        {
+            return;
+        }
+
+        _lastUserInteractionAtUtc = DateTime.UtcNow;
+    }
+
+    private void OnAnyPreviewMouseDown(object sender, MouseButtonEventArgs e)
+    {
+        _lastUserInteractionAtUtc = DateTime.UtcNow;
     }
 
     private void StopAnnouncePump(bool clearQueue)
