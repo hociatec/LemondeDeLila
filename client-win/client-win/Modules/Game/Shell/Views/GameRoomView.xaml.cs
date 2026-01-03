@@ -152,6 +152,15 @@ public partial class GameRoomView : UserControl
 
     private void OnPreviewKeyDown(object sender, KeyEventArgs e)
     {
+        if (!e.IsRepeat)
+        {
+            var key = e.Key == Key.System ? e.SystemKey : e.Key;
+            if (key is not (Key.LeftShift or Key.RightShift or Key.LeftCtrl or Key.RightCtrl or Key.LeftAlt or Key.RightAlt or Key.LWin or Key.RWin))
+            {
+                HistoryHost?.CancelPendingAnnouncementsFromHost();
+            }
+        }
+
         if (e.Key == Key.Escape && DataContext is ViewModels.GameRoomViewModel vm && vm.GameZone.IsStarted)
         {
             e.Handled = true;

@@ -19,6 +19,7 @@
 	            <Grid.RowDefinitions>
 	                <RowDefinition Height="Auto" />
 	                <RowDefinition Height="*" />
+	                <RowDefinition Height="Auto" />
 	            </Grid.RowDefinitions>
 
             <TextBlock x:Name="HistoryTitle"
@@ -51,6 +52,16 @@
                      AutomationProperties.Name="Historique"
 	                     AutomationProperties.HelpText="Historique en lecture seule. Naviguez comme dans un document (flèches, PageUp/PageDown, sélection, etc.)."
 	                     MinHeight="200" />
+
+	            <!-- Live region minimal pour annoncer les nouvelles lignes d'historique. -->
+	            <TextBlock x:Name="A11yAnnouncer"
+	                       Grid.Row="2"
+	                       Height="1"
+	                       Width="1"
+	                       Opacity="0"
+	                       IsHitTestVisible="False"
+	                       AutomationProperties.IsOffscreenBehavior="Onscreen"
+	                       AutomationProperties.LiveSetting="Polite" />
 	        </Grid>
 	    </Border>
 	</UserControl>

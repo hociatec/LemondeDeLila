@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Windows;
+using System.Windows.Automation;
+using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
@@ -15,6 +17,8 @@ public partial class GameHistoryView : UserControl
     private GameHistoryViewModel? _viewModel;
     private bool _pendingRebuild;
     private int _lastKnownEntryCount;
+    private readonly List<string> _pendingAnnouncements = new();
+    private bool _announceScheduled;
 
     public GameHistoryView()
     {
@@ -27,6 +31,13 @@ public partial class GameHistoryView : UserControl
     public FrameworkElement? FocusTarget => HistoryEditor;
 
     public event EventHandler<TabNavigationRequestedEventArgs>? TabNavigationRequested;
+
+    public void CancelPendingAnnouncementsFromHost()
+    {
+        _pendingAnnouncements.Clear();
+        _announceScheduled = false;
+        A11yAnnouncer.Text = string.Empty;
+    }
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
@@ -73,6 +84,8 @@ public partial class GameHistoryView : UserControl
             return;
         }
 
+        _pendingAnnouncements.Clear();
+        _announceScheduled = false;
         HistoryEditor.Clear();
         _lastKnownEntryCount = 0;
     }
@@ -87,6 +100,7 @@ public partial class GameHistoryView : UserControl
         if (e.Action == NotifyCollectionChangedAction.Add && e.NewItems != null && e.NewItems.Count > 0)
         {
             AppendEntries(e.NewItems.Cast<string>());
+            CollectAnnouncements(e.NewItems.Cast<string>());
 
             _lastKnownEntryCount = _viewModel.Entries.Count;
             return;
@@ -211,6 +225,81 @@ public partial class GameHistoryView : UserControl
 
         var shift = (Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift;
         TabNavigationRequested?.Invoke(this, new TabNavigationRequestedEventArgs(shift));
+    }
+
+    private static IEnumerable<string> SplitLines(string message)
+    {
+        if (string.IsNullOrWhiteSpace(message))
+        {
+            yield break;
+        }
+
+        var normalized = message
+            .Replace("\r\n", "\n", StringComparison.Ordinal)
+            .Replace('\r', '\n');
+
+        foreach (var raw in normalized.Split('\n'))
+        {
+            var cleaned = (raw ?? string.Empty).Trim();
+            if (!string.IsNullOrWhiteSpace(cleaned))
+            {
+                yield return cleaned;
+            }
+        }
+    }
+
+    private void CollectAnnouncements(IEnumerable<string> entries)
+    {
+        var added = entries
+            .SelectMany(SplitLines)
+            .Select(line => (line ?? string.Empty).Trim())
+            .Where(line => !string.IsNullOrWhiteSpace(line))
+            .ToList();
+
+        if (added.Count == 0)
+        {
+            return;
+        }
+
+        _pendingAnnouncements.AddRange(added);
+        ScheduleAnnouncement();
+    }
+
+    private void ScheduleAnnouncement()
+    {
+        if (_announceScheduled)
+        {
+            return;
+        }
+
+        _announceScheduled = true;
+        Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(FlushAnnouncements));
+    }
+
+    private void FlushAnnouncements()
+    {
+        _announceScheduled = false;
+
+        if (_pendingAnnouncements.Count == 0)
+        {
+            return;
+        }
+
+        var message = string.Join(Environment.NewLine, _pendingAnnouncements);
+        _pendingAnnouncements.Clear();
+
+        try
+        {
+            A11yAnnouncer.Text = message;
+            AutomationProperties.SetName(A11yAnnouncer, message);
+            var peer = FrameworkElementAutomationPeer.FromElement(A11yAnnouncer) ??
+                       FrameworkElementAutomationPeer.CreatePeerForElement(A11yAnnouncer);
+            peer?.RaiseAutomationEvent(AutomationEvents.LiveRegionChanged);
+        }
+        catch
+        {
+            // Best-effort.
+        }
     }
 
 }
