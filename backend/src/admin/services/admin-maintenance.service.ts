@@ -6,10 +6,30 @@ type SystemctlShow = Record<string, string>;
 
 const DEPLOY_UNIT = process.env.ADMIN_MAINTENANCE_DEPLOY_UNIT || 'lila-backend-deploy.service';
 const BACKEND_SERVICE = process.env.ADMIN_MAINTENANCE_BACKEND_SERVICE || 'lila-backend.service';
+const SERVICE_RE = /^[a-zA-Z0-9@._-]+$/;
 
 @Injectable()
 export class AdminMaintenanceService {
   private readonly backendCwd = process.cwd();
+
+  startBuildAndRestartBackend() {
+    if (!SERVICE_RE.test(BACKEND_SERVICE)) {
+      throw new InternalServerErrorException({
+        message: `Service backend invalide: ${BACKEND_SERVICE}`,
+      });
+    }
+
+    // IMPORTANT: on planifie après la réponse HTTP.
+    // On build d'abord, puis on restart le service. Si le build échoue, le service n'est pas touché.
+    const chain = [
+      `cd ${this.shQuote(this.backendCwd)}`,
+      'npm run build',
+      `sudo -n systemctl restart ${this.shQuote(BACKEND_SERVICE)}`,
+    ].join(' && ');
+
+    this.spawnDetached(['bash', '-lc', chain], { delayMs: 350 });
+    return { ok: true, service: BACKEND_SERVICE, scheduled: true };
+  }
 
   startDeploy() {
     const res = this.run(['sudo', '-n', 'systemctl', 'start', '--no-block', DEPLOY_UNIT]);
@@ -198,6 +218,12 @@ export class AdminMaintenanceService {
         // best effort
       }
     }, Math.max(0, delayMs));
+  }
+
+  private shQuote(value: string): string {
+    const raw = String(value ?? '');
+    // Single-quote safe for bash: ' -> '\''
+    return `'${raw.replaceAll("'", `'\\''`)}'`;
   }
 
   private httpGet(

@@ -51,6 +51,13 @@ public sealed class AdminMaintenanceHttpService : IAdminMaintenanceHttpService
         return await ReadJsonAsync<AdminMaintenanceRestartResponse>(res, cancellationToken).ConfigureAwait(false);
     }
 
+    public async Task<AdminMaintenanceRestartResponse> BuildAndRestartBackendAsync(CancellationToken cancellationToken = default)
+    {
+        using var req = CreateAuthenticatedRequest(HttpMethod.Post, new Uri(_config.HttpBase, "admin/maintenance/service/build-restart"));
+        using var res = await _apiHttp.SendAuthenticatedAsync(req, TimeSpan.FromSeconds(8), cancellationToken).ConfigureAwait(false);
+        return await ReadJsonAsync<AdminMaintenanceRestartResponse>(res, cancellationToken).ConfigureAwait(false);
+    }
+
     public async Task<AdminMaintenanceCommandResponse> DaemonReloadAsync(CancellationToken cancellationToken = default)
     {
         using var req = CreateAuthenticatedRequest(HttpMethod.Post, new Uri(_config.HttpBase, "admin/maintenance/systemd/daemon-reload"));

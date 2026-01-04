@@ -130,6 +130,7 @@ public sealed partial class AdminViewModel
         Items.Add(new AdminMenuItem("Status service backend", tag: "maintenance.service.status"));
         Items.Add(new AdminMenuItem("Migrations only (TypeORM)", tag: "maintenance.migrations"));
         Items.Add(new AdminMenuItem("Dry-run : build sans redémarrer", tag: "maintenance.dryrun"));
+        Items.Add(new AdminMenuItem("Build puis redémarrer backend", tag: "maintenance.buildRestart"));
         Items.Add(new AdminMenuItem("Restart backend (redémarrage uniquement)", tag: "maintenance.restart"));
         Items.Add(new AdminMenuItem("Retour", tag: "maintenance.back"));
         SelectedItem = Items.FirstOrDefault();
@@ -404,6 +405,80 @@ public sealed partial class AdminViewModel
             if (await EnsureMaintenanceTokenOrUpdateAsync(ex).ConfigureAwait(true))
             {
                 await MaintenanceRestartBackendAsync().ConfigureAwait(true);
+                return;
+            }
+            await _dialogs.ShowError("Maintenance", ex.Message).ConfigureAwait(true);
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private async Task MaintenanceBuildAndRestartBackendAsync()
+    {
+        if (IsBusy)
+        {
+            return;
+        }
+
+        if (!await EnsureMaintenanceTokenAsync(promptIfMissing: true).ConfigureAwait(true))
+        {
+            Status = "Maintenance: token requis";
+            return;
+        }
+
+        var confirmed = await _dialogs.Confirm(
+                "Maintenance",
+                "Compiler (npm run build) puis redémarrer le backend ?\n\n" +
+                "Notes:\n" +
+                "- Le build peut prendre quelques minutes.\n" +
+                "- Le backend sera ensuite redémarré (connexion coupée quelques secondes).",
+                okText: "Lancer",
+                cancelText: "Annuler")
+            .ConfigureAwait(true);
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        try
+        {
+            IsBusy = true;
+            Status = "Maintenance: build + restart…";
+            Details = "Tâche planifiée côté serveur. Le backend sera redémarré après compilation.";
+            PreferDetailsFocus = true;
+
+            _ = await _maintenance.BuildAndRestartBackendAsync().ConfigureAwait(true);
+
+            var deadline = DateTimeOffset.UtcNow.AddMinutes(12);
+            var attempt = 0;
+            while (DateTimeOffset.UtcNow < deadline)
+            {
+                attempt++;
+                try
+                {
+                    var status = await _maintenance.GetBackendServiceStatusAsync().ConfigureAwait(true);
+                    Details = "Backend:\n" + FormatDeployStatus(status);
+                    PreferDetailsFocus = true;
+                    Status = "Maintenance: build + restart (ok)";
+                    return;
+                }
+                catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+                {
+                    Status = "Maintenance: attente backend…";
+                    await Task.Delay(RetryStrategy.CalculateDelay(attempt, baseDelayMs: 900, maxDelayMs: 6000))
+                        .ConfigureAwait(true);
+                }
+            }
+
+            Status = "Maintenance: build + restart (timeout)";
+        }
+        catch (Exception ex)
+        {
+            if (await EnsureMaintenanceTokenOrUpdateAsync(ex).ConfigureAwait(true))
+            {
+                await MaintenanceBuildAndRestartBackendAsync().ConfigureAwait(true);
                 return;
             }
             await _dialogs.ShowError("Maintenance", ex.Message).ConfigureAwait(true);

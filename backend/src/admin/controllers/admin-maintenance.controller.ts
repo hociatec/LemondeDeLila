@@ -43,6 +43,12 @@ export class AdminMaintenanceController {
     return this.maintenance.startRestartBackend();
   }
 
+  @Post('service/build-restart')
+  @HttpCode(202)
+  buildAndRestartService() {
+    return this.maintenance.startBuildAndRestartBackend();
+  }
+
   @Post('systemd/daemon-reload')
   systemdDaemonReload() {
     return this.maintenance.daemonReload();
