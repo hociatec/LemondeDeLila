@@ -28,30 +28,23 @@
                        FontSize="18"
                        Margin="0 0 0 12" />
 
-	            <TextBox x:Name="HistoryEditor"
-	                     Grid.Row="1"
-                     Background="#0D1625"
-                     BorderThickness="0"
-                     Foreground="#C3D2EA"
-                     FontFamily="Segoe UI"
-                     FontSize="13"
-                     AcceptsReturn="True"
-                     AcceptsTab="False"
-                     IsReadOnly="True"
-                     IsReadOnlyCaretVisible="True"
-                     SpellCheck.IsEnabled="False"
-                     TextBoxBase.IsUndoEnabled="False"
-                     TextWrapping="Wrap"
-                     VerticalScrollBarVisibility="Auto"
-                     HorizontalScrollBarVisibility="Disabled"
-                     PreviewKeyDown="OnHistoryEditorPreviewKeyDown"
-                     Focusable="True"
-                     IsTabStop="True"
-                     KeyboardNavigation.TabIndex="1"
-                     AutomationProperties.LabeledBy="{Binding ElementName=HistoryTitle}"
-                     AutomationProperties.Name="Historique"
-	                     AutomationProperties.HelpText="Historique en lecture seule. Naviguez comme dans un document (flèches, PageUp/PageDown, sélection, etc.)."
-	                     MinHeight="200" />
+<FlowDocumentScrollViewer
+    x:Name="HistoryViewer"
+    Grid.Row="1"
+    Background="#0D1625"
+    Foreground="#C3D2EA"
+    Focusable="True"
+    IsTabStop="True"
+    KeyboardNavigation.TabIndex="1"
+    VerticalScrollBarVisibility="Auto"
+    HorizontalScrollBarVisibility="Disabled"
+    AutomationProperties.LabeledBy="{Binding ElementName=HistoryTitle}"
+    AutomationProperties.Name="Historique"
+    AutomationProperties.HelpText="Historique en lecture seule. Utilisez les flèches pour naviguer.">
+
+    <FlowDocument FontFamily="Segoe UI" FontSize="13" />
+</FlowDocumentScrollViewer>
+
 
 	            <!-- Live region minimal pour annoncer les nouvelles lignes d'historique. -->
 	            <TextBlock x:Name="A11yAnnouncer"
