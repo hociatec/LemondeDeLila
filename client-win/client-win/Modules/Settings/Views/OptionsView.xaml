@@ -75,35 +75,34 @@
         </StackPanel>
 
         <Border Grid.Row="1" Background="{StaticResource PanelBrush}" CornerRadius="12" Padding="16" Margin="24 0 24 16">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="260" />
-                    <ColumnDefinition Width="16" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
+            <TabControl x:Name="CategoryTabs"
+                        ItemsSource="{Binding Categories}"
+                        SelectedItem="{Binding SelectedCategory}"
+                        KeyboardNavigation.TabNavigation="Continue"
+                        AutomationProperties.Name="Onglets des options">
+                <TabControl.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding}" />
+                    </DataTemplate>
+                </TabControl.ItemTemplate>
 
-                <ListBox x:Name="CategoryList"
-                         Grid.Column="0"
-                         ItemsSource="{Binding Categories}"
-                         SelectedItem="{Binding SelectedCategory}"
-                         AutomationProperties.Name="Catégories des options"
-                         KeyboardNavigation.TabNavigation="Once" />
-
-                <ContentControl Grid.Column="2"
-                                Focusable="False"
-                                IsTabStop="False"
-                                KeyboardNavigation.TabNavigation="Continue">
-                    <ContentControl.Style>
-                        <Style TargetType="ContentControl">
-                            <Setter Property="Content">
-                                <Setter.Value>
-                                    <TextBlock Text="Sélectionnez une catégorie." Foreground="#9CB2D1" />
-                                </Setter.Value>
-                            </Setter>
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding SelectedCategory}" Value="Général">
+                <TabControl.ContentTemplate>
+                    <DataTemplate>
+                        <ContentControl DataContext="{Binding DataContext, RelativeSource={RelativeSource AncestorType=TabControl}}"
+                                        Focusable="False"
+                                        IsTabStop="False"
+                                        KeyboardNavigation.TabNavigation="Continue">
+                            <ContentControl.Style>
+                                <Style TargetType="ContentControl">
                                     <Setter Property="Content">
                                         <Setter.Value>
+                                            <TextBlock Text="Sélectionnez une catégorie." Foreground="#9CB2D1" />
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SelectedCategory}" Value="Général">
+                                            <Setter Property="Content">
+                                                <Setter.Value>
                                             <ScrollViewer VerticalScrollBarVisibility="Auto"
                                                           Focusable="False"
                                                           IsTabStop="False"
@@ -114,13 +113,13 @@
                                                     <CheckBox Content="Demander confirmation à la fermeture" IsChecked="{Binding ConfirmExit}" />
                                                 </StackPanel>
                                             </ScrollViewer>
-                                        </Setter.Value>
-                                    </Setter>
-                                </DataTrigger>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </DataTrigger>
 
-                                <DataTrigger Binding="{Binding SelectedCategory}" Value="Sons">
-                                    <Setter Property="Content">
-                                        <Setter.Value>
+                                        <DataTrigger Binding="{Binding SelectedCategory}" Value="Sons">
+                                            <Setter Property="Content">
+                                                <Setter.Value>
                                             <ScrollViewer VerticalScrollBarVisibility="Auto"
                                                           Focusable="False"
                                                           IsTabStop="False"
@@ -196,13 +195,13 @@
                                                             AutomationProperties.HelpText="De 0 à 100. Utilisez les flèches haut et bas pour ajuster." />
                                                 </StackPanel>
                                             </ScrollViewer>
-                                        </Setter.Value>
-                                    </Setter>
-                                </DataTrigger>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </DataTrigger>
 
-                                <DataTrigger Binding="{Binding SelectedCategory}" Value="Tchat">
-                                    <Setter Property="Content">
-                                        <Setter.Value>
+                                        <DataTrigger Binding="{Binding SelectedCategory}" Value="Tchat">
+                                            <Setter Property="Content">
+                                                <Setter.Value>
                                             <ScrollViewer VerticalScrollBarVisibility="Auto"
                                                           Focusable="False"
                                                           IsTabStop="False"
@@ -214,14 +213,16 @@
                                                     <CheckBox Content="Demander confirmation avant de fermer le tchat" IsChecked="{Binding ConfirmChatExit}" />
                                                 </StackPanel>
                                             </ScrollViewer>
-                                        </Setter.Value>
-                                    </Setter>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </ContentControl.Style>
-                </ContentControl>
-            </Grid>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ContentControl.Style>
+                        </ContentControl>
+                    </DataTemplate>
+                </TabControl.ContentTemplate>
+            </TabControl>
         </Border>
 
         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="24 0 24 20">

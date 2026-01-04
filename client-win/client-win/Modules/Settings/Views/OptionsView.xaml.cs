@@ -30,12 +30,24 @@ public partial class OptionsView : UserControl
 
         Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
         {
-            FocusFirstItem(CategoryList);
+            FocusTabs();
         }));
     }
 
     private void OnPreviewKeyDown(object sender, KeyEventArgs e)
     {
+        if (e.Key is Key.Left or Key.Right)
+        {
+            if (!TryNavigateTabs(e.Key == Key.Right))
+            {
+                // Let controls (e.g. sliders) handle the key.
+                return;
+            }
+
+            e.Handled = true;
+            return;
+        }
+
         if (e.Key is Key.Up or Key.Down)
         {
             var slider = FindAncestorOrSelf<Slider>(Keyboard.FocusedElement as DependencyObject);
@@ -114,32 +126,47 @@ public partial class OptionsView : UserControl
         return null;
     }
 
-    private static void FocusFirstItem(ListBox? listBox)
+    private void FocusTabs()
     {
-        if (listBox == null)
+        if (CategoryTabs == null)
         {
             return;
         }
 
-        if (listBox.Items.Count == 0)
+        CategoryTabs.UpdateLayout();
+        CategoryTabs.Focus();
+        Keyboard.Focus(CategoryTabs);
+    }
+
+    private bool TryNavigateTabs(bool forward)
+    {
+        if (CategoryTabs == null || CategoryTabs.Items.Count == 0)
         {
-            listBox.Focus();
-            return;
+            return false;
         }
 
-        if (listBox.SelectedIndex < 0)
+        // Do not steal left/right from controls that use it (slider, text input, combo).
+        var focused = Keyboard.FocusedElement as DependencyObject;
+        if (FindAncestorOrSelf<Slider>(focused) != null ||
+            FindAncestorOrSelf<TextBoxBase>(focused) != null ||
+            FindAncestorOrSelf<ComboBox>(focused) != null)
         {
-            listBox.SelectedIndex = 0;
+            return false;
         }
 
-        listBox.UpdateLayout();
-        if (listBox.ItemContainerGenerator.ContainerFromIndex(listBox.SelectedIndex) is ListBoxItem item)
+        var index = CategoryTabs.SelectedIndex;
+        if (index < 0)
         {
-            item.Focus();
+            index = 0;
         }
-        else
-        {
-            listBox.Focus();
-        }
+
+        var next = forward ? index + 1 : index - 1;
+        if (next >= CategoryTabs.Items.Count) next = 0;
+        if (next < 0) next = CategoryTabs.Items.Count - 1;
+        CategoryTabs.SelectedIndex = next;
+
+        // Keep focus on the tabs so left/right remains consistent.
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusTabs));
+        return true;
     }
 }
