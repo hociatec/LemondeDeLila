@@ -29,16 +29,22 @@ export function getAvailableActions(
 ): GameSingleActionDto[] {
   if ((state.status || '').toLowerCase() === 'finished') return [];
   const rawPending = state.pending as any;
+  const pendingPlayerId = normalizeNumber(rawPending?.playerId);
   if (
     rawPending &&
     rawPending.blocking &&
-    typeof rawPending.playerId === 'number' &&
-    rawPending.playerId !== playerId
+    pendingPlayerId != null &&
+    pendingPlayerId !== playerId
   ) {
     // Une action bloquante est en attente pour un autre joueur : personne d'autre ne peut jouer.
     return [];
   }
-  if (rawPending && rawPending.type === 'pick' && rawPending.playerId === playerId) {
+  if (
+    rawPending &&
+    rawPending.type === 'pick' &&
+    pendingPlayerId != null &&
+    pendingPlayerId === playerId
+  ) {
     const choices = Array.isArray(rawPending.choices) ? rawPending.choices : [];
     return choices.map((_, index: number) => ({
       type: 'pick_choice',
@@ -73,10 +79,12 @@ export function getAvailableActions(
   const pendingQuiz = meta.quiz?.pending?.[playerId];
   const hasPendingQuiz = Boolean(pendingQuiz);
   const pending = state.pending ?? null;
+  const pendingPid = normalizeNumber((pending as any)?.playerId);
   const hasPendingExchange = Boolean(
     pending &&
     pending.type === 'exchange' &&
-    pending.playerId === playerId &&
+    pendingPid != null &&
+    pendingPid === playerId &&
     (pending as any).step !== 'confirm',
   );
 
@@ -158,8 +166,7 @@ export function validateAction(
   const type = rawType as PanierExpressActionType;
   const pendingAny = state.pending as any;
   const hasBlockingPending = Boolean(pendingAny?.blocking);
-  const pendingPlayerId =
-    typeof pendingAny?.playerId === 'number' ? pendingAny.playerId : null;
+  const pendingPlayerId = normalizeNumber(pendingAny?.playerId);
 
   if (hasBlockingPending) {
     const allowedWhileBlocking = new Set<string>([
@@ -222,7 +229,8 @@ export function validateAction(
 
   if (type === 'pick_choice') {
     const pending = state.pending as any;
-    if (!pending || pending.type !== 'pick' || pending.playerId !== actorId) {
+    const pid = normalizeNumber(pending?.playerId);
+    if (!pending || pending.type !== 'pick' || pid == null || pid !== actorId) {
       throw new PlayerActionError('Aucun choix en attente.', {
         gameType: 'panier-express',
         playerId: actorId ?? undefined,
@@ -279,11 +287,13 @@ export function validateAction(
 
   if (type === 'exchange_accept' || type === 'exchange_refuse') {
     const pending = state.pending as any;
+    const pid = normalizeNumber(pending?.playerId);
     if (
       !pending ||
       pending.type !== 'exchange' ||
       pending.step !== 'confirm' ||
-      pending.playerId !== actorId
+      pid == null ||
+      pid !== actorId
     ) {
       throw new PlayerActionError('Aucun échange à confirmer.', {
         gameType: 'panier-express',
