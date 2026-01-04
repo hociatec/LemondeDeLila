@@ -77,7 +77,9 @@
                      SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
                      DisplayMemberPath="Label"
                      SelectionMode="Single"
-                     VirtualizingStackPanel.IsVirtualizing="False"
+                     VirtualizingStackPanel.IsVirtualizing="True"
+                     VirtualizingStackPanel.VirtualizationMode="Recycling"
+                     ScrollViewer.CanContentScroll="True"
                      KeyboardNavigation.TabNavigation="None"
                      IsTabStop="False"
                      PreviewKeyDown="OnListPreviewKeyDown"
@@ -91,4 +93,3 @@
         </Border>
     </Grid>
 </UserControl>
-

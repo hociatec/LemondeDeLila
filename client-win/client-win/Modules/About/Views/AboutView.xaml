@@ -94,18 +94,20 @@
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
-                    <ListBox x:Name="ItemsList"
-                             Grid.Row="0"
-                             Visibility="{Binding ShowItemsList, Converter={StaticResource BoolToVis}}"
-                             ItemsSource="{Binding Items}"
-                             SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
-                             SelectionMode="Single"
-                             VirtualizingStackPanel.IsVirtualizing="False"
-                             KeyboardNavigation.TabNavigation="None"
-                             IsTabStop="False"
-                             PreviewKeyDown="OnListPreviewKeyDown"
-                             KeyDown="OnListKeyDown"
-                             AutomationProperties.LabeledBy="{Binding ElementName=TitleText}">
+	                    <ListBox x:Name="ItemsList"
+	                             Grid.Row="0"
+	                             Visibility="{Binding ShowItemsList, Converter={StaticResource BoolToVis}}"
+	                             ItemsSource="{Binding Items}"
+	                             SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
+	                             SelectionMode="Single"
+	                             VirtualizingStackPanel.IsVirtualizing="True"
+	                             VirtualizingStackPanel.VirtualizationMode="Recycling"
+	                             ScrollViewer.CanContentScroll="True"
+	                             KeyboardNavigation.TabNavigation="None"
+	                             IsTabStop="False"
+	                             PreviewKeyDown="OnListPreviewKeyDown"
+	                             KeyDown="OnListKeyDown"
+	                             AutomationProperties.LabeledBy="{Binding ElementName=TitleText}">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding Label}"

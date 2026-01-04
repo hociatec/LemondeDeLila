@@ -76,16 +76,18 @@
 
                 <TextBlock Text="Navigation" Foreground="White" FontSize="18" Margin="0 0 0 12" />
 
-                <ListBox x:Name="ItemsList"
-                         Grid.Row="1"
-                         ItemsSource="{Binding Items}"
-                         SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
-                         DisplayMemberPath="Label"
-                         SelectionMode="Single"
-                         VirtualizingStackPanel.IsVirtualizing="False"
-                         PreviewKeyDown="OnListPreviewKeyDown"
-                         KeyDown="OnListKeyDown"
-                         AutomationProperties.LabeledBy="{Binding ElementName=TitleText}" />
+	                <ListBox x:Name="ItemsList"
+	                         Grid.Row="1"
+	                         ItemsSource="{Binding Items}"
+	                         SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
+	                         DisplayMemberPath="Label"
+	                         SelectionMode="Single"
+	                         VirtualizingStackPanel.IsVirtualizing="True"
+	                         VirtualizingStackPanel.VirtualizationMode="Recycling"
+	                         ScrollViewer.CanContentScroll="True"
+	                         PreviewKeyDown="OnListPreviewKeyDown"
+	                         KeyDown="OnListKeyDown"
+	                         AutomationProperties.LabeledBy="{Binding ElementName=TitleText}" />
             </Grid>
         </Border>
 
@@ -105,4 +107,3 @@
         </Border>
     </Grid>
 </UserControl>
-

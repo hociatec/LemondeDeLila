@@ -163,6 +163,9 @@ public sealed class RoomGatewayClient : IRoomGatewayClient
         if (reusedWarm)
         {
             // Switch room via command to avoid an extra handshake.
+            await TrySyncClockAsync(socket, linked.Token).ConfigureAwait(false);
+
+            var trace = new { id = Guid.NewGuid().ToString("N"), sentAtMs = ServerClock.NowServerMs() };
             var join = JsonSerializer.Serialize(new
             {
                 type = "room.join",
@@ -171,6 +174,7 @@ public sealed class RoomGatewayClient : IRoomGatewayClient
                     roomId,
                     spectator,
                     hidden = silent,
+                    _trace = trace
                 }
             }, _json);
             await socket.SendAsync(join, linked.Token).ConfigureAwait(false);
@@ -183,6 +187,8 @@ public sealed class RoomGatewayClient : IRoomGatewayClient
             Log.Information("WS room.connect: connexion à {Endpoint}", uri);
             await socket.ConnectAsync(uri, token: token, headers: headers, cancellationToken: linked.Token).ConfigureAwait(false);
         }
+
+        await TrySyncClockAsync(socket, linked.Token).ConfigureAwait(false);
 
         var initial = await WaitRoomStateAsync(socket, linked.Token).ConfigureAwait(false);
         var payload = initial.Payload;
@@ -264,6 +270,11 @@ public sealed class RoomGatewayClient : IRoomGatewayClient
                 }
 
                 var type = typeProp.GetString() ?? string.Empty;
+                if (string.Equals(type, "room.pong", StringComparison.OrdinalIgnoreCase))
+                {
+                    TryUpdateClockFromPong(doc.RootElement);
+                    return;
+                }
                 if (string.Equals(type, "room.created", StringComparison.OrdinalIgnoreCase))
                 {
                     var msg = JsonSerializer.Deserialize<RoomEnvelope<RoomPayloadDto>>(raw, _json);
@@ -318,7 +329,12 @@ public sealed class RoomGatewayClient : IRoomGatewayClient
 
         try
         {
-            var create = JsonSerializer.Serialize(new { type = "room.create", payload = new { gameType } }, _json);
+            await TrySyncClockAsync(socket, cancellationToken).ConfigureAwait(false);
+
+            var trace = new { id = Guid.NewGuid().ToString("N"), sentAtMs = ServerClock.NowServerMs() };
+            var create = JsonSerializer.Serialize(
+                new { type = "room.create", payload = new { gameType, _trace = trace } },
+                _json);
             await socket.SendAsync(create, cancellationToken).ConfigureAwait(false);
             connected = true;
 
@@ -360,6 +376,11 @@ public sealed class RoomGatewayClient : IRoomGatewayClient
                 }
 
                 var type = typeProp.GetString() ?? string.Empty;
+                if (string.Equals(type, "room.pong", StringComparison.OrdinalIgnoreCase))
+                {
+                    TryUpdateClockFromPong(doc.RootElement);
+                    return;
+                }
                 if (string.Equals(type, "room.updated", StringComparison.OrdinalIgnoreCase))
                 {
                     var msg = JsonSerializer.Deserialize<RoomEnvelope<RoomPayloadDto>>(raw, _json);
@@ -457,6 +478,96 @@ public sealed class RoomGatewayClient : IRoomGatewayClient
         }
         builder.Query = string.Join("&", query);
         return builder.Uri;
+    }
+
+    private static async Task TrySyncClockAsync(IWebSocketConnection socket, CancellationToken cancellationToken)
+    {
+        var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        void OnMessage(string raw)
+        {
+            try
+            {
+                using var doc = JsonDocument.Parse(raw);
+                if (!doc.RootElement.TryGetProperty("type", out var typeProp) ||
+                    typeProp.ValueKind != JsonValueKind.String)
+                {
+                    return;
+                }
+
+                var type = typeProp.GetString() ?? string.Empty;
+                if (!string.Equals(type, "room.pong", StringComparison.OrdinalIgnoreCase))
+                {
+                    return;
+                }
+
+                if (TryUpdateClockFromPong(doc.RootElement))
+                {
+                    tcs.TrySetResult(true);
+                }
+            }
+            catch
+            {
+                // ignore
+            }
+        }
+
+        socket.MessageReceived += OnMessage;
+
+        try
+        {
+            var ping = JsonSerializer.Serialize(
+                new { type = "room.ping", payload = new { clientSentAtMs = ServerClock.UtcNowMs() } },
+                _json);
+            await socket.SendAsync(ping, cancellationToken).ConfigureAwait(false);
+
+            using var timeout = new CancellationTokenSource(TimeSpan.FromMilliseconds(1200));
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeout.Token);
+            await tcs.Task.WaitAsync(linked.Token).ConfigureAwait(false);
+        }
+        catch
+        {
+            // Best-effort: si le ping échoue ou timeout, on continue quand même.
+        }
+        finally
+        {
+            socket.MessageReceived -= OnMessage;
+        }
+    }
+
+    private static bool TryUpdateClockFromPong(JsonElement root)
+    {
+        var receivedAtMs = ServerClock.UtcNowMs();
+
+        try
+        {
+            if (!root.TryGetProperty("payload", out var payload) ||
+                payload.ValueKind != JsonValueKind.Object)
+            {
+                return false;
+            }
+
+            if (!payload.TryGetProperty("serverTimeMs", out var serverTimeProp) ||
+                serverTimeProp.ValueKind != JsonValueKind.Number)
+            {
+                return false;
+            }
+
+            if (!payload.TryGetProperty("clientSentAtMs", out var clientSentProp) ||
+                clientSentProp.ValueKind != JsonValueKind.Number)
+            {
+                return false;
+            }
+
+            var serverTimeMs = serverTimeProp.GetInt64();
+            var clientSentAtMs = clientSentProp.GetInt64();
+            ServerClock.UpdateFromPong(serverTimeMs, clientSentAtMs, receivedAtMs);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     private async Task<IDictionary<string, string>?> BuildHeadersAsync(CancellationToken cancellationToken)

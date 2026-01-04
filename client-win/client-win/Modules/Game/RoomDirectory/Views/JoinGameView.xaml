@@ -90,7 +90,9 @@
                              ItemsSource="{Binding Rooms}"
                              SelectedItem="{Binding SelectedRoom, Mode=TwoWay}"
                              SelectionMode="Single"
-                             VirtualizingStackPanel.IsVirtualizing="False"
+                             VirtualizingStackPanel.IsVirtualizing="True"
+                             VirtualizingStackPanel.VirtualizationMode="Recycling"
+                             ScrollViewer.CanContentScroll="True"
                              PreviewKeyDown="OnListPreviewKeyDown"
                              KeyDown="OnListKeyDown"
                              AutomationProperties.LabeledBy="{Binding ElementName=TitleText}">

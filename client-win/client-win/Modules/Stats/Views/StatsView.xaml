@@ -78,17 +78,19 @@
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
-                <ListBox x:Name="ItemsList"
-                         ItemsSource="{Binding Items}"
-                         SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
-                         DisplayMemberPath="Label"
-                         SelectionMode="Single"
-                         VirtualizingStackPanel.IsVirtualizing="False"
-                         KeyboardNavigation.TabNavigation="None"
-                         IsTabStop="False"
-                         PreviewKeyDown="OnListPreviewKeyDown"
-                         KeyDown="OnListKeyDown"
-                         AutomationProperties.LabeledBy="{Binding ElementName=TitleText}" />
+            <ListBox x:Name="ItemsList"
+                     ItemsSource="{Binding Items}"
+                     SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
+                     DisplayMemberPath="Label"
+                     SelectionMode="Single"
+                     VirtualizingStackPanel.IsVirtualizing="True"
+                     VirtualizingStackPanel.VirtualizationMode="Recycling"
+                     ScrollViewer.CanContentScroll="True"
+                     KeyboardNavigation.TabNavigation="None"
+                     IsTabStop="False"
+                     PreviewKeyDown="OnListPreviewKeyDown"
+                     KeyDown="OnListKeyDown"
+                     AutomationProperties.LabeledBy="{Binding ElementName=TitleText}" />
 
                 <TextBlock Grid.Row="1"
                            Text="{Binding Details}"
@@ -106,4 +108,3 @@
         </Border>
     </Grid>
 </UserControl>
-

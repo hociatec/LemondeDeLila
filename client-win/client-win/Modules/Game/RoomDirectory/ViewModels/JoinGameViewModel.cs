@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.ObjectModel;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,11 +24,13 @@ public sealed class JoinGameViewModel : ObservableObject, IDisposable
     private readonly UserControl _returnView;
     private IDisposable? _refreshSubscription;
     private IDisposable? _transportSubscription;
+    private CancellationTokenSource? _refreshDebounceCts;
     private bool _isDisposed;
     private bool _subscribed;
     private bool _subscriptionSupported = true;
     private bool _isBusy;
     private string _status = "Chargement des tables...";
+    private ObservableCollection<PublicRoomListItem> _roomsList = new();
     private PublicRoomListItem? _selected;
     private bool _lastEmptyAnnounced;
 
@@ -53,15 +56,17 @@ public sealed class JoinGameViewModel : ObservableObject, IDisposable
         {
             // Si le WS "api" est recréé, l'abonnement côté serveur est perdu (connectionId change).
             // On relance un refresh pour se ré-abonner sans forcer l'utilisateur à relancer le client.
-            _ = _dispatcher.BeginInvoke(
-                DispatcherPriority.Background,
-                new Action(() => _ = RefreshCommand.ExecuteAsync(null)));
+            ScheduleRefresh();
         });
 
         _dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() => RefreshCommand.Execute(null)));
     }
 
-    public ObservableCollection<PublicRoomListItem> Rooms { get; } = new();
+    public ObservableCollection<PublicRoomListItem> Rooms
+    {
+        get => _roomsList;
+        private set => SetProperty(ref _roomsList, value);
+    }
 
     public PublicRoomListItem? SelectedRoom
     {
@@ -107,9 +112,7 @@ public sealed class JoinGameViewModel : ObservableObject, IDisposable
 
                     _refreshSubscription ??= _rooms.OnPublicRefresh(() =>
                         // Reçu depuis un thread réseau; rebasculer sur UI.
-                        _ = _dispatcher.BeginInvoke(
-                            DispatcherPriority.Background,
-                            new Action(() => _ = RefreshCommand.ExecuteAsync(null))));
+                        ScheduleRefresh());
                 }
                 catch (Exception ex)
                 {
@@ -135,16 +138,15 @@ public sealed class JoinGameViewModel : ObservableObject, IDisposable
                 listed = await _rooms.PublicListAsync().ConfigureAwait(true);
             }
 
-            Rooms.Clear();
-            foreach (var item in listed.Items)
-            {
-                Rooms.Add(item);
-            }
+            var previousSelectedId = SelectedRoom?.Id ?? 0;
+            Rooms = new ObservableCollection<PublicRoomListItem>(listed.Items ?? Array.Empty<PublicRoomListItem>());
 
             if (Rooms.Count > 0)
             {
                 _lastEmptyAnnounced = false;
-                SelectedRoom ??= Rooms[0];
+                SelectedRoom = previousSelectedId > 0
+                    ? Rooms.FirstOrDefault(r => r.Id == previousSelectedId) ?? Rooms[0]
+                    : Rooms[0];
                 if (_subscribed)
                 {
                     Status = "Entrée : rejoindre la table sélectionnée. (Temps réel) Échap : retour.";
@@ -211,6 +213,8 @@ public sealed class JoinGameViewModel : ObservableObject, IDisposable
 
         try
         {
+            _refreshDebounceCts?.Cancel();
+            _refreshDebounceCts?.Dispose();
             _refreshSubscription?.Dispose();
             _transportSubscription?.Dispose();
         }
@@ -220,6 +224,7 @@ public sealed class JoinGameViewModel : ObservableObject, IDisposable
         }
         _refreshSubscription = null;
         _transportSubscription = null;
+        _refreshDebounceCts = null;
 
         if (_subscribed)
         {
@@ -237,5 +242,41 @@ public sealed class JoinGameViewModel : ObservableObject, IDisposable
                 }
             });
         }
+    }
+
+    private void ScheduleRefresh()
+    {
+        if (_isDisposed || !_subscriptionSupported)
+        {
+            return;
+        }
+
+        _refreshDebounceCts?.Cancel();
+        _refreshDebounceCts?.Dispose();
+        _refreshDebounceCts = new CancellationTokenSource();
+        var token = _refreshDebounceCts.Token;
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await Task.Delay(350, token).ConfigureAwait(false);
+                if (token.IsCancellationRequested) return;
+
+                await _dispatcher.BeginInvoke(
+                    DispatcherPriority.Background,
+                    new Action(() =>
+                    {
+                        if (!_isDisposed)
+                        {
+                            _ = RefreshCommand.ExecuteAsync(null);
+                        }
+                    }));
+            }
+            catch
+            {
+                // ignore
+            }
+        });
     }
 }

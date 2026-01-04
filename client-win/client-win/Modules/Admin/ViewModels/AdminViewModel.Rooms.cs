@@ -192,8 +192,8 @@ public sealed partial class AdminViewModel
             // avec au moins un joueur connecté.
             var listed = await _admin.ListRoomsAsync(
                 includePrivate: true,
-                includeStarted: false,
-                joinableOnly: true,
+                includeStarted: true,
+                joinableOnly: false,
                 limit: 200).ConfigureAwait(true);
             _roomsForAdmin = listed.Items ?? Array.Empty<AdminRoomListItemDto>();
         }

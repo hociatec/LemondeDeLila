@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using client_win.Modules.Game.Play.Dtos;
+using client_win.Modules.Network.Services;
 using client_win.Modules.Network.WebSockets;
 using Serilog;
 
@@ -91,7 +92,7 @@ public sealed class GameSession : IAsyncDisposable
             return;
         }
 
-        var trace = new { id = Guid.NewGuid().ToString("N"), sentAtMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() };
+        var trace = new { id = Guid.NewGuid().ToString("N"), sentAtMs = ServerClock.NowServerMs() };
         var join = JsonSerializer.Serialize(
             new { type = "game.join", payload = new { roomId = RoomId, gameType = GameType, _trace = trace } },
             _json);
@@ -106,7 +107,7 @@ public sealed class GameSession : IAsyncDisposable
             return;
         }
 
-        var trace = new { id = Guid.NewGuid().ToString("N"), sentAtMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() };
+        var trace = new { id = Guid.NewGuid().ToString("N"), sentAtMs = ServerClock.NowServerMs() };
         var msg = JsonSerializer.Serialize(
             new { type = "game.state", payload = new { roomId = RoomId, gameType = GameType, _trace = trace } },
             _json);
@@ -121,7 +122,7 @@ public sealed class GameSession : IAsyncDisposable
             return;
         }
 
-        var trace = new { id = Guid.NewGuid().ToString("N"), sentAtMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() };
+        var trace = new { id = Guid.NewGuid().ToString("N"), sentAtMs = ServerClock.NowServerMs() };
         var msg = JsonSerializer.Serialize(
             new { type = "game.turn", payload = new { roomId = RoomId, gameType = GameType, _trace = trace } },
             _json);
@@ -136,7 +137,7 @@ public sealed class GameSession : IAsyncDisposable
             return;
         }
 
-        var trace = new { id = Guid.NewGuid().ToString("N"), sentAtMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() };
+        var trace = new { id = Guid.NewGuid().ToString("N"), sentAtMs = ServerClock.NowServerMs() };
         actions ??= Array.Empty<GameClientAction>();
         var msg = JsonSerializer.Serialize(
             new
@@ -200,34 +201,72 @@ public sealed class GameSession : IAsyncDisposable
     private void OnRawMessage(string raw)
     {
         RawMessageReceived?.Invoke(raw);
-        ParseError(raw);
-        ParseCommandAck(raw);
-        ParseState(raw);
-        ParseTurn(raw);
-    }
 
-    private void ParseCommandAck(string raw)
-    {
         try
         {
             using var doc = JsonDocument.Parse(raw);
             var root = doc.RootElement;
             if (root.ValueKind != JsonValueKind.Object) return;
 
-            if (!root.TryGetProperty("type", out var typeProp)) return;
-            var type = typeProp.GetString() ?? string.Empty;
-            if (!string.Equals(type, "game.ack", StringComparison.OrdinalIgnoreCase))
+            if (!root.TryGetProperty("type", out var typeProp) ||
+                typeProp.ValueKind != JsonValueKind.String)
             {
                 return;
             }
 
+            var type = typeProp.GetString() ?? string.Empty;
+            if (string.IsNullOrWhiteSpace(type))
+            {
+                return;
+            }
+
+            if (string.Equals(type, "error", StringComparison.OrdinalIgnoreCase))
+            {
+                HandleError(root);
+                return;
+            }
+
+            if (string.Equals(type, "game.pong", StringComparison.OrdinalIgnoreCase))
+            {
+                HandlePong(root);
+                return;
+            }
+
+            if (string.Equals(type, "game.ack", StringComparison.OrdinalIgnoreCase))
+            {
+                HandleCommandAck(root);
+                return;
+            }
+
+            if (string.Equals(type, "game.state", StringComparison.OrdinalIgnoreCase))
+            {
+                HandleState(root);
+                return;
+            }
+
+            if (string.Equals(type, "game.turn", StringComparison.OrdinalIgnoreCase))
+            {
+                HandleTurn(root);
+            }
+        }
+        catch
+        {
+            // ignore
+        }
+    }
+
+    private void HandleCommandAck(JsonElement root)
+    {
+        try
+        {
             if (!root.TryGetProperty("payload", out var payload) ||
                 payload.ValueKind != JsonValueKind.Object)
             {
                 return;
             }
 
-            var action = payload.TryGetProperty("action", out var actionProp) && actionProp.ValueKind == JsonValueKind.String
+            var action = payload.TryGetProperty("action", out var actionProp) &&
+                         actionProp.ValueKind == JsonValueKind.String
                 ? actionProp.GetString() ?? string.Empty
                 : string.Empty;
 
@@ -268,6 +307,11 @@ public sealed class GameSession : IAsyncDisposable
         // On envoie un ping léger: le serveur compte l'activité via `on message`.
         using var timer = new PeriodicTimer(interval);
 
+        if (IsConnected)
+        {
+            await SendPingAsync(cancellationToken).ConfigureAwait(false);
+        }
+
         while (!cancellationToken.IsCancellationRequested)
         {
             try
@@ -290,8 +334,7 @@ public sealed class GameSession : IAsyncDisposable
 
             try
             {
-                var ping = JsonSerializer.Serialize(new { type = "game.ping", payload = new { } }, _json);
-                await TrySendAsync(ping, cancellationToken).ConfigureAwait(false);
+                await SendPingAsync(cancellationToken).ConfigureAwait(false);
             }
             catch
             {
@@ -300,21 +343,52 @@ public sealed class GameSession : IAsyncDisposable
         }
     }
 
-    private void ParseError(string raw)
+    private Task SendPingAsync(CancellationToken cancellationToken)
     {
+        var ping = JsonSerializer.Serialize(
+            new { type = "game.ping", payload = new { clientSentAtMs = ServerClock.UtcNowMs() } },
+            _json);
+        return TrySendAsync(ping, cancellationToken);
+    }
+
+    private void HandlePong(JsonElement root)
+    {
+        var receivedAtMs = ServerClock.UtcNowMs();
+
         try
         {
-            using var doc = JsonDocument.Parse(raw);
-            var root = doc.RootElement;
-            if (root.ValueKind != JsonValueKind.Object) return;
-
-            if (!root.TryGetProperty("type", out var typeProp)) return;
-            var type = typeProp.GetString() ?? string.Empty;
-            if (!string.Equals(type, "error", StringComparison.OrdinalIgnoreCase))
+            if (!root.TryGetProperty("payload", out var payload) ||
+                payload.ValueKind != JsonValueKind.Object)
             {
                 return;
             }
 
+            if (!payload.TryGetProperty("serverTimeMs", out var serverTimeProp) ||
+                serverTimeProp.ValueKind != JsonValueKind.Number)
+            {
+                return;
+            }
+
+            if (!payload.TryGetProperty("clientSentAtMs", out var clientSentProp) ||
+                clientSentProp.ValueKind != JsonValueKind.Number)
+            {
+                return;
+            }
+
+            var serverTimeMs = serverTimeProp.GetInt64();
+            var clientSentAtMs = clientSentProp.GetInt64();
+            ServerClock.UpdateFromPong(serverTimeMs, clientSentAtMs, receivedAtMs);
+        }
+        catch
+        {
+            // ignore
+        }
+    }
+
+    private void HandleError(JsonElement root)
+    {
+        try
+        {
             if (!root.TryGetProperty("payload", out var payload) ||
                 payload.ValueKind != JsonValueKind.Object)
             {
@@ -340,21 +414,10 @@ public sealed class GameSession : IAsyncDisposable
         }
     }
 
-    private void ParseState(string raw)
+    private void HandleState(JsonElement root)
     {
         try
         {
-            using var doc = JsonDocument.Parse(raw);
-            var root = doc.RootElement;
-            if (root.ValueKind != JsonValueKind.Object) return;
-
-            if (!root.TryGetProperty("type", out var typeProp)) return;
-            var type = typeProp.GetString() ?? string.Empty;
-            if (!string.Equals(type, "game.state", StringComparison.OrdinalIgnoreCase))
-            {
-                return;
-            }
-
             if (!root.TryGetProperty("payload", out var payloadProp) ||
                 payloadProp.ValueKind == JsonValueKind.Undefined ||
                 payloadProp.ValueKind == JsonValueKind.Null)
@@ -374,21 +437,10 @@ public sealed class GameSession : IAsyncDisposable
         }
     }
 
-    private void ParseTurn(string raw)
+    private void HandleTurn(JsonElement root)
     {
         try
         {
-            using var doc = JsonDocument.Parse(raw);
-            var root = doc.RootElement;
-            if (root.ValueKind != JsonValueKind.Object) return;
-
-            if (!root.TryGetProperty("type", out var typeProp)) return;
-            var type = typeProp.GetString() ?? string.Empty;
-            if (!string.Equals(type, "game.turn", StringComparison.OrdinalIgnoreCase))
-            {
-                return;
-            }
-
             if (!root.TryGetProperty("payload", out var payloadProp) ||
                 payloadProp.ValueKind == JsonValueKind.Undefined ||
                 payloadProp.ValueKind == JsonValueKind.Null)

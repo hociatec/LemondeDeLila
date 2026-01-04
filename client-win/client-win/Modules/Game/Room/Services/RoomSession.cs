@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using client_win.Modules.Network.Services;
 using client_win.Modules.Network.WebSockets;
 using Serilog;
 
@@ -42,7 +43,7 @@ public sealed class RoomSession : IAsyncDisposable
         merged["_trace"] = new
         {
             id = Guid.NewGuid().ToString("N"),
-            sentAtMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+            sentAtMs = ServerClock.NowServerMs()
         };
         var msg = JsonSerializer.Serialize(new { type, payload = merged }, _json);
         await _socket.SendAsync(msg, cancellationToken).ConfigureAwait(false);
@@ -85,25 +86,87 @@ public sealed class RoomSession : IAsyncDisposable
     private void OnRawMessage(string raw)
     {
         RawMessageReceived?.Invoke(raw);
-        ParseError(raw);
-        ParseRoomState(raw);
-    }
 
-    private void ParseError(string raw)
-    {
         try
         {
             using var doc = JsonDocument.Parse(raw);
             var root = doc.RootElement;
             if (root.ValueKind != JsonValueKind.Object) return;
 
-            if (!root.TryGetProperty("type", out var typeProp)) return;
-            var type = typeProp.GetString() ?? string.Empty;
-            if (!string.Equals(type, "error", StringComparison.OrdinalIgnoreCase))
+            if (!root.TryGetProperty("type", out var typeProp) ||
+                typeProp.ValueKind != JsonValueKind.String)
             {
                 return;
             }
 
+            var type = typeProp.GetString() ?? string.Empty;
+            if (string.IsNullOrWhiteSpace(type))
+            {
+                return;
+            }
+
+            if (string.Equals(type, "error", StringComparison.OrdinalIgnoreCase))
+            {
+                HandleError(root);
+                return;
+            }
+
+            if (string.Equals(type, "room.pong", StringComparison.OrdinalIgnoreCase))
+            {
+                HandlePong(root);
+                return;
+            }
+
+            if (string.Equals(type, "room.updated", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(type, "room.created", StringComparison.OrdinalIgnoreCase))
+            {
+                HandleRoomState(root);
+            }
+        }
+        catch
+        {
+            // ignore
+        }
+    }
+
+    private void HandlePong(JsonElement root)
+    {
+        var receivedAtMs = ServerClock.UtcNowMs();
+
+        try
+        {
+            if (!root.TryGetProperty("payload", out var payload) ||
+                payload.ValueKind != JsonValueKind.Object)
+            {
+                return;
+            }
+
+            if (!payload.TryGetProperty("serverTimeMs", out var serverTimeProp) ||
+                serverTimeProp.ValueKind != JsonValueKind.Number)
+            {
+                return;
+            }
+
+            if (!payload.TryGetProperty("clientSentAtMs", out var clientSentProp) ||
+                clientSentProp.ValueKind != JsonValueKind.Number)
+            {
+                return;
+            }
+
+            var serverTimeMs = serverTimeProp.GetInt64();
+            var clientSentAtMs = clientSentProp.GetInt64();
+            ServerClock.UpdateFromPong(serverTimeMs, clientSentAtMs, receivedAtMs);
+        }
+        catch
+        {
+            // ignore
+        }
+    }
+
+    private void HandleError(JsonElement root)
+    {
+        try
+        {
             if (!root.TryGetProperty("payload", out var payload) ||
                 payload.ValueKind != JsonValueKind.Object)
             {
@@ -129,23 +192,10 @@ public sealed class RoomSession : IAsyncDisposable
         }
     }
 
-    private void ParseRoomState(string raw)
+    private void HandleRoomState(JsonElement root)
     {
         try
         {
-            using var doc = JsonDocument.Parse(raw);
-            var root = doc.RootElement;
-            if (root.ValueKind != JsonValueKind.Object) return;
-
-            if (!root.TryGetProperty("type", out var typeProp)) return;
-            var type = typeProp.GetString() ?? string.Empty;
-
-            if (!string.Equals(type, "room.updated", StringComparison.OrdinalIgnoreCase) &&
-                !string.Equals(type, "room.created", StringComparison.OrdinalIgnoreCase))
-            {
-                return;
-            }
-
             if (!root.TryGetProperty("payload", out var payloadProp) ||
                 payloadProp.ValueKind == JsonValueKind.Undefined ||
                 payloadProp.ValueKind == JsonValueKind.Null)

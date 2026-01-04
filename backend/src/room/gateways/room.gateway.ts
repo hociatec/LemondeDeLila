@@ -187,8 +187,22 @@ export class RoomGateway
             const isParticipant =
               state.room.players?.some((p) => p?.id === payload.id) ?? false;
             const isPrivate = Boolean(state.room.isPrivate);
+            const started =
+              (state.room.status || '').toLowerCase() === 'started' ||
+              Boolean(state.room.startedAt);
             if (!isOwner && !isParticipant) {
-              if (!isPrivate) {
+              // Table démarrée: si l'utilisateur n'est pas joueur, on tente un fallback en spectateur
+              // (utile pour les tables privées: autoriser si invité).
+              if (started) {
+                const allowed = await this.canSpectate(targetRoomId, payload.id);
+                if (allowed) {
+                  role = 'spectator';
+                } else {
+                  await this.sendError(client, reason);
+                  client.close(4003, reason);
+                  return;
+                }
+              } else if (!isPrivate) {
                 role = 'spectator';
               } else {
                 // Important: envoyer un message d'erreur avant de fermer la socket,
@@ -583,6 +597,19 @@ export class RoomGateway
         break;
       case 'room.info':
         await this.handleRoomInfo(client, meta);
+        break;
+      case 'room.ping':
+        this.safeSend(client, {
+          type: 'room.pong',
+          roomId: meta.roomId,
+          payload: {
+            serverTimeMs: Date.now(),
+            clientSentAtMs:
+              typeof data?.clientSentAtMs === 'number'
+                ? data.clientSentAtMs
+                : (data?._trace?.sentAtMs as number | undefined) ?? null,
+          },
+        });
         break;
       case 'bot.add':
         await this.handleBotAdd(meta, data, receivedAtMs);
@@ -1153,17 +1180,17 @@ export class RoomGateway
     );
   }
 
-	  private async handleRoomJoin(
-	    client: WebSocket,
-	    meta: ClientMeta,
-	    payload: any,
-	    receivedAtMs: number,
-	  ) {
-    const trace = this.extractTraceMeta(payload, receivedAtMs);
-    await this.perf.measure(
-      'ws.room.join.total',
-	      async () => {
-	        const roomId = Number(payload?.roomId ?? payload?.room ?? 0);
+		  private async handleRoomJoin(
+		    client: WebSocket,
+		    meta: ClientMeta,
+		    payload: any,
+		    receivedAtMs: number,
+		  ) {
+	    const trace = this.extractTraceMeta(payload, receivedAtMs);
+	    await this.perf.measure(
+	      'ws.room.join.total',
+		      async () => {
+		        const roomId = Number(payload?.roomId ?? payload?.room ?? 0);
 	        const spectatorRaw = payload?.spectator;
 	        const spectator =
 	          spectatorRaw === true ||
@@ -1192,24 +1219,52 @@ export class RoomGateway
 	          throw new Error('roomId invalide');
 	        }
 
-	        const effectiveSilent = Boolean(silent);
-	        if (effectiveSilent && !meta.isAdmin) {
-	          client.close(4003, 'Mode caché réservé aux admins');
-	          return;
-	        }
+		        const effectiveSilent = Boolean(silent);
+		        if (effectiveSilent && !meta.isAdmin) {
+		          client.close(4003, 'Mode caché réservé aux admins');
+		          return;
+		        }
 
-	        const effectiveSpectator = spectator || effectiveSilent;
-	        if (effectiveSpectator && !effectiveSilent) {
-	          const allowed = await this.canSpectate(roomId, meta.userId);
-	          if (!allowed) {
-	            client.close(4003, 'Spectateur non autorise sur cette table');
-	            return;
-	          }
-	        }
+		        let effectiveSpectator = spectator || effectiveSilent;
+		        if (effectiveSpectator && !effectiveSilent) {
+		          const allowed = await this.canSpectate(roomId, meta.userId);
+		          if (!allowed) {
+		            client.close(4003, 'Spectateur non autorise sur cette table');
+		            return;
+		          }
+		        }
 
-	        if (!effectiveSpectator) {
-	          await this.roomsService.joinRoom(roomId, meta.userId);
-	        }
+		        if (!effectiveSpectator) {
+		          try {
+		            await this.roomsService.joinRoom(roomId, meta.userId);
+			          } catch (err) {
+			            // Table démarrée: autoriser un "join" en spectateur plutôt que refuser,
+			            // à condition que l'utilisateur ait le droit de spectate (tables privées: invite).
+			            const reason = (err as Error).message;
+			            const state = await this.roomsService.getRoomPayload(roomId);
+			            const isOwner = state.room.owner?.id === meta.userId;
+			            const isParticipant =
+			              state.room.players?.some((p) => p?.id === meta.userId) ?? false;
+			            const started =
+			              (state.room.status || '').toLowerCase() === 'started' ||
+			              Boolean(state.room.startedAt);
+			            if (started) {
+			              // Rejoin: si l'utilisateur est déjà joueur (owner/participant),
+			              // on accepte la connexion en "participant" même si joinRoom() refuse.
+			              if (isOwner || isParticipant) {
+			                // no-op
+			              } else {
+			                const allowed = await this.canSpectate(roomId, meta.userId);
+			                if (!allowed) {
+			                  throw new Error(reason);
+			                }
+			                effectiveSpectator = true;
+			              }
+			            } else {
+			              throw err;
+			            }
+			          }
+			        }
 
 	        const previousRoomId = meta.roomId;
 	        if (previousRoomId !== roomId) {

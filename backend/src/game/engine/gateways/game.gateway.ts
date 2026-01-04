@@ -192,7 +192,13 @@ export class GameGateway
         case 'game.ping':
           this.safeSend(client, {
             type: 'game.pong',
-            payload: { serverTimeMs: Date.now() },
+            payload: {
+              serverTimeMs: Date.now(),
+              clientSentAtMs:
+                typeof payload?.clientSentAtMs === 'number'
+                  ? payload.clientSentAtMs
+                  : null,
+            },
           });
           break;
         case 'game.state':
