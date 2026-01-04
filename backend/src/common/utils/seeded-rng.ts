@@ -9,6 +9,24 @@ function normalizeSeed(value: unknown): number | null {
   return n >>> 0;
 }
 
+function fnv1a32(input: string): number {
+  let hash = 0x811c9dc5;
+  for (let i = 0; i < input.length; i += 1) {
+    hash ^= input.charCodeAt(i);
+    hash = Math.imul(hash, 0x01000193);
+  }
+  return hash >>> 0;
+}
+
+function deriveSeedFromContext(meta: Record<string, any>): number | null {
+  const roomId = meta?.roomId;
+  const startedAt = meta?.roomStartedAt;
+  const gameType = meta?.gameType;
+  if (roomId == null || startedAt == null) return null;
+  const input = `${String(gameType ?? '')}|${String(roomId)}|${String(startedAt)}`;
+  return fnv1a32(input);
+}
+
 function mulberry32(seed: number): () => number {
   let a = seed >>> 0;
   return () => {
@@ -23,7 +41,9 @@ function mulberry32(seed: number): () => number {
 export function ensureSeededRng(meta: Record<string, any>): SeededRngState {
   const current = meta?.rng ?? null;
   const seed =
-    normalizeSeed(current?.seed) ?? Math.floor(Math.random() * 2 ** 32);
+    normalizeSeed(current?.seed) ??
+    deriveSeedFromContext(meta) ??
+    Math.floor(Math.random() * 2 ** 32);
   const counter = Math.max(0, normalizeSeed(current?.counter) ?? 0);
   return { seed, counter };
 }

@@ -185,31 +185,54 @@ export class PanierExpressService extends AbstractGameService {
     };
     const shoppingDeck = this.extractShoppingLists(metadata);
     const pawns = this.setup.pawns();
-    const hydratedPlayers = players.map((p, idx) => {
+
+    // Attribution stable des listes/pions:
+    // - indépendante de l'ordre du tableau `players` (qui peut changer selon l'aléatoire / reconnections)
+    // - favorise les humains avant les bots pour éviter qu'un bot ajouté/retiré ne "décale" les humains
+    const assignmentOrder = [...players].sort((a, b) => {
+      const aBot = a?.isBot === true;
+      const bBot = b?.isBot === true;
+      if (aBot !== bBot) return aBot ? 1 : -1;
+      return (a?.id ?? 0) - (b?.id ?? 0);
+    });
+    let listIndex = 0;
+    let pawnIndex = 0;
+    const assignedById = new Map<
+      number,
+      { list: string[]; pawn?: string; isBot: boolean }
+    >();
+    assignmentOrder.forEach((p) => {
       const username = (p.username ?? '').toLowerCase();
       const isBot = p.isBot === true || username.includes('bot');
-      const hasList =
-        Array.isArray(p.shoppingList) && p.shoppingList.length > 0;
-      const list: string[] = hasList
-        ? this.toStringArray(p.shoppingList)
-        : (shoppingDeck[idx] ?? this.buildShoppingList());
+      const existingList = this.toStringArray(p.shoppingList);
+      const list =
+        existingList.length > 0
+          ? existingList
+          : (shoppingDeck[listIndex++] ?? this.buildShoppingList());
+      const existingPawn =
+        typeof (p as any)?.pawn === 'string' ? String((p as any).pawn).trim() : '';
       const pawn =
-        typeof (p as any)?.pawn === 'string' && String((p as any).pawn).trim()
-          ? String((p as any).pawn).trim()
+        existingPawn.length > 0
+          ? existingPawn
           : pawns.length
-            ? pawns[idx % pawns.length]
+            ? pawns[pawnIndex++ % pawns.length]
             : undefined;
+      assignedById.set(p.id, { list, pawn, isBot });
+    });
+
+    const hydratedPlayers = players.map((p) => {
+      const assigned = assignedById.get(p.id);
       return {
         ...p,
-        isBot,
+        isBot: assigned?.isBot ?? p.isBot === true,
         basket: Array.isArray(p.basket)
           ? p.basket.map((item) => String(item))
           : [],
         inventory: Array.isArray(p.inventory)
           ? p.inventory.map((item) => String(item))
           : [],
-        shoppingList: list,
-        pawn,
+        shoppingList: assigned?.list ?? this.toStringArray(p.shoppingList),
+        pawn: assigned?.pawn,
       };
     });
     const positions: Record<number, number> = {};
