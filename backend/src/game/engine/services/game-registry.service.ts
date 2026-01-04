@@ -102,7 +102,9 @@ export class GameRegistryService {
   private enrichWithHandler(def: GameDefinition): GameDefinition {
     const handler = this.getHandler(def.id);
     if (!handler) {
-      return def;
+      // Même sans handler, on doit appliquer les overrides de catégories (admin)
+      // pour que le catalogue affiche les libellés configurés.
+      return this.categories.applyToDefinition(def);
     }
     const enriched: GameDefinition = {
       id: def.id,

@@ -29,6 +29,7 @@ public sealed class MessagingViewModel : ObservableObject
     private bool _isComposeMode;
 
     public event EventHandler? FocusFirstMessageRequested;
+    public event EventHandler? NavigateHomeRequested;
 
     public MessagingViewModel(IMessagingService service, IDialogService dialogs, Action onClose)
     {
@@ -271,11 +272,10 @@ public sealed class MessagingViewModel : ObservableObject
                 SelectedMessage = message;
                 InputText = string.Empty;
                 Status = "Message envoyé avec succès.";
-                MessageBox.Show(
-                    $"Votre message a été envoyé avec succès à {ConversationUser.Username}.",
-                    "Message envoyé",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information);
+                await _dialogs
+                    .ShowInfo("Message envoyé", $"Votre message a été envoyé à {ConversationUser.Username}.")
+                    .ConfigureAwait(true);
+                NavigateHomeRequested?.Invoke(this, EventArgs.Empty);
             }
             else
             {
@@ -357,11 +357,11 @@ public sealed class MessagingViewModel : ObservableObject
                 ComposeBody = string.Empty;
                 IsComposeMode = false;
                 Status = "Message envoyé avec succès.";
-                MessageBox.Show(
-                    $"Votre message a été envoyé avec succès à {recipient.Username}.",
-                    "Message envoyé",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information);
+                var subjectLabel = string.IsNullOrWhiteSpace(subject) ? "Sans sujet" : subject;
+                await _dialogs
+                    .ShowInfo("Message envoyé", $"Envoyé à {recipient.Username}.\nSujet : {subjectLabel}")
+                    .ConfigureAwait(true);
+                NavigateHomeRequested?.Invoke(this, EventArgs.Empty);
             }
             else
             {
@@ -474,6 +474,9 @@ public sealed class MessagingViewModel : ObservableObject
         if (reload)
         {
             await LoadBoxAsync(SelectedBox, selectFirst: true).ConfigureAwait(true);
+            await _dialogs
+                .ShowInfo("Message supprimé", "Le message a été déplacé dans la corbeille.")
+                .ConfigureAwait(true);
             FocusFirstMessageRequested?.Invoke(this, EventArgs.Empty);
         }
     }
@@ -520,6 +523,9 @@ public sealed class MessagingViewModel : ObservableObject
         if (reload)
         {
             await LoadBoxAsync(SelectedBox, selectFirst: true).ConfigureAwait(true);
+            await _dialogs
+                .ShowInfo("Message supprimé", "Le message a été supprimé définitivement.")
+                .ConfigureAwait(true);
             FocusFirstMessageRequested?.Invoke(this, EventArgs.Empty);
         }
     }
@@ -572,6 +578,9 @@ public sealed class MessagingViewModel : ObservableObject
         if (reload)
         {
             await LoadBoxAsync(SelectedBox, selectFirst: true).ConfigureAwait(true);
+            await _dialogs
+                .ShowInfo("Message restauré", "Le message a été restauré.")
+                .ConfigureAwait(true);
             FocusFirstMessageRequested?.Invoke(this, EventArgs.Empty);
         }
     }

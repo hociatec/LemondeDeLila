@@ -64,6 +64,7 @@ public partial class MessagingView : UserControl
         _vm.BoxMessages.CollectionChanged += OnBoxMessagesChanged;
         _vm.PropertyChanged += OnVmPropertyChanged;
         _vm.FocusFirstMessageRequested += OnFocusFirstMessageRequested;
+        _vm.NavigateHomeRequested += OnNavigateHomeRequested;
         UpdateDetailDocument();
     }
 
@@ -77,7 +78,20 @@ public partial class MessagingView : UserControl
         _vm.BoxMessages.CollectionChanged -= OnBoxMessagesChanged;
         _vm.PropertyChanged -= OnVmPropertyChanged;
         _vm.FocusFirstMessageRequested -= OnFocusFirstMessageRequested;
+        _vm.NavigateHomeRequested -= OnNavigateHomeRequested;
         _vm = null;
+    }
+
+    private void OnNavigateHomeRequested(object? sender, EventArgs e)
+    {
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
+        {
+            if (MenuList.Items.Count > 0)
+            {
+                MenuList.SelectedIndex = 0;
+            }
+            ShowScreen(MessagingScreen.Menu);
+        }));
     }
 
     private void OnFocusFirstMessageRequested(object? sender, EventArgs e)
