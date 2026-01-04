@@ -133,34 +133,31 @@ public partial class GameHistoryView : UserControl
 
     private void AppendEntries(IEnumerable<string> entries)
     {
-        var shouldAutoScroll = ShouldAutoScrollToEnd();
-        var preserveSelection = HistoryViewer.IsKeyboardFocusWithin && !shouldAutoScroll;
+        //var shouldAutoScroll = ShouldAutoScrollToEnd();
+        //var preserveSelection = HistoryViewer.IsKeyboardFocusWithin && !shouldAutoScroll;
 
-        var selectionStart = HistoryViewer.Document.ContentStart.GetOffsetToPosition(HistoryViewer.Selection.Start);
-        var selectionLength = HistoryViewer.Selection.Start.GetOffsetToPosition(HistoryViewer.Selection.End);
-        var caretIndex = HistoryViewer.Document.ContentStart.GetOffsetToPosition(HistoryViewer.CaretPosition);
+        //var selectionStart = HistoryViewer.Document.ContentStart.GetOffsetToPosition(HistoryViewer.Selection.Start);
+        //var selectionLength = HistoryViewer.Selection.Start.GetOffsetToPosition(HistoryViewer.Selection.End);
+        //var caretIndex = HistoryViewer.Document.ContentStart.GetOffsetToPosition(HistoryViewer.CaretPosition);
 
         foreach (var entry in entries.Where(s => !string.IsNullOrWhiteSpace(s)))
         {
-            if (HistoryViewer.Document.Blocks.Count > 0)
-            {
-                HistoryViewer.AppendText(Environment.NewLine);
-            }
-
-            HistoryViewer.AppendText(entry);
+            HistoryViewer.Document.Blocks.Add(new Paragraph(new Run(entry)));
         }
 
-        if (preserveSelection)
-        {
-            RestoreSelection(selectionStart, selectionLength, caretIndex);
-            return;
-        }
+        //if (preserveSelection)
+        //{
+        //    RestoreSelection(selectionStart, selectionLength, caretIndex);
+        //    return;
+        //}
 
-        if (shouldAutoScroll)
-        {
-            HistoryViewer.CaretPosition = HistoryViewer.Document.ContentEnd;
-            HistoryViewer.ScrollToEnd();
-        }
+        // For now, always scroll to end when new entries are added.
+        HistoryViewer.ScrollToEnd();
+        //if (shouldAutoScroll)
+        //{
+        //    HistoryViewer.CaretPosition = HistoryViewer.Document.ContentEnd;
+        //    HistoryViewer.ScrollToEnd();
+        //}
     }
 
     private void ScheduleRebuild(bool scrollToEnd)
@@ -185,26 +182,31 @@ public partial class GameHistoryView : UserControl
             return;
         }
 
-        var shouldAutoScroll = scrollToEnd || ShouldAutoScrollToEnd();
-        var preserveSelection = HistoryViewer.IsKeyboardFocusWithin && !shouldAutoScroll;
+        //var shouldAutoScroll = scrollToEnd || ShouldAutoScrollToEnd();
+        //var preserveSelection = HistoryViewer.IsKeyboardFocusWithin && !shouldAutoScroll;
 
-        var selectionStart = HistoryViewer.Document.ContentStart.GetOffsetToPosition(HistoryViewer.Selection.Start);
-        var selectionLength = HistoryViewer.Selection.Start.GetOffsetToPosition(HistoryViewer.Selection.End);
-        var caretIndex = HistoryViewer.Document.ContentStart.GetOffsetToPosition(HistoryViewer.CaretPosition);
+        //var selectionStart = HistoryViewer.Document.ContentStart.GetOffsetToPosition(HistoryViewer.Selection.Start);
+        //var selectionLength = HistoryViewer.Selection.Start.GetOffsetToPosition(HistoryViewer.Selection.End);
+        //var caretIndex = HistoryViewer.Document.ContentStart.GetOffsetToPosition(HistoryViewer.CaretPosition);
 
-        new TextRange(HistoryViewer.Document.ContentStart, HistoryViewer.Document.ContentEnd).Text = string.Join(Environment.NewLine, _viewModel.Entries.Where(s => !string.IsNullOrEmpty(s)));
-
-        if (preserveSelection)
+        HistoryViewer.Document.Blocks.Clear();
+        foreach (var entry in _viewModel.Entries.Where(s => !string.IsNullOrEmpty(s)))
         {
-            RestoreSelection(selectionStart, selectionLength, caretIndex);
-            return;
+            HistoryViewer.Document.Blocks.Add(new Paragraph(new Run(entry)));
         }
 
-        if (shouldAutoScroll)
-        {
-            HistoryViewer.CaretPosition = HistoryViewer.Document.ContentEnd;
-            HistoryViewer.ScrollToEnd();
-        }
+        //if (preserveSelection)
+        //{
+        //    RestoreSelection(selectionStart, selectionLength, caretIndex);
+        //    return;
+        //}
+
+        HistoryViewer.ScrollToEnd();
+        //if (shouldAutoScroll)
+        //{
+        //    HistoryViewer.CaretPosition = HistoryViewer.Document.ContentEnd;
+        //    HistoryViewer.ScrollToEnd();
+        //}
     }
 
     private void RestoreSelection(int selectionStart, int selectionLength, int caretIndex)
