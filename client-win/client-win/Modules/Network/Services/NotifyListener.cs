@@ -5,6 +5,7 @@ using System.Threading;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Threading;
 using client_win.Core;
 using client_win.Modules.Audio.Models;
 using client_win.Modules.Audio.Services;
@@ -228,17 +229,31 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
             // Recharge les paths et les players (best-effort).
             _sounds.PreloadAll();
 
-            // Réapplique l'ambiance/musique selon la vue courante.
-            var view = _navigation.CurrentView;
-            _sounds.StopLoop(SoundId.MainMenuMusic);
-            _sounds.StopLoop(SoundId.TavernAmbience);
-            if (view is CatalogView)
+            // Réapplique l'ambiance/musique selon la vue courante (sur le thread UI pour éviter les races).
+            var dispatcher = Application.Current?.Dispatcher;
+            if (dispatcher != null)
             {
-                _sounds.StartLoop(SoundId.TavernAmbience);
-            }
-            else if (view is MainMenuView)
-            {
-                _sounds.StartLoop(SoundId.MainMenuMusic);
+                _ = dispatcher.BeginInvoke(() =>
+                {
+                    try
+                    {
+                        var view = _navigation.CurrentView;
+                        _sounds.StopLoop(SoundId.MainMenuMusic);
+                        _sounds.StopLoop(SoundId.TavernAmbience);
+                        if (view is CatalogView)
+                        {
+                            _sounds.StartLoop(SoundId.TavernAmbience);
+                        }
+                        else if (view is MainMenuView)
+                        {
+                            _sounds.StartLoop(SoundId.MainMenuMusic);
+                        }
+                    }
+                    catch
+                    {
+                        // ignore (best-effort)
+                    }
+                }, DispatcherPriority.Background);
             }
         }
         catch (Exception ex)

@@ -2,8 +2,10 @@ using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Threading;
+using System.Windows.Media;
 using client_win.Modules.Game.History.Views;
 using client_win.Modules.Game.Shell.ViewModels;
 using client_win.Modules.Shell.Services;
@@ -167,7 +169,13 @@ public partial class GameRoomView : UserControl
             {
                 HistoryHost?.NotifyUserInteraction();
                 HistoryHost?.CancelPendingAnnouncementsFromHost();
-                _screenReader?.CancelSpeech();
+
+                // Ne pas couper la lecture du lecteur d'écran quand l'utilisateur lit l'historique
+                // (mot par mot / flèches) ou saisit dans un champ texte.
+                if (!IsTextInputFocused() && !IsNavigationKey(key))
+                {
+                    _screenReader?.CancelSpeech();
+                }
             }
         }
 
@@ -330,6 +338,34 @@ public partial class GameRoomView : UserControl
         }
 
         FocusHistory();
+    }
+
+    private bool IsTextInputFocused()
+    {
+        var focused = Keyboard.FocusedElement as DependencyObject;
+        while (focused != null)
+        {
+            if (focused is TextBoxBase || focused is PasswordBox)
+            {
+                return true;
+            }
+
+            focused = VisualTreeHelper.GetParent(focused);
+        }
+
+        return false;
+    }
+
+    private static bool IsNavigationKey(Key key)
+    {
+        return key is Key.Left
+            or Key.Right
+            or Key.Up
+            or Key.Down
+            or Key.Home
+            or Key.End
+            or Key.PageUp
+            or Key.PageDown;
     }
 
     private void OnChatInputPreviewKeyDown(object sender, KeyEventArgs e)

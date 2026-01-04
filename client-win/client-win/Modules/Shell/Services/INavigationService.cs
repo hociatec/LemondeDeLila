@@ -6,6 +6,9 @@ public interface INavigationService
 {
     UserControl? CurrentView { get; }
     UserContext CurrentUser { get; }
+
+    event System.EventHandler<UserControl?>? CurrentViewChanged;
+
     void SetUser(UserContext user);
     void ClearUser();
     void Show(UserControl view);

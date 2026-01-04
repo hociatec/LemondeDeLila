@@ -8,6 +8,8 @@ export type SocialProfileSettings = {
   bioMaxLength: number;
 };
 
+const BioHardMaxLength = 100000;
+
 @Injectable()
 export class SocialProfileSettingsService implements OnModuleInit {
   private cache: SocialProfileSettings | null = null;
@@ -32,7 +34,7 @@ export class SocialProfileSettingsService implements OnModuleInit {
       ? Math.max(0, Math.floor(input.bioMinLength as number))
       : 0;
     const max = Number.isFinite(input.bioMaxLength as number)
-      ? Math.max(0, Math.min(5000, Math.floor(input.bioMaxLength as number)))
+      ? Math.max(0, Math.min(BioHardMaxLength, Math.floor(input.bioMaxLength as number)))
       : 500;
     const clampedMin = Math.min(min, max);
     return { bioMinLength: clampedMin, bioMaxLength: max };

@@ -63,6 +63,7 @@ public partial class MessagingView : UserControl
 
         _vm.BoxMessages.CollectionChanged += OnBoxMessagesChanged;
         _vm.PropertyChanged += OnVmPropertyChanged;
+        _vm.FocusFirstMessageRequested += OnFocusFirstMessageRequested;
         UpdateDetailDocument();
     }
 
@@ -75,7 +76,28 @@ public partial class MessagingView : UserControl
 
         _vm.BoxMessages.CollectionChanged -= OnBoxMessagesChanged;
         _vm.PropertyChanged -= OnVmPropertyChanged;
+        _vm.FocusFirstMessageRequested -= OnFocusFirstMessageRequested;
         _vm = null;
+    }
+
+    private void OnFocusFirstMessageRequested(object? sender, EventArgs e)
+    {
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
+        {
+            // Après une suppression/restauration, revenir à la liste et replacer le focus sur le 1er item
+            // (cohérent clavier / lecteur d'écran).
+            if (_currentScreen != MessagingScreen.List)
+            {
+                ShowScreen(MessagingScreen.List);
+                return;
+            }
+
+            if (MessagesList.Items.Count > 0)
+            {
+                MessagesList.SelectedIndex = 0;
+            }
+            FocusMessagesWhenReady();
+        }));
     }
 
     private void OnVmPropertyChanged(object? sender, PropertyChangedEventArgs e)

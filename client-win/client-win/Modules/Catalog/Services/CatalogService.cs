@@ -27,6 +27,8 @@ public sealed class CatalogService : ICatalogService
     private static readonly TimeSpan _cacheTtl = TimeSpan.FromMinutes(2);
     private readonly TimeSpan _defaultFetchTimeout;
 
+    public event EventHandler? CacheInvalidated;
+
     public CatalogService(WsRequestClient ws, ISessionService session, ErrorBus? errors = null)
     {
         _ws = ws ?? throw new ArgumentNullException(nameof(ws));
@@ -66,11 +68,22 @@ public sealed class CatalogService : ICatalogService
 
     public void InvalidateCache()
     {
+        EventHandler? handler;
         lock (_sync)
         {
             _cached = null;
             _cachedAtUtc = default;
             _inflight = null;
+            handler = CacheInvalidated;
+        }
+
+        try
+        {
+            handler?.Invoke(this, EventArgs.Empty);
+        }
+        catch
+        {
+            // best-effort
         }
     }
 

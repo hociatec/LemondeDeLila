@@ -36,6 +36,7 @@ public sealed class MenuRouterStub : IMenuRouter
     private readonly IRoomDirectoryClient _roomDirectory;
     private readonly IScreenReaderAnnouncer _screenReader;
     private readonly Modules.Audio.Services.ISoundService? _sounds;
+    private readonly IDialogService _dialogs;
 
     public MenuRouterStub(
         ILogger<MenuRouterStub> logger,
@@ -44,6 +45,7 @@ public sealed class MenuRouterStub : IMenuRouter
         Modules.Audio.Services.ISoundService sounds,
         IChatLauncher chat,
         ICatalogService catalog,
+        IDialogService dialogs,
         INavigationService navigation,
         IMessagingService messaging,
         IGameTableOpener tables,
@@ -55,6 +57,7 @@ public sealed class MenuRouterStub : IMenuRouter
         _sounds = sounds;
         _chat = chat;
         _catalog = catalog;
+        _dialogs = dialogs;
         _navigation = navigation;
         _messaging = messaging;
         _tables = tables;
@@ -67,18 +70,21 @@ public sealed class MenuRouterStub : IMenuRouter
         var catalogView = new CatalogView();
         StopBackgroundLoops();
         _sounds?.StartLoop(SoundId.TavernAmbience);
-        var vm = new CatalogViewModel(
+        CatalogViewModel? vm = null;
+        vm = new CatalogViewModel(
             _catalog,
             onClose: () =>
-        {
-            if (previous != null)
             {
-                _navigation.Show(previous);
-                RestoreFocusAfterBackNavigation(previous);
-            }
+                vm?.Dispose();
 
-            StartLoopForView(previous);
-        },
+                if (previous != null)
+                {
+                    _navigation.Show(previous);
+                    RestoreFocusAfterBackNavigation(previous);
+                }
+
+                StartLoopForView(_navigation.CurrentView);
+            },
             openGame: async game =>
             {
                 StopBackgroundLoops();
@@ -123,7 +129,7 @@ public sealed class MenuRouterStub : IMenuRouter
                     RestoreFocusAfterBackNavigation(previous);
                 }
 
-                StartLoopForView(previous);
+                StartLoopForView(_navigation.CurrentView);
             });
         view.DataContext = vm;
         _navigation.Show(view);
@@ -145,7 +151,7 @@ public sealed class MenuRouterStub : IMenuRouter
         var previous = _navigation.CurrentView;
         StopBackgroundLoops();
         var view = new MessagingView();
-        var vm = new MessagingViewModel(_messaging, onClose: () =>
+        var vm = new MessagingViewModel(_messaging, _dialogs, onClose: () =>
         {
             if (previous != null)
             {
@@ -153,7 +159,7 @@ public sealed class MenuRouterStub : IMenuRouter
                 RestoreFocusAfterBackNavigation(previous);
             }
 
-            StartLoopForView(previous);
+            StartLoopForView(_navigation.CurrentView);
         });
         view.DataContext = vm;
         _navigation.Show(view);

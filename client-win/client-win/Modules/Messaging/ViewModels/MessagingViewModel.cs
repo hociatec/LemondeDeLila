@@ -7,12 +7,14 @@ using System.Windows.Input;
 using client_win.Core;
 using client_win.Modules.Messaging.Models;
 using client_win.Modules.Messaging.Services;
+using client_win.Modules.Shell.Services;
 
 namespace client_win.Modules.Messaging.ViewModels;
 
 public sealed class MessagingViewModel : ObservableObject
 {
     private readonly IMessagingService _service;
+    private readonly IDialogService _dialogs;
     private readonly Action _onClose;
     private MessagingBox _selectedBox = MessagingBox.Inbox;
     private MessagingMessage? _selectedMessage;
@@ -26,9 +28,12 @@ public sealed class MessagingViewModel : ObservableObject
     private bool _isBusy;
     private bool _isComposeMode;
 
-    public MessagingViewModel(IMessagingService service, Action onClose)
+    public event EventHandler? FocusFirstMessageRequested;
+
+    public MessagingViewModel(IMessagingService service, IDialogService dialogs, Action onClose)
     {
         _service = service ?? throw new ArgumentNullException(nameof(service));
+        _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
         _onClose = onClose ?? throw new ArgumentNullException(nameof(onClose));
 
         BoxMessages = new ObservableCollection<MessagingMessage>();
@@ -146,7 +151,7 @@ public sealed class MessagingViewModel : ObservableObject
         return LoadBoxAsync(SelectedBox);
     }
 
-    private async Task LoadBoxAsync(MessagingBox box)
+    private async Task LoadBoxAsync(MessagingBox box, bool selectFirst = false)
     {
         if (IsBusy)
         {
@@ -155,7 +160,7 @@ public sealed class MessagingViewModel : ObservableObject
         IsBusy = true;
         try
         {
-            var previousId = SelectedMessage?.Id;
+            var previousId = selectFirst ? null : SelectedMessage?.Id;
             BoxMessages.Clear();
             var items = await _service.GetBoxAsync(box).ConfigureAwait(true);
             foreach (var item in items.OrderByDescending(m => m.CreatedAt))
@@ -185,11 +190,7 @@ public sealed class MessagingViewModel : ObservableObject
         catch (Exception ex)
         {
             Status = $"Erreur lors du chargement : {ex.Message}";
-            MessageBox.Show(
-                $"Erreur lors du chargement de la messagerie :\n\n{ex.Message}",
-                "Erreur de chargement",
-                MessageBoxButton.OK,
-                MessageBoxImage.Error);
+            await _dialogs.ShowError("Messagerie", $"Erreur lors du chargement : {ex.Message}").ConfigureAwait(true);
         }
         finally
         {
@@ -433,12 +434,14 @@ public sealed class MessagingViewModel : ObservableObject
             return;
         }
 
-        var confirm = MessageBox.Show(
-            "Voulez-vous vraiment supprimer ce message ?",
-            "Confirmer la suppression",
-            MessageBoxButton.OKCancel,
-            MessageBoxImage.Warning);
-        if (confirm != MessageBoxResult.OK)
+        var confirm = await _dialogs
+            .Confirm(
+                "Confirmer la suppression",
+                "Voulez-vous vraiment supprimer ce message ?",
+                okText: "Supprimer",
+                cancelText: "Annuler")
+            .ConfigureAwait(true);
+        if (confirm != true)
         {
             return;
         }
@@ -470,18 +473,21 @@ public sealed class MessagingViewModel : ObservableObject
 
         if (reload)
         {
-            await LoadBoxAsync(SelectedBox).ConfigureAwait(true);
+            await LoadBoxAsync(SelectedBox, selectFirst: true).ConfigureAwait(true);
+            FocusFirstMessageRequested?.Invoke(this, EventArgs.Empty);
         }
     }
 
     private async Task PurgeAsync(MessagingMessage message)
     {
-        var confirm = MessageBox.Show(
-            "Cette action supprime définitivement le message. Continuer ?",
-            "Suppression definitive",
-            MessageBoxButton.OKCancel,
-            MessageBoxImage.Warning);
-        if (confirm != MessageBoxResult.OK)
+        var confirm = await _dialogs
+            .Confirm(
+                "Suppression définitive",
+                "Cette action supprime définitivement le message. Continuer ?",
+                okText: "Supprimer",
+                cancelText: "Annuler")
+            .ConfigureAwait(true);
+        if (confirm != true)
         {
             return;
         }
@@ -513,7 +519,8 @@ public sealed class MessagingViewModel : ObservableObject
 
         if (reload)
         {
-            await LoadBoxAsync(SelectedBox).ConfigureAwait(true);
+            await LoadBoxAsync(SelectedBox, selectFirst: true).ConfigureAwait(true);
+            FocusFirstMessageRequested?.Invoke(this, EventArgs.Empty);
         }
     }
 
@@ -525,12 +532,14 @@ public sealed class MessagingViewModel : ObservableObject
             return;
         }
 
-        var confirm = MessageBox.Show(
-            "Voulez-vous vraiment restaurer ce message ?",
-            "Confirmer la restauration",
-            MessageBoxButton.OKCancel,
-            MessageBoxImage.Question);
-        if (confirm != MessageBoxResult.OK)
+        var confirm = await _dialogs
+            .Confirm(
+                "Confirmer la restauration",
+                "Voulez-vous vraiment restaurer ce message ?",
+                okText: "Restaurer",
+                cancelText: "Annuler")
+            .ConfigureAwait(true);
+        if (confirm != true)
         {
             return;
         }
@@ -562,7 +571,8 @@ public sealed class MessagingViewModel : ObservableObject
 
         if (reload)
         {
-            await LoadBoxAsync(SelectedBox).ConfigureAwait(true);
+            await LoadBoxAsync(SelectedBox, selectFirst: true).ConfigureAwait(true);
+            FocusFirstMessageRequested?.Invoke(this, EventArgs.Empty);
         }
     }
 

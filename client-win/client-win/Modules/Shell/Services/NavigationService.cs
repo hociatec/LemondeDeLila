@@ -16,6 +16,8 @@ public sealed class NavigationService : INavigationService
     public UserControl? CurrentView { get; private set; }
     public UserContext CurrentUser => _currentUser;
 
+    public event EventHandler<UserControl?>? CurrentViewChanged;
+
     public NavigationService(ContentControl host)
     {
         _host = host ?? throw new ArgumentNullException(nameof(host));
@@ -35,6 +37,14 @@ public sealed class NavigationService : INavigationService
     {
         _host.Content = view ?? throw new ArgumentNullException(nameof(view));
         CurrentView = view;
+        try
+        {
+            CurrentViewChanged?.Invoke(this, view);
+        }
+        catch
+        {
+            // Best-effort : ne pas casser la navigation si un listener échoue.
+        }
 
         // Accessibilité : donner une opportunité au focus clavier d'atterrir dans la nouvelle vue.
         _host.Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() =>

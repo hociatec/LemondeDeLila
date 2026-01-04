@@ -26,6 +26,7 @@ using client_win.Modules.Audio.Services;
 using client_win.Core.Accessibility;
 using client_win.Modules.Audio.Models;
 using System.Windows.Threading;
+using client_win.Modules.Catalog.Views;
 
 namespace client_win
 {
@@ -69,11 +70,39 @@ namespace client_win
 
             _homeView = new HomeView { DataContext = _homeViewModel };
             _navigation = _host.Navigation;
+            _navigation.CurrentViewChanged += OnCurrentViewChanged;
             _errorHandler = new ShellErrorHandler(_errorBus, _navigation, _dialogs, _host.Configuration, () => _homeView, _host.CrashReporter);
 
             Loaded += OnLoaded;
             PreviewKeyDown += OnPreviewKeyDown;
             Closing += OnClosing;
+        }
+
+        private void OnCurrentViewChanged(object? sender, System.Windows.Controls.UserControl? view)
+        {
+            // Centralise la musique/ambiance : si on revient au menu principal depuis n'importe où,
+            // la boucle doit repartir de manière fiable (évite les races "un coup sur deux").
+            try
+            {
+                var sounds = _host.Services.GetRequiredService<ISoundService>();
+                sounds.StopLoop(SoundId.MainMenuMusic);
+                sounds.StopLoop(SoundId.TavernAmbience);
+
+                if (view is CatalogView)
+                {
+                    sounds.StartLoop(SoundId.TavernAmbience);
+                    return;
+                }
+
+                if (view is MainMenuView)
+                {
+                    _ = StartMainMenuMusicAfterConnectAsync();
+                }
+            }
+            catch
+            {
+                // ignore (best-effort)
+            }
         }
 
         private void OnClosing(object? sender, CancelEventArgs e)
@@ -386,17 +415,21 @@ namespace client_win
                 sounds.PreloadAll();
 
                 // Rejouer la boucle selon la vue courante pour prendre en compte les sons distants nouvellement téléchargés.
-                var view = _navigation.CurrentView;
-                sounds.StopLoop(Modules.Audio.Models.SoundId.MainMenuMusic);
-                sounds.StopLoop(Modules.Audio.Models.SoundId.TavernAmbience);
-                if (view is MainMenuView)
+                // IMPORTANT: décider sur le thread UI pour éviter les races pendant une navigation.
+                await Dispatcher.InvokeAsync(() =>
                 {
-                    _ = StartMainMenuMusicAfterConnectAsync();
-                }
-                else if (view is Modules.Catalog.Views.CatalogView)
-                {
-                    sounds.StartLoop(Modules.Audio.Models.SoundId.TavernAmbience);
-                }
+                    var view = _navigation.CurrentView;
+                    sounds.StopLoop(Modules.Audio.Models.SoundId.MainMenuMusic);
+                    sounds.StopLoop(Modules.Audio.Models.SoundId.TavernAmbience);
+                    if (view is MainMenuView)
+                    {
+                        _ = StartMainMenuMusicAfterConnectAsync();
+                    }
+                    else if (view is Modules.Catalog.Views.CatalogView)
+                    {
+                        sounds.StartLoop(Modules.Audio.Models.SoundId.TavernAmbience);
+                    }
+                }, DispatcherPriority.Background);
             }
             catch
             {
@@ -442,6 +475,14 @@ namespace client_win
 
         protected override async void OnClosed(EventArgs e)
         {
+            try
+            {
+                _navigation.CurrentViewChanged -= OnCurrentViewChanged;
+            }
+            catch
+            {
+                // ignore
+            }
             _errorHandler.Dispose();
             await _host.DisposeAsync();
             base.OnClosed(e);

@@ -24,6 +24,7 @@ public enum CatalogEscapeResult
 /// Vue modèle inspirée du GameCatalogScreen Java : catégories -> sous-catégories -> jeux filtrés.
 /// </summary>
 public sealed class CatalogViewModel : ObservableObject
+    , IDisposable
 {
     public sealed record CatalogActionItem(string Label, ICommand Command)
     {
@@ -41,6 +42,8 @@ public sealed class CatalogViewModel : ObservableObject
     private string _status = string.Empty;
     private bool _isBusy;
     private int _selectionRevision;
+    private bool _refreshAfterBusy;
+    private bool _isDisposed;
 
     public CatalogViewModel(
         ICatalogService service,
@@ -55,6 +58,7 @@ public sealed class CatalogViewModel : ObservableObject
         _dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
         CloseCommand = new RelayCommand(_close);
         RefreshCommand = new AsyncRelayCommand(LoadAsync);
+        _service.CacheInvalidated += OnCatalogInvalidated;
 
         if (joinGame != null)
         {
@@ -136,7 +140,50 @@ public sealed class CatalogViewModel : ObservableObject
         private set
         {
             SetProperty(ref _isBusy, value);
+
+            if (!value && _refreshAfterBusy && !_isDisposed)
+            {
+                _refreshAfterBusy = false;
+                _dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() => RefreshCommand.Execute(null)));
+            }
         }
+    }
+
+    public void Dispose()
+    {
+        if (_isDisposed)
+        {
+            return;
+        }
+
+        _isDisposed = true;
+        _service.CacheInvalidated -= OnCatalogInvalidated;
+    }
+
+    private void OnCatalogInvalidated(object? sender, EventArgs e)
+    {
+        if (_isDisposed)
+        {
+            return;
+        }
+
+        _dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
+        {
+            if (_isDisposed)
+            {
+                return;
+            }
+
+            Status = "Catalogue mis à jour, rechargement...";
+
+            if (IsBusy)
+            {
+                _refreshAfterBusy = true;
+                return;
+            }
+
+            RefreshCommand.Execute(null);
+        }));
     }
 
     public CatalogEscapeResult HandleEscape(bool closeFromCategoryColumn = false, bool fromSubCategoryColumn = false)

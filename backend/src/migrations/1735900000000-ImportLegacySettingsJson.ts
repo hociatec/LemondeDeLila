@@ -32,7 +32,7 @@ function normalizeProfile(input: Partial<SocialProfileSettingsJson>): {
     ? Math.max(0, Math.floor(input.bioMinLength as number))
     : 0;
   const max = Number.isFinite(input.bioMaxLength as number)
-    ? Math.max(0, Math.min(5000, Math.floor(input.bioMaxLength as number)))
+    ? Math.max(0, Math.min(100000, Math.floor(input.bioMaxLength as number)))
     : 500;
   const clampedMin = Math.min(min, max);
   return { bioMinLength: clampedMin, bioMaxLength: max };

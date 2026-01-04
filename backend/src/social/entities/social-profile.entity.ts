@@ -20,7 +20,7 @@ export class SocialProfile {
   @JoinColumn({ name: 'user_id' })
   user!: User;
 
-  @Column({ type: 'varchar', length: 500, nullable: true })
+  @Column({ type: 'longtext', nullable: true })
   bio?: string | null;
 
   @Column({ type: 'varchar', length: 20, default: 'public' })

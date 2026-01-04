@@ -1,22 +1,51 @@
-import * as fs from 'fs';
-import * as os from 'os';
-import * as path from 'path';
 import { SocialProfileSettingsService } from './social-profile-settings.service';
+import { SocialProfileSettingsEntity } from '../entities/social-profile-settings.entity';
 
 describe('SocialProfileSettingsService', () => {
-  it('clamps min to max and caps max', () => {
-    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'lila-profile-'));
-    const svc = new SocialProfileSettingsService(tmp);
-    const updated = svc.update({ bioMinLength: 9999, bioMaxLength: 6000 });
-    expect(updated.bioMaxLength).toBe(5000);
-    expect(updated.bioMinLength).toBe(5000);
+  function createRepo() {
+    let store: SocialProfileSettingsEntity | null = null;
+
+    return {
+      repo: {
+        findOne: jest.fn(async () => store),
+        insert: jest.fn(async (row: Partial<SocialProfileSettingsEntity>) => {
+          store = {
+            id: row.id ?? 1,
+            bioMinLength: row.bioMinLength ?? 0,
+            bioMaxLength: row.bioMaxLength ?? 500,
+          } as SocialProfileSettingsEntity;
+          return { identifiers: [{ id: store.id }] } as any;
+        }),
+        save: jest.fn(async (row: Partial<SocialProfileSettingsEntity>) => {
+          store = {
+            id: row.id ?? store?.id ?? 1,
+            bioMinLength: row.bioMinLength ?? store?.bioMinLength ?? 0,
+            bioMaxLength: row.bioMaxLength ?? store?.bioMaxLength ?? 500,
+          } as SocialProfileSettingsEntity;
+          return store;
+        }),
+      },
+      getStore: () => store,
+    };
+  }
+
+  it('clamps min to max and caps max', async () => {
+    const { repo } = createRepo();
+    const svc = new SocialProfileSettingsService(repo as any);
+
+    const updated = await svc.update({ bioMinLength: 999999, bioMaxLength: 200000 });
+    expect(updated.bioMaxLength).toBe(100000);
+    expect(updated.bioMinLength).toBe(100000);
   });
 
-  it('persists settings to disk', () => {
-    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'lila-profile-'));
-    const svc = new SocialProfileSettingsService(tmp);
-    svc.update({ bioMinLength: 10, bioMaxLength: 20 });
-    const svc2 = new SocialProfileSettingsService(tmp);
+  it('loads settings from repo after init', async () => {
+    const { repo } = createRepo();
+    const svc = new SocialProfileSettingsService(repo as any);
+
+    await svc.update({ bioMinLength: 10, bioMaxLength: 20 });
+
+    const svc2 = new SocialProfileSettingsService(repo as any);
+    await svc2.onModuleInit();
     expect(svc2.get()).toEqual({ bioMinLength: 10, bioMaxLength: 20 });
   });
 });

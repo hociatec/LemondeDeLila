@@ -127,18 +127,21 @@ public sealed class MenuRouter : IMenuRouter
         var catalogView = new CatalogView();
         StopBackgroundLoops();
         _sounds.StartLoop(Modules.Audio.Models.SoundId.TavernAmbience);
-        var vm = new CatalogViewModel(
+        CatalogViewModel? vm = null;
+        vm = new CatalogViewModel(
             _catalog,
             onClose: () =>
-        {
-            if (previous != null)
             {
-                _navigation.Show(previous);
-                RestoreFocusAfterBackNavigation(previous);
-            }
+                vm?.Dispose();
 
-            StartLoopForView(previous);
-        },
+                if (previous != null)
+                {
+                    _navigation.Show(previous);
+                    RestoreFocusAfterBackNavigation(previous);
+                }
+
+                StartLoopForView(_navigation.CurrentView);
+            },
             openGame: async game =>
             {
                 StopBackgroundLoops();
@@ -176,7 +179,7 @@ public sealed class MenuRouter : IMenuRouter
                 RestoreFocusAfterBackNavigation(previous);
             }
 
-            StartLoopForView(previous);
+            StartLoopForView(_navigation.CurrentView);
         }, openLeaderboard: async () => { await OpenLeaderboard().ConfigureAwait(true); });
         view.DataContext = vm;
         _navigation.Show(view);
@@ -201,7 +204,7 @@ public sealed class MenuRouter : IMenuRouter
                     RestoreFocusAfterBackNavigation(previous);
                 }
 
-                StartLoopForView(previous);
+                StartLoopForView(_navigation.CurrentView);
             },
             openLeaderboard: async () => { await OpenLeaderboard().ConfigureAwait(true); },
             targetUserId: userId,
@@ -227,7 +230,7 @@ public sealed class MenuRouter : IMenuRouter
                 RestoreFocusAfterBackNavigation(previous);
             }
 
-            StartLoopForView(previous);
+            StartLoopForView(_navigation.CurrentView);
         });
         view.DataContext = vm;
         _navigation.Show(view);
@@ -257,7 +260,7 @@ public sealed class MenuRouter : IMenuRouter
                     RestoreFocusAfterBackNavigation(previous);
                 }
 
-                StartLoopForView(previous);
+                StartLoopForView(_navigation.CurrentView);
             });
         view.DataContext = vm;
         _navigation.Show(view);
@@ -435,7 +438,7 @@ public sealed class MenuRouter : IMenuRouter
         var previous = _navigation.CurrentView;
         StopBackgroundLoops();
         var view = new MessagingView();
-        var vm = new MessagingViewModel(_messaging, onClose: () =>
+        var vm = new MessagingViewModel(_messaging, _dialogs, onClose: () =>
         {
             if (previous != null)
             {
@@ -443,7 +446,7 @@ public sealed class MenuRouter : IMenuRouter
                 RestoreFocusAfterBackNavigation(previous);
             }
 
-            StartLoopForView(previous);
+            StartLoopForView(_navigation.CurrentView);
         });
         view.DataContext = vm;
         _navigation.Show(view);
@@ -473,7 +476,7 @@ public sealed class MenuRouter : IMenuRouter
                 RestoreFocusAfterBackNavigation(previous);
             }
 
-            StartLoopForView(previous);
+            StartLoopForView(_navigation.CurrentView);
         });
         view.DataContext = vm;
         _navigation.Show(view);
@@ -496,7 +499,7 @@ public sealed class MenuRouter : IMenuRouter
                 RestoreFocusAfterBackNavigation(previous);
             }
 
-            StartLoopForView(previous);
+            StartLoopForView(_navigation.CurrentView);
         });
         view.DataContext = vm;
         _navigation.Show(view);
@@ -519,7 +522,7 @@ public sealed class MenuRouter : IMenuRouter
                 RestoreFocusAfterBackNavigation(previous);
             }
 
-            StartLoopForView(previous);
+            StartLoopForView(_navigation.CurrentView);
         });
         view.DataContext = vm;
         _navigation.Show(view);

@@ -11,13 +11,13 @@ export class AdminProfileSettingsUpdateWsDto {
   @IsOptional()
   @IsInt()
   @Min(0)
-  @Max(5000)
+  @Max(100000)
   bioMinLength?: number;
 
   @IsOptional()
   @IsInt()
   @Min(0)
-  @Max(5000)
+  @Max(100000)
   bioMaxLength?: number;
 }
 
