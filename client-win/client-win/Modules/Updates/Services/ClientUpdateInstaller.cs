@@ -17,7 +17,18 @@ public static class ClientUpdateInstaller
 {
     private const string DefaultBaseUrl = "https://api.lilas.hociatec.fr/updates/client-win/";
 
-    public static async Task<bool> InstallLatestAsync(
+    public enum ClientUpdateInstallOutcome
+    {
+        NotStarted = 0,
+        UpdatedInPlace = 1,
+        InstallerLaunched = 2,
+    }
+
+    public readonly record struct ClientUpdateInstallResult(
+        bool Started,
+        ClientUpdateInstallOutcome Outcome);
+
+    public static async Task<ClientUpdateInstallResult> InstallLatestAsync(
         IDialogService dialogs,
         string? updatesBaseUrl,
         string reason,
@@ -30,7 +41,7 @@ public static class ClientUpdateInstaller
         // ouvre une fenêtre système.
         if (await TryUpdateCurrentDeploymentSilentlyAsync(cancellationToken).ConfigureAwait(true))
         {
-            return true;
+            return new ClientUpdateInstallResult(true, ClientUpdateInstallOutcome.UpdatedInPlace);
         }
 
         // Objectif: mise à jour uniforme et robuste:
@@ -77,7 +88,7 @@ public static class ClientUpdateInstaller
                     "Impossible de trouver l'installateur ClickOnce (.application) sur le serveur.\n\n" +
                     "Le serveur n'est peut-être pas correctement publié.")
                 .ConfigureAwait(true);
-            return false;
+            return new ClientUpdateInstallResult(false, ClientUpdateInstallOutcome.NotStarted);
         }
 
         try
@@ -86,13 +97,13 @@ public static class ClientUpdateInstaller
             if (!string.IsNullOrWhiteSpace(validationError))
             {
                 await dialogs.ShowError("Mise à jour", validationError).ConfigureAwait(true);
-                return false;
+                return new ClientUpdateInstallResult(false, ClientUpdateInstallOutcome.NotStarted);
             }
 
             // Prefer dfshim to force ClickOnce handler (évite les cas où Windows ouvre le navigateur / télécharge au lieu d'installer).
             if (TryLaunchClickOnce(applicationUrl))
             {
-                return true;
+                return new ClientUpdateInstallResult(true, ClientUpdateInstallOutcome.InstallerLaunched);
             }
 
             // IMPORTANT: pas de fallback navigateur — on veut un comportement uniforme.
@@ -102,7 +113,7 @@ public static class ClientUpdateInstaller
                     "Cause probable : composant ClickOnce manquant/corrompu, ou association .application absente.\n\n" +
                     "Action: réinstalle le client via l'installateur ClickOnce, puis relance.")
                 .ConfigureAwait(true);
-            return false;
+            return new ClientUpdateInstallResult(false, ClientUpdateInstallOutcome.NotStarted);
         }
         catch (Exception ex)
         {
@@ -110,7 +121,7 @@ public static class ClientUpdateInstaller
                     "Mise à jour",
                     $"Impossible de lancer l'installateur ClickOnce.\n\n{ex.GetType().Name}: {ex.Message}")
                 .ConfigureAwait(true);
-            return false;
+            return new ClientUpdateInstallResult(false, ClientUpdateInstallOutcome.NotStarted);
         }
     }
 

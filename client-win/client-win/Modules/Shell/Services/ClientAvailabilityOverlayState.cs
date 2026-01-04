@@ -173,9 +173,28 @@ public sealed class ClientAvailabilityOverlayState : INotifyPropertyChanged
                 : message.Trim();
             Status = "Téléchargement / installation en cours.";
             ShowProgress = true;
-            IsBlocking = required;
+            // Pas d'option "Plus tard": la mise à jour se fait automatiquement.
+            IsBlocking = true;
             SetPrimaryAction("Redémarrer maintenant", () => UpdateRestartHelper.RestartCurrentProcess(reason: "update-ready"));
-            SetSecondaryAction(required ? null : "Plus tard", Hide);
+            SetSecondaryAction(null, null);
+            Raise(nameof(IsVisible));
+        });
+    }
+
+    public void ShowUpdateFailed(bool required, string message)
+    {
+        RunOnUi(() =>
+        {
+            Kind = required ? ClientAvailabilityOverlayKind.UpdateRequired : ClientAvailabilityOverlayKind.UpdateInProgress;
+            Title = required ? "Mise à jour requise" : "Mise à jour";
+            Message = string.IsNullOrWhiteSpace(message)
+                ? "Impossible de lancer la mise à jour."
+                : message.Trim();
+            Status = required ? "Mise à jour nécessaire pour continuer." : "Vous pouvez continuer, mais la mise à jour n'a pas pu être lancée.";
+            ShowProgress = false;
+            IsBlocking = required;
+            SetPrimaryAction(required ? "Réessayer" : null, () => UpdateRestartHelper.RestartCurrentProcess(reason: "update-retry"));
+            SetSecondaryAction(required ? null : "Fermer", Hide);
             Raise(nameof(IsVisible));
         });
     }

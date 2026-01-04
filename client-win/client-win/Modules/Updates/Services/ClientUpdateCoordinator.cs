@@ -50,23 +50,10 @@ public static class ClientUpdateCoordinator
 
             FlowChanged?.Invoke(new ClientUpdateFlowState(ClientUpdateFlowKind.Enforcing, required, title, message, reason));
 
-            // Enforced update: user must acknowledge (no "Ignorer").
-            // This blocks the UI until OK, then we start the installer.
-            try
-            {
-                await dialogs.ShowInfo(
-                        string.IsNullOrWhiteSpace(title) ? "Mise à jour" : title,
-                        (message ?? string.Empty).Trim())
-                    .ConfigureAwait(true);
-            }
-            catch
-            {
-                // ignore dialog failures; still enforce update attempt
-            }
-
-            var started = await ClientUpdateInstaller
+            var result = await ClientUpdateInstaller
                 .InstallLatestAsync(dialogs, clickOnceUrl, reason, cancellationToken)
                 .ConfigureAwait(true);
+            var started = result.Started;
 
             FlowChanged?.Invoke(new ClientUpdateFlowState(
                 started ? ClientUpdateFlowKind.InstallStarted : ClientUpdateFlowKind.InstallFailed,
@@ -77,7 +64,23 @@ public static class ClientUpdateCoordinator
                     : "Impossible de lancer la mise à jour.",
                 reason));
 
-            // On ne ferme plus brutalement le client: la MAJ peut se faire en arrière-plan, et l'utilisateur pourra redémarrer quand il le souhaite.
+            if (!started)
+            {
+                return;
+            }
+
+            // Pas de choix utilisateur: on applique la mise à jour automatiquement.
+            // - UpdatedInPlace => la MAJ est déjà téléchargée/appliquée, on peut relancer immédiatement.
+            // - InstallerLaunched => un launcher attend la fermeture du process pour lancer ClickOnce.
+            if (result.Outcome == ClientUpdateInstaller.ClientUpdateInstallOutcome.UpdatedInPlace)
+            {
+                _ = UpdateRestartHelper.RestartCurrentProcess(reason: "update-inplace");
+            }
+            else
+            {
+                // Laisse le launcher dfshim démarrer ClickOnce après exit.
+                Environment.Exit(0);
+            }
         }
         finally
         {
@@ -85,7 +88,7 @@ public static class ClientUpdateCoordinator
         }
     }
 
-    public static async Task<bool> PromptAsync(
+  public static async Task<bool> PromptAsync(
         IDialogService dialogs,
         string title,
         string message,
@@ -94,53 +97,17 @@ public static class ClientUpdateCoordinator
         string? deDupKey = null,
         CancellationToken cancellationToken = default)
     {
-        if (dialogs == null) throw new ArgumentNullException(nameof(dialogs));
-
-        var key = (deDupKey ?? string.Empty).Trim();
-        if (key.Length > 0 &&
-            string.Equals(_lastKey, key, StringComparison.Ordinal) &&
-            DateTime.UtcNow - _lastShownAtUtc < Cooldown)
-        {
-            return false;
-        }
-
-        if (!await Gate.WaitAsync(0, cancellationToken).ConfigureAwait(true))
-        {
-            return false;
-        }
-
-        try
-        {
-            _lastKey = key.Length > 0 ? key : null;
-            _lastShownAtUtc = DateTime.UtcNow;
-
-            var wantUpdate = await dialogs.Confirm(
-                    string.IsNullOrWhiteSpace(title) ? "Mise à jour" : title,
-                    (message ?? string.Empty).Trim(),
-                    okText: "Mettre à jour",
-                    cancelText: "OK")
-                .ConfigureAwait(true) == true;
-
-            if (!wantUpdate)
-            {
-                return false;
-            }
-
-            var started = await ClientUpdateInstaller
-                .InstallLatestAsync(dialogs, clickOnceUrl, reason, cancellationToken)
-                .ConfigureAwait(true);
-
-            if (started)
-            {
-                // ClickOnce termine l'installation au redémarrage.
-                Environment.Exit(0);
-            }
-
-            return started;
-        }
-        finally
-        {
-            Gate.Release();
-        }
+        // Compat: on n'offre plus de choix "ignorer", on force la mise à jour.
+        await EnforceAsync(
+                dialogs,
+                title,
+                message,
+                clickOnceUrl,
+                reason,
+                required: false,
+                deDupKey: deDupKey,
+                cancellationToken: cancellationToken)
+            .ConfigureAwait(true);
+        return true;
     }
 }

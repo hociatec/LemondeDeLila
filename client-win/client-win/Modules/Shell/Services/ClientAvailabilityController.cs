@@ -104,8 +104,7 @@ public sealed class ClientAvailabilityController : IDisposable
 
         if (state.Kind == ClientUpdateFlowKind.InstallFailed)
         {
-            // Keep it non-blocking unless required.
-            _overlay.ShowUpdateInProgress(state.Required, state.Message);
+            _overlay.ShowUpdateFailed(state.Required, state.Message);
         }
     }
 

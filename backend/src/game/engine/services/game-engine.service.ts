@@ -184,6 +184,18 @@ export class GameEngineService {
       ).trim();
       const roomStartedAt = String(payload?.room?.startedAt ?? '').trim();
 
+      const hasMeaningfulStartedAtChange = (() => {
+        if (!storedStartedAt || !roomStartedAt) return false;
+        const a = Date.parse(storedStartedAt);
+        const b = Date.parse(roomStartedAt);
+        if (Number.isFinite(a) && Number.isFinite(b)) {
+          // Certains stockages/serializations tronquent les millisecondes (".000Z").
+          // On ne reconstruit l'état que si la différence est significative (ex: vraie relance de la table).
+          return Math.abs(a - b) > 2000;
+        }
+        return storedStartedAt !== roomStartedAt;
+      })();
+
       // Réinitialisation explicite (room repasse en "setup/open/...") :
       // on repart d'un état neuf pour permettre d'ajouter/retirer des joueurs et relancer une partie.
       if (
@@ -248,7 +260,7 @@ export class GameEngineService {
         nextStatus === 'started' &&
         roomStartedAt &&
         storedStartedAt &&
-        roomStartedAt !== storedStartedAt
+        hasMeaningfulStartedAtChange
       ) {
         this.gameLogger.info('Game state rebuild (startedAt changed)', {
           roomId,
