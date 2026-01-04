@@ -29,7 +29,11 @@ public partial class OptionsDialog : Window
         }
         _didInitialFocus = true;
 
-        Dispatcher.BeginInvoke((Action)(FocusTabs), DispatcherPriority.Input);
+        Dispatcher.BeginInvoke((Action)(() =>
+        {
+            EnsureDefaultTabSelected();
+            FocusSelectedTabHeader();
+        }), DispatcherPriority.Input);
     }
 
     private void OnSaveClicked(object sender, RoutedEventArgs e)
@@ -172,11 +176,49 @@ public partial class OptionsDialog : Window
         }
 
         var next = forward ? index + 1 : index - 1;
-        if (next >= CategoryTabs.Items.Count) next = 0;
-        if (next < 0) next = CategoryTabs.Items.Count - 1;
-        CategoryTabs.SelectedIndex = next;
+        if (next < 0 || next >= CategoryTabs.Items.Count)
+        {
+            // Bloqué aux extrémités (pas de boucle).
+            FocusSelectedTabHeader();
+            _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusSelectedTabHeader));
+            return true;
+        }
 
-        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusTabs));
+        CategoryTabs.SelectedIndex = next;
+        FocusSelectedTabHeader();
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusSelectedTabHeader));
         return true;
+    }
+
+    private void EnsureDefaultTabSelected()
+    {
+        if (CategoryTabs == null || CategoryTabs.Items.Count == 0)
+        {
+            return;
+        }
+
+        if (CategoryTabs.SelectedIndex < 0)
+        {
+            CategoryTabs.SelectedIndex = 0;
+        }
+    }
+
+    private void FocusSelectedTabHeader()
+    {
+        if (CategoryTabs == null || CategoryTabs.Items.Count == 0)
+        {
+            return;
+        }
+
+        CategoryTabs.UpdateLayout();
+        var index = CategoryTabs.SelectedIndex >= 0 ? CategoryTabs.SelectedIndex : 0;
+        if (CategoryTabs.ItemContainerGenerator.ContainerFromIndex(index) is TabItem tab)
+        {
+            tab.Focus();
+            Keyboard.Focus(tab);
+            return;
+        }
+
+        FocusTabs();
     }
 }

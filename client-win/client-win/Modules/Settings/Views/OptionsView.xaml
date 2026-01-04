@@ -78,8 +78,7 @@
             <TabControl x:Name="CategoryTabs"
                         ItemsSource="{Binding Categories}"
                         SelectedItem="{Binding SelectedCategory}"
-                        KeyboardNavigation.TabNavigation="Continue"
-                        AutomationProperties.Name="Onglets des options">
+                        KeyboardNavigation.TabNavigation="Continue">
                 <TabControl.ItemTemplate>
                     <DataTemplate>
                         <TextBlock Text="{Binding}" />
