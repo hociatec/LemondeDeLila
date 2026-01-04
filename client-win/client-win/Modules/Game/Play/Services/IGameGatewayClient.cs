@@ -5,5 +5,6 @@ namespace client_win.Modules.Game.Play.Services;
 
 public interface IGameGatewayClient
 {
+    Task WarmUpAsync(CancellationToken cancellationToken = default);
     Task<GameSession> ConnectAsync(int roomId, string gameType, CancellationToken cancellationToken = default);
 }

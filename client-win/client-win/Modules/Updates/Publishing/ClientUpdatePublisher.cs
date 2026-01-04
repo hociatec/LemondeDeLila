@@ -252,7 +252,8 @@ public sealed class ClientUpdatePublisher : IClientUpdatePublisher
             "/p:UpdateMode=Background",
             "/p:UpdateInterval=0",
             "/p:UpdateIntervalUnits=Days",
-            "/p:CreateDesktopShortcut=true",
+            // IMPORTANT: ClickOnce + CreateDesktopShortcut peut dupliquer le raccourci sur le bureau à chaque update.
+            "/p:CreateDesktopShortcut=false",
             "/p:GenerateManifests=true",
             useBootstrapper ? "/p:BootstrapperEnabled=true" : "/p:BootstrapperEnabled=false",
             useBootstrapper ? "/p:IsWebBootstrapper=true" : "/p:IsWebBootstrapper=false",

@@ -282,31 +282,41 @@ public sealed class GameTableOpener : IGameTableOpener
             }
         };
 
-        var createdMessage = isNew
-            ? $"Table de {game.Name} créée. Ajoutez des bots et commencez à jouer."
-            : $"Table rejointe : {game.Name}.";
-        foreach (var line in GameHistoryMessageSplitter.Split(createdMessage))
-        {
-            vm.History.Entries.Add(line);
-        }
-        _gameAnnouncements.Info(createdMessage);
-        _sounds.Play(isNew ? SoundId.RoomOpened : SoundId.RoomJoined);
-
-        bindings = new GameTableBindings(
-            dispatcher: dispatcher,
-            game: game,
-            session: session,
-            tableView: tableView,
-            tableVm: vm,
-            announcements: _announcements,
-            sounds: _sounds,
-            createGamePlayVm: () => CreateGamePlayViewModel(session, game),
-            selfUsername: _navigation.CurrentUser?.Username ?? string.Empty);
-        bindings.Attach();
-        bindings.InitializeFromLastState();
-
         tableView.DataContext = vm;
         _navigation.Show(tableView);
+
+        // IMPORTANT: laisser WPF rendre la vue avant d'attacher les bindings lourds,
+        // sinon l'UI reste "figée" jusqu'à la fin de cette méthode.
+        _ = dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
+        {
+            if (Interlocked.CompareExchange(ref isExiting, 0, 0) == 1)
+            {
+                return;
+            }
+
+            var createdMessage = isNew
+                ? $"Table de {game.Name} créée. Ajoutez des bots et commencez à jouer."
+                : $"Table rejointe : {game.Name}.";
+            foreach (var line in GameHistoryMessageSplitter.Split(createdMessage))
+            {
+                vm.History.Entries.Add(line);
+            }
+            _gameAnnouncements.Info(createdMessage);
+            _sounds.Play(isNew ? SoundId.RoomOpened : SoundId.RoomJoined);
+
+            bindings = new GameTableBindings(
+                dispatcher: dispatcher,
+                game: game,
+                session: session,
+                tableView: tableView,
+                tableVm: vm,
+                announcements: _announcements,
+                sounds: _sounds,
+                createGamePlayVm: () => CreateGamePlayViewModel(session, game),
+                selfUsername: _navigation.CurrentUser?.Username ?? string.Empty);
+            bindings.Attach();
+            bindings.InitializeFromLastState();
+        }));
 
         // Si le WS room est fermé (ex: table supprimée / serveur coupe la connexion),
         // revenir automatiquement à la vue de retour au lieu de laisser l'utilisateur sur un écran "mort".

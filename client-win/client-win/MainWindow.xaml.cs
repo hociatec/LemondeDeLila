@@ -301,6 +301,18 @@ namespace client_win
             {
                 // ignore (best-effort)
             }
+            // Warm-up WS game to reduce latency when entering a table (game.join).
+            try
+            {
+                using var warmCts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+                _ = _host.Services
+                    .GetRequiredService<Modules.Game.Play.Services.IGameGatewayClient>()
+                    .WarmUpAsync(warmCts.Token);
+            }
+            catch
+            {
+                // ignore (best-effort)
+            }
 
             // Capabilities (best-effort): allow the client to avoid unsupported WS routes.
             try
