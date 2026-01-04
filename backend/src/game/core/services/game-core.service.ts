@@ -16,6 +16,10 @@ export class GameCoreService {
       roomId: payload?.room?.id ?? null,
       gameType,
       roomStartedAt: payload?.room?.startedAt ?? null,
+      roomRunId:
+        typeof (payload?.room as any)?.runId === 'number'
+          ? (payload.room as any).runId
+          : null,
       generatedAt: new Date().toISOString(),
     };
     const rng = ensureSeededRng(metadata as any);

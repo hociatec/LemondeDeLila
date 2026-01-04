@@ -41,6 +41,9 @@ export class Room {
   @Column({ name: 'started_at', type: 'datetime', nullable: true })
   startedAt?: Date | null;
 
+  @Column({ name: 'run_id', type: 'int', default: 0 })
+  runId!: number;
+
   @OneToMany(() => RoomParticipant, (p) => p.room)
   participants!: RoomParticipant[];
 

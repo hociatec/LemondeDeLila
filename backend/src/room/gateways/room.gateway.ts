@@ -831,9 +831,8 @@ export class RoomGateway
         await this.broadcast(meta.roomId, 'state-updated', { roomId: meta.roomId });
         const updated = await this.tryUpdateRoomPayload(meta.roomId, (payload) => {
           payload.room.status = room.status;
-          payload.room.startedAt = room.startedAt
-            ? room.startedAt.toISOString()
-            : new Date().toISOString();
+          payload.room.startedAt = room.startedAt ? room.startedAt.toISOString() : null;
+          payload.room.runId = typeof (room as any).runId === 'number' ? (room as any).runId : null;
           payload.generatedAt = new Date().toISOString();
           return payload;
         });
@@ -864,6 +863,7 @@ export class RoomGateway
         const updated = await this.tryUpdateRoomPayload(meta.roomId, (payload) => {
           payload.room.status = room.status;
           payload.room.startedAt = null;
+          payload.room.runId = typeof (room as any).runId === 'number' ? (room as any).runId : null;
           payload.generatedAt = new Date().toISOString();
           return payload;
         });

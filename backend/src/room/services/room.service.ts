@@ -601,7 +601,12 @@ export class RoomService {
       throw new BadRequestException('Au moins deux participants sont requis');
     }
     room.status = 'started';
-    room.startedAt = room.startedAt ?? new Date();
+    if (!room.startedAt) {
+      // Normalise au niveau seconde (MySQL datetime tronque souvent les millisecondes),
+      // et incrémente runId pour identifier une nouvelle session de partie de façon fiable.
+      room.runId = Math.max(0, Number(room.runId ?? 0)) + 1;
+      room.startedAt = new Date(Math.floor(Date.now() / 1000) * 1000);
+    }
     await this.rooms.save(room);
     if (invalidateCache) {
       await this.invalidateRoomPayloadCache(room.id);
@@ -712,6 +717,7 @@ export class RoomService {
         status: room.status,
         gameType: room.gameType,
         startedAt: room.startedAt ? room.startedAt.toISOString() : null,
+        runId: typeof (room as any).runId === 'number' ? (room as any).runId : null,
         counts: {
           players: (room.participants || []).filter((p) => !p.leftAt).length,
           spectators: 0,

@@ -184,6 +184,15 @@ export class GameEngineService {
       ).trim();
       const roomStartedAt = String(payload?.room?.startedAt ?? '').trim();
 
+      const storedRunIdRaw = (existing.metadata as any)?.roomRunId;
+      const roomRunIdRaw = (payload?.room as any)?.runId;
+      const storedRunId =
+        typeof storedRunIdRaw === 'number' ? storedRunIdRaw : Number(storedRunIdRaw);
+      const roomRunId = typeof roomRunIdRaw === 'number' ? roomRunIdRaw : Number(roomRunIdRaw);
+      const hasRunId =
+        Number.isFinite(storedRunId) && Number.isFinite(roomRunId) && roomRunId >= 0 && storedRunId >= 0;
+      const hasRunIdChanged = hasRunId && storedRunId !== roomRunId;
+
       const hasMeaningfulStartedAtChange = (() => {
         if (!storedStartedAt || !roomStartedAt) return false;
         const a = Date.parse(storedStartedAt);
@@ -254,19 +263,21 @@ export class GameEngineService {
 
       // Cas spécial : la room a été reset (startedAt remis à null) puis relancée,
       // mais le moteur n'a pas "vu" la transition setup->started (ex: aucun WS game connecté).
-      // On force la reconstruction si startedAt a changé.
+      // On force la reconstruction si runId a changé (prioritaire) ou si startedAt a changé de manière significative.
       if (
         previousStatus === 'started' &&
         nextStatus === 'started' &&
         roomStartedAt &&
         storedStartedAt &&
-        hasMeaningfulStartedAtChange
+        (hasRunIdChanged || hasMeaningfulStartedAtChange)
       ) {
         this.gameLogger.info('Game state rebuild (startedAt changed)', {
           roomId,
           gameType,
           storedStartedAt,
           roomStartedAt,
+          storedRunId: Number.isFinite(storedRunId) ? storedRunId : null,
+          roomRunId: Number.isFinite(roomRunId) ? roomRunId : null,
         });
         this.cleanupRoom(roomId, gameType);
         const rebuilt = await this.buildInitialState(payload, gameType);
