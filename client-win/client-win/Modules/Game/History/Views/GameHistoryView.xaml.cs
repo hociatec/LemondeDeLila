@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Automation.Peers;
 using System.Windows.Controls;
+using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Threading;
 using client_win.Modules.Game.History.ViewModels;
@@ -34,7 +35,7 @@ public partial class GameHistoryView : UserControl
         DataContextChanged += OnDataContextChanged;
     }
 
-    public FrameworkElement? FocusTarget => HistoryEditor;
+    public FrameworkElement? FocusTarget => HistoryViewer;
 
     public event EventHandler<TabNavigationRequestedEventArgs>? TabNavigationRequested;
 
@@ -63,9 +64,9 @@ public partial class GameHistoryView : UserControl
 
         Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
         {
-            if (!HistoryEditor.IsKeyboardFocusWithin)
+            if (!HistoryViewer.IsKeyboardFocusWithin)
             {
-                HistoryEditor.ScrollToEnd();
+                HistoryViewer.ScrollToEnd();
             }
         }));
     }
@@ -106,7 +107,7 @@ public partial class GameHistoryView : UserControl
         _announceScheduled = false;
         _announceRunId++;
         _forceAssertiveAnnouncements = 0;
-        HistoryEditor.Clear();
+        HistoryViewer.Document.Blocks.Clear();
         _lastKnownEntryCount = 0;
     }
 
@@ -133,20 +134,20 @@ public partial class GameHistoryView : UserControl
     private void AppendEntries(IEnumerable<string> entries)
     {
         var shouldAutoScroll = ShouldAutoScrollToEnd();
-        var preserveSelection = HistoryEditor.IsKeyboardFocusWithin && !shouldAutoScroll;
+        var preserveSelection = HistoryViewer.IsKeyboardFocusWithin && !shouldAutoScroll;
 
-        var selectionStart = HistoryEditor.SelectionStart;
-        var selectionLength = HistoryEditor.SelectionLength;
-        var caretIndex = HistoryEditor.CaretIndex;
+        var selectionStart = HistoryViewer.Document.ContentStart.GetOffsetToPosition(HistoryViewer.Selection.Start);
+        var selectionLength = HistoryViewer.Selection.Start.GetOffsetToPosition(HistoryViewer.Selection.End);
+        var caretIndex = HistoryViewer.Document.ContentStart.GetOffsetToPosition(HistoryViewer.CaretPosition);
 
         foreach (var entry in entries.Where(s => !string.IsNullOrWhiteSpace(s)))
         {
-            if (HistoryEditor.Text.Length > 0)
+            if (HistoryViewer.Document.Blocks.Count > 0)
             {
-                HistoryEditor.AppendText(Environment.NewLine);
+                HistoryViewer.AppendText(Environment.NewLine);
             }
 
-            HistoryEditor.AppendText(entry);
+            HistoryViewer.AppendText(entry);
         }
 
         if (preserveSelection)
@@ -157,8 +158,8 @@ public partial class GameHistoryView : UserControl
 
         if (shouldAutoScroll)
         {
-            HistoryEditor.CaretIndex = HistoryEditor.Text.Length;
-            HistoryEditor.ScrollToEnd();
+            HistoryViewer.CaretPosition = HistoryViewer.Document.ContentEnd;
+            HistoryViewer.ScrollToEnd();
         }
     }
 
@@ -185,13 +186,13 @@ public partial class GameHistoryView : UserControl
         }
 
         var shouldAutoScroll = scrollToEnd || ShouldAutoScrollToEnd();
-        var preserveSelection = HistoryEditor.IsKeyboardFocusWithin && !shouldAutoScroll;
+        var preserveSelection = HistoryViewer.IsKeyboardFocusWithin && !shouldAutoScroll;
 
-        var selectionStart = HistoryEditor.SelectionStart;
-        var selectionLength = HistoryEditor.SelectionLength;
-        var caretIndex = HistoryEditor.CaretIndex;
+        var selectionStart = HistoryViewer.Document.ContentStart.GetOffsetToPosition(HistoryViewer.Selection.Start);
+        var selectionLength = HistoryViewer.Selection.Start.GetOffsetToPosition(HistoryViewer.Selection.End);
+        var caretIndex = HistoryViewer.Document.ContentStart.GetOffsetToPosition(HistoryViewer.CaretPosition);
 
-        HistoryEditor.Text = string.Join(Environment.NewLine, _viewModel.Entries.Where(s => !string.IsNullOrEmpty(s)));
+        new TextRange(HistoryViewer.Document.ContentStart, HistoryViewer.Document.ContentEnd).Text = string.Join(Environment.NewLine, _viewModel.Entries.Where(s => !string.IsNullOrEmpty(s)));
 
         if (preserveSelection)
         {
@@ -201,40 +202,34 @@ public partial class GameHistoryView : UserControl
 
         if (shouldAutoScroll)
         {
-            HistoryEditor.CaretIndex = HistoryEditor.Text.Length;
-            HistoryEditor.ScrollToEnd();
+            HistoryViewer.CaretPosition = HistoryViewer.Document.ContentEnd;
+            HistoryViewer.ScrollToEnd();
         }
     }
 
     private void RestoreSelection(int selectionStart, int selectionLength, int caretIndex)
     {
-        var textLength = HistoryEditor.Text.Length;
+        var textLength = new TextRange(HistoryViewer.Document.ContentStart, HistoryViewer.Document.ContentEnd).Text.Length;
         var clampedStart = Math.Clamp(selectionStart, 0, textLength);
         var clampedLength = Math.Clamp(selectionLength, 0, Math.Max(0, textLength - clampedStart));
         var clampedCaret = Math.Clamp(caretIndex, 0, textLength);
 
-        HistoryEditor.SelectionStart = clampedStart;
-        HistoryEditor.SelectionLength = clampedLength;
-        HistoryEditor.CaretIndex = clampedCaret;
+        var startPointer = HistoryViewer.Document.ContentStart.GetPositionAtOffset(clampedStart, LogicalDirection.Forward);
+        var endPointer = startPointer.GetPositionAtOffset(clampedLength, LogicalDirection.Forward);
+        HistoryViewer.Selection.Select(startPointer, endPointer);
+
+        var caretPointer = HistoryViewer.Document.ContentStart.GetPositionAtOffset(clampedCaret, LogicalDirection.Forward);
+        HistoryViewer.CaretPosition = caretPointer;
     }
 
     private bool ShouldAutoScrollToEnd()
     {
-        if (!HistoryEditor.IsKeyboardFocusWithin)
-        {
-            return true;
-        }
-
-        if (HistoryEditor.LineCount <= 0)
-        {
-            return true;
-        }
-
-        var lastVisibleLine = HistoryEditor.GetLastVisibleLineIndex();
-        return lastVisibleLine >= HistoryEditor.LineCount - 1;
+        // The original logic using LineCount is not compatible with WPF's RichTextBox.
+        // This is a simplified check that prevents auto-scrolling if the user has keyboard focus.
+        return !HistoryViewer.IsKeyboardFocusWithin;
     }
 
-    private void OnHistoryEditorPreviewKeyDown(object sender, KeyEventArgs e)
+    private void OnHistoryViewerPreviewKeyDown(object sender, KeyEventArgs e)
     {
         if (e.Key != Key.Tab)
         {
