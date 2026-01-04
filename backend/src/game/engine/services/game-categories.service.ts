@@ -151,14 +151,50 @@ export class GameCategoriesService implements OnModuleInit {
 
   applyToDefinition(def: GameDefinition): GameDefinition {
     const assignment = this.getAssignment(def.id);
-    if (!assignment) {
+    if (assignment) {
+      const assigned = this.getCategory(assignment);
+      if (assigned && assigned.enabled !== false) {
+        return { ...def, category: assigned.name, subcategory: undefined };
+      }
+    }
+
+    // Fallback: si aucune affectation explicite n'existe, on tente de mapper automatiquement
+    // la catégorie/sous-catégorie "technique" (ex: VentsInfinis) vers une catégorie admin existante.
+    // Cela permet de renommer les étagères de la taverne sans devoir affecter chaque jeu manuellement.
+    const inferred = this.inferCategoryFromDefinition(def);
+    if (!inferred) {
       return def;
     }
-    const category = this.getCategory(assignment);
-    if (!category) {
-      return def;
+
+    return { ...def, category: inferred.name, subcategory: undefined };
+  }
+
+  private inferCategoryFromDefinition(def: GameDefinition): GameCategory | undefined {
+    const raw = (def.subcategory || def.category || '').trim();
+    if (!raw) {
+      return undefined;
     }
-    return { ...def, category: category.name, subcategory: undefined };
+
+    const root = this.getRoot();
+    const normalizedId = this.slugify(raw);
+    if (!normalizedId) {
+      return undefined;
+    }
+
+    // 1) Match exact sur l'id (recommandé).
+    const direct = root.categories.find(
+      (c) => c.enabled !== false && c.id === normalizedId,
+    );
+    if (direct) {
+      return direct;
+    }
+
+    // 2) Match suffixe (ex: les-vents-infinis -> vents-infinis).
+    const suffix = `-${normalizedId}`;
+    const matches = root.categories.filter(
+      (c) => c.enabled !== false && c.id.endsWith(suffix),
+    );
+    return matches.length === 1 ? matches[0] : undefined;
   }
 
   private getRoot(): CategoriesRoot {
@@ -212,4 +248,3 @@ export class GameCategoriesService implements OnModuleInit {
     return normalized.replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
   }
 }
-

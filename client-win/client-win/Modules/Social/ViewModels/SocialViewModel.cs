@@ -418,7 +418,6 @@ public sealed class SocialViewModel : ObservableObject
 
         return string.Join(Environment.NewLine, new[]
         {
-            $"ID : {id}",
             $"Visibilité : {visibility}",
             string.IsNullOrWhiteSpace(created) ? null : $"Créé : {created}",
             string.IsNullOrWhiteSpace(updated) ? null : $"Mis à jour : {updated}",
