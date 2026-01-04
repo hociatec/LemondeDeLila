@@ -80,68 +80,71 @@ export function getAvailableActions(
     (pending as any).step !== 'confirm',
   );
 
+  // IMPORTANT: un quiz "pending" peut provenir d'autres mécaniques (ex: échange refusé),
+  // pas uniquement d'une case quiz. Tant que le quiz n'est pas résolu, aucune autre action n'est autorisée.
+  if (hasPendingQuiz) {
+    const rawChoices = Array.isArray((pendingQuiz as any)?.choices)
+      ? (pendingQuiz as any).choices
+      : (pendingQuiz as any)?.answer
+        ? [(pendingQuiz as any).answer]
+        : [];
+    const choices = rawChoices
+      .map((c: any) => String(c))
+      .map((c: string) => c.trim())
+      .filter((c: string) => c.length > 0);
+    return choices.map((answer) => ({
+      type: 'answer_quiz',
+      payload: { answer },
+    }));
+  }
+
+  // IMPORTANT: un échange "pending" peut aussi provenir d'une action/carte (pas uniquement d'une case échange).
+  // Tant que l'échange n'est pas terminé, aucune autre action n'est autorisée.
+  if (hasPendingExchange) {
+    const exchangePending = pending as any;
+
+    if (exchangePending?.step === 'choose_target') {
+      const targets = Array.isArray(exchangePending.targets)
+        ? exchangePending.targets
+        : [];
+      return targets
+        .filter((t: any) => t && typeof t.targetPlayerId === 'number')
+        .map((t: any) => ({
+          type: 'exchange_choose_target',
+          payload: { targetPlayerId: t.targetPlayerId },
+        }));
+    }
+
+    if (exchangePending?.step === 'choose_give') {
+      const choices = Array.isArray(exchangePending.giveChoices)
+        ? exchangePending.giveChoices
+        : [];
+      return choices
+        .map((c: any) => String(c))
+        .map((c: string) => c.trim())
+        .filter((c: string) => c.length > 0)
+        .map((give: string) => ({
+          type: 'exchange_choose_give',
+          payload: { give },
+        }));
+    }
+
+    // Étape inconnue => ne pas proposer 'roll' (sinon boucle d'erreur "terminer l'échange").
+    return [];
+  }
+
   const base: GameSingleActionDto[] = (() => {
     switch (tile?.type) {
       case 'quiz':
-        if (hasPendingQuiz) {
-          const rawChoices = Array.isArray(pendingQuiz?.choices)
-            ? pendingQuiz?.choices
-            : pendingQuiz?.answer
-              ? [pendingQuiz.answer]
-              : [];
-          const choices = rawChoices
-            .map((c: any) => String(c))
-            .map((c: string) => c.trim())
-            .filter((c: string) => c.length > 0);
-          return choices.map((answer) => ({
-            type: 'answer_quiz',
-            payload: { answer },
-          }));
-        }
         return [{ type: 'roll' }, { type: 'ROLL_DICE' }];
 
       case 'exchange':
-        if (hasPendingExchange) {
-          const exchangePending = pending as any;
-
-          if (exchangePending?.step === 'choose_target') {
-            const targets = Array.isArray(exchangePending.targets)
-              ? exchangePending.targets
-              : [];
-            return targets
-              .filter((t: any) => t && typeof t.targetPlayerId === 'number')
-              .map((t: any) => ({
-                type: 'exchange_choose_target',
-                payload: { targetPlayerId: t.targetPlayerId },
-              }));
-          }
-
-          if (exchangePending?.step === 'choose_give') {
-            const choices = Array.isArray(exchangePending.giveChoices)
-              ? exchangePending.giveChoices
-              : [];
-            return choices
-              .map((c: any) => String(c))
-              .map((c: string) => c.trim())
-              .filter((c: string) => c.length > 0)
-              .map((give: string) => ({
-                type: 'exchange_choose_give',
-                payload: { give },
-              }));
-          }
-
-          return [{ type: 'roll' }, { type: 'ROLL_DICE' }];
-        }
         return [{ type: 'roll' }, { type: 'ROLL_DICE' }];
 
       default:
         return [{ type: 'roll' }, { type: 'ROLL_DICE' }];
     }
   })();
-
-  if (hasPendingQuiz) {
-    return base;
-  }
   return base;
 }
 
