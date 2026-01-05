@@ -1117,8 +1117,22 @@ export class RoomGateway
       }
       meta.role = 'spectator';
     } else {
-      // Privé: autorisé uniquement si déjà owner/participant (canSpectate l'a déjà garanti).
-      if (!state.room.isPrivate) {
+      // Participant: on (re)joint la table pour être compté comme joueur.
+      // - Public: join standard
+      // - Privé: join autorisé pour le propriétaire (pour revenir de "spectateur owner" -> "joueur")
+      if (state.room.isPrivate) {
+        if (isOwner) {
+          await this.roomsService.joinRoom(meta.roomId, meta.userId, {
+            allowPrivate: true,
+          });
+        } else {
+          const isParticipant =
+            state.room.players?.some((p) => p?.id === meta.userId) ?? false;
+          if (!isParticipant) {
+            throw new Error('Table privée: invitation requise');
+          }
+        }
+      } else {
         await this.roomsService.joinRoom(meta.roomId, meta.userId);
       }
       meta.role = 'participant';

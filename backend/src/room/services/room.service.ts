@@ -515,9 +515,13 @@ export class RoomService {
         relations: ['user'],
         order: { joinedAt: 'ASC' },
       });
-      room.owner = next?.user ?? null;
-      await this.rooms.save(room);
-      await this.invalidateRoomPayloadCache(room.id);
+      // S'il n'y a plus de joueur humain, on garde le propriétaire actuel
+      // (évite une table "sans propriétaire" qui bloquerait start/bots/invites).
+      if (next?.user) {
+        room.owner = next.user;
+        await this.rooms.save(room);
+        await this.invalidateRoomPayloadCache(room.id);
+      }
     }
 
     // Remplacer un joueur humain par un bot quand la table est démarrée.
@@ -593,7 +597,8 @@ export class RoomService {
       relations: ['user'],
       order: { joinedAt: 'ASC' },
     });
-    room.owner = next?.user ?? null;
+    if (!next?.user) return;
+    room.owner = next.user;
     await this.rooms.save(room);
     await this.invalidateRoomPayloadCache(room.id);
 
