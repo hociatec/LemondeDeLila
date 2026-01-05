@@ -76,7 +76,7 @@
                 </ListBox>
 
                 <TextBox Grid.Row="1"
-                         Text="{Binding SelectedDetailText}"
+                         Text="{Binding SelectedDetailText, Mode=OneWay}"
                          Style="{StaticResource InputTextBox}"
                          IsReadOnly="True"
                          IsReadOnlyCaretVisible="True"
@@ -140,4 +140,3 @@
         </Border>
     </Grid>
 </UserControl>
-
