@@ -14,4 +14,5 @@ public interface IMessagingService
     Task<MessagingMessage?> RestoreAsync(string messageId, CancellationToken cancellationToken = default);
     Task<MessagingMessage?> PurgeAsync(string messageId, CancellationToken cancellationToken = default);
     Task<MessagingUser?> SearchUserAsync(string query, CancellationToken cancellationToken = default);
+    Task MarkReadAsync(string messageId, CancellationToken cancellationToken = default);
 }

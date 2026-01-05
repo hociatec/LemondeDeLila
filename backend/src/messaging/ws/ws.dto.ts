@@ -61,3 +61,10 @@ export class MessagingSearchDto {
   @MaxLength(255)
   query?: string;
 }
+
+export class MessagingMarkReadDto {
+  @IsString()
+  @MinLength(1)
+  @MaxLength(64)
+  messageId!: string;
+}

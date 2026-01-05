@@ -452,6 +452,7 @@ public partial class MessagingView : UserControl
         }
 
         ShowScreen(MessagingScreen.Detail);
+        _ = vm.MarkSelectedMessageReadAsync();
     }
 
     private void OnReplyClick(object sender, RoutedEventArgs e)

@@ -50,25 +50,7 @@ public partial class NotificationsView : UserControl
             return;
         }
 
-        if (ItemsList.Items.Count == 0)
-        {
-            ItemsList.Focus();
-            return;
-        }
-
-        if (ItemsList.SelectedIndex < 0)
-        {
-            ItemsList.SelectedIndex = 0;
-        }
-
-        ItemsList.UpdateLayout();
-        if (ItemsList.ItemContainerGenerator.ContainerFromIndex(ItemsList.SelectedIndex) is ListBoxItem item)
-        {
-            item.Focus();
-            return;
-        }
-
+        // Ne pas auto-sélectionner un item: ouvrir la vue ne doit pas marquer comme "lu".
         ItemsList.Focus();
     }
 }
-

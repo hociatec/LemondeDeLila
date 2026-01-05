@@ -7,7 +7,6 @@ using System.Windows.Input;
 using client_win.Core;
 using client_win.Modules.Messaging.Models;
 using client_win.Modules.Messaging.Services;
-using client_win.Modules.MainMenu.Services;
 using client_win.Modules.Shell.Services;
 
 namespace client_win.Modules.Messaging.ViewModels;
@@ -16,7 +15,6 @@ public sealed class MessagingViewModel : ObservableObject
 {
     private readonly IMessagingService _service;
     private readonly IDialogService _dialogs;
-    private readonly IMenuBadges _badges;
     private readonly Action _onClose;
     private MessagingBox _selectedBox = MessagingBox.Inbox;
     private MessagingMessage? _selectedMessage;
@@ -33,11 +31,10 @@ public sealed class MessagingViewModel : ObservableObject
     public event EventHandler? FocusFirstMessageRequested;
     public event EventHandler? NavigateHomeRequested;
 
-    public MessagingViewModel(IMessagingService service, IDialogService dialogs, IMenuBadges badges, Action onClose)
+    public MessagingViewModel(IMessagingService service, IDialogService dialogs, Action onClose)
     {
         _service = service ?? throw new ArgumentNullException(nameof(service));
         _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
-        _badges = badges ?? throw new ArgumentNullException(nameof(badges));
         _onClose = onClose ?? throw new ArgumentNullException(nameof(onClose));
 
         BoxMessages = new ObservableCollection<MessagingMessage>();
@@ -76,12 +73,18 @@ public sealed class MessagingViewModel : ObservableObject
             if (SetProperty(ref _selectedMessage, value))
             {
                 OnPropertyChanged(nameof(SelectedMessageDetailText));
-                if (value != null && !string.IsNullOrWhiteSpace(value.Id))
-                {
-                    _badges.MarkMessageRead(value.Id);
-                }
             }
         }
+    }
+
+    public Task MarkSelectedMessageReadAsync()
+    {
+        var msg = SelectedMessage;
+        if (msg == null || string.IsNullOrWhiteSpace(msg.Id) || msg.IsSent)
+        {
+            return Task.CompletedTask;
+        }
+        return _service.MarkReadAsync(msg.Id);
     }
 
     public string SelectedMessageDetailText => FormatMessageDetail(_selectedMessage);

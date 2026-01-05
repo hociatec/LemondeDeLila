@@ -11,14 +11,17 @@ import { RedisClientFactory } from '../common/redis/redis-client.factory';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { SocialRelationship } from '../social/entities/social-relationship.entity';
 import { User } from '../user/entities/user.entity';
-import { UserInboxService } from './services/user-inbox.service';
 import { AdminContactService } from './services/admin-contact.service';
+import { NotificationInboxItem } from './entities/notification-inbox-item.entity';
+import { NotificationInboxDbService } from './services/notification-inbox-db.service';
+import { PrivateMessage } from '../messaging/entities/private-message.entity';
+import { UserBadgeCountsService } from './services/user-badge-counts.service';
 
 @Module({
   imports: [
     ConfigModule,
     ClientUpdatesModule,
-    TypeOrmModule.forFeature([SocialRelationship, User]),
+    TypeOrmModule.forFeature([SocialRelationship, User, NotificationInboxItem, PrivateMessage]),
   ],
   providers: [
     {
@@ -39,10 +42,16 @@ import { AdminContactService } from './services/admin-contact.service';
       },
     },
     NotificationService,
-    UserInboxService,
+    NotificationInboxDbService,
+    UserBadgeCountsService,
     AdminContactService,
     NotificationGateway,
   ],
-  exports: [NotificationService, AdminContactService],
+  exports: [
+    NotificationService,
+    AdminContactService,
+    UserBadgeCountsService,
+    NotificationInboxDbService,
+  ],
 })
 export class NotificationModule {}

@@ -44,4 +44,7 @@ export class PrivateMessage {
 
   @Column({ name: 'deleted_by_recipient_at', type: 'datetime', nullable: true })
   deletedByRecipientAt?: Date | null;
+
+  @Column({ name: 'read_by_recipient_at', type: 'datetime', nullable: true })
+  readByRecipientAt?: Date | null;
 }

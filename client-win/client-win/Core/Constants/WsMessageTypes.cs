@@ -56,6 +56,7 @@ public static class WsMessageTypes
         public const string Purge = "messaging.purge";
         public const string Purged = "messaging.purged";
         public const string SearchUser = "messaging.search";
+        public const string MarkRead = "messaging.markRead";
     }
 
     /// <summary>

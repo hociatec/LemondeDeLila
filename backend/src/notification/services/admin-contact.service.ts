@@ -5,9 +5,10 @@ import { Repository } from 'typeorm';
 import type { WsAuthPayload } from '../../common/interfaces/ws-auth-payload';
 import { NotificationService } from './notification.service';
 import { User } from '../../user/entities/user.entity';
-import { InboxNotificationItem, UserInboxService } from './user-inbox.service';
+import { NotificationInboxDbService } from './notification-inbox-db.service';
+import { UserBadgeCountsService } from './user-badge-counts.service';
 
-export type AdminContactItem = InboxNotificationItem & {
+export type AdminContactItem = {
   kind: 'admin_contact';
   contactId: string;
   message: string;
@@ -15,13 +16,17 @@ export type AdminContactItem = InboxNotificationItem & {
   fromUsername: string;
   // When staff replies, the target user id is included.
   toUserId?: number;
+  id: string;
+  createdAt: string;
+  readAt?: string | null;
 };
 
 @Injectable()
 export class AdminContactService {
   constructor(
     private readonly notifications: NotificationService,
-    private readonly inbox: UserInboxService,
+    private readonly inbox: NotificationInboxDbService,
+    private readonly counts: UserBadgeCountsService,
     @InjectRepository(User) private readonly users: Repository<User>,
   ) {}
 
@@ -35,12 +40,30 @@ export class AdminContactService {
     );
   }
 
-  async listInbox(userId: number, limit = 100): Promise<InboxNotificationItem[]> {
-    return this.inbox.list(userId, limit);
+  async listInbox(userId: number, limit = 100): Promise<any[]> {
+    const items = await this.inbox.list(userId, limit);
+    return items.map((it) => ({
+      id: it.id,
+      kind: it.kind,
+      contactId: it.contactId ?? null,
+      createdAt: it.createdAt?.toISOString?.() ?? new Date().toISOString(),
+      readAt: it.readAt?.toISOString?.() ?? null,
+      fromUserId: it.fromUserId ?? 0,
+      fromUsername: it.fromUsername ?? '',
+      toUserId: it.toUserId ?? null,
+      message: it.message ?? '',
+      ...(it.payload ?? {}),
+    }));
   }
 
   async deleteInboxItem(userId: number, id: string): Promise<void> {
     await this.inbox.delete(userId, id);
+    await this.counts.notifyCounts(userId);
+  }
+
+  async markRead(userId: number, id: string): Promise<void> {
+    await this.inbox.markRead(userId, id);
+    await this.counts.notifyCounts(userId);
   }
 
   async sendFromUserToStaff(
@@ -62,11 +85,12 @@ export class AdminContactService {
       .map((u) => u.id)
       .filter((id) => typeof id === 'number' && id > 0);
 
-    const item: AdminContactItem = {
-      id: randomUUID(),
+    const cid = contactId || randomUUID();
+    const createdAt = new Date();
+    const baseItem: Omit<AdminContactItem, 'id'> = {
       kind: 'admin_contact',
-      contactId: contactId || randomUUID(),
-      createdAt: new Date().toISOString(),
+      contactId: cid,
+      createdAt: createdAt.toISOString(),
       message: clean,
       fromUserId: from.id,
       fromUsername: from.username,
@@ -74,14 +98,33 @@ export class AdminContactService {
 
     const recipients = new Set<number>([from.id, ...staffIds]);
 
+    const firstRowId = randomUUID();
+    const rowIds = Array.from(recipients).map((uid, i) => ({
+      uid,
+      rowId: i === 0 ? firstRowId : randomUUID(),
+    }));
+
     await Promise.all(
-      Array.from(recipients).map(async (uid) => {
-        await this.inbox.add(uid, item);
+      rowIds.map(async ({ uid, rowId }) => {
+        const item: AdminContactItem = { ...baseItem, id: rowId };
+        await this.inbox.create({
+          id: rowId,
+          userId: uid,
+          kind: 'admin_contact',
+          createdAt,
+          contactId: cid,
+          fromUserId: from.id,
+          fromUsername: from.username,
+          toUserId: null,
+          message: clean,
+          payload: null,
+        });
         await this.notifications.notifyUser(uid, 'notify.inbox.item', item);
+        await this.counts.notifyCounts(uid);
       }),
     );
 
-    return item;
+    return { ...baseItem, id: firstRowId };
   }
 
   async replyFromStaffToUser(
@@ -114,11 +157,11 @@ export class AdminContactService {
       .map((u) => u.id)
       .filter((id) => typeof id === 'number' && id > 0);
 
-    const item: AdminContactItem = {
-      id: randomUUID(),
+    const createdAt = new Date();
+    const baseItem: Omit<AdminContactItem, 'id'> = {
       kind: 'admin_contact',
       contactId: cid,
-      createdAt: new Date().toISOString(),
+      createdAt: createdAt.toISOString(),
       message: clean,
       fromUserId: from.id,
       fromUsername: from.username,
@@ -127,14 +170,32 @@ export class AdminContactService {
 
     const recipients = new Set<number>([toUserId, ...staffIds]);
 
+    const firstRowId = randomUUID();
+    const rowIds = Array.from(recipients).map((uid, i) => ({
+      uid,
+      rowId: i === 0 ? firstRowId : randomUUID(),
+    }));
+
     await Promise.all(
-      Array.from(recipients).map(async (uid) => {
-        await this.inbox.add(uid, item);
+      rowIds.map(async ({ uid, rowId }) => {
+        const item: AdminContactItem = { ...baseItem, id: rowId };
+        await this.inbox.create({
+          id: rowId,
+          userId: uid,
+          kind: 'admin_contact',
+          createdAt,
+          contactId: cid,
+          fromUserId: from.id,
+          fromUsername: from.username,
+          toUserId,
+          message: clean,
+          payload: null,
+        });
         await this.notifications.notifyUser(uid, 'notify.inbox.item', item);
+        await this.counts.notifyCounts(uid);
       }),
     );
 
-    return item;
+    return { ...baseItem, id: firstRowId };
   }
 }
-

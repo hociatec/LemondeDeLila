@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Threading;
@@ -47,8 +48,9 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
     private readonly INotificationInbox _inbox;
     private readonly IMenuBadges _badges;
 
-    private IWebSocketConnection? _ws;
-    private bool _started;
+	private IWebSocketConnection? _ws;
+	private bool _started;
+    private readonly ConcurrentDictionary<string, TaskCompletionSource<(string Type, string? Error)>> _pendingAcks = new();
 
     public NotifyListener(
         ClientConfiguration config,
@@ -116,6 +118,16 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
             {
                 // Best-effort
             }
+
+            // Source de vérité des badges (serveur).
+            try
+            {
+                await SendAsync("notify.counts.get", payload: null, cancellationToken).ConfigureAwait(false);
+            }
+            catch
+            {
+                // ignore (best-effort)
+            }
         }
         catch (Exception ex)
         {
@@ -153,6 +165,21 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
             var type = root.TryGetProperty("type", out var t) ? t.GetString() : null;
             if (string.IsNullOrWhiteSpace(type)) return;
 
+            if (root.TryGetProperty("requestId", out var rid) && rid.ValueKind == JsonValueKind.String)
+            {
+                var requestId = rid.GetString() ?? string.Empty;
+                if (!string.IsNullOrWhiteSpace(requestId) && _pendingAcks.TryGetValue(requestId, out var tcs))
+                {
+                    string? error = null;
+                    if (root.TryGetProperty("payload", out var p) && p.ValueKind == JsonValueKind.Object &&
+                        p.TryGetProperty("message", out var m) && m.ValueKind == JsonValueKind.String)
+                    {
+                        error = m.GetString();
+                    }
+                    tcs.TrySetResult((type, error));
+                }
+            }
+
             if (string.Equals(type, "admin.broadcast", StringComparison.OrdinalIgnoreCase))
             {
                 var message = root.TryGetProperty("payload", out var p) && p.TryGetProperty("message", out var m)
@@ -160,7 +187,7 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
                     : string.Empty;
                 if (!string.IsNullOrWhiteSpace(message))
                 {
-                    _screenReader.AnnouncePolite(message);
+                    RunOnUi(() => _screenReader.AnnouncePolite(message));
                 }
             }
             else if (string.Equals(type, "catalog.invalidate", StringComparison.OrdinalIgnoreCase))
@@ -227,11 +254,11 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
             }
             else if (string.Equals(type, "notify.inbox.snapshot", StringComparison.OrdinalIgnoreCase))
             {
-                HandleInboxSnapshot(root);
+                RunOnUi(() => HandleInboxSnapshot(root));
             }
             else if (string.Equals(type, "notify.inbox.item", StringComparison.OrdinalIgnoreCase))
             {
-                HandleInboxItem(root);
+                RunOnUi(() => HandleInboxItem(root));
             }
             else if (string.Equals(type, "notify.admin_contact.error", StringComparison.OrdinalIgnoreCase))
             {
@@ -241,13 +268,124 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
                     : string.Empty;
                 if (!string.IsNullOrWhiteSpace(msg))
                 {
-                    _screenReader.AnnouncePolite(msg);
+                    RunOnUi(() => _screenReader.AnnouncePolite(msg));
                 }
+            }
+            else if (string.Equals(type, "notify.counts", StringComparison.OrdinalIgnoreCase))
+            {
+                RunOnUi(() => HandleCounts(root));
             }
         }
         catch (Exception ex)
         {
             Log.Debug(ex, "Message notify invalide.");
+        }
+    }
+
+    private static void RunOnUi(Action action)
+    {
+        try
+        {
+            var dispatcher = Application.Current?.Dispatcher;
+            if (dispatcher == null || dispatcher.CheckAccess())
+            {
+                action();
+                return;
+            }
+
+            _ = dispatcher.BeginInvoke(action, DispatcherPriority.Background);
+        }
+        catch
+        {
+            // ignore
+        }
+    }
+
+    public async Task<(bool Ok, string? Error)> SendWithAckAsync(
+        string type,
+        object? payload,
+        string successType,
+        string errorType,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(type))
+        {
+            return (false, "Type manquant.");
+        }
+
+        await StartAsync(cancellationToken).ConfigureAwait(false);
+        var ws = _ws;
+        if (ws == null)
+        {
+            return (false, "WS notify non connecté.");
+        }
+
+        var requestId = Guid.NewGuid().ToString("N");
+        var tcs = new TaskCompletionSource<(string Type, string? Error)>(TaskCreationOptions.RunContinuationsAsynchronously);
+        _pendingAcks[requestId] = tcs;
+
+        try
+        {
+            var raw = JsonSerializer.Serialize(new
+            {
+                type,
+                requestId,
+                payload,
+            });
+            await ws.SendAsync(raw, cancellationToken).ConfigureAwait(false);
+
+            using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            timeoutCts.CancelAfter(TimeSpan.FromSeconds(6));
+
+            var completed = await Task.WhenAny(tcs.Task, Task.Delay(Timeout.InfiniteTimeSpan, timeoutCts.Token))
+                .ConfigureAwait(false);
+
+            if (completed != tcs.Task)
+            {
+                return (false, "Délai dépassé.");
+            }
+
+            var (respType, err) = await tcs.Task.ConfigureAwait(false);
+            if (string.Equals(respType, successType, StringComparison.OrdinalIgnoreCase))
+            {
+                return (true, null);
+            }
+
+            if (string.Equals(respType, errorType, StringComparison.OrdinalIgnoreCase))
+            {
+                return (false, string.IsNullOrWhiteSpace(err) ? "Erreur." : err);
+            }
+
+            return (false, "Réponse inattendue.");
+        }
+        finally
+        {
+            _pendingAcks.TryRemove(requestId, out _);
+        }
+    }
+
+    private void HandleCounts(JsonElement root)
+    {
+        try
+        {
+            if (!root.TryGetProperty("payload", out var payload) || payload.ValueKind != JsonValueKind.Object)
+            {
+                return;
+            }
+
+            var unreadNotifications = payload.TryGetProperty("unreadNotifications", out var n) && n.ValueKind == JsonValueKind.Number
+                ? n.GetInt32()
+                : 0;
+            var unreadMessages = payload.TryGetProperty("unreadMessages", out var m) && m.ValueKind == JsonValueKind.Number
+                ? m.GetInt32()
+                : 0;
+
+            _badges.SetUnreadNotifications(unreadNotifications);
+            _badges.SetUnreadMessaging(unreadMessages);
+        }
+        catch
+        {
+            // ignore
         }
     }
 
@@ -329,15 +467,6 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
                 var me = _session.CurrentUser;
                 var fromMe = me != null && item.FromUserId == me.UserId;
                 _sounds.Play(fromMe ? SoundId.AdminContactSent : SoundId.AdminContactReceived);
-
-                if (!fromMe)
-                {
-                    _badges.AddUnreadNotification(item.Id);
-                }
-            }
-            else
-            {
-                _badges.AddUnreadNotification(item.Id);
             }
         }
         catch
@@ -713,14 +842,6 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
             if (me == null || fromId <= 0 || fromId != me.UserId)
             {
                 _sounds.Play(SoundId.PrivateMessageReceived);
-
-                var messageId = payload.TryGetProperty("messageId", out var mid) && mid.ValueKind == JsonValueKind.String
-                    ? (mid.GetString() ?? string.Empty)
-                    : string.Empty;
-                if (!string.IsNullOrWhiteSpace(messageId))
-                {
-                    _badges.AddUnreadMessage(messageId);
-                }
             }
         }
         catch

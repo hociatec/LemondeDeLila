@@ -217,6 +217,24 @@ public sealed class MessagingService : IMessagingService
         };
     }
 
+    public async Task MarkReadAsync(string messageId, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(messageId))
+        {
+            return;
+        }
+
+        var user = _session.CurrentUser;
+        string? token = user?.Token;
+
+        // Best-effort; no UI error if it fails.
+        _ = await _ws.RequestAsync<object>(
+            WsMessageTypes.Messaging.MarkRead,
+            new { messageId },
+            token,
+            cancellationToken).ConfigureAwait(false);
+    }
+
     private static IReadOnlyList<MessagingMessage> MapMessages(IEnumerable<MessageDto>? source)
     {
         if (source == null)

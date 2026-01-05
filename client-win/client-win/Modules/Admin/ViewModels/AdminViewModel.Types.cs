@@ -53,6 +53,7 @@ internal enum AdminPage
     SoundsConnection,
     SoundsChat,
     SoundsPrivateMessages,
+    SoundsAdminContact,
     SoundDetails,
     BugReports,
     BugReportsStatusReports,

@@ -224,6 +224,30 @@ export class MessagingService {
     return dto;
   }
 
+  async markRead(userId: number, messageId: string): Promise<void> {
+    const id = String(messageId || '').trim();
+    if (!id) return;
+
+    const message = await this.messages.findOne({
+      where: { messageId: id },
+      relations: ['sender', 'recipient'],
+    });
+    if (!message) {
+      throw new NotFoundException('Message introuvable');
+    }
+    if (message.recipient?.id !== userId) {
+      throw new ForbiddenException('Non autorise');
+    }
+    if (message.deletedByRecipientAt) {
+      return;
+    }
+    if (message.readByRecipientAt) {
+      return;
+    }
+    message.readByRecipientAt = new Date();
+    await this.messages.save(message);
+  }
+
   async lookupUser(username: string): Promise<MessageUserDto | null> {
     const normalized = (username ?? '').trim();
     if (!normalized) {

@@ -373,6 +373,12 @@ public sealed partial class AdminViewModel
                     BuildSoundsPrivateMessages();
                     return;
                 }
+                if (soundsTag == "sounds.adminContact")
+                {
+                    PushReturnFocus();
+                    BuildSoundsAdminContact();
+                    return;
+                }
             }
 
             if (_page == AdminPage.SoundsAmbience && tag is string ambienceSound)
@@ -535,6 +541,22 @@ public sealed partial class AdminViewModel
                 {
                     PushReturnFocus();
                     BuildSoundDetails(Modules.Audio.Models.SoundId.PrivateMessageReceived);
+                    return;
+                }
+            }
+
+            if (_page == AdminPage.SoundsAdminContact && tag is string adminContactSound)
+            {
+                if (adminContactSound == "sounds.adminContact.sent")
+                {
+                    PushReturnFocus();
+                    BuildSoundDetails(Modules.Audio.Models.SoundId.AdminContactSent);
+                    return;
+                }
+                if (adminContactSound == "sounds.adminContact.received")
+                {
+                    PushReturnFocus();
+                    BuildSoundDetails(Modules.Audio.Models.SoundId.AdminContactReceived);
                     return;
                 }
             }

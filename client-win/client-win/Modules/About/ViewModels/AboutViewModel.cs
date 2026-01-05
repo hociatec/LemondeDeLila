@@ -278,7 +278,21 @@ public sealed class AboutViewModel : ObservableObject
         IsBusy = true;
         try
         {
-            await _notify.SendAsync("notify.admin_contact.send", new { message }).ConfigureAwait(true);
+            var (ok, err) = await _notify.SendWithAckAsync(
+                    "notify.admin_contact.send",
+                    new { message },
+                    successType: "notify.admin_contact.sent",
+                    errorType: "notify.admin_contact.error")
+                .ConfigureAwait(true);
+
+            if (!ok)
+            {
+                Status = $"Erreur : {err}";
+                await _dialogs.ShowError("Contact admin", err ?? "Erreur").ConfigureAwait(true);
+                return;
+            }
+
+            await _dialogs.ShowInfo("Contact admin", "Message envoyé au staff.").ConfigureAwait(true);
             BuildRoot();
             Status = "Message envoyé au staff.";
         }

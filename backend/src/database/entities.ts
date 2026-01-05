@@ -19,6 +19,7 @@ import { GameCatalogOverrideEntity } from '../game/engine/entities/game-catalog-
 import { BotSettingsEntity } from '../game/modules/bot/entities/bot-settings.entity';
 import { BugReportEntity } from '../bug-reports/entities/bug-report.entity';
 import { BugReportCommentEntity } from '../bug-reports/entities/bug-report-comment.entity';
+import { NotificationInboxItem } from '../notification/entities/notification-inbox-item.entity';
 
 export const ORM_ENTITIES = [
   User,
@@ -42,4 +43,5 @@ export const ORM_ENTITIES = [
   BotSettingsEntity,
   BugReportEntity,
   BugReportCommentEntity,
+  NotificationInboxItem,
 ];

@@ -8,7 +8,6 @@ using client_win.Core;
 using client_win.Modules.Network.Services;
 using client_win.Modules.Notifications.Models;
 using client_win.Modules.Notifications.Services;
-using client_win.Modules.MainMenu.Services;
 using client_win.Modules.User.Services;
 
 namespace client_win.Modules.Notifications.ViewModels;
@@ -18,7 +17,6 @@ public sealed class NotificationsViewModel : ObservableObject
     private readonly INotificationInbox _inbox;
     private readonly INotifyGatewayClient _notify;
     private readonly ISessionService _session;
-    private readonly IMenuBadges _badges;
     private readonly Action _onClose;
 
     private NotificationItem? _selected;
@@ -32,13 +30,11 @@ public sealed class NotificationsViewModel : ObservableObject
         INotificationInbox inbox,
         INotifyGatewayClient notify,
         ISessionService session,
-        IMenuBadges badges,
         Action onClose)
     {
         _inbox = inbox ?? throw new ArgumentNullException(nameof(inbox));
         _notify = notify ?? throw new ArgumentNullException(nameof(notify));
         _session = session ?? throw new ArgumentNullException(nameof(session));
-        _badges = badges ?? throw new ArgumentNullException(nameof(badges));
         _onClose = onClose ?? throw new ArgumentNullException(nameof(onClose));
 
         if (_inbox.Items is INotifyCollectionChanged notifyColl)
@@ -46,10 +42,6 @@ public sealed class NotificationsViewModel : ObservableObject
             notifyColl.CollectionChanged += (_, __) =>
             {
                 Status = Items.Count == 0 ? "Aucune notification." : $"Notifications : {Items.Count}.";
-                if (SelectedItem == null && Items.Count > 0)
-                {
-                    SelectedItem = Items[0];
-                }
             };
         }
 
@@ -74,7 +66,11 @@ public sealed class NotificationsViewModel : ObservableObject
                 OnPropertyChanged(nameof(CanReply));
                 if (value != null && !string.IsNullOrWhiteSpace(value.Id))
                 {
-                    _badges.MarkNotificationRead(value.Id);
+                    _ = _notify.SendWithAckAsync(
+                        "notify.inbox.markRead",
+                        new { id = value.Id },
+                        successType: "notify.inbox.markRead",
+                        errorType: "notify.admin_contact.error");
                 }
             }
         }
@@ -113,7 +109,6 @@ public sealed class NotificationsViewModel : ObservableObject
     {
         await RefreshAsync().ConfigureAwait(true);
         Status = Items.Count == 0 ? "Aucune notification." : $"Notifications : {Items.Count}.";
-        SelectedItem = Items.Count > 0 ? Items[0] : null;
         FocusFirstItemRequested?.Invoke(this, EventArgs.Empty);
     }
 
@@ -198,7 +193,6 @@ public sealed class NotificationsViewModel : ObservableObject
             return;
         }
 
-        _badges.MarkNotificationRead(it.Id);
         await _notify.SendAsync("notify.inbox.delete", new { id = it.Id }).ConfigureAwait(true);
         Status = "Notification supprimée.";
     }

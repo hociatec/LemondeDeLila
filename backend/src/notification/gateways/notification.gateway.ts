@@ -15,6 +15,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { SocialRelationship } from '../../social/entities/social-relationship.entity';
 import { AdminContactService } from '../services/admin-contact.service';
+import { UserBadgeCountsService } from '../services/user-badge-counts.service';
 
 type ClientMeta = {
   userId: number;
@@ -41,6 +42,7 @@ export class NotificationGateway
     private readonly clientUpdates: ClientUpdatesService,
     private readonly wsTickets: WsTicketAuthService,
     private readonly adminContacts: AdminContactService,
+    private readonly counts: UserBadgeCountsService,
     @InjectRepository(SocialRelationship)
     private readonly relationships: Repository<SocialRelationship>,
   ) {}
@@ -131,6 +133,14 @@ export class NotificationGateway
       type: 'notify.connected',
       payload: { userId: user.id },
     });
+
+    // Push counts at connect (source of truth for badges).
+    try {
+      const payload = await this.counts.getCounts(user.id);
+      this.safeSend(client, { type: 'notify.counts', payload });
+    } catch {
+      // ignore
+    }
   }
 
   handleDisconnect(client: WebSocket) {
@@ -231,13 +241,40 @@ export class NotificationGateway
 
     const type = typeof parsed?.type === 'string' ? parsed.type : '';
     if (!type) return;
+    const requestId =
+      typeof parsed?.requestId === 'string' ? parsed.requestId : null;
+
+    if (type === 'notify.counts.get') {
+      try {
+        const payload = await this.counts.getCounts(meta.userId);
+        this.safeSendResponse(client, 'notify.counts', payload, requestId);
+      } catch {
+        this.safeSendResponse(
+          client,
+          'notify.counts',
+          { unreadNotifications: 0, unreadMessages: 0 },
+          requestId,
+        );
+      }
+      return;
+    }
 
     if (type === 'notify.inbox.list') {
       try {
         const items = await this.adminContacts.listInbox(meta.userId, 200);
-        this.safeSend(client, { type: 'notify.inbox.snapshot', payload: { items } });
+        this.safeSendResponse(
+          client,
+          'notify.inbox.snapshot',
+          { items },
+          requestId,
+        );
       } catch {
-        this.safeSend(client, { type: 'notify.inbox.snapshot', payload: { items: [] } });
+        this.safeSendResponse(
+          client,
+          'notify.inbox.snapshot',
+          { items: [] },
+          requestId,
+        );
       }
       return;
     }
@@ -248,7 +285,24 @@ export class NotificationGateway
       try {
         await this.adminContacts.deleteInboxItem(meta.userId, id);
         const items = await this.adminContacts.listInbox(meta.userId, 200);
-        this.safeSend(client, { type: 'notify.inbox.snapshot', payload: { items } });
+        this.safeSendResponse(
+          client,
+          'notify.inbox.snapshot',
+          { items },
+          requestId,
+        );
+      } catch {
+        // ignore
+      }
+      return;
+    }
+
+    if (type === 'notify.inbox.markRead') {
+      const id = typeof parsed?.payload?.id === 'string' ? parsed.payload.id.trim() : '';
+      if (!id) return;
+      try {
+        await this.adminContacts.markRead(meta.userId, id);
+        this.safeSendResponse(client, 'notify.inbox.markRead', { ok: true }, requestId);
       } catch {
         // ignore
       }
@@ -262,9 +316,19 @@ export class NotificationGateway
           { id: meta.userId, username: meta.username, roles: meta.roles } as any,
           message,
         );
-        this.safeSend(client, { type: 'notify.admin_contact.sent', payload: { id: item.id, contactId: item.contactId } });
+        this.safeSendResponse(
+          client,
+          'notify.admin_contact.sent',
+          { id: item.id, contactId: item.contactId },
+          requestId,
+        );
       } catch (err: any) {
-        this.safeSend(client, { type: 'notify.admin_contact.error', payload: { message: String(err?.message || 'Erreur') } });
+        this.safeSendResponse(
+          client,
+          'notify.admin_contact.error',
+          { message: String(err?.message || 'Erreur') },
+          requestId,
+        );
       }
       return;
     }
@@ -284,9 +348,19 @@ export class NotificationGateway
         const item = isStaff
           ? await this.adminContacts.replyFromStaffToUser(from, toUserId, message, contactId)
           : await this.adminContacts.sendFromUserToStaff(from, message, contactId);
-        this.safeSend(client, { type: 'notify.admin_contact.sent', payload: { id: item.id, contactId: item.contactId } });
+        this.safeSendResponse(
+          client,
+          'notify.admin_contact.sent',
+          { id: item.id, contactId: item.contactId },
+          requestId,
+        );
       } catch (err: any) {
-        this.safeSend(client, { type: 'notify.admin_contact.error', payload: { message: String(err?.message || 'Erreur') } });
+        this.safeSendResponse(
+          client,
+          'notify.admin_contact.error',
+          { message: String(err?.message || 'Erreur') },
+          requestId,
+        );
       }
       return;
     }
@@ -353,5 +427,14 @@ export class NotificationGateway
     } catch (err) {
       this.logger.debug('Echec vérification version client', err as Error);
     }
+  }
+
+  private safeSendResponse(
+    client: WebSocket,
+    type: string,
+    payload: any,
+    requestId: string | null,
+  ) {
+    this.safeSend(client, requestId ? { type, payload, requestId } : { type, payload });
   }
 }

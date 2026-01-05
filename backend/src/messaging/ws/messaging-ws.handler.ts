@@ -5,9 +5,11 @@ import { PayloadValidationService } from '../../common/validation/payload-valida
 import { requireUser } from '../../common/ws/ws-auth';
 import type { WsSession } from '../../common/ws/ws-route-registry.service';
 import { NotificationService } from '../../notification/services/notification.service';
+import { UserBadgeCountsService } from '../../notification/services/user-badge-counts.service';
 import {
   MessagingConversationDto,
   MessagingListDto,
+  MessagingMarkReadDto,
   MessagingSearchDto,
   MessagingSendDto,
 } from './ws.dto';
@@ -18,6 +20,7 @@ export class MessagingWsHandler {
     private readonly messaging: MessagingService,
     private readonly validator: PayloadValidationService,
     private readonly notifications: NotificationService,
+    private readonly counts: UserBadgeCountsService,
   ) {}
 
   async conversation(session: WsSession, payload: any) {
@@ -59,6 +62,7 @@ export class MessagingWsHandler {
         preview,
         createdAt: message.createdAt,
       });
+      await this.counts.notifyCounts(dto.recipientId);
     } catch {
       // best-effort
     }
@@ -69,6 +73,7 @@ export class MessagingWsHandler {
     const user = requireUser(session);
     const messageId = String(payload?.messageId ?? payload?.id ?? '');
     const message = await this.messaging.delete(user.id, messageId);
+    await this.counts.notifyCounts(user.id);
     return { type: 'messaging.deleted', payload: { message } };
   }
 
@@ -76,6 +81,7 @@ export class MessagingWsHandler {
     const user = requireUser(session);
     const messageId = String(payload?.messageId ?? payload?.id ?? '');
     const message = await this.messaging.restore(user.id, messageId);
+    await this.counts.notifyCounts(user.id);
     return { type: 'messaging.restored', payload: { message } };
   }
 
@@ -83,6 +89,7 @@ export class MessagingWsHandler {
     const user = requireUser(session);
     const messageId = String(payload?.messageId ?? payload?.id ?? '');
     const message = await this.messaging.purge(user.id, messageId);
+    await this.counts.notifyCounts(user.id);
     return { type: 'messaging.purged', payload: { message } };
   }
 
@@ -91,6 +98,14 @@ export class MessagingWsHandler {
     const username = dto.username ?? dto.query ?? '';
     const user = await this.messaging.lookupUser(username);
     return { type: 'messaging.user', payload: { user } };
+  }
+
+  async markRead(session: WsSession, payload: any) {
+    const user = requireUser(session);
+    const dto = this.validator.validate(MessagingMarkReadDto, payload);
+    await this.messaging.markRead(user.id, dto.messageId);
+    await this.counts.notifyCounts(user.id);
+    return { type: 'messaging.markRead', payload: { ok: true } };
   }
 
   private async resolveBox(

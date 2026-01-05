@@ -33,6 +33,7 @@ public sealed partial class AdminViewModel
         Items.Add(new AdminMenuItem("Amis", tag: "sounds.invitations"));
         Items.Add(new AdminMenuItem("Tchat", tag: "sounds.chat"));
         Items.Add(new AdminMenuItem("Messages privés", tag: "sounds.private"));
+        Items.Add(new AdminMenuItem("Contact admin", tag: "sounds.adminContact"));
         SelectedItem = Items.FirstOrDefault();
         Status = "Entrée : sélectionner. Échap : retour.";
         UpdateFilterVisibility();
@@ -151,6 +152,23 @@ public sealed partial class AdminViewModel
         RestoreFocusIfAny();
     }
 
+    private void BuildSoundsAdminContact()
+    {
+        _page = AdminPage.SoundsAdminContact;
+        Title = "Administration - Sons - Contact admin";
+        Details = "Choisir un son lié aux messages de contact admin.";
+        IsTextInputVisible = false;
+        IsSecondaryInputVisible = false;
+        IsAdditionalPermissionsVisible = false;
+        Items.Clear();
+        Items.Add(new AdminMenuItem("Envoi d'un contact admin", tag: "sounds.adminContact.sent"));
+        Items.Add(new AdminMenuItem("Réception d'un contact admin", tag: "sounds.adminContact.received"));
+        SelectedItem = Items.FirstOrDefault();
+        Status = "Entrée : sélectionner. Échap : retour.";
+        UpdateFilterVisibility();
+        RestoreFocusIfAny();
+    }
+
     private void BuildSoundDetails(
         SoundId sound,
         AdminPage? returnPageOverride = null,
@@ -167,6 +185,7 @@ public sealed partial class AdminViewModel
             SoundId.InvitationSent or SoundId.InvitationReceived => AdminPage.SoundsTable,
             SoundId.ChatMessageSent or SoundId.ChatMessageReceived => AdminPage.SoundsChat,
             SoundId.PrivateMessageSent or SoundId.PrivateMessageReceived => AdminPage.SoundsPrivateMessages,
+            SoundId.AdminContactSent or SoundId.AdminContactReceived => AdminPage.SoundsAdminContact,
             SoundId.FriendConnected or SoundId.FriendDisconnected or SoundId.FriendInvitationSent or SoundId.FriendInvitationReceived => AdminPage.SoundsInvitations,
             _ => AdminPage.Sounds
         };
@@ -193,6 +212,8 @@ public sealed partial class AdminViewModel
             SoundId.ChatMessageReceived => ("Tchat", "Réception d'un message", _options.Current.SoundChatMessageReceivedPath),
             SoundId.PrivateMessageSent => ("Messages privés", "Envoi d'un message privé", _options.Current.SoundPrivateMessageSentPath),
             SoundId.PrivateMessageReceived => ("Messages privés", "Réception d'un message privé", _options.Current.SoundPrivateMessageReceivedPath),
+            SoundId.AdminContactSent => ("Contact admin", "Envoi d'un contact admin", null),
+            SoundId.AdminContactReceived => ("Contact admin", "Réception d'un contact admin", null),
             _ => ("Sons", sound.ToString(), null)
         };
 

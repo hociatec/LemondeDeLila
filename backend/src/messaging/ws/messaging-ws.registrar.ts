@@ -28,6 +28,9 @@ export class MessagingWsRegistrar implements OnModuleInit {
     this.registry.register('messaging.purge', (session, payload) =>
       this.handler.purge(session, payload),
     );
+    this.registry.register('messaging.markRead', (session, payload) =>
+      this.handler.markRead(session, payload),
+    );
     this.registry.register('messaging.search', (_, payload) =>
       this.handler.search(payload),
     );
