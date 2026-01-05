@@ -23,7 +23,7 @@ public partial class AboutView : UserControl
     {
         if (e.Key == Key.Tab)
         {
-            if (DataContext is AboutViewModel vm && vm.ShowContactAdmin)
+            if (DataContext is AboutViewModel aboutVm && aboutVm.ShowContactAdmin)
             {
                 return;
             }

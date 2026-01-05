@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
+using client_win.Core;
 using client_win.Modules.MainMenu.ViewModels;
 
 namespace client_win.Modules.MainMenu.Views;
@@ -34,7 +35,16 @@ public partial class MainMenuView : UserControl
             e.Handled = true;
             _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(async () =>
             {
-                await vm.ContactAdminCommand.ExecuteAsync(null).ConfigureAwait(true);
+                if (vm.ContactAdminCommand is AsyncRelayCommand asyncCmd)
+                {
+                    await asyncCmd.ExecuteAsync(null).ConfigureAwait(true);
+                    return;
+                }
+
+                if (vm.ContactAdminCommand.CanExecute(null))
+                {
+                    vm.ContactAdminCommand.Execute(null);
+                }
             }));
             return;
         }

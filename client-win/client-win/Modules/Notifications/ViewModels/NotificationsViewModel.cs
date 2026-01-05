@@ -173,7 +173,7 @@ public sealed class NotificationsViewModel : ObservableObject
                 new
                 {
                     contactId = it.ContactId,
-                    toUserId = toUserId > 0 ? toUserId : null,
+                    toUserId = toUserId > 0 ? (int?)toUserId : null,
                     message,
                 })
             .ConfigureAwait(true);
