@@ -471,7 +471,11 @@ export class RoomService {
   async leaveRoom(
     roomId: number,
     userId: number,
-    opts?: { preserveRoom?: boolean; disconnectOnly?: boolean },
+    opts?: {
+      preserveRoom?: boolean;
+      disconnectOnly?: boolean;
+      preserveOwner?: boolean;
+    },
   ): Promise<Room | null> {
     const room = await this.requireRoom(roomId);
     const user = await this.requireUser(userId);
@@ -500,7 +504,12 @@ export class RoomService {
 
     // Si le propriétaire quitte, transférer immédiatement au premier joueur humain restant.
     // (On le fait même en preserveRoom=true pour éviter d'avoir une table sans propriétaire.)
-    if (participant && room.owner && room.owner.id === userId) {
+    if (
+      participant &&
+      room.owner &&
+      room.owner.id === userId &&
+      opts?.preserveOwner !== true
+    ) {
       const next = await this.participants.findOne({
         where: { room: { id: room.id }, leftAt: IsNull() },
         relations: ['user'],
@@ -570,6 +579,27 @@ export class RoomService {
     this.notifyDirectoryChanged(room.id, 'left');
 
     return room;
+  }
+
+  async transferOwnerIfCurrent(roomId: number, userId: number): Promise<void> {
+    const room = await this.rooms.findOne({
+      where: { id: roomId },
+      relations: ['owner'],
+    });
+    if (!room?.owner || room.owner.id !== userId) return;
+
+    const next = await this.participants.findOne({
+      where: { room: { id: room.id }, leftAt: IsNull() },
+      relations: ['user'],
+      order: { joinedAt: 'ASC' },
+    });
+    room.owner = next?.user ?? null;
+    await this.rooms.save(room);
+    await this.invalidateRoomPayloadCache(room.id);
+
+    // Broadcast la mise à jour de présence en temps réel
+    this.presenceService.broadcastPresence();
+    this.notifyDirectoryChanged(room.id, 'left');
   }
 
   async togglePrivacy(

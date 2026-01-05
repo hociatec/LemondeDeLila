@@ -326,9 +326,11 @@ export class RoomGateway
     // on traite la déconnexion comme un simple disconnect (disconnectOnly=true),
     // ce qui évite de marquer le joueur comme parti et de déclencher une suppression.
     let roomStarted: boolean | null = false;
+    let ownerId: number | null = null;
     if (meta && meta.roomId > 0) {
       try {
         const state = await this.roomsService.getRoomPayload(meta.roomId);
+        ownerId = state?.room?.owner?.id ?? null;
         roomStarted =
           (state?.room?.status || '').toLowerCase() === 'started' ||
           Boolean(state?.room?.startedAt);
@@ -349,21 +351,46 @@ export class RoomGateway
 	        }
 	      }
 	      const silentSet = this.silentRooms.get(meta.roomId);
+	      let remainingSilentConnections = 0;
 	      if (silentSet) {
 	        silentSet.delete(client);
 	        if (silentSet.size === 0) {
 	          this.silentRooms.delete(meta.roomId);
+	          remainingSilentConnections = 0;
+	        } else {
+	          remainingSilentConnections = silentSet.size;
 	        }
 	      }
+	      const remainingTotalConnections =
+	        remainingConnections + remainingSilentConnections;
+	      const userStillConnected = this.hasUserConnections(
+	        meta.roomId,
+	        meta.userId,
+	      );
 	      // si plus aucune connexion pour cette room, on supprime la table côté service
 	      if (meta.role === 'participant') {
 	        const disconnectOnly = roomStarted === true || roomStarted === null;
 	        this.roomsService
           .leaveRoom(meta.roomId, meta.userId, {
-            preserveRoom: disconnectOnly || remainingConnections > 0,
+            preserveRoom: disconnectOnly || remainingTotalConnections > 0,
             disconnectOnly,
 	          })
 	          .catch(() => {});
+	      } else {
+	        if (!userStillConnected && ownerId === meta.userId) {
+	          this.roomsService
+	            .transferOwnerIfCurrent(meta.roomId, meta.userId)
+	            .catch(() => {});
+	        }
+
+	        if (remainingTotalConnections === 0) {
+	          this.roomsService
+	            .leaveRoom(meta.roomId, meta.userId, {
+	              preserveRoom: false,
+	              disconnectOnly: false,
+	            })
+	            .catch(() => {});
+	        }
 	      }
 	      if (meta.roomId > 0 && meta.silent !== true) {
 	        this.sendRoomState(meta.roomId).catch(() => {});
@@ -788,17 +815,25 @@ export class RoomGateway
     }
     this.realtimeTracker.setSocketParticipantRoom(client, null);
 
-    const set = this.rooms.get(roomId);
-    let remainingConnections = 0;
-    if (set) {
-      set.delete(client);
-      if (set.size === 0) {
-        this.rooms.delete(roomId);
-        remainingConnections = 0;
+    const activeSet = meta.silent ? this.silentRooms.get(roomId) : this.rooms.get(roomId);
+    let remainingInActiveSet = 0;
+    if (activeSet) {
+      activeSet.delete(client);
+      if (activeSet.size === 0) {
+        if (meta.silent) {
+          this.silentRooms.delete(roomId);
+        } else {
+          this.rooms.delete(roomId);
+        }
+        remainingInActiveSet = 0;
       } else {
-        remainingConnections = set.size;
+        remainingInActiveSet = activeSet.size;
       }
     }
+    const otherSet = meta.silent ? this.rooms.get(roomId) : this.silentRooms.get(roomId);
+    const remainingInOtherSet = otherSet?.size ?? 0;
+    const remainingTotalConnections = remainingInActiveSet + remainingInOtherSet;
+    const userStillConnected = this.hasUserConnections(roomId, meta.userId);
 
     if (meta.role === 'participant') {
       let roomStarted = false;
@@ -812,9 +847,19 @@ export class RoomGateway
       }
 
       await this.roomsService.leaveRoom(roomId, meta.userId, {
-        preserveRoom: roomStarted || remainingConnections > 0,
+        preserveRoom: roomStarted || remainingTotalConnections > 0,
         disconnectOnly: false,
       });
+    } else {
+      if (!userStillConnected) {
+        await this.roomsService.transferOwnerIfCurrent(roomId, meta.userId);
+      }
+      if (remainingTotalConnections === 0) {
+        await this.roomsService.leaveRoom(roomId, meta.userId, {
+          preserveRoom: false,
+          disconnectOnly: false,
+        });
+      }
     }
 
     // Empêche handleDisconnect de rappeler leaveRoom quand on ferme le socket après un leave explicite.
@@ -830,7 +875,7 @@ export class RoomGateway
       this.safeSend(client, { type: 'room.deleted', roomId });
     }
 
-    if (remainingConnections > 0) {
+    if (remainingTotalConnections > 0) {
       await this.sendRoomState(roomId);
     }
 
@@ -1031,6 +1076,7 @@ export class RoomGateway
     if (status === 'started') {
       throw new Error('Partie déjà commencée');
     }
+    const isOwner = state.room.owner?.id === meta.userId;
 
     const spectatorRaw = payload?.spectator;
     const spectator =
@@ -1046,6 +1092,7 @@ export class RoomGateway
       if (!state.room.isPrivate) {
         await this.roomsService.leaveRoom(meta.roomId, meta.userId, {
           preserveRoom: true,
+          preserveOwner: isOwner,
         });
       }
       meta.role = 'spectator';
@@ -1326,6 +1373,24 @@ export class RoomGateway
 
   private countSpectators(roomId: number): number {
     return listVisibleSpectators(this.clients.values(), roomId).length;
+  }
+
+  private hasUserConnections(roomId: number, userId: number): boolean {
+    const set = this.rooms.get(roomId);
+    if (set) {
+      for (const socket of set.values()) {
+        const meta = this.clients.get(socket);
+        if (meta?.userId === userId && meta.roomId === roomId) return true;
+      }
+    }
+    const silentSet = this.silentRooms.get(roomId);
+    if (silentSet) {
+      for (const socket of silentSet.values()) {
+        const meta = this.clients.get(socket);
+        if (meta?.userId === userId && meta.roomId === roomId) return true;
+      }
+    }
+    return false;
   }
 
   private async canSpectate(roomId: number, userId: number): Promise<boolean> {
