@@ -450,7 +450,7 @@ public sealed class MenuRouter : IMenuRouter
         var previous = _navigation.CurrentView;
         StopBackgroundLoops();
         var view = new MessagingView();
-        var vm = new MessagingViewModel(_messaging, _dialogs, onClose: () =>
+        var vm = new MessagingViewModel(_messaging, _dialogs, _badges, onClose: () =>
         {
             if (previous != null)
             {
@@ -462,7 +462,6 @@ public sealed class MenuRouter : IMenuRouter
         });
         view.DataContext = vm;
         _navigation.Show(view);
-        _badges.ResetMessaging();
 
         return Task.FromResult("Messagerie ouverte.");
     }
@@ -504,7 +503,7 @@ public sealed class MenuRouter : IMenuRouter
         var previous = _navigation.CurrentView;
         StopBackgroundLoops();
         var view = new NotificationsView();
-        var vm = new NotificationsViewModel(_inbox, _notify, _session, onClose: () =>
+        var vm = new NotificationsViewModel(_inbox, _notify, _session, _badges, onClose: () =>
         {
             if (previous != null)
             {
@@ -516,7 +515,6 @@ public sealed class MenuRouter : IMenuRouter
         });
         view.DataContext = vm;
         _navigation.Show(view);
-        _badges.ResetNotifications();
 
         return Task.FromResult("Notifications ouvertes.");
     }

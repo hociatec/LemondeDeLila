@@ -164,7 +164,7 @@ public sealed class MainMenuViewModel : ObservableObject
 
     private static string FormatMenuLabel(string baseLabel, int unread)
     {
-        if (unread <= 0) return baseLabel;
+        unread = Math.Max(0, unread);
         return $"{baseLabel} ({unread})";
     }
 

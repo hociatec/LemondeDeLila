@@ -5,10 +5,9 @@ public interface IMenuBadges
     int UnreadNotifications { get; }
     int UnreadMessaging { get; }
 
-    void IncrementNotifications();
-    void ResetNotifications();
+    void AddUnreadNotification(string id);
+    void MarkNotificationRead(string id);
 
-    void IncrementMessaging();
-    void ResetMessaging();
+    void AddUnreadMessage(string id);
+    void MarkMessageRead(string id);
 }
-

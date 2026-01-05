@@ -330,18 +330,14 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
                 var fromMe = me != null && item.FromUserId == me.UserId;
                 _sounds.Play(fromMe ? SoundId.AdminContactSent : SoundId.AdminContactReceived);
 
-                var isReading = _navigation.CurrentView is NotificationsView;
-                if (!fromMe && !isReading)
+                if (!fromMe)
                 {
-                    _badges.IncrementNotifications();
+                    _badges.AddUnreadNotification(item.Id);
                 }
             }
             else
             {
-                if (_navigation.CurrentView is not NotificationsView)
-                {
-                    _badges.IncrementNotifications();
-                }
+                _badges.AddUnreadNotification(item.Id);
             }
         }
         catch
@@ -717,9 +713,13 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
             if (me == null || fromId <= 0 || fromId != me.UserId)
             {
                 _sounds.Play(SoundId.PrivateMessageReceived);
-                if (_navigation.CurrentView is not MessagingView)
+
+                var messageId = payload.TryGetProperty("messageId", out var mid) && mid.ValueKind == JsonValueKind.String
+                    ? (mid.GetString() ?? string.Empty)
+                    : string.Empty;
+                if (!string.IsNullOrWhiteSpace(messageId))
                 {
-                    _badges.IncrementMessaging();
+                    _badges.AddUnreadMessage(messageId);
                 }
             }
         }

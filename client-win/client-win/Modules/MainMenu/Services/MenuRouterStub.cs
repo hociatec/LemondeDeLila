@@ -151,7 +151,7 @@ public sealed class MenuRouterStub : IMenuRouter
         var previous = _navigation.CurrentView;
         StopBackgroundLoops();
         var view = new MessagingView();
-        var vm = new MessagingViewModel(_messaging, _dialogs, onClose: () =>
+        var vm = new MessagingViewModel(_messaging, _dialogs, new MenuBadges(), onClose: () =>
         {
             if (previous != null)
             {
