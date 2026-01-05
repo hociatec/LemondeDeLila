@@ -724,6 +724,24 @@ export class GameEngineService {
   ): number | null {
     if ((state.status || '').toLowerCase() === 'finished') return null;
 
+    // Priorité: si une action "pending" est attendue d'un bot (même si ce n'est pas son tour),
+    // déclencher ce bot d'abord. Certains jeux utilisent `pending` pour des choix bloquants
+    // (pick/exchange/quiz) et peuvent laisser `turn.currentPlayerId` inchangé.
+    const pending = state.pending as any;
+    const pendingPlayerId =
+      pending && typeof pending.playerId === 'number' ? pending.playerId : null;
+    if (typeof pendingPlayerId === 'number') {
+      const pendingPlayer =
+        state.players?.find((p) => p.id === pendingPlayerId) ?? null;
+      if (pendingPlayer?.isBot) {
+        const available =
+          handler?.getAvailableActions?.(state, pendingPlayerId) ?? [];
+        if (Array.isArray(available) && available.length > 0) {
+          return pendingPlayerId;
+        }
+      }
+    }
+
     const currentId = state.turn?.currentPlayerId ?? null;
     const currentPlayer =
       state.players?.find((p) => p.id === currentId) ?? null;
@@ -731,22 +749,7 @@ export class GameEngineService {
       return currentId;
     }
 
-    const pending = state.pending as any;
-    const pendingPlayerId =
-      pending && typeof pending.playerId === 'number' ? pending.playerId : null;
-    if (typeof pendingPlayerId !== 'number') return null;
-
-    const pendingPlayer =
-      state.players?.find((p) => p.id === pendingPlayerId) ?? null;
-    if (!pendingPlayer?.isBot) return null;
-
-    const available =
-      handler?.getAvailableActions?.(state, pendingPlayerId) ?? [];
-    if (!Array.isArray(available) || available.length === 0) {
-      return null;
-    }
-
-    return pendingPlayerId;
+    return null;
   }
 
   private pendingSignature(pending: unknown): string | null {

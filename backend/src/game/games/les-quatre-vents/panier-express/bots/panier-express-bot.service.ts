@@ -68,6 +68,11 @@ export class PanierExpressBotService {
     const score = (action: GameSingleActionDto) => {
       const type = action.type?.toLowerCase() ?? '';
       if (type === 'answer_quiz') return 6;
+      if (type === 'pick_choice') {
+        const index = typeof action.payload?.index === 'number' ? action.payload.index : 0;
+        // Choix déterministe: on préfère les premiers items pour progresser.
+        return 8 - Math.max(0, Math.min(6, index));
+      }
       if (type === 'exchange_accept' || type === 'exchange_refuse') {
         const pending = state.pending as any;
         const offer =
@@ -126,6 +131,7 @@ export class PanierExpressBotService {
       {
         preferTypes: [
           'answer_quiz',
+          'pick_choice',
           'exchange_choose_give',
           'exchange_choose_target',
           'roll',
