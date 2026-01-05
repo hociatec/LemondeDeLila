@@ -7,10 +7,12 @@
              d:DesignHeight="60" d:DesignWidth="1280"
              Focusable="False"
              IsTabStop="False">
-    <Border Background="#0C1523"
+    <Border x:Name="StatusRegion"
+            Background="#0C1523"
             Padding="12 8"
             AutomationProperties.LiveSetting="Polite">
-        <TextBlock Text="{Binding Status}"
+        <TextBlock x:Name="StatusText"
+                   Text="{Binding Status}"
                    Foreground="#F2C14E"
                    FontSize="14"
                    TextWrapping="Wrap"

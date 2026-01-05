@@ -543,23 +543,35 @@ export class GameEngineService {
     // Fin de partie : remettre la room en "setup" (comme le raccourci X) et réinitialiser l'état du jeu
     // pour permettre de relancer immédiatement.
     if ((marked.status || '').toLowerCase() === 'finished') {
+      // Best-effort: les stats ne doivent pas empêcher le reset de table.
       try {
         await this.stats.finalizeFinished(roomId, marked);
-        await this.rooms.resetRoomSystem(roomId);
-        await this.rooms.notifyRoomStateUpdated(roomId);
-
-        // Attente : pas de rebuild tant que la table n'est pas redémarrée.
-        this.botScheduler.clear(this.buildKey(roomId, gameType));
       } catch (err) {
         this.gameLogger.error(
-          'Auto-reset after game finished failed',
+          'Finalize finished game failed',
           err instanceof Error ? err : undefined,
-          {
-            roomId,
-            gameType,
-          },
+          { roomId, gameType },
         );
       }
+
+      try {
+        await this.rooms.resetRoomSystem(roomId);
+      } catch (err) {
+        this.gameLogger.error(
+          'Auto-reset room after game finished failed',
+          err instanceof Error ? err : undefined,
+          { roomId, gameType },
+        );
+      }
+
+      try {
+        await this.rooms.notifyRoomStateUpdated(roomId);
+      } catch {
+        // best effort
+      }
+
+      // Attente : pas de rebuild tant que la table n'est pas redémarrée.
+      this.botScheduler.clear(this.buildKey(roomId, gameType));
     }
 
     this.gameLogger.debug('Actions applied successfully', {
@@ -903,6 +915,27 @@ export class GameEngineService {
     const isOwner = payload?.room?.owner?.id === userId;
     if (payload?.room?.isPrivate && !isParticipant && !isOwner) {
       throw new UnauthorizedException('Accès non autorisé à cette table');
+    }
+  }
+
+  async checkPlayAccess(roomId: number, userId: number): Promise<void> {
+    let payload: RoomPayload;
+    try {
+      payload = await this.rooms.getRoomPayload(roomId);
+    } catch (err) {
+      if (this.isRoomNotFound(err)) {
+        throw new NotFoundException('Table introuvable');
+      }
+      throw err;
+    }
+
+    const players = Array.isArray(payload?.room?.players)
+      ? payload.room.players
+      : [];
+    const isParticipant = players.some((p) => p?.id === userId);
+
+    if (!isParticipant) {
+      throw new UnauthorizedException('Mode spectateur : action de jeu interdite');
     }
   }
 

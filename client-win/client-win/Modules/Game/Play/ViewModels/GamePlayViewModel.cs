@@ -39,8 +39,10 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
     private readonly GamePlayAnnouncementRouter _announcementRouter;
     private int _pendingForcedTurnAnnouncements;
     private int? _lastStateTurnPlayerId;
+    private bool _skipLogReplayOnce = true;
 
     private GameSession? _session;
+    private bool _isSpectator;
 
     private string _connectionStatus = "Connexion au moteur de jeu...";
     private string _stateSummary = "En attente d'un état de jeu (game.state)...";
@@ -96,7 +98,7 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
             {
                 await TrySendRollAsync().ConfigureAwait(true);
             },
-            canExecute: () => _actions.CanSendRoll(_session));
+            canExecute: () => !_isSpectator && _actions.CanSendRoll(_session));
 
         _exchangeAcceptCommand = new AsyncRelayCommand(
             async () =>
@@ -105,8 +107,9 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
                     .ConfigureAwait(true);
             },
             canExecute: () =>
-                _actions.CanSendSimpleAction(_session, "answer_ask_card_accept") ||
-                _actions.CanSendSimpleAction(_session, "exchange_accept"));
+                !_isSpectator &&
+                (_actions.CanSendSimpleAction(_session, "answer_ask_card_accept") ||
+                 _actions.CanSendSimpleAction(_session, "exchange_accept")));
 
         _exchangeRefuseCommand = new AsyncRelayCommand(
             async () =>
@@ -115,15 +118,16 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
                     .ConfigureAwait(true);
             },
             canExecute: () =>
-                _actions.CanSendSimpleAction(_session, "answer_ask_card_refuse") ||
-                _actions.CanSendSimpleAction(_session, "exchange_refuse"));
+                !_isSpectator &&
+                (_actions.CanSendSimpleAction(_session, "answer_ask_card_refuse") ||
+                 _actions.CanSendSimpleAction(_session, "exchange_refuse")));
 
         _drawCommand = new AsyncRelayCommand(
             async () =>
             {
                 await TrySendSimpleActionAsync("draw").ConfigureAwait(true);
             },
-            canExecute: () => _actions.CanSendSimpleAction(_session, "draw"));
+            canExecute: () => !_isSpectator && _actions.CanSendSimpleAction(_session, "draw"));
 
         _discardSelectCommand = new AsyncRelayCommand(
             () =>
@@ -135,7 +139,7 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
                 }
                 return Task.CompletedTask;
             },
-            canExecute: () => _choices.HasDiscardChoices(_session?.LastState));
+            canExecute: () => !_isSpectator && _choices.HasDiscardChoices(_session?.LastState));
 
         _askCardSelectCommand = new AsyncRelayCommand(
             () =>
@@ -147,7 +151,7 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
                 }
                 return Task.CompletedTask;
             },
-            canExecute: () => CanStartAskCardSelection(_session?.LastState));
+            canExecute: () => !_isSpectator && CanStartAskCardSelection(_session?.LastState));
 
         _pollutionCommand = new AsyncRelayCommand(
             () =>
@@ -155,7 +159,7 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
                 StartPanelRequest(PanelMode.Pollution);
                 return Task.CompletedTask;
             },
-            canExecute: () => HasPollution(_session?.LastState));
+            canExecute: () => !_isSpectator && HasPollution(_session?.LastState));
 
         _simpleActionFromHintCommand = new AsyncRelayCommand<string>(
             async actionType =>
@@ -168,6 +172,7 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
                 await TrySendSimpleActionAsync(actionType).ConfigureAwait(true);
             },
             canExecute: actionType =>
+                !_isSpectator &&
                 !string.IsNullOrWhiteSpace(actionType) &&
                 _actions.CanSendSimpleAction(_session, actionType));
 
@@ -177,7 +182,7 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
                 StartPanelRequest(PanelMode.Shopping);
                 return Task.CompletedTask;
             },
-            canExecute: () => _projector.HasInterfaceShortcut(_session?.LastState, "shopping"));
+            canExecute: () => !_isSpectator && _projector.HasInterfaceShortcut(_session?.LastState, "shopping"));
 
         _toggleStableCommand = new AsyncRelayCommand(
             () =>
@@ -185,7 +190,7 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
                 StartPanelRequest(PanelMode.Stable);
                 return Task.CompletedTask;
             },
-            canExecute: () => _projector.HasInterfaceShortcut(_session?.LastState, "stable"));
+            canExecute: () => !_isSpectator && _projector.HasInterfaceShortcut(_session?.LastState, "stable"));
 
         _toggleScoreCommand = new AsyncRelayCommand(
             () =>
@@ -193,7 +198,7 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
                 StartPanelRequest(PanelMode.Score);
                 return Task.CompletedTask;
             },
-            canExecute: () => _projector.HasInterfaceShortcut(_session?.LastState, "score"));
+            canExecute: () => !_isSpectator && _projector.HasInterfaceShortcut(_session?.LastState, "score"));
 
         _toggleBasketCommand = new AsyncRelayCommand(
             () =>
@@ -201,7 +206,7 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
                 StartPanelRequest(PanelMode.Basket);
                 return Task.CompletedTask;
             },
-            canExecute: () => _projector.HasInterfaceShortcut(_session?.LastState, "basket"));
+            canExecute: () => !_isSpectator && _projector.HasInterfaceShortcut(_session?.LastState, "basket"));
 
         _toggleInventoryCommand = new AsyncRelayCommand(
             () =>
@@ -209,7 +214,7 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
                 StartPanelRequest(PanelMode.Inventory);
                 return Task.CompletedTask;
             },
-            canExecute: () => _projector.HasInterfaceShortcut(_session?.LastState, "inventory"));
+            canExecute: () => !_isSpectator && _projector.HasInterfaceShortcut(_session?.LastState, "inventory"));
 
         _toggleHandCommand = new AsyncRelayCommand(
             () =>
@@ -217,7 +222,7 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
                 StartPanelRequest(PanelMode.Hand);
                 return Task.CompletedTask;
             },
-            canExecute: () => _projector.HasInterfaceShortcut(_session?.LastState, "hand"));
+            canExecute: () => !_isSpectator && _projector.HasInterfaceShortcut(_session?.LastState, "hand"));
 
         _toggleBooksCommand = new AsyncRelayCommand(
             () =>
@@ -225,11 +230,11 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
                 StartPanelRequest(PanelMode.Books);
                 return Task.CompletedTask;
             },
-            canExecute: () => _projector.HasInterfaceShortcut(_session?.LastState, "books"));
+            canExecute: () => !_isSpectator && _projector.HasInterfaceShortcut(_session?.LastState, "books"));
 
         _turnInfoCommand = new AsyncRelayCommand(
             RequestTurnAsync,
-            canExecute: () => _session != null);
+            canExecute: () => !_isSpectator && _session != null);
 
         _positionCommand = new AsyncRelayCommand(
             () =>
@@ -237,7 +242,7 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
                 StartPositionRequest();
                 return Task.CompletedTask;
             },
-            canExecute: () => _projector.HasInterfaceShortcut(_session?.LastState, "position"));
+            canExecute: () => !_isSpectator && _projector.HasInterfaceShortcut(_session?.LastState, "position"));
 
         _shortcuts = new GamePlayShortcutsViewModel(
             _projector,
@@ -291,6 +296,17 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
 
     public event Action<string>? MessageReceived;
     public event Action? GameZoneFocusRequested;
+
+    public void SetSpectator(bool isSpectator)
+    {
+        if (_isSpectator == isSpectator)
+        {
+            return;
+        }
+
+        _isSpectator = isSpectator;
+        RefreshCanExecute();
+    }
 
     public string ConnectionStatus
     {
@@ -349,7 +365,10 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
 
     public async Task InitializeAsync(CancellationToken cancellationToken = default)
     {
+        // Au premier état reçu après connexion, ne pas rejouer tout l'historique :
+        // l'historique de la vue doit commencer à partir de l'arrivée du joueur.
         _projector.ResetLogCursor();
+        _skipLogReplayOnce = true;
         _lastStateTurnPlayerId = null;
 
         await _connection.InitializeAsync(cancellationToken).ConfigureAwait(false);
@@ -357,6 +376,15 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
 
     public async Task<bool> SubmitSelectedChoiceAsync(CancellationToken cancellationToken = default)
     {
+        if (_isSpectator)
+        {
+            const string message = "Mode spectateur : action de jeu interdite.";
+            ConnectionStatus = message;
+            _announcements?.Error(message);
+            MessageReceived?.Invoke(message);
+            return false;
+        }
+
         var session = _session;
         if (session == null) return false;
 
@@ -657,6 +685,12 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
 
         _dispatcher.InvokeAsync(() =>
         {
+            if (_skipLogReplayOnce)
+            {
+                _projector.PrimeLogCursor(state);
+                _skipLogReplayOnce = false;
+            }
+
             var presented = _presenter.Present(state!);
 
             // IMPORTANT:
@@ -803,7 +837,7 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
     {
         // Le client ne décide pas: il envoie, le serveur tranche (actions disponibles + validation).
         // Ici on évite uniquement d'envoyer si la session est inexistante/déconnectée.
-        return session.IsConnected;
+        return session.IsConnected && !_isSpectator;
     }
 
     private void RefreshCanExecute()

@@ -61,6 +61,7 @@ public partial class GameHistoryView : UserControl
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
         AttachViewModel(DataContext as GameHistoryViewModel);
+        AttachAppActivationHooks();
 
         Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
         {
@@ -74,6 +75,7 @@ public partial class GameHistoryView : UserControl
     private void OnUnloaded(object sender, RoutedEventArgs e)
     {
         AttachViewModel(null);
+        DetachAppActivationHooks();
     }
 
     private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
@@ -267,6 +269,11 @@ public partial class GameHistoryView : UserControl
 
     private void CollectAnnouncements(IEnumerable<string> entries)
     {
+        if (!IsAppActive())
+        {
+            return;
+        }
+
         var added = entries
             .SelectMany(SplitLines)
             .Select(line => (line ?? string.Empty).Trim())
@@ -336,6 +343,11 @@ public partial class GameHistoryView : UserControl
 
     private void Announce(string message)
     {
+        if (!IsAppActive())
+        {
+            return;
+        }
+
         var normalized = NormalizeAnnouncement(message);
         if (string.IsNullOrWhiteSpace(normalized))
         {
@@ -363,6 +375,11 @@ public partial class GameHistoryView : UserControl
 
     private void AnnounceDirect(string message)
     {
+        if (!IsAppActive())
+        {
+            return;
+        }
+
         if (_screenReader == null || _screenReader.IsRunning != true)
         {
             return;
@@ -412,6 +429,68 @@ public partial class GameHistoryView : UserControl
     }
 
     private bool UseDirectSpeech() => _screenReader?.IsRunning == true;
+
+    private void AttachAppActivationHooks()
+    {
+        try
+        {
+            if (Application.Current == null) return;
+            Application.Current.Activated -= OnAppActivated;
+            Application.Current.Deactivated -= OnAppDeactivated;
+            Application.Current.Activated += OnAppActivated;
+            Application.Current.Deactivated += OnAppDeactivated;
+        }
+        catch
+        {
+            // ignore
+        }
+    }
+
+    private void DetachAppActivationHooks()
+    {
+        try
+        {
+            if (Application.Current == null) return;
+            Application.Current.Activated -= OnAppActivated;
+            Application.Current.Deactivated -= OnAppDeactivated;
+        }
+        catch
+        {
+            // ignore
+        }
+    }
+
+    private void OnAppActivated(object? sender, EventArgs e)
+    {
+        // No-op: on n'annonce pas le backlog, l'historique reste consultable.
+    }
+
+    private void OnAppDeactivated(object? sender, EventArgs e)
+    {
+        CancelPendingAnnouncementsFromHost();
+        _screenReader?.CancelSpeech();
+    }
+
+    private static bool IsAppActive()
+    {
+        try
+        {
+            var app = Application.Current;
+            if (app == null) return true;
+            foreach (var window in app.Windows)
+            {
+                if (window is Window w && w.IsActive)
+                {
+                    return true;
+                }
+            }
+            return app.MainWindow == null;
+        }
+        catch
+        {
+            return true;
+        }
+    }
 
 }
 

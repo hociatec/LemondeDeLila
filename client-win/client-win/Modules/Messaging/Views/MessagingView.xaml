@@ -140,7 +140,7 @@
                                    FontStyle="Italic"
                                    HorizontalAlignment="Center"
                                    VerticalAlignment="Center"
-                                   Focusable="True"
+                                   Focusable="False"
                                    AutomationProperties.Name="Aucun message dans cette boîte">
                             <TextBlock.Style>
                                 <Style TargetType="TextBlock">

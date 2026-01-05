@@ -19,10 +19,20 @@ public partial class GameZoneHostView : UserControl
         if (GameZoneHost?.Content is System.Windows.FrameworkElement contentRoot)
         {
             // Priorité: focus sur un enfant réellement interactif (ex: liste de choix).
-            // Fallback: focus sur le root seulement s'il n'y a rien d'autre.
+            // Si aucun enfant focusable, garder le focus sur le root du jeu plutôt que sur l'ancre,
+            // pour éviter que les flèches ré-annoncent le titre (NVDA) en restant bloquées sur l'ancre.
             if (contentRoot.MoveFocus(new TraversalRequest(FocusNavigationDirection.First)))
             {
                 return;
+            }
+
+            if (contentRoot.Focusable || contentRoot.IsTabStop)
+            {
+                if (contentRoot.Focus())
+                {
+                    Keyboard.Focus(contentRoot);
+                    return;
+                }
             }
         }
 

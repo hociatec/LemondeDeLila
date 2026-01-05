@@ -50,7 +50,9 @@ internal sealed class GameTableBindings : IAsyncDisposable
     private Dictionary<int, (string Username, bool Spectator)> _participants = new();
     private Dictionary<int, string> _botsById = new();
     private int _ownerId = 0;
+    private bool _selfIsSpectator;
     private readonly HashSet<long> _seenChatSeq = new();
+    private bool _ignoreChatHistoryOnce = true;
 
     public GameTableBindings(
         Dispatcher dispatcher,
@@ -91,6 +93,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
     {
         _lastStatus = _session.LastRoomState?.Room?.Status;
         SeedParticipants(_session.LastRoomState?.Room);
+        _selfIsSpectator = ComputeSelfSpectator();
         SyncChatEnabled(_session.LastRoomState?.Manifest);
 
         _onAnnounced = announcement =>
@@ -121,6 +124,12 @@ internal sealed class GameTableBindings : IAsyncDisposable
         {
             _dispatcher.InvokeAsync(() =>
             {
+                if (_ignoreChatHistoryOnce)
+                {
+                    _ignoreChatHistoryOnce = false;
+                    return;
+                }
+
                 foreach (var msg in messages)
                 {
                     if (msg == null) continue;
@@ -173,6 +182,8 @@ internal sealed class GameTableBindings : IAsyncDisposable
                 // L'annonce passe via IRoomAnnouncements -> Announced -> historique (puis SR).
                 // Ne pas dupliquer via _history.Add / Status (sinon double lecture).
                 _announcements.RoleChanged(isSpectator);
+                _selfIsSpectator = isSpectator;
+                ApplySpectatorState();
             }, DispatcherPriority.Background);
         };
 
@@ -183,6 +194,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
             TrackParticipants(payload.Room);
             TrackBots(payload.Room);
             TrackOwner(payload.Room);
+            ApplySpectatorState();
 
             var nextStatus = payload.Room?.Status;
             var wasStarted = string.Equals(_lastStatus, "started", StringComparison.OrdinalIgnoreCase);
@@ -433,6 +445,11 @@ internal sealed class GameTableBindings : IAsyncDisposable
             return;
         }
 
+        if (_selfIsSpectator)
+        {
+            return;
+        }
+
         foreach (var shortcut in _gamePlayVm.Shortcuts.Where(IsGameplayShortcut))
         {
             _tableVm.GameZone.Shortcuts.Add(shortcut);
@@ -459,6 +476,36 @@ internal sealed class GameTableBindings : IAsyncDisposable
         }
 
         _tableVm.GameZone.Content = new GamePlayView { DataContext = _gamePlayVm };
+        ApplySpectatorState();
+    }
+
+    private void ApplySpectatorState()
+    {
+        _selfIsSpectator = ComputeSelfSpectator();
+        _gamePlayVm?.SetSpectator(_selfIsSpectator);
+        SyncGameplayShortcuts();
+    }
+
+    private bool ComputeSelfSpectator()
+    {
+        if (string.IsNullOrWhiteSpace(_selfUsername))
+        {
+            return _role.IsSpectator;
+        }
+
+        var self = (_selfUsername ?? string.Empty).Trim();
+        foreach (var entry in _participants.Values)
+        {
+            if (!string.Equals((entry.Username ?? string.Empty).Trim(), self, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            return entry.Spectator;
+        }
+
+        // Fallback: état local (reçu via room.role) si la room ne nous expose pas dans le roster.
+        return _role.IsSpectator;
     }
 
     private void UpdateGameTitle(RoomPayloadDto payload)

@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Windows;
 using Serilog;
 
 namespace client_win.Modules.Shell.Services;
@@ -51,6 +52,11 @@ public sealed class ScreenReaderAnnouncer : IScreenReaderAnnouncer, IDisposable
             return;
         }
 
+        if (!IsAppActive())
+        {
+            return;
+        }
+
         // Best-effort : NVDA si disponible, sinon on ne fait rien (les live regions WPF restent en place).
         try
         {
@@ -66,6 +72,33 @@ public sealed class ScreenReaderAnnouncer : IScreenReaderAnnouncer, IDisposable
         catch
         {
             // ignore
+        }
+    }
+
+    private static bool IsAppActive()
+    {
+        try
+        {
+            var app = Application.Current;
+            if (app == null)
+            {
+                return true;
+            }
+
+            foreach (var window in app.Windows)
+            {
+                if (window is Window w && w.IsActive)
+                {
+                    return true;
+                }
+            }
+
+            // Fallback: si aucune fenêtre connue, ne pas bloquer.
+            return app.MainWindow == null;
+        }
+        catch
+        {
+            return true;
         }
     }
 

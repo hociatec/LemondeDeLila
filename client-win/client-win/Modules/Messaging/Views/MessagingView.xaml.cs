@@ -327,7 +327,10 @@ public partial class MessagingView : UserControl
 
         if (MessagesList.Items.Count == 0)
         {
-            EmptyMessagesText.Focus();
+            // Ne pas forcer le focus sur le placeholder "Aucun message" :
+            // la liste peut être temporairement vide pendant un chargement, et certains lecteurs d'écran
+            // annoncent alors "Aucun message" avant d'énumérer les items quand ils arrivent.
+            MessagesList.Focus();
             return;
         }
 

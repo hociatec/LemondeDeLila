@@ -18,6 +18,29 @@ internal sealed class GamePlayStateProjector
         _lastSeenLogKey = null;
     }
 
+    internal void PrimeLogCursor(GameStateDto? state)
+    {
+        try
+        {
+            var log = state?.Log ?? new List<GameLogEntryDto>();
+            if (log.Count <= 0)
+            {
+                ResetLogCursor();
+                return;
+            }
+
+            _lastSeenLogCount = log.Count;
+            var lastEntry = log[log.Count - 1];
+            var tsLast = lastEntry?.Timestamp;
+            _lastSeenLogTimestamp = string.IsNullOrWhiteSpace(tsLast) ? null : tsLast;
+            _lastSeenLogKey = BuildLogKey(lastEntry);
+        }
+        catch
+        {
+            ResetLogCursor();
+        }
+    }
+
     internal (List<string> choices, string? selected) ExtractPendingChoices(GameStateDto state)
     {
         var result = new List<string>();
