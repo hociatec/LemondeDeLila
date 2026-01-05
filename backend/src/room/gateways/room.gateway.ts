@@ -448,6 +448,17 @@ export class RoomGateway
   private applySpectators(roomId: number, payload: RoomPayload): void {
     payload.room.spectators = listVisibleSpectators(this.clients.values(), roomId);
     payload.room.counts.spectators = payload.room.spectators.length;
+
+    // Garde-fou: éviter qu'un utilisateur apparaisse à la fois dans `players` (participants DB)
+    // et `spectators` (role socket) avant le démarrage.
+    const started =
+      (payload.room.status || '').toLowerCase() === 'started' ||
+      Boolean(payload.room.startedAt);
+    if (!started && payload.room.players?.length && payload.room.spectators?.length) {
+      const spectatorIds = new Set(payload.room.spectators.map((s) => s.id));
+      payload.room.players = payload.room.players.filter((p) => !spectatorIds.has(p.id));
+      payload.room.counts.players = payload.room.players.length;
+    }
   }
 
   private async broadcastRoomPayload(
