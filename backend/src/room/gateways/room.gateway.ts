@@ -175,6 +175,24 @@ export class RoomGateway
           client.close(4003, 'Spectateur non autorise sur cette table');
           return;
         }
+        // Alignement avec `room.set-role`: si on connecte directement en spectateur sur une table non démarrée,
+        // on se retire des participants quand c'est autorisé (public, ou owner sur privé) pour éviter d'apparaître
+        // à la fois dans `players` (DB) et `spectators` (WS).
+        try {
+          const state = await this.roomsService.getRoomPayload(targetRoomId);
+          const isOwner = state.room.owner?.id === payload.id;
+          const started =
+            (state.room.status || '').toLowerCase() === 'started' ||
+            Boolean(state.room.startedAt);
+          if (!started && (!state.room.isPrivate || isOwner)) {
+            await this.roomsService.leaveRoom(targetRoomId, payload.id, {
+              preserveRoom: true,
+              preserveOwner: isOwner,
+            });
+          }
+        } catch {
+          // ignore: best effort
+        }
       } else if (role !== 'spectator') {
         try {
           await this.roomsService.joinRoom(targetRoomId, payload.id);
