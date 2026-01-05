@@ -26,7 +26,7 @@ public partial class GameZoneHostView : UserControl
                 return;
             }
 
-            if (contentRoot.Focusable || contentRoot.IsTabStop)
+            if (contentRoot.Focusable || KeyboardNavigation.GetIsTabStop(contentRoot))
             {
                 if (contentRoot.Focus())
                 {
