@@ -8,6 +8,7 @@ using client_win.Modules.Catalog.Services;
 using client_win.Modules.MainMenu.Services;
 using client_win.Modules.User.Models;
 using Serilog;
+using System.ComponentModel;
 
 namespace client_win.Modules.MainMenu.ViewModels;
 
@@ -17,6 +18,7 @@ public sealed class MainMenuViewModel : ObservableObject
     private readonly IMenuRouter _router;
     private readonly ICatalogService _catalog;
     private readonly IApiCapabilitiesService _capabilities;
+    private readonly IMenuBadges _badges;
     private readonly Action? _logout;
     private string _statusMessage = "Prêt.";
     private bool _isAdminVisible;
@@ -28,12 +30,14 @@ public sealed class MainMenuViewModel : ObservableObject
         IMenuRouter router,
         ICatalogService catalog,
         IApiCapabilitiesService capabilities,
+        IMenuBadges badges,
         Action? logout = null)
     {
         _user = user ?? throw new ArgumentNullException(nameof(user));
         _router = router ?? throw new ArgumentNullException(nameof(router));
         _catalog = catalog ?? throw new ArgumentNullException(nameof(catalog));
         _capabilities = capabilities ?? throw new ArgumentNullException(nameof(capabilities));
+        _badges = badges ?? throw new ArgumentNullException(nameof(badges));
         _logout = logout;
         _isAdminVisible = false;
 
@@ -52,6 +56,8 @@ public sealed class MainMenuViewModel : ObservableObject
         JoinGameCommand = new AsyncRelayCommand(async () => SetStatus(await _router.JoinGame()));
         ChatCommand = new AsyncRelayCommand(async () => SetStatus(await _router.OpenChat()));
         MessagingCommand = new AsyncRelayCommand(async () => SetStatus(await _router.OpenMessaging()));
+        NotificationsCommand = new AsyncRelayCommand(async () => SetStatus(await _router.OpenNotifications()));
+        ContactAdminCommand = new AsyncRelayCommand(async () => SetStatus(await _router.OpenContactAdmin()));
         SocialCommand = new AsyncRelayCommand(async () => SetStatus(await _router.OpenSocial()));
         StatsCommand = new AsyncRelayCommand(async () => SetStatus(await _router.OpenStats()));
         AboutCommand = new AsyncRelayCommand(async () => SetStatus(await _router.OpenAbout()));
@@ -78,6 +84,11 @@ public sealed class MainMenuViewModel : ObservableObject
             Log.Error(ex, "Erreur lors de la détection des droits admin");
         });
         BuildMenuItems();
+
+        if (_badges is INotifyPropertyChanged pc)
+        {
+            pc.PropertyChanged += (_, __) => RebuildMenuPreservingSelection();
+        }
     }
 
     public string Welcome => $"Bienvenue, {_user.Username}";
@@ -100,6 +111,8 @@ public sealed class MainMenuViewModel : ObservableObject
     public ICommand JoinGameCommand { get; }
     public ICommand ChatCommand { get; }
     public ICommand MessagingCommand { get; }
+    public ICommand NotificationsCommand { get; }
+    public ICommand ContactAdminCommand { get; }
     public ICommand SocialCommand { get; }
     public ICommand StatsCommand { get; }
     public ICommand AdminCommand { get; }
@@ -125,9 +138,11 @@ public sealed class MainMenuViewModel : ObservableObject
         Items.Clear();
 
         Items.Add(new MainMenuItem("Entrée dans la taverne", tag: OpenCatalogCommand));
-        Items.Add(new MainMenuItem("Messagerie", tag: MessagingCommand));
+        Items.Add(new MainMenuItem(FormatMenuLabel("Messagerie", _badges.UnreadMessaging), tag: MessagingCommand));
         Items.Add(new MainMenuItem("Tchat", tag: ChatCommand));
+        Items.Add(new MainMenuItem(FormatMenuLabel("Notifications", _badges.UnreadNotifications), tag: NotificationsCommand));
         Items.Add(new MainMenuItem("Social", tag: SocialCommand));
+        Items.Add(new MainMenuItem("Contacter un administrateur (F3)", tag: ContactAdminCommand));
         Items.Add(new MainMenuItem("À propos", tag: AboutCommand));
 
         Items.Add(new MainMenuItem("Options", tag: OptionsCommand));
@@ -135,6 +150,22 @@ public sealed class MainMenuViewModel : ObservableObject
 
         SelectedItem = Items.FirstOrDefault();
         StatusMessage = "Entrée : sélectionner.";
+    }
+
+    private void RebuildMenuPreservingSelection()
+    {
+        var prevTag = SelectedItem?.Tag;
+        BuildMenuItems();
+        if (prevTag != null)
+        {
+            SelectedItem = Items.FirstOrDefault(i => ReferenceEquals(i.Tag, prevTag)) ?? Items.FirstOrDefault();
+        }
+    }
+
+    private static string FormatMenuLabel(string baseLabel, int unread)
+    {
+        if (unread <= 0) return baseLabel;
+        return $"{baseLabel} ({unread})";
     }
 
     private async Task RefreshAdminVisibilityAsync()

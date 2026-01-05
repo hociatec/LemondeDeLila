@@ -19,6 +19,8 @@ public enum SoundId
     GameDefeat,
     InvitationSent,
     InvitationReceived,
+    AdminContactSent,
+    AdminContactReceived,
     RoomOpened,
     RoomJoined,
     RoomExit,

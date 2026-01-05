@@ -11,6 +11,8 @@ public interface IMenuRouter
     Task<string> OpenChat();
     Task<string> OpenMessaging();
     Task<string> OpenSocial();
+    Task<string> OpenNotifications();
+    Task<string> OpenContactAdmin();
     Task<string> OpenAdmin();
     Task<string> OpenAbout();
     Task<string> OpenOptions();

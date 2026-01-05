@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Threading;
@@ -17,6 +18,11 @@ using client_win.Modules.Network.WebSockets;
 using client_win.Modules.Shell.Services;
 using client_win.Modules.MainMenu.Views;
 using client_win.Modules.User.Services;
+using client_win.Modules.Notifications.Models;
+using client_win.Modules.Notifications.Services;
+using client_win.Modules.MainMenu.Services;
+using client_win.Modules.Notifications.Views;
+using client_win.Modules.Messaging.Views;
 using client_win.Modules.Updates;
 using client_win.Modules.Game.RoomDirectory.Services;
 using client_win.Modules.Game.Shell.Services;
@@ -24,7 +30,7 @@ using Serilog;
 
 namespace client_win.Modules.Network.Services;
 
-public sealed class NotifyListener : INotifyListener, IAsyncDisposable
+public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsyncDisposable
 {
     private readonly ClientConfiguration _config;
     private readonly ISessionService _session;
@@ -38,6 +44,8 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
     private readonly INavigationService _navigation;
     private readonly ISoundService _sounds;
     private readonly IRemoteSoundCache _remoteSounds;
+    private readonly INotificationInbox _inbox;
+    private readonly IMenuBadges _badges;
 
     private IWebSocketConnection? _ws;
     private bool _started;
@@ -54,7 +62,9 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
         IGameTableOpener tables,
         INavigationService navigation,
         ISoundService sounds,
-        IRemoteSoundCache remoteSounds)
+        IRemoteSoundCache remoteSounds,
+        INotificationInbox inbox,
+        IMenuBadges badges)
     {
         _config = config ?? throw new ArgumentNullException(nameof(config));
         _session = session ?? throw new ArgumentNullException(nameof(session));
@@ -68,6 +78,8 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
         _navigation = navigation ?? throw new ArgumentNullException(nameof(navigation));
         _sounds = sounds ?? throw new ArgumentNullException(nameof(sounds));
         _remoteSounds = remoteSounds ?? throw new ArgumentNullException(nameof(remoteSounds));
+        _inbox = inbox ?? throw new ArgumentNullException(nameof(inbox));
+        _badges = badges ?? throw new ArgumentNullException(nameof(badges));
     }
 
     public async Task StartAsync(CancellationToken cancellationToken = default)
@@ -213,10 +225,198 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
             {
                 _ = HandleSoundsUpdatedAsync();
             }
+            else if (string.Equals(type, "notify.inbox.snapshot", StringComparison.OrdinalIgnoreCase))
+            {
+                HandleInboxSnapshot(root);
+            }
+            else if (string.Equals(type, "notify.inbox.item", StringComparison.OrdinalIgnoreCase))
+            {
+                HandleInboxItem(root);
+            }
+            else if (string.Equals(type, "notify.admin_contact.error", StringComparison.OrdinalIgnoreCase))
+            {
+                var msg = root.TryGetProperty("payload", out var p) && p.ValueKind == JsonValueKind.Object &&
+                          p.TryGetProperty("message", out var m) && m.ValueKind == JsonValueKind.String
+                    ? (m.GetString() ?? string.Empty)
+                    : string.Empty;
+                if (!string.IsNullOrWhiteSpace(msg))
+                {
+                    _screenReader.AnnouncePolite(msg);
+                }
+            }
         }
         catch (Exception ex)
         {
             Log.Debug(ex, "Message notify invalide.");
+        }
+    }
+
+    public async Task SendAsync(string type, object? payload = null, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(type))
+        {
+            return;
+        }
+
+        await StartAsync(cancellationToken).ConfigureAwait(false);
+        var ws = _ws;
+        if (ws == null)
+        {
+            throw new InvalidOperationException("WS notify non connecté.");
+        }
+
+        var raw = JsonSerializer.Serialize(new
+        {
+            type,
+            payload,
+        });
+        await ws.SendAsync(raw, cancellationToken).ConfigureAwait(false);
+    }
+
+    public Task RequestInboxSnapshotAsync(CancellationToken cancellationToken = default) =>
+        SendAsync("notify.inbox.list", payload: null, cancellationToken);
+
+    private void HandleInboxSnapshot(JsonElement root)
+    {
+        try
+        {
+            if (!root.TryGetProperty("payload", out var payload) || payload.ValueKind != JsonValueKind.Object)
+            {
+                return;
+            }
+
+            if (!payload.TryGetProperty("items", out var itemsEl) || itemsEl.ValueKind != JsonValueKind.Array)
+            {
+                _inbox.ReplaceAll(Array.Empty<NotificationItem>());
+                return;
+            }
+
+            var items = new List<NotificationItem>();
+            foreach (var el in itemsEl.EnumerateArray())
+            {
+                if (TryParseNotificationItem(el, out var item) && item != null)
+                {
+                    items.Add(item);
+                }
+            }
+
+            _inbox.ReplaceAll(items);
+        }
+        catch
+        {
+            // ignore
+        }
+    }
+
+    private void HandleInboxItem(JsonElement root)
+    {
+        try
+        {
+            if (!root.TryGetProperty("payload", out var payload) || payload.ValueKind != JsonValueKind.Object)
+            {
+                return;
+            }
+
+            if (!TryParseNotificationItem(payload, out var item) || item == null)
+            {
+                return;
+            }
+
+            _inbox.Upsert(item);
+
+            if (string.Equals(item.Kind, "admin_contact", StringComparison.OrdinalIgnoreCase))
+            {
+                var me = _session.CurrentUser;
+                var fromMe = me != null && item.FromUserId == me.UserId;
+                _sounds.Play(fromMe ? SoundId.AdminContactSent : SoundId.AdminContactReceived);
+
+                var isReading = _navigation.CurrentView is NotificationsView;
+                if (!fromMe && !isReading)
+                {
+                    _badges.IncrementNotifications();
+                }
+            }
+            else
+            {
+                if (_navigation.CurrentView is not NotificationsView)
+                {
+                    _badges.IncrementNotifications();
+                }
+            }
+        }
+        catch
+        {
+            // ignore
+        }
+    }
+
+    private static bool TryParseNotificationItem(JsonElement payload, out NotificationItem? item)
+    {
+        item = null;
+        try
+        {
+            var id = payload.TryGetProperty("id", out var idEl) && idEl.ValueKind == JsonValueKind.String
+                ? idEl.GetString()
+                : null;
+            var kind = payload.TryGetProperty("kind", out var kEl) && kEl.ValueKind == JsonValueKind.String
+                ? kEl.GetString()
+                : null;
+            var createdAt = payload.TryGetProperty("createdAt", out var cEl) && cEl.ValueKind == JsonValueKind.String
+                ? cEl.GetString()
+                : null;
+
+            if (string.IsNullOrWhiteSpace(id) || string.IsNullOrWhiteSpace(kind))
+            {
+                return false;
+            }
+
+            var ts = DateTimeOffset.TryParse(createdAt, out var dto) ? dto : DateTimeOffset.UtcNow;
+
+            if (string.Equals(kind, "admin_contact", StringComparison.OrdinalIgnoreCase))
+            {
+                var contactId = payload.TryGetProperty("contactId", out var ci) && ci.ValueKind == JsonValueKind.String
+                    ? ci.GetString()
+                    : null;
+                var fromUserId = payload.TryGetProperty("fromUserId", out var fu) && fu.ValueKind == JsonValueKind.Number
+                    ? fu.GetInt32()
+                    : 0;
+                var fromUsername = payload.TryGetProperty("fromUsername", out var fn) && fn.ValueKind == JsonValueKind.String
+                    ? (fn.GetString() ?? string.Empty)
+                    : string.Empty;
+                var message = payload.TryGetProperty("message", out var msg) && msg.ValueKind == JsonValueKind.String
+                    ? (msg.GetString() ?? string.Empty)
+                    : string.Empty;
+                int? toUserId = null;
+                if (payload.TryGetProperty("toUserId", out var tu) && tu.ValueKind == JsonValueKind.Number)
+                {
+                    toUserId = tu.GetInt32();
+                }
+
+                item = new NotificationItem
+                {
+                    Id = id,
+                    Kind = "admin_contact",
+                    CreatedAt = ts,
+                    ContactId = contactId,
+                    FromUserId = fromUserId,
+                    FromUsername = fromUsername,
+                    ToUserId = toUserId,
+                    Message = message,
+                };
+                return true;
+            }
+
+            item = new NotificationItem
+            {
+                Id = id,
+                Kind = kind,
+                CreatedAt = ts,
+            };
+            return true;
+        }
+        catch
+        {
+            return false;
         }
     }
 
@@ -517,6 +717,10 @@ public sealed class NotifyListener : INotifyListener, IAsyncDisposable
             if (me == null || fromId <= 0 || fromId != me.UserId)
             {
                 _sounds.Play(SoundId.PrivateMessageReceived);
+                if (_navigation.CurrentView is not MessagingView)
+                {
+                    _badges.IncrementMessaging();
+                }
             }
         }
         catch

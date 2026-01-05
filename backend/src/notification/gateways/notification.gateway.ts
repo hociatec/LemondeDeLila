@@ -14,8 +14,15 @@ import { WsTicketAuthService } from '../../common/ws/ws-ticket-auth.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { SocialRelationship } from '../../social/entities/social-relationship.entity';
+import { AdminContactService } from '../services/admin-contact.service';
 
-type ClientMeta = { userId: number; socket: WebSocket; origin: string | null };
+type ClientMeta = {
+  userId: number;
+  username: string;
+  roles: string[];
+  socket: WebSocket;
+  origin: string | null;
+};
 
 @WebSocketGateway({ path: '/ws/notify' })
 export class NotificationGateway
@@ -33,6 +40,7 @@ export class NotificationGateway
     private readonly notifications: NotificationService,
     private readonly clientUpdates: ClientUpdatesService,
     private readonly wsTickets: WsTicketAuthService,
+    private readonly adminContacts: AdminContactService,
     @InjectRepository(SocialRelationship)
     private readonly relationships: Repository<SocialRelationship>,
   ) {}
@@ -107,6 +115,8 @@ export class NotificationGateway
     const prevCount = this.socketCountsByUserId.get(user.id) ?? 0;
     this.clients.set(client, {
       userId: user.id,
+      username: String(user.username || '').trim() || `user#${user.id}`,
+      roles: Array.isArray(user.roles) ? user.roles : [],
       socket: client,
       origin: this.extractOriginFromWsArgs(args),
     });
@@ -220,6 +230,67 @@ export class NotificationGateway
     }
 
     const type = typeof parsed?.type === 'string' ? parsed.type : '';
+    if (!type) return;
+
+    if (type === 'notify.inbox.list') {
+      try {
+        const items = await this.adminContacts.listInbox(meta.userId, 200);
+        this.safeSend(client, { type: 'notify.inbox.snapshot', payload: { items } });
+      } catch {
+        this.safeSend(client, { type: 'notify.inbox.snapshot', payload: { items: [] } });
+      }
+      return;
+    }
+
+    if (type === 'notify.inbox.delete') {
+      const id = typeof parsed?.payload?.id === 'string' ? parsed.payload.id.trim() : '';
+      if (!id) return;
+      try {
+        await this.adminContacts.deleteInboxItem(meta.userId, id);
+        const items = await this.adminContacts.listInbox(meta.userId, 200);
+        this.safeSend(client, { type: 'notify.inbox.snapshot', payload: { items } });
+      } catch {
+        // ignore
+      }
+      return;
+    }
+
+    if (type === 'notify.admin_contact.send') {
+      try {
+        const message = typeof parsed?.payload?.message === 'string' ? parsed.payload.message : '';
+        const item = await this.adminContacts.sendFromUserToStaff(
+          { id: meta.userId, username: meta.username, roles: meta.roles } as any,
+          message,
+        );
+        this.safeSend(client, { type: 'notify.admin_contact.sent', payload: { id: item.id, contactId: item.contactId } });
+      } catch (err: any) {
+        this.safeSend(client, { type: 'notify.admin_contact.error', payload: { message: String(err?.message || 'Erreur') } });
+      }
+      return;
+    }
+
+    if (type === 'notify.admin_contact.reply') {
+      try {
+        const from = { id: meta.userId, username: meta.username, roles: meta.roles } as any;
+        const message = typeof parsed?.payload?.message === 'string' ? parsed.payload.message : '';
+        const contactId = typeof parsed?.payload?.contactId === 'string' ? parsed.payload.contactId : '';
+        const toUserId = typeof parsed?.payload?.toUserId === 'number' ? parsed.payload.toUserId : 0;
+        const isStaff =
+          Array.isArray((from as any).roles) &&
+          ((from as any).roles.includes('ROLE_ADMIN') ||
+            (from as any).roles.includes('admin') ||
+            (from as any).roles.includes('ROLE_MODERATOR') ||
+            (from as any).roles.includes('moderator'));
+        const item = isStaff
+          ? await this.adminContacts.replyFromStaffToUser(from, toUserId, message, contactId)
+          : await this.adminContacts.sendFromUserToStaff(from, message, contactId);
+        this.safeSend(client, { type: 'notify.admin_contact.sent', payload: { id: item.id, contactId: item.contactId } });
+      } catch (err: any) {
+        this.safeSend(client, { type: 'notify.admin_contact.error', payload: { message: String(err?.message || 'Erreur') } });
+      }
+      return;
+    }
+
     if (type !== 'client.hello') {
       return;
     }

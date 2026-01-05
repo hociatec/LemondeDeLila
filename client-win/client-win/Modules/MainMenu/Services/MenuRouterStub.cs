@@ -192,6 +192,10 @@ public sealed class MenuRouterStub : IMenuRouter
 
     public Task<string> OpenSocial() => LogAndReturn("Social (stub)");
 
+    public Task<string> OpenNotifications() => LogAndReturn("Notifications (stub)");
+
+    public Task<string> OpenContactAdmin() => LogAndReturn("Contact admin (stub)");
+
     public Task<string> OpenAdmin() => LogAndReturn("Administration (stub)");
 
     public Task<string> OpenAbout() => LogAndReturn("À propos (stub)");

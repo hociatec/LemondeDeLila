@@ -32,6 +32,7 @@ using client_win.Modules.Catalog.Services;
 using client_win.Modules.Messaging.Services;
 using client_win.Modules.Social.Services;
 using client_win.Modules.Stats.Services;
+using client_win.Modules.Notifications.Services;
 using client_win.Modules.Admin.Services;
 using client_win.Modules.Leaderboard.Services;
 using client_win.Modules.Game.Play.Services;
@@ -293,7 +294,10 @@ public static class AppBootstrapper
                 sp.GetRequiredService<WsRequestClient>(),
                 sp.GetRequiredService<ISessionService>()));
 
-        services.AddSingleton<INotifyListener>(sp =>
+        services.AddSingleton<Modules.MainMenu.Services.IMenuBadges, Modules.MainMenu.Services.MenuBadges>();
+        services.AddSingleton<INotificationInbox, NotificationInbox>();
+
+        services.AddSingleton<NotifyListener>(sp =>
             new NotifyListener(
                 sp.GetRequiredService<ClientConfiguration>(),
                 sp.GetRequiredService<ISessionService>(),
@@ -306,7 +310,12 @@ public static class AppBootstrapper
                 sp.GetRequiredService<Modules.Game.Shell.Services.IGameTableOpener>(),
                 sp.GetRequiredService<INavigationService>(),
                 sp.GetRequiredService<ISoundService>(),
-                sp.GetRequiredService<IRemoteSoundCache>()));
+                sp.GetRequiredService<IRemoteSoundCache>(),
+                sp.GetRequiredService<INotificationInbox>(),
+                sp.GetRequiredService<Modules.MainMenu.Services.IMenuBadges>()));
+
+        services.AddSingleton<INotifyListener>(sp => sp.GetRequiredService<NotifyListener>());
+        services.AddSingleton<INotifyGatewayClient>(sp => sp.GetRequiredService<NotifyListener>());
 
         services.AddTransient<IMenuRouter, MenuRouter>();
 
@@ -499,6 +508,7 @@ public sealed class AppHost : IAsyncDisposable
             Services.GetRequiredService<Modules.MainMenu.Services.IMenuRouter>(),
             Services.GetRequiredService<Modules.Catalog.Services.ICatalogService>(),
             Services.GetRequiredService<Modules.Network.Services.IApiCapabilitiesService>(),
+            Services.GetRequiredService<Modules.MainMenu.Services.IMenuBadges>(),
             logout);
 
     public async ValueTask DisposeAsync()

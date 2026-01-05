@@ -36,6 +36,9 @@ using client_win.Modules.User.Services;
 using client_win.Modules.Network.Services;
 using client_win.Modules.MainMenu.Views;
 using client_win.Modules.TextPrompts.Services;
+using client_win.Modules.Notifications.Services;
+using client_win.Modules.Notifications.ViewModels;
+using client_win.Modules.Notifications.Views;
 
 namespace client_win.Modules.MainMenu.Services;
 
@@ -68,6 +71,9 @@ public sealed class MenuRouter : IMenuRouter
     private readonly ISessionService _session;
     private readonly IRemoteSoundCache _remoteSounds;
     private readonly IApiCapabilitiesService _apiCapabilities;
+    private readonly INotificationInbox _inbox;
+    private readonly INotifyGatewayClient _notify;
+    private readonly IMenuBadges _badges;
 
     public MenuRouter(
         ILogger<MenuRouter> logger,
@@ -78,6 +84,9 @@ public sealed class MenuRouter : IMenuRouter
         ISessionService session,
         IRemoteSoundCache remoteSounds,
         IApiCapabilitiesService apiCapabilities,
+        INotificationInbox inbox,
+        INotifyGatewayClient notify,
+        IMenuBadges badges,
         IChatLauncher chat,
         ICatalogService catalog,
         INavigationService navigation,
@@ -102,6 +111,9 @@ public sealed class MenuRouter : IMenuRouter
         _session = session;
         _remoteSounds = remoteSounds;
         _apiCapabilities = apiCapabilities;
+        _inbox = inbox;
+        _notify = notify;
+        _badges = badges;
         _chat = chat;
         _catalog = catalog;
         _navigation = navigation;
@@ -450,6 +462,7 @@ public sealed class MenuRouter : IMenuRouter
         });
         view.DataContext = vm;
         _navigation.Show(view);
+        _badges.ResetMessaging();
 
         return Task.FromResult("Messagerie ouverte.");
     }
@@ -484,6 +497,53 @@ public sealed class MenuRouter : IMenuRouter
         return Task.FromResult("Réseau social ouvert.");
     }
 
+    public Task<string> OpenNotifications()
+    {
+        _logger.LogInformation("Ouverture des notifications");
+
+        var previous = _navigation.CurrentView;
+        StopBackgroundLoops();
+        var view = new NotificationsView();
+        var vm = new NotificationsViewModel(_inbox, _notify, _session, onClose: () =>
+        {
+            if (previous != null)
+            {
+                _navigation.Show(previous);
+                RestoreFocusAfterBackNavigation(previous);
+            }
+
+            StartLoopForView(_navigation.CurrentView);
+        });
+        view.DataContext = vm;
+        _navigation.Show(view);
+        _badges.ResetNotifications();
+
+        return Task.FromResult("Notifications ouvertes.");
+    }
+
+    public Task<string> OpenContactAdmin()
+    {
+        _logger.LogInformation("Ouverture du contact admin");
+
+        var previous = _navigation.CurrentView;
+        StopBackgroundLoops();
+        var view = new AboutView();
+        var vm = new AboutViewModel(_config, _dialogs, _notify, onClose: () =>
+        {
+            if (previous != null)
+            {
+                _navigation.Show(previous);
+                RestoreFocusAfterBackNavigation(previous);
+            }
+
+            StartLoopForView(_navigation.CurrentView);
+        }, openContactAdmin: true);
+        view.DataContext = vm;
+        _navigation.Show(view);
+
+        return Task.FromResult("Contact admin ouvert.");
+    }
+
     public Task<string> OpenAdmin()
     {
         _logger.LogInformation("Ouverture du panneau d'administration");
@@ -514,7 +574,7 @@ public sealed class MenuRouter : IMenuRouter
         var previous = _navigation.CurrentView;
         StopBackgroundLoops();
         var view = new AboutView();
-        var vm = new AboutViewModel(_config, _dialogs, onClose: () =>
+        var vm = new AboutViewModel(_config, _dialogs, _notify, onClose: () =>
         {
             if (previous != null)
             {

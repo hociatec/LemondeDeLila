@@ -23,6 +23,11 @@ public partial class AboutView : UserControl
     {
         if (e.Key == Key.Tab)
         {
+            if (DataContext is AboutViewModel vm && vm.ShowContactAdmin)
+            {
+                return;
+            }
+
             e.Handled = true;
             return;
         }
@@ -72,6 +77,12 @@ public partial class AboutView : UserControl
         if (ShortcutsBox != null && ShortcutsBox.IsVisible)
         {
             ShortcutsBox.Focus();
+            return;
+        }
+
+        if (ContactMessageBox != null && ContactMessageBox.IsVisible)
+        {
+            ContactMessageBox.Focus();
             return;
         }
 

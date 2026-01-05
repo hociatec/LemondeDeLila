@@ -10,6 +10,7 @@ using client_win.Core;
 using client_win.Core.Constants;
 using client_win.Modules.Config;
 using client_win.Modules.Shell.Services;
+using client_win.Modules.Network.Services;
 
 namespace client_win.Modules.About.ViewModels;
 
@@ -26,37 +27,51 @@ public sealed class AboutViewModel : ObservableObject
     private readonly Dispatcher _dispatcher;
     private readonly ClientConfiguration _config;
     private readonly IDialogService _dialogs;
+    private readonly INotifyGatewayClient _notify;
     private AboutPage _page = AboutPage.Root;
     private string _title = "À propos";
     private string _status = "Entrée : sélectionner. Échap : retour.";
     private string _details = string.Empty;
     private bool _isBusy;
     private AboutMenuItem? _selectedItem;
+    private string _contactMessage = string.Empty;
 
     private string _appName = AppConstants.AppName;
     private string _currentVersion = AppInfo.GetShortVersion();
     private string _localUpdatedAt = "Inconnue";
 
     private readonly AsyncRelayCommand _activateCommand;
+    private readonly AsyncRelayCommand _sendContactCommand;
+    private readonly RelayCommand _cancelContactCommand;
 
     private const string TagShortcuts = "shortcuts";
     private const string TagInfo = "info";
+    private const string TagContactAdmin = "contact_admin";
 
     public AboutViewModel(
         ClientConfiguration config,
         IDialogService dialogs,
-        Action onClose)
+        INotifyGatewayClient notify,
+        Action onClose,
+        bool openContactAdmin = false)
     {
         _config = config ?? throw new ArgumentNullException(nameof(config));
         _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
+        _notify = notify ?? throw new ArgumentNullException(nameof(notify));
         _close = onClose ?? (() => { });
         _dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
 
         Items = new ObservableCollection<AboutMenuItem>();
         _activateCommand = new AsyncRelayCommand(ActivateSelectedAsync);
+        _sendContactCommand = new AsyncRelayCommand(SendContactAsync);
+        _cancelContactCommand = new RelayCommand(() => BuildRoot());
 
         RefreshLocalInfo();
         BuildRoot();
+        if (openContactAdmin)
+        {
+            BuildContactAdmin();
+        }
     }
 
     public ObservableCollection<AboutMenuItem> Items { get; }
@@ -99,6 +114,16 @@ public sealed class AboutViewModel : ObservableObject
     public bool ShowItemsList => _page is AboutPage.Root or AboutPage.Info;
     public bool ShowShortcuts => _page == AboutPage.Shortcuts;
     public bool ShowInfo => _page == AboutPage.Info;
+    public bool ShowContactAdmin => _page == AboutPage.ContactAdmin;
+
+    public string ContactMessage
+    {
+        get => _contactMessage;
+        set => SetProperty(ref _contactMessage, value);
+    }
+
+    public AsyncRelayCommand SendContactCommand => _sendContactCommand;
+    public RelayCommand CancelContactCommand => _cancelContactCommand;
 
     public string AppName
     {
@@ -124,7 +149,7 @@ public sealed class AboutViewModel : ObservableObject
 
     public AboutNavResult HandleEscape()
     {
-        if (_page is AboutPage.Shortcuts or AboutPage.Info)
+        if (_page is AboutPage.Shortcuts or AboutPage.Info or AboutPage.ContactAdmin)
         {
             BuildRoot();
             return AboutNavResult.Moved;
@@ -140,12 +165,14 @@ public sealed class AboutViewModel : ObservableObject
         OnPropertyChanged(nameof(ShowItemsList));
         OnPropertyChanged(nameof(ShowShortcuts));
         OnPropertyChanged(nameof(ShowInfo));
+        OnPropertyChanged(nameof(ShowContactAdmin));
 
         Title = "À propos";
         Details = string.Empty;
         Items.Clear();
         Items.Add(new AboutMenuItem("Raccourcis", tag: TagShortcuts));
         Items.Add(new AboutMenuItem("Informations sur l'application", tag: TagInfo));
+        Items.Add(new AboutMenuItem("Contacter un administrateur", tag: TagContactAdmin));
         SelectedItem = Items.FirstOrDefault();
         Status = "Entrée : ouvrir. Échap : retour.";
     }
@@ -156,6 +183,7 @@ public sealed class AboutViewModel : ObservableObject
         OnPropertyChanged(nameof(ShowItemsList));
         OnPropertyChanged(nameof(ShowShortcuts));
         OnPropertyChanged(nameof(ShowInfo));
+        OnPropertyChanged(nameof(ShowContactAdmin));
 
         Title = "Raccourcis";
         Details = string.Empty;
@@ -171,12 +199,29 @@ public sealed class AboutViewModel : ObservableObject
         OnPropertyChanged(nameof(ShowItemsList));
         OnPropertyChanged(nameof(ShowShortcuts));
         OnPropertyChanged(nameof(ShowInfo));
+        OnPropertyChanged(nameof(ShowContactAdmin));
 
         Title = "Informations sur l'application";
         Details = string.Empty;
         Status = "Flèches : lire. Échap : retour.";
 
         RefreshLocalInfo();
+    }
+
+    private void BuildContactAdmin()
+    {
+        _page = AboutPage.ContactAdmin;
+        OnPropertyChanged(nameof(ShowItemsList));
+        OnPropertyChanged(nameof(ShowShortcuts));
+        OnPropertyChanged(nameof(ShowInfo));
+        OnPropertyChanged(nameof(ShowContactAdmin));
+
+        Title = "Contacter un administrateur";
+        Details = string.Empty;
+        Items.Clear();
+        SelectedItem = null;
+        Status = "Tab : naviguer. Entrée : envoyer. Échap : retour.";
+        ContactMessage = string.Empty;
     }
 
     private Task ActivateSelectedAsync()
@@ -206,7 +251,46 @@ public sealed class AboutViewModel : ObservableObject
             return Task.CompletedTask;
         }
 
+        if (_page == AboutPage.Root &&
+            string.Equals(tag, TagContactAdmin, StringComparison.OrdinalIgnoreCase))
+        {
+            BuildContactAdmin();
+            return Task.CompletedTask;
+        }
+
         return Task.CompletedTask;
+    }
+
+    private async Task SendContactAsync()
+    {
+        if (IsBusy)
+        {
+            return;
+        }
+
+        var message = (ContactMessage ?? string.Empty).Trim();
+        if (string.IsNullOrWhiteSpace(message))
+        {
+            Status = "Message vide.";
+            return;
+        }
+
+        IsBusy = true;
+        try
+        {
+            await _notify.SendAsync("notify.admin_contact.send", new { message }).ConfigureAwait(true);
+            BuildRoot();
+            Status = "Message envoyé au staff.";
+        }
+        catch (Exception ex)
+        {
+            Status = $"Erreur : {ex.Message}";
+            await _dialogs.ShowError("Contact admin", ex.Message).ConfigureAwait(true);
+        }
+        finally
+        {
+            IsBusy = false;
+        }
     }
 
     private void RebuildInfoItems()
@@ -290,6 +374,7 @@ public sealed class AboutViewModel : ObservableObject
         sb.AppendLine("- Entrée : valider / sélectionner");
         sb.AppendLine("- Échap : retour / fermer");
         sb.AppendLine("- Ctrl+U : présence (joueurs connectés)");
+        sb.AppendLine("- F3 : contacter un administrateur");
         sb.AppendLine();
         sb.AppendLine("Table (salle)");
         sb.AppendLine("- Tab : basculer Zone de jeu → Historique");
@@ -322,6 +407,7 @@ public sealed class AboutViewModel : ObservableObject
     {
         Root,
         Shortcuts,
-        Info
+        Info,
+        ContactAdmin
     }
 }

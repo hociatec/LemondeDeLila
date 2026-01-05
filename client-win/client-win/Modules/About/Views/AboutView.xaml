@@ -67,6 +67,14 @@
             <Setter Property="Padding" Value="10" />
             <Setter Property="FontSize" Value="14" />
         </Style>
+        <Style x:Key="ActionButton" TargetType="Button">
+            <Setter Property="Padding" Value="10 8" />
+            <Setter Property="Margin" Value="0 0 10 0" />
+            <Setter Property="Background" Value="#214570" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="BorderBrush" Value="{StaticResource HighlightBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+        </Style>
     </UserControl.Resources>
 
     <Grid Background="{StaticResource ShellBackground}" FocusManager.IsFocusScope="True">
@@ -128,6 +136,39 @@
                              VerticalScrollBarVisibility="Auto"
                              HorizontalScrollBarVisibility="Disabled"
                              AutomationProperties.Name="Raccourcis" />
+
+                    <Border Grid.Row="0"
+                            Visibility="{Binding ShowContactAdmin, Converter={StaticResource BoolToVis}}"
+                            Background="#0E2034"
+                            BorderBrush="#1F3C60"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="12">
+                        <StackPanel>
+                            <TextBlock Text="Votre message au staff" Foreground="White" FontWeight="SemiBold" />
+                            <TextBox x:Name="ContactMessageBox"
+                                     Style="{StaticResource InputTextBox}"
+                                     Text="{Binding ContactMessage, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     AcceptsReturn="True"
+                                     MinHeight="140"
+                                     TextWrapping="Wrap"
+                                     Margin="0,8,0,0"
+                                     TabIndex="0"
+                                     AutomationProperties.Name="Message" />
+                            <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                                <Button Content="Envoyer"
+                                        Style="{StaticResource ActionButton}"
+                                        Command="{Binding SendContactCommand}"
+                                        TabIndex="1"
+                                        AutomationProperties.Name="Envoyer" />
+                                <Button Content="Annuler"
+                                        Style="{StaticResource ActionButton}"
+                                        Command="{Binding CancelContactCommand}"
+                                        TabIndex="2"
+                                        AutomationProperties.Name="Annuler" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
 
                 </Grid>
 

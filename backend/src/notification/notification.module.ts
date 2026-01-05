@@ -10,9 +10,16 @@ import { ClientUpdatesModule } from '../client-updates/client-updates.module';
 import { RedisClientFactory } from '../common/redis/redis-client.factory';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { SocialRelationship } from '../social/entities/social-relationship.entity';
+import { User } from '../user/entities/user.entity';
+import { UserInboxService } from './services/user-inbox.service';
+import { AdminContactService } from './services/admin-contact.service';
 
 @Module({
-  imports: [ConfigModule, ClientUpdatesModule, TypeOrmModule.forFeature([SocialRelationship])],
+  imports: [
+    ConfigModule,
+    ClientUpdatesModule,
+    TypeOrmModule.forFeature([SocialRelationship, User]),
+  ],
   providers: [
     {
       provide: NotificationTransport,
@@ -32,8 +39,10 @@ import { SocialRelationship } from '../social/entities/social-relationship.entit
       },
     },
     NotificationService,
+    UserInboxService,
+    AdminContactService,
     NotificationGateway,
   ],
-  exports: [NotificationService],
+  exports: [NotificationService, AdminContactService],
 })
 export class NotificationModule {}
