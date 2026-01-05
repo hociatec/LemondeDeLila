@@ -1088,8 +1088,10 @@ export class RoomGateway
       spectatorRaw === 'y';
 
     if (spectator) {
-      // Public: on se retire des participants (sans fermer la connexion) pour ne pas être compté comme joueur.
-      if (!state.room.isPrivate) {
+      // On se retire des participants (sans fermer la connexion) pour ne pas être compté comme joueur.
+      // - Public: toujours
+      // - Privé: uniquement pour le propriétaire (permet une partie 100% bots)
+      if (!state.room.isPrivate || isOwner) {
         await this.roomsService.leaveRoom(meta.roomId, meta.userId, {
           preserveRoom: true,
           preserveOwner: isOwner,
