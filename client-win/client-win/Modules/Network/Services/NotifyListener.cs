@@ -493,7 +493,7 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
 	    private void HandleCounts(JsonElement root)
 	    {
 	        try
-	        {
+        {
             if (!root.TryGetProperty("payload", out var payload) || payload.ValueKind != JsonValueKind.Object)
             {
                 return;
@@ -506,15 +506,15 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
                 ? m.GetInt32()
                 : 0;
 
-	            _badges.SetUnreadNotifications(unreadNotifications);
-	            _badges.SetUnreadMessaging(unreadMessages);
-	            _countsSupported = true;
-	            _countsFirstReceived?.TrySetResult(true);
-	            Log.Information("Notify counts: notif={Notifications} msg={Messages}", unreadNotifications, unreadMessages);
-	        }
-	        catch
-	        {
-            // ignore
+            _badges.SetUnreadNotifications(unreadNotifications);
+            _badges.SetUnreadMessaging(unreadMessages);
+            _countsSupported = true;
+            _countsFirstReceived?.TrySetResult(true);
+            Log.Information("Notify counts: notif={Notifications} msg={Messages}", unreadNotifications, unreadMessages);
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "Echec traitement notify.counts");
         }
     }
 
