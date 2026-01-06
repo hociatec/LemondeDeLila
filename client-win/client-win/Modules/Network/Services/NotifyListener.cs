@@ -130,42 +130,33 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
 	                    // Best-effort
 	                }
 
-	                // Source de vérité des badges (serveur).
-	                try
-	                {
-	                    await SendAsync("notify.counts.get", payload: null, cancellationToken).ConfigureAwait(false);
-	                    _ = Task.Run(async () =>
-	                    {
-	                        try
-	                        {
-	                            var tcs = _countsFirstReceived;
-	                            if (tcs == null)
-	                            {
-	                                return;
-	                            }
+                // Source de vérité des badges (serveur) avec ack explicite.
+                try
+                {
+                    var (ok, error) = await SendWithAckAsync(
+                        "notify.counts.get",
+                        payload: null,
+                        successType: "notify.counts",
+                        errorType: "notify.error",
+                        cancellationToken).ConfigureAwait(false);
 
-	                            using var probeCts = new CancellationTokenSource(TimeSpan.FromSeconds(4));
-	                            var completed = await Task.WhenAny(tcs.Task, Task.Delay(Timeout.InfiniteTimeSpan, probeCts.Token))
-	                                .ConfigureAwait(false);
-	                            if (completed != tcs.Task)
-	                            {
-	                                Log.Warning("Aucune réponse notify.counts reçue (serveur incompatible ou WS instable).");
-	                            }
-	                        }
-	                        catch
-	                        {
-	                            // ignore
-	                        }
-	                    });
-	                }
-	                catch
-	                {
-	                    // ignore (best-effort)
-	                }
-	            }
-	            catch (Exception ex)
-	            {
-	                Log.Warning(ex, "Impossible de se connecter au WS notify.");
+                    if (ok)
+                    {
+                        _countsFirstReceived?.TrySetResult(true);
+                    }
+                    else
+                    {
+                        Log.Warning("notify.counts.get: échec de la réponse: {Error}", error ?? "inconnue");
+                    }
+                }
+                catch
+                {
+                    // ignore (best-effort)
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "Impossible de se connecter au WS notify.");
 	                if (ws != null)
 	                {
 	                    try
@@ -453,15 +444,15 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
 
 	        try
 	        {
-	            var raw = JsonSerializer.Serialize(new
-	            {
+            var raw = JsonSerializer.Serialize(new
+            {
                 type,
                 requestId,
                 payload,
             });
-	            try
-	            {
-	                await ws.SendAsync(raw, cancellationToken).ConfigureAwait(false);
+            try
+            {
+                await ws.SendAsync(raw, cancellationToken).ConfigureAwait(false);
 	            }
 	            catch (Exception ex)
 	            {

@@ -137,6 +137,7 @@ export class NotificationGateway
     // Push counts at connect (source of truth for badges).
     try {
       const payload = await this.counts.getCounts(user.id);
+      this.logger.log(`notify.counts initial push for user ${user.id}: ${JSON.stringify(payload)}`);
       this.safeSend(client, { type: 'notify.counts', payload });
     } catch {
       this.logger.warn(
@@ -216,7 +217,13 @@ export class NotificationGateway
     try {
       client.send(JSON.stringify(payload));
     } catch (err) {
-      this.logger.debug('Echec envoi WS notify', err as Error);
+      const type =
+        payload && typeof payload === 'object' && typeof payload.type === 'string'
+          ? payload.type
+          : 'unknown';
+      this.logger.warn(
+        `Echec envoi WS notify (type=${type}) : ${(err as Error).message}`,
+      );
       try {
         client.close();
       } catch {
@@ -254,6 +261,9 @@ export class NotificationGateway
     if (type === 'notify.counts.get') {
       try {
         const payload = await this.counts.getCounts(meta.userId);
+        this.logger.log(
+          `notify.counts.get for user ${meta.userId}: ${JSON.stringify(payload)}`,
+        );
         this.safeSendResponse(client, 'notify.counts', payload, requestId);
       } catch {
         this.logger.warn(
