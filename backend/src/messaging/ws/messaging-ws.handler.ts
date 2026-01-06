@@ -1,4 +1,4 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { MessagingService } from '../services/messaging.service';
 import { SendMessageDto } from '../dto/send-message.dto';
 import { PayloadValidationService } from '../../common/validation/payload-validation.service';
@@ -16,6 +16,8 @@ import {
 
 @Injectable()
 export class MessagingWsHandler {
+  private readonly logger = new Logger(MessagingWsHandler.name);
+
   constructor(
     private readonly messaging: MessagingService,
     private readonly validator: PayloadValidationService,
@@ -62,9 +64,16 @@ export class MessagingWsHandler {
         preview,
         createdAt: message.createdAt,
       });
-      await this.counts.notifyCounts(dto.recipientId);
     } catch {
-      // best-effort
+      // best-effort notification; continue to counts update below
+    }
+    // Toujours pousser les compteurs, même si la notification WS échoue.
+    try {
+      await this.counts.notifyCounts(dto.recipientId);
+    } catch (err) {
+      this.logger.warn(
+        `notifyCounts failed for user ${dto.recipientId}: ${(err as Error).message}`,
+      );
     }
     return { type: 'messaging.message', payload: { message } };
   }
@@ -104,7 +113,13 @@ export class MessagingWsHandler {
     const user = requireUser(session);
     const dto = this.validator.validate(MessagingMarkReadDto, payload);
     await this.messaging.markRead(user.id, dto.messageId);
-    await this.counts.notifyCounts(user.id);
+    try {
+      await this.counts.notifyCounts(user.id);
+    } catch (err) {
+      this.logger.warn(
+        `notifyCounts failed after markRead for user ${user.id}: ${(err as Error).message}`,
+      );
+    }
     return { type: 'messaging.markRead', payload: { ok: true } };
   }
 

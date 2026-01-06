@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { randomUUID } from 'crypto';
 import { Repository } from 'typeorm';
@@ -23,6 +23,8 @@ export type AdminContactItem = {
 
 @Injectable()
 export class AdminContactService {
+  private readonly logger = new Logger(AdminContactService.name);
+
   constructor(
     private readonly notifications: NotificationService,
     private readonly inbox: NotificationInboxDbService,
@@ -119,8 +121,20 @@ export class AdminContactService {
           message: clean,
           payload: null,
         });
-        await this.notifications.notifyUser(uid, 'notify.inbox.item', item);
-        await this.counts.notifyCounts(uid);
+        try {
+          await this.notifications.notifyUser(uid, 'notify.inbox.item', item);
+        } catch (err) {
+          this.logger.warn(
+            `notify.inbox.item failed for user ${uid}: ${(err as Error).message}`,
+          );
+        }
+        try {
+          await this.counts.notifyCounts(uid);
+        } catch (err) {
+          this.logger.warn(
+            `notifyCounts failed for user ${uid}: ${(err as Error).message}`,
+          );
+        }
       }),
     );
 
@@ -191,8 +205,20 @@ export class AdminContactService {
           message: clean,
           payload: null,
         });
-        await this.notifications.notifyUser(uid, 'notify.inbox.item', item);
-        await this.counts.notifyCounts(uid);
+        try {
+          await this.notifications.notifyUser(uid, 'notify.inbox.item', item);
+        } catch (err) {
+          this.logger.warn(
+            `notify.inbox.item failed for user ${uid}: ${(err as Error).message}`,
+          );
+        }
+        try {
+          await this.counts.notifyCounts(uid);
+        } catch (err) {
+          this.logger.warn(
+            `notifyCounts failed for user ${uid}: ${(err as Error).message}`,
+          );
+        }
       }),
     );
 

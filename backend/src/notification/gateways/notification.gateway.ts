@@ -249,6 +249,9 @@ export class NotificationGateway
         const payload = await this.counts.getCounts(meta.userId);
         this.safeSendResponse(client, 'notify.counts', payload, requestId);
       } catch {
+        this.logger.warn(
+          `notify.counts.get failed for user ${meta.userId}, returning zeros`,
+        );
         this.safeSendResponse(
           client,
           'notify.counts',
