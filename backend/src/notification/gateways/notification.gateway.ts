@@ -204,6 +204,10 @@ export class NotificationGateway
         username: String(username || '').trim() || `user#${userId}`,
       };
 
+      this.logger.log(
+        `Notify friends presence: user=${userId} ${isOnline ? 'online' : 'offline'} -> friends=${friendIds.join(',')}`,
+      );
+
       await Promise.all(
         friendIds.map((fid) => this.notifications.notifyUser(fid, type, payload)),
       );
