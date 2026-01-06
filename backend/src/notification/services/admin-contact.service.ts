@@ -59,7 +59,11 @@ export class AdminContactService {
   }
 
   async deleteInboxItem(userId: number, id: string): Promise<void> {
-    await this.inbox.delete(userId, id);
+    const ok = await this.inbox.delete(userId, id);
+    this.logger.log(`Inbox delete user=${userId} id=${id} ok=${ok}`);
+    const items = await this.inbox.list(userId, 5);
+    const ids = items.map((it) => it.id).join(',');
+    this.logger.log(`Inbox after delete user=${userId} remaining=${items.length} ids=[${ids}]`);
     await this.counts.notifyCounts(userId);
   }
 

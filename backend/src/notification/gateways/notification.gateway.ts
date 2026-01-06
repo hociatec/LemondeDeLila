@@ -310,8 +310,13 @@ export class NotificationGateway
       const id = typeof parsed?.payload?.id === 'string' ? parsed.payload.id.trim() : '';
       if (!id) return;
       try {
+        this.logger.log(`notify.inbox.delete user=${meta.userId} id=${id}`);
         await this.adminContacts.deleteInboxItem(meta.userId, id);
         const items = await this.adminContacts.listInbox(meta.userId, 200);
+        const sampleIds = items.slice(0, 5).map((it: any) => it.id).join(',');
+        this.logger.log(
+          `notify.inbox.snapshot after delete user=${meta.userId} count=${items.length} ids=[${sampleIds}]`,
+        );
         this.safeSendResponse(
           client,
           'notify.inbox.snapshot',

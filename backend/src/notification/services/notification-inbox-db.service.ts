@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { NotificationInboxItem } from '../entities/notification-inbox-item.entity';
@@ -19,6 +19,8 @@ export type CreateInboxItemInput = {
 
 @Injectable()
 export class NotificationInboxDbService {
+  private readonly logger = new Logger(NotificationInboxDbService.name);
+
   constructor(
     @InjectRepository(NotificationInboxItem)
     private readonly repo: Repository<NotificationInboxItem>,
@@ -74,7 +76,33 @@ export class NotificationInboxDbService {
       .andWhere('user_id = :userId', { userId })
       .andWhere('deleted_at IS NULL')
       .execute();
-    return (res.affected ?? 0) > 0;
+    if ((res.affected ?? 0) > 0) return true;
+
+    // Fallback debug path: check what exists for this id, then delete by id only.
+    const found = await this.repo.findOne({
+      where: { id } as any,
+      select: { id: true, deletedAt: true, user: { id: true } } as any,
+      relations: ['user'],
+      withDeleted: true,
+    });
+    this.logger.warn(
+      `Delete miss user=${userId} id=${id} foundUser=${found?.user?.id ?? 'none'} deletedAt=${found?.deletedAt?.toISOString?.() ?? 'null'}`,
+    );
+    if (found && !found.deletedAt) {
+      const res2 = await this.repo
+        .createQueryBuilder()
+        .update(NotificationInboxItem)
+        .set({ deletedAt: now })
+        .where('id = :id', { id })
+        .andWhere('deleted_at IS NULL')
+        .execute();
+      return (res2.affected ?? 0) > 0;
+    }
+    if (found && found.deletedAt) {
+      // Already soft-deleted; treat as success to avoid loops.
+      return true;
+    }
+    return false;
   }
 
   async countUnread(userId: number): Promise<number> {
