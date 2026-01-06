@@ -211,7 +211,6 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
 
             // Clone the payload before dispatching to the UI thread; doc will be disposed.
             var rootClone = root.Clone();
-            var payloadClone = root.TryGetProperty("payload", out var p) ? p.Clone() : default;
             root = rootClone; // use cloned element for the rest of this method
 
             if (root.TryGetProperty("requestId", out var rid) && rid.ValueKind == JsonValueKind.String)
@@ -220,8 +219,8 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
                 if (!string.IsNullOrWhiteSpace(requestId) && _pendingAcks.TryGetValue(requestId, out var tcs))
 	                {
 	                    string? error = null;
-	                    if (root.TryGetProperty("payload", out var p) && p.ValueKind == JsonValueKind.Object &&
-	                        p.TryGetProperty("message", out var m) && m.ValueKind == JsonValueKind.String)
+	                    if (root.TryGetProperty("payload", out var payload) && payload.ValueKind == JsonValueKind.Object &&
+	                        payload.TryGetProperty("message", out var m) && m.ValueKind == JsonValueKind.String)
 	                    {
 	                        error = m.GetString();
 	                    }
