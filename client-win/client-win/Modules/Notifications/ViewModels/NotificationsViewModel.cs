@@ -115,8 +115,9 @@ public sealed class NotificationsViewModel : ObservableObject
             CancelReply();
             return true;
         }
-        FocusFirstItemRequested?.Invoke(this, EventArgs.Empty);
-        return true;
+
+        _onClose();
+        return false;
     }
 
     private async Task RefreshAsync()
@@ -205,6 +206,7 @@ public sealed class NotificationsViewModel : ObservableObject
         try
         {
             await _notify.SendAsync("notify.inbox.delete", new { id = it.Id }).ConfigureAwait(true);
+            _inbox.Remove(it.Id);
             await _notify.RequestInboxSnapshotAsync().ConfigureAwait(true);
             Status = "Notification supprimée.";
         }

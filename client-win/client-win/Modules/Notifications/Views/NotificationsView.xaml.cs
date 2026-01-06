@@ -71,8 +71,12 @@ public partial class NotificationsView : UserControl
         if (e.Key == Key.Escape && DataContext is NotificationsViewModel vm)
         {
             e.Handled = true;
-            vm.HandleEscape();
-            FocusFirstItem();
+            var stayOpen = vm.HandleEscape();
+            if (stayOpen)
+            {
+                FocusFirstItem();
+            }
+            return;
         }
     }
 
