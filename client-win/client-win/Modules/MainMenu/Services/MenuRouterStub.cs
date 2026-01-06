@@ -18,6 +18,8 @@ using client_win.Modules.Game.RoomDirectory.ViewModels;
 using client_win.Modules.Game.RoomDirectory.Views;
 using client_win.Modules.MainMenu.Views;
 using client_win.Modules.Audio.Models;
+using client_win.Modules.About.ViewModels;
+using client_win.Modules.About.Views;
 
 namespace client_win.Modules.MainMenu.Services;
 

@@ -64,14 +64,6 @@ public sealed class NotificationsViewModel : ObservableObject
             {
                 OnPropertyChanged(nameof(SelectedDetailText));
                 OnPropertyChanged(nameof(CanReply));
-                if (value != null && !string.IsNullOrWhiteSpace(value.Id))
-                {
-                    _ = _notify.SendWithAckAsync(
-                        "notify.inbox.markRead",
-                        new { id = value.Id },
-                        successType: "notify.inbox.markRead",
-                        errorType: "notify.admin_contact.error");
-                }
             }
         }
     }
@@ -195,6 +187,16 @@ public sealed class NotificationsViewModel : ObservableObject
 
         await _notify.SendAsync("notify.inbox.delete", new { id = it.Id }).ConfigureAwait(true);
         Status = "Notification supprimée.";
+    }
+
+    public Task MarkSelectedReadAsync()
+    {
+        var it = SelectedItem;
+        if (it == null || string.IsNullOrWhiteSpace(it.Id))
+        {
+            return Task.CompletedTask;
+        }
+        return _notify.SendAsync("notify.inbox.markRead", new { id = it.Id });
     }
 
     private static string FormatDetail(NotificationItem? item)

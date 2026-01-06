@@ -8,6 +8,8 @@ using System.Windows;
 using System.Windows.Threading;
 using client_win.Core;
 using client_win.Core.Constants;
+using client_win.Modules.Audio.Models;
+using client_win.Modules.Audio.Services;
 using client_win.Modules.Config;
 using client_win.Modules.Shell.Services;
 using client_win.Modules.Network.Services;
@@ -28,6 +30,7 @@ public sealed class AboutViewModel : ObservableObject
     private readonly ClientConfiguration _config;
     private readonly IDialogService _dialogs;
     private readonly INotifyGatewayClient _notify;
+    private readonly ISoundService _sounds;
     private AboutPage _page = AboutPage.Root;
     private string _title = "À propos";
     private string _status = "Entrée : sélectionner. Échap : retour.";
@@ -52,12 +55,14 @@ public sealed class AboutViewModel : ObservableObject
         ClientConfiguration config,
         IDialogService dialogs,
         INotifyGatewayClient notify,
+        ISoundService sounds,
         Action onClose,
         bool openContactAdmin = false)
     {
         _config = config ?? throw new ArgumentNullException(nameof(config));
         _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
         _notify = notify ?? throw new ArgumentNullException(nameof(notify));
+        _sounds = sounds ?? throw new ArgumentNullException(nameof(sounds));
         _close = onClose ?? (() => { });
         _dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
 
@@ -292,6 +297,7 @@ public sealed class AboutViewModel : ObservableObject
                 return;
             }
 
+            _sounds.Play(SoundId.AdminContactSent);
             await _dialogs.ShowInfo("Contact admin", "Message envoyé au staff.").ConfigureAwait(true);
             BuildRoot();
             Status = "Message envoyé au staff.";

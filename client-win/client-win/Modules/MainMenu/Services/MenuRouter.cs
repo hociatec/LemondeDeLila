@@ -526,7 +526,7 @@ public sealed class MenuRouter : IMenuRouter
         var previous = _navigation.CurrentView;
         StopBackgroundLoops();
         var view = new AboutView();
-        var vm = new AboutViewModel(_config, _dialogs, _notify, onClose: () =>
+        var vm = new AboutViewModel(_config, _dialogs, _notify, _sounds, onClose: () =>
         {
             if (previous != null)
             {
@@ -572,7 +572,7 @@ public sealed class MenuRouter : IMenuRouter
         var previous = _navigation.CurrentView;
         StopBackgroundLoops();
         var view = new AboutView();
-        var vm = new AboutViewModel(_config, _dialogs, _notify, onClose: () =>
+        var vm = new AboutViewModel(_config, _dialogs, _notify, _sounds, onClose: () =>
         {
             if (previous != null)
             {

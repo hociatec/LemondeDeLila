@@ -41,6 +41,12 @@ public partial class NotificationsView : UserControl
             e.Handled = true;
             await vm.DeleteSelectedAsync().ConfigureAwait(true);
         }
+
+        if ((e.Key == Key.Enter || e.Key == Key.Return) && DataContext is NotificationsViewModel vm2)
+        {
+            e.Handled = true;
+            await vm2.MarkSelectedReadAsync().ConfigureAwait(true);
+        }
     }
 
     private void FocusFirstItem()
@@ -50,7 +56,24 @@ public partial class NotificationsView : UserControl
             return;
         }
 
-        // Ne pas auto-sélectionner un item: ouvrir la vue ne doit pas marquer comme "lu".
+        if (ItemsList.Items.Count == 0)
+        {
+            ItemsList.Focus();
+            return;
+        }
+
+        if (ItemsList.SelectedIndex < 0)
+        {
+            ItemsList.SelectedIndex = 0;
+        }
+
+        ItemsList.UpdateLayout();
+        if (ItemsList.ItemContainerGenerator.ContainerFromIndex(ItemsList.SelectedIndex) is ListBoxItem item)
+        {
+            item.Focus();
+            return;
+        }
+
         ItemsList.Focus();
     }
 }

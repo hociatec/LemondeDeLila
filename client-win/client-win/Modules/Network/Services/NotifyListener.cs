@@ -155,31 +155,43 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
         }
     }
 
-    private void OnMessage(string raw)
-    {
-        if (string.IsNullOrWhiteSpace(raw)) return;
-        try
+	    private void OnMessage(string raw)
+	    {
+	        if (string.IsNullOrWhiteSpace(raw)) return;
+	        try
+	        {
+	            using var doc = JsonDocument.Parse(raw);
+	            var root = doc.RootElement;
+	            var type = root.TryGetProperty("type", out var t) ? t.GetString() : null;
+	            if (string.IsNullOrWhiteSpace(type)) return;
+
+	            if (root.TryGetProperty("requestId", out var rid) && rid.ValueKind == JsonValueKind.String)
+	            {
+	                var requestId = rid.GetString() ?? string.Empty;
+	                if (!string.IsNullOrWhiteSpace(requestId) && _pendingAcks.TryGetValue(requestId, out var tcs))
+	                {
+	                    string? error = null;
+	                    if (root.TryGetProperty("payload", out var p) && p.ValueKind == JsonValueKind.Object &&
+	                        p.TryGetProperty("message", out var m) && m.ValueKind == JsonValueKind.String)
+	                    {
+	                        error = m.GetString();
+	                    }
+	                    tcs.TrySetResult((type, error));
+	                }
+	            }
+
+                // Tout ce qui touche à WPF (collections bindées, sons, annonces, navigation)
+                // doit être exécuté sur le thread UI pour éviter les blocages aléatoires.
+                RunOnUi(() => HandleMessageOnUi(type, root));
+	        }
+	        catch (Exception ex)
+	        {
+	            Log.Debug(ex, "Message notify invalide.");
+	        }
+	    }
+
+        private void HandleMessageOnUi(string type, JsonElement root)
         {
-            using var doc = JsonDocument.Parse(raw);
-            var root = doc.RootElement;
-            var type = root.TryGetProperty("type", out var t) ? t.GetString() : null;
-            if (string.IsNullOrWhiteSpace(type)) return;
-
-            if (root.TryGetProperty("requestId", out var rid) && rid.ValueKind == JsonValueKind.String)
-            {
-                var requestId = rid.GetString() ?? string.Empty;
-                if (!string.IsNullOrWhiteSpace(requestId) && _pendingAcks.TryGetValue(requestId, out var tcs))
-                {
-                    string? error = null;
-                    if (root.TryGetProperty("payload", out var p) && p.ValueKind == JsonValueKind.Object &&
-                        p.TryGetProperty("message", out var m) && m.ValueKind == JsonValueKind.String)
-                    {
-                        error = m.GetString();
-                    }
-                    tcs.TrySetResult((type, error));
-                }
-            }
-
             if (string.Equals(type, "admin.broadcast", StringComparison.OrdinalIgnoreCase))
             {
                 var message = root.TryGetProperty("payload", out var p) && p.TryGetProperty("message", out var m)
@@ -187,14 +199,18 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
                     : string.Empty;
                 if (!string.IsNullOrWhiteSpace(message))
                 {
-                    RunOnUi(() => _screenReader.AnnouncePolite(message));
+                    _screenReader.AnnouncePolite(message);
                 }
+                return;
             }
-            else if (string.Equals(type, "catalog.invalidate", StringComparison.OrdinalIgnoreCase))
+
+            if (string.Equals(type, "catalog.invalidate", StringComparison.OrdinalIgnoreCase))
             {
                 _catalog.InvalidateCache();
+                return;
             }
-            else if (string.Equals(type, "client.update.available", StringComparison.OrdinalIgnoreCase))
+
+            if (string.Equals(type, "client.update.available", StringComparison.OrdinalIgnoreCase))
             {
                 var payload = root.TryGetProperty("payload", out var p) ? p : default;
                 var message = payload.ValueKind != JsonValueKind.Undefined && payload.TryGetProperty("message", out var m)
@@ -208,8 +224,10 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
                     : string.Empty;
 
                 _ = HandleClientUpdateAvailableAsync(message, version, url);
+                return;
             }
-            else if (string.Equals(type, "client.update.required", StringComparison.OrdinalIgnoreCase))
+
+            if (string.Equals(type, "client.update.required", StringComparison.OrdinalIgnoreCase))
             {
                 var payload = root.TryGetProperty("payload", out var p) ? p : default;
                 var message = payload.ValueKind != JsonValueKind.Undefined && payload.TryGetProperty("message", out var m)
@@ -223,44 +241,64 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
                     : string.Empty;
 
                 _ = HandleClientUpdateRequiredAsync(message, minRequiredVersion, url);
+                return;
             }
-            else if (string.Equals(type, "rooms.invite.received", StringComparison.OrdinalIgnoreCase))
+
+            if (string.Equals(type, "rooms.invite.received", StringComparison.OrdinalIgnoreCase))
             {
                 _ = HandleRoomInviteReceivedAsync(root);
+                return;
             }
-            else if (string.Equals(type, "rooms.invite.responded", StringComparison.OrdinalIgnoreCase))
+
+            if (string.Equals(type, "rooms.invite.responded", StringComparison.OrdinalIgnoreCase))
             {
                 HandleRoomInviteResponded(root);
+                return;
             }
-            else if (string.Equals(type, "messaging.new", StringComparison.OrdinalIgnoreCase))
+
+            if (string.Equals(type, "messaging.new", StringComparison.OrdinalIgnoreCase))
             {
                 HandleMessagingNew(root);
+                return;
             }
-            else if (string.Equals(type, "social.friend.requested", StringComparison.OrdinalIgnoreCase))
+
+            if (string.Equals(type, "social.friend.requested", StringComparison.OrdinalIgnoreCase))
             {
                 HandleFriendRequested(root);
+                return;
             }
-            else if (string.Equals(type, "social.friend.connected", StringComparison.OrdinalIgnoreCase))
+
+            if (string.Equals(type, "social.friend.connected", StringComparison.OrdinalIgnoreCase))
             {
                 HandleFriendPresence(root, connected: true);
+                return;
             }
-            else if (string.Equals(type, "social.friend.disconnected", StringComparison.OrdinalIgnoreCase))
+
+            if (string.Equals(type, "social.friend.disconnected", StringComparison.OrdinalIgnoreCase))
             {
                 HandleFriendPresence(root, connected: false);
+                return;
             }
-            else if (string.Equals(type, "sounds.updated", StringComparison.OrdinalIgnoreCase))
+
+            if (string.Equals(type, "sounds.updated", StringComparison.OrdinalIgnoreCase))
             {
                 _ = HandleSoundsUpdatedAsync();
+                return;
             }
-            else if (string.Equals(type, "notify.inbox.snapshot", StringComparison.OrdinalIgnoreCase))
+
+            if (string.Equals(type, "notify.inbox.snapshot", StringComparison.OrdinalIgnoreCase))
             {
-                RunOnUi(() => HandleInboxSnapshot(root));
+                HandleInboxSnapshot(root);
+                return;
             }
-            else if (string.Equals(type, "notify.inbox.item", StringComparison.OrdinalIgnoreCase))
+
+            if (string.Equals(type, "notify.inbox.item", StringComparison.OrdinalIgnoreCase))
             {
-                RunOnUi(() => HandleInboxItem(root));
+                HandleInboxItem(root);
+                return;
             }
-            else if (string.Equals(type, "notify.admin_contact.error", StringComparison.OrdinalIgnoreCase))
+
+            if (string.Equals(type, "notify.admin_contact.error", StringComparison.OrdinalIgnoreCase))
             {
                 var msg = root.TryGetProperty("payload", out var p) && p.ValueKind == JsonValueKind.Object &&
                           p.TryGetProperty("message", out var m) && m.ValueKind == JsonValueKind.String
@@ -268,19 +306,16 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
                     : string.Empty;
                 if (!string.IsNullOrWhiteSpace(msg))
                 {
-                    RunOnUi(() => _screenReader.AnnouncePolite(msg));
+                    _screenReader.AnnouncePolite(msg);
                 }
+                return;
             }
-            else if (string.Equals(type, "notify.counts", StringComparison.OrdinalIgnoreCase))
+
+            if (string.Equals(type, "notify.counts", StringComparison.OrdinalIgnoreCase))
             {
-                RunOnUi(() => HandleCounts(root));
+                HandleCounts(root);
             }
         }
-        catch (Exception ex)
-        {
-            Log.Debug(ex, "Message notify invalide.");
-        }
-    }
 
     private static void RunOnUi(Action action)
     {
@@ -382,6 +417,7 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
 
             _badges.SetUnreadNotifications(unreadNotifications);
             _badges.SetUnreadMessaging(unreadMessages);
+            Log.Information("Notify counts: notif={Notifications} msg={Messages}", unreadNotifications, unreadMessages);
         }
         catch
         {

@@ -142,7 +142,6 @@ public sealed class MainMenuViewModel : ObservableObject
         Items.Add(new MainMenuItem("Tchat", tag: ChatCommand));
         Items.Add(new MainMenuItem(FormatMenuLabel("Notifications", _badges.UnreadNotifications), tag: NotificationsCommand));
         Items.Add(new MainMenuItem("Social", tag: SocialCommand));
-        Items.Add(new MainMenuItem("Contacter un administrateur (F3)", tag: ContactAdminCommand));
         Items.Add(new MainMenuItem("À propos", tag: AboutCommand));
 
         Items.Add(new MainMenuItem("Options", tag: OptionsCommand));
