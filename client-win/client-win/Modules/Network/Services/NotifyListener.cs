@@ -203,16 +203,19 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
 	    {
 	        if (string.IsNullOrWhiteSpace(raw)) return;
 	        try
-	        {
-	            using var doc = JsonDocument.Parse(raw);
-	            var root = doc.RootElement;
-	            var type = root.TryGetProperty("type", out var t) ? t.GetString() : null;
-	            if (string.IsNullOrWhiteSpace(type)) return;
+        {
+            using var doc = JsonDocument.Parse(raw);
+            var root = doc.RootElement;
+            var type = root.TryGetProperty("type", out var t) ? t.GetString() : null;
+            if (string.IsNullOrWhiteSpace(type)) return;
 
-	            if (root.TryGetProperty("requestId", out var rid) && rid.ValueKind == JsonValueKind.String)
-	            {
-	                var requestId = rid.GetString() ?? string.Empty;
-	                if (!string.IsNullOrWhiteSpace(requestId) && _pendingAcks.TryGetValue(requestId, out var tcs))
+            // Clone the payload before dispatching to the UI thread; doc will be disposed.
+            var rootClone = root.Clone();
+
+            if (root.TryGetProperty("requestId", out var rid) && rid.ValueKind == JsonValueKind.String)
+            {
+                var requestId = rid.GetString() ?? string.Empty;
+                if (!string.IsNullOrWhiteSpace(requestId) && _pendingAcks.TryGetValue(requestId, out var tcs))
 	                {
 	                    string? error = null;
 	                    if (root.TryGetProperty("payload", out var p) && p.ValueKind == JsonValueKind.Object &&
@@ -222,16 +225,16 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
 	                    }
 	                    tcs.TrySetResult((type, error));
 	                }
-	            }
+            }
 
-                // Tout ce qui touche à WPF (collections bindées, sons, annonces, navigation)
-                // doit être exécuté sur le thread UI pour éviter les blocages aléatoires.
-                RunOnUi(() => HandleMessageOnUi(type, root));
-	        }
-	        catch (Exception ex)
-	        {
-	            Log.Debug(ex, "Message notify invalide.");
-	        }
+            // Tout ce qui touche à WPF (collections bindées, sons, annonces, navigation)
+            // doit être exécuté sur le thread UI pour éviter les blocages aléatoires.
+            RunOnUi(() => HandleMessageOnUi(type, rootClone));
+        }
+        catch (Exception ex)
+        {
+            Log.Debug(ex, "Message notify invalide.");
+        }
 	    }
 
 	    private void OnWsError(string msg)
