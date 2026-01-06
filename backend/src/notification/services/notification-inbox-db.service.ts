@@ -51,25 +51,30 @@ export class NotificationInboxDbService {
   }
 
   async markRead(userId: number, id: string): Promise<boolean> {
-    const item = await this.repo.findOne({
-      where: { id, user: { id: userId }, deletedAt: null } as any,
-    });
-    if (!item) return false;
-    if (item.readAt) return true;
-    item.readAt = new Date();
-    await this.repo.save(item);
-    return true;
+    const now = new Date();
+    const res = await this.repo
+      .createQueryBuilder()
+      .update(NotificationInboxItem)
+      .set({ readAt: now })
+      .where('id = :id', { id })
+      .andWhere('user_id = :userId', { userId })
+      .andWhere('deleted_at IS NULL')
+      .andWhere('read_at IS NULL')
+      .execute();
+    return (res.affected ?? 0) > 0;
   }
 
   async delete(userId: number, id: string): Promise<boolean> {
-    const item = await this.repo.findOne({
-      where: { id, user: { id: userId }, deletedAt: null } as any,
-    });
-    if (!item) return false;
-    if (item.deletedAt) return true;
-    item.deletedAt = new Date();
-    await this.repo.save(item);
-    return true;
+    const now = new Date();
+    const res = await this.repo
+      .createQueryBuilder()
+      .update(NotificationInboxItem)
+      .set({ deletedAt: now })
+      .where('id = :id', { id })
+      .andWhere('user_id = :userId', { userId })
+      .andWhere('deleted_at IS NULL')
+      .execute();
+    return (res.affected ?? 0) > 0;
   }
 
   async countUnread(userId: number): Promise<number> {
@@ -82,4 +87,3 @@ export class NotificationInboxDbService {
     });
   }
 }
-
