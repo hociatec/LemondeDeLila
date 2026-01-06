@@ -92,7 +92,6 @@
 
                 <Button Grid.Row="2"
                         Content="Répondre"
-                        Style="{StaticResource ActionButton}"
                         Command="{Binding ReplyCommand}"
                         Click="OnReplyClick"
                         Margin="0,12,0,0"
