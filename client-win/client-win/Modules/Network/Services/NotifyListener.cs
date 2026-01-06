@@ -643,6 +643,21 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
             var readAt = payload.TryGetProperty("readAt", out var rEl) && rEl.ValueKind == JsonValueKind.String
                 ? rEl.GetString()
                 : null;
+            var message = payload.TryGetProperty("message", out var msgEl) && msgEl.ValueKind == JsonValueKind.String
+                ? msgEl.GetString()
+                : string.Empty;
+            var fromUserId = payload.TryGetProperty("fromUserId", out var fuEl) && fuEl.ValueKind == JsonValueKind.Number
+                ? fuEl.GetInt32()
+                : 0;
+            var fromUsername = payload.TryGetProperty("fromUsername", out var fnEl) && fnEl.ValueKind == JsonValueKind.String
+                ? fnEl.GetString()
+                : string.Empty;
+            var toUserId = payload.TryGetProperty("toUserId", out var tuEl) && tuEl.ValueKind == JsonValueKind.Number
+                ? (int?)tuEl.GetInt32()
+                : null;
+            var contactId = payload.TryGetProperty("contactId", out var ciEl) && ciEl.ValueKind == JsonValueKind.String
+                ? ciEl.GetString()
+                : null;
 
             if (string.IsNullOrWhiteSpace(id) || string.IsNullOrWhiteSpace(kind))
             {
@@ -651,47 +666,17 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
 
             var ts = DateTimeOffset.TryParse(createdAt, out var dto) ? dto : DateTimeOffset.UtcNow;
 
-            if (string.Equals(kind, "admin_contact", StringComparison.OrdinalIgnoreCase))
-            {
-                var contactId = payload.TryGetProperty("contactId", out var ci) && ci.ValueKind == JsonValueKind.String
-                    ? ci.GetString()
-                    : null;
-                var fromUserId = payload.TryGetProperty("fromUserId", out var fu) && fu.ValueKind == JsonValueKind.Number
-                    ? fu.GetInt32()
-                    : 0;
-                var fromUsername = payload.TryGetProperty("fromUsername", out var fn) && fn.ValueKind == JsonValueKind.String
-                    ? (fn.GetString() ?? string.Empty)
-                    : string.Empty;
-                var message = payload.TryGetProperty("message", out var msg) && msg.ValueKind == JsonValueKind.String
-                    ? (msg.GetString() ?? string.Empty)
-                    : string.Empty;
-                int? toUserId = null;
-                if (payload.TryGetProperty("toUserId", out var tu) && tu.ValueKind == JsonValueKind.Number)
-                {
-                    toUserId = tu.GetInt32();
-                }
-
-                item = new NotificationItem
-                {
-                    Id = id,
-                    Kind = "admin_contact",
-                    CreatedAt = ts,
-                    IsRead = !string.IsNullOrWhiteSpace(readAt),
-                    ContactId = contactId,
-                    FromUserId = fromUserId,
-                    FromUsername = fromUsername,
-                    ToUserId = toUserId,
-                    Message = message,
-                };
-                return true;
-            }
-
             item = new NotificationItem
             {
                 Id = id,
                 Kind = kind,
                 CreatedAt = ts,
                 IsRead = !string.IsNullOrWhiteSpace(readAt),
+                ContactId = contactId,
+                FromUserId = fromUserId,
+                FromUsername = fromUsername ?? string.Empty,
+                ToUserId = toUserId,
+                Message = message ?? string.Empty,
             };
             return true;
         }

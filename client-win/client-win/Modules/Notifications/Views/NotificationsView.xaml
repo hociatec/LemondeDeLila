@@ -63,6 +63,7 @@
                          VirtualizingStackPanel.VirtualizationMode="Recycling"
                          ScrollViewer.CanContentScroll="True"
                          PreviewKeyDown="OnListPreviewKeyDown"
+                         Loaded="OnItemsLoaded"
                          AutomationProperties.LabeledBy="{Binding ElementName=TitleText}">
                     <ListBox.ItemTemplate>
                         <DataTemplate>

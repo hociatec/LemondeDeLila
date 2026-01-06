@@ -126,6 +126,11 @@ public partial class NotificationsView : UserControl
         ItemsList.Focus();
     }
 
+    private void OnItemsLoaded(object sender, RoutedEventArgs e)
+    {
+        FocusFirstItem();
+    }
+
     private void FocusReplyBox()
     {
         if (ReplyBox == null)
