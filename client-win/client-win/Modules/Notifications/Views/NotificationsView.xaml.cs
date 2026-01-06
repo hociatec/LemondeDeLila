@@ -72,6 +72,7 @@ public partial class NotificationsView : UserControl
         {
             e.Handled = true;
             vm.HandleEscape();
+            FocusFirstItem();
         }
     }
 

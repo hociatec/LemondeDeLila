@@ -96,9 +96,19 @@
                         Command="{Binding ReplyCommand}"
                         Click="OnReplyClick"
                         Margin="0,12,0,0"
-                        Visibility="{Binding CanReply, Converter={StaticResource BoolToVis}}"
                         TabIndex="0"
-                        AutomationProperties.Name="Ouvrir la réponse" />
+                        AutomationProperties.Name="Répondre">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource ActionButton}">
+                            <Setter Property="Visibility" Value="{Binding CanReply, Converter={StaticResource BoolToVis}}" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsReplyMode}" Value="True">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
 
                 <Border Grid.Row="3"
                         Margin="0,12,0,0"
@@ -107,7 +117,10 @@
                         BorderBrush="#1F3C60"
                         BorderThickness="1"
                         CornerRadius="8"
-                        Padding="12">
+                        Padding="12"
+                        KeyboardNavigation.TabNavigation="Cycle"
+                        KeyboardNavigation.ControlTabNavigation="Cycle"
+                        KeyboardNavigation.DirectionalNavigation="Cycle">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
@@ -121,6 +134,7 @@
                                      AcceptsReturn="True"
                                      MinHeight="80"
                                      TextWrapping="Wrap"
+                                     TabIndex="0"
                                      AutomationProperties.Name="Réponse" />
                             <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
                                 <Button Content="Envoyer"
@@ -128,11 +142,6 @@
                                         Command="{Binding SendReplyCommand}"
                                         TabIndex="1"
                                         AutomationProperties.Name="Envoyer la réponse" />
-                                <Button Content="Annuler"
-                                        Style="{StaticResource ActionButton}"
-                                        Command="{Binding CancelReplyCommand}"
-                                        TabIndex="2"
-                                        AutomationProperties.Name="Annuler" />
                             </StackPanel>
                         </StackPanel>
                     </Grid>

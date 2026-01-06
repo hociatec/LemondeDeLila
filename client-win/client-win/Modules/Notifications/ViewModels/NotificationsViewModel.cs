@@ -115,7 +115,7 @@ public sealed class NotificationsViewModel : ObservableObject
             CancelReply();
             return true;
         }
-        _onClose();
+        FocusFirstItemRequested?.Invoke(this, EventArgs.Empty);
         return true;
     }
 
