@@ -22,6 +22,7 @@ export type MessageDto = {
   createdAt: string;
   direction: 'sent' | 'received';
   deletedAt: string | null;
+  boxType: 'inbox' | 'outbox' | 'deleted';
 };
 
 @Injectable()
@@ -279,6 +280,12 @@ export class MessagingService {
       direction === 'sent'
         ? (message.deletedBySenderAt ?? null)
         : (message.deletedByRecipientAt ?? null);
+    const boxType =
+      deletedAt != null
+        ? 'deleted'
+        : direction === 'sent'
+          ? 'outbox'
+          : 'inbox';
     return {
       id: message.messageId,
       sender: { id: message.sender.id, username: message.sender.username },
@@ -291,6 +298,7 @@ export class MessagingService {
       createdAt: message.createdAt.toISOString(),
       direction,
       deletedAt: deletedAt ? deletedAt.toISOString() : null,
+      boxType,
     };
   }
 

@@ -12,6 +12,7 @@ public sealed class MessagingMessage
     public DateTime CreatedAt { get; init; }
     public bool IsSent { get; init; }
     public bool IsDeleted { get; init; }
+    public string BoxType { get; init; } = string.Empty;
 
     public override string ToString()
     {

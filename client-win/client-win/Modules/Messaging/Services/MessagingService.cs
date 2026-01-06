@@ -263,7 +263,8 @@ public sealed class MessagingService : IMessagingService
             Text = dto.Text ?? string.Empty,
             CreatedAt = created,
             IsSent = string.Equals(dto.Direction, "sent", StringComparison.OrdinalIgnoreCase),
-            IsDeleted = isDeleted
+            IsDeleted = isDeleted,
+            BoxType = dto.BoxType ?? string.Empty
         };
     }
 
@@ -318,5 +319,6 @@ public sealed class MessagingService : IMessagingService
         public string? CreatedAt { get; set; }
         public string? Direction { get; set; }
         public string? DeletedAt { get; set; }
+        public string? BoxType { get; set; }
     }
 }
