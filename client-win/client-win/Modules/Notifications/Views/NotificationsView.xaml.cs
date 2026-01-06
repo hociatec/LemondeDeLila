@@ -86,7 +86,15 @@ public partial class NotificationsView : UserControl
         if ((e.Key == Key.Enter || e.Key == Key.Return) && DataContext is NotificationsViewModel vm2)
         {
             e.Handled = true;
-            await vm2.MarkSelectedReadAsync().ConfigureAwait(true);
+            if (vm2.CanReply)
+            {
+                vm2.ReplyCommand.Execute(null);
+                FocusReplyBox();
+            }
+            else
+            {
+                await vm2.MarkSelectedReadAsync().ConfigureAwait(true);
+            }
         }
     }
 
@@ -116,5 +124,19 @@ public partial class NotificationsView : UserControl
         }
 
         ItemsList.Focus();
+    }
+
+    private void FocusReplyBox()
+    {
+        if (ReplyBox == null)
+        {
+            return;
+        }
+
+        Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
+        {
+            ReplyBox.Focus();
+            ReplyBox.SelectAll();
+        }));
     }
 }

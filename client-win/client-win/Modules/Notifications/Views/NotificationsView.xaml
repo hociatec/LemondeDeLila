@@ -128,15 +128,8 @@
         </Border>
 
         <Border Grid.Row="2" Background="#0C1523" Padding="12 8" Focusable="False">
-            <DockPanel>
-                <TextBlock Text="{Binding Status}" Foreground="{StaticResource HighlightBrush}" FontSize="14"
-                           HorizontalAlignment="Center" DockPanel.Dock="Left" />
-                <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" HorizontalAlignment="Right">
-                    <Button Content="Rafraîchir" Style="{StaticResource ActionButton}" Command="{Binding RefreshCommand}" />
-                    <Button Content="Répondre" Style="{StaticResource ActionButton}" Command="{Binding ReplyCommand}" IsEnabled="{Binding CanReply}" />
-                    <Button Content="Fermer" Style="{StaticResource ActionButton}" Command="{Binding CloseCommand}" />
-                </StackPanel>
-            </DockPanel>
+            <TextBlock Text="{Binding Status}" Foreground="{StaticResource HighlightBrush}" FontSize="14"
+                       HorizontalAlignment="Center" />
         </Border>
     </Grid>
 </UserControl>
