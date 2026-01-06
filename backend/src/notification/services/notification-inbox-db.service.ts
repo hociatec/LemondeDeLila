@@ -45,11 +45,13 @@ export class NotificationInboxDbService {
   }
 
   async list(userId: number, limit = 200): Promise<NotificationInboxItem[]> {
-    return this.repo.find({
+    const items = await this.repo.find({
       where: { user: { id: userId }, deletedAt: null } as any,
       order: { createdAt: 'DESC' },
       take: limit,
     });
+    // Safety: ensure soft-deleted rows never leak if the DB filter fails.
+    return items.filter((it) => !it.deletedAt);
   }
 
   async markRead(userId: number, id: string): Promise<boolean> {
