@@ -86,15 +86,7 @@ public partial class NotificationsView : UserControl
         if ((e.Key == Key.Enter || e.Key == Key.Return) && DataContext is NotificationsViewModel vm2)
         {
             e.Handled = true;
-            if (vm2.CanReply)
-            {
-                vm2.ReplyCommand.Execute(null);
-                FocusReplyBox();
-            }
-            else
-            {
-                await vm2.MarkSelectedReadAsync().ConfigureAwait(true);
-            }
+            await vm2.MarkSelectedReadAsync().ConfigureAwait(true);
         }
     }
 
@@ -143,5 +135,17 @@ public partial class NotificationsView : UserControl
             ReplyBox.Focus();
             ReplyBox.SelectAll();
         }));
+    }
+
+    private void OnReplyClick(object sender, RoutedEventArgs e)
+    {
+        if (DataContext is not NotificationsViewModel vm)
+        {
+            return;
+        }
+
+        vm.ReplyCommand.Execute(null);
+        FocusReplyBox();
+        e.Handled = true;
     }
 }

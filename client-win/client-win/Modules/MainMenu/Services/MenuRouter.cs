@@ -503,7 +503,7 @@ public sealed class MenuRouter : IMenuRouter
         var previous = _navigation.CurrentView;
         StopBackgroundLoops();
         var view = new NotificationsView();
-        var vm = new NotificationsViewModel(_inbox, _notify, _session, onClose: () =>
+        var vm = new NotificationsViewModel(_inbox, _notify, _session, _dialogs, onClose: () =>
         {
             if (previous != null)
             {

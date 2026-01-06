@@ -52,6 +52,7 @@
                     <RowDefinition Height="*" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
                 <ListBox x:Name="ItemsList"
@@ -89,7 +90,17 @@
                          HorizontalScrollBarVisibility="Disabled"
                          AutomationProperties.Name="Détails de la notification" />
 
-                <Border Grid.Row="2"
+                <Button Grid.Row="2"
+                        Content="Répondre"
+                        Style="{StaticResource ActionButton}"
+                        Command="{Binding ReplyCommand}"
+                        Click="OnReplyClick"
+                        Margin="0,12,0,0"
+                        Visibility="{Binding CanReply, Converter={StaticResource BoolToVis}}"
+                        TabIndex="0"
+                        AutomationProperties.Name="Ouvrir la réponse" />
+
+                <Border Grid.Row="3"
                         Margin="0,12,0,0"
                         Visibility="{Binding IsReplyMode, Converter={StaticResource BoolToVis}}"
                         Background="#0E2034"
@@ -115,12 +126,12 @@
                                 <Button Content="Envoyer"
                                         Style="{StaticResource ActionButton}"
                                         Command="{Binding SendReplyCommand}"
-                                        TabIndex="0"
+                                        TabIndex="1"
                                         AutomationProperties.Name="Envoyer la réponse" />
                                 <Button Content="Annuler"
                                         Style="{StaticResource ActionButton}"
                                         Command="{Binding CancelReplyCommand}"
-                                        TabIndex="1"
+                                        TabIndex="2"
                                         AutomationProperties.Name="Annuler" />
                             </StackPanel>
                         </StackPanel>

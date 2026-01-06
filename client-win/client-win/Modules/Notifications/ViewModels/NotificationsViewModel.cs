@@ -2,12 +2,14 @@ using System;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Collections.Specialized;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using client_win.Core;
 using client_win.Modules.Network.Services;
 using client_win.Modules.Notifications.Models;
 using client_win.Modules.Notifications.Services;
+using client_win.Modules.Shell.Services;
 using client_win.Modules.User.Services;
 
 namespace client_win.Modules.Notifications.ViewModels;
@@ -17,6 +19,7 @@ public sealed class NotificationsViewModel : ObservableObject
     private readonly INotificationInbox _inbox;
     private readonly INotifyGatewayClient _notify;
     private readonly ISessionService _session;
+    private readonly IDialogService _dialogs;
     private readonly Action _onClose;
 
     private NotificationItem? _selected;
@@ -30,18 +33,20 @@ public sealed class NotificationsViewModel : ObservableObject
         INotificationInbox inbox,
         INotifyGatewayClient notify,
         ISessionService session,
+        IDialogService dialogs,
         Action onClose)
     {
         _inbox = inbox ?? throw new ArgumentNullException(nameof(inbox));
         _notify = notify ?? throw new ArgumentNullException(nameof(notify));
         _session = session ?? throw new ArgumentNullException(nameof(session));
+        _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
         _onClose = onClose ?? throw new ArgumentNullException(nameof(onClose));
 
         if (_inbox.Items is INotifyCollectionChanged notifyColl)
         {
             notifyColl.CollectionChanged += (_, __) =>
             {
-                Status = Items.Count == 0 ? "Aucune notification." : $"Notifications : {Items.Count}.";
+                UpdateStatusAndSelection();
             };
         }
 
@@ -100,8 +105,7 @@ public sealed class NotificationsViewModel : ObservableObject
     public async Task InitializeAsync()
     {
         await RefreshAsync().ConfigureAwait(true);
-        Status = Items.Count == 0 ? "Aucune notification." : $"Notifications : {Items.Count}.";
-        FocusFirstItemRequested?.Invoke(this, EventArgs.Empty);
+        UpdateStatusAndSelection();
     }
 
     public bool HandleEscape()
@@ -118,7 +122,7 @@ public sealed class NotificationsViewModel : ObservableObject
     private async Task RefreshAsync()
     {
         await _notify.RequestInboxSnapshotAsync().ConfigureAwait(true);
-        Status = Items.Count == 0 ? "Aucune notification." : $"Notifications : {Items.Count}.";
+        UpdateStatusAndSelection();
     }
 
     private void OpenReply()
@@ -185,8 +189,29 @@ public sealed class NotificationsViewModel : ObservableObject
             return;
         }
 
-        await _notify.SendAsync("notify.inbox.delete", new { id = it.Id }).ConfigureAwait(true);
-        Status = "Notification supprimée.";
+        var confirm = await _dialogs
+            .Confirm(
+                "Confirmer la suppression",
+                "Supprimer cette notification ?",
+                okText: "Supprimer",
+                cancelText: "Annuler")
+            .ConfigureAwait(true);
+        if (confirm != true)
+        {
+            Status = "Suppression annulée.";
+            return;
+        }
+
+        try
+        {
+            await _notify.SendAsync("notify.inbox.delete", new { id = it.Id }).ConfigureAwait(true);
+            await _notify.RequestInboxSnapshotAsync().ConfigureAwait(true);
+            Status = "Notification supprimée.";
+        }
+        catch
+        {
+            Status = "Suppression impossible (connexion notifications ?).";
+        }
     }
 
     public Task MarkSelectedReadAsync()
@@ -197,6 +222,34 @@ public sealed class NotificationsViewModel : ObservableObject
             return Task.CompletedTask;
         }
         return _notify.SendAsync("notify.inbox.markRead", new { id = it.Id });
+    }
+
+    private void UpdateStatusAndSelection()
+    {
+        Status = Items.Count == 0 ? "Aucune notification." : $"Notifications : {Items.Count}.";
+
+        if (Items.Count == 0)
+        {
+            SelectedItem = null;
+            return;
+        }
+
+        var selectedId = SelectedItem?.Id;
+        if (!string.IsNullOrWhiteSpace(selectedId))
+        {
+            var existing = Items.FirstOrDefault(x => string.Equals(x.Id, selectedId, StringComparison.Ordinal));
+            if (existing != null)
+            {
+                if (!ReferenceEquals(existing, SelectedItem))
+                {
+                    SelectedItem = existing;
+                }
+                return;
+            }
+        }
+
+        SelectedItem = Items[0];
+        FocusFirstItemRequested?.Invoke(this, EventArgs.Empty);
     }
 
     private static string FormatDetail(NotificationItem? item)
