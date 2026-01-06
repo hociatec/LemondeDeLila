@@ -263,6 +263,9 @@ export class NotificationGateway
       typeof parsed?.requestId === 'string' ? parsed.requestId : null;
 
     if (type === 'notify.counts.get') {
+      this.logger.log(
+        `notify.counts.get received user=${meta.userId} requestId=${requestId ?? 'none'}`,
+      );
       try {
         const payload = await this.counts.getCounts(meta.userId);
         this.logger.log(
