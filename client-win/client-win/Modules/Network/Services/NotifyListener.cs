@@ -47,10 +47,12 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
     private readonly IRemoteSoundCache _remoteSounds;
     private readonly INotificationInbox _inbox;
     private readonly IMenuBadges _badges;
+    private volatile bool _countsSupported;
+    private TaskCompletionSource<bool>? _countsFirstReceived;
 
-	private IWebSocketConnection? _ws;
-	private bool _started;
-    private readonly ConcurrentDictionary<string, TaskCompletionSource<(string Type, string? Error)>> _pendingAcks = new();
+		private IWebSocketConnection? _ws;
+	    private readonly SemaphoreSlim _connectLock = new(1, 1);
+	    private readonly ConcurrentDictionary<string, TaskCompletionSource<(string Type, string? Error)>> _pendingAcks = new();
 
     public NotifyListener(
         ClientConfiguration config,
@@ -84,71 +86,122 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
         _badges = badges ?? throw new ArgumentNullException(nameof(badges));
     }
 
-    public async Task StartAsync(CancellationToken cancellationToken = default)
-    {
-        if (_started) return;
-        var token = _session.CurrentUser?.Token;
-        if (string.IsNullOrWhiteSpace(token))
-        {
-            return;
-        }
+	    public async Task StartAsync(CancellationToken cancellationToken = default)
+	    {
+	        if (_ws != null) return;
+	        var token = _session.CurrentUser?.Token;
+	        if (string.IsNullOrWhiteSpace(token))
+	        {
+	            return;
+	        }
 
-        _started = true;
-        _ws = _wsFactory();
-        _ws.MessageReceived += OnMessage;
-        _ws.Error += msg => Log.Warning("WS notify error: {Message}", msg);
+	        await _connectLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+	        try
+	        {
+	            if (_ws != null) return;
 
-        try
-        {
-            var headers = await BuildHeadersAsync(cancellationToken).ConfigureAwait(false);
-            await _ws.ConnectAsync(_config.NotifyGatewayWs, token, headers: headers, cancellationToken).ConfigureAwait(false);
-            Log.Information("Connexion WS notify établie.");
+	            IWebSocketConnection? ws = null;
+	            try
+	            {
+	                ws = _wsFactory();
+	                ws.MessageReceived += OnMessage;
+	                ws.Error += OnWsError;
+	                ws.StateChanged += OnWsStateChanged;
 
-            // Handshake version: permet au serveur de proposer la MAJ à chaque connexion.
-            try
-            {
-                var hello = JsonSerializer.Serialize(new
-                {
-                    type = "client.hello",
-                    payload = new { version = AppInfo.GetShortVersion() },
-                });
-                await _ws.SendAsync(hello, cancellationToken).ConfigureAwait(false);
-            }
-            catch
-            {
-                // Best-effort
-            }
+	                var headers = await BuildHeadersAsync(cancellationToken).ConfigureAwait(false);
+	                Log.Information("Connexion WS notify vers {Endpoint}", _config.NotifyGatewayWs);
+	                await ws.ConnectAsync(_config.NotifyGatewayWs, token, headers: headers, cancellationToken).ConfigureAwait(false);
+	                _ws = ws;
+	                Log.Information("Connexion WS notify établie.");
+	                _countsFirstReceived = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            // Source de vérité des badges (serveur).
-            try
-            {
-                await SendAsync("notify.counts.get", payload: null, cancellationToken).ConfigureAwait(false);
-            }
-            catch
-            {
-                // ignore (best-effort)
-            }
-        }
-        catch (Exception ex)
-        {
-            Log.Warning(ex, "Impossible de se connecter au WS notify.");
-            await StopAsync(cancellationToken).ConfigureAwait(false);
-        }
-    }
+	                // Handshake version: permet au serveur de proposer la MAJ à chaque connexion.
+	                try
+	                {
+	                    var hello = JsonSerializer.Serialize(new
+	                    {
+	                        type = "client.hello",
+	                        payload = new { version = AppInfo.GetShortVersion() },
+	                    });
+	                    await _ws.SendAsync(hello, cancellationToken).ConfigureAwait(false);
+	                }
+	                catch
+	                {
+	                    // Best-effort
+	                }
 
-    public async Task StopAsync(CancellationToken cancellationToken = default)
-    {
-        _started = false;
-        var ws = _ws;
-        _ws = null;
-        if (ws != null)
-        {
-            ws.MessageReceived -= OnMessage;
-            try
-            {
-                await ws.CloseAsync().ConfigureAwait(false);
-            }
-            catch
+	                // Source de vérité des badges (serveur).
+	                try
+	                {
+	                    await SendAsync("notify.counts.get", payload: null, cancellationToken).ConfigureAwait(false);
+	                    _ = Task.Run(async () =>
+	                    {
+	                        try
+	                        {
+	                            var tcs = _countsFirstReceived;
+	                            if (tcs == null)
+	                            {
+	                                return;
+	                            }
+
+	                            using var probeCts = new CancellationTokenSource(TimeSpan.FromSeconds(4));
+	                            var completed = await Task.WhenAny(tcs.Task, Task.Delay(Timeout.InfiniteTimeSpan, probeCts.Token))
+	                                .ConfigureAwait(false);
+	                            if (completed != tcs.Task)
+	                            {
+	                                Log.Warning("Aucune réponse notify.counts reçue (serveur incompatible ou WS instable).");
+	                            }
+	                        }
+	                        catch
+	                        {
+	                            // ignore
+	                        }
+	                    });
+	                }
+	                catch
+	                {
+	                    // ignore (best-effort)
+	                }
+	            }
+	            catch (Exception ex)
+	            {
+	                Log.Warning(ex, "Impossible de se connecter au WS notify.");
+	                if (ws != null)
+	                {
+	                    try
+	                    {
+	                        ws.MessageReceived -= OnMessage;
+	                        ws.Error -= OnWsError;
+	                        ws.StateChanged -= OnWsStateChanged;
+	                        await ws.CloseAsync().ConfigureAwait(false);
+	                    }
+	                    catch
+	                    {
+	                        // ignore
+	                    }
+	                }
+	            }
+	        }
+	        finally
+	        {
+	            _connectLock.Release();
+	        }
+	    }
+
+	    public async Task StopAsync(CancellationToken cancellationToken = default)
+	    {
+	        var ws = _ws;
+	        _ws = null;
+	        if (ws != null)
+	        {
+	            ws.MessageReceived -= OnMessage;
+	            ws.Error -= OnWsError;
+	            ws.StateChanged -= OnWsStateChanged;
+	            try
+	            {
+	                await ws.CloseAsync().ConfigureAwait(false);
+	            }
+	            catch
             {
                 // ignore
             }
@@ -187,6 +240,45 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
 	        catch (Exception ex)
 	        {
 	            Log.Debug(ex, "Message notify invalide.");
+	        }
+	    }
+
+	    private void OnWsError(string msg)
+	    {
+	        Log.Warning("WS notify error: {Message}", msg);
+	        _ = Task.Run(() => HandleDisconnectAsync(msg));
+	    }
+
+	    private void OnWsStateChanged(WebSocketState state)
+	    {
+	        if (state == WebSocketState.Error || state == WebSocketState.Disconnected)
+	        {
+	            _ = Task.Run(() => HandleDisconnectAsync(state.ToString()));
+	        }
+	    }
+
+	    private async Task HandleDisconnectAsync(string reason)
+	    {
+	        try
+	        {
+	            foreach (var kvp in _pendingAcks)
+	            {
+	                kvp.Value.TrySetResult(("notify.error", $"WS notify déconnecté: {reason}"));
+	            }
+	            _pendingAcks.Clear();
+	        }
+	        catch
+	        {
+	            // ignore
+	        }
+
+	        try
+	        {
+	            await StopAsync().ConfigureAwait(false);
+	        }
+	        catch
+	        {
+	            // ignore
 	        }
 	    }
 
@@ -336,41 +428,49 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
         }
     }
 
-    public async Task<(bool Ok, string? Error)> SendWithAckAsync(
-        string type,
-        object? payload,
-        string successType,
+	    public async Task<(bool Ok, string? Error)> SendWithAckAsync(
+	        string type,
+	        object? payload,
+	        string successType,
         string errorType,
         CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(type))
         {
             return (false, "Type manquant.");
-        }
+	        }
 
-        await StartAsync(cancellationToken).ConfigureAwait(false);
-        var ws = _ws;
-        if (ws == null)
-        {
-            return (false, "WS notify non connecté.");
-        }
+	        await StartAsync(cancellationToken).ConfigureAwait(false);
+	        var ws = _ws;
+	        if (ws == null)
+	        {
+	            return (false, "WS notify non connecté.");
+	        }
 
         var requestId = Guid.NewGuid().ToString("N");
         var tcs = new TaskCompletionSource<(string Type, string? Error)>(TaskCreationOptions.RunContinuationsAsynchronously);
         _pendingAcks[requestId] = tcs;
 
-        try
-        {
-            var raw = JsonSerializer.Serialize(new
-            {
+	        try
+	        {
+	            var raw = JsonSerializer.Serialize(new
+	            {
                 type,
                 requestId,
                 payload,
             });
-            await ws.SendAsync(raw, cancellationToken).ConfigureAwait(false);
+	            try
+	            {
+	                await ws.SendAsync(raw, cancellationToken).ConfigureAwait(false);
+	            }
+	            catch (Exception ex)
+	            {
+	                await HandleDisconnectAsync(ex.Message).ConfigureAwait(false);
+	                return (false, "WS notify déconnecté.");
+	            }
 
-            using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            timeoutCts.CancelAfter(TimeSpan.FromSeconds(6));
+	            using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+	            timeoutCts.CancelAfter(TimeSpan.FromSeconds(6));
 
             var completed = await Task.WhenAny(tcs.Task, Task.Delay(Timeout.InfiniteTimeSpan, timeoutCts.Token))
                 .ConfigureAwait(false);
@@ -399,10 +499,10 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
         }
     }
 
-    private void HandleCounts(JsonElement root)
-    {
-        try
-        {
+	    private void HandleCounts(JsonElement root)
+	    {
+	        try
+	        {
             if (!root.TryGetProperty("payload", out var payload) || payload.ValueKind != JsonValueKind.Object)
             {
                 return;
@@ -415,37 +515,47 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
                 ? m.GetInt32()
                 : 0;
 
-            _badges.SetUnreadNotifications(unreadNotifications);
-            _badges.SetUnreadMessaging(unreadMessages);
-            Log.Information("Notify counts: notif={Notifications} msg={Messages}", unreadNotifications, unreadMessages);
-        }
-        catch
-        {
+	            _badges.SetUnreadNotifications(unreadNotifications);
+	            _badges.SetUnreadMessaging(unreadMessages);
+	            _countsSupported = true;
+	            _countsFirstReceived?.TrySetResult(true);
+	            Log.Information("Notify counts: notif={Notifications} msg={Messages}", unreadNotifications, unreadMessages);
+	        }
+	        catch
+	        {
             // ignore
         }
     }
 
-    public async Task SendAsync(string type, object? payload = null, CancellationToken cancellationToken = default)
-    {
-        if (string.IsNullOrWhiteSpace(type))
-        {
-            return;
-        }
+	    public async Task SendAsync(string type, object? payload = null, CancellationToken cancellationToken = default)
+	    {
+	        if (string.IsNullOrWhiteSpace(type))
+	        {
+	            return;
+	        }
 
-        await StartAsync(cancellationToken).ConfigureAwait(false);
-        var ws = _ws;
-        if (ws == null)
-        {
-            throw new InvalidOperationException("WS notify non connecté.");
-        }
+	        await StartAsync(cancellationToken).ConfigureAwait(false);
+	        var ws = _ws;
+	        if (ws == null)
+	        {
+	            throw new InvalidOperationException("WS notify non connecté.");
+	        }
 
         var raw = JsonSerializer.Serialize(new
-        {
-            type,
-            payload,
-        });
-        await ws.SendAsync(raw, cancellationToken).ConfigureAwait(false);
-    }
+	        {
+	            type,
+	            payload,
+	        });
+	        try
+	        {
+	            await ws.SendAsync(raw, cancellationToken).ConfigureAwait(false);
+	        }
+	        catch
+	        {
+	            await HandleDisconnectAsync("send failed").ConfigureAwait(false);
+	            throw;
+	        }
+	    }
 
     public Task RequestInboxSnapshotAsync(CancellationToken cancellationToken = default) =>
         SendAsync("notify.inbox.list", payload: null, cancellationToken);
@@ -482,10 +592,10 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
         }
     }
 
-    private void HandleInboxItem(JsonElement root)
-    {
-        try
-        {
+	    private void HandleInboxItem(JsonElement root)
+	    {
+	        try
+	        {
             if (!root.TryGetProperty("payload", out var payload) || payload.ValueKind != JsonValueKind.Object)
             {
                 return;
@@ -496,19 +606,29 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
                 return;
             }
 
-            _inbox.Upsert(item);
+	            _inbox.Upsert(item);
+	            if (!_countsSupported)
+	            {
+	                _badges.SetUnreadNotifications(_badges.UnreadNotifications + 1);
+	            }
 
-            if (string.Equals(item.Kind, "admin_contact", StringComparison.OrdinalIgnoreCase))
-            {
-                var me = _session.CurrentUser;
-                var fromMe = me != null && item.FromUserId == me.UserId;
-                _sounds.Play(fromMe ? SoundId.AdminContactSent : SoundId.AdminContactReceived);
-            }
-        }
-        catch
-        {
-            // ignore
-        }
+	            if (string.Equals(item.Kind, "admin_contact", StringComparison.OrdinalIgnoreCase))
+	            {
+	                var me = _session.CurrentUser;
+	                var fromMe = me != null && item.FromUserId == me.UserId;
+	                _sounds.Play(fromMe ? SoundId.AdminContactSent : SoundId.AdminContactReceived);
+	            }
+
+	            // Source de vérité serveur pour badges.
+	            _ = Task.Run(async () =>
+	            {
+	                try { await SendAsync("notify.counts.get").ConfigureAwait(false); } catch { }
+	            });
+	        }
+	        catch
+	        {
+	            // ignore
+	        }
     }
 
     private static bool TryParseNotificationItem(JsonElement payload, out NotificationItem? item)
@@ -837,10 +957,10 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
         }
     }
 
-    private void HandleMessagingNew(JsonElement root)
-    {
-        try
-        {
+	    private void HandleMessagingNew(JsonElement root)
+	    {
+	        try
+	        {
             if (!root.TryGetProperty("payload", out var payload) || payload.ValueKind != JsonValueKind.Object)
             {
                 return;
@@ -875,16 +995,26 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
             _screenReader.AnnouncePolite(text.Trim());
 
             var me = _session.CurrentUser;
-            if (me == null || fromId <= 0 || fromId != me.UserId)
-            {
-                _sounds.Play(SoundId.PrivateMessageReceived);
-            }
-        }
-        catch
-        {
-            // ignore
-        }
-    }
+	            if (me == null || fromId <= 0 || fromId != me.UserId)
+	            {
+	                _sounds.Play(SoundId.PrivateMessageReceived);
+	            }
+	            if (!_countsSupported)
+	            {
+	                _badges.SetUnreadMessaging(_badges.UnreadMessaging + 1);
+	            }
+
+	            // Source de vérité serveur pour badges.
+	            _ = Task.Run(async () =>
+	            {
+	                try { await SendAsync("notify.counts.get").ConfigureAwait(false); } catch { }
+	            });
+	        }
+	        catch
+	        {
+	            // ignore
+	        }
+	    }
 
     private void HandleFriendRequested(JsonElement root)
     {

@@ -9,20 +9,61 @@ namespace client_win.Modules.Notifications.Views;
 
 public partial class NotificationsView : UserControl
 {
+    private NotificationsViewModel? _vm;
+    private EventHandler? _focusHandler;
+
     public NotificationsView()
     {
         InitializeComponent();
+        DataContextChanged += OnDataContextChanged;
+        Unloaded += OnUnloaded;
     }
 
     private async void OnLoaded(object sender, RoutedEventArgs e)
     {
         if (DataContext is NotificationsViewModel vm)
         {
-            vm.FocusFirstItemRequested += (_, __) =>
-                Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusFirstItem));
-            await vm.InitializeAsync().ConfigureAwait(true);
+            HookVm(vm);
+            try
+            {
+                await vm.InitializeAsync().ConfigureAwait(true);
+            }
+            catch
+            {
+                // Best-effort: éviter de bloquer l'UI si le WS est indisponible.
+            }
         }
         FocusFirstItem();
+    }
+
+    private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+    {
+        HookVm(DataContext as NotificationsViewModel);
+    }
+
+    private void OnUnloaded(object sender, RoutedEventArgs e)
+    {
+        HookVm(null);
+    }
+
+    private void HookVm(NotificationsViewModel? vm)
+    {
+        if (_vm != null && _focusHandler != null)
+        {
+            _vm.FocusFirstItemRequested -= _focusHandler;
+        }
+
+        _vm = vm;
+        _focusHandler = null;
+
+        if (_vm == null)
+        {
+            return;
+        }
+
+        _focusHandler = (_, __) =>
+            Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusFirstItem));
+        _vm.FocusFirstItemRequested += _focusHandler;
     }
 
     private void OnKeyDown(object sender, KeyEventArgs e)

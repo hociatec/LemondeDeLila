@@ -34,7 +34,14 @@ public partial class MessagingView : UserControl
     {
         if (DataContext is MessagingViewModel vm)
         {
-            await vm.InitializeAsync();
+            try
+            {
+                await vm.InitializeAsync();
+            }
+            catch
+            {
+                // Best-effort: éviter une exception non gérée qui bloquerait l'UI.
+            }
         }
 
         await Dispatcher.InvokeAsync(() =>

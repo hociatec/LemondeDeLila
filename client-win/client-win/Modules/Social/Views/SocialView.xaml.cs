@@ -37,7 +37,14 @@ public partial class SocialView : UserControl
         if (DataContext is SocialViewModel vm)
         {
             HookProfileFocusRequests(vm);
-            await vm.InitializeAsync();
+            try
+            {
+                await vm.InitializeAsync();
+            }
+            catch
+            {
+                // Best-effort: éviter une exception non gérée qui bloquerait l'UI.
+            }
         }
     }
 
