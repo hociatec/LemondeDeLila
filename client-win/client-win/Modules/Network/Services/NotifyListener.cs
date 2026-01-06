@@ -202,7 +202,7 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
 	    private void OnMessage(string raw)
 	    {
 	        if (string.IsNullOrWhiteSpace(raw)) return;
-	        try
+        try
         {
             using var doc = JsonDocument.Parse(raw);
             var root = doc.RootElement;
@@ -211,6 +211,8 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
 
             // Clone the payload before dispatching to the UI thread; doc will be disposed.
             var rootClone = root.Clone();
+            var payloadClone = root.TryGetProperty("payload", out var p) ? p.Clone() : default;
+            root = rootClone; // use cloned element for the rest of this method
 
             if (root.TryGetProperty("requestId", out var rid) && rid.ValueKind == JsonValueKind.String)
             {
@@ -639,6 +641,9 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
             var createdAt = payload.TryGetProperty("createdAt", out var cEl) && cEl.ValueKind == JsonValueKind.String
                 ? cEl.GetString()
                 : null;
+            var readAt = payload.TryGetProperty("readAt", out var rEl) && rEl.ValueKind == JsonValueKind.String
+                ? rEl.GetString()
+                : null;
 
             if (string.IsNullOrWhiteSpace(id) || string.IsNullOrWhiteSpace(kind))
             {
@@ -672,6 +677,7 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
                     Id = id,
                     Kind = "admin_contact",
                     CreatedAt = ts,
+                    IsRead = !string.IsNullOrWhiteSpace(readAt),
                     ContactId = contactId,
                     FromUserId = fromUserId,
                     FromUsername = fromUsername,
@@ -686,6 +692,7 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
                 Id = id,
                 Kind = kind,
                 CreatedAt = ts,
+                IsRead = !string.IsNullOrWhiteSpace(readAt),
             };
             return true;
         }

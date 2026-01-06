@@ -13,7 +13,9 @@ public sealed class NotificationInbox : INotificationInbox
     public void ReplaceAll(IEnumerable<NotificationItem> items)
     {
         Items.Clear();
-        foreach (var it in (items ?? Array.Empty<NotificationItem>()).OrderByDescending(x => x.CreatedAt))
+        foreach (var it in (items ?? Array.Empty<NotificationItem>())
+                     .Select(Clone)
+                     .OrderByDescending(x => x.CreatedAt))
         {
             Items.Add(it);
         }
@@ -32,7 +34,7 @@ public sealed class NotificationInbox : INotificationInbox
             var idx = Items.IndexOf(existing);
             if (idx >= 0)
             {
-                Items[idx] = item;
+                Items[idx] = Clone(item);
             }
             return;
         }
@@ -43,7 +45,7 @@ public sealed class NotificationInbox : INotificationInbox
         {
             insertAt++;
         }
-        Items.Insert(insertAt, item);
+        Items.Insert(insertAt, Clone(item));
     }
 
     public void Remove(string id)
@@ -58,5 +60,19 @@ public sealed class NotificationInbox : INotificationInbox
             Items.Remove(existing);
         }
     }
-}
 
+    private static NotificationItem Clone(NotificationItem item)
+    {
+        return new NotificationItem
+        {
+            Id = item.Id ?? string.Empty,
+            Kind = item.Kind ?? string.Empty,
+            CreatedAt = item.CreatedAt,
+            ContactId = item.ContactId,
+            FromUserId = item.FromUserId,
+            FromUsername = item.FromUsername ?? string.Empty,
+            ToUserId = item.ToUserId,
+            Message = item.Message ?? string.Empty,
+        };
+    }
+}
