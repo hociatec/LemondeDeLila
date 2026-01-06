@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PrivateMessage } from '../../messaging/entities/private-message.entity';
@@ -7,6 +7,8 @@ import { NotificationInboxDbService } from './notification-inbox-db.service';
 
 @Injectable()
 export class UserBadgeCountsService {
+  private readonly logger = new Logger(UserBadgeCountsService.name);
+
   constructor(
     private readonly inbox: NotificationInboxDbService,
     @InjectRepository(PrivateMessage)
@@ -18,17 +20,24 @@ export class UserBadgeCountsService {
     unreadNotifications: number;
     unreadMessages: number;
   }> {
-    const [unreadNotifications, unreadMessages] = await Promise.all([
-      this.inbox.countUnread(userId),
-      this.messages.count({
-        where: {
-          recipient: { id: userId },
-          deletedByRecipientAt: null,
-          readByRecipientAt: null,
-        } as any,
-      }),
-    ]);
-    return { unreadNotifications, unreadMessages };
+    try {
+      const [unreadNotifications, unreadMessages] = await Promise.all([
+        this.inbox.countUnread(userId),
+        this.messages.count({
+          where: {
+            recipient: { id: userId },
+            deletedByRecipientAt: null,
+            readByRecipientAt: null,
+          } as any,
+        }),
+      ]);
+      return { unreadNotifications, unreadMessages };
+    } catch (err) {
+      this.logger.warn(
+        `getCounts failed for user ${userId}: ${(err as Error).message}`,
+      );
+      throw err;
+    }
   }
 
   async notifyCounts(userId: number): Promise<void> {
@@ -36,4 +45,3 @@ export class UserBadgeCountsService {
     await this.notifications.notifyUser(userId, 'notify.counts', counts);
   }
 }
-

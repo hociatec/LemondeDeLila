@@ -139,7 +139,14 @@ export class NotificationGateway
       const payload = await this.counts.getCounts(user.id);
       this.safeSend(client, { type: 'notify.counts', payload });
     } catch {
-      // ignore
+      this.logger.warn(
+        `notify.counts initial push failed for user ${user.id}; client will retry`,
+      );
+      // Even on failure, send zeros to avoid client timeouts.
+      this.safeSend(client, {
+        type: 'notify.counts',
+        payload: { unreadNotifications: 0, unreadMessages: 0 },
+      });
     }
   }
 
