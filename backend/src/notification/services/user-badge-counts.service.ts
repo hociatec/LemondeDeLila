@@ -23,13 +23,12 @@ export class UserBadgeCountsService {
     try {
       const [unreadNotifications, unreadMessages] = await Promise.all([
         this.inbox.countUnread(userId),
-        this.messages.count({
-          where: {
-            recipient: { id: userId },
-            deletedByRecipientAt: null,
-            readByRecipientAt: null,
-          } as any,
-        }),
+        this.messages
+          .createQueryBuilder('m')
+          .where('m.recipient_id = :userId', { userId })
+          .andWhere('m.deleted_by_recipient_at IS NULL')
+          .andWhere('m.read_by_recipient_at IS NULL')
+          .getCount(),
       ]);
       return { unreadNotifications, unreadMessages };
     } catch (err) {

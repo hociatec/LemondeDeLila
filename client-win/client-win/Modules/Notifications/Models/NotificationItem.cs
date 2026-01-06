@@ -15,4 +15,12 @@ public sealed class NotificationItem
     public string FromUsername { get; init; } = string.Empty;
     public int? ToUserId { get; init; }
     public string Message { get; init; } = string.Empty;
+
+    public override string ToString()
+    {
+        var title = string.IsNullOrWhiteSpace(Kind) ? "Notification" : Kind;
+        var from = string.IsNullOrWhiteSpace(FromUsername) ? string.Empty : $" - {FromUsername}";
+        var msg = string.IsNullOrWhiteSpace(Message) ? string.Empty : $" : {Message}";
+        return $"{title}{from}{msg}";
+    }
 }

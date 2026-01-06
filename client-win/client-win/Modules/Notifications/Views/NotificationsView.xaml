@@ -68,9 +68,10 @@
                     <ListBox.ItemTemplate>
                         <DataTemplate>
                             <StackPanel>
-                                <TextBlock Text="{Binding Kind}" Foreground="#BFD0E6" />
-                                <TextBlock Text="{Binding FromUsername}" Foreground="White" FontWeight="SemiBold" />
+                                <TextBlock Text="{Binding Kind}" Foreground="#BFD0E6" FontWeight="SemiBold" />
+                                <TextBlock Text="{Binding FromUsername}" Foreground="White" />
                                 <TextBlock Text="{Binding Message}" Foreground="White" TextWrapping="Wrap" />
+                                <TextBlock Text="{Binding CreatedAt, StringFormat={}{0:G}}" Foreground="#9CB2D1" FontSize="12" />
                             </StackPanel>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
