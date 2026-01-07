@@ -25,7 +25,6 @@ public partial class GameRoomView : UserControl
         InitializeComponent();
         DataContextChanged += OnDataContextChanged;
         Unloaded += OnUnloaded;
-        HookHistoryTabDelegation();
         HookGameZoneTabDelegation();
     }
 
@@ -40,7 +39,6 @@ public partial class GameRoomView : UserControl
     private void OnLoaded(object sender, System.Windows.RoutedEventArgs e)
     {
         HookTabCapture();
-        HookHistoryTabDelegation();
         HookGameZoneTabDelegation();
         HookFocusRequests(DataContext as ViewModels.GameRoomViewModel);
 
@@ -106,17 +104,6 @@ public partial class GameRoomView : UserControl
         };
 
         _vm.GameZone.FocusRequested += _focusRequestedHandler;
-    }
-
-    private void HookHistoryTabDelegation()
-    {
-        if (HistoryHost == null)
-        {
-            return;
-        }
-
-        HistoryHost.TabNavigationRequested -= OnHistoryTabNavigationRequested;
-        HistoryHost.TabNavigationRequested += OnHistoryTabNavigationRequested;
     }
 
     private void HookGameZoneTabDelegation()
@@ -268,20 +255,6 @@ public partial class GameRoomView : UserControl
         // Ne pas intercepter Tab quand le focus est déjà dans la zone de jeu : elle délègue (Tab -> Historique).
         // Ici on ne force Tab vers la zone de jeu que si l'utilisateur n'est ni dans l'historique ni dans la zone de jeu.
         return;
-    }
-
-    private void OnHistoryTabNavigationRequested(object? sender, TabNavigationRequestedEventArgs e)
-    {
-        Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
-        {
-            if (e.IsShiftPressed && IsChatEnabled())
-            {
-                FocusChatInput();
-                return;
-            }
-
-            FocusGameZone();
-        }));
     }
 
     private void FocusGameZone()

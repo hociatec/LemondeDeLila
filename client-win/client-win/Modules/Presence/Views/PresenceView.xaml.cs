@@ -99,7 +99,7 @@ public partial class PresenceView : UserControl
         Focus();
     }
 
-    private void FocusFirstItem()
+    private void FocusSelectedOrFirstItem()
     {
         if (ItemsList == null || ItemsList.Items.Count == 0)
         {
@@ -107,11 +107,19 @@ public partial class PresenceView : UserControl
             return;
         }
 
-        ItemsList.SelectedIndex = 0;
-        ItemsList.ScrollIntoView(ItemsList.Items[0]);
+        if (ItemsList.SelectedIndex < 0)
+        {
+            ItemsList.SelectedIndex = 0;
+        }
+
+        if (ItemsList.SelectedIndex >= 0 && ItemsList.SelectedIndex < ItemsList.Items.Count)
+        {
+            ItemsList.ScrollIntoView(ItemsList.Items[ItemsList.SelectedIndex]);
+        }
 
         ItemsList.UpdateLayout();
-        if (ItemsList.ItemContainerGenerator.ContainerFromIndex(ItemsList.SelectedIndex) is ListBoxItem item)
+        if (ItemsList.SelectedIndex >= 0 &&
+            ItemsList.ItemContainerGenerator.ContainerFromIndex(ItemsList.SelectedIndex) is ListBoxItem item)
         {
             item.Focus();
         }
@@ -131,7 +139,7 @@ public partial class PresenceView : UserControl
         if (ItemsList.HasItems &&
             ItemsList.ItemContainerGenerator.Status == System.Windows.Controls.Primitives.GeneratorStatus.ContainersGenerated)
         {
-            _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusFirstItem));
+            _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusSelectedOrFirstItem));
             return;
         }
 
@@ -144,7 +152,7 @@ public partial class PresenceView : UserControl
             }
 
             ItemsList.ItemContainerGenerator.StatusChanged -= handler;
-            _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusFirstItem));
+            _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusSelectedOrFirstItem));
         };
         ItemsList.ItemContainerGenerator.StatusChanged += handler;
     }

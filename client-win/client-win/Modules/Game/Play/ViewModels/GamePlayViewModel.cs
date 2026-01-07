@@ -26,7 +26,6 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
     private readonly IDialogService _dialogs;
     private readonly ISoundService _sounds;
     private readonly Func<CancellationToken, Task<GameSession>> _connect;
-    private readonly IGameAnnouncements? _announcements;
     private readonly GamePlayActionDispatcher _actions = new();
     private readonly GamePlayStateProjector _projector = new();
     private readonly GamePlayPanelRequester _panels = new();
@@ -73,13 +72,11 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
     public GamePlayViewModel(
         Func<CancellationToken, Task<GameSession>> connect,
         IDialogService dialogs,
-        ISoundService sounds,
-        IGameAnnouncements? announcements = null)
+        ISoundService sounds)
     {
         _connect = connect ?? throw new ArgumentNullException(nameof(connect));
         _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
         _sounds = sounds ?? throw new ArgumentNullException(nameof(sounds));
-        _announcements = announcements;
         _dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
         _choices = new GamePlayChoicesViewModel(_actions);
         _choicesPropertyChangedHandler = (_, e) =>
@@ -91,7 +88,7 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
         };
         _choices.PropertyChanged += _choicesPropertyChangedHandler;
         _presenter = new GamePlayStatePresenter(_projector);
-        _announcementRouter = new GamePlayAnnouncementRouter(_announcements);
+        _announcementRouter = new GamePlayAnnouncementRouter();
 
         _rollCommand = new AsyncRelayCommand(
             async () =>
@@ -380,7 +377,6 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
         {
             const string message = "Mode spectateur : action de jeu interdite.";
             ConnectionStatus = message;
-            _announcements?.Error(message);
             MessageReceived?.Invoke(message);
             return false;
         }
@@ -395,7 +391,6 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
                     emitError: message =>
                     {
                         ConnectionStatus = $"Erreur pending: {message}";
-                        _announcements?.Error(message);
                         MessageReceived?.Invoke($"Erreur pending: {message}");
                     },
                     cancellationToken)
@@ -405,7 +400,6 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
         {
             Log.Error(ex, "Erreur lors de l'envoi d'une action de pending");
             ConnectionStatus = $"Erreur pending: {ex.Message}";
-            _announcements?.Error(ex.Message);
             MessageReceived?.Invoke($"Erreur pending: {ex.Message}");
             return false;
         }
@@ -638,7 +632,6 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
         _dispatcher.InvokeAsync(() =>
         {
             ConnectionStatus = $"Erreur serveur: {message}";
-            _announcements?.Error(message);
             MessageReceived?.Invoke($"Erreur: {message}");
             RefreshCanExecute();
         }, DispatcherPriority.Background);

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using System.Linq;
 using System.Windows;
 using System.Windows.Threading;
 using client_win.Core;
@@ -12,7 +11,6 @@ namespace client_win.Modules.Game.History.ViewModels;
 public sealed class GameHistoryViewModel : ObservableObject
 {
     private const int MaxEntries = 400;
-    private string _displayText = string.Empty;
     private bool _isPruning;
     private bool _pruneScheduled;
     private readonly Dispatcher _dispatcher;
@@ -23,16 +21,9 @@ public sealed class GameHistoryViewModel : ObservableObject
 
         _dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
         Entries.CollectionChanged += OnEntriesChanged;
-        RebuildDisplayText();
     }
 
     public ObservableCollection<string> Entries { get; } = new();
-
-    public string DisplayText
-    {
-        get => _displayText;
-        private set => SetProperty(ref _displayText, value);
-    }
 
     private void OnEntriesChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
@@ -43,8 +34,6 @@ public sealed class GameHistoryViewModel : ObservableObject
         {
             SchedulePrune();
         }
-
-        RebuildDisplayText();
     }
 
     private void SchedulePrune()
@@ -77,10 +66,5 @@ public sealed class GameHistoryViewModel : ObservableObject
                 _isPruning = false;
             }
         }));
-    }
-
-    private void RebuildDisplayText()
-    {
-        DisplayText = string.Join(Environment.NewLine, Entries.Where(s => !string.IsNullOrEmpty(s)));
     }
 }

@@ -1,17 +1,9 @@
 using System;
-using client_win.Modules.Shell.Services;
 
 namespace client_win.Modules.Game.Room.Services;
 
 public sealed class RoomAnnouncements : IRoomAnnouncements
 {
-    private readonly IScreenReaderAnnouncer _announcer;
-
-    public RoomAnnouncements(IScreenReaderAnnouncer announcer)
-    {
-        _announcer = announcer ?? throw new ArgumentNullException(nameof(announcer));
-    }
-
     public event Action<RoomAnnouncement>? Announced;
 
     public void BotJoined(string botName)
@@ -49,11 +41,6 @@ public sealed class RoomAnnouncements : IRoomAnnouncements
         var name = (username ?? string.Empty).Trim();
         var message = name.Length == 0 ? "Propriétaire : aucun." : $"Nouveau propriétaire : {name}.";
         Announced?.Invoke(new(RoomAnnouncementKind.Polite, message));
-    }
-
-    public void ShortcutKey(string key)
-    {
-        // Annonces directes désactivées: l'historique est la source unique d'annonces.
     }
 
     public void PlayersList(string message)

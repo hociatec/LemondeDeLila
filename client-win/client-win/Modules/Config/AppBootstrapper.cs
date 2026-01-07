@@ -137,7 +137,6 @@ public static class AppBootstrapper
         services.AddSingleton<IDialogService, WpfDialogService>();
         services.AddSingleton<IScreenReaderAnnouncer>(screenReaderAnnouncer);
         services.AddTransient<IRoomAnnouncements, RoomAnnouncements>();
-        services.AddTransient<IGameAnnouncements, GameAnnouncements>();
 
         // Enregistrement des services réseau avec NetworkConfiguration
         services.AddSingleton<PersistentWsClient>(sp => new PersistentWsClient(

@@ -5,15 +5,11 @@ namespace client_win.Modules.Game.Play.Services;
 
 internal sealed class GamePlayAnnouncementRouter
 {
-    private readonly IGameAnnouncements? _announcements;
     private string? _lastTurnAnnouncement;
     private DateTime _lastTurnAnnouncementAtUtc;
-    private string? _lastInfoAnnouncement;
-    private DateTime _lastInfoAnnouncementAtUtc;
 
-    internal GamePlayAnnouncementRouter(IGameAnnouncements? announcements)
+    internal GamePlayAnnouncementRouter()
     {
-        _announcements = announcements;
     }
 
     internal bool TryHandleTurnUpdate(TurnInfoDto info, Action<string> emitHistoryMessage, bool force = false)
@@ -40,52 +36,6 @@ internal sealed class GamePlayAnnouncementRouter
         _lastTurnAnnouncementAtUtc = now;
 
         emitHistoryMessage(msg);
-        return true;
-    }
-
-    internal void TryAnnounceLogMessage(string? message)
-    {
-        if (_announcements == null)
-        {
-            return;
-        }
-
-        if (!ShouldAnnounceLogMessage(message))
-        {
-            return;
-        }
-
-        var msg = message!.Trim();
-        var now = DateTime.UtcNow;
-        if (string.Equals(_lastInfoAnnouncement, msg, StringComparison.Ordinal) &&
-            (now - _lastInfoAnnouncementAtUtc) < TimeSpan.FromSeconds(1))
-        {
-            return;
-        }
-
-        _lastInfoAnnouncement = msg;
-        _lastInfoAnnouncementAtUtc = now;
-        _announcements.Info(msg);
-    }
-
-    private static bool ShouldAnnounceLogMessage(string? message)
-    {
-        if (string.IsNullOrWhiteSpace(message))
-        {
-            return false;
-        }
-
-        var msg = message.Trim();
-
-        // Le tour est annoncé via `game.turn` (pas via les logs) pour éviter les doublons.
-        if (msg.StartsWith("C'est au tour de", StringComparison.OrdinalIgnoreCase) ||
-            msg.StartsWith("Tour actuel", StringComparison.OrdinalIgnoreCase))
-        {
-            return false;
-        }
-
-        // Par défaut on annonce toutes les nouvelles lignes de log: elles arrivent dans l'historique
-        // et doivent être accessibles sans déplacer le focus.
         return true;
     }
 }

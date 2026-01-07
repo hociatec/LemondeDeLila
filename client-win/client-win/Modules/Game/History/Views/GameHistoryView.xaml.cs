@@ -19,7 +19,6 @@ public partial class GameHistoryView : UserControl
 {
     private GameHistoryViewModel? _viewModel;
     private bool _pendingRebuild;
-    private int _lastKnownEntryCount;
     private const int AnnouncementSpacingMs = 200;
     private readonly Queue<string> _pendingAnnouncements = new();
     private bool _announceScheduled;
@@ -37,8 +36,6 @@ public partial class GameHistoryView : UserControl
 
     public FrameworkElement? FocusTarget => HistoryViewer;
 
-    public event EventHandler<TabNavigationRequestedEventArgs>? TabNavigationRequested;
-
     public void SetScreenReader(IScreenReaderAnnouncer? screenReader)
     {
         _screenReader = screenReader;
@@ -51,11 +48,7 @@ public partial class GameHistoryView : UserControl
 
     public void CancelPendingAnnouncementsFromHost()
     {
-        _pendingAnnouncements.Clear();
-        _announceScheduled = false;
-        _announceRunId++;
-        A11yAnnouncer.Text = string.Empty;
-        AutomationProperties.SetName(A11yAnnouncer, string.Empty);
+        ResetAnnouncements();
     }
 
     private void OnLoaded(object sender, RoutedEventArgs e)
@@ -101,16 +94,12 @@ public partial class GameHistoryView : UserControl
         {
             _viewModel.Entries.CollectionChanged += OnEntriesCollectionChanged;
             RebuildFromViewModel(scrollToEnd: true);
-            _lastKnownEntryCount = _viewModel.Entries.Count;
             return;
         }
 
-        _pendingAnnouncements.Clear();
-        _announceScheduled = false;
-        _announceRunId++;
+        ResetAnnouncements();
         _forceAssertiveAnnouncements = 0;
         HistoryViewer.Document.Blocks.Clear();
-        _lastKnownEntryCount = 0;
     }
 
     private void OnEntriesCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -124,42 +113,23 @@ public partial class GameHistoryView : UserControl
         {
             AppendEntries(e.NewItems.Cast<string>());
             CollectAnnouncements(e.NewItems.Cast<string>());
-
-            _lastKnownEntryCount = _viewModel.Entries.Count;
             return;
         }
 
         ScheduleRebuild(scrollToEnd: false);
-        _lastKnownEntryCount = _viewModel.Entries.Count;
     }
 
     private void AppendEntries(IEnumerable<string> entries)
     {
-        //var shouldAutoScroll = ShouldAutoScrollToEnd();
-        //var preserveSelection = HistoryViewer.IsKeyboardFocusWithin && !shouldAutoScroll;
-
-        //var selectionStart = HistoryViewer.Document.ContentStart.GetOffsetToPosition(HistoryViewer.Selection.Start);
-        //var selectionLength = HistoryViewer.Selection.Start.GetOffsetToPosition(HistoryViewer.Selection.End);
-        //var caretIndex = HistoryViewer.Document.ContentStart.GetOffsetToPosition(HistoryViewer.CaretPosition);
-
         foreach (var entry in entries.Where(s => !string.IsNullOrWhiteSpace(s)))
         {
             HistoryViewer.Document.Blocks.Add(new Paragraph(new Run(entry)));
         }
 
-        //if (preserveSelection)
-        //{
-        //    RestoreSelection(selectionStart, selectionLength, caretIndex);
-        //    return;
-        //}
-
-        // For now, always scroll to end when new entries are added.
-        HistoryViewer.ScrollToEnd();
-        //if (shouldAutoScroll)
-        //{
-        //    HistoryViewer.CaretPosition = HistoryViewer.Document.ContentEnd;
-        //    HistoryViewer.ScrollToEnd();
-        //}
+        if (!HistoryViewer.IsKeyboardFocusWithin)
+        {
+            HistoryViewer.ScrollToEnd();
+        }
     }
 
     private void ScheduleRebuild(bool scrollToEnd)
@@ -184,86 +154,15 @@ public partial class GameHistoryView : UserControl
             return;
         }
 
-        //var shouldAutoScroll = scrollToEnd || ShouldAutoScrollToEnd();
-        //var preserveSelection = HistoryViewer.IsKeyboardFocusWithin && !shouldAutoScroll;
-
-        //var selectionStart = HistoryViewer.Document.ContentStart.GetOffsetToPosition(HistoryViewer.Selection.Start);
-        //var selectionLength = HistoryViewer.Selection.Start.GetOffsetToPosition(HistoryViewer.Selection.End);
-        //var caretIndex = HistoryViewer.Document.ContentStart.GetOffsetToPosition(HistoryViewer.CaretPosition);
-
         HistoryViewer.Document.Blocks.Clear();
         foreach (var entry in _viewModel.Entries.Where(s => !string.IsNullOrEmpty(s)))
         {
             HistoryViewer.Document.Blocks.Add(new Paragraph(new Run(entry)));
         }
 
-        //if (preserveSelection)
-        //{
-        //    RestoreSelection(selectionStart, selectionLength, caretIndex);
-        //    return;
-        //}
-
-        HistoryViewer.ScrollToEnd();
-        //if (shouldAutoScroll)
-        //{
-        //    HistoryViewer.CaretPosition = HistoryViewer.Document.ContentEnd;
-        //    HistoryViewer.ScrollToEnd();
-        //}
-    }
-
-    private void RestoreSelection(int selectionStart, int selectionLength, int caretIndex)
-    {
-        var textLength = new TextRange(HistoryViewer.Document.ContentStart, HistoryViewer.Document.ContentEnd).Text.Length;
-        var clampedStart = Math.Clamp(selectionStart, 0, textLength);
-        var clampedLength = Math.Clamp(selectionLength, 0, Math.Max(0, textLength - clampedStart));
-        var clampedCaret = Math.Clamp(caretIndex, 0, textLength);
-
-        var startPointer = HistoryViewer.Document.ContentStart.GetPositionAtOffset(clampedStart, LogicalDirection.Forward);
-        var endPointer = startPointer.GetPositionAtOffset(clampedLength, LogicalDirection.Forward);
-        HistoryViewer.Selection.Select(startPointer, endPointer);
-
-        var caretPointer = HistoryViewer.Document.ContentStart.GetPositionAtOffset(clampedCaret, LogicalDirection.Forward);
-        HistoryViewer.CaretPosition = caretPointer;
-    }
-
-    private bool ShouldAutoScrollToEnd()
-    {
-        // The original logic using LineCount is not compatible with WPF's RichTextBox.
-        // This is a simplified check that prevents auto-scrolling if the user has keyboard focus.
-        return !HistoryViewer.IsKeyboardFocusWithin;
-    }
-
-    private void OnHistoryViewerPreviewKeyDown(object sender, KeyEventArgs e)
-    {
-        if (e.Key != Key.Tab)
+        if (scrollToEnd && !HistoryViewer.IsKeyboardFocusWithin)
         {
-            return;
-        }
-
-        e.Handled = true;
-
-        var shift = (Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift;
-        TabNavigationRequested?.Invoke(this, new TabNavigationRequestedEventArgs(shift));
-    }
-
-    private static IEnumerable<string> SplitLines(string message)
-    {
-        if (string.IsNullOrWhiteSpace(message))
-        {
-            yield break;
-        }
-
-        var normalized = message
-            .Replace("\r\n", "\n", StringComparison.Ordinal)
-            .Replace('\r', '\n');
-
-        foreach (var raw in normalized.Split('\n'))
-        {
-            var cleaned = (raw ?? string.Empty).Trim();
-            if (!string.IsNullOrWhiteSpace(cleaned))
-            {
-                yield return cleaned;
-            }
+            HistoryViewer.ScrollToEnd();
         }
     }
 
@@ -275,9 +174,8 @@ public partial class GameHistoryView : UserControl
         }
 
         var added = entries
-            .SelectMany(SplitLines)
-            .Select(line => (line ?? string.Empty).Trim())
-            .Where(line => !string.IsNullOrWhiteSpace(line))
+            .Select(s => (s ?? string.Empty).Trim())
+            .Where(s => !string.IsNullOrWhiteSpace(s))
             .ToList();
 
         if (added.Count == 0)
@@ -299,6 +197,15 @@ public partial class GameHistoryView : UserControl
             _pendingAnnouncements.Enqueue(line);
         }
         ScheduleAnnouncement();
+    }
+
+    private void ResetAnnouncements()
+    {
+        _pendingAnnouncements.Clear();
+        _announceScheduled = false;
+        _announceRunId++;
+        A11yAnnouncer.Text = string.Empty;
+        AutomationProperties.SetName(A11yAnnouncer, string.Empty);
     }
 
     private void ScheduleAnnouncement()
@@ -418,13 +325,6 @@ public partial class GameHistoryView : UserControl
         {
             return string.Empty;
         }
-
-        var last = trimmed[^1];
-        if (char.IsLetterOrDigit(last))
-        {
-            return $"{trimmed}.";
-        }
-
         return trimmed;
     }
 
@@ -435,9 +335,7 @@ public partial class GameHistoryView : UserControl
         try
         {
             if (Application.Current == null) return;
-            Application.Current.Activated -= OnAppActivated;
             Application.Current.Deactivated -= OnAppDeactivated;
-            Application.Current.Activated += OnAppActivated;
             Application.Current.Deactivated += OnAppDeactivated;
         }
         catch
@@ -451,18 +349,12 @@ public partial class GameHistoryView : UserControl
         try
         {
             if (Application.Current == null) return;
-            Application.Current.Activated -= OnAppActivated;
             Application.Current.Deactivated -= OnAppDeactivated;
         }
         catch
         {
             // ignore
         }
-    }
-
-    private void OnAppActivated(object? sender, EventArgs e)
-    {
-        // No-op: on n'annonce pas le backlog, l'historique reste consultable.
     }
 
     private void OnAppDeactivated(object? sender, EventArgs e)
@@ -492,14 +384,4 @@ public partial class GameHistoryView : UserControl
         }
     }
 
-}
-
-public sealed class TabNavigationRequestedEventArgs : EventArgs
-{
-    public TabNavigationRequestedEventArgs(bool isShiftPressed)
-    {
-        IsShiftPressed = isShiftPressed;
-    }
-
-    public bool IsShiftPressed { get; }
 }

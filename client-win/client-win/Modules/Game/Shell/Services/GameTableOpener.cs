@@ -32,7 +32,6 @@ public sealed class GameTableOpener : IGameTableOpener
     private readonly IDialogService _dialogs;
     private readonly IScreenReaderAnnouncer _screenReader;
     private readonly IRoomAnnouncements _announcements;
-    private readonly IGameAnnouncements _gameAnnouncements;
     private readonly IPresenceMonitor _presence;
     private readonly ISoundService _sounds;
     private readonly IHomeViewAccessor _home;
@@ -45,7 +44,6 @@ public sealed class GameTableOpener : IGameTableOpener
         IDialogService dialogs,
         IScreenReaderAnnouncer screenReader,
         IRoomAnnouncements announcements,
-        IGameAnnouncements gameAnnouncements,
         IPresenceMonitor presence,
         ISoundService sounds,
         IHomeViewAccessor home)
@@ -57,7 +55,6 @@ public sealed class GameTableOpener : IGameTableOpener
         _dialogs = dialogs;
         _screenReader = screenReader ?? throw new ArgumentNullException(nameof(screenReader));
         _announcements = announcements;
-        _gameAnnouncements = gameAnnouncements;
         _presence = presence ?? throw new ArgumentNullException(nameof(presence));
         _sounds = sounds ?? throw new ArgumentNullException(nameof(sounds));
         _home = home ?? throw new ArgumentNullException(nameof(home));
@@ -247,7 +244,6 @@ public sealed class GameTableOpener : IGameTableOpener
         Task AnnouncePlayers() => AnnouncePlayersAsync(session);
         Task AnnounceInfo()
         {
-            _announcements.ShortcutKey("i");
             return bindings?.RequestInfoAsync() ?? Task.CompletedTask;
         }
         Task TogglePrivacy() => bindings?.TogglePrivacyAsync() ?? Task.CompletedTask;
@@ -301,7 +297,6 @@ public sealed class GameTableOpener : IGameTableOpener
             {
                 vm.History.Entries.Add(line);
             }
-            _gameAnnouncements.Info(createdMessage);
             _sounds.Play(isNew ? SoundId.RoomOpened : SoundId.RoomJoined);
 
             bindings = new GameTableBindings(
@@ -336,14 +331,11 @@ public sealed class GameTableOpener : IGameTableOpener
         return new GamePlayViewModel(
             connect: ct => _games.ConnectAsync(room.RoomId, game.Id, ct),
             dialogs: _dialogs,
-            sounds: _sounds,
-            announcements: _gameAnnouncements);
+            sounds: _sounds);
     }
 
     private Task AnnouncePlayersAsync(RoomSession session)
     {
-        _announcements.ShortcutKey("w");
-
         var room = session.LastRoomState?.Room;
         if (room == null)
         {
