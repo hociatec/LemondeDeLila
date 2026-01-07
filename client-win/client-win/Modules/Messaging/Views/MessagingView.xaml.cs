@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
@@ -166,13 +167,6 @@ public partial class MessagingView : UserControl
                 {
                     vm.RestoreCommand.Execute(null);
                 }
-                e.Handled = true;
-                return;
-            }
-
-            if (e.Key == Key.D)
-            {
-                vm.DeleteCommand.Execute(null);
                 e.Handled = true;
                 return;
             }
@@ -432,8 +426,35 @@ public partial class MessagingView : UserControl
         }
     }
 
-    private void OnMessagesKeyDown(object sender, KeyEventArgs e)
+    private async void OnMessagesKeyDown(object sender, KeyEventArgs e)
     {
+        if (DataContext is not MessagingViewModel vm)
+        {
+            return;
+        }
+
+        if (e.Key == Key.Delete)
+        {
+            if (MessagesList?.SelectedItems == null || MessagesList.SelectedItems.Count == 0)
+            {
+                return;
+            }
+
+            var items = MessagesList.SelectedItems.OfType<MessagingMessage>().ToArray();
+            if (items.Length == 0)
+            {
+                return;
+            }
+
+            var handled = await vm.DeleteMessagesAsync(items).ConfigureAwait(true);
+            if (handled)
+            {
+                e.Handled = true;
+            }
+
+            return;
+        }
+
         if (e.Key == Key.Enter)
         {
             OpenMessageDetail();

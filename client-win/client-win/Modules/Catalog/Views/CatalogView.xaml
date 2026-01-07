@@ -100,45 +100,6 @@
                 Margin="16" Padding="12">
             <StackPanel>
                 <TextBlock Text="Catégories" Foreground="White" FontSize="18" Margin="0 0 0 8" />
-                <ListBox x:Name="ActionsList"
-                         ItemsSource="{Binding Actions}"
-                         SelectedIndex="0"
-                         SelectionMode="Single"
-                         VirtualizingStackPanel.IsVirtualizing="True"
-                         VirtualizingStackPanel.VirtualizationMode="Recycling"
-                         ScrollViewer.CanContentScroll="True"
-                         KeyboardNavigation.TabNavigation="None"
-                         IsTabStop="False"
-                         KeyDown="OnActionsKeyDown"
-                         AutomationProperties.Name="Actions de la taverne">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding Label}" FontSize="15" FontWeight="SemiBold" />
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                    <ListBox.Style>
-                        <Style TargetType="ListBox" BasedOn="{StaticResource {x:Type ListBox}}">
-                            <Setter Property="Visibility" Value="Visible" />
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding Actions.Count}" Value="0">
-                                    <Setter Property="Visibility" Value="Collapsed" />
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </ListBox.Style>
-                </ListBox>
-                <Separator Margin="0 6 0 6">
-                    <Separator.Style>
-                        <Style TargetType="Separator">
-                            <Setter Property="Visibility" Value="Visible" />
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding Actions.Count}" Value="0">
-                                    <Setter Property="Visibility" Value="Collapsed" />
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Separator.Style>
-                </Separator>
                 <ListBox x:Name="CategoriesList"
                          ItemsSource="{Binding Shelves}"
                          SelectedItem="{Binding SelectedShelf, Mode=TwoWay}"

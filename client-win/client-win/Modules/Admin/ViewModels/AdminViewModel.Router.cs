@@ -100,6 +100,17 @@ public sealed partial class AdminViewModel
                     BuildRooms();
                     return;
                 }
+                if (tag is string notifications && notifications == "notifications")
+                {
+                    if (_openNotifications == null)
+                    {
+                        Status = "Notifications indisponibles.";
+                        return;
+                    }
+
+                    Status = await _openNotifications().ConfigureAwait(true);
+                    return;
+                }
             }
 
             if (_page == AdminPage.BugReports && tag is string bugListAction)

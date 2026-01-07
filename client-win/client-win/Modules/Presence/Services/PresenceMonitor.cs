@@ -32,6 +32,10 @@ public sealed class PresenceMonitor : IPresenceMonitor, IAsyncDisposable
     private int _reconnectAttempt;
     private int _reconnectInProgress;
 
+    private readonly object _pendingPlayersGate = new();
+    private IReadOnlyList<PresencePlayer>? _pendingPlayers;
+    private int _applyPlayersScheduled;
+
     private string _pendingContextJson = JsonSerializer.Serialize(new { type = "presence-context", context = "home" });
     private int? _currentRoomId;
     private string? _currentRoomName;
@@ -334,15 +338,64 @@ public sealed class PresenceMonitor : IPresenceMonitor, IAsyncDisposable
                 parsed.Add(new PresencePlayer(id, username, activity, roomId, roomName));
             }
 
-            _ = _dispatcher.InvokeAsync(() =>
-            {
-                ApplyPlayers(parsed);
-                PlayersChanged?.Invoke();
-            }, DispatcherPriority.Background);
+            QueueApplyPlayers(parsed);
         }
         catch
         {
             // ignore
+        }
+    }
+
+    private void QueueApplyPlayers(IReadOnlyList<PresencePlayer> latest)
+    {
+        // Coalescing: présence peut envoyer des rafales (rejoins/quitte), on ne veut pas clear+rebuild UI à chaque frame.
+        lock (_pendingPlayersGate)
+        {
+            _pendingPlayers = latest;
+        }
+
+        if (Interlocked.Exchange(ref _applyPlayersScheduled, 1) == 1)
+        {
+            return;
+        }
+
+        _ = _dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(ApplyPendingPlayers));
+    }
+
+    private void ApplyPendingPlayers()
+    {
+        try
+        {
+            while (true)
+            {
+                IReadOnlyList<PresencePlayer>? next;
+                lock (_pendingPlayersGate)
+                {
+                    next = _pendingPlayers;
+                    _pendingPlayers = null;
+                }
+
+                if (next == null)
+                {
+                    return;
+                }
+
+                ApplyPlayers(next);
+                PlayersChanged?.Invoke();
+            }
+        }
+        finally
+        {
+            Interlocked.Exchange(ref _applyPlayersScheduled, 0);
+
+            // Une mise à jour a pu arriver juste après le dernier tour de boucle.
+            lock (_pendingPlayersGate)
+            {
+                if (_pendingPlayers != null && Interlocked.Exchange(ref _applyPlayersScheduled, 1) == 0)
+                {
+                    _ = _dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(ApplyPendingPlayers));
+                }
+            }
         }
     }
 

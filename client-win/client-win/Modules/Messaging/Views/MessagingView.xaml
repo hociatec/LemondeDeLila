@@ -157,6 +157,7 @@
                         <ListBox x:Name="MessagesList"
                              ItemsSource="{Binding BoxMessages}"
                              SelectedItem="{Binding SelectedMessage, Mode=TwoWay}"
+                             SelectionMode="Extended"
                              MouseDoubleClick="OnMessagesDoubleClick"
                              KeyDown="OnMessagesKeyDown"
                              ItemContainerStyle="{StaticResource ListButtonItem}"

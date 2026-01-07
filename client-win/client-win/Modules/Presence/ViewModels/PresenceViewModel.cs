@@ -9,6 +9,7 @@ using client_win.Modules.Messaging.Services;
 using client_win.Modules.Presence.Models;
 using client_win.Modules.Presence.Services;
 using client_win.Modules.Shell.Services;
+using client_win.Modules.Social.Services;
 using client_win.Modules.TextPrompts.Services;
 using client_win.Modules.User.Services;
 
@@ -25,11 +26,13 @@ public sealed class PresenceViewModel : ObservableObject
     private readonly IPresenceMonitor _presence;
     private readonly IRoomDirectoryClient _rooms;
     private readonly IMessagingService _messaging;
+    private readonly ISocialService _social;
     private readonly ITextPromptService _prompts;
     private readonly ISessionService _session;
     private readonly IDialogService _dialogs;
     private readonly Action _close;
     private readonly Func<int, Task> _joinRoom;
+    private readonly Func<int, string, Task>? _openStoryBook;
 
     private PresencePage _page = PresencePage.Players;
     private string _title = "Présence";
@@ -38,28 +41,40 @@ public sealed class PresenceViewModel : ObservableObject
     private PresenceMenuItem? _selectedItem;
     private PresencePlayer? _selectedPlayer;
     private bool _isBusy;
+    private bool? _isFriend;
+    private bool? _isBlocked;
+    private CancellationTokenSource? _socialCts;
 
     private const string TagInvite = "invite";
     private const string TagJoin = "join";
     private const string TagMessage = "message";
+    private const string TagFriendAdd = "friend.add";
+    private const string TagFriendRemove = "friend.remove";
+    private const string TagBlock = "block";
+    private const string TagUnblock = "unblock";
+    private const string TagStoryBook = "storybook";
 
     public PresenceViewModel(
         IPresenceMonitor presence,
         IRoomDirectoryClient rooms,
         IMessagingService messaging,
+        ISocialService social,
         ITextPromptService prompts,
         ISessionService session,
         IDialogService dialogs,
         Func<int, Task> joinRoom,
+        Func<int, string, Task>? openStoryBook,
         Action onClose)
     {
         _presence = presence ?? throw new ArgumentNullException(nameof(presence));
         _rooms = rooms ?? throw new ArgumentNullException(nameof(rooms));
         _messaging = messaging ?? throw new ArgumentNullException(nameof(messaging));
+        _social = social ?? throw new ArgumentNullException(nameof(social));
         _prompts = prompts ?? throw new ArgumentNullException(nameof(prompts));
         _session = session ?? throw new ArgumentNullException(nameof(session));
         _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
         _joinRoom = joinRoom ?? throw new ArgumentNullException(nameof(joinRoom));
+        _openStoryBook = openStoryBook;
         _close = onClose ?? (() => { });
 
         Items = new ObservableCollection<PresenceMenuItem>();
@@ -115,6 +130,8 @@ public sealed class PresenceViewModel : ObservableObject
     {
         _page = PresencePage.Players;
         _selectedPlayer = null;
+        _isFriend = null;
+        _isBlocked = null;
         SelectedItem = null;
         Title = BuildTitle();
         Status = "Flèches : naviguer. Entrée : sélectionner. Échap : fermer.";
@@ -125,8 +142,11 @@ public sealed class PresenceViewModel : ObservableObject
     {
         if (_page == PresencePage.PlayerActions)
         {
+            _socialCts?.Cancel();
             _page = PresencePage.Players;
             _selectedPlayer = null;
+            _isFriend = null;
+            _isBlocked = null;
             Title = BuildTitle();
             Status = "Flèches : naviguer. Entrée : sélectionner. Échap : fermer.";
             RebuildPlayers();
@@ -219,7 +239,10 @@ public sealed class PresenceViewModel : ObservableObject
             _page = PresencePage.PlayerActions;
             Title = player.Username;
             Status = "Flèches : naviguer. Entrée : sélectionner. Échap : retour.";
+            _isFriend = null;
+            _isBlocked = null;
             RebuildPlayerActions();
+            _ = RefreshSocialStateAsync(player.Id);
             return;
         }
 
@@ -244,6 +267,34 @@ public sealed class PresenceViewModel : ObservableObject
         var canInvite = myRoomId.HasValue && myRoomId.Value > 0 && player.CurrentRoomId != myRoomId;
         var canJoin = (!myRoomId.HasValue || myRoomId.Value <= 0) && player.CurrentRoomId.HasValue && player.CurrentRoomId.Value > 0;
 
+        if (_isBlocked == true)
+        {
+            Items.Add(new PresenceMenuItem("Débloquer", tag: TagUnblock));
+        }
+        else if (_isBlocked == false)
+        {
+            Items.Add(new PresenceMenuItem("Bloquer", tag: TagBlock));
+        }
+        else
+        {
+            Items.Add(new PresenceMenuItem("Bloquer / débloquer (chargement...)", tag: TagBlock));
+        }
+
+        if (_isFriend == true)
+        {
+            Items.Add(new PresenceMenuItem("Retirer de mes amis", tag: TagFriendRemove));
+        }
+        else if (_isFriend == false)
+        {
+            Items.Add(new PresenceMenuItem("Ajouter en ami", tag: TagFriendAdd));
+        }
+        else
+        {
+            Items.Add(new PresenceMenuItem("Ajouter / retirer ami (chargement...)", tag: TagFriendAdd));
+        }
+
+        Items.Add(new PresenceMenuItem("Voir son livre des contes", tag: TagStoryBook));
+
         if (canInvite)
         {
             Items.Add(new PresenceMenuItem("Inviter à ma table", tag: TagInvite));
@@ -261,6 +312,37 @@ public sealed class PresenceViewModel : ObservableObject
                 : "Aucune action de table disponible. Échap : retour.";
 
         SelectedItem = Items.FirstOrDefault();
+    }
+
+    private async Task RefreshSocialStateAsync(int userId)
+    {
+        _socialCts?.Cancel();
+        _socialCts?.Dispose();
+        _socialCts = new CancellationTokenSource();
+        var token = _socialCts.Token;
+
+        try
+        {
+            var friendsTask = _social.GetFriendsAsync(token);
+            var blockedTask = _social.GetBlockedAsync(token);
+            await Task.WhenAll(friendsTask, blockedTask).ConfigureAwait(true);
+
+            var friends = friendsTask.Result;
+            var blocked = blockedTask.Result;
+
+            _isFriend = friends.Any(u => u.Id == userId);
+            _isBlocked = blocked.Any(u => u.Id == userId);
+
+            if (_page == PresencePage.PlayerActions && _selectedPlayer?.Id == userId)
+            {
+                RebuildPlayerActions();
+            }
+        }
+        catch
+        {
+            _isFriend = null;
+            _isBlocked = null;
+        }
     }
 
     private async Task RunActionAsync()
@@ -314,6 +396,20 @@ public sealed class PresenceViewModel : ObservableObject
             return;
         }
 
+        if (string.Equals(tag, TagStoryBook, StringComparison.OrdinalIgnoreCase))
+        {
+            if (_openStoryBook == null)
+            {
+                Details = "Livre des contes indisponible.";
+                return;
+            }
+
+            // Fermer la présence avant d'ouvrir le livre des contes pour éviter les doubles activations accidentelles.
+            _close();
+            await _openStoryBook(player.Id, StripSelfSuffix(player.Username)).ConfigureAwait(true);
+            return;
+        }
+
         if (string.Equals(tag, TagMessage, StringComparison.OrdinalIgnoreCase))
         {
             var draft = await _prompts.PromptPrivateMessageAsync(
@@ -340,6 +436,95 @@ public sealed class PresenceViewModel : ObservableObject
             {
                 IsBusy = false;
             }
+        }
+
+        if (string.Equals(tag, TagFriendAdd, StringComparison.OrdinalIgnoreCase))
+        {
+            IsBusy = true;
+            try
+            {
+                var ok = await _social.RequestFriendAsync(player.Id, CancellationToken.None).ConfigureAwait(true);
+                Details = ok ? "Demande d'ami envoyée." : "Action impossible.";
+                _isFriend = ok ? false : _isFriend;
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+
+            _ = RefreshSocialStateAsync(player.Id);
+            return;
+        }
+
+        if (string.Equals(tag, TagFriendRemove, StringComparison.OrdinalIgnoreCase))
+        {
+            var confirm = await _dialogs.Confirm(
+                "Amis",
+                $"Retirer {StripSelfSuffix(player.Username)} de vos amis ?",
+                okText: "Retirer",
+                cancelText: "Annuler").ConfigureAwait(true);
+            if (confirm != true)
+            {
+                return;
+            }
+
+            IsBusy = true;
+            try
+            {
+                var ok = await _social.RemoveFriendAsync(player.Id, CancellationToken.None).ConfigureAwait(true);
+                Details = ok ? "Ami retiré." : "Action impossible.";
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+
+            _ = RefreshSocialStateAsync(player.Id);
+            return;
+        }
+
+        if (string.Equals(tag, TagBlock, StringComparison.OrdinalIgnoreCase))
+        {
+            var confirm = await _dialogs.Confirm(
+                "Blocage",
+                $"Bloquer {StripSelfSuffix(player.Username)} ?\n\nVous ne verrez plus ses messages et interactions sociales.",
+                okText: "Bloquer",
+                cancelText: "Annuler").ConfigureAwait(true);
+            if (confirm != true)
+            {
+                return;
+            }
+
+            IsBusy = true;
+            try
+            {
+                var ok = await _social.BlockUserAsync(player.Id, CancellationToken.None).ConfigureAwait(true);
+                Details = ok ? "Utilisateur bloqué." : "Action impossible.";
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+
+            _ = RefreshSocialStateAsync(player.Id);
+            return;
+        }
+
+        if (string.Equals(tag, TagUnblock, StringComparison.OrdinalIgnoreCase))
+        {
+            IsBusy = true;
+            try
+            {
+                var ok = await _social.UnblockUserAsync(player.Id, CancellationToken.None).ConfigureAwait(true);
+                Details = ok ? "Utilisateur débloqué." : "Action impossible.";
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+
+            _ = RefreshSocialStateAsync(player.Id);
+            return;
         }
     }
 

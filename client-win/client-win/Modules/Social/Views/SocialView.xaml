@@ -195,6 +195,9 @@
                              KeyDown="OnMenuKeyDown"
                              PreviewMouseLeftButtonUp="OnMenuClick"
                              AutomationProperties.Name="Menu social">
+                        <ListBoxItem Tag="messaging">
+                            <TextBlock Text="Messagerie" />
+                        </ListBoxItem>
                         <ListBoxItem Tag="friends">
                             <TextBlock Text="Amis" />
                         </ListBoxItem>

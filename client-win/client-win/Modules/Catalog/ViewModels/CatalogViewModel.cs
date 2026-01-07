@@ -26,15 +26,12 @@ public enum CatalogEscapeResult
 public sealed class CatalogViewModel : ObservableObject
     , IDisposable
 {
-    public sealed record CatalogActionItem(string Label, ICommand Command)
-    {
-        public override string ToString() => Label;
-    }
-
     private readonly ICatalogService _service;
     private readonly Func<CatalogGame, Task> _openGame;
     private readonly Action _close;
     private readonly Dispatcher _dispatcher;
+    private readonly Dictionary<string, ICommand> _shelfActions = new();
+    private readonly List<CatalogCategory> _actionShelves = new();
     private List<CatalogGame> _allGames = new();
     private CatalogCategory? _selectedCategory;
     private CatalogCategory? _selectedSubcategory;
@@ -44,6 +41,7 @@ public sealed class CatalogViewModel : ObservableObject
     private int _selectionRevision;
     private bool _refreshAfterBusy;
     private bool _isDisposed;
+    private const string ActionPrefix = "action:";
 
     public CatalogViewModel(
         ICatalogService service,
@@ -62,15 +60,17 @@ public sealed class CatalogViewModel : ObservableObject
 
         if (joinGame != null)
         {
-            Actions.Add(new CatalogActionItem(
+            AddShelfAction(
+                id: $"{ActionPrefix}joinGame",
                 "Rejoindre une partie",
-                new AsyncRelayCommand(async () => Status = await joinGame().ConfigureAwait(true))));
+                new AsyncRelayCommand(async () => Status = await joinGame().ConfigureAwait(true)));
         }
         if (openStoryBook != null)
         {
-            Actions.Add(new CatalogActionItem(
+            AddShelfAction(
+                id: $"{ActionPrefix}storyBook",
                 "Livre des contes",
-                new AsyncRelayCommand(async () => Status = await openStoryBook().ConfigureAwait(true))));
+                new AsyncRelayCommand(async () => Status = await openStoryBook().ConfigureAwait(true)));
         }
 
         Status = "Chargement du catalogue...";
@@ -78,8 +78,6 @@ public sealed class CatalogViewModel : ObservableObject
         // (sinon ItemsControl peut lever ItemContainerGenerator.Verify()).
         _dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() => RefreshCommand.Execute(null)));
     }
-
-    public ObservableCollection<CatalogActionItem> Actions { get; } = new();
 
     public ObservableCollection<CatalogCategory> Shelves { get; } = new();
     public ObservableCollection<CatalogCategory> SubShelves { get; } = new();
@@ -92,6 +90,17 @@ public sealed class CatalogViewModel : ObservableObject
         {
             if (SetProperty(ref _selectedCategory, value))
             {
+                if (IsActionShelf(value))
+                {
+                    // Les actions n'ont pas de sous-catégories/jeux.
+                    SubShelves.Clear();
+                    Games.Clear();
+                    SelectedSubShelf = null;
+                    SelectedGame = null;
+                    Status = "Entrée : sélectionner une action ou une catégorie.";
+                    return;
+                }
+
                 _selectionRevision++;
                 ScheduleUpdateSubShelves(_selectionRevision);
                 Status = "Sélectionnez une sous-catégorie ou un jeu.";
@@ -158,6 +167,40 @@ public sealed class CatalogViewModel : ObservableObject
 
         _isDisposed = true;
         _service.CacheInvalidated -= OnCatalogInvalidated;
+    }
+
+    public bool TryActivateSelectedShelfAction()
+    {
+        var shelf = SelectedShelf;
+        if (!IsActionShelf(shelf))
+        {
+            return false;
+        }
+
+        var id = shelf!.Id ?? string.Empty;
+        if (!_shelfActions.TryGetValue(id, out var command))
+        {
+            return false;
+        }
+
+        if (command.CanExecute(null))
+        {
+            command.Execute(null);
+        }
+        return true;
+    }
+
+    private bool IsActionShelf(CatalogCategory? shelf)
+    {
+        var id = shelf?.Id ?? string.Empty;
+        return id.StartsWith(ActionPrefix, StringComparison.Ordinal);
+    }
+
+    private void AddShelfAction(string id, string name, ICommand command)
+    {
+        var cat = new CatalogCategory(id, name);
+        _actionShelves.Add(cat);
+        _shelfActions[id] = command;
     }
 
     private void OnCatalogInvalidated(object? sender, EventArgs e)
@@ -276,6 +319,11 @@ public sealed class CatalogViewModel : ObservableObject
             _allGames = payload.Games?.ToList() ?? new List<CatalogGame>();
             var categories = payload.Categories ?? new List<CatalogCategory>();
 
+            foreach (var action in _actionShelves)
+            {
+                Shelves.Add(action);
+            }
+
             foreach (var cat in categories)
             {
                 Shelves.Add(cat);
@@ -288,7 +336,6 @@ public sealed class CatalogViewModel : ObservableObject
             }
 
             SelectedShelf = Shelves[0];
-            Status = "Choisissez une catégorie.";
         }, DispatcherPriority.Background);
     }
 

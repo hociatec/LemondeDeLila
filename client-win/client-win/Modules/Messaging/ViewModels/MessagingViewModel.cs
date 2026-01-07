@@ -1,5 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -151,6 +152,129 @@ public sealed class MessagingViewModel : ObservableObject
     public ICommand RestoreCommand { get; }
     public ICommand ReplyCommand { get; }
     public ICommand CloseCommand { get; }
+
+    public async Task<bool> DeleteMessagesAsync(IReadOnlyList<MessagingMessage> messages)
+    {
+        if (IsBusy)
+        {
+            return false;
+        }
+
+        var ids = (messages ?? Array.Empty<MessagingMessage>())
+            .Select(m => m?.Id)
+            .Where(id => !string.IsNullOrWhiteSpace(id))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        if (ids.Length == 0)
+        {
+            return false;
+        }
+
+        if (SelectedBox == MessagingBox.Deleted)
+        {
+            var confirm = await _dialogs
+                .Confirm(
+                    "Suppression définitive",
+                    ids.Length == 1
+                        ? "Cette action supprime définitivement le message. Continuer ?"
+                        : $"Cette action supprime définitivement {ids.Length} messages. Continuer ?",
+                    okText: "Supprimer",
+                    cancelText: "Annuler")
+                .ConfigureAwait(true);
+            if (confirm != true)
+            {
+                return true;
+            }
+
+            IsBusy = true;
+            try
+            {
+                var removed = 0;
+                foreach (var id in ids)
+                {
+                    var purged = await _service.PurgeAsync(id!).ConfigureAwait(true);
+                    if (purged != null)
+                    {
+                        removed++;
+                        RemoveMessage(purged.Id);
+                    }
+                }
+
+                Status = removed > 0
+                    ? (removed == 1 ? "Message supprimé définitivement." : $"{removed} messages supprimés définitivement.")
+                    : "Aucune suppression effectuée.";
+            }
+            catch (Exception ex)
+            {
+                Status = $"Erreur lors de la suppression définitive : {ex.Message}";
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+
+            await LoadBoxAsync(SelectedBox, selectFirst: true).ConfigureAwait(true);
+            FocusFirstMessageRequested?.Invoke(this, EventArgs.Empty);
+            return true;
+        }
+
+        var confirmDelete = await _dialogs
+            .Confirm(
+                "Confirmer la suppression",
+                ids.Length == 1
+                    ? "Voulez-vous vraiment supprimer ce message ?"
+                    : $"Voulez-vous vraiment supprimer {ids.Length} messages ?",
+                okText: "Supprimer",
+                cancelText: "Annuler")
+            .ConfigureAwait(true);
+        if (confirmDelete != true)
+        {
+            return true;
+        }
+
+        IsBusy = true;
+        var moved = 0;
+        try
+        {
+            foreach (var id in ids)
+            {
+                var deleted = await _service.DeleteAsync(id!).ConfigureAwait(true);
+                if (deleted != null)
+                {
+                    moved++;
+                    ReplaceMessage(deleted);
+                }
+            }
+
+            Status = moved > 0
+                ? (moved == 1 ? "Message supprimé." : $"{moved} messages supprimés.")
+                : "Aucune suppression effectuée.";
+        }
+        catch (Exception ex)
+        {
+            Status = $"Erreur lors de la suppression : {ex.Message}";
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+
+        if (moved > 0)
+        {
+            await LoadBoxAsync(SelectedBox, selectFirst: true).ConfigureAwait(true);
+            await _dialogs
+                .ShowInfo(
+                    "Message supprimé",
+                    moved == 1
+                        ? "Le message a été déplacé dans la corbeille."
+                        : $"{moved} messages ont été déplacés dans la corbeille.")
+                .ConfigureAwait(true);
+            FocusFirstMessageRequested?.Invoke(this, EventArgs.Empty);
+        }
+
+        return true;
+    }
 
     public async Task InitializeAsync()
     {
@@ -438,57 +562,7 @@ public sealed class MessagingViewModel : ObservableObject
             return;
         }
 
-        if (SelectedBox == MessagingBox.Deleted)
-        {
-            await PurgeAsync(message).ConfigureAwait(true);
-            return;
-        }
-
-        var confirm = await _dialogs
-            .Confirm(
-                "Confirmer la suppression",
-                "Voulez-vous vraiment supprimer ce message ?",
-                okText: "Supprimer",
-                cancelText: "Annuler")
-            .ConfigureAwait(true);
-        if (confirm != true)
-        {
-            return;
-        }
-
-        var reload = false;
-        IsBusy = true;
-        try
-        {
-            var deleted = await _service.DeleteAsync(message.Id).ConfigureAwait(true);
-            if (deleted != null)
-            {
-                ReplaceMessage(deleted);
-                Status = "Message supprimé.";
-                reload = true;
-            }
-            else
-            {
-                Status = "Échec de la suppression.";
-            }
-        }
-        catch (Exception ex)
-        {
-            Status = $"Erreur lors de la suppression : {ex.Message}";
-        }
-        finally
-        {
-            IsBusy = false;
-        }
-
-        if (reload)
-        {
-            await LoadBoxAsync(SelectedBox, selectFirst: true).ConfigureAwait(true);
-            await _dialogs
-                .ShowInfo("Message supprimé", "Le message a été déplacé dans la corbeille.")
-                .ConfigureAwait(true);
-            FocusFirstMessageRequested?.Invoke(this, EventArgs.Empty);
-        }
+        await DeleteMessagesAsync(new[] { message }).ConfigureAwait(true);
     }
 
     private async Task PurgeAsync(MessagingMessage message)

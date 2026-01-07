@@ -347,11 +347,7 @@ public sealed class MenuRouter : IMenuRouter
                     return true;
                 }
 
-                // Catalog (taverne): revenir sur l'action/catégorie sélectionnée (ex: "Rejoindre une partie").
-                if (target.FindName("ActionsList") is System.Windows.Controls.ListBox actions && TryFocusList(actions))
-                {
-                    return;
-                }
+                // Catalog (taverne): revenir sur la catégorie sélectionnée (les actions sont dans la liste).
                 if (target.FindName("CategoriesList") is System.Windows.Controls.ListBox categories && TryFocusList(categories))
                 {
                     return;
@@ -480,6 +476,11 @@ public sealed class MenuRouter : IMenuRouter
                 StopBackgroundLoops();
                 return await OpenStatsForUser(userId, username).ConfigureAwait(true);
             },
+            openMessaging: async () =>
+            {
+                StopBackgroundLoops();
+                return await OpenMessaging().ConfigureAwait(true);
+            },
             onClose: () =>
         {
             if (previous != null)
@@ -549,7 +550,13 @@ public sealed class MenuRouter : IMenuRouter
         var previous = _navigation.CurrentView;
         StopBackgroundLoops();
         var view = new AdminView();
-        var vm = new AdminViewModel(_admin, _adminMaintenance, _maintenanceTokenStore, _secretPrompts, _roomDirectory, _apiCapabilities, _config, _publisher, _dialogs, _options, _sounds, _session, _remoteSounds, _tables, view, onClose: () =>
+        var vm = new AdminViewModel(_admin, _adminMaintenance, _maintenanceTokenStore, _secretPrompts, _roomDirectory, _apiCapabilities, _config, _publisher, _dialogs, _options, _sounds, _session, _remoteSounds, _tables, view,
+            openNotifications: async () =>
+            {
+                StopBackgroundLoops();
+                return await OpenNotifications().ConfigureAwait(true);
+            },
+            onClose: () =>
         {
             if (previous != null)
             {

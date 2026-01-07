@@ -70,7 +70,7 @@ public sealed partial class AdminViewModel
 
         Items.Clear();
         Items.Add(new AdminMenuItem("Réinitialiser le tchat (supprimer tous les messages)", tag: "chat.clear"));
-        Items.Add(new AdminMenuItem($"Messages chargés (global serveur): {_chatHistoryLimit} (modifier)", tag: "chat.settings.limit"));
+        Items.Add(new AdminMenuItem($"Paramètres tchat (serveur) : historique={_chatHistoryLimit} (modifier)", tag: "chat.settings.limit"));
 
         var days = _loadedChatMessages
             .Select(m => m.CreatedAt.ToLocalTime().Date)

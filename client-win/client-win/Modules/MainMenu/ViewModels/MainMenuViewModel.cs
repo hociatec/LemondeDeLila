@@ -141,9 +141,7 @@ public sealed class MainMenuViewModel : ObservableObject
         Items.Clear();
 
         Items.Add(new MainMenuItem("Entrée dans la taverne", tag: OpenCatalogCommand));
-        Items.Add(new MainMenuItem(FormatMenuLabel("Messagerie", _badges.UnreadMessaging), tag: MessagingCommand));
         Items.Add(new MainMenuItem("Tchat", tag: ChatCommand));
-        Items.Add(new MainMenuItem(FormatMenuLabel("Notifications", _badges.UnreadNotifications), tag: NotificationsCommand));
         Items.Add(new MainMenuItem("Social", tag: SocialCommand));
         Items.Add(new MainMenuItem("À propos", tag: AboutCommand));
     if (IsAdminVisible)

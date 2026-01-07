@@ -361,6 +361,7 @@ public sealed partial class AdminViewModel
         Items.Add(new AdminMenuItem("Mises à jour client", tag: "clientUpdates"));
         Items.Add(new AdminMenuItem("Gérer les rôles", tag: "rolesDefinitions"));
         Items.Add(new AdminMenuItem("Gérer les sons (application)", tag: "sounds"));
+        Items.Add(new AdminMenuItem("Notifications", tag: "notifications"));
         Items.Add(new AdminMenuItem("Rapports de bug", tag: "bugReports"));
         Items.Add(new AdminMenuItem("Diagnostics latence (rooms/bots/parties)", tag: "perf"));
         Items.Add(new AdminMenuItem("Consulter les logs", tag: "logs"));

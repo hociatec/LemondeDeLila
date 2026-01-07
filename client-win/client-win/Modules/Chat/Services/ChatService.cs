@@ -211,7 +211,11 @@ public sealed class ChatService : IChatService
         catch (Exception ex)
         {
             SetStatus($"Envoi tchat échoué : {ex.Message}", isError: true);
-            throw;
+            // IMPORTANT: ne pas rethrow ici.
+            // Le SendCommand est déclenché depuis un ICommand (async void) et certains appels peuvent être
+            // "fire-and-forget" via l'UI ; rethrow remonte en exception non observée et peut faire tomber l'app.
+            // On garde un feedback utilisateur via Status/LastServerError.
+            return;
         }
     }
 

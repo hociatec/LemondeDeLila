@@ -15,7 +15,9 @@ namespace client_win.Modules.Chat.ViewModels;
 
 public sealed class ChatViewModel : ObservableObject
 {
-    private sealed record HistorySpan(int Start, int End, ChatMessage Message);
+    public sealed record HistoryActionResult(bool Handled, bool StartedEdit);
+
+    private sealed record HistorySpan(int Start, int EndExclusive, ChatMessage Message);
 
     private readonly IChatService _chat;
     private readonly Action? _closeWindow;
@@ -96,23 +98,23 @@ public sealed class ChatViewModel : ObservableObject
         await _chat.SendAsync(toSend);
     }
 
-    public Task<bool> HandleHistoryActionAsync(int caretIndex)
+    public Task<HistoryActionResult> HandleHistoryActionAsync(int caretIndex)
     {
         var msg = FindMessageAtCaret(caretIndex);
         if (!CanActOnMessage(msg))
         {
-            return Task.FromResult(false);
+            return Task.FromResult(new HistoryActionResult(Handled: false, StartedEdit: false));
         }
 
         return HandleMessageActionAsync(msg!);
     }
 
-    private async Task<bool> HandleMessageActionAsync(ChatMessage msg)
+    private async Task<HistoryActionResult> HandleMessageActionAsync(ChatMessage msg)
     {
         if (_dialogs == null)
         {
             BeginEdit(msg);
-            return true;
+            return new HistoryActionResult(Handled: true, StartedEdit: true);
         }
 
         var choice = await _dialogs.Choose(
@@ -125,7 +127,7 @@ public sealed class ChatViewModel : ObservableObject
         if (choice == DialogChoice.Primary)
         {
             BeginEdit(msg);
-            return true;
+            return new HistoryActionResult(Handled: true, StartedEdit: true);
         }
 
         if (choice == DialogChoice.Secondary)
@@ -139,10 +141,10 @@ public sealed class ChatViewModel : ObservableObject
             {
                 await DeleteAsync(msg);
             }
-            return false;
+            return new HistoryActionResult(Handled: true, StartedEdit: false);
         }
 
-        return false;
+        return new HistoryActionResult(Handled: true, StartedEdit: false);
     }
 
     private bool CanActOnMessage(ChatMessage? message)
@@ -180,15 +182,13 @@ public sealed class ChatViewModel : ObservableObject
         var idx = Math.Max(0, caretIndex);
         foreach (var span in _historySpans)
         {
-            if (idx >= span.Start && idx <= span.End)
+            if (idx >= span.Start && idx < span.EndExclusive)
             {
                 return span.Message;
             }
         }
 
-        // Si le caret est en fin de texte, prendre le dernier message.
-        var last = _historySpans[^1];
-        return idx >= last.End ? last.Message : null;
+        return null;
     }
 
     private void BeginEdit(ChatMessage message)
@@ -238,25 +238,27 @@ public sealed class ChatViewModel : ObservableObject
             var time = local.ToString("HH:mm", CultureInfo.GetCultureInfo("fr-FR"));
 
             var start = builder.Length;
+            string line;
             if (string.IsNullOrWhiteSpace(user))
             {
-                builder.AppendLine($"{time} {text}");
+                line = $"{time} {text}";
             }
             else if (string.IsNullOrWhiteSpace(text))
             {
-                builder.AppendLine($"{time} {user}");
+                line = $"{time} {user}";
             }
             else
             {
-                builder.AppendLine($"{time} {user} : {text}");
+                line = $"{time} {user} : {text}";
             }
-            var end = builder.Length;
-            spans.Add(new HistorySpan(start, end, m));
+
+            builder.Append(line);
+            var endExclusive = builder.Length;
+            spans.Add(new HistorySpan(start, endExclusive, m));
+            builder.AppendLine();
         }
 
-        // Ajouter une ligne vide à la fin : améliore le confort de lecture (dernier message non "collé" au bord).
-        var history = builder.ToString().TrimEnd('\r', '\n');
-        HistoryText = string.IsNullOrEmpty(history) ? string.Empty : history + Environment.NewLine;
+        HistoryText = builder.ToString();
         _historySpans = spans.ToArray();
     }
 }

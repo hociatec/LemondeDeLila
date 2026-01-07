@@ -5,6 +5,9 @@ using System.Windows.Input;
 using System.Windows.Threading;
 using client_win.Modules.Game.Shell.Services;
 using client_win.Modules.Game.Shell.Views;
+using client_win.Modules.Stats.Services;
+using client_win.Modules.Stats.ViewModels;
+using client_win.Modules.Stats.Views;
 using client_win.Modules.Presence.ViewModels;
 using client_win.Modules.Presence.Views;
 using client_win.Modules.Shell.Services;
@@ -46,10 +49,12 @@ public sealed class PresenceLauncher : IPresenceLauncher
                     presence: _services.GetRequiredService<IPresenceMonitor>(),
                     rooms: _services.GetRequiredService<Modules.Game.RoomDirectory.Services.IRoomDirectoryClient>(),
                     messaging: _services.GetRequiredService<Modules.Messaging.Services.IMessagingService>(),
+                    social: _services.GetRequiredService<Modules.Social.Services.ISocialService>(),
                     prompts: _services.GetRequiredService<Modules.TextPrompts.Services.ITextPromptService>(),
                     session: _session,
                     dialogs: _services.GetRequiredService<IDialogService>(),
                     joinRoom: roomId => JoinRoomAsync(roomId),
+                    openStoryBook: (userId, username) => OpenStoryBookAsync(userId, username),
                     onClose: () => _ = CloseAsync());
             }
             if (_view.DataContext is PresenceViewModel vm)
@@ -62,6 +67,56 @@ public sealed class PresenceLauncher : IPresenceLauncher
         });
 
         return "Présence ouverte.";
+    }
+
+    private async Task OpenStoryBookAsync(int userId, string username)
+    {
+        var stats = _services.GetRequiredService<IStatsService>();
+        var returnView = _previousView ?? _navigation.CurrentView ?? _view;
+        if (returnView == null)
+        {
+            return;
+        }
+
+        await CloseInternalAsync(restorePrevious: false).ConfigureAwait(true);
+
+        await Application.Current.Dispatcher.InvokeAsync(() =>
+        {
+            var view = new StatsView();
+            var vm = new StatsViewModel(
+                stats,
+                onClose: () =>
+                {
+                    _navigation.Show(returnView);
+                    _ = Application.Current.Dispatcher.BeginInvoke(
+                        DispatcherPriority.ApplicationIdle,
+                        new Action(() =>
+                        {
+                            try
+                            {
+                                if (returnView is GameRoomView room)
+                                {
+                                    room.RequestFocusGameZone();
+                                    return;
+                                }
+
+                                if (!returnView.IsKeyboardFocusWithin)
+                                {
+                                    returnView.MoveFocus(new TraversalRequest(FocusNavigationDirection.First));
+                                }
+                            }
+                            catch
+                            {
+                                // Best-effort
+                            }
+                        }));
+                },
+                targetUserId: userId,
+                targetUsername: username);
+            view.DataContext = vm;
+            _navigation.Show(view);
+            view.Focus();
+        });
     }
 
     private async Task JoinRoomAsync(int roomId)

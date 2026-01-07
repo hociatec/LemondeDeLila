@@ -23,6 +23,7 @@ public sealed class SocialViewModel : ObservableObject
 {
     private readonly ISocialService _service;
     private readonly Func<int, string, Task<string>>? _openStoryBook;
+    private readonly Func<Task<string>>? _openMessaging;
     private readonly Action? _onClose;
     private SocialSection _selectedSection;
     private string _status = "Chargement...";
@@ -48,10 +49,12 @@ public sealed class SocialViewModel : ObservableObject
     public SocialViewModel(
         ISocialService service,
         Func<int, string, Task<string>>? openStoryBook = null,
+        Func<Task<string>>? openMessaging = null,
         Action? onClose = null)
     {
         _service = service ?? throw new ArgumentNullException(nameof(service));
         _openStoryBook = openStoryBook;
+        _openMessaging = openMessaging;
         _onClose = onClose;
 
         Friends = new ObservableCollection<SocialUser>();
@@ -71,6 +74,7 @@ public sealed class SocialViewModel : ObservableObject
         UpdateProfileCommand = new AsyncRelayCommand(UpdateProfileAsync, () => !IsBusy);
         ViewProfileCommand = new AsyncRelayCommand<SocialUser>(ViewProfileAsync, user => user != null && !IsBusy);
         OpenStoryBookCommand = new AsyncRelayCommand(OpenStoryBookAsync, () => Profile != null && !IsBusy);
+        OpenMessagingCommand = new AsyncRelayCommand(OpenMessagingAsync, () => _openMessaging != null && !IsBusy);
         RefreshCommand = new AsyncRelayCommand(RefreshAsync, () => !IsBusy);
         CloseCommand = new RelayCommand(HandleClose);
 
@@ -94,6 +98,7 @@ public sealed class SocialViewModel : ObservableObject
     public ICommand UpdateProfileCommand { get; }
     public AsyncRelayCommand<SocialUser> ViewProfileCommand { get; }
     public ICommand OpenStoryBookCommand { get; }
+    public ICommand OpenMessagingCommand { get; }
     public ICommand RefreshCommand { get; }
     public ICommand CloseCommand { get; }
 
@@ -479,6 +484,24 @@ public sealed class SocialViewModel : ObservableObject
         finally
         {
             IsBusy = false;
+        }
+    }
+
+    private async Task OpenMessagingAsync()
+    {
+        if (_openMessaging == null)
+        {
+            Status = "Messagerie indisponible.";
+            return;
+        }
+
+        try
+        {
+            Status = await _openMessaging().ConfigureAwait(true);
+        }
+        catch (Exception ex)
+        {
+            Status = $"Messagerie : {ex.Message}";
         }
     }
 

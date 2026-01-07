@@ -142,6 +142,12 @@ public partial class SocialView : UserControl
         var tag = item.Tag as string ?? string.Empty;
         switch (tag)
         {
+            case "messaging":
+                if (vm.OpenMessagingCommand.CanExecute(null))
+                {
+                    vm.OpenMessagingCommand.Execute(null);
+                }
+                break;
             case "friends":
                 vm.SelectedSection = SocialSection.Friends;
                 SetScreen(SocialScreen.Section);

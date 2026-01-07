@@ -104,6 +104,7 @@ public sealed partial class AdminViewModel : ObservableObject
     private readonly IRoomDirectoryClient _roomDirectory;
     private readonly IApiCapabilitiesService _apiCapabilities;
     private readonly UserControl _returnView;
+    private readonly Func<Task<string>>? _openNotifications;
 
     public AdminViewModel(
         IAdminService admin,
@@ -121,6 +122,7 @@ public sealed partial class AdminViewModel : ObservableObject
         IRemoteSoundCache remoteSounds,
         IGameTableOpener tables,
         UserControl returnView,
+        Func<Task<string>>? openNotifications,
         Action onClose)
     {
         _admin = admin ?? throw new ArgumentNullException(nameof(admin));
@@ -138,6 +140,7 @@ public sealed partial class AdminViewModel : ObservableObject
         _remoteSounds = remoteSounds ?? throw new ArgumentNullException(nameof(remoteSounds));
         _tables = tables ?? throw new ArgumentNullException(nameof(tables));
         _returnView = returnView ?? throw new ArgumentNullException(nameof(returnView));
+        _openNotifications = openNotifications;
         _close = onClose ?? (() => { });
         _dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
 
