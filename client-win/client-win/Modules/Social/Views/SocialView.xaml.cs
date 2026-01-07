@@ -32,19 +32,29 @@ public partial class SocialView : UserControl
     {
         // IMPORTANT (NVDA): ne pas attendre les appels async avant de placer le focus,
         // sinon WPF peut donner le focus au premier élément Focusable (ex: "Aucun ami").
-        await Dispatcher.InvokeAsync(() => SetScreen(SocialScreen.Menu), DispatcherPriority.Input);
+        await Dispatcher.InvokeAsync(() =>
+        {
+            // UX: en arrivant dans Social, le focus doit être sur le 1er item (Messagerie).
+            _lastMenuIndex = 0;
+            SetScreen(SocialScreen.Menu);
+        }, DispatcherPriority.Input);
 
         if (DataContext is SocialViewModel vm)
         {
             HookProfileFocusRequests(vm);
-            try
-            {
-                await vm.InitializeAsync();
-            }
-            catch
-            {
-                // Best-effort: éviter une exception non gérée qui bloquerait l'UI.
-            }
+            _ = InitializeVmAsync(vm);
+        }
+    }
+
+    private static async Task InitializeVmAsync(SocialViewModel vm)
+    {
+        try
+        {
+            await vm.InitializeAsync().ConfigureAwait(true);
+        }
+        catch
+        {
+            // Best-effort: éviter une exception non gérée qui bloquerait l'UI.
         }
     }
 

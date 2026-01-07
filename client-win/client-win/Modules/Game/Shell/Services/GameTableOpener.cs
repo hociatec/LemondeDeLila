@@ -34,7 +34,6 @@ public sealed class GameTableOpener : IGameTableOpener
     private readonly IRoomAnnouncements _announcements;
     private readonly IPresenceMonitor _presence;
     private readonly ISoundService _sounds;
-    private readonly IHomeViewAccessor _home;
 
     public GameTableOpener(
         ILogger<GameTableOpener> logger,
@@ -45,8 +44,7 @@ public sealed class GameTableOpener : IGameTableOpener
         IScreenReaderAnnouncer screenReader,
         IRoomAnnouncements announcements,
         IPresenceMonitor presence,
-        ISoundService sounds,
-        IHomeViewAccessor home)
+        ISoundService sounds)
     {
         _logger = logger;
         _rooms = rooms;
@@ -57,7 +55,6 @@ public sealed class GameTableOpener : IGameTableOpener
         _announcements = announcements;
         _presence = presence ?? throw new ArgumentNullException(nameof(presence));
         _sounds = sounds ?? throw new ArgumentNullException(nameof(sounds));
-        _home = home ?? throw new ArgumentNullException(nameof(home));
     }
 
     public async Task OpenAsync(CatalogGame game, UserControl returnView)
@@ -65,21 +62,13 @@ public sealed class GameTableOpener : IGameTableOpener
         if (game == null) throw new ArgumentNullException(nameof(game));
         if (returnView == null) throw new ArgumentNullException(nameof(returnView));
 
-        RoomSession session;
-        try
-        {
-            _logger.LogInformation("Création de la table: gameType={GameType}", game.Id);
-            session = await _rooms.CreateAndConnectAsync(game.Id).ConfigureAwait(true);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Erreur création table: gameType={GameType}", game.Id);
-            await _dialogs.ShowError("Création de table", $"Impossible de créer la table : {ex.Message}")
-                .ConfigureAwait(true);
-            return;
-        }
-
-        await OpenSessionAsync(session, game, returnView, isNew: true).ConfigureAwait(true);
+        await OpenDeferredAsync(
+                placeholderGame: game,
+                returnView: returnView,
+                connect: ct => _rooms.CreateAndConnectAsync(game.Id, ct),
+                buildGameFromSession: _ => game,
+                isNew: true)
+            .ConfigureAwait(true);
     }
 
     public async Task OpenExistingAsync(int roomId, UserControl returnView)
@@ -97,67 +86,57 @@ public sealed class GameTableOpener : IGameTableOpener
         if (roomId <= 0) throw new ArgumentException("roomId invalide", nameof(roomId));
         if (returnView == null) throw new ArgumentNullException(nameof(returnView));
 
-        RoomSession session;
-        try
-        {
-            session = await _rooms.ConnectAsync(roomId, spectator, silent).ConfigureAwait(true);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Erreur connexion table: roomId={RoomId}", roomId);
-            await _dialogs.ShowError("Rejoindre une table", $"Impossible de rejoindre la table : {ex.Message}")
-                .ConfigureAwait(true);
-            return;
-        }
-
-        var payload = session.LastRoomState;
-        var manifest = payload?.Manifest;
-        var gameType = payload?.Room?.GameType;
-        var name = manifest?.Name;
-        var min = manifest?.MinPlayers ?? 1;
-        var max = manifest?.MaxPlayers ?? 8;
-
-        var game = new CatalogGame(
-            code: string.IsNullOrWhiteSpace(gameType) ? "unknown" : gameType!,
-            name: string.IsNullOrWhiteSpace(name) ? $"Table #{roomId}" : name!,
-            summary: string.Empty,
-            minPlayers: min,
-            maxPlayers: max,
+        var placeholderGame = new CatalogGame(
+            code: "unknown",
+            name: $"Table #{roomId}",
+            summary: "Connexion…",
+            minPlayers: 1,
+            maxPlayers: 8,
             engine: string.Empty,
             categories: Array.Empty<string>());
 
-        await OpenSessionAsync(session, game, returnView, isNew: false).ConfigureAwait(true);
-    }
+        await OpenDeferredAsync(
+                placeholderGame: placeholderGame,
+                returnView: returnView,
+                connect: ct => _rooms.ConnectAsync(roomId, spectator, silent, ct),
+                buildGameFromSession: session =>
+                {
+                    var payload = session.LastRoomState;
+                    var manifest = payload?.Manifest;
+                    var gameType = payload?.Room?.GameType;
+                    var name = manifest?.Name;
+                    var min = manifest?.MinPlayers ?? 1;
+                    var max = manifest?.MaxPlayers ?? 8;
 
-    private async Task OpenSessionAsync(RoomSession session, CatalogGame game, UserControl returnView, bool isNew)
-    {
-        var roomName = session.LastRoomState?.Room?.Name;
-        await _presence.SetTableAsync(session.RoomId, string.IsNullOrWhiteSpace(roomName) ? game.Name : roomName)
+                    return new CatalogGame(
+                        code: string.IsNullOrWhiteSpace(gameType) ? "unknown" : gameType!,
+                        name: string.IsNullOrWhiteSpace(name) ? $"Table #{roomId}" : name!,
+                        summary: string.Empty,
+                        minPlayers: min,
+                        maxPlayers: max,
+                        engine: string.Empty,
+                        categories: Array.Empty<string>());
+                },
+                isNew: false)
             .ConfigureAwait(true);
-
-        var dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
-        if (!dispatcher.CheckAccess())
-        {
-            await dispatcher.InvokeAsync(
-                () => OpenSessionUi(session, game, returnView, isNew),
-                DispatcherPriority.Normal);
-            return;
-        }
-
-        OpenSessionUi(session, game, returnView, isNew);
     }
 
-    private void OpenSessionUi(RoomSession session, CatalogGame game, UserControl returnView, bool isNew)
+    private async Task OpenDeferredAsync(
+        CatalogGame placeholderGame,
+        UserControl returnView,
+        Func<CancellationToken, Task<RoomSession>> connect,
+        Func<RoomSession, CatalogGame> buildGameFromSession,
+        bool isNew)
     {
         var dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
-        var tableView = new GameRoomView();
-        tableView.SetScreenReader(_screenReader);
 
+        var cts = new CancellationTokenSource();
+        RoomSession? session = null;
         GameTableBindings? bindings = null;
         Action<client_win.Modules.Network.WebSockets.WebSocketState>? onRoomConnectionStateChanged = null;
         var isExiting = 0;
 
-        async Task ExitToTavernAsync(string? reason = null)
+        async Task ExitAsync(string? reason = null)
         {
             if (Interlocked.Exchange(ref isExiting, 1) == 1)
             {
@@ -166,7 +145,9 @@ public sealed class GameTableOpener : IGameTableOpener
 
             try
             {
-                if (onRoomConnectionStateChanged != null)
+                try { cts.Cancel(); } catch { }
+
+                if (session != null && onRoomConnectionStateChanged != null)
                 {
                     session.ConnectionStateChanged -= onRoomConnectionStateChanged;
                     onRoomConnectionStateChanged = null;
@@ -182,20 +163,24 @@ public sealed class GameTableOpener : IGameTableOpener
                 }
                 catch
                 {
-                    // Best-effort; le backend ferme la table quand la dernière connexion sort.
+                    // best-effort
+                }
+
+                if (session != null)
+                {
+                    try { await session.DisposeAsync().ConfigureAwait(false); } catch { }
+                    session = null;
                 }
 
                 _ = _presence.SetHomeAsync();
 
-                // Navigation + éventuel message : toujours sur le thread UI.
-                var target = returnView;
                 if (!dispatcher.CheckAccess())
                 {
-                    await dispatcher.InvokeAsync(() => _navigation.Show(target), DispatcherPriority.Normal);
+                    await dispatcher.InvokeAsync(() => _navigation.Show(returnView), DispatcherPriority.Normal);
                 }
                 else
                 {
-                    _navigation.Show(target);
+                    _navigation.Show(returnView);
                 }
 
                 // Réactive l'ambiance/musique si on revient vers un écran qui en a une.
@@ -203,11 +188,11 @@ public sealed class GameTableOpener : IGameTableOpener
                 {
                     _sounds.StopLoop(SoundId.MainMenuMusic);
                     _sounds.StopLoop(SoundId.TavernAmbience);
-                    if (target is CatalogView)
+                    if (returnView is CatalogView)
                     {
                         _sounds.StartLoop(SoundId.TavernAmbience);
                     }
-                    else if (target is MainMenuView)
+                    else if (returnView is MainMenuView)
                     {
                         _sounds.StartLoop(SoundId.MainMenuMusic);
                     }
@@ -219,111 +204,177 @@ public sealed class GameTableOpener : IGameTableOpener
 
                 if (!string.IsNullOrWhiteSpace(reason))
                 {
-                    try
-                    {
-                        await _dialogs.ShowInfo("Table", reason.Trim()).ConfigureAwait(true);
-                    }
-                    catch
-                    {
-                        // ignore
-                    }
+                    try { await _dialogs.ShowInfo("Table", reason.Trim()).ConfigureAwait(true); } catch { }
                 }
             }
             finally
             {
-                // Autorise une future sortie si cette instance est réutilisée (par prudence).
                 Interlocked.Exchange(ref isExiting, 0);
             }
         }
 
-        Task Start() => session.SendCommandAsync("room.start", payload: null);
-        Task Reset() => session.SendCommandAsync("room.reset", payload: null);
-        Task SendChat(string message) => session.SendCommandAsync("room.chat.send", payload: new { message });
-        Task AddBot() => bindings?.AddBotAsync() ?? Task.CompletedTask;
-        Task RemoveBot() => bindings?.RemoveBotAsync() ?? Task.CompletedTask;
-        Task AnnouncePlayers() => AnnouncePlayersAsync(session);
-        Task AnnounceInfo()
+        GameRoomView? tableView = null;
+        GameRoomViewModel? vm = null;
+
+        await dispatcher.InvokeAsync(() =>
         {
-            return bindings?.RequestInfoAsync() ?? Task.CompletedTask;
-        }
-        Task TogglePrivacy() => bindings?.TogglePrivacyAsync() ?? Task.CompletedTask;
-        Task ToggleRole() => bindings?.ToggleRoleAsync() ?? Task.CompletedTask;
+            tableView = new GameRoomView();
+            tableView.SetScreenReader(_screenReader);
 
-        var vm = new GameRoomViewModel(
-            game,
-            onSendChat: SendChat,
-            onStart: Start,
-            onReset: Reset,
-            onQuit: async () =>
-            {
-                _sounds.Play(SoundId.RoomExit);
-                await ExitToTavernAsync().ConfigureAwait(true);
-            },
-            onAddBot: AddBot,
-            onRemoveBot: RemoveBot,
-            onAnnouncePlayers: AnnouncePlayers,
-            onAnnounceInfo: AnnounceInfo,
-            onTogglePrivacy: TogglePrivacy,
-            onToggleRole: ToggleRole,
-            dialogs: _dialogs);
+            Task Start() => session?.SendCommandAsync("room.start", payload: null) ?? Task.CompletedTask;
+            Task Reset() => session?.SendCommandAsync("room.reset", payload: null) ?? Task.CompletedTask;
+            Task SendChat(string message) =>
+                session?.SendCommandAsync("room.chat.send", payload: new { message }) ?? Task.CompletedTask;
 
-        vm.Chat.SelfUsername = _navigation.CurrentUser?.Username ?? string.Empty;
-        vm.Chat.LocalEcho = msg =>
+            Task AddBot() => bindings?.AddBotAsync() ?? Task.CompletedTask;
+            Task RemoveBot() => bindings?.RemoveBotAsync() ?? Task.CompletedTask;
+            Task AnnouncePlayers() => session == null ? Task.CompletedTask : AnnouncePlayersAsync(session);
+            Task AnnounceInfo() => bindings?.RequestInfoAsync() ?? Task.CompletedTask;
+            Task TogglePrivacy() => bindings?.TogglePrivacyAsync() ?? Task.CompletedTask;
+            Task ToggleRole() => bindings?.ToggleRoleAsync() ?? Task.CompletedTask;
+
+            vm = new GameRoomViewModel(
+                placeholderGame,
+                onSendChat: SendChat,
+                onStart: Start,
+                onReset: Reset,
+                onQuit: () => ExitAsync(),
+                onAddBot: AddBot,
+                onRemoveBot: RemoveBot,
+                onAnnouncePlayers: AnnouncePlayers,
+                onAnnounceInfo: AnnounceInfo,
+                onTogglePrivacy: TogglePrivacy,
+                onToggleRole: ToggleRole,
+                dialogs: _dialogs);
+            vm.Status = "Connexion à la table…";
+
+            tableView.DataContext = vm;
+            _navigation.Show(tableView);
+        }, DispatcherPriority.Normal);
+
+        _ = Task.Run(async () =>
         {
-            var who = string.IsNullOrWhiteSpace(vm.Chat.SelfUsername) ? "Moi" : vm.Chat.SelfUsername.Trim();
-            vm.History.Entries.Add($"Chat — {who} : {msg}");
-            if (vm.Chat.IsSoundsEnabled)
+            try
             {
-                _sounds.Play(SoundId.ChatMessageSent);
+                var connected = await connect(cts.Token).ConfigureAwait(false);
+                if (cts.IsCancellationRequested)
+                {
+                    try { await connected.DisposeAsync().ConfigureAwait(false); } catch { }
+                    return;
+                }
+
+                session = connected;
+                var game = buildGameFromSession(session);
+
+                // Mettre à jour la présence (best-effort).
+                try
+                {
+                    var roomName = session.LastRoomState?.Room?.Name;
+                    await _presence.SetTableAsync(session.RoomId, string.IsNullOrWhiteSpace(roomName) ? game.Name : roomName)
+                        .ConfigureAwait(false);
+                }
+                catch
+                {
+                    // ignore
+                }
+
+                await dispatcher.InvokeAsync(() =>
+                {
+                    if (cts.IsCancellationRequested || Interlocked.CompareExchange(ref isExiting, 0, 0) == 1)
+                    {
+                        return;
+                    }
+
+                    // Si on a ouvert une table existante, remplacer le DataContext par un VM complet basé sur le manifest.
+                    if (!ReferenceEquals(placeholderGame, game))
+                    {
+                        if (tableView == null) return;
+                        var newVm = new GameRoomViewModel(
+                            game,
+                            onSendChat: msg => session.SendCommandAsync("room.chat.send", payload: new { message = msg }),
+                            onStart: () => session.SendCommandAsync("room.start", payload: null),
+                            onReset: () => session.SendCommandAsync("room.reset", payload: null),
+                            onQuit: () => ExitAsync(),
+                            onAddBot: () => bindings?.AddBotAsync() ?? Task.CompletedTask,
+                            onRemoveBot: () => bindings?.RemoveBotAsync() ?? Task.CompletedTask,
+                            onAnnouncePlayers: () => AnnouncePlayersAsync(session),
+                            onAnnounceInfo: () => bindings?.RequestInfoAsync() ?? Task.CompletedTask,
+                            onTogglePrivacy: () => bindings?.TogglePrivacyAsync() ?? Task.CompletedTask,
+                            onToggleRole: () => bindings?.ToggleRoleAsync() ?? Task.CompletedTask,
+                            dialogs: _dialogs);
+                        newVm.Status = "Connexion à la table…";
+                        vm = newVm;
+                        tableView.DataContext = vm;
+                    }
+
+                    if (tableView == null || vm == null)
+                    {
+                        return;
+                    }
+
+                    var createdMessage = isNew
+                        ? $"Table de {game.Name} créée. Ajoutez des bots et commencez à jouer."
+                        : $"Table rejointe : {game.Name}.";
+                    foreach (var line in GameHistoryMessageSplitter.Split(createdMessage))
+                    {
+                        vm.History.Entries.Add(line);
+                    }
+
+                    try { _sounds.Play(isNew ? SoundId.RoomOpened : SoundId.RoomJoined); } catch { }
+
+                    bindings = new GameTableBindings(
+                        dispatcher: dispatcher,
+                        game: game,
+                        session: session,
+                        tableView: tableView,
+                        tableVm: vm,
+                        announcements: _announcements,
+                        sounds: _sounds,
+                        createGamePlayVm: () => CreateGamePlayViewModel(session, game),
+                        selfUsername: _navigation.CurrentUser?.Username ?? string.Empty);
+                    bindings.Attach();
+                    bindings.InitializeFromLastState();
+
+                    vm.Status = "Table prête.";
+
+                    onRoomConnectionStateChanged = state =>
+                    {
+                        if (state is client_win.Modules.Network.WebSockets.WebSocketState.Disconnected or
+                            client_win.Modules.Network.WebSockets.WebSocketState.Error)
+                        {
+                            _ = ExitAsync("Connexion à la table interrompue.");
+                        }
+                    };
+                    session.ConnectionStateChanged += onRoomConnectionStateChanged;
+                }, DispatcherPriority.Background);
             }
-        };
-
-        tableView.DataContext = vm;
-        _navigation.Show(tableView);
-
-        // IMPORTANT: laisser WPF rendre la vue avant d'attacher les bindings lourds,
-        // sinon l'UI reste "figée" jusqu'à la fin de cette méthode.
-        _ = dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
-        {
-            if (Interlocked.CompareExchange(ref isExiting, 0, 0) == 1)
+            catch (OperationCanceledException)
             {
-                return;
+                // ignore
             }
-
-            var createdMessage = isNew
-                ? $"Table de {game.Name} créée. Ajoutez des bots et commencez à jouer."
-                : $"Table rejointe : {game.Name}.";
-            foreach (var line in GameHistoryMessageSplitter.Split(createdMessage))
+            catch (Exception ex)
             {
-                vm.History.Entries.Add(line);
-            }
-            _sounds.Play(isNew ? SoundId.RoomOpened : SoundId.RoomJoined);
+                _logger.LogError(ex, "Erreur ouverture table (deferred)");
+                if (cts.IsCancellationRequested)
+                {
+                    return;
+                }
 
-            bindings = new GameTableBindings(
-                dispatcher: dispatcher,
-                game: game,
-                session: session,
-                tableView: tableView,
-                tableVm: vm,
-                announcements: _announcements,
-                sounds: _sounds,
-                createGamePlayVm: () => CreateGamePlayViewModel(session, game),
-                selfUsername: _navigation.CurrentUser?.Username ?? string.Empty);
-            bindings.Attach();
-            bindings.InitializeFromLastState();
-        }));
-
-        // Si le WS room est fermé (ex: table supprimée / serveur coupe la connexion),
-        // revenir automatiquement à la vue de retour au lieu de laisser l'utilisateur sur un écran "mort".
-        onRoomConnectionStateChanged = state =>
-        {
-            if (state is client_win.Modules.Network.WebSockets.WebSocketState.Disconnected or
-                client_win.Modules.Network.WebSockets.WebSocketState.Error)
-            {
-                _ = ExitToTavernAsync("Connexion à la table interrompue.");
+                try
+                {
+                    await dispatcher.InvokeAsync(() => _navigation.Show(returnView), DispatcherPriority.Normal);
+                    await _dialogs.ShowError("Table", $"Impossible d'ouvrir la table : {ex.Message}")
+                        .ConfigureAwait(true);
+                }
+                catch
+                {
+                    // ignore
+                }
+                finally
+                {
+                }
             }
-        };
-        session.ConnectionStateChanged += onRoomConnectionStateChanged;
+        });
     }
 
     private GamePlayViewModel CreateGamePlayViewModel(RoomSession room, CatalogGame game)

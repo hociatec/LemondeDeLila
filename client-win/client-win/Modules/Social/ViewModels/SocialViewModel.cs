@@ -332,11 +332,43 @@ public sealed class SocialViewModel : ObservableObject
 
     private async Task LoadFriendsAsync()
     {
-        var friends = await _service.GetFriendsAsync().ConfigureAwait(true);
+        // IMPORTANT: si un utilisateur est bloqué mais qu'il est aussi un ami, il doit rester visible
+        // dans la liste d'amis (demande UX). Certains backends retirent l'ami de friends.list lors d'un blocage;
+        // on réinjecte alors les "amis bloqués" depuis friends.blocked quand l'info est disponible (Since != null).
+        var friendsTask = _service.GetFriendsAsync();
+        var blockedTask = _service.GetBlockedAsync();
+        await Task.WhenAll(friendsTask, blockedTask).ConfigureAwait(true);
+
+        var friends = friendsTask.Result;
+        var blocked = blockedTask.Result;
+
+        var friendIds = friends.Count == 0
+            ? new System.Collections.Generic.HashSet<int>()
+            : new System.Collections.Generic.HashSet<int>(friends.Select(f => f.Id));
+
+        var blockedFriends = blocked
+            .Where(u => u != null && u.Id > 0 && u.Since.HasValue && !friendIds.Contains(u.Id))
+            .Select(u => new SocialUser
+            {
+                Id = u.Id,
+                Username = $"{u.Username} (bloqué)",
+                Avatar = u.Avatar,
+                Since = u.Since,
+                CreatedAt = u.CreatedAt,
+                BlockedAt = u.BlockedAt,
+                ProfileVisibility = u.ProfileVisibility
+            })
+            .ToList();
+
         Friends.Clear();
         foreach (var friend in friends)
         {
             Friends.Add(friend);
+        }
+
+        foreach (var bf in blockedFriends)
+        {
+            Friends.Add(bf);
         }
         Status = $"Amis: {Friends.Count}.";
     }

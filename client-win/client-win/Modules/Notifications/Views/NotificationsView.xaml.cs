@@ -24,16 +24,21 @@ public partial class NotificationsView : UserControl
         if (DataContext is NotificationsViewModel vm)
         {
             HookVm(vm);
-            try
-            {
-                await vm.InitializeAsync().ConfigureAwait(true);
-            }
-            catch
-            {
-                // Best-effort: éviter de bloquer l'UI si le WS est indisponible.
-            }
+            _ = InitializeVmAsync(vm);
         }
         FocusFirstItem();
+    }
+
+    private static async Task InitializeVmAsync(NotificationsViewModel vm)
+    {
+        try
+        {
+            await vm.InitializeAsync().ConfigureAwait(true);
+        }
+        catch
+        {
+            // Best-effort: éviter de bloquer l'UI si le WS est indisponible.
+        }
     }
 
     private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)

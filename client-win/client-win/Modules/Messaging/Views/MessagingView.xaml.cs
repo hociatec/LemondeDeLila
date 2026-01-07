@@ -23,6 +23,7 @@ public partial class MessagingView : UserControl
     }
 
     private MessagingScreen _currentScreen = MessagingScreen.Menu;
+    private MessagingScreen _screenBeforeCompose = MessagingScreen.Menu;
     private MessagingViewModel? _vm;
 
     public MessagingView()
@@ -33,18 +34,6 @@ public partial class MessagingView : UserControl
 
     private async void OnLoaded(object sender, RoutedEventArgs e)
     {
-        if (DataContext is MessagingViewModel vm)
-        {
-            try
-            {
-                await vm.InitializeAsync();
-            }
-            catch
-            {
-                // Best-effort: éviter une exception non gérée qui bloquerait l'UI.
-            }
-        }
-
         await Dispatcher.InvokeAsync(() =>
         {
             if (MenuList.Items.Count > 0)
@@ -53,6 +42,23 @@ public partial class MessagingView : UserControl
             }
             ShowScreen(MessagingScreen.Menu);
         }, DispatcherPriority.Input);
+
+        if (DataContext is MessagingViewModel vm)
+        {
+            _ = InitializeVmAsync(vm);
+        }
+    }
+
+    private static async Task InitializeVmAsync(MessagingViewModel vm)
+    {
+        try
+        {
+            await vm.InitializeAsync().ConfigureAwait(true);
+        }
+        catch
+        {
+            // Best-effort: éviter une exception non gérée qui bloquerait l'UI.
+        }
     }
 
     private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
@@ -187,7 +193,7 @@ public partial class MessagingView : UserControl
                 break;
             case MessagingScreen.Compose:
                 vm.IsComposeMode = false;
-                ShowScreen(MessagingScreen.Menu);
+                ShowScreen(_screenBeforeCompose);
                 break;
             default:
                 vm.CloseCommand.Execute(null);
@@ -384,6 +390,7 @@ public partial class MessagingView : UserControl
         switch (tag)
         {
             case "compose":
+                _screenBeforeCompose = MessagingScreen.Menu;
                 vm.IsComposeMode = true;
                 ShowScreen(MessagingScreen.Compose);
                 break;
@@ -487,6 +494,7 @@ public partial class MessagingView : UserControl
     {
         // The button's Command (ReplyCommand) prepares the compose fields.
         // We only need to switch the UI to the compose screen.
+        _screenBeforeCompose = _currentScreen;
         _ = Dispatcher.BeginInvoke(
             DispatcherPriority.Input,
             new Action(() => ShowScreen(MessagingScreen.Compose)));

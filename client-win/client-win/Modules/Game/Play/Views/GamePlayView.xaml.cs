@@ -13,11 +13,12 @@ namespace client_win.Modules.Game.Play.Views;
 
 public partial class GamePlayView : UserControl
 {
-    private int _initialized;
     private GamePlayViewModel? _vm;
     private INotifyCollectionChanged? _choicesCollection;
     private NotifyCollectionChangedEventHandler? _choicesChanged;
     private Action? _focusRequestedHandler;
+    private CancellationTokenSource? _initCts;
+    private GamePlayViewModel? _initVm;
 
     public GamePlayView()
     {
@@ -26,37 +27,87 @@ public partial class GamePlayView : UserControl
         Unloaded += OnUnloaded;
     }
 
-    private async void OnLoaded(object sender, RoutedEventArgs e)
+    private void OnLoaded(object sender, RoutedEventArgs e)
     {
-        if (System.Threading.Interlocked.Exchange(ref _initialized, 1) == 1)
-        {
-            return;
-        }
-
-        if (DataContext is GamePlayViewModel vm)
-        {
-            try
-            {
-                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-                await vm.InitializeAsync(cts.Token).ConfigureAwait(true);
-            }
-            catch
-            {
-                // Best-effort: l'état de connexion est déjà exposé dans le ViewModel.
-            }
-        }
-
         UpdateChoicesAccessibility();
+        var vm = DataContext as GamePlayViewModel;
+        HookChoiceAutoFocus(vm);
+        TryStartInitialization(vm);
     }
 
     private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
     {
-        HookChoiceAutoFocus(DataContext as GamePlayViewModel);
+        var vm = DataContext as GamePlayViewModel;
+        HookChoiceAutoFocus(vm);
+        TryStartInitialization(vm);
     }
 
     private void OnUnloaded(object sender, RoutedEventArgs e)
     {
         HookChoiceAutoFocus(null);
+        CancelInitialization();
+    }
+
+    private void TryStartInitialization(GamePlayViewModel? vm)
+    {
+        if (vm == null)
+        {
+            return;
+        }
+
+        if (ReferenceEquals(_initVm, vm))
+        {
+            return;
+        }
+
+        CancelInitialization();
+        _initVm = vm;
+        _initCts = new CancellationTokenSource();
+        var expectedVm = vm;
+        var expectedToken = _initCts.Token;
+
+        // IMPORTANT: démarrer après le rendu initial pour éviter une sensation de "lag" à l'ouverture.
+        Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
+        {
+            if (expectedToken.IsCancellationRequested || !ReferenceEquals(_initVm, expectedVm))
+            {
+                return;
+            }
+
+            _ = InitializeVmAsync(expectedVm, expectedToken);
+        }));
+    }
+
+    private void CancelInitialization()
+    {
+        try
+        {
+            _initCts?.Cancel();
+        }
+        catch
+        {
+            // Best-effort
+        }
+
+        _initCts?.Dispose();
+        _initCts = null;
+        _initVm = null;
+    }
+
+    private static async System.Threading.Tasks.Task InitializeVmAsync(GamePlayViewModel vm, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await vm.InitializeAsync(cancellationToken).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            // ignore
+        }
+        catch
+        {
+            // Best-effort: l'état de connexion est déjà exposé dans le ViewModel.
+        }
     }
 
     private void HookChoiceAutoFocus(GamePlayViewModel? vm)

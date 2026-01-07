@@ -422,7 +422,11 @@ public sealed class PresenceViewModel : ObservableObject
             var blocked = blockedTask.Result;
             var outgoing = outgoingTask.Result;
 
-            _isFriend = friends.Any(u => u.Id == userId);
+            // UX: un utilisateur peut être bloqué tout en restant "ami" (ne pas perdre l'état ami).
+            // Si le backend retire l'ami de friends.list lors du blocage, on le récupère via la liste des bloqués
+            // quand l'info "Since" (amitié) est disponible.
+            _isFriend = friends.Any(u => u.Id == userId) ||
+                        blocked.Any(u => u.Id == userId && u.Since.HasValue);
             _isBlocked = blocked.Any(u => u.Id == userId);
             _isFriendRequestPending = _isFriend == false && outgoing.Any(r => r.Addressee.Id == userId);
 
