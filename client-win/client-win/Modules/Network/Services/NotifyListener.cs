@@ -101,24 +101,26 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
 	            if (_ws != null) return;
 
 	            IWebSocketConnection? ws = null;
-	            try
-	            {
-	                ws = _wsFactory();
-	                ws.MessageReceived += OnMessage;
-	                ws.Error += OnWsError;
-	                ws.StateChanged += OnWsStateChanged;
+            try
+            {
+                ws = _wsFactory();
+                ws.MessageReceived += OnMessage;
+                ws.Error += OnWsError;
+                ws.StateChanged += OnWsStateChanged;
 
-	                var headers = await BuildHeadersAsync(cancellationToken).ConfigureAwait(false);
-	                Log.Information("Connexion WS notify vers {Endpoint}", _config.NotifyGatewayWs);
-	                await ws.ConnectAsync(_config.NotifyGatewayWs, token, headers: headers, cancellationToken).ConfigureAwait(false);
-	                _ws = ws;
-	                Log.Information("Connexion WS notify établie.");
-	                _countsFirstReceived = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+                var headers = await BuildHeadersAsync(cancellationToken).ConfigureAwait(false);
+                Log.Information("Connexion WS notify vers {Endpoint}", _config.NotifyGatewayWs);
+                await ws.ConnectAsync(_config.NotifyGatewayWs, token, headers: headers, cancellationToken).ConfigureAwait(false);
+                _ws = ws;
+                Log.Information("Connexion WS notify établie.");
+                _countsFirstReceived = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+                _countsSupported = false;
+                _badges.SetUnreadNotifications(0);
 
-	                // Handshake version: permet au serveur de proposer la MAJ à chaque connexion.
-	                try
-	                {
-	                    var hello = JsonSerializer.Serialize(new
+                // Handshake version: permet au serveur de proposer la MAJ à chaque connexion.
+                try
+                {
+                    var hello = JsonSerializer.Serialize(new
 	                    {
 	                        type = "client.hello",
 	                        payload = new { version = AppInfo.GetShortVersion() },
@@ -261,6 +263,7 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
 	                kvp.Value.TrySetResult(("notify.error", $"WS notify déconnecté: {reason}"));
 	            }
 	            _pendingAcks.Clear();
+                _countsSupported = false;
 	        }
 	        catch
 	        {
@@ -510,10 +513,15 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
                 ? m.GetInt32()
                 : 0;
 
+            var prevNotif = _badges.UnreadNotifications;
             _badges.SetUnreadNotifications(unreadNotifications);
             _badges.SetUnreadMessaging(unreadMessages);
             _countsSupported = true;
             _countsFirstReceived?.TrySetResult(true);
+            if (prevNotif != unreadNotifications)
+            {
+                Log.Information("Notify counts sync: prevNotif={Prev} serverNotif={Server}", prevNotif, unreadNotifications);
+            }
             Log.Information("Notify counts: notif={Notifications} msg={Messages}", unreadNotifications, unreadMessages);
         }
         catch (Exception ex)
@@ -581,7 +589,12 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
 
             _inbox.ReplaceAll(items);
             var unread = items.Count(x => !x.IsRead);
+            var prev = _badges.UnreadNotifications;
             _badges.SetUnreadNotifications(unread);
+            if (prev != unread)
+            {
+                Log.Information("Inbox snapshot resync badges: prev={Prev} computed={Computed}", prev, unread);
+            }
         }
         catch
         {
