@@ -85,6 +85,9 @@ public sealed class MainMenuViewModel : ObservableObject
         });
         BuildMenuItems();
 
+        // Déclenche immédiatement la détection des droits admin à l'arrivée sur le menu.
+        _ = RefreshAdminVisibilityCommand.ExecuteAsync(null);
+
         if (_badges is INotifyPropertyChanged pc)
         {
             pc.PropertyChanged += (_, __) => RebuildMenuPreservingSelection();
