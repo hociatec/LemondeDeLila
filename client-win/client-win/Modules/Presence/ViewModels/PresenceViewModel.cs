@@ -3,6 +3,8 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Threading;
 using client_win.Core;
 using client_win.Modules.Game.RoomDirectory.Services;
 using client_win.Modules.Messaging.Services;
@@ -33,6 +35,7 @@ public sealed class PresenceViewModel : ObservableObject
     private readonly Action _close;
     private readonly Func<int, Task> _joinRoom;
     private readonly Func<int, string, Task>? _openStoryBook;
+    private readonly Dispatcher _dispatcher;
 
     private PresencePage _page = PresencePage.Players;
     private string _title = "Présence";
@@ -78,6 +81,7 @@ public sealed class PresenceViewModel : ObservableObject
         _joinRoom = joinRoom ?? throw new ArgumentNullException(nameof(joinRoom));
         _openStoryBook = openStoryBook;
         _close = onClose ?? (() => { });
+        _dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
 
         Items = new ObservableCollection<PresenceMenuItem>();
         ActivateCommand = new AsyncRelayCommand(ActivateAsync, () => !IsBusy);
@@ -89,6 +93,7 @@ public sealed class PresenceViewModel : ObservableObject
     public ObservableCollection<PresenceMenuItem> Items { get; }
 
     public event Action? FocusFirstItemRequested;
+    public event Action? FocusSelectedItemRequested;
 
     public PresenceMenuItem? SelectedItem
     {
@@ -312,7 +317,9 @@ public sealed class PresenceViewModel : ObservableObject
             _isFriendRequestPending = null;
             RebuildPlayerActions();
             _ = RefreshSocialStateAsync(player.Id);
-            FocusFirstItemRequested?.Invoke();
+            _dispatcher.BeginInvoke(
+                DispatcherPriority.ApplicationIdle,
+                new Action(() => FocusFirstItemRequested?.Invoke()));
             return;
         }
 
@@ -324,6 +331,7 @@ public sealed class PresenceViewModel : ObservableObject
 
     private void RebuildPlayerActions()
     {
+        var previousSelection = SelectedItem?.Tag;
         Items.Clear();
         var player = _selectedPlayer;
         if (player == null)
@@ -386,6 +394,14 @@ public sealed class PresenceViewModel : ObservableObject
                 : "Aucune action de table disponible. Échap : retour.";
 
         SelectedItem = Items.FirstOrDefault();
+        if (previousSelection != null)
+        {
+            SelectedItem = Items.FirstOrDefault(i => Equals(i.Tag, previousSelection)) ?? SelectedItem;
+        }
+
+        _dispatcher.BeginInvoke(
+            DispatcherPriority.ApplicationIdle,
+            new Action(() => FocusSelectedItemRequested?.Invoke()));
     }
 
     private async Task RefreshSocialStateAsync(int userId)

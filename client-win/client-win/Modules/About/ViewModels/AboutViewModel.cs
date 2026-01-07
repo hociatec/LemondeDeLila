@@ -299,7 +299,8 @@ public sealed class AboutViewModel : ObservableObject
 
             _sounds.Play(SoundId.AdminContactSent);
             await _dialogs.ShowInfo("Contact admin", "Message envoyé au staff.").ConfigureAwait(true);
-            BuildRoot();
+            // Après envoi depuis le menu principal, revenir au menu principal.
+            _close();
             Status = "Message envoyé au staff.";
         }
         catch (Exception ex)

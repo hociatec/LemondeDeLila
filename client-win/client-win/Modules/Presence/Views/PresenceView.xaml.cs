@@ -30,6 +30,7 @@ public partial class PresenceView : UserControl
         if (_viewModel != null)
         {
             _viewModel.FocusFirstItemRequested -= OnFocusFirstItemRequested;
+            _viewModel.FocusSelectedItemRequested -= OnFocusSelectedItemRequested;
             _viewModel = null;
         }
 
@@ -37,6 +38,7 @@ public partial class PresenceView : UserControl
         {
             _viewModel = vm;
             vm.FocusFirstItemRequested += OnFocusFirstItemRequested;
+            vm.FocusSelectedItemRequested += OnFocusSelectedItemRequested;
         }
     }
 
@@ -54,6 +56,11 @@ public partial class PresenceView : UserControl
             }
             RequestFocusSelectedOrFirstItem();
         }));
+    }
+
+    private void OnFocusSelectedItemRequested()
+    {
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(RequestFocusSelectedOrFirstItem));
     }
 
     private void OnKeyDown(object sender, KeyEventArgs e)
@@ -74,6 +81,14 @@ public partial class PresenceView : UserControl
 
     private async void OnListPreviewKeyDown(object sender, KeyEventArgs e)
     {
+        if (e.Key == Key.Escape && DataContext is PresenceViewModel vmEsc)
+        {
+            e.Handled = true;
+            vmEsc.HandleEscape();
+            _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusCurrentPage));
+            return;
+        }
+
         if (e.Key != Key.Enter && e.Key != Key.Return)
         {
             return;
