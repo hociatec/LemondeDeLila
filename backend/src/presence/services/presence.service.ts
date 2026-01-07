@@ -119,6 +119,14 @@ export class PresenceService implements OnModuleDestroy {
       await this.handleChatSend(from, payload);
       return;
     }
+    if (payload.type === 'chat-edit') {
+      await this.handleChatEdit(from, payload);
+      return;
+    }
+    if (payload.type === 'chat-delete') {
+      await this.handleChatDelete(from, payload);
+      return;
+    }
     if (payload.type === 'presence-context') {
       this.handlePresenceContext(from, payload);
       this.broadcastPresence();
@@ -165,6 +173,104 @@ export class PresenceService implements OnModuleDestroy {
       this.logger.warn(
         `Echec enregistrement/diffusion message tchat pour ${from.user.username}: ${(err as Error)?.message ?? 'inconnu'}`,
       );
+      this.safeSend(from.socket, {
+        type: 'error',
+        payload: {
+          message: (err as Error)?.message ?? 'Erreur tchat.',
+        },
+      });
+    }
+  }
+
+  private async handleChatEdit(from: PresenceClient, payload: any) {
+    const text = typeof payload.text === 'string' ? payload.text : '';
+    const messageId =
+      typeof payload.messageId === 'string' ? payload.messageId.trim() : '';
+    if (!messageId) {
+      return;
+    }
+    try {
+      const ban = await this.getChatBan(from.user.id);
+      if (ban?.until && ban.until.getTime() > Date.now()) {
+        this.safeSend(from.socket, {
+          type: 'error',
+          payload: {
+            message: 'Accès au tchat refusé.',
+            reason: ban.reason ?? null,
+            until: ban.until ? ban.until.toISOString() : null,
+          },
+        });
+        try {
+          from.socket.close(4403, 'chat banned');
+        } catch {
+          /* ignore */
+        }
+        return;
+      }
+    } catch {
+      // ignore ban lookup errors; best-effort
+    }
+
+    try {
+      const normalized = await this.chat.editOwnMessage(
+        from.user.id,
+        messageId,
+        text,
+      );
+      this.broadcastChat({ type: 'chat-message.updated', payload: normalized });
+    } catch (err) {
+      this.safeSend(from.socket, {
+        type: 'error',
+        payload: {
+          message: (err as Error)?.message ?? 'Modification impossible.',
+        },
+      });
+    }
+  }
+
+  private async handleChatDelete(from: PresenceClient, payload: any) {
+    const messageId =
+      typeof payload.messageId === 'string' ? payload.messageId.trim() : '';
+    if (!messageId) {
+      return;
+    }
+    try {
+      const ban = await this.getChatBan(from.user.id);
+      if (ban?.until && ban.until.getTime() > Date.now()) {
+        this.safeSend(from.socket, {
+          type: 'error',
+          payload: {
+            message: 'Accès au tchat refusé.',
+            reason: ban.reason ?? null,
+            until: ban.until ? ban.until.toISOString() : null,
+          },
+        });
+        try {
+          from.socket.close(4403, 'chat banned');
+        } catch {
+          /* ignore */
+        }
+        return;
+      }
+    } catch {
+      // ignore ban lookup errors; best-effort
+    }
+
+    try {
+      const ok = await this.chat.deleteOwnMessage(from.user.id, messageId);
+      if (ok) {
+        this.broadcastChat({
+          type: 'chat-message.deleted',
+          payload: { id: messageId },
+        });
+      }
+    } catch (err) {
+      this.safeSend(from.socket, {
+        type: 'error',
+        payload: {
+          message: (err as Error)?.message ?? 'Suppression impossible.',
+        },
+      });
     }
   }
 

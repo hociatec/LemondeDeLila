@@ -146,7 +146,10 @@ public sealed class MainMenuViewModel : ObservableObject
         Items.Add(new MainMenuItem(FormatMenuLabel("Notifications", _badges.UnreadNotifications), tag: NotificationsCommand));
         Items.Add(new MainMenuItem("Social", tag: SocialCommand));
         Items.Add(new MainMenuItem("À propos", tag: AboutCommand));
-
+    if (IsAdminVisible)
+    {
+        Items.Add(new MainMenuItem("Administration", tag: AdminCommand));
+    }
         Items.Add(new MainMenuItem("Options", tag: OptionsCommand));
         Items.Add(new MainMenuItem("Déconnexion", tag: LogoutCommand));
 
@@ -180,48 +183,9 @@ public sealed class MainMenuViewModel : ObservableObject
             return;
         }
 
-        IsAdminVisible = shouldShowAdmin;
-        UpsertAdminMenuItem();
-    }
 
-    private void UpsertAdminMenuItem()
-    {
-        const string adminLabel = "Administration";
-        var existing = Items.FirstOrDefault(i => string.Equals(i.Label, adminLabel, StringComparison.Ordinal));
-
-        if (_isAdminVisible)
-        {
-            if (existing != null)
-            {
-                return;
-            }
-
-            var optionsIndex = Items
-                .Select((item, index) => (item, index))
-                .FirstOrDefault(x => string.Equals(x.item.Label, "Options", StringComparison.Ordinal))
-                .index;
-
-            if (optionsIndex <= 0 || optionsIndex >= Items.Count)
-            {
-                Items.Add(new MainMenuItem(adminLabel, tag: AdminCommand));
-                return;
-            }
-
-            Items.Insert(optionsIndex, new MainMenuItem(adminLabel, tag: AdminCommand));
-            return;
-        }
-
-        if (existing == null)
-        {
-            return;
-        }
-
-        var wasSelected = ReferenceEquals(SelectedItem, existing);
-        Items.Remove(existing);
-        if (wasSelected)
-        {
-            SelectedItem = Items.FirstOrDefault();
-        }
+IsAdminVisible = shouldShowAdmin;
+BuildMenuItems();
     }
 
     private async Task ActivateSelectedAsync()

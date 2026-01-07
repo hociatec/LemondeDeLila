@@ -15,6 +15,7 @@ type BroadcastUser = {
 export class ChatService {
   private static readonly DEFAULT_HISTORY_LIMIT = 200;
   private static readonly CACHE_LIMIT = 2000;
+  private static readonly EDIT_WINDOW_MS = 5 * 60 * 1000;
   private historyCache: Array<Record<string, unknown>> | null = null;
 
   constructor(
@@ -56,6 +57,68 @@ export class ChatService {
 
     this.appendToCache(normalized);
     return normalized;
+  }
+
+  async editOwnMessage(
+    userId: number,
+    messageId: string,
+    text: string,
+  ): Promise<Record<string, unknown>> {
+    const id = (messageId || '').trim();
+    if (!id) {
+      throw new Error('Message introuvable.');
+    }
+    const message = await this.messages.findOne({
+      where: { messageId: id },
+      relations: ['user'],
+    });
+    if (!message || !message.user?.id) {
+      throw new Error('Message introuvable.');
+    }
+    if (message.user.id !== userId) {
+      throw new Error('Vous ne pouvez modifier que vos messages.');
+    }
+    if (message.deletedAt) {
+      throw new Error('Message supprimé.');
+    }
+    const ageMs = Date.now() - message.createdAt.getTime();
+    if (ageMs > ChatService.EDIT_WINDOW_MS) {
+      throw new Error('Message trop ancien pour être modifié.');
+    }
+
+    const sanitized = this.validator.validate(text);
+    message.message = sanitized;
+    await this.messages.save(message);
+
+    const normalized = this.normalize(message);
+    this.replaceInCache(normalized);
+    return normalized;
+  }
+
+  async deleteOwnMessage(userId: number, messageId: string): Promise<boolean> {
+    const id = (messageId || '').trim();
+    if (!id) return false;
+    const message = await this.messages.findOne({
+      where: { messageId: id },
+      relations: ['user'],
+    });
+    if (!message || !message.user?.id) {
+      throw new Error('Message introuvable.');
+    }
+    if (message.user.id !== userId) {
+      throw new Error('Vous ne pouvez supprimer que vos messages.');
+    }
+    if (message.deletedAt) {
+      return true;
+    }
+    const ageMs = Date.now() - message.createdAt.getTime();
+    if (ageMs > ChatService.EDIT_WINDOW_MS) {
+      throw new Error('Message trop ancien pour être supprimé.');
+    }
+
+    await this.messages.delete({ id: message.id });
+    this.removeFromCache(id);
+    return true;
   }
 
   async getRecentMessages(
@@ -174,5 +237,17 @@ export class ChatService {
     if (!this.historyCache) return;
     const idx = this.historyCache.findIndex((m) => (m as any)?.id === messageId);
     if (idx >= 0) this.historyCache.splice(idx, 1);
+  }
+
+  private replaceInCache(message: Record<string, unknown>): void {
+    if (!this.historyCache) return;
+    const id = (message as any)?.id;
+    if (!id) return;
+    const idx = this.historyCache.findIndex((m) => (m as any)?.id === id);
+    if (idx >= 0) {
+      this.historyCache[idx] = message;
+    } else {
+      this.appendToCache(message);
+    }
   }
 }

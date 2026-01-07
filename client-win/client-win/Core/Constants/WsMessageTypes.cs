@@ -35,8 +35,12 @@ public static class WsMessageTypes
     public static class Chat
     {
         public const string Send = "chat-send";
+        public const string Edit = "chat-edit";
+        public const string Delete = "chat-delete";
         public const string Receive = "chat-receive";
         public const string Message = "chat-message";
+        public const string MessageUpdated = "chat-message.updated";
+        public const string MessageDeleted = "chat-message.deleted";
         public const string History = "chat-history";
     }
 

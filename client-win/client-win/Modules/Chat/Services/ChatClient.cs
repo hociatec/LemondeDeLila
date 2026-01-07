@@ -20,6 +20,8 @@ public sealed class ChatClient : IAsyncDisposable
 
     public event Action<IReadOnlyList<ChatMessage>>? HistoryReceived;
     public event Action<ChatMessage>? MessageReceived;
+    public event Action<ChatMessage>? MessageUpdated;
+    public event Action<string>? MessageDeleted;
     public event Action<string>? ErrorReceived;
     public event Action<ChatServerError>? ErrorDetailsReceived;
     public event Action<ChatState>? StateChanged;
@@ -51,6 +53,31 @@ public sealed class ChatClient : IAsyncDisposable
         {
             type = WsMessageTypes.Chat.Send,
             text = text
+        };
+        string json = JsonSerializer.Serialize(payload, new JsonSerializerOptions(JsonSerializerDefaults.Web));
+        await _transport.SendAsync(json, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task EditMessageAsync(string messageId, string text, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(messageId)) return;
+        var payload = new
+        {
+            type = WsMessageTypes.Chat.Edit,
+            messageId,
+            text,
+        };
+        string json = JsonSerializer.Serialize(payload, new JsonSerializerOptions(JsonSerializerDefaults.Web));
+        await _transport.SendAsync(json, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task DeleteMessageAsync(string messageId, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(messageId)) return;
+        var payload = new
+        {
+            type = WsMessageTypes.Chat.Delete,
+            messageId,
         };
         string json = JsonSerializer.Serialize(payload, new JsonSerializerOptions(JsonSerializerDefaults.Web));
         await _transport.SendAsync(json, cancellationToken).ConfigureAwait(false);
@@ -105,6 +132,30 @@ public sealed class ChatClient : IAsyncDisposable
                     MessageReceived?.Invoke(msg);
                 }
             }
+            else if (type.Equals(WsMessageTypes.Chat.MessageUpdated, StringComparison.OrdinalIgnoreCase))
+            {
+                var msgNode = root.TryGetProperty("payload", out var payload) ? payload : root;
+                var msg = ParseMessage(msgNode);
+                if (msg != null)
+                {
+                    MessageUpdated?.Invoke(msg);
+                }
+            }
+            else if (type.Equals(WsMessageTypes.Chat.MessageDeleted, StringComparison.OrdinalIgnoreCase))
+            {
+                string? id = null;
+                var payload = root.TryGetProperty("payload", out var pl) ? pl : root;
+                if (payload.ValueKind == JsonValueKind.Object &&
+                    payload.TryGetProperty("id", out var idProp) &&
+                    idProp.ValueKind == JsonValueKind.String)
+                {
+                    id = idProp.GetString();
+                }
+                if (!string.IsNullOrWhiteSpace(id))
+                {
+                    MessageDeleted?.Invoke(id!);
+                }
+            }
             else if (type.Equals("error", StringComparison.OrdinalIgnoreCase))
             {
                 string message = root.TryGetProperty("payload", out var p) &&
@@ -137,12 +188,17 @@ public sealed class ChatClient : IAsyncDisposable
     private static ChatMessage? ParseMessage(JsonElement element)
     {
         string? id = element.TryGetProperty("id", out var idProp) ? idProp.GetString() : null;
+        int? userId = null;
         string user = "inconnu";
         if (element.TryGetProperty("user", out var userProp) &&
             userProp.ValueKind == JsonValueKind.Object &&
             userProp.TryGetProperty("username", out var uname))
         {
             user = uname.GetString() ?? "inconnu";
+            if (userProp.TryGetProperty("id", out var uid) && uid.ValueKind == JsonValueKind.Number)
+            {
+                userId = uid.GetInt32();
+            }
         }
         else if (element.TryGetProperty("from", out var from))
         {
@@ -165,7 +221,7 @@ public sealed class ChatClient : IAsyncDisposable
             timestamp = dt;
         }
 
-        return new ChatMessage(user, text, timestamp, id);
+        return new ChatMessage(user, text, timestamp, id, userId);
     }
 
     private void SetState(ChatState state) => StateChanged?.Invoke(state);

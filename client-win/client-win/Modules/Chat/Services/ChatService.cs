@@ -27,7 +27,7 @@ public sealed class ChatService : IChatService
     private readonly Dispatcher _dispatcher;
     private readonly ISoundService _sounds;
     private readonly IWsTicketProvider _tickets;
-    private readonly HashSet<string> _seenMessageKeys = new(StringComparer.Ordinal);
+    private string? _editingMessageId;
 
     public ObservableCollection<ChatMessage> Messages { get; } = new();
     public ChatState State { get; private set; } = ChatState.Disconnected;
@@ -76,6 +76,14 @@ public sealed class ChatService : IChatService
         _client.MessageReceived += msg =>
         {
             _ = _dispatcher.InvokeAsync(() => AddMessage(msg, playReceiveSound: true), DispatcherPriority.Background);
+        };
+        _client.MessageUpdated += msg =>
+        {
+            _ = _dispatcher.InvokeAsync(() => UpsertMessage(msg, playReceiveSound: false), DispatcherPriority.Background);
+        };
+        _client.MessageDeleted += id =>
+        {
+            _ = _dispatcher.InvokeAsync(() => RemoveMessage(id), DispatcherPriority.Background);
         };
     }
 
@@ -178,13 +186,52 @@ public sealed class ChatService : IChatService
                     throw new InvalidOperationException("Tchat non connecté.");
                 }
             }
-            await _client.SendMessageAsync(text, cancellationToken).ConfigureAwait(false);
-            _sounds.Play(SoundId.ChatMessageSent);
+            if (!string.IsNullOrWhiteSpace(_editingMessageId))
+            {
+                var targetId = _editingMessageId;
+                _editingMessageId = null;
+                await _client.EditMessageAsync(targetId, text, cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
+                await _client.SendMessageAsync(text, cancellationToken).ConfigureAwait(false);
+                _sounds.Play(SoundId.ChatMessageSent);
+            }
         }
         catch (Exception ex)
         {
             SetStatus($"Envoi tchat échoué : {ex.Message}", isError: true);
             throw;
+        }
+    }
+
+    public Task EditAsync(string messageId, string text, CancellationToken cancellationToken = default)
+    {
+        _editingMessageId = messageId;
+        return SendAsync(text, cancellationToken);
+    }
+
+    public async Task DeleteAsync(string messageId, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(messageId))
+        {
+            return;
+        }
+        try
+        {
+            if (State != ChatState.Connected)
+            {
+                bool opened = await OpenAsync(cancellationToken).ConfigureAwait(false);
+                if (!opened)
+                {
+                    throw new InvalidOperationException("Tchat non connecté.");
+                }
+            }
+            await _client.DeleteMessageAsync(messageId, cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            SetStatus($"Suppression tchat échouée : {ex.Message}", isError: true);
         }
     }
 
@@ -222,23 +269,7 @@ public sealed class ChatService : IChatService
 
     private void AddMessage(ChatMessage message, bool playReceiveSound)
     {
-        var key = GetMessageKey(message);
-        if (!_seenMessageKeys.Add(key))
-        {
-            return;
-        }
-
-        Messages.Add(message);
-        if (playReceiveSound && ShouldPlayReceiveSound(message))
-        {
-            _sounds.Play(SoundId.ChatMessageReceived);
-        }
-        while (Messages.Count > MaxMessages)
-        {
-            var removed = Messages[0];
-            Messages.RemoveAt(0);
-            _seenMessageKeys.Remove(GetMessageKey(removed));
-        }
+        UpsertMessage(message, playReceiveSound);
     }
 
     private bool ShouldPlayReceiveSound(ChatMessage message)
@@ -252,13 +283,77 @@ public sealed class ChatService : IChatService
         return !string.Equals(message.User, self, StringComparison.OrdinalIgnoreCase);
     }
 
-    private static string GetMessageKey(ChatMessage message)
+    private void UpsertMessage(ChatMessage message, bool playReceiveSound)
     {
-        if (!string.IsNullOrWhiteSpace(message.Id))
+        var isMine = message.UserId.HasValue
+            ? (_session.CurrentUser?.UserId == message.UserId.Value)
+            : string.Equals(message.User, _session.CurrentUser?.Username, StringComparison.OrdinalIgnoreCase);
+        var normalized = new ChatMessage(
+            message.User,
+            message.Text,
+            message.Timestamp,
+            message.Id,
+            message.UserId,
+            message.IsDeleted,
+            isMine);
+
+        if (string.IsNullOrWhiteSpace(normalized.Id))
         {
-            return $"id:{message.Id}";
+            Messages.Add(normalized);
         }
-        return $"legacy:{message.User}\n{message.Timestamp:O}\n{message.Text}";
+        else
+        {
+            var idx = FindIndexById(normalized.Id);
+            if (normalized.IsDeleted)
+            {
+                if (idx >= 0)
+                {
+                    Messages.RemoveAt(idx);
+                }
+                return;
+            }
+
+            if (idx >= 0)
+            {
+                Messages[idx] = normalized;
+            }
+            else
+            {
+                Messages.Add(normalized);
+            }
+        }
+
+        if (playReceiveSound && !normalized.IsDeleted && ShouldPlayReceiveSound(normalized))
+        {
+            _sounds.Play(SoundId.ChatMessageReceived);
+        }
+
+        while (Messages.Count > MaxMessages)
+        {
+            Messages.RemoveAt(0);
+        }
+    }
+
+    private void RemoveMessage(string messageId)
+    {
+        if (string.IsNullOrWhiteSpace(messageId)) return;
+        var idx = FindIndexById(messageId);
+        if (idx >= 0)
+        {
+            Messages.RemoveAt(idx);
+        }
+    }
+
+    private int FindIndexById(string id)
+    {
+        for (var i = 0; i < Messages.Count; i++)
+        {
+            if (string.Equals(Messages[i].Id, id, StringComparison.Ordinal))
+            {
+                return i;
+            }
+        }
+        return -1;
     }
 
     public async ValueTask DisposeAsync()

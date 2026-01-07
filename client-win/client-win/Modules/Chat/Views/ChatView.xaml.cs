@@ -3,7 +3,6 @@ using System.Collections.Specialized;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media;
 using client_win.Modules.Chat.ViewModels;
 
 namespace client_win.Modules.Chat.Views;
@@ -12,8 +11,6 @@ public partial class ChatView : UserControl
 {
     private INotifyCollectionChanged? _currentMessages;
     private bool _didInitialFocus;
-    private ScrollViewer? _historyScroll;
-    private bool _stickToBottom = true;
 
     public ChatView()
     {
@@ -51,85 +48,33 @@ public partial class ChatView : UserControl
             coll.CollectionChanged += OnMessagesChanged;
         }
 
-        _historyScroll = FindDescendantScrollViewer(HistoryBox);
-        if (_historyScroll != null)
-        {
-            _historyScroll.ScrollChanged += (_, _) =>
-            {
-                _stickToBottom = IsNearBottom(_historyScroll);
-            };
-        }
-
         if (!_didInitialFocus)
         {
             _didInitialFocus = true;
-            ScrollHistoryToEnd(force: true);
+            ScrollHistoryToEnd();
         }
     }
 
     private void OnMessagesChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
-        ScrollHistoryToEnd(force: false);
+        ScrollHistoryToEnd();
     }
 
-    private void ScrollHistoryToEnd(bool force)
+    private void ScrollHistoryToEnd()
     {
-        if (HistoryBox == null)
+        if (HistoryList?.Items.Count > 0)
         {
-            return;
-        }
-
-        if (!force && !_stickToBottom)
-        {
-            return;
-        }
-
-        try
-        {
-            HistoryBox.CaretIndex = HistoryBox.Text?.Length ?? 0;
-            HistoryBox.ScrollToEnd();
-        }
-        catch
-        {
-            // ignore
+            var last = HistoryList.Items[^1];
+            HistoryList.ScrollIntoView(last);
         }
     }
 
-    private static bool IsNearBottom(ScrollViewer sv)
+    private async void OnHistoryKeyDown(object sender, KeyEventArgs e)
     {
-        if (sv.ScrollableHeight <= 0)
+        if (e.Key == Key.Enter && DataContext is ChatViewModel vm)
         {
-            return true;
+            await vm.HandleSelectedMessageActionAsync();
+            e.Handled = true;
         }
-        return sv.VerticalOffset >= sv.ScrollableHeight - 1.0;
     }
-
-    private static ScrollViewer? FindDescendantScrollViewer(DependencyObject? root)
-    {
-        if (root == null)
-        {
-            return null;
-        }
-
-        if (root is ScrollViewer sv)
-        {
-            return sv;
-        }
-
-        var count = VisualTreeHelper.GetChildrenCount(root);
-        for (var i = 0; i < count; i++)
-        {
-            var child = VisualTreeHelper.GetChild(root, i);
-            var found = FindDescendantScrollViewer(child);
-            if (found != null)
-            {
-                return found;
-            }
-        }
-
-        return null;
-    }
-
-    // IMPORTANT: on ne surcharge pas les flèches dans l'historique.
-    // WPF + le lecteur d'écran gèrent mieux la lecture ligne par ligne sans interception.
 }

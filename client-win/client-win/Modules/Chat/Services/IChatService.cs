@@ -17,5 +17,7 @@ public interface IChatService : IAsyncDisposable
 
     Task<bool> OpenAsync(CancellationToken cancellationToken = default);
     Task SendAsync(string text, CancellationToken cancellationToken = default);
+    Task EditAsync(string messageId, string text, CancellationToken cancellationToken = default);
+    Task DeleteAsync(string messageId, CancellationToken cancellationToken = default);
     Task CloseAsync();
 }
