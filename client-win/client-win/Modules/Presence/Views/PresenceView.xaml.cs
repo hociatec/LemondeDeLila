@@ -39,7 +39,14 @@ public partial class PresenceView : UserControl
 
     private void OnFocusFirstItemRequested()
     {
-        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusWhenContainersGenerated));
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
+        {
+            if (ItemsList != null && ItemsList.Items.Count > 0)
+            {
+                ItemsList.SelectedIndex = 0;
+            }
+            FocusWhenContainersGenerated();
+        }));
     }
 
     private void OnKeyDown(object sender, KeyEventArgs e)
@@ -100,10 +107,8 @@ public partial class PresenceView : UserControl
             return;
         }
 
-        if (ItemsList.SelectedIndex < 0)
-        {
-            ItemsList.SelectedIndex = 0;
-        }
+        ItemsList.SelectedIndex = 0;
+        ItemsList.ScrollIntoView(ItemsList.Items[0]);
 
         ItemsList.UpdateLayout();
         if (ItemsList.ItemContainerGenerator.ContainerFromIndex(ItemsList.SelectedIndex) is ListBoxItem item)
