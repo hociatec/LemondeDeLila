@@ -35,6 +35,7 @@ public sealed class PresenceMonitor : IPresenceMonitor, IAsyncDisposable
     private readonly object _pendingPlayersGate = new();
     private IReadOnlyList<PresencePlayer>? _pendingPlayers;
     private int _applyPlayersScheduled;
+    private int _playersChangedScheduled;
 
     private string _pendingContextJson = JsonSerializer.Serialize(new { type = "presence-context", context = "home" });
     private int? _currentRoomId;
@@ -338,7 +339,13 @@ public sealed class PresenceMonitor : IPresenceMonitor, IAsyncDisposable
                 parsed.Add(new PresencePlayer(id, username, activity, roomId, roomName));
             }
 
-            QueueApplyPlayers(parsed);
+            // Trier hors UI thread pour éviter de bloquer l'interface lors d'une rafale d'updates.
+            var sorted = parsed
+                .OrderBy(p => ScoreActivity(p.Activity))
+                .ThenBy(p => p.Username, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            QueueApplyPlayers(sorted);
         }
         catch
         {
@@ -379,7 +386,7 @@ public sealed class PresenceMonitor : IPresenceMonitor, IAsyncDisposable
             }
 
             ApplyPlayers(next);
-            PlayersChanged?.Invoke();
+            QueuePlayersChanged();
         }
         finally
         {
@@ -396,17 +403,36 @@ public sealed class PresenceMonitor : IPresenceMonitor, IAsyncDisposable
         }
     }
 
+    private void QueuePlayersChanged()
+    {
+        if (Interlocked.Exchange(ref _playersChangedScheduled, 1) == 1)
+        {
+            return;
+        }
+
+        _ = _dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
+        {
+            try
+            {
+                PlayersChanged?.Invoke();
+            }
+            catch
+            {
+                // Ne pas casser le Dispatcher sur une exception d'abonné.
+            }
+            finally
+            {
+                Interlocked.Exchange(ref _playersChangedScheduled, 0);
+            }
+        }));
+    }
+
     private void ApplyPlayers(IReadOnlyList<PresencePlayer> players)
     {
         Players.Clear();
 
         var me = _session.CurrentUser;
-        var sorted = players
-            .OrderBy(p => ScoreActivity(p.Activity))
-            .ThenBy(p => p.Username, StringComparer.OrdinalIgnoreCase)
-            .ToList();
-
-        foreach (var p in sorted)
+        foreach (var p in players)
         {
             var username = p.Username;
             if (me != null && string.Equals(username, me.Username, StringComparison.OrdinalIgnoreCase))

@@ -163,12 +163,19 @@ public sealed class PresenceViewModel : ObservableObject
 
     private void OnPlayersChanged()
     {
-        if (_page != PresencePage.Players)
+        try
         {
-            Title = BuildTitle();
-            return;
+            if (_page != PresencePage.Players)
+            {
+                Title = BuildTitle();
+                return;
+            }
+            RebuildPlayers();
         }
-        RebuildPlayers();
+        catch
+        {
+            // Best-effort: ne pas bloquer l'UI sur une erreur de refresh.
+        }
     }
 
     private string BuildTitle()
@@ -179,21 +186,73 @@ public sealed class PresenceViewModel : ObservableObject
 
     private void RebuildPlayers()
     {
-        var previous = SelectedItem?.Tag as int?;
-        Items.Clear();
+        var previousId = SelectedItem?.Tag is int pid ? pid : (int?)null;
 
         Title = BuildTitle();
         Details = _presence.Status;
 
-        foreach (var p in _presence.Players)
+        var desired = _presence.Players
+            .Select(p => new PresenceMenuItem(BuildPlayerLabel(p), tag: p.Id))
+            .ToList();
+
+        // Éviter Clear/Add complet : ça peut provoquer des rafales de layout/focus sous WPF.
+        SelectedItem = null;
+
+        for (var i = 0; i < desired.Count; i++)
         {
-            var label = BuildPlayerLabel(p);
-            Items.Add(new PresenceMenuItem(label, tag: p.Id));
+            var want = desired[i];
+            if (i >= Items.Count)
+            {
+                Items.Add(want);
+                continue;
+            }
+
+            var have = Items[i];
+            if (have.Tag is int haveId && want.Tag is int wantId)
+            {
+                if (haveId == wantId)
+                {
+                    if (!string.Equals(have.Label, want.Label, StringComparison.Ordinal))
+                    {
+                        Items[i] = want;
+                    }
+                    continue;
+                }
+
+                // Chercher l'item existant plus loin (reorder minimal), sinon insérer.
+                var foundIndex = -1;
+                for (var j = i + 1; j < Items.Count; j++)
+                {
+                    if (Items[j].Tag is int id && id == wantId)
+                    {
+                        foundIndex = j;
+                        break;
+                    }
+                }
+
+                if (foundIndex >= 0)
+                {
+                    Items.RemoveAt(foundIndex);
+                    Items.Insert(i, want);
+                }
+                else
+                {
+                    Items.Insert(i, want);
+                }
+                continue;
+            }
+
+            Items[i] = want;
         }
 
-        if (previous.HasValue)
+        while (Items.Count > desired.Count)
         {
-            SelectedItem = Items.FirstOrDefault(i => i.Tag is int id && id == previous.Value);
+            Items.RemoveAt(Items.Count - 1);
+        }
+
+        if (previousId.HasValue)
+        {
+            SelectedItem = Items.FirstOrDefault(i => i.Tag is int id && id == previousId.Value);
         }
         SelectedItem ??= Items.FirstOrDefault();
     }
