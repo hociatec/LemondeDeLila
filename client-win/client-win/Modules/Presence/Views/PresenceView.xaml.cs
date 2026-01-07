@@ -10,6 +10,7 @@ namespace client_win.Modules.Presence.Views;
 public partial class PresenceView : UserControl
 {
     private PresenceViewModel? _viewModel;
+    private int _focusRequestId;
 
     public PresenceView()
     {
@@ -49,7 +50,7 @@ public partial class PresenceView : UserControl
                 ItemsList.SelectedIndex = 0;
                 ItemsList.ScrollIntoView(ItemsList.Items[0]);
             }
-            FocusWhenContainersGenerated();
+            RequestFocusSelectedOrFirstItem();
         }));
     }
 
@@ -81,7 +82,7 @@ public partial class PresenceView : UserControl
         }
         e.Handled = true;
         await vm.ActivateCommand.ExecuteAsync(null).ConfigureAwait(true);
-        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusCurrentPage));
+        RequestFocusSelectedOrFirstItem();
     }
 
     private void OnListKeyDown(object sender, KeyEventArgs e)
@@ -96,14 +97,22 @@ public partial class PresenceView : UserControl
     {
         if (ItemsList != null && ItemsList.IsVisible)
         {
-            FocusWhenContainersGenerated();
+            RequestFocusSelectedOrFirstItem();
             return;
         }
 
         Focus();
     }
 
-    private void FocusSelectedOrFirstItem()
+    private void RequestFocusSelectedOrFirstItem()
+    {
+        var id = ++_focusRequestId;
+        _ = Dispatcher.BeginInvoke(
+            DispatcherPriority.ApplicationIdle,
+            new Action(() => FocusSelectedOrFirstItemWithRetry(requestId: id, attemptsRemaining: 6)));
+    }
+
+    private void FocusSelectedOrFirstItemWithRetry(int requestId, int attemptsRemaining)
     {
         if (ItemsList == null || ItemsList.Items.Count == 0)
         {
@@ -125,39 +134,21 @@ public partial class PresenceView : UserControl
         if (ItemsList.SelectedIndex >= 0 &&
             ItemsList.ItemContainerGenerator.ContainerFromIndex(ItemsList.SelectedIndex) is ListBoxItem item)
         {
-            item.Focus();
-        }
-        else
-        {
+            // Certaines configs WPF + virtualisation + SR "accrochent" mieux si le ListBox reçoit d'abord le focus.
             ItemsList.Focus();
-        }
-    }
-
-    private void FocusWhenContainersGenerated()
-    {
-        if (ItemsList == null)
-        {
+            item.Focus();
+            item.BringIntoView();
             return;
         }
 
-        if (ItemsList.HasItems &&
-            ItemsList.ItemContainerGenerator.Status == System.Windows.Controls.Primitives.GeneratorStatus.ContainersGenerated)
+        if (attemptsRemaining > 0 && requestId == _focusRequestId)
         {
-            _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusSelectedOrFirstItem));
+            _ = Dispatcher.BeginInvoke(
+                DispatcherPriority.ApplicationIdle,
+                new Action(() => FocusSelectedOrFirstItemWithRetry(requestId, attemptsRemaining - 1)));
             return;
         }
 
-        EventHandler? handler = null;
-        handler = (_, __) =>
-        {
-            if (ItemsList.ItemContainerGenerator.Status != System.Windows.Controls.Primitives.GeneratorStatus.ContainersGenerated)
-            {
-                return;
-            }
-
-            ItemsList.ItemContainerGenerator.StatusChanged -= handler;
-            _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusSelectedOrFirstItem));
-        };
-        ItemsList.ItemContainerGenerator.StatusChanged += handler;
+        ItemsList.Focus();
     }
 }

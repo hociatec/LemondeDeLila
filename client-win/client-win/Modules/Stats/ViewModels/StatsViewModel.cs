@@ -56,7 +56,16 @@ public sealed class StatsViewModel : ObservableObject
         Title = "Livre des contes";
         Status = "Entrée : sélectionner. Échap : retour.";
 
-        BuildRoot();
+        if (HasTargetUser())
+        {
+            // Si on consulte le livre d'un autre utilisateur (depuis Présence/Social),
+            // ouvrir directement le contenu sans repasser par l'écran "Consulter le livre...".
+            _ = LoadGamesAsync();
+        }
+        else
+        {
+            BuildRoot();
+        }
     }
 
     public ObservableCollection<StatsMenuItem> Items { get; }
@@ -115,6 +124,12 @@ public sealed class StatsViewModel : ObservableObject
 
         if (_page == StatsPage.Games)
         {
+            if (HasTargetUser())
+            {
+                _close();
+                return StatsNavResult.Closed;
+            }
+
             BuildRoot();
             return StatsNavResult.Moved;
         }
@@ -140,6 +155,8 @@ public sealed class StatsViewModel : ObservableObject
         SelectedItem = Items.FirstOrDefault();
         Status = "Entrée : consulter. Échap : retour.";
     }
+
+    private bool HasTargetUser() => _targetUserId.HasValue && _targetUserId.Value > 0;
 
     private void BuildGames()
     {
