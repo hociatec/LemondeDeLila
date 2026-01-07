@@ -42,6 +42,9 @@ export class StatsWsHandler {
   async leaderboardTop(payload: any) {
     const dto = this.validator.validate(LeaderboardTopDto, payload);
     const entries = await this.stats.getTop10(dto.gameType);
-    return { type: 'leaderboard.top', payload: { gameType: dto.gameType, entries } };
+    return {
+      type: 'leaderboard.top',
+      payload: { gameType: dto.gameType, entries },
+    };
   }
 }

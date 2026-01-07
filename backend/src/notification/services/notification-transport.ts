@@ -25,7 +25,9 @@ export class RedisNotificationTransport extends NotificationTransport {
     this.transport = new RedisPubSubTransport<NotificationEvent>(
       url,
       'notifications',
-      redisFactory ? (u, name) => redisFactory.create(u, name, { lazyConnect: true }) : undefined,
+      redisFactory
+        ? (u, name) => redisFactory.create(u, name, { lazyConnect: true })
+        : undefined,
     );
   }
 

@@ -16,10 +16,7 @@ export class AdminLogsWsHandler {
 
   async logsDownload(session: WsSession, payload: any) {
     requireAdmin(session);
-    const dto = this.validator.validate(
-      AdminLogsDownloadWsDto,
-      payload ?? {},
-    ) as AdminLogsDownloadWsDto;
+    const dto = this.validator.validate(AdminLogsDownloadWsDto, payload ?? {});
     const linesCount = dto.lines ?? 200;
     const filter = dto.filter?.trim() ?? '';
     const logDir = this.config.get<string>('LOG_DIR') ?? 'log';
@@ -62,4 +59,3 @@ export class AdminLogsWsHandler {
     };
   }
 }
-

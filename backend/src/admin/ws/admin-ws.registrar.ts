@@ -120,9 +120,7 @@ export class AdminWsRegistrar implements OnModuleInit {
     this.registry.register('admin.chat.clear', (s, p) =>
       this.chat.chatClear(s, p),
     );
-    this.registry.register('admin.chat.ban', (s, p) =>
-      this.chat.chatBan(s, p),
-    );
+    this.registry.register('admin.chat.ban', (s, p) => this.chat.chatBan(s, p));
     this.registry.register('admin.chat.unban', (s, p) =>
       this.chat.chatUnban(s, p),
     );

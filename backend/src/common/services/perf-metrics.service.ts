@@ -98,8 +98,10 @@ export class PerfMetricsService {
       if (recent.length === 0) continue;
       const values = recent.map((e) => e.ms);
       const c2sValues = recent
-        .map((e) => (e.meta ? (e.meta['clientToServerMs'] as unknown) : null))
-        .filter((v): v is number => typeof v === 'number' && Number.isFinite(v));
+        .map((e) => (e.meta ? e.meta['clientToServerMs'] : null))
+        .filter(
+          (v): v is number => typeof v === 'number' && Number.isFinite(v),
+        );
       const count = values.length;
       const sum = values.reduce((a, b) => a + b, 0);
       const maxMs = values.reduce((a, b) => (b > a ? b : a), 0);

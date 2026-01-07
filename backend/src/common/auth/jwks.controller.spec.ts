@@ -23,4 +23,3 @@ describe('JwksController', () => {
     expect(typeof res.keys[0].kid).toBe('string');
   });
 });
-

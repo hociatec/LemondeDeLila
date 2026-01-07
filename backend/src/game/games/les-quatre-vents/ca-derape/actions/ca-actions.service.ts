@@ -24,7 +24,10 @@ export class CaActionService {
     private readonly core: GameCoreService,
   ) {}
 
-  applyActions(state: GameStateEntity, actions: GameSingleActionDto[]): GameStateEntity {
+  applyActions(
+    state: GameStateEntity,
+    actions: GameSingleActionDto[],
+  ): GameStateEntity {
     let next = state;
     for (const action of actions ?? []) {
       const type = String(action?.type ?? '').trim();
@@ -79,7 +82,7 @@ export class CaActionService {
 
     if (roll <= 0) {
       const rng = this.random.rollDice(meta as any, 6);
-      meta = { ...meta, ...(rng.meta as any) };
+      meta = { ...meta, ...rng.meta };
       roll = rng.roll;
     }
 
@@ -89,7 +92,10 @@ export class CaActionService {
         ...meta,
         statuses: {
           ...meta.statuses,
-          doubleNextRoll: { ...(meta.statuses.doubleNextRoll ?? {}), [currentId]: false },
+          doubleNextRoll: {
+            ...(meta.statuses.doubleNextRoll ?? {}),
+            [currentId]: false,
+          },
         },
       };
     }
@@ -109,13 +115,18 @@ export class CaActionService {
         ...meta.statuses,
         mirrorNextRollFrom: {
           ...(meta.statuses?.mirrorNextRollFrom ?? {}),
-          [currentId]: mirrorApplied ? null : (meta.statuses?.mirrorNextRollFrom?.[currentId] ?? null),
+          [currentId]: mirrorApplied
+            ? null
+            : (meta.statuses?.mirrorNextRollFrom?.[currentId] ?? null),
         },
       } as any,
     };
     next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
 
-    next = this.core.appendLog(next, `${this.playerName(next, currentId)} lance le dé : "${roll}".`);
+    next = this.core.appendLog(
+      next,
+      `${this.playerName(next, currentId)} lance le dé : "${roll}".`,
+    );
 
     const drawOut = this.drawCard(this.getMeta(next));
     meta = drawOut.meta;
@@ -135,30 +146,49 @@ export class CaActionService {
     if (next.pending) return next;
 
     const keepTurn = Boolean(card?.keepTurn);
-    if (keepTurn) return this.core.appendLog(next, `${this.playerName(next, currentId)} rejoue.`);
+    if (keepTurn)
+      return this.core.appendLog(
+        next,
+        `${this.playerName(next, currentId)} rejoue.`,
+      );
 
-    const override = (this.getMeta(next).pendingContext as PendingContext) ?? null;
-    if (override && (override.kind === 'choose_next_player' || override.kind === 'choose_next_delta' || override.kind === 'mirror_next_roll')) {
+    const override =
+      (this.getMeta(next).pendingContext as PendingContext) ?? null;
+    if (
+      override &&
+      (override.kind === 'choose_next_player' ||
+        override.kind === 'choose_next_delta' ||
+        override.kind === 'mirror_next_roll')
+    ) {
       return next;
     }
 
     return this.advanceTurnWithNextDelta(next);
   }
 
-  private handleChooseTarget(state: GameStateEntity, action: GameSingleActionDto): GameStateEntity {
+  private handleChooseTarget(
+    state: GameStateEntity,
+    action: GameSingleActionDto,
+  ): GameStateEntity {
     if (String(state.status ?? '').toLowerCase() !== 'started') return state;
     const currentId = state.turn?.currentPlayerId ?? null;
     if (currentId == null) return state;
 
     const pending = state.pending as any;
-    if (!pending || pending.type !== 'choose_target' || pending.playerId !== currentId) return state;
+    if (
+      !pending ||
+      pending.type !== 'choose_target' ||
+      pending.playerId !== currentId
+    )
+      return state;
 
     const targetPlayerId = Number((action.payload as any)?.targetPlayerId);
     if (!Number.isFinite(targetPlayerId)) return state;
 
     let meta = this.getMeta(state);
     const context = (meta.pendingContext as PendingContext) ?? null;
-    if (!context || context.actorId !== currentId) return { ...state, pending: null };
+    if (!context || context.actorId !== currentId)
+      return { ...state, pending: null };
 
     if (context.kind === 'swap_after_move') {
       const actorPos = meta.positions?.[currentId] ?? 0;
@@ -211,13 +241,21 @@ export class CaActionService {
     return { ...state, pending: null };
   }
 
-  private handleChooseNextPlayer(state: GameStateEntity, action: GameSingleActionDto): GameStateEntity {
+  private handleChooseNextPlayer(
+    state: GameStateEntity,
+    action: GameSingleActionDto,
+  ): GameStateEntity {
     if (String(state.status ?? '').toLowerCase() !== 'started') return state;
     const currentId = state.turn?.currentPlayerId ?? null;
     if (currentId == null) return state;
 
     const pending = state.pending as any;
-    if (!pending || pending.type !== 'choose_next_player' || pending.playerId !== currentId) return state;
+    if (
+      !pending ||
+      pending.type !== 'choose_next_player' ||
+      pending.playerId !== currentId
+    )
+      return state;
 
     const playerId = Number((action.payload as any)?.playerId);
     if (!Number.isFinite(playerId)) return state;
@@ -228,8 +266,15 @@ export class CaActionService {
 
     let meta = this.getMeta(state);
     meta = { ...meta, pendingContext: null };
-    let next: GameStateEntity = { ...state, pending: null, metadata: { ...(state.metadata ?? {}), ...meta } };
-    next = this.core.appendLog(next, `Prochain joueur choisi : ${this.playerName(next, playerId)}.`);
+    let next: GameStateEntity = {
+      ...state,
+      pending: null,
+      metadata: { ...(state.metadata ?? {}), ...meta },
+    };
+    next = this.core.appendLog(
+      next,
+      `Prochain joueur choisi : ${this.playerName(next, playerId)}.`,
+    );
     return {
       ...next,
       turnIndex: idx,
@@ -237,15 +282,24 @@ export class CaActionService {
     };
   }
 
-  private handleChooseNextDelta(state: GameStateEntity, action: GameSingleActionDto): GameStateEntity {
+  private handleChooseNextDelta(
+    state: GameStateEntity,
+    action: GameSingleActionDto,
+  ): GameStateEntity {
     if (String(state.status ?? '').toLowerCase() !== 'started') return state;
     const currentId = state.turn?.currentPlayerId ?? null;
     if (currentId == null) return state;
 
     const pending = state.pending as any;
-    if (!pending || pending.type !== 'choose_next_delta' || pending.playerId !== currentId) return state;
+    if (
+      !pending ||
+      pending.type !== 'choose_next_delta' ||
+      pending.playerId !== currentId
+    )
+      return state;
     const delta = Number((action.payload as any)?.delta);
-    if (!Number.isFinite(delta) || (delta !== -1 && delta !== 1)) return { ...state, pending: null };
+    if (!Number.isFinite(delta) || (delta !== -1 && delta !== 1))
+      return { ...state, pending: null };
 
     let meta = this.getMeta(state);
     meta = {
@@ -253,8 +307,15 @@ export class CaActionService {
       pendingContext: null,
       statuses: { ...meta.statuses, nextPlayerDelta: delta } as any,
     };
-    let next: GameStateEntity = { ...state, pending: null, metadata: { ...(state.metadata ?? {}), ...meta } };
-    next = this.core.appendLog(next, `Effet : le prochain joueur aura un déplacement ${delta > 0 ? '+1' : '-1'}.`);
+    let next: GameStateEntity = {
+      ...state,
+      pending: null,
+      metadata: { ...(state.metadata ?? {}), ...meta },
+    };
+    next = this.core.appendLog(
+      next,
+      `Effet : le prochain joueur aura un déplacement ${delta > 0 ? '+1' : '-1'}.`,
+    );
     return this.advanceTurnWithNextDelta(next);
   }
 
@@ -278,7 +339,11 @@ export class CaActionService {
       }
       updatedSince[actorId] = didMove ? 0 : (updatedSince[actorId] ?? 0);
       updatedLast[actorId] = delta;
-      meta = { ...meta, turnsSinceMoved: updatedSince, lastMoveDelta: updatedLast };
+      meta = {
+        ...meta,
+        turnsSinceMoved: updatedSince,
+        lastMoveDelta: updatedLast,
+      };
     };
 
     if (card.kind === 'neutral') {
@@ -292,12 +357,18 @@ export class CaActionService {
     }
 
     // Règles idiotes : effets permanents.
-    if (card.kind === 'rule' && /prochain déplacement est doubl/i.test(card.text)) {
+    if (
+      card.kind === 'rule' &&
+      /prochain déplacement est doubl/i.test(card.text)
+    ) {
       meta = {
         ...meta,
         statuses: {
           ...meta.statuses,
-          doubleNextMove: { ...(meta.statuses.doubleNextMove ?? {}), [actorId]: true },
+          doubleNextMove: {
+            ...(meta.statuses.doubleNextMove ?? {}),
+            [actorId]: true,
+          },
         },
       };
     }
@@ -306,16 +377,25 @@ export class CaActionService {
         ...meta,
         statuses: {
           ...meta.statuses,
-          ignoreNextPenalty: { ...(meta.statuses.ignoreNextPenalty ?? {}), [actorId]: true },
+          ignoreNextPenalty: {
+            ...(meta.statuses.ignoreNextPenalty ?? {}),
+            [actorId]: true,
+          },
         },
       };
     }
-    if (card.kind === 'rule' && /prochain lancer.*compte double/i.test(card.text)) {
+    if (
+      card.kind === 'rule' &&
+      /prochain lancer.*compte double/i.test(card.text)
+    ) {
       meta = {
         ...meta,
         statuses: {
           ...meta.statuses,
-          doubleNextRoll: { ...(meta.statuses.doubleNextRoll ?? {}), [actorId]: true },
+          doubleNextRoll: {
+            ...(meta.statuses.doubleNextRoll ?? {}),
+            [actorId]: true,
+          },
         },
       };
     }
@@ -332,11 +412,24 @@ export class CaActionService {
           choices: targets.map((t) => t.username),
           data: {
             context: 'mirror_next_roll',
-            targets: targets.map((t) => ({ targetPlayerId: t.id, targetUsername: t.username })),
+            targets: targets.map((t) => ({
+              targetPlayerId: t.id,
+              targetUsername: t.username,
+            })),
           },
         };
-        meta = { ...meta, pendingContext: { kind: 'mirror_next_roll', actorId } satisfies PendingContext };
-        return { ...next, pending, metadata: { ...(next.metadata ?? {}), ...meta } };
+        meta = {
+          ...meta,
+          pendingContext: {
+            kind: 'mirror_next_roll',
+            actorId,
+          } satisfies PendingContext,
+        };
+        return {
+          ...next,
+          pending,
+          metadata: { ...(next.metadata ?? {}), ...meta },
+        };
       }
     }
 
@@ -347,7 +440,10 @@ export class CaActionService {
           ...meta,
           statuses: {
             ...meta.statuses,
-            ignoreNextPenalty: { ...(meta.statuses.ignoreNextPenalty ?? {}), [actorId]: false },
+            ignoreNextPenalty: {
+              ...(meta.statuses.ignoreNextPenalty ?? {}),
+              [actorId]: false,
+            },
           },
         };
         next = this.core.appendLog(next, 'Pénalité ignorée.');
@@ -357,7 +453,10 @@ export class CaActionService {
           ...meta,
           statuses: {
             ...meta.statuses,
-            skipTurn: { ...(meta.statuses.skipTurn ?? {}), [actorId]: curr + 1 },
+            skipTurn: {
+              ...(meta.statuses.skipTurn ?? {}),
+              [actorId]: curr + 1,
+            },
           },
         };
       }
@@ -372,17 +471,28 @@ export class CaActionService {
     let baseRoll = roll;
     if (card.kind === 'rule' && /lancer le dé deux fois/i.test(card.text)) {
       const extra = this.random.rollDice(meta as any, 6);
-      meta = { ...meta, ...(extra.meta as any) };
+      meta = { ...meta, ...extra.meta };
       baseRoll = roll + extra.roll;
-      next = this.core.appendLog(next, `Règle : second dé = "${extra.roll}". Total = "${baseRoll}".`);
+      next = this.core.appendLog(
+        next,
+        `Règle : second dé = "${extra.roll}". Total = "${baseRoll}".`,
+      );
     }
 
     if (card.kind === 'rule' && /^Pioche une carte/i.test(card.text)) {
       const draw2 = this.drawCard(meta);
       meta = draw2.meta;
       if (draw2.card) {
-        next = this.core.appendLog(next, `Carte supplémentaire : ${draw2.card.title}. ${draw2.card.text}`);
-        next = this.applyCardEffects({ ...next, metadata: { ...(next.metadata ?? {}), ...meta } }, actorId, draw2.card, baseRoll);
+        next = this.core.appendLog(
+          next,
+          `Carte supplémentaire : ${draw2.card.title}. ${draw2.card.text}`,
+        );
+        next = this.applyCardEffects(
+          { ...next, metadata: { ...(next.metadata ?? {}), ...meta } },
+          actorId,
+          draw2.card,
+          baseRoll,
+        );
         return next;
       }
     }
@@ -392,14 +502,20 @@ export class CaActionService {
     if (card.moveDelta === 0 && /Pas de déplacement/i.test(card.text)) {
       baseMove = 0;
     }
-    let delta = (card.moveDelta ?? 0);
+    let delta = card.moveDelta ?? 0;
     baseMove = baseRoll;
 
     // Recule/avance en deux temps (net), fidélité simple.
-    if (card.kind === 'rule' && /Recule de 3 cases puis avance de 2/i.test(card.text)) {
+    if (
+      card.kind === 'rule' &&
+      /Recule de 3 cases puis avance de 2/i.test(card.text)
+    ) {
       delta = -1;
     }
-    if (card.kind === 'rule' && /Avance de 3 cases puis recule de 1/i.test(card.text)) {
+    if (
+      card.kind === 'rule' &&
+      /Avance de 3 cases puis recule de 1/i.test(card.text)
+    ) {
       delta = 2;
     }
 
@@ -411,20 +527,27 @@ export class CaActionService {
         ...meta,
         statuses: {
           ...meta.statuses,
-          doubleNextMove: { ...(meta.statuses.doubleNextMove ?? {}), [actorId]: false },
+          doubleNextMove: {
+            ...(meta.statuses.doubleNextMove ?? {}),
+            [actorId]: false,
+          },
         },
       };
     }
 
     if (combined !== 0) {
       // Ignore prochain recul/penalité si un recul doit s'appliquer.
-      const ignorePenalty = meta.statuses?.ignoreNextPenalty?.[actorId] === true;
+      const ignorePenalty =
+        meta.statuses?.ignoreNextPenalty?.[actorId] === true;
       if (ignorePenalty && combined < 0) {
         meta = {
           ...meta,
           statuses: {
             ...meta.statuses,
-            ignoreNextPenalty: { ...(meta.statuses.ignoreNextPenalty ?? {}), [actorId]: false },
+            ignoreNextPenalty: {
+              ...(meta.statuses.ignoreNextPenalty ?? {}),
+              [actorId]: false,
+            },
           },
         };
         next = this.core.appendLog(next, 'Pénalité ignorée.');
@@ -433,10 +556,16 @@ export class CaActionService {
 
       const before = meta.positions?.[actorId] ?? 0;
       const after = clamp(before + combined, 0, meta.tiles.length - 1);
-      meta = { ...meta, positions: { ...(meta.positions ?? {}), [actorId]: after } };
+      meta = {
+        ...meta,
+        positions: { ...(meta.positions ?? {}), [actorId]: after },
+      };
       const casesWord = Math.abs(combined) === 1 ? 'case' : 'cases';
       const verb = combined >= 0 ? 'avance' : 'recule';
-      next = this.core.appendLog(next, `${this.playerName(next, actorId)} ${verb} de ${Math.abs(combined)} ${casesWord}.`);
+      next = this.core.appendLog(
+        next,
+        `${this.playerName(next, actorId)} ${verb} de ${Math.abs(combined)} ${casesWord}.`,
+      );
       bumpTurnStats(true, combined);
     } else {
       bumpTurnStats(false, 0);
@@ -460,11 +589,24 @@ export class CaActionService {
           choices: targets.map((t) => t.username),
           data: {
             context: 'swap',
-            targets: targets.map((t) => ({ targetPlayerId: t.id, targetUsername: t.username })),
+            targets: targets.map((t) => ({
+              targetPlayerId: t.id,
+              targetUsername: t.username,
+            })),
           },
         };
-        meta = { ...meta, pendingContext: { kind: 'swap_after_move', actorId } satisfies PendingContext };
-        return { ...next, pending, metadata: { ...(next.metadata ?? {}), ...meta } };
+        meta = {
+          ...meta,
+          pendingContext: {
+            kind: 'swap_after_move',
+            actorId,
+          } satisfies PendingContext,
+        };
+        return {
+          ...next,
+          pending,
+          metadata: { ...(next.metadata ?? {}), ...meta },
+        };
       }
     }
 
@@ -479,33 +621,64 @@ export class CaActionService {
         choices: players.map((p) => p.username),
         data: { playerIds: ids },
       };
-      meta = { ...meta, pendingContext: { kind: 'choose_next_player', actorId } satisfies PendingContext };
-      return { ...next, pending, metadata: { ...(next.metadata ?? {}), ...meta } };
+      meta = {
+        ...meta,
+        pendingContext: {
+          kind: 'choose_next_player',
+          actorId,
+        } satisfies PendingContext,
+      };
+      return {
+        ...next,
+        pending,
+        metadata: { ...(next.metadata ?? {}), ...meta },
+      };
     }
 
-    if (card.kind === 'rule' && /tu décides si le prochain joueur/i.test(card.text)) {
+    if (
+      card.kind === 'rule' &&
+      /tu décides si le prochain joueur/i.test(card.text)
+    ) {
       const pending: PendingState = {
         type: 'choose_next_delta',
-        label: 'Choisissez l’effet pour le prochain joueur dans la liste, puis Entrée.',
+        label:
+          'Choisissez l’effet pour le prochain joueur dans la liste, puis Entrée.',
         playerId: actorId,
         blocking: true,
         choices: ['Avancer de 1', 'Reculer de 1'],
         data: { deltas: [1, -1] },
       };
-      meta = { ...meta, pendingContext: { kind: 'choose_next_delta', actorId } satisfies PendingContext };
-      return { ...next, pending, metadata: { ...(next.metadata ?? {}), ...meta } };
+      meta = {
+        ...meta,
+        pendingContext: {
+          kind: 'choose_next_delta',
+          actorId,
+        } satisfies PendingContext,
+      };
+      return {
+        ...next,
+        pending,
+        metadata: { ...(next.metadata ?? {}), ...meta },
+      };
     }
 
     // Victoire.
     if ((meta.positions?.[actorId] ?? 0) >= meta.tiles.length - 1) {
       meta = { ...meta, winnerId: actorId };
-      next = this.core.appendLog(next, `${this.playerName(next, actorId)} remporte la partie !`);
+      next = this.core.appendLog(
+        next,
+        `${this.playerName(next, actorId)} remporte la partie !`,
+      );
     }
 
     return { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
   }
 
-  private applyGlobal(state: GameStateEntity, actorId: number, card: CaCard): GameStateEntity {
+  private applyGlobal(
+    state: GameStateEntity,
+    actorId: number,
+    card: CaCard,
+  ): GameStateEntity {
     let next = state;
     let meta = this.getMeta(next);
     const players = Array.isArray(next.players) ? next.players : [];
@@ -515,11 +688,13 @@ export class CaActionService {
     if (card.id === 41) {
       const vals = ids.map((id) => positions[id] ?? 0);
       const shuffled = this.random.shuffle(meta as any, vals);
-      meta = { ...meta, ...(shuffled.meta as any) };
+      meta = { ...meta, ...shuffled.meta };
       ids.forEach((id, i) => (positions[id] = shuffled.values[i] ?? 0));
       next = this.core.appendLog(next, 'Chaos : les positions sont mélangées.');
     } else if (card.id === 42) {
-      const ranked = [...ids].sort((a, b) => (positions[a] ?? 0) - (positions[b] ?? 0));
+      const ranked = [...ids].sort(
+        (a, b) => (positions[a] ?? 0) - (positions[b] ?? 0),
+      );
       const reversed = [...ranked].reverse();
       ranked.forEach((id, i) => (positions[id] = positions[reversed[i]] ?? 0));
       next = this.core.appendLog(next, 'Chaos : ordre du classement inversé.');
@@ -527,38 +702,78 @@ export class CaActionService {
       const skip = { ...(meta.statuses?.skipTurn ?? {}) };
       ids.forEach((id) => (skip[id] = (skip[id] ?? 0) + 1));
       meta = { ...meta, statuses: { ...meta.statuses, skipTurn: skip } };
-      next = this.core.appendLog(next, 'Tour commun perdu : tout le monde passe son prochain tour.');
+      next = this.core.appendLog(
+        next,
+        'Tour commun perdu : tout le monde passe son prochain tour.',
+      );
     } else if (card.id === 44) {
-      ids.forEach((id) => (positions[id] = clamp((positions[id] ?? 0) + 1, 0, meta.tiles.length - 1)));
+      ids.forEach(
+        (id) =>
+          (positions[id] = clamp(
+            (positions[id] ?? 0) + 1,
+            0,
+            meta.tiles.length - 1,
+          )),
+      );
     } else if (card.id === 45) {
-      ids.forEach((id) => (positions[id] = clamp((positions[id] ?? 0) - 2, 0, meta.tiles.length - 1)));
+      ids.forEach(
+        (id) =>
+          (positions[id] = clamp(
+            (positions[id] ?? 0) - 2,
+            0,
+            meta.tiles.length - 1,
+          )),
+      );
     } else if (card.id === 46) {
       next = this.core.appendLog(next, "Rien n'arrive.");
     } else if (card.id === 47) {
       const skip = { ...(meta.statuses?.skipTurn ?? {}) };
       ids.forEach((id) => (skip[id] = (skip[id] ?? 0) + 1));
       meta = { ...meta, statuses: { ...meta.statuses, skipTurn: skip } };
-      next = this.core.appendLog(next, 'Tout le monde passe son prochain tour.');
+      next = this.core.appendLog(
+        next,
+        'Tout le monde passe son prochain tour.',
+      );
     } else if (card.id === 48) {
-      ids.forEach((id) => (positions[id] = clamp((positions[id] ?? 0) + 2, 0, meta.tiles.length - 1)));
+      ids.forEach(
+        (id) =>
+          (positions[id] = clamp(
+            (positions[id] ?? 0) + 2,
+            0,
+            meta.tiles.length - 1,
+          )),
+      );
     } else if (card.id === 49) {
-      const ranked = [...ids].sort((a, b) => (positions[a] ?? 0) - (positions[b] ?? 0));
-      const shifted = ranked.map((_, i) => ranked[(i - 1 + ranked.length) % ranked.length]);
+      const ranked = [...ids].sort(
+        (a, b) => (positions[a] ?? 0) - (positions[b] ?? 0),
+      );
+      const shifted = ranked.map(
+        (_, i) => ranked[(i - 1 + ranked.length) % ranked.length],
+      );
       ranked.forEach((id, i) => (positions[id] = positions[shifted[i]] ?? 0));
     } else if (card.id === 50) {
-      next = this.core.appendLog(next, `${this.playerName(next, actorId)} rejoue.`);
+      next = this.core.appendLog(
+        next,
+        `${this.playerName(next, actorId)} rejoue.`,
+      );
     }
 
     meta = { ...meta, positions };
     return { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
   }
 
-  private applyConditional(state: GameStateEntity, actorId: number, card: CaCard): GameStateEntity {
+  private applyConditional(
+    state: GameStateEntity,
+    actorId: number,
+    card: CaCard,
+  ): GameStateEntity {
     let next = state;
     let meta = this.getMeta(next);
     const positions = meta.positions ?? {};
     const ids = Object.keys(positions).map(Number).filter(Number.isFinite);
-    const ordered = [...ids].sort((a, b) => (positions[a] ?? 0) - (positions[b] ?? 0));
+    const ordered = [...ids].sort(
+      (a, b) => (positions[a] ?? 0) - (positions[b] ?? 0),
+    );
     const leader = ordered[ordered.length - 1] ?? actorId;
     const last = ordered[0] ?? actorId;
     const myPos = positions[actorId] ?? 0;
@@ -571,7 +786,10 @@ export class CaActionService {
       if (delta !== 0) {
         const casesWord = Math.abs(delta) === 1 ? 'case' : 'cases';
         const verb = delta >= 0 ? 'avance' : 'recule';
-        next = this.core.appendLog(next, `${this.playerName(next, actorId)} ${verb} de ${Math.abs(delta)} ${casesWord} (condition).`);
+        next = this.core.appendLog(
+          next,
+          `${this.playerName(next, actorId)} ${verb} de ${Math.abs(delta)} ${casesWord} (condition).`,
+        );
       }
     };
 
@@ -590,59 +808,100 @@ export class CaActionService {
           ...meta,
           statuses: {
             ...meta.statuses,
-            skipTurn: { ...(meta.statuses.skipTurn ?? {}), [actorId]: Math.max(0, remaining - 1) },
+            skipTurn: {
+              ...(meta.statuses.skipTurn ?? {}),
+              [actorId]: Math.max(0, remaining - 1),
+            },
           },
         };
         next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-        next = this.core.appendLog(next, 'Condition : un tour d’attente est annulé.');
+        next = this.core.appendLog(
+          next,
+          'Condition : un tour d’attente est annulé.',
+        );
       }
     } else if (text.includes('multiple de 5')) {
       const caseNumber = myPos + 1;
       const isMultiple = caseNumber % 5 === 0;
       applyMove(isMultiple ? 4 : -1);
-    } else if (text.includes("pas bougé depuis 2")) {
+    } else if (text.includes('pas bougé depuis 2')) {
       const tsm = meta.turnsSinceMoved?.[actorId] ?? 0;
       applyMove(tsm >= 2 ? 5 : 0);
     } else if (text.includes('à égalité')) {
-      const same = ids.find((id) => id !== actorId && (positions[id] ?? 0) === myPos);
+      const same = ids.find(
+        (id) => id !== actorId && (positions[id] ?? 0) === myPos,
+      );
       if (same != null) {
         const aAfter = clamp(myPos + 2, 0, meta.tiles.length - 1);
-        const sAfter = clamp((positions[same] ?? 0) + 2, 0, meta.tiles.length - 1);
-        meta = { ...meta, positions: { ...positions, [actorId]: aAfter, [same]: sAfter } };
+        const sAfter = clamp(
+          (positions[same] ?? 0) + 2,
+          0,
+          meta.tiles.length - 1,
+        );
+        meta = {
+          ...meta,
+          positions: { ...positions, [actorId]: aAfter, [same]: sAfter },
+        };
         next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-        next = this.core.appendLog(next, `Condition : ${this.playerName(next, actorId)} et ${this.playerName(next, same)} avancent de 2 cases.`);
+        next = this.core.appendLog(
+          next,
+          `Condition : ${this.playerName(next, actorId)} et ${this.playerName(next, same)} avancent de 2 cases.`,
+        );
       }
     } else if (text.includes('rejoue immédiatement')) {
       // Indiqué au niveau du deck via keepTurn, mais au cas où.
-      next = this.core.appendLog(next, `${this.playerName(next, actorId)} rejoue.`);
+      next = this.core.appendLog(
+        next,
+        `${this.playerName(next, actorId)} rejoue.`,
+      );
     } else if (text.includes('derrière quelqu’un') && text.includes('1 case')) {
       const aheadId = ordered[myIndex + 1];
       if (aheadId != null && (positions[aheadId] ?? 0) === myPos + 1) {
-        meta = { ...meta, positions: { ...positions, [actorId]: positions[aheadId] ?? myPos } };
+        meta = {
+          ...meta,
+          positions: { ...positions, [actorId]: positions[aheadId] ?? myPos },
+        };
         next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-        next = this.core.appendLog(next, `Condition : ${this.playerName(next, actorId)} rejoint ${this.playerName(next, aheadId)}.`);
+        next = this.core.appendLog(
+          next,
+          `Condition : ${this.playerName(next, actorId)} rejoint ${this.playerName(next, aheadId)}.`,
+        );
       }
     }
 
     return next;
   }
 
-  private applySpecialAfterMove(state: GameStateEntity, actorId: number, card: CaCard): GameStateEntity {
+  private applySpecialAfterMove(
+    state: GameStateEntity,
+    actorId: number,
+    card: CaCard,
+  ): GameStateEntity {
     if (!card) return state;
     let next = state;
     let meta = this.getMeta(next);
     const myPos = meta.positions?.[actorId] ?? 0;
     const lastIndex = Math.max(0, (meta.tiles?.length ?? 0) - 1);
 
-    const ids = Object.keys(meta.positions ?? {}).map(Number).filter(Number.isFinite);
+    const ids = Object.keys(meta.positions ?? {})
+      .map(Number)
+      .filter(Number.isFinite);
     const others = ids.filter((id) => id !== actorId);
-    const maxPos = others.length ? Math.max(...others.map((id) => meta.positions?.[id] ?? 0)) : myPos;
+    const maxPos = others.length
+      ? Math.max(...others.map((id) => meta.positions?.[id] ?? 0))
+      : myPos;
 
     if (card.id === 33) {
       const target = clamp(maxPos + 1, 0, lastIndex);
-      meta = { ...meta, positions: { ...(meta.positions ?? {}), [actorId]: target } };
+      meta = {
+        ...meta,
+        positions: { ...(meta.positions ?? {}), [actorId]: target },
+      };
       next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-      next = this.core.appendLog(next, `${this.playerName(next, actorId)} prend la première place.`);
+      next = this.core.appendLog(
+        next,
+        `${this.playerName(next, actorId)} prend la première place.`,
+      );
       return next;
     }
     if (card.id === 35) {
@@ -652,9 +911,15 @@ export class CaActionService {
         .sort((a, b) => a.pos - b.pos)[0];
       if (!ahead) return next;
       const target = clamp(ahead.pos + 1, 0, lastIndex);
-      meta = { ...meta, positions: { ...(meta.positions ?? {}), [actorId]: target } };
+      meta = {
+        ...meta,
+        positions: { ...(meta.positions ?? {}), [actorId]: target },
+      };
       next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-      next = this.core.appendLog(next, `${this.playerName(next, actorId)} dépasse ${this.playerName(next, ahead.id)}.`);
+      next = this.core.appendLog(
+        next,
+        `${this.playerName(next, actorId)} dépasse ${this.playerName(next, ahead.id)}.`,
+      );
       return next;
     }
     if (card.id === 36) {
@@ -664,9 +929,15 @@ export class CaActionService {
         }
         return lastIndex;
       })();
-      meta = { ...meta, positions: { ...(meta.positions ?? {}), [actorId]: nextMultiple } };
+      meta = {
+        ...meta,
+        positions: { ...(meta.positions ?? {}), [actorId]: nextMultiple },
+      };
       next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-      next = this.core.appendLog(next, `${this.playerName(next, actorId)} avance jusqu'à une case multiple de 5.`);
+      next = this.core.appendLog(
+        next,
+        `${this.playerName(next, actorId)} avance jusqu'à une case multiple de 5.`,
+      );
       return next;
     }
     if (card.id === 34) {
@@ -674,7 +945,10 @@ export class CaActionService {
         ...meta,
         statuses: {
           ...meta.statuses,
-          ignoreNextPenalty: { ...(meta.statuses.ignoreNextPenalty ?? {}), [actorId]: true },
+          ignoreNextPenalty: {
+            ...(meta.statuses.ignoreNextPenalty ?? {}),
+            [actorId]: true,
+          },
         },
       };
       return { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
@@ -698,7 +972,10 @@ export class CaActionService {
       statuses: { ...meta.statuses, nextPlayerDelta: null } as any,
       positions: { ...(meta.positions ?? {}), [nextId]: after },
     };
-    let nextState: GameStateEntity = { ...advanced, metadata: { ...(advanced.metadata ?? {}), ...meta } };
+    let nextState: GameStateEntity = {
+      ...advanced,
+      metadata: { ...(advanced.metadata ?? {}), ...meta },
+    };
     nextState = this.core.appendLog(
       nextState,
       `${this.playerName(nextState, nextId)} ${delta > 0 ? 'avance' : 'recule'} de 1 case (effet).`,
@@ -706,25 +983,40 @@ export class CaActionService {
     return nextState;
   }
 
-  private drawCard(meta: CaMetadata): { card: CaCard | null; meta: CaMetadata } {
+  private drawCard(meta: CaMetadata): {
+    card: CaCard | null;
+    meta: CaMetadata;
+  } {
     const deck = Array.isArray(meta.decks?.cards) ? meta.decks.cards : [];
-    const discard = Array.isArray(meta.decks?.discard) ? meta.decks.discard : [];
+    const discard = Array.isArray(meta.decks?.discard)
+      ? meta.decks.discard
+      : [];
     if (!deck.length && discard.length) {
       const shuffled = this.random.shuffle(meta as any, discard);
-      const nextMeta = { ...meta, ...(shuffled.meta as any), decks: { cards: shuffled.values as CaCard[], discard: [] } };
+      const nextMeta = {
+        ...meta,
+        ...shuffled.meta,
+        decks: { cards: shuffled.values, discard: [] },
+      };
       return this.drawCard(nextMeta);
     }
     if (!deck.length) return { card: null, meta };
     const [card, ...rest] = deck;
-    const next: CaMetadata = { ...meta, decks: { cards: rest, discard: [...discard, card] } };
+    const next: CaMetadata = {
+      ...meta,
+      decks: { cards: rest, discard: [...discard, card] },
+    };
     return { card, meta: next };
   }
 
   private getMeta(state: GameStateEntity): CaMetadata {
-    return ((state.metadata ?? {}) as any) as CaMetadata;
+    return (state.metadata ?? {}) as any as CaMetadata;
   }
 
-  private otherPlayers(state: GameStateEntity, me: number): Array<{ id: number; username: string }> {
+  private otherPlayers(
+    state: GameStateEntity,
+    me: number,
+  ): Array<{ id: number; username: string }> {
     const players = Array.isArray(state.players) ? state.players : [];
     return players
       .filter((p) => p?.id != null && p.id !== me)
@@ -734,7 +1026,10 @@ export class CaActionService {
   private playerName(state: GameStateEntity, id: number): string {
     const players = Array.isArray(state.players) ? state.players : [];
     const p = players.find((x) => x?.id === id);
-    const u = p?.username && String(p.username).trim() ? String(p.username).trim() : null;
+    const u =
+      p?.username && String(p.username).trim()
+        ? String(p.username).trim()
+        : null;
     return u ?? `Joueur ${id}`;
   }
 }

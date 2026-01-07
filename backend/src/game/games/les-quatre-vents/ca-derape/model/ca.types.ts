@@ -8,7 +8,10 @@ export type CaPending =
       playerId: number;
       blocking: true;
       choices: string[];
-      data: { context: string; targets: Array<{ targetPlayerId: number; targetUsername: string }> };
+      data: {
+        context: string;
+        targets: Array<{ targetPlayerId: number; targetUsername: string }>;
+      };
     }
   | {
       type: 'choose_next_player';

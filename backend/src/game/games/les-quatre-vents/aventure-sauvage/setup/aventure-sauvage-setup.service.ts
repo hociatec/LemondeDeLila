@@ -90,25 +90,89 @@ function buildTiles(): AventureSauvageTile[] {
 
 function defaultAnimalDeck(): AventureSauvageCard[] {
   const deck: AventureSauvageCard[] = [
-    { id: 1, deck: 'animal', text: 'Hyène : avancez de 2 cases.', moveDelta: 2 },
-    { id: 2, deck: 'animal', text: 'Hippopotame : reculez d’1 case.', moveDelta: -1 },
-    { id: 3, deck: 'animal', text: 'Impala : avancez de 3 cases.', moveDelta: 3 },
+    {
+      id: 1,
+      deck: 'animal',
+      text: 'Hyène : avancez de 2 cases.',
+      moveDelta: 2,
+    },
+    {
+      id: 2,
+      deck: 'animal',
+      text: 'Hippopotame : reculez d’1 case.',
+      moveDelta: -1,
+    },
+    {
+      id: 3,
+      deck: 'animal',
+      text: 'Impala : avancez de 3 cases.',
+      moveDelta: 3,
+    },
     { id: 4, deck: 'animal', text: 'Suricate : relancez le dé.', reroll: true },
     { id: 5, deck: 'animal', text: 'Flamant rose : restez sur place.' },
-    { id: 6, deck: 'animal', text: 'Guépard : avancez d’1 case.', moveDelta: 1 },
+    {
+      id: 6,
+      deck: 'animal',
+      text: 'Guépard : avancez d’1 case.',
+      moveDelta: 1,
+    },
     { id: 7, deck: 'animal', text: 'Buffle : avancez d’1 case.', moveDelta: 1 },
-    { id: 8, deck: 'animal', text: 'Serpent : avancez de 2 cases.', moveDelta: 2 },
+    {
+      id: 8,
+      deck: 'animal',
+      text: 'Serpent : avancez de 2 cases.',
+      moveDelta: 2,
+    },
     { id: 9, deck: 'animal', text: 'Calao : avancez d’1 case.', moveDelta: 1 },
     { id: 10, deck: 'animal', text: 'Babouin : passez un tour.', skipTurns: 1 },
-    { id: 11, deck: 'animal', text: 'Tisserin : avancez de 2 cases.', moveDelta: 2 },
-    { id: 12, deck: 'animal', text: 'Musique : avancez de 3 cases.', moveDelta: 3 },
-    { id: 13, deck: 'animal', text: 'Phacochère : avancez d’1 case.', moveDelta: 1 },
+    {
+      id: 11,
+      deck: 'animal',
+      text: 'Tisserin : avancez de 2 cases.',
+      moveDelta: 2,
+    },
+    {
+      id: 12,
+      deck: 'animal',
+      text: 'Musique : avancez de 3 cases.',
+      moveDelta: 3,
+    },
+    {
+      id: 13,
+      deck: 'animal',
+      text: 'Phacochère : avancez d’1 case.',
+      moveDelta: 1,
+    },
     { id: 14, deck: 'animal', text: 'Gecko : avancez d’1 case.', moveDelta: 1 },
-    { id: 15, deck: 'animal', text: 'Pangolin : avancez d’1 case.', moveDelta: 1 },
-    { id: 16, deck: 'animal', text: 'Marabout : avancez de 2 cases.', moveDelta: 2 },
-    { id: 17, deck: 'animal', text: 'Grenouille : reculez d’1 case puis avancez d’1 case.' },
-    { id: 18, deck: 'animal', text: 'Mangouste : avancez d’1 case.', moveDelta: 1 },
-    { id: 19, deck: 'animal', text: 'Rhinocéros : avancez de 3 cases.', moveDelta: 3 },
+    {
+      id: 15,
+      deck: 'animal',
+      text: 'Pangolin : avancez d’1 case.',
+      moveDelta: 1,
+    },
+    {
+      id: 16,
+      deck: 'animal',
+      text: 'Marabout : avancez de 2 cases.',
+      moveDelta: 2,
+    },
+    {
+      id: 17,
+      deck: 'animal',
+      text: 'Grenouille : reculez d’1 case puis avancez d’1 case.',
+    },
+    {
+      id: 18,
+      deck: 'animal',
+      text: 'Mangouste : avancez d’1 case.',
+      moveDelta: 1,
+    },
+    {
+      id: 19,
+      deck: 'animal',
+      text: 'Rhinocéros : avancez de 3 cases.',
+      moveDelta: 3,
+    },
     { id: 20, deck: 'animal', text: 'Arbre : restez sur place.' },
   ];
   return deck;
@@ -119,14 +183,23 @@ function defaultPatteDeck(): AventureSauvageCard[] {
     { id: 1, deck: 'patte', text: 'Civette : passez un tour.', skipTurns: 1 },
     { id: 2, deck: 'patte', text: 'Pluie : reculez d’1 case.', moveDelta: -1 },
     { id: 3, deck: 'patte', text: 'Nid : passez un tour.', skipTurns: 1 },
-    { id: 4, deck: 'patte', text: 'Scorpion : reculez d’1 case.', moveDelta: -1 },
+    {
+      id: 4,
+      deck: 'patte',
+      text: 'Scorpion : reculez d’1 case.',
+      moveDelta: -1,
+    },
     { id: 5, deck: 'patte', text: 'Fourmilier : restez sur place.' },
     { id: 6, deck: 'patte', text: 'Baobab : passez un tour.', skipTurns: 1 },
     { id: 7, deck: 'patte', text: 'Manguier : passez un tour.', skipTurns: 1 },
     { id: 8, deck: 'patte', text: 'Feuilles : perdez un tour.', skipTurns: 1 },
     { id: 9, deck: 'patte', text: 'Caméléon : passez un tour.', skipTurns: 1 },
-    { id: 10, deck: 'patte', text: 'Perroquet : reculez d’1 case.', moveDelta: -1 },
+    {
+      id: 10,
+      deck: 'patte',
+      text: 'Perroquet : reculez d’1 case.',
+      moveDelta: -1,
+    },
   ];
   return deck;
 }
-

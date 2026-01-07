@@ -1,7 +1,10 @@
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 
-export function getAvailableActions(state: GameStateEntity, playerId: number): GameSingleActionDto[] {
+export function getAvailableActions(
+  state: GameStateEntity,
+  playerId: number,
+): GameSingleActionDto[] {
   const status = String(state.status ?? '').toLowerCase();
   if (status !== 'started') return [];
   if (state.pending) return [];
@@ -35,4 +38,3 @@ export function validateAction(
   }
   return { type: 'roll', payload: {} };
 }
-

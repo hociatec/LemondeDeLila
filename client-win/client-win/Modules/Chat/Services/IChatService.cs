@@ -11,6 +11,7 @@ public interface IChatService : IAsyncDisposable
     ObservableCollection<ChatMessage> Messages { get; }
     ChatState State { get; }
     string StatusMessage { get; }
+    int EditWindowSeconds { get; }
     ChatServerError? LastServerError { get; }
     event Action<string>? StatusChanged;
     event Action<string>? Error;

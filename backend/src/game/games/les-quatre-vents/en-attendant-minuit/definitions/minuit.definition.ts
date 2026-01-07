@@ -2,7 +2,11 @@
 
 export type MinuitGameId = 'en-attendant-minuit';
 export type MinuitPhaseId = 'turn';
-export type MinuitActionType = 'roll' | 'ROLL_DICE' | 'choose_target' | 'answer_quiz';
+export type MinuitActionType =
+  | 'roll'
+  | 'ROLL_DICE'
+  | 'choose_target'
+  | 'answer_quiz';
 
 export const MINUIT_GAME: GameDefinition<
   MinuitGameId,

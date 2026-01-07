@@ -18,4 +18,3 @@ export type JeuOieMetadata = {
   };
   winnerId: number | null;
 };
-

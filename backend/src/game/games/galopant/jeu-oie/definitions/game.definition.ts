@@ -20,4 +20,3 @@ export const JEU_OIE_GAME: GameDefinition<
   phaseOrder: [{ id: 'turn', kind: 'player-action' }],
   victory: null,
 } as const;
-

@@ -9,7 +9,10 @@ import { MessagingWsRegistrar } from './ws/messaging-ws.registrar';
 import { NotificationModule } from '../notification/notification.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([PrivateMessage, User]), NotificationModule],
+  imports: [
+    TypeOrmModule.forFeature([PrivateMessage, User]),
+    NotificationModule,
+  ],
   providers: [
     MessagingService,
     MessageValidatorService,

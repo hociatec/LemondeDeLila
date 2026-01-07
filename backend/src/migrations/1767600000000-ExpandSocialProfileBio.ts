@@ -15,4 +15,3 @@ export class ExpandSocialProfileBio1767600000000 implements MigrationInterface {
     );
   }
 }
-

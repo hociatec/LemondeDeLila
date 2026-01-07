@@ -25,7 +25,13 @@ import { RoomMaintenanceSettingsEntity } from './entities/room-maintenance-setti
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Room, RoomParticipant, RoomBot, RoomMaintenanceSettingsEntity, User]),
+    TypeOrmModule.forFeature([
+      Room,
+      RoomParticipant,
+      RoomBot,
+      RoomMaintenanceSettingsEntity,
+      User,
+    ]),
     forwardRef(() => BotModule),
     forwardRef(() => PresenceModule),
     NotificationModule,

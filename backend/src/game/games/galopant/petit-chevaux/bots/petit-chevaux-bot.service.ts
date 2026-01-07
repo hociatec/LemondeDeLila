@@ -8,14 +8,25 @@ import * as PetitChevauxRulebook from '../rulebook/rulebook';
 export class PetitChevauxBotService {
   constructor(private readonly botRunner: BotRunnerService) {}
 
-  getBotActions(state: GameStateEntity, botPlayerId: number): GameSingleActionDto[] {
+  getBotActions(
+    state: GameStateEntity,
+    botPlayerId: number,
+  ): GameSingleActionDto[] {
     const current = state.turn?.currentPlayerId ?? null;
     if (current !== botPlayerId) return [];
 
-    const available = PetitChevauxRulebook.getAvailableActions(state, botPlayerId);
-    return this.botRunner.choose(available, { state, playerId: botPlayerId }, 'random', {
-      preferTypes: ['move_pawn', 'roll'],
-      fallbackTypes: ['move_pawn', 'roll'],
-    });
+    const available = PetitChevauxRulebook.getAvailableActions(
+      state,
+      botPlayerId,
+    );
+    return this.botRunner.choose(
+      available,
+      { state, playerId: botPlayerId },
+      'random',
+      {
+        preferTypes: ['move_pawn', 'roll'],
+        fallbackTypes: ['move_pawn', 'roll'],
+      },
+    );
   }
 }

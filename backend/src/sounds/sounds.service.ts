@@ -1,8 +1,17 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import * as crypto from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
-import { SOUND_KEYS, SoundKey, SoundManifest, SoundManifestEntry } from './sounds.types';
+import {
+  SOUND_KEYS,
+  SoundKey,
+  SoundManifest,
+  SoundManifestEntry,
+} from './sounds.types';
 import { NotificationService } from '../notification/services/notification.service';
 
 @Injectable()
@@ -67,7 +76,11 @@ export class SoundsService {
     return { ...manifest, sounds };
   }
 
-  async setSound(soundIdRaw: string, tempFilePath: string, originalName?: string) {
+  async setSound(
+    soundIdRaw: string,
+    tempFilePath: string,
+    originalName?: string,
+  ) {
     const soundId = this.normalizeSoundKey(soundIdRaw);
     if (!tempFilePath || !fs.existsSync(tempFilePath)) {
       throw new BadRequestException('Fichier manquant.');
@@ -82,7 +95,9 @@ export class SoundsService {
     // Safety: keep reasonably small. Can be tuned.
     const maxBytes = 15 * 1024 * 1024;
     if (stat.size <= 0 || stat.size > maxBytes) {
-      throw new BadRequestException(`Taille fichier invalide (max ${maxBytes} bytes).`);
+      throw new BadRequestException(
+        `Taille fichier invalide (max ${maxBytes} bytes).`,
+      );
     }
 
     const bytes = await fs.promises.readFile(tempFilePath);

@@ -14,7 +14,10 @@ export class JeuOieActionService {
     private readonly core: GameCoreService,
   ) {}
 
-  applyActions(state: GameStateEntity, actions: GameSingleActionDto[]): GameStateEntity {
+  applyActions(
+    state: GameStateEntity,
+    actions: GameSingleActionDto[],
+  ): GameStateEntity {
     let next = state;
     for (const action of actions ?? []) {
       const type = String(action?.type ?? '').trim();
@@ -69,16 +72,25 @@ export class JeuOieActionService {
     const tiles = Array.isArray(meta.tiles) ? meta.tiles : [];
     const tile: JeuOieTile | undefined = tiles[position];
 
-    meta = { ...meta, positions: { ...(meta.positions ?? {}), [playerId]: position } };
+    meta = {
+      ...meta,
+      positions: { ...(meta.positions ?? {}), [playerId]: position },
+    };
     next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
 
     const label = tile?.label ?? `Case ${position}`;
-    next = this.core.appendLog(next, `${this.playerName(next, playerId)} arrive sur ${label}.`);
+    next = this.core.appendLog(
+      next,
+      `${this.playerName(next, playerId)} arrive sur ${label}.`,
+    );
 
     if (!tile) return next;
 
     if (tile.type === 'finish') {
-      next = this.core.appendLog(next, `${this.playerName(next, playerId)} a gagné !`);
+      next = this.core.appendLog(
+        next,
+        `${this.playerName(next, playerId)} a gagné !`,
+      );
       meta = this.getMeta(next);
       meta = { ...meta, winnerId: playerId };
       return { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
@@ -86,7 +98,10 @@ export class JeuOieActionService {
 
     if (tile.type === 'bridge') {
       const jumpTo = 12;
-      next = this.core.appendLog(next, `Pont : avance directement à la case ${jumpTo}.`);
+      next = this.core.appendLog(
+        next,
+        `Pont : avance directement à la case ${jumpTo}.`,
+      );
       return this.applyLanding(next, playerId, jumpTo, roll);
     }
 
@@ -96,7 +111,10 @@ export class JeuOieActionService {
     }
 
     if (tile.type === 'labyrinth') {
-      next = this.core.appendLog(next, `Labyrinthe : retour à la case ${tile.backTo}.`);
+      next = this.core.appendLog(
+        next,
+        `Labyrinthe : retour à la case ${tile.backTo}.`,
+      );
       return this.applyLanding(next, playerId, tile.backTo, roll);
     }
 
@@ -109,13 +127,19 @@ export class JeuOieActionService {
       meta = this.getMeta(next);
       const currentSkip = meta.statuses?.skipTurn?.[playerId] ?? 0;
       const statuses = meta.statuses ?? { skipTurn: {} };
-      const skipTurn = { ...(statuses.skipTurn ?? {}), [playerId]: currentSkip + turns };
+      const skipTurn = {
+        ...(statuses.skipTurn ?? {}),
+        [playerId]: currentSkip + turns,
+      };
       meta = { ...meta, statuses: { ...statuses, skipTurn } };
       return { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
     }
 
     if (tile.type === 'goose') {
-      next = this.core.appendLog(next, `Oie : avance à nouveau de ${roll} case(s).`);
+      next = this.core.appendLog(
+        next,
+        `Oie : avance à nouveau de ${roll} case(s).`,
+      );
       const moved = this.move(position, roll);
       return this.applyLanding(next, playerId, moved, roll);
     }
@@ -132,13 +156,16 @@ export class JeuOieActionService {
   }
 
   private getMeta(state: GameStateEntity): JeuOieMetadata {
-    return ((state.metadata ?? {}) as any) as JeuOieMetadata;
+    return (state.metadata ?? {}) as any as JeuOieMetadata;
   }
 
   private playerName(state: GameStateEntity, id: number): string {
     const players = Array.isArray(state.players) ? state.players : [];
     const p = players.find((x) => x?.id === id);
-    const u = p?.username && String(p.username).trim() ? String(p.username).trim() : null;
+    const u =
+      p?.username && String(p.username).trim()
+        ? String(p.username).trim()
+        : null;
     return u ?? `Joueur ${id}`;
   }
 }

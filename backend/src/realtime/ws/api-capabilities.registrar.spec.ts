@@ -10,10 +10,7 @@ describe('ApiCapabilitiesWsRegistrar', () => {
     const handler = registry.get('api.capabilities');
     expect(handler).toBeDefined();
 
-    const res = await handler!(
-      { user: null, connectionId: 'c1' },
-      {},
-    );
+    const res = await handler!({ user: null, connectionId: 'c1' }, {});
 
     expect(res?.type).toBe('api.capabilities');
     expect(res?.payload?.isAdmin).toBe(false);
@@ -41,4 +38,3 @@ describe('ApiCapabilitiesWsRegistrar', () => {
     expect(res?.payload?.features?.['admin.rooms.list']).toBe(true);
   });
 });
-

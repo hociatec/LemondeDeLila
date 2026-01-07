@@ -4,4 +4,3 @@ export const AVENTURE_SAUVAGE_GAME = {
   maxPlayers: 6,
   phaseOrder: [{ id: 'playing' }],
 } as const;
-

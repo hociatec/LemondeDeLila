@@ -11,4 +11,3 @@ export class RoleDefinitionEntity {
   @Column({ type: 'json' })
   permissions!: string[];
 }
-

@@ -62,7 +62,10 @@ export class AdminBugReportsWsHandler {
 
   async updateStatus(session: WsSession, payload: any) {
     requireAdmin(session);
-    const dto = this.validator.validate(AdminBugReportUpdateStatusWsDto, payload);
+    const dto = this.validator.validate(
+      AdminBugReportUpdateStatusWsDto,
+      payload,
+    );
     const report = await this.reports.updateStatus(dto.id, dto.status);
     if (!report) {
       throw new BadRequestException('Rapport introuvable');

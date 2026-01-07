@@ -78,7 +78,10 @@ export class AdminClientUpdatesController {
       storage: diskStorage({
         destination: (_req, _file, cb) => cb(null, os.tmpdir()),
         filename: (_req, file, cb) =>
-          cb(null, `lila-client-update-chunk-${Date.now()}-${file.originalname}`),
+          cb(
+            null,
+            `lila-client-update-chunk-${Date.now()}-${file.originalname}`,
+          ),
       }),
       limits: { fileSize: 15 * 1024 * 1024 }, // keep < 20m
     }),

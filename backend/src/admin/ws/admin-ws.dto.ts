@@ -121,10 +121,17 @@ export class AdminChatSettingsGetWsDto {
 }
 
 export class AdminChatSettingsUpdateWsDto {
+  @IsOptional()
   @IsInt()
   @Min(1)
   @Max(2000)
-  chatHistoryLimit!: number;
+  chatHistoryLimit?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(86400)
+  editWindowSeconds?: number;
 }
 
 export class AdminChatDeleteWsDto {

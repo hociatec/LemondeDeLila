@@ -83,4 +83,3 @@ export class AdminRoomsWsHandler {
     return { type: 'admin.rooms.settings.update', payload: updated };
   }
 }
-

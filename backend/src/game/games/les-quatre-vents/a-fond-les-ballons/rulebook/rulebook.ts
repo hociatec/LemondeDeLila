@@ -11,7 +11,9 @@ export function getAvailableActions(
   const pending = state.pending as any;
   if (pending) {
     if (pending.type === 'swap' && pending.playerId === playerId) {
-      const targets: Array<{ targetPlayerId: number }> = Array.isArray(pending?.data?.targets)
+      const targets: Array<{ targetPlayerId: number }> = Array.isArray(
+        pending?.data?.targets,
+      )
         ? pending.data.targets
         : [];
       return targets.map((t) => ({
@@ -56,7 +58,9 @@ export function validateAction(
     if (!pending || pending.type !== 'swap' || pending.playerId !== actorId) {
       throw new Error('Aucun échange de position en attente.');
     }
-    const targets: Array<{ targetPlayerId: number }> = Array.isArray(pending?.data?.targets)
+    const targets: Array<{ targetPlayerId: number }> = Array.isArray(
+      pending?.data?.targets,
+    )
       ? pending.data.targets
       : [];
     const payload = (action?.payload ?? {}) as any;
@@ -81,4 +85,3 @@ export function validateAction(
   }
   return { type: 'roll', payload: {} };
 }
-

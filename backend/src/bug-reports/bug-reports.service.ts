@@ -10,7 +10,9 @@ function normalizeBugReportStatus(status: BugReportStatus): BugReportStatus {
   return status;
 }
 
-function normalizeBugReportEntityStatus(report: BugReportEntity): BugReportEntity {
+function normalizeBugReportEntityStatus(
+  report: BugReportEntity,
+): BugReportEntity {
   report.status = normalizeBugReportStatus(report.status);
   return report;
 }
@@ -55,7 +57,10 @@ export class BugReportsService {
     return this.repo.save(entity);
   }
 
-  async update(id: string, patch: { subject?: string; content?: string }): Promise<BugReportEntity | null> {
+  async update(
+    id: string,
+    patch: { subject?: string; content?: string },
+  ): Promise<BugReportEntity | null> {
     const current = await this.get(id);
     if (!current) return null;
 
@@ -68,7 +73,10 @@ export class BugReportsService {
     return this.repo.save(current);
   }
 
-  async updateStatus(id: string, status: BugReportStatus): Promise<BugReportEntity | null> {
+  async updateStatus(
+    id: string,
+    status: BugReportStatus,
+  ): Promise<BugReportEntity | null> {
     const current = await this.get(id);
     if (!current) return null;
     current.status = normalizeBugReportStatus(status);

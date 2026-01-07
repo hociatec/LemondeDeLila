@@ -16,7 +16,10 @@ export class OdysseeSetupService {
 
     const pawnsByPlayer: Record<number, OdysseePawnState[]> = {};
     for (const p of players) {
-      pawnsByPlayer[p.id] = [0, 1, 2, 3].map((pawnIndex) => ({ pawnIndex, progress: -1 }));
+      pawnsByPlayer[p.id] = [0, 1, 2, 3].map((pawnIndex) => ({
+        pawnIndex,
+        progress: -1,
+      }));
     }
 
     const meta: OdysseeMetadata = {

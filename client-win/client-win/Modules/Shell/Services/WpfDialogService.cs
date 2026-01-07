@@ -30,6 +30,9 @@ public sealed class WpfDialogService : IDialogService
             return ShowCustomConfirm(title, message, okText ?? "OK", cancelText ?? "Annuler");
         });
 
+    public Task<DialogChoice?> Choose(string title, string message, string primaryText, string secondaryText, string cancelText) =>
+        InvokeAsync<DialogChoice?>(() => ShowCustomChoice(title, message, primaryText, secondaryText, cancelText));
+
     private static bool? ShowCustomConfirm(string title, string message, string okText, string cancelText)
     {
         var owner = GetOwnerWindow();
@@ -125,6 +128,122 @@ public sealed class WpfDialogService : IDialogService
             if (e.Key == Key.Escape)
             {
                 result = false;
+                dialog.Close();
+            }
+        };
+
+        dialog.ShowDialog();
+        return result;
+    }
+
+    private static DialogChoice? ShowCustomChoice(string title, string message, string primaryText, string secondaryText, string cancelText)
+    {
+        var owner = GetOwnerWindow();
+        try
+        {
+            owner?.Activate();
+        }
+        catch
+        {
+            // ignore
+        }
+
+        var dialog = new Window
+        {
+            Title = string.IsNullOrWhiteSpace(title) ? "Choix" : title,
+            Owner = owner,
+            WindowStartupLocation = owner != null ? WindowStartupLocation.CenterOwner : WindowStartupLocation.CenterScreen,
+            SizeToContent = SizeToContent.WidthAndHeight,
+            ResizeMode = ResizeMode.NoResize,
+            ShowInTaskbar = false,
+            Topmost = owner == null,
+            MinWidth = 520,
+            Background = Brushes.White,
+        };
+
+        DialogChoice? result = null;
+
+        var root = new Grid
+        {
+            Margin = new Thickness(16),
+        };
+        root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        root.RowDefinitions.Add(new RowDefinition { Height = new GridLength(12) });
+        root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+
+        var text = new TextBox
+        {
+            Text = message ?? string.Empty,
+            IsReadOnly = true,
+            BorderThickness = new Thickness(0),
+            Background = Brushes.Transparent,
+            TextWrapping = TextWrapping.Wrap,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
+            MinWidth = 420,
+            MaxWidth = 800,
+            MinHeight = 90,
+            MaxHeight = 420,
+            Focusable = false,
+        };
+        Grid.SetRow(text, 0);
+        root.Children.Add(text);
+
+        var buttons = new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            HorizontalAlignment = HorizontalAlignment.Right,
+        };
+        Grid.SetRow(buttons, 2);
+
+        var cancel = new Button
+        {
+            Content = cancelText,
+            MinWidth = 120,
+            Margin = new Thickness(0, 0, 8, 0),
+            IsCancel = true,
+        };
+        cancel.Click += (_, _) =>
+        {
+            result = null;
+            dialog.Close();
+        };
+
+        var secondary = new Button
+        {
+            Content = secondaryText,
+            MinWidth = 140,
+            Margin = new Thickness(0, 0, 8, 0),
+        };
+        secondary.Click += (_, _) =>
+        {
+            result = DialogChoice.Secondary;
+            dialog.Close();
+        };
+
+        var primary = new Button
+        {
+            Content = primaryText,
+            MinWidth = 160,
+            IsDefault = true,
+        };
+        primary.Click += (_, _) =>
+        {
+            result = DialogChoice.Primary;
+            dialog.Close();
+        };
+
+        buttons.Children.Add(cancel);
+        buttons.Children.Add(secondary);
+        buttons.Children.Add(primary);
+        root.Children.Add(buttons);
+
+        dialog.Content = root;
+        dialog.PreviewKeyDown += (_, e) =>
+        {
+            if (e.Key == Key.Escape)
+            {
+                result = null;
                 dialog.Close();
             }
         };

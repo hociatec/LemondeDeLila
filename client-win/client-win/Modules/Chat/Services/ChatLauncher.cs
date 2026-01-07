@@ -44,7 +44,7 @@ public sealed class ChatLauncher : IChatLauncher
             {
                 _previousView = _navigation.CurrentView;
                 _view = new ChatView();
-                _view.DataContext = new ChatViewModel(_chat, () => _ = CloseAsync());
+                _view.DataContext = new ChatViewModel(_chat, () => _ = CloseAsync(), _dialogs);
             }
             _navigation.Show(_view);
             _view.Focus();

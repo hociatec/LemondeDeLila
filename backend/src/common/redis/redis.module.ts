@@ -7,4 +7,3 @@ import { RedisClientFactory } from './redis-client.factory';
   exports: [RedisClientFactory],
 })
 export class RedisModule {}
-

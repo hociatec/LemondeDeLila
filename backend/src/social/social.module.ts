@@ -12,10 +12,20 @@ import { SocialWsRegistrar } from './ws/social-ws.registrar';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([SocialRelationship, SocialProfile, SocialProfileSettingsEntity, User]),
+    TypeOrmModule.forFeature([
+      SocialRelationship,
+      SocialProfile,
+      SocialProfileSettingsEntity,
+      User,
+    ]),
     NotificationModule,
   ],
-  providers: [SocialProfileSettingsService, SocialService, SocialWsHandler, SocialWsRegistrar],
+  providers: [
+    SocialProfileSettingsService,
+    SocialService,
+    SocialWsHandler,
+    SocialWsRegistrar,
+  ],
   exports: [SocialService, SocialProfileSettingsService],
 })
 export class SocialModule {}

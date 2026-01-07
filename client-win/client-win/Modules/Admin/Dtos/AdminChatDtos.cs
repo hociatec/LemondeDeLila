@@ -13,6 +13,9 @@ public sealed class AdminChatSettingsDto
 {
     [JsonPropertyName("chatHistoryLimit")]
     public int ChatHistoryLimit { get; set; }
+
+    [JsonPropertyName("editWindowSeconds")]
+    public int EditWindowSeconds { get; set; }
 }
 
 public sealed class AdminChatMessageDto
@@ -86,4 +89,3 @@ public sealed class AdminChatUnbanResponseDto
     [JsonPropertyName("userId")]
     public int UserId { get; set; }
 }
-

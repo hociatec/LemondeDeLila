@@ -13,4 +13,3 @@ export class AdminBugReportCommentAddWsDto extends AdminBugReportCommentsListWsD
   @MaxLength(5000)
   content!: string;
 }
-

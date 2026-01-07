@@ -2,7 +2,10 @@ import type { GameDefinition } from '../../../../engine/model/game-definition.mo
 
 export type AFondLesBallonsGameId = 'a-fond-les-ballons';
 export type AFondLesBallonsPhaseId = 'turn';
-export type AFondLesBallonsActionType = 'roll' | 'ROLL_DICE' | 'swap_choose_target';
+export type AFondLesBallonsActionType =
+  | 'roll'
+  | 'ROLL_DICE'
+  | 'swap_choose_target';
 
 export const A_FOND_LES_BALLONS_GAME: GameDefinition<
   AFondLesBallonsGameId,
@@ -20,4 +23,3 @@ export const A_FOND_LES_BALLONS_GAME: GameDefinition<
   phaseOrder: [{ id: 'turn', kind: 'player-action' }],
   victory: null,
 } as const;
-

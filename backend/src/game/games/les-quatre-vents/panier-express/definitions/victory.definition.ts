@@ -27,7 +27,9 @@ export const PANIER_EXPRESS_VICTORY: VictoryCondition[] = [
           shoppingList.every((item) => basket.includes(item));
 
         const pos =
-          typeof positions?.[player.id] === 'number' ? positions[player.id] : -1;
+          typeof positions?.[player.id] === 'number'
+            ? positions[player.id]
+            : -1;
         const atStart = pos === 0;
 
         if (completed && atStart) {

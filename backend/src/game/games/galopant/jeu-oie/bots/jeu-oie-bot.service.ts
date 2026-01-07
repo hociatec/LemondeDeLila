@@ -8,15 +8,22 @@ import * as JeuOieRulebook from '../rulebook/rulebook';
 export class JeuOieBotService {
   constructor(private readonly botRunner: BotRunnerService) {}
 
-  getBotActions(state: GameStateEntity, botPlayerId: number): GameSingleActionDto[] {
+  getBotActions(
+    state: GameStateEntity,
+    botPlayerId: number,
+  ): GameSingleActionDto[] {
     const current = state.turn?.currentPlayerId ?? null;
     if (current !== botPlayerId) return [];
 
     const available = JeuOieRulebook.getAvailableActions(state, botPlayerId);
-    return this.botRunner.choose(available, { state, playerId: botPlayerId }, 'random', {
-      preferTypes: ['roll'],
-      fallbackTypes: ['roll'],
-    });
+    return this.botRunner.choose(
+      available,
+      { state, playerId: botPlayerId },
+      'random',
+      {
+        preferTypes: ['roll'],
+        fallbackTypes: ['roll'],
+      },
+    );
   }
 }
-

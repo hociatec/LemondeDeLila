@@ -1,5 +1,5 @@
 import type { GameShortcutsBuilder } from '../../../engine/shortcuts/game-shortcuts';
 import { positionOnlyShortcuts } from '../../../engine/shortcuts/shortcut-presets';
 
-export const buildOdysseeShortcuts: GameShortcutsBuilder = () => positionOnlyShortcuts();
-
+export const buildOdysseeShortcuts: GameShortcutsBuilder = () =>
+  positionOnlyShortcuts();

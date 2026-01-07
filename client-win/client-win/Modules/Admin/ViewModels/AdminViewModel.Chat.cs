@@ -12,12 +12,20 @@ public sealed partial class AdminViewModel
     private sealed record ChatDayTag(DateTime DayLocalDate);
 
     private int _chatHistoryLimit = 200;
+    private int _chatEditWindowSeconds = 300;
 
     private static int ClampChatModerationLimit(int limit)
     {
         if (limit < 1) return 1;
         if (limit > 2000) return 2000;
         return limit;
+    }
+
+    private static int ClampChatEditWindowSeconds(int seconds)
+    {
+        if (seconds < 0) return 0;
+        if (seconds > 86400) return 86400;
+        return seconds;
     }
 
     private async Task LoadChatAsync()
@@ -33,10 +41,12 @@ public sealed partial class AdminViewModel
             {
                 var settings = await _admin.GetChatSettingsAsync(cts.Token).ConfigureAwait(true);
                 _chatHistoryLimit = ClampChatModerationLimit(settings.ChatHistoryLimit);
+                _chatEditWindowSeconds = ClampChatEditWindowSeconds(settings.EditWindowSeconds);
             }
             catch
             {
                 _chatHistoryLimit = 200;
+                _chatEditWindowSeconds = 300;
             }
 
             _loadedChatMessages = await _admin.GetChatMessagesAsync(limit: _chatHistoryLimit, includeDeleted: false, cts.Token).ConfigureAwait(true);
@@ -272,7 +282,7 @@ public sealed partial class AdminViewModel
     {
         _page = AdminPage.ChatSettings;
         Title = "Tchat (modération) : paramètres";
-        Details = "Réglage global (serveur) : influence les X derniers messages envoyés à tous les clients.";
+        Details = "Réglage global (serveur) : influence l'historique et le délai d’édition/suppression.";
         Items.Clear();
         Items.Add(new AdminMenuItem("Valider", tag: "chat.settings.submit"));
         SelectedItem = Items.FirstOrDefault();
@@ -281,9 +291,9 @@ public sealed partial class AdminViewModel
         TextInputLabel = "Charger les X derniers messages (1 à 2000)";
         TextInput = _chatHistoryLimit.ToString();
 
-        IsSecondaryInputVisible = false;
-        SecondaryInputLabel = string.Empty;
-        SecondaryInput = string.Empty;
+        IsSecondaryInputVisible = true;
+        SecondaryInputLabel = "Délai édition/suppression (secondes) (0 à 86400)";
+        SecondaryInput = _chatEditWindowSeconds.ToString();
 
         Status = "Entrée : valider. Échap : retour.";
         RestoreFocusIfAny();
@@ -299,10 +309,20 @@ public sealed partial class AdminViewModel
         }
 
         var limit = ClampChatModerationLimit(parsed);
+
+        var rawEdit = (SecondaryInput ?? string.Empty).Trim();
+        if (!int.TryParse(rawEdit, out var parsedEdit))
+        {
+            await _dialogs.ShowError("Tchat", "Délai invalide.").ConfigureAwait(true);
+            return;
+        }
+
+        var editWindow = ClampChatEditWindowSeconds(parsedEdit);
         try
         {
-            var updated = await _admin.UpdateChatSettingsAsync(limit).ConfigureAwait(true);
+            var updated = await _admin.UpdateChatSettingsAsync(limit, editWindow).ConfigureAwait(true);
             _chatHistoryLimit = ClampChatModerationLimit(updated.ChatHistoryLimit);
+            _chatEditWindowSeconds = ClampChatEditWindowSeconds(updated.EditWindowSeconds);
         }
         catch
         {

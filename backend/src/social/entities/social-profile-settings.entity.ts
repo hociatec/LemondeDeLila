@@ -11,4 +11,3 @@ export class SocialProfileSettingsEntity {
   @Column({ name: 'bio_max_length', type: 'int', default: 500 })
   bioMaxLength!: number;
 }
-

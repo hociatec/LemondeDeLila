@@ -28,11 +28,12 @@ describe('Auth guards', () => {
 
   it('HttpJwtGuard attaches payload to request', () => {
     const guard = new HttpJwtGuard(config);
-    const token = jwt.sign(
-      { username: 'lila' },
-      secret,
-      { algorithm: 'HS256', issuer, subject: '1', expiresIn: '1h' },
-    );
+    const token = jwt.sign({ username: 'lila' }, secret, {
+      algorithm: 'HS256',
+      issuer,
+      subject: '1',
+      expiresIn: '1h',
+    });
     const request: any = {
       headers: { authorization: `Bearer ${token}` },
     };
@@ -44,11 +45,12 @@ describe('Auth guards', () => {
 
   it('WsJwtGuard accepts token via query string', () => {
     const guard = new WsJwtGuard(config);
-    const token = jwt.sign(
-      { id: 42, username: 'x' },
-      secret,
-      { algorithm: 'HS256', issuer, subject: '42', expiresIn: '1h' },
-    );
+    const token = jwt.sign({ id: 42, username: 'x' }, secret, {
+      algorithm: 'HS256',
+      issuer,
+      subject: '42',
+      expiresIn: '1h',
+    });
     const client: any = {
       handshakeHeaders: {},
       handshake: { headers: {}, auth: {} },

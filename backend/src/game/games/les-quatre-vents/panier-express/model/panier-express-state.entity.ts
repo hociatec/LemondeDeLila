@@ -34,7 +34,13 @@ export type PanierExpressTile =
       label?: string;
       description?: string;
     }
-  | { id: string; type: 'skip'; turns?: number; label?: string; description?: string }
+  | {
+      id: string;
+      type: 'skip';
+      turns?: number;
+      label?: string;
+      description?: string;
+    }
   | { id: string; type: 'bonus_course'; label?: string; description?: string }
   | { id: string; type: 'move_to_stand'; label?: string; description?: string };
 

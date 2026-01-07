@@ -8,7 +8,10 @@ import { buildContesShortcuts } from '../contes.shortcuts';
 
 @Injectable()
 export class ContesPresenterService {
-  exposeStateForUser(state: GameStateEntity, userId: number): GameStateWithActions {
+  exposeStateForUser(
+    state: GameStateEntity,
+    userId: number,
+  ): GameStateWithActions {
     const actions = Rulebook.getAvailableActions(state, userId);
     const meta = (state.metadata ?? {}) as any as ContesCacahuetesMetadata;
     const players = Array.isArray(state.players) ? state.players : [];
@@ -16,7 +19,10 @@ export class ContesPresenterService {
 
     const extras = {
       ...(state as any).extras,
-      currentPlayerView: { id: userId, username: me?.username ?? `Joueur ${userId}` },
+      currentPlayerView: {
+        id: userId,
+        username: me?.username ?? `Joueur ${userId}`,
+      },
       shortcuts: buildContesShortcuts({
         metadata: meta as any,
         currentPlayerId: userId,
@@ -26,8 +32,15 @@ export class ContesPresenterService {
 
     return {
       ...state,
-      catalog: { phases: CONTES_CACAHUETES_GAME.phaseOrder.map((p) => p.id), victory: null },
-      actions: actions.map((a) => ({ type: a.type, label: a.type, payload: a.payload ?? {} })),
+      catalog: {
+        phases: CONTES_CACAHUETES_GAME.phaseOrder.map((p) => p.id),
+        victory: null,
+      },
+      actions: actions.map((a) => ({
+        type: a.type,
+        label: a.type,
+        payload: a.payload ?? {},
+      })),
       pending: state.pending ?? null,
       extras,
       board: {
@@ -38,4 +51,3 @@ export class ContesPresenterService {
     } as any;
   }
 }
-

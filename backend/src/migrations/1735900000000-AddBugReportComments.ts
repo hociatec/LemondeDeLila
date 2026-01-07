@@ -1,4 +1,10 @@
-import { MigrationInterface, QueryRunner, Table, TableForeignKey, TableIndex } from 'typeorm';
+import {
+  MigrationInterface,
+  QueryRunner,
+  Table,
+  TableForeignKey,
+  TableIndex,
+} from 'typeorm';
 
 export class AddBugReportComments1735900000000 implements MigrationInterface {
   name = 'AddBugReportComments1735900000000';
@@ -13,11 +19,25 @@ export class AddBugReportComments1735900000000 implements MigrationInterface {
         name: 'bug_report_comments',
         columns: [
           { name: 'id', type: 'varchar', length: '36', isPrimary: true },
-          { name: 'report_id', type: 'varchar', length: '36', isNullable: false },
+          {
+            name: 'report_id',
+            type: 'varchar',
+            length: '36',
+            isNullable: false,
+          },
           { name: 'content', type: 'longtext', isNullable: false },
-          { name: 'created_at', type: 'datetime', default: 'CURRENT_TIMESTAMP' },
+          {
+            name: 'created_at',
+            type: 'datetime',
+            default: 'CURRENT_TIMESTAMP',
+          },
           { name: 'created_by_user_id', type: 'int', isNullable: false },
-          { name: 'created_by_username', type: 'varchar', length: '100', isNullable: false },
+          {
+            name: 'created_by_username',
+            type: 'varchar',
+            length: '100',
+            isNullable: false,
+          },
         ],
       }),
       true,
@@ -57,4 +77,3 @@ export class AddBugReportComments1735900000000 implements MigrationInterface {
     await queryRunner.dropTable('bug_report_comments', true);
   }
 }
-

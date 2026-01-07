@@ -8,15 +8,22 @@ import * as Rulebook from '../rulebook/rulebook';
 export class AFondLesBallonsBotService {
   constructor(private readonly botRunner: BotRunnerService) {}
 
-  getBotActions(state: GameStateEntity, botPlayerId: number): GameSingleActionDto[] {
+  getBotActions(
+    state: GameStateEntity,
+    botPlayerId: number,
+  ): GameSingleActionDto[] {
     const current = state.turn?.currentPlayerId ?? null;
     if (current !== botPlayerId) return [];
 
     const available = Rulebook.getAvailableActions(state, botPlayerId);
-    return this.botRunner.choose(available, { state, playerId: botPlayerId }, 'random', {
-      preferTypes: ['swap_choose_target', 'roll'],
-      fallbackTypes: ['swap_choose_target', 'roll'],
-    });
+    return this.botRunner.choose(
+      available,
+      { state, playerId: botPlayerId },
+      'random',
+      {
+        preferTypes: ['swap_choose_target', 'roll'],
+        fallbackTypes: ['swap_choose_target', 'roll'],
+      },
+    );
   }
 }
-

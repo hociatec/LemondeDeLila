@@ -1,4 +1,9 @@
-import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  OnModuleDestroy,
+  OnModuleInit,
+} from '@nestjs/common';
 import { RoomService } from './room.service';
 import { RoomMaintenanceSettingsService } from './room-maintenance-settings.service';
 
@@ -34,7 +39,10 @@ export class RoomAutoCleanupService implements OnModuleInit, OnModuleDestroy {
       return;
     }
     const now = Date.now();
-    if (this.lastRunAtMs && now - this.lastRunAtMs < s.autoCleanupIntervalSeconds * 1000) {
+    if (
+      this.lastRunAtMs &&
+      now - this.lastRunAtMs < s.autoCleanupIntervalSeconds * 1000
+    ) {
       return;
     }
     this.lastRunAtMs = now;

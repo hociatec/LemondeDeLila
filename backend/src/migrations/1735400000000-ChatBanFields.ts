@@ -24,4 +24,3 @@ export class ChatBanFields1735400000000 implements MigrationInterface {
     await queryRunner.dropColumn('users', 'chat_banned_until');
   }
 }
-

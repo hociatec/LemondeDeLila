@@ -8,7 +8,10 @@ import * as os from 'os';
 import * as path from 'path';
 import { randomUUID } from 'crypto';
 import { parseVersion } from '../../common/utils/version.utils';
-import { ClientUpdateMeta, ClientUpdatesService } from './client-updates.service';
+import {
+  ClientUpdateMeta,
+  ClientUpdatesService,
+} from './client-updates.service';
 
 type UploadMetaFile = {
   uploadId: string;
@@ -113,7 +116,8 @@ export class ClientUpdatesUploadService {
         params.minRequiredVersion,
       ),
       totalBytes:
-        typeof params.totalBytes === 'number' && Number.isFinite(params.totalBytes)
+        typeof params.totalBytes === 'number' &&
+        Number.isFinite(params.totalBytes)
           ? params.totalBytes
           : null,
       createdAt: new Date().toISOString(),
@@ -128,7 +132,11 @@ export class ClientUpdatesUploadService {
     return { uploadId };
   }
 
-  async uploadChunk(params: { uploadId: string; index: number; filePath: string }) {
+  async uploadChunk(params: {
+    uploadId: string;
+    index: number;
+    filePath: string;
+  }) {
     const uploadId = (params.uploadId || '').trim();
     const index = params.index;
     if (!uploadId || !Number.isFinite(index) || index < 0) {
@@ -268,4 +276,3 @@ export class ClientUpdatesUploadService {
     }
   }
 }
-

@@ -221,7 +221,9 @@ export class PanierExpressPresenterService extends BasePresenterService {
           ? exchangePending.giveChoices
           : [];
         const choices = giveChoices
-          .map((c: any) => this.utils.formatCourseLabel(sanitizeText(String(c))))
+          .map((c: any) =>
+            this.utils.formatCourseLabel(sanitizeText(String(c))),
+          )
           .filter((c: string) => c.length > 0);
         const targetUsername = sanitizeText(
           String(exchangePending.targetUsername ?? ''),
@@ -251,7 +253,9 @@ export class PanierExpressPresenterService extends BasePresenterService {
         );
         const take =
           exchangePending.take != null
-            ? this.utils.formatCourseLabel(sanitizeText(String(exchangePending.take)))
+            ? this.utils.formatCourseLabel(
+                sanitizeText(String(exchangePending.take)),
+              )
             : '';
         const question = take
           ? `${initiator} vous propose un échange : il vous donne "${give}" et vous lui donnez "${take}". (A = accepter, R = refuser)`
@@ -272,14 +276,18 @@ export class PanierExpressPresenterService extends BasePresenterService {
       params.rawPending.type !== 'quiz'
     ) {
       const anyPending = params.rawPending as any;
-      const rawChoices = Array.isArray(anyPending.choices) ? anyPending.choices : null;
+      const rawChoices = Array.isArray(anyPending.choices)
+        ? anyPending.choices
+        : null;
       if (!rawChoices) {
         return params.rawPending;
       }
       return {
         ...anyPending,
         choices: rawChoices
-          .map((c: any) => this.utils.formatCourseLabel(sanitizeText(String(c))))
+          .map((c: any) =>
+            this.utils.formatCourseLabel(sanitizeText(String(c))),
+          )
           .filter((c: string) => c.length > 0),
       };
     }
@@ -300,7 +308,9 @@ export class PanierExpressPresenterService extends BasePresenterService {
           ? [pendingQuiz.answer]
           : [];
     const choices = rawChoices
-      .map((choice) => this.utils.formatCourseLabel(sanitizeText(String(choice))))
+      .map((choice) =>
+        this.utils.formatCourseLabel(sanitizeText(String(choice))),
+      )
       .filter((choice) => choice.length > 0);
     if (!question && choices.length === 0) {
       return null;
@@ -324,9 +334,13 @@ export class PanierExpressPresenterService extends BasePresenterService {
       username: typeof player.username === 'string' ? player.username : null,
       isBot: player?.isBot === true,
       pawn: typeof player.pawn === 'string' ? player.pawn : null,
-      shoppingList: this.utils.formatCourseLabels(this.toStringArray(player.shoppingList)),
+      shoppingList: this.utils.formatCourseLabels(
+        this.toStringArray(player.shoppingList),
+      ),
       basket: this.utils.formatCourseLabels(this.toStringArray(player.basket)),
-      inventory: this.utils.formatCourseLabels(this.toStringArray(player.inventory)),
+      inventory: this.utils.formatCourseLabels(
+        this.toStringArray(player.inventory),
+      ),
     };
   }
 

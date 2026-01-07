@@ -19,4 +19,3 @@ export type GameShortcutsContext<TMetadata = unknown> = {
 export type GameShortcutsBuilder<TMetadata = unknown> = (
   ctx: GameShortcutsContext<TMetadata>,
 ) => GameShortcutHint[];
-

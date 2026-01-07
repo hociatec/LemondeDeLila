@@ -9,4 +9,3 @@ export class GameCategoryAssignmentEntity {
   @Column({ name: 'category_id', type: 'varchar', length: 120, nullable: true })
   categoryId!: string | null;
 }
-

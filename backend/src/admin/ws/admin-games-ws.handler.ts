@@ -120,10 +120,7 @@ export class AdminGamesWsHandler {
 
   async gamesSetEnabled(session: WsSession, payload: any) {
     const admin = requireAdmin(session);
-    const dto = this.validator.validate(
-      AdminGameSetEnabledWsDto,
-      payload,
-    ) as AdminGameSetEnabledWsDto;
+    const dto = this.validator.validate(AdminGameSetEnabledWsDto, payload);
     await this.overrides.setEnabled(dto.gameType, dto.enabled);
     await this.catalogInvalidation.invalidateCatalogAndNotify(admin.id);
     return { type: 'admin.games.setEnabled', payload: { ok: true } };
@@ -131,10 +128,7 @@ export class AdminGamesWsHandler {
 
   async gamesUpdate(session: WsSession, payload: any) {
     const admin = requireAdmin(session);
-    const dto = this.validator.validate(
-      AdminGameUpdateWsDto,
-      payload,
-    ) as AdminGameUpdateWsDto;
+    const dto = this.validator.validate(AdminGameUpdateWsDto, payload);
     await this.overrides.updateGameOverride(dto.gameType, {
       enabled: dto.enabled,
       minPlayers: dto.minPlayers,
@@ -150,10 +144,7 @@ export class AdminGamesWsHandler {
 
   async gamesReset(session: WsSession, payload: any) {
     const admin = requireAdmin(session);
-    const dto = this.validator.validate(
-      AdminGameResetWsDto,
-      payload,
-    ) as AdminGameResetWsDto;
+    const dto = this.validator.validate(AdminGameResetWsDto, payload);
     await this.overrides.clearGameOverride(dto.gameType);
     await this.catalogInvalidation.invalidateCatalogAndNotify(admin.id);
     return { type: 'admin.games.reset', payload: { ok: true } };

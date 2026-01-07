@@ -15,7 +15,9 @@ export class LoupGarouPresenterService {
   ) {}
 
   private usernameOf(state: GameStateEntity, playerId: number): string {
-    const player: any = (state.players ?? []).find((p: any) => p?.id === playerId);
+    const player: any = (state.players ?? []).find(
+      (p: any) => p?.id === playerId,
+    );
     return String(player?.username ?? `Joueur ${playerId}`);
   }
 
@@ -28,9 +30,21 @@ export class LoupGarouPresenterService {
     const step = meta.step;
     const data = { step, day: meta.day };
 
-    const requiresChoice = ['seer', 'cupid', 'wolves', 'witch', 'day-vote'].includes(step);
+    const requiresChoice = [
+      'seer',
+      'cupid',
+      'wolves',
+      'witch',
+      'day-vote',
+    ].includes(step);
     if (!requiresChoice) {
-      return { type: 'phase', label: step, playerId: null, blocking: false, data };
+      return {
+        type: 'phase',
+        label: step,
+        playerId: null,
+        blocking: false,
+        data,
+      };
     }
 
     const label =
@@ -61,10 +75,14 @@ export class LoupGarouPresenterService {
       if (step === 'witch' && a.type === 'witch_decide') {
         const save = Boolean((a.payload as any)?.save);
         const killTargetIdRaw = (a.payload as any)?.killTargetId;
-        const killTargetId = killTargetIdRaw == null ? null : Number(killTargetIdRaw);
+        const killTargetId =
+          killTargetIdRaw == null ? null : Number(killTargetIdRaw);
         if (save) {
           const wolvesTarget = meta.pending?.wolvesTarget;
-          const who = typeof wolvesTarget === 'number' ? ` (${this.usernameOf(state, wolvesTarget)})` : '';
+          const who =
+            typeof wolvesTarget === 'number'
+              ? ` (${this.usernameOf(state, wolvesTarget)})`
+              : '';
           return `Sauver la victime${who}`;
         }
         if (killTargetId != null && Number.isFinite(killTargetId)) {

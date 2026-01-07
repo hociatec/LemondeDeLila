@@ -21,13 +21,21 @@ import { UserBadgeCountsService } from './services/user-badge-counts.service';
   imports: [
     ConfigModule,
     ClientUpdatesModule,
-    TypeOrmModule.forFeature([SocialRelationship, User, NotificationInboxItem, PrivateMessage]),
+    TypeOrmModule.forFeature([
+      SocialRelationship,
+      User,
+      NotificationInboxItem,
+      PrivateMessage,
+    ]),
   ],
   providers: [
     {
       provide: NotificationTransport,
       inject: [ConfigService, RedisClientFactory],
-      useFactory: async (config: ConfigService, redisFactory: RedisClientFactory) => {
+      useFactory: async (
+        config: ConfigService,
+        redisFactory: RedisClientFactory,
+      ) => {
         const redisUrl =
           config.get<string>('NOTIFICATION_REDIS_URL') ||
           config.get<string>('SESSION_STORE_REDIS_URL');
@@ -36,7 +44,10 @@ import { UserBadgeCountsService } from './services/user-badge-counts.service';
             'NOTIFICATION_REDIS_URL ou SESSION_STORE_REDIS_URL doit être défini pour les notifications.',
           );
         }
-        const transport = new RedisNotificationTransport(redisUrl, redisFactory);
+        const transport = new RedisNotificationTransport(
+          redisUrl,
+          redisFactory,
+        );
         await transport.connect();
         return transport;
       },

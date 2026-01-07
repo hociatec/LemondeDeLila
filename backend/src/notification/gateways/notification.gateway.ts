@@ -9,7 +9,10 @@ import { Server, WebSocket } from 'ws';
 import { WsJwtAuthService } from '../../common/ws/ws-jwt-auth.service';
 import { NotificationService } from '../services/notification.service';
 import { ClientUpdatesService } from '../../client-updates/services/client-updates.service';
-import { isVersionGreater, isVersionLower } from '../../common/utils/version.utils';
+import {
+  isVersionGreater,
+  isVersionLower,
+} from '../../common/utils/version.utils';
 import { WsTicketAuthService } from '../../common/ws/ws-ticket-auth.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -97,8 +100,7 @@ export class NotificationGateway
             payload: {
               minRequiredVersion,
               currentVersion: clientVersion || null,
-              message:
-                'Une mise à jour du client est requise pour continuer.',
+              message: 'Une mise à jour du client est requise pour continuer.',
               publishedAt: null,
               url: this.clientUpdates.resolveClientPublicUrlForOrigin(
                 latest,
@@ -137,7 +139,9 @@ export class NotificationGateway
     // Push counts at connect (source of truth for badges).
     try {
       const payload = await this.counts.getCounts(user.id);
-      this.logger.log(`notify.counts initial push for user ${user.id}: ${JSON.stringify(payload)}`);
+      this.logger.log(
+        `notify.counts initial push for user ${user.id}: ${JSON.stringify(payload)}`,
+      );
       this.safeSend(client, { type: 'notify.counts', payload });
     } catch {
       this.logger.warn(
@@ -209,7 +213,9 @@ export class NotificationGateway
       );
 
       await Promise.all(
-        friendIds.map((fid) => this.notifications.notifyUser(fid, type, payload)),
+        friendIds.map((fid) =>
+          this.notifications.notifyUser(fid, type, payload),
+        ),
       );
     } catch (err) {
       this.logger.debug('Friend notify failed', err as Error);
@@ -222,7 +228,9 @@ export class NotificationGateway
       client.send(JSON.stringify(payload));
     } catch (err) {
       const type =
-        payload && typeof payload === 'object' && typeof payload.type === 'string'
+        payload &&
+        typeof payload === 'object' &&
+        typeof payload.type === 'string'
           ? payload.type
           : 'unknown';
       this.logger.warn(
@@ -307,13 +315,17 @@ export class NotificationGateway
     }
 
     if (type === 'notify.inbox.delete') {
-      const id = typeof parsed?.payload?.id === 'string' ? parsed.payload.id.trim() : '';
+      const id =
+        typeof parsed?.payload?.id === 'string' ? parsed.payload.id.trim() : '';
       if (!id) return;
       try {
         this.logger.log(`notify.inbox.delete user=${meta.userId} id=${id}`);
         await this.adminContacts.deleteInboxItem(meta.userId, id);
         const items = await this.adminContacts.listInbox(meta.userId, 200);
-        const sampleIds = items.slice(0, 5).map((it: any) => it.id).join(',');
+        const sampleIds = items
+          .slice(0, 5)
+          .map((it: any) => it.id)
+          .join(',');
         this.logger.log(
           `notify.inbox.snapshot after delete user=${meta.userId} count=${items.length} ids=[${sampleIds}]`,
         );
@@ -330,11 +342,17 @@ export class NotificationGateway
     }
 
     if (type === 'notify.inbox.markRead') {
-      const id = typeof parsed?.payload?.id === 'string' ? parsed.payload.id.trim() : '';
+      const id =
+        typeof parsed?.payload?.id === 'string' ? parsed.payload.id.trim() : '';
       if (!id) return;
       try {
         await this.adminContacts.markRead(meta.userId, id);
-        this.safeSendResponse(client, 'notify.inbox.markRead', { ok: true }, requestId);
+        this.safeSendResponse(
+          client,
+          'notify.inbox.markRead',
+          { ok: true },
+          requestId,
+        );
       } catch {
         // ignore
       }
@@ -343,9 +361,16 @@ export class NotificationGateway
 
     if (type === 'notify.admin_contact.send') {
       try {
-        const message = typeof parsed?.payload?.message === 'string' ? parsed.payload.message : '';
+        const message =
+          typeof parsed?.payload?.message === 'string'
+            ? parsed.payload.message
+            : '';
         const item = await this.adminContacts.sendFromUserToStaff(
-          { id: meta.userId, username: meta.username, roles: meta.roles } as any,
+          {
+            id: meta.userId,
+            username: meta.username,
+            roles: meta.roles,
+          } as any,
           message,
         );
         this.safeSendResponse(
@@ -367,19 +392,41 @@ export class NotificationGateway
 
     if (type === 'notify.admin_contact.reply') {
       try {
-        const from = { id: meta.userId, username: meta.username, roles: meta.roles } as any;
-        const message = typeof parsed?.payload?.message === 'string' ? parsed.payload.message : '';
-        const contactId = typeof parsed?.payload?.contactId === 'string' ? parsed.payload.contactId : '';
-        const toUserId = typeof parsed?.payload?.toUserId === 'number' ? parsed.payload.toUserId : 0;
+        const from = {
+          id: meta.userId,
+          username: meta.username,
+          roles: meta.roles,
+        } as any;
+        const message =
+          typeof parsed?.payload?.message === 'string'
+            ? parsed.payload.message
+            : '';
+        const contactId =
+          typeof parsed?.payload?.contactId === 'string'
+            ? parsed.payload.contactId
+            : '';
+        const toUserId =
+          typeof parsed?.payload?.toUserId === 'number'
+            ? parsed.payload.toUserId
+            : 0;
         const isStaff =
-          Array.isArray((from as any).roles) &&
-          ((from as any).roles.includes('ROLE_ADMIN') ||
-            (from as any).roles.includes('admin') ||
-            (from as any).roles.includes('ROLE_MODERATOR') ||
-            (from as any).roles.includes('moderator'));
+          Array.isArray(from.roles) &&
+          (from.roles.includes('ROLE_ADMIN') ||
+            from.roles.includes('admin') ||
+            from.roles.includes('ROLE_MODERATOR') ||
+            from.roles.includes('moderator'));
         const item = isStaff
-          ? await this.adminContacts.replyFromStaffToUser(from, toUserId, message, contactId)
-          : await this.adminContacts.sendFromUserToStaff(from, message, contactId);
+          ? await this.adminContacts.replyFromStaffToUser(
+              from,
+              toUserId,
+              message,
+              contactId,
+            )
+          : await this.adminContacts.sendFromUserToStaff(
+              from,
+              message,
+              contactId,
+            );
         this.safeSendResponse(
           client,
           'notify.admin_contact.sent',
@@ -467,6 +514,9 @@ export class NotificationGateway
     payload: any,
     requestId: string | null,
   ) {
-    this.safeSend(client, requestId ? { type, payload, requestId } : { type, payload });
+    this.safeSend(
+      client,
+      requestId ? { type, payload, requestId } : { type, payload },
+    );
   }
 }

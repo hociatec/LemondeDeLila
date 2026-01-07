@@ -19,7 +19,10 @@ export function listVisibleSpectators(
     if (meta.silent) continue;
     unique.set(meta.userId, meta.username || `User ${meta.userId}`);
   }
-  return Array.from(unique.entries()).map(([id, username]) => ({ id, username }));
+  return Array.from(unique.entries()).map(([id, username]) => ({
+    id,
+    username,
+  }));
 }
 
 export function listConnectedPlayers(
@@ -33,7 +36,10 @@ export function listConnectedPlayers(
     if (meta.silent) continue;
     unique.set(meta.userId, meta.username || `User ${meta.userId}`);
   }
-  return Array.from(unique.entries()).map(([id, username]) => ({ id, username }));
+  return Array.from(unique.entries()).map(([id, username]) => ({
+    id,
+    username,
+  }));
 }
 
 export function mergePlayers(
@@ -43,7 +49,10 @@ export function mergePlayers(
   const merged = new Map<number, string>();
   for (const p of dbPlayers ?? []) merged.set(p.id, p.username);
   for (const p of connectedPlayers ?? []) merged.set(p.id, p.username);
-  return Array.from(merged.entries()).map(([id, username]) => ({ id, username }));
+  return Array.from(merged.entries()).map(([id, username]) => ({
+    id,
+    username,
+  }));
 }
 
 export function addHiddenSelf(
@@ -54,6 +63,8 @@ export function addHiddenSelf(
   const unique = new Map<number, string>();
   for (const s of spectators ?? []) unique.set(s.id, s.username);
   unique.set(hiddenSelf.userId, hiddenSelf.username);
-  return Array.from(unique.entries()).map(([id, username]) => ({ id, username }));
+  return Array.from(unique.entries()).map(([id, username]) => ({
+    id,
+    username,
+  }));
 }
-

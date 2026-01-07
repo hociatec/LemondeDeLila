@@ -1,8 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class AddNotificationsAndReadState1767800000000
-  implements MigrationInterface
-{
+export class AddNotificationsAndReadState1767800000000 implements MigrationInterface {
   name = 'AddNotificationsAndReadState1767800000000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -48,4 +46,3 @@ export class AddNotificationsAndReadState1767800000000
     await queryRunner.query(`DROP TABLE \`notification_inbox_items\`;`);
   }
 }
-

@@ -28,4 +28,3 @@ export class BugReportCommentEntity {
   @Column({ name: 'created_by_username', type: 'varchar', length: 100 })
   createdByUsername!: string;
 }
-

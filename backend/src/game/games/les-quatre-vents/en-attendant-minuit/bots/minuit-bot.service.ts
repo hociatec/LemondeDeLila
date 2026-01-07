@@ -8,11 +8,19 @@ import * as Rulebook from '../rulebook/rulebook';
 export class MinuitBotService {
   constructor(private readonly botRunner: BotRunnerService) {}
 
-  getBotActions(state: GameStateEntity, botPlayerId: number): GameSingleActionDto[] {
+  getBotActions(
+    state: GameStateEntity,
+    botPlayerId: number,
+  ): GameSingleActionDto[] {
     const available = Rulebook.getAvailableActions(state, botPlayerId);
-    return this.botRunner.choose(available, { state, playerId: botPlayerId }, 'random', {
-      preferTypes: ['answer_quiz', 'choose_target', 'roll'],
-      fallbackTypes: ['answer_quiz', 'choose_target', 'roll'],
-    });
+    return this.botRunner.choose(
+      available,
+      { state, playerId: botPlayerId },
+      'random',
+      {
+        preferTypes: ['answer_quiz', 'choose_target', 'roll'],
+        fallbackTypes: ['answer_quiz', 'choose_target', 'roll'],
+      },
+    );
   }
 }

@@ -7,5 +7,7 @@ export class ChatSettingsEntity {
 
   @Column({ name: 'chat_history_limit', type: 'int', default: 200 })
   chatHistoryLimit!: number;
-}
 
+  @Column({ name: 'edit_window_seconds', type: 'int', default: 300 })
+  editWindowSeconds!: number;
+}

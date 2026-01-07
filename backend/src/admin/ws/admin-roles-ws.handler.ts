@@ -43,7 +43,10 @@ export class AdminRolesWsHandler {
 
   async roleDefinitionCreate(session: WsSession, payload: any) {
     const admin = requireAdmin(session);
-    const dto = this.validator.validate(AdminRoleDefinitionCreateWsDto, payload);
+    const dto = this.validator.validate(
+      AdminRoleDefinitionCreateWsDto,
+      payload,
+    );
     await this.roleDefinitions.create({
       name: dto.name,
       description: dto.description,
@@ -55,7 +58,10 @@ export class AdminRolesWsHandler {
 
   async roleDefinitionUpdate(session: WsSession, payload: any) {
     const admin = requireAdmin(session);
-    const dto = this.validator.validate(AdminRoleDefinitionUpdateWsDto, payload);
+    const dto = this.validator.validate(
+      AdminRoleDefinitionUpdateWsDto,
+      payload,
+    );
     await this.roleDefinitions.update(dto.name, {
       name: dto.newName,
       description: dto.description,
@@ -67,10 +73,12 @@ export class AdminRolesWsHandler {
 
   async roleDefinitionDelete(session: WsSession, payload: any) {
     const admin = requireAdmin(session);
-    const dto = this.validator.validate(AdminRoleDefinitionDeleteWsDto, payload);
+    const dto = this.validator.validate(
+      AdminRoleDefinitionDeleteWsDto,
+      payload,
+    );
     await this.roleDefinitions.delete(dto.name);
     await this.catalogInvalidation.notifyCatalogInvalidated(admin.id);
     return this.rolesDefinitionsList(session);
   }
 }
-

@@ -3,6 +3,7 @@ using System.Collections.Specialized;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using client_win.Modules.Chat.ViewModels;
 
 namespace client_win.Modules.Chat.Views;
@@ -11,6 +12,8 @@ public partial class ChatView : UserControl
 {
     private INotifyCollectionChanged? _currentMessages;
     private bool _didInitialFocus;
+    private ScrollViewer? _historyScroll;
+    private bool _stickToBottom = true;
 
     public ChatView()
     {
@@ -48,24 +51,49 @@ public partial class ChatView : UserControl
             coll.CollectionChanged += OnMessagesChanged;
         }
 
+        _historyScroll = FindDescendantScrollViewer(HistoryList);
+        if (_historyScroll != null)
+        {
+            _historyScroll.ScrollChanged += (_, _) => { _stickToBottom = IsNearBottom(_historyScroll); };
+        }
+
         if (!_didInitialFocus)
         {
             _didInitialFocus = true;
-            ScrollHistoryToEnd();
+            ScrollHistoryToEnd(force: true);
         }
     }
 
     private void OnMessagesChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
-        ScrollHistoryToEnd();
+        ScrollHistoryToEnd(force: false);
     }
 
-    private void ScrollHistoryToEnd()
+    private void ScrollHistoryToEnd(bool force)
     {
-        if (HistoryList?.Items.Count > 0)
+        if (HistoryList == null)
         {
+            return;
+        }
+
+        if (!force && !_stickToBottom)
+        {
+            return;
+        }
+
+        try
+        {
+            if (HistoryList.Items.Count <= 0)
+            {
+                return;
+            }
+
             var last = HistoryList.Items[^1];
             HistoryList.ScrollIntoView(last);
+        }
+        catch
+        {
+            // Best-effort: never crash the UI for a sound UX enhancement.
         }
     }
 
@@ -74,7 +102,43 @@ public partial class ChatView : UserControl
         if (e.Key == Key.Enter && DataContext is ChatViewModel vm)
         {
             await vm.HandleSelectedMessageActionAsync();
+            InputBox.Focus();
             e.Handled = true;
         }
+    }
+
+    private static bool IsNearBottom(ScrollViewer sv)
+    {
+        if (sv.ScrollableHeight <= 0)
+        {
+            return true;
+        }
+        return sv.VerticalOffset >= sv.ScrollableHeight - 1.0;
+    }
+
+    private static ScrollViewer? FindDescendantScrollViewer(DependencyObject? root)
+    {
+        if (root == null)
+        {
+            return null;
+        }
+
+        if (root is ScrollViewer sv)
+        {
+            return sv;
+        }
+
+        var count = VisualTreeHelper.GetChildrenCount(root);
+        for (var i = 0; i < count; i++)
+        {
+            var child = VisualTreeHelper.GetChild(root, i);
+            var found = FindDescendantScrollViewer(child);
+            if (found != null)
+            {
+                return found;
+            }
+        }
+
+        return null;
     }
 }

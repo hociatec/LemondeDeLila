@@ -5,4 +5,3 @@ export class StatsUserDto {
   @Min(1)
   userId!: number;
 }
-

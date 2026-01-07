@@ -17,4 +17,3 @@ export class RoomMaintenanceSettingsEntity {
   @Column({ name: 'auto_cleanup_limit', type: 'int', default: 1000 })
   autoCleanupLimit!: number;
 }
-

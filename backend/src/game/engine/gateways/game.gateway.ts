@@ -238,7 +238,9 @@ export class GameGateway
     const traceId =
       typeof payload?._trace?.id === 'string' ? payload._trace.id : null;
     const sentAtMs =
-      typeof payload?._trace?.sentAtMs === 'number' ? payload._trace.sentAtMs : null;
+      typeof payload?._trace?.sentAtMs === 'number'
+        ? payload._trace.sentAtMs
+        : null;
     const clientToServerMs =
       typeof sentAtMs === 'number' && Number.isFinite(sentAtMs)
         ? Math.max(0, receivedAtMs - sentAtMs)
@@ -271,7 +273,9 @@ export class GameGateway
     const traceId =
       typeof payload?._trace?.id === 'string' ? payload._trace.id : null;
     const sentAtMs =
-      typeof payload?._trace?.sentAtMs === 'number' ? payload._trace.sentAtMs : null;
+      typeof payload?._trace?.sentAtMs === 'number'
+        ? payload._trace.sentAtMs
+        : null;
     const clientToServerMs =
       typeof sentAtMs === 'number' && Number.isFinite(sentAtMs)
         ? Math.max(0, receivedAtMs - sentAtMs)
@@ -308,7 +312,9 @@ export class GameGateway
     const traceId =
       typeof payload?._trace?.id === 'string' ? payload._trace.id : null;
     const sentAtMs =
-      typeof payload?._trace?.sentAtMs === 'number' ? payload._trace.sentAtMs : null;
+      typeof payload?._trace?.sentAtMs === 'number'
+        ? payload._trace.sentAtMs
+        : null;
     const clientToServerMs =
       typeof sentAtMs === 'number' && Number.isFinite(sentAtMs)
         ? Math.max(0, receivedAtMs - sentAtMs)
@@ -356,7 +362,11 @@ export class GameGateway
     );
   }
 
-  private async handleActions(client: WebSocket, meta: GameClient, payload: any) {
+  private async handleActions(
+    client: WebSocket,
+    meta: GameClient,
+    payload: any,
+  ) {
     const roomId = Number(payload?.roomId ?? meta.roomId ?? 0);
     const gameType = String(payload?.gameType ?? meta.gameType ?? '');
     if (!roomId || !gameType) {
@@ -366,7 +376,9 @@ export class GameGateway
     const traceId =
       typeof payload?._trace?.id === 'string' ? payload._trace.id : null;
     const sentAtMs =
-      typeof payload?._trace?.sentAtMs === 'number' ? payload._trace.sentAtMs : null;
+      typeof payload?._trace?.sentAtMs === 'number'
+        ? payload._trace.sentAtMs
+        : null;
     const clientToServerMs =
       typeof sentAtMs === 'number' && Number.isFinite(sentAtMs)
         ? Math.max(0, receivedAtMs - sentAtMs)

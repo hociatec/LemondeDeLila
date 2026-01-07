@@ -5,6 +5,7 @@ import { randomBytes } from 'crypto';
 import { ChatMessage } from '../entities/chat-message.entity';
 import { ChatValidator } from './chat.validator';
 import { IsNull } from 'typeorm';
+import { ChatSettingsService } from './chat-settings.service';
 
 type BroadcastUser = {
   id: number;
@@ -15,13 +16,13 @@ type BroadcastUser = {
 export class ChatService {
   private static readonly DEFAULT_HISTORY_LIMIT = 200;
   private static readonly CACHE_LIMIT = 2000;
-  private static readonly EDIT_WINDOW_MS = 5 * 60 * 1000;
   private historyCache: Array<Record<string, unknown>> | null = null;
 
   constructor(
     @InjectRepository(ChatMessage)
     private readonly messages: Repository<ChatMessage>,
     private readonly validator: ChatValidator,
+    private readonly settings: ChatSettingsService,
   ) {}
 
   async recordMessageForBroadcast(
@@ -82,7 +83,8 @@ export class ChatService {
       throw new Error('Message supprimé.');
     }
     const ageMs = Date.now() - message.createdAt.getTime();
-    if (ageMs > ChatService.EDIT_WINDOW_MS) {
+    const windowMs = this.settings.getEditWindowSeconds() * 1000;
+    if (windowMs <= 0 || ageMs > windowMs) {
       throw new Error('Message trop ancien pour être modifié.');
     }
 
@@ -112,7 +114,8 @@ export class ChatService {
       return true;
     }
     const ageMs = Date.now() - message.createdAt.getTime();
-    if (ageMs > ChatService.EDIT_WINDOW_MS) {
+    const windowMs = this.settings.getEditWindowSeconds() * 1000;
+    if (windowMs <= 0 || ageMs > windowMs) {
       throw new Error('Message trop ancien pour être supprimé.');
     }
 
@@ -229,13 +232,18 @@ export class ChatService {
     }
     this.historyCache.push(message);
     if (this.historyCache.length > ChatService.CACHE_LIMIT) {
-      this.historyCache.splice(0, this.historyCache.length - ChatService.CACHE_LIMIT);
+      this.historyCache.splice(
+        0,
+        this.historyCache.length - ChatService.CACHE_LIMIT,
+      );
     }
   }
 
   private removeFromCache(messageId: string): void {
     if (!this.historyCache) return;
-    const idx = this.historyCache.findIndex((m) => (m as any)?.id === messageId);
+    const idx = this.historyCache.findIndex(
+      (m) => (m as any)?.id === messageId,
+    );
     if (idx >= 0) this.historyCache.splice(idx, 1);
   }
 

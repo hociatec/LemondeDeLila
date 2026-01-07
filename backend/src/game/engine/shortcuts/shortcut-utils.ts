@@ -1,7 +1,4 @@
-import type {
-  GameShortcutHint,
-  GameShortcutsContext,
-} from './game-shortcuts';
+import type { GameShortcutHint, GameShortcutsContext } from './game-shortcuts';
 
 export function pressed(key: string): string {
   const trimmed = String(key ?? '').trim();
@@ -12,7 +9,10 @@ export function interfaceShortcut(key: string, id: string): GameShortcutHint {
   return { key: pressed(key), type: 'interface', id };
 }
 
-export function actionShortcut(key: string, actionType: string): GameShortcutHint {
+export function actionShortcut(
+  key: string,
+  actionType: string,
+): GameShortcutHint {
   return { key: pressed(key), type: 'action', actionType };
 }
 
@@ -25,7 +25,8 @@ export function when<TMeta>(
   return [...shortcuts];
 }
 
-export function concat(...parts: Array<readonly GameShortcutHint[]>): GameShortcutHint[] {
+export function concat(
+  ...parts: Array<readonly GameShortcutHint[]>
+): GameShortcutHint[] {
   return parts.flatMap((p) => [...p]);
 }
-

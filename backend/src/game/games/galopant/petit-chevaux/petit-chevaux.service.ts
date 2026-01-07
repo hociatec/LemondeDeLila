@@ -64,7 +64,10 @@ export class PetitChevauxService implements GameRulesAdapter, OnModuleInit {
     return PetitChevauxRulebook.validateAction(state, action, actorId);
   }
 
-  getBotActions(state: GameStateEntity, botPlayerId: number): GameSingleActionDto[] {
+  getBotActions(
+    state: GameStateEntity,
+    botPlayerId: number,
+  ): GameSingleActionDto[] {
     return this.bots.getBotActions(state, botPlayerId);
   }
 
@@ -73,7 +76,10 @@ export class PetitChevauxService implements GameRulesAdapter, OnModuleInit {
     return { ...state, actions: [] };
   }
 
-  exposeStateForUser(state: GameStateEntity, userId: number): GameStateWithActions {
+  exposeStateForUser(
+    state: GameStateEntity,
+    userId: number,
+  ): GameStateWithActions {
     return this.presenter.exposeStateForUser(state, userId);
   }
 }

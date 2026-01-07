@@ -15,7 +15,15 @@ import { GameCategoriesService } from './services/game-categories.service';
       GameCatalogOverrideEntity,
     ]),
   ],
-  providers: [GameRegistryService, GameCatalogOverridesService, GameCategoriesService],
-  exports: [GameRegistryService, GameCatalogOverridesService, GameCategoriesService],
+  providers: [
+    GameRegistryService,
+    GameCatalogOverridesService,
+    GameCategoriesService,
+  ],
+  exports: [
+    GameRegistryService,
+    GameCatalogOverridesService,
+    GameCategoriesService,
+  ],
 })
 export class GameRegistryModule {}

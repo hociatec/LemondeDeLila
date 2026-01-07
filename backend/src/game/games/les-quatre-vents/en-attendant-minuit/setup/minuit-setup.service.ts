@@ -2,7 +2,11 @@
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import { GameContentLoaderService } from '../../../../engine/services/game-content-loader.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
-import type { MinuitBoardJsonV1, MinuitCardsJsonV1, MinuitMetadata } from '../model/minuit.types';
+import type {
+  MinuitBoardJsonV1,
+  MinuitCardsJsonV1,
+  MinuitMetadata,
+} from '../model/minuit.types';
 
 @Injectable()
 export class MinuitSetupService {
@@ -41,7 +45,11 @@ export class MinuitSetupService {
       ...base,
       phase: 'playing',
       pending: null,
-      metadata: { ...(base.metadata ?? {}), ...(shuffled.meta as any), ...meta },
+      metadata: {
+        ...(base.metadata ?? {}),
+        ...shuffled.meta,
+        ...meta,
+      },
     };
   }
 

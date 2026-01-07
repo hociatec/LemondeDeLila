@@ -1,6 +1,9 @@
 ﻿import { Injectable, OnModuleInit } from '@nestjs/common';
 import type { GameStateEntity } from '../../../core/entities/game-state.entity';
-import type { GameSingleActionDto, GameStateWithActions } from '../../../engine/dto/game-action.dto';
+import type {
+  GameSingleActionDto,
+  GameStateWithActions,
+} from '../../../engine/dto/game-action.dto';
 import type { GameRulesAdapter } from '../../../engine/interfaces/game-rules-adapter.interface';
 import { GameRegistryService } from '../../../engine/services/game-registry.service';
 import { ODYSSEE_GAME } from './definitions/odyssee.definition';
@@ -11,7 +14,9 @@ import { OdysseeBotService } from './bots/odyssee-bot.service';
 import * as Rulebook from './rulebook/rulebook';
 
 @Injectable()
-export class OdysseeQuatreCieuxService implements GameRulesAdapter, OnModuleInit {
+export class OdysseeQuatreCieuxService
+  implements GameRulesAdapter, OnModuleInit
+{
   readonly gameType = 'odyssee-quatre-cieux';
   readonly category = 'JeuxDePlateaux';
   readonly subcategory = 'LesQuatreVents';
@@ -36,23 +41,39 @@ export class OdysseeQuatreCieuxService implements GameRulesAdapter, OnModuleInit
     return this.setup.hydrateInitialState(baseState);
   }
 
-  applyActions(state: GameStateEntity, actions: GameSingleActionDto[]): GameStateEntity {
+  applyActions(
+    state: GameStateEntity,
+    actions: GameSingleActionDto[],
+  ): GameStateEntity {
     return this.actions.applyActions(state, actions);
   }
 
-  getAvailableActions(state: GameStateEntity, playerId: number): GameSingleActionDto[] {
+  getAvailableActions(
+    state: GameStateEntity,
+    playerId: number,
+  ): GameSingleActionDto[] {
     return Rulebook.getAvailableActions(state, playerId);
   }
 
-  validateAction(state: GameStateEntity, action: GameSingleActionDto, actorId: number | null): GameSingleActionDto {
+  validateAction(
+    state: GameStateEntity,
+    action: GameSingleActionDto,
+    actorId: number | null,
+  ): GameSingleActionDto {
     return Rulebook.validateAction(state, action, actorId);
   }
 
-  getBotActions(state: GameStateEntity, botPlayerId: number): GameSingleActionDto[] {
+  getBotActions(
+    state: GameStateEntity,
+    botPlayerId: number,
+  ): GameSingleActionDto[] {
     return this.bots.getBotActions(state, botPlayerId);
   }
 
-  exposeStateForUser(state: GameStateEntity, userId: number): GameStateWithActions {
+  exposeStateForUser(
+    state: GameStateEntity,
+    userId: number,
+  ): GameStateWithActions {
     return this.presenter.exposeStateForUser(state, userId);
   }
 }

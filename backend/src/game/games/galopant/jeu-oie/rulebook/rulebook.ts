@@ -1,6 +1,9 @@
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
-import { GameValidationError, PlayerActionError } from '../../../../../common/errors/game-errors';
+import {
+  GameValidationError,
+  PlayerActionError,
+} from '../../../../../common/errors/game-errors';
 
 const ALLOWED = new Set(['roll', 'ROLL_DICE', 'roll_dice']);
 
@@ -25,7 +28,11 @@ export function validateAction(
   if (!ALLOWED.has(rawType) && !ALLOWED.has(normalized)) {
     throw new GameValidationError(
       `Action type not allowed: ${rawType || '(empty)'}`,
-      { gameType: 'jeu-oie', action: rawType, allowedActions: Array.from(ALLOWED) },
+      {
+        gameType: 'jeu-oie',
+        action: rawType,
+        allowedActions: Array.from(ALLOWED),
+      },
     );
   }
 

@@ -140,7 +140,9 @@ export class BotService {
         throw new BadRequestException('Nom requis');
       }
       if (sanitized !== botName.name) {
-        const exists = await this.botNames.findOne({ where: { name: sanitized } });
+        const exists = await this.botNames.findOne({
+          where: { name: sanitized },
+        });
         if (exists) {
           throw new BadRequestException('Nom déjà utilisé');
         }

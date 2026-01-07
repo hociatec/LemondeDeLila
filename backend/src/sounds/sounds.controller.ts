@@ -21,7 +21,10 @@ export class SoundsController {
     @Param('sha') sha: string,
     @Res() res: Response,
   ) {
-    const { entry, filePath } = await this.sounds.resolveSoundFile(soundId, sha);
+    const { entry, filePath } = await this.sounds.resolveSoundFile(
+      soundId,
+      sha,
+    );
     res.setHeader('Content-Type', 'audio/mpeg');
     res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
     res.setHeader('ETag', `"${entry.sha256}"`);

@@ -63,9 +63,7 @@ function normalizeRoom(input: Partial<RoomMaintenanceSettingsJson>): {
   };
 }
 
-export class ImportLegacySettingsJson1735900000000
-  implements MigrationInterface
-{
+export class ImportLegacySettingsJson1735900000000 implements MigrationInterface {
   name = 'ImportLegacySettingsJson1735900000000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -88,7 +86,8 @@ export class ImportLegacySettingsJson1735900000000
           );
         } else {
           const current = rows[0];
-          const isDefault = current.bioMinLength === 0 && current.bioMaxLength === 500;
+          const isDefault =
+            current.bioMinLength === 0 && current.bioMaxLength === 500;
           if (isDefault) {
             await queryRunner.query(
               'UPDATE social_profile_settings SET bio_min_length = ?, bio_max_length = ? WHERE id = 1',
@@ -134,7 +133,8 @@ export class ImportLegacySettingsJson1735900000000
         } else {
           const current = rows[0];
           const currentEnabled =
-            current.autoCleanupEnabled === true || current.autoCleanupEnabled === 1;
+            current.autoCleanupEnabled === true ||
+            current.autoCleanupEnabled === 1;
           const isDefault =
             currentEnabled === false &&
             current.autoCleanupOlderThanMinutes === 60 &&

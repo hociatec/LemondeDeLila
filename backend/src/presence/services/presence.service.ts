@@ -358,6 +358,7 @@ export class PresenceService implements OnModuleDestroy {
       const limit = this.chatSettings.getChatHistoryLimit();
       const payload = {
         type: 'chat-history',
+        editWindowSeconds: this.chatSettings.getEditWindowSeconds(),
         messages: await this.chat.getRecentNormalizedMessages(limit),
       };
       to.send(JSON.stringify(payload));

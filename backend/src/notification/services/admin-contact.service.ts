@@ -63,7 +63,9 @@ export class AdminContactService {
     this.logger.log(`Inbox delete user=${userId} id=${id} ok=${ok}`);
     const items = await this.inbox.list(userId, 5);
     const ids = items.map((it) => it.id).join(',');
-    this.logger.log(`Inbox after delete user=${userId} remaining=${items.length} ids=[${ids}]`);
+    this.logger.log(
+      `Inbox after delete user=${userId} remaining=${items.length} ids=[${ids}]`,
+    );
     await this.counts.notifyCounts(userId);
   }
 

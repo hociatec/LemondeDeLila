@@ -12,7 +12,13 @@ import { JeuOiePresenterService } from './presenter/jeu-oie-presenter.service';
 import { JeuOieBotService } from './bots/jeu-oie-bot.service';
 
 @Module({
-  imports: [GameCoreModule, GameRegistryModule, RandomModule, TurnModule, BotModule],
+  imports: [
+    GameCoreModule,
+    GameRegistryModule,
+    RandomModule,
+    TurnModule,
+    BotModule,
+  ],
   providers: [
     JeuOieService,
     JeuOieSetupService,
@@ -24,4 +30,3 @@ import { JeuOieBotService } from './bots/jeu-oie-bot.service';
   exports: [JeuOieService],
 })
 export class JeuOieModule {}
-

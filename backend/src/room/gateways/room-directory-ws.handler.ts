@@ -73,7 +73,9 @@ export class RoomDirectoryWsHandler {
     }
     const rooms = await qb.getMany();
     // Option recommandée: n'afficher que les tables où au moins 1 joueur (participant) est réellement connecté.
-    const activeRoomIds = new Set(this.realtimeTracker.getActivePlayerRoomIds());
+    const activeRoomIds = new Set(
+      this.realtimeTracker.getActivePlayerRoomIds(),
+    );
     const activeRooms = rooms.filter((r) => activeRoomIds.has(r.id));
     const built = buildPublicRoomList(activeRooms, {
       allowedGameTypes: allowed,

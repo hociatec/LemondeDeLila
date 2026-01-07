@@ -25,7 +25,10 @@ import { RedisClientFactory } from '../common/redis/redis-client.factory';
     {
       provide: PresenceTransport,
       inject: [ConfigService, RedisClientFactory],
-      useFactory: async (config: ConfigService, redisFactory: RedisClientFactory) => {
+      useFactory: async (
+        config: ConfigService,
+        redisFactory: RedisClientFactory,
+      ) => {
         const redisUrl =
           config.get<string>('PRESENCE_REDIS_URL') ||
           config.get<string>('SESSION_STORE_REDIS_URL');

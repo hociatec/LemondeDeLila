@@ -17,7 +17,10 @@ export class AdminBugReportCommentsWsHandler {
 
   async list(session: WsSession, payload: any) {
     requireAdmin(session);
-    const dto = this.validator.validate(AdminBugReportCommentsListWsDto, payload);
+    const dto = this.validator.validate(
+      AdminBugReportCommentsListWsDto,
+      payload,
+    );
     const items = await this.comments.listByReportId(dto.reportId);
     return { type: 'admin.bugReports.comments.list', payload: { items } };
   }
@@ -37,4 +40,3 @@ export class AdminBugReportCommentsWsHandler {
     return { type: 'admin.bugReports.comments.add', payload: { comment } };
   }
 }
-

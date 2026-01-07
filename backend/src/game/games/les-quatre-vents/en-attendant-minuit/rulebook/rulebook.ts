@@ -1,10 +1,19 @@
 ﻿import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
-import { GameValidationError, PlayerActionError } from '../../../../../common/errors/game-errors';
-import { MINUIT_GAME, type MinuitActionType } from '../definitions/minuit.definition';
+import {
+  GameValidationError,
+  PlayerActionError,
+} from '../../../../../common/errors/game-errors';
+import {
+  MINUIT_GAME,
+  type MinuitActionType,
+} from '../definitions/minuit.definition';
 import type { MinuitMetadata } from '../model/minuit.types';
 
-export function getAvailableActions(state: GameStateEntity, playerId: number): GameSingleActionDto[] {
+export function getAvailableActions(
+  state: GameStateEntity,
+  playerId: number,
+): GameSingleActionDto[] {
   const status = String(state.status ?? '').toLowerCase();
   if (status !== 'started') return [];
 
@@ -22,7 +31,9 @@ export function getAvailableActions(state: GameStateEntity, playerId: number): G
   if (pending) {
     if (pending.playerId !== playerId) return [];
     if (pending.type === 'choose_target') {
-      const targets: Array<{ targetPlayerId: number }> = Array.isArray(pending?.data?.targets)
+      const targets: Array<{ targetPlayerId: number }> = Array.isArray(
+        pending?.data?.targets,
+      )
         ? pending.data.targets
         : [];
       return targets.map((t) => ({
@@ -38,9 +49,15 @@ export function getAvailableActions(state: GameStateEntity, playerId: number): G
   return [{ type: 'roll' }, { type: 'ROLL_DICE' }];
 }
 
-export function validateAction(state: GameStateEntity, action: GameSingleActionDto, actorId: number | null): GameSingleActionDto {
+export function validateAction(
+  state: GameStateEntity,
+  action: GameSingleActionDto,
+  actorId: number | null,
+): GameSingleActionDto {
   const rawType = String(action?.type ?? '').trim();
-  const type = (rawType === 'roll_dice' ? 'ROLL_DICE' : rawType) as MinuitActionType;
+  const type = (
+    rawType === 'roll_dice' ? 'ROLL_DICE' : rawType
+  ) as MinuitActionType;
   if (!MINUIT_GAME.actions.includes(type)) {
     throw new GameValidationError(`Action inconnue: ${rawType || '(vide)'}`, {
       gameType: 'en-attendant-minuit',
@@ -49,11 +66,15 @@ export function validateAction(state: GameStateEntity, action: GameSingleActionD
     });
   }
   if (actorId == null) {
-    throw new PlayerActionError('Acteur requis.', { gameType: 'en-attendant-minuit' });
+    throw new PlayerActionError('Acteur requis.', {
+      gameType: 'en-attendant-minuit',
+    });
   }
 
   if (String(state.status ?? '').toLowerCase() !== 'started') {
-    throw new PlayerActionError("La partie n'est pas démarrée.", { gameType: 'en-attendant-minuit' });
+    throw new PlayerActionError("La partie n'est pas démarrée.", {
+      gameType: 'en-attendant-minuit',
+    });
   }
 
   const meta = (state.metadata ?? {}) as any as MinuitMetadata;
@@ -83,17 +104,26 @@ export function validateAction(state: GameStateEntity, action: GameSingleActionD
   const pending = state.pending as any;
   if (pending) {
     if (pending.playerId !== actorId) {
-      throw new PlayerActionError("Ce n'est pas votre action.", { gameType: 'en-attendant-minuit' });
+      throw new PlayerActionError("Ce n'est pas votre action.", {
+        gameType: 'en-attendant-minuit',
+      });
     }
     if (pending.type === 'choose_target') {
       if (type !== 'choose_target') {
-        throw new PlayerActionError('Choix invalide.', { gameType: 'en-attendant-minuit' });
+        throw new PlayerActionError('Choix invalide.', {
+          gameType: 'en-attendant-minuit',
+        });
       }
-      const targets: Array<{ targetPlayerId: number }> = Array.isArray(pending?.data?.targets)
+      const targets: Array<{ targetPlayerId: number }> = Array.isArray(
+        pending?.data?.targets,
+      )
         ? pending.data.targets
         : [];
       const targetPlayerId = Number((action.payload as any)?.targetPlayerId);
-      if (!Number.isFinite(targetPlayerId) || !targets.some((t) => t.targetPlayerId === targetPlayerId)) {
+      if (
+        !Number.isFinite(targetPlayerId) ||
+        !targets.some((t) => t.targetPlayerId === targetPlayerId)
+      ) {
         throw new GameValidationError('Cible invalide.', {
           gameType: 'en-attendant-minuit',
           targetPlayerId,
@@ -101,7 +131,9 @@ export function validateAction(state: GameStateEntity, action: GameSingleActionD
       }
       return { type: 'choose_target', payload: { targetPlayerId } };
     }
-    throw new PlayerActionError('Action non disponible.', { gameType: 'en-attendant-minuit' });
+    throw new PlayerActionError('Action non disponible.', {
+      gameType: 'en-attendant-minuit',
+    });
   }
 
   const current = state.turn?.currentPlayerId ?? null;

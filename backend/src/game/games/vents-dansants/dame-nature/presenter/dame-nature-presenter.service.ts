@@ -157,7 +157,7 @@ export class DameNaturePresenterService extends BasePresenterService {
 
     const pollution =
       started && typeof currentPlayerId === 'number'
-        ? (metadata?.pollutionByPlayer ?? {})[String(currentPlayerId)] ?? 0
+        ? ((metadata?.pollutionByPlayer ?? {})[String(currentPlayerId)] ?? 0)
         : 0;
     const maxPollution = metadata?.maxPollution ?? 0;
     const goal = metadata?.familyGoal ?? 0;
@@ -220,7 +220,7 @@ export class DameNaturePresenterService extends BasePresenterService {
 
     const pollution =
       started && typeof userId === 'number'
-        ? (metadata?.pollutionByPlayer ?? {})[String(userId)] ?? 0
+        ? ((metadata?.pollutionByPlayer ?? {})[String(userId)] ?? 0)
         : 0;
     const maxPollution = metadata?.maxPollution ?? 0;
     const goal = metadata?.familyGoal ?? 0;

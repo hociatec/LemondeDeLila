@@ -8,6 +8,7 @@ using System.Windows.Input;
 using client_win.Core;
 using client_win.Modules.Chat.Models;
 using client_win.Modules.Chat.Services;
+using client_win.Modules.Shell.Services;
 
 namespace client_win.Modules.Chat.ViewModels;
 
@@ -15,14 +16,18 @@ public sealed class ChatViewModel : ObservableObject
 {
     private readonly IChatService _chat;
     private readonly Action? _closeWindow;
+    private readonly IDialogService? _dialogs;
     private string _input = string.Empty;
     private string _historyText = string.Empty;
     private string _status = "Tchat fermé.";
+    private string? _pendingEditMessageId;
+    private ChatMessage? _selectedMessage;
 
-    public ChatViewModel(IChatService chat, Action? closeWindow = null)
+    public ChatViewModel(IChatService chat, Action? closeWindow = null, IDialogService? dialogs = null)
     {
         _chat = chat ?? throw new ArgumentNullException(nameof(chat));
         _closeWindow = closeWindow;
+        _dialogs = dialogs;
         Messages = chat.Messages;
         _status = chat.StatusMessage;
         chat.StatusChanged += msg => Status = msg;
@@ -39,6 +44,12 @@ public sealed class ChatViewModel : ObservableObject
     }
 
     public ObservableCollection<ChatMessage> Messages { get; }
+
+    public ChatMessage? SelectedMessage
+    {
+        get => _selectedMessage;
+        set => SetProperty(ref _selectedMessage, value);
+    }
 
     public string Input
     {
@@ -77,7 +88,108 @@ public sealed class ChatViewModel : ObservableObject
         }
         string toSend = Input;
         Input = string.Empty;
+        if (!string.IsNullOrWhiteSpace(_pendingEditMessageId))
+        {
+            var targetId = _pendingEditMessageId;
+            _pendingEditMessageId = null;
+            await _chat.EditAsync(targetId!, toSend);
+            return;
+        }
+
         await _chat.SendAsync(toSend);
+    }
+
+    public async Task HandleSelectedMessageActionAsync()
+    {
+        var msg = SelectedMessage;
+        if (!CanActOnMessage(msg))
+        {
+            return;
+        }
+
+        if (_dialogs == null)
+        {
+            BeginEdit(msg!);
+            return;
+        }
+
+        var choice = await _dialogs.Choose(
+            "Tchat",
+            "Que voulez-vous faire avec ce message ?\n\nNote : l’édition/suppression n’est possible que pendant un délai limité après l’envoi.",
+            primaryText: "Modifier",
+            secondaryText: "Supprimer",
+            cancelText: "Annuler");
+
+        if (choice == DialogChoice.Primary)
+        {
+            BeginEdit(msg!);
+            return;
+        }
+
+        if (choice == DialogChoice.Secondary)
+        {
+            var confirm = await _dialogs.Confirm(
+                "Tchat",
+                "Supprimer ce message ?\n\nCette action est irréversible.",
+                okText: "Supprimer",
+                cancelText: "Annuler");
+            if (confirm == true)
+            {
+                await DeleteAsync(msg!);
+            }
+        }
+    }
+
+    private bool CanActOnMessage(ChatMessage? message)
+    {
+        if (message == null || !message.IsMine || string.IsNullOrWhiteSpace(message.Id))
+        {
+            return false;
+        }
+
+        var windowSeconds = Math.Max(0, _chat.EditWindowSeconds);
+        if (windowSeconds <= 0)
+        {
+            return false;
+        }
+
+        var ts = message.Timestamp.Kind == DateTimeKind.Unspecified
+            ? DateTime.SpecifyKind(message.Timestamp, DateTimeKind.Utc)
+            : message.Timestamp.ToUniversalTime();
+        var age = DateTime.UtcNow - ts;
+        if (age < TimeSpan.Zero)
+        {
+            age = TimeSpan.Zero;
+        }
+
+        return age <= TimeSpan.FromSeconds(windowSeconds);
+    }
+
+    private void BeginEdit(ChatMessage message)
+    {
+        if (string.IsNullOrWhiteSpace(message.Id))
+        {
+            return;
+        }
+
+        _pendingEditMessageId = message.Id;
+        Input = message.Text;
+        Status = $"Édition du message… ({_chat.EditWindowSeconds}s)";
+    }
+
+    private Task DeleteAsync(ChatMessage message)
+    {
+        if (string.IsNullOrWhiteSpace(message.Id))
+        {
+            return Task.CompletedTask;
+        }
+
+        if (string.Equals(_pendingEditMessageId, message.Id, StringComparison.Ordinal))
+        {
+            _pendingEditMessageId = null;
+        }
+
+        return _chat.DeleteAsync(message.Id);
     }
 
     private void RebuildHistory()

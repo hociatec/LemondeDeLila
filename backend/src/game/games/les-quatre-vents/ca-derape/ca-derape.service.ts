@@ -39,11 +39,17 @@ export class CaDerapeService implements GameRulesAdapter, OnModuleInit {
     return this.setup.hydrateInitialState(baseState);
   }
 
-  applyActions(state: GameStateEntity, actions: GameSingleActionDto[]): GameStateEntity {
+  applyActions(
+    state: GameStateEntity,
+    actions: GameSingleActionDto[],
+  ): GameStateEntity {
     return this.actions.applyActions(state, actions);
   }
 
-  getAvailableActions(state: GameStateEntity, playerId: number): GameSingleActionDto[] {
+  getAvailableActions(
+    state: GameStateEntity,
+    playerId: number,
+  ): GameSingleActionDto[] {
     return Rulebook.getAvailableActions(state, playerId);
   }
 
@@ -55,11 +61,17 @@ export class CaDerapeService implements GameRulesAdapter, OnModuleInit {
     return Rulebook.validateAction(state, action, actorId);
   }
 
-  getBotActions(state: GameStateEntity, botPlayerId: number): GameSingleActionDto[] {
+  getBotActions(
+    state: GameStateEntity,
+    botPlayerId: number,
+  ): GameSingleActionDto[] {
     return this.bots.getBotActions(state, botPlayerId);
   }
 
-  exposeStateForUser(state: GameStateEntity, userId: number): GameStateWithActions {
+  exposeStateForUser(
+    state: GameStateEntity,
+    userId: number,
+  ): GameStateWithActions {
     return this.presenter.exposeStateForUser(state, userId);
   }
 }

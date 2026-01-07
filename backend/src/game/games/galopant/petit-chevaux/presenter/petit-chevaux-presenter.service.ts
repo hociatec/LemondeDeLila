@@ -30,9 +30,14 @@ export class PetitChevauxPresenterService {
         p.progress >= meta.trackLength &&
         p.progress < pathLen,
     ).length;
-    const finished = myPawns.filter((p: any) => (p?.progress ?? -1) >= pathLen).length;
+    const finished = myPawns.filter(
+      (p: any) => (p?.progress ?? -1) >= pathLen,
+    ).length;
     const out = myPawns.filter(
-      (p: any) => typeof p?.progress === 'number' && p.progress >= 0 && p.progress < meta.trackLength,
+      (p: any) =>
+        typeof p?.progress === 'number' &&
+        p.progress >= 0 &&
+        p.progress < meta.trackLength,
     );
 
     const stableLines: string[] = [];
@@ -45,7 +50,9 @@ export class PetitChevauxPresenterService {
       const offset = meta.offsets?.[userId] ?? 0;
       for (const pawn of out) {
         const pos = (offset + pawn.progress) % meta.trackLength;
-        stableLines.push(`Cheval ${pawn.pawnIndex + 1}: case ${pos + 1}/${meta.trackLength}.`);
+        stableLines.push(
+          `Cheval ${pawn.pawnIndex + 1}: case ${pos + 1}/${meta.trackLength}.`,
+        );
       }
     } else {
       stableLines.push('Aucun cheval sorti.');
@@ -86,7 +93,7 @@ export class PetitChevauxPresenterService {
         ? (state.pending as any).playerId === userId
           ? state.pending
           : null
-        : state.pending ?? null;
+        : (state.pending ?? null);
 
     return {
       ...state,

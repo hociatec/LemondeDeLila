@@ -8,7 +8,10 @@ import { buildCaDerapeShortcuts } from '../ca-derape.shortcuts';
 
 @Injectable()
 export class CaPresenterService {
-  exposeStateForUser(state: GameStateEntity, userId: number): GameStateWithActions {
+  exposeStateForUser(
+    state: GameStateEntity,
+    userId: number,
+  ): GameStateWithActions {
     const actions = Rulebook.getAvailableActions(state, userId);
     const meta = (state.metadata ?? {}) as any as CaMetadata;
     const players = Array.isArray(state.players) ? state.players : [];
@@ -16,12 +19,22 @@ export class CaPresenterService {
 
     return {
       ...state,
-      catalog: { phases: CA_DERAPE_GAME.phaseOrder.map((p) => p.id), victory: null },
-      actions: actions.map((a) => ({ type: a.type, label: a.type, payload: a.payload ?? {} })),
+      catalog: {
+        phases: CA_DERAPE_GAME.phaseOrder.map((p) => p.id),
+        victory: null,
+      },
+      actions: actions.map((a) => ({
+        type: a.type,
+        label: a.type,
+        payload: a.payload ?? {},
+      })),
       pending: state.pending ?? null,
       extras: {
         ...(state as any).extras,
-        currentPlayerView: { id: userId, username: me?.username ?? `Joueur ${userId}` },
+        currentPlayerView: {
+          id: userId,
+          username: me?.username ?? `Joueur ${userId}`,
+        },
         shortcuts: buildCaDerapeShortcuts({
           metadata: meta as any,
           currentPlayerId: userId,
@@ -35,4 +48,3 @@ export class CaPresenterService {
     } as any;
   }
 }
-

@@ -31,4 +31,3 @@ describe('seeded-rng', () => {
     }
   });
 });
-

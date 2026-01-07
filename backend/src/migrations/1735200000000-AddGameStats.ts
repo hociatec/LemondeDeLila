@@ -174,4 +174,3 @@ export class AddGameStats1735200000000 implements MigrationInterface {
     await queryRunner.dropTable('game_matches', true);
   }
 }
-

@@ -17,7 +17,9 @@ export class WsTicketController {
   @UseGuards(HttpJwtGuard)
   @Get('ticket')
   getTicket(@Req() req: any, @Query('scope') scopeRaw: string) {
-    const scope = String(scopeRaw || '').trim().toLowerCase() as WsTicketScope;
+    const scope = String(scopeRaw || '')
+      .trim()
+      .toLowerCase() as WsTicketScope;
     if (!AllowedScopes.includes(scope)) {
       return {
         error: 'scope invalide',
@@ -25,9 +27,8 @@ export class WsTicketController {
       };
     }
 
-    const userId = Number((req?.user as any)?.id ?? 0);
+    const userId = Number(req?.user?.id ?? 0);
     const res = this.tickets.issue(userId, scope);
     return res;
   }
 }
-

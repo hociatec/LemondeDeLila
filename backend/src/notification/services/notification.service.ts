@@ -104,7 +104,9 @@ export class NotificationService implements OnModuleDestroy {
 
   private dispatchToAllLocal(type: string, payload: any) {
     const message = JSON.stringify({ type, payload });
-    for (const [userId, targets] of Array.from(this.socketsByUserId.entries())) {
+    for (const [userId, targets] of Array.from(
+      this.socketsByUserId.entries(),
+    )) {
       for (const socket of Array.from(targets)) {
         if (socket.readyState !== WebSocket.OPEN) {
           targets.delete(socket);

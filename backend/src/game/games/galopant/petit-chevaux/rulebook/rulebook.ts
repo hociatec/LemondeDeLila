@@ -1,6 +1,9 @@
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
-import { PETIT_CHEVAUX_GAME, type PetitChevauxActionType } from '../definitions/game.definition';
+import {
+  PETIT_CHEVAUX_GAME,
+  type PetitChevauxActionType,
+} from '../definitions/game.definition';
 import {
   GameValidationError,
   PlayerActionError,
@@ -82,7 +85,11 @@ export function validateAction(
 
   if (type === 'move_pawn') {
     const pending: any = state.pending ?? null;
-    if (!pending || pending.type !== 'choose_pawn' || pending.playerId !== actorId) {
+    if (
+      !pending ||
+      pending.type !== 'choose_pawn' ||
+      pending.playerId !== actorId
+    ) {
       throw new PlayerActionError('Aucun choix de pion en attente.', {
         gameType: 'petit-chevaux',
         playerId: actorId ?? undefined,
@@ -93,11 +100,14 @@ export function validateAction(
     const pawnIndex = normalizeNumber((payload as any).pawnIndex);
     const targetProgress = normalizeNumber((payload as any).targetProgress);
     if (pawnIndex == null || targetProgress == null) {
-      throw new GameValidationError('Payload invalide: pawnIndex/targetProgress', {
-        gameType: 'petit-chevaux',
-        playerId: actorId ?? undefined,
-        payload,
-      });
+      throw new GameValidationError(
+        'Payload invalide: pawnIndex/targetProgress',
+        {
+          gameType: 'petit-chevaux',
+          playerId: actorId ?? undefined,
+          payload,
+        },
+      );
     }
 
     const moves: Array<{ pawnIndex: number; targetProgress: number }> =
@@ -113,7 +123,11 @@ export function validateAction(
       });
     }
 
-    return { ...action, type: 'move_pawn', payload: { pawnIndex, targetProgress } };
+    return {
+      ...action,
+      type: 'move_pawn',
+      payload: { pawnIndex, targetProgress },
+    };
   }
 
   return { ...action, type: 'roll', payload: {} };

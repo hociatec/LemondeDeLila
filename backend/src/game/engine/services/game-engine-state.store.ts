@@ -109,9 +109,12 @@ export class GameEngineStateStore {
   private initializeRedis(url: string): void {
     try {
       this.redis = this.redisFactory.create(url, 'game-engine-state-store');
-      this.logger.log("GameEngineStateStore connecté à Redis.");
+      this.logger.log('GameEngineStateStore connecté à Redis.');
     } catch (error) {
-      this.logger.error("Impossible d'initialiser Redis pour GameEngineStateStore", error instanceof Error ? error.stack : String(error));
+      this.logger.error(
+        "Impossible d'initialiser Redis pour GameEngineStateStore",
+        error instanceof Error ? error.stack : String(error),
+      );
       this.redis = null;
     }
   }

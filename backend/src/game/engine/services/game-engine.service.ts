@@ -187,10 +187,16 @@ export class GameEngineService {
       const storedRunIdRaw = (existing.metadata as any)?.roomRunId;
       const roomRunIdRaw = (payload?.room as any)?.runId;
       const storedRunId =
-        typeof storedRunIdRaw === 'number' ? storedRunIdRaw : Number(storedRunIdRaw);
-      const roomRunId = typeof roomRunIdRaw === 'number' ? roomRunIdRaw : Number(roomRunIdRaw);
+        typeof storedRunIdRaw === 'number'
+          ? storedRunIdRaw
+          : Number(storedRunIdRaw);
+      const roomRunId =
+        typeof roomRunIdRaw === 'number' ? roomRunIdRaw : Number(roomRunIdRaw);
       const hasRunId =
-        Number.isFinite(storedRunId) && Number.isFinite(roomRunId) && roomRunId >= 0 && storedRunId >= 0;
+        Number.isFinite(storedRunId) &&
+        Number.isFinite(roomRunId) &&
+        roomRunId >= 0 &&
+        storedRunId >= 0;
       const hasRunIdChanged = hasRunId && storedRunId !== roomRunId;
 
       const hasMeaningfulStartedAtChange = (() => {
@@ -413,13 +419,21 @@ export class GameEngineService {
 
       const allowedTypes = new Set(
         available
-          .map((a) => String((a as any)?.type ?? '').toLowerCase().trim())
+          .map((a) =>
+            String((a as any)?.type ?? '')
+              .toLowerCase()
+              .trim(),
+          )
           .filter((t) => t.length > 0),
       );
       if (allowedTypes.size === 0) return false;
 
       const requestedTypes = (Array.isArray(actions) ? actions : [])
-        .map((a) => String((a as any)?.type ?? '').toLowerCase().trim())
+        .map((a) =>
+          String((a as any)?.type ?? '')
+            .toLowerCase()
+            .trim(),
+        )
         .filter((t) => t.length > 0);
       if (requestedTypes.length === 0) return false;
 
@@ -935,7 +949,9 @@ export class GameEngineService {
     const isParticipant = players.some((p) => p?.id === userId);
 
     if (!isParticipant) {
-      throw new UnauthorizedException('Mode spectateur : action de jeu interdite');
+      throw new UnauthorizedException(
+        'Mode spectateur : action de jeu interdite',
+      );
     }
   }
 

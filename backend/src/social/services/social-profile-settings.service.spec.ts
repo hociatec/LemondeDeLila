@@ -33,7 +33,10 @@ describe('SocialProfileSettingsService', () => {
     const { repo } = createRepo();
     const svc = new SocialProfileSettingsService(repo as any);
 
-    const updated = await svc.update({ bioMinLength: 999999, bioMaxLength: 200000 });
+    const updated = await svc.update({
+      bioMinLength: 999999,
+      bioMaxLength: 200000,
+    });
     expect(updated.bioMaxLength).toBe(100000);
     expect(updated.bioMinLength).toBe(100000);
   });
@@ -49,4 +52,3 @@ describe('SocialProfileSettingsService', () => {
     expect(svc2.get()).toEqual({ bioMinLength: 10, bioMaxLength: 20 });
   });
 });
-

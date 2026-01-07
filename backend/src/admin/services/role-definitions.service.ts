@@ -54,7 +54,10 @@ export class RoleDefinitionsService implements OnModuleInit {
     this.cache = null;
   }
 
-  async update(name: string, update: Partial<RoleDefinition> & { name?: string }): Promise<void> {
+  async update(
+    name: string,
+    update: Partial<RoleDefinition> & { name?: string },
+  ): Promise<void> {
     await this.ensureSeeded();
     const current = await this.repo.findOne({ where: { name } });
     if (!current) {
@@ -102,17 +105,20 @@ export class RoleDefinitionsService implements OnModuleInit {
     return [
       {
         name: 'ROLE_USER',
-        description: "Accès utilisateur standard, peut rejoindre et jouer aux parties.",
+        description:
+          'Accès utilisateur standard, peut rejoindre et jouer aux parties.',
         permissions: ['game.play', 'game.history', 'chat.read'],
       },
       {
         name: 'ROLE_MODERATOR',
-        description: 'Peut gérer les utilisateurs (ban/unban) et surveiller les parties.',
+        description:
+          'Peut gérer les utilisateurs (ban/unban) et surveiller les parties.',
         permissions: ['game.play', 'game.history', 'chat.read', 'admin.users'],
       },
       {
         name: 'ROLE_ADMIN',
-        description: 'Accès complet à l’administration, aux jeux et aux configurations.',
+        description:
+          'Accès complet à l’administration, aux jeux et aux configurations.',
         permissions: ['admin.*', 'game.*', 'log.read'],
       },
     ];

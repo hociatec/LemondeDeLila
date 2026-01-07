@@ -29,4 +29,3 @@ export class AdminRoomsSettingsUpdateWsDto {
   @Max(5000)
   autoCleanupLimit?: number;
 }
-

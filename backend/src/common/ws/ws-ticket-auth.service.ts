@@ -4,7 +4,11 @@ import { WsTicketScope, WsTicketService } from './ws-ticket.service';
 
 export type WsTicketValidationResult =
   | { ok: true; reason: 'not_required' | 'ok'; ticketPresent: boolean }
-  | { ok: false; reason: 'missing_ticket' | 'invalid_ticket'; ticketPresent: boolean };
+  | {
+      ok: false;
+      reason: 'missing_ticket' | 'invalid_ticket';
+      ticketPresent: boolean;
+    };
 
 @Injectable()
 export class WsTicketAuthService {
@@ -99,4 +103,3 @@ export class WsTicketAuthService {
     return null;
   }
 }
-

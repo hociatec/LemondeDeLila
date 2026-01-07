@@ -51,14 +51,19 @@ export class GameCategoriesService implements OnModuleInit {
     return { ...this.getRoot().assignments };
   }
 
-  async assignCategory(gameType: string, categoryId: string | null): Promise<void> {
+  async assignCategory(
+    gameType: string,
+    categoryId: string | null,
+  ): Promise<void> {
     if (!gameType || !gameType.trim()) {
       throw new Error('gameType requis');
     }
     await this.ensureLoaded();
     const root = this.getRoot();
-    const normalizedCategoryId = typeof categoryId === 'string' ? categoryId.trim() : categoryId;
-    const nextCategoryId = normalizedCategoryId === '' ? null : normalizedCategoryId ?? null;
+    const normalizedCategoryId =
+      typeof categoryId === 'string' ? categoryId.trim() : categoryId;
+    const nextCategoryId =
+      normalizedCategoryId === '' ? null : (normalizedCategoryId ?? null);
 
     if (nextCategoryId && !this.getCategory(nextCategoryId)) {
       throw new Error(`Catégorie inconnue : ${nextCategoryId}`);
@@ -72,15 +77,20 @@ export class GameCategoriesService implements OnModuleInit {
     this.cache = root;
   }
 
-  async createCategory(name: string, parentId?: string | null): Promise<GameCategory> {
+  async createCategory(
+    name: string,
+    parentId?: string | null,
+  ): Promise<GameCategory> {
     const trimmed = (name ?? '').trim();
     if (!trimmed) {
       throw new Error('Nom de catégorie requis');
     }
     await this.ensureLoaded();
     const root = this.getRoot();
-    const normalizedParentId = typeof parentId === 'string' ? parentId.trim() : parentId;
-    const actualParentId = normalizedParentId === '' ? null : normalizedParentId ?? null;
+    const normalizedParentId =
+      typeof parentId === 'string' ? parentId.trim() : parentId;
+    const actualParentId =
+      normalizedParentId === '' ? null : (normalizedParentId ?? null);
 
     if (actualParentId && !this.getCategory(actualParentId)) {
       throw new Error(`Catégorie parente introuvable : ${actualParentId}`);
@@ -128,8 +138,11 @@ export class GameCategoriesService implements OnModuleInit {
 
     if (data.parentId !== undefined) {
       const normalizedParentId =
-        typeof data.parentId === 'string' ? data.parentId.trim() : data.parentId;
-      const targetParentId = normalizedParentId === '' ? null : normalizedParentId ?? null;
+        typeof data.parentId === 'string'
+          ? data.parentId.trim()
+          : data.parentId;
+      const targetParentId =
+        normalizedParentId === '' ? null : (normalizedParentId ?? null);
 
       if (targetParentId && !this.getCategory(targetParentId)) {
         throw new Error(`Catégorie parente introuvable : ${targetParentId}`);
@@ -169,7 +182,9 @@ export class GameCategoriesService implements OnModuleInit {
     return { ...def, category: inferred.name, subcategory: undefined };
   }
 
-  private inferCategoryFromDefinition(def: GameDefinition): GameCategory | undefined {
+  private inferCategoryFromDefinition(
+    def: GameDefinition,
+  ): GameCategory | undefined {
     const raw = (def.subcategory || def.category || '').trim();
     if (!raw) {
       return undefined;
@@ -222,7 +237,9 @@ export class GameCategoriesService implements OnModuleInit {
 
       this.cache = { categories, assignments };
     } catch (error) {
-      this.logger.warn(`Impossible de charger les catégories: ${(error as Error).message}`);
+      this.logger.warn(
+        `Impossible de charger les catégories: ${(error as Error).message}`,
+      );
       this.cache = { categories: [], assignments: {} };
     }
   }

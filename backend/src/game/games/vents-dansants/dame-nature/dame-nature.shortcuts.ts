@@ -7,9 +7,9 @@ import {
   when,
 } from '../../../engine/shortcuts/shortcut-utils';
 
-export const buildDameNatureShortcuts: GameShortcutsBuilder<DameNatureMetadata> = (
-  ctx,
-) => {
+export const buildDameNatureShortcuts: GameShortcutsBuilder<
+  DameNatureMetadata
+> = (ctx) => {
   const { metadata, started, currentPlayerId } = ctx;
   const pendingAsk = metadata?.pendingAsk ?? null;
   const pendingQuiz = metadata?.pendingQuiz ?? null;
@@ -39,7 +39,11 @@ export const buildDameNatureShortcuts: GameShortcutsBuilder<DameNatureMetadata> 
     when(ctx, started, startedShortcuts),
     when(
       ctx,
-      Boolean(pendingAsk && actionPlayerId != null && pendingAsk.targetId === actionPlayerId),
+      Boolean(
+        pendingAsk &&
+        actionPlayerId != null &&
+        pendingAsk.targetId === actionPlayerId,
+      ),
       askAnswerShortcuts,
     ),
   );

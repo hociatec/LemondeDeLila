@@ -4,8 +4,10 @@ import * as http from 'node:http';
 
 type SystemctlShow = Record<string, string>;
 
-const DEPLOY_UNIT = process.env.ADMIN_MAINTENANCE_DEPLOY_UNIT || 'lila-backend-deploy.service';
-const BACKEND_SERVICE = process.env.ADMIN_MAINTENANCE_BACKEND_SERVICE || 'lila-backend.service';
+const DEPLOY_UNIT =
+  process.env.ADMIN_MAINTENANCE_DEPLOY_UNIT || 'lila-backend-deploy.service';
+const BACKEND_SERVICE =
+  process.env.ADMIN_MAINTENANCE_BACKEND_SERVICE || 'lila-backend.service';
 const SERVICE_RE = /^[a-zA-Z0-9@._-]+$/;
 
 @Injectable()
@@ -32,7 +34,14 @@ export class AdminMaintenanceService {
   }
 
   startDeploy() {
-    const res = this.run(['sudo', '-n', 'systemctl', 'start', '--no-block', DEPLOY_UNIT]);
+    const res = this.run([
+      'sudo',
+      '-n',
+      'systemctl',
+      'start',
+      '--no-block',
+      DEPLOY_UNIT,
+    ]);
     if (res.status !== 0) {
       throw new InternalServerErrorException({
         message: 'Échec du déclenchement du déploiement',
@@ -64,10 +73,10 @@ export class AdminMaintenanceService {
   }
 
   dryRunBuild() {
-    const res = this.run(
-      ['npm', 'run', 'build'],
-      { cwd: this.backendCwd, timeoutMs: 10 * 60 * 1000 },
-    );
+    const res = this.run(['npm', 'run', 'build'], {
+      cwd: this.backendCwd,
+      timeoutMs: 10 * 60 * 1000,
+    });
     if (res.status !== 0) {
       throw new InternalServerErrorException({
         message: `Build échoué (dry-run)`,
@@ -78,10 +87,10 @@ export class AdminMaintenanceService {
   }
 
   runMigrations() {
-    const res = this.run(
-      ['npm', 'run', 'migration:run'],
-      { cwd: this.backendCwd, timeoutMs: 10 * 60 * 1000 },
-    );
+    const res = this.run(['npm', 'run', 'migration:run'], {
+      cwd: this.backendCwd,
+      timeoutMs: 10 * 60 * 1000,
+    });
     if (res.status !== 0) {
       throw new InternalServerErrorException({
         message: `Migrations échouées`,
@@ -177,10 +186,7 @@ export class AdminMaintenanceService {
     return Math.max(1, Math.min(2000, n));
   }
 
-  private run(
-    argv: string[],
-    opts?: { cwd?: string; timeoutMs?: number },
-  ) {
+  private run(argv: string[], opts?: { cwd?: string; timeoutMs?: number }) {
     const [cmd, ...args] = argv;
     const result = spawnSync(cmd, args, {
       encoding: 'utf8',
@@ -203,21 +209,24 @@ export class AdminMaintenanceService {
     opts?: { cwd?: string; delayMs?: number },
   ): void {
     const delayMs = typeof opts?.delayMs === 'number' ? opts.delayMs : 0;
-    setTimeout(() => {
-      try {
-        const [cmd, ...args] = argv;
-        const child = spawn(cmd, args, {
-          cwd: opts?.cwd,
-          env: process.env,
-          detached: true,
-          stdio: 'ignore',
-          windowsHide: true,
-        });
-        child.unref();
-      } catch {
-        // best effort
-      }
-    }, Math.max(0, delayMs));
+    setTimeout(
+      () => {
+        try {
+          const [cmd, ...args] = argv;
+          const child = spawn(cmd, args, {
+            cwd: opts?.cwd,
+            env: process.env,
+            detached: true,
+            stdio: 'ignore',
+            windowsHide: true,
+          });
+          child.unref();
+        } catch {
+          // best effort
+        }
+      },
+      Math.max(0, delayMs),
+    );
   }
 
   private shQuote(value: string): string {
@@ -233,7 +242,8 @@ export class AdminMaintenanceService {
     return new Promise((resolve) => {
       try {
         const req = http.get(url, (res) => {
-          const statusCode = typeof res.statusCode === 'number' ? res.statusCode : 0;
+          const statusCode =
+            typeof res.statusCode === 'number' ? res.statusCode : 0;
           res.setEncoding('utf8');
           let body = '';
           res.on('data', (chunk) => (body += chunk));

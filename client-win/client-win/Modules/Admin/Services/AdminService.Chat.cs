@@ -42,12 +42,12 @@ public sealed partial class AdminService
         return res.Payload;
     }
 
-    public async Task<AdminChatSettingsDto> UpdateChatSettingsAsync(int chatHistoryLimit, CancellationToken cancellationToken = default)
+    public async Task<AdminChatSettingsDto> UpdateChatSettingsAsync(int chatHistoryLimit, int editWindowSeconds, CancellationToken cancellationToken = default)
     {
         var token = EnsureAuth();
         var res = await _ws.RequestAsync<AdminChatSettingsDto>(
             WsMessageTypes.Admin.ChatSettingsUpdate,
-            new { chatHistoryLimit },
+            new { chatHistoryLimit, editWindowSeconds },
             token,
             cancellationToken).ConfigureAwait(false);
 
@@ -127,4 +127,3 @@ public sealed partial class AdminService
         return response.Payload.Ok;
     }
 }
-

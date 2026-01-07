@@ -752,7 +752,8 @@ export class RoomService {
         status: room.status,
         gameType: room.gameType,
         startedAt: room.startedAt ? room.startedAt.toISOString() : null,
-        runId: typeof (room as any).runId === 'number' ? (room as any).runId : null,
+        runId:
+          typeof (room as any).runId === 'number' ? (room as any).runId : null,
         counts: {
           players: (room.participants || []).filter((p) => !p.leftAt).length,
           spectators: 0,

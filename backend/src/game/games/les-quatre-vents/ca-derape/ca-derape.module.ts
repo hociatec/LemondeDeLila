@@ -11,9 +11,20 @@ import { CaPresenterService } from './presenter/ca-presenter.service';
 import { CaBotService } from './bots/ca-bot.service';
 
 @Module({
-  imports: [GameCoreModule, GameRegistryModule, RandomModule, TurnModule, BotModule],
-  providers: [CaDerapeService, CaSetupService, CaActionService, CaPresenterService, CaBotService],
+  imports: [
+    GameCoreModule,
+    GameRegistryModule,
+    RandomModule,
+    TurnModule,
+    BotModule,
+  ],
+  providers: [
+    CaDerapeService,
+    CaSetupService,
+    CaActionService,
+    CaPresenterService,
+    CaBotService,
+  ],
   exports: [CaDerapeService],
 })
 export class CaDerapeModule {}
-

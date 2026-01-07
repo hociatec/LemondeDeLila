@@ -7,4 +7,3 @@ export class JeuOiePhaseService {
     return state;
   }
 }
-

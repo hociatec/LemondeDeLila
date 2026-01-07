@@ -8,4 +8,3 @@ export class BotSettingsEntity {
   @Column({ name: 'bot_turn_delay_ms', type: 'int', default: 4000 })
   botTurnDelayMs!: number;
 }
-

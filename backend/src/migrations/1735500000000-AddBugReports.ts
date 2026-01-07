@@ -29,8 +29,17 @@ export class AddBugReports1735500000000 implements MigrationInterface {
             { name: 'id', type: 'varchar', length: '36', isPrimary: true },
             { name: 'subject', type: 'varchar', length: '200' },
             { name: 'content', type: 'longtext' },
-            { name: 'status', type: 'varchar', length: '20', default: "'pending'" },
-            { name: 'created_at', type: 'datetime', default: 'CURRENT_TIMESTAMP' },
+            {
+              name: 'status',
+              type: 'varchar',
+              length: '20',
+              default: "'pending'",
+            },
+            {
+              name: 'created_at',
+              type: 'datetime',
+              default: 'CURRENT_TIMESTAMP',
+            },
             {
               name: 'updated_at',
               type: 'datetime',
@@ -69,13 +78,18 @@ export class AddBugReports1735500000000 implements MigrationInterface {
     const count = Number(rows?.[0]?.c ?? 0);
     if (count > 0) return;
 
-    const legacy = this.tryReadJson<LegacyBugReportsFile>(this.dataPath('bug-reports.json'));
-    const items = Array.isArray(legacy?.items) ? legacy!.items! : [];
+    const legacy = this.tryReadJson<LegacyBugReportsFile>(
+      this.dataPath('bug-reports.json'),
+    );
+    const items = Array.isArray(legacy?.items) ? legacy.items : [];
     if (items.length === 0) return;
 
     for (const r of items) {
       if (!r?.id || !r.subject || !r.content) continue;
-      const status = r.status === 'in_progress' || r.status === 'done' ? r.status : 'pending';
+      const status =
+        r.status === 'in_progress' || r.status === 'done'
+          ? r.status
+          : 'pending';
       await queryRunner.query(
         `INSERT INTO bug_reports
           (id, subject, content, status, created_at, updated_at, created_by_user_id, created_by_username)
@@ -116,4 +130,3 @@ export class AddBugReports1735500000000 implements MigrationInterface {
     return d.toISOString().slice(0, 19).replace('T', ' ');
   }
 }
-

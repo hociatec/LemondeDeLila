@@ -1,4 +1,10 @@
-﻿export type MinuitTileType = 'start' | 'neutral' | 'card' | 'move' | 'skip' | 'finish';
+﻿export type MinuitTileType =
+  | 'start'
+  | 'neutral'
+  | 'card'
+  | 'move'
+  | 'skip'
+  | 'finish';
 
 export type MinuitTile = {
   n: number;

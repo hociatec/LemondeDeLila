@@ -128,7 +128,9 @@ export class ClientUpdatesService {
 
   async writeLandingPage(targetDir: string): Promise<void> {
     const zipExists = fs.existsSync(path.join(targetDir, this.latestZipName));
-    const entries = await fs.promises.readdir(targetDir, { withFileTypes: true });
+    const entries = await fs.promises.readdir(targetDir, {
+      withFileTypes: true,
+    });
     const application = entries
       .filter((e) => e.isFile())
       .map((e) => e.name)
@@ -191,7 +193,11 @@ export class ClientUpdatesService {
   </body>
 </html>`;
 
-    await fs.promises.writeFile(path.join(targetDir, 'index.html'), html, 'utf-8');
+    await fs.promises.writeFile(
+      path.join(targetDir, 'index.html'),
+      html,
+      'utf-8',
+    );
   }
 
   async getLatest(): Promise<ClientUpdateMeta | null> {
@@ -226,7 +232,9 @@ export class ClientUpdatesService {
   async getMinRequiredVersion(): Promise<string | null> {
     const env = (process.env.CLIENT_MIN_VERSION || '').trim();
     const latest = await this.getLatest();
-    const forceLatestRaw = (process.env.CLIENT_FORCE_LATEST || '').trim().toLowerCase();
+    const forceLatestRaw = (process.env.CLIENT_FORCE_LATEST || '')
+      .trim()
+      .toLowerCase();
     const forceLatest =
       forceLatestRaw === '1' ||
       forceLatestRaw === 'true' ||
@@ -234,8 +242,12 @@ export class ClientUpdatesService {
       forceLatestRaw === 'y';
 
     const metaMin = (latest?.minRequiredVersion || '').trim();
-    const publishedClickOnce = forceLatest ? (await this.getPublishedClickOnceVersion()) : null;
-    const latestAsMin = forceLatest ? ((publishedClickOnce || (latest?.version || '')).trim()) : '';
+    const publishedClickOnce = forceLatest
+      ? await this.getPublishedClickOnceVersion()
+      : null;
+    const latestAsMin = forceLatest
+      ? (publishedClickOnce || latest?.version || '').trim()
+      : '';
 
     const candidates = [env, metaMin, latestAsMin].filter((v) => Boolean(v));
     if (candidates.length === 0) return null;
@@ -250,7 +262,6 @@ export class ClientUpdatesService {
     }
     parsed.sort((a, b) => b.p - a.p);
     return parsed[0].v;
-
   }
 
   private async assertZipSafe(zipPath: string) {
@@ -416,7 +427,9 @@ export class ClientUpdatesService {
         return;
       }
 
-      const entries = await fs.promises.readdir(targetDir, { withFileTypes: true });
+      const entries = await fs.promises.readdir(targetDir, {
+        withFileTypes: true,
+      });
       const application = entries
         .filter((e) => e.isFile())
         .map((e) => e.name)

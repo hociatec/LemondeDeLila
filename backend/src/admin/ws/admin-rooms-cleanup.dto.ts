@@ -28,4 +28,3 @@ export class AdminRoomsCleanupWsDto {
   @Max(5000)
   limit?: number;
 }
-

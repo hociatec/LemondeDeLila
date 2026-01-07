@@ -8,12 +8,19 @@ import * as Rulebook from '../rulebook/ca.rulebook';
 export class CaBotService {
   constructor(private readonly botRunner: BotRunnerService) {}
 
-  getBotActions(state: GameStateEntity, botPlayerId: number): GameSingleActionDto[] {
+  getBotActions(
+    state: GameStateEntity,
+    botPlayerId: number,
+  ): GameSingleActionDto[] {
     const available = Rulebook.getAvailableActions(state, botPlayerId);
-    return this.botRunner.choose(available, { state, playerId: botPlayerId }, 'random', {
-      preferTypes: ['choose_target', 'choose_next_player', 'roll'],
-      fallbackTypes: ['choose_target', 'choose_next_player', 'roll'],
-    });
+    return this.botRunner.choose(
+      available,
+      { state, playerId: botPlayerId },
+      'random',
+      {
+        preferTypes: ['choose_target', 'choose_next_player', 'roll'],
+        fallbackTypes: ['choose_target', 'choose_next_player', 'roll'],
+      },
+    );
   }
 }
-

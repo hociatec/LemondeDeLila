@@ -38,7 +38,9 @@ export class BotSettingsService implements OnModuleInit {
     return this.getRoot().botTurnDelayMs;
   }
 
-  async updateSettings(update: { botTurnDelayMs?: number }): Promise<BotSettings> {
+  async updateSettings(update: {
+    botTurnDelayMs?: number;
+  }): Promise<BotSettings> {
     await this.ensureSeeded();
     const root = this.getRoot();
 
@@ -79,7 +81,9 @@ export class BotSettingsService implements OnModuleInit {
     try {
       const existing = await this.repo.findOne({ where: { id: 1 } });
       if (existing) {
-        this.cache = { botTurnDelayMs: this.clampDelay(existing.botTurnDelayMs) };
+        this.cache = {
+          botTurnDelayMs: this.clampDelay(existing.botTurnDelayMs),
+        };
         return;
       }
 
@@ -94,4 +98,3 @@ export class BotSettingsService implements OnModuleInit {
     }
   }
 }
-

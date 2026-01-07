@@ -19,7 +19,11 @@ describe('PetitChevauxService', () => {
     } as any);
     const exposedA: any = service.exposeStateForUser(state, 1);
     const exposedB: any = service.exposeStateForUser(state, 2);
-    expect((exposedA.actions ?? []).some((a: any) => a.type === 'roll')).toBe(true);
-    expect((exposedB.actions ?? []).some((a: any) => a.type === 'roll')).toBe(false);
+    expect((exposedA.actions ?? []).some((a: any) => a.type === 'roll')).toBe(
+      true,
+    );
+    expect((exposedB.actions ?? []).some((a: any) => a.type === 'roll')).toBe(
+      false,
+    );
   });
 });

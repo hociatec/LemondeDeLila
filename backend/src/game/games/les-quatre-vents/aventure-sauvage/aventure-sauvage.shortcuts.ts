@@ -3,4 +3,3 @@ import { positionOnlyShortcuts } from '../../../engine/shortcuts/shortcut-preset
 
 export const buildAventureSauvageShortcuts: GameShortcutsBuilder = () =>
   positionOnlyShortcuts();
-

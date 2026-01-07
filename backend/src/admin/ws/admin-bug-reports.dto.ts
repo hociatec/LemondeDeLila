@@ -1,4 +1,10 @@
-import { IsIn, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import {
+  IsIn,
+  IsOptional,
+  IsString,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 
 export class AdminBugReportCreateWsDto {
   @IsString()
@@ -42,5 +48,11 @@ export class AdminBugReportUpdateWsDto extends AdminBugReportIdWsDto {
 export class AdminBugReportUpdateStatusWsDto extends AdminBugReportIdWsDto {
   @IsString()
   @IsIn(['pending', 'in_progress', 'to_test', 'done', 'refused', 'rejected'])
-  status!: 'pending' | 'in_progress' | 'to_test' | 'done' | 'refused' | 'rejected';
+  status!:
+    | 'pending'
+    | 'in_progress'
+    | 'to_test'
+    | 'done'
+    | 'refused'
+    | 'rejected';
 }

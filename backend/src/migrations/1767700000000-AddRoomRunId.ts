@@ -5,12 +5,11 @@ export class AddRoomRunId1767700000000 implements MigrationInterface {
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
-      "ALTER TABLE `rooms` ADD COLUMN `run_id` int NOT NULL DEFAULT 0",
+      'ALTER TABLE `rooms` ADD COLUMN `run_id` int NOT NULL DEFAULT 0',
     );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query("ALTER TABLE `rooms` DROP COLUMN `run_id`");
+    await queryRunner.query('ALTER TABLE `rooms` DROP COLUMN `run_id`');
   }
 }
-

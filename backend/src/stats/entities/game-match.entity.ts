@@ -46,4 +46,3 @@ export class GameMatch {
   @OneToMany(() => GameMatchPlayer, (p) => p.match)
   players!: GameMatchPlayer[];
 }
-

@@ -67,7 +67,10 @@ export type ContesPending =
       playerId: number;
       blocking: true;
       choices: string[];
-      data: { context: string; targets: Array<{ targetPlayerId: number; targetUsername: string }> };
+      data: {
+        context: string;
+        targets: Array<{ targetPlayerId: number; targetUsername: string }>;
+      };
     }
   | {
       type: 'choose_number';
@@ -91,5 +94,12 @@ export type ContesPending =
       playerId: number;
       blocking: true;
       choices: string[];
-      data: { context: string; cards: Array<{ cardType: ContesCardType; cardId: number; title: string }> };
+      data: {
+        context: string;
+        cards: Array<{
+          cardType: ContesCardType;
+          cardId: number;
+          title: string;
+        }>;
+      };
     };

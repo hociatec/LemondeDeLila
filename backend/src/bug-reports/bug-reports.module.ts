@@ -6,7 +6,9 @@ import { BugReportCommentEntity } from './entities/bug-report-comment.entity';
 import { BugReportCommentsService } from './bug-report-comments.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([BugReportEntity, BugReportCommentEntity])],
+  imports: [
+    TypeOrmModule.forFeature([BugReportEntity, BugReportCommentEntity]),
+  ],
   providers: [BugReportsService, BugReportCommentsService],
   exports: [BugReportsService, BugReportCommentsService],
 })

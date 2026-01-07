@@ -3,4 +3,3 @@ import { stableAndPositionShortcuts } from '../../../engine/shortcuts/shortcut-p
 
 export const buildPetitChevauxShortcuts: GameShortcutsBuilder = () =>
   stableAndPositionShortcuts();
-

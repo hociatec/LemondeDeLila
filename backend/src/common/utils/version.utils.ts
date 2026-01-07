@@ -34,4 +34,3 @@ export function isVersionLower(a: string, b: string): boolean | null {
   if (pa == null || pb == null) return null;
   return pa < pb;
 }
-

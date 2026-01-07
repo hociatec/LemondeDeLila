@@ -11,7 +11,13 @@ import { AFondLesBallonsPresenterService } from './presenter/a-fond-les-ballons-
 import { AFondLesBallonsBotService } from './bots/a-fond-les-ballons-bot.service';
 
 @Module({
-  imports: [GameCoreModule, GameRegistryModule, RandomModule, TurnModule, BotModule],
+  imports: [
+    GameCoreModule,
+    GameRegistryModule,
+    RandomModule,
+    TurnModule,
+    BotModule,
+  ],
   providers: [
     AFondLesBallonsService,
     AFondLesBallonsSetupService,
@@ -22,4 +28,3 @@ import { AFondLesBallonsBotService } from './bots/a-fond-les-ballons-bot.service
   exports: [AFondLesBallonsService],
 })
 export class AFondLesBallonsModule {}
-

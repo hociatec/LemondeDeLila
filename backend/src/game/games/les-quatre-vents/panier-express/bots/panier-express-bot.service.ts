@@ -69,7 +69,8 @@ export class PanierExpressBotService {
       const type = action.type?.toLowerCase() ?? '';
       if (type === 'answer_quiz') return 6;
       if (type === 'pick_choice') {
-        const index = typeof action.payload?.index === 'number' ? action.payload.index : 0;
+        const index =
+          typeof action.payload?.index === 'number' ? action.payload.index : 0;
         // Choix déterministe: on préfère les premiers items pour progresser.
         return 8 - Math.max(0, Math.min(6, index));
       }
@@ -94,17 +95,9 @@ export class PanierExpressBotService {
         }
 
         if (type === 'exchange_accept') {
-          return (
-            5 +
-            (giveNeeded ? 4 : 0) +
-            (takeNeeded ? -4 : 1)
-          );
+          return 5 + (giveNeeded ? 4 : 0) + (takeNeeded ? -4 : 1);
         }
-        return (
-          4 +
-          (takeNeeded ? 3 : 0) +
-          (giveNeeded ? -2 : 0)
-        );
+        return 4 + (takeNeeded ? 3 : 0) + (giveNeeded ? -2 : 0);
       }
       if (type === 'exchange_choose_target') {
         const targetId = action.payload?.targetPlayerId;

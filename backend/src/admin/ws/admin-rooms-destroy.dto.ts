@@ -8,4 +8,3 @@ export class AdminRoomsDestroyWsDto {
   @IsBoolean()
   confirm!: boolean;
 }
-

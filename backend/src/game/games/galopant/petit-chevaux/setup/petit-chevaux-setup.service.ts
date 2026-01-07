@@ -54,7 +54,7 @@ export class PetitChevauxSetupService {
         progress: -1,
       }));
       colorsByPlayer[p.id] = colorTable[idx] ?? 'Rouge';
-      offsets[p.id] = offsetTable[idx] ?? ((idx * 10) % trackLength);
+      offsets[p.id] = offsetTable[idx] ?? (idx * 10) % trackLength;
     });
 
     const tiles: PetitChevauxTile[] = Array.isArray(board.tiles)
@@ -81,7 +81,9 @@ export class PetitChevauxSetupService {
     const safeFromOffsets = players
       .map((p) => offsets[p.id])
       .filter((x) => typeof x === 'number');
-    const mergedSafeTiles = Array.from(new Set([...safeTiles, ...safeFromOffsets]));
+    const mergedSafeTiles = Array.from(
+      new Set([...safeTiles, ...safeFromOffsets]),
+    );
 
     const meta: PetitChevauxMetadata = {
       tiles,
@@ -108,7 +110,10 @@ export class PetitChevauxSetupService {
     let next = this.recomputeBoardView(hydrated);
     for (const p of players) {
       const color = colorsByPlayer[p.id];
-      next = this.core.appendLog(next, `${p.username} reçoit les pions ${color}.`);
+      next = this.core.appendLog(
+        next,
+        `${p.username} reçoit les pions ${color}.`,
+      );
     }
     return next;
   }

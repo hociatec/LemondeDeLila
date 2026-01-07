@@ -1,8 +1,6 @@
 import { MigrationInterface, QueryRunner, TableColumn } from 'typeorm';
 
-export class GameChatSoundsEnabledOverride1736200000000
-  implements MigrationInterface
-{
+export class GameChatSoundsEnabledOverride1736200000000 implements MigrationInterface {
   name = 'GameChatSoundsEnabledOverride1736200000000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -17,7 +15,9 @@ export class GameChatSoundsEnabledOverride1736200000000
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.dropColumn('game_catalog_overrides', 'chat_sounds_enabled');
+    await queryRunner.dropColumn(
+      'game_catalog_overrides',
+      'chat_sounds_enabled',
+    );
   }
 }
-

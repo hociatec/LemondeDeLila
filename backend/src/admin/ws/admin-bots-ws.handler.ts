@@ -80,4 +80,3 @@ export class AdminBotsWsHandler {
     return this.botsNamesList(session, {});
   }
 }
-

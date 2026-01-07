@@ -15,7 +15,10 @@ export type WsTicketPayload = {
 export class WsTicketService {
   constructor(private readonly config: ConfigService) {}
 
-  issue(userId: number, scope: WsTicketScope): {
+  issue(
+    userId: number,
+    scope: WsTicketScope,
+  ): {
     ticket: string;
     expiresInSeconds: number;
     scope: WsTicketScope;

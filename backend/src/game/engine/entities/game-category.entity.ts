@@ -14,4 +14,3 @@ export class GameCategoryEntity {
   @Column({ type: 'boolean', default: true })
   enabled!: boolean;
 }
-

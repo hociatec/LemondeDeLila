@@ -63,7 +63,12 @@ function buildTiles(): JeuOieTile[] {
       continue;
     }
     if (i === 52) {
-      tiles.push({ id: 'prison', type: 'prison', label: 'Prison', skipTurns: 2 });
+      tiles.push({
+        id: 'prison',
+        type: 'prison',
+        label: 'Prison',
+        skipTurns: 2,
+      });
       continue;
     }
     if (i === 58) {
@@ -78,4 +83,3 @@ function buildTiles(): JeuOieTile[] {
   }
   return tiles;
 }
-

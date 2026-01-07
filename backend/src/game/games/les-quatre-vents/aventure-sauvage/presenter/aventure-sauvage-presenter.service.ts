@@ -8,7 +8,10 @@ import { buildAventureSauvageShortcuts } from '../aventure-sauvage.shortcuts';
 
 @Injectable()
 export class AventureSauvagePresenterService {
-  exposeStateForUser(state: GameStateEntity, userId: number): GameStateWithActions {
+  exposeStateForUser(
+    state: GameStateEntity,
+    userId: number,
+  ): GameStateWithActions {
     const actions = Rulebook.getAvailableActions(state, userId);
     const meta = (state.metadata ?? {}) as any as AventureSauvageMetadata;
     const players = Array.isArray(state.players) ? state.players : [];
@@ -16,7 +19,10 @@ export class AventureSauvagePresenterService {
 
     const extras = {
       ...(state as any).extras,
-      currentPlayerView: { id: userId, username: me?.username ?? `Joueur ${userId}` },
+      currentPlayerView: {
+        id: userId,
+        username: me?.username ?? `Joueur ${userId}`,
+      },
       shortcuts: buildAventureSauvageShortcuts({
         metadata: meta as any,
         currentPlayerId: userId,
@@ -26,8 +32,15 @@ export class AventureSauvagePresenterService {
 
     return {
       ...state,
-      catalog: { phases: AVENTURE_SAUVAGE_GAME.phaseOrder.map((p) => p.id), victory: null },
-      actions: actions.map((a) => ({ type: a.type, label: a.type, payload: a.payload ?? {} })),
+      catalog: {
+        phases: AVENTURE_SAUVAGE_GAME.phaseOrder.map((p) => p.id),
+        victory: null,
+      },
+      actions: actions.map((a) => ({
+        type: a.type,
+        label: a.type,
+        payload: a.payload ?? {},
+      })),
       pending: state.pending ?? null,
       extras,
       board: {
@@ -38,4 +51,3 @@ export class AventureSauvagePresenterService {
     } as any;
   }
 }
-

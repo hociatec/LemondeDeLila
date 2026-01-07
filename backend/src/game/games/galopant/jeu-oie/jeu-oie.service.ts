@@ -64,11 +64,17 @@ export class JeuOieService implements GameRulesAdapter, OnModuleInit {
     return JeuOieRulebook.validateAction(state, action, actorId);
   }
 
-  getBotActions(state: GameStateEntity, botPlayerId: number): GameSingleActionDto[] {
+  getBotActions(
+    state: GameStateEntity,
+    botPlayerId: number,
+  ): GameSingleActionDto[] {
     return this.bots.getBotActions(state, botPlayerId);
   }
 
-  exposeStateForUser(state: GameStateEntity, userId: number): GameStateWithActions {
+  exposeStateForUser(
+    state: GameStateEntity,
+    userId: number,
+  ): GameStateWithActions {
     return this.presenter.exposeStateForUser(state, userId);
   }
 }

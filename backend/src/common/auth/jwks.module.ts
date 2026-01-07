@@ -7,4 +7,3 @@ import { JwksController } from './jwks.controller';
   controllers: [JwksController],
 })
 export class JwksModule {}
-

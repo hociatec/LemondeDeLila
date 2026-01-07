@@ -18,4 +18,3 @@ export class LilaWsAdapter extends WsAdapter {
     return super.create(port, merged);
   }
 }
-

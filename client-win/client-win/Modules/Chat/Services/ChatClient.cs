@@ -19,6 +19,7 @@ public sealed class ChatClient : IAsyncDisposable
     private CancellationTokenSource? _cts;
 
     public event Action<IReadOnlyList<ChatMessage>>? HistoryReceived;
+    public event Action<int>? EditWindowSecondsReceived;
     public event Action<ChatMessage>? MessageReceived;
     public event Action<ChatMessage>? MessageUpdated;
     public event Action<string>? MessageDeleted;
@@ -100,6 +101,20 @@ public sealed class ChatClient : IAsyncDisposable
             string type = root.TryGetProperty("type", out var t) ? t.GetString() ?? string.Empty : string.Empty;
             if (type.Equals(WsMessageTypes.Chat.History, StringComparison.OrdinalIgnoreCase))
             {
+                if (root.TryGetProperty("editWindowSeconds", out var editWindowProp) &&
+                    editWindowProp.ValueKind == JsonValueKind.Number)
+                {
+                    try
+                    {
+                        var seconds = editWindowProp.GetInt32();
+                        EditWindowSecondsReceived?.Invoke(seconds);
+                    }
+                    catch
+                    {
+                        // ignore
+                    }
+                }
+
                 var list = new List<ChatMessage>();
                 JsonElement? container = null;
                 if (root.TryGetProperty("messages", out var msgs))

@@ -33,4 +33,3 @@ export class SocialProfileSettings1735700000000 implements MigrationInterface {
     await queryRunner.dropTable('social_profile_settings', true);
   }
 }
-

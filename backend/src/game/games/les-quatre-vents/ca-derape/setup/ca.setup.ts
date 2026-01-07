@@ -136,7 +136,7 @@ function buildDeck(): CaCard[] {
     ['Glissade élégante mais contre-productive', 'move', -2],
     ['Tu oublies ce que tu faisais', 'skip', 1],
     ["Chaussures à l'envers", 'move', -1],
-    ["Tu cherches ton élan", 'move', 0],
+    ['Tu cherches ton élan', 'move', 0],
     ['Doute existentialo-sportif', 'move', -3],
     ["Tu perds l'équilibre", 'move', -2],
     ['Piqûre de mouette (symbolique)', 'move', -1],
@@ -147,15 +147,14 @@ function buildDeck(): CaCard[] {
   ] as const;
   losses.forEach(([t, k, d], i) => {
     const id = 21 + i;
-    if (k === 'skip')
-      push(id, t, 'reculs', 'skip', 'Perds ton prochain tour.');
+    if (k === 'skip') push(id, t, 'reculs', 'skip', 'Perds ton prochain tour.');
     else
       push(
         id,
         t,
         'reculs',
         'move',
-        d === 0 ? "Pas de déplacement ce tour-ci." : `Déplacement: ${d}.`,
+        d === 0 ? 'Pas de déplacement ce tour-ci.' : `Déplacement: ${d}.`,
         d as any,
       );
   });
@@ -175,7 +174,7 @@ function buildDeck(): CaCard[] {
     ],
     ['Chemin de traverse', 'rule', 'Avance de 3 cases et rejoue.', 3, true],
     [
-      "Trompe-l’œil du décor",
+      'Trompe-l’œil du décor',
       'swap',
       'Avance de 2 cases et échange ta position avec un joueur.',
     ],
@@ -183,23 +182,61 @@ function buildDeck(): CaCard[] {
     ['Virage à 90° trop efficace', 'move', 'Avance de 3 cases.', 3],
   ] as const;
   special.forEach(([t, kind, text, delta, keepTurn], i) =>
-    push(33 + i, t, 'special', kind as any, text, delta as any, keepTurn as any),
+    push(
+      33 + i,
+      t,
+      'special',
+      kind as any,
+      text,
+      delta as any,
+      keepTurn as any,
+    ),
   );
 
   const shared = [
-    ['La trompette de l’univers', 'global', 'Tous les joueurs changent de place au hasard.'],
-    ['Course en file indienne', 'global', "Le dernier devient premier (inversion du classement)."],
-    ['Pause hydratation collective', 'global', 'Tour commun perdu (tous passent leur prochain tour).'],
+    [
+      'La trompette de l’univers',
+      'global',
+      'Tous les joueurs changent de place au hasard.',
+    ],
+    [
+      'Course en file indienne',
+      'global',
+      'Le dernier devient premier (inversion du classement).',
+    ],
+    [
+      'Pause hydratation collective',
+      'global',
+      'Tour commun perdu (tous passent leur prochain tour).',
+    ],
     ['Concours de fières postures', 'global', 'Chacun avance de 1 case.'],
-    ['Le sol est un peu trop élastique', 'global', 'Tout le monde recule de 2.'],
+    [
+      'Le sol est un peu trop élastique',
+      'global',
+      'Tout le monde recule de 2.',
+    ],
     ['Brise de sérénité', 'neutral', "Rien n'arrive."],
     ['Appel du koala intérieur', 'global', 'Tous passent leur prochain tour.'],
     ['Applaudissements inattendus', 'global', 'Tous avancent de 2 cases.'],
     ['Brouhaha inexplicable', 'global', 'Décalage général des positions.'],
-    ['La danse des mollets heureux', 'global', 'Le joueur courant rejoue.', undefined, true],
+    [
+      'La danse des mollets heureux',
+      'global',
+      'Le joueur courant rejoue.',
+      undefined,
+      true,
+    ],
   ] as const;
   shared.forEach(([t, kind, text, delta, keepTurn], i) =>
-    push(41 + i, t, 'chaos', kind as any, text as any, delta as any, keepTurn as any),
+    push(
+      41 + i,
+      t,
+      'chaos',
+      kind as any,
+      text as any,
+      delta as any,
+      keepTurn as any,
+    ),
   );
 
   const conditional = [
@@ -215,7 +252,15 @@ function buildDeck(): CaCard[] {
     'Si tu dépasses un joueur ce tour-ci, avance encore de 1.',
   ];
   conditional.forEach((text, i) =>
-    push(51 + i, `Condition ${i + 1}`, 'conditionnel', 'conditional', text, undefined, i === 7),
+    push(
+      51 + i,
+      `Condition ${i + 1}`,
+      'conditionnel',
+      'conditional',
+      text,
+      undefined,
+      i === 7,
+    ),
   );
 
   const rules = [

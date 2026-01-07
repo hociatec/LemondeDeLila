@@ -8,7 +8,10 @@ import { buildOdysseeShortcuts } from '../odyssee.shortcuts';
 
 @Injectable()
 export class OdysseePresenterService {
-  exposeStateForUser(state: GameStateEntity, userId: number): GameStateWithActions {
+  exposeStateForUser(
+    state: GameStateEntity,
+    userId: number,
+  ): GameStateWithActions {
     const actions = Rulebook.getAvailableActions(state, userId);
     const meta = (state.metadata ?? {}) as any as OdysseeMetadata;
     const players = Array.isArray(state.players) ? state.players : [];
@@ -16,12 +19,22 @@ export class OdysseePresenterService {
 
     return {
       ...state,
-      catalog: { phases: ODYSSEE_GAME.phaseOrder.map((p) => p.id), victory: null },
-      actions: actions.map((a) => ({ type: a.type, label: a.type, payload: a.payload ?? {} })),
+      catalog: {
+        phases: ODYSSEE_GAME.phaseOrder.map((p) => p.id),
+        victory: null,
+      },
+      actions: actions.map((a) => ({
+        type: a.type,
+        label: a.type,
+        payload: a.payload ?? {},
+      })),
       pending: state.pending ?? null,
       extras: {
         ...(state as any).extras,
-        currentPlayerView: { id: userId, username: me?.username ?? `Joueur ${userId}` },
+        currentPlayerView: {
+          id: userId,
+          username: me?.username ?? `Joueur ${userId}`,
+        },
         shortcuts: buildOdysseeShortcuts({
           metadata: meta as any,
           currentPlayerId: userId,

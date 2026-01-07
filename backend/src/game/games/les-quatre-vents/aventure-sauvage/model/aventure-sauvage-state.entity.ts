@@ -30,4 +30,3 @@ export type AventureSauvageMetadata = {
   };
   winnerId: number | null;
 };
-

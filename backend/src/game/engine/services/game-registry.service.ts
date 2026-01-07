@@ -166,7 +166,10 @@ export class GameRegistryService {
       const raw = await fs.promises.readFile(manifestPath, 'utf-8');
       // Certains fichiers JSON peuvent contenir un BOM UTF-8 (U+FEFF) au début.
       // JSON.parse ne le tolère pas -> on le supprime.
-      const data = JSON.parse(raw.replace(/^\uFEFF/, '')) as Record<string, any>;
+      const data = JSON.parse(raw.replace(/^\uFEFF/, '')) as Record<
+        string,
+        any
+      >;
       if (data.enabled === false) {
         this.logger.warn(
           `Jeu désactivé ignoré (manifest): ${manifestPath} (${data.code ?? data.id ?? 'unknown'})`,
@@ -184,7 +187,8 @@ export class GameRegistryService {
       const segments = relPath.split(path.sep).filter(Boolean);
 
       const hasHandler = this.handlers.has(id);
-      const rawCategory = typeof data.category === 'string' ? data.category : '';
+      const rawCategory =
+        typeof data.category === 'string' ? data.category : '';
       const rawSubcategory =
         typeof data.subcategory === 'string' ? data.subcategory : '';
 
@@ -193,7 +197,7 @@ export class GameRegistryService {
       // - Si un handler est enregistré, on laisse category/subcategory vides pour que enrichWithHandler applique les valeurs
       //   de l'adaptateur (ex: JeuxDePlateaux / LesQuatreVents), sauf si manifest précise explicitement ces champs.
       const category = this.formatName(
-        rawCategory || (hasHandler ? '' : segments[0] ?? 'Catalogue'),
+        rawCategory || (hasHandler ? '' : (segments[0] ?? 'Catalogue')),
       );
       const subcategory = this.formatName(rawSubcategory || '');
       return {
@@ -204,7 +208,8 @@ export class GameRegistryService {
         description: data.summary ?? data.description ?? '',
         minPlayers: data.minPlayers,
         maxPlayers: data.maxPlayers,
-        chatEnabled: typeof data.chatEnabled === 'boolean' ? data.chatEnabled : undefined,
+        chatEnabled:
+          typeof data.chatEnabled === 'boolean' ? data.chatEnabled : undefined,
         chatSoundsEnabled:
           typeof data.chatSoundsEnabled === 'boolean'
             ? data.chatSoundsEnabled

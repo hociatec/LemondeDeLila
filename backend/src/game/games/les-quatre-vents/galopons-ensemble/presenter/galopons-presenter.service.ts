@@ -8,7 +8,10 @@ import { buildGaloponsShortcuts } from '../galopons.shortcuts';
 
 @Injectable()
 export class GaloponsPresenterService {
-  exposeStateForUser(state: GameStateEntity, userId: number): GameStateWithActions {
+  exposeStateForUser(
+    state: GameStateEntity,
+    userId: number,
+  ): GameStateWithActions {
     const actions = Rulebook.getAvailableActions(state, userId);
     const meta = (state.metadata ?? {}) as any as GaloponsMetadata;
     const players = Array.isArray(state.players) ? state.players : [];
@@ -16,12 +19,22 @@ export class GaloponsPresenterService {
 
     return {
       ...state,
-      catalog: { phases: GALOPONS_GAME.phaseOrder.map((p) => p.id), victory: null },
-      actions: actions.map((a) => ({ type: a.type, label: a.type, payload: a.payload ?? {} })),
+      catalog: {
+        phases: GALOPONS_GAME.phaseOrder.map((p) => p.id),
+        victory: null,
+      },
+      actions: actions.map((a) => ({
+        type: a.type,
+        label: a.type,
+        payload: a.payload ?? {},
+      })),
       pending: state.pending ?? null,
       extras: {
         ...(state as any).extras,
-        currentPlayerView: { id: userId, username: me?.username ?? `Joueur ${userId}` },
+        currentPlayerView: {
+          id: userId,
+          username: me?.username ?? `Joueur ${userId}`,
+        },
         shortcuts: buildGaloponsShortcuts({
           metadata: meta as any,
           currentPlayerId: userId,

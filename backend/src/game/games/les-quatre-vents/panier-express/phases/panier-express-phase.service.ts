@@ -85,7 +85,7 @@ export class PanierExpressPhaseService {
           revealShoppingList,
           noDrawCourses,
         },
-      } as any,
+      },
       turn: {
         ...(next.turn ?? { currentPlayerId: null, direction: 1 }),
         direction: movementDirection,

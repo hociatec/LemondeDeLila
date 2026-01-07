@@ -37,4 +37,3 @@ export const CONTES_CACAHUETES_GAME: GameDefinition<
   phaseOrder: [{ id: 'turn', kind: 'player-action' }],
   victory: null,
 } as const;
-

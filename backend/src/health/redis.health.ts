@@ -29,7 +29,9 @@ export class RedisHealthIndicator extends HealthIndicator {
 
     let client: Redis | null = null;
     try {
-      client = this.redisFactory.create(url, 'health:redis', { lazyConnect: true });
+      client = this.redisFactory.create(url, 'health:redis', {
+        lazyConnect: true,
+      });
       await client.connect();
       await client.ping();
       await client.quit();

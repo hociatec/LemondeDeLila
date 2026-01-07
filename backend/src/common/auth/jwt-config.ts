@@ -4,7 +4,9 @@ import type { Algorithm } from 'jsonwebtoken';
 
 export type JwtAlgorithm = 'HS256' | 'RS256';
 
-function normalizeAlgorithm(value: string | undefined | null): JwtAlgorithm | null {
+function normalizeAlgorithm(
+  value: string | undefined | null,
+): JwtAlgorithm | null {
   const v = (value || '').trim().toUpperCase();
   if (v === 'HS256' || v === 'RS256') return v;
   return null;
@@ -79,4 +81,3 @@ export function getJwtVerifyAlgorithms(config: ConfigService): Algorithm[] {
   const alg = getJwtAlgorithm(config);
   return [alg] as Algorithm[];
 }
-

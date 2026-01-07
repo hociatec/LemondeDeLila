@@ -167,9 +167,10 @@ export class JsonDataToDb1735300000000 implements MigrationInterface {
       this.dataPath('role-definitions.json'),
     );
 
-    const definitions = Array.isArray(fromFile) && fromFile.length > 0
-      ? fromFile
-      : this.getDefaultRoleDefinitions();
+    const definitions =
+      Array.isArray(fromFile) && fromFile.length > 0
+        ? fromFile
+        : this.getDefaultRoleDefinitions();
 
     for (const def of definitions) {
       if (!def?.name || !def?.description) continue;
@@ -189,9 +190,10 @@ export class JsonDataToDb1735300000000 implements MigrationInterface {
     const fromFile = this.tryReadJson<BotSettingsFile>(
       this.dataPath('bot-settings.json'),
     );
-    const candidate = typeof fromFile?.botTurnDelayMs === 'number'
-      ? fromFile.botTurnDelayMs
-      : 4000;
+    const candidate =
+      typeof fromFile?.botTurnDelayMs === 'number'
+        ? fromFile.botTurnDelayMs
+        : 4000;
     const delay = this.clampInt(candidate, 0, 60000, 4000);
 
     await queryRunner.query(
@@ -223,7 +225,8 @@ export class JsonDataToDb1735300000000 implements MigrationInterface {
     const known = new Set<string>();
     for (const category of categories) {
       const id = typeof category?.id === 'string' ? category.id.trim() : '';
-      const name = typeof category?.name === 'string' ? category.name.trim() : '';
+      const name =
+        typeof category?.name === 'string' ? category.name.trim() : '';
       if (!id || !name) continue;
       known.add(id);
       const parentId =
@@ -244,7 +247,8 @@ export class JsonDataToDb1735300000000 implements MigrationInterface {
         typeof categoryIdRaw === 'string' && categoryIdRaw.trim()
           ? categoryIdRaw.trim()
           : null;
-      const safeCategoryId = categoryId && known.has(categoryId) ? categoryId : null;
+      const safeCategoryId =
+        categoryId && known.has(categoryId) ? categoryId : null;
       await queryRunner.query(
         'INSERT INTO game_category_assignments (game_type, category_id) VALUES (?, ?)',
         [gameType, safeCategoryId],
@@ -252,7 +256,9 @@ export class JsonDataToDb1735300000000 implements MigrationInterface {
     }
   }
 
-  private async seedGameCatalogOverrides(queryRunner: QueryRunner): Promise<void> {
+  private async seedGameCatalogOverrides(
+    queryRunner: QueryRunner,
+  ): Promise<void> {
     const rows = (await queryRunner.query(
       'SELECT COUNT(*) as c FROM game_catalog_overrides',
     )) as Array<{ c: number | string }>;
@@ -263,7 +269,9 @@ export class JsonDataToDb1735300000000 implements MigrationInterface {
       this.dataPath('game-overrides.json'),
     );
     const games =
-      fromFile?.games && typeof fromFile.games === 'object' ? fromFile.games : {};
+      fromFile?.games && typeof fromFile.games === 'object'
+        ? fromFile.games
+        : {};
 
     for (const [gameTypeRaw, ov] of Object.entries(games)) {
       const gameType = (gameTypeRaw ?? '').trim();
@@ -277,7 +285,9 @@ export class JsonDataToDb1735300000000 implements MigrationInterface {
           typeof ov?.enabled === 'boolean' ? ov.enabled : null,
           typeof ov?.minPlayers === 'number' ? Math.round(ov.minPlayers) : null,
           typeof ov?.maxPlayers === 'number' ? Math.round(ov.maxPlayers) : null,
-          typeof ov?.name === 'string' && ov.name.trim() ? ov.name.trim() : null,
+          typeof ov?.name === 'string' && ov.name.trim()
+            ? ov.name.trim()
+            : null,
           typeof ov?.description === 'string' && ov.description.trim()
             ? ov.description
             : null,
@@ -300,7 +310,12 @@ export class JsonDataToDb1735300000000 implements MigrationInterface {
     }
   }
 
-  private clampInt(value: number, min: number, max: number, fallback: number): number {
+  private clampInt(
+    value: number,
+    min: number,
+    max: number,
+    fallback: number,
+  ): number {
     const candidate = Number(value);
     if (!Number.isFinite(candidate)) return fallback;
     const rounded = Math.round(candidate);
@@ -313,20 +328,22 @@ export class JsonDataToDb1735300000000 implements MigrationInterface {
     return [
       {
         name: 'ROLE_USER',
-        description: "Accès utilisateur standard, peut rejoindre et jouer aux parties.",
+        description:
+          'Accès utilisateur standard, peut rejoindre et jouer aux parties.',
         permissions: ['game.play', 'game.history', 'chat.read'],
       },
       {
         name: 'ROLE_MODERATOR',
-        description: 'Peut gérer les utilisateurs (ban/unban) et surveiller les parties.',
+        description:
+          'Peut gérer les utilisateurs (ban/unban) et surveiller les parties.',
         permissions: ['game.play', 'game.history', 'chat.read', 'admin.users'],
       },
       {
         name: 'ROLE_ADMIN',
-        description: 'Accès complet à l’administration, aux jeux et aux configurations.',
+        description:
+          'Accès complet à l’administration, aux jeux et aux configurations.',
         permissions: ['admin.*', 'game.*', 'log.read'],
       },
     ];
   }
 }
-

@@ -198,7 +198,10 @@ describe('PanierExpressService', () => {
       status: 'running',
     } as any);
 
-    (state.metadata.decks as any).exchanges = { deck: ['echange-amiable'], discards: [] };
+    state.metadata.decks.exchanges = {
+      deck: ['echange-amiable'],
+      discards: [],
+    };
 
     const after = exchangeSvc.applyExchange(state, 1);
     expect(after.pending ?? null).toBeNull();
@@ -259,7 +262,10 @@ describe('PanierExpressService', () => {
     base.turnIndex = 0;
 
     // Simule un tirage chanceux : 3 cartes ont déjà été sorties du deck au moment de l'offre.
-    (base.metadata.decks as any)['courses-bonus'] = { deck: ['banane'], discards: [] };
+    base.metadata.decks['courses-bonus'] = {
+      deck: ['banane'],
+      discards: [],
+    };
     base.pending = {
       type: 'pick',
       playerId: 1,
@@ -273,7 +279,11 @@ describe('PanierExpressService', () => {
     };
 
     const after = service.applyActions(base, [
-      { type: 'pick_choice', payload: { index: 0 }, meta: { actorId: 1 } } as any,
+      {
+        type: 'pick_choice',
+        payload: { index: 0 },
+        meta: { actorId: 1 },
+      } as any,
     ]);
 
     const pool = (after.metadata as any)?.decks?.['courses-bonus'];
@@ -313,8 +323,21 @@ describe('PanierExpressService', () => {
   it("expose currentPlayerView pour l'utilisateur connecté (même si c'est le tour d'un bot)", () => {
     const state: any = service.hydrateInitialState({
       players: [
-        { id: 1, username: 'admin', shoppingList: ['ananas'], basket: [], inventory: [] },
-        { id: -1, username: 'GnoleGear', isBot: true, shoppingList: ['melon'], basket: [], inventory: [] },
+        {
+          id: 1,
+          username: 'admin',
+          shoppingList: ['ananas'],
+          basket: [],
+          inventory: [],
+        },
+        {
+          id: -1,
+          username: 'GnoleGear',
+          isBot: true,
+          shoppingList: ['melon'],
+          basket: [],
+          inventory: [],
+        },
       ],
       status: 'running',
     } as any);
@@ -383,7 +406,9 @@ describe('PanierExpressService', () => {
     state.metadata.positions[1] = 4; // exchange-1
 
     const actions = service.getAvailableActions(state, 1);
-    expect(actions.some((a: any) => a.type === 'exchange_choose_target')).toBe(false);
+    expect(actions.some((a: any) => a.type === 'exchange_choose_target')).toBe(
+      false,
+    );
     expect(actions.some((a: any) => a.type === 'roll')).toBe(true);
   });
 
@@ -407,7 +432,9 @@ describe('PanierExpressService', () => {
     state.metadata.positions[1] = 4; // exchange-1
 
     const actions = service.getAvailableActions(state, 1);
-    expect(actions.some((a: any) => a.type === 'exchange_choose_target')).toBe(true);
+    expect(actions.some((a: any) => a.type === 'exchange_choose_target')).toBe(
+      true,
+    );
   });
 
   it('met en pending un échange lorsqu’une offre est possible', () => {
@@ -419,7 +446,10 @@ describe('PanierExpressService', () => {
       status: 'running',
     } as any);
 
-    (state.metadata.decks as any).exchanges = { deck: ['echange-amiable'], discards: [] };
+    state.metadata.decks.exchanges = {
+      deck: ['echange-amiable'],
+      discards: [],
+    };
     const after = exchangeSvc.applyExchange(state, 1);
     expect(after.pending?.type).toBe('exchange');
     expect((after.pending as any)?.playerId).toBe(1);
@@ -428,12 +458,13 @@ describe('PanierExpressService', () => {
 
   it("gère l'échange impossible sans pending", () => {
     const state: any = service.hydrateInitialState({
-      players: [
-        { id: 1, username: 'A', inventory: ['pomme'] },
-      ],
+      players: [{ id: 1, username: 'A', inventory: ['pomme'] }],
       status: 'running',
     } as any);
-    (state.metadata.decks as any).exchanges = { deck: ['echange-amiable'], discards: [] };
+    state.metadata.decks.exchanges = {
+      deck: ['echange-amiable'],
+      discards: [],
+    };
     const after = exchangeSvc.applyExchange(state, 1);
     expect((after as any).pending ?? null).toBeNull();
   });
@@ -446,7 +477,10 @@ describe('PanierExpressService', () => {
       ],
       status: 'running',
     } as any);
-    (state.metadata.decks as any).exchanges = { deck: ['echange-amiable'], discards: [] };
+    state.metadata.decks.exchanges = {
+      deck: ['echange-amiable'],
+      discards: [],
+    };
 
     const pendingState = exchangeSvc.applyExchange(state, 1);
     const chosenTarget = exchangeSvc.chooseTarget(pendingState as any, 1, 2);
@@ -470,7 +504,10 @@ describe('PanierExpressService', () => {
       ],
       status: 'running',
     } as any);
-    (base.metadata.decks as any).exchanges = { deck: ['echange-amiable'], discards: [] };
+    base.metadata.decks.exchanges = {
+      deck: ['echange-amiable'],
+      discards: [],
+    };
     const first = exchangeSvc.applyExchange(base, 1);
     const second = exchangeSvc.applyExchange(first as any, 2);
     expect(second.pending?.playerId).toBe(1);
@@ -484,13 +521,16 @@ describe('PanierExpressService', () => {
       ],
       status: 'running',
     } as any);
-    (base.metadata.decks as any).exchanges = { deck: ['echange-amiable'], discards: [] };
+    base.metadata.decks.exchanges = {
+      deck: ['echange-amiable'],
+      discards: [],
+    };
     const pending = exchangeSvc.applyExchange(base, 1);
     const after = exchangeSvc.chooseTarget(pending as any, 2, 1);
     expect(after.pending?.playerId).toBe(1);
   });
 
-  it("ne propose pas de roll quand un pending bloquant concerne un autre joueur", () => {
+  it('ne propose pas de roll quand un pending bloquant concerne un autre joueur', () => {
     const state: any = service.hydrateInitialState({
       players: [
         { id: 1, username: 'A' },
@@ -503,18 +543,24 @@ describe('PanierExpressService', () => {
         blocking: true,
         label: 'Choix',
         choices: ['x'],
-        data: { kind: 'exchange.impose.choose_card', initiatorId: 1, cards: ['x'] },
+        data: {
+          kind: 'exchange.impose.choose_card',
+          initiatorId: 1,
+          cards: ['x'],
+        },
       },
     } as any);
     state.turn = { currentPlayerId: 1, direction: 1 };
     state.turnIndex = 0;
 
     const actions = service.getAvailableActions(state, 1);
-    expect(actions.some((a: any) => String(a.type).toLowerCase() === 'roll')).toBe(false);
+    expect(
+      actions.some((a: any) => String(a.type).toLowerCase() === 'roll'),
+    ).toBe(false);
     expect(actions.length).toBe(0);
   });
 
-  it("rejette le roll si une action bloquante est en attente", () => {
+  it('rejette le roll si une action bloquante est en attente', () => {
     const state: any = service.hydrateInitialState({
       players: [
         { id: 1, username: 'A' },
@@ -527,7 +573,11 @@ describe('PanierExpressService', () => {
         blocking: true,
         label: 'Choix',
         choices: ['x'],
-        data: { kind: 'exchange.impose.choose_card', initiatorId: 1, cards: ['x'] },
+        data: {
+          kind: 'exchange.impose.choose_card',
+          initiatorId: 1,
+          cards: ['x'],
+        },
       },
     } as any);
     state.turn = { currentPlayerId: 1, direction: 1 };
@@ -560,7 +610,7 @@ describe('PanierExpressService', () => {
     expect(after.metadata.statuses.revealInventory?.[1] ?? 0).toBe(0);
   });
 
-  it("conserve la direction de mouvement au changement de tour", () => {
+  it('conserve la direction de mouvement au changement de tour', () => {
     const state: any = service.hydrateInitialState({
       players: [
         { id: 1, username: 'A' },

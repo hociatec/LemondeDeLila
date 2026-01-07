@@ -56,4 +56,3 @@ describe('BugReportsService', () => {
     expect(await svc.get(created.id)).toBeNull();
   });
 });
-

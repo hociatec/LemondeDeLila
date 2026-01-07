@@ -37,4 +37,3 @@ export class AdminCatalogInvalidationService {
     await this.notifyCatalogInvalidated(adminId);
   }
 }
-

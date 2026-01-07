@@ -11,8 +11,16 @@ export class RoomMaintenanceSettings1735800000000 implements MigrationInterface 
           columns: [
             { name: 'id', type: 'tinyint', isPrimary: true },
             { name: 'auto_cleanup_enabled', type: 'boolean', default: false },
-            { name: 'auto_cleanup_older_than_minutes', type: 'int', default: 60 },
-            { name: 'auto_cleanup_interval_seconds', type: 'int', default: 300 },
+            {
+              name: 'auto_cleanup_older_than_minutes',
+              type: 'int',
+              default: 60,
+            },
+            {
+              name: 'auto_cleanup_interval_seconds',
+              type: 'int',
+              default: 300,
+            },
             { name: 'auto_cleanup_limit', type: 'int', default: 1000 },
           ],
         }),
@@ -37,4 +45,3 @@ export class RoomMaintenanceSettings1735800000000 implements MigrationInterface 
     await queryRunner.dropTable('room_maintenance_settings', true);
   }
 }
-

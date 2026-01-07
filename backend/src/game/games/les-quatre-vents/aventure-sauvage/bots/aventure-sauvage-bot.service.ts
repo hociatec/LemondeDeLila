@@ -8,14 +8,25 @@ import * as AventureSauvageRulebook from '../rulebook/rulebook';
 export class AventureSauvageBotService {
   constructor(private readonly botRunner: BotRunnerService) {}
 
-  getBotActions(state: GameStateEntity, botPlayerId: number): GameSingleActionDto[] {
+  getBotActions(
+    state: GameStateEntity,
+    botPlayerId: number,
+  ): GameSingleActionDto[] {
     const current = state.turn?.currentPlayerId ?? null;
     if (current !== botPlayerId) return [];
 
-    const available = AventureSauvageRulebook.getAvailableActions(state, botPlayerId);
-    return this.botRunner.choose(available, { state, playerId: botPlayerId }, 'random', {
-      preferTypes: ['roll'],
-      fallbackTypes: ['roll'],
-    });
+    const available = AventureSauvageRulebook.getAvailableActions(
+      state,
+      botPlayerId,
+    );
+    return this.botRunner.choose(
+      available,
+      { state, playerId: botPlayerId },
+      'random',
+      {
+        preferTypes: ['roll'],
+        fallbackTypes: ['roll'],
+      },
+    );
   }
 }

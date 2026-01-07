@@ -23,7 +23,10 @@ export class AdminClientUpdatesWsHandler {
 
   async clientUpdateAnnounce(session: WsSession, payload: any) {
     const admin = requireAdmin(session);
-    const dto = this.validator.validate(AdminClientUpdateAnnounceWsDto, payload);
+    const dto = this.validator.validate(
+      AdminClientUpdateAnnounceWsDto,
+      payload,
+    );
 
     const ids = await this.userRepo
       .createQueryBuilder('u')
@@ -46,7 +49,11 @@ export class AdminClientUpdatesWsHandler {
 
     await Promise.all(
       recipients.map((u) =>
-        this.notifications.notifyUser(u.id, 'client.update.available', payloadOut),
+        this.notifications.notifyUser(
+          u.id,
+          'client.update.available',
+          payloadOut,
+        ),
       ),
     );
 
@@ -67,7 +74,7 @@ export class AdminClientUpdatesWsHandler {
     const latestVersion = latest?.version?.trim() || null;
     if (!latestVersion) {
       throw new BadRequestException(
-        "Impossible de forcer la mise à jour : aucune version publiée (latest.json manquant).",
+        'Impossible de forcer la mise à jour : aucune version publiée (latest.json manquant).',
       );
     }
 
@@ -104,13 +111,20 @@ export class AdminClientUpdatesWsHandler {
 
     await Promise.all(
       recipients.map((u) =>
-        this.notifications.notifyUser(u.id, 'client.update.required', payloadOut),
+        this.notifications.notifyUser(
+          u.id,
+          'client.update.required',
+          payloadOut,
+        ),
       ),
     );
 
     return {
       type: 'admin.client.update.forceLatest',
-      payload: { delivered: recipients.length, minRequiredVersion: latestVersion },
+      payload: {
+        delivered: recipients.length,
+        minRequiredVersion: latestVersion,
+      },
     };
   }
 }

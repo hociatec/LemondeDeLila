@@ -15,4 +15,3 @@ export class RenameBugReportRejectedToRefused1736000000000 implements MigrationI
     );
   }
 }
-

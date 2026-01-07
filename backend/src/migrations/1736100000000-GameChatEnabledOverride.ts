@@ -18,4 +18,3 @@ export class GameChatEnabledOverride1736100000000 implements MigrationInterface 
     await queryRunner.dropColumn('game_catalog_overrides', 'chat_enabled');
   }
 }
-

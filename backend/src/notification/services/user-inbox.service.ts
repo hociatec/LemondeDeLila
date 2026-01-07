@@ -16,10 +16,7 @@ export class UserInboxService implements OnModuleDestroy {
   private readonly redis: Redis;
   private connected = false;
 
-  constructor(
-    config: ConfigService,
-    redisFactory: RedisClientFactory,
-  ) {
+  constructor(config: ConfigService, redisFactory: RedisClientFactory) {
     const redisUrl =
       config.get<string>('NOTIFICATION_REDIS_URL') ||
       config.get<string>('SESSION_STORE_REDIS_URL');
@@ -133,4 +130,3 @@ export class UserInboxService implements OnModuleDestroy {
     }
   }
 }
-

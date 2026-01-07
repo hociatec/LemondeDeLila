@@ -8,4 +8,3 @@ export function positionOnlyShortcuts(): GameShortcutHint[] {
 export function stableAndPositionShortcuts(): GameShortcutHint[] {
   return [interfaceShortcut('S', 'stable'), interfaceShortcut('P', 'position')];
 }
-

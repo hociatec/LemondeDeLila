@@ -1,6 +1,9 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import type { GameStateEntity } from '../../../core/entities/game-state.entity';
-import type { GameSingleActionDto, GameStateWithActions } from '../../../engine/dto/game-action.dto';
+import type {
+  GameSingleActionDto,
+  GameStateWithActions,
+} from '../../../engine/dto/game-action.dto';
 import type { GameRulesAdapter } from '../../../engine/interfaces/game-rules-adapter.interface';
 import { GameRegistryService } from '../../../engine/services/game-registry.service';
 import { A_FOND_LES_BALLONS_GAME } from './definitions/game.definition';
@@ -36,24 +39,39 @@ export class AFondLesBallonsService implements GameRulesAdapter, OnModuleInit {
     return this.setup.hydrateInitialState(baseState);
   }
 
-  applyActions(state: GameStateEntity, actions: GameSingleActionDto[]): GameStateEntity {
+  applyActions(
+    state: GameStateEntity,
+    actions: GameSingleActionDto[],
+  ): GameStateEntity {
     return this.actions.applyActions(state, actions);
   }
 
-  getAvailableActions(state: GameStateEntity, playerId: number): GameSingleActionDto[] {
+  getAvailableActions(
+    state: GameStateEntity,
+    playerId: number,
+  ): GameSingleActionDto[] {
     return Rulebook.getAvailableActions(state, playerId);
   }
 
-  validateAction(state: GameStateEntity, action: GameSingleActionDto, actorId: number | null): GameSingleActionDto {
+  validateAction(
+    state: GameStateEntity,
+    action: GameSingleActionDto,
+    actorId: number | null,
+  ): GameSingleActionDto {
     return Rulebook.validateAction(state, action, actorId);
   }
 
-  getBotActions(state: GameStateEntity, botPlayerId: number): GameSingleActionDto[] {
+  getBotActions(
+    state: GameStateEntity,
+    botPlayerId: number,
+  ): GameSingleActionDto[] {
     return this.bots.getBotActions(state, botPlayerId);
   }
 
-  exposeStateForUser(state: GameStateEntity, userId: number): GameStateWithActions {
+  exposeStateForUser(
+    state: GameStateEntity,
+    userId: number,
+  ): GameStateWithActions {
     return this.presenter.exposeStateForUser(state, userId);
   }
 }
-

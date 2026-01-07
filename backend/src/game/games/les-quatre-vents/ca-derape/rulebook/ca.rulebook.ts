@@ -4,7 +4,10 @@ import {
   GameValidationError,
   PlayerActionError,
 } from '../../../../../common/errors/game-errors';
-import { CA_DERAPE_GAME, type CaDerapeActionType } from '../definitions/ca.definition';
+import {
+  CA_DERAPE_GAME,
+  type CaDerapeActionType,
+} from '../definitions/ca.definition';
 
 const ROLL_ALIASES = new Set(['roll', 'ROLL_DICE', 'roll_dice']);
 
@@ -52,7 +55,10 @@ export function getAvailableActions(
 
   const current = state.turn?.currentPlayerId ?? null;
   if (current !== playerId) return [];
-  return [{ type: 'roll', payload: {} }, { type: 'ROLL_DICE', payload: {} }];
+  return [
+    { type: 'roll', payload: {} },
+    { type: 'ROLL_DICE', payload: {} },
+  ];
 }
 
 export function validateAction(
@@ -91,7 +97,9 @@ export function validateAction(
     }
     if (pending.type === 'choose_target') {
       if (normalized !== 'choose_target') {
-        throw new PlayerActionError('Choix invalide.', { gameType: 'ca-derape' });
+        throw new PlayerActionError('Choix invalide.', {
+          gameType: 'ca-derape',
+        });
       }
       const targets: Array<{ targetPlayerId: number }> = Array.isArray(
         pending?.data?.targets,
@@ -112,7 +120,9 @@ export function validateAction(
     }
     if (pending.type === 'choose_next_player') {
       if (normalized !== 'choose_next_player') {
-        throw new PlayerActionError('Choix invalide.', { gameType: 'ca-derape' });
+        throw new PlayerActionError('Choix invalide.', {
+          gameType: 'ca-derape',
+        });
       }
       const ids: number[] = Array.isArray(pending?.data?.playerIds)
         ? pending.data.playerIds
@@ -128,7 +138,9 @@ export function validateAction(
     }
     if (pending.type === 'choose_next_delta') {
       if (normalized !== 'choose_next_delta') {
-        throw new PlayerActionError('Choix invalide.', { gameType: 'ca-derape' });
+        throw new PlayerActionError('Choix invalide.', {
+          gameType: 'ca-derape',
+        });
       }
       const deltas: number[] = Array.isArray(pending?.data?.deltas)
         ? pending.data.deltas

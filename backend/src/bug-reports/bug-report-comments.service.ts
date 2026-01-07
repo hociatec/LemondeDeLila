@@ -40,10 +40,10 @@ export class BugReportCommentsService {
       reportId,
       content: String(input.content ?? '').trim(),
       createdByUserId: Number(input.createdByUserId || 0),
-      createdByUsername: String(input.createdByUsername ?? '').trim() || 'admin',
+      createdByUsername:
+        String(input.createdByUsername ?? '').trim() || 'admin',
       createdAt: now,
     });
     return this.repo.save(entity);
   }
 }
-

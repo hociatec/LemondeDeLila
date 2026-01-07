@@ -50,8 +50,10 @@ export class GameCatalogOverridesService implements OnModuleInit {
       enabled: ov.enabled !== false,
       name: ov.name ?? def.name,
       description: ov.description ?? def.description,
-      minPlayers: typeof ov.minPlayers === 'number' ? ov.minPlayers : def.minPlayers,
-      maxPlayers: typeof ov.maxPlayers === 'number' ? ov.maxPlayers : def.maxPlayers,
+      minPlayers:
+        typeof ov.minPlayers === 'number' ? ov.minPlayers : def.minPlayers,
+      maxPlayers:
+        typeof ov.maxPlayers === 'number' ? ov.maxPlayers : def.maxPlayers,
       chatEnabled:
         typeof ov.chatEnabled === 'boolean'
           ? ov.chatEnabled
@@ -112,8 +114,10 @@ export class GameCatalogOverridesService implements OnModuleInit {
       minPlayers: typeof next.minPlayers === 'number' ? next.minPlayers : null,
       maxPlayers: typeof next.maxPlayers === 'number' ? next.maxPlayers : null,
       name: typeof next.name === 'string' ? next.name : null,
-      description: typeof next.description === 'string' ? next.description : null,
-      chatEnabled: typeof next.chatEnabled === 'boolean' ? next.chatEnabled : null,
+      description:
+        typeof next.description === 'string' ? next.description : null,
+      chatEnabled:
+        typeof next.chatEnabled === 'boolean' ? next.chatEnabled : null,
       chatSoundsEnabled:
         typeof next.chatSoundsEnabled === 'boolean'
           ? next.chatSoundsEnabled
@@ -143,8 +147,10 @@ export class GameCatalogOverridesService implements OnModuleInit {
       for (const row of rows) {
         games[row.gameType] = {
           enabled: typeof row.enabled === 'boolean' ? row.enabled : undefined,
-          minPlayers: typeof row.minPlayers === 'number' ? row.minPlayers : undefined,
-          maxPlayers: typeof row.maxPlayers === 'number' ? row.maxPlayers : undefined,
+          minPlayers:
+            typeof row.minPlayers === 'number' ? row.minPlayers : undefined,
+          maxPlayers:
+            typeof row.maxPlayers === 'number' ? row.maxPlayers : undefined,
           name: row.name ?? undefined,
           description: row.description ?? undefined,
           chatEnabled:
@@ -157,7 +163,9 @@ export class GameCatalogOverridesService implements OnModuleInit {
       }
       this.cache = { games };
     } catch (error) {
-      this.logger.warn(`Impossible de charger les overrides catalogue: ${(error as Error).message}`);
+      this.logger.warn(
+        `Impossible de charger les overrides catalogue: ${(error as Error).message}`,
+      );
       this.cache = { games: {} };
     }
   }

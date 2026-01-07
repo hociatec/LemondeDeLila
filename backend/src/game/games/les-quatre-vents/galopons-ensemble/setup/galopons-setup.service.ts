@@ -2,7 +2,11 @@
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import { GameContentLoaderService } from '../../../../engine/services/game-content-loader.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
-import type { GaloponsBoardJsonV1, GaloponsCardsJsonV1, GaloponsMetadata } from '../model/galopons.types';
+import type {
+  GaloponsBoardJsonV1,
+  GaloponsCardsJsonV1,
+  GaloponsMetadata,
+} from '../model/galopons.types';
 
 @Injectable()
 export class GaloponsSetupService {
@@ -34,7 +38,12 @@ export class GaloponsSetupService {
       statuses: { skipTurn: {} },
       decks: { cards: shuffled.values as any, discard: [] },
       pendingContext: null,
-      finish: { triggered: false, starterId: null, pendingIds: [], bonusGiven: false },
+      finish: {
+        triggered: false,
+        starterId: null,
+        pendingIds: [],
+        bonusGiven: false,
+      },
       winnerId: null,
     };
 
@@ -42,7 +51,11 @@ export class GaloponsSetupService {
       ...base,
       phase: 'playing',
       pending: null,
-      metadata: { ...(base.metadata ?? {}), ...(shuffled.meta as any), ...meta },
+      metadata: {
+        ...(base.metadata ?? {}),
+        ...shuffled.meta,
+        ...meta,
+      },
     };
   }
 

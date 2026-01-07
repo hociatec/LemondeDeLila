@@ -11,7 +11,13 @@ import { AventureSauvagePresenterService } from './presenter/aventure-sauvage-pr
 import { AventureSauvageBotService } from './bots/aventure-sauvage-bot.service';
 
 @Module({
-  imports: [GameCoreModule, GameRegistryModule, RandomModule, TurnModule, BotModule],
+  imports: [
+    GameCoreModule,
+    GameRegistryModule,
+    RandomModule,
+    TurnModule,
+    BotModule,
+  ],
   providers: [
     AventureSauvageService,
     AventureSauvageSetupService,

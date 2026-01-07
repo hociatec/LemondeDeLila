@@ -1,4 +1,10 @@
-﻿export type GaloponsTileType = 'start' | 'neutral' | 'card' | 'bonus' | 'skip' | 'finish';
+﻿export type GaloponsTileType =
+  | 'start'
+  | 'neutral'
+  | 'card'
+  | 'bonus'
+  | 'skip'
+  | 'finish';
 
 export type GaloponsTile = {
   n: number;
@@ -18,10 +24,17 @@ export type GaloponsMetadata = {
   ious: Record<number, Record<number, number>>;
   statuses: { skipTurn: Record<number, number> };
   decks: { cards: GaloponsCard[]; discard: GaloponsCard[] };
-  pendingContext?:
-    | { kind: 'pair_advance' | 'give_apple' | 'help_advance'; actorId: number; replayAfter?: boolean }
-    | null;
-  finish?: { triggered: boolean; starterId: number | null; pendingIds: number[]; bonusGiven: boolean };
+  pendingContext?: {
+    kind: 'pair_advance' | 'give_apple' | 'help_advance';
+    actorId: number;
+    replayAfter?: boolean;
+  } | null;
+  finish?: {
+    triggered: boolean;
+    starterId: number | null;
+    pendingIds: number[];
+    bonusGiven: boolean;
+  };
   winnerId?: number | null;
 };
 

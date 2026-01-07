@@ -73,4 +73,3 @@ function extractBearer(headers: any): string | null {
   }
   return null;
 }
-

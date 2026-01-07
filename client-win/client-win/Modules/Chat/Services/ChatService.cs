@@ -21,6 +21,7 @@ namespace client_win.Modules.Chat.Services;
 public sealed class ChatService : IChatService
 {
     private const int MaxMessages = 500;
+    private const int DefaultEditWindowSeconds = 5 * 60;
     private readonly ChatClient _client;
     private readonly IOptionsService _options;
     private readonly ISessionService _session;
@@ -32,6 +33,7 @@ public sealed class ChatService : IChatService
     public ObservableCollection<ChatMessage> Messages { get; } = new();
     public ChatState State { get; private set; } = ChatState.Disconnected;
     public string StatusMessage { get; private set; } = "Tchat fermé.";
+    public int EditWindowSeconds { get; private set; } = DefaultEditWindowSeconds;
     public ChatServerError? LastServerError { get; private set; }
 
     public event Action<string>? StatusChanged;
@@ -71,6 +73,14 @@ public sealed class ChatService : IChatService
                 {
                     AddMessage(m, playReceiveSound: false);
                 }
+            }, DispatcherPriority.Background);
+        };
+        _client.EditWindowSecondsReceived += seconds =>
+        {
+            _ = _dispatcher.InvokeAsync(() =>
+            {
+                // Clamp defensively (server should do it too).
+                EditWindowSeconds = Math.Max(0, Math.Min(86400, seconds));
             }, DispatcherPriority.Background);
         };
         _client.MessageReceived += msg =>

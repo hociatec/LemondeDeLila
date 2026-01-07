@@ -5,7 +5,10 @@ import { CatalogService } from '../../catalog/services/catalog.service';
 import { GameStateEntity } from '../../game/core/entities/game-state.entity';
 import { User } from '../../user/entities/user.entity';
 import { GameMatch } from '../entities/game-match.entity';
-import { GameMatchPlayer, GameMatchOutcome } from '../entities/game-match-player.entity';
+import {
+  GameMatchPlayer,
+  GameMatchOutcome,
+} from '../entities/game-match-player.entity';
 
 export type MyStatsCounts = {
   finished: number;
@@ -97,7 +100,11 @@ export class GameStatsService {
       where: { match: { id: match.id }, user: { id: userId } },
     });
     if (!row) return;
-    if (row.outcome === 'won' || row.outcome === 'lost' || row.outcome === 'draw') {
+    if (
+      row.outcome === 'won' ||
+      row.outcome === 'lost' ||
+      row.outcome === 'draw'
+    ) {
       return;
     }
     row.outcome = 'quit';
@@ -109,26 +116,39 @@ export class GameStatsService {
     await this.closeActiveMatch(roomId, 'reset');
   }
 
-  async finalizeFinished(roomId: number, state: GameStateEntity): Promise<void> {
+  async finalizeFinished(
+    roomId: number,
+    state: GameStateEntity,
+  ): Promise<void> {
     const match = await this.getActiveMatch(roomId);
     if (!match) return;
 
     const winnerRaw = (state.metadata as any)?.winnerId ?? null;
     const winnerId = typeof winnerRaw === 'number' ? winnerRaw : null;
-    const cooperative = typeof winnerRaw === 'string' && winnerRaw.trim() !== '';
+    const cooperative =
+      typeof winnerRaw === 'string' && winnerRaw.trim() !== '';
 
     match.endedAt = new Date();
     match.endedReason = 'finished';
-    match.winnerUser = winnerId != null ? await this.users.findOne({ where: { id: winnerId } }) : null;
+    match.winnerUser =
+      winnerId != null
+        ? await this.users.findOne({ where: { id: winnerId } })
+        : null;
     await this.matches.save(match);
 
-    const rows = await this.players.find({ where: { match: { id: match.id } } });
+    const rows = await this.players.find({
+      where: { match: { id: match.id } },
+    });
     for (const row of rows) {
       if (row.outcome === 'quit') {
         continue;
       }
 
-      row.outcome = this.resolveOutcome(row.user?.id ?? 0, winnerId, cooperative);
+      row.outcome = this.resolveOutcome(
+        row.user?.id ?? 0,
+        winnerId,
+        cooperative,
+      );
       await this.players.save(row);
     }
   }
@@ -139,7 +159,10 @@ export class GameStatsService {
       relations: ['match'],
     });
 
-    const byGame = new Map<string, { withBots: MyStatsCounts; withoutBots: MyStatsCounts }>();
+    const byGame = new Map<
+      string,
+      { withBots: MyStatsCounts; withoutBots: MyStatsCounts }
+    >();
 
     for (const r of rows) {
       const match = (r as any).match as GameMatch | undefined;
@@ -214,8 +237,14 @@ export class GameStatsService {
       .select('p.user_id', 'userId')
       .addSelect('MAX(p.username)', 'username')
       .addSelect("SUM(CASE WHEN p.outcome = 'won' THEN 1 ELSE 0 END)", 'wins')
-      .addSelect("SUM(CASE WHEN p.outcome = 'lost' THEN 1 ELSE 0 END)", 'losses')
-      .addSelect("SUM(CASE WHEN p.outcome IN ('won','lost','draw') THEN 1 ELSE 0 END)", 'finished')
+      .addSelect(
+        "SUM(CASE WHEN p.outcome = 'lost' THEN 1 ELSE 0 END)",
+        'losses',
+      )
+      .addSelect(
+        "SUM(CASE WHEN p.outcome IN ('won','lost','draw') THEN 1 ELSE 0 END)",
+        'finished',
+      )
       .addSelect("SUM(CASE WHEN p.outcome = 'quit' THEN 1 ELSE 0 END)", 'quit')
       .where('m.game_type = :gameType', { gameType: normalized })
       .andWhere('m.ended_reason = :reason', { reason: 'finished' })
@@ -236,7 +265,11 @@ export class GameStatsService {
     }));
   }
 
-  private resolveOutcome(userId: number, winnerId: number | null, cooperative: boolean): GameMatchOutcome {
+  private resolveOutcome(
+    userId: number,
+    winnerId: number | null,
+    cooperative: boolean,
+  ): GameMatchOutcome {
     if (cooperative) {
       return 'won';
     }
@@ -254,7 +287,10 @@ export class GameStatsService {
     });
   }
 
-  private async closeActiveMatch(roomId: number, reason: string): Promise<void> {
+  private async closeActiveMatch(
+    roomId: number,
+    reason: string,
+  ): Promise<void> {
     const match = await this.getActiveMatch(roomId);
     if (!match) return;
 
@@ -263,9 +299,15 @@ export class GameStatsService {
     match.winnerUser = null;
     await this.matches.save(match);
 
-    const rows = await this.players.find({ where: { match: { id: match.id } } });
+    const rows = await this.players.find({
+      where: { match: { id: match.id } },
+    });
     for (const row of rows) {
-      if (row.outcome === 'won' || row.outcome === 'lost' || row.outcome === 'draw') {
+      if (
+        row.outcome === 'won' ||
+        row.outcome === 'lost' ||
+        row.outcome === 'draw'
+      ) {
         continue;
       }
       row.outcome = 'quit';
@@ -276,4 +318,3 @@ export class GameStatsService {
     this.logger.warn(`Match actif clos (roomId=${roomId}, reason=${reason})`);
   }
 }
-

@@ -9,4 +9,3 @@ export class LeaderboardTopDto {
   @IsBoolean()
   withBots?: boolean;
 }
-

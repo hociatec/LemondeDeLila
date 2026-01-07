@@ -8,7 +8,10 @@ import { buildAFondLesBallonsShortcuts } from '../a-fond-les-ballons.shortcuts';
 
 @Injectable()
 export class AFondLesBallonsPresenterService {
-  exposeStateForUser(state: GameStateEntity, userId: number): GameStateWithActions {
+  exposeStateForUser(
+    state: GameStateEntity,
+    userId: number,
+  ): GameStateWithActions {
     const actions = Rulebook.getAvailableActions(state, userId);
     const meta = (state.metadata ?? {}) as any as AFondLesBallonsMetadata;
     const players = Array.isArray(state.players) ? state.players : [];
@@ -16,7 +19,10 @@ export class AFondLesBallonsPresenterService {
 
     const extras = {
       ...(state as any).extras,
-      currentPlayerView: { id: userId, username: me?.username ?? `Joueur ${userId}` },
+      currentPlayerView: {
+        id: userId,
+        username: me?.username ?? `Joueur ${userId}`,
+      },
       shortcuts: buildAFondLesBallonsShortcuts({
         metadata: meta as any,
         currentPlayerId: userId,
@@ -26,8 +32,15 @@ export class AFondLesBallonsPresenterService {
 
     return {
       ...state,
-      catalog: { phases: A_FOND_LES_BALLONS_GAME.phaseOrder.map((p) => p.id), victory: null },
-      actions: actions.map((a) => ({ type: a.type, label: a.type, payload: a.payload ?? {} })),
+      catalog: {
+        phases: A_FOND_LES_BALLONS_GAME.phaseOrder.map((p) => p.id),
+        victory: null,
+      },
+      actions: actions.map((a) => ({
+        type: a.type,
+        label: a.type,
+        payload: a.payload ?? {},
+      })),
       pending: state.pending ?? null,
       extras,
       board: {
@@ -38,4 +51,3 @@ export class AFondLesBallonsPresenterService {
     } as any;
   }
 }
-

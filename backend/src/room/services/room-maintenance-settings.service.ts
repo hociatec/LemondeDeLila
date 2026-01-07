@@ -24,7 +24,9 @@ export class RoomMaintenanceSettingsService implements OnModuleInit {
   }
 
   private defaults(): RoomMaintenanceSettings {
-    const enabledRaw = (process.env.ROOM_AUTO_CLEANUP_ENABLED || '').trim().toLowerCase();
+    const enabledRaw = (process.env.ROOM_AUTO_CLEANUP_ENABLED || '')
+      .trim()
+      .toLowerCase();
     const enabled =
       enabledRaw === '1' ||
       enabledRaw === 'true' ||
@@ -52,7 +54,9 @@ export class RoomMaintenanceSettingsService implements OnModuleInit {
     });
   }
 
-  private normalize(input: Partial<RoomMaintenanceSettings>): RoomMaintenanceSettings {
+  private normalize(
+    input: Partial<RoomMaintenanceSettings>,
+  ): RoomMaintenanceSettings {
     const enabled = input.autoCleanupEnabled === true;
     const interval = Number.isFinite(input.autoCleanupIntervalSeconds as number)
       ? Math.max(30, Math.floor(input.autoCleanupIntervalSeconds as number))
@@ -61,7 +65,10 @@ export class RoomMaintenanceSettingsService implements OnModuleInit {
       ? Math.max(5, Math.floor(input.autoCleanupOlderThanMinutes as number))
       : 60;
     const limit = Number.isFinite(input.autoCleanupLimit as number)
-      ? Math.max(1, Math.min(5000, Math.floor(input.autoCleanupLimit as number)))
+      ? Math.max(
+          1,
+          Math.min(5000, Math.floor(input.autoCleanupLimit as number)),
+        )
       : 1000;
 
     return {
@@ -76,7 +83,9 @@ export class RoomMaintenanceSettingsService implements OnModuleInit {
     return this.cache ?? this.defaults();
   }
 
-  async update(patch: Partial<RoomMaintenanceSettings>): Promise<RoomMaintenanceSettings> {
+  async update(
+    patch: Partial<RoomMaintenanceSettings>,
+  ): Promise<RoomMaintenanceSettings> {
     await this.ensureSeeded();
     const current = this.get();
     const next = this.normalize({ ...current, ...patch });

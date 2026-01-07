@@ -90,12 +90,16 @@ export class PetitChevauxActionService {
     }
 
     const hasStableExit =
-      roll === 6 && moves.some((m) => typeof m?.targetProgress === 'number' && m.targetProgress === 0);
-    const label = hasStableExit && moves.every((m) => m.targetProgress === 0)
-      ? 'Choisissez un cheval à sortir dans la liste, puis Entrée.'
-      : hasStableExit
-        ? 'Choisissez un cheval à sortir ou à jouer dans la liste, puis Entrée.'
-        : 'Choisissez un cheval à jouer dans la liste, puis Entrée.';
+      roll === 6 &&
+      moves.some(
+        (m) => typeof m?.targetProgress === 'number' && m.targetProgress === 0,
+      );
+    const label =
+      hasStableExit && moves.every((m) => m.targetProgress === 0)
+        ? 'Choisissez un cheval à sortir dans la liste, puis Entrée.'
+        : hasStableExit
+          ? 'Choisissez un cheval à sortir ou à jouer dans la liste, puis Entrée.'
+          : 'Choisissez un cheval à jouer dans la liste, puis Entrée.';
 
     const pending: PendingState = {
       type: 'choose_pawn',
@@ -126,7 +130,11 @@ export class PetitChevauxActionService {
     if (currentId == null) return state;
 
     const pending = state.pending as any;
-    if (!pending || pending.type !== 'choose_pawn' || pending.playerId !== currentId) {
+    if (
+      !pending ||
+      pending.type !== 'choose_pawn' ||
+      pending.playerId !== currentId
+    ) {
       return state;
     }
 
@@ -338,7 +346,8 @@ export class PetitChevauxActionService {
         if (intermediateProgress >= meta.trackLength) break;
         const pos = (myOffset + intermediateProgress) % meta.trackLength;
         if (opponentsOnTrack.has(pos)) {
-          bestDistance = bestDistance == null ? step : Math.min(bestDistance, step);
+          bestDistance =
+            bestDistance == null ? step : Math.min(bestDistance, step);
           break;
         }
       }
@@ -361,9 +370,7 @@ export class PetitChevauxActionService {
       ? meta.pawnsByPlayer[playerId]
       : [];
 
-    const pawn = pawns.find((p: any) => p?.pawnIndex === move.pawnIndex) as
-      | PetitChevauxPawnState
-      | undefined;
+    const pawn = pawns.find((p: any) => p?.pawnIndex === move.pawnIndex);
     if (!pawn) return state;
 
     const prevProg = typeof pawn.progress === 'number' ? pawn.progress : -1;
@@ -399,7 +406,11 @@ export class PetitChevauxActionService {
     }
 
     // Messages clairs pour l'entrée dans la maison / arrivée (sans coordonnées "case x/52").
-    if (prevProg >= 0 && prevProg < meta.trackLength && nextProg >= meta.trackLength) {
+    if (
+      prevProg >= 0 &&
+      prevProg < meta.trackLength &&
+      nextProg >= meta.trackLength
+    ) {
       const homeIndex = nextProg - meta.trackLength + 1;
       if (homeIndex >= 1 && homeIndex <= meta.homeLength) {
         next = this.core.appendLog(
@@ -419,7 +430,10 @@ export class PetitChevauxActionService {
     next = this.applyCapture(next, playerId, move.pawnIndex, nextProg);
 
     if (this.isWinner(next, playerId, pathLen)) {
-      next = this.core.appendLog(next, `${this.playerName(state, playerId)} a gagné !`);
+      next = this.core.appendLog(
+        next,
+        `${this.playerName(state, playerId)} a gagné !`,
+      );
       return {
         ...next,
         status: 'finished',
@@ -442,7 +456,8 @@ export class PetitChevauxActionService {
 
     const moverOffset = meta.offsets?.[moverId] ?? 0;
     const moverPos = (moverOffset + moverProgress) % meta.trackLength;
-    const isSafe = Array.isArray(meta.safeTiles) && meta.safeTiles.includes(moverPos);
+    const isSafe =
+      Array.isArray(meta.safeTiles) && meta.safeTiles.includes(moverPos);
     if (isSafe) return state;
 
     const players = Array.isArray(state.players) ? state.players : [];
@@ -484,24 +499,35 @@ export class PetitChevauxActionService {
   private endTurn(state: GameStateEntity, extraTurn: boolean): GameStateEntity {
     if (extraTurn) {
       const currentId = state.turn?.currentPlayerId ?? null;
-      const who = currentId != null ? this.playerName(state, currentId) : 'Le joueur';
+      const who =
+        currentId != null ? this.playerName(state, currentId) : 'Le joueur';
       return this.core.appendLog(state, `6 : ${who} rejoue.`);
     }
     return this.turns.advanceTurn(state);
   }
 
-  private isWinner(state: GameStateEntity, playerId: number, pathLen: number): boolean {
+  private isWinner(
+    state: GameStateEntity,
+    playerId: number,
+    pathLen: number,
+  ): boolean {
     const meta = (state.metadata ?? {}) as any as PetitChevauxMetadata;
     const pawns = Array.isArray(meta.pawnsByPlayer?.[playerId])
       ? meta.pawnsByPlayer[playerId]
       : [];
     if (pawns.length !== 4) return false;
-    return pawns.every((p: any) => typeof p?.progress === 'number' && p.progress >= pathLen);
+    return pawns.every(
+      (p: any) => typeof p?.progress === 'number' && p.progress >= pathLen,
+    );
   }
 
-  private describeProgress(meta: PetitChevauxMetadata, playerId: number, progress: number): string {
+  private describeProgress(
+    meta: PetitChevauxMetadata,
+    playerId: number,
+    progress: number,
+  ): string {
     if (!Number.isFinite(progress) || progress < 0) {
-      return "écurie";
+      return 'écurie';
     }
     const pathLen = meta.trackLength + meta.homeLength;
     if (progress >= pathLen) {
@@ -519,7 +545,10 @@ export class PetitChevauxActionService {
   private playerName(state: GameStateEntity, id: number): string {
     const players = Array.isArray(state.players) ? state.players : [];
     const p = players.find((x) => x?.id === id);
-    const u = p?.username && String(p.username).trim() ? String(p.username).trim() : null;
+    const u =
+      p?.username && String(p.username).trim()
+        ? String(p.username).trim()
+        : null;
     return u ?? `Joueur ${id}`;
   }
 }

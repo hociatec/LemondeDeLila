@@ -59,7 +59,10 @@ export class AdminChatWsHandler {
   async chatSettingsGet(session: WsSession, payload: any) {
     requireAdmin(session);
     this.validator.validate(AdminChatSettingsGetWsDto, payload ?? {});
-    return { type: 'admin.chat.settings.get', payload: this.chatSettings.getSettings() };
+    return {
+      type: 'admin.chat.settings.get',
+      payload: this.chatSettings.getSettings(),
+    };
   }
 
   async chatSettingsUpdate(session: WsSession, payload: any) {
@@ -67,6 +70,7 @@ export class AdminChatWsHandler {
     const dto = this.validator.validate(AdminChatSettingsUpdateWsDto, payload);
     const updated = await this.chatSettings.updateSettings({
       chatHistoryLimit: dto.chatHistoryLimit,
+      editWindowSeconds: dto.editWindowSeconds,
     });
     return { type: 'admin.chat.settings.update', payload: updated };
   }
@@ -93,7 +97,8 @@ export class AdminChatWsHandler {
       throw new BadRequestException('Utilisateur introuvable');
     }
 
-    const days = dto.durationDays && dto.durationDays > 0 ? dto.durationDays : 3650;
+    const days =
+      dto.durationDays && dto.durationDays > 0 ? dto.durationDays : 3650;
     const until = new Date(Date.now() + days * 24 * 60 * 60_000);
     user.chatBannedUntil = until;
     user.chatBanReason = (dto.reason || '').trim() || null;
@@ -127,4 +132,3 @@ export class AdminChatWsHandler {
     };
   }
 }
-

@@ -2,7 +2,11 @@
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import { GameContentLoaderService } from '../../../../engine/services/game-content-loader.service';
 import { RandomService } from '../../../../modules/random/services/random.service';
-import type { FrousseBoardJsonV1, FrousseCardsJsonV1, FrousseMetadata } from '../model/frousse.types';
+import type {
+  FrousseBoardJsonV1,
+  FrousseCardsJsonV1,
+  FrousseMetadata,
+} from '../model/frousse.types';
 
 @Injectable()
 export class FrousseSetupService {
@@ -46,7 +50,11 @@ export class FrousseSetupService {
       ...base,
       phase: 'playing',
       pending: null,
-      metadata: { ...(base.metadata ?? {}), ...(shuffled.meta as any), ...meta },
+      metadata: {
+        ...(base.metadata ?? {}),
+        ...shuffled.meta,
+        ...meta,
+      },
     };
   }
 

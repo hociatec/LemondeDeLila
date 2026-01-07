@@ -69,14 +69,24 @@ export async function createPanierExpressTestingModule() {
         useValue: {
           choose: (actions: any[], _ctx: any, _profile: any, opts: any) => {
             const safe = Array.isArray(actions) ? actions : [];
-            const prefer: string[] = Array.isArray(opts?.preferTypes) ? opts.preferTypes : [];
+            const prefer: string[] = Array.isArray(opts?.preferTypes)
+              ? opts.preferTypes
+              : [];
             for (const type of prefer) {
-              const match = safe.find((a) => (a?.type || '').toLowerCase() === String(type).toLowerCase());
+              const match = safe.find(
+                (a) =>
+                  (a?.type || '').toLowerCase() === String(type).toLowerCase(),
+              );
               if (match) return [match];
             }
-            const fallback: string[] = Array.isArray(opts?.fallbackTypes) ? opts.fallbackTypes : [];
+            const fallback: string[] = Array.isArray(opts?.fallbackTypes)
+              ? opts.fallbackTypes
+              : [];
             for (const type of fallback) {
-              const match = safe.find((a) => (a?.type || '').toLowerCase() === String(type).toLowerCase());
+              const match = safe.find(
+                (a) =>
+                  (a?.type || '').toLowerCase() === String(type).toLowerCase(),
+              );
               if (match) return [match];
             }
             return safe.length ? [safe[0]] : [];

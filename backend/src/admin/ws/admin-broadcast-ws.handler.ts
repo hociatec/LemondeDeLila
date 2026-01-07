@@ -42,4 +42,3 @@ export class AdminBroadcastWsHandler {
     return { type: 'admin.broadcast', payload: { delivered: ids.length } };
   }
 }
-

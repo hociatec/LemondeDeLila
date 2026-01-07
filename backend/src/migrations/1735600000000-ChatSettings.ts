@@ -32,4 +32,3 @@ export class ChatSettings1735600000000 implements MigrationInterface {
     await queryRunner.dropTable('chat_settings', true);
   }
 }
-

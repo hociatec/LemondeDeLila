@@ -67,7 +67,11 @@ export class PanierExpressDrawService {
         [playerId]: card,
       },
     };
-    const nextState: GameStateEntity = { ...state, players, metadata: nextMeta as any };
+    const nextState: GameStateEntity = {
+      ...state,
+      players,
+      metadata: nextMeta as any,
+    };
     const standLabel = this.resolveStandLabel(meta, playerId, resolvedStandId);
     const courseLabel = this.utils.formatCourseLabel(card);
     const logged = this.core.appendLog(

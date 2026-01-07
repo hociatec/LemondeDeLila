@@ -38,4 +38,3 @@ export class GameMatchPlayer {
   @Column({ name: 'left_at', type: 'datetime', nullable: true })
   leftAt?: Date | null;
 }
-

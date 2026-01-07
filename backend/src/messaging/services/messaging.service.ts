@@ -281,11 +281,7 @@ export class MessagingService {
         ? (message.deletedBySenderAt ?? null)
         : (message.deletedByRecipientAt ?? null);
     const boxType =
-      deletedAt != null
-        ? 'deleted'
-        : direction === 'sent'
-          ? 'outbox'
-          : 'inbox';
+      deletedAt != null ? 'deleted' : direction === 'sent' ? 'outbox' : 'inbox';
     return {
       id: message.messageId,
       sender: { id: message.sender.id, username: message.sender.username },

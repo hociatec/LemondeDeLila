@@ -1,4 +1,9 @@
-import { CanActivate, ExecutionContext, ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
 
 @Injectable()
 export class AdminMaintenanceGuard implements CanActivate {
@@ -9,11 +14,15 @@ export class AdminMaintenanceGuard implements CanActivate {
 
     const request = context.switchToHttp().getRequest();
     if (this.isTokenRequired()) {
-      const token = String(request?.headers?.['x-admin-maintenance-token'] || '').trim();
+      const token = String(
+        request?.headers?.['x-admin-maintenance-token'] || '',
+      ).trim();
       const expected = String(process.env.ADMIN_MAINTENANCE_TOKEN || '').trim();
 
       if (!expected) {
-        throw new ForbiddenException('Maintenance non configurée (token manquant)');
+        throw new ForbiddenException(
+          'Maintenance non configurée (token manquant)',
+        );
       }
 
       if (!token || token !== expected) {
@@ -33,7 +42,9 @@ export class AdminMaintenanceGuard implements CanActivate {
   }
 
   private isEnabled(): boolean {
-    const raw = String(process.env.ADMIN_MAINTENANCE_ENABLED || '').trim().toLowerCase();
+    const raw = String(process.env.ADMIN_MAINTENANCE_ENABLED || '')
+      .trim()
+      .toLowerCase();
     return raw === '1' || raw === 'true' || raw === 'yes';
   }
 
@@ -55,8 +66,12 @@ export class AdminMaintenanceGuard implements CanActivate {
   }
 
   private getRequestIp(request: any): string | null {
-    const forwarded = String(request?.headers?.['x-forwarded-for'] || '').trim();
-    const ip = forwarded ? forwarded.split(',')[0]?.trim() : String(request?.ip || '').trim();
+    const forwarded = String(
+      request?.headers?.['x-forwarded-for'] || '',
+    ).trim();
+    const ip = forwarded
+      ? forwarded.split(',')[0]?.trim()
+      : String(request?.ip || '').trim();
     if (!ip) return null;
     // Normalize "::ffff:1.2.3.4" style addresses.
     return ip.startsWith('::ffff:') ? ip.slice('::ffff:'.length) : ip;

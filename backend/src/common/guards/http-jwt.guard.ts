@@ -72,7 +72,7 @@ export class HttpJwtGuard implements CanActivate {
         verifyOptions.audience = audience;
       }
 
-      const payload = jwt.verify(token, key, verifyOptions) as StrictJwtPayload;
+      const payload = jwt.verify(token, key, verifyOptions);
 
       if (!payload || typeof payload !== 'object') {
         throw new UnauthorizedException('Token invalide');

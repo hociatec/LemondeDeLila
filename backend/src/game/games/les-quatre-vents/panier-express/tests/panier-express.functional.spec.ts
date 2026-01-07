@@ -23,7 +23,11 @@ function makeStartedState(
   return state;
 }
 
-function resolveBlockingPending(game: PanierExpressService, state: any, maxSteps = 20) {
+function resolveBlockingPending(
+  game: PanierExpressService,
+  state: any,
+  maxSteps = 20,
+) {
   let next = state;
   for (let i = 0; i < maxSteps; i += 1) {
     if (!next.pending) return next;
@@ -32,14 +36,16 @@ function resolveBlockingPending(game: PanierExpressService, state: any, maxSteps
     const actorId =
       typeof pending.playerId === 'number'
         ? pending.playerId
-        : next.turn?.currentPlayerId ?? null;
+        : (next.turn?.currentPlayerId ?? null);
     if (typeof actorId !== 'number') {
       throw new Error('pending bloquant sans playerId ni currentPlayerId');
     }
     const actor = (next.players ?? []).find((p: any) => p.id === actorId);
     const botActions = actor?.isBot ? game.getBotActions(next, actorId) : [];
     const actions =
-      botActions.length > 0 ? botActions : game.getAvailableActions(next, actorId);
+      botActions.length > 0
+        ? botActions
+        : game.getAvailableActions(next, actorId);
     if (!actions.length) {
       throw new Error(
         `Aucune action disponible pour résoudre le pending (type=${pending.type}, kind=${pending?.data?.kind ?? ''}).`,
@@ -69,14 +75,26 @@ describe('PanierExpress - tests fonctionnels (simulation)', () => {
       const base = makeStartedState(
         game,
         [
-          { id: 1, username: 'A', inventory: ['pomme'], basket: [], shoppingList: [] },
-          { id: 2, username: 'B', inventory: ['poire'], basket: [], shoppingList: [] },
+          {
+            id: 1,
+            username: 'A',
+            inventory: ['pomme'],
+            basket: [],
+            shoppingList: [],
+          },
+          {
+            id: 2,
+            username: 'B',
+            inventory: ['poire'],
+            basket: [],
+            shoppingList: [],
+          },
         ],
         1,
         1,
       );
-      (base.metadata.decks as any).events = { deck: [card], discards: [] };
-      (base.metadata.decks as any)['courses-bonus'] = {
+      base.metadata.decks.events = { deck: [card], discards: [] };
+      base.metadata.decks['courses-bonus'] = {
         deck: ['amande', 'noix', 'pomme', 'banane', 'fraise', 'melon'],
         discards: [],
       };
@@ -88,22 +106,37 @@ describe('PanierExpress - tests fonctionnels (simulation)', () => {
   });
 
   it('résout chaque carte échange (sans crash + pending bloquants résolubles)', () => {
-    const exchanges: string[] = require('../model/content/exchanges.json').exchanges;
+    const exchanges: string[] =
+      require('../model/content/exchanges.json').exchanges;
     for (const card of exchanges) {
       const base = makeStartedState(
         game,
         [
-          { id: 1, username: 'A', inventory: ['pomme', 'banane'], basket: [], shoppingList: [] },
-          { id: 2, username: 'B', inventory: ['poire', 'kiwi'], basket: [], shoppingList: [] },
+          {
+            id: 1,
+            username: 'A',
+            inventory: ['pomme', 'banane'],
+            basket: [],
+            shoppingList: [],
+          },
+          {
+            id: 2,
+            username: 'B',
+            inventory: ['poire', 'kiwi'],
+            basket: [],
+            shoppingList: [],
+          },
         ],
         1,
         2,
       );
       const meta: any = base.metadata;
-      const exchangeIndex = (meta.tiles ?? []).findIndex((t: any) => t?.type === 'exchange');
+      const exchangeIndex = (meta.tiles ?? []).findIndex(
+        (t: any) => t?.type === 'exchange',
+      );
       meta.positions[1] = exchangeIndex >= 0 ? exchangeIndex : 0;
 
-      (meta.decks as any).exchanges = { deck: [card], discards: [] };
+      meta.decks.exchanges = { deck: [card], discards: [] };
 
       const after = exchange.applyExchange(base, 1);
       const afterPending = resolveBlockingPending(game, after, 25);
@@ -115,8 +148,21 @@ describe('PanierExpress - tests fonctionnels (simulation)', () => {
     let state: any = makeStartedState(
       game,
       [
-        { id: 1, username: 'Nuggets', isBot: true, inventory: [], basket: [], shoppingList: ['pomme'] },
-        { id: 2, username: 'Humain', inventory: [], basket: [], shoppingList: ['poire'] },
+        {
+          id: 1,
+          username: 'Nuggets',
+          isBot: true,
+          inventory: [],
+          basket: [],
+          shoppingList: ['pomme'],
+        },
+        {
+          id: 2,
+          username: 'Humain',
+          inventory: [],
+          basket: [],
+          shoppingList: ['poire'],
+        },
       ],
       1,
       3,
@@ -130,15 +176,19 @@ describe('PanierExpress - tests fonctionnels (simulation)', () => {
       const actorId =
         typeof pending?.playerId === 'number'
           ? pending.playerId
-          : state.turn?.currentPlayerId ?? null;
+          : (state.turn?.currentPlayerId ?? null);
       if (typeof actorId !== 'number') {
-        throw new Error('Partie sans actorId (ni pending.playerId, ni currentPlayerId)');
+        throw new Error(
+          'Partie sans actorId (ni pending.playerId, ni currentPlayerId)',
+        );
       }
 
       const actor = (state.players ?? []).find((p: any) => p.id === actorId);
       const botActions = actor?.isBot ? game.getBotActions(state, actorId) : [];
       const actions =
-        botActions.length > 0 ? botActions : game.getAvailableActions(state, actorId);
+        botActions.length > 0
+          ? botActions
+          : game.getAvailableActions(state, actorId);
 
       if (!actions.length) {
         throw new Error(
@@ -150,9 +200,9 @@ describe('PanierExpress - tests fonctionnels (simulation)', () => {
         status: state.status,
         turn: state.turn,
         pending: state.pending,
-        positions: (state.metadata as any)?.positions,
-        laps: (state.metadata as any)?.laps,
-        rng: (state.metadata as any)?.rng,
+        positions: state.metadata?.positions,
+        laps: state.metadata?.laps,
+        rng: state.metadata?.rng,
       });
 
       state = game.applyActions(state, [
@@ -163,9 +213,9 @@ describe('PanierExpress - tests fonctionnels (simulation)', () => {
         status: state.status,
         turn: state.turn,
         pending: state.pending,
-        positions: (state.metadata as any)?.positions,
-        laps: (state.metadata as any)?.laps,
-        rng: (state.metadata as any)?.rng,
+        positions: state.metadata?.positions,
+        laps: state.metadata?.laps,
+        rng: state.metadata?.rng,
       });
 
       expect(after).not.toBe(before);

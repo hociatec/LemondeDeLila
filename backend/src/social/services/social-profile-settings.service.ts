@@ -24,17 +24,28 @@ export class SocialProfileSettingsService implements OnModuleInit {
   }
 
   private defaults(): SocialProfileSettings {
-    const min = Number.parseInt((process.env.PROFILE_BIO_MIN_LENGTH || '0').trim(), 10);
-    const max = Number.parseInt((process.env.PROFILE_BIO_MAX_LENGTH || '500').trim(), 10);
+    const min = Number.parseInt(
+      (process.env.PROFILE_BIO_MIN_LENGTH || '0').trim(),
+      10,
+    );
+    const max = Number.parseInt(
+      (process.env.PROFILE_BIO_MAX_LENGTH || '500').trim(),
+      10,
+    );
     return this.normalize({ bioMinLength: min, bioMaxLength: max });
   }
 
-  private normalize(input: Partial<SocialProfileSettings>): SocialProfileSettings {
+  private normalize(
+    input: Partial<SocialProfileSettings>,
+  ): SocialProfileSettings {
     const min = Number.isFinite(input.bioMinLength as number)
       ? Math.max(0, Math.floor(input.bioMinLength as number))
       : 0;
     const max = Number.isFinite(input.bioMaxLength as number)
-      ? Math.max(0, Math.min(BioHardMaxLength, Math.floor(input.bioMaxLength as number)))
+      ? Math.max(
+          0,
+          Math.min(BioHardMaxLength, Math.floor(input.bioMaxLength as number)),
+        )
       : 500;
     const clampedMin = Math.min(min, max);
     return { bioMinLength: clampedMin, bioMaxLength: max };
@@ -44,7 +55,9 @@ export class SocialProfileSettingsService implements OnModuleInit {
     return this.cache ?? this.defaults();
   }
 
-  async update(patch: Partial<SocialProfileSettings>): Promise<SocialProfileSettings> {
+  async update(
+    patch: Partial<SocialProfileSettings>,
+  ): Promise<SocialProfileSettings> {
     await this.ensureSeeded();
     const current = this.get();
     const next = this.normalize({ ...current, ...patch });

@@ -8,7 +8,10 @@ import { buildMinuitShortcuts } from '../minuit.shortcuts';
 
 @Injectable()
 export class MinuitPresenterService {
-  exposeStateForUser(state: GameStateEntity, userId: number): GameStateWithActions {
+  exposeStateForUser(
+    state: GameStateEntity,
+    userId: number,
+  ): GameStateWithActions {
     const actions = Rulebook.getAvailableActions(state, userId);
     const meta = (state.metadata ?? {}) as any as MinuitMetadata;
     const players = Array.isArray(state.players) ? state.players : [];
@@ -26,12 +29,22 @@ export class MinuitPresenterService {
 
     return {
       ...state,
-      catalog: { phases: MINUIT_GAME.phaseOrder.map((p) => p.id), victory: null },
-      actions: actions.map((a) => ({ type: a.type, label: a.type, payload: a.payload ?? {} })),
+      catalog: {
+        phases: MINUIT_GAME.phaseOrder.map((p) => p.id),
+        victory: null,
+      },
+      actions: actions.map((a) => ({
+        type: a.type,
+        label: a.type,
+        payload: a.payload ?? {},
+      })),
       pending,
       extras: {
         ...(state as any).extras,
-        currentPlayerView: { id: userId, username: me?.username ?? `Joueur ${userId}` },
+        currentPlayerView: {
+          id: userId,
+          username: me?.username ?? `Joueur ${userId}`,
+        },
         shortcuts: buildMinuitShortcuts({
           metadata: meta as any,
           currentPlayerId: userId,

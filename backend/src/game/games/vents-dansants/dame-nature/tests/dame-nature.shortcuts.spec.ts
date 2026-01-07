@@ -25,7 +25,10 @@ describe('DameNature shortcuts + score extras', () => {
     const shortcuts = exposed?.extras?.shortcuts ?? [];
     expect(
       shortcuts.some(
-        (s: any) => s?.type === 'interface' && s?.id === 'score' && s?.key === 'pressed P',
+        (s: any) =>
+          s?.type === 'interface' &&
+          s?.id === 'score' &&
+          s?.key === 'pressed P',
       ),
     ).toBe(true);
 

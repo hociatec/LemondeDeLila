@@ -78,7 +78,7 @@
                            FontSize="14"
                            FontWeight="SemiBold"
                            Margin="0 0 12 0"
-                           Target="{Binding ElementName=HistoryBox}" />
+                           Target="{Binding ElementName=HistoryList}" />
                     <TextBlock Text="Aucun message pour le moment"
                                Foreground="#9CB2D1"
                                VerticalAlignment="Center"
@@ -87,7 +87,7 @@
                             <Style TargetType="TextBlock">
                                 <Setter Property="Visibility" Value="Collapsed" />
                                 <Style.Triggers>
-                                    <DataTrigger Binding="{Binding Items.Count}" Value="0">
+                                    <DataTrigger Binding="{Binding Messages.Count}" Value="0">
                                         <Setter Property="Visibility" Value="Visible" />
                                     </DataTrigger>
                                 </Style.Triggers>
@@ -96,23 +96,45 @@
                     </TextBlock>
                 </StackPanel>
 
-                <TextBox Grid.Row="1"
-                         x:Name="HistoryBox"
-                         Text="{Binding HistoryText, Mode=OneWay}"
-                         IsReadOnly="True"
-                         IsReadOnlyCaretVisible="True"
-                         AcceptsReturn="True"
-                         TextWrapping="Wrap"
-                         VerticalScrollBarVisibility="Auto"
-                         HorizontalScrollBarVisibility="Disabled"
+                <ListBox Grid.Row="1"
+                         x:Name="HistoryList"
+                         ItemsSource="{Binding Messages}"
+                         SelectedItem="{Binding SelectedMessage, Mode=TwoWay}"
+                         KeyDown="OnHistoryKeyDown"
                          BorderThickness="1"
                          BorderBrush="#284C75"
                          Background="#0C1523"
                          Foreground="White"
                          MinHeight="200"
                          TabIndex="0"
+                         ScrollViewer.VerticalScrollBarVisibility="Auto"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                          AutomationProperties.Name="Historique du tchat"
-                         AutomationProperties.HelpText="Historique des messages. Le focus est placé en bas à l'ouverture." />
+                         AutomationProperties.HelpText="Historique des messages. Entrée: actions sur votre message (si récent).">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Border CornerRadius="8" Padding="8" Margin="0 0 0 6">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Background" Value="#0A1320" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsMine}" Value="True">
+                                                <Setter Property="Background" Value="#102B46" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <TextBlock TextWrapping="Wrap">
+                                    <Run Text="{Binding Timestamp, StringFormat={}{0:HH:mm}}" Foreground="#9CB2D1" />
+                                    <Run Text=" " />
+                                    <Run Text="{Binding User}" FontWeight="SemiBold" />
+                                    <Run Text=" : " Foreground="#9CB2D1" />
+                                    <Run Text="{Binding Text}" />
+                                </TextBlock>
+                            </Border>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
 
                 <Grid Grid.Row="2" Margin="0 16 0 0">
                     <Grid.ColumnDefinitions>

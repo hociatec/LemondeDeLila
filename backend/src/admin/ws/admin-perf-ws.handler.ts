@@ -19,4 +19,3 @@ export class AdminPerfWsHandler {
     return { type: 'admin.perf.snapshot', payload: snapshot };
   }
 }
-

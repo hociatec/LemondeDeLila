@@ -1,6 +1,9 @@
 import { Controller, Get, Query, Req } from '@nestjs/common';
 import { ClientUpdatesService } from '../services/client-updates.service';
-import { isVersionGreater, isVersionLower } from '../../common/utils/version.utils';
+import {
+  isVersionGreater,
+  isVersionLower,
+} from '../../common/utils/version.utils';
 import type { Request, Response } from 'express';
 
 @Controller()
@@ -8,10 +11,13 @@ export class ClientUpdatesController {
   constructor(private readonly updates: ClientUpdatesService) {}
 
   private getOrigin(req: Request): string | null {
-    const hostHeader = (req.headers['x-forwarded-host'] as string | undefined) || req.get('host');
+    const hostHeader =
+      (req.headers['x-forwarded-host'] as string | undefined) ||
+      req.get('host');
     const host = (hostHeader || '').split(',')[0]?.trim();
     if (!host) return null;
-    const protoHeader = (req.headers['x-forwarded-proto'] as string | undefined) || req.protocol;
+    const protoHeader =
+      (req.headers['x-forwarded-proto'] as string | undefined) || req.protocol;
     const proto = (protoHeader || '').split(',')[0]?.trim() || 'https';
     return `${proto}://${host}`;
   }

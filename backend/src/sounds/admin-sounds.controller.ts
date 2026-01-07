@@ -36,7 +36,11 @@ export class AdminSoundsController {
       throw new BadRequestException('Fichier manquant (champ "file").');
     }
     try {
-      const entry = await this.sounds.setSound(soundId, file.path, file.originalname);
+      const entry = await this.sounds.setSound(
+        soundId,
+        file.path,
+        file.originalname,
+      );
       return { ok: true, sound: entry };
     } finally {
       try {
@@ -54,4 +58,3 @@ export class AdminSoundsController {
     return this.sounds.clearSound(soundId);
   }
 }
-

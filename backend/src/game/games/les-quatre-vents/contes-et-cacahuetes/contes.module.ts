@@ -11,7 +11,13 @@ import { ContesPresenterService } from './presenter/contes-presenter.service';
 import { ContesBotService } from './bots/contes-bot.service';
 
 @Module({
-  imports: [GameCoreModule, GameRegistryModule, RandomModule, TurnModule, BotModule],
+  imports: [
+    GameCoreModule,
+    GameRegistryModule,
+    RandomModule,
+    TurnModule,
+    BotModule,
+  ],
   providers: [
     ContesService,
     ContesCacahuetesSetupService,
@@ -22,4 +28,3 @@ import { ContesBotService } from './bots/contes-bot.service';
   exports: [ContesService],
 })
 export class ContesModule {}
-

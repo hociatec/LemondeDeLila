@@ -30,7 +30,12 @@ export class NotificationInboxItem {
   @Column({ name: 'from_user_id', type: 'int', nullable: true })
   fromUserId?: number | null;
 
-  @Column({ name: 'from_username', type: 'varchar', length: 100, nullable: true })
+  @Column({
+    name: 'from_username',
+    type: 'varchar',
+    length: 100,
+    nullable: true,
+  })
   fromUsername?: string | null;
 
   @Column({ name: 'to_user_id', type: 'int', nullable: true })
@@ -51,4 +56,3 @@ export class NotificationInboxItem {
   @Column({ name: 'deleted_at', type: 'datetime', nullable: true })
   deletedAt?: Date | null;
 }
-
