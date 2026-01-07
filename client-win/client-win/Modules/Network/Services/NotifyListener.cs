@@ -580,6 +580,8 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
             }
 
             _inbox.ReplaceAll(items);
+            var unread = items.Count(x => !x.IsRead);
+            _badges.SetUnreadNotifications(unread);
         }
         catch
         {

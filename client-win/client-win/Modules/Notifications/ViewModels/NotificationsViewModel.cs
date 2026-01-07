@@ -69,6 +69,7 @@ public sealed class NotificationsViewModel : ObservableObject
             {
                 OnPropertyChanged(nameof(SelectedDetailText));
                 OnPropertyChanged(nameof(CanReply));
+                _ = MarkSelectedReadAsync();
             }
         }
     }
