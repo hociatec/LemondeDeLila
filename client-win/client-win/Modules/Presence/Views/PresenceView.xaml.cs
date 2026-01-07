@@ -43,7 +43,11 @@ public partial class PresenceView : UserControl
         {
             if (ItemsList != null && ItemsList.Items.Count > 0)
             {
+                // Forcer un changement de sélection pour déclencher l'annonce SR
+                // quand on entre dans une page (sinon il faut parfois appuyer sur ↓).
+                ItemsList.SelectedIndex = -1;
                 ItemsList.SelectedIndex = 0;
+                ItemsList.ScrollIntoView(ItemsList.Items[0]);
             }
             FocusWhenContainersGenerated();
         }));
