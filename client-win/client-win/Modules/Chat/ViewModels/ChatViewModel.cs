@@ -2,6 +2,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -14,6 +15,8 @@ namespace client_win.Modules.Chat.ViewModels;
 
 public sealed class ChatViewModel : ObservableObject
 {
+    private sealed record HistorySpan(int Start, int End, ChatMessage Message);
+
     private readonly IChatService _chat;
     private readonly Action? _closeWindow;
     private readonly IDialogService? _dialogs;
@@ -21,7 +24,7 @@ public sealed class ChatViewModel : ObservableObject
     private string _historyText = string.Empty;
     private string _status = "Tchat fermé.";
     private string? _pendingEditMessageId;
-    private ChatMessage? _selectedMessage;
+    private HistorySpan[] _historySpans = Array.Empty<HistorySpan>();
 
     public ChatViewModel(IChatService chat, Action? closeWindow = null, IDialogService? dialogs = null)
     {
@@ -44,12 +47,6 @@ public sealed class ChatViewModel : ObservableObject
     }
 
     public ObservableCollection<ChatMessage> Messages { get; }
-
-    public ChatMessage? SelectedMessage
-    {
-        get => _selectedMessage;
-        set => SetProperty(ref _selectedMessage, value);
-    }
 
     public string Input
     {
@@ -99,17 +96,22 @@ public sealed class ChatViewModel : ObservableObject
         await _chat.SendAsync(toSend);
     }
 
-    public async Task HandleSelectedMessageActionAsync()
+    public Task HandleHistoryActionAsync(int caretIndex)
     {
-        var msg = SelectedMessage;
+        var msg = FindMessageAtCaret(caretIndex);
         if (!CanActOnMessage(msg))
         {
-            return;
+            return Task.CompletedTask;
         }
 
+        return HandleMessageActionAsync(msg!);
+    }
+
+    private async Task HandleMessageActionAsync(ChatMessage msg)
+    {
         if (_dialogs == null)
         {
-            BeginEdit(msg!);
+            BeginEdit(msg);
             return;
         }
 
@@ -122,7 +124,7 @@ public sealed class ChatViewModel : ObservableObject
 
         if (choice == DialogChoice.Primary)
         {
-            BeginEdit(msg!);
+            BeginEdit(msg);
             return;
         }
 
@@ -135,7 +137,7 @@ public sealed class ChatViewModel : ObservableObject
                 cancelText: "Annuler");
             if (confirm == true)
             {
-                await DeleteAsync(msg!);
+                await DeleteAsync(msg);
             }
         }
     }
@@ -163,6 +165,27 @@ public sealed class ChatViewModel : ObservableObject
         }
 
         return age <= TimeSpan.FromSeconds(windowSeconds);
+    }
+
+    private ChatMessage? FindMessageAtCaret(int caretIndex)
+    {
+        if (_historySpans.Length == 0)
+        {
+            return null;
+        }
+
+        var idx = Math.Max(0, caretIndex);
+        foreach (var span in _historySpans)
+        {
+            if (idx >= span.Start && idx <= span.End)
+            {
+                return span.Message;
+            }
+        }
+
+        // Si le caret est en fin de texte, prendre le dernier message.
+        var last = _historySpans[^1];
+        return idx >= last.End ? last.Message : null;
     }
 
     private void BeginEdit(ChatMessage message)
@@ -195,10 +218,14 @@ public sealed class ChatViewModel : ObservableObject
     private void RebuildHistory()
     {
         var builder = new StringBuilder();
+        var spans = new System.Collections.Generic.List<HistorySpan>(capacity: Math.Max(0, Messages.Count));
+
         foreach (var m in Messages)
         {
             var user = (m.User ?? string.Empty).Trim();
             var text = (m.Text ?? string.Empty).TrimEnd();
+            // Garder l'historique sur une ligne par message (simplifie l'action sur la ligne).
+            text = text.Replace("\r", " ").Replace("\n", " ");
             if (string.IsNullOrWhiteSpace(user) && string.IsNullOrWhiteSpace(text))
             {
                 continue;
@@ -207,6 +234,7 @@ public sealed class ChatViewModel : ObservableObject
             var local = m.Timestamp.Kind == DateTimeKind.Unspecified ? m.Timestamp : m.Timestamp.ToLocalTime();
             var time = local.ToString("HH:mm", CultureInfo.GetCultureInfo("fr-FR"));
 
+            var start = builder.Length;
             if (string.IsNullOrWhiteSpace(user))
             {
                 builder.AppendLine($"{time} {text}");
@@ -219,10 +247,13 @@ public sealed class ChatViewModel : ObservableObject
             {
                 builder.AppendLine($"{time} {user} : {text}");
             }
+            var end = builder.Length;
+            spans.Add(new HistorySpan(start, end, m));
         }
 
         // Ajouter une ligne vide à la fin : améliore le confort de lecture (dernier message non "collé" au bord).
         var history = builder.ToString().TrimEnd('\r', '\n');
         HistoryText = string.IsNullOrEmpty(history) ? string.Empty : history + Environment.NewLine;
+        _historySpans = spans.ToArray();
     }
 }

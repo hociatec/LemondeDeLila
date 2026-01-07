@@ -51,7 +51,7 @@ public partial class ChatView : UserControl
             coll.CollectionChanged += OnMessagesChanged;
         }
 
-        _historyScroll = FindDescendantScrollViewer(HistoryList);
+        _historyScroll = FindDescendantScrollViewer(HistoryBox);
         if (_historyScroll != null)
         {
             _historyScroll.ScrollChanged += (_, _) => { _stickToBottom = IsNearBottom(_historyScroll); };
@@ -71,7 +71,7 @@ public partial class ChatView : UserControl
 
     private void ScrollHistoryToEnd(bool force)
     {
-        if (HistoryList == null)
+        if (HistoryBox == null)
         {
             return;
         }
@@ -83,13 +83,8 @@ public partial class ChatView : UserControl
 
         try
         {
-            if (HistoryList.Items.Count <= 0)
-            {
-                return;
-            }
-
-            var last = HistoryList.Items[^1];
-            HistoryList.ScrollIntoView(last);
+            HistoryBox.CaretIndex = HistoryBox.Text?.Length ?? 0;
+            HistoryBox.ScrollToEnd();
         }
         catch
         {
@@ -101,7 +96,8 @@ public partial class ChatView : UserControl
     {
         if (e.Key == Key.Enter && DataContext is ChatViewModel vm)
         {
-            await vm.HandleSelectedMessageActionAsync();
+            var caret = HistoryBox?.CaretIndex ?? 0;
+            await vm.HandleHistoryActionAsync(caret);
             InputBox.Focus();
             e.Handled = true;
         }

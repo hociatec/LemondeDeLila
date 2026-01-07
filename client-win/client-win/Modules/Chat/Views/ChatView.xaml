@@ -78,7 +78,7 @@
                            FontSize="14"
                            FontWeight="SemiBold"
                            Margin="0 0 12 0"
-                           Target="{Binding ElementName=HistoryList}" />
+                           Target="{Binding ElementName=HistoryBox}" />
                     <TextBlock Text="Aucun message pour le moment"
                                Foreground="#9CB2D1"
                                VerticalAlignment="Center"
@@ -96,45 +96,24 @@
                     </TextBlock>
                 </StackPanel>
 
-                <ListBox Grid.Row="1"
-                         x:Name="HistoryList"
-                         ItemsSource="{Binding Messages}"
-                         SelectedItem="{Binding SelectedMessage, Mode=TwoWay}"
-                         KeyDown="OnHistoryKeyDown"
+                <TextBox Grid.Row="1"
+                         x:Name="HistoryBox"
+                         Text="{Binding HistoryText, Mode=OneWay}"
+                         IsReadOnly="True"
+                         IsReadOnlyCaretVisible="True"
+                         AcceptsReturn="True"
+                         TextWrapping="Wrap"
+                         VerticalScrollBarVisibility="Auto"
+                         HorizontalScrollBarVisibility="Disabled"
                          BorderThickness="1"
                          BorderBrush="#284C75"
                          Background="#0C1523"
                          Foreground="White"
                          MinHeight="200"
                          TabIndex="0"
-                         ScrollViewer.VerticalScrollBarVisibility="Auto"
-                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                          AutomationProperties.Name="Historique du tchat"
-                         AutomationProperties.HelpText="Historique des messages. Entrée: actions sur votre message (si récent).">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <Border CornerRadius="8" Padding="8" Margin="0 0 0 6">
-                                <Border.Style>
-                                    <Style TargetType="Border">
-                                        <Setter Property="Background" Value="#0A1320" />
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsMine}" Value="True">
-                                                <Setter Property="Background" Value="#102B46" />
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Border.Style>
-                                <TextBlock TextWrapping="Wrap">
-                                    <Run Text="{Binding Timestamp, Mode=OneWay, StringFormat={}{0:HH:mm}}" Foreground="#9CB2D1" />
-                                    <Run Text=" " />
-                                    <Run Text="{Binding User, Mode=OneWay}" FontWeight="SemiBold" />
-                                    <Run Text=" : " Foreground="#9CB2D1" />
-                                    <Run Text="{Binding Text, Mode=OneWay}" />
-                                </TextBlock>
-                            </Border>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
+                         AutomationProperties.HelpText="Historique des messages. Entrée: actions sur votre message (si récent)."
+                         KeyDown="OnHistoryKeyDown" />
 
                 <Grid Grid.Row="2" Margin="0 16 0 0">
                     <Grid.ColumnDefinitions>
