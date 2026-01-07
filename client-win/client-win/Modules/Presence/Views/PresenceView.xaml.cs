@@ -1,5 +1,7 @@
 using System;
 using System.Windows;
+using System.Windows.Automation;
+using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
@@ -109,7 +111,32 @@ public partial class PresenceView : UserControl
         var id = ++_focusRequestId;
         _ = Dispatcher.BeginInvoke(
             DispatcherPriority.ApplicationIdle,
-            new Action(() => FocusSelectedOrFirstItemWithRetry(requestId: id, attemptsRemaining: 6)));
+            new Action(() => FocusSelectedOrFirstItemWithRetry(requestId: id, attemptsRemaining: 12)));
+
+        // Si la virtualisation retarde la génération des containers, on retente au moment opportun.
+        if (ItemsList?.ItemContainerGenerator != null &&
+            ItemsList.ItemContainerGenerator.Status != System.Windows.Controls.Primitives.GeneratorStatus.ContainersGenerated)
+        {
+            EventHandler? handler = null;
+            handler = (_, __) =>
+            {
+                if (ItemsList?.ItemContainerGenerator == null)
+                {
+                    return;
+                }
+
+                if (ItemsList.ItemContainerGenerator.Status != System.Windows.Controls.Primitives.GeneratorStatus.ContainersGenerated)
+                {
+                    return;
+                }
+
+                ItemsList.ItemContainerGenerator.StatusChanged -= handler;
+                _ = Dispatcher.BeginInvoke(
+                    DispatcherPriority.ApplicationIdle,
+                    new Action(() => FocusSelectedOrFirstItemWithRetry(requestId: id, attemptsRemaining: 12)));
+            };
+            ItemsList.ItemContainerGenerator.StatusChanged += handler;
+        }
     }
 
     private void FocusSelectedOrFirstItemWithRetry(int requestId, int attemptsRemaining)
@@ -136,8 +163,10 @@ public partial class PresenceView : UserControl
         {
             // Certaines configs WPF + virtualisation + SR "accrochent" mieux si le ListBox reçoit d'abord le focus.
             ItemsList.Focus();
+            item.IsSelected = true;
             item.Focus();
             item.BringIntoView();
+            RaiseAutomationFocusChanged(item);
             return;
         }
 
@@ -150,5 +179,18 @@ public partial class PresenceView : UserControl
         }
 
         ItemsList.Focus();
+    }
+
+    private static void RaiseAutomationFocusChanged(UIElement element)
+    {
+        try
+        {
+            var peer = UIElementAutomationPeer.FromElement(element) ?? UIElementAutomationPeer.CreatePeerForElement(element);
+            peer?.RaiseAutomationEvent(AutomationEvents.AutomationFocusChanged);
+        }
+        catch
+        {
+            // Best-effort.
+        }
     }
 }

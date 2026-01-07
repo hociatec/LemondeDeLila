@@ -147,6 +147,7 @@ public sealed class PresenceViewModel : ObservableObject
     {
         if (_page == PresencePage.PlayerActions)
         {
+            var previousPlayerId = _selectedPlayer?.Id;
             _socialCts?.Cancel();
             _page = PresencePage.Players;
             _selectedPlayer = null;
@@ -155,7 +156,7 @@ public sealed class PresenceViewModel : ObservableObject
             _isFriendRequestPending = null;
             Title = BuildTitle();
             Status = "Flèches : naviguer. Entrée : sélectionner. Échap : fermer.";
-            RebuildPlayers();
+            RebuildPlayers(preferSelectedPlayerId: previousPlayerId);
             return;
         }
         _close();
@@ -184,9 +185,11 @@ public sealed class PresenceViewModel : ObservableObject
         return count <= 1 ? "Présence (1 connecté)" : $"Présence ({count} connectés)";
     }
 
-    private void RebuildPlayers()
+    private void RebuildPlayers(int? preferSelectedPlayerId = null)
     {
-        var previousId = SelectedItem?.Tag is int pid ? pid : (int?)null;
+        var previousId =
+            preferSelectedPlayerId ??
+            (SelectedItem?.Tag is int pid ? pid : (int?)null);
 
         Title = BuildTitle();
         Details = _presence.Status;
@@ -479,9 +482,16 @@ public sealed class PresenceViewModel : ObservableObject
                 return;
             }
 
-            // Fermer la présence avant d'ouvrir le livre des contes pour éviter les doubles activations accidentelles.
-            _close();
-            await _openStoryBook(player.Id, StripSelfSuffix(player.Username)).ConfigureAwait(true);
+            IsBusy = true;
+            try
+            {
+                // Ne pas fermer la présence : Échap doit revenir à la présence (pas à l'accueil).
+                await _openStoryBook(player.Id, StripSelfSuffix(player.Username)).ConfigureAwait(true);
+            }
+            finally
+            {
+                IsBusy = false;
+            }
             return;
         }
 

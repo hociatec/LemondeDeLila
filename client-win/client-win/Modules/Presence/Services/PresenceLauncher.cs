@@ -72,7 +72,8 @@ public sealed class PresenceLauncher : IPresenceLauncher
     private async Task OpenStoryBookAsync(int userId, string username)
     {
         var stats = _services.GetRequiredService<IStatsService>();
-        var returnView = _previousView ?? _navigation.CurrentView ?? _view;
+        // Depuis Présence, Échap doit revenir à la Présence (pas à la vue précédente).
+        var returnView = _view ?? _navigation.CurrentView ?? _previousView;
         if (returnView == null)
         {
             return;
@@ -94,6 +95,13 @@ public sealed class PresenceLauncher : IPresenceLauncher
                         {
                             try
                             {
+                                if (returnView is PresenceView presence)
+                                {
+                                    presence.Focus();
+                                    presence.MoveFocus(new TraversalRequest(FocusNavigationDirection.First));
+                                    return;
+                                }
+
                                 if (returnView is GameRoomView room)
                                 {
                                     room.RequestFocusGameZone();
