@@ -125,11 +125,11 @@
                                     </Style>
                                 </Border.Style>
                                 <TextBlock TextWrapping="Wrap">
-                                    <Run Text="{Binding Timestamp, StringFormat={}{0:HH:mm}}" Foreground="#9CB2D1" />
+                                    <Run Text="{Binding Timestamp, Mode=OneWay, StringFormat={}{0:HH:mm}}" Foreground="#9CB2D1" />
                                     <Run Text=" " />
-                                    <Run Text="{Binding User}" FontWeight="SemiBold" />
+                                    <Run Text="{Binding User, Mode=OneWay}" FontWeight="SemiBold" />
                                     <Run Text=" : " Foreground="#9CB2D1" />
-                                    <Run Text="{Binding Text}" />
+                                    <Run Text="{Binding Text, Mode=OneWay}" />
                                 </TextBlock>
                             </Border>
                         </DataTemplate>
