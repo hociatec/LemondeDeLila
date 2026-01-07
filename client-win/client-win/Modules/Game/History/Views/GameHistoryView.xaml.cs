@@ -32,9 +32,20 @@ public partial class GameHistoryView : UserControl
         Loaded += OnLoaded;
         Unloaded += OnUnloaded;
         DataContextChanged += OnDataContextChanged;
+        HistoryViewer.GotKeyboardFocus += OnHistoryGotKeyboardFocus;
     }
 
     public FrameworkElement? FocusTarget => HistoryViewer;
+
+    public void FocusToBottom()
+    {
+        Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
+        {
+            MoveCaretAndScrollToEnd();
+            HistoryViewer.Focus();
+            Keyboard.Focus(HistoryViewer);
+        }));
+    }
 
     public void SetScreenReader(IScreenReaderAnnouncer? screenReader)
     {
@@ -60,7 +71,7 @@ public partial class GameHistoryView : UserControl
         {
             if (!HistoryViewer.IsKeyboardFocusWithin)
             {
-                HistoryViewer.ScrollToEnd();
+                MoveCaretAndScrollToEnd();
             }
         }));
     }
@@ -128,7 +139,7 @@ public partial class GameHistoryView : UserControl
 
         if (!HistoryViewer.IsKeyboardFocusWithin)
         {
-            HistoryViewer.ScrollToEnd();
+            MoveCaretAndScrollToEnd();
         }
     }
 
@@ -162,7 +173,39 @@ public partial class GameHistoryView : UserControl
 
         if (scrollToEnd && !HistoryViewer.IsKeyboardFocusWithin)
         {
+            MoveCaretAndScrollToEnd();
+        }
+    }
+
+    private void OnHistoryGotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
+    {
+        // UX: quand on entre dans l'historique (Tab depuis la zone de jeu, clic, etc.),
+        // se placer automatiquement sur la dernière ligne.
+        Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(MoveCaretAndScrollToEnd));
+    }
+
+    private void MoveCaretAndScrollToEnd()
+    {
+        try
+        {
+            var end = HistoryViewer.Document?.ContentEnd;
+            if (end != null)
+            {
+                HistoryViewer.CaretPosition = end;
+            }
+        }
+        catch
+        {
+            // Best-effort
+        }
+
+        try
+        {
             HistoryViewer.ScrollToEnd();
+        }
+        catch
+        {
+            // Best-effort
         }
     }
 

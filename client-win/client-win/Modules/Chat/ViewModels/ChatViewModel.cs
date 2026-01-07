@@ -5,6 +5,8 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Threading;
 using System.Windows.Input;
 using client_win.Core;
 using client_win.Modules.Chat.Models;
@@ -22,30 +24,44 @@ public sealed class ChatViewModel : ObservableObject
     private readonly IChatService _chat;
     private readonly Action? _closeWindow;
     private readonly IDialogService? _dialogs;
+    private readonly IScreenReaderAnnouncer? _screenReader;
+    private readonly Dispatcher _dispatcher;
+    private string? _lastAnnouncedMessageId;
     private string _input = string.Empty;
     private string _historyText = string.Empty;
     private string _status = "Tchat fermé.";
     private string? _pendingEditMessageId;
     private HistorySpan[] _historySpans = Array.Empty<HistorySpan>();
+    private bool _rebuildScheduled;
 
-    public ChatViewModel(IChatService chat, Action? closeWindow = null, IDialogService? dialogs = null)
+    public ChatViewModel(
+        IChatService chat,
+        Action? closeWindow = null,
+        IDialogService? dialogs = null,
+        IScreenReaderAnnouncer? screenReader = null)
     {
         _chat = chat ?? throw new ArgumentNullException(nameof(chat));
         _closeWindow = closeWindow;
         _dialogs = dialogs;
+        _screenReader = screenReader;
+        _dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
         Messages = chat.Messages;
         _status = chat.StatusMessage;
         chat.StatusChanged += msg => Status = msg;
         chat.Error += msg => Status = msg;
+        chat.MessageArrived += OnMessageArrived;
 
         SendCommand = new AsyncRelayCommand(SendAsync, () => CanSend);
         CloseCommand = new RelayCommand(() => _closeWindow?.Invoke());
 
         if (Messages is INotifyCollectionChanged coll)
         {
-            coll.CollectionChanged += (_, _) => RebuildHistory();
+            // IMPORTANT perf: lors de l'ouverture, l'historique peut arriver en rafale.
+            // RebuildHistory est coûteux (reconstruit tout le texte + les spans). On coalesce sur le dispatcher
+            // pour ne faire qu'un rebuild par rafale plutôt qu'un par message.
+            coll.CollectionChanged += (_, _) => ScheduleRebuildHistory();
         }
-        RebuildHistory();
+        ScheduleRebuildHistory();
     }
 
     public ObservableCollection<ChatMessage> Messages { get; }
@@ -78,6 +94,53 @@ public sealed class ChatViewModel : ObservableObject
 
     public ICommand SendCommand { get; }
     public ICommand CloseCommand { get; }
+
+    private void ScheduleRebuildHistory()
+    {
+        if (_rebuildScheduled)
+        {
+            return;
+        }
+
+        _rebuildScheduled = true;
+        _dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
+        {
+            _rebuildScheduled = false;
+            RebuildHistory();
+        }));
+    }
+
+    private void OnMessageArrived(ChatMessage message)
+    {
+        if (_screenReader == null || !_screenReader.IsRunning)
+        {
+            return;
+        }
+
+        if (message.IsDeleted || message.IsMine)
+        {
+            return;
+        }
+
+        if (!string.IsNullOrWhiteSpace(message.Id) &&
+            string.Equals(_lastAnnouncedMessageId, message.Id, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        _lastAnnouncedMessageId = message.Id;
+
+        var user = (message.User ?? string.Empty).Trim();
+        var text = (message.Text ?? string.Empty).Trim();
+        text = text.Replace("\r", " ").Replace("\n", " ");
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return;
+        }
+
+        var prefix = string.IsNullOrWhiteSpace(user) ? "Nouveau message" : $"Nouveau message de {user}";
+        _screenReader.AnnouncePolite($"{prefix} : {text}");
+    }
 
     private async Task SendAsync()
     {
@@ -234,7 +297,12 @@ public sealed class ChatViewModel : ObservableObject
                 continue;
             }
 
-            var local = m.Timestamp.Kind == DateTimeKind.Unspecified ? m.Timestamp : m.Timestamp.ToLocalTime();
+            // Robustness: le serveur peut envoyer des timestamps sans timezone (Kind=Unspecified).
+            // On interprète Unspecified comme UTC pour éviter des décalages de jour/heure.
+            var ts = m.Timestamp.Kind == DateTimeKind.Unspecified
+                ? DateTime.SpecifyKind(m.Timestamp, DateTimeKind.Utc)
+                : m.Timestamp;
+            var local = ts.Kind == DateTimeKind.Utc ? ts.ToLocalTime() : ts;
             var time = local.ToString("HH:mm", CultureInfo.GetCultureInfo("fr-FR"));
 
             var start = builder.Length;

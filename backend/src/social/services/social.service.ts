@@ -115,15 +115,17 @@ export class SocialService {
       throw new HttpException('Utilisateur introuvable.', 404);
     }
 
-    const existing = await this.findRelation(requesterId, addresseeId);
-    if (existing) {
-      if (existing.status === 'blocked') {
+    const existing = await this.findRelations(requesterId, addresseeId);
+    if (existing.length > 0) {
+      if (existing.some((r) => r.status === 'blocked')) {
         throw new HttpException('Relation bloquee.', 403);
       }
-      if (existing.status === 'accepted') {
+      if (existing.some((r) => r.status === 'accepted')) {
         return { status: 'accepted' };
       }
-      throw new HttpException('Demande deja en attente.', 409);
+      if (existing.some((r) => r.status === 'pending')) {
+        throw new HttpException('Demande deja en attente.', 409);
+      }
     }
 
     const relation = this.relationships.create({
@@ -231,9 +233,25 @@ export class SocialService {
       throw new HttpException('Utilisateur introuvable.', 404);
     }
 
-    const existing = await this.findRelation(userId, targetId);
-    if (existing) {
-      await this.relationships.remove(existing);
+    const existing = await this.findRelations(userId, targetId);
+    const alreadyBlocked = existing.find(
+      (r) =>
+        r.status === 'blocked' &&
+        r.requester.id === userId &&
+        r.addressee.id === targetId,
+    );
+    if (alreadyBlocked) {
+      return {
+        id: alreadyBlocked.id,
+        status: alreadyBlocked.status,
+        updatedAt: alreadyBlocked.updatedAt,
+      };
+    }
+
+    // Cancel pending requests in either direction when blocking.
+    const pending = existing.filter((r) => r.status === 'pending');
+    if (pending.length > 0) {
+      await this.relationships.remove(pending);
     }
 
     const blocked = this.relationships.create({
@@ -373,8 +391,8 @@ export class SocialService {
     return Boolean(relation);
   }
 
-  private async findRelation(userId: number, targetId: number) {
-    return this.relationships.findOne({
+  private async findRelations(userId: number, targetId: number) {
+    return this.relationships.find({
       where: [
         { requester: { id: userId }, addressee: { id: targetId } },
         { requester: { id: targetId }, addressee: { id: userId } },

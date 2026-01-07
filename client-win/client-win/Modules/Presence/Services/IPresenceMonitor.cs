@@ -20,5 +20,6 @@ public interface IPresenceMonitor
 
     Task SetHomeAsync(CancellationToken cancellationToken = default);
     Task SetTableAsync(int roomId, string? roomName, CancellationToken cancellationToken = default);
+    Task SetContextAsync(string context, CancellationToken cancellationToken = default);
+    Task NotifyUserInteractionAsync(CancellationToken cancellationToken = default);
 }
-

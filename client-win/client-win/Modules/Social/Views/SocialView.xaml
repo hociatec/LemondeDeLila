@@ -459,6 +459,7 @@
                                      SelectedItem="{Binding SelectedOutgoingRequest, Mode=TwoWay}"
                                      ItemContainerStyle="{StaticResource ListItem}"
                                      Style="{StaticResource ListBoxBase}"
+                                     PreviewKeyDown="OnOutgoingListPreviewKeyDown"
                                      AutomationProperties.Name="Demandes envoyées">
                                 <ListBox.ItemTemplate>
                                     <DataTemplate>

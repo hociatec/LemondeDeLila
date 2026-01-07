@@ -40,6 +40,7 @@ public sealed class PresenceMonitor : IPresenceMonitor, IAsyncDisposable
     private string _pendingContextJson = JsonSerializer.Serialize(new { type = "presence-context", context = "home" });
     private int? _currentRoomId;
     private string? _currentRoomName;
+    private long _lastInteractionSentTicks;
 
     public PresenceMonitor(
         ClientConfiguration config,
@@ -138,6 +139,57 @@ public sealed class PresenceMonitor : IPresenceMonitor, IAsyncDisposable
             roomName = _currentRoomName
         }, new JsonSerializerOptions(JsonSerializerDefaults.Web));
         return SendPendingContextAsync(cancellationToken);
+    }
+
+    public Task SetContextAsync(string context, CancellationToken cancellationToken = default)
+    {
+        var normalized = (context ?? string.Empty).Trim().ToLowerInvariant();
+        if (string.IsNullOrWhiteSpace(normalized))
+        {
+            normalized = "home";
+        }
+
+        if (string.Equals(normalized, "table", StringComparison.OrdinalIgnoreCase))
+        {
+            // Use SetTableAsync for table contexts (needs room info).
+            return SendPendingContextAsync(cancellationToken);
+        }
+
+        _currentRoomId = null;
+        _currentRoomName = null;
+        _pendingContextJson = JsonSerializer.Serialize(new { type = "presence-context", context = normalized },
+            new JsonSerializerOptions(JsonSerializerDefaults.Web));
+        return SendPendingContextAsync(cancellationToken);
+    }
+
+    public Task NotifyUserInteractionAsync(CancellationToken cancellationToken = default)
+    {
+        // Throttle: avoid flooding the presence WS; 1 signal per 10s is enough for "absent after 3min".
+        var nowTicks = DateTime.UtcNow.Ticks;
+        var last = Interlocked.Read(ref _lastInteractionSentTicks);
+        if (last != 0 && (nowTicks - last) < TimeSpan.FromSeconds(10).Ticks)
+        {
+            return Task.CompletedTask;
+        }
+        Interlocked.Exchange(ref _lastInteractionSentTicks, nowTicks);
+
+        var ws = _ws;
+        if (ws == null || _state != WebSocketState.Connected)
+        {
+            return Task.CompletedTask;
+        }
+
+        var json = JsonSerializer.Serialize(
+            new { type = "presence-activity", at = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() },
+            new JsonSerializerOptions(JsonSerializerDefaults.Web));
+        try
+        {
+            return ws.SendAsync(json, cancellationToken);
+        }
+        catch
+        {
+            return Task.CompletedTask;
+        }
     }
 
     private async Task SendPendingContextAsync(CancellationToken cancellationToken)
@@ -336,12 +388,20 @@ public sealed class PresenceMonitor : IPresenceMonitor, IAsyncDisposable
                     }
                 }
 
-                parsed.Add(new PresencePlayer(id, username, activity, roomId, roomName));
+                var availability = p.TryGetProperty("availability", out var av) && av.ValueKind == JsonValueKind.String
+                    ? av.GetString()
+                    : null;
+                var location = p.TryGetProperty("location", out var loc) && loc.ValueKind == JsonValueKind.String
+                    ? loc.GetString()
+                    : null;
+
+                parsed.Add(new PresencePlayer(id, username, activity, roomId, roomName, availability, location));
             }
 
             // Trier hors UI thread pour éviter de bloquer l'interface lors d'une rafale d'updates.
             var sorted = parsed
-                .OrderBy(p => ScoreActivity(p.Activity))
+                .OrderBy(p => ScoreAvailability(p.Availability))
+                .ThenBy(p => ScoreActivity(p.Activity))
                 .ThenBy(p => p.Username, StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
@@ -403,6 +463,21 @@ public sealed class PresenceMonitor : IPresenceMonitor, IAsyncDisposable
         }
     }
 
+    private static int ScoreAvailability(string availability)
+    {
+        var a = (availability ?? string.Empty).Trim().ToLowerInvariant();
+        return a switch
+        {
+            "available" => 0,
+            "disponible" => 0,
+            "occupied" => 1,
+            "occupé" => 1,
+            "occupe" => 1,
+            "absent" => 2,
+            _ => 3
+        };
+    }
+
     private void QueuePlayersChanged()
     {
         if (Interlocked.Exchange(ref _playersChangedScheduled, 1) == 1)
@@ -435,11 +510,14 @@ public sealed class PresenceMonitor : IPresenceMonitor, IAsyncDisposable
         foreach (var p in players)
         {
             var username = p.Username;
-            if (me != null && string.Equals(username, me.Username, StringComparison.OrdinalIgnoreCase))
-            {
-                username = $"{username} (vous)";
-            }
-            Players.Add(new PresencePlayer(p.Id, username, p.Activity, p.CurrentRoomId, p.CurrentRoomName));
+            Players.Add(new PresencePlayer(
+                p.Id,
+                username,
+                p.Activity,
+                p.CurrentRoomId,
+                p.CurrentRoomName,
+                p.Availability,
+                p.Location));
         }
     }
 
@@ -449,8 +527,14 @@ public sealed class PresenceMonitor : IPresenceMonitor, IAsyncDisposable
         return a switch
         {
             "table" => 0,
-            "chat" => 1,
-            _ => 2
+            "messaging" => 1,
+            "social" => 1,
+            "notifications" => 1,
+            "other" => 1,
+            "chat" => 2,
+            "tavern" => 3,
+            "stats" => 3,
+            _ => 4
         };
     }
 

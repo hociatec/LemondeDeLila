@@ -72,8 +72,17 @@ public sealed partial class AdminViewModel
         Items.Add(new AdminMenuItem("Réinitialiser le tchat (supprimer tous les messages)", tag: "chat.clear"));
         Items.Add(new AdminMenuItem($"Paramètres tchat (serveur) : historique={_chatHistoryLimit} (modifier)", tag: "chat.settings.limit"));
 
+        static DateTime ToLocalDateAssumingUtc(DateTime dt)
+        {
+            // Robustness: many server payloads serialize DateTime without timezone ("2026-01-07T23:10:00"),
+            // which System.Text.Json parses as Kind=Unspecified.
+            // We treat Unspecified as UTC to avoid day-shifts in moderation UI.
+            var utc = dt.Kind == DateTimeKind.Unspecified ? DateTime.SpecifyKind(dt, DateTimeKind.Utc) : dt;
+            return utc.ToLocalTime().Date;
+        }
+
         var days = _loadedChatMessages
-            .Select(m => m.CreatedAt.ToLocalTime().Date)
+            .Select(m => ToLocalDateAssumingUtc(m.CreatedAt))
             .Distinct()
             .OrderByDescending(d => d)
             .ToArray();
@@ -89,11 +98,18 @@ public sealed partial class AdminViewModel
 
         foreach (var day in days)
         {
-            var count = _loadedChatMessages.Count(m => m.CreatedAt.ToLocalTime().Date == day);
-            Items.Add(new AdminMenuItem($"{day:dd/MM/yyyy} ({count})", tag: new ChatDayTag(day)));
+            var count = _loadedChatMessages.Count(m => ToLocalDateAssumingUtc(m.CreatedAt) == day);
+            var label = day == DateTime.Now.Date
+                ? $"Aujourd'hui ({count})"
+                : $"{day:dd/MM/yyyy} ({count})";
+            Items.Add(new AdminMenuItem(label, tag: new ChatDayTag(day)));
         }
 
-        SelectedItem = Items.FirstOrDefault(i => i.Tag is ChatDayTag) ?? Items.FirstOrDefault();
+        // UX: sélectionner "Aujourd'hui" par défaut si présent.
+        SelectedItem =
+            Items.FirstOrDefault(i => i.Tag is ChatDayTag d && d.DayLocalDate == DateTime.Now.Date)
+            ?? Items.FirstOrDefault(i => i.Tag is ChatDayTag)
+            ?? Items.FirstOrDefault();
         Status = "Entrée : ouvrir le jour. Échap : retour.";
         RestoreFocusIfAny();
     }
@@ -109,10 +125,16 @@ public sealed partial class AdminViewModel
 
         Items.Clear();
 
+        static DateTime ToLocalAssumingUtc(DateTime dt)
+        {
+            var utc = dt.Kind == DateTimeKind.Unspecified ? DateTime.SpecifyKind(dt, DateTimeKind.Utc) : dt;
+            return utc.ToLocalTime();
+        }
+
         var messages = _loadedChatMessages
             .Select(m =>
             {
-                var local = m.CreatedAt.ToLocalTime();
+                var local = ToLocalAssumingUtc(m.CreatedAt);
                 return (m, local, day: local.Date);
             })
             .Where(x => x.day == dayLocalDate)

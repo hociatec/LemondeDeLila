@@ -38,6 +38,7 @@ public sealed class ChatService : IChatService
 
     public event Action<string>? StatusChanged;
     public event Action<string>? Error;
+    public event Action<ChatMessage>? MessageArrived;
 
     public ChatService(
         Uri endpoint,
@@ -299,6 +300,7 @@ public sealed class ChatService : IChatService
 
     private void UpsertMessage(ChatMessage message, bool playReceiveSound)
     {
+        var isNew = true;
         var isMine = message.UserId.HasValue
             ? (_session.CurrentUser?.UserId == message.UserId.Value)
             : string.Equals(message.User, _session.CurrentUser?.Username, StringComparison.OrdinalIgnoreCase);
@@ -318,6 +320,7 @@ public sealed class ChatService : IChatService
         else
         {
             var idx = FindIndexById(normalized.Id);
+            isNew = idx < 0;
             if (normalized.IsDeleted)
             {
                 if (idx >= 0)
@@ -340,6 +343,11 @@ public sealed class ChatService : IChatService
         if (playReceiveSound && !normalized.IsDeleted && ShouldPlayReceiveSound(normalized))
         {
             _sounds.Play(SoundId.ChatMessageReceived);
+        }
+
+        if (playReceiveSound && isNew && !normalized.IsDeleted)
+        {
+            MessageArrived?.Invoke(normalized);
         }
 
         while (Messages.Count > MaxMessages)

@@ -74,6 +74,7 @@ public sealed class MenuRouter : IMenuRouter
     private readonly INotificationInbox _inbox;
     private readonly INotifyGatewayClient _notify;
     private readonly IMenuBadges _badges;
+    private readonly Modules.Presence.Services.IPresenceMonitor _presence;
 
     public MenuRouter(
         ILogger<MenuRouter> logger,
@@ -87,6 +88,7 @@ public sealed class MenuRouter : IMenuRouter
         INotificationInbox inbox,
         INotifyGatewayClient notify,
         IMenuBadges badges,
+        Modules.Presence.Services.IPresenceMonitor presence,
         IChatLauncher chat,
         ICatalogService catalog,
         INavigationService navigation,
@@ -114,6 +116,7 @@ public sealed class MenuRouter : IMenuRouter
         _inbox = inbox;
         _notify = notify;
         _badges = badges;
+        _presence = presence;
         _chat = chat;
         _catalog = catalog;
         _navigation = navigation;
@@ -131,6 +134,35 @@ public sealed class MenuRouter : IMenuRouter
         _publisher = publisher;
     }
 
+    private void SetPresenceContextForView(UserControl? view)
+    {
+        try
+        {
+            // Table context is handled by GameTableOpener (needs room id/name).
+            if (view is client_win.Modules.Game.Shell.Views.GameRoomView)
+            {
+                return;
+            }
+
+            var ctx = view switch
+            {
+                client_win.Modules.Catalog.Views.CatalogView => "tavern",
+                client_win.Modules.Stats.Views.StatsView => "stats",
+                client_win.Modules.Social.Views.SocialView => "social",
+                client_win.Modules.Messaging.Views.MessagingView => "messaging",
+                client_win.Modules.Notifications.Views.NotificationsView => "notifications",
+                client_win.Modules.MainMenu.Views.MainMenuView => "home",
+                _ => "other"
+            };
+
+            _ = _presence.SetContextAsync(ctx);
+        }
+        catch
+        {
+            // Best-effort
+        }
+    }
+
     public Task<string> OpenCatalog()
     {
         _logger.LogInformation("Ouverture du catalogue de jeux");
@@ -139,6 +171,7 @@ public sealed class MenuRouter : IMenuRouter
         var catalogView = new CatalogView();
         StopBackgroundLoops();
         _sounds.StartLoop(Modules.Audio.Models.SoundId.TavernAmbience);
+        SetPresenceContextForView(catalogView);
         CatalogViewModel? vm = null;
         vm = new CatalogViewModel(
             _catalog,
@@ -150,6 +183,7 @@ public sealed class MenuRouter : IMenuRouter
                 {
                     _navigation.Show(previous);
                     RestoreFocusAfterBackNavigation(previous);
+                    SetPresenceContextForView(previous);
                 }
 
                 StartLoopForView(_navigation.CurrentView);
@@ -183,12 +217,14 @@ public sealed class MenuRouter : IMenuRouter
         var previous = _navigation.CurrentView;
         StopBackgroundLoops();
         var view = new StatsView();
+        SetPresenceContextForView(view);
         var vm = new StatsViewModel(_stats, onClose: () =>
         {
             if (previous != null)
             {
                 _navigation.Show(previous);
                 RestoreFocusAfterBackNavigation(previous);
+                SetPresenceContextForView(previous);
             }
 
             StartLoopForView(_navigation.CurrentView);
@@ -206,6 +242,7 @@ public sealed class MenuRouter : IMenuRouter
         var previous = _navigation.CurrentView;
         StopBackgroundLoops();
         var view = new StatsView();
+        SetPresenceContextForView(view);
         var vm = new StatsViewModel(
             _stats,
             onClose: () =>
@@ -214,6 +251,7 @@ public sealed class MenuRouter : IMenuRouter
                 {
                     _navigation.Show(previous);
                     RestoreFocusAfterBackNavigation(previous);
+                    SetPresenceContextForView(previous);
                 }
 
                 StartLoopForView(_navigation.CurrentView);
@@ -257,6 +295,7 @@ public sealed class MenuRouter : IMenuRouter
         var previous = _navigation.CurrentView;
         StopBackgroundLoops();
         var view = new JoinGameView();
+        SetPresenceContextForView(view);
         JoinGameViewModel? vm = null;
         vm = new JoinGameViewModel(
             rooms: _roomDirectory,
@@ -270,6 +309,7 @@ public sealed class MenuRouter : IMenuRouter
                 {
                     _navigation.Show(previous);
                     RestoreFocusAfterBackNavigation(previous);
+                    SetPresenceContextForView(previous);
                 }
 
                 StartLoopForView(_navigation.CurrentView);
@@ -446,16 +486,20 @@ public sealed class MenuRouter : IMenuRouter
         var previous = _navigation.CurrentView;
         StopBackgroundLoops();
         var view = new MessagingView();
+        SetPresenceContextForView(view);
         var vm = new MessagingViewModel(_messaging, _dialogs, onClose: () =>
         {
             if (previous != null)
             {
                 _navigation.Show(previous);
                 RestoreFocusAfterBackNavigation(previous);
+                SetPresenceContextForView(previous);
             }
 
             StartLoopForView(_navigation.CurrentView);
         });
+        // Depuis Social, Échap doit revenir directement au menu Social.
+        vm.CloseOnEscape = previous is SocialView;
         view.DataContext = vm;
         _navigation.Show(view);
 
@@ -469,6 +513,7 @@ public sealed class MenuRouter : IMenuRouter
         var previous = _navigation.CurrentView;
         StopBackgroundLoops();
         var view = new SocialView();
+        SetPresenceContextForView(view);
         var vm = new SocialViewModel(
             _social,
             openStoryBook: async (userId, username) =>
@@ -487,6 +532,7 @@ public sealed class MenuRouter : IMenuRouter
             {
                 _navigation.Show(previous);
                 RestoreFocusAfterBackNavigation(previous);
+                SetPresenceContextForView(previous);
             }
 
             StartLoopForView(_navigation.CurrentView);
@@ -504,12 +550,14 @@ public sealed class MenuRouter : IMenuRouter
         var previous = _navigation.CurrentView;
         StopBackgroundLoops();
         var view = new NotificationsView();
+        SetPresenceContextForView(view);
         var vm = new NotificationsViewModel(_inbox, _notify, _session, _dialogs, onClose: () =>
         {
             if (previous != null)
             {
                 _navigation.Show(previous);
                 RestoreFocusAfterBackNavigation(previous);
+                SetPresenceContextForView(previous);
             }
 
             StartLoopForView(_navigation.CurrentView);

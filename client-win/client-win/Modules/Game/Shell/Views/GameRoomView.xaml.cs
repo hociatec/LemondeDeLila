@@ -284,11 +284,9 @@ public partial class GameRoomView : UserControl
 
     private void FocusHistory()
     {
-        var target = HistoryHost?.FocusTarget;
-        if (target != null)
+        if (HistoryHost != null)
         {
-            target.Focus();
-            Keyboard.Focus(target);
+            HistoryHost.FocusToBottom();
             return;
         }
 

@@ -10,8 +10,19 @@ import { In, IsNull, Repository } from 'typeorm';
 import { PresenceEvent, PresenceTransport } from './presence-transport';
 import { User } from '../../user/entities/user.entity';
 
-export type PresenceConnectionContext = 'home' | 'chat' | 'table';
-type PresenceActivity = 'home' | 'chat' | 'table';
+export type PresenceConnectionContext =
+  | 'home'
+  | 'chat'
+  | 'table'
+  | 'tavern'
+  | 'messaging'
+  | 'social'
+  | 'stats'
+  | 'notifications'
+  | 'other';
+type PresenceActivity = PresenceConnectionContext;
+
+export type PresenceAvailability = 'available' | 'occupied' | 'absent';
 
 type PresenceClient = {
   socket: WebSocket;
@@ -19,6 +30,7 @@ type PresenceClient = {
   context: PresenceConnectionContext;
   contextLocked: boolean;
   roomHint: { id: number; name?: string | null } | null;
+  lastInteractionAt: number;
 };
 
 export type PresenceBroadcastPlayer = {
@@ -27,8 +39,13 @@ export type PresenceBroadcastPlayer = {
   currentRoom: { id: number; name: string } | null;
   activity: PresenceActivity;
   contextLocked: boolean;
+  lastInteractionAt: number;
+  roomStarted: boolean | null;
 };
-type PresencePublicPlayer = Omit<PresenceBroadcastPlayer, 'contextLocked'>;
+type PresencePublicPlayer = Omit<PresenceBroadcastPlayer, 'contextLocked'> & {
+  availability?: PresenceAvailability;
+  location?: string;
+};
 
 @Injectable()
 export class PresenceService implements OnModuleDestroy {
@@ -48,6 +65,7 @@ export class PresenceService implements OnModuleDestroy {
     { at: number; until: Date | null; reason: string | null }
   >();
   private readonly chatBanCacheTtlMs = 10_000;
+  private readonly absentAfterMs = 3 * 60_000;
 
   constructor(
     private readonly chat: ChatService,
@@ -80,6 +98,7 @@ export class PresenceService implements OnModuleDestroy {
       context,
       contextLocked: false,
       roomHint: null,
+      lastInteractionAt: Date.now(),
     });
     this.ensureHeartbeat();
   }
@@ -116,20 +135,34 @@ export class PresenceService implements OnModuleDestroy {
       return;
     }
     if (payload.type === 'chat-send') {
+      from.lastInteractionAt = Date.now();
       await this.handleChatSend(from, payload);
       return;
     }
     if (payload.type === 'chat-edit') {
+      from.lastInteractionAt = Date.now();
       await this.handleChatEdit(from, payload);
       return;
     }
     if (payload.type === 'chat-delete') {
+      from.lastInteractionAt = Date.now();
       await this.handleChatDelete(from, payload);
       return;
     }
     if (payload.type === 'presence-context') {
+      from.lastInteractionAt = Date.now();
       this.handlePresenceContext(from, payload);
       this.broadcastPresence();
+      return;
+    }
+    if (payload.type === 'presence-activity') {
+      // Client-side interaction heartbeat (keyboard/mouse/touch), used for "absent" detection.
+      const at =
+        typeof payload.at === 'number' && Number.isFinite(payload.at)
+          ? payload.at
+          : Date.now();
+      from.lastInteractionAt = at;
+      // No immediate broadcast; heartbeat will refresh periodically, and other events can rebroadcast.
     }
   }
 
@@ -320,6 +353,18 @@ export class PresenceService implements OnModuleDestroy {
       context = 'chat';
     } else if (raw === 'table') {
       context = 'table';
+    } else if (raw === 'tavern') {
+      context = 'tavern';
+    } else if (raw === 'messaging') {
+      context = 'messaging';
+    } else if (raw === 'social') {
+      context = 'social';
+    } else if (raw === 'stats') {
+      context = 'stats';
+    } else if (raw === 'notifications') {
+      context = 'notifications';
+    } else if (raw === 'other') {
+      context = 'other';
     }
     client.context = context;
     client.contextLocked = true;
@@ -394,6 +439,8 @@ export class PresenceService implements OnModuleDestroy {
           : null,
         activity,
         contextLocked,
+        lastInteractionAt: client.lastInteractionAt ?? Date.now(),
+        roomStarted: null,
       };
       const existing = playersByUser.get(user.id);
       if (!existing) {
@@ -411,6 +458,12 @@ export class PresenceService implements OnModuleDestroy {
           existing.contextLocked || candidate.contextLocked;
         if (!existing.currentRoom && candidate.currentRoom) {
           existing.currentRoom = candidate.currentRoom;
+        }
+        if (
+          typeof candidate.lastInteractionAt === 'number' &&
+          candidate.lastInteractionAt > (existing.lastInteractionAt ?? 0)
+        ) {
+          existing.lastInteractionAt = candidate.lastInteractionAt;
         }
       }
     }
@@ -449,6 +502,11 @@ export class PresenceService implements OnModuleDestroy {
       if (!entry.contextLocked) {
         entry.activity = 'table';
       }
+
+      // Enrich: know whether the room has started (affects availability).
+      entry.roomStarted =
+        String((p.room as any).status ?? '').toLowerCase() === 'started' ||
+        Boolean((p.room as any).startedAt);
     }
   }
 
@@ -456,10 +514,21 @@ export class PresenceService implements OnModuleDestroy {
     if (activity === 'table') {
       return 0;
     }
-    if (activity === 'chat') {
+    if (
+      activity === 'messaging' ||
+      activity === 'social' ||
+      activity === 'notifications' ||
+      activity === 'other'
+    ) {
       return 1;
     }
-    return 2;
+    if (activity === 'chat') {
+      return 2;
+    }
+    if (activity === 'tavern' || activity === 'stats') {
+      return 3;
+    }
+    return 4; // home (default)
   }
 
   private broadcast(payload: Record<string, unknown>) {
@@ -506,7 +575,8 @@ export class PresenceService implements OnModuleDestroy {
     this.playersByOrigin.set(this.instanceId, { at: Date.now(), players });
     this.pruneOrigins();
     const merged = this.mergePlayersFromOrigins();
-    this.broadcast({ type: 'presence-update', players: merged });
+    const enriched = this.enrichMergedPlayers(merged);
+    this.broadcast({ type: 'presence-update', players: enriched });
     this.transport
       .publish({ players, origin: this.instanceId, at: Date.now() })
       .catch((err) =>
@@ -536,7 +606,8 @@ export class PresenceService implements OnModuleDestroy {
     });
     this.pruneOrigins();
     const merged = this.mergePlayersFromOrigins();
-    this.broadcast({ type: 'presence-update', players: merged });
+    const enriched = this.enrichMergedPlayers(merged);
+    this.broadcast({ type: 'presence-update', players: enriched });
   }
 
   findClient(socket: WebSocket): PresenceClient | undefined {
@@ -574,6 +645,13 @@ export class PresenceService implements OnModuleDestroy {
         activity:
           (String((p as any).activity ?? 'home') as PresenceActivity) ?? 'home',
         currentRoom: (p as any).currentRoom ?? null,
+        lastInteractionAt:
+          typeof (p as any).lastInteractionAt === 'number' &&
+          Number.isFinite((p as any).lastInteractionAt)
+            ? (p as any).lastInteractionAt
+            : 0,
+        roomStarted:
+          typeof (p as any).roomStarted === 'boolean' ? (p as any).roomStarted : null,
       };
 
       const existing = byUser.get(id);
@@ -593,10 +671,68 @@ export class PresenceService implements OnModuleDestroy {
         if (!existing.currentRoom && candidate.currentRoom) {
           existing.currentRoom = candidate.currentRoom;
         }
+        if (
+          typeof candidate.lastInteractionAt === 'number' &&
+          candidate.lastInteractionAt > (existing.lastInteractionAt ?? 0)
+        ) {
+          existing.lastInteractionAt = candidate.lastInteractionAt;
+        }
+        if (existing.roomStarted == null && candidate.roomStarted != null) {
+          existing.roomStarted = candidate.roomStarted;
+        }
       }
     }
 
     return Array.from(byUser.values());
+  }
+
+  private enrichMergedPlayers(players: PresencePublicPlayer[]): PresencePublicPlayer[] {
+    const now = Date.now();
+    return players.map((p) => {
+      const last = typeof p.lastInteractionAt === 'number' ? p.lastInteractionAt : 0;
+      const availability = this.computeAvailability(p.activity, p.roomStarted, now, last);
+      const location = this.computeLocation(p.activity, p.currentRoom);
+      return { ...p, availability, location };
+    });
+  }
+
+  private computeAvailability(
+    activity: PresenceActivity,
+    roomStarted: boolean | null,
+    now: number,
+    lastInteractionAt: number,
+  ): PresenceAvailability {
+    if (lastInteractionAt > 0 && now - lastInteractionAt >= this.absentAfterMs) {
+      return 'absent';
+    }
+
+    if (activity === 'table') {
+      return roomStarted ? 'occupied' : 'available';
+    }
+
+    if (activity === 'chat' || activity === 'tavern' || activity === 'stats' || activity === 'home') {
+      return 'available';
+    }
+
+    // messaging + other modules: occupied
+    return 'occupied';
+  }
+
+  private computeLocation(
+    activity: PresenceActivity,
+    currentRoom: { id: number; name: string } | null,
+  ): string {
+    if (activity === 'table') {
+      return currentRoom?.name || (currentRoom?.id ? `Table #${currentRoom.id}` : 'Table');
+    }
+    if (activity === 'chat') return 'tchat';
+    if (activity === 'tavern') return 'taverne';
+    if (activity === 'stats') return 'livre des contes';
+    if (activity === 'messaging') return 'messagerie';
+    if (activity === 'social') return 'social';
+    if (activity === 'notifications') return 'notifications';
+    if (activity === 'home') return 'accueil';
+    return 'application';
   }
 
   private ensureHeartbeat() {
@@ -642,6 +778,10 @@ export class PresenceService implements OnModuleDestroy {
           socket.close();
         }
       }
+    }
+    // Periodic refresh so "absent" status propagates even without explicit events.
+    if (this.clients.size > 0) {
+      this.broadcastPresence();
     }
     if (this.clients.size === 0) {
       this.stopHeartbeat();

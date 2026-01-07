@@ -15,6 +15,7 @@ public interface IChatService : IAsyncDisposable
     ChatServerError? LastServerError { get; }
     event Action<string>? StatusChanged;
     event Action<string>? Error;
+    event Action<ChatMessage>? MessageArrived;
 
     Task<bool> OpenAsync(CancellationToken cancellationToken = default);
     Task SendAsync(string text, CancellationToken cancellationToken = default);

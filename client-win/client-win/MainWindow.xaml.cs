@@ -75,6 +75,7 @@ namespace client_win
 
             Loaded += OnLoaded;
             PreviewKeyDown += OnPreviewKeyDown;
+            PreviewMouseDown += OnPreviewMouseDown;
             Closing += OnClosing;
         }
 
@@ -189,6 +190,20 @@ namespace client_win
 
         private void OnPreviewKeyDown(object sender, KeyEventArgs e)
         {
+            // Présence: marque une activité utilisateur pour le statut "absent" (throttled côté PresenceMonitor).
+            try
+            {
+                var key = e.Key == Key.System ? e.SystemKey : e.Key;
+                if (key is not (Key.LeftShift or Key.RightShift or Key.LeftCtrl or Key.RightCtrl or Key.LeftAlt or Key.RightAlt or Key.LWin or Key.RWin))
+                {
+                    _ = _presence.NotifyUserInteractionAsync();
+                }
+            }
+            catch
+            {
+                // ignore
+            }
+
             var isAlt = (Keyboard.Modifiers & ModifierKeys.Alt) == ModifierKeys.Alt;
             var isCtrl = (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control;
             var key = e.Key == Key.System ? e.SystemKey : e.Key;
@@ -207,6 +222,18 @@ namespace client_win
                 }
 
                 _ = _presenceUi.OpenAsync(this);
+            }
+        }
+
+        private void OnPreviewMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            try
+            {
+                _ = _presence.NotifyUserInteractionAsync();
+            }
+            catch
+            {
+                // ignore
             }
         }
 

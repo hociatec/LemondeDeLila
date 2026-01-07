@@ -183,6 +183,13 @@ public partial class MessagingView : UserControl
             return;
         }
 
+        if (vm.CloseOnEscape)
+        {
+            vm.CloseCommand.Execute(null);
+            e.Handled = true;
+            return;
+        }
+
         switch (_currentScreen)
         {
             case MessagingScreen.Detail:

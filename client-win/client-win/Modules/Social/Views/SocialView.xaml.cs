@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
 using client_win.Modules.Social.ViewModels;
+using client_win.Core;
 
 namespace client_win.Modules.Social.Views;
 
@@ -299,6 +300,33 @@ public partial class SocialView : UserControl
         if (MenuList.SelectedIndex >= 0)
         {
             _lastMenuIndex = MenuList.SelectedIndex;
+        }
+    }
+
+    private async void OnOutgoingListPreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key != Key.Enter && e.Key != Key.Return)
+        {
+            return;
+        }
+
+        if (DataContext is not SocialViewModel vm)
+        {
+            return;
+        }
+
+        // UX: dans "Demandes envoyées", Entrée annule la demande sélectionnée.
+        if (vm.CancelRequestCommand is AsyncRelayCommand asyncCmd)
+        {
+            e.Handled = true;
+            await asyncCmd.ExecuteAsync(null).ConfigureAwait(true);
+            return;
+        }
+
+        if (vm.CancelRequestCommand.CanExecute(null))
+        {
+            e.Handled = true;
+            vm.CancelRequestCommand.Execute(null);
         }
     }
 

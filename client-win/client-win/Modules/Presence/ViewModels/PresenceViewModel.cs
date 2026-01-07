@@ -58,6 +58,7 @@ public sealed class PresenceViewModel : ObservableObject
     private const string TagBlock = "block";
     private const string TagUnblock = "unblock";
     private const string TagStoryBook = "storybook";
+    private const string TagBio = "bio";
 
     public PresenceViewModel(
         IPresenceMonitor presence,
@@ -268,17 +269,45 @@ public sealed class PresenceViewModel : ObservableObject
     private static string BuildPlayerLabel(PresencePlayer p)
     {
         var baseName = p.Username;
-        if (p.CurrentRoomId.HasValue)
+
+        var availability = (p.Availability ?? string.Empty).Trim().ToLowerInvariant();
+        var status = availability switch
         {
-            var roomLabel = string.IsNullOrWhiteSpace(p.CurrentRoomName) ? $"Table #{p.CurrentRoomId}" : p.CurrentRoomName!.Trim();
-            return $"{baseName} — {roomLabel}";
-        }
-        var activity = (p.Activity ?? string.Empty).Trim().ToLowerInvariant();
-        return activity switch
-        {
-            "chat" => $"{baseName} — tchat",
-            _ => $"{baseName} — accueil"
+            "available" => "disponible",
+            "occupied" => "occupé",
+            "absent" => "absent",
+            _ => string.Empty
         };
+
+        var location = (p.Location ?? string.Empty).Trim();
+        if (string.IsNullOrWhiteSpace(location))
+        {
+            if (p.CurrentRoomId.HasValue)
+            {
+                location = string.IsNullOrWhiteSpace(p.CurrentRoomName)
+                    ? $"Table #{p.CurrentRoomId}"
+                    : p.CurrentRoomName!.Trim();
+            }
+            else
+            {
+                var activity = (p.Activity ?? string.Empty).Trim().ToLowerInvariant();
+                location = activity switch
+                {
+                    "chat" => "tchat",
+                    "tavern" => "taverne",
+                    "stats" => "livre des contes",
+                    "messaging" => "messagerie",
+                    _ => "accueil"
+                };
+            }
+        }
+
+        if (string.IsNullOrWhiteSpace(status))
+        {
+            return $"{baseName}, {location}";
+        }
+
+        return $"{baseName} ({status}), {location}";
     }
 
     private async Task ActivateAsync()
@@ -375,6 +404,7 @@ public sealed class PresenceViewModel : ObservableObject
             Items.Add(new PresenceMenuItem("Ajouter / retirer ami (chargement...)", tag: TagFriendAdd));
         }
 
+        Items.Add(new PresenceMenuItem("Voir sa bio", tag: TagBio));
         Items.Add(new PresenceMenuItem("Voir son livre des contes", tag: TagStoryBook));
 
         if (canInvite)
@@ -507,6 +537,61 @@ public sealed class PresenceViewModel : ObservableObject
             {
                 // Ne pas fermer la présence : Échap doit revenir à la présence (pas à l'accueil).
                 await _openStoryBook(player.Id, StripSelfSuffix(player.Username)).ConfigureAwait(true);
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+            return;
+        }
+
+        if (string.Equals(tag, TagBio, StringComparison.OrdinalIgnoreCase))
+        {
+            IsBusy = true;
+            try
+            {
+                var profile = await _social.GetProfileAsync(player.Id, CancellationToken.None).ConfigureAwait(true);
+                if (profile == null)
+                {
+                    await _dialogs.ShowInfo("Bio", "Profil indisponible.").ConfigureAwait(true);
+                    return;
+                }
+
+                if (!profile.IsOwner && !profile.CanView)
+                {
+                    var vis = (profile.Visibility ?? string.Empty).Trim().ToLowerInvariant();
+                    var reason = vis switch
+                    {
+                        "friends" => "Bio indisponible (réservée aux amis).",
+                        "private" => "Bio indisponible (profil privé).",
+                        "public" => "Bio indisponible.",
+                        _ => "Bio indisponible."
+                    };
+                    await _dialogs.ShowInfo("Bio", reason).ConfigureAwait(true);
+                    return;
+                }
+
+                var bio = (profile.Bio ?? string.Empty).Trim();
+                if (string.IsNullOrWhiteSpace(bio))
+                {
+                    bio = "(vide)";
+                }
+
+                var visibilityLabel = (profile.Visibility ?? string.Empty).Trim().ToLowerInvariant() switch
+                {
+                    "public" => "Public",
+                    "friends" => "Amis",
+                    "private" => "Privé",
+                    _ => string.IsNullOrWhiteSpace(profile.Visibility) ? "Inconnue" : profile.Visibility!.Trim()
+                };
+
+                await _dialogs
+                    .ShowInfo($"Bio — {StripSelfSuffix(player.Username)}", $"Visibilité : {visibilityLabel}\n\n{bio}")
+                    .ConfigureAwait(true);
+            }
+            catch (Exception ex)
+            {
+                await _dialogs.ShowError("Bio", $"Erreur lors du chargement de la bio : {ex.Message}").ConfigureAwait(true);
             }
             finally
             {
