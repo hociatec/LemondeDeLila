@@ -9,14 +9,37 @@ namespace client_win.Modules.Presence.Views;
 
 public partial class PresenceView : UserControl
 {
+    private PresenceViewModel? _viewModel;
+
     public PresenceView()
     {
         InitializeComponent();
+        DataContextChanged += OnDataContextChanged;
     }
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
         FocusCurrentPage();
+    }
+
+    private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+    {
+        if (_viewModel != null)
+        {
+            _viewModel.FocusFirstItemRequested -= OnFocusFirstItemRequested;
+            _viewModel = null;
+        }
+
+        if (e.NewValue is PresenceViewModel vm)
+        {
+            _viewModel = vm;
+            vm.FocusFirstItemRequested += OnFocusFirstItemRequested;
+        }
+    }
+
+    private void OnFocusFirstItemRequested()
+    {
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusWhenContainersGenerated));
     }
 
     private void OnKeyDown(object sender, KeyEventArgs e)
@@ -121,4 +144,3 @@ public partial class PresenceView : UserControl
         ItemsList.ItemContainerGenerator.StatusChanged += handler;
     }
 }
-

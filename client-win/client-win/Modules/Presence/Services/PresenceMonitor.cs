@@ -366,23 +366,20 @@ public sealed class PresenceMonitor : IPresenceMonitor, IAsyncDisposable
     {
         try
         {
-            while (true)
+            IReadOnlyList<PresencePlayer>? next;
+            lock (_pendingPlayersGate)
             {
-                IReadOnlyList<PresencePlayer>? next;
-                lock (_pendingPlayersGate)
-                {
-                    next = _pendingPlayers;
-                    _pendingPlayers = null;
-                }
-
-                if (next == null)
-                {
-                    return;
-                }
-
-                ApplyPlayers(next);
-                PlayersChanged?.Invoke();
+                next = _pendingPlayers;
+                _pendingPlayers = null;
             }
+
+            if (next == null)
+            {
+                return;
+            }
+
+            ApplyPlayers(next);
+            PlayersChanged?.Invoke();
         }
         finally
         {
