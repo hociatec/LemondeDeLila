@@ -97,8 +97,11 @@ public partial class ChatView : UserControl
         if (e.Key == Key.Enter && DataContext is ChatViewModel vm)
         {
             var caret = HistoryBox?.CaretIndex ?? 0;
-            await vm.HandleHistoryActionAsync(caret);
-            InputBox.Focus();
+            var startedEdit = await vm.HandleHistoryActionAsync(caret);
+            if (startedEdit)
+            {
+                InputBox.Focus();
+            }
             e.Handled = true;
         }
     }

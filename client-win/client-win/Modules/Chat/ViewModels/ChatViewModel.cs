@@ -96,23 +96,23 @@ public sealed class ChatViewModel : ObservableObject
         await _chat.SendAsync(toSend);
     }
 
-    public Task HandleHistoryActionAsync(int caretIndex)
+    public Task<bool> HandleHistoryActionAsync(int caretIndex)
     {
         var msg = FindMessageAtCaret(caretIndex);
         if (!CanActOnMessage(msg))
         {
-            return Task.CompletedTask;
+            return Task.FromResult(false);
         }
 
         return HandleMessageActionAsync(msg!);
     }
 
-    private async Task HandleMessageActionAsync(ChatMessage msg)
+    private async Task<bool> HandleMessageActionAsync(ChatMessage msg)
     {
         if (_dialogs == null)
         {
             BeginEdit(msg);
-            return;
+            return true;
         }
 
         var choice = await _dialogs.Choose(
@@ -125,7 +125,7 @@ public sealed class ChatViewModel : ObservableObject
         if (choice == DialogChoice.Primary)
         {
             BeginEdit(msg);
-            return;
+            return true;
         }
 
         if (choice == DialogChoice.Secondary)
@@ -139,7 +139,10 @@ public sealed class ChatViewModel : ObservableObject
             {
                 await DeleteAsync(msg);
             }
+            return false;
         }
+
+        return false;
     }
 
     private bool CanActOnMessage(ChatMessage? message)

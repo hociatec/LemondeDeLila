@@ -6,26 +6,6 @@ using client_win.Modules.Game.Play.Dtos;
 
 namespace client_win.Modules.Game.Play.Services;
 
-internal static class GamePlayShortcutKeyFormatter
-{
-    internal static string ToDisplay(string key)
-    {
-        if (string.IsNullOrWhiteSpace(key))
-        {
-            return string.Empty;
-        }
-
-        var trimmed = key.Trim();
-        const string pressed = "pressed ";
-        if (trimmed.StartsWith(pressed, StringComparison.OrdinalIgnoreCase))
-        {
-            return trimmed.Substring(pressed.Length).Trim();
-        }
-
-        return trimmed;
-    }
-}
-
 internal static class GamePlayExtrasParser
 {
     internal sealed class ShortcutHint

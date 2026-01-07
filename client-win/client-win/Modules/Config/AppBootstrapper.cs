@@ -262,7 +262,6 @@ public static class AppBootstrapper
                 sp.GetRequiredService<ISoundService>(),
                 sp.GetRequiredService<Modules.Network.Services.IWsTicketProvider>()));
 
-        services.AddSingleton<IViewFactory<ChatWindow>, ChatWindowFactory>();
         services.AddSingleton<IChatLauncher, ChatLauncher>();
 
         services.AddSingleton<IMessagingService>(sp =>

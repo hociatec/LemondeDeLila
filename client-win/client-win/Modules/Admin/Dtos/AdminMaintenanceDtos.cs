@@ -2,15 +2,6 @@ using System.Text.Json.Serialization;
 
 namespace client_win.Modules.Admin.Dtos;
 
-public sealed class AdminMaintenanceStartDeployResponse
-{
-    [JsonPropertyName("ok")]
-    public bool Ok { get; set; }
-
-    [JsonPropertyName("unit")]
-    public string? Unit { get; set; }
-}
-
 public sealed class AdminMaintenanceUnitStatusResponse
 {
     [JsonPropertyName("ok")]
@@ -27,21 +18,6 @@ public sealed class AdminMaintenanceUnitStatusResponse
     public string? ExecMainCode { get; set; }
     public string? ExecMainStartTimestamp { get; set; }
     public string? ExecMainExitTimestamp { get; set; }
-}
-
-public sealed class AdminMaintenanceLogsResponse
-{
-    [JsonPropertyName("ok")]
-    public bool Ok { get; set; }
-
-    [JsonPropertyName("unit")]
-    public string? Unit { get; set; }
-
-    [JsonPropertyName("tail")]
-    public int Tail { get; set; }
-
-    [JsonPropertyName("logs")]
-    public string? Logs { get; set; }
 }
 
 public sealed class AdminMaintenanceCommandResponse
