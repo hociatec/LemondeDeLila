@@ -113,9 +113,10 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
                 await ws.ConnectAsync(_config.NotifyGatewayWs, token, headers: headers, cancellationToken).ConfigureAwait(false);
                 _ws = ws;
                 Log.Information("Connexion WS notify établie.");
-                _countsFirstReceived = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-                _countsSupported = false;
-                _badges.SetUnreadNotifications(0);
+            _countsFirstReceived = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            _countsSupported = false;
+            _badges.SetUnreadNotifications(0);
+            _ = SendAsync("notify.counts.get");
 
                 // Handshake version: permet au serveur de proposer la MAJ à chaque connexion.
                 try
@@ -616,16 +617,12 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
                 return;
             }
 
-	            _inbox.Upsert(item);
-	            if (!_countsSupported)
-	            {
-	                _badges.SetUnreadNotifications(_badges.UnreadNotifications + 1);
-	            }
+            _inbox.Upsert(item);
 
-	            if (string.Equals(item.Kind, "admin_contact", StringComparison.OrdinalIgnoreCase))
-	            {
-	                var me = _session.CurrentUser;
-	                var fromMe = me != null && item.FromUserId == me.UserId;
+            if (string.Equals(item.Kind, "admin_contact", StringComparison.OrdinalIgnoreCase))
+            {
+                var me = _session.CurrentUser;
+                var fromMe = me != null && item.FromUserId == me.UserId;
 	                _sounds.Play(fromMe ? SoundId.AdminContactSent : SoundId.AdminContactReceived);
 	            }
 
