@@ -69,40 +69,33 @@ export class NotificationInboxDbService {
   }
 
   async delete(userId: number, id: string): Promise<boolean> {
-    const now = new Date();
     const res = await this.repo
       .createQueryBuilder()
-      .update(NotificationInboxItem)
-      .set({ deletedAt: now })
+      .delete()
+      .from(NotificationInboxItem)
       .where('id = :id', { id })
       .andWhere('user_id = :userId', { userId })
-      .andWhere('deleted_at IS NULL')
       .execute();
     if ((res.affected ?? 0) > 0) return true;
 
-    // Fallback debug path: check what exists for this id, then delete by id only.
+    // Fallback debug path: delete by id only (in case of inconsistent user_id).
     const found = await this.repo.findOne({
       where: { id } as any,
-      select: { id: true, deletedAt: true, user: { id: true } } as any,
+      select: { id: true, user: { id: true } } as any,
       relations: ['user'],
       withDeleted: true,
     });
-    this.logger.warn(
-      `Delete miss user=${userId} id=${id} foundUser=${found?.user?.id ?? 'none'} deletedAt=${found?.deletedAt?.toISOString?.() ?? 'null'}`,
-    );
-    if (found && !found.deletedAt) {
+    if (found) {
+      this.logger.warn(
+        `Hard delete fallback user=${userId} id=${id} owner=${found.user?.id ?? 'none'}`,
+      );
       const res2 = await this.repo
         .createQueryBuilder()
-        .update(NotificationInboxItem)
-        .set({ deletedAt: now })
+        .delete()
+        .from(NotificationInboxItem)
         .where('id = :id', { id })
-        .andWhere('deleted_at IS NULL')
         .execute();
       return (res2.affected ?? 0) > 0;
-    }
-    if (found && found.deletedAt) {
-      // Already soft-deleted; treat as success to avoid loops.
-      return true;
     }
     return false;
   }

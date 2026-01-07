@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Text.Json;
+using System.Text;
 using client_win.Modules.User.Services;
 
 namespace client_win.Modules.Network.Services;
@@ -48,11 +50,36 @@ public sealed class ApiCapabilitiesService : IApiCapabilitiesService, IDisposabl
             return new ApiCapabilities();
         }
 
+        var localIsAdmin = IsAdminFromToken(token);
+
         var res = await _ws.RequestAsync<ApiCapabilitiesPayload>(
             "api.capabilities",
             new { },
             token,
             cancellationToken).ConfigureAwait(false);
+
+        if (!res.Success)
+        {
+            // Ne pas mettre en cache une réponse en échec : on retentera au prochain appel
+            // et on s'appuie sur les rôles du JWT comme filet de sécurité.
+            lock (_sync)
+            {
+                if (_cached != null)
+                {
+                    return _cached;
+                }
+            }
+            return new ApiCapabilities
+            {
+                IsAdmin = localIsAdmin,
+                SupportsAdminRoomsList = false,
+                SupportsAdminRoomsDestroy = false,
+                SupportsAdminRoomsCleanup = false,
+                RoutesCount = 0,
+                WsTypes = Array.Empty<string>(),
+                GeneratedAt = string.Empty,
+            };
+        }
 
         var wsTypes = res.Success && res.Payload?.WsTypes != null
             ? res.Payload.WsTypes
@@ -66,10 +93,10 @@ public sealed class ApiCapabilitiesService : IApiCapabilitiesService, IDisposabl
 
         var capabilities = new ApiCapabilities
         {
-            IsAdmin = res.Success && res.Payload?.IsAdmin == true,
-            SupportsAdminRoomsList = res.Success && res.Payload?.Features?.GetValueOrDefault("admin.rooms.list") == true,
-            SupportsAdminRoomsDestroy = res.Success && res.Payload?.Features?.GetValueOrDefault("admin.rooms.destroy") == true,
-            SupportsAdminRoomsCleanup = res.Success && res.Payload?.Features?.GetValueOrDefault("admin.rooms.cleanup") == true,
+            IsAdmin = localIsAdmin || (res.Payload?.IsAdmin == true),
+            SupportsAdminRoomsList = res.Payload?.Features?.GetValueOrDefault("admin.rooms.list") == true,
+            SupportsAdminRoomsDestroy = res.Payload?.Features?.GetValueOrDefault("admin.rooms.destroy") == true,
+            SupportsAdminRoomsCleanup = res.Payload?.Features?.GetValueOrDefault("admin.rooms.cleanup") == true,
             RoutesCount = res.Payload?.RoutesCount ?? 0,
             WsTypes = wsTypes,
             GeneratedAt = res.Payload?.GeneratedAt ?? string.Empty
@@ -96,6 +123,63 @@ public sealed class ApiCapabilitiesService : IApiCapabilitiesService, IDisposabl
     public void Dispose()
     {
         _transport.Connected -= OnTransportConnected;
+    }
+
+    private static bool IsAdminFromToken(string? token)
+    {
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            return false;
+        }
+
+        try
+        {
+            var parts = token.Split('.');
+            if (parts.Length < 2) return false;
+
+            static string Pad(string s)
+            {
+                s = s.Replace('-', '+').Replace('_', '/');
+                var mod = s.Length % 4;
+                return mod == 0 ? s : s + new string('=', 4 - mod);
+            }
+
+            var payloadJson = Encoding.UTF8.GetString(Convert.FromBase64String(Pad(parts[1])));
+            using var doc = JsonDocument.Parse(payloadJson);
+            if (!doc.RootElement.TryGetProperty("roles", out var rolesEl))
+            {
+                return false;
+            }
+
+            if (rolesEl.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var roleEl in rolesEl.EnumerateArray())
+                {
+                    if (roleEl.ValueKind == JsonValueKind.String && IsAdminRole(roleEl.GetString()))
+                    {
+                        return true;
+                    }
+                }
+            }
+            else if (rolesEl.ValueKind == JsonValueKind.String && IsAdminRole(rolesEl.GetString()))
+            {
+                return true;
+            }
+
+            return false;
+        }
+        catch
+        {
+            // Parse best-effort only.
+            return false;
+        }
+    }
+
+    private static bool IsAdminRole(string? role)
+    {
+        if (string.IsNullOrWhiteSpace(role)) return false;
+        return string.Equals(role, "ROLE_ADMIN", StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(role, "admin", StringComparison.OrdinalIgnoreCase);
     }
 
     private sealed class ApiCapabilitiesPayload
