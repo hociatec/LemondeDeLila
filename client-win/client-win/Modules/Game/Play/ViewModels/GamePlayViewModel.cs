@@ -843,7 +843,7 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
             cell.CanPlaceWallV = false;
             cell.IsCarryingPawn = _selectedPawnCell != null;
             cell.IsSelectedPawn = false;
-            cell.CellTags = Array.Empty<string>();
+cell.CellTags = new ObservableCollection<string>();
         }
 
         if (positions != null)
@@ -878,17 +878,16 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
             var k = $"{cell.X},{cell.Y}";
             if (cellTagsByKey.TryGetValue(k, out var tags) && tags.Length > 0)
             {
-                cell.CellTags = tags;
+                cell.CellTags = new ObservableCollection<string>(tags);
             }
 
             if (!_gridActionsByCellKey.TryGetValue(k, out var actions) || actions.Count == 0)
             {
-                cell.ActionLabels = Array.Empty<string>();
+cell.ActionLabels = new ObservableCollection<string>();
                 continue;
             }
 
-            cell.ActionLabels = actions.Select(a => a.Label).Where(s => !string.IsNullOrWhiteSpace(s)).ToArray();
-            cell.IsLegalMove = actions.Any(a => !a.HasOrientation);
+cell.ActionLabels = new ObservableCollection<string>(actions.Select(a => a.Label).Where(s => !string.IsNullOrWhiteSpace(s)));
             cell.CanPlaceWallH = actions.Any(a => a.HasOrientation && HasOrientation(a.Payload, "h"));
             cell.CanPlaceWallV = actions.Any(a => a.HasOrientation && HasOrientation(a.Payload, "v"));
         }
