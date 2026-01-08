@@ -498,8 +498,6 @@ public sealed class MenuRouter : IMenuRouter
 
             StartLoopForView(_navigation.CurrentView);
         });
-        // Depuis Social, Échap doit revenir directement au menu Social.
-        vm.CloseOnEscape = previous is SocialView;
         view.DataContext = vm;
         _navigation.Show(view);
 

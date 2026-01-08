@@ -188,30 +188,9 @@ public partial class MessagingView : UserControl
             return;
         }
 
-        if (vm.CloseOnEscape)
-        {
-            vm.CloseCommand.Execute(null);
-            e.Handled = true;
-            return;
-        }
-
-        switch (_currentScreen)
-        {
-            case MessagingScreen.Detail:
-                ShowScreen(MessagingScreen.List);
-                break;
-            case MessagingScreen.List:
-                ShowScreen(MessagingScreen.Menu);
-                break;
-            case MessagingScreen.Compose:
-                vm.IsComposeMode = false;
-                ShowScreen(_screenBeforeCompose);
-                break;
-            default:
-                vm.CloseCommand.Execute(null);
-                break;
-        }
-
+        // Dans la messagerie, Échap revient toujours à l'écran précédent (ferme la vue),
+        // quel que soit le sous-écran courant.
+        vm.CloseCommand.Execute(null);
         e.Handled = true;
     }
 

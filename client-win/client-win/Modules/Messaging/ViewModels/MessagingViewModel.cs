@@ -32,10 +32,6 @@ public sealed class MessagingViewModel : ObservableObject
     public event EventHandler? FocusFirstMessageRequested;
     public event EventHandler? NavigateHomeRequested;
 
-    // UX: quand la messagerie est ouverte depuis Social, Échap doit fermer la messagerie en une seule fois
-    // pour revenir au menu Social (pas remonter dans les sous-écrans de la messagerie).
-    public bool CloseOnEscape { get; set; }
-
     public MessagingViewModel(IMessagingService service, IDialogService dialogs, Action onClose)
     {
         _service = service ?? throw new ArgumentNullException(nameof(service));
