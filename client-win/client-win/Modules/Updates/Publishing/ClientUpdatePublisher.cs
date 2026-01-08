@@ -235,8 +235,8 @@ public sealed class ClientUpdatePublisher : IClientUpdatePublisher
         var isDotnet = string.Equals(msbuildExe, "dotnet", StringComparison.OrdinalIgnoreCase) ||
                        msbuildExe.EndsWith("dotnet.exe", StringComparison.OrdinalIgnoreCase);
 
-        var msbuildArgs = new[]
-        {
+	        var msbuildArgs = new[]
+	        {
             // dotnet msbuild <proj> ... vs MSBuild.exe <proj> ...
             isDotnet ? "msbuild" : string.Empty,
             Quote(projectPath),
@@ -245,16 +245,15 @@ public sealed class ClientUpdatePublisher : IClientUpdatePublisher
             "/p:Configuration=Release",
             "/p:PublishProfile=ClickOnce",
             $"/p:PublishDir={Quote(publishDir + Path.DirectorySeparatorChar)}",
-            "/p:PublishProtocol=ClickOnce",
-            "/p:Install=true",
-            "/p:InstallFrom=Web",
-            "/p:UpdateEnabled=true",
-            "/p:UpdateMode=Background",
-            "/p:UpdateInterval=0",
-            "/p:UpdateIntervalUnits=Days",
-            // IMPORTANT: ClickOnce + CreateDesktopShortcut peut dupliquer le raccourci sur le bureau à chaque update.
-            "/p:CreateDesktopShortcut=false",
-            "/p:GenerateManifests=true",
+	            "/p:PublishProtocol=ClickOnce",
+	            "/p:Install=true",
+	            "/p:InstallFrom=Web",
+	            // IMPORTANT: on désactive l'auto-update ClickOnce (qui peut afficher des boîtes système).
+	            // Les mises à jour sont gérées par le client via ApplicationDeployment.Update() (silencieux).
+	            "/p:UpdateEnabled=false",
+	            // IMPORTANT: ClickOnce + CreateDesktopShortcut peut dupliquer le raccourci sur le bureau à chaque update.
+	            "/p:CreateDesktopShortcut=false",
+	            "/p:GenerateManifests=true",
             useBootstrapper ? "/p:BootstrapperEnabled=true" : "/p:BootstrapperEnabled=false",
             useBootstrapper ? "/p:IsWebBootstrapper=true" : "/p:IsWebBootstrapper=false",
             $"/p:PublishUrl={Quote(baseUrl)}",
