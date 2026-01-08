@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using System.Windows;
 using System.Linq;
+using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -13,10 +14,10 @@ namespace client_win.Modules.Shell.Services;
 public sealed class WpfDialogService : IDialogService
 {
     public Task ShowError(string title, string message) =>
-        InvokeAsync(() => ShowOwned(message, title, MessageBoxButton.OK, MessageBoxImage.Error));
+        InvokeAsync(() => ShowTextDialog(title, message, kind: "Erreur"));
 
     public Task ShowInfo(string title, string message) =>
-        InvokeAsync(() => ShowOwned(message, title, MessageBoxButton.OK, MessageBoxImage.Information));
+        InvokeAsync(() => ShowTextDialog(title, message, kind: "Information"));
 
     public Task<bool?> Confirm(string title, string message, string? okText = null, string? cancelText = null) =>
         InvokeAsync<bool?>(() =>
@@ -271,6 +272,99 @@ public sealed class WpfDialogService : IDialogService
         return owner != null
             ? MessageBox.Show(owner, message, title, buttons, icon)
             : MessageBox.Show(message, title, buttons, icon);
+    }
+
+    private static void ShowTextDialog(string title, string message, string kind)
+    {
+        var owner = GetOwnerWindow();
+        try
+        {
+            owner?.Activate();
+        }
+        catch
+        {
+            // ignore
+        }
+
+        var dialog = new Window
+        {
+            Title = string.IsNullOrWhiteSpace(title) ? kind : title,
+            Owner = owner,
+            WindowStartupLocation = owner != null ? WindowStartupLocation.CenterOwner : WindowStartupLocation.CenterScreen,
+            SizeToContent = SizeToContent.WidthAndHeight,
+            ResizeMode = ResizeMode.CanResizeWithGrip,
+            ShowInTaskbar = false,
+            Topmost = owner == null,
+            MinWidth = 520,
+            Background = Brushes.White,
+        };
+
+        var root = new Grid
+        {
+            Margin = new Thickness(16),
+        };
+        root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        root.RowDefinitions.Add(new RowDefinition { Height = new GridLength(12) });
+        root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+
+        var text = new TextBox
+        {
+            Text = message ?? string.Empty,
+            IsReadOnly = true,
+            IsReadOnlyCaretVisible = true,
+            BorderBrush = Brushes.LightGray,
+            BorderThickness = new Thickness(1),
+            Background = Brushes.White,
+            Padding = new Thickness(8),
+            TextWrapping = TextWrapping.Wrap,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
+            AcceptsReturn = true,
+            AcceptsTab = false,
+            MinWidth = 480,
+            MaxWidth = 900,
+            MinHeight = 120,
+            MaxHeight = 520,
+        };
+        AutomationProperties.SetName(text, $"Texte ({kind})");
+        Grid.SetRow(text, 0);
+        root.Children.Add(text);
+
+        var buttons = new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            HorizontalAlignment = HorizontalAlignment.Right,
+        };
+        Grid.SetRow(buttons, 2);
+
+        var ok = new Button
+        {
+            Content = "OK",
+            MinWidth = 140,
+            IsDefault = true,
+            IsCancel = true,
+        };
+        ok.Click += (_, _) => dialog.Close();
+
+        buttons.Children.Add(ok);
+        root.Children.Add(buttons);
+
+        dialog.Content = root;
+        dialog.PreviewKeyDown += (_, e) =>
+        {
+            if (e.Key == Key.Escape)
+            {
+                dialog.Close();
+            }
+        };
+        dialog.Loaded += (_, _) =>
+        {
+            text.Focus();
+            text.CaretIndex = 0;
+            text.Select(0, 0);
+        };
+
+        dialog.ShowDialog();
     }
 
     private static Window? GetOwnerWindow()
