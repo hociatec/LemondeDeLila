@@ -1553,10 +1553,10 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
             var key = $"{from.X},{from.Y}";
             if (_gridBlockedEdges.TryGetValue(key, out var edges))
             {
-                if (dx == 1 && edges.e) return "Déplacement interdit : mur vertical entre ces colonnes.";
-                if (dx == -1 && edges.w) return "Déplacement interdit : mur vertical entre ces colonnes.";
-                if (dy == 1 && edges.s) return "Déplacement interdit : mur horizontal entre ces lignes.";
-                if (dy == -1 && edges.n) return "Déplacement interdit : mur horizontal entre ces lignes.";
+                if (dx == 1 && edges.e) return "Déplacement interdit : mur à droite.";
+                if (dx == -1 && edges.w) return "Déplacement interdit : mur à gauche.";
+                if (dy == 1 && edges.s) return "Déplacement interdit : mur en bas.";
+                if (dy == -1 && edges.n) return "Déplacement interdit : mur en haut.";
             }
             return "Déplacement interdit.";
         }
@@ -1658,14 +1658,38 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
             return false;
         }
 
-        // Certaines phases/jeux n'exposent pas de tour: dans ce cas on ne bloque pas.
-        var current = state.Turn?.CurrentPlayerId;
-        if (current == null)
+        // Source de vérité côté client: si le serveur nous fournit des actions, c'est forcément notre tour
+        // (les jeux "tour par tour" ne renvoient des actions qu'au joueur actif).
+        try
         {
-            return true;
+            if ((state.Actions?.Count ?? 0) > 0)
+            {
+                return true;
+            }
+            if (state.Extras.ValueKind == JsonValueKind.Object &&
+                state.Extras.TryGetProperty("grid", out var grid) &&
+                grid.ValueKind == JsonValueKind.Object &&
+                grid.TryGetProperty("cellActions", out var cellActions) &&
+                cellActions.ValueKind == JsonValueKind.Object)
+            {
+                foreach (var cellProp in cellActions.EnumerateObject())
+                {
+                    if (cellProp.Value.ValueKind != JsonValueKind.Array) continue;
+                    if (cellProp.Value.EnumerateArray().Any())
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+        catch
+        {
+            // ignore
         }
 
-        return current.Value == viewerPlayerId.Value;
+        // Fallback: comparer au tour courant si exposé.
+        var current = state.Turn?.CurrentPlayerId;
+        return current != null && current.Value == viewerPlayerId.Value;
     }
 
     private async Task SendGridActionAsync(GridAction action)

@@ -4,6 +4,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:shell="clr-namespace:client_win.Modules.Game.Shell.Views"
+             xmlns:play="clr-namespace:client_win.Modules.Game.Play.Views"
              mc:Ignorable="d"
              d:DesignHeight="320"
              d:DesignWidth="900"
@@ -41,17 +42,17 @@
                    TextWrapping="Wrap"
                    Margin="0 0 0 8" />
 
-        <Border Grid.Row="2"
-                Background="#0E1E34"
-                CornerRadius="8"
-                Padding="10"
-                Margin="0 0 0 10"
-                Visibility="{Binding ShowGridBoard, Converter={StaticResource BoolToVis}}"
-                AutomationProperties.Name="Grille de jeu"
-                x:Name="GridBoard"
-                KeyboardNavigation.DirectionalNavigation="Contained"
-                KeyboardNavigation.TabNavigation="Once"
-                PreviewKeyDown="OnGridPreviewKeyDown">
+	        <Border Grid.Row="2"
+	                Background="#0E1E34"
+	                CornerRadius="8"
+	                Padding="10"
+	                Margin="0 0 0 10"
+	                Visibility="{Binding ShowGridBoard, Converter={StaticResource BoolToVis}}"
+	                AutomationProperties.Name=""
+	                x:Name="GridBoard"
+	                KeyboardNavigation.DirectionalNavigation="Contained"
+	                KeyboardNavigation.TabNavigation="Once"
+	                PreviewKeyDown="OnGridPreviewKeyDown">
             <StackPanel>
                 <TextBlock Text="Grille"
                            Foreground="#F2C14E"
@@ -67,6 +68,7 @@
 	                              ItemsSource="{Binding GridCells}"
 	                              KeyboardNavigation.DirectionalNavigation="Contained"
 	                              KeyboardNavigation.TabNavigation="Once"
+	                              AutomationProperties.Name=""
 	                              Loaded="OnGridLoaded">
 	                    <!--
 	                        Accessibilité NVDA (Corridor) :
@@ -89,30 +91,30 @@
 	                            <UniformGrid Columns="{Binding GridSize}" />
 	                        </ItemsPanelTemplate>
 	                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <Button Content="{Binding Display}"
-                                    FontSize="16"
-                                    FontWeight="SemiBold"
-                                    Width="34"
-                                    Height="34"
-                                    Padding="0"
-                                    Margin="1"
-                                    Background="#10223A"
-                                    BorderBrush="#284C75"
-                                    BorderThickness="{Binding CellBorderThickness}"
-                                    Foreground="White"
-                                    FocusVisualStyle="{x:Null}"
-                                    AutomationProperties.Name="{Binding AccessibleName}"
-                                    AutomationProperties.AutomationId="{Binding CellRef}"
-                                    Command="{Binding DataContext.GridCellCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                    CommandParameter="{Binding}">
-                                <Button.Style>
-                                    <Style TargetType="Button">
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsLegalMove}" Value="True">
-                                                <Setter Property="Background" Value="#1B3554" />
-                                                <Setter Property="BorderBrush" Value="#F2C14E" />
+	                    <ItemsControl.ItemTemplate>
+	                        <DataTemplate>
+	                            <play:A11yGridCell Content="{Binding Display}"
+	                                               FontSize="16"
+	                                               FontWeight="SemiBold"
+	                                               Width="34"
+	                                               Height="34"
+	                                               Padding="0"
+	                                               Margin="1"
+	                                               Background="#10223A"
+	                                               BorderBrush="#284C75"
+	                                               BorderThickness="{Binding CellBorderThickness}"
+	                                               Foreground="White"
+	                                               FocusVisualStyle="{x:Null}"
+	                                               AutomationProperties.Name="{Binding AccessibleName}"
+	                                               AutomationProperties.AutomationId="{Binding CellRef}"
+	                                               Command="{Binding DataContext.GridCellCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+	                                               CommandParameter="{Binding}">
+	                                <play:A11yGridCell.Style>
+	                                    <Style TargetType="play:A11yGridCell">
+	                                        <Style.Triggers>
+	                                            <DataTrigger Binding="{Binding IsLegalMove}" Value="True">
+	                                                <Setter Property="Background" Value="#1B3554" />
+	                                                <Setter Property="BorderBrush" Value="#F2C14E" />
                                             </DataTrigger>
                                             <DataTrigger Binding="{Binding CanPlaceWallH}" Value="True">
                                                 <Setter Property="Background" Value="#1B3554" />
@@ -128,17 +130,17 @@
                                             </DataTrigger>
                                             <DataTrigger Binding="{Binding IsSelectedPawn}" Value="True">
                                                 <Setter Property="BorderBrush" Value="#F2C14E" />
-                                            </DataTrigger>
-                                            <Trigger Property="IsKeyboardFocused" Value="True">
-                                                <Setter Property="BorderBrush" Value="#F2C14E" />
-                                            </Trigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Button.Style>
-                            </Button>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
+	                                            </DataTrigger>
+	                                            <Trigger Property="IsKeyboardFocused" Value="True">
+	                                                <Setter Property="BorderBrush" Value="#F2C14E" />
+	                                            </Trigger>
+	                                        </Style.Triggers>
+	                                    </Style>
+	                                </play:A11yGridCell.Style>
+	                            </play:A11yGridCell>
+	                        </DataTemplate>
+	                    </ItemsControl.ItemTemplate>
+	                </ItemsControl>
             </StackPanel>
         </Border>
 

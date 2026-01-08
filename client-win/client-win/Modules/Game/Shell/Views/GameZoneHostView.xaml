@@ -9,14 +9,14 @@
              d:DesignWidth="600"
              Focusable="False"
              IsTabStop="False">
-    <Border Background="#0E1E34"
-            CornerRadius="10"
-            Padding="16"
-            Margin="0 0 0 12"
-            Focusable="False"
-            KeyboardNavigation.DirectionalNavigation="Contained"
-            AutomationProperties.Name="{Binding Title}"
-            AutomationProperties.HelpText="{Binding Title, StringFormat=Zone de jeu. Surface UI dynamique chargée selon le jeu ({0}).}">
+	    <Border Background="#0E1E34"
+	            CornerRadius="10"
+	            Padding="16"
+	            Margin="0 0 0 12"
+	            Focusable="False"
+	            KeyboardNavigation.DirectionalNavigation="Contained"
+	            AutomationProperties.Name=""
+	            AutomationProperties.HelpText="">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
@@ -32,7 +32,7 @@
             <Grid Grid.Row="1">
                 <!-- Ancre de focus permanente pour garder la navigation "dans la zone de jeu"
                      même si la surface de jeu n'a pas d'élément focusable à l'instant T. -->
-                <local:GameZoneFocusAnchor x:Name="GameZoneFocusAnchor"
+	                <local:GameZoneFocusAnchor x:Name="GameZoneFocusAnchor"
                                            Focusable="True"
                                            IsTabStop="True"
                                            KeyboardNavigation.TabIndex="0"
@@ -42,20 +42,20 @@
                                            Opacity="0"
                                            Width="1"
                                            Height="1"
-                                           HorizontalAlignment="Left"
-                                           VerticalAlignment="Top"
-                                           AutomationProperties.Name="{Binding Title}"
-                                           PreviewKeyDown="OnAnchorPreviewKeyDown" />
+	                                           HorizontalAlignment="Left"
+	                                           VerticalAlignment="Top"
+	                                           AutomationProperties.Name=""
+	                                           PreviewKeyDown="OnAnchorPreviewKeyDown" />
 
-                <local:GameZoneFocusAnchor x:Name="GameZoneEmptyAnchor"
+	                <local:GameZoneFocusAnchor x:Name="GameZoneEmptyAnchor"
                                            Focusable="True"
                                            IsTabStop="True"
                                            KeyboardNavigation.TabIndex="0"
                                            Background="Transparent"
                                            BorderThickness="0"
-                                           Padding="0"
-                                           PreviewKeyDown="OnAnchorPreviewKeyDown"
-                                           AutomationProperties.Name="{Binding Title}">
+	                                           Padding="0"
+	                                           PreviewKeyDown="OnAnchorPreviewKeyDown"
+	                                           AutomationProperties.Name="">
                     <local:GameZoneFocusAnchor.Style>
                         <Style TargetType="{x:Type local:GameZoneFocusAnchor}">
                             <Setter Property="Visibility" Value="Collapsed" />
@@ -72,14 +72,14 @@
                     </local:GameZoneFocusAnchor.Style>
                 </local:GameZoneFocusAnchor>
 
-                <ContentControl x:Name="GameZoneHost"
-                                Content="{Binding Content}"
-                                Focusable="False"
-                                IsTabStop="False"
-                                MinHeight="180"
-                                HorizontalContentAlignment="Stretch"
-                                VerticalContentAlignment="Stretch"
-                                AutomationProperties.Name="{Binding Title}" />
+	                <ContentControl x:Name="GameZoneHost"
+	                                Content="{Binding Content}"
+	                                Focusable="False"
+	                                IsTabStop="False"
+	                                MinHeight="180"
+	                                HorizontalContentAlignment="Stretch"
+	                                VerticalContentAlignment="Stretch"
+	                                AutomationProperties.Name="" />
 
                 <!-- Placeholder visuel volontairement supprimé (lecture d'écran: ne pas polluer le focus). -->
             </Grid>

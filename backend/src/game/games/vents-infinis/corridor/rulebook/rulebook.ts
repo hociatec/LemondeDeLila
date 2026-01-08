@@ -313,7 +313,9 @@ export function validateMoveAction(
   action: GameSingleActionDto,
   actorId: number | null,
 ): { to: CorridorPos; actorId: number } {
-  if (!actorId || actorId <= 0) {
+  // Les bots ont des IDs négatifs dans l'état de jeu (GameCoreService),
+  // donc on ne doit pas rejeter actorId <= 0 ici.
+  if (actorId == null) {
     throw new Error('Acteur requis');
   }
   if ((action?.type ?? '').trim() !== 'corridor_move') {
@@ -340,7 +342,9 @@ export function validatePlaceWallAction(
   action: GameSingleActionDto,
   actorId: number | null,
 ): { wall: CorridorWall; actorId: number } {
-  if (!actorId || actorId <= 0) {
+  // Les bots ont des IDs négatifs dans l'état de jeu (GameCoreService),
+  // donc on ne doit pas rejeter actorId <= 0 ici.
+  if (actorId == null) {
     throw new Error('Acteur requis');
   }
   if ((action?.type ?? '').trim() !== 'corridor_place_wall') {

@@ -285,10 +285,10 @@ public sealed class GridCellViewModel : ObservableObject
 
             if (WallNorth || WallSouth || WallWest || WallEast)
             {
-                if (WallNorth) parts.Add("Mur au nord.");
-                if (WallSouth) parts.Add("Mur au sud.");
-                if (WallWest) parts.Add("Mur à l'ouest.");
-                if (WallEast) parts.Add("Mur à l'est.");
+                if (WallNorth) parts.Add("Mur en haut.");
+                if (WallSouth) parts.Add("Mur en bas.");
+                if (WallWest) parts.Add("Mur à gauche.");
+                if (WallEast) parts.Add("Mur à droite.");
             }
 
             return string.Join(" ", parts);
