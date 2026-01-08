@@ -75,14 +75,13 @@
 	                        Le conteneur généré par ItemsControl peut être annoncé comme "élément de donnée" avec le nom par défaut
 	                        (ToString du ViewModel). On force un libellé humain et un type localisé pour éviter le bruit.
 	                    -->
-	                    <ItemsControl.ItemContainerStyle>
-	                        <Style TargetType="ContentPresenter">
-	                            <Setter Property="AutomationProperties.Name" Value="{Binding AccessibleName}" />
-	                            <Setter Property="AutomationProperties.LocalizedControlType" Value="case" />
-	                            <Setter Property="AutomationProperties.AutomationId" Value="{Binding CellRef}" />
-	                            <Setter Property="AutomationProperties.HelpText" Value="" />
-	                        </Style>
-	                    </ItemsControl.ItemContainerStyle>
+		                    <ItemsControl.ItemContainerStyle>
+		                        <Style TargetType="ContentPresenter">
+		                            <Setter Property="AutomationProperties.Name" Value="{Binding AccessibleName}" />
+		                            <Setter Property="AutomationProperties.AutomationId" Value="{Binding CellRef}" />
+		                            <Setter Property="AutomationProperties.HelpText" Value="" />
+		                        </Style>
+		                    </ItemsControl.ItemContainerStyle>
 	                    <ItemsControl.ItemsPanel>
 	                        <ItemsPanelTemplate>
 	                            <UniformGrid Columns="{Binding GridSize}" />
