@@ -12,6 +12,8 @@ Dans `exposeStateForUser`, ajouter dans `extras` :
   - `true` signifie “mur / bord / passage bloqué”
 - `grid.cellActions`: objet `{ "x,y": [ { type, label, payload } ] }`
   - `label` est lu par le lecteur d’écran dans la case (important)
+- `grid.cellTags` (optionnel) : objet `{ "x,y": [ "Objectif", "Départ", ... ] }`
+  - chaque tag est lu par le lecteur d’écran dans la case
 - `grid.statusLines`: tableau de chaînes (annonces d’état courtes)
 
 Optionnel :
@@ -28,4 +30,3 @@ Exemple vivant : `backend/src/game/games/vents-infinis/corridor/presenter/corrid
 - Pour les murs avec 2 orientations, une boîte “Horizontal / Vertical” apparaît.
 
 Implémentation côté client : `client-win/client-win/Modules/Game/Play/ViewModels/GamePlayViewModel.cs` + `client-win/client-win/Modules/Game/Play/ViewModels/GridCellViewModel.cs`.
-

@@ -22,6 +22,32 @@ public sealed class GridCellViewModel : ObservableObject
     public int Column => X + 1;
     public int Row => Y + 1;
 
+    public int MaxColumns
+    {
+        get => _maxColumns;
+        set
+        {
+            if (SetProperty(ref _maxColumns, value))
+            {
+                OnPropertyChanged(nameof(AccessibleName));
+            }
+        }
+    }
+    private int _maxColumns;
+
+    public int MaxRows
+    {
+        get => _maxRows;
+        set
+        {
+            if (SetProperty(ref _maxRows, value))
+            {
+                OnPropertyChanged(nameof(AccessibleName));
+            }
+        }
+    }
+    private int _maxRows;
+
     public Thickness CellBorderThickness
     {
         get => _cellBorderThickness;
@@ -125,6 +151,19 @@ public sealed class GridCellViewModel : ObservableObject
     }
     private bool _isLegalMove;
 
+    public IReadOnlyList<string> CellTags
+    {
+        get => _cellTags;
+        set
+        {
+            if (SetProperty(ref _cellTags, value ?? Array.Empty<string>()))
+            {
+                OnPropertyChanged(nameof(AccessibleName));
+            }
+        }
+    }
+    private IReadOnlyList<string> _cellTags = Array.Empty<string>();
+
     public IReadOnlyList<string> ActionLabels
     {
         get => _actionLabels;
@@ -215,6 +254,13 @@ public sealed class GridCellViewModel : ObservableObject
 
             if (IsLegalMove && IsCarryingPawn) parts.Add("Déplacement disponible.");
 
+            foreach (var tag in CellTags)
+            {
+                var t = (tag ?? string.Empty).Trim();
+                if (string.IsNullOrWhiteSpace(t)) continue;
+                parts.Add(t.EndsWith(".", StringComparison.Ordinal) ? t : $"{t}.");
+            }
+
             if (CanPlaceWallH || CanPlaceWallV)
             {
                 if (CanPlaceWallH && CanPlaceWallV) parts.Add("Mur disponible (horizontal ou vertical).");
@@ -224,12 +270,22 @@ public sealed class GridCellViewModel : ObservableObject
 
             if (WallNorth || WallSouth || WallWest || WallEast)
             {
-                var walls = new List<string>();
-                if (WallNorth) walls.Add("nord");
-                if (WallSouth) walls.Add("sud");
-                if (WallWest) walls.Add("ouest");
-                if (WallEast) walls.Add("est");
-                parts.Add($"Mur : {string.Join(", ", walls)}.");
+                if (WallNorth)
+                {
+                    parts.Add(Row <= 1 ? "Bord nord." : $"Mur horizontal entre ligne {Row - 1} et ligne {Row}.");
+                }
+                if (WallSouth)
+                {
+                    parts.Add(MaxRows > 0 && Row >= MaxRows ? "Bord sud." : $"Mur horizontal entre ligne {Row} et ligne {Row + 1}.");
+                }
+                if (WallWest)
+                {
+                    parts.Add(Column <= 1 ? "Bord ouest." : $"Mur vertical entre colonne {Column - 1} et colonne {Column}.");
+                }
+                if (WallEast)
+                {
+                    parts.Add(MaxColumns > 0 && Column >= MaxColumns ? "Bord est." : $"Mur vertical entre colonne {Column} et colonne {Column + 1}.");
+                }
             }
 
             if (ActionLabels.Count > 0)

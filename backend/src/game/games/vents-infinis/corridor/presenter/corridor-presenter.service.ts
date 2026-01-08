@@ -30,6 +30,7 @@ export class CorridorPresenterService extends BasePresenterService {
     const viewerPos = CorridorRulebook.getPawnPos(meta, userId);
     const cellActions = this.buildGridCellActions(exposed);
     const blockedEdges = this.buildBlockedEdges(meta);
+    const cellTags = this.buildGridCellTags(state, userId, size);
 
     return {
       ...exposed,
@@ -48,6 +49,7 @@ export class CorridorPresenterService extends BasePresenterService {
           })),
           blockedEdges,
           cellActions,
+          cellTags,
           statusLines: [
             viewerIsTurn ? 'À vous de jouer.' : "Tour de l'adversaire.",
             `Murs restants : ${(meta?.wallsRemainingByPlayerId ?? {})[String(userId)] ?? 0}`,
@@ -75,6 +77,25 @@ export class CorridorPresenterService extends BasePresenterService {
         positions,
       },
     } as any;
+  }
+
+  private buildGridCellTags(
+    state: GameStateEntity,
+    userId: number,
+    size: number,
+  ): Record<string, string[]> {
+    if (!size) return {};
+
+    const players = state.players ?? [];
+    const idx = players.findIndex((p) => p?.id === userId);
+    if (idx < 0) return {};
+
+    const goalY = idx === 0 ? size - 1 : 0;
+    const tags: Record<string, string[]> = {};
+    for (let x = 0; x < size; x++) {
+      tags[`${x},${goalY}`] = ['Objectif'];
+    }
+    return tags;
   }
 
   private buildGridCellActions(exposed: GameStateWithActions): Record<string, any[]> {

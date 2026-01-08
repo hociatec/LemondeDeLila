@@ -45,7 +45,10 @@
                 CornerRadius="8"
                 Padding="10"
                 Margin="0 0 0 10"
-                Visibility="{Binding ShowGridBoard, Converter={StaticResource BoolToVis}}">
+                Visibility="{Binding ShowGridBoard, Converter={StaticResource BoolToVis}}"
+                AutomationProperties.Name="Grille de jeu"
+                KeyboardNavigation.DirectionalNavigation="Contained"
+                KeyboardNavigation.TabNavigation="Once">
             <StackPanel>
                 <TextBlock Text="Grille"
                            Foreground="#F2C14E"

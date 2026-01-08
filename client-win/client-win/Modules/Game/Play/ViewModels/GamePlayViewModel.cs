@@ -24,6 +24,7 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
 {
     private sealed record GridAction(string Type, string Label, JsonElement Payload, bool HasOrientation);
     private readonly Dictionary<string, List<GridAction>> _gridActionsByCellKey = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, (bool n, bool e, bool s, bool w)> _gridBlockedEdges = new(StringComparer.Ordinal);
     private readonly Dispatcher _dispatcher;
     private readonly IDialogService _dialogs;
     private readonly ISoundService _sounds;
@@ -784,19 +785,23 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
     {
         var safe = size <= 0 ? 9 : size;
         GridSize = safe;
-        if (GridCells.Count == safe * safe)
+        if (GridCells.Count != safe * safe)
         {
-            return;
+            GridCells.Clear();
+            for (var y = 0; y < safe; y++)
+            {
+                for (var x = 0; x < safe; x++)
+                {
+                    var idx = y * safe + x;
+                    GridCells.Add(new GridCellViewModel(x, y, idx));
+                }
+            }
         }
 
-        GridCells.Clear();
-        for (var y = 0; y < safe; y++)
+        foreach (var cell in GridCells)
         {
-            for (var x = 0; x < safe; x++)
-            {
-                var idx = y * safe + x;
-                GridCells.Add(new GridCellViewModel(x, y, idx));
-            }
+            cell.MaxColumns = safe;
+            cell.MaxRows = safe;
         }
     }
 
@@ -814,6 +819,7 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
 
         var viewerId = _viewerPlayerId;
         var positions = state.Board?.Positions;
+        var cellTagsByKey = TryReadGridCellTags(state);
 
         foreach (var cell in GridCells)
         {
@@ -829,6 +835,7 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
             cell.CanPlaceWallV = false;
             cell.IsCarryingPawn = _selectedPawnCell != null;
             cell.IsSelectedPawn = false;
+            cell.CellTags = Array.Empty<string>();
         }
 
         if (positions != null)
@@ -861,6 +868,11 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
         foreach (var cell in GridCells)
         {
             var k = $"{cell.X},{cell.Y}";
+            if (cellTagsByKey.TryGetValue(k, out var tags) && tags.Length > 0)
+            {
+                cell.CellTags = tags;
+            }
+
             if (!_gridActionsByCellKey.TryGetValue(k, out var actions) || actions.Count == 0)
             {
                 cell.ActionLabels = Array.Empty<string>();
@@ -996,6 +1008,43 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
         return dict;
     }
 
+    private static Dictionary<string, string[]> TryReadGridCellTags(GameStateDto state)
+    {
+        var dict = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
+        try
+        {
+            if (state.Extras.ValueKind != JsonValueKind.Object ||
+                !state.Extras.TryGetProperty("grid", out var grid) ||
+                grid.ValueKind != JsonValueKind.Object ||
+                !grid.TryGetProperty("cellTags", out var cellTags) ||
+                cellTags.ValueKind != JsonValueKind.Object)
+            {
+                return dict;
+            }
+
+            foreach (var cellProp in cellTags.EnumerateObject())
+            {
+                if (string.IsNullOrWhiteSpace(cellProp.Name)) continue;
+                if (cellProp.Value.ValueKind != JsonValueKind.Array) continue;
+                var tags = cellProp.Value.EnumerateArray()
+                    .Where(e => e.ValueKind == JsonValueKind.String)
+                    .Select(e => (e.GetString() ?? string.Empty).Trim())
+                    .Where(s => !string.IsNullOrWhiteSpace(s))
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToArray();
+                if (tags.Length > 0)
+                {
+                    dict[cellProp.Name.Trim()] = tags;
+                }
+            }
+        }
+        catch
+        {
+            // ignore
+        }
+        return dict;
+    }
+
     private void SyncGridStatus(GameStateDto state)
     {
         try
@@ -1039,6 +1088,22 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
                 blocked.ValueKind != JsonValueKind.Object)
             {
                 return;
+            }
+
+            _gridBlockedEdges.Clear();
+            foreach (var prop in blocked.EnumerateObject())
+            {
+                if (prop.Value.ValueKind != JsonValueKind.Object)
+                {
+                    continue;
+                }
+
+                var edges = prop.Value;
+                var n = edges.TryGetProperty("n", out var nn) && nn.ValueKind == JsonValueKind.True;
+                var e = edges.TryGetProperty("e", out var ee) && ee.ValueKind == JsonValueKind.True;
+                var s = edges.TryGetProperty("s", out var ss) && ss.ValueKind == JsonValueKind.True;
+                var w = edges.TryGetProperty("w", out var ww) && ww.ValueKind == JsonValueKind.True;
+                _gridBlockedEdges[prop.Name] = (n, e, s, w);
             }
 
             for (var y = 0; y < GridSize; y++)
@@ -1285,7 +1350,8 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
             var moveActions = actionsHere.Where(a => !a.HasOrientation).ToList();
             if (moveActions.Count == 0)
             {
-                MessageReceived?.Invoke("Déplacement indisponible.");
+                var reason = TryExplainBlockedMove(_selectedPawnCell, cell);
+                MessageReceived?.Invoke(reason ?? "Déplacement interdit.");
                 return;
             }
 
@@ -1373,6 +1439,36 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
         return byLabel.TryGetValue(picked, out var chosen) ? chosen : null;
     }
 
+    private string? TryExplainBlockedMove(GridCellViewModel from, GridCellViewModel to)
+    {
+        if (from == null || to == null)
+        {
+            return null;
+        }
+
+        if (to.IsOccupied)
+        {
+            return "Déplacement interdit : case occupée.";
+        }
+
+        var dx = to.X - from.X;
+        var dy = to.Y - from.Y;
+        if (Math.Abs(dx) + Math.Abs(dy) == 1)
+        {
+            var key = $"{from.X},{from.Y}";
+            if (_gridBlockedEdges.TryGetValue(key, out var edges))
+            {
+                if (dx == 1 && edges.e) return "Déplacement interdit : mur vertical entre ces colonnes.";
+                if (dx == -1 && edges.w) return "Déplacement interdit : mur vertical entre ces colonnes.";
+                if (dy == 1 && edges.s) return "Déplacement interdit : mur horizontal entre ces lignes.";
+                if (dy == -1 && edges.n) return "Déplacement interdit : mur horizontal entre ces lignes.";
+            }
+            return "Déplacement interdit.";
+        }
+
+        return "Déplacement interdit.";
+    }
+
     private async Task PromptAndSendWallAsync(GridCellViewModel cell, List<GridAction> wallActions)
     {
         var horizontal = wallActions.FirstOrDefault(a => HasOrientation(a.Payload, "h"));
@@ -1391,12 +1487,12 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
             if (choice == DialogChoice.Primary)
             {
                 await SendGridActionAsync(horizontal).ConfigureAwait(true);
-                MessageReceived?.Invoke("Mur envoyé.");
+                MessageReceived?.Invoke($"Mur horizontal posé à colonne {cell.Column}, ligne {cell.Row}.");
             }
             else if (choice == DialogChoice.Secondary)
             {
                 await SendGridActionAsync(vertical).ConfigureAwait(true);
-                MessageReceived?.Invoke("Mur envoyé.");
+                MessageReceived?.Invoke($"Mur vertical posé à colonne {cell.Column}, ligne {cell.Row}.");
             }
 
             return;
@@ -1413,7 +1509,7 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
         if (ok == true)
         {
             await SendGridActionAsync(only).ConfigureAwait(true);
-            MessageReceived?.Invoke("Mur envoyé.");
+            MessageReceived?.Invoke($"Mur posé à colonne {cell.Column}, ligne {cell.Row}.");
         }
     }
 
