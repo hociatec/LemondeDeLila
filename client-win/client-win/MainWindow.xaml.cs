@@ -193,8 +193,8 @@ namespace client_win
             // Présence: marque une activité utilisateur pour le statut "absent" (throttled côté PresenceMonitor).
             try
             {
-                var key = e.Key == Key.System ? e.SystemKey : e.Key;
-                if (key is not (Key.LeftShift or Key.RightShift or Key.LeftCtrl or Key.RightCtrl or Key.LeftAlt or Key.RightAlt or Key.LWin or Key.RWin))
+                var interactionKey = e.Key == Key.System ? e.SystemKey : e.Key;
+                if (interactionKey is not (Key.LeftShift or Key.RightShift or Key.LeftCtrl or Key.RightCtrl or Key.LeftAlt or Key.RightAlt or Key.LWin or Key.RWin))
                 {
                     _ = _presence.NotifyUserInteractionAsync();
                 }

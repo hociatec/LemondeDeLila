@@ -346,7 +346,7 @@ public sealed class PresenceViewModel : ObservableObject
             _isFriendRequestPending = null;
             RebuildPlayerActions();
             _ = RefreshSocialStateAsync(player.Id);
-            _dispatcher.BeginInvoke(
+            _ = _dispatcher.BeginInvoke(
                 DispatcherPriority.ApplicationIdle,
                 new Action(() => FocusFirstItemRequested?.Invoke()));
             return;
