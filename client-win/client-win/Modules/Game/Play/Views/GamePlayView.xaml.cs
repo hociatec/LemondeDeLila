@@ -22,6 +22,7 @@ public partial class GamePlayView : UserControl
     private CancellationTokenSource? _initCts;
     private GamePlayViewModel? _initVm;
     private int _gridFocusIndex;
+    private EventHandler? _gridGeneratorStatusChanged;
 
     public GamePlayView()
     {
@@ -36,10 +37,6 @@ public partial class GamePlayView : UserControl
         var vm = DataContext as GamePlayViewModel;
         HookChoiceAutoFocus(vm);
         TryStartInitialization(vm);
-        Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
-        {
-            TryFocusPreferredGridCell();
-        }));
     }
 
     private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
@@ -53,6 +50,50 @@ public partial class GamePlayView : UserControl
     {
         HookChoiceAutoFocus(null);
         CancelInitialization();
+        UnhookGridGenerator();
+    }
+
+    private void OnGridLoaded(object sender, RoutedEventArgs e)
+    {
+        HookGridGenerator();
+        Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() =>
+        {
+            TryFocusPreferredGridCell();
+        }));
+    }
+
+    private void HookGridGenerator()
+    {
+        UnhookGridGenerator();
+        _gridGeneratorStatusChanged = (_, __) =>
+        {
+            if (GridItems.ItemContainerGenerator.Status != GeneratorStatus.ContainersGenerated)
+            {
+                return;
+            }
+
+            Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() =>
+            {
+                TryFocusPreferredGridCell();
+            }));
+        };
+        GridItems.ItemContainerGenerator.StatusChanged += _gridGeneratorStatusChanged;
+    }
+
+    private void UnhookGridGenerator()
+    {
+        if (_gridGeneratorStatusChanged != null)
+        {
+            try
+            {
+                GridItems.ItemContainerGenerator.StatusChanged -= _gridGeneratorStatusChanged;
+            }
+            catch
+            {
+                // best-effort
+            }
+            _gridGeneratorStatusChanged = null;
+        }
     }
 
     private void TryStartInitialization(GamePlayViewModel? vm)
@@ -283,8 +324,37 @@ public partial class GamePlayView : UserControl
         TryFocusPreferredGridCell();
     }
 
-    private void OnRootPreviewKeyDown(object sender, KeyEventArgs e)
+    private async void OnRootPreviewKeyDown(object sender, KeyEventArgs e)
     {
+        if (e.Key == Key.M)
+        {
+            if (DataContext is not GamePlayViewModel vm || !vm.ShowGridBoard)
+            {
+                return;
+            }
+
+            var cell = GetFocusedGridCell();
+            if (cell == null)
+            {
+                TryFocusPreferredGridCell();
+                cell = GetFocusedGridCell();
+            }
+
+            if (cell != null)
+            {
+                e.Handled = true;
+                try
+                {
+                    await vm.HandleGridWallHotkeyAsync(cell).ConfigureAwait(true);
+                }
+                catch
+                {
+                    // ignore
+                }
+                return;
+            }
+        }
+
         HandleGridArrowKey(e);
     }
 
@@ -310,10 +380,10 @@ public partial class GamePlayView : UserControl
             var focused = GetFocusedGridCell();
             if (focused == null)
             {
-                if (TryFocusPreferredGridCell())
-                {
-                    e.Handled = true;
-                }
+                // Même si les containers ne sont pas encore générés, on consomme la touche
+                // et on planifie un focus sur la grille (sinon le focus WPF tombe sur un "data item").
+                TryFocusPreferredGridCell();
+                e.Handled = true;
                 return;
             }
 
@@ -394,13 +464,17 @@ public partial class GamePlayView : UserControl
             {
                 FocusGridCellIndex(_gridFocusIndex);
             }));
-            return false;
+            return true;
         }
 
         var button = FindVisualChild<Button>(container) ?? container as Button;
         if (button == null)
         {
-            return false;
+            Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() =>
+            {
+                FocusGridCellIndex(_gridFocusIndex);
+            }));
+            return true;
         }
 
         button.Focus();

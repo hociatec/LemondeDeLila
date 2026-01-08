@@ -81,8 +81,16 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
     public bool ShowGridBoard
     {
         get => _showGridBoard;
-        private set => SetProperty(ref _showGridBoard, value);
+        private set
+        {
+            if (SetProperty(ref _showGridBoard, value))
+            {
+                OnPropertyChanged(nameof(ShowLegacyActionsPanel));
+            }
+        }
     }
+
+    public bool ShowLegacyActionsPanel => !ShowGridBoard;
 
     public int GridSize
     {
@@ -1510,6 +1518,43 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
         {
             await SendGridActionAsync(only).ConfigureAwait(true);
             MessageReceived?.Invoke($"Mur posé à colonne {cell.Column}, ligne {cell.Row}.");
+        }
+    }
+
+    public async Task HandleGridWallHotkeyAsync(GridCellViewModel cell)
+    {
+        var session = _session;
+        if (session == null || !session.IsConnected)
+        {
+            return;
+        }
+
+        if (_viewerPlayerId == null || _viewerPlayerId.Value <= 0)
+        {
+            return;
+        }
+
+        if (_selectedPawnCell != null)
+        {
+            MessageReceived?.Invoke("Mur indisponible : pion en main. Reposez le pion avant de poser un mur.");
+            return;
+        }
+
+        var key = $"{cell.X},{cell.Y}";
+        _gridActionsByCellKey.TryGetValue(key, out var actionsHere);
+        actionsHere ??= new List<GridAction>();
+
+        var wallActions = actionsHere.Where(a => a.HasOrientation).ToList();
+        if (wallActions.Count == 0)
+        {
+            MessageReceived?.Invoke($"Aucun mur possible à colonne {cell.Column}, ligne {cell.Row}.");
+            return;
+        }
+
+        await PromptAndSendWallAsync(cell, wallActions).ConfigureAwait(true);
+        if (session.LastState != null)
+        {
+            SyncGridFromState(session.LastState);
         }
     }
 
