@@ -1128,10 +1128,16 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
                         continue;
                     }
 
-                    cell.WallNorth = edges.TryGetProperty("n", out var n) && n.ValueKind == JsonValueKind.True;
-                    cell.WallEast = edges.TryGetProperty("e", out var e) && e.ValueKind == JsonValueKind.True;
-                    cell.WallSouth = edges.TryGetProperty("s", out var s) && s.ValueKind == JsonValueKind.True;
-                    cell.WallWest = edges.TryGetProperty("w", out var w) && w.ValueKind == JsonValueKind.True;
+                    // Pour l'annonce lecteur d'écran : ne pas annoncer les bords (seulement les murs internes).
+                    var nBlocked = edges.TryGetProperty("n", out var n) && n.ValueKind == JsonValueKind.True;
+                    var eBlocked = edges.TryGetProperty("e", out var e) && e.ValueKind == JsonValueKind.True;
+                    var sBlocked = edges.TryGetProperty("s", out var s) && s.ValueKind == JsonValueKind.True;
+                    var wBlocked = edges.TryGetProperty("w", out var w) && w.ValueKind == JsonValueKind.True;
+
+                    cell.WallNorth = nBlocked && y > 0;
+                    cell.WallSouth = sBlocked && y < GridSize - 1;
+                    cell.WallWest = wBlocked && x > 0;
+                    cell.WallEast = eBlocked && x < GridSize - 1;
 
                     var thick = 4.0;
                     cell.CellBorderThickness = new Thickness(

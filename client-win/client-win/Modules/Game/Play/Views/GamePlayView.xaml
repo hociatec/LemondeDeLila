@@ -87,11 +87,10 @@
                                     BorderThickness="{Binding CellBorderThickness}"
                                     Foreground="White"
                                     FocusVisualStyle="{x:Null}"
+                                    AutomationProperties.Name="{Binding AccessibleName}"
+                                    AutomationProperties.AutomationId="{Binding CellRef}"
                                     Command="{Binding DataContext.GridCellCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                     CommandParameter="{Binding}">
-                                <AutomationProperties.Name>
-                                    <Binding Path="AccessibleName" />
-                                </AutomationProperties.Name>
                                 <Button.Style>
                                     <Style TargetType="Button">
                                         <Style.Triggers>

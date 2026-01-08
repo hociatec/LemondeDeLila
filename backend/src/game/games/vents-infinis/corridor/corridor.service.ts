@@ -10,6 +10,7 @@ import { CorridorSetupService } from './setup/corridor-setup.service';
 import { CorridorActionService } from './actions/corridor-action.service';
 import { CorridorPresenterService } from './presenter/corridor-presenter.service';
 import { CORRIDOR_GAME } from './definitions/game.definition';
+import { CorridorBotService } from './bots/corridor-bot.service';
 
 @Injectable()
 export class CorridorService implements GameRulesAdapter, OnModuleInit {
@@ -26,6 +27,7 @@ export class CorridorService implements GameRulesAdapter, OnModuleInit {
     private readonly setup: CorridorSetupService,
     private readonly actions: CorridorActionService,
     private readonly presenter: CorridorPresenterService,
+    private readonly bots: CorridorBotService,
   ) {
     this.registry = registry;
   }
@@ -44,8 +46,11 @@ export class CorridorService implements GameRulesAdapter, OnModuleInit {
     return this.actions.applyActions(state, actions);
   }
 
+  getBotActions(state: GameStateEntity, botPlayerId: number): GameSingleActionDto[] {
+    return this.bots.getBotActions(state, botPlayerId);
+  }
+
   exposeStateForUser(state: GameStateEntity, userId: number): GameStateWithActions {
     return this.presenter.exposeStateForUser(state, userId);
   }
 }
-
