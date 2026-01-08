@@ -191,7 +191,7 @@ export class GameCategoriesService implements OnModuleInit {
     }
 
     const root = this.getRoot();
-    const normalizedId = this.slugify(raw);
+    const normalizedId = this.slugify(this.normalizeLabel(raw));
     if (!normalizedId) {
       return undefined;
     }
@@ -210,6 +210,13 @@ export class GameCategoriesService implements OnModuleInit {
       (c) => c.enabled !== false && c.id.endsWith(suffix),
     );
     return matches.length === 1 ? matches[0] : undefined;
+  }
+
+  private normalizeLabel(value: string): string {
+    return (value ?? '')
+      .replace(/([a-z])([A-Z])/g, '$1 $2')
+      .replace(/[_-]+/g, ' ')
+      .trim();
   }
 
   private getRoot(): CategoriesRoot {

@@ -63,16 +63,28 @@
                            TextWrapping="Wrap"
                            Margin="0 0 0 8" />
 
-                <ItemsControl x:Name="GridItems"
-                              ItemsSource="{Binding GridCells}"
-                              KeyboardNavigation.DirectionalNavigation="Contained"
-                              KeyboardNavigation.TabNavigation="Once"
-                              Loaded="OnGridLoaded">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <UniformGrid Columns="{Binding GridSize}" />
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
+	                <ItemsControl x:Name="GridItems"
+	                              ItemsSource="{Binding GridCells}"
+	                              KeyboardNavigation.DirectionalNavigation="Contained"
+	                              KeyboardNavigation.TabNavigation="Once"
+	                              Loaded="OnGridLoaded">
+	                    <!--
+	                        Accessibilité NVDA (Corridor) :
+	                        L'élément conteneur généré par ItemsControl (ContentPresenter) peut être annoncé avec le nom par défaut
+	                        (ToString du ViewModel : "...Modules...ViewModels..."), ce qui pollue l'annonce de chaque case.
+	                        On le retire de l'arbre UIA et on laisse le Button (focusable) porter le libellé.
+	                    -->
+	                    <ItemsControl.ItemContainerStyle>
+	                        <Style TargetType="ContentPresenter">
+	                            <Setter Property="AutomationProperties.IsControlElement" Value="False" />
+	                            <Setter Property="AutomationProperties.IsContentElement" Value="False" />
+	                        </Style>
+	                    </ItemsControl.ItemContainerStyle>
+	                    <ItemsControl.ItemsPanel>
+	                        <ItemsPanelTemplate>
+	                            <UniformGrid Columns="{Binding GridSize}" />
+	                        </ItemsPanelTemplate>
+	                    </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <Button Content="{Binding Display}"
