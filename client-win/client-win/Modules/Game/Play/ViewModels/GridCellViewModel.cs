@@ -1,286 +1,289 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using client_win.Core;
 
-namespace client_win.Modules.Game.Play.ViewModels;
-
-public sealed class GridCellViewModel : ObservableObject
+namespace client_win.Modules.Game.Play.ViewModels
 {
-    public GridCellViewModel(int x, int y, int index)
+    public sealed class GridCellViewModel : ObservableObject
     {
-        X = x;
-        Y = y;
-        Index = index;
-    }
-
-    public int X { get; }
-    public int Y { get; }
-    public int Index { get; }
-
-    public int Column => X + 1;
-    public int Row => Y + 1;
-
-    public string CellRef => $"{ToColumnLetters(Column)}{Row}";
-
-    private static string ToColumnLetters(int oneBasedColumn)
-    {
-        var n = Math.Max(1, oneBasedColumn);
-        var s = string.Empty;
-        while (n > 0)
+        public GridCellViewModel(int x, int y, int index)
         {
-            n--;
-            s = (char)('A' + (n % 26)) + s;
-            n /= 26;
+            X = x;
+            Y = y;
+            Index = index;
+            _cellTags = new ObservableCollection<string>();
+            _actionLabels = new ObservableCollection<string>();
         }
-        return s;
-    }
 
-    public int MaxColumns
-    {
-        get => _maxColumns;
-        set
+        public int X { get; }
+        public int Y { get; }
+        public int Index { get; }
+
+        public int Column => X + 1;
+        public int Row => Y + 1;
+        public string CellRef => ToColumnLetters(Column);
+
+        private static string ToColumnLetters(int oneBasedColumn)
         {
-            if (SetProperty(ref _maxColumns, value))
+            var n = Math.Max(1, oneBasedColumn);
+            var s = string.Empty;
+            while (n > 0)
             {
-                OnPropertyChanged(nameof(AccessibleName));
+                n--;
+                s = (char)('A' + (n % 26)) + s;
+                n /= 26;
+            }
+            return s;
+        }
+
+        public int MaxColumns
+        {
+            get => _maxColumns;
+            set
+            {
+                if (SetProperty(ref _maxColumns, value))
+                    UpdateAccessibleName();
             }
         }
-    }
-    private int _maxColumns;
+        private int _maxColumns;
 
-    public int MaxRows
-    {
-        get => _maxRows;
-        set
+        public int MaxRows
         {
-            if (SetProperty(ref _maxRows, value))
+            get => _maxRows;
+            set
             {
-                OnPropertyChanged(nameof(AccessibleName));
+                if (SetProperty(ref _maxRows, value))
+                    UpdateAccessibleName();
             }
         }
-    }
-    private int _maxRows;
+        private int _maxRows;
 
-    public Thickness CellBorderThickness
-    {
-        get => _cellBorderThickness;
-        set => SetProperty(ref _cellBorderThickness, value);
-    }
-    private Thickness _cellBorderThickness = new Thickness(1);
-
-    public bool WallNorth
-    {
-        get => _wallNorth;
-        set
+        public Thickness CellBorderThickness
         {
-            if (SetProperty(ref _wallNorth, value))
+            get => _cellBorderThickness;
+            set => SetProperty(ref _cellBorderThickness, value);
+        }
+        private Thickness _cellBorderThickness = new Thickness(1);
+
+        public bool WallNorth
+        {
+            get => _wallNorth;
+            set
             {
-                OnPropertyChanged(nameof(AccessibleName));
+                if (SetProperty(ref _wallNorth, value))
+                    UpdateAccessibleName();
             }
         }
-    }
-    private bool _wallNorth;
+        private bool _wallNorth;
 
-    public bool WallSouth
-    {
-        get => _wallSouth;
-        set
+        public bool WallSouth
         {
-            if (SetProperty(ref _wallSouth, value))
+            get => _wallSouth;
+            set
             {
-                OnPropertyChanged(nameof(AccessibleName));
+                if (SetProperty(ref _wallSouth, value))
+                    UpdateAccessibleName();
             }
         }
-    }
-    private bool _wallSouth;
+        private bool _wallSouth;
 
-    public bool WallWest
-    {
-        get => _wallWest;
-        set
+        public bool WallWest
         {
-            if (SetProperty(ref _wallWest, value))
+            get => _wallWest;
+            set
             {
-                OnPropertyChanged(nameof(AccessibleName));
+                if (SetProperty(ref _wallWest, value))
+                    UpdateAccessibleName();
             }
         }
-    }
-    private bool _wallWest;
+        private bool _wallWest;
 
-    public bool WallEast
-    {
-        get => _wallEast;
-        set
+        public bool WallEast
         {
-            if (SetProperty(ref _wallEast, value))
+            get => _wallEast;
+            set
             {
-                OnPropertyChanged(nameof(AccessibleName));
+                if (SetProperty(ref _wallEast, value))
+                    UpdateAccessibleName();
             }
         }
-    }
-    private bool _wallEast;
+        private bool _wallEast;
 
-    public int? OccupantPlayerId
-    {
-        get => _occupantPlayerId;
-        set
+        public int? OccupantPlayerId
         {
-            if (SetProperty(ref _occupantPlayerId, value))
+            get => _occupantPlayerId;
+            set
             {
-                OnPropertyChanged(nameof(IsOccupied));
-                OnPropertyChanged(nameof(Display));
-                OnPropertyChanged(nameof(AccessibleName));
+                if (SetProperty(ref _occupantPlayerId, value))
+                {
+                    _isDisplayDirty = true;
+                    OnPropertyChanged(nameof(IsOccupied));
+                    UpdateAccessibleName();
+                }
             }
         }
-    }
-    private int? _occupantPlayerId;
+        private int? _occupantPlayerId;
 
-    public bool IsOccupied => OccupantPlayerId != null;
+        public bool IsOccupied => OccupantPlayerId != null;
 
-    public bool IsOwnPawn
-    {
-        get => _isOwnPawn;
-        set
+        public bool IsOwnPawn
         {
-            if (SetProperty(ref _isOwnPawn, value))
+            get => _isOwnPawn;
+            set
             {
-                OnPropertyChanged(nameof(Display));
-                OnPropertyChanged(nameof(AccessibleName));
+                if (SetProperty(ref _isOwnPawn, value))
+                {
+                    _isDisplayDirty = true;
+                    UpdateAccessibleName();
+                }
             }
         }
-    }
-    private bool _isOwnPawn;
+        private bool _isOwnPawn;
 
-    public bool IsLegalMove
-    {
-        get => _isLegalMove;
-        set
+        public bool IsLegalMove
         {
-            if (SetProperty(ref _isLegalMove, value))
+            get => _isLegalMove;
+            set
             {
-                OnPropertyChanged(nameof(AccessibleName));
+                if (SetProperty(ref _isLegalMove, value))
+                    UpdateAccessibleName();
             }
         }
-    }
-    private bool _isLegalMove;
+        private bool _isLegalMove;
 
-    public IReadOnlyList<string> CellTags
-    {
-        get => _cellTags;
-        set
+        public ObservableCollection<string> CellTags
         {
-            if (SetProperty(ref _cellTags, value ?? Array.Empty<string>()))
+            get => _cellTags;
+            set
             {
-                OnPropertyChanged(nameof(AccessibleName));
+                if (SetProperty(ref _cellTags, value ?? new ObservableCollection<string>()))
+                    UpdateAccessibleName();
             }
         }
-    }
-    private IReadOnlyList<string> _cellTags = Array.Empty<string>();
+        private ObservableCollection<string> _cellTags;
 
-    public IReadOnlyList<string> ActionLabels
-    {
-        get => _actionLabels;
-        set
+        public ObservableCollection<string> ActionLabels
         {
-            if (SetProperty(ref _actionLabels, value ?? Array.Empty<string>()))
+            get => _actionLabels;
+            set
             {
-                OnPropertyChanged(nameof(AccessibleName));
+                if (SetProperty(ref _actionLabels, value ?? new ObservableCollection<string>()))
+                    UpdateAccessibleName();
             }
         }
-    }
-    private IReadOnlyList<string> _actionLabels = Array.Empty<string>();
+        private ObservableCollection<string> _actionLabels;
 
-    public bool CanPlaceWallH
-    {
-        get => _canPlaceWallH;
-        set
+        public bool CanPlaceWallH
         {
-            if (SetProperty(ref _canPlaceWallH, value))
+            get => _canPlaceWallH;
+            set
             {
-                OnPropertyChanged(nameof(AccessibleName));
+                if (SetProperty(ref _canPlaceWallH, value))
+                    UpdateAccessibleName();
             }
         }
-    }
-    private bool _canPlaceWallH;
+        private bool _canPlaceWallH;
 
-    public bool CanPlaceWallV
-    {
-        get => _canPlaceWallV;
-        set
+        public bool CanPlaceWallV
         {
-            if (SetProperty(ref _canPlaceWallV, value))
+            get => _canPlaceWallV;
+            set
             {
-                OnPropertyChanged(nameof(AccessibleName));
+                if (SetProperty(ref _canPlaceWallV, value))
+                    UpdateAccessibleName();
             }
         }
-    }
-    private bool _canPlaceWallV;
+        private bool _canPlaceWallV;
 
-    public bool IsSelectedPawn
-    {
-        get => _isSelectedPawn;
-        set
+        public bool IsSelectedPawn
         {
-            if (SetProperty(ref _isSelectedPawn, value))
+            get => _isSelectedPawn;
+            set
             {
-                OnPropertyChanged(nameof(AccessibleName));
+                if (SetProperty(ref _isSelectedPawn, value))
+                    UpdateAccessibleName();
             }
         }
-    }
-    private bool _isSelectedPawn;
+        private bool _isSelectedPawn;
 
-    public bool IsCarryingPawn
-    {
-        get => _isCarryingPawn;
-        set
+        public bool IsCarryingPawn
         {
-            if (SetProperty(ref _isCarryingPawn, value))
+            get => _isCarryingPawn;
+            set
             {
-                OnPropertyChanged(nameof(AccessibleName));
+                if (SetProperty(ref _isCarryingPawn, value))
+                    UpdateAccessibleName();
             }
         }
-    }
-    private bool _isCarryingPawn;
+        private bool _isCarryingPawn;
 
-    public string Display
-    {
-        get
+        private string _displayCache = string.Empty;
+        private bool _isDisplayDirty = true;
+        public string Display
         {
-            if (IsOwnPawn) return "●";
-            if (IsOccupied) return "○";
-            return string.Empty;
+            get
+            {
+                if (_isDisplayDirty)
+                {
+                    _displayCache = IsOwnPawn ? "●" : IsOccupied ? "○" : string.Empty;
+                    _isDisplayDirty = false;
+                }
+                return _displayCache;
+            }
         }
-    }
 
-    public string AccessibleName
-    {
-        get
+        private string _accessibleNameCache = string.Empty;
+        private bool _isAccessibleNameDirty = true;
+        public string AccessibleName
+        {
+            get
+            {
+                if (_isAccessibleNameDirty)
+                {
+                    _accessibleNameCache = BuildAccessibleName();
+                    _isAccessibleNameDirty = false;
+                }
+                return _accessibleNameCache;
+            }
+        }
+
+        private string BuildAccessibleName()
         {
             var parts = new List<string> { $"{CellRef}." };
 
-            if (IsOwnPawn) parts.Add("Votre pion.");
-            else if (IsOccupied) parts.Add("Pion adverse.");
-            else parts.Add("Vide.");
+            if (IsOwnPawn)
+                parts.Add("Votre pion.");
+            else if (IsOccupied)
+                parts.Add("Pion adverse.");
+            else
+                parts.Add("Vide.");
 
-            if (IsSelectedPawn) parts.Add("Sélectionné.");
-            if (IsCarryingPawn) parts.Add("Pion en main.");
+            if (IsSelectedPawn)
+                parts.Add("Sélectionné.");
+            if (IsCarryingPawn)
+                parts.Add("Pion en main.");
 
-            if (IsLegalMove && IsCarryingPawn) parts.Add("Destination possible.");
+            if (IsLegalMove && IsCarryingPawn)
+                parts.Add("Destination possible.");
 
             foreach (var tag in CellTags)
             {
                 var t = (tag ?? string.Empty).Trim();
-                if (string.IsNullOrWhiteSpace(t)) continue;
-                parts.Add(t.EndsWith(".", StringComparison.Ordinal) ? t : $"{t}.");
+                if (!string.IsNullOrWhiteSpace(t))
+                    parts.Add(t.EndsWith(".") ? t : $"{t}.");
             }
 
             if (CanPlaceWallH || CanPlaceWallV)
             {
-                if (CanPlaceWallH && CanPlaceWallV) parts.Add("Mur possible.");
-                else if (CanPlaceWallH) parts.Add("Mur horizontal possible.");
-                else parts.Add("Mur vertical possible.");
+                if (CanPlaceWallH && CanPlaceWallV)
+                    parts.Add("Mur possible.");
+                else if (CanPlaceWallH)
+                    parts.Add("Mur horizontal possible.");
+                else
+                    parts.Add("Mur vertical possible.");
             }
 
             if (WallNorth || WallSouth || WallWest || WallEast)
@@ -293,10 +296,13 @@ public sealed class GridCellViewModel : ObservableObject
 
             return string.Join(" ", parts);
         }
-    }
 
-    public override string ToString()
-    {
-        return AccessibleName;
+        private void UpdateAccessibleName()
+        {
+            _isAccessibleNameDirty = true;
+            OnPropertyChanged(nameof(AccessibleName));
+        }
+
+        public override string ToString() => AccessibleName;
     }
 }
