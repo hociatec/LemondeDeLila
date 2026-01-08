@@ -61,7 +61,7 @@ public static class ClientUpdateCoordinator
                 title,
                 started
                     ? "Mise à jour lancée. Le client peut continuer, mais un redémarrage sera nécessaire pour appliquer la mise à jour."
-                    : "Impossible de lancer la mise à jour.",
+                    : (string.IsNullOrWhiteSpace(result.ErrorMessage) ? "Impossible de lancer la mise à jour." : result.ErrorMessage!),
                 reason));
 
             if (!started)

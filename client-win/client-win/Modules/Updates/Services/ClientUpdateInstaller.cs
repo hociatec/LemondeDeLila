@@ -26,7 +26,8 @@ public static class ClientUpdateInstaller
 
     public readonly record struct ClientUpdateInstallResult(
         bool Started,
-        ClientUpdateInstallOutcome Outcome);
+        ClientUpdateInstallOutcome Outcome,
+        string? ErrorMessage = null);
 
     public static async Task<ClientUpdateInstallResult> InstallLatestAsync(
         IDialogService dialogs,
@@ -35,6 +36,9 @@ public static class ClientUpdateInstaller
         CancellationToken cancellationToken = default)
     {
         _ = reason;
+
+        var currentDeploymentUpdateLocation = TryGetCurrentDeploymentUpdateLocation();
+        var isAlreadyClickOnceInstalled = !string.IsNullOrWhiteSpace(currentDeploymentUpdateLocation);
 
         // 1) Si l'app est déjà une installation ClickOnce, tenter une mise à jour silencieuse "in-place".
         // Objectif: éviter toute UI ClickOnce ("Voulez-vous mettre à jour maintenant ?") et les cas où dfshim
@@ -54,7 +58,7 @@ public static class ClientUpdateInstaller
         foreach (var raw in new[]
                  {
                      // Priorité: l'UpdateLocation ClickOnce de l'installation courante (le plus fiable).
-                     TryGetCurrentDeploymentUpdateLocation(),
+                     currentDeploymentUpdateLocation,
                      // Ensuite: l'URL fournie par le serveur (peut être absente ou non-ClickOnce).
                      updatesBaseUrl,
                      // Enfin: fallback stable.
@@ -82,13 +86,22 @@ public static class ClientUpdateInstaller
 
         if (string.IsNullOrWhiteSpace(applicationUrl))
         {
-            await dialogs
-                .ShowError(
-                    "Mise à jour",
-                    "Impossible de trouver l'installateur ClickOnce (.application) sur le serveur.\n\n" +
-                    "Le serveur n'est peut-être pas correctement publié.")
-                .ConfigureAwait(true);
-            return new ClientUpdateInstallResult(false, ClientUpdateInstallOutcome.NotStarted);
+            return new ClientUpdateInstallResult(
+                false,
+                ClientUpdateInstallOutcome.NotStarted,
+                "Impossible de trouver l'installateur ClickOnce (.application) sur le serveur.\n\n" +
+                "Le serveur n'est peut-être pas correctement publié.");
+        }
+
+        if (isAlreadyClickOnceInstalled)
+        {
+            // On est déjà sous ClickOnce: on refuse de relancer dfshim (qui peut afficher des boîtes système)
+            // et on reste sur une mise à jour "in-place" uniquement.
+            return new ClientUpdateInstallResult(
+                false,
+                ClientUpdateInstallOutcome.NotStarted,
+                "Mise à jour silencieuse impossible sur cette installation ClickOnce.\n\n" +
+                "Action: relance l'application et réessaie. Si le problème persiste, republie la mise à jour côté serveur.");
         }
 
         try
@@ -96,8 +109,10 @@ public static class ClientUpdateInstaller
             var validationError = await TryValidateClickOnceServerAsync(applicationUrl, cancellationToken).ConfigureAwait(true);
             if (!string.IsNullOrWhiteSpace(validationError))
             {
-                await dialogs.ShowError("Mise à jour", validationError).ConfigureAwait(true);
-                return new ClientUpdateInstallResult(false, ClientUpdateInstallOutcome.NotStarted);
+                return new ClientUpdateInstallResult(
+                    false,
+                    ClientUpdateInstallOutcome.NotStarted,
+                    validationError);
             }
 
             // Prefer dfshim to force ClickOnce handler (évite les cas où Windows ouvre le navigateur / télécharge au lieu d'installer).
@@ -107,21 +122,19 @@ public static class ClientUpdateInstaller
             }
 
             // IMPORTANT: pas de fallback navigateur — on veut un comportement uniforme.
-            await dialogs.ShowError(
-                    "Mise à jour",
-                    "Impossible de lancer ClickOnce automatiquement sur ce poste.\n\n" +
-                    "Cause probable : composant ClickOnce manquant/corrompu, ou association .application absente.\n\n" +
-                    "Action: réinstalle le client via l'installateur ClickOnce, puis relance.")
-                .ConfigureAwait(true);
-            return new ClientUpdateInstallResult(false, ClientUpdateInstallOutcome.NotStarted);
+            return new ClientUpdateInstallResult(
+                false,
+                ClientUpdateInstallOutcome.NotStarted,
+                "Impossible de lancer ClickOnce automatiquement sur ce poste.\n\n" +
+                "Cause probable : composant ClickOnce manquant/corrompu, ou association .application absente.\n\n" +
+                "Action: réinstalle le client via l'installateur ClickOnce, puis relance.");
         }
         catch (Exception ex)
         {
-            await dialogs.ShowError(
-                    "Mise à jour",
-                    $"Impossible de lancer l'installateur ClickOnce.\n\n{ex.GetType().Name}: {ex.Message}")
-                .ConfigureAwait(true);
-            return new ClientUpdateInstallResult(false, ClientUpdateInstallOutcome.NotStarted);
+            return new ClientUpdateInstallResult(
+                false,
+                ClientUpdateInstallOutcome.NotStarted,
+                $"Impossible de lancer l'installateur ClickOnce.\n\n{ex.GetType().Name}: {ex.Message}");
         }
     }
 
