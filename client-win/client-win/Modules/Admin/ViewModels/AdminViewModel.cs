@@ -105,6 +105,8 @@ public sealed partial class AdminViewModel : ObservableObject
     private readonly IApiCapabilitiesService _apiCapabilities;
     private readonly UserControl _returnView;
     private readonly Func<Task<string>>? _openNotifications;
+    private readonly Func<int, string, Task<string>>? _openStoryBookForUser;
+    private string? _userPickMode;
 
     public AdminViewModel(
         IAdminService admin,
@@ -123,6 +125,7 @@ public sealed partial class AdminViewModel : ObservableObject
         IGameTableOpener tables,
         UserControl returnView,
         Func<Task<string>>? openNotifications,
+        Func<int, string, Task<string>>? openStoryBookForUser,
         Action onClose)
     {
         _admin = admin ?? throw new ArgumentNullException(nameof(admin));
@@ -141,6 +144,7 @@ public sealed partial class AdminViewModel : ObservableObject
         _tables = tables ?? throw new ArgumentNullException(nameof(tables));
         _returnView = returnView ?? throw new ArgumentNullException(nameof(returnView));
         _openNotifications = openNotifications;
+        _openStoryBookForUser = openStoryBookForUser;
         _close = onClose ?? (() => { });
         _dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
 

@@ -317,4 +317,21 @@ export class GameStatsService {
 
     this.logger.warn(`Match actif clos (roomId=${roomId}, reason=${reason})`);
   }
+
+  async resetAllStats(): Promise<{ deletedPlayers: number; deletedMatches: number }> {
+    const deletedPlayers = await this.players
+      .createQueryBuilder()
+      .delete()
+      .execute();
+
+    const deletedMatches = await this.matches
+      .createQueryBuilder()
+      .delete()
+      .execute();
+
+    return {
+      deletedPlayers: deletedPlayers.affected ?? 0,
+      deletedMatches: deletedMatches.affected ?? 0,
+    };
+  }
 }

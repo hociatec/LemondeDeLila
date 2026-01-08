@@ -48,13 +48,16 @@ public sealed class PresenceViewModel : ObservableObject
     private bool? _isBlocked;
     private CancellationTokenSource? _socialCts;
     private bool? _isFriendRequestPending;
+    private bool? _hasIncomingFriendRequest;
 
     private const string TagInvite = "invite";
     private const string TagJoin = "join";
     private const string TagMessage = "message";
     private const string TagFriendAdd = "friend.add";
     private const string TagFriendRemove = "friend.remove";
-    private const string TagFriendPending = "friend.pending";
+    private const string TagFriendCancel = "friend.cancel";
+    private const string TagFriendAccept = "friend.accept";
+    private const string TagFriendReject = "friend.reject";
     private const string TagBlock = "block";
     private const string TagUnblock = "unblock";
     private const string TagStoryBook = "storybook";
@@ -344,6 +347,7 @@ public sealed class PresenceViewModel : ObservableObject
             _isFriend = null;
             _isBlocked = null;
             _isFriendRequestPending = null;
+            _hasIncomingFriendRequest = null;
             RebuildPlayerActions();
             _ = RefreshSocialStateAsync(player.Id);
             _ = _dispatcher.BeginInvoke(
@@ -391,9 +395,14 @@ public sealed class PresenceViewModel : ObservableObject
         {
             Items.Add(new PresenceMenuItem("Retirer de mes amis", tag: TagFriendRemove));
         }
+        else if (_hasIncomingFriendRequest == true)
+        {
+            Items.Add(new PresenceMenuItem("Accepter la demande d'ami", tag: TagFriendAccept));
+            Items.Add(new PresenceMenuItem("Refuser la demande d'ami", tag: TagFriendReject));
+        }
         else if (_isFriendRequestPending == true)
         {
-            Items.Add(new PresenceMenuItem("Demande d'ami en attente", tag: TagFriendPending));
+            Items.Add(new PresenceMenuItem("Annuler ma demande d'ami", tag: TagFriendCancel));
         }
         else if (_isFriend == false && _isFriendRequestPending == false)
         {
@@ -446,11 +455,13 @@ public sealed class PresenceViewModel : ObservableObject
             var friendsTask = _social.GetFriendsAsync(token);
             var blockedTask = _social.GetBlockedAsync(token);
             var outgoingTask = _social.GetRequestsAsync("outgoing", token);
-            await Task.WhenAll(friendsTask, blockedTask, outgoingTask).ConfigureAwait(true);
+            var incomingTask = _social.GetRequestsAsync("incoming", token);
+            await Task.WhenAll(friendsTask, blockedTask, outgoingTask, incomingTask).ConfigureAwait(true);
 
             var friends = friendsTask.Result;
             var blocked = blockedTask.Result;
             var outgoing = outgoingTask.Result;
+            var incoming = incomingTask.Result;
 
             // UX: un utilisateur peut être bloqué tout en restant "ami" (ne pas perdre l'état ami).
             // Si le backend retire l'ami de friends.list lors du blocage, on le récupère via la liste des bloqués
@@ -459,6 +470,7 @@ public sealed class PresenceViewModel : ObservableObject
                         blocked.Any(u => u.Id == userId && u.Since.HasValue);
             _isBlocked = blocked.Any(u => u.Id == userId);
             _isFriendRequestPending = _isFriend == false && outgoing.Any(r => r.Addressee.Id == userId);
+            _hasIncomingFriendRequest = _isFriend == false && incoming.Any(r => r.Requester.Id == userId);
 
             if (_page == PresencePage.PlayerActions && _selectedPlayer?.Id == userId)
             {
@@ -470,6 +482,7 @@ public sealed class PresenceViewModel : ObservableObject
             _isFriend = null;
             _isBlocked = null;
             _isFriendRequestPending = null;
+            _hasIncomingFriendRequest = null;
         }
     }
 
@@ -629,17 +642,16 @@ public sealed class PresenceViewModel : ObservableObject
             return;
         }
 
-        if (string.Equals(tag, TagFriendPending, StringComparison.OrdinalIgnoreCase))
-        {
-            Details = "Demande déjà envoyée (en attente).";
-            return;
-        }
-
         if (string.Equals(tag, TagFriendAdd, StringComparison.OrdinalIgnoreCase))
         {
             if (_isFriendRequestPending == true)
             {
                 Details = "Demande déjà envoyée (en attente).";
+                return;
+            }
+            if (_hasIncomingFriendRequest == true)
+            {
+                Details = "Demande reçue : acceptez ou refusez.";
                 return;
             }
 
@@ -652,6 +664,95 @@ public sealed class PresenceViewModel : ObservableObject
                 {
                     _isFriend = false;
                     _isFriendRequestPending = true;
+                    RebuildPlayerActions();
+                }
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+
+            _ = RefreshSocialStateAsync(player.Id);
+            return;
+        }
+
+        if (string.Equals(tag, TagFriendAccept, StringComparison.OrdinalIgnoreCase))
+        {
+            if (_hasIncomingFriendRequest != true)
+            {
+                Details = "Aucune demande reçue.";
+                return;
+            }
+
+            IsBusy = true;
+            try
+            {
+                var ok = await _social.AcceptFriendAsync(player.Id, CancellationToken.None).ConfigureAwait(true);
+                Details = ok ? "Demande acceptée." : "Action impossible.";
+                if (ok)
+                {
+                    _isFriend = true;
+                    _hasIncomingFriendRequest = false;
+                    _isFriendRequestPending = false;
+                    RebuildPlayerActions();
+                }
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+
+            _ = RefreshSocialStateAsync(player.Id);
+            return;
+        }
+
+        if (string.Equals(tag, TagFriendReject, StringComparison.OrdinalIgnoreCase))
+        {
+            if (_hasIncomingFriendRequest != true)
+            {
+                Details = "Aucune demande reçue.";
+                return;
+            }
+
+            IsBusy = true;
+            try
+            {
+                var ok = await _social.RejectFriendAsync(player.Id, CancellationToken.None).ConfigureAwait(true);
+                Details = ok ? "Demande refusée." : "Action impossible.";
+                if (ok)
+                {
+                    _hasIncomingFriendRequest = false;
+                    _isFriendRequestPending = false;
+                    _isFriend = false;
+                    RebuildPlayerActions();
+                }
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+
+            _ = RefreshSocialStateAsync(player.Id);
+            return;
+        }
+
+        if (string.Equals(tag, TagFriendCancel, StringComparison.OrdinalIgnoreCase))
+        {
+            if (_isFriendRequestPending != true)
+            {
+                Details = "Aucune demande d'ami en attente.";
+                return;
+            }
+
+            IsBusy = true;
+            try
+            {
+                var ok = await _social.CancelRequestAsync(player.Id, CancellationToken.None).ConfigureAwait(true);
+                Details = ok ? "Demande d'ami annulée." : "Action impossible.";
+                if (ok)
+                {
+                    _isFriend = false;
+                    _isFriendRequestPending = false;
                     RebuildPlayerActions();
                 }
             }

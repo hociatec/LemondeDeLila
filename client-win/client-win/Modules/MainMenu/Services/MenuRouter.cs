@@ -604,6 +604,11 @@ public sealed class MenuRouter : IMenuRouter
                 StopBackgroundLoops();
                 return await OpenNotifications().ConfigureAwait(true);
             },
+            openStoryBookForUser: async (userId, username) =>
+            {
+                StopBackgroundLoops();
+                return await OpenStatsForUser(userId, username).ConfigureAwait(true);
+            },
             onClose: () =>
         {
             if (previous != null)

@@ -25,9 +25,13 @@ export class StatsWsHandler {
     const user = requireUser(session);
     const dto = this.validator.validate(StatsUserDto, payload);
 
-    const profile = await this.social.getProfile(user.id, dto.userId);
-    if (!profile.isOwner && !profile.canView) {
-      throw new HttpException('Profil privé.', 403);
+    const roles = Array.isArray(user.roles) ? user.roles : [];
+    const isAdmin = roles.includes('ROLE_ADMIN') || roles.includes('admin');
+    if (!isAdmin) {
+      const profile = await this.social.getProfile(user.id, dto.userId);
+      if (!profile.isOwner && !profile.canView) {
+        throw new HttpException('Profil privé.', 403);
+      }
     }
 
     const games = await this.stats.getMyStats(dto.userId);

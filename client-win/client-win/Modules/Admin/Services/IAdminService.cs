@@ -96,4 +96,6 @@ public interface IAdminService
     Task<bool> DeleteBugReportAsync(string id, CancellationToken cancellationToken = default);
     Task<AdminBugReportCommentsListResponseDto> ListBugReportCommentsAsync(string reportId, CancellationToken cancellationToken = default);
     Task<AdminBugReportCommentDto> AddBugReportCommentAsync(string reportId, string content, CancellationToken cancellationToken = default);
+
+    Task ResetAllStoryBookAsync(CancellationToken cancellationToken = default);
 }

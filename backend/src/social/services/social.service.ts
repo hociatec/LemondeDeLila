@@ -123,8 +123,45 @@ export class SocialService {
       if (existing.some((r) => r.status === 'accepted')) {
         return { status: 'accepted' };
       }
-      if (existing.some((r) => r.status === 'pending')) {
-        throw new HttpException('Demande deja en attente.', 409);
+      const pending = existing.find((r) => r.status === 'pending');
+      if (pending) {
+        // Robustesse UX : rendre l'action idempotente et éviter un "error" WS qui déclenche un dialogue modal.
+        // - Si la demande a déjà été envoyée par le demandeur : on renvoie "pending".
+        // - Si une demande entrante existe (l'autre a déjà demandé) : on accepte directement.
+        if (
+          pending.requester?.id === requesterId &&
+          pending.addressee?.id === addresseeId
+        ) {
+          return {
+            id: pending.id,
+            status: pending.status,
+            createdAt: pending.createdAt,
+          };
+        }
+
+        if (
+          pending.requester?.id === addresseeId &&
+          pending.addressee?.id === requesterId
+        ) {
+          pending.status = 'accepted';
+          const saved = await this.relationships.save(pending);
+
+          await this.notifications.notifyUser(
+            addresseeId,
+            'social.friend.accepted',
+            {
+              userId: requesterId,
+            },
+          );
+
+          return {
+            id: saved.id,
+            status: saved.status,
+            updatedAt: saved.updatedAt,
+          };
+        }
+
+        return { status: 'pending' };
       }
     }
 

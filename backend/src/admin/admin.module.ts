@@ -36,6 +36,8 @@ import { AdminBugReportCommentsWsHandler } from './ws/admin-bug-report-comments-
 import { AdminMaintenanceController } from './controllers/admin-maintenance.controller';
 import { AdminMaintenanceGuard } from './guards/admin-maintenance.guard';
 import { AdminMaintenanceService } from './services/admin-maintenance.service';
+import { StatsModule } from '../stats/stats.module';
+import { AdminStatsWsHandler } from './ws/admin-stats-ws.handler';
 
 @Module({
   imports: [
@@ -51,6 +53,7 @@ import { AdminMaintenanceService } from './services/admin-maintenance.service';
     RoomModule,
     SocialModule,
     BugReportsModule,
+    StatsModule,
   ],
   controllers: [AdminUsersController, AdminMaintenanceController],
   providers: [
@@ -74,6 +77,7 @@ import { AdminMaintenanceService } from './services/admin-maintenance.service';
     AdminProfileWsHandler,
     AdminBugReportsWsHandler,
     AdminBugReportCommentsWsHandler,
+    AdminStatsWsHandler,
     AdminWsRegistrar,
   ],
 })

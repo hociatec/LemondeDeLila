@@ -186,6 +186,8 @@ public static class WsMessageTypes
         public const string BugReportsDelete = "admin.bugReports.delete";
         public const string BugReportsCommentsList = "admin.bugReports.comments.list";
         public const string BugReportsCommentsAdd = "admin.bugReports.comments.add";
+
+        public const string StatsResetAll = "admin.stats.resetAll";
     }
 
     public static class Rooms

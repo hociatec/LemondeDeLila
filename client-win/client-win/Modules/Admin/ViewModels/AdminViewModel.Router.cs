@@ -100,6 +100,12 @@ public sealed partial class AdminViewModel
                     BuildRooms();
                     return;
                 }
+                if (tag is string storyBook && storyBook == "storybook")
+                {
+                    PushReturnFocus();
+                    BuildStoryBook();
+                    return;
+                }
                 if (tag is string notifications && notifications == "notifications")
                 {
                     if (_openNotifications == null)
@@ -109,6 +115,21 @@ public sealed partial class AdminViewModel
                     }
 
                     Status = await _openNotifications().ConfigureAwait(true);
+                    return;
+                }
+            }
+
+            if (_page == AdminPage.StoryBook && tag is string storyBookAction)
+            {
+                if (storyBookAction == "storybook.resetAll")
+                {
+                    await ResetStoryBookForEveryoneAsync().ConfigureAwait(true);
+                    return;
+                }
+                if (storyBookAction == "storybook.openUser")
+                {
+                    PushReturnFocus();
+                    await BeginPickUserForStoryBookAsync().ConfigureAwait(true);
                     return;
                 }
             }
@@ -706,6 +727,12 @@ public sealed partial class AdminViewModel
 
             if (_page == AdminPage.Users && tag is AdminUserDto user)
             {
+                if (string.Equals(_userPickMode, "storybook", StringComparison.OrdinalIgnoreCase))
+                {
+                    await OpenStoryBookForUserAsync(user).ConfigureAwait(true);
+                    return;
+                }
+
                 PushReturnFocus();
                 BuildUserActions(user);
                 return;

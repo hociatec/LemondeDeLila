@@ -10,6 +10,7 @@ public enum AdminNavResult
 internal enum AdminPage
 {
     Root,
+    StoryBook,
     Maintenance,
     MaintenanceBackend,
     MaintenanceSystemd,

@@ -23,8 +23,10 @@ public sealed partial class AdminViewModel
             return;
         }
 
+        var pickStoryBook = string.Equals(_userPickMode, "storybook", StringComparison.OrdinalIgnoreCase);
+
         _page = AdminPage.Users;
-        Title = "Gestion des utilisateurs";
+        Title = pickStoryBook ? "Livre des contes — choisir un utilisateur" : "Gestion des utilisateurs";
         Details = string.Empty;
         IsTextInputVisible = false;
         IsAdditionalPermissionsVisible = false;
@@ -75,8 +77,11 @@ public sealed partial class AdminViewModel
             _dispatcher.Invoke(() =>
             {
                 Items.Clear();
-                Items.Add(new AdminMenuItem("Gestion profil", tag: "users.profile"));
-                Items.Add(new AdminMenuItem("—", tag: "separator"));
+                if (!pickStoryBook)
+                {
+                    Items.Add(new AdminMenuItem("Gestion profil", tag: "users.profile"));
+                    Items.Add(new AdminMenuItem("—", tag: "separator"));
+                }
                 foreach (var user in _loadedUsers.OrderBy(u => u.Username))
                 {
                     var roles = user.Roles != null && user.Roles.Count > 0 ? string.Join(',', user.Roles) : "ROLE_USER";
@@ -90,7 +95,9 @@ public sealed partial class AdminViewModel
                 SelectedItem = selectUserId.HasValue
                     ? Items.FirstOrDefault(i => i.Tag is AdminUserDto u && u.Id == selectUserId.Value) ?? Items.FirstOrDefault()
                     : Items.FirstOrDefault();
-                Status = $"Affichage {Math.Min(_loadedUsers.Length, res.Total)} / {res.Total} utilisateurs. Entrée : actions. Échap : retour.";
+                Status = pickStoryBook
+                    ? $"Affichage {Math.Min(_loadedUsers.Length, res.Total)} / {res.Total} utilisateurs. Entrée : ouvrir. Échap : retour."
+                    : $"Affichage {Math.Min(_loadedUsers.Length, res.Total)} / {res.Total} utilisateurs. Entrée : actions. Échap : retour.";
                 UpdateFilterVisibility();
                 RestoreFocusIfAny();
             });

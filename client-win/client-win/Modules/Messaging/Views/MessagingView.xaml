@@ -7,7 +7,7 @@
              mc:Ignorable="d"
              d:DesignHeight="720" d:DesignWidth="1280"
              Loaded="OnLoaded"
-             KeyDown="OnRootKeyDown"
+             PreviewKeyDown="OnRootKeyDown"
              KeyboardNavigation.TabNavigation="Continue">
 
     <UserControl.Resources>
