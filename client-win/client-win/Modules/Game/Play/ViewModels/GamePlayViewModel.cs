@@ -22,6 +22,8 @@ namespace client_win.Modules.Game.Play.ViewModels;
 
 public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
 {
+    private sealed record GridAction(string Type, string Label, JsonElement Payload, bool HasOrientation);
+    private readonly Dictionary<string, List<GridAction>> _gridActionsByCellKey = new(StringComparer.Ordinal);
     private readonly Dispatcher _dispatcher;
     private readonly IDialogService _dialogs;
     private readonly ISoundService _sounds;
@@ -68,28 +70,34 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
     private readonly AsyncRelayCommand _toggleBooksCommand;
     private readonly AsyncRelayCommand _turnInfoCommand;
     private readonly AsyncRelayCommand _positionCommand;
-    private readonly AsyncRelayCommand<CorridorCellViewModel> _corridorCellCommand;
-    private CorridorCellViewModel? _selectedCorridorPawnCell;
-    private int _corridorSize = 9;
+    private readonly AsyncRelayCommand<GridCellViewModel> _gridCellCommand;
+    private GridCellViewModel? _selectedPawnCell;
+    private int _gridSize = 9;
+    private bool _showGridBoard;
 
     public string GameId { get; }
-    public bool ShowCorridorBoard => string.Equals(GameId, "corridor", StringComparison.OrdinalIgnoreCase);
 
-    public int CorridorSize
+    public bool ShowGridBoard
     {
-        get => _corridorSize;
-        private set => SetProperty(ref _corridorSize, value);
+        get => _showGridBoard;
+        private set => SetProperty(ref _showGridBoard, value);
     }
 
-    public ObservableCollection<CorridorCellViewModel> CorridorCells { get; } = new();
-    public ICommand CorridorCellCommand => _corridorCellCommand;
-
-    public string CorridorWallsRemaining
+    public int GridSize
     {
-        get => _corridorWallsRemaining;
-        private set => SetProperty(ref _corridorWallsRemaining, value);
+        get => _gridSize;
+        private set => SetProperty(ref _gridSize, value);
     }
-    private string _corridorWallsRemaining = string.Empty;
+
+    public ObservableCollection<GridCellViewModel> GridCells { get; } = new();
+    public ICommand GridCellCommand => _gridCellCommand;
+
+    public string GridStatus
+    {
+        get => _gridStatus;
+        private set => SetProperty(ref _gridStatus, value);
+    }
+    private string _gridStatus = string.Empty;
 
     public GamePlayViewModel(
         string gameId,
@@ -265,16 +273,16 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
             },
             canExecute: () => !_isSpectator && _projector.HasInterfaceShortcut(_session?.LastState, "position"));
 
-        _corridorCellCommand = new AsyncRelayCommand<CorridorCellViewModel>(
+        _gridCellCommand = new AsyncRelayCommand<GridCellViewModel>(
             async cell =>
             {
                 if (cell == null)
                 {
                     return;
                 }
-                await HandleCorridorCellActivatedAsync(cell).ConfigureAwait(true);
+                await HandleGridCellActivatedAsync(cell).ConfigureAwait(true);
             },
-            canExecute: cell => !_isSpectator && ShowCorridorBoard && cell != null);
+            canExecute: cell => !_isSpectator && ShowGridBoard && cell != null);
 
         _shortcuts = new GamePlayShortcutsViewModel(
             _projector,
@@ -318,11 +326,6 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
             refreshCanExecute: RefreshCanExecute);
 
         BuildStaticShortcuts();
-
-        if (ShowCorridorBoard)
-        {
-            EnsureCorridorCells(CorridorSize);
-        }
     }
 
     public ObservableCollection<string> PendingChoices => _choices.PendingChoices;
@@ -765,10 +768,7 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
             {
                 _gameShortcuts.Sync(state, CanStartAskCardSelection);
                 SyncInterfaceShortcuts(state);
-                if (ShowCorridorBoard)
-                {
-                    SyncCorridorFromState(state);
-                }
+                SyncGridFromState(state);
             }
 
             RefreshCanExecute();
@@ -780,35 +780,42 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
         }, DispatcherPriority.Background);
     }
 
-    private void EnsureCorridorCells(int size)
+    private void EnsureGridCells(int size)
     {
         var safe = size <= 0 ? 9 : size;
-        CorridorSize = safe;
-        if (CorridorCells.Count == safe * safe)
+        GridSize = safe;
+        if (GridCells.Count == safe * safe)
         {
             return;
         }
 
-        CorridorCells.Clear();
+        GridCells.Clear();
         for (var y = 0; y < safe; y++)
         {
             for (var x = 0; x < safe; x++)
             {
                 var idx = y * safe + x;
-                CorridorCells.Add(new CorridorCellViewModel(x, y, idx));
+                GridCells.Add(new GridCellViewModel(x, y, idx));
             }
         }
     }
 
-    private void SyncCorridorFromState(GameStateDto state)
+    private void SyncGridFromState(GameStateDto state)
     {
-        var size = TryReadCorridorSize(state) ?? CorridorSize;
-        EnsureCorridorCells(size);
+        if (!TryReadGridSize(state, out var size))
+        {
+            ShowGridBoard = false;
+            GridStatus = string.Empty;
+            return;
+        }
+
+        ShowGridBoard = true;
+        EnsureGridCells(size);
 
         var viewerId = _viewerPlayerId;
         var positions = state.Board?.Positions;
 
-        foreach (var cell in CorridorCells)
+        foreach (var cell in GridCells)
         {
             cell.OccupantPlayerId = null;
             cell.IsOwnPawn = false;
@@ -820,7 +827,8 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
             cell.WallEast = false;
             cell.CanPlaceWallH = false;
             cell.CanPlaceWallV = false;
-            cell.IsCarryingPawn = _selectedCorridorPawnCell != null;
+            cell.IsCarryingPawn = _selectedPawnCell != null;
+            cell.IsSelectedPawn = false;
         }
 
         if (positions != null)
@@ -833,145 +841,150 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
                 }
 
                 var idx = kv.Value;
-                if (idx < 0 || idx >= CorridorCells.Count)
+                if (idx < 0 || idx >= GridCells.Count)
                 {
                     continue;
                 }
 
-                CorridorCells[idx].OccupantPlayerId = pid;
+                GridCells[idx].OccupantPlayerId = pid;
                 if (viewerId != null && pid == viewerId.Value)
                 {
-                    CorridorCells[idx].IsOwnPawn = true;
+                    GridCells[idx].IsOwnPawn = true;
                 }
             }
         }
 
-        SyncCorridorWallsRemaining(state, viewerId);
-        ApplyCorridorWallsToBorders(state);
-        ApplyCorridorWallsAccessibility(state);
+        SyncGridStatus(state);
+        ApplyGridWallsAccessibility(state);
 
-        var legalMoves = ExtractCorridorLegalMoves(state);
-        foreach (var (x, y) in legalMoves)
+        BuildGridActionsIndex(state);
+        foreach (var cell in GridCells)
         {
-            var idx = y * CorridorSize + x;
-            if (idx >= 0 && idx < CorridorCells.Count)
+            var k = $"{cell.X},{cell.Y}";
+            if (!_gridActionsByCellKey.TryGetValue(k, out var actions) || actions.Count == 0)
             {
-                CorridorCells[idx].IsLegalMove = true;
+                cell.ActionLabels = Array.Empty<string>();
+                continue;
             }
+
+            cell.ActionLabels = actions.Select(a => a.Label).Where(s => !string.IsNullOrWhiteSpace(s)).ToArray();
+            cell.IsLegalMove = actions.Any(a => !a.HasOrientation);
+            cell.CanPlaceWallH = actions.Any(a => a.HasOrientation && HasOrientation(a.Payload, "h"));
+            cell.CanPlaceWallV = actions.Any(a => a.HasOrientation && HasOrientation(a.Payload, "v"));
         }
 
-        var legalWallsH = ExtractCorridorLegalWalls(state, "h");
-        foreach (var (x, y) in legalWallsH)
+        var currentOwnPawn = GridCells.FirstOrDefault(c => c.IsOwnPawn);
+        if (_selectedPawnCell != null && currentOwnPawn != _selectedPawnCell)
         {
-            var idx = y * CorridorSize + x;
-            if (idx >= 0 && idx < CorridorCells.Count)
-            {
-                CorridorCells[idx].CanPlaceWallH = true;
-            }
+            _selectedPawnCell = null;
         }
 
-        var legalWallsV = ExtractCorridorLegalWalls(state, "v");
-        foreach (var (x, y) in legalWallsV)
+        if (_selectedPawnCell != null)
         {
-            var idx = y * CorridorSize + x;
-            if (idx >= 0 && idx < CorridorCells.Count)
-            {
-                CorridorCells[idx].CanPlaceWallV = true;
-            }
-        }
-
-        var currentOwnPawn = CorridorCells.FirstOrDefault(c => c.IsOwnPawn);
-        if (_selectedCorridorPawnCell != null && currentOwnPawn != _selectedCorridorPawnCell)
-        {
-            _selectedCorridorPawnCell.IsSelectedPawn = false;
-            _selectedCorridorPawnCell = null;
-        }
-
-        if (_selectedCorridorPawnCell != null)
-        {
-            _selectedCorridorPawnCell.IsSelectedPawn = true;
+            _selectedPawnCell.IsSelectedPawn = true;
         }
     }
 
-    private void SyncCorridorWallsRemaining(GameStateDto state, int? viewerId)
+    private void BuildGridActionsIndex(GameStateDto state)
     {
-        if (viewerId == null || viewerId.Value <= 0)
-        {
-            CorridorWallsRemaining = string.Empty;
-            return;
-        }
+        _gridActionsByCellKey.Clear();
 
+        var labelsByKeyAndType = TryReadGridCellActionLabels(state);
+
+        foreach (var action in state.Actions ?? new List<GameAvailableActionDto>())
+        {
+            if (action == null) continue;
+            if (action.Payload.ValueKind != JsonValueKind.Object) continue;
+
+            if (!action.Payload.TryGetProperty("x", out var xNode) ||
+                !action.Payload.TryGetProperty("y", out var yNode) ||
+                !xNode.TryGetInt32(out var x) ||
+                !yNode.TryGetInt32(out var y))
+            {
+                continue;
+            }
+
+            var key = $"{x},{y}";
+            var hasOrientation = action.Payload.TryGetProperty("o", out var oNode) && oNode.ValueKind == JsonValueKind.String;
+
+            var orientation = OrientationValue(action.Payload);
+            var label = action.Label;
+            if (labelsByKeyAndType.TryGetValue((key, action.Type, orientation), out var resolved))
+            {
+                label = resolved;
+            }
+            if (string.IsNullOrWhiteSpace(label))
+            {
+                label = action.Type;
+            }
+
+            if (!_gridActionsByCellKey.TryGetValue(key, out var list))
+            {
+                list = new List<GridAction>();
+                _gridActionsByCellKey[key] = list;
+            }
+
+            list.Add(new GridAction(action.Type, label!, action.Payload, hasOrientation));
+        }
+    }
+
+    private static string OrientationValue(JsonElement payload)
+    {
         try
         {
-            if (state.Extras.ValueKind != JsonValueKind.Object ||
-                !state.Extras.TryGetProperty("corridor", out var corridor) ||
-                corridor.ValueKind != JsonValueKind.Object ||
-                !corridor.TryGetProperty("wallsRemainingByPlayerId", out var map) ||
-                map.ValueKind != JsonValueKind.Object)
+            if (payload.ValueKind == JsonValueKind.Object &&
+                payload.TryGetProperty("o", out var oNode) &&
+                oNode.ValueKind == JsonValueKind.String)
             {
-                CorridorWallsRemaining = string.Empty;
-                return;
+                return (oNode.GetString() ?? string.Empty).Trim().ToLowerInvariant();
             }
-
-            var key = viewerId.Value.ToString();
-            if (map.TryGetProperty(key, out var value) && value.ValueKind == JsonValueKind.Number && value.TryGetInt32(out var n))
-            {
-                CorridorWallsRemaining = $"Murs restants : {n}";
-                return;
-            }
-
-            CorridorWallsRemaining = string.Empty;
         }
         catch
         {
-            CorridorWallsRemaining = string.Empty;
+            // ignore
         }
+        return string.Empty;
     }
 
-    private void ApplyCorridorWallsToBorders(GameStateDto state)
+    private static bool HasOrientation(JsonElement payload, string expected)
     {
-        // On dessine les murs via l'épaisseur des bordures des cellules adjacentes.
-        // Convention backend:
-        // - Mur horizontal (x,y): entre y et y+1, affecte les bords bas des cellules (x,y) et (x+1,y)
-        // - Mur vertical (x,y): entre x et x+1, affecte les bords droit des cellules (x,y) et (x,y+1)
+        var o = OrientationValue(payload);
+        return string.Equals(o, expected, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static Dictionary<(string key, string type, string o), string> TryReadGridCellActionLabels(GameStateDto state)
+    {
+        var dict = new Dictionary<(string, string, string), string>();
         try
         {
             if (state.Extras.ValueKind != JsonValueKind.Object ||
-                !state.Extras.TryGetProperty("corridor", out var corridor) ||
-                corridor.ValueKind != JsonValueKind.Object ||
-                !corridor.TryGetProperty("walls", out var walls) ||
-                walls.ValueKind != JsonValueKind.Object)
+                !state.Extras.TryGetProperty("grid", out var grid) ||
+                grid.ValueKind != JsonValueKind.Object ||
+                !grid.TryGetProperty("cellActions", out var cellActions) ||
+                cellActions.ValueKind != JsonValueKind.Object)
             {
-                return;
+                return dict;
             }
 
-            var thickness = 4.0;
-
-            if (walls.TryGetProperty("h", out var h) && h.ValueKind == JsonValueKind.Array)
+            foreach (var cellProp in cellActions.EnumerateObject())
             {
-                foreach (var item in h.EnumerateArray())
+                var key = cellProp.Name;
+                if (cellProp.Value.ValueKind != JsonValueKind.Array) continue;
+                foreach (var item in cellProp.Value.EnumerateArray())
                 {
-                    if (item.ValueKind != JsonValueKind.String) continue;
-                    var parts = (item.GetString() ?? string.Empty).Split(',');
-                    if (parts.Length != 2) continue;
-                    if (!int.TryParse(parts[0], out var x) || !int.TryParse(parts[1], out var y)) continue;
+                    if (item.ValueKind != JsonValueKind.Object) continue;
+                    var type = item.TryGetProperty("type", out var t) && t.ValueKind == JsonValueKind.String ? (t.GetString() ?? "") : "";
+                    var label = item.TryGetProperty("label", out var l) && l.ValueKind == JsonValueKind.String ? (l.GetString() ?? "") : "";
+                    var o = string.Empty;
+                    if (item.TryGetProperty("payload", out var p) && p.ValueKind == JsonValueKind.Object)
+                    {
+                        o = OrientationValue(p);
+                    }
 
-                    ApplyCellBottomBorder(x, y, thickness);
-                    ApplyCellBottomBorder(x + 1, y, thickness);
-                }
-            }
-
-            if (walls.TryGetProperty("v", out var v) && v.ValueKind == JsonValueKind.Array)
-            {
-                foreach (var item in v.EnumerateArray())
-                {
-                    if (item.ValueKind != JsonValueKind.String) continue;
-                    var parts = (item.GetString() ?? string.Empty).Split(',');
-                    if (parts.Length != 2) continue;
-                    if (!int.TryParse(parts[0], out var x) || !int.TryParse(parts[1], out var y)) continue;
-
-                    ApplyCellRightBorder(x, y, thickness);
-                    ApplyCellRightBorder(x, y + 1, thickness);
+                    if (!string.IsNullOrWhiteSpace(key) && !string.IsNullOrWhiteSpace(type) && !string.IsNullOrWhiteSpace(label))
+                    {
+                        dict[(key, type.Trim(), o)] = label.Trim();
+                    }
                 }
             }
         }
@@ -979,70 +992,80 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
         {
             // ignore
         }
+
+        return dict;
     }
 
-    private void ApplyCorridorWallsAccessibility(GameStateDto state)
+    private void SyncGridStatus(GameStateDto state)
     {
-        // Recalcule, pour chaque case, la présence de murs sur ses 4 côtés.
-        // On réutilise la même logique que côté backend (mur horizontal/vertical stocké en ancrage x,y).
         try
         {
             if (state.Extras.ValueKind != JsonValueKind.Object ||
-                !state.Extras.TryGetProperty("corridor", out var corridor) ||
-                corridor.ValueKind != JsonValueKind.Object ||
-                !corridor.TryGetProperty("walls", out var walls) ||
-                walls.ValueKind != JsonValueKind.Object)
+                !state.Extras.TryGetProperty("grid", out var grid) ||
+                grid.ValueKind != JsonValueKind.Object)
+            {
+                GridStatus = string.Empty;
+                return;
+            }
+
+            if (grid.TryGetProperty("statusLines", out var linesNode) &&
+                linesNode.ValueKind == JsonValueKind.Array)
+            {
+                var lines = linesNode.EnumerateArray()
+                    .Where(e => e.ValueKind == JsonValueKind.String)
+                    .Select(e => (e.GetString() ?? string.Empty).Trim())
+                    .Where(s => !string.IsNullOrWhiteSpace(s))
+                    .ToArray();
+                GridStatus = lines.Length > 0 ? string.Join(" ", lines) : string.Empty;
+                return;
+            }
+
+            GridStatus = string.Empty;
+        }
+        catch
+        {
+            GridStatus = string.Empty;
+        }
+    }
+
+    private void ApplyGridWallsAccessibility(GameStateDto state)
+    {
+        try
+        {
+            if (state.Extras.ValueKind != JsonValueKind.Object ||
+                !state.Extras.TryGetProperty("grid", out var grid) ||
+                grid.ValueKind != JsonValueKind.Object ||
+                !grid.TryGetProperty("blockedEdges", out var blocked) ||
+                blocked.ValueKind != JsonValueKind.Object)
             {
                 return;
             }
 
-            var setH = new HashSet<string>(StringComparer.Ordinal);
-            var setV = new HashSet<string>(StringComparer.Ordinal);
-
-            if (walls.TryGetProperty("h", out var h) && h.ValueKind == JsonValueKind.Array)
+            for (var y = 0; y < GridSize; y++)
             {
-                foreach (var item in h.EnumerateArray())
+                for (var x = 0; x < GridSize; x++)
                 {
-                    if (item.ValueKind != JsonValueKind.String) continue;
-                    var s = (item.GetString() ?? string.Empty).Trim();
-                    if (!string.IsNullOrWhiteSpace(s)) setH.Add(s);
-                }
-            }
+                    var idx = y * GridSize + x;
+                    if (idx < 0 || idx >= GridCells.Count) continue;
+                    var cell = GridCells[idx];
 
-            if (walls.TryGetProperty("v", out var v) && v.ValueKind == JsonValueKind.Array)
-            {
-                foreach (var item in v.EnumerateArray())
-                {
-                    if (item.ValueKind != JsonValueKind.String) continue;
-                    var s = (item.GetString() ?? string.Empty).Trim();
-                    if (!string.IsNullOrWhiteSpace(s)) setV.Add(s);
-                }
-            }
+                    if (!blocked.TryGetProperty($"{x},{y}", out var edges) ||
+                        edges.ValueKind != JsonValueKind.Object)
+                    {
+                        continue;
+                    }
 
-            bool HasH(int x, int y) => setH.Contains($"{x},{y}");
-            bool HasV(int x, int y) => setV.Contains($"{x},{y}");
+                    cell.WallNorth = edges.TryGetProperty("n", out var n) && n.ValueKind == JsonValueKind.True;
+                    cell.WallEast = edges.TryGetProperty("e", out var e) && e.ValueKind == JsonValueKind.True;
+                    cell.WallSouth = edges.TryGetProperty("s", out var s) && s.ValueKind == JsonValueKind.True;
+                    cell.WallWest = edges.TryGetProperty("w", out var w) && w.ValueKind == JsonValueKind.True;
 
-            for (var y = 0; y < CorridorSize; y++)
-            {
-                for (var x = 0; x < CorridorSize; x++)
-                {
-                    var idx = y * CorridorSize + x;
-                    if (idx < 0 || idx >= CorridorCells.Count) continue;
-                    var cell = CorridorCells[idx];
-
-                    // Mur sud : entre (x,y) et (x,y+1)
-                    var south = HasH(x, y) || HasH(x - 1, y);
-                    // Mur nord : entre (x,y-1) et (x,y)
-                    var north = HasH(x, y - 1) || HasH(x - 1, y - 1);
-                    // Mur est : entre (x,y) et (x+1,y)
-                    var east = HasV(x, y) || HasV(x, y - 1);
-                    // Mur ouest : entre (x-1,y) et (x,y)
-                    var west = HasV(x - 1, y) || HasV(x - 1, y - 1);
-
-                    cell.WallNorth = north;
-                    cell.WallSouth = south;
-                    cell.WallEast = east;
-                    cell.WallWest = west;
+                    var thick = 4.0;
+                    cell.CellBorderThickness = new Thickness(
+                        cell.WallWest ? thick : 1,
+                        cell.WallNorth ? thick : 1,
+                        cell.WallEast ? thick : 1,
+                        cell.WallSouth ? thick : 1);
                 }
             }
         }
@@ -1050,24 +1073,6 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
         {
             // ignore
         }
-    }
-
-    private void ApplyCellBottomBorder(int x, int y, double thickness)
-    {
-        if (x < 0 || y < 0 || x >= CorridorSize || y >= CorridorSize) return;
-        var idx = y * CorridorSize + x;
-        if (idx < 0 || idx >= CorridorCells.Count) return;
-        var t = CorridorCells[idx].CellBorderThickness;
-        CorridorCells[idx].CellBorderThickness = new Thickness(t.Left, t.Top, t.Right, Math.Max(t.Bottom, thickness));
-    }
-
-    private void ApplyCellRightBorder(int x, int y, double thickness)
-    {
-        if (x < 0 || y < 0 || x >= CorridorSize || y >= CorridorSize) return;
-        var idx = y * CorridorSize + x;
-        if (idx < 0 || idx >= CorridorCells.Count) return;
-        var t = CorridorCells[idx].CellBorderThickness;
-        CorridorCells[idx].CellBorderThickness = new Thickness(t.Left, t.Top, Math.Max(t.Right, thickness), t.Bottom);
     }
 
     private static List<(int x, int y)> ExtractCorridorLegalWalls(GameStateDto state, string orientation)
@@ -1144,6 +1149,50 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
         }
     }
 
+    private static bool TryReadGridSize(GameStateDto state, out int size)
+    {
+        size = 0;
+        try
+        {
+            if (state.Extras.ValueKind != JsonValueKind.Object)
+            {
+                return false;
+            }
+
+            if (state.Extras.TryGetProperty("grid", out var grid) &&
+                grid.ValueKind == JsonValueKind.Object &&
+                grid.TryGetProperty("size", out var sizeNode))
+            {
+                if (sizeNode.ValueKind == JsonValueKind.Number && sizeNode.TryGetInt32(out var asInt))
+                {
+                    size = asInt;
+                    return size > 0;
+                }
+
+                if (sizeNode.ValueKind == JsonValueKind.String &&
+                    int.TryParse(sizeNode.GetString(), out var parsed))
+                {
+                    size = parsed;
+                    return size > 0;
+                }
+            }
+
+            // Fallback legacy.
+            var legacy = TryReadCorridorSize(state);
+            if (legacy != null && legacy.Value > 0)
+            {
+                size = legacy.Value;
+                return true;
+            }
+
+            return false;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
     private static List<(int x, int y)> ExtractCorridorLegalMoves(GameStateDto state)
     {
         var result = new List<(int x, int y)>();
@@ -1194,7 +1243,7 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
         return result;
     }
 
-    private async Task HandleCorridorCellActivatedAsync(CorridorCellViewModel cell)
+    private async Task HandleGridCellActivatedAsync(GridCellViewModel cell)
     {
         var session = _session;
         if (session == null || !session.IsConnected)
@@ -1209,121 +1258,127 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
 
         if (cell.IsOwnPawn)
         {
-            if (_selectedCorridorPawnCell == cell)
+            if (_selectedPawnCell == cell)
             {
-                cell.IsSelectedPawn = false;
-                _selectedCorridorPawnCell = null;
+                _selectedPawnCell = null;
                 MessageReceived?.Invoke("Pion reposé.");
+            }
+            else
+            {
+                _selectedPawnCell = cell;
+                MessageReceived?.Invoke("Pion pris.");
+            }
+
+            if (session.LastState != null)
+            {
+                SyncGridFromState(session.LastState);
+            }
+            return;
+        }
+
+        var key = $"{cell.X},{cell.Y}";
+        _gridActionsByCellKey.TryGetValue(key, out var actionsHere);
+        actionsHere ??= new List<GridAction>();
+
+        if (_selectedPawnCell != null)
+        {
+            var moveActions = actionsHere.Where(a => !a.HasOrientation).ToList();
+            if (moveActions.Count == 0)
+            {
+                MessageReceived?.Invoke("Déplacement indisponible.");
                 return;
             }
 
-            if (_selectedCorridorPawnCell != null)
+            var chosen = await PickActionAsync("Action", $"Choisir une action (colonne {cell.Column}, ligne {cell.Row}) :", moveActions)
+                .ConfigureAwait(true);
+            if (chosen == null)
             {
-                _selectedCorridorPawnCell.IsSelectedPawn = false;
+                return;
             }
 
-            cell.IsSelectedPawn = true;
-            _selectedCorridorPawnCell = cell;
-            MessageReceived?.Invoke("Pion pris.");
+            await SendGridActionAsync(chosen).ConfigureAwait(true);
+            _selectedPawnCell = null;
+            MessageReceived?.Invoke("Action envoyée.");
+            if (session.LastState != null)
+            {
+                SyncGridFromState(session.LastState);
+            }
             return;
         }
 
-        if (_selectedCorridorPawnCell != null)
+        // Pas de pion en main: si on a des actions, on choisit. Pour les murs, on force le choix Horizontal/Vertical.
+        var wallActions = actionsHere.Where(a => a.HasOrientation).ToList();
+        if (wallActions.Count > 0)
         {
-            if (!cell.IsLegalMove) return;
-            await TrySendCorridorMoveAsync(cell.X, cell.Y).ConfigureAwait(true);
-            _selectedCorridorPawnCell.IsSelectedPawn = false;
-            _selectedCorridorPawnCell = null;
-            MessageReceived?.Invoke("Déplacement envoyé.");
+            await PromptAndSendWallAsync(cell, wallActions).ConfigureAwait(true);
+            if (session.LastState != null)
+            {
+                SyncGridFromState(session.LastState);
+            }
             return;
         }
 
-        // Pas de pion en main : proposer pose de mur si possible.
-        if (!cell.CanPlaceWallH && !cell.CanPlaceWallV)
-        {
-            return;
-        }
-
-        await PromptAndPlaceWallAsync(cell).ConfigureAwait(true);
-    }
-
-    private async Task TrySendCorridorMoveAsync(int x, int y)
-    {
-        var session = _session;
-        if (session == null || !session.IsConnected)
+        if (actionsHere.Count == 0)
         {
             return;
         }
 
-        var actions = session.LastState?.Actions;
-        if (actions == null || actions.Count == 0)
+        var any = await PickActionAsync("Action", $"Choisir une action (colonne {cell.Column}, ligne {cell.Row}) :", actionsHere)
+            .ConfigureAwait(true);
+        if (any == null)
         {
             return;
         }
 
-        var isAvailable = actions.Any(a =>
+        await SendGridActionAsync(any).ConfigureAwait(true);
+        MessageReceived?.Invoke("Action envoyée.");
+        if (session.LastState != null)
         {
-            if (a == null)
-            {
-                return false;
-            }
-
-            if (!string.Equals(a.Type, "corridor_move", StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-
-            try
-            {
-                if (a.Payload.ValueKind != JsonValueKind.Object)
-                {
-                    return false;
-                }
-                if (!a.Payload.TryGetProperty("x", out var xNode) ||
-                    !a.Payload.TryGetProperty("y", out var yNode))
-                {
-                    return false;
-                }
-                return xNode.TryGetInt32(out var ax) && yNode.TryGetInt32(out var ay) && ax == x && ay == y;
-            }
-            catch
-            {
-                return false;
-            }
-        });
-
-        if (!isAvailable)
-        {
-            return;
-        }
-
-        try
-        {
-            await session
-                .SendActionsAsync(new[] { new GameClientAction("corridor_move", payload: new { x, y }) }, CancellationToken.None)
-                .ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-            try
-            {
-                await _dialogs.ShowError("Corridor", $"Impossible d'envoyer le déplacement : {ex.Message}").ConfigureAwait(true);
-            }
-            catch
-            {
-                // ignore
-            }
+            SyncGridFromState(session.LastState);
         }
     }
 
-    private async Task PromptAndPlaceWallAsync(CorridorCellViewModel cell)
+    private async Task<GridAction?> PickActionAsync(string title, string message, List<GridAction> actions)
     {
-        if (cell == null)
+        if (actions.Count == 0)
         {
-            return;
+            return null;
+        }
+        if (actions.Count == 1)
+        {
+            return actions[0];
         }
 
-        if (cell.CanPlaceWallH && cell.CanPlaceWallV)
+        var labels = new List<string>();
+        var byLabel = new Dictionary<string, GridAction>(StringComparer.Ordinal);
+        var counts = new Dictionary<string, int>(StringComparer.Ordinal);
+
+        foreach (var action in actions)
+        {
+            var baseLabel = string.IsNullOrWhiteSpace(action.Label) ? action.Type : action.Label;
+            counts.TryGetValue(baseLabel, out var n);
+            n++;
+            counts[baseLabel] = n;
+            var label = n == 1 ? baseLabel : $"{baseLabel} ({n})";
+            labels.Add(label);
+            byLabel[label] = action;
+        }
+
+        var picked = await _dialogs.Pick(title, message, labels, okText: "Valider", cancelText: "Annuler").ConfigureAwait(true);
+        if (picked == null)
+        {
+            return null;
+        }
+
+        return byLabel.TryGetValue(picked, out var chosen) ? chosen : null;
+    }
+
+    private async Task PromptAndSendWallAsync(GridCellViewModel cell, List<GridAction> wallActions)
+    {
+        var horizontal = wallActions.FirstOrDefault(a => HasOrientation(a.Payload, "h"));
+        var vertical = wallActions.FirstOrDefault(a => HasOrientation(a.Payload, "v"));
+
+        if (horizontal != null && vertical != null)
         {
             var choice = await _dialogs.Choose(
                     title: "Mur",
@@ -1335,39 +1390,34 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
 
             if (choice == DialogChoice.Primary)
             {
-                await TrySendCorridorPlaceWallAsync(cell.X, cell.Y, "h").ConfigureAwait(true);
+                await SendGridActionAsync(horizontal).ConfigureAwait(true);
+                MessageReceived?.Invoke("Mur envoyé.");
             }
             else if (choice == DialogChoice.Secondary)
             {
-                await TrySendCorridorPlaceWallAsync(cell.X, cell.Y, "v").ConfigureAwait(true);
+                await SendGridActionAsync(vertical).ConfigureAwait(true);
+                MessageReceived?.Invoke("Mur envoyé.");
             }
 
             return;
         }
 
-        if (cell.CanPlaceWallH)
+        var only = horizontal ?? vertical ?? (wallActions.Count > 0 ? wallActions[0] : null);
+        if (only == null)
         {
-            var ok = await _dialogs.Confirm("Mur", $"Poser un mur horizontal à colonne {cell.Column}, ligne {cell.Row} ?", okText: "Poser", cancelText: "Annuler")
-                .ConfigureAwait(true);
-            if (ok == true)
-            {
-                await TrySendCorridorPlaceWallAsync(cell.X, cell.Y, "h").ConfigureAwait(true);
-            }
             return;
         }
 
-        if (cell.CanPlaceWallV)
+        var ok = await _dialogs.Confirm("Mur", $"Poser un mur à colonne {cell.Column}, ligne {cell.Row} ?", okText: "Poser", cancelText: "Annuler")
+            .ConfigureAwait(true);
+        if (ok == true)
         {
-            var ok = await _dialogs.Confirm("Mur", $"Poser un mur vertical à colonne {cell.Column}, ligne {cell.Row} ?", okText: "Poser", cancelText: "Annuler")
-                .ConfigureAwait(true);
-            if (ok == true)
-            {
-                await TrySendCorridorPlaceWallAsync(cell.X, cell.Y, "v").ConfigureAwait(true);
-            }
+            await SendGridActionAsync(only).ConfigureAwait(true);
+            MessageReceived?.Invoke("Mur envoyé.");
         }
     }
 
-    private async Task TrySendCorridorPlaceWallAsync(int x, int y, string orientation)
+    private async Task SendGridActionAsync(GridAction action)
     {
         var session = _session;
         if (session == null || !session.IsConnected)
@@ -1375,60 +1425,62 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
             return;
         }
 
-        var actions = session.LastState?.Actions;
-        if (actions == null || actions.Count == 0)
-        {
-            return;
-        }
-
-        var o = string.Equals(orientation, "v", StringComparison.OrdinalIgnoreCase) ? "v" : "h";
-
-        var isAvailable = actions.Any(a =>
-        {
-            if (a == null) return false;
-            if (!string.Equals(a.Type, "corridor_place_wall", StringComparison.OrdinalIgnoreCase)) return false;
-            try
-            {
-                if (a.Payload.ValueKind != JsonValueKind.Object) return false;
-                if (!a.Payload.TryGetProperty("x", out var xNode) ||
-                    !a.Payload.TryGetProperty("y", out var yNode) ||
-                    !a.Payload.TryGetProperty("o", out var oNode))
-                {
-                    return false;
-                }
-
-                if (!xNode.TryGetInt32(out var ax) || !yNode.TryGetInt32(out var ay)) return false;
-                var ao = oNode.ValueKind == JsonValueKind.String ? (oNode.GetString() ?? "") : "";
-                return ax == x && ay == y && string.Equals(ao, o, StringComparison.OrdinalIgnoreCase);
-            }
-            catch
-            {
-                return false;
-            }
-        });
-
-        if (!isAvailable)
-        {
-            return;
-        }
-
         try
         {
-            await session
-                .SendActionsAsync(new[] { new GameClientAction("corridor_place_wall", payload: new { x, y, o }) }, CancellationToken.None)
+            var payload = JsonToObject(action.Payload);
+            await session.SendActionsAsync(new[] { new GameClientAction(action.Type, payload: payload) }, CancellationToken.None)
                 .ConfigureAwait(false);
-            MessageReceived?.Invoke("Mur envoyé.");
         }
         catch (Exception ex)
         {
             try
             {
-                await _dialogs.ShowError("Corridor", $"Impossible d'envoyer le mur : {ex.Message}").ConfigureAwait(true);
+                await _dialogs.ShowError("Jeu", $"Impossible d'envoyer l'action : {ex.Message}").ConfigureAwait(true);
             }
             catch
             {
                 // ignore
             }
+        }
+    }
+
+    private static object? JsonToObject(JsonElement element)
+    {
+        switch (element.ValueKind)
+        {
+            case JsonValueKind.Undefined:
+            case JsonValueKind.Null:
+                return null;
+            case JsonValueKind.True:
+                return true;
+            case JsonValueKind.False:
+                return false;
+            case JsonValueKind.Number:
+                if (element.TryGetInt64(out var l)) return l;
+                if (element.TryGetDouble(out var d)) return d;
+                return null;
+            case JsonValueKind.String:
+                return element.GetString();
+            case JsonValueKind.Array:
+            {
+                var list = new List<object?>();
+                foreach (var item in element.EnumerateArray())
+                {
+                    list.Add(JsonToObject(item));
+                }
+                return list;
+            }
+            case JsonValueKind.Object:
+            {
+                var dict = new Dictionary<string, object?>(StringComparer.Ordinal);
+                foreach (var prop in element.EnumerateObject())
+                {
+                    dict[prop.Name] = JsonToObject(prop.Value);
+                }
+                return dict;
+            }
+            default:
+                return null;
         }
     }
 

@@ -1,11 +1,14 @@
-using client_win.Core;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
+using client_win.Core;
 
 namespace client_win.Modules.Game.Play.ViewModels;
 
-public sealed class CorridorCellViewModel : ObservableObject
+public sealed class GridCellViewModel : ObservableObject
 {
-    public CorridorCellViewModel(int x, int y, int index)
+    public GridCellViewModel(int x, int y, int index)
     {
         X = x;
         Y = y;
@@ -122,18 +125,18 @@ public sealed class CorridorCellViewModel : ObservableObject
     }
     private bool _isLegalMove;
 
-    public bool IsLegalWallAnchor
+    public IReadOnlyList<string> ActionLabels
     {
-        get => _isLegalWallAnchor;
+        get => _actionLabels;
         set
         {
-            if (SetProperty(ref _isLegalWallAnchor, value))
+            if (SetProperty(ref _actionLabels, value ?? Array.Empty<string>()))
             {
                 OnPropertyChanged(nameof(AccessibleName));
             }
         }
     }
-    private bool _isLegalWallAnchor;
+    private IReadOnlyList<string> _actionLabels = Array.Empty<string>();
 
     public bool CanPlaceWallH
     {
@@ -164,7 +167,13 @@ public sealed class CorridorCellViewModel : ObservableObject
     public bool IsSelectedPawn
     {
         get => _isSelectedPawn;
-        set => SetProperty(ref _isSelectedPawn, value);
+        set
+        {
+            if (SetProperty(ref _isSelectedPawn, value))
+            {
+                OnPropertyChanged(nameof(AccessibleName));
+            }
+        }
     }
     private bool _isSelectedPawn;
 
@@ -195,58 +204,39 @@ public sealed class CorridorCellViewModel : ObservableObject
     {
         get
         {
-            var parts = new System.Collections.Generic.List<string>
-            {
-                $"Colonne {Column}, ligne {Row}."
-            };
+            var parts = new List<string> { $"Colonne {Column}, ligne {Row}." };
 
-            if (IsOwnPawn)
-            {
-                parts.Add("Votre pion.");
-            }
-            else if (IsOccupied)
-            {
-                parts.Add("Pion adverse.");
-            }
-            else
-            {
-                parts.Add("Vide.");
-            }
+            if (IsOwnPawn) parts.Add("Votre pion.");
+            else if (IsOccupied) parts.Add("Pion adverse.");
+            else parts.Add("Vide.");
 
-            if (IsCarryingPawn)
-            {
-                parts.Add("Pion en main.");
-            }
+            if (IsSelectedPawn) parts.Add("Sélectionné.");
+            if (IsCarryingPawn) parts.Add("Pion en main.");
 
-            if (IsLegalMove)
-            {
-                parts.Add("Déplacement disponible.");
-            }
+            if (IsLegalMove && IsCarryingPawn) parts.Add("Déplacement disponible.");
 
             if (CanPlaceWallH || CanPlaceWallV)
             {
-                if (CanPlaceWallH && CanPlaceWallV)
-                {
-                    parts.Add("Mur disponible (horizontal ou vertical).");
-                }
-                else if (CanPlaceWallH)
-                {
-                    parts.Add("Mur horizontal disponible.");
-                }
-                else
-                {
-                    parts.Add("Mur vertical disponible.");
-                }
+                if (CanPlaceWallH && CanPlaceWallV) parts.Add("Mur disponible (horizontal ou vertical).");
+                else if (CanPlaceWallH) parts.Add("Mur horizontal disponible.");
+                else parts.Add("Mur vertical disponible.");
             }
 
             if (WallNorth || WallSouth || WallWest || WallEast)
             {
-                var walls = new System.Collections.Generic.List<string>();
+                var walls = new List<string>();
                 if (WallNorth) walls.Add("nord");
                 if (WallSouth) walls.Add("sud");
                 if (WallWest) walls.Add("ouest");
                 if (WallEast) walls.Add("est");
                 parts.Add($"Mur : {string.Join(", ", walls)}.");
+            }
+
+            if (ActionLabels.Count > 0)
+            {
+                var shown = ActionLabels.Take(3).ToArray();
+                var suffix = ActionLabels.Count > shown.Length ? $" (+{ActionLabels.Count - shown.Length})" : string.Empty;
+                parts.Add($"Actions : {string.Join(", ", shown)}{suffix}.");
             }
 
             return string.Join(" ", parts);

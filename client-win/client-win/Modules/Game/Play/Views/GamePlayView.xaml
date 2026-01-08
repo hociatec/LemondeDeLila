@@ -45,24 +45,24 @@
                 CornerRadius="8"
                 Padding="10"
                 Margin="0 0 0 10"
-                Visibility="{Binding ShowCorridorBoard, Converter={StaticResource BoolToVis}}">
+                Visibility="{Binding ShowGridBoard, Converter={StaticResource BoolToVis}}">
             <StackPanel>
-                <TextBlock Text="Grille (Le Corridor)"
+                <TextBlock Text="Grille"
                            Foreground="#F2C14E"
                            FontSize="12"
                            Margin="0 0 0 6"/>
-                <TextBlock Text="{Binding CorridorWallsRemaining}"
+                <TextBlock Text="{Binding GridStatus}"
                            Foreground="#9CB2D1"
                            FontSize="12"
                            TextWrapping="Wrap"
                            Margin="0 0 0 8" />
 
-                <ItemsControl ItemsSource="{Binding CorridorCells}"
+                <ItemsControl ItemsSource="{Binding GridCells}"
                               KeyboardNavigation.DirectionalNavigation="Contained"
                               KeyboardNavigation.TabNavigation="Once">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <UniformGrid Columns="{Binding CorridorSize}" />
+                            <UniformGrid Columns="{Binding GridSize}" />
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
@@ -79,7 +79,7 @@
                                     BorderThickness="{Binding CellBorderThickness}"
                                     Foreground="White"
                                     FocusVisualStyle="{x:Null}"
-                                    Command="{Binding DataContext.CorridorCellCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                    Command="{Binding DataContext.GridCellCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                     CommandParameter="{Binding}">
                                 <AutomationProperties.Name>
                                     <Binding Path="AccessibleName" />
