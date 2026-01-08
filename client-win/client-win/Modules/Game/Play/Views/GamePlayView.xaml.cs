@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Specialized;
+using System.Linq;
 using System.Threading;
 using System.Windows;
 using System.Windows.Automation;
@@ -7,6 +8,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
 using System.Windows.Controls.Primitives;
+using System.Windows.Media;
 using client_win.Modules.Game.Play.ViewModels;
 
 namespace client_win.Modules.Game.Play.Views;
@@ -19,6 +21,7 @@ public partial class GamePlayView : UserControl
     private Action? _focusRequestedHandler;
     private CancellationTokenSource? _initCts;
     private GamePlayViewModel? _initVm;
+    private int _gridFocusIndex;
 
     public GamePlayView()
     {
@@ -33,6 +36,10 @@ public partial class GamePlayView : UserControl
         var vm = DataContext as GamePlayViewModel;
         HookChoiceAutoFocus(vm);
         TryStartInitialization(vm);
+        Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
+        {
+            TryFocusPreferredGridCell();
+        }));
     }
 
     private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
@@ -271,6 +278,147 @@ public partial class GamePlayView : UserControl
 
         Focus();
         Keyboard.Focus(this);
+
+        // Si une grille est affichée, on ancre le focus sur une case (sinon les flèches ne déplacent rien).
+        TryFocusPreferredGridCell();
+    }
+
+    private void OnRootPreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        HandleGridArrowKey(e);
+    }
+
+    private void OnGridPreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        HandleGridArrowKey(e);
+    }
+
+    private void HandleGridArrowKey(KeyEventArgs e)
+    {
+        if (DataContext is not GamePlayViewModel vm)
+        {
+            return;
+        }
+        if (!vm.ShowGridBoard || vm.GridSize <= 0 || vm.GridCells.Count == 0)
+        {
+            return;
+        }
+
+        // Quand le focus n'est pas déjà dans une case, la première flèche doit amener sur la grille.
+        if (e.Key is Key.Left or Key.Right or Key.Up or Key.Down)
+        {
+            var focused = GetFocusedGridCell();
+            if (focused == null)
+            {
+                if (TryFocusPreferredGridCell())
+                {
+                    e.Handled = true;
+                }
+                return;
+            }
+
+            var x = focused.X;
+            var y = focused.Y;
+            switch (e.Key)
+            {
+                case Key.Left: x--; break;
+                case Key.Right: x++; break;
+                case Key.Up: y--; break;
+                case Key.Down: y++; break;
+            }
+
+            x = Math.Clamp(x, 0, vm.GridSize - 1);
+            y = Math.Clamp(y, 0, vm.GridSize - 1);
+            var idx = y * vm.GridSize + x;
+            if (FocusGridCellIndex(idx))
+            {
+                e.Handled = true;
+            }
+        }
+    }
+
+    private bool TryFocusPreferredGridCell()
+    {
+        if (DataContext is not GamePlayViewModel vm)
+        {
+            return false;
+        }
+        if (!vm.ShowGridBoard || vm.GridSize <= 0 || vm.GridCells.Count == 0)
+        {
+            return false;
+        }
+
+        var preferred = vm.GridCells.FirstOrDefault(c => c.IsOwnPawn) ?? vm.GridCells.FirstOrDefault();
+        var idx = preferred?.Index ?? 0;
+        if (idx < 0 || idx >= vm.GridCells.Count)
+        {
+            idx = 0;
+        }
+        return FocusGridCellIndex(idx);
+    }
+
+    private GridCellViewModel? GetFocusedGridCell()
+    {
+        var focused = Keyboard.FocusedElement as DependencyObject;
+        while (focused != null)
+        {
+            if (focused is FrameworkElement fe && fe.DataContext is GridCellViewModel cell)
+            {
+                _gridFocusIndex = cell.Index;
+                return cell;
+            }
+            focused = VisualTreeHelper.GetParent(focused);
+        }
+        return null;
+    }
+
+    private bool FocusGridCellIndex(int index)
+    {
+        if (DataContext is not GamePlayViewModel vm)
+        {
+            return false;
+        }
+        if (index < 0 || index >= vm.GridCells.Count)
+        {
+            return false;
+        }
+
+        _gridFocusIndex = index;
+
+        GridItems.UpdateLayout();
+        var container = GridItems.ItemContainerGenerator.ContainerFromIndex(index) as DependencyObject;
+        if (container == null)
+        {
+            // Fallback: retente après layout, sinon aucune annonce.
+            Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() =>
+            {
+                FocusGridCellIndex(_gridFocusIndex);
+            }));
+            return false;
+        }
+
+        var button = FindVisualChild<Button>(container) ?? container as Button;
+        if (button == null)
+        {
+            return false;
+        }
+
+        button.Focus();
+        Keyboard.Focus(button);
+        return true;
+    }
+
+    private static T? FindVisualChild<T>(DependencyObject parent) where T : DependencyObject
+    {
+        var count = VisualTreeHelper.GetChildrenCount(parent);
+        for (var i = 0; i < count; i++)
+        {
+            var child = VisualTreeHelper.GetChild(parent, i);
+            if (child is T typed) return typed;
+            var sub = FindVisualChild<T>(child);
+            if (sub != null) return sub;
+        }
+        return null;
     }
 
     private async void OnChoicesKeyDown(object sender, KeyEventArgs e)
