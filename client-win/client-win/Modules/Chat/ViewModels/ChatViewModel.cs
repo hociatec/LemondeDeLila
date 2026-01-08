@@ -24,7 +24,7 @@ public sealed class ChatViewModel : ObservableObject
     private readonly IChatService _chat;
     private readonly Action? _closeWindow;
     private readonly IDialogService? _dialogs;
-    private readonly IScreenReaderAnnouncer? _screenReader;
+    private readonly IAnnouncementService? _announcements;
     private readonly Dispatcher _dispatcher;
     private string? _lastAnnouncedMessageId;
     private string _input = string.Empty;
@@ -38,12 +38,12 @@ public sealed class ChatViewModel : ObservableObject
         IChatService chat,
         Action? closeWindow = null,
         IDialogService? dialogs = null,
-        IScreenReaderAnnouncer? screenReader = null)
+        IAnnouncementService? announcements = null)
     {
         _chat = chat ?? throw new ArgumentNullException(nameof(chat));
         _closeWindow = closeWindow;
         _dialogs = dialogs;
-        _screenReader = screenReader;
+        _announcements = announcements;
         _dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
         Messages = chat.Messages;
         _status = chat.StatusMessage;
@@ -112,7 +112,7 @@ public sealed class ChatViewModel : ObservableObject
 
     private void OnMessageArrived(ChatMessage message)
     {
-        if (_screenReader == null || !_screenReader.IsRunning)
+        if (_announcements?.IsAvailable != true)
         {
             return;
         }
@@ -139,7 +139,7 @@ public sealed class ChatViewModel : ObservableObject
         }
 
         var prefix = string.IsNullOrWhiteSpace(user) ? "Nouveau message" : $"Nouveau message de {user}";
-        _screenReader.AnnouncePolite($"{prefix} : {text}");
+        _announcements.Enqueue($"{prefix} : {text}", AnnouncementPriority.Polite);
     }
 
     private async Task SendAsync()

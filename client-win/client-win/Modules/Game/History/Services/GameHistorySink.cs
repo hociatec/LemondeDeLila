@@ -1,6 +1,7 @@
 using System;
 using System.Windows.Threading;
 using client_win.Modules.Game.History.ViewModels;
+using client_win.Modules.Shell.Services;
 
 namespace client_win.Modules.Game.History.Services;
 
@@ -8,11 +9,13 @@ public sealed class GameHistorySink : IGameHistorySink
 {
     private readonly Dispatcher _dispatcher;
     private readonly GameHistoryViewModel _history;
+    private readonly IAnnouncementService? _announcements;
 
-    public GameHistorySink(Dispatcher dispatcher, GameHistoryViewModel history)
+    public GameHistorySink(Dispatcher dispatcher, GameHistoryViewModel history, IAnnouncementService? announcements = null)
     {
         _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
         _history = history ?? throw new ArgumentNullException(nameof(history));
+        _announcements = announcements;
     }
 
     public void Add(string message)
@@ -34,6 +37,10 @@ public sealed class GameHistorySink : IGameHistorySink
                 }
 
                 _history.Entries.Add(cleaned);
+
+                // Robustesse lecteur d'écran: annoncer explicitement chaque ligne.
+                // On séquence avec un petit espacement pour éviter que NVDA "avale" des lignes lors d'une rafale.
+                _announcements?.Enqueue(cleaned, AnnouncementPriority.Polite);
             }
         }
 

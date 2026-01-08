@@ -216,6 +216,13 @@ public partial class GameHistoryView : UserControl
             return;
         }
 
+        // Si on a un annonceur direct (NVDA), l’annonce est gérée en amont (GameHistorySink) pour garantir
+        // que chaque ligne est lue. Éviter toute annonce en double ici.
+        if (_screenReader?.IsRunning == true)
+        {
+            return;
+        }
+
         var added = entries
             .Select(s => (s ?? string.Empty).Trim())
             .Where(s => !string.IsNullOrWhiteSpace(s))

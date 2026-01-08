@@ -136,6 +136,11 @@ public static class AppBootstrapper
         services.AddSingleton<Modules.Shell.Services.IHomeViewAccessor, Modules.Shell.Services.HomeViewAccessor>();
         services.AddSingleton<IDialogService, WpfDialogService>();
         services.AddSingleton<IScreenReaderAnnouncer>(screenReaderAnnouncer);
+        services.AddSingleton<IAnnouncementService>(sp =>
+            new ScreenReaderAnnouncementService(
+                sp.GetRequiredService<IScreenReaderAnnouncer>(),
+                sp.GetRequiredService<Dispatcher>(),
+                sp.GetRequiredService<ILogger<ScreenReaderAnnouncementService>>()));
         services.AddTransient<IRoomAnnouncements, RoomAnnouncements>();
 
         // Enregistrement des services réseau avec NetworkConfiguration
@@ -302,6 +307,7 @@ public static class AppBootstrapper
                 () => sp.GetRequiredService<IWebSocketConnection>(),
                 sp.GetRequiredService<Modules.Network.Services.IWsTicketProvider>(),
                 sp.GetRequiredService<IScreenReaderAnnouncer>(),
+                sp.GetRequiredService<IAnnouncementService>(),
                 sp.GetRequiredService<Modules.Catalog.Services.ICatalogService>(),
                 sp.GetRequiredService<IDialogService>(),
                 sp.GetRequiredService<Modules.Game.RoomDirectory.Services.IRoomDirectoryClient>(),

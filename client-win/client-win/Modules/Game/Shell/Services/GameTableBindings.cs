@@ -29,6 +29,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
     private readonly IRoomAnnouncements _announcements;
     private readonly IGameHistorySink _history;
     private readonly ISoundService _sounds;
+    private readonly IAnnouncementService? _announcementService;
     private readonly string _selfUsername;
 
     private readonly RoomBotCommands _bots;
@@ -62,6 +63,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
         GameRoomViewModel tableVm,
         IRoomAnnouncements announcements,
         ISoundService sounds,
+        IAnnouncementService? announcementService,
         Func<GamePlayViewModel> createGamePlayVm,
         string selfUsername)
     {
@@ -72,9 +74,10 @@ internal sealed class GameTableBindings : IAsyncDisposable
         _tableVm = tableVm ?? throw new ArgumentNullException(nameof(tableVm));
         _announcements = announcements ?? throw new ArgumentNullException(nameof(announcements));
         _sounds = sounds ?? throw new ArgumentNullException(nameof(sounds));
+        _announcementService = announcementService;
         _createGamePlayVm = createGamePlayVm ?? throw new ArgumentNullException(nameof(createGamePlayVm));
         _selfUsername = (selfUsername ?? string.Empty).Trim();
-        _history = new GameHistorySink(_dispatcher, _tableVm.History);
+        _history = new GameHistorySink(_dispatcher, _tableVm.History, _announcementService);
 
         _bots = new RoomBotCommands(_session);
         _privacy = new RoomPrivacyCommands(_session);

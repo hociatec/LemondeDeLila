@@ -31,6 +31,7 @@ public sealed class GameTableOpener : IGameTableOpener
     private readonly INavigationService _navigation;
     private readonly IDialogService _dialogs;
     private readonly IScreenReaderAnnouncer _screenReader;
+    private readonly IAnnouncementService _announcementService;
     private readonly IRoomAnnouncements _announcements;
     private readonly IPresenceMonitor _presence;
     private readonly ISoundService _sounds;
@@ -42,6 +43,7 @@ public sealed class GameTableOpener : IGameTableOpener
         INavigationService navigation,
         IDialogService dialogs,
         IScreenReaderAnnouncer screenReader,
+        IAnnouncementService announcementService,
         IRoomAnnouncements announcements,
         IPresenceMonitor presence,
         ISoundService sounds)
@@ -52,6 +54,7 @@ public sealed class GameTableOpener : IGameTableOpener
         _navigation = navigation;
         _dialogs = dialogs;
         _screenReader = screenReader ?? throw new ArgumentNullException(nameof(screenReader));
+        _announcementService = announcementService ?? throw new ArgumentNullException(nameof(announcementService));
         _announcements = announcements;
         _presence = presence ?? throw new ArgumentNullException(nameof(presence));
         _sounds = sounds ?? throw new ArgumentNullException(nameof(sounds));
@@ -218,8 +221,9 @@ public sealed class GameTableOpener : IGameTableOpener
 
         await dispatcher.InvokeAsync(() =>
         {
-            tableView = new GameRoomView();
-            tableView.SetScreenReader(_screenReader);
+                        tableView = new GameRoomView();
+                        tableView.SetScreenReader(_screenReader);
+                        tableView.SetAnnouncementService(_announcementService);
 
             Task Start() => session?.SendCommandAsync("room.start", payload: null) ?? Task.CompletedTask;
             Task Reset() => session?.SendCommandAsync("room.reset", payload: null) ?? Task.CompletedTask;
@@ -315,10 +319,7 @@ public sealed class GameTableOpener : IGameTableOpener
                     var createdMessage = isNew
                         ? $"Table de {game.Name} créée. Ajoutez des bots et commencez à jouer."
                         : $"Table rejointe : {game.Name}.";
-                    foreach (var line in GameHistoryMessageSplitter.Split(createdMessage))
-                    {
-                        vm.History.Entries.Add(line);
-                    }
+                    new GameHistorySink(dispatcher, vm.History, _announcementService).Add(createdMessage);
 
                     try { _sounds.Play(isNew ? SoundId.RoomOpened : SoundId.RoomJoined); } catch { }
 
@@ -330,6 +331,7 @@ public sealed class GameTableOpener : IGameTableOpener
                         tableVm: vm,
                         announcements: _announcements,
                         sounds: _sounds,
+                        announcementService: _announcementService,
                         createGamePlayVm: () => CreateGamePlayViewModel(session, game),
                         selfUsername: _navigation.CurrentUser?.Username ?? string.Empty);
                     bindings.Attach();

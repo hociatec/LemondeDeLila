@@ -68,6 +68,7 @@ public sealed class MenuRouter : IMenuRouter
     private readonly ClientConfiguration _config;
     private readonly ISoundService _sounds;
     private readonly IScreenReaderAnnouncer _screenReader;
+    private readonly IAnnouncementService _announcements;
     private readonly ISessionService _session;
     private readonly IRemoteSoundCache _remoteSounds;
     private readonly IApiCapabilitiesService _apiCapabilities;
@@ -82,6 +83,7 @@ public sealed class MenuRouter : IMenuRouter
         IOptionsService options,
         ISoundService sounds,
         IScreenReaderAnnouncer screenReader,
+        IAnnouncementService announcements,
         ISessionService session,
         IRemoteSoundCache remoteSounds,
         IApiCapabilitiesService apiCapabilities,
@@ -110,6 +112,7 @@ public sealed class MenuRouter : IMenuRouter
         _options = options;
         _sounds = sounds;
         _screenReader = screenReader;
+        _announcements = announcements;
         _session = session;
         _remoteSounds = remoteSounds;
         _apiCapabilities = apiCapabilities;
@@ -300,7 +303,7 @@ public sealed class MenuRouter : IMenuRouter
         vm = new JoinGameViewModel(
             rooms: _roomDirectory,
             tables: _tables,
-            screenReader: _screenReader,
+            announcements: _announcements,
             returnView: previous ?? view,
             onClose: () =>
             {

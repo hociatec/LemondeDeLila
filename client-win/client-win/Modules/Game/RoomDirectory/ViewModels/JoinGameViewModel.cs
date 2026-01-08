@@ -18,7 +18,7 @@ public sealed class JoinGameViewModel : ObservableObject, IDisposable
 {
     private readonly IRoomDirectoryClient _rooms;
     private readonly IGameTableOpener _tables;
-    private readonly IScreenReaderAnnouncer _screenReader;
+    private readonly IAnnouncementService _announcements;
     private readonly Action _close;
     private readonly Dispatcher _dispatcher;
     private readonly UserControl _returnView;
@@ -37,13 +37,13 @@ public sealed class JoinGameViewModel : ObservableObject, IDisposable
     public JoinGameViewModel(
         IRoomDirectoryClient rooms,
         IGameTableOpener tables,
-        IScreenReaderAnnouncer screenReader,
+        IAnnouncementService announcements,
         UserControl returnView,
         Action onClose)
     {
         _rooms = rooms ?? throw new ArgumentNullException(nameof(rooms));
         _tables = tables ?? throw new ArgumentNullException(nameof(tables));
-        _screenReader = screenReader ?? throw new ArgumentNullException(nameof(screenReader));
+        _announcements = announcements ?? throw new ArgumentNullException(nameof(announcements));
         _returnView = returnView ?? throw new ArgumentNullException(nameof(returnView));
         _close = onClose ?? (() => { });
         _dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
@@ -164,7 +164,7 @@ public sealed class JoinGameViewModel : ObservableObject, IDisposable
                 if (!_lastEmptyAnnounced)
                 {
                     _lastEmptyAnnounced = true;
-                    _screenReader.AnnouncePolite("Aucune table à rejoindre.");
+                    _announcements.Enqueue("Aucune table à rejoindre.", AnnouncementPriority.Polite);
                 }
             }
         }

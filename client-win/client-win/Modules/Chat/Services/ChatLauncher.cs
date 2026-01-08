@@ -17,7 +17,7 @@ public sealed class ChatLauncher : IChatLauncher
     private readonly IDialogService _dialogs;
     private readonly IOptionsService _options;
     private readonly INavigationService _navigation;
-    private readonly IScreenReaderAnnouncer _screenReader;
+    private readonly IAnnouncementService _announcements;
     private ChatView? _view;
     private System.Windows.Controls.UserControl? _previousView;
     private bool _isCleaningUp;
@@ -28,13 +28,13 @@ public sealed class ChatLauncher : IChatLauncher
         IDialogService dialogs,
         IOptionsService options,
         INavigationService navigation,
-        IScreenReaderAnnouncer screenReader)
+        IAnnouncementService announcements)
     {
         _chat = chat ?? throw new ArgumentNullException(nameof(chat));
         _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
         _options = options ?? throw new ArgumentNullException(nameof(options));
         _navigation = navigation ?? throw new ArgumentNullException(nameof(navigation));
-        _screenReader = screenReader ?? throw new ArgumentNullException(nameof(screenReader));
+        _announcements = announcements ?? throw new ArgumentNullException(nameof(announcements));
     }
 
     public async Task<string> OpenAsync(Window owner)
@@ -51,7 +51,7 @@ public sealed class ChatLauncher : IChatLauncher
             {
                 _previousView = _navigation.CurrentView;
                 _view = new ChatView();
-                _view.DataContext = new ChatViewModel(_chat, () => _ = CloseAsync(), _dialogs, _screenReader);
+                _view.DataContext = new ChatViewModel(_chat, () => _ = CloseAsync(), _dialogs, _announcements);
             }
             _navigation.Show(_view);
             _view.Focus();

@@ -19,6 +19,7 @@ public partial class GameRoomView : UserControl
     private bool _didHookTabCapture;
     private KeyEventHandler? _tabCaptureHandler;
     private IScreenReaderAnnouncer? _screenReader;
+    private IAnnouncementService? _announcements;
 
     public GameRoomView()
     {
@@ -34,6 +35,11 @@ public partial class GameRoomView : UserControl
     {
         _screenReader = screenReader;
         HistoryHost?.SetScreenReader(screenReader);
+    }
+
+    public void SetAnnouncementService(IAnnouncementService? announcements)
+    {
+        _announcements = announcements;
     }
 
     private void OnLoaded(object sender, System.Windows.RoutedEventArgs e)
@@ -161,6 +167,7 @@ public partial class GameRoomView : UserControl
                 // (mot par mot / flèches) ou saisit dans un champ texte.
                 if (!IsTextInputFocused() && !IsNavigationKey(key))
                 {
+                    _announcements?.CancelPending(cancelSpeech: false);
                     _screenReader?.CancelSpeech();
                 }
             }

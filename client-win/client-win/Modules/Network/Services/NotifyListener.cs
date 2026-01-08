@@ -38,6 +38,7 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
     private readonly Func<IWebSocketConnection> _wsFactory;
     private readonly IWsTicketProvider _tickets;
     private readonly IScreenReaderAnnouncer _screenReader;
+    private readonly IAnnouncementService _announcements;
     private readonly ICatalogService _catalog;
     private readonly IDialogService _dialogs;
     private readonly IRoomDirectoryClient _rooms;
@@ -60,6 +61,7 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
         Func<IWebSocketConnection> wsFactory,
         IWsTicketProvider tickets,
         IScreenReaderAnnouncer screenReader,
+        IAnnouncementService announcements,
         ICatalogService catalog,
         IDialogService dialogs,
         IRoomDirectoryClient rooms,
@@ -75,6 +77,7 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
         _wsFactory = wsFactory ?? throw new ArgumentNullException(nameof(wsFactory));
         _tickets = tickets ?? throw new ArgumentNullException(nameof(tickets));
         _screenReader = screenReader ?? throw new ArgumentNullException(nameof(screenReader));
+        _announcements = announcements ?? throw new ArgumentNullException(nameof(announcements));
         _catalog = catalog ?? throw new ArgumentNullException(nameof(catalog));
         _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
         _rooms = rooms ?? throw new ArgumentNullException(nameof(rooms));
@@ -290,7 +293,7 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
                     : string.Empty;
                 if (!string.IsNullOrWhiteSpace(message))
                 {
-                    _screenReader.AnnouncePolite(message);
+                    _announcements.Enqueue(message, AnnouncementPriority.Polite);
                 }
                 return;
             }
@@ -397,7 +400,7 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
                     : string.Empty;
                 if (!string.IsNullOrWhiteSpace(msg))
                 {
-                    _screenReader.AnnouncePolite(msg);
+                    _announcements.Enqueue(msg, AnnouncementPriority.Polite);
                 }
                 return;
             }
@@ -883,7 +886,7 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
                 }
             }
 
-            _screenReader.AnnouncePolite($"Invitation reçue de {fromName}.");
+            _announcements.Enqueue($"Invitation reçue de {fromName}.", AnnouncementPriority.Polite);
             _sounds.Play(SoundId.InvitationReceived);
 
             var confirm = await _dialogs.Confirm(
@@ -946,7 +949,9 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
             {
                 byName = u.GetString() ?? byName;
             }
-            _screenReader.AnnouncePolite(accepted ? $"{byName} a accepté votre invitation." : $"{byName} a refusé votre invitation.");
+            _announcements.Enqueue(
+                accepted ? $"{byName} a accepté votre invitation." : $"{byName} a refusé votre invitation.",
+                AnnouncementPriority.Polite);
         }
         catch
         {
@@ -989,7 +994,7 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
                 text += $" {preview}";
             }
 
-            _screenReader.AnnouncePolite(text.Trim());
+            _announcements.Enqueue(text.Trim(), AnnouncementPriority.Polite);
 
             var me = _session.CurrentUser;
 	            if (me == null || fromId <= 0 || fromId != me.UserId)
@@ -1023,7 +1028,7 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
             }
 
             // Backend sends only requesterId; keep it generic client-side.
-            _screenReader.AnnouncePolite("Nouvelle demande d'ami.");
+            _announcements.Enqueue("Nouvelle demande d'ami.", AnnouncementPriority.Polite);
             _sounds.Play(SoundId.FriendInvitationReceived);
         }
         catch
@@ -1060,7 +1065,9 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
             }
 
             var label = string.IsNullOrWhiteSpace(name) ? $"Ami #{id}" : name.Trim();
-            _screenReader.AnnouncePolite(connected ? $"{label} s'est connecté." : $"{label} s'est déconnecté.");
+            _announcements.Enqueue(
+                connected ? $"{label} s'est connecté." : $"{label} s'est déconnecté.",
+                AnnouncementPriority.Polite);
             _sounds.Play(connected ? SoundId.FriendConnected : SoundId.FriendDisconnected);
         }
         catch
