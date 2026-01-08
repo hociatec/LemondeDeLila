@@ -911,7 +911,82 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
 
         var labelsByKeyAndType = TryReadGridCellActionLabels(state);
 
-        foreach (var action in state.Actions ?? new List<GameAvailableActionDto>())
+        var topLevelActions = state.Actions ?? new List<GameAvailableActionDto>();
+        if (topLevelActions.Count == 0)
+        {
+            // Certains jeux/presenters exposent les actions uniquement dans extras.grid.cellActions.
+            // Dans ce cas on reconstruit l'index directement depuis ces données, afin de garder
+            // les déplacements/poses de mur fonctionnels (ex: Corridor).
+            try
+            {
+                if (state.Extras.ValueKind == JsonValueKind.Object &&
+                    state.Extras.TryGetProperty("grid", out var grid) &&
+                    grid.ValueKind == JsonValueKind.Object &&
+                    grid.TryGetProperty("cellActions", out var cellActions) &&
+                    cellActions.ValueKind == JsonValueKind.Object)
+                {
+                    foreach (var cellProp in cellActions.EnumerateObject())
+                    {
+                        var key = cellProp.Name;
+                        if (string.IsNullOrWhiteSpace(key) || cellProp.Value.ValueKind != JsonValueKind.Array)
+                        {
+                            continue;
+                        }
+
+                        foreach (var item in cellProp.Value.EnumerateArray())
+                        {
+                            if (item.ValueKind != JsonValueKind.Object)
+                            {
+                                continue;
+                            }
+
+                            var type = item.TryGetProperty("type", out var t) && t.ValueKind == JsonValueKind.String
+                                ? (t.GetString() ?? string.Empty).Trim()
+                                : string.Empty;
+                            if (string.IsNullOrWhiteSpace(type))
+                            {
+                                continue;
+                            }
+
+                            var payload = item.TryGetProperty("payload", out var p) ? p : default;
+                            var hasOrientation = payload.ValueKind == JsonValueKind.Object &&
+                                                 payload.TryGetProperty("o", out var oNode) &&
+                                                 oNode.ValueKind == JsonValueKind.String;
+
+                            var orientation = OrientationValue(payload);
+                            var label = item.TryGetProperty("label", out var l) && l.ValueKind == JsonValueKind.String
+                                ? (l.GetString() ?? string.Empty).Trim()
+                                : string.Empty;
+                            if (labelsByKeyAndType.TryGetValue((key, type, orientation), out var resolved))
+                            {
+                                label = resolved;
+                            }
+                            if (string.IsNullOrWhiteSpace(label))
+                            {
+                                label = type;
+                            }
+
+                            if (!_gridActionsByCellKey.TryGetValue(key, out var list))
+                            {
+                                list = new List<GridAction>();
+                                _gridActionsByCellKey[key] = list;
+                            }
+
+                            // payload peut être Undefined si absent; SendGridActionAsync tolère null/empty.
+                            list.Add(new GridAction(type, label, payload, hasOrientation));
+                        }
+                    }
+
+                    return;
+                }
+            }
+            catch
+            {
+                // ignore, fallback to empty index
+            }
+        }
+
+        foreach (var action in topLevelActions)
         {
             if (action == null) continue;
             if (action.Payload.ValueKind != JsonValueKind.Object) continue;
@@ -1335,6 +1410,12 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
             return;
         }
 
+        if (!IsViewerTurn(session.LastState, _viewerPlayerId))
+        {
+            MessageReceived?.Invoke("Action impossible : ce n'est pas votre tour.");
+            return;
+        }
+
         if (cell.IsOwnPawn)
         {
             if (_selectedPawnCell == cell)
@@ -1540,6 +1621,12 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
             return;
         }
 
+        if (!IsViewerTurn(session.LastState, _viewerPlayerId))
+        {
+            MessageReceived?.Invoke("Mur indisponible : ce n'est pas votre tour.");
+            return;
+        }
+
         if (_selectedPawnCell != null)
         {
             MessageReceived?.Invoke("Mur indisponible : pion en main. Reposez le pion avant de poser un mur.");
@@ -1562,6 +1649,23 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
         {
             SyncGridFromState(session.LastState);
         }
+    }
+
+    private static bool IsViewerTurn(GameStateDto? state, int? viewerPlayerId)
+    {
+        if (state == null || viewerPlayerId == null || viewerPlayerId.Value <= 0)
+        {
+            return false;
+        }
+
+        // Certaines phases/jeux n'exposent pas de tour: dans ce cas on ne bloque pas.
+        var current = state.Turn?.CurrentPlayerId;
+        if (current == null)
+        {
+            return true;
+        }
+
+        return current.Value == viewerPlayerId.Value;
     }
 
     private async Task SendGridActionAsync(GridAction action)

@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Text.Json;
 using client_win.Modules.Game.Play.Dtos;
 
 namespace client_win.Modules.Game.Play.ViewModels;
@@ -11,6 +12,41 @@ internal static class GamePlayActionsTextBuilder
         var actions = state.Actions ?? new();
         if (actions.Count == 0)
         {
+            // Certains jeux exposent les actions uniquement dans extras.grid.cellActions (indexées par case).
+            try
+            {
+                if (state.Extras.ValueKind == JsonValueKind.Object &&
+                    state.Extras.TryGetProperty("grid", out var grid) &&
+                    grid.ValueKind == JsonValueKind.Object &&
+                    grid.TryGetProperty("cellActions", out var cellActions) &&
+                    cellActions.ValueKind == JsonValueKind.Object)
+                {
+                    var types = cellActions.EnumerateObject()
+                        .SelectMany(p =>
+                            p.Value.ValueKind == JsonValueKind.Array
+                                ? p.Value.EnumerateArray()
+                                : Enumerable.Empty<JsonElement>())
+                        .Where(e => e.ValueKind == JsonValueKind.Object)
+                        .Select(e =>
+                            e.TryGetProperty("type", out var t) && t.ValueKind == JsonValueKind.String
+                                ? (t.GetString() ?? string.Empty).Trim()
+                                : string.Empty)
+                        .Where(s => !string.IsNullOrWhiteSpace(s))
+                        .Distinct(StringComparer.OrdinalIgnoreCase)
+                        .OrderBy(s => s, StringComparer.OrdinalIgnoreCase)
+                        .ToArray();
+
+                    if (types.Length > 0)
+                    {
+                        return $"Actions disponibles via la grille : {string.Join(", ", types)}.";
+                    }
+                }
+            }
+            catch
+            {
+                // ignore
+            }
+
             return "Aucune action disponible (serveur).";
         }
 

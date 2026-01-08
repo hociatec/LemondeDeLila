@@ -76,8 +76,12 @@
 	                    -->
 	                    <ItemsControl.ItemContainerStyle>
 	                        <Style TargetType="ContentPresenter">
-	                            <Setter Property="AutomationProperties.IsControlElement" Value="False" />
-	                            <Setter Property="AutomationProperties.IsContentElement" Value="False" />
+	                            <!--
+	                                WPF n'expose pas de propriété "IsControlElement/IsContentElement" comme en UIA direct.
+	                                Ici on fixe explicitement un Name vide pour éviter que l'UIA fallback utilise ToString()
+	                                du DataContext (ex: "client_win.Modules...GridCellViewModel"), que NVDA annonçait.
+	                            -->
+	                            <Setter Property="AutomationProperties.Name" Value="" />
 	                        </Style>
 	                    </ItemsControl.ItemContainerStyle>
 	                    <ItemsControl.ItemsPanel>
