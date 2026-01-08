@@ -18,6 +18,11 @@ public partial class ChatView : UserControl
     public ChatView()
     {
         InitializeComponent();
+        HistoryBox.GotKeyboardFocus += (_, _) =>
+        {
+            _stickToBottom = true;
+            ScrollHistoryToEnd(force: true);
+        };
         Loaded += (_, _) => InputBox.Focus();
     }
 
