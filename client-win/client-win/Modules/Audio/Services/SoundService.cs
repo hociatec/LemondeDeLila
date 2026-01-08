@@ -236,77 +236,9 @@ public sealed class SoundService : ISoundService, IDisposable
                     return;
                 }
 
-                // Warm-up best-effort: encourage Media Foundation to decode/buffer before the first real playback.
-                void WarmUp(int expectedGeneration)
-                {
-                    bool IsStillCurrent()
-                    {
-                        lock (_gate)
-                        {
-                            return _playGeneration.TryGetValue(sound, out var current) ? current == expectedGeneration : expectedGeneration == 0;
-                        }
-                    }
-
-                    if (!IsStillCurrent())
-                    {
-                        return;
-                    }
-
-                    var previousVolume = player.Volume;
-                    var previousMuted = player.IsMuted;
-                    try
-                    {
-                        if (!IsStillCurrent())
-                        {
-                            return;
-                        }
-
-                        // Utiliser IsMuted plutôt que Volume=0 pour éviter un "blip" audible selon le timing du moteur audio.
-                        player.IsMuted = true;
-                        player.Volume = 0;
-                        player.Stop();
-                        player.Position = TimeSpan.Zero;
-                        player.Play();
-                        if (IsStillCurrent())
-                        {
-                            player.Pause();
-                            player.Position = TimeSpan.Zero;
-                        }
-                    }
-                    catch
-                    {
-                        // ignore (best-effort)
-                    }
-                    finally
-                    {
-                        // Ne pas écraser une lecture réelle qui aurait démarré pendant le warm-up.
-                        if (IsStillCurrent())
-                        {
-                            try { player.Volume = previousVolume; } catch { /* ignore */ }
-                            try { player.IsMuted = previousMuted; } catch { /* ignore */ }
-                        }
-                    }
-                }
-
-                bool alreadyOpened;
-                lock (_gate)
-                {
-                    alreadyOpened = _opened.Contains(sound);
-                }
-
-                if (alreadyOpened)
-                {
-                    WarmUp(generationSnapshot);
-                    return;
-                }
-
-                EventHandler? opened = null;
-                opened = (_, _) =>
-                {
-                    try { player.MediaOpened -= opened; } catch { /* ignore */ }
-                    WarmUp(generationSnapshot);
-                };
-                player.MediaOpened += opened;
+                // Warm-up disabled: attempting to Play/Pause can leak audible "blips" on some machines,
+                // which feels like "multiple sounds at startup".
+                _ = generationSnapshot;
             }
             catch (Exception ex)
             {
@@ -744,8 +676,28 @@ public sealed class SoundService : ISoundService, IDisposable
             return;
         }
 
+        if (!canInterruptPlayback && _looping.Contains(sound))
+        {
+            return;
+        }
+
         if (_players.TryGetValue(sound, out var old))
         {
+            // Stop first to avoid rare cases where Close() doesn't immediately cut audio output.
+            try { old.Stop(); } catch { /* ignore */ }
+
+            // If this sound was looping on the old player, clear loop state to avoid dangling handlers/players.
+            if (_loopPlayers.TryGetValue(sound, out var loopPlayer) && ReferenceEquals(loopPlayer, old))
+            {
+                if (_loopHandlers.TryGetValue(sound, out var loopHandler))
+                {
+                    try { old.MediaEnded -= loopHandler; } catch { /* ignore */ }
+                }
+                _loopPlayers.Remove(sound);
+                _loopHandlers.Remove(sound);
+                _looping.Remove(sound);
+            }
+
             try { old.Close(); } catch { /* ignore */ }
             _players.Remove(sound);
         }
