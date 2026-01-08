@@ -29,6 +29,14 @@ public partial class SocialView : UserControl
         Unloaded += OnUnloaded;
     }
 
+    public void ReturnToMenu()
+    {
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
+        {
+            SetScreen(SocialScreen.Menu);
+        }));
+    }
+
     private async void OnLoaded(object sender, RoutedEventArgs e)
     {
         // IMPORTANT (NVDA): ne pas attendre les appels async avant de placer le focus,

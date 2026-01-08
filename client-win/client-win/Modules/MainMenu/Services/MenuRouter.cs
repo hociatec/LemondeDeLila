@@ -492,7 +492,14 @@ public sealed class MenuRouter : IMenuRouter
             if (previous != null)
             {
                 _navigation.Show(previous);
-                RestoreFocusAfterBackNavigation(previous);
+                if (previous is SocialView social)
+                {
+                    social.ReturnToMenu();
+                }
+                else
+                {
+                    RestoreFocusAfterBackNavigation(previous);
+                }
                 SetPresenceContextForView(previous);
             }
 
