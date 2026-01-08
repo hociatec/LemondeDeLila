@@ -364,22 +364,25 @@ public sealed partial class AdminViewModel
         IsSecondaryInputVisible = false;
         IsAdditionalPermissionsVisible = false;
         Items.Clear();
-        Items.Add(new AdminMenuItem("Gérer les catégories", tag: "categories"));
-        Items.Add(new AdminMenuItem("Gérer les jeux", tag: "games"));
-        Items.Add(new AdminMenuItem("Gérer les bots", tag: "bots"));
-        Items.Add(new AdminMenuItem("Gérer les utilisateurs", tag: "users"));
-        Items.Add(new AdminMenuItem("Gérer les rooms", tag: "rooms"));
-        Items.Add(new AdminMenuItem("Livre des contes", tag: "storybook"));
-        Items.Add(new AdminMenuItem("Tchat (modération)", tag: "chat"));
-        Items.Add(new AdminMenuItem("Envoyer un message global", tag: "broadcast"));
-        Items.Add(new AdminMenuItem("Mises à jour client", tag: "clientUpdates"));
-        Items.Add(new AdminMenuItem("Gérer les rôles", tag: "rolesDefinitions"));
-        Items.Add(new AdminMenuItem("Gérer les sons (application)", tag: "sounds"));
-        Items.Add(new AdminMenuItem("Notifications", tag: "notifications"));
-        Items.Add(new AdminMenuItem("Rapports de bug", tag: "bugReports"));
-        Items.Add(new AdminMenuItem("Diagnostics latence (rooms/bots/parties)", tag: "perf"));
-        Items.Add(new AdminMenuItem("Consulter les logs", tag: "logs"));
-        Items.Add(new AdminMenuItem("Maintenance (outils)", tag: "maintenance"));
+        Items.Add(new AdminMenuItem("Gérer les catégories", tag: "categories", category: "Jeux & Contenu"));
+        Items.Add(new AdminMenuItem("Gérer les jeux", tag: "games", category: "Jeux & Contenu"));
+        Items.Add(new AdminMenuItem("Gérer les bots", tag: "bots", category: "Jeux & Contenu"));
+        Items.Add(new AdminMenuItem("Gérer les rooms", tag: "rooms", category: "Jeux & Contenu"));
+
+        Items.Add(new AdminMenuItem("Gérer les utilisateurs", tag: "users", category: "Communauté"));
+        Items.Add(new AdminMenuItem("Gérer les rôles", tag: "rolesDefinitions", category: "Communauté"));
+        Items.Add(new AdminMenuItem("Livre des contes", tag: "storybook", category: "Communauté"));
+
+        Items.Add(new AdminMenuItem("Tchat (modération)", tag: "chat", category: "Modération"));
+        Items.Add(new AdminMenuItem("Envoyer un message global", tag: "broadcast", category: "Modération"));
+        Items.Add(new AdminMenuItem("Notifications", tag: "notifications", category: "Modération"));
+        Items.Add(new AdminMenuItem("Rapports de bug", tag: "bugReports", category: "Modération"));
+
+        Items.Add(new AdminMenuItem("Mises à jour client", tag: "clientUpdates", category: "Système"));
+        Items.Add(new AdminMenuItem("Gérer les sons (application)", tag: "sounds", category: "Système"));
+        Items.Add(new AdminMenuItem("Diagnostics latence (rooms/bots/parties)", tag: "perf", category: "Système"));
+        Items.Add(new AdminMenuItem("Consulter les logs", tag: "logs", category: "Système"));
+        Items.Add(new AdminMenuItem("Maintenance (outils)", tag: "maintenance", category: "Système"));
         SelectedItem = Items.FirstOrDefault();
         Status = "Entrée : sélectionner. Échap : retour.";
         UpdateFilterVisibility();

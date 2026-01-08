@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Threading;
 using client_win.Core;
 using client_win.Modules.Admin.Dtos;
@@ -149,6 +151,7 @@ public sealed partial class AdminViewModel : ObservableObject
         _dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
 
         Items = new ObservableCollection<AdminMenuItem>();
+        ItemsView = CollectionViewSource.GetDefaultView(Items);
         ActivateCommand = new AsyncRelayCommand(ActivateSelectedAsync);
         ApplyFiltersCommand = new AsyncRelayCommand(ApplyFiltersAsync);
         DownloadLogsCommand = new AsyncRelayCommand(DownloadLogsAsync);
@@ -179,6 +182,7 @@ public sealed partial class AdminViewModel : ObservableObject
     public bool IsRootMenu => _page == AdminPage.Root;
 
     public ObservableCollection<AdminMenuItem> Items { get; }
+    public ICollectionView ItemsView { get; }
 
     public AdminMenuItem? SelectedItem
     {

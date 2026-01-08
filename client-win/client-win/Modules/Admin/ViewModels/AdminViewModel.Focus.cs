@@ -17,6 +17,8 @@ public sealed partial class AdminViewModel
 
     private void RestoreFocusIfAny()
     {
+        ConfigureItemsViewForPage();
+
         if (_focusStack.Count == 0) return;
         var (page, tag) = _focusStack.Peek();
         if (page != _page) return;
