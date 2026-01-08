@@ -36,6 +36,11 @@ public partial class MessagingView : UserControl
     {
         await Dispatcher.InvokeAsync(() =>
         {
+            // IMPORTANT : forcer le focus dans la vue dès l'ouverture.
+            // Sinon la vue précédente peut conserver le focus (Échap ne fait rien et Tab navigue ailleurs).
+            Focus();
+            Keyboard.Focus(this);
+
             if (MenuList.Items.Count > 0)
             {
                 MenuList.SelectedIndex = 0;
@@ -317,6 +322,7 @@ public partial class MessagingView : UserControl
         if (listBox.Items.Count == 0)
         {
             listBox.Focus();
+            Keyboard.Focus(listBox);
             return;
         }
 
@@ -326,10 +332,12 @@ public partial class MessagingView : UserControl
         if (container != null)
         {
             container.Focus();
+            Keyboard.Focus(container);
             return;
         }
 
         listBox.Focus();
+        Keyboard.Focus(listBox);
     }
 
     private void FocusMessagesWhenReady()

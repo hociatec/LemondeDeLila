@@ -175,11 +175,33 @@ public sealed class PresenceViewModel : ObservableObject
     {
         try
         {
+            if (_page == PresencePage.PlayerActions)
+            {
+                var selectedId = _selectedPlayer?.Id;
+                if (selectedId.HasValue && selectedId.Value > 0)
+                {
+                    var latest = _presence.Players.FirstOrDefault(p => p.Id == selectedId.Value);
+                    if (latest != null)
+                    {
+                        _selectedPlayer = latest;
+                        Title = BuildPlayerLabel(latest);
+                        RebuildPlayerActions();
+                    }
+                    else
+                    {
+                        // L'utilisateur n'est plus dans la liste (déconnexion / présence indisponible).
+                        Details = "Utilisateur déconnecté.";
+                    }
+                }
+                return;
+            }
+
             if (_page != PresencePage.Players)
             {
                 Title = BuildTitle();
                 return;
             }
+
             RebuildPlayers();
         }
         catch
@@ -342,7 +364,7 @@ public sealed class PresenceViewModel : ObservableObject
 
             _selectedPlayer = player;
             _page = PresencePage.PlayerActions;
-            Title = player.Username;
+            Title = BuildPlayerLabel(player);
             Status = "Flèches : naviguer. Entrée : sélectionner. Échap : retour.";
             _isFriend = null;
             _isBlocked = null;

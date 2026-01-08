@@ -165,7 +165,7 @@ export class NotificationGateway
       const nextCount = Math.max(0, prevCount - 1);
       if (nextCount === 0) {
         this.socketCountsByUserId.delete(meta.userId);
-        void this.notifyFriendsPresence(meta.userId, null, false);
+        void this.notifyFriendsPresence(meta.userId, meta.username, false);
       } else {
         this.socketCountsByUserId.set(meta.userId, nextCount);
       }

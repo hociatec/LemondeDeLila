@@ -8,6 +8,8 @@
              d:DesignHeight="720" d:DesignWidth="1280"
              Loaded="OnLoaded"
              PreviewKeyDown="OnRootKeyDown"
+             Focusable="True"
+             IsTabStop="True"
              KeyboardNavigation.TabNavigation="Continue">
 
     <UserControl.Resources>
@@ -72,7 +74,7 @@
                              ItemContainerStyle="{StaticResource MenuListItem}"
                              KeyDown="OnMenuKeyDown"
                              PreviewMouseLeftButtonUp="OnMenuClick"
-                             IsTabStop="False"
+                             IsTabStop="True"
                              AutomationProperties.Name="Menu de navigation de la messagerie">
                         <ListBoxItem x:Name="MenuCompose" Tag="compose" AutomationProperties.Name="Rédiger un nouveau message">
                             <TextBlock Text="Rediger un message" />
