@@ -72,18 +72,15 @@
 	                              Loaded="OnGridLoaded">
 	                    <!--
 	                        Accessibilité NVDA (Corridor) :
-	                        L'élément conteneur généré par ItemsControl (ContentPresenter) peut être annoncé avec le nom par défaut
-	                        (ToString du ViewModel : "...Modules...ViewModels..."), ce qui pollue l'annonce de chaque case.
-	                        On le retire de l'arbre UIA et on laisse le Button (focusable) porter le libellé.
+	                        Le conteneur généré par ItemsControl peut être annoncé comme "élément de donnée" avec le nom par défaut
+	                        (ToString du ViewModel). On force un libellé humain et un type localisé pour éviter le bruit.
 	                    -->
 	                    <ItemsControl.ItemContainerStyle>
 	                        <Style TargetType="ContentPresenter">
-	                            <!--
-	                                WPF n'expose pas de propriété "IsControlElement/IsContentElement" comme en UIA direct.
-	                                Ici on fixe explicitement un Name vide pour éviter que l'UIA fallback utilise ToString()
-	                                du DataContext (ex: "client_win.Modules...GridCellViewModel"), que NVDA annonçait.
-	                            -->
-	                            <Setter Property="AutomationProperties.Name" Value="" />
+	                            <Setter Property="AutomationProperties.Name" Value="{Binding AccessibleName}" />
+	                            <Setter Property="AutomationProperties.LocalizedControlType" Value="case" />
+	                            <Setter Property="AutomationProperties.AutomationId" Value="{Binding CellRef}" />
+	                            <Setter Property="AutomationProperties.HelpText" Value="" />
 	                        </Style>
 	                    </ItemsControl.ItemContainerStyle>
 	                    <ItemsControl.ItemsPanel>

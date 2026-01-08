@@ -294,4 +294,9 @@ public sealed class GridCellViewModel : ObservableObject
             return string.Join(" ", parts);
         }
     }
+
+    public override string ToString()
+    {
+        return AccessibleName;
+    }
 }

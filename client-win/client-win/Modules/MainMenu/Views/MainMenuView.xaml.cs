@@ -93,13 +93,30 @@ public partial class MainMenuView : UserControl
         }
 
         ItemsList.UpdateLayout();
+        ItemsList.ScrollIntoView(ItemsList.SelectedItem);
         if (ItemsList.ItemContainerGenerator.ContainerFromIndex(ItemsList.SelectedIndex) is ListBoxItem item)
         {
             item.Focus();
+            Keyboard.Focus(item);
         }
         else
         {
             ItemsList.Focus();
+        }
+    }
+
+    private void OnListGotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
+    {
+        if (ItemsList == null)
+        {
+            return;
+        }
+
+        // Si le focus arrive sur la liste elle-même, le remonter sur l'item sélectionné
+        // pour que NVDA annonce directement l'entrée et pas juste "liste".
+        if (ReferenceEquals(e.NewFocus, ItemsList))
+        {
+            _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusFirstItem));
         }
     }
 
