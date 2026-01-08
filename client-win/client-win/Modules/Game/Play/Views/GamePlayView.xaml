@@ -11,8 +11,12 @@
              IsTabStop="True"
              AutomationProperties.Name="{Binding DataContext.Title, RelativeSource={RelativeSource AncestorType=shell:GameZoneHostView}}"
              Loaded="OnLoaded">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+    </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -37,6 +41,85 @@
                    Margin="0 0 0 8" />
 
         <Border Grid.Row="2"
+                Background="#0E1E34"
+                CornerRadius="8"
+                Padding="10"
+                Margin="0 0 0 10"
+                Visibility="{Binding ShowCorridorBoard, Converter={StaticResource BoolToVis}}">
+            <StackPanel>
+                <TextBlock Text="Grille (Le Corridor)"
+                           Foreground="#F2C14E"
+                           FontSize="12"
+                           Margin="0 0 0 6"/>
+                <TextBlock Text="{Binding CorridorWallsRemaining}"
+                           Foreground="#9CB2D1"
+                           FontSize="12"
+                           TextWrapping="Wrap"
+                           Margin="0 0 0 8" />
+
+                <ItemsControl ItemsSource="{Binding CorridorCells}"
+                              KeyboardNavigation.DirectionalNavigation="Contained"
+                              KeyboardNavigation.TabNavigation="Once">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <UniformGrid Columns="{Binding CorridorSize}" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Button Content="{Binding Display}"
+                                    FontSize="16"
+                                    FontWeight="SemiBold"
+                                    Width="34"
+                                    Height="34"
+                                    Padding="0"
+                                    Margin="1"
+                                    Background="#10223A"
+                                    BorderBrush="#284C75"
+                                    BorderThickness="{Binding CellBorderThickness}"
+                                    Foreground="White"
+                                    FocusVisualStyle="{x:Null}"
+                                    Command="{Binding DataContext.CorridorCellCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                    CommandParameter="{Binding}">
+                                <AutomationProperties.Name>
+                                    <Binding Path="AccessibleName" />
+                                </AutomationProperties.Name>
+                                <Button.Style>
+                                    <Style TargetType="Button">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsLegalMove}" Value="True">
+                                                <Setter Property="Background" Value="#1B3554" />
+                                                <Setter Property="BorderBrush" Value="#F2C14E" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding CanPlaceWallH}" Value="True">
+                                                <Setter Property="Background" Value="#1B3554" />
+                                                <Setter Property="BorderBrush" Value="#F2C14E" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding CanPlaceWallV}" Value="True">
+                                                <Setter Property="Background" Value="#1B3554" />
+                                                <Setter Property="BorderBrush" Value="#F2C14E" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding IsOwnPawn}" Value="True">
+                                                <Setter Property="Background" Value="#214570" />
+                                                <Setter Property="BorderBrush" Value="#BFD0E6" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding IsSelectedPawn}" Value="True">
+                                                <Setter Property="BorderBrush" Value="#F2C14E" />
+                                            </DataTrigger>
+                                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                                <Setter Property="BorderBrush" Value="#F2C14E" />
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </Border>
+
+        <Border Grid.Row="3"
                 Background="#10223A"
                 CornerRadius="8"
                 Padding="10"

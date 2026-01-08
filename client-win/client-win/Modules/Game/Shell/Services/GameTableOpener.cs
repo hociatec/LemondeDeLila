@@ -382,6 +382,7 @@ public sealed class GameTableOpener : IGameTableOpener
     private GamePlayViewModel CreateGamePlayViewModel(RoomSession room, CatalogGame game)
     {
         return new GamePlayViewModel(
+            gameId: game.Id,
             connect: ct => _games.ConnectAsync(room.RoomId, game.Id, ct),
             dialogs: _dialogs,
             sounds: _sounds);

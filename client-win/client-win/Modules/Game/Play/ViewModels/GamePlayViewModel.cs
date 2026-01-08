@@ -68,12 +68,36 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
     private readonly AsyncRelayCommand _toggleBooksCommand;
     private readonly AsyncRelayCommand _turnInfoCommand;
     private readonly AsyncRelayCommand _positionCommand;
+    private readonly AsyncRelayCommand<CorridorCellViewModel> _corridorCellCommand;
+    private CorridorCellViewModel? _selectedCorridorPawnCell;
+    private int _corridorSize = 9;
+
+    public string GameId { get; }
+    public bool ShowCorridorBoard => string.Equals(GameId, "corridor", StringComparison.OrdinalIgnoreCase);
+
+    public int CorridorSize
+    {
+        get => _corridorSize;
+        private set => SetProperty(ref _corridorSize, value);
+    }
+
+    public ObservableCollection<CorridorCellViewModel> CorridorCells { get; } = new();
+    public ICommand CorridorCellCommand => _corridorCellCommand;
+
+    public string CorridorWallsRemaining
+    {
+        get => _corridorWallsRemaining;
+        private set => SetProperty(ref _corridorWallsRemaining, value);
+    }
+    private string _corridorWallsRemaining = string.Empty;
 
     public GamePlayViewModel(
+        string gameId,
         Func<CancellationToken, Task<GameSession>> connect,
         IDialogService dialogs,
         ISoundService sounds)
     {
+        GameId = (gameId ?? string.Empty).Trim();
         _connect = connect ?? throw new ArgumentNullException(nameof(connect));
         _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
         _sounds = sounds ?? throw new ArgumentNullException(nameof(sounds));
@@ -241,6 +265,17 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
             },
             canExecute: () => !_isSpectator && _projector.HasInterfaceShortcut(_session?.LastState, "position"));
 
+        _corridorCellCommand = new AsyncRelayCommand<CorridorCellViewModel>(
+            async cell =>
+            {
+                if (cell == null)
+                {
+                    return;
+                }
+                await HandleCorridorCellActivatedAsync(cell).ConfigureAwait(true);
+            },
+            canExecute: cell => !_isSpectator && ShowCorridorBoard && cell != null);
+
         _shortcuts = new GamePlayShortcutsViewModel(
             _projector,
             toggleShopping: _toggleShoppingCommand,
@@ -283,6 +318,11 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
             refreshCanExecute: RefreshCanExecute);
 
         BuildStaticShortcuts();
+
+        if (ShowCorridorBoard)
+        {
+            EnsureCorridorCells(CorridorSize);
+        }
     }
 
     public ObservableCollection<string> PendingChoices => _choices.PendingChoices;
@@ -725,6 +765,10 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
             {
                 _gameShortcuts.Sync(state, CanStartAskCardSelection);
                 SyncInterfaceShortcuts(state);
+                if (ShowCorridorBoard)
+                {
+                    SyncCorridorFromState(state);
+                }
             }
 
             RefreshCanExecute();
@@ -734,6 +778,658 @@ public sealed class GamePlayViewModel : ObservableObject, IAsyncDisposable
                 TryAnnounceTurnFromState(state);
             }
         }, DispatcherPriority.Background);
+    }
+
+    private void EnsureCorridorCells(int size)
+    {
+        var safe = size <= 0 ? 9 : size;
+        CorridorSize = safe;
+        if (CorridorCells.Count == safe * safe)
+        {
+            return;
+        }
+
+        CorridorCells.Clear();
+        for (var y = 0; y < safe; y++)
+        {
+            for (var x = 0; x < safe; x++)
+            {
+                var idx = y * safe + x;
+                CorridorCells.Add(new CorridorCellViewModel(x, y, idx));
+            }
+        }
+    }
+
+    private void SyncCorridorFromState(GameStateDto state)
+    {
+        var size = TryReadCorridorSize(state) ?? CorridorSize;
+        EnsureCorridorCells(size);
+
+        var viewerId = _viewerPlayerId;
+        var positions = state.Board?.Positions;
+
+        foreach (var cell in CorridorCells)
+        {
+            cell.OccupantPlayerId = null;
+            cell.IsOwnPawn = false;
+            cell.IsLegalMove = false;
+            cell.CellBorderThickness = new Thickness(1);
+            cell.WallNorth = false;
+            cell.WallSouth = false;
+            cell.WallWest = false;
+            cell.WallEast = false;
+            cell.CanPlaceWallH = false;
+            cell.CanPlaceWallV = false;
+            cell.IsCarryingPawn = _selectedCorridorPawnCell != null;
+        }
+
+        if (positions != null)
+        {
+            foreach (var kv in positions)
+            {
+                if (!int.TryParse(kv.Key, out var pid))
+                {
+                    continue;
+                }
+
+                var idx = kv.Value;
+                if (idx < 0 || idx >= CorridorCells.Count)
+                {
+                    continue;
+                }
+
+                CorridorCells[idx].OccupantPlayerId = pid;
+                if (viewerId != null && pid == viewerId.Value)
+                {
+                    CorridorCells[idx].IsOwnPawn = true;
+                }
+            }
+        }
+
+        SyncCorridorWallsRemaining(state, viewerId);
+        ApplyCorridorWallsToBorders(state);
+        ApplyCorridorWallsAccessibility(state);
+
+        var legalMoves = ExtractCorridorLegalMoves(state);
+        foreach (var (x, y) in legalMoves)
+        {
+            var idx = y * CorridorSize + x;
+            if (idx >= 0 && idx < CorridorCells.Count)
+            {
+                CorridorCells[idx].IsLegalMove = true;
+            }
+        }
+
+        var legalWallsH = ExtractCorridorLegalWalls(state, "h");
+        foreach (var (x, y) in legalWallsH)
+        {
+            var idx = y * CorridorSize + x;
+            if (idx >= 0 && idx < CorridorCells.Count)
+            {
+                CorridorCells[idx].CanPlaceWallH = true;
+            }
+        }
+
+        var legalWallsV = ExtractCorridorLegalWalls(state, "v");
+        foreach (var (x, y) in legalWallsV)
+        {
+            var idx = y * CorridorSize + x;
+            if (idx >= 0 && idx < CorridorCells.Count)
+            {
+                CorridorCells[idx].CanPlaceWallV = true;
+            }
+        }
+
+        var currentOwnPawn = CorridorCells.FirstOrDefault(c => c.IsOwnPawn);
+        if (_selectedCorridorPawnCell != null && currentOwnPawn != _selectedCorridorPawnCell)
+        {
+            _selectedCorridorPawnCell.IsSelectedPawn = false;
+            _selectedCorridorPawnCell = null;
+        }
+
+        if (_selectedCorridorPawnCell != null)
+        {
+            _selectedCorridorPawnCell.IsSelectedPawn = true;
+        }
+    }
+
+    private void SyncCorridorWallsRemaining(GameStateDto state, int? viewerId)
+    {
+        if (viewerId == null || viewerId.Value <= 0)
+        {
+            CorridorWallsRemaining = string.Empty;
+            return;
+        }
+
+        try
+        {
+            if (state.Extras.ValueKind != JsonValueKind.Object ||
+                !state.Extras.TryGetProperty("corridor", out var corridor) ||
+                corridor.ValueKind != JsonValueKind.Object ||
+                !corridor.TryGetProperty("wallsRemainingByPlayerId", out var map) ||
+                map.ValueKind != JsonValueKind.Object)
+            {
+                CorridorWallsRemaining = string.Empty;
+                return;
+            }
+
+            var key = viewerId.Value.ToString();
+            if (map.TryGetProperty(key, out var value) && value.ValueKind == JsonValueKind.Number && value.TryGetInt32(out var n))
+            {
+                CorridorWallsRemaining = $"Murs restants : {n}";
+                return;
+            }
+
+            CorridorWallsRemaining = string.Empty;
+        }
+        catch
+        {
+            CorridorWallsRemaining = string.Empty;
+        }
+    }
+
+    private void ApplyCorridorWallsToBorders(GameStateDto state)
+    {
+        // On dessine les murs via l'épaisseur des bordures des cellules adjacentes.
+        // Convention backend:
+        // - Mur horizontal (x,y): entre y et y+1, affecte les bords bas des cellules (x,y) et (x+1,y)
+        // - Mur vertical (x,y): entre x et x+1, affecte les bords droit des cellules (x,y) et (x,y+1)
+        try
+        {
+            if (state.Extras.ValueKind != JsonValueKind.Object ||
+                !state.Extras.TryGetProperty("corridor", out var corridor) ||
+                corridor.ValueKind != JsonValueKind.Object ||
+                !corridor.TryGetProperty("walls", out var walls) ||
+                walls.ValueKind != JsonValueKind.Object)
+            {
+                return;
+            }
+
+            var thickness = 4.0;
+
+            if (walls.TryGetProperty("h", out var h) && h.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var item in h.EnumerateArray())
+                {
+                    if (item.ValueKind != JsonValueKind.String) continue;
+                    var parts = (item.GetString() ?? string.Empty).Split(',');
+                    if (parts.Length != 2) continue;
+                    if (!int.TryParse(parts[0], out var x) || !int.TryParse(parts[1], out var y)) continue;
+
+                    ApplyCellBottomBorder(x, y, thickness);
+                    ApplyCellBottomBorder(x + 1, y, thickness);
+                }
+            }
+
+            if (walls.TryGetProperty("v", out var v) && v.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var item in v.EnumerateArray())
+                {
+                    if (item.ValueKind != JsonValueKind.String) continue;
+                    var parts = (item.GetString() ?? string.Empty).Split(',');
+                    if (parts.Length != 2) continue;
+                    if (!int.TryParse(parts[0], out var x) || !int.TryParse(parts[1], out var y)) continue;
+
+                    ApplyCellRightBorder(x, y, thickness);
+                    ApplyCellRightBorder(x, y + 1, thickness);
+                }
+            }
+        }
+        catch
+        {
+            // ignore
+        }
+    }
+
+    private void ApplyCorridorWallsAccessibility(GameStateDto state)
+    {
+        // Recalcule, pour chaque case, la présence de murs sur ses 4 côtés.
+        // On réutilise la même logique que côté backend (mur horizontal/vertical stocké en ancrage x,y).
+        try
+        {
+            if (state.Extras.ValueKind != JsonValueKind.Object ||
+                !state.Extras.TryGetProperty("corridor", out var corridor) ||
+                corridor.ValueKind != JsonValueKind.Object ||
+                !corridor.TryGetProperty("walls", out var walls) ||
+                walls.ValueKind != JsonValueKind.Object)
+            {
+                return;
+            }
+
+            var setH = new HashSet<string>(StringComparer.Ordinal);
+            var setV = new HashSet<string>(StringComparer.Ordinal);
+
+            if (walls.TryGetProperty("h", out var h) && h.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var item in h.EnumerateArray())
+                {
+                    if (item.ValueKind != JsonValueKind.String) continue;
+                    var s = (item.GetString() ?? string.Empty).Trim();
+                    if (!string.IsNullOrWhiteSpace(s)) setH.Add(s);
+                }
+            }
+
+            if (walls.TryGetProperty("v", out var v) && v.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var item in v.EnumerateArray())
+                {
+                    if (item.ValueKind != JsonValueKind.String) continue;
+                    var s = (item.GetString() ?? string.Empty).Trim();
+                    if (!string.IsNullOrWhiteSpace(s)) setV.Add(s);
+                }
+            }
+
+            bool HasH(int x, int y) => setH.Contains($"{x},{y}");
+            bool HasV(int x, int y) => setV.Contains($"{x},{y}");
+
+            for (var y = 0; y < CorridorSize; y++)
+            {
+                for (var x = 0; x < CorridorSize; x++)
+                {
+                    var idx = y * CorridorSize + x;
+                    if (idx < 0 || idx >= CorridorCells.Count) continue;
+                    var cell = CorridorCells[idx];
+
+                    // Mur sud : entre (x,y) et (x,y+1)
+                    var south = HasH(x, y) || HasH(x - 1, y);
+                    // Mur nord : entre (x,y-1) et (x,y)
+                    var north = HasH(x, y - 1) || HasH(x - 1, y - 1);
+                    // Mur est : entre (x,y) et (x+1,y)
+                    var east = HasV(x, y) || HasV(x, y - 1);
+                    // Mur ouest : entre (x-1,y) et (x,y)
+                    var west = HasV(x - 1, y) || HasV(x - 1, y - 1);
+
+                    cell.WallNorth = north;
+                    cell.WallSouth = south;
+                    cell.WallEast = east;
+                    cell.WallWest = west;
+                }
+            }
+        }
+        catch
+        {
+            // ignore
+        }
+    }
+
+    private void ApplyCellBottomBorder(int x, int y, double thickness)
+    {
+        if (x < 0 || y < 0 || x >= CorridorSize || y >= CorridorSize) return;
+        var idx = y * CorridorSize + x;
+        if (idx < 0 || idx >= CorridorCells.Count) return;
+        var t = CorridorCells[idx].CellBorderThickness;
+        CorridorCells[idx].CellBorderThickness = new Thickness(t.Left, t.Top, t.Right, Math.Max(t.Bottom, thickness));
+    }
+
+    private void ApplyCellRightBorder(int x, int y, double thickness)
+    {
+        if (x < 0 || y < 0 || x >= CorridorSize || y >= CorridorSize) return;
+        var idx = y * CorridorSize + x;
+        if (idx < 0 || idx >= CorridorCells.Count) return;
+        var t = CorridorCells[idx].CellBorderThickness;
+        CorridorCells[idx].CellBorderThickness = new Thickness(t.Left, t.Top, Math.Max(t.Right, thickness), t.Bottom);
+    }
+
+    private static List<(int x, int y)> ExtractCorridorLegalWalls(GameStateDto state, string orientation)
+    {
+        var result = new List<(int x, int y)>();
+        var actions = state.Actions;
+        if (actions == null) return result;
+        var o = string.Equals(orientation, "v", StringComparison.OrdinalIgnoreCase) ? "v" : "h";
+
+        foreach (var action in actions)
+        {
+            if (action == null) continue;
+            if (!string.Equals(action.Type, "corridor_place_wall", StringComparison.OrdinalIgnoreCase)) continue;
+
+            try
+            {
+                if (action.Payload.ValueKind != JsonValueKind.Object) continue;
+                if (!action.Payload.TryGetProperty("x", out var xNode) ||
+                    !action.Payload.TryGetProperty("y", out var yNode) ||
+                    !action.Payload.TryGetProperty("o", out var oNode))
+                {
+                    continue;
+                }
+
+                if (!xNode.TryGetInt32(out var x) || !yNode.TryGetInt32(out var y)) continue;
+                var ao = oNode.ValueKind == JsonValueKind.String ? (oNode.GetString() ?? "") : "";
+                if (!string.Equals(ao, o, StringComparison.OrdinalIgnoreCase)) continue;
+                result.Add((x, y));
+            }
+            catch
+            {
+                // ignore
+            }
+        }
+
+        return result;
+    }
+
+    private static int? TryReadCorridorSize(GameStateDto state)
+    {
+        try
+        {
+            if (state.Extras.ValueKind != JsonValueKind.Object)
+            {
+                return null;
+            }
+
+            if (!state.Extras.TryGetProperty("corridor", out var corridor) ||
+                corridor.ValueKind != JsonValueKind.Object)
+            {
+                return null;
+            }
+
+            if (!corridor.TryGetProperty("size", out var sizeNode))
+            {
+                return null;
+            }
+
+            if (sizeNode.ValueKind == JsonValueKind.Number && sizeNode.TryGetInt32(out var asInt))
+            {
+                return asInt;
+            }
+
+            if (sizeNode.ValueKind == JsonValueKind.String && int.TryParse(sizeNode.GetString(), out var parsed))
+            {
+                return parsed;
+            }
+
+            return null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static List<(int x, int y)> ExtractCorridorLegalMoves(GameStateDto state)
+    {
+        var result = new List<(int x, int y)>();
+        var actions = state.Actions;
+        if (actions == null)
+        {
+            return result;
+        }
+
+        foreach (var action in actions)
+        {
+            if (action == null)
+            {
+                continue;
+            }
+
+            if (!string.Equals(action.Type, "corridor_move", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            try
+            {
+                if (action.Payload.ValueKind != JsonValueKind.Object)
+                {
+                    continue;
+                }
+
+                if (!action.Payload.TryGetProperty("x", out var xNode) ||
+                    !action.Payload.TryGetProperty("y", out var yNode))
+                {
+                    continue;
+                }
+
+                if (!xNode.TryGetInt32(out var x) || !yNode.TryGetInt32(out var y))
+                {
+                    continue;
+                }
+
+                result.Add((x, y));
+            }
+            catch
+            {
+                // ignore
+            }
+        }
+
+        return result;
+    }
+
+    private async Task HandleCorridorCellActivatedAsync(CorridorCellViewModel cell)
+    {
+        var session = _session;
+        if (session == null || !session.IsConnected)
+        {
+            return;
+        }
+
+        if (_viewerPlayerId == null || _viewerPlayerId.Value <= 0)
+        {
+            return;
+        }
+
+        if (cell.IsOwnPawn)
+        {
+            if (_selectedCorridorPawnCell == cell)
+            {
+                cell.IsSelectedPawn = false;
+                _selectedCorridorPawnCell = null;
+                MessageReceived?.Invoke("Pion reposé.");
+                return;
+            }
+
+            if (_selectedCorridorPawnCell != null)
+            {
+                _selectedCorridorPawnCell.IsSelectedPawn = false;
+            }
+
+            cell.IsSelectedPawn = true;
+            _selectedCorridorPawnCell = cell;
+            MessageReceived?.Invoke("Pion pris.");
+            return;
+        }
+
+        if (_selectedCorridorPawnCell != null)
+        {
+            if (!cell.IsLegalMove) return;
+            await TrySendCorridorMoveAsync(cell.X, cell.Y).ConfigureAwait(true);
+            _selectedCorridorPawnCell.IsSelectedPawn = false;
+            _selectedCorridorPawnCell = null;
+            MessageReceived?.Invoke("Déplacement envoyé.");
+            return;
+        }
+
+        // Pas de pion en main : proposer pose de mur si possible.
+        if (!cell.CanPlaceWallH && !cell.CanPlaceWallV)
+        {
+            return;
+        }
+
+        await PromptAndPlaceWallAsync(cell).ConfigureAwait(true);
+    }
+
+    private async Task TrySendCorridorMoveAsync(int x, int y)
+    {
+        var session = _session;
+        if (session == null || !session.IsConnected)
+        {
+            return;
+        }
+
+        var actions = session.LastState?.Actions;
+        if (actions == null || actions.Count == 0)
+        {
+            return;
+        }
+
+        var isAvailable = actions.Any(a =>
+        {
+            if (a == null)
+            {
+                return false;
+            }
+
+            if (!string.Equals(a.Type, "corridor_move", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            try
+            {
+                if (a.Payload.ValueKind != JsonValueKind.Object)
+                {
+                    return false;
+                }
+                if (!a.Payload.TryGetProperty("x", out var xNode) ||
+                    !a.Payload.TryGetProperty("y", out var yNode))
+                {
+                    return false;
+                }
+                return xNode.TryGetInt32(out var ax) && yNode.TryGetInt32(out var ay) && ax == x && ay == y;
+            }
+            catch
+            {
+                return false;
+            }
+        });
+
+        if (!isAvailable)
+        {
+            return;
+        }
+
+        try
+        {
+            await session
+                .SendActionsAsync(new[] { new GameClientAction("corridor_move", payload: new { x, y }) }, CancellationToken.None)
+                .ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            try
+            {
+                await _dialogs.ShowError("Corridor", $"Impossible d'envoyer le déplacement : {ex.Message}").ConfigureAwait(true);
+            }
+            catch
+            {
+                // ignore
+            }
+        }
+    }
+
+    private async Task PromptAndPlaceWallAsync(CorridorCellViewModel cell)
+    {
+        if (cell == null)
+        {
+            return;
+        }
+
+        if (cell.CanPlaceWallH && cell.CanPlaceWallV)
+        {
+            var choice = await _dialogs.Choose(
+                    title: "Mur",
+                    message: $"Poser un mur à colonne {cell.Column}, ligne {cell.Row} :",
+                    primaryText: "Horizontal",
+                    secondaryText: "Vertical",
+                    cancelText: "Annuler")
+                .ConfigureAwait(true);
+
+            if (choice == DialogChoice.Primary)
+            {
+                await TrySendCorridorPlaceWallAsync(cell.X, cell.Y, "h").ConfigureAwait(true);
+            }
+            else if (choice == DialogChoice.Secondary)
+            {
+                await TrySendCorridorPlaceWallAsync(cell.X, cell.Y, "v").ConfigureAwait(true);
+            }
+
+            return;
+        }
+
+        if (cell.CanPlaceWallH)
+        {
+            var ok = await _dialogs.Confirm("Mur", $"Poser un mur horizontal à colonne {cell.Column}, ligne {cell.Row} ?", okText: "Poser", cancelText: "Annuler")
+                .ConfigureAwait(true);
+            if (ok == true)
+            {
+                await TrySendCorridorPlaceWallAsync(cell.X, cell.Y, "h").ConfigureAwait(true);
+            }
+            return;
+        }
+
+        if (cell.CanPlaceWallV)
+        {
+            var ok = await _dialogs.Confirm("Mur", $"Poser un mur vertical à colonne {cell.Column}, ligne {cell.Row} ?", okText: "Poser", cancelText: "Annuler")
+                .ConfigureAwait(true);
+            if (ok == true)
+            {
+                await TrySendCorridorPlaceWallAsync(cell.X, cell.Y, "v").ConfigureAwait(true);
+            }
+        }
+    }
+
+    private async Task TrySendCorridorPlaceWallAsync(int x, int y, string orientation)
+    {
+        var session = _session;
+        if (session == null || !session.IsConnected)
+        {
+            return;
+        }
+
+        var actions = session.LastState?.Actions;
+        if (actions == null || actions.Count == 0)
+        {
+            return;
+        }
+
+        var o = string.Equals(orientation, "v", StringComparison.OrdinalIgnoreCase) ? "v" : "h";
+
+        var isAvailable = actions.Any(a =>
+        {
+            if (a == null) return false;
+            if (!string.Equals(a.Type, "corridor_place_wall", StringComparison.OrdinalIgnoreCase)) return false;
+            try
+            {
+                if (a.Payload.ValueKind != JsonValueKind.Object) return false;
+                if (!a.Payload.TryGetProperty("x", out var xNode) ||
+                    !a.Payload.TryGetProperty("y", out var yNode) ||
+                    !a.Payload.TryGetProperty("o", out var oNode))
+                {
+                    return false;
+                }
+
+                if (!xNode.TryGetInt32(out var ax) || !yNode.TryGetInt32(out var ay)) return false;
+                var ao = oNode.ValueKind == JsonValueKind.String ? (oNode.GetString() ?? "") : "";
+                return ax == x && ay == y && string.Equals(ao, o, StringComparison.OrdinalIgnoreCase);
+            }
+            catch
+            {
+                return false;
+            }
+        });
+
+        if (!isAvailable)
+        {
+            return;
+        }
+
+        try
+        {
+            await session
+                .SendActionsAsync(new[] { new GameClientAction("corridor_place_wall", payload: new { x, y, o }) }, CancellationToken.None)
+                .ConfigureAwait(false);
+            MessageReceived?.Invoke("Mur envoyé.");
+        }
+        catch (Exception ex)
+        {
+            try
+            {
+                await _dialogs.ShowError("Corridor", $"Impossible d'envoyer le mur : {ex.Message}").ConfigureAwait(true);
+            }
+            catch
+            {
+                // ignore
+            }
+        }
     }
 
     private void TryPlayEndgameSound(GameStateDto? state, int? viewerPlayerId)
