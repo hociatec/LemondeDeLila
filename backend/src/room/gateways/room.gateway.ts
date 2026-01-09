@@ -983,12 +983,8 @@ export class RoomGateway
     if (remainingTotalConnections > 0) {
       await this.sendRoomState(roomId);
     }
-
-    try {
-      client.close();
-    } catch {
-      /* ignore */
-    }
+    // Important: ne pas fermer la socket.
+    // Le client doit pouvoir rester connecté et rejoindre une autre table sans relancer l’app.
   }
 
   private async handleRoomStart(
@@ -1663,7 +1659,7 @@ export class RoomGateway
     const message = ban
       ? 'Vous avez ete banni de cette table.'
       : 'Vous avez ete exclu de cette table.';
-    this.forceDisconnectUser(roomId, targetUserId, message);
+    await this.forceDisconnectUser(roomId, targetUserId, message);
 
     await this.sendRoomState(roomId);
   }
@@ -1702,16 +1698,28 @@ export class RoomGateway
     await this.sendRoomState(roomId);
   }
 
-  private forceDisconnectUser(
+  private async forceDisconnectUser(
     roomId: number,
     userId: number,
     message: string,
-  ): void {
+  ): Promise<void> {
     const sockets: WebSocket[] = [];
     const a = this.rooms.get(roomId);
     const b = this.silentRooms.get(roomId);
     if (a) sockets.push(...Array.from(a));
     if (b) sockets.push(...Array.from(b));
+
+    let leavePayload: RoomPayload | null = null;
+    try {
+      leavePayload = await this.roomsService.getRoomPayload(roomId);
+      leavePayload.room.spectators = listVisibleSpectators(
+        this.clients.values(),
+        roomId,
+      );
+      leavePayload.room.counts.spectators = leavePayload.room.spectators.length;
+    } catch {
+      leavePayload = null;
+    }
 
     for (const socket of sockets) {
       const meta = this.clients.get(socket);
@@ -1729,12 +1737,30 @@ export class RoomGateway
         // ignore
       }
 
+      // Important: envoyer un évènement de sortie explicite avant close,
+      // sinon certains clients restent bloqués sans navigation.
       try {
-        socket.close(4003, message);
+        if (leavePayload) {
+          this.safeSend(socket, { type: 'room.left', roomId, payload: leavePayload });
+        } else {
+          this.safeSend(socket, { type: 'room.deleted', roomId });
+        }
       } catch {
         // ignore
       }
+
+      // Important: retirer du contexte room, mais garder la socket ouverte
+      // pour permettre un nouveau join sans relancer l’app.
+      this.realtimeTracker.clearSocket(socket);
+      meta.role = 'spectator';
+      meta.roomId = 0;
+      meta.silent = false;
+      a?.delete(socket);
+      b?.delete(socket);
     }
+
+    if (a && a.size === 0) this.rooms.delete(roomId);
+    if (b && b.size === 0) this.silentRooms.delete(roomId);
   }
 
   private isAdmin(roles?: string[] | null): boolean {

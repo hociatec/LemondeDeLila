@@ -29,6 +29,27 @@ export type AdminContactItem = {
   handledByUsername?: string | null;
 };
 
+export type AdminContactThreadSummary = {
+  kind: 'admin_contact';
+  contactId: string;
+  latestId: string;
+  latestCreatedAt: string;
+  latestReadAt?: string | null;
+  latestMessage: string;
+  fromUserId: number;
+  fromUsername: string;
+  toUserId?: number | null;
+  unreadCount: number;
+  status: 'open' | 'in_progress' | 'handled';
+  handled: boolean;
+  statusAt?: string | null;
+  statusByUserId?: number | null;
+  statusByUsername?: string | null;
+  handledAt?: string | null;
+  handledByUserId?: number | null;
+  handledByUsername?: string | null;
+};
+
 @Injectable()
 export class AdminContactService {
   private readonly logger = new Logger(AdminContactService.name);
@@ -66,20 +87,176 @@ export class AdminContactService {
     return 'open';
   }
 
+  private static normalizeContactPayload(payload: any): {
+    status: 'open' | 'in_progress' | 'handled';
+    handled: boolean;
+    statusAt: string | null;
+    statusByUserId: number | null;
+    statusByUsername: string | null;
+    handledAt: string | null;
+    handledByUserId: number | null;
+    handledByUsername: string | null;
+  } {
+    const obj = payload && typeof payload === 'object' ? payload : {};
+    const normalizedStatus = AdminContactService.normalizeContactStatus(obj.status);
+    const handled = normalizedStatus === 'handled' || Boolean(obj.handled);
+    return {
+      status: handled ? 'handled' : normalizedStatus,
+      handled,
+      statusAt: typeof obj.statusAt === 'string' ? obj.statusAt : null,
+      statusByUserId: typeof obj.statusByUserId === 'number' ? obj.statusByUserId : null,
+      statusByUsername: typeof obj.statusByUsername === 'string' ? obj.statusByUsername : null,
+      handledAt: typeof obj.handledAt === 'string' ? obj.handledAt : null,
+      handledByUserId: typeof obj.handledByUserId === 'number' ? obj.handledByUserId : null,
+      handledByUsername: typeof obj.handledByUsername === 'string' ? obj.handledByUsername : null,
+    };
+  }
+
   async listInbox(userId: number, limit = 100): Promise<any[]> {
     const items = await this.inbox.list(userId, limit);
-    return items.map((it) => ({
-      id: it.id,
-      kind: it.kind,
-      contactId: it.contactId ?? null,
-      createdAt: it.createdAt?.toISOString?.() ?? new Date().toISOString(),
-      readAt: it.readAt?.toISOString?.() ?? null,
-      fromUserId: it.fromUserId ?? 0,
-      fromUsername: it.fromUsername ?? '',
-      toUserId: it.toUserId ?? null,
-      message: it.message ?? '',
-      ...(it.payload ?? {}),
-    }));
+    return items.map((it) => {
+      const base = {
+        id: it.id,
+        kind: it.kind,
+        contactId: it.contactId ?? null,
+        createdAt: it.createdAt?.toISOString?.() ?? new Date().toISOString(),
+        readAt: it.readAt?.toISOString?.() ?? null,
+        fromUserId: it.fromUserId ?? 0,
+        fromUsername: it.fromUsername ?? '',
+        toUserId: it.toUserId ?? null,
+        message: it.message ?? '',
+        ...(it.payload ?? {}),
+      };
+
+      if (it.kind !== AdminContactService.ADMIN_CONTACT_KIND) return base;
+
+      const normalized = AdminContactService.normalizeContactPayload(it.payload);
+      return {
+        ...base,
+        status: normalized.status,
+        handled: normalized.handled,
+        statusAt: normalized.statusAt,
+        statusByUserId: normalized.statusByUserId,
+        statusByUsername: normalized.statusByUsername,
+        handledAt: normalized.handledAt,
+        handledByUserId: normalized.handledByUserId,
+        handledByUsername: normalized.handledByUsername,
+      };
+    });
+  }
+
+  async listThreads(
+    userId: number,
+    {
+      maxItems = 1000,
+      limitThreads = 200,
+    }: { maxItems?: number; limitThreads?: number } = {},
+  ): Promise<AdminContactThreadSummary[]> {
+    const items = await this.inbox.list(userId, maxItems);
+    const threads = new Map<string, AdminContactThreadSummary>();
+
+    for (const it of items) {
+      if (it.kind !== AdminContactService.ADMIN_CONTACT_KIND) continue;
+      const contactId = it.contactId ?? '';
+      if (!contactId) continue;
+
+      const existing = threads.get(contactId);
+      const unreadInc = it.readAt ? 0 : 1;
+
+      if (!existing) {
+        const normalized = AdminContactService.normalizeContactPayload(it.payload);
+        threads.set(contactId, {
+          kind: 'admin_contact',
+          contactId,
+          latestId: it.id,
+          latestCreatedAt:
+            it.createdAt?.toISOString?.() ?? new Date().toISOString(),
+          latestReadAt: it.readAt?.toISOString?.() ?? null,
+          latestMessage: it.message ?? '',
+          fromUserId: it.fromUserId ?? 0,
+          fromUsername: it.fromUsername ?? '',
+          toUserId: it.toUserId ?? null,
+          unreadCount: unreadInc,
+          status: normalized.status,
+          handled: normalized.handled,
+          statusAt: normalized.statusAt,
+          statusByUserId: normalized.statusByUserId,
+          statusByUsername: normalized.statusByUsername,
+          handledAt: normalized.handledAt,
+          handledByUserId: normalized.handledByUserId,
+          handledByUsername: normalized.handledByUsername,
+        });
+        continue;
+      }
+
+      existing.unreadCount += unreadInc;
+      // Items are already sorted by createdAt DESC, so the first entry for a contactId is the latest.
+    }
+
+    return Array.from(threads.values()).slice(0, limitThreads);
+  }
+
+  async cycleStatusForContact(
+    from: Pick<WsAuthPayload, 'id' | 'username' | 'roles'>,
+    contactId: string,
+  ): Promise<{ status: 'open' | 'in_progress' | 'handled' }> {
+    if (!this.isStaffRoles(from.roles)) {
+      throw new Error('Accès refusé.');
+    }
+    const cid = String(contactId || '').trim();
+    if (!cid) throw new Error('contactId requis.');
+
+    const rows = await this.inbox.listByContactId(
+      AdminContactService.ADMIN_CONTACT_KIND,
+      cid,
+    );
+    if (rows.length === 0) return { status: 'open' };
+
+    const current = AdminContactService.normalizeContactPayload(rows[0].payload);
+    const next =
+      current.status === 'open'
+        ? 'in_progress'
+        : current.status === 'in_progress'
+          ? 'handled'
+          : 'open';
+
+    await this.setStatusForContact(from, cid, next);
+    return { status: next };
+  }
+
+  async cycleStatusForInboxItem(
+    from: Pick<WsAuthPayload, 'id' | 'username' | 'roles'>,
+    userId: number,
+    inboxItemId: string,
+  ): Promise<{ status: 'open' | 'in_progress' | 'handled' }> {
+    if (!this.isStaffRoles(from.roles)) {
+      throw new Error('Accès refusé.');
+    }
+    const item = await this.inbox.getByIdForUser(userId, inboxItemId);
+    const cid =
+      item?.kind === AdminContactService.ADMIN_CONTACT_KIND
+        ? (item.contactId ?? '')
+        : '';
+    if (!cid) throw new Error('contactId introuvable pour cette notification.');
+    return this.cycleStatusForContact(from, cid);
+  }
+
+  async setStatusForInboxItem(
+    from: Pick<WsAuthPayload, 'id' | 'username' | 'roles'>,
+    userId: number,
+    inboxItemId: string,
+    status: 'open' | 'in_progress' | 'handled' | string,
+  ): Promise<void> {
+    if (!this.isStaffRoles(from.roles)) {
+      throw new Error('Accès refusé.');
+    }
+    const item = await this.inbox.getByIdForUser(userId, inboxItemId);
+    const cid =
+      item?.kind === AdminContactService.ADMIN_CONTACT_KIND
+        ? (item.contactId ?? '')
+        : '';
+    if (!cid) throw new Error('contactId introuvable pour cette notification.');
+    await this.setStatusForContact(from, cid, status);
   }
 
   async deleteInboxItem(userId: number, id: string): Promise<void> {
