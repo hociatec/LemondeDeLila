@@ -483,21 +483,120 @@ export class NotificationGateway
           typeof parsed?.payload?.contactId === 'string'
             ? parsed.payload.contactId
             : '';
+        const inboxItemId =
+          typeof parsed?.payload?.id === 'string' ? parsed.payload.id : '';
         const status =
           typeof parsed?.payload?.status === 'string' ? parsed.payload.status : '';
-        await this.adminContacts.setStatusForContact(
-          {
-            id: meta.userId,
-            username: meta.username,
-            roles: meta.roles,
-          } as any,
-          contactId,
-          status,
-        );
+        const from = {
+          id: meta.userId,
+          username: meta.username,
+          roles: meta.roles,
+        } as any;
+        if (contactId) {
+          await this.adminContacts.setStatusForContact(from, contactId, status);
+        } else if (inboxItemId) {
+          await this.adminContacts.setStatusForInboxItem(
+            from,
+            meta.userId,
+            inboxItemId,
+            status,
+          );
+        } else {
+          throw new Error('contactId ou id requis.');
+        }
         this.safeSendResponse(
           client,
           'notify.admin_contact.setStatus',
           { ok: true },
+          requestId,
+        );
+      } catch (err: any) {
+        this.safeSendResponse(
+          client,
+          'notify.admin_contact.error',
+          { message: String(err?.message || 'Erreur') },
+          requestId,
+        );
+      }
+      return;
+    }
+
+    if (type === 'notify.admin_contact.cycleStatus') {
+      try {
+        const contactId =
+          typeof parsed?.payload?.contactId === 'string'
+            ? parsed.payload.contactId
+            : '';
+        const inboxItemId =
+          typeof parsed?.payload?.id === 'string' ? parsed.payload.id : '';
+        const from = {
+          id: meta.userId,
+          username: meta.username,
+          roles: meta.roles,
+        } as any;
+        const res = contactId
+          ? await this.adminContacts.cycleStatusForContact(from, contactId)
+          : inboxItemId
+            ? await this.adminContacts.cycleStatusForInboxItem(
+                from,
+                meta.userId,
+                inboxItemId,
+              )
+            : (() => {
+                throw new Error('contactId ou id requis.');
+              })();
+        this.safeSendResponse(
+          client,
+          'notify.admin_contact.cycleStatus',
+          { ok: true, status: res.status },
+          requestId,
+        );
+      } catch (err: any) {
+        this.safeSendResponse(
+          client,
+          'notify.admin_contact.error',
+          { message: String(err?.message || 'Erreur') },
+          requestId,
+        );
+      }
+      return;
+    }
+
+    if (type === 'notify.admin_contact.threads') {
+      try {
+        const limitThreads =
+          typeof parsed?.payload?.limit === 'number'
+            ? parsed.payload.limit
+            : undefined;
+        const threads = await this.adminContacts.listThreads(meta.userId, {
+          limitThreads,
+        });
+        const sections = {
+          open: threads.filter((t) => t.status === 'open'),
+          in_progress: threads.filter((t) => t.status === 'in_progress'),
+          handled: threads.filter((t) => t.status === 'handled'),
+        };
+        this.safeSendResponse(
+          client,
+          'notify.admin_contact.threads',
+          {
+            sections: [
+              { id: 'open', title: 'Ouvert', collapsed: true, items: sections.open },
+              {
+                id: 'in_progress',
+                title: 'En cours',
+                collapsed: true,
+                items: sections.in_progress,
+              },
+              {
+                id: 'handled',
+                title: 'Traité',
+                collapsed: true,
+                items: sections.handled,
+              },
+            ],
+            total: threads.length,
+          },
           requestId,
         );
       } catch (err: any) {

@@ -127,31 +127,53 @@ public sealed class GameTableOpener : IGameTableOpener
 
     private async Task InvitePlayerAsync(RoomSession session)
     {
-        var query = await _textPrompts
-            .PromptAsync("Inviter un joueur", "Nom d'utilisateur", initialText: string.Empty)
-            .ConfigureAwait(true);
-        query = (query ?? string.Empty).Trim();
-        if (query.Length == 0)
+        InvitePresenceListResult listed;
+        try
         {
+            listed = await _directory.InvitePresenceListAsync(session.RoomId).ConfigureAwait(true);
+        }
+        catch (Exception ex)
+        {
+            await _dialogs.ShowInfo("Invitation", ex.Message).ConfigureAwait(true);
             return;
         }
 
-        var results = await _social.SearchUsersAsync(query).ConfigureAwait(true);
-        var filtered = results
-            .Where(u => u != null && u.Id > 0 && !string.IsNullOrWhiteSpace(u.Username))
-            .OrderBy(u => u.Username, StringComparer.OrdinalIgnoreCase)
+        var candidates = (listed?.Players ?? Array.Empty<InvitePresenceListItem>())
+            .Where(p => p != null && p.Id > 0 && !string.IsNullOrWhiteSpace(p.Username))
+            .OrderBy(p => p.Username, StringComparer.OrdinalIgnoreCase)
             .ToList();
 
-        if (filtered.Count == 0)
+        if (candidates.Count == 0)
         {
-            await _dialogs.ShowInfo("Invitation", "Aucun utilisateur trouvé.").ConfigureAwait(true);
+            await _dialogs.ShowInfo("Invitation", "Aucun joueur connecté à inviter.").ConfigureAwait(true);
             return;
         }
 
-        var labels = filtered.Select(u => $"{u.Username} (id {u.Id})").ToList();
+        var labels = candidates
+            .Select(p =>
+            {
+                var name = p.Username.Trim();
+                var loc = (p.Location ?? string.Empty).Trim();
+                var status = p.PendingInvite ? "invitation en attente" : string.Empty;
+                if (!string.IsNullOrWhiteSpace(loc) && !string.IsNullOrWhiteSpace(status))
+                {
+                    return $"{name} ({loc}, {status})";
+                }
+                if (!string.IsNullOrWhiteSpace(loc))
+                {
+                    return $"{name} ({loc})";
+                }
+                if (!string.IsNullOrWhiteSpace(status))
+                {
+                    return $"{name} ({status})";
+                }
+                return name;
+            })
+            .ToList();
+
         var picked = await _dialogs.Pick(
                 "Invitation",
-                "Choisir un joueur :",
+                "Choisir un joueur connecté :",
                 labels,
                 okText: "Inviter",
                 cancelText: "Annuler")
@@ -163,13 +185,13 @@ public sealed class GameTableOpener : IGameTableOpener
         }
 
         var idx = labels.IndexOf(picked);
-        if (idx < 0 || idx >= filtered.Count)
+        if (idx < 0 || idx >= candidates.Count)
         {
             return;
         }
 
-        var user = filtered[idx];
-        var message = await _directory.InviteSendAsync(session.RoomId, user.Id).ConfigureAwait(true);
+        var target = candidates[idx];
+        var message = await _directory.InviteSendAsync(session.RoomId, target.Id).ConfigureAwait(true);
         if (!string.IsNullOrWhiteSpace(message))
         {
             await _dialogs.ShowInfo("Invitation", message.Trim()).ConfigureAwait(true);
@@ -338,6 +360,7 @@ public sealed class GameTableOpener : IGameTableOpener
         RoomSession? session = null;
         GameTableBindings? bindings = null;
         Action<client_win.Modules.Network.WebSockets.WebSocketState>? onRoomConnectionStateChanged = null;
+        Action<string>? onSessionLeft = null;
         var isExiting = 0;
 
         async Task ExitAsync(string? reason = null)
@@ -355,6 +378,11 @@ public sealed class GameTableOpener : IGameTableOpener
                 {
                     session.ConnectionStateChanged -= onRoomConnectionStateChanged;
                     onRoomConnectionStateChanged = null;
+                }
+                if (session != null && onSessionLeft != null)
+                {
+                    session.Left -= onSessionLeft;
+                    onSessionLeft = null;
                 }
 
                 try
@@ -472,6 +500,9 @@ public sealed class GameTableOpener : IGameTableOpener
                 onTransferOwner: TransferOwner,
                 dialogs: _dialogs);
             vm.Status = "Connexion à la table…";
+            vm.IsReconnecting = true;
+            vm.GameZone.IsConnected = false;
+            vm.Chat.IsConnected = false;
 
             tableView.DataContext = vm;
             _navigation.Show(tableView);
@@ -514,8 +545,8 @@ public sealed class GameTableOpener : IGameTableOpener
                     if (!ReferenceEquals(placeholderGame, game))
                     {
                         if (tableView == null) return;
-                        var newVm = new GameRoomViewModel(
-                            game,
+	                        var newVm = new GameRoomViewModel(
+	                            game,
                             onSendChat: msg => session.SendCommandAsync("room.chat.send", payload: new { message = msg }),
                             onStart: () => session.SendCommandAsync("room.start", payload: null),
                             onReset: () => session.SendCommandAsync("room.reset", payload: null),
@@ -529,12 +560,15 @@ public sealed class GameTableOpener : IGameTableOpener
                             onInvite: () => InvitePlayerAsync(session),
                             onKick: () => KickPlayerAsync(session, ban: false),
                             onBan: () => KickPlayerAsync(session, ban: true),
-                            onTransferOwner: () => TransferOwnerAsync(session),
-                            dialogs: _dialogs);
-                        newVm.Status = "Connexion à la table…";
-                        vm = newVm;
-                        tableView.DataContext = vm;
-                    }
+	                            onTransferOwner: () => TransferOwnerAsync(session),
+	                            dialogs: _dialogs);
+	                        newVm.Status = "Connexion à la table…";
+	                        newVm.IsReconnecting = true;
+	                        newVm.GameZone.IsConnected = false;
+	                        newVm.Chat.IsConnected = false;
+	                        vm = newVm;
+	                        tableView.DataContext = vm;
+	                    }
 
                     if (tableView == null || vm == null)
                     {
@@ -564,12 +598,63 @@ public sealed class GameTableOpener : IGameTableOpener
 
                     vm.Status = "Table prête.";
 
+                    session.ErrorReceived += message =>
+                    {
+                        if (string.IsNullOrWhiteSpace(message)) return;
+                        var m = message.Trim().ToLowerInvariant();
+                        if (m.Contains("exclu") || m.Contains("banni") || m.Contains("banni"))
+                        {
+                            _ = ExitAsync(message.Trim());
+                        }
+                    };
+
+                    onSessionLeft = type =>
+                    {
+                        if (string.Equals(type, "room.deleted", StringComparison.OrdinalIgnoreCase))
+                        {
+                            _ = ExitAsync("Table fermée.");
+                        }
+                        else
+                        {
+                            _ = ExitAsync("Vous avez quitté la table.");
+                        }
+                    };
+                    session.Left += onSessionLeft;
+
                     onRoomConnectionStateChanged = state =>
                     {
-                        if (state is client_win.Modules.Network.WebSockets.WebSocketState.Disconnected or
-                            client_win.Modules.Network.WebSockets.WebSocketState.Error)
+                        if (vm == null)
                         {
-                            _ = ExitAsync("Connexion à la table interrompue.");
+                            return;
+                        }
+
+                        if (state == client_win.Modules.Network.WebSockets.WebSocketState.Connecting)
+                        {
+                            vm.Status = "Connexion à la table…";
+                            vm.IsReconnecting = true;
+                            vm.GameZone.IsConnected = false;
+                            vm.Chat.IsConnected = false;
+                        }
+                        else if (state == client_win.Modules.Network.WebSockets.WebSocketState.Connected)
+                        {
+                            vm.Status = "Table prête.";
+                            vm.IsReconnecting = false;
+                            vm.GameZone.IsConnected = true;
+                            vm.Chat.IsConnected = true;
+                        }
+                        else if (state == client_win.Modules.Network.WebSockets.WebSocketState.Disconnected)
+                        {
+                            vm.Status = "Connexion table perdue. Reconnexion…";
+                            vm.IsReconnecting = true;
+                            vm.GameZone.IsConnected = false;
+                            vm.Chat.IsConnected = false;
+                        }
+                        else if (state == client_win.Modules.Network.WebSockets.WebSocketState.Error)
+                        {
+                            vm.Status = "Connexion table en erreur. Reconnexion…";
+                            vm.IsReconnecting = true;
+                            vm.GameZone.IsConnected = false;
+                            vm.Chat.IsConnected = false;
                         }
                     };
                     session.ConnectionStateChanged += onRoomConnectionStateChanged;

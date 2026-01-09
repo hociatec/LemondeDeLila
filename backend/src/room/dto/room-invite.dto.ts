@@ -24,3 +24,9 @@ export class RoomInviteRespondDto {
   @IsBoolean()
   accept!: boolean;
 }
+
+export class RoomInvitePresenceListDto {
+  @IsInt()
+  @IsPositive()
+  roomId!: number;
+}

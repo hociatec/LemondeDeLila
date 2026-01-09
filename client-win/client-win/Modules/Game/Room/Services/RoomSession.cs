@@ -13,15 +13,42 @@ public sealed class RoomSession : IAsyncDisposable
 {
     private static readonly JsonSerializerOptions _json = new(JsonSerializerDefaults.Web);
     private readonly IWebSocketConnection _socket;
+    private readonly Func<IWebSocketConnection, Task>? _returnSocketAsync;
+    private readonly Func<IWebSocketConnection, CancellationToken, Task>? _reconnectAsync;
+    private readonly bool _spectator;
+    private readonly bool _silent;
 
-    public RoomSession(int roomId, string gameType, IWebSocketConnection socket)
+    private readonly CancellationTokenSource _lifetimeCts = new();
+    private Task? _keepAliveLoop;
+    private Task? _reconnectLoop;
+    private int _reconnectRequested;
+    private int _forceReconnectRequested;
+    private int _reconnectAttempt;
+    private DateTime _lastPongUtc = DateTime.MinValue;
+    private WebSocketState _state = WebSocketState.Connected;
+
+    public RoomSession(
+        int roomId,
+        string gameType,
+        IWebSocketConnection socket,
+        Func<IWebSocketConnection, Task>? returnSocketAsync = null,
+        Func<IWebSocketConnection, CancellationToken, Task>? reconnectAsync = null,
+        bool spectator = false,
+        bool silent = false)
     {
         RoomId = roomId;
         GameType = gameType ?? string.Empty;
         _socket = socket ?? throw new ArgumentNullException(nameof(socket));
+        _returnSocketAsync = returnSocketAsync;
+        _reconnectAsync = reconnectAsync;
+        _spectator = spectator;
+        _silent = silent;
         _socket.MessageReceived += OnRawMessage;
         _socket.StateChanged += OnStateChanged;
         _socket.Error += _ => { };
+
+        _lastPongUtc = DateTime.UtcNow;
+        _keepAliveLoop = Task.Run(() => KeepAliveLoopAsync(_lifetimeCts.Token));
     }
 
     public int RoomId { get; }
@@ -32,9 +59,8 @@ public sealed class RoomSession : IAsyncDisposable
     public event Action<RoomPayloadDto>? RoomUpdated;
     public event Action<string>? RawMessageReceived;
     public event Action<string>? ErrorReceived;
+    public event Action<string>? Left;
     public event Action<WebSocketState>? ConnectionStateChanged;
-
-    public Task CloseAsync() => _socket.CloseAsync();
 
     public async Task SendCommandAsync(string type, object? payload = null, CancellationToken cancellationToken = default)
     {
@@ -58,21 +84,38 @@ public sealed class RoomSession : IAsyncDisposable
         }
         catch
         {
-            // Best-effort (si l'envoi échoue, on ferme quand même).
+            // Best-effort.
         }
-
-        await _socket.CloseAsync().ConfigureAwait(false);
     }
 
     public async ValueTask DisposeAsync()
     {
+        try { _lifetimeCts.Cancel(); } catch { }
+
+        if (_keepAliveLoop != null)
+        {
+            try { await _keepAliveLoop.ConfigureAwait(false); } catch { }
+            _keepAliveLoop = null;
+        }
+        if (_reconnectLoop != null)
+        {
+            try { await _reconnectLoop.ConfigureAwait(false); } catch { }
+            _reconnectLoop = null;
+        }
+
         _socket.MessageReceived -= OnRawMessage;
         _socket.StateChanged -= OnStateChanged;
+        if (_returnSocketAsync != null)
+        {
+            await _returnSocketAsync(_socket).ConfigureAwait(false);
+            return;
+        }
         await _socket.DisposeAsync().ConfigureAwait(false);
     }
 
     private void OnStateChanged(WebSocketState state)
     {
+        _state = state;
         try
         {
             ConnectionStateChanged?.Invoke(state);
@@ -80,6 +123,24 @@ public sealed class RoomSession : IAsyncDisposable
         catch
         {
             // Best-effort (ne pas casser la boucle WS si un handler client échoue).
+        }
+
+        if (_reconnectAsync == null)
+        {
+            return;
+        }
+
+        if (state is WebSocketState.Disconnected or WebSocketState.Error)
+        {
+            RequestReconnect(force: false);
+        }
+        else if (state == WebSocketState.Connected)
+        {
+            _reconnectAttempt = 0;
+            _lastPongUtc = DateTime.UtcNow;
+
+            // Après reconnexion, il faut se rattacher à la table.
+            _ = Task.Run(() => EnsureJoinedAsync(CancellationToken.None));
         }
     }
 
@@ -111,6 +172,14 @@ public sealed class RoomSession : IAsyncDisposable
                 return;
             }
 
+            if (string.Equals(type, "room.left", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(type, "room.deleted", StringComparison.OrdinalIgnoreCase))
+            {
+                // Sortie imposée (kick/ban/delete) OU table supprimée. La navigation est gérée par l'UI.
+                Left?.Invoke(type);
+                return;
+            }
+
             if (string.Equals(type, "room.pong", StringComparison.OrdinalIgnoreCase))
             {
                 HandlePong(root);
@@ -132,6 +201,7 @@ public sealed class RoomSession : IAsyncDisposable
     private void HandlePong(JsonElement root)
     {
         var receivedAtMs = ServerClock.UtcNowMs();
+        _lastPongUtc = DateTime.UtcNow;
 
         try
         {
@@ -213,6 +283,179 @@ public sealed class RoomSession : IAsyncDisposable
         {
             Log.Debug(ex, "RoomSession: ignore message parse error");
         }
+    }
+
+    private void RequestReconnect(bool force)
+    {
+        if (_reconnectAsync == null) return;
+        if (_lifetimeCts.IsCancellationRequested) return;
+
+        Interlocked.Exchange(ref _reconnectRequested, 1);
+        if (force)
+        {
+            Interlocked.Exchange(ref _forceReconnectRequested, 1);
+        }
+
+        if (_reconnectLoop != null && !_reconnectLoop.IsCompleted)
+        {
+            return;
+        }
+
+        _reconnectLoop = Task.Run(() => ReconnectLoopAsync(_lifetimeCts.Token));
+    }
+
+    private async Task ReconnectLoopAsync(CancellationToken cancellationToken)
+    {
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            var want = Interlocked.CompareExchange(ref _reconnectRequested, 0, 1) == 1;
+            var force = Interlocked.CompareExchange(ref _forceReconnectRequested, 0, 1) == 1;
+            if (!want && !force)
+            {
+                return;
+            }
+
+            if (!force && _state == WebSocketState.Connected)
+            {
+                // Déjà connecté, rien à faire (sauf si force).
+                return;
+            }
+
+            _reconnectAttempt = Math.Min(_reconnectAttempt + 1, 12);
+            var delay = ComputeBackoff(_reconnectAttempt);
+            try
+            {
+                await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
+            }
+            catch
+            {
+                return;
+            }
+
+            try
+            {
+                using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(12));
+                using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeout.Token);
+
+                await _reconnectAsync!(_socket, linked.Token).ConfigureAwait(false);
+                await EnsureJoinedAsync(linked.Token).ConfigureAwait(false);
+
+                _reconnectAttempt = 0;
+                return;
+            }
+            catch
+            {
+                // Continue loop: we'll retry.
+                Interlocked.Exchange(ref _reconnectRequested, 1);
+            }
+        }
+    }
+
+    private async Task EnsureJoinedAsync(CancellationToken cancellationToken)
+    {
+        // Best-effort: send join then wait for a room state update.
+        try
+        {
+            var trace = new { id = Guid.NewGuid().ToString("N"), sentAtMs = ServerClock.NowServerMs() };
+            var join = JsonSerializer.Serialize(new
+            {
+                type = "room.join",
+                payload = new
+                {
+                    roomId = RoomId,
+                    spectator = _spectator,
+                    hidden = _silent,
+                    _trace = trace
+                }
+            }, _json);
+            await _socket.SendAsync(join, cancellationToken).ConfigureAwait(false);
+        }
+        catch
+        {
+            return;
+        }
+
+        var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        void OnUpdate(RoomPayloadDto _) => tcs.TrySetResult(true);
+        RoomUpdated += OnUpdate;
+        try
+        {
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeout.Token);
+            await tcs.Task.WaitAsync(linked.Token).ConfigureAwait(false);
+        }
+        catch
+        {
+            // ignore
+        }
+        finally
+        {
+            RoomUpdated -= OnUpdate;
+        }
+    }
+
+    private async Task KeepAliveLoopAsync(CancellationToken cancellationToken)
+    {
+        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(20));
+
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            try
+            {
+                var ok = await timer.WaitForNextTickAsync(cancellationToken).ConfigureAwait(false);
+                if (!ok) return;
+            }
+            catch
+            {
+                return;
+            }
+
+            if (_reconnectAsync != null && _state == WebSocketState.Connected)
+            {
+                var age = DateTime.UtcNow - _lastPongUtc;
+                if (_lastPongUtc != DateTime.MinValue && age > TimeSpan.FromSeconds(60))
+                {
+                    // Socket "fantôme" probable: forcer une reconnexion.
+                    RequestReconnect(force: true);
+                    continue;
+                }
+            }
+
+            if (_state != WebSocketState.Connected)
+            {
+                continue;
+            }
+
+            try
+            {
+                var ping = JsonSerializer.Serialize(
+                    new { type = "room.ping", payload = new { clientSentAtMs = ServerClock.UtcNowMs() } },
+                    _json);
+                await _socket.SendAsync(ping, cancellationToken).ConfigureAwait(false);
+            }
+            catch
+            {
+                // Best-effort: la reconnexion sera déclenchée par StateChanged ou par le watchdog.
+            }
+        }
+    }
+
+    private static TimeSpan ComputeBackoff(int attempt)
+    {
+        var seconds = attempt switch
+        {
+            1 => 1,
+            2 => 2,
+            3 => 5,
+            4 => 10,
+            5 => 20,
+            6 => 30,
+            _ => 30,
+        };
+
+        // Jitter +/-20% pour éviter que tout le monde reconnecte en même temps.
+        var jitter = 0.8 + (Random.Shared.NextDouble() * 0.4);
+        return TimeSpan.FromMilliseconds(Math.Max(250, seconds * 1000 * jitter));
     }
 
     private static Dictionary<string, object?> ToDictionary(object? payload)

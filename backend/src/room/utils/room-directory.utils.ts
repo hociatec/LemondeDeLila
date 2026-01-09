@@ -8,6 +8,7 @@ export type PublicRoomListItem = {
   status: string;
   started: boolean;
   spectatorOnly: boolean;
+  banned?: boolean;
   maxPlayers: number;
   playersCount: number;
   botsCount: number;
@@ -22,7 +23,13 @@ function isRoomOpenStatus(status: unknown): boolean {
 }
 
 function countActiveParticipants(room: Room): number {
-  return (room.participants || []).filter((p) => !p.leftAt).length;
+  const active = (room.participants || []).filter((p) => !p.leftAt);
+  const activeCount = active.length;
+  const ownerId = room.owner?.id;
+  if (!ownerId) return activeCount;
+
+  const ownerAlreadyCounted = active.some((p) => p?.user?.id === ownerId);
+  return ownerAlreadyCounted ? activeCount : activeCount + 1;
 }
 
 export function buildPublicRoomList(

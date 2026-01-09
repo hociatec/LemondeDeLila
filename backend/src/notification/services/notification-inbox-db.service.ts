@@ -68,6 +68,17 @@ export class NotificationInboxDbService {
     return items.filter((it) => !it.deletedAt);
   }
 
+  async getByIdForUser(
+    userId: number,
+    id: string,
+  ): Promise<NotificationInboxItem | null> {
+    const cleanId = String(id || '').trim();
+    if (!cleanId) return null;
+    return this.repo.findOne({
+      where: { id: cleanId, user: { id: userId }, deletedAt: null } as any,
+    });
+  }
+
   async markRead(userId: number, id: string): Promise<boolean> {
     const now = new Date();
     const res = await this.repo

@@ -15,6 +15,7 @@ internal sealed class GameSessionMessageRouter
     private readonly Action<string> _emitCommandAck;
     private readonly Action<string> _emitUiMessage;
     private readonly Action<string> _emitRaw;
+    private readonly Action? _emitPong;
 
     internal GameSessionMessageRouter(
         JsonSerializerOptions json,
@@ -23,7 +24,8 @@ internal sealed class GameSessionMessageRouter
         Action<string> emitError,
         Action<string> emitCommandAck,
         Action<string> emitUiMessage,
-        Action<string> emitRaw)
+        Action<string> emitRaw,
+        Action? emitPong = null)
     {
         _json = json ?? throw new ArgumentNullException(nameof(json));
         _emitState = emitState ?? throw new ArgumentNullException(nameof(emitState));
@@ -32,6 +34,7 @@ internal sealed class GameSessionMessageRouter
         _emitCommandAck = emitCommandAck ?? throw new ArgumentNullException(nameof(emitCommandAck));
         _emitUiMessage = emitUiMessage ?? throw new ArgumentNullException(nameof(emitUiMessage));
         _emitRaw = emitRaw ?? throw new ArgumentNullException(nameof(emitRaw));
+        _emitPong = emitPong;
     }
 
     internal void HandleRawMessage(string raw)
@@ -148,6 +151,7 @@ internal sealed class GameSessionMessageRouter
     private void HandlePong(JsonElement root)
     {
         var receivedAtMs = ServerClock.UtcNowMs();
+        _emitPong?.Invoke();
 
         try
         {

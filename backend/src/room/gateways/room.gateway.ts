@@ -65,6 +65,7 @@ export class RoomGateway
   private readonly lastPong = new WeakMap<WebSocket, number>();
   private readonly pingIntervalMs = 25_000;
   private readonly lastChatSentAt = new WeakMap<WebSocket, number>();
+  private readonly messageQueueByClient = new WeakMap<WebSocket, Promise<void>>();
 
   private readonly roomChat = new Map<
     number,
@@ -164,12 +165,13 @@ export class RoomGateway
     }
     const isAdmin = this.isAdmin(payload.roles);
 
-    const targetRoomId = roomId && roomId > 0 ? roomId : 0;
+    let targetRoomId = roomId && roomId > 0 ? roomId : 0;
     if (targetRoomId > 0) {
       const effectiveSilent = Boolean(silent);
       if (this.roomsService.isBanned(targetRoomId, payload.id)) {
-        client.close(4003, 'Banni de cette table');
-        return;
+        await this.sendError(client, 'Banni de cette table.');
+        // Keep the socket open so the client can go back to home and join another room.
+        targetRoomId = 0;
       }
       if (effectiveSilent && !isAdmin) {
         client.close(4003, 'Mode caché réservé aux admins');
@@ -361,6 +363,7 @@ export class RoomGateway
     const meta = this.clients.get(client);
     this.realtimeTracker.clearSocket(client);
     this.clients.delete(client);
+    this.messageQueueByClient.delete(client);
     const hb = this.heartbeats.get(client);
     if (hb) {
       clearInterval(hb);
@@ -445,21 +448,34 @@ export class RoomGateway
 
   @SubscribeMessage('message')
   async handleMessage(client: WebSocket, raw: any) {
-    const meta = this.clients.get(client);
-    if (!meta) {
-      client.close();
-      return;
-    }
-    try {
-      const parsed = this.decode(raw);
-      if (!parsed) return;
-      await this.handleCommand(client, meta, parsed);
-    } catch (err) {
-      await this.sendError(
-        client,
-        (err as Error).message || 'Erreur temps réel',
-      );
-    }
+    await this.enqueueClientMessage(client, async () => {
+      const meta = this.clients.get(client);
+      if (!meta) {
+        client.close();
+        return;
+      }
+      try {
+        const parsed = this.decode(raw);
+        if (!parsed) return;
+        await this.handleCommand(client, meta, parsed);
+      } catch (err) {
+        await this.sendError(
+          client,
+          (err as Error).message || 'Erreur temps réel',
+        );
+      }
+    });
+  }
+
+  private enqueueClientMessage(
+    client: WebSocket,
+    fn: () => Promise<void>,
+  ): Promise<void> {
+    const prev = this.messageQueueByClient.get(client) ?? Promise.resolve();
+    const next = prev.then(fn, fn);
+    // Keep the chain alive even if one handler throws.
+    this.messageQueueByClient.set(client, next.catch(() => {}));
+    return next;
   }
 
   private async sendRoomState(roomId: number) {
@@ -912,6 +928,9 @@ export class RoomGateway
     }
     this.realtimeTracker.setSocketParticipantRoom(client, null);
 
+    const userId = meta.userId;
+    const wasParticipant = meta.role === 'participant';
+
     const activeSet = meta.silent
       ? this.silentRooms.get(roomId)
       : this.rooms.get(roomId);
@@ -935,60 +954,58 @@ export class RoomGateway
     const remainingInOtherSet = otherSet?.size ?? 0;
     const remainingTotalConnections =
       remainingInActiveSet + remainingInOtherSet;
-    const userStillConnected = this.hasUserConnections(roomId, meta.userId);
-
-    if (meta.role === 'participant') {
-      let roomStarted = false;
-      try {
-        const state = await this.roomsService.getRoomPayload(roomId);
-        roomStarted =
-          (state?.room?.status || '').toLowerCase() === 'started' ||
-          Boolean(state?.room?.startedAt);
-      } catch {
-        roomStarted = false;
-      }
-
-      await this.roomsService.leaveRoom(roomId, meta.userId, {
-        preserveRoom: roomStarted || remainingTotalConnections > 0,
-        disconnectOnly: false,
-      });
-    } else {
-      if (!userStillConnected) {
-        await this.roomsService.transferOwnerIfCurrent(roomId, meta.userId);
-      }
-      if (remainingTotalConnections === 0) {
-        await this.roomsService.leaveRoom(roomId, meta.userId, {
-          preserveRoom: false,
-          disconnectOnly: false,
-        });
-      }
-    }
+    const userStillConnected = this.hasUserConnections(roomId, userId);
 
     // Empêche handleDisconnect de rappeler leaveRoom quand on ferme le socket après un leave explicite.
     meta.role = 'spectator';
     meta.roomId = 0;
+    meta.silent = false;
 
+    let leftPayload: RoomPayload | null = null;
     try {
-      const payload = await this.roomsService.getRoomPayload(roomId);
-      payload.room.spectators = listVisibleSpectators(
-        this.clients.values(),
-        roomId,
-      );
-      payload.room.counts.spectators = payload.room.spectators.length;
-      this.safeSend(client, { type: 'room.left', roomId, payload });
+      leftPayload = await this.roomsService.getRoomPayload(roomId);
+      this.applySpectators(roomId, leftPayload);
+      this.safeSend(client, { type: 'room.left', roomId, payload: leftPayload });
     } catch {
       this.safeSend(client, { type: 'room.deleted', roomId });
     }
 
-    if (remainingTotalConnections > 0) {
-      await this.sendRoomState(roomId);
-    }
+    // Do not block on DB leave logic; allow the client to re-join instantly.
+    (async () => {
+      try {
+        if (wasParticipant) {
+          const started =
+            (leftPayload?.room?.status || '').toLowerCase() === 'started' ||
+            Boolean(leftPayload?.room?.startedAt);
+          await this.roomsService.leaveRoom(roomId, userId, {
+            preserveRoom: started || remainingTotalConnections > 0,
+            disconnectOnly: false,
+          });
+        } else {
+          if (!userStillConnected) {
+            await this.roomsService.transferOwnerIfCurrent(roomId, userId);
+          }
+          if (remainingTotalConnections === 0) {
+            await this.roomsService.leaveRoom(roomId, userId, {
+              preserveRoom: false,
+              disconnectOnly: false,
+            });
+          }
+        }
+      } catch {
+        // ignore: best effort
+      }
 
-    try {
-      client.close();
-    } catch {
-      /* ignore */
-    }
+      try {
+        if (remainingTotalConnections > 0) {
+          await this.sendRoomState(roomId);
+        }
+      } catch {
+        // ignore
+      }
+    })().catch(() => {});
+    // Important: ne pas fermer la socket.
+    // Le client doit pouvoir rester connecté et rejoindre une autre table sans relancer l’app.
   }
 
   private async handleRoomStart(
@@ -1463,7 +1480,7 @@ export class RoomGateway
         }
 
         if (this.roomsService.isBanned(roomId, meta.userId)) {
-          client.close(4003, 'Banni de cette table');
+          await this.sendError(client, 'Banni de cette table.');
           return;
         }
 
@@ -1516,7 +1533,12 @@ export class RoomGateway
 
         const previousRoomId = meta.roomId;
         const previousRole = meta.role;
-        if (previousRoomId !== roomId) {
+        const previousSilent = meta.silent === true;
+        // Rebind socket room membership if:
+        // - we switch rooms, or
+        // - we stay in the same room but change silent/normal mode
+        // (otherwise the socket may end up in the wrong set and not receive updates).
+        if (previousRoomId !== roomId || previousSilent !== effectiveSilent) {
           const previousSet = this.rooms.get(previousRoomId);
           if (previousSet) {
             previousSet.delete(client);
@@ -1663,7 +1685,7 @@ export class RoomGateway
     const message = ban
       ? 'Vous avez ete banni de cette table.'
       : 'Vous avez ete exclu de cette table.';
-    this.forceDisconnectUser(roomId, targetUserId, message);
+    await this.forceDisconnectUser(roomId, targetUserId, message);
 
     await this.sendRoomState(roomId);
   }
@@ -1702,11 +1724,11 @@ export class RoomGateway
     await this.sendRoomState(roomId);
   }
 
-  private forceDisconnectUser(
+  private async forceDisconnectUser(
     roomId: number,
     userId: number,
     message: string,
-  ): void {
+  ): Promise<void> {
     const sockets: WebSocket[] = [];
     const a = this.rooms.get(roomId);
     const b = this.silentRooms.get(roomId);
@@ -1729,12 +1751,28 @@ export class RoomGateway
         // ignore
       }
 
+      // IMPORTANT: garder la socket ouverte (cycle de vie de l'app) et simplement
+      // la détacher de la table. Le client peut ensuite rejoindre une autre table.
+      this.realtimeTracker.setSocketParticipantRoom(socket, null);
+      this.realtimeTracker.clearSocket(socket);
+      a?.delete(socket);
+      b?.delete(socket);
+
+      meta.role = 'spectator';
+      meta.roomId = 0;
+      meta.silent = false;
+
       try {
-        socket.close(4003, message);
+        const leftPayload = await this.roomsService.getRoomPayload(roomId);
+        this.applySpectators(roomId, leftPayload);
+        this.safeSend(socket, { type: 'room.left', roomId, payload: leftPayload });
       } catch {
-        // ignore
+        this.safeSend(socket, { type: 'room.deleted', roomId });
       }
     }
+
+    if (a && a.size === 0) this.rooms.delete(roomId);
+    if (b && b.size === 0) this.silentRooms.delete(roomId);
   }
 
   private isAdmin(roles?: string[] | null): boolean {

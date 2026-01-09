@@ -18,6 +18,7 @@ import {
 import {
   RoomInviteRespondDto,
   RoomInviteSendDto,
+  RoomInvitePresenceListDto,
 } from '../dto/room-invite.dto';
 import { RoomService } from '../services/room.service';
 import { RoomInviteService } from '../services/room-invite.service';
@@ -26,6 +27,7 @@ import { buildPublicRoomList } from '../utils/room-directory.utils';
 import { CatalogService } from '../../catalog/services/catalog.service';
 import { PublicRoomDirectoryService } from '../services/public-room-directory.service';
 import { RoomRealtimeTrackerService } from '../services/room-realtime-tracker.service';
+import { PresenceService } from '../../presence/services/presence.service';
 
 @Injectable()
 export class RoomDirectoryWsHandler {
@@ -37,13 +39,14 @@ export class RoomDirectoryWsHandler {
     private readonly catalog: CatalogService,
     private readonly directory: PublicRoomDirectoryService,
     private readonly realtimeTracker: RoomRealtimeTrackerService,
+    private readonly presence: PresenceService,
     @InjectRepository(Room) private readonly roomRepo: Repository<Room>,
     @InjectRepository(RoomParticipant)
     private readonly participantRepo: Repository<RoomParticipant>,
   ) {}
 
   async listPublic(session: WsSession, payload: any) {
-    requireUser(session);
+    const user = requireUser(session);
     const dto = this.validator.validate(RoomsPublicListDto, payload);
     const allowed = new Set(
       (await this.catalog.getAllGames()).map((g) => g.id),
@@ -82,12 +85,21 @@ export class RoomDirectoryWsHandler {
     const built = buildPublicRoomList(activeRooms, {
       allowedGameTypes: allowed,
     });
+    const isBanned = (roomId: number) => this.rooms.isBanned(roomId, user.id);
+    built.items = built.items.map((it) => ({ ...it, banned: isBanned(it.id) }));
+    built.groups = built.groups.map((g) => ({
+      ...g,
+      rooms: g.rooms.map((it) => ({ ...it, banned: isBanned(it.id) })),
+    }));
     return { type: 'rooms.public.listed', payload: built };
   }
 
   async joinPublic(session: WsSession, payload: any) {
     const user = requireUser(session);
     const dto = this.validator.validate(RoomsPublicJoinDto, payload);
+    if (this.rooms.isBanned(dto.roomId, user.id)) {
+      throw new ForbiddenException('Banni de cette table');
+    }
     await this.rooms.joinRoom(dto.roomId, user.id);
     const state = await this.rooms.getRoomPayload(dto.roomId);
     return {
@@ -202,6 +214,57 @@ export class RoomDirectoryWsHandler {
     };
   }
 
+  async invitePresenceList(session: WsSession, payload: any) {
+    const user = requireUser(session);
+    const dto = this.validator.validate(RoomInvitePresenceListDto, payload ?? {});
+
+    const room = await this.roomRepo.findOne({
+      where: { id: dto.roomId },
+      relations: ['owner'],
+    });
+    if (!room) {
+      throw new NotFoundException('Table introuvable');
+    }
+    if (!room.owner || room.owner.id !== user.id) {
+      throw new ForbiddenException('Seul le propriétaire peut inviter');
+    }
+
+    const activeParticipantIds = new Set<number>(
+      (
+        await this.participantRepo
+          .createQueryBuilder('p')
+          .select('p.user_id', 'userId')
+          .where('p.room_id = :roomId', { roomId: room.id })
+          .andWhere('p.left_at IS NULL')
+          .getRawMany()
+      )
+        .map((r: any) => Number(r?.userId ?? 0))
+        .filter((id) => Number.isFinite(id) && id > 0),
+    );
+
+    const players = this.presence
+      .listPlayers()
+      .filter((p) => p.id !== user.id)
+      .filter((p) => p.availability !== 'absent')
+      .filter((p) => !activeParticipantIds.has(p.id))
+      .map((p) => ({
+        id: p.id,
+        username: p.username,
+        availability: p.availability ?? null,
+        location: p.location ?? null,
+        currentRoom: p.currentRoom ?? null,
+        pendingInvite: Boolean(this.invites.findActive(room.id, p.id)),
+      }))
+      .sort((a, b) =>
+        a.username.localeCompare(b.username, undefined, { sensitivity: 'base' }),
+      );
+
+    return {
+      type: 'rooms.invite.presence.listed',
+      payload: { roomId: dto.roomId, players },
+    };
+  }
+
   async inviteRespond(session: WsSession, payload: any) {
     const user = requireUser(session);
     const dto = this.validator.validate(RoomInviteRespondDto, payload);
@@ -244,6 +307,12 @@ export class RoomDirectoryWsHandler {
     if (started) {
       // Table déjà démarrée : l'invité rejoint en spectateur (même table privée).
       this.invites.consume(dto.invitationId, { keep: true });
+      // Best-effort: rafraîchir la room côté propriétaire (ex: afficher un badge "spectateur accepté").
+      try {
+        await this.rooms.notifyRoomStateUpdated(invite.roomId);
+      } catch {
+        // ignore
+      }
       this.notifications.notifyUser(
         invite.fromUserId,
         'rooms.invite.responded',
@@ -264,12 +333,23 @@ export class RoomDirectoryWsHandler {
     try {
       await this.rooms.joinRoom(invite.roomId, user.id, { allowPrivate: true });
       this.invites.consume(dto.invitationId);
+      // Important: prévenir les clients déjà connectés à la table (propriétaire) pour que le roster se mette à jour.
+      try {
+        await this.rooms.notifyRoomStateUpdated(invite.roomId);
+      } catch {
+        // ignore
+      }
     } catch (err) {
       const msg = String((err as Error)?.message ?? '');
       const msgLower = msg.toLowerCase();
       if (msgLower.includes('démarr') || msgLower.includes('demarr')) {
         const state = await this.rooms.getRoomPayload(invite.roomId);
         this.invites.consume(dto.invitationId, { keep: true });
+        try {
+          await this.rooms.notifyRoomStateUpdated(invite.roomId);
+        } catch {
+          // ignore
+        }
         this.notifications.notifyUser(
           invite.fromUserId,
           'rooms.invite.responded',

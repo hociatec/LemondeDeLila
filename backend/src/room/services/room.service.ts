@@ -490,22 +490,33 @@ export class RoomService {
     if (room.isPrivate && !opts?.allowPrivate) {
       throw new BadRequestException('Table privée');
     }
+    const user = await this.requireUser(userId);
+
+    const existing = await this.participants.findOne({
+      where: { room: { id: room.id }, user: { id: user.id }, leftAt: IsNull() },
+    });
+
+    // Robustness: allow re-join if the room is started but the user is already a participant.
     if (!this.isRoomOpen(room)) {
+      if (existing) {
+        await this.leaveAllRoomsForUser(userId, { exceptRoomId: room.id });
+        await this.invalidateRoomPayloadCache(room.id);
+        this.presenceService.broadcastPresence();
+        this.notifyDirectoryChanged(room.id, 'joined');
+        return room;
+      }
       throw new BadRequestException('Table déjà démarrée');
     }
-    const user = await this.requireUser(userId);
+
     const activeHumans = await this.countActiveHumans(room.id);
     const bots = await this.countBots(room.id);
     if (activeHumans + bots >= room.maxPlayers) {
       throw new BadRequestException('Table pleine');
     }
-    const existing = await this.participants.findOne({
-      where: { room: { id: room.id }, user: { id: user.id }, leftAt: IsNull() },
-    });
-    if (!existing) {
-      // Quitter toutes les autres tables avant de rejoindre celle-ci.
-      await this.leaveAllRoomsForUser(userId, { exceptRoomId: room.id });
+    // Quitter toutes les autres tables avant de rejoindre celle-ci (même si déjà participant).
+    await this.leaveAllRoomsForUser(userId, { exceptRoomId: room.id });
 
+    if (!existing) {
       const participant = this.participants.create({
         room,
         user,

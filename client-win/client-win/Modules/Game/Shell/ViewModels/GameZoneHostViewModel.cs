@@ -28,6 +28,7 @@ public sealed class GameZoneHostViewModel : ObservableObject
     private object? _content;
     private string _title = "Zone de jeu";
     private bool _isStarted;
+    private bool _isConnected = true;
 
     public GameZoneHostViewModel(
         string title,
@@ -62,18 +63,18 @@ public sealed class GameZoneHostViewModel : ObservableObject
         _onTransferOwner = onTransferOwner ?? throw new ArgumentNullException(nameof(onTransferOwner));
         _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
 
-        StartCommand = new AsyncRelayCommand(StartAsync, () => !_isStarted);
-        ResetCommand = new AsyncRelayCommand(ResetAsync);
-        AddBotCommand = new AsyncRelayCommand(AddBotAsync);
-        RemoveBotCommand = new AsyncRelayCommand(RemoveBotAsync);
-        AnnouncePlayersCommand = new AsyncRelayCommand(AnnouncePlayersAsync);
-        AnnounceInfoCommand = new AsyncRelayCommand(AnnounceInfoAsync);
-        TogglePrivacyCommand = new AsyncRelayCommand(TogglePrivacyAsync);
-        ToggleRoleCommand = new AsyncRelayCommand(ToggleRoleAsync);
-        InviteCommand = new AsyncRelayCommand(InviteAsync);
-        KickCommand = new AsyncRelayCommand(KickAsync);
-        BanCommand = new AsyncRelayCommand(BanAsync);
-        TransferOwnerCommand = new AsyncRelayCommand(TransferOwnerAsync);
+        StartCommand = new AsyncRelayCommand(StartAsync, () => IsConnected && !_isStarted);
+        ResetCommand = new AsyncRelayCommand(ResetAsync, () => IsConnected);
+        AddBotCommand = new AsyncRelayCommand(AddBotAsync, () => IsConnected);
+        RemoveBotCommand = new AsyncRelayCommand(RemoveBotAsync, () => IsConnected);
+        AnnouncePlayersCommand = new AsyncRelayCommand(AnnouncePlayersAsync, () => IsConnected);
+        AnnounceInfoCommand = new AsyncRelayCommand(AnnounceInfoAsync, () => IsConnected);
+        TogglePrivacyCommand = new AsyncRelayCommand(TogglePrivacyAsync, () => IsConnected);
+        ToggleRoleCommand = new AsyncRelayCommand(ToggleRoleAsync, () => IsConnected);
+        InviteCommand = new AsyncRelayCommand(InviteAsync, () => IsConnected);
+        KickCommand = new AsyncRelayCommand(KickAsync, () => IsConnected);
+        BanCommand = new AsyncRelayCommand(BanAsync, () => IsConnected);
+        TransferOwnerCommand = new AsyncRelayCommand(TransferOwnerAsync, () => IsConnected);
         QuitCommand = new AsyncRelayCommand(QuitAsync);
 
         foreach (var shortcut in RoomShortcuts.Create(
@@ -129,16 +130,49 @@ public sealed class GameZoneHostViewModel : ObservableObject
         {
             if (SetProperty(ref _isStarted, value))
             {
-                if (StartCommand is AsyncRelayCommand asyncCmd)
-                {
-                    asyncCmd.RaiseCanExecuteChanged();
-                }
+                RaiseCommandsCanExecuteChanged();
+            }
+        }
+    }
+
+    public bool IsConnected
+    {
+        get => _isConnected;
+        set
+        {
+            if (SetProperty(ref _isConnected, value))
+            {
+                RaiseCommandsCanExecuteChanged();
             }
         }
     }
 
     public event Action<string>? StatusRequested;
     public event Action? FocusRequested;
+
+    private void RaiseCommandsCanExecuteChanged()
+    {
+        static void Raise(ICommand cmd)
+        {
+            if (cmd is AsyncRelayCommand asyncCmd)
+            {
+                asyncCmd.RaiseCanExecuteChanged();
+            }
+        }
+
+        Raise(StartCommand);
+        Raise(ResetCommand);
+        Raise(AddBotCommand);
+        Raise(RemoveBotCommand);
+        Raise(AnnouncePlayersCommand);
+        Raise(AnnounceInfoCommand);
+        Raise(TogglePrivacyCommand);
+        Raise(ToggleRoleCommand);
+        Raise(InviteCommand);
+        Raise(KickCommand);
+        Raise(BanCommand);
+        Raise(TransferOwnerCommand);
+    }
 
     private async Task StartAsync()
     {

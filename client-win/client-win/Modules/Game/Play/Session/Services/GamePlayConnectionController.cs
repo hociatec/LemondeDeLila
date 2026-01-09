@@ -225,15 +225,31 @@ internal sealed class GamePlayConnectionController : IAsyncDisposable
                 }, DispatcherPriority.Background);
             }
 
-            var delayMs = Math.Min(15000, 500 + attempt * 750);
+            var delay = ComputeBackoff(attempt);
             try
             {
-                await Task.Delay(delayMs, cancellationToken).ConfigureAwait(false);
+                await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
             }
             catch
             {
                 return;
             }
         }
+    }
+
+    private static TimeSpan ComputeBackoff(int attempt)
+    {
+        var seconds = attempt switch
+        {
+            1 => 1,
+            2 => 2,
+            3 => 5,
+            4 => 10,
+            5 => 20,
+            _ => 30,
+        };
+
+        var jitter = 0.8 + (Random.Shared.NextDouble() * 0.4);
+        return TimeSpan.FromMilliseconds(Math.Max(250, seconds * 1000 * jitter));
     }
 }

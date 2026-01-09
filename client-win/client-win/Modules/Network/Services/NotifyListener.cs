@@ -51,9 +51,15 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
     private volatile bool _countsSupported;
     private TaskCompletionSource<bool>? _countsFirstReceived;
 
-		private IWebSocketConnection? _ws;
+	    private IWebSocketConnection? _ws;
 	    private readonly SemaphoreSlim _connectLock = new(1, 1);
 	    private readonly ConcurrentDictionary<string, TaskCompletionSource<(string Type, string? Error)>> _pendingAcks = new();
+	    private volatile bool _started;
+	    private CancellationTokenSource? _reconnectCts;
+	    private Task? _reconnectLoop;
+	    private int _reconnectAttempt;
+	    private int _reconnectInProgress;
+	    private WebSocketState _state = WebSocketState.Disconnected;
 
     public NotifyListener(
         ClientConfiguration config,
@@ -91,102 +97,47 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
 
 	    public async Task StartAsync(CancellationToken cancellationToken = default)
 	    {
-	        if (_ws != null) return;
+	        if (_started) return;
 	        var token = _session.CurrentUser?.Token;
 	        if (string.IsNullOrWhiteSpace(token))
 	        {
 	            return;
 	        }
 
-	        await _connectLock.WaitAsync(cancellationToken).ConfigureAwait(false);
-	        try
+	        _started = true;
+	        _reconnectCts?.Cancel();
+	        _reconnectCts?.Dispose();
+	        _reconnectCts = new CancellationTokenSource();
+
+	        await EnsureConnectedAsync(cancellationToken).ConfigureAwait(false);
+
+	        if (_reconnectLoop == null || _reconnectLoop.IsCompleted)
 	        {
-	            if (_ws != null) return;
-
-	            IWebSocketConnection? ws = null;
-            try
-            {
-                ws = _wsFactory();
-                ws.MessageReceived += OnMessage;
-                ws.Error += OnWsError;
-                ws.StateChanged += OnWsStateChanged;
-
-                var headers = await BuildHeadersAsync(cancellationToken).ConfigureAwait(false);
-                Log.Information("Connexion WS notify vers {Endpoint}", _config.NotifyGatewayWs);
-                await ws.ConnectAsync(_config.NotifyGatewayWs, token, headers: headers, cancellationToken).ConfigureAwait(false);
-                _ws = ws;
-                Log.Information("Connexion WS notify établie.");
-            _countsFirstReceived = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-            _countsSupported = false;
-            _badges.SetUnreadNotifications(0);
-            _ = SendAsync("notify.counts.get");
-
-                // Handshake version: permet au serveur de proposer la MAJ à chaque connexion.
-                try
-                {
-                    var hello = JsonSerializer.Serialize(new
-	                    {
-	                        type = "client.hello",
-	                        payload = new { version = AppInfo.GetShortVersion() },
-	                    });
-	                    await _ws.SendAsync(hello, cancellationToken).ConfigureAwait(false);
-	                }
-	                catch
-	                {
-	                    // Best-effort
-	                }
-
-                // Source de vérité des badges (serveur) avec ack explicite.
-                try
-                {
-                    var (ok, error) = await SendWithAckAsync(
-                        "notify.counts.get",
-                        payload: null,
-                        successType: "notify.counts",
-                        errorType: "notify.error",
-                        cancellationToken).ConfigureAwait(false);
-
-                    if (ok)
-                    {
-                        _countsFirstReceived?.TrySetResult(true);
-                    }
-                    else
-                    {
-                        Log.Warning("notify.counts.get: échec de la réponse: {Error}", error ?? "inconnue");
-                    }
-                }
-                catch
-                {
-                    // ignore (best-effort)
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.Warning(ex, "Impossible de se connecter au WS notify.");
-	                if (ws != null)
-	                {
-	                    try
-	                    {
-	                        ws.MessageReceived -= OnMessage;
-	                        ws.Error -= OnWsError;
-	                        ws.StateChanged -= OnWsStateChanged;
-	                        await ws.CloseAsync().ConfigureAwait(false);
-	                    }
-	                    catch
-	                    {
-	                        // ignore
-	                    }
-	                }
-	            }
-	        }
-	        finally
-	        {
-	            _connectLock.Release();
+	            _reconnectLoop = Task.Run(() => ReconnectLoopAsync(_reconnectCts.Token), _reconnectCts.Token);
 	        }
 	    }
 
 	    public async Task StopAsync(CancellationToken cancellationToken = default)
 	    {
+	        _started = false;
+	        try
+	        {
+	            _reconnectCts?.Cancel();
+	            _reconnectCts?.Dispose();
+	        }
+	        catch
+	        {
+	            // ignore
+	        }
+	        _reconnectCts = null;
+
+	        var loop = _reconnectLoop;
+	        _reconnectLoop = null;
+	        if (loop != null)
+	        {
+	            try { await loop.ConfigureAwait(false); } catch { }
+	        }
+
 	        var ws = _ws;
 	        _ws = null;
 	        if (ws != null)
@@ -199,11 +150,176 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
 	                await ws.CloseAsync().ConfigureAwait(false);
 	            }
 	            catch
-            {
-                // ignore
-            }
-        }
-    }
+	            {
+	                // ignore
+	            }
+	        }
+	        _state = WebSocketState.Disconnected;
+	    }
+
+	    private void RequestReconnect()
+	    {
+	        if (!_started) return;
+	        if (Interlocked.Exchange(ref _reconnectInProgress, 1) == 1) return;
+	    }
+
+	    private async Task ReconnectLoopAsync(CancellationToken cancellationToken)
+	    {
+	        while (!cancellationToken.IsCancellationRequested)
+	        {
+	            try
+	            {
+	                if (!_started)
+	                {
+	                    return;
+	                }
+
+	                if (_state == WebSocketState.Connected)
+	                {
+	                    await Task.Delay(1000, cancellationToken).ConfigureAwait(false);
+	                    continue;
+	                }
+
+	                if (Interlocked.CompareExchange(ref _reconnectInProgress, 0, 0) == 0)
+	                {
+	                    await Task.Delay(500, cancellationToken).ConfigureAwait(false);
+	                    continue;
+	                }
+
+	                var attempt = Math.Min(6, Interlocked.Increment(ref _reconnectAttempt));
+	                var delay = ComputeBackoff(attempt);
+	                await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
+
+	                using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(12));
+	                using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeout.Token);
+	                await EnsureConnectedAsync(linked.Token).ConfigureAwait(false);
+
+	                if (_state != WebSocketState.Connected)
+	                {
+	                    Interlocked.Exchange(ref _reconnectInProgress, 1);
+	                }
+	            }
+	            catch (OperationCanceledException)
+	            {
+	                return;
+	            }
+	            catch
+	            {
+	                await Task.Delay(2000, cancellationToken).ConfigureAwait(false);
+	            }
+	        }
+	    }
+
+	    private async Task EnsureConnectedAsync(CancellationToken cancellationToken)
+	    {
+	        if (!_started)
+	        {
+	            return;
+	        }
+
+	        var token = _session.CurrentUser?.Token;
+	        if (string.IsNullOrWhiteSpace(token))
+	        {
+	            return;
+	        }
+
+	        await _connectLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+	        try
+	        {
+	            if (!_started)
+	            {
+	                return;
+	            }
+
+	            var ws = _ws;
+	            if (ws == null)
+	            {
+	                ws = _wsFactory();
+	                ws.MessageReceived += OnMessage;
+	                ws.Error += OnWsError;
+	                ws.StateChanged += OnWsStateChanged;
+	                _ws = ws;
+	            }
+
+	            var headers = await BuildHeadersAsync(cancellationToken).ConfigureAwait(false);
+	            Log.Information("Connexion WS notify vers {Endpoint}", _config.NotifyGatewayWs);
+	            await ws.ConnectAsync(_config.NotifyGatewayWs, token, headers: headers, cancellationToken).ConfigureAwait(false);
+
+	            _state = WebSocketState.Connected;
+	            Interlocked.Exchange(ref _reconnectAttempt, 0);
+	            Interlocked.Exchange(ref _reconnectInProgress, 0);
+	            Log.Information("Connexion WS notify établie.");
+
+	            _countsFirstReceived = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+	            _countsSupported = false;
+	            _badges.SetUnreadNotifications(0);
+
+	            // Handshake version: permet au serveur de proposer la MAJ à chaque connexion.
+	            try
+	            {
+	                var hello = JsonSerializer.Serialize(new
+	                {
+	                    type = "client.hello",
+	                    payload = new { version = AppInfo.GetShortVersion() },
+	                });
+	                await ws.SendAsync(hello, cancellationToken).ConfigureAwait(false);
+	            }
+	            catch
+	            {
+	                // Best-effort
+	            }
+
+	            // Source de vérité des badges (serveur) avec ack explicite.
+	            try
+	            {
+	                var (ok, error) = await SendWithAckAsync(
+	                    "notify.counts.get",
+	                    payload: null,
+	                    successType: "notify.counts",
+	                    errorType: "notify.error",
+	                    cancellationToken).ConfigureAwait(false);
+
+	                if (ok)
+	                {
+	                    _countsFirstReceived?.TrySetResult(true);
+	                }
+	                else
+	                {
+	                    Log.Warning("notify.counts.get: échec de la réponse: {Error}", error ?? "inconnue");
+	                }
+	            }
+	            catch
+	            {
+	                // ignore (best-effort)
+	            }
+	        }
+	        catch (Exception ex) when (!cancellationToken.IsCancellationRequested)
+	        {
+	            _state = WebSocketState.Disconnected;
+	            Log.Warning(ex, "Impossible de se connecter au WS notify.");
+	            RequestReconnect();
+	        }
+	        finally
+	        {
+	            _connectLock.Release();
+	        }
+	    }
+
+	    private static TimeSpan ComputeBackoff(int attempt)
+	    {
+	        var seconds = attempt switch
+	        {
+	            1 => 1,
+	            2 => 2,
+	            3 => 5,
+	            4 => 10,
+	            5 => 20,
+	            _ => 30,
+	        };
+
+	        var jitter = 0.8 + (Random.Shared.NextDouble() * 0.4);
+	        return TimeSpan.FromMilliseconds(Math.Max(250, seconds * 1000 * jitter));
+	    }
 
 	    private void OnMessage(string raw)
 	    {
@@ -244,22 +360,23 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
         }
 	    }
 
-	    private void OnWsError(string msg)
-	    {
-	        Log.Warning("WS notify error: {Message}", msg);
-	        _ = Task.Run(() => HandleDisconnectAsync(msg));
-	    }
+		    private void OnWsError(string msg)
+		    {
+		        Log.Warning("WS notify error: {Message}", msg);
+		        _ = Task.Run(() => HandleDisconnectAsync(msg));
+		    }
 
-	    private void OnWsStateChanged(WebSocketState state)
-	    {
-	        if (state == WebSocketState.Error || state == WebSocketState.Disconnected)
-	        {
-	            _ = Task.Run(() => HandleDisconnectAsync(state.ToString()));
-	        }
-	    }
+		    private void OnWsStateChanged(WebSocketState state)
+		    {
+		        _state = state;
+		        if (state == WebSocketState.Error || state == WebSocketState.Disconnected)
+		        {
+		            _ = Task.Run(() => HandleDisconnectAsync(state.ToString()));
+		        }
+		    }
 
-	    private async Task HandleDisconnectAsync(string reason)
-	    {
+		    private async Task HandleDisconnectAsync(string reason)
+		    {
 	        try
 	        {
 	            foreach (var kvp in _pendingAcks)
@@ -274,15 +391,15 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
 	            // ignore
 	        }
 
-	        try
-	        {
-	            await StopAsync().ConfigureAwait(false);
-	        }
-	        catch
-	        {
-	            // ignore
-	        }
-	    }
+		        try
+		        {
+		            RequestReconnect();
+		        }
+		        catch
+		        {
+		            // ignore
+		        }
+		    }
 
         private void HandleMessageOnUi(string type, JsonElement root)
         {
