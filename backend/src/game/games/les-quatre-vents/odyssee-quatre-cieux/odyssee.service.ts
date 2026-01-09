@@ -6,12 +6,17 @@ import type {
 } from '../../../engine/dto/game-action.dto';
 import type { GameRulesAdapter } from '../../../engine/interfaces/game-rules-adapter.interface';
 import { GameRegistryService } from '../../../engine/services/game-registry.service';
+import type {
+  GameShortcutHint,
+  GameShortcutsContext,
+} from '../../../engine/shortcuts/game-shortcuts';
 import { ODYSSEE_GAME } from './definitions/odyssee.definition';
 import { OdysseeSetupService } from './setup/odyssee-setup.service';
 import { OdysseeActionService } from './actions/odyssee-action.service';
 import { OdysseePresenterService } from './presenter/odyssee-presenter.service';
 import { OdysseeBotService } from './bots/odyssee-bot.service';
 import * as Rulebook from './rulebook/rulebook';
+import { buildOdysseeShortcuts } from './odyssee.shortcuts';
 
 @Injectable()
 export class OdysseeQuatreCieuxService
@@ -75,5 +80,9 @@ export class OdysseeQuatreCieuxService
     userId: number,
   ): GameStateWithActions {
     return this.presenter.exposeStateForUser(state, userId);
+  }
+
+  getShortcuts(ctx: GameShortcutsContext<any>): GameShortcutHint[] {
+    return buildOdysseeShortcuts(ctx);
   }
 }

@@ -6,6 +6,10 @@ import type {
 } from '../../../engine/dto/game-action.dto';
 import type { GameRulesAdapter } from '../../../engine/interfaces/game-rules-adapter.interface';
 import { GameRegistryService } from '../../../engine/services/game-registry.service';
+import type {
+  GameShortcutHint,
+  GameShortcutsContext,
+} from '../../../engine/shortcuts/game-shortcuts';
 import * as PetitChevauxRulebook from './rulebook/rulebook';
 import { PetitChevauxActionService } from './actions/petit-chevaux-action.service';
 import { PetitChevauxPhaseService } from './phases/petit-chevaux-phase.service';
@@ -13,6 +17,7 @@ import { PetitChevauxPresenterService } from './presenter/petit-chevaux-presente
 import { PetitChevauxSetupService } from './setup/petit-chevaux-setup.service';
 import { PETIT_CHEVAUX_GAME } from './definitions/game.definition';
 import { PetitChevauxBotService } from './bots/petit-chevaux-bot.service';
+import { buildPetitChevauxShortcuts } from './petit-chevaux.shortcuts';
 
 @Injectable()
 export class PetitChevauxService implements GameRulesAdapter, OnModuleInit {
@@ -81,5 +86,9 @@ export class PetitChevauxService implements GameRulesAdapter, OnModuleInit {
     userId: number,
   ): GameStateWithActions {
     return this.presenter.exposeStateForUser(state, userId);
+  }
+
+  getShortcuts(ctx: GameShortcutsContext<any>): GameShortcutHint[] {
+    return buildPetitChevauxShortcuts(ctx);
   }
 }

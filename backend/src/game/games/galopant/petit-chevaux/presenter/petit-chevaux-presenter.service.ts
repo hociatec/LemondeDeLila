@@ -5,7 +5,6 @@ import { BoardPayloadService } from '../../../../modules/board/services/board-pa
 import * as PetitChevauxRulebook from '../rulebook/rulebook';
 import { PETIT_CHEVAUX_GAME } from '../definitions/game.definition';
 import type { PetitChevauxMetadata } from '../model/petit-chevaux-state.entity';
-import { buildPetitChevauxShortcuts } from '../petit-chevaux.shortcuts';
 
 @Injectable()
 export class PetitChevauxPresenterService {
@@ -82,11 +81,25 @@ export class PetitChevauxPresenterService {
         stable: stableLines,
         position: positionLines,
       },
-      shortcuts: buildPetitChevauxShortcuts({
-        metadata: meta as any,
-        currentPlayerId: userId,
-        started: true,
-      }),
+      ui: {
+        panels: {
+          stable: {
+            title: 'Écurie',
+            message: stableLines.length ? stableLines.join(' ') : 'Écurie: inconnue.',
+          },
+          position: {
+            title: 'Position',
+            message: positionLines.length
+              ? positionLines.join(' ')
+              : this.boardPayload.buildPositionPanelMessage({
+                  tilesRaw: meta.tiles,
+                  positionsRaw: meta.positions,
+                  lapsRaw: meta.laps,
+                  playerId: userId,
+                }),
+          },
+        },
+      },
     };
 
     // Ne pas exposer le pending (liste de choix) aux autres joueurs :

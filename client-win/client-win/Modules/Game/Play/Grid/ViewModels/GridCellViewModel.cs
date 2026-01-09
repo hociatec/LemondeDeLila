@@ -20,8 +20,8 @@ public sealed partial class GridCellViewModel : ObservableObject
     public int Index { get; }
 
     public int Column => X + 1;
-    public int Row => Y + 1;
-    public string CellRef => GridColumnLetters.ToColumnLetters(Column);
+    public int Row => MaxRows > 0 ? (MaxRows - Y) : (Y + 1);
+    public string CellRef => $"{GridColumnLetters.ToColumnLetters(Column)}{Row}";
 
     private int _maxColumns;
     public int MaxColumns
@@ -56,4 +56,3 @@ public sealed partial class GridCellViewModel : ObservableObject
         set => SetProperty(ref _cellBorderThickness, value);
     }
 }
-

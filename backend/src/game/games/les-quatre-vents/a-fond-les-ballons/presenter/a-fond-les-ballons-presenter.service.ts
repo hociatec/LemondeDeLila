@@ -5,7 +5,6 @@ import { BoardPayloadService } from '../../../../modules/board/services/board-pa
 import * as Rulebook from '../rulebook/rulebook';
 import { A_FOND_LES_BALLONS_GAME } from '../definitions/game.definition';
 import type { AFondLesBallonsMetadata } from '../model/a-fond-les-ballons-state.entity';
-import { buildAFondLesBallonsShortcuts } from '../a-fond-les-ballons.shortcuts';
 
 @Injectable()
 export class AFondLesBallonsPresenterService {
@@ -26,11 +25,18 @@ export class AFondLesBallonsPresenterService {
         id: userId,
         username: me?.username ?? `Joueur ${userId}`,
       },
-      shortcuts: buildAFondLesBallonsShortcuts({
-        metadata: meta as any,
-        currentPlayerId: userId,
-        started: true,
-      }),
+      ui: {
+        panels: {
+          position: {
+            title: 'Position',
+            message: this.boardPayload.buildPositionPanelMessage({
+              tilesRaw: meta.tiles,
+              positionsRaw: meta.positions,
+              playerId: userId,
+            }),
+          },
+        },
+      },
     };
 
     return {

@@ -45,6 +45,11 @@ import { PanierExpressBotService } from './bots/panier-express-bot.service';
 import { PanierExpressPhaseService } from './phases/panier-express-phase.service';
 import { PanierExpressPresenterService } from './presenter/panier-express-presenter.service';
 import { RandomService } from '../../../modules/random/services/random.service';
+import type {
+  GameShortcutHint,
+  GameShortcutsContext,
+} from '../../../engine/shortcuts/game-shortcuts';
+import { buildPanierExpressShortcuts } from './panier-express.shortcuts';
 
 @Injectable()
 export class PanierExpressService extends AbstractGameService {
@@ -149,6 +154,10 @@ export class PanierExpressService extends AbstractGameService {
       pendingQuiz,
       currentId: viewerId,
     });
+  }
+
+  getShortcuts(ctx: GameShortcutsContext<any>): GameShortcutHint[] {
+    return buildPanierExpressShortcuts(ctx);
   }
 
   hydrateInitialState(baseState: GameStateEntity): GameStateEntity {

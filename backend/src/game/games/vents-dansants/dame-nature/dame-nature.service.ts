@@ -41,6 +41,11 @@ import { DiscardCardActionHandler } from './actions/discard.action-handler';
 import { AskCardActionHandler } from './actions/ask-card.action-handler';
 import { AnswerAskCardActionHandler } from './actions/answer-ask-card.action-handler';
 import { AnswerQuizActionHandler } from './actions/answer-quiz.action-handler';
+import type {
+  GameShortcutHint,
+  GameShortcutsContext,
+} from '../../../engine/shortcuts/game-shortcuts';
+import { buildDameNatureShortcuts } from './dame-nature.shortcuts';
 
 export type DameNatureMetadata = {
   // Métadonnées génériques consommées côté client (ex: filtrage des raccourcis).
@@ -1144,6 +1149,10 @@ export class DameNatureService extends AbstractGameService {
     userId: number,
   ): GameStateWithActions {
     return this.presenter.exposeStateForUser(state, userId);
+  }
+
+  getShortcuts(ctx: GameShortcutsContext<any>): GameShortcutHint[] {
+    return buildDameNatureShortcuts(ctx);
   }
 
   private advancePhase(state: GameStateEntity): GameStateEntity {

@@ -12,6 +12,11 @@ import { AventureSauvageActionService } from './actions/aventure-sauvage-action.
 import { AventureSauvagePresenterService } from './presenter/aventure-sauvage-presenter.service';
 import { AventureSauvageBotService } from './bots/aventure-sauvage-bot.service';
 import * as Rulebook from './rulebook/rulebook';
+import type {
+  GameShortcutHint,
+  GameShortcutsContext,
+} from '../../../engine/shortcuts/game-shortcuts';
+import { buildAventureSauvageShortcuts } from './aventure-sauvage.shortcuts';
 
 @Injectable()
 export class AventureSauvageService implements GameRulesAdapter, OnModuleInit {
@@ -73,5 +78,9 @@ export class AventureSauvageService implements GameRulesAdapter, OnModuleInit {
     userId: number,
   ): GameStateWithActions {
     return this.presenter.exposeStateForUser(state, userId);
+  }
+
+  getShortcuts(ctx: GameShortcutsContext<any>): GameShortcutHint[] {
+    return buildAventureSauvageShortcuts(ctx);
   }
 }

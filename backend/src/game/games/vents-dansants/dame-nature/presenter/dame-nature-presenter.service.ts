@@ -13,7 +13,6 @@ import type {
 } from '../model/dame-nature.model';
 import * as DameNatureRulebook from '../rulebook/rulebook';
 import { BasePresenterService } from '../../../../engine/abstract/base-presenter.service';
-import { buildDameNatureShortcuts } from '../dame-nature.shortcuts';
 
 @Injectable()
 export class DameNaturePresenterService extends BasePresenterService {
@@ -130,6 +129,21 @@ export class DameNaturePresenterService extends BasePresenterService {
     metadata: DameNatureMetadata,
     currentPlayerId: number | null,
   ): Record<string, unknown> {
+    const buildListMessage = (title: string, itemsRaw: unknown) => {
+      const items = Array.isArray(itemsRaw)
+        ? itemsRaw.map((x) => String(x ?? '').trim()).filter((x) => x)
+        : [];
+
+      if (items.length === 0) return `${title}: (vide)`;
+
+      const max = 12;
+      const shown = items.length > max ? items.slice(0, max) : items;
+      const body = shown.join(', ');
+      return items.length > max
+        ? `${title}: ${body}, ... (+${items.length - max})`
+        : `${title}: ${body}`;
+    };
+
     const baseExtras = this.getBaseExtras(state);
     const started = this.isStarted(state);
     const players = this.setup.ensurePlayers(state) as any[];
@@ -149,11 +163,6 @@ export class DameNaturePresenterService extends BasePresenterService {
       started,
       currentPlayerView,
     );
-    const shortcuts = buildDameNatureShortcuts({
-      metadata,
-      currentPlayerId,
-      started,
-    });
 
     const pollution =
       started && typeof currentPlayerId === 'number'
@@ -178,7 +187,28 @@ export class DameNaturePresenterService extends BasePresenterService {
       handCards,
       books: started ? (currentPlayerView?.books ?? []) : [],
       score,
-      shortcuts,
+      ui: {
+        panels: {
+          hand: {
+            title: 'Main',
+            message: buildListMessage('Main', started ? (currentPlayerView?.hand ?? []) : []),
+          },
+          books: {
+            title: 'Familles',
+            message: buildListMessage('Familles', started ? (currentPlayerView?.books ?? []) : []),
+          },
+          score: {
+            title: 'Score',
+            message: buildListMessage('Score', score),
+          },
+          pollution: {
+            title: 'Pollution',
+            message: started
+              ? `Pollution: ${pollution}/${maxPollution}.`
+              : 'Pollution: inconnue.',
+          },
+        },
+      },
       pendingAsk: metadata?.pendingAsk ?? null,
       pendingQuiz: metadata?.pendingQuiz ?? null,
     };
@@ -190,6 +220,21 @@ export class DameNaturePresenterService extends BasePresenterService {
     userId: number,
     currentPlayerId: number | null,
   ): Record<string, unknown> {
+    const buildListMessage = (title: string, itemsRaw: unknown) => {
+      const items = Array.isArray(itemsRaw)
+        ? itemsRaw.map((x) => String(x ?? '').trim()).filter((x) => x)
+        : [];
+
+      if (items.length === 0) return `${title}: (vide)`;
+
+      const max = 12;
+      const shown = items.length > max ? items.slice(0, max) : items;
+      const body = shown.join(', ');
+      return items.length > max
+        ? `${title}: ${body}, ... (+${items.length - max})`
+        : `${title}: ${body}`;
+    };
+
     const baseExtras = this.getBaseExtras(state);
     const started = this.isStarted(state);
     const players = this.setup.ensurePlayers(state) as any[];
@@ -212,11 +257,6 @@ export class DameNaturePresenterService extends BasePresenterService {
         ? (players.find((p) => p.id === userId) ?? null)
         : null;
     const handCards = this.buildHandCardsForUser(viewerPlayer, started);
-    const shortcuts = buildDameNatureShortcuts({
-      metadata,
-      currentPlayerId,
-      started,
-    });
 
     const pollution =
       started && typeof userId === 'number'
@@ -241,7 +281,28 @@ export class DameNaturePresenterService extends BasePresenterService {
       handCards,
       books: started ? (viewerView?.books ?? []) : [],
       score,
-      shortcuts,
+      ui: {
+        panels: {
+          hand: {
+            title: 'Main',
+            message: buildListMessage('Main', started ? (viewerView?.hand ?? []) : []),
+          },
+          books: {
+            title: 'Familles',
+            message: buildListMessage('Familles', started ? (viewerView?.books ?? []) : []),
+          },
+          score: {
+            title: 'Score',
+            message: buildListMessage('Score', score),
+          },
+          pollution: {
+            title: 'Pollution',
+            message: started
+              ? `Pollution: ${pollution}/${maxPollution}.`
+              : 'Pollution: inconnue.',
+          },
+        },
+      },
       pendingAsk: metadata?.pendingAsk ?? null,
       pendingQuiz: metadata?.pendingQuiz ?? null,
     };

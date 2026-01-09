@@ -6,6 +6,10 @@ import type {
 } from '../../../engine/dto/game-action.dto';
 import type { GameRulesAdapter } from '../../../engine/interfaces/game-rules-adapter.interface';
 import { GameRegistryService } from '../../../engine/services/game-registry.service';
+import type {
+  GameShortcutHint,
+  GameShortcutsContext,
+} from '../../../engine/shortcuts/game-shortcuts';
 import * as JeuOieRulebook from './rulebook/rulebook';
 import { JeuOieActionService } from './actions/jeu-oie-action.service';
 import { JeuOiePhaseService } from './phases/jeu-oie-phase.service';
@@ -13,6 +17,7 @@ import { JeuOiePresenterService } from './presenter/jeu-oie-presenter.service';
 import { JeuOieSetupService } from './setup/jeu-oie-setup.service';
 import { JEU_OIE_GAME } from './definitions/game.definition';
 import { JeuOieBotService } from './bots/jeu-oie-bot.service';
+import { buildJeuOieShortcuts } from './jeu-oie.shortcuts';
 
 @Injectable()
 export class JeuOieService implements GameRulesAdapter, OnModuleInit {
@@ -76,5 +81,9 @@ export class JeuOieService implements GameRulesAdapter, OnModuleInit {
     userId: number,
   ): GameStateWithActions {
     return this.presenter.exposeStateForUser(state, userId);
+  }
+
+  getShortcuts(ctx: GameShortcutsContext<any>): GameShortcutHint[] {
+    return buildJeuOieShortcuts(ctx);
   }
 }

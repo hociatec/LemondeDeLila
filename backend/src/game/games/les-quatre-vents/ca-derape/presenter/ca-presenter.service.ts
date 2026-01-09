@@ -5,7 +5,6 @@ import { BoardPayloadService } from '../../../../modules/board/services/board-pa
 import { CA_DERAPE_GAME } from '../definitions/ca.definition';
 import * as Rulebook from '../rulebook/ca.rulebook';
 import type { CaMetadata } from '../model/ca.types';
-import { buildCaDerapeShortcuts } from '../ca-derape.shortcuts';
 
 @Injectable()
 export class CaPresenterService {
@@ -38,11 +37,18 @@ export class CaPresenterService {
           id: userId,
           username: me?.username ?? `Joueur ${userId}`,
         },
-        shortcuts: buildCaDerapeShortcuts({
-          metadata: meta as any,
-          currentPlayerId: userId,
-          started: true,
-        }),
+        ui: {
+          panels: {
+            position: {
+              title: 'Position',
+              message: this.boardPayload.buildPositionPanelMessage({
+                tilesRaw: meta.tiles,
+                positionsRaw: meta.positions,
+                playerId: userId,
+              }),
+            },
+          },
+        },
       },
       board: this.boardPayload.buildTilesPositionsLaps(meta.tiles, meta.positions),
     } as any;

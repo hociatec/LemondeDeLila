@@ -5,7 +5,6 @@ import { BoardPayloadService } from '../../../../modules/board/services/board-pa
 import { FROUSSE_GAME } from '../definitions/frousse.definition';
 import * as Rulebook from '../rulebook/rulebook';
 import type { FrousseMetadata } from '../model/frousse.types';
-import { buildFrousseShortcuts } from '../frousse.shortcuts';
 
 @Injectable()
 export class FroussePresenterService {
@@ -38,11 +37,18 @@ export class FroussePresenterService {
           id: userId,
           username: me?.username ?? `Joueur ${userId}`,
         },
-        shortcuts: buildFrousseShortcuts({
-          metadata: meta as any,
-          currentPlayerId: userId,
-          started: true,
-        }),
+        ui: {
+          panels: {
+            position: {
+              title: 'Position',
+              message: this.boardPayload.buildPositionPanelMessage({
+                tilesRaw: meta.tiles,
+                positionsRaw: meta.positions,
+                playerId: userId,
+              }),
+            },
+          },
+        },
       },
       board: this.boardPayload.buildTilesPositionsLaps(meta.tiles, meta.positions),
     } as any;

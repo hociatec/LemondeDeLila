@@ -5,7 +5,6 @@ import { BoardPayloadService } from '../../../../modules/board/services/board-pa
 import * as Rulebook from '../rulebook/rulebook';
 import { CONTES_CACAHUETES_GAME } from '../definitions/game.definition';
 import type { ContesCacahuetesMetadata } from '../model/contes-et-cacahuetes-state.entity';
-import { buildContesShortcuts } from '../contes.shortcuts';
 
 @Injectable()
 export class ContesPresenterService {
@@ -26,11 +25,18 @@ export class ContesPresenterService {
         id: userId,
         username: me?.username ?? `Joueur ${userId}`,
       },
-      shortcuts: buildContesShortcuts({
-        metadata: meta as any,
-        currentPlayerId: userId,
-        started: true,
-      }),
+      ui: {
+        panels: {
+          position: {
+            title: 'Position',
+            message: this.boardPayload.buildPositionPanelMessage({
+              tilesRaw: meta.tiles,
+              positionsRaw: meta.positions,
+              playerId: userId,
+            }),
+          },
+        },
+      },
     };
 
     return {

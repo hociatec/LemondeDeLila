@@ -6,12 +6,17 @@ import type {
 } from '../../../engine/dto/game-action.dto';
 import type { GameRulesAdapter } from '../../../engine/interfaces/game-rules-adapter.interface';
 import { GameRegistryService } from '../../../engine/services/game-registry.service';
+import type {
+  GameShortcutHint,
+  GameShortcutsContext,
+} from '../../../engine/shortcuts/game-shortcuts';
 import { GALOPONS_GAME } from './definitions/galopons.definition';
 import { GaloponsSetupService } from './setup/galopons-setup.service';
 import { GaloponsActionService } from './actions/galopons-action.service';
 import { GaloponsPresenterService } from './presenter/galopons-presenter.service';
 import { GaloponsBotService } from './bots/galopons-bot.service';
 import * as Rulebook from './rulebook/rulebook';
+import { buildGaloponsShortcuts } from './galopons.shortcuts';
 
 @Injectable()
 export class GaloponsEnsembleService implements GameRulesAdapter, OnModuleInit {
@@ -73,5 +78,9 @@ export class GaloponsEnsembleService implements GameRulesAdapter, OnModuleInit {
     userId: number,
   ): GameStateWithActions {
     return this.presenter.exposeStateForUser(state, userId);
+  }
+
+  getShortcuts(ctx: GameShortcutsContext<any>): GameShortcutHint[] {
+    return buildGaloponsShortcuts(ctx);
   }
 }

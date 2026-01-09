@@ -18,7 +18,6 @@ import { PANIER_EXPRESS_PHASES } from '../definitions/rules.definition';
 import { PANIER_EXPRESS_VICTORY } from '../definitions/victory.definition';
 import { BasePresenterService } from '../../../../engine/abstract/base-presenter.service';
 import { BoardPayloadService } from '../../../../modules/board/services/board-payload.service';
-import { buildPanierExpressShortcuts } from '../panier-express.shortcuts';
 
 type PanierExpressPlayerView = {
   id: number;
@@ -361,10 +360,25 @@ export class PanierExpressPresenterService extends BasePresenterService {
           null)
         : null;
 
-    const shortcuts = buildPanierExpressShortcuts({
-      metadata: this.getMetadata(state) as PanierExpressMetadata,
-      currentPlayerId: params.currentId,
-      started: this.isStarted(state),
+    const listMessage = (title: string, items: string[] | null | undefined) => {
+      const values = Array.isArray(items)
+        ? items.map((x) => String(x ?? '').trim()).filter((x) => x.length > 0)
+        : [];
+      if (values.length === 0) return `${title}: (vide)`;
+      const max = 12;
+      const shown = values.length > max ? values.slice(0, max) : values;
+      const body = shown.join(', ');
+      return values.length > max
+        ? `${title}: ${body}, ... (+${values.length - max})`
+        : `${title}: ${body}`;
+    };
+
+    const meta = this.getMetadata(state) as PanierExpressMetadata;
+    const positionMessage = this.boardPayload.buildPositionPanelMessage({
+      tilesRaw: meta.tiles,
+      positionsRaw: meta.positions,
+      lapsRaw: meta.laps,
+      playerId: params.currentId,
     });
 
     return {
@@ -372,7 +386,26 @@ export class PanierExpressPresenterService extends BasePresenterService {
       currentPlayerView,
       playerViews: params.playerViews,
       players: params.players,
-      shortcuts,
+      ui: {
+        panels: {
+          shopping: {
+            title: 'Shopping list',
+            message: listMessage('Shopping list', currentPlayerView?.shoppingList),
+          },
+          basket: {
+            title: 'Panier',
+            message: listMessage('Panier', currentPlayerView?.basket),
+          },
+          inventory: {
+            title: 'Inventaire',
+            message: listMessage('Inventaire', currentPlayerView?.inventory),
+          },
+          position: {
+            title: 'Position',
+            message: positionMessage,
+          },
+        },
+      },
     };
   }
 

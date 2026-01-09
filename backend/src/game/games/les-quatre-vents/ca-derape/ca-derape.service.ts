@@ -6,12 +6,17 @@ import type {
 } from '../../../engine/dto/game-action.dto';
 import type { GameRulesAdapter } from '../../../engine/interfaces/game-rules-adapter.interface';
 import { GameRegistryService } from '../../../engine/services/game-registry.service';
+import type {
+  GameShortcutHint,
+  GameShortcutsContext,
+} from '../../../engine/shortcuts/game-shortcuts';
 import { CA_DERAPE_GAME } from './definitions/ca.definition';
 import { CaSetupService } from './setup/ca.setup';
 import { CaActionService } from './actions/ca-actions.service';
 import { CaPresenterService } from './presenter/ca-presenter.service';
 import { CaBotService } from './bots/ca-bot.service';
 import * as Rulebook from './rulebook/ca.rulebook';
+import { buildCaDerapeShortcuts } from './ca-derape.shortcuts';
 
 @Injectable()
 export class CaDerapeService implements GameRulesAdapter, OnModuleInit {
@@ -73,5 +78,9 @@ export class CaDerapeService implements GameRulesAdapter, OnModuleInit {
     userId: number,
   ): GameStateWithActions {
     return this.presenter.exposeStateForUser(state, userId);
+  }
+
+  getShortcuts(ctx: GameShortcutsContext<any>): GameShortcutHint[] {
+    return buildCaDerapeShortcuts(ctx);
   }
 }

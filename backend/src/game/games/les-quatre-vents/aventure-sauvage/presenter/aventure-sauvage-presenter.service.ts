@@ -5,7 +5,6 @@ import { BoardPayloadService } from '../../../../modules/board/services/board-pa
 import { AVENTURE_SAUVAGE_GAME } from '../definitions/game.definition';
 import * as Rulebook from '../rulebook/rulebook';
 import type { AventureSauvageMetadata } from '../model/aventure-sauvage-state.entity';
-import { buildAventureSauvageShortcuts } from '../aventure-sauvage.shortcuts';
 
 @Injectable()
 export class AventureSauvagePresenterService {
@@ -26,11 +25,18 @@ export class AventureSauvagePresenterService {
         id: userId,
         username: me?.username ?? `Joueur ${userId}`,
       },
-      shortcuts: buildAventureSauvageShortcuts({
-        metadata: meta as any,
-        currentPlayerId: userId,
-        started: true,
-      }),
+      ui: {
+        panels: {
+          position: {
+            title: 'Position',
+            message: this.boardPayload.buildPositionPanelMessage({
+              tilesRaw: meta.tiles,
+              positionsRaw: meta.positions,
+              playerId: userId,
+            }),
+          },
+        },
+      },
     };
 
     return {

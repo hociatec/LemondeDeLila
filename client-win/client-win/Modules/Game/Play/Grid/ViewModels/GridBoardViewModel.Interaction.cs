@@ -32,7 +32,7 @@ public sealed partial class GridBoardViewModel
 
         var any = await PickActionAsync(
                 "Action",
-                $"Choisir une action (colonne {cell.Column}, ligne {cell.Row}) :",
+                $"Choisir une action ({cell.CellRef}) :",
                 actionsHere)
             .ConfigureAwait(true);
         if (any == null)

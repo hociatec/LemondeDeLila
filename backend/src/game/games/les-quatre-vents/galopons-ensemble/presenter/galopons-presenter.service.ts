@@ -5,7 +5,6 @@ import { BoardPayloadService } from '../../../../modules/board/services/board-pa
 import { GALOPONS_GAME } from '../definitions/galopons.definition';
 import * as Rulebook from '../rulebook/rulebook';
 import type { GaloponsMetadata } from '../model/galopons.types';
-import { buildGaloponsShortcuts } from '../galopons.shortcuts';
 
 @Injectable()
 export class GaloponsPresenterService {
@@ -38,11 +37,18 @@ export class GaloponsPresenterService {
           id: userId,
           username: me?.username ?? `Joueur ${userId}`,
         },
-        shortcuts: buildGaloponsShortcuts({
-          metadata: meta as any,
-          currentPlayerId: userId,
-          started: true,
-        }),
+        ui: {
+          panels: {
+            position: {
+              title: 'Position',
+              message: this.boardPayload.buildPositionPanelMessage({
+                tilesRaw: meta.tiles,
+                positionsRaw: meta.positions,
+                playerId: userId,
+              }),
+            },
+          },
+        },
         apples: meta.apples ?? {},
       },
       board: this.boardPayload.buildTilesPositionsLaps(meta.tiles, meta.positions),

@@ -6,12 +6,17 @@ import type {
 } from '../../../engine/dto/game-action.dto';
 import type { GameRulesAdapter } from '../../../engine/interfaces/game-rules-adapter.interface';
 import { GameRegistryService } from '../../../engine/services/game-registry.service';
+import type {
+  GameShortcutHint,
+  GameShortcutsContext,
+} from '../../../engine/shortcuts/game-shortcuts';
 import { MINUIT_GAME } from './definitions/minuit.definition';
 import { MinuitSetupService } from './setup/minuit-setup.service';
 import { MinuitActionService } from './actions/minuit-action.service';
 import { MinuitPresenterService } from './presenter/minuit-presenter.service';
 import { MinuitBotService } from './bots/minuit-bot.service';
 import * as Rulebook from './rulebook/rulebook';
+import { buildMinuitShortcuts } from './minuit.shortcuts';
 
 @Injectable()
 export class EnAttendantMinuitService
@@ -75,5 +80,9 @@ export class EnAttendantMinuitService
     userId: number,
   ): GameStateWithActions {
     return this.presenter.exposeStateForUser(state, userId);
+  }
+
+  getShortcuts(ctx: GameShortcutsContext<any>): GameShortcutHint[] {
+    return buildMinuitShortcuts(ctx);
   }
 }

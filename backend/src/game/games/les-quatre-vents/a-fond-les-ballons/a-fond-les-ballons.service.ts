@@ -6,12 +6,17 @@ import type {
 } from '../../../engine/dto/game-action.dto';
 import type { GameRulesAdapter } from '../../../engine/interfaces/game-rules-adapter.interface';
 import { GameRegistryService } from '../../../engine/services/game-registry.service';
+import type {
+  GameShortcutHint,
+  GameShortcutsContext,
+} from '../../../engine/shortcuts/game-shortcuts';
 import { A_FOND_LES_BALLONS_GAME } from './definitions/game.definition';
 import { AFondLesBallonsSetupService } from './setup/a-fond-les-ballons-setup.service';
 import { AFondLesBallonsActionService } from './actions/a-fond-les-ballons-action.service';
 import { AFondLesBallonsPresenterService } from './presenter/a-fond-les-ballons-presenter.service';
 import { AFondLesBallonsBotService } from './bots/a-fond-les-ballons-bot.service';
 import * as Rulebook from './rulebook/rulebook';
+import { buildAFondLesBallonsShortcuts } from './a-fond-les-ballons.shortcuts';
 
 @Injectable()
 export class AFondLesBallonsService implements GameRulesAdapter, OnModuleInit {
@@ -73,5 +78,9 @@ export class AFondLesBallonsService implements GameRulesAdapter, OnModuleInit {
     userId: number,
   ): GameStateWithActions {
     return this.presenter.exposeStateForUser(state, userId);
+  }
+
+  getShortcuts(ctx: GameShortcutsContext<any>): GameShortcutHint[] {
+    return buildAFondLesBallonsShortcuts(ctx);
   }
 }

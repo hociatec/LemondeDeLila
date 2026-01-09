@@ -32,6 +32,7 @@ import {
 import { GameLoggerService } from '../../../common/services/game-logger.service';
 import { GameStatsService } from '../../../stats/services/game-stats.service';
 import { GridRenderService } from '../../modules/grid/services/grid-render.service';
+import type { GameShortcutHint } from '../shortcuts/game-shortcuts';
 
 @Injectable()
 export class GameEngineService {
@@ -153,11 +154,12 @@ export class GameEngineService {
         ? handler.exposeState(state)
         : (state as GameStateWithActions);
     const withLabel = this.attachTurnLabel(exposed, label);
-    return this.attachUiDescriptors(
+    const withDescriptors = this.attachUiDescriptors(
       this.gridRender.attachGridRenderDescriptors(
         this.attachCurrentPlayerView(withLabel),
       ),
     );
+    return this.attachShortcuts(withDescriptors, handler, userId);
   }
 
   async handleKeyPress(
@@ -174,11 +176,14 @@ export class GameEngineService {
     if (!normalized) return null;
 
     const state = await this.getStateForUser(roomId, gameType, userId);
-    const extras =
-      state?.extras && typeof state.extras === 'object' ? state.extras : {};
+    const handler = this.registry.getHandler(gameType);
+    if (!handler?.getShortcuts) return null;
 
-    const shortcutsRaw = (extras as any).shortcuts;
-    const shortcuts: Array<any> = Array.isArray(shortcutsRaw) ? shortcutsRaw : [];
+    const shortcuts: GameShortcutHint[] = handler.getShortcuts({
+      metadata: state?.metadata ?? {},
+      currentPlayerId: userId,
+      started: String(state?.status ?? '').toLowerCase() === 'started',
+    });
 
     const match = shortcuts.find((s) => {
       const rawKey = typeof s?.key === 'string' ? s.key : '';
@@ -191,16 +196,18 @@ export class GameEngineService {
 
     if (!match || typeof match !== 'object') return null;
 
-    if (String(match.type ?? '') === 'action') {
+    if (match.type === 'action') {
       const actionType = String(match.actionType ?? '').trim();
       if (!actionType) return null;
       return { kind: 'action', actions: [{ type: actionType, payload: {} }] };
     }
 
-    if (String(match.type ?? '') === 'interface') {
+    if (match.type === 'interface') {
       const panelId = String(match.id ?? '').trim();
       if (!panelId) return null;
 
+      const extras =
+        state?.extras && typeof state.extras === 'object' ? state.extras : {};
       const ui = (extras as any).ui;
       const panels = ui && typeof ui === 'object' ? (ui as any).panels : null;
       const panel =
@@ -214,6 +221,33 @@ export class GameEngineService {
     }
 
     return null;
+  }
+
+  private attachShortcuts(
+    state: GameStateWithActions,
+    handler: GameRulesAdapter | undefined,
+    userId: number,
+  ): GameStateWithActions {
+    if (!handler?.getShortcuts) {
+      return state;
+    }
+
+    const extras =
+      state.extras && typeof state.extras === 'object' ? state.extras : {};
+
+    const shortcuts = handler.getShortcuts({
+      metadata: state.metadata ?? {},
+      currentPlayerId: userId,
+      started: String(state.status ?? '').toLowerCase() === 'started',
+    });
+
+    return {
+      ...state,
+      extras: {
+        ...extras,
+        shortcuts,
+      },
+    };
   }
 
   private async getInternalState(
@@ -1294,6 +1328,10 @@ export class GameEngineService {
   }
 
   private attachUiDescriptors(state: GameStateWithActions): GameStateWithActions {
+    // Les panneaux UI doivent Ļtre entiĶrement dķfinis par les jeux via `extras.ui.panels`.
+    // Le moteur n'infĶre plus de panneaux gķnķriques (shopping, position, pollution, etc.).
+    return state;
+
     const extras =
       state.extras && typeof state.extras === 'object' ? state.extras : {};
 

@@ -6,12 +6,17 @@ import type {
 } from '../../../engine/dto/game-action.dto';
 import type { GameRulesAdapter } from '../../../engine/interfaces/game-rules-adapter.interface';
 import { GameRegistryService } from '../../../engine/services/game-registry.service';
+import type {
+  GameShortcutHint,
+  GameShortcutsContext,
+} from '../../../engine/shortcuts/game-shortcuts';
 import { CONTES_CACAHUETES_GAME } from './definitions/game.definition';
 import { ContesCacahuetesSetupService } from './setup/contes-et-cacahuetes-setup.service';
 import { ContesActionService } from './actions/contes-action.service';
 import { ContesPresenterService } from './presenter/contes-presenter.service';
 import { ContesBotService } from './bots/contes-bot.service';
 import * as Rulebook from './rulebook/rulebook';
+import { buildContesShortcuts } from './contes.shortcuts';
 
 @Injectable()
 export class ContesService implements GameRulesAdapter, OnModuleInit {
@@ -74,5 +79,9 @@ export class ContesService implements GameRulesAdapter, OnModuleInit {
     userId: number,
   ): GameStateWithActions {
     return this.presenter.exposeStateForUser(state, userId);
+  }
+
+  getShortcuts(ctx: GameShortcutsContext<any>): GameShortcutHint[] {
+    return buildContesShortcuts(ctx);
   }
 }

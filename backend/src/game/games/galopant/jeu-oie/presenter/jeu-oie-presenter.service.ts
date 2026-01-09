@@ -5,7 +5,6 @@ import { BoardPayloadService } from '../../../../modules/board/services/board-pa
 import * as JeuOieRulebook from '../rulebook/rulebook';
 import { JEU_OIE_GAME } from '../definitions/game.definition';
 import type { JeuOieMetadata } from '../model/jeu-oie-state.entity';
-import { buildJeuOieShortcuts } from '../jeu-oie.shortcuts';
 
 @Injectable()
 export class JeuOiePresenterService {
@@ -26,11 +25,19 @@ export class JeuOiePresenterService {
         id: userId,
         username: me?.username ?? `Joueur ${userId}`,
       },
-      shortcuts: buildJeuOieShortcuts({
-        metadata: meta as any,
-        currentPlayerId: userId,
-        started: true,
-      }),
+      ui: {
+        panels: {
+          position: {
+            title: 'Position',
+            message: this.boardPayload.buildPositionPanelMessage({
+              tilesRaw: meta.tiles,
+              positionsRaw: meta.positions,
+              lapsRaw: meta.laps,
+              playerId: userId,
+            }),
+          },
+        },
+      },
     };
 
     return {

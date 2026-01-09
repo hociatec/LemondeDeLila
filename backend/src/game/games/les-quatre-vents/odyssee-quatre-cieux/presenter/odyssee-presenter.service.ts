@@ -4,7 +4,6 @@ import type { GameStateWithActions } from '../../../../engine/dto/game-action.dt
 import { ODYSSEE_GAME } from '../definitions/odyssee.definition';
 import * as Rulebook from '../rulebook/rulebook';
 import type { OdysseeMetadata } from '../model/odyssee.types';
-import { buildOdysseeShortcuts } from '../odyssee.shortcuts';
 
 @Injectable()
 export class OdysseePresenterService {
@@ -35,11 +34,25 @@ export class OdysseePresenterService {
           id: userId,
           username: me?.username ?? `Joueur ${userId}`,
         },
-        shortcuts: buildOdysseeShortcuts({
-          metadata: meta as any,
-          currentPlayerId: userId,
-          started: true,
-        }),
+        ui: {
+          panels: {
+            position: {
+              title: 'Position',
+              message: (() => {
+                const pawns = Array.isArray(meta.pawnsByPlayer?.[userId])
+                  ? meta.pawnsByPlayer[userId]
+                  : [];
+                if (pawns.length === 0) return 'Position: inconnue.';
+
+                const parts = pawns
+                  .filter((p) => p && typeof p.pawnIndex === 'number' && typeof p.progress === 'number')
+                  .map((p) => `Pion ${p.pawnIndex + 1}: ${p.progress}`);
+                if (parts.length === 0) return 'Position: inconnue.';
+                return `Pions: ${parts.join(', ')}.`;
+              })(),
+            },
+          },
+        },
       },
       board: {
         trackLength: meta.trackLength,

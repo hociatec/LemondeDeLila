@@ -4,6 +4,10 @@ import {
   GameStateWithActions,
 } from '../dto/game-action.dto';
 import type { BotStrategy } from '../../modules/bot/bot-strategy.interface';
+import type {
+  GameShortcutHint,
+  GameShortcutsContext,
+} from '../shortcuts/game-shortcuts';
 
 /**
  * Interface principale pour les adaptateurs de règles de jeu.
@@ -315,6 +319,15 @@ export interface GameRulesAdapter {
     state: GameStateEntity,
     userId: number,
   ): GameStateWithActions;
+
+  /**
+   * Optionnel : dÇ¸clare les raccourcis clavier gÇ¸rÇ¸s par ce jeu.
+   *
+   * Le client ne doit pas dÇ¸duire de rÇùgles : il affiche simplement ces hints
+   * et envoie les touches au serveur (`game.key`). Le moteur route ensuite
+   * vers le jeu en cours.
+   */
+  getShortcuts?(ctx: GameShortcutsContext<any>): GameShortcutHint[];
 }
 
 /**

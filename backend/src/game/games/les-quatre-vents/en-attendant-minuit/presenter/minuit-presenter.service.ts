@@ -5,7 +5,6 @@ import { BoardPayloadService } from '../../../../modules/board/services/board-pa
 import { MINUIT_GAME } from '../definitions/minuit.definition';
 import * as Rulebook from '../rulebook/rulebook';
 import type { MinuitMetadata } from '../model/minuit.types';
-import { buildMinuitShortcuts } from '../minuit.shortcuts';
 
 @Injectable()
 export class MinuitPresenterService {
@@ -48,11 +47,18 @@ export class MinuitPresenterService {
           id: userId,
           username: me?.username ?? `Joueur ${userId}`,
         },
-        shortcuts: buildMinuitShortcuts({
-          metadata: meta as any,
-          currentPlayerId: userId,
-          started: true,
-        }),
+        ui: {
+          panels: {
+            position: {
+              title: 'Position',
+              message: this.boardPayload.buildPositionPanelMessage({
+                tilesRaw: meta.tiles,
+                positionsRaw: meta.positions,
+                playerId: userId,
+              }),
+            },
+          },
+        },
       },
       board: this.boardPayload.buildTilesPositionsLaps(meta.tiles, meta.positions),
     } as any;

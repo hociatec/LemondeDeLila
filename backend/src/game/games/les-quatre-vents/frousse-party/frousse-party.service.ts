@@ -6,12 +6,17 @@ import type {
 } from '../../../engine/dto/game-action.dto';
 import type { GameRulesAdapter } from '../../../engine/interfaces/game-rules-adapter.interface';
 import { GameRegistryService } from '../../../engine/services/game-registry.service';
+import type {
+  GameShortcutHint,
+  GameShortcutsContext,
+} from '../../../engine/shortcuts/game-shortcuts';
 import { FROUSSE_GAME } from './definitions/frousse.definition';
 import { FrousseSetupService } from './setup/frousse-setup.service';
 import { FrousseActionService } from './actions/frousse-action.service';
 import { FroussePresenterService } from './presenter/frousse-presenter.service';
 import { FrousseBotService } from './bots/frousse-bot.service';
 import * as Rulebook from './rulebook/rulebook';
+import { buildFrousseShortcuts } from './frousse.shortcuts';
 
 @Injectable()
 export class FroussePartyService implements GameRulesAdapter, OnModuleInit {
@@ -73,5 +78,9 @@ export class FroussePartyService implements GameRulesAdapter, OnModuleInit {
     userId: number,
   ): GameStateWithActions {
     return this.presenter.exposeStateForUser(state, userId);
+  }
+
+  getShortcuts(ctx: GameShortcutsContext<any>): GameShortcutHint[] {
+    return buildFrousseShortcuts(ctx);
   }
 }

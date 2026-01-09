@@ -33,5 +33,33 @@ export class BoardPayloadService {
 
     return Object.keys(laps).length > 0 ? { tiles, positions, laps } : { tiles, positions };
   }
-}
 
+  buildPositionPanelMessage(params: {
+    tilesRaw: unknown;
+    positionsRaw: unknown;
+    lapsRaw?: unknown;
+    playerId: number | null;
+  }): string {
+    const playerId = params.playerId;
+    if (typeof playerId !== 'number' || !Number.isFinite(playerId)) {
+      return 'Position: inconnue.';
+    }
+
+    const board = this.buildTilesPositionsLaps(
+      params.tilesRaw,
+      params.positionsRaw,
+      params.lapsRaw,
+    );
+
+    const totalTiles = board.tiles.length;
+    const pos = board.positions[String(playerId)];
+    if (!Number.isFinite(pos) || totalTiles <= 0) {
+      return 'Position: inconnue.';
+    }
+
+    const caseNumber = Math.max(1, Math.trunc(pos) + 1);
+    const lap = board.laps?.[String(playerId)];
+    const tourPlateau = Number.isFinite(lap) ? String(Math.trunc(lap as number)) : '?';
+    return `Tour plateau ${tourPlateau}, case ${caseNumber}/${totalTiles}.`;
+  }
+}
