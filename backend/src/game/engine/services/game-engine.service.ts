@@ -1316,7 +1316,16 @@ export class GameEngineService {
 
     const upsertPanel = (id: string, title: string, message: string) => {
       if (!id || !title || !message) return;
-      if (panels[id] !== undefined) return;
+
+      const existing = panels[id];
+      const existingMessage =
+        existing && typeof existing === 'object' && !Array.isArray(existing)
+          ? (existing as any).message
+          : null;
+      const hasMessage =
+        typeof existingMessage === 'string' && existingMessage.trim().length > 0;
+      if (hasMessage) return;
+
       panels[id] = { title, message };
     };
 

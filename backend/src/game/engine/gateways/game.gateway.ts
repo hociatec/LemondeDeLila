@@ -445,18 +445,6 @@ export class GameGateway
 
         const normalized = String(key ?? '').trim();
         if (!normalized) {
-          this.safeSend(client, {
-            type: 'game.ack',
-            payload: {
-              action: 'game.key',
-              ok: false,
-              reason: 'Touche vide',
-              key: '',
-              traceId,
-              receivedAtMs,
-              clientToServerMs,
-            },
-          });
           return;
         }
 
@@ -468,18 +456,6 @@ export class GameGateway
         );
 
         if (!result) {
-          this.safeSend(client, {
-            type: 'game.ack',
-            payload: {
-              action: 'game.key',
-              ok: false,
-              reason: 'Raccourci indisponible',
-              key: normalized,
-              traceId,
-              receivedAtMs,
-              clientToServerMs,
-            },
-          });
           return;
         }
 
