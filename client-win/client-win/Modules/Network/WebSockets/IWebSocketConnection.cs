@@ -7,6 +7,7 @@ namespace client_win.Modules.Network.WebSockets;
 
 public interface IWebSocketConnection : IAsyncDisposable
 {
+    WebSocketState State { get; }
     event Action<WebSocketState>? StateChanged;
     event Action<string>? MessageReceived;
     event Action<string>? Error;

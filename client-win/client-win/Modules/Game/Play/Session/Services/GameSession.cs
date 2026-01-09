@@ -21,11 +21,10 @@ public sealed class GameSession : IAsyncDisposable
     private Task? _watchdogLoop;
     private DateTime _lastPongUtc = DateTime.MinValue;
 
-    // NOTE: GameSession est créé après ConnectAsync côté GameGatewayClient, donc le socket est déjà connecté.
-    // IWebSocketConnection ne fournit pas l'état courant; on démarre donc en "Connected" et on se met à jour
-    // via l'évènement StateChanged pour les transitions ultérieures.
-    private WebSocketState _state = WebSocketState.Connected;
-    private bool _everConnected = true;
+    // NOTE: GameSession est créé après ConnectAsync côté GameGatewayClient (souvent socket déjà connecté).
+    // L'état initial est lu depuis IWebSocketConnection.State.
+    private WebSocketState _state = WebSocketState.Disconnected;
+    private bool _everConnected;
 
     public GameSession(int roomId, string gameType, IWebSocketConnection socket)
     {
@@ -34,6 +33,9 @@ public sealed class GameSession : IAsyncDisposable
         GameType = gameType ?? string.Empty;
         _socket = socket ?? throw new ArgumentNullException(nameof(socket));
         _socket.StateChanged += OnSocketStateChanged;
+
+        _state = _socket.State;
+        _everConnected = _state == WebSocketState.Connected;
 
         _router = new GameSessionMessageRouter(
             _json,

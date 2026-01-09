@@ -597,6 +597,9 @@ public sealed class GameTableOpener : IGameTableOpener
                     bindings.InitializeFromLastState();
 
                     vm.Status = "Table prête.";
+                    vm.IsReconnecting = false;
+                    vm.GameZone.IsConnected = true;
+                    vm.Chat.IsConnected = true;
 
                     session.ErrorReceived += message =>
                     {
@@ -658,6 +661,7 @@ public sealed class GameTableOpener : IGameTableOpener
                         }
                     };
                     session.ConnectionStateChanged += onRoomConnectionStateChanged;
+                    onRoomConnectionStateChanged(session.State);
                 }, DispatcherPriority.Background);
             }
             catch (OperationCanceledException)
