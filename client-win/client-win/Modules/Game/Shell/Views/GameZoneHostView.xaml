@@ -55,7 +55,7 @@
                                            BorderThickness="0"
 	                                           Padding="0"
 	                                           PreviewKeyDown="OnAnchorPreviewKeyDown"
-	                                           AutomationProperties.Name="{Binding Title, StringFormat= {0}.}">
+	                                           AutomationProperties.Name="{Binding Title, StringFormat=Table de {0}. Entree pour demarrer.}">
                     <local:GameZoneFocusAnchor.Style>
                         <Style TargetType="{x:Type local:GameZoneFocusAnchor}">
                             <Setter Property="Visibility" Value="Collapsed" />

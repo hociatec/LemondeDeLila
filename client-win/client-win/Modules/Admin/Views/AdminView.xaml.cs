@@ -14,6 +14,7 @@ namespace client_win.Modules.Admin.Views;
 public partial class AdminView : UserControl
 {
     private AdminViewModel? _vm;
+    private bool _didInitialRootFocus;
 
     public AdminView()
     {
@@ -24,6 +25,7 @@ public partial class AdminView : UserControl
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
+        _didInitialRootFocus = false;
         AttachViewModel(DataContext as AdminViewModel);
         AttachRootTabSuppression();
         AttachItemsKeyNavigation();
@@ -74,10 +76,13 @@ public partial class AdminView : UserControl
         // L'utilisateur développe une catégorie pour voir son contenu.
         CollapseAllGroups();
 
-        var desiredCategory = vm.SelectedItem?.Category ?? string.Empty;
-        if (!string.IsNullOrWhiteSpace(desiredCategory))
+        // Demande utilisateur : à l'arrivée dans l'administration, focus sur le premier élément.
+        // Ici : premier en-tête de catégorie (accordéon replié), pour éviter d'atterrir dans du contenu caché.
+        if (!_didInitialRootFocus)
         {
-            FocusGroupHeader(desiredCategory);
+            vm.SelectedItem = vm.Items.FirstOrDefault();
+            FocusFirstGroupHeader();
+            _didInitialRootFocus = true;
         }
     }
 
@@ -190,6 +195,27 @@ public partial class AdminView : UserControl
         }
 
         (match ?? first)?.Focus();
+    }
+
+    private void FocusFirstGroupHeader()
+    {
+        if (ItemsList == null)
+        {
+            return;
+        }
+
+        foreach (var expander in FindVisualChildren<Expander>(ItemsList))
+        {
+            if (expander.DataContext is not CollectionViewGroup)
+            {
+                continue;
+            }
+
+            expander.Focus();
+            return;
+        }
+
+        ItemsList.Focus();
     }
 
     private void ExpandOnlyGroup(string category)
