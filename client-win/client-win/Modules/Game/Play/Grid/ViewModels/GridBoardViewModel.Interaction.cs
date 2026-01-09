@@ -50,7 +50,6 @@ public sealed partial class GridBoardViewModel
             }
 
             await SendGridActionAsync(move).ConfigureAwait(true);
-            _announce("Action envoyee.");
             _isEntityGrabbed = false;
             if (session.LastState != null)
             {
@@ -85,7 +84,6 @@ public sealed partial class GridBoardViewModel
         }
 
         await SendGridActionAsync(chosen).ConfigureAwait(true);
-        _announce("Action envoyee.");
         if (session.LastState != null)
         {
             SyncFromState(session.LastState, _viewerPlayerId);
@@ -132,7 +130,6 @@ public sealed partial class GridBoardViewModel
         }
 
         await SendGridActionAsync(chosen).ConfigureAwait(true);
-        _announce("Action envoyee.");
         if (session.LastState != null)
         {
             SyncFromState(session.LastState, _viewerPlayerId);

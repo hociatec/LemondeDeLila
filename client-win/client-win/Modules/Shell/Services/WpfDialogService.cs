@@ -41,6 +41,7 @@ public sealed class WpfDialogService : IDialogService
     private static bool? ShowCustomConfirm(string title, string message, string okText, string cancelText)
     {
         var owner = GetOwnerWindow();
+        var previousFocus = Keyboard.FocusedElement;
         try
         {
             owner?.Activate();
@@ -138,12 +139,14 @@ public sealed class WpfDialogService : IDialogService
         };
 
         dialog.ShowDialog();
+        RestoreFocusAfterDialog(owner, previousFocus);
         return result;
     }
 
     private static DialogChoice? ShowCustomChoice(string title, string message, string primaryText, string secondaryText, string cancelText)
     {
         var owner = GetOwnerWindow();
+        var previousFocus = Keyboard.FocusedElement;
         try
         {
             owner?.Activate();
@@ -254,6 +257,7 @@ public sealed class WpfDialogService : IDialogService
         };
 
         dialog.ShowDialog();
+        RestoreFocusAfterDialog(owner, previousFocus);
         return result;
     }
 
@@ -264,6 +268,7 @@ public sealed class WpfDialogService : IDialogService
         MessageBoxImage icon)
     {
         var owner = GetOwnerWindow();
+        var previousFocus = Keyboard.FocusedElement;
         try
         {
             owner?.Activate();
@@ -273,14 +278,17 @@ public sealed class WpfDialogService : IDialogService
             // ignore
         }
 
-        return owner != null
+        var result = owner != null
             ? MessageBox.Show(owner, message, title, buttons, icon)
             : MessageBox.Show(message, title, buttons, icon);
+        RestoreFocusAfterDialog(owner, previousFocus);
+        return result;
     }
 
     private static void ShowTextDialog(string title, string message, string kind)
     {
         var owner = GetOwnerWindow();
+        var previousFocus = Keyboard.FocusedElement;
         try
         {
             owner?.Activate();
@@ -369,6 +377,7 @@ public sealed class WpfDialogService : IDialogService
         };
 
         dialog.ShowDialog();
+        RestoreFocusAfterDialog(owner, previousFocus);
     }
 
     private static string? ShowPickDialog(
@@ -379,6 +388,7 @@ public sealed class WpfDialogService : IDialogService
         string cancelText)
     {
         var owner = GetOwnerWindow();
+        var previousFocus = Keyboard.FocusedElement;
         try
         {
             owner?.Activate();
@@ -504,7 +514,50 @@ public sealed class WpfDialogService : IDialogService
         };
 
         dialog.ShowDialog();
+        RestoreFocusAfterDialog(owner, previousFocus);
         return result;
+    }
+
+    private static void RestoreFocusAfterDialog(Window? owner, IInputElement? previousFocus)
+    {
+        try
+        {
+            var dispatcher = Application.Current?.Dispatcher;
+            if (dispatcher == null)
+            {
+                return;
+            }
+
+            void TryRestore()
+            {
+                try
+                {
+                    if (previousFocus is UIElement ui && ui.IsVisible && ui.IsEnabled)
+                    {
+                        ui.Focus();
+                        Keyboard.Focus(ui);
+                        return;
+                    }
+
+                    if (owner != null)
+                    {
+                        owner.Focus();
+                        Keyboard.Focus(owner);
+                    }
+                }
+                catch
+                {
+                    // ignore
+                }
+            }
+
+            dispatcher.BeginInvoke((Action)TryRestore, System.Windows.Threading.DispatcherPriority.Input);
+            dispatcher.BeginInvoke((Action)TryRestore, System.Windows.Threading.DispatcherPriority.ApplicationIdle);
+        }
+        catch
+        {
+            // ignore
+        }
     }
 
     private static Window? GetOwnerWindow()

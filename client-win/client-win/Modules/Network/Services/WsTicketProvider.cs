@@ -45,16 +45,54 @@ public sealed class WsTicketProvider : IWsTicketProvider
         }
 
         var baseUri = _config.HttpBase;
-        // HttpBase is configured as .../api/; we want .../ws/ticket.
-        var ticketUri = new Uri(baseUri, "../ws/ticket?scope=" + Uri.EscapeDataString(scope));
+        // Some deployments expose only /api/* to the backend (reverse proxy).
+        // Try /api/ws/ticket first, then fallback to /ws/ticket.
+        var candidates = new[]
+        {
+            new Uri(baseUri, "ws/ticket?scope=" + Uri.EscapeDataString(scope)),
+            new Uri(baseUri, "../ws/ticket?scope=" + Uri.EscapeDataString(scope)),
+        };
 
-        using var req = new HttpRequestMessage(HttpMethod.Get, ticketUri);
-        req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        string? json = null;
+        HttpResponseMessage? res = null;
+        Exception? lastError = null;
+        foreach (var ticketUri in candidates)
+        {
+            try
+            {
+                using var req = new HttpRequestMessage(HttpMethod.Get, ticketUri);
+                req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-        using var res = await _apiHttp.SendAsync(req, TimeSpan.FromSeconds(6), cancellationToken)
-            .ConfigureAwait(false);
-        var json = await res.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-        res.EnsureSuccessStatusCode();
+                res?.Dispose();
+                res = await _apiHttp.SendAsync(req, TimeSpan.FromSeconds(6), cancellationToken)
+                    .ConfigureAwait(false);
+                json = await res.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+                if (res.IsSuccessStatusCode)
+                {
+                    lastError = null;
+                    break;
+                }
+
+                lastError = new HttpRequestException(
+                    $"HTTP {(int)res.StatusCode} ({res.StatusCode}) sur {ticketUri}");
+            }
+            catch (Exception ex)
+            {
+                lastError = ex;
+            }
+        }
+
+        res?.Dispose();
+        if (lastError != null)
+        {
+            throw new InvalidOperationException(
+                "Impossible d'obtenir un ticket WebSocket. Vérifiez que l'API expose /ws/ticket ou /api/ws/ticket.",
+                lastError);
+        }
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return null;
+        }
 
         using var doc = JsonDocument.Parse(json);
         var root = doc.RootElement;

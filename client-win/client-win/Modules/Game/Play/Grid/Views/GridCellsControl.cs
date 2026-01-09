@@ -5,12 +5,16 @@ using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Controls.Primitives;
 using System.Windows.Media;
+using System.Windows.Automation.Peers;
+using System.Collections.Generic;
 using client_win.Modules.Game.Play.Grid.ViewModels;
 
 namespace client_win.Modules.Game.Play.Grid.Views;
 
 public sealed class GridCellsControl : ItemsControl
 {
+    protected override AutomationPeer OnCreateAutomationPeer() => new GridCellsControlAutomationPeer(this);
+
     protected override DependencyObject GetContainerForItemOverride() => new A11yGridCell();
 
     protected override bool IsItemItsOwnContainerOverride(object item) => item is A11yGridCell;
@@ -66,5 +70,68 @@ public sealed class GridCellsControl : ItemsControl
         }
 
         base.ClearContainerForItemOverride(element, item);
+    }
+
+    private sealed class GridCellsControlAutomationPeer : ItemsControlAutomationPeer
+    {
+        public GridCellsControlAutomationPeer(GridCellsControl owner) : base(owner) { }
+
+        protected override ItemAutomationPeer CreateItemAutomationPeer(object item) =>
+            new GridCellItemAutomationPeer(item, this);
+    }
+
+    private sealed class GridCellItemAutomationPeer : ItemAutomationPeer
+    {
+        public GridCellItemAutomationPeer(object item, ItemsControlAutomationPeer itemsControlPeer)
+            : base(item, itemsControlPeer) { }
+
+        protected override string GetClassNameCore() => nameof(A11yGridCell);
+
+        protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.Custom;
+
+        protected override string GetLocalizedControlTypeCore() => string.Empty;
+
+        protected override int GetPositionInSetCore() => -1;
+
+        protected override int GetSizeOfSetCore() => -1;
+
+        protected override string GetNameCore()
+        {
+            var wrapper = TryGetWrapper() as UIElement;
+            if (wrapper == null) return string.Empty;
+            return AutomationProperties.GetName(wrapper) ?? string.Empty;
+        }
+
+        protected override List<AutomationPeer>? GetChildrenCore()
+        {
+            var wrapper = TryGetWrapper() as UIElement;
+            if (wrapper == null) return null;
+            var peer = UIElementAutomationPeer.CreatePeerForElement(wrapper);
+            return peer == null ? null : new List<AutomationPeer> { peer };
+        }
+
+        public override object? GetPattern(PatternInterface patternInterface)
+        {
+            var wrapper = TryGetWrapper() as UIElement;
+            if (wrapper == null) return null;
+            var peer = UIElementAutomationPeer.CreatePeerForElement(wrapper);
+            return peer?.GetPattern(patternInterface);
+        }
+
+        private DependencyObject? TryGetWrapper()
+        {
+            try
+            {
+                if (ItemsControlAutomationPeer.Owner is not ItemsControl owner)
+                {
+                    return null;
+                }
+                return owner.ItemContainerGenerator.ContainerFromItem(Item);
+            }
+            catch
+            {
+                return null;
+            }
+        }
     }
 }

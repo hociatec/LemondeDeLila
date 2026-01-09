@@ -49,13 +49,9 @@ export function buildPublicRoomList(
         return true;
       }
 
-      // Table en attente : listée uniquement si un joueur peut rejoindre (slots disponibles + status open).
-      if (!isRoomOpenStatus(room.status)) {
-        return false;
-      }
-      const playersCount = countActiveParticipants(room);
-      const botsCount = (room.bots || []).length;
-      return playersCount + botsCount < room.maxPlayers;
+      // Table en attente : listée si elle est "open".
+      // Même si la table est pleine, on veut l'afficher : elle est alors rejoignable en spectateur.
+      return isRoomOpenStatus(room.status);
     })
     .map((room) => {
       const playersCount = countActiveParticipants(room);

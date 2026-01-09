@@ -10,25 +10,30 @@ const AllowedScopes: WsTicketScope[] = [
   'game',
 ];
 
-@Controller('ws')
+@Controller()
 export class WsTicketController {
   constructor(private readonly tickets: WsTicketService) {}
 
   @UseGuards(HttpJwtGuard)
-  @Get('ticket')
+  @Get('ws/ticket')
   getTicket(@Req() req: any, @Query('scope') scopeRaw: string) {
-    const scope = String(scopeRaw || '')
-      .trim()
-      .toLowerCase() as WsTicketScope;
+    return this.issue(req, scopeRaw);
+  }
+
+  // Some deployments proxy only /api/* to the backend. Provide a compatible path as well.
+  @UseGuards(HttpJwtGuard)
+  @Get('api/ws/ticket')
+  getTicketUnderApi(@Req() req: any, @Query('scope') scopeRaw: string) {
+    return this.issue(req, scopeRaw);
+  }
+
+  private issue(req: any, scopeRaw: string) {
+    const scope = String(scopeRaw || '').trim().toLowerCase() as WsTicketScope;
     if (!AllowedScopes.includes(scope)) {
-      return {
-        error: 'scope invalide',
-        allowedScopes: AllowedScopes,
-      };
+      return { error: 'scope invalide', allowedScopes: AllowedScopes };
     }
 
     const userId = Number(req?.user?.id ?? 0);
-    const res = this.tickets.issue(userId, scope);
-    return res;
+    return this.tickets.issue(userId, scope);
   }
 }

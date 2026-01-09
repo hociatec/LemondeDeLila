@@ -14,7 +14,9 @@ public sealed class GameZoneFocusAnchor : Button
         {
         }
 
-        protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.Pane;
+        // NVDA annonce "volet" quand le ControlType est Pane. Or cette ancre de focus est invisible et ne doit pas polluer
+        // la navigation. On expose un type neutre pour que NVDA lise surtout le nom (si présent) ou le moins possible.
+        protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.Custom;
 
         protected override string GetLocalizedControlTypeCore() => string.Empty;
 

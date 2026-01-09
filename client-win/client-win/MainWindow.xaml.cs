@@ -27,6 +27,7 @@ using client_win.Core.Accessibility;
 using client_win.Modules.Audio.Models;
 using System.Windows.Threading;
 using client_win.Modules.Catalog.Views;
+using client_win.Modules.Game.Shell.Views;
 
 namespace client_win
 {
@@ -79,6 +80,7 @@ namespace client_win
             PreviewKeyDown += OnPreviewKeyDown;
             PreviewMouseDown += OnPreviewMouseDown;
             Closing += OnClosing;
+            Activated += OnActivated;
         }
 
         private void OnCurrentViewChanged(object? sender, System.Windows.Controls.UserControl? view)
@@ -247,6 +249,23 @@ namespace client_win
             try
             {
                 _ = _presence.NotifyUserInteractionAsync();
+            }
+            catch
+            {
+                // ignore
+            }
+        }
+
+        private void OnActivated(object? sender, EventArgs e)
+        {
+            // Accessibilité: quand on revient sur la fenêtre (Alt+Tab / fermeture d'un dialog),
+            // redonner un focus fiable à la zone de jeu si on est dans une table.
+            try
+            {
+                if (_navigation.CurrentView is GameRoomView room)
+                {
+                    Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(room.RequestFocusGameZone));
+                }
             }
             catch
             {

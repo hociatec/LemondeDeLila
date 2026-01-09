@@ -325,6 +325,13 @@ public sealed class MenuRouter : IMenuRouter
 
     private static void RestoreFocusAfterBackNavigation(UserControl target)
     {
+        // Cas particulier : retour vers une table de jeu => redonner le focus à la zone de jeu.
+        // Sinon le focus peut tomber sur un conteneur "volet" et obliger à renaviguer au clavier.
+        if (target is client_win.Modules.Game.Shell.Views.GameRoomView room)
+        {
+            room.RequestFocusGameZone();
+            return;
+        }
         // Accessibilité: quand on revient au menu précédent via Échap,
         // remettre le focus sur l'élément sélectionné (NVDA annonce le libellé, comme lors de la navigation au clavier).
         var dispatcher = target.Dispatcher;

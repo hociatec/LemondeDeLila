@@ -1,7 +1,7 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as jwt from 'jsonwebtoken';
-import { randomUUID } from 'crypto';
+import { randomBytes, randomUUID } from 'crypto';
 
 export type WsTicketScope = 'api' | 'presence' | 'notify' | 'room' | 'game';
 
@@ -13,6 +13,10 @@ export type WsTicketPayload = {
 
 @Injectable()
 export class WsTicketService {
+  private readonly logger = new Logger(WsTicketService.name);
+  private ephemeralSecret: string | null = null;
+  private warnedMissingSecret = false;
+
   constructor(private readonly config: ConfigService) {}
 
   issue(
@@ -75,7 +79,26 @@ export class WsTicketService {
   private getSecret(): string {
     const secret = this.config.get<string>('WS_TICKET_SECRET');
     if (!secret) {
-      throw new UnauthorizedException('Configuration WS manquante');
+      const nodeEnv = String(
+        this.config.get<string>('NODE_ENV') || process.env.NODE_ENV || '',
+      )
+        .trim()
+        .toLowerCase();
+      if (nodeEnv === 'production') {
+        throw new UnauthorizedException('Configuration WS manquante');
+      }
+
+      if (!this.ephemeralSecret) {
+        // Dev-only fallback to keep local setups working even when WS_TICKET_SECRET is missing.
+        this.ephemeralSecret = randomBytes(32).toString('base64url');
+      }
+      if (!this.warnedMissingSecret) {
+        this.warnedMissingSecret = true;
+        this.logger.warn(
+          'WS_TICKET_SECRET manquant: utilisation d’un secret éphémère (dev uniquement).',
+        );
+      }
+      return this.ephemeralSecret;
     }
     return secret;
   }
