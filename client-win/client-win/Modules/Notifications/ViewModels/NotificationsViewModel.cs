@@ -56,6 +56,7 @@ public sealed class NotificationsViewModel : ObservableObject
         ReplyCommand = new RelayCommand(OpenReply);
         SendReplyCommand = new AsyncRelayCommand(SendReplyAsync);
         CancelReplyCommand = new RelayCommand(CancelReply);
+        ChangeStatusCommand = new AsyncRelayCommand(ChangeStatusAsync);
         ToggleHandledCommand = new AsyncRelayCommand(ToggleHandledAsync);
         DeleteCommand = new AsyncRelayCommand(DeleteSelectedAsync);
         CloseCommand = new RelayCommand(_onClose);
@@ -170,6 +171,7 @@ public sealed class NotificationsViewModel : ObservableObject
     public ICommand ReplyCommand { get; }
     public ICommand SendReplyCommand { get; }
     public ICommand CancelReplyCommand { get; }
+    public ICommand ChangeStatusCommand { get; }
     public ICommand ToggleHandledCommand { get; }
     public ICommand DeleteCommand { get; }
     public ICommand CloseCommand { get; }
@@ -254,10 +256,52 @@ public sealed class NotificationsViewModel : ObservableObject
         CancelReply();
     }
 
-    public async Task ToggleHandledAsync()
-    {
-        var it = SelectedItem;
-        if (!CanToggleHandled || it == null || string.IsNullOrWhiteSpace(it.ContactId))
+	    private async Task ChangeStatusAsync()
+	    {
+	        if (!CanToggleHandled)
+	        {
+	            return;
+	        }
+
+	        var it = SelectedItem;
+	        if (it == null || string.IsNullOrWhiteSpace(it.ContactId))
+	        {
+	            return;
+	        }
+
+	        var picked = await _dialogs.Pick(
+	                "Notifications",
+	                "Choisir un statut :",
+	                new[] { "Non traitee", "En cours", "Traitee" },
+	                okText: "Valider",
+	                cancelText: "Annuler")
+	            .ConfigureAwait(true);
+
+	        if (picked == null)
+	        {
+	            return;
+	        }
+
+	        var status = picked switch
+	        {
+	            "Non traitee" => "open",
+	            "En cours" => "in_progress",
+	            "Traitee" => "handled",
+	            _ => string.Empty
+	        };
+
+	        if (string.IsNullOrWhiteSpace(status))
+	        {
+	            return;
+	        }
+
+	        await SetAdminContactStatusAsync(status, $"Statut mis a jour : {picked}.").ConfigureAwait(true);
+	    }
+
+	    public async Task ToggleHandledAsync()
+	    {
+	        var it = SelectedItem;
+	        if (!CanToggleHandled || it == null || string.IsNullOrWhiteSpace(it.ContactId))
         {
             return;
         }

@@ -28,7 +28,6 @@ public partial class AdminView : UserControl
         AttachRootTabSuppression();
         AttachItemsKeyNavigation();
         FocusWhenContainersGenerated();
-        EnsureRootAccordionExpandedGroup();
         FocusBestInputIfVisible();
         FocusDetailsIfPreferred();
     }
@@ -55,17 +54,8 @@ public partial class AdminView : UserControl
     private void OnNavigationChanged()
     {
         FocusWhenContainersGenerated();
-        EnsureRootAccordionExpandedGroup();
         FocusBestInputIfVisible();
         FocusDetailsIfPreferred();
-    }
-
-    private void EnsureRootAccordionExpandedGroup()
-    {
-        _ = Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() =>
-        {
-            EnsureRootAccordionExpandedGroupCore();
-        }));
     }
 
     private void EnsureRootAccordionExpandedGroupCore()
@@ -80,13 +70,15 @@ public partial class AdminView : UserControl
             return;
         }
 
-        var desiredCategory = vm.SelectedItem?.Category;
-        if (string.IsNullOrWhiteSpace(desiredCategory))
-        {
-            return;
-        }
+        // À l'arrivée dans l'admin (menu racine), on veut voir uniquement les 4 catégories repliées.
+        // L'utilisateur développe une catégorie pour voir son contenu.
+        CollapseAllGroups();
 
-        ExpandOnlyGroup(desiredCategory);
+        var desiredCategory = vm.SelectedItem?.Category ?? string.Empty;
+        if (!string.IsNullOrWhiteSpace(desiredCategory))
+        {
+            FocusGroupHeader(desiredCategory);
+        }
     }
 
     private void OnGroupExpanderExpanded(object sender, RoutedEventArgs e)
@@ -150,6 +142,54 @@ public partial class AdminView : UserControl
 
             expander.IsExpanded = false;
         }
+    }
+
+    private void CollapseAllGroups()
+    {
+        if (ItemsList == null)
+        {
+            return;
+        }
+
+        foreach (var expander in FindVisualChildren<Expander>(ItemsList))
+        {
+            if (expander.DataContext is not CollectionViewGroup)
+            {
+                continue;
+            }
+
+            expander.IsExpanded = false;
+        }
+    }
+
+    private void FocusGroupHeader(string category)
+    {
+        if (ItemsList == null)
+        {
+            return;
+        }
+
+        Expander? match = null;
+        Expander? first = null;
+
+        foreach (var expander in FindVisualChildren<Expander>(ItemsList))
+        {
+            if (expander.DataContext is not CollectionViewGroup group)
+            {
+                continue;
+            }
+
+            first ??= expander;
+
+            var groupName = group.Name?.ToString() ?? string.Empty;
+            if (string.Equals(groupName, category, StringComparison.Ordinal))
+            {
+                match = expander;
+                break;
+            }
+        }
+
+        (match ?? first)?.Focus();
     }
 
     private void ExpandOnlyGroup(string category)
@@ -378,7 +418,15 @@ public partial class AdminView : UserControl
             _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
             {
                 EnsureRootAccordionExpandedGroupCore();
-                FocusFirstItem();
+                if (DataContext is AdminViewModel vm && vm.IsRootMenu)
+                {
+                    // Menu racine : focus sur l'en-tête de catégorie (accordéon replié).
+                    FocusGroupHeader(vm.SelectedItem?.Category ?? string.Empty);
+                }
+                else
+                {
+                    FocusFirstItem();
+                }
             }));
             return;
         }
@@ -395,7 +443,14 @@ public partial class AdminView : UserControl
             _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
             {
                 EnsureRootAccordionExpandedGroupCore();
-                FocusFirstItem();
+                if (DataContext is AdminViewModel vm && vm.IsRootMenu)
+                {
+                    FocusGroupHeader(vm.SelectedItem?.Category ?? string.Empty);
+                }
+                else
+                {
+                    FocusFirstItem();
+                }
             }));
         };
         ItemsList.ItemContainerGenerator.StatusChanged += handler;

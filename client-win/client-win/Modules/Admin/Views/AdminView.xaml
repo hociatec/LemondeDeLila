@@ -70,6 +70,8 @@
                                                           BorderThickness="0"
                                                           Padding="0"
                                                           KeyboardNavigation.TabNavigation="Continue"
+                                                          AutomationProperties.Name="{Binding Name}"
+                                                          AutomationProperties.HelpText="Développer pour afficher les actions de cette catégorie."
                                                           Expanded="OnGroupExpanderExpanded">
                                                     <Expander.Header>
                                                         <Border Background="#0E2034"

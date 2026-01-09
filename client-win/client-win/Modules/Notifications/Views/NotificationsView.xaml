@@ -90,24 +90,62 @@
                          HorizontalScrollBarVisibility="Disabled"
                          AutomationProperties.Name="Détails de la notification" />
 
-                <Button Grid.Row="2"
-                        Content="Répondre"
-                        Command="{Binding ReplyCommand}"
-                        Click="OnReplyClick"
-                        Margin="0,12,0,0"
-                        TabIndex="0"
-                        AutomationProperties.Name="Répondre">
-                    <Button.Style>
-                        <Style TargetType="Button" BasedOn="{StaticResource ActionButton}">
-                            <Setter Property="Visibility" Value="{Binding CanReply, Converter={StaticResource BoolToVis}}" />
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding IsReplyMode}" Value="True">
-                                    <Setter Property="Visibility" Value="Collapsed" />
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Button.Style>
-                </Button>
+                <StackPanel Grid.Row="2"
+                            Orientation="Horizontal"
+                            Margin="0,12,0,0"
+                            KeyboardNavigation.TabNavigation="Continue">
+                    <Button Content="Répondre"
+                            Command="{Binding ReplyCommand}"
+                            Click="OnReplyClick"
+                            TabIndex="0"
+                            AutomationProperties.Name="Répondre">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource ActionButton}">
+                                <Setter Property="Visibility" Value="{Binding CanReply, Converter={StaticResource BoolToVis}}" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsReplyMode}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+
+                    <Button Content="Changer statut"
+                            Command="{Binding ChangeStatusCommand}"
+                            TabIndex="1"
+                            AutomationProperties.Name="Changer le statut de la notification">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource ActionButton}">
+                                <Setter Property="Visibility" Value="{Binding CanToggleHandled, Converter={StaticResource BoolToVis}}" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsReplyMode}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+
+                    <Button Content="Supprimer"
+                            Command="{Binding DeleteCommand}"
+                            TabIndex="2"
+                            AutomationProperties.Name="Supprimer la notification">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource ActionButton}">
+                                <Setter Property="Visibility" Value="Visible" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SelectedItem}" Value="{x:Null}">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding IsReplyMode}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </StackPanel>
 
                 <Border Grid.Row="3"
                         Margin="0,12,0,0"
