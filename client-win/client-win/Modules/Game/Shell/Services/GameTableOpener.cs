@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
-using Serilog;
 using Microsoft.Extensions.Logging;
 using client_win.Modules.Catalog.Models;
 using client_win.Modules.Game.History.Services;
@@ -598,26 +597,9 @@ public sealed class GameTableOpener : IGameTableOpener
                     bindings.InitializeFromLastState();
 
                     vm.Status = "Table prête.";
-
-                    if (isNew)
-                    {
-                        _ = Task.Run(async () =>
-                        {
-                            try
-                            {
-                                await AutoFillBotsAndStartIfNeededAsync(
-                                        game,
-                                        session,
-                                        bindings,
-                                        cts.Token)
-                                    .ConfigureAwait(false);
-                            }
-                            catch
-                            {
-                                // best effort
-                            }
-                        });
-                    }
+                    vm.IsReconnecting = false;
+                    vm.GameZone.IsConnected = true;
+                    vm.Chat.IsConnected = true;
 
                     session.ErrorReceived += message =>
                     {
@@ -717,60 +699,6 @@ public sealed class GameTableOpener : IGameTableOpener
             connect: ct => _games.ConnectAsync(room.RoomId, game.Id, ct),
             dialogs: _dialogs,
             sounds: _sounds);
-    }
-
-    private static async Task AutoFillBotsAndStartIfNeededAsync(
-        CatalogGame game,
-        RoomSession session,
-        GameTableBindings bindings,
-        CancellationToken cancellationToken)
-    {
-        // Permet de jouer immédiatement après création d'une table:
-        // - ajoute des bots jusqu'au minPlayers du jeu
-        // - puis démarre la table
-        //
-        // Best-effort: ne bloque jamais l'UI si ça échoue (erreur affichée via WS "error" si nécessaire).
-        var payload = session.LastRoomState;
-        var room = payload?.Room;
-        if (room == null)
-        {
-            return;
-        }
-
-        var status = (room.Status ?? string.Empty).Trim();
-        if (string.Equals(status, "started", StringComparison.OrdinalIgnoreCase))
-        {
-            return;
-        }
-
-        var minPlayers = Math.Max(1, game.MinPlayers);
-        var maxPlayers = Math.Max(1, room.MaxPlayers);
-        var humans = room.Players?.Count ?? room.Counts?.Players ?? 0;
-        var bots = room.Bots?.Count ?? 0;
-        var currentTotal = humans + bots;
-
-        var missing = Math.Max(0, minPlayers - currentTotal);
-        var capacity = Math.Max(0, maxPlayers - currentTotal);
-        var toAdd = Math.Min(missing, capacity);
-
-        if (toAdd > 0)
-        {
-            Log.Information(
-                "Auto-setup roomId={RoomId}: ajout de {BotCount} bot(s) (minPlayers={MinPlayers})",
-                room.Id,
-                toAdd,
-                minPlayers);
-            for (var i = 0; i < toAdd; i++)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                await bindings.AddBotAsync().ConfigureAwait(false);
-                await Task.Delay(120, cancellationToken).ConfigureAwait(false);
-            }
-        }
-
-        Log.Information("Auto-setup roomId={RoomId}: tentative de démarrage", room.Id);
-        await session.SendCommandAsync("room.start", payload: null, cancellationToken: cancellationToken)
-            .ConfigureAwait(false);
     }
 
     private Task AnnouncePlayersAsync(RoomSession session)
