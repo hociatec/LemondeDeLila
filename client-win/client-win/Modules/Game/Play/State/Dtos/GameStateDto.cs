@@ -84,15 +84,6 @@ public sealed class GamePlayerDto
 
     [JsonPropertyName("isBot")]
     public bool? IsBot { get; set; }
-
-    [JsonPropertyName("basket")]
-    public JsonElement Basket { get; set; }
-
-    [JsonPropertyName("inventory")]
-    public JsonElement Inventory { get; set; }
-
-    [JsonPropertyName("shoppingList")]
-    public JsonElement ShoppingList { get; set; }
 }
 
 public sealed class GamePendingDto

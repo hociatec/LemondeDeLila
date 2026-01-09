@@ -73,6 +73,7 @@ export class RoomGateway
   private readonly roomChatLimit = 120;
   private readonly chatCooldownMs = 350;
   private readonly chatMaxLength = 300;
+  private readonly lastRoomStatusByRoomId = new Map<number, string>();
 
   constructor(
     private readonly roomsService: RoomService,
@@ -178,6 +179,13 @@ export class RoomGateway
       let role: ClientRole =
         spectator || effectiveSilent ? 'spectator' : 'participant';
       if (role === 'spectator' && !effectiveSilent) {
+        try {
+          await this.roomsService.leaveAllRoomsForUser(payload.id, {
+            exceptRoomId: targetRoomId,
+          });
+        } catch {
+          // ignore
+        }
         const allowed = await this.canSpectate(targetRoomId, payload.id);
         if (!allowed) {
           client.close(4003, 'Spectateur non autorise sur cette table');
@@ -220,6 +228,14 @@ export class RoomGateway
               // Table démarrée: si l'utilisateur n'est pas joueur, on tente un fallback en spectateur
               // (utile pour les tables privées: autoriser si invité).
               if (started) {
+                try {
+                  await this.roomsService.leaveAllRoomsForUser(payload.id, {
+                    exceptRoomId: targetRoomId,
+                  });
+                } catch {
+                  // ignore
+                }
+
                 const allowed = await this.canSpectate(
                   targetRoomId,
                   payload.id,
@@ -448,7 +464,21 @@ export class RoomGateway
 
   private async sendRoomState(roomId: number) {
     try {
-      const payload = await this.roomsService.getRoomPayload(roomId);
+      let payload = await this.roomsService.getRoomPayload(roomId);
+
+      const previousStatus = (this.lastRoomStatusByRoomId.get(roomId) ?? '')
+        .toLowerCase()
+        .trim();
+      const nextStatus = String(payload?.room?.status ?? '')
+        .toLowerCase()
+        .trim();
+      if (previousStatus === 'started' && nextStatus && nextStatus !== 'started') {
+        await this.promoteConnectedSpectatorsToParticipants(roomId);
+        await this.roomsService.invalidateRoomPayloadCache(roomId);
+        payload = await this.roomsService.getRoomPayload(roomId);
+      }
+      this.lastRoomStatusByRoomId.set(roomId, nextStatus);
+
       this.applySpectators(roomId, payload);
       await this.broadcast(roomId, 'room.updated', payload);
     } catch {
@@ -1309,6 +1339,7 @@ export class RoomGateway
         );
 
         const previousRoomId = meta.roomId;
+        const previousRole = meta.role;
         if (previousRoomId !== room.id) {
           const previousSet = this.rooms.get(previousRoomId);
           if (previousSet) {
@@ -1370,6 +1401,13 @@ export class RoomGateway
             message.type,
             message.payload ?? state,
             room.id,
+          );
+        }
+        if (previousRoomId > 0 && previousRoomId !== room.id) {
+          await this.leavePreviousRoomOnSwitch(
+            previousRoomId,
+            meta.userId,
+            previousRole,
           );
         }
         await this.roomsService.primeRoomPayloadCache(room.id, state);

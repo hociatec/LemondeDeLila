@@ -46,6 +46,7 @@ public sealed class AboutViewModel : ObservableObject
     private readonly AsyncRelayCommand _activateCommand;
     private readonly AsyncRelayCommand _sendContactCommand;
     private readonly RelayCommand _cancelContactCommand;
+    private readonly bool _standaloneContactAdmin;
 
     private const string TagShortcuts = "shortcuts";
     private const string TagInfo = "info";
@@ -65,11 +66,20 @@ public sealed class AboutViewModel : ObservableObject
         _sounds = sounds ?? throw new ArgumentNullException(nameof(sounds));
         _close = onClose ?? (() => { });
         _dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
+        _standaloneContactAdmin = openContactAdmin;
 
         Items = new ObservableCollection<AboutMenuItem>();
         _activateCommand = new AsyncRelayCommand(ActivateSelectedAsync);
         _sendContactCommand = new AsyncRelayCommand(SendContactAsync);
-        _cancelContactCommand = new RelayCommand(() => BuildRoot());
+        _cancelContactCommand = new RelayCommand(() =>
+        {
+            if (_standaloneContactAdmin && _page == AboutPage.ContactAdmin)
+            {
+                _close();
+                return;
+            }
+            BuildRoot();
+        });
 
         RefreshLocalInfo();
         BuildRoot();
@@ -154,6 +164,12 @@ public sealed class AboutViewModel : ObservableObject
 
     public AboutNavResult HandleEscape()
     {
+        if (_standaloneContactAdmin)
+        {
+            _close();
+            return AboutNavResult.Closed;
+        }
+
         if (_page is AboutPage.Shortcuts or AboutPage.Info or AboutPage.ContactAdmin)
         {
             BuildRoot();

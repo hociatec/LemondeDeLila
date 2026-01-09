@@ -383,6 +383,21 @@ public sealed partial class AdminViewModel
         Items.Add(new AdminMenuItem("Diagnostics latence (rooms/bots/parties)", tag: "perf", category: "Outils"));
         Items.Add(new AdminMenuItem("Consulter les logs", tag: "logs", category: "Outils"));
         Items.Add(new AdminMenuItem("Maintenance (outils)", tag: "maintenance", category: "Outils"));
+        // Réduit les catégories de base pour simplifier la navigation clavier (moins de groupes à parcourir).
+        var normalized = Items
+            .Select(it =>
+                string.Equals(it.Category, "Jeux", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(it.Category, "Utilisateurs", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(it.Category, "Outils", StringComparison.OrdinalIgnoreCase)
+                    ? new AdminMenuItem(it.Label, it.Tag, it.IsCheckable, it.IsChecked, category: "Gestion")
+                    : it)
+            .ToList();
+        Items.Clear();
+        foreach (var it in normalized)
+        {
+            Items.Add(it);
+        }
+
         SelectedItem = Items.FirstOrDefault();
         Status = "Entrée : sélectionner. Échap : retour.";
         UpdateFilterVisibility();

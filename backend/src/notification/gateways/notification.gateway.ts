@@ -444,6 +444,104 @@ export class NotificationGateway
       return;
     }
 
+    if (type === 'notify.admin_contact.setHandled') {
+      try {
+        const contactId =
+          typeof parsed?.payload?.contactId === 'string'
+            ? parsed.payload.contactId
+            : '';
+        const handled = Boolean(parsed?.payload?.handled);
+        await this.adminContacts.setHandledForContact(
+          {
+            id: meta.userId,
+            username: meta.username,
+            roles: meta.roles,
+          } as any,
+          contactId,
+          handled,
+        );
+        this.safeSendResponse(
+          client,
+          'notify.admin_contact.setHandled',
+          { ok: true },
+          requestId,
+        );
+      } catch (err: any) {
+        this.safeSendResponse(
+          client,
+          'notify.admin_contact.error',
+          { message: String(err?.message || 'Erreur') },
+          requestId,
+        );
+      }
+      return;
+    }
+
+    if (type === 'notify.admin_contact.setStatus') {
+      try {
+        const contactId =
+          typeof parsed?.payload?.contactId === 'string'
+            ? parsed.payload.contactId
+            : '';
+        const status =
+          typeof parsed?.payload?.status === 'string' ? parsed.payload.status : '';
+        await this.adminContacts.setStatusForContact(
+          {
+            id: meta.userId,
+            username: meta.username,
+            roles: meta.roles,
+          } as any,
+          contactId,
+          status,
+        );
+        this.safeSendResponse(
+          client,
+          'notify.admin_contact.setStatus',
+          { ok: true },
+          requestId,
+        );
+      } catch (err: any) {
+        this.safeSendResponse(
+          client,
+          'notify.admin_contact.error',
+          { message: String(err?.message || 'Erreur') },
+          requestId,
+        );
+      }
+      return;
+    }
+
+    if (type === 'notify.admin_contact.deleteThread') {
+      try {
+        const contactId =
+          typeof parsed?.payload?.contactId === 'string'
+            ? parsed.payload.contactId
+            : '';
+        await this.adminContacts.deleteThreadForContact(
+          {
+            id: meta.userId,
+            username: meta.username,
+            roles: meta.roles,
+          } as any,
+          contactId,
+        );
+        this.safeSendResponse(
+          client,
+          'notify.admin_contact.deleteThread',
+          { ok: true },
+          requestId,
+        );
+      } catch (err: any) {
+        this.safeSendResponse(
+          client,
+          'notify.admin_contact.error',
+          { message: String(err?.message || 'Erreur') },
+          requestId,
+        );
+      }
+      return;
+    }
+
     if (type !== 'client.hello') {
       return;
     }

@@ -392,6 +392,12 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
                 return;
             }
 
+            if (string.Equals(type, "notify.inbox.removed", StringComparison.OrdinalIgnoreCase))
+            {
+                HandleInboxRemoved(root);
+                return;
+            }
+
             if (string.Equals(type, "notify.admin_contact.error", StringComparison.OrdinalIgnoreCase))
             {
                 var msg = root.TryGetProperty("payload", out var p) && p.ValueKind == JsonValueKind.Object &&
@@ -641,6 +647,59 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
 	        }
     }
 
+    private void HandleInboxRemoved(JsonElement root)
+    {
+        try
+        {
+            if (!root.TryGetProperty("payload", out var payload) || payload.ValueKind != JsonValueKind.Object)
+            {
+                return;
+            }
+
+            if (!payload.TryGetProperty("ids", out var idsEl) || idsEl.ValueKind != JsonValueKind.Array)
+            {
+                return;
+            }
+
+            var ids = new List<string>();
+            foreach (var el in idsEl.EnumerateArray())
+            {
+                if (el.ValueKind != JsonValueKind.String)
+                {
+                    continue;
+                }
+                var id = (el.GetString() ?? string.Empty).Trim();
+                if (!string.IsNullOrWhiteSpace(id))
+                {
+                    ids.Add(id);
+                }
+            }
+
+            if (ids.Count == 0)
+            {
+                return;
+            }
+
+            RunOnUi(() =>
+            {
+                foreach (var id in ids)
+                {
+                    _inbox.Remove(id);
+                }
+            });
+
+            // Source de vérité serveur pour badges.
+            _ = Task.Run(async () =>
+            {
+                try { await SendAsync("notify.counts.get").ConfigureAwait(false); } catch { }
+            });
+        }
+        catch
+        {
+            // ignore
+        }
+    }
+
     private static bool TryParseNotificationItem(JsonElement payload, out NotificationItem? item)
     {
         item = null;
@@ -673,6 +732,18 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
             var contactId = payload.TryGetProperty("contactId", out var ciEl) && ciEl.ValueKind == JsonValueKind.String
                 ? ciEl.GetString()
                 : null;
+            var status = payload.TryGetProperty("status", out var stEl) && stEl.ValueKind == JsonValueKind.String
+                ? (stEl.GetString() ?? string.Empty).Trim()
+                : string.Empty;
+            var handled = payload.TryGetProperty("handled", out var hEl) && hEl.ValueKind is JsonValueKind.True or JsonValueKind.False
+                ? hEl.GetBoolean()
+                : false;
+            var handledAt = payload.TryGetProperty("handledAt", out var haEl) && haEl.ValueKind == JsonValueKind.String
+                ? haEl.GetString()
+                : null;
+            var handledByUsername = payload.TryGetProperty("handledByUsername", out var hbEl) && hbEl.ValueKind == JsonValueKind.String
+                ? hbEl.GetString()
+                : null;
 
             if (string.IsNullOrWhiteSpace(id) || string.IsNullOrWhiteSpace(kind))
             {
@@ -680,6 +751,9 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
             }
 
             var ts = DateTimeOffset.TryParse(createdAt, out var dto) ? dto : DateTimeOffset.UtcNow;
+            DateTimeOffset? handledTs = DateTimeOffset.TryParse(handledAt, out var hDto) ? hDto : null;
+            var normalizedStatus = string.IsNullOrWhiteSpace(status) ? string.Empty : status.Trim().ToLowerInvariant();
+            var isHandled = normalizedStatus == "handled" ? true : handled;
 
             item = new NotificationItem
             {
@@ -692,6 +766,10 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
                 FromUsername = fromUsername ?? string.Empty,
                 ToUserId = toUserId,
                 Message = message ?? string.Empty,
+                AdminStatus = string.IsNullOrWhiteSpace(status) ? null : status.Trim(),
+                IsHandled = isHandled,
+                HandledAt = handledTs,
+                HandledByUsername = handledByUsername,
             };
             return true;
         }

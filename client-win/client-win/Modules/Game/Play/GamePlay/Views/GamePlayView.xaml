@@ -64,7 +64,7 @@
                            TextWrapping="Wrap"
                            Margin="0 0 0 8" />
 
-	                <ItemsControl x:Name="GridItems"
+	                <grid:GridCellsControl x:Name="GridItems"
                                   DataContext="{Binding Grid}"
 	                              ItemsSource="{Binding Cells}"
 	                              KeyboardNavigation.DirectionalNavigation="Contained"
@@ -77,13 +77,18 @@
 	                        (ToString du ViewModel). On force un libellé humain et un type localisé pour éviter le bruit.
 	                    -->
 		                    <ItemsControl.ItemContainerStyle>
-		                        <Style TargetType="ContentPresenter">
-		                            <Setter Property="AutomationProperties.Name" Value="" />
+		                        <Style TargetType="grid:A11yGridCell">
+		                            <!--
+		                                NVDA annonce parfois le ContentPresenter comme "élément de donnée X sur N" (et duplique le nom),
+		                                même quand la cellule (Button) a déjà un AutomationProperties.Name.
+		                                On force un type localisé vide et on désactive l'annonce "X sur N" pour ne garder que la cellule (Button).
+		                            -->
+		                            <Setter Property="AutomationProperties.Name" Value=" " />
 		                            <Setter Property="AutomationProperties.HelpText" Value="" />
 		                            <Setter Property="AutomationProperties.ItemType" Value="" />
 		                            <Setter Property="AutomationProperties.ItemStatus" Value="" />
-		                            <Setter Property="AutomationProperties.PositionInSet" Value="0" />
-		                            <Setter Property="AutomationProperties.SizeOfSet" Value="0" />
+		                            <Setter Property="AutomationProperties.PositionInSet" Value="-1" />
+		                            <Setter Property="AutomationProperties.SizeOfSet" Value="-1" />
 		                        </Style>
 		                    </ItemsControl.ItemContainerStyle>
 	                    <ItemsControl.ItemsPanel>
@@ -106,7 +111,6 @@
 	                                               Foreground="White"
 	                                               FocusVisualStyle="{x:Null}"
 	                                               AutomationProperties.Name="{Binding AccessibleName}"
-	                                               AutomationProperties.AutomationId="{Binding CellRef}"
 	                                               AutomationProperties.HelpText=""
 	                                               Command="{Binding DataContext.CellCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
 	                                               CommandParameter="{Binding}">
@@ -130,7 +134,7 @@
 	                            </grid:A11yGridCell>
 	                        </DataTemplate>
 	                    </ItemsControl.ItemTemplate>
-	                </ItemsControl>
+	                </grid:GridCellsControl>
             </StackPanel>
         </Border>
 

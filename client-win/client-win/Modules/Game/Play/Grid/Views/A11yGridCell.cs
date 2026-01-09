@@ -18,7 +18,7 @@ public sealed class A11yGridCell : Button
         {
             // NVDA annonce "bouton" pour AutomationControlType.Button.
             // On expose un contrôle personnalisé avec un libellé de type explicite.
-            return AutomationControlType.Custom;
+            return AutomationControlType.Button;
         }
 
         protected override string GetLocalizedControlTypeCore()
@@ -35,13 +35,13 @@ public sealed class A11yGridCell : Button
         protected override int GetPositionInSetCore()
         {
             // Eviter "78 sur 81" (bruit NVDA) : ne pas préciser la position dans une liste.
-            return 0;
+            return -1;
         }
 
         protected override int GetSizeOfSetCore()
         {
             // Eviter "78 sur 81" (bruit NVDA) : ne pas préciser la taille de l'ensemble.
-            return 0;
+            return -1;
         }
 
         protected override string GetItemTypeCore()

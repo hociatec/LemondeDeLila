@@ -26,28 +26,65 @@ public sealed partial class GridBoardViewModel
         _gridActionsByCellKey.TryGetValue(key, out var actionsHere);
         actionsHere ??= new List<GridAction>();
 
-        if (IsCorridor)
-        {
-            await HandleCorridorEnterAsync(cell, actionsHere).ConfigureAwait(true);
-            return;
-        }
-
-        if (actionsHere.Count == 0)
+        if (!_canInteract())
         {
             return;
         }
 
-        var any = await PickActionAsync(
+        // Generic grid "grab" mechanic: Enter on an owned pawn toggles grab,
+        // then Enter on a target cell triggers the first MOVE action for that cell.
+        if (_isEntityGrabbed)
+        {
+            if (cell.HasOwnPawn)
+            {
+                _isEntityGrabbed = false;
+                _announce("Pion repose.");
+                return;
+            }
+
+            var move = actionsHere.FirstOrDefault(a => HasUiKey(a.Payload, "ENTER") && HasUiKind(a.Payload, "move"));
+            if (move == null)
+            {
+                _announce("Déplacement impossible.");
+                return;
+            }
+
+            await SendGridActionAsync(move).ConfigureAwait(true);
+            _announce("Action envoyee.");
+            _isEntityGrabbed = false;
+            if (session.LastState != null)
+            {
+                SyncFromState(session.LastState, _viewerPlayerId);
+            }
+            return;
+        }
+
+        if (cell.HasOwnPawn)
+        {
+            _isEntityGrabbed = true;
+            _announce("Pion pris. Choisissez une case et appuyez sur Entrée.");
+            return;
+        }
+
+        // Default: on Enter, execute only actions that declare key=ENTER (or no key) to avoid
+        // triggering actions meant for other keys (ex: wall placement).
+        var enterActions = actionsHere.Where(a => MatchesUiKey(a.Payload, "ENTER")).ToList();
+        if (enterActions.Count == 0)
+        {
+            return;
+        }
+
+        var chosen = await PickActionAsync(
                 "Action",
                 $"Choisir une action ({cell.CellRef}) :",
-                actionsHere)
+                enterActions)
             .ConfigureAwait(true);
-        if (any == null)
+        if (chosen == null)
         {
             return;
         }
 
-        await SendGridActionAsync(any).ConfigureAwait(true);
+        await SendGridActionAsync(chosen).ConfigureAwait(true);
         _announce("Action envoyee.");
         if (session.LastState != null)
         {
@@ -55,51 +92,106 @@ public sealed partial class GridBoardViewModel
         }
     }
 
-    private async Task HandleCorridorEnterAsync(
-        GridCellViewModel cell,
-        List<GridAction> actionsHere)
+    public async Task TryExecuteFocusedCellActionsAsync(string keyHint, GridCellViewModel cell)
     {
-        if (cell == null)
+        if (string.IsNullOrWhiteSpace(keyHint) || cell == null)
         {
             return;
         }
 
-        if (!_corridorPawnGrabbed)
+        if (!_canInteract())
         {
-            if (!cell.HasOwnPawn)
-            {
-                _announce("Prenez votre pion (Entree) puis choisissez une case.");
-                return;
-            }
-
-            _corridorPawnGrabbed = true;
-            _announce("Pion pris. Choisissez une case et appuyez sur Entree.");
             return;
         }
-
-        if (cell.HasOwnPawn)
-        {
-            _corridorPawnGrabbed = false;
-            _announce("Pion repose.");
-            return;
-        }
-
-        var move = actionsHere.FirstOrDefault(a =>
-            string.Equals(a.Type, "corridor_move", StringComparison.OrdinalIgnoreCase));
-        if (move == null)
-        {
-            _announce("Deplacement impossible.");
-            return;
-        }
-
-        await SendGridActionAsync(move).ConfigureAwait(true);
-        _announce("Action envoyee.");
-        _corridorPawnGrabbed = false;
 
         var session = _getSession();
-        if (session?.LastState != null && _viewerPlayerId != null)
+        if (session == null || !session.IsConnected)
+        {
+            return;
+        }
+
+        var key = GridCellKey.From(cell);
+        _gridActionsByCellKey.TryGetValue(key, out var actionsHere);
+        actionsHere ??= new List<GridAction>();
+
+        // Filter by declared ui key when present, otherwise fallback to all actions.
+        var filtered = actionsHere.Where(a => HasUiKey(a.Payload, keyHint)).ToList();
+        if (filtered.Count == 0)
+        {
+            filtered = actionsHere;
+        }
+
+        var chosen = await PickActionAsync(
+                "Action",
+                $"Choisir une action ({cell.CellRef}) :",
+                filtered)
+            .ConfigureAwait(true);
+        if (chosen == null)
+        {
+            return;
+        }
+
+        await SendGridActionAsync(chosen).ConfigureAwait(true);
+        _announce("Action envoyee.");
+        if (session.LastState != null)
         {
             SyncFromState(session.LastState, _viewerPlayerId);
+        }
+    }
+
+    private static bool HasUiKind(System.Text.Json.JsonElement payload, string kind)
+    {
+        try
+        {
+            if (payload.ValueKind != System.Text.Json.JsonValueKind.Object) return false;
+            if (!payload.TryGetProperty("_ui", out var ui) || ui.ValueKind != System.Text.Json.JsonValueKind.Object) return false;
+            if (!ui.TryGetProperty("kind", out var k) || k.ValueKind != System.Text.Json.JsonValueKind.String) return false;
+            return string.Equals((k.GetString() ?? string.Empty).Trim(), kind, StringComparison.OrdinalIgnoreCase);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static bool HasUiKey(System.Text.Json.JsonElement payload, string key)
+    {
+        try
+        {
+            if (payload.ValueKind != System.Text.Json.JsonValueKind.Object) return false;
+            if (!payload.TryGetProperty("_ui", out var ui) || ui.ValueKind != System.Text.Json.JsonValueKind.Object) return false;
+            if (!ui.TryGetProperty("key", out var k) || k.ValueKind != System.Text.Json.JsonValueKind.String) return false;
+            return string.Equals((k.GetString() ?? string.Empty).Trim(), key, StringComparison.OrdinalIgnoreCase);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static bool MatchesUiKey(System.Text.Json.JsonElement payload, string key)
+    {
+        // If the action does not declare a key, treat it as eligible for ENTER.
+        if (payload.ValueKind != System.Text.Json.JsonValueKind.Object)
+        {
+            return true;
+        }
+        try
+        {
+            if (!payload.TryGetProperty("_ui", out var ui) || ui.ValueKind != System.Text.Json.JsonValueKind.Object)
+            {
+                return true;
+            }
+            if (!ui.TryGetProperty("key", out var k) || k.ValueKind != System.Text.Json.JsonValueKind.String)
+            {
+                return true;
+            }
+            var value = (k.GetString() ?? string.Empty).Trim();
+            return string.Equals(value, key, StringComparison.OrdinalIgnoreCase);
+        }
+        catch
+        {
+            return true;
         }
     }
 
@@ -137,4 +229,3 @@ public sealed partial class GridBoardViewModel
         return byLabel.TryGetValue(picked, out var chosen) ? chosen : null;
     }
 }
-

@@ -127,8 +127,8 @@ public partial class GamePlayView
             return;
         }
 
-        // Corridor: place wall at focused cell (dialog: horizontal/vertical).
-        if (e.Key is Key.M && vm.Grid.IsCorridor)
+        // Generic: open the list of actions available on the focused cell (uses server-provided _ui hints when present).
+        if (e.Key is Key.M)
         {
             var focused = GetFocusedGridCell();
             if (focused == null)
@@ -137,7 +137,7 @@ public partial class GamePlayView
             }
 
             e.Handled = true;
-            _ = vm.Grid.TryPromptCorridorWallPlacementAsync(focused);
+            _ = vm.Grid.TryExecuteFocusedCellActionsAsync("M", focused);
         }
     }
 

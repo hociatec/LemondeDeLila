@@ -91,7 +91,7 @@ public sealed class GameActionMenuWindow : Window
 
         PreviewKeyDown += (_, e) =>
         {
-            if (e.Key == Key.F2)
+            if (e.Key is Key.F2 or Key.Escape)
             {
                 Close();
             }
@@ -188,4 +188,3 @@ public sealed class GameActionMenuWindow : Window
         return string.Empty;
     }
 }
-

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text.Json;
 using client_win.Modules.Game.Play.State.Dtos;
 
@@ -20,11 +19,6 @@ internal static class GamePlayExtrasParser
     {
         public int? Id { get; init; }
         public string? Username { get; init; }
-        public string[] ShoppingList { get; init; } = Array.Empty<string>();
-        public string[] Basket { get; init; } = Array.Empty<string>();
-        public string[] Inventory { get; init; } = Array.Empty<string>();
-        public string[] Stable { get; init; } = Array.Empty<string>();
-        public string[] Position { get; init; } = Array.Empty<string>();
     }
 
     internal static List<ShortcutHint> ExtractShortcutHints(GameStateDto state)
@@ -91,11 +85,6 @@ internal static class GamePlayExtrasParser
                 Username = view.TryGetProperty("username", out var u) && u.ValueKind == JsonValueKind.String
                     ? u.GetString()?.Trim()
                     : null,
-                ShoppingList = ExtractStringArray(view, "shoppingList"),
-                Basket = ExtractStringArray(view, "basket"),
-                Inventory = ExtractStringArray(view, "inventory"),
-                Stable = ExtractStringArray(view, "stable"),
-                Position = ExtractStringArray(view, "position"),
             };
         }
         catch
@@ -130,18 +119,5 @@ internal static class GamePlayExtrasParser
         return null;
     }
 
-    private static string[] ExtractStringArray(JsonElement obj, string key)
-    {
-        if (!obj.TryGetProperty(key, out var node) || node.ValueKind != JsonValueKind.Array)
-        {
-            return Array.Empty<string>();
-        }
 
-        return node.EnumerateArray()
-            .Where(e => e.ValueKind == JsonValueKind.String)
-            .Select(e => e.GetString() ?? string.Empty)
-            .Select(s => s.Trim())
-            .Where(s => !string.IsNullOrWhiteSpace(s))
-            .ToArray();
-    }
 }

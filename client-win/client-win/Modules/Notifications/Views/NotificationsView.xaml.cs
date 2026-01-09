@@ -93,6 +93,24 @@ public partial class NotificationsView : UserControl
             await vm.DeleteSelectedAsync().ConfigureAwait(true);
         }
 
+        if (e.Key == Key.H && DataContext is NotificationsViewModel vmH)
+        {
+            e.Handled = true;
+            await vmH.ToggleHandledAsync().ConfigureAwait(true);
+        }
+
+        if (e.Key == Key.P && DataContext is NotificationsViewModel vmP)
+        {
+            e.Handled = true;
+            await vmP.SetInProgressAsync().ConfigureAwait(true);
+        }
+
+        if (e.Key == Key.U && DataContext is NotificationsViewModel vmU)
+        {
+            e.Handled = true;
+            await vmU.SetOpenAsync().ConfigureAwait(true);
+        }
+
         if ((e.Key == Key.Enter || e.Key == Key.Return) && DataContext is NotificationsViewModel vm2)
         {
             e.Handled = true;

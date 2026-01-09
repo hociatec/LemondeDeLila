@@ -67,8 +67,8 @@ public partial class GamePlayView
             return;
         }
 
-        // Corridor: 'M' is handled locally on the grid (orientation dialog), not forwarded as a server shortcut.
-        if (e.Key == Key.M && vm.Grid.IsCorridor && vm.Grid.IsVisible)
+        // Grille: 'M' est un raccourci UI local (liste d'actions de la case), pas une touche envoyée au serveur.
+        if (e.Key == Key.M && vm.Grid.IsVisible)
         {
             return;
         }

@@ -19,11 +19,20 @@ export type AdminContactItem = {
   id: string;
   createdAt: string;
   readAt?: string | null;
+  status?: 'open' | 'in_progress' | 'handled';
+  handled?: boolean;
+  statusAt?: string | null;
+  statusByUserId?: number | null;
+  statusByUsername?: string | null;
+  handledAt?: string | null;
+  handledByUserId?: number | null;
+  handledByUsername?: string | null;
 };
 
 @Injectable()
 export class AdminContactService {
   private readonly logger = new Logger(AdminContactService.name);
+  private static readonly ADMIN_CONTACT_KIND = 'admin_contact';
 
   constructor(
     private readonly notifications: NotificationService,
@@ -40,6 +49,21 @@ export class AdminContactService {
       arr.includes('ROLE_MODERATOR') ||
       arr.includes('moderator')
     );
+  }
+
+  private async listStaffUserIds(): Promise<number[]> {
+    const all = await this.users.find({ select: ['id', 'username', 'roles'] });
+    return all
+      .filter((u) => this.isStaffRoles(u.roles))
+      .map((u) => u.id)
+      .filter((id) => typeof id === 'number' && id > 0);
+  }
+
+  private static normalizeContactStatus(value: unknown): 'open' | 'in_progress' | 'handled' {
+    const v = String(value ?? '').trim().toLowerCase();
+    if (v === 'handled' || v === 'done' || v === 'resolved') return 'handled';
+    if (v === 'in_progress' || v === 'in progress' || v === 'progress') return 'in_progress';
+    return 'open';
   }
 
   async listInbox(userId: number, limit = 100): Promise<any[]> {
@@ -87,11 +111,7 @@ export class AdminContactService {
       throw new Error('Message trop long (max 2000 caractères).');
     }
 
-    const all = await this.users.find({ select: ['id', 'username', 'roles'] });
-    const staffIds = all
-      .filter((u) => this.isStaffRoles(u.roles))
-      .map((u) => u.id)
-      .filter((id) => typeof id === 'number' && id > 0);
+    const staffIds = await this.listStaffUserIds();
 
     const cid = contactId || randomUUID();
     const createdAt = new Date();
@@ -102,6 +122,8 @@ export class AdminContactService {
       message: clean,
       fromUserId: from.id,
       fromUsername: from.username,
+      status: 'open',
+      handled: false,
     };
 
     const recipients = new Set<number>([from.id, ...staffIds]);
@@ -118,14 +140,14 @@ export class AdminContactService {
         await this.inbox.create({
           id: rowId,
           userId: uid,
-          kind: 'admin_contact',
+          kind: AdminContactService.ADMIN_CONTACT_KIND,
           createdAt,
           contactId: cid,
           fromUserId: from.id,
           fromUsername: from.username,
           toUserId: null,
           message: clean,
-          payload: null,
+          payload: { status: 'open', handled: false, statusAt: null, statusByUserId: null, statusByUsername: null },
         });
         try {
           await this.notifications.notifyUser(uid, 'notify.inbox.item', item);
@@ -171,11 +193,7 @@ export class AdminContactService {
       throw new Error('contactId requis.');
     }
 
-    const all = await this.users.find({ select: ['id', 'username', 'roles'] });
-    const staffIds = all
-      .filter((u) => this.isStaffRoles(u.roles))
-      .map((u) => u.id)
-      .filter((id) => typeof id === 'number' && id > 0);
+    const staffIds = await this.listStaffUserIds();
 
     const createdAt = new Date();
     const baseItem: Omit<AdminContactItem, 'id'> = {
@@ -186,6 +204,8 @@ export class AdminContactService {
       fromUserId: from.id,
       fromUsername: from.username,
       toUserId,
+      status: 'open',
+      handled: false,
     };
 
     const recipients = new Set<number>([toUserId, ...staffIds]);
@@ -202,14 +222,14 @@ export class AdminContactService {
         await this.inbox.create({
           id: rowId,
           userId: uid,
-          kind: 'admin_contact',
+          kind: AdminContactService.ADMIN_CONTACT_KIND,
           createdAt,
           contactId: cid,
           fromUserId: from.id,
           fromUsername: from.username,
           toUserId,
           message: clean,
-          payload: null,
+          payload: { status: 'open', handled: false, statusAt: null, statusByUserId: null, statusByUsername: null },
         });
         try {
           await this.notifications.notifyUser(uid, 'notify.inbox.item', item);
@@ -229,5 +249,139 @@ export class AdminContactService {
     );
 
     return { ...baseItem, id: firstRowId };
+  }
+
+  async setHandledForContact(
+    from: Pick<WsAuthPayload, 'id' | 'username' | 'roles'>,
+    contactId: string,
+    handled: boolean,
+  ): Promise<void> {
+    await this.setStatusForContact(from, contactId, handled ? 'handled' : 'open');
+  }
+
+  async setStatusForContact(
+    from: Pick<WsAuthPayload, 'id' | 'username' | 'roles'>,
+    contactId: string,
+    status: 'open' | 'in_progress' | 'handled' | string,
+  ): Promise<void> {
+    if (!this.isStaffRoles(from.roles)) {
+      throw new Error('Accès refusé.');
+    }
+
+    const cid = String(contactId || '').trim();
+    if (!cid) {
+      throw new Error('contactId requis.');
+    }
+
+    const normalizedStatus = AdminContactService.normalizeContactStatus(status);
+    const rows = await this.inbox.listByContactId(
+      AdminContactService.ADMIN_CONTACT_KIND,
+      cid,
+    );
+    if (rows.length === 0) {
+      return;
+    }
+
+    const now = new Date();
+    const isHandled = normalizedStatus === 'handled';
+
+    await Promise.all(
+      rows.map(async (row) => {
+        const prev =
+          row.payload && typeof row.payload === 'object' ? row.payload : {};
+
+        const nextPayload = {
+          ...prev,
+          status: normalizedStatus,
+          handled: isHandled,
+          statusAt: now.toISOString(),
+          statusByUserId: from.id,
+          statusByUsername: from.username,
+          handledAt: isHandled ? now.toISOString() : null,
+          handledByUserId: isHandled ? from.id : null,
+          handledByUsername: isHandled ? from.username : null,
+        };
+
+        await this.inbox.updatePayload(row.id, nextPayload);
+
+        const item: AdminContactItem = {
+          kind: 'admin_contact',
+          id: row.id,
+          contactId: cid,
+          createdAt: row.createdAt.toISOString(),
+          readAt: row.readAt?.toISOString?.() ?? null,
+          fromUserId: row.fromUserId ?? 0,
+          fromUsername: row.fromUsername ?? '',
+          toUserId: row.toUserId ?? undefined,
+          message: row.message ?? '',
+          status: normalizedStatus,
+          handled: isHandled,
+          statusAt: nextPayload.statusAt,
+          statusByUserId: nextPayload.statusByUserId,
+          statusByUsername: nextPayload.statusByUsername,
+          handledAt: nextPayload.handledAt,
+          handledByUserId: nextPayload.handledByUserId,
+          handledByUsername: nextPayload.handledByUsername,
+        };
+
+        try {
+          await this.notifications.notifyUser(row.userId, 'notify.inbox.item', item);
+        } catch (err) {
+          this.logger.warn(
+            `notify.inbox.item failed for user ${row.userId}: ${(err as Error).message}`,
+          );
+        }
+      }),
+    );
+  }
+
+  async deleteThreadForContact(
+    from: Pick<WsAuthPayload, 'id' | 'username' | 'roles'>,
+    contactId: string,
+  ): Promise<void> {
+    if (!this.isStaffRoles(from.roles)) {
+      throw new Error('Accès refusé.');
+    }
+
+    const cid = String(contactId || '').trim();
+    if (!cid) {
+      throw new Error('contactId requis.');
+    }
+
+    const rows = await this.inbox.listByContactId('admin_contact', cid);
+    if (rows.length === 0) {
+      return;
+    }
+
+    const byUser = new Map<number, string[]>();
+    for (const row of rows) {
+      const list = byUser.get(row.userId) ?? [];
+      list.push(row.id);
+      byUser.set(row.userId, list);
+    }
+
+    await this.inbox.deleteManyByIds(rows.map((r) => r.id));
+
+    await Promise.all(
+      Array.from(byUser.entries()).map(async ([userId, ids]) => {
+        try {
+          await this.notifications.notifyUser(userId, 'notify.inbox.removed', {
+            ids,
+            contactId: cid,
+          });
+        } catch (err) {
+          this.logger.warn(
+            `notify.inbox.removed failed for user ${userId}: ${(err as Error).message}`,
+          );
+        }
+        try {
+          await this.counts.notifyCounts(userId);
+        } catch (err) {
+          this.logger.warn(
+            `notifyCounts failed for user ${userId}: ${(err as Error).message}`,
+          );
+        }
+      }),
+    );
   }
 }

@@ -36,7 +36,6 @@ export class CorridorPresenterService extends BasePresenterService {
 
     const currentPlayerId = state.turn?.currentPlayerId ?? null;
     const viewerIsTurn = currentPlayerId === userId;
-    const viewerPos = CorridorRulebook.getPawnPos(meta, userId);
 
     const cellActions = this.gridCellActions.buildFromActions(
       exposed.actions ?? [],
@@ -49,7 +48,8 @@ export class CorridorPresenterService extends BasePresenterService {
             : '';
 
         if (type === 'corridor_move') return 'Déplacer ici';
-        if (type === 'corridor_place_wall' && o === 'h') return 'Mur horizontal ici';
+        if (type === 'corridor_place_wall' && o === 'h')
+          return 'Mur horizontal ici';
         if (type === 'corridor_place_wall' && o === 'v') return 'Mur vertical ici';
         return String((action as any)?.label ?? (action as any)?.type ?? '').trim();
       },
@@ -72,7 +72,7 @@ export class CorridorPresenterService extends BasePresenterService {
               ownerId: Number(pid),
               x: pos.x,
               y: pos.y,
-              glyph: Number(pid) === userId ? 'ƒ-?' : 'ƒ-<',
+              glyph: Number(pid) === userId ? '@' : 'O',
             }),
           ),
           blockedEdges,
@@ -82,19 +82,6 @@ export class CorridorPresenterService extends BasePresenterService {
             viewerIsTurn ? 'À vous de jouer.' : "Tour de l'adversaire.",
             `Murs restants : ${(meta?.wallsRemainingByPlayerId ?? {})[String(userId)] ?? 0}`,
           ],
-        },
-        corridor: {
-          size,
-          pawnsByPlayerId: meta?.pawnsByPlayerId ?? {},
-          walls: meta?.walls ?? { h: [], v: [] },
-          wallsRemainingByPlayerId: meta?.wallsRemainingByPlayerId ?? {},
-          modeHints: viewerIsTurn
-            ? ['Déplacement ou pose de mur.']
-            : ['Attendez votre tour.'],
-          current: {
-            playerId: userId,
-            pawn: viewerPos,
-          },
         },
       },
       board: {
@@ -144,11 +131,11 @@ export class CorridorPresenterService extends BasePresenterService {
     return [
       ...moves.map((to) => ({
         type: 'corridor_move',
-        payload: { x: to.x, y: to.y },
+        payload: { x: to.x, y: to.y, _ui: { key: 'ENTER', kind: 'move' } },
       })),
       ...walls.map((w) => ({
         type: 'corridor_place_wall',
-        payload: { x: w.x, y: w.y, o: w.o },
+        payload: { x: w.x, y: w.y, o: w.o, _ui: { key: 'M', kind: 'place_wall' } },
       })),
     ];
   }
@@ -159,48 +146,18 @@ export class CorridorPresenterService extends BasePresenterService {
 
   protected buildExtras(
     state: GameStateEntity,
-    metadata: CorridorMetadata,
-    currentPlayerId: number | null,
+    _metadata: CorridorMetadata,
+    _currentPlayerId: number | null,
   ): Record<string, unknown> {
-    const baseExtras = this.getBaseExtras(state);
-    const id = typeof currentPlayerId === 'number' ? currentPlayerId : null;
-    const pos = id != null ? CorridorRulebook.getPawnPos(metadata, id) : null;
-
-    return {
-      ...baseExtras,
-      currentPlayerView: {
-        id,
-        username:
-          id != null
-            ? state.players?.find((p) => p?.id === id)?.username ?? ''
-            : '',
-        position:
-          pos != null
-            ? [`Votre pion : colonne ${pos.x + 1}, ligne ${pos.y + 1}.`]
-            : [],
-      },
-    };
+    return this.getBaseExtras(state);
   }
 
   protected buildExtrasForUser(
     state: GameStateEntity,
-    metadata: CorridorMetadata,
-    userId: number,
-    currentPlayerId: number | null,
+    _metadata: CorridorMetadata,
+    _userId: number,
+    _currentPlayerId: number | null,
   ): Record<string, unknown> {
-    const baseExtras = this.getBaseExtras(state);
-    const pos = CorridorRulebook.getPawnPos(metadata, userId);
-    const isTurn = currentPlayerId === userId;
-    const suffix = isTurn ? ' (à vous de jouer).' : '.';
-
-    return {
-      ...baseExtras,
-      currentPlayerView: {
-        id: userId,
-        username: state.players?.find((p) => p?.id === userId)?.username ?? '',
-        position: [`Votre pion : colonne ${pos.x + 1}, ligne ${pos.y + 1}${suffix}`],
-      },
-    };
+    return this.getBaseExtras(state);
   }
 }
-

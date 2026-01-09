@@ -417,6 +417,10 @@ export class RoomService {
     if (!gameType || gameType.trim() === '') {
       throw new BadRequestException('Type de jeu requis');
     }
+
+    // Un utilisateur ne doit pas rester accroché à une ancienne table.
+    await this.leaveAllRoomsForUser(userId).catch(() => undefined);
+
     const gameId = gameType.trim();
     const known = await this.catalog.getGame(gameId);
     const afterCatalogAt = Date.now();
@@ -499,8 +503,8 @@ export class RoomService {
       where: { room: { id: room.id }, user: { id: user.id }, leftAt: IsNull() },
     });
     if (!existing) {
-      // Fermer toutes les participations actives de l'utilisateur dans d'autres rooms
-      await this.closeAllUserParticipations(userId);
+      // Quitter toutes les autres tables avant de rejoindre celle-ci.
+      await this.leaveAllRoomsForUser(userId, { exceptRoomId: room.id });
 
       const participant = this.participants.create({
         room,
@@ -878,16 +882,44 @@ export class RoomService {
     return this.botService.countBotsForRoom(roomId);
   }
 
-  private async closeAllUserParticipations(userId: number): Promise<void> {
+  /**
+   * Quand un utilisateur rejoint/crée une nouvelle table, il ne doit plus être "présent"
+   * sur une précédente table. On applique donc un leave complet (transfert owner / suppression)
+   * plutôt qu'un simple `leftAt` (sinon la table reste dans un état incohérent).
+   */
+  async leaveAllRoomsForUser(
+    userId: number,
+    opts?: { exceptRoomId?: number },
+  ): Promise<void> {
+    const except =
+      typeof opts?.exceptRoomId === 'number' &&
+      Number.isFinite(opts.exceptRoomId) &&
+      opts.exceptRoomId > 0
+        ? Math.floor(opts.exceptRoomId)
+        : 0;
+
     const activeParticipations = await this.participants.find({
       where: { user: { id: userId }, leftAt: IsNull() },
+      relations: ['room'],
     });
-    const now = new Date();
+
     for (const participation of activeParticipations) {
-      participation.leftAt = now;
-    }
-    if (activeParticipations.length > 0) {
-      await this.participants.save(activeParticipations);
+      const roomId = participation?.room?.id ?? 0;
+      if (!Number.isFinite(roomId) || roomId <= 0) {
+        continue;
+      }
+      if (except > 0 && roomId === except) {
+        continue;
+      }
+
+      try {
+        await this.leaveRoom(roomId, userId, {
+          preserveRoom: false,
+          disconnectOnly: false,
+        });
+      } catch {
+        // best effort
+      }
     }
   }
 

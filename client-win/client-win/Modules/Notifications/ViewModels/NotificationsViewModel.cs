@@ -3,6 +3,8 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using client_win.Core;
@@ -54,6 +56,7 @@ public sealed class NotificationsViewModel : ObservableObject
         ReplyCommand = new RelayCommand(OpenReply);
         SendReplyCommand = new AsyncRelayCommand(SendReplyAsync);
         CancelReplyCommand = new RelayCommand(CancelReply);
+        ToggleHandledCommand = new AsyncRelayCommand(ToggleHandledAsync);
         DeleteCommand = new AsyncRelayCommand(DeleteSelectedAsync);
         CloseCommand = new RelayCommand(_onClose);
     }
@@ -69,6 +72,7 @@ public sealed class NotificationsViewModel : ObservableObject
             {
                 OnPropertyChanged(nameof(SelectedDetailText));
                 OnPropertyChanged(nameof(CanReply));
+                OnPropertyChanged(nameof(CanToggleHandled));
                 _ = MarkSelectedReadAsync();
             }
         }
@@ -94,12 +98,79 @@ public sealed class NotificationsViewModel : ObservableObject
 
     public bool CanReply => SelectedItem != null && string.Equals(SelectedItem.Kind, "admin_contact", StringComparison.OrdinalIgnoreCase);
 
+    private bool IsStaff
+    {
+        get
+        {
+            var token = _session.CurrentUser?.Token;
+            return IsStaffFromToken(token);
+        }
+    }
+
+    private static bool IsStaffFromToken(string? token)
+    {
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            return false;
+        }
+
+        try
+        {
+            var parts = token.Split('.');
+            if (parts.Length < 2) return false;
+
+            static string Pad(string s)
+            {
+                s = s.Replace('-', '+').Replace('_', '/');
+                var mod = s.Length % 4;
+                return mod == 0 ? s : s + new string('=', 4 - mod);
+            }
+
+            var payloadJson = Encoding.UTF8.GetString(Convert.FromBase64String(Pad(parts[1])));
+            using var doc = JsonDocument.Parse(payloadJson);
+            if (!doc.RootElement.TryGetProperty("roles", out var rolesEl))
+            {
+                return false;
+            }
+
+            bool IsStaffRole(string? role)
+            {
+                if (string.IsNullOrWhiteSpace(role)) return false;
+                return string.Equals(role, "ROLE_ADMIN", StringComparison.OrdinalIgnoreCase) ||
+                       string.Equals(role, "admin", StringComparison.OrdinalIgnoreCase) ||
+                       string.Equals(role, "ROLE_MODERATOR", StringComparison.OrdinalIgnoreCase) ||
+                       string.Equals(role, "moderator", StringComparison.OrdinalIgnoreCase);
+            }
+
+            if (rolesEl.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var roleEl in rolesEl.EnumerateArray())
+                {
+                    if (roleEl.ValueKind == JsonValueKind.String && IsStaffRole(roleEl.GetString()))
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            return rolesEl.ValueKind == JsonValueKind.String && IsStaffRole(rolesEl.GetString());
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public bool CanToggleHandled => IsStaff && SelectedItem != null && string.Equals(SelectedItem.Kind, "admin_contact", StringComparison.OrdinalIgnoreCase);
+
     public string SelectedDetailText => FormatDetail(SelectedItem);
 
     public ICommand RefreshCommand { get; }
     public ICommand ReplyCommand { get; }
     public ICommand SendReplyCommand { get; }
     public ICommand CancelReplyCommand { get; }
+    public ICommand ToggleHandledCommand { get; }
     public ICommand DeleteCommand { get; }
     public ICommand CloseCommand { get; }
 
@@ -183,6 +254,56 @@ public sealed class NotificationsViewModel : ObservableObject
         CancelReply();
     }
 
+    public async Task ToggleHandledAsync()
+    {
+        var it = SelectedItem;
+        if (!CanToggleHandled || it == null || string.IsNullOrWhiteSpace(it.ContactId))
+        {
+            return;
+        }
+
+        try
+        {
+            await _notify.SendAsync(
+                    "notify.admin_contact.setStatus",
+                    new { contactId = it.ContactId, status = it.IsHandled ? "open" : "handled" })
+                .ConfigureAwait(true);
+
+            Status = !it.IsHandled ? "Notification marquǸe comme traitǸe." : "Notification marquǸe comme non traitǸe.";
+        }
+        catch
+        {
+            Status = "Impossible de modifier l'Ǹtat (connexion notifications ?).";
+        }
+    }
+
+    public Task SetInProgressAsync() => SetAdminContactStatusAsync("in_progress", "Notification marquǸe comme en cours de traitement.");
+
+    public Task SetOpenAsync() => SetAdminContactStatusAsync("open", "Notification marquǸe comme non traitǸe.");
+
+    private async Task SetAdminContactStatusAsync(string status, string okMessage)
+    {
+        var it = SelectedItem;
+        if (!CanToggleHandled || it == null || string.IsNullOrWhiteSpace(it.ContactId))
+        {
+            return;
+        }
+
+        try
+        {
+            await _notify.SendAsync(
+                    "notify.admin_contact.setStatus",
+                    new { contactId = it.ContactId, status })
+                .ConfigureAwait(true);
+
+            Status = okMessage;
+        }
+        catch
+        {
+            Status = "Impossible de modifier l'Ǹtat (connexion notifications ?).";
+        }
+    }
+
     public async Task DeleteSelectedAsync()
     {
         var it = SelectedItem;
@@ -206,6 +327,15 @@ public sealed class NotificationsViewModel : ObservableObject
 
         try
         {
+            if (IsStaff &&
+                string.Equals(it.Kind, "admin_contact", StringComparison.OrdinalIgnoreCase) &&
+                !string.IsNullOrWhiteSpace(it.ContactId))
+            {
+                await _notify.SendAsync("notify.admin_contact.deleteThread", new { contactId = it.ContactId }).ConfigureAwait(true);
+                Status = "Thread supprimǸ.";
+                return;
+            }
+
             await _notify.SendAsync("notify.inbox.delete", new { id = it.Id }).ConfigureAwait(true);
             _inbox.Remove(it.Id);
             await _notify.RequestInboxSnapshotAsync().ConfigureAwait(true);
@@ -266,7 +396,18 @@ public sealed class NotificationsViewModel : ObservableObject
 
         if (string.Equals(item.Kind, "admin_contact", StringComparison.OrdinalIgnoreCase))
         {
-            return $"{ts}\nDe: {item.FromUsername}\n\n{item.Message}";
+            var status = (item.AdminStatus ?? string.Empty).Trim().ToLowerInvariant();
+            var label = status switch
+            {
+                "handled" => "Traitée",
+                "in_progress" => "En cours de traitement",
+                "open" => "Non traitée",
+                _ => (item.IsHandled ? "Traitée" : "Non traitée"),
+            };
+            var handled = item.IsHandled
+                ? $"Traitée{(string.IsNullOrWhiteSpace(item.HandledByUsername) ? "" : $" par {item.HandledByUsername}")}{(item.HandledAt.HasValue ? $" ({item.HandledAt.Value.ToLocalTime():g})" : "")}"
+                : "Non traitée";
+            return $"{ts}\nDe: {item.FromUsername}\nÉtat: {label}\n\n{item.Message}";
         }
 
         return $"{ts}\nType: {item.Kind}";

@@ -25,8 +25,7 @@ public sealed partial class GridBoardViewModel : ObservableObject
     private bool _isVisible;
     private int _size = 9;
     private string _status = string.Empty;
-    private bool _isCorridor;
-    private bool _corridorPawnGrabbed;
+    private bool _isEntityGrabbed;
 
     public GridBoardViewModel(
         IDialogService dialogs,
@@ -64,12 +63,6 @@ public sealed partial class GridBoardViewModel : ObservableObject
     {
         get => _status;
         private set => SetProperty(ref _status, value);
-    }
-
-    public bool IsCorridor
-    {
-        get => _isCorridor;
-        private set => SetProperty(ref _isCorridor, value);
     }
 
     public ObservableCollection<GridCellViewModel> Cells { get; } = new();

@@ -73,6 +73,10 @@ public sealed class NotificationInbox : INotificationInbox
             FromUsername = item.FromUsername ?? string.Empty,
             ToUserId = item.ToUserId,
             Message = item.Message ?? string.Empty,
+            AdminStatus = item.AdminStatus,
+            IsHandled = item.IsHandled,
+            HandledAt = item.HandledAt,
+            HandledByUsername = item.HandledByUsername,
         };
     }
 }

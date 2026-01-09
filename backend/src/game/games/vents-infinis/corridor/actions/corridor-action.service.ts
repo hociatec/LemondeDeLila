@@ -6,7 +6,27 @@ import * as CorridorRulebook from '../rulebook/rulebook';
 
 @Injectable()
 export class CorridorActionService {
-  applyActions(state: GameStateEntity, actions: GameSingleActionDto[]): GameStateEntity {
+  private toCellRef(pos: { x: number; y: number }, size: number): string {
+    const col = CorridorActionService.toColumnLetters((pos?.x ?? 0) + 1);
+    const row = Math.max(1, size - (pos?.y ?? 0));
+    return `${col}${row}`.toLowerCase();
+  }
+
+  private static toColumnLetters(column: number): string {
+    let n = Math.max(1, Math.floor(Number(column) || 1));
+    let out = '';
+    while (n > 0) {
+      n -= 1;
+      out = String.fromCharCode(65 + (n % 26)) + out;
+      n = Math.floor(n / 26);
+    }
+    return out;
+  }
+
+  applyActions(
+    state: GameStateEntity,
+    actions: GameSingleActionDto[],
+  ): GameStateEntity {
     let next = state;
     for (const action of actions ?? []) {
       next = this.applyOne(next, action);
@@ -14,7 +34,10 @@ export class CorridorActionService {
     return next;
   }
 
-  private applyOne(state: GameStateEntity, action: GameSingleActionDto): GameStateEntity {
+  private applyOne(
+    state: GameStateEntity,
+    action: GameSingleActionDto,
+  ): GameStateEntity {
     if (String(state.status ?? '').toLowerCase() !== 'started') {
       return state;
     }
@@ -44,6 +67,7 @@ export class CorridorActionService {
 
     const meta = (state.metadata ?? {}) as CorridorMetadata;
     const from = CorridorRulebook.getPawnPos(meta, validatedActor);
+    const size = Number(meta?.size ?? 0) || 9;
 
     const nextMeta: CorridorMetadata = {
       ...meta,
@@ -54,7 +78,7 @@ export class CorridorActionService {
     };
 
     return this.advanceTurnAndMaybeFinish(state, validatedActor, nextMeta, {
-      moveMessage: `(${from.x + 1},${from.y + 1}) → (${to.x + 1},${to.y + 1})`,
+      moveMessage: `se déplace de ${this.toCellRef(from, size)} à ${this.toCellRef(to, size)}`,
       maybeWinnerPos: to,
     });
   }
@@ -68,9 +92,9 @@ export class CorridorActionService {
       CorridorRulebook.validatePlaceWallAction(state, action, actorId);
 
     const meta = (state.metadata ?? {}) as CorridorMetadata;
-    const remaining = (meta?.wallsRemainingByPlayerId ?? {})[
-      String(validatedActor)
-    ] ?? 0;
+    const size = Number(meta?.size ?? 0) || 9;
+    const remaining =
+      (meta?.wallsRemainingByPlayerId ?? {})[String(validatedActor)] ?? 0;
 
     const nextMeta: CorridorMetadata = {
       ...CorridorRulebook.applyWall(meta, wall),
@@ -80,13 +104,11 @@ export class CorridorActionService {
       },
     };
 
-    const label =
-      wall.o === 'h'
-        ? `mur horizontal (${wall.x + 1},${wall.y + 1})`
-        : `mur vertical (${wall.x + 1},${wall.y + 1})`;
+    const at = this.toCellRef({ x: wall.x, y: wall.y }, size);
+    const orientation = wall.o === 'h' ? 'horizontal' : 'vertical';
 
     return this.advanceTurnAndMaybeFinish(state, validatedActor, nextMeta, {
-      moveMessage: label,
+      moveMessage: `place un mur ${orientation} en ${at}`,
       maybeWinnerPos: null,
     });
   }
@@ -113,7 +135,7 @@ export class CorridorActionService {
     }
 
     const actorName = actor?.username ?? `#${actorId}`;
-    const moveMsg = `${actorName} : ${options.moveMessage}.`;
+    const moveMsg = `${actorName} ${options.moveMessage}.`;
     const winMsg = won ? `Victoire de ${actorName}.` : null;
 
     return {
@@ -127,7 +149,10 @@ export class CorridorActionService {
         ...(winMsg ? [{ message: winMsg }] : []),
       ],
       turn: won
-        ? { ...(state.turn ?? { currentPlayerId: null, direction: 1 }), currentPlayerId: null }
+        ? {
+            ...(state.turn ?? { currentPlayerId: null, direction: 1 }),
+            currentPlayerId: null,
+          }
         : {
             ...(state.turn ?? { currentPlayerId: nextPlayerId, direction: 1 }),
             currentPlayerId: nextPlayerId,

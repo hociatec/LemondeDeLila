@@ -15,6 +15,10 @@ public sealed class NotificationItem
     public string FromUsername { get; init; } = string.Empty;
     public int? ToUserId { get; init; }
     public string Message { get; init; } = string.Empty;
+    public string? AdminStatus { get; init; }
+    public bool IsHandled { get; init; }
+    public DateTimeOffset? HandledAt { get; init; }
+    public string? HandledByUsername { get; init; }
 
     public override string ToString()
     {
