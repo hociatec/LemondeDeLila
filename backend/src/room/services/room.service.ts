@@ -934,6 +934,43 @@ export class RoomService {
     }
   }
 
+  /**
+   * Best-effort helper for WS/game clients that connect early ("warm") and
+   * later start sending actions without having called `game.join`.
+   *
+   * Returns the most recently joined active room for the user, prioritizing a started game.
+   */
+  async findLatestActiveRoomForUser(
+    userId: number,
+  ): Promise<{ roomId: number; gameType: string } | null> {
+    if (!Number.isFinite(userId) || userId <= 0) return null;
+
+    const startedParticipation = await this.participants
+      .createQueryBuilder('p')
+      .innerJoinAndSelect('p.room', 'r')
+      .where('p.user_id = :userId', { userId })
+      .andWhere('p.left_at IS NULL')
+      .andWhere('(r.started_at IS NOT NULL OR LOWER(r.status) = :started)', {
+        started: 'started',
+      })
+      .orderBy('p.joined_at', 'DESC')
+      .getOne();
+
+    const p =
+      startedParticipation ??
+      (await this.participants.findOne({
+        where: { user: { id: userId }, leftAt: IsNull() },
+        relations: ['room'],
+        order: { joinedAt: 'DESC' },
+      }));
+
+    const roomId = p?.room?.id ?? 0;
+    const gameType = String(p?.room?.gameType ?? '').trim();
+    if (!Number.isFinite(roomId) || roomId <= 0) return null;
+    if (!gameType) return null;
+    return { roomId, gameType };
+  }
+
   private roomPayloadKey(roomId: number): string {
     return `${this.roomPayloadRedisPrefix}${roomId}`;
   }
