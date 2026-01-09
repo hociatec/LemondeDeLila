@@ -31,6 +31,7 @@ import {
 } from '../../../common/errors/game-errors';
 import { GameLoggerService } from '../../../common/services/game-logger.service';
 import { GameStatsService } from '../../../stats/services/game-stats.service';
+import { GridRenderService } from '../../modules/grid/services/grid-render.service';
 
 @Injectable()
 export class GameEngineService {
@@ -59,6 +60,7 @@ export class GameEngineService {
     private readonly botRunner: BotRunnerService,
     private readonly botScheduler: BotSchedulerService,
     private readonly botSettings: BotSettingsService,
+    private readonly gridRender: GridRenderService,
     private readonly store: GameEngineStateStore,
     private readonly gameLogger: GameLoggerService,
     private readonly stats: GameStatsService,
@@ -151,7 +153,67 @@ export class GameEngineService {
         ? handler.exposeState(state)
         : (state as GameStateWithActions);
     const withLabel = this.attachTurnLabel(exposed, label);
-    return this.attachCurrentPlayerView(withLabel);
+    return this.attachUiDescriptors(
+      this.gridRender.attachGridRenderDescriptors(
+        this.attachCurrentPlayerView(withLabel),
+      ),
+    );
+  }
+
+  async handleKeyPress(
+    roomId: number,
+    gameType: string,
+    userId: number,
+    key: string,
+  ): Promise<
+    | { kind: 'action'; actions: GameSingleActionDto[] }
+    | { kind: 'panel'; panelId: string; message: string }
+    | null
+  > {
+    const normalized = String(key ?? '').trim().toUpperCase();
+    if (!normalized) return null;
+
+    const state = await this.getStateForUser(roomId, gameType, userId);
+    const extras =
+      state?.extras && typeof state.extras === 'object' ? state.extras : {};
+
+    const shortcutsRaw = (extras as any).shortcuts;
+    const shortcuts: Array<any> = Array.isArray(shortcutsRaw) ? shortcutsRaw : [];
+
+    const match = shortcuts.find((s) => {
+      const rawKey = typeof s?.key === 'string' ? s.key : '';
+      const prefix = 'pressed ';
+      const k = rawKey.toLowerCase().startsWith(prefix)
+        ? rawKey.substring(prefix.length).trim().toUpperCase()
+        : rawKey.trim().toUpperCase();
+      return k === normalized;
+    });
+
+    if (!match || typeof match !== 'object') return null;
+
+    if (String(match.type ?? '') === 'action') {
+      const actionType = String(match.actionType ?? '').trim();
+      if (!actionType) return null;
+      return { kind: 'action', actions: [{ type: actionType, payload: {} }] };
+    }
+
+    if (String(match.type ?? '') === 'interface') {
+      const panelId = String(match.id ?? '').trim();
+      if (!panelId) return null;
+
+      const ui = (extras as any).ui;
+      const panels = ui && typeof ui === 'object' ? (ui as any).panels : null;
+      const panel =
+        panels && typeof panels === 'object' ? (panels as any)[panelId] : null;
+      const message =
+        panel && typeof panel === 'object' && typeof panel.message === 'string'
+          ? String(panel.message).trim()
+          : '';
+
+      return message ? { kind: 'panel', panelId, message } : null;
+    }
+
+    return null;
   }
 
   private async getInternalState(
@@ -1182,7 +1244,11 @@ export class GameEngineService {
       ? handler.exposeState(state)
       : (state as GameStateWithActions);
     const withLabel = this.attachTurnLabel(exposed, label);
-    return this.attachCurrentPlayerView(withLabel);
+    return this.attachUiDescriptors(
+      this.gridRender.attachGridRenderDescriptors(
+        this.attachCurrentPlayerView(withLabel),
+      ),
+    );
   }
 
   private attachTurnLabel(
@@ -1223,6 +1289,116 @@ export class GameEngineService {
       extras: {
         ...extras,
         currentPlayerView,
+      },
+    };
+  }
+
+  private attachUiDescriptors(state: GameStateWithActions): GameStateWithActions {
+    const extras =
+      state.extras && typeof state.extras === 'object' ? state.extras : {};
+
+    const uiExisting = (extras as any).ui;
+    const ui =
+      uiExisting && typeof uiExisting === 'object' && !Array.isArray(uiExisting)
+        ? { ...(uiExisting as Record<string, unknown>) }
+        : {};
+
+    const panelsExisting = (ui as any).panels;
+    const panels =
+      panelsExisting &&
+      typeof panelsExisting === 'object' &&
+      !Array.isArray(panelsExisting)
+        ? { ...(panelsExisting as Record<string, unknown>) }
+        : {};
+
+    const currentPlayerView = (extras as any).currentPlayerView;
+    const metadata = state.metadata ?? {};
+
+    const upsertPanel = (id: string, title: string, message: string) => {
+      if (!id || !title || !message) return;
+      if (panels[id] !== undefined) return;
+      panels[id] = { title, message };
+    };
+
+    const buildListMessage = (title: string, itemsRaw: unknown) => {
+      const items = Array.isArray(itemsRaw)
+        ? itemsRaw.map((x) => String(x ?? '').trim()).filter((x) => x)
+        : [];
+
+      if (items.length === 0) return `${title}: (vide)`;
+
+      const max = 12;
+      const shown = items.length > max ? items.slice(0, max) : items;
+      const body = shown.join(', ');
+      return items.length > max
+        ? `${title}: ${body}, ... (+${items.length - max})`
+        : `${title}: ${body}`;
+    };
+
+    const normalizeSentence = (text: unknown): string => {
+      const t = String(text ?? '').trim();
+      if (!t) return '';
+      return t.endsWith('.') ? t : `${t}.`;
+    };
+
+    const buildJoinedLinesMessage = (title: string, linesRaw: unknown) => {
+      const lines = Array.isArray(linesRaw)
+        ? linesRaw.map(normalizeSentence).filter((x) => x)
+        : [];
+      if (lines.length === 0) return `${title}: inconnue.`;
+      return lines.join(' ');
+    };
+
+    if (currentPlayerView && typeof currentPlayerView === 'object') {
+      upsertPanel(
+        'shopping',
+        'Shopping list',
+        buildListMessage('Shopping list', (currentPlayerView as any).shoppingList),
+      );
+      upsertPanel(
+        'basket',
+        'Panier',
+        buildListMessage('Panier', (currentPlayerView as any).basket),
+      );
+      upsertPanel(
+        'inventory',
+        'Inventaire',
+        buildListMessage('Inventaire', (currentPlayerView as any).inventory),
+      );
+      upsertPanel(
+        'stable',
+        'Écurie',
+        buildJoinedLinesMessage('Écurie', (currentPlayerView as any).stable),
+      );
+      upsertPanel(
+        'position',
+        'Position',
+        buildJoinedLinesMessage('Position', (currentPlayerView as any).position),
+      );
+    }
+
+    upsertPanel('score', 'Score', buildListMessage('Score', (extras as any).score));
+    upsertPanel('hand', 'Main', buildListMessage('Main', (extras as any).hand));
+    upsertPanel('books', 'Familles', buildListMessage('Familles', (extras as any).books));
+
+    if (typeof (metadata as any).pollution === 'number' || typeof (metadata as any).maxPollution === 'number') {
+      const p = typeof (metadata as any).pollution === 'number' ? (metadata as any).pollution : null;
+      const max = typeof (metadata as any).maxPollution === 'number' ? (metadata as any).maxPollution : null;
+
+      let message = 'Pollution: inconnue.';
+      if (p !== null && max !== null) message = `Pollution: ${p}/${max}.`;
+      else if (p !== null) message = `Pollution: ${p}.`;
+      else if (max !== null) message = `Pollution max: ${max}.`;
+
+      upsertPanel('pollution', 'Pollution', message);
+    }
+
+    (ui as any).panels = panels;
+    return {
+      ...state,
+      extras: {
+        ...extras,
+        ui,
       },
     };
   }

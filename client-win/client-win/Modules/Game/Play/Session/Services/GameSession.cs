@@ -15,13 +15,14 @@ public sealed class GameSession : IAsyncDisposable
 {
     private static readonly JsonSerializerOptions _json = new(JsonSerializerDefaults.Web);
     private readonly IWebSocketConnection _socket;
+    private readonly GameSessionMessageRouter _router;
+    private readonly GameSessionKeepAlive _keepAlive;
+
     // NOTE: GameSession est créé après ConnectAsync côté GameGatewayClient, donc le socket est déjà connecté.
     // IWebSocketConnection ne fournit pas l'état courant; on démarre donc en "Connected" et on se met à jour
-    // via l'événement StateChanged pour les transitions ultérieures.
+    // via l'évènement StateChanged pour les transitions ultérieures.
     private WebSocketState _state = WebSocketState.Connected;
     private bool _everConnected = true;
-    private CancellationTokenSource? _keepAliveCts;
-    private Task? _keepAliveLoop;
 
     public GameSession(int roomId, string gameType, IWebSocketConnection socket)
     {
@@ -30,11 +31,30 @@ public sealed class GameSession : IAsyncDisposable
         GameType = gameType ?? string.Empty;
         _socket = socket ?? throw new ArgumentNullException(nameof(socket));
         _socket.StateChanged += OnSocketStateChanged;
-        _socket.MessageReceived += OnRawMessage;
+
+        _router = new GameSessionMessageRouter(
+            _json,
+            emitState: s =>
+            {
+                LastState = s;
+                StateUpdated?.Invoke(s);
+            },
+            emitTurn: t =>
+            {
+                LastTurnInfo = t;
+                TurnUpdated?.Invoke(t);
+            },
+            emitError: msg => ErrorReceived?.Invoke(msg),
+            emitCommandAck: msg => CommandAckReceived?.Invoke(msg),
+            emitUiMessage: msg => UiMessageReceived?.Invoke(msg),
+            emitRaw: msg => RawMessageReceived?.Invoke(msg));
+        _socket.MessageReceived += _router.HandleRawMessage;
         _socket.Error += OnSocketError;
 
-        // Keep-alive côté client : évite les déconnexions en cas d'inactivité.
-        StartKeepAlive();
+        _keepAlive = new GameSessionKeepAlive(
+            isConnected: () => IsConnected,
+            sendPing: SendPingAsync);
+        _keepAlive.Start();
     }
 
     public int RoomId { get; }
@@ -50,40 +70,13 @@ public sealed class GameSession : IAsyncDisposable
     public event Action<string>? RawMessageReceived;
     public event Action<string>? ErrorReceived;
     public event Action<string>? CommandAckReceived;
+    public event Action<string>? UiMessageReceived;
 
     public Task CloseAsync() => _socket.CloseAsync();
 
-    public void StartKeepAlive(TimeSpan? interval = null)
-    {
-        var tick = interval ?? TimeSpan.FromSeconds(20);
-        if (tick < TimeSpan.FromSeconds(5))
-        {
-            tick = TimeSpan.FromSeconds(5);
-        }
+    public void StartKeepAlive(TimeSpan? interval = null) => _keepAlive.Start(interval);
 
-        if (_keepAliveLoop != null && !_keepAliveLoop.IsCompleted)
-        {
-            return;
-        }
-
-        _keepAliveCts?.Cancel();
-        _keepAliveCts?.Dispose();
-        _keepAliveCts = new CancellationTokenSource();
-
-        _keepAliveLoop = Task.Run(() => KeepAliveLoopAsync(tick, _keepAliveCts.Token));
-    }
-
-    public void StopKeepAlive()
-    {
-        try
-        {
-            _keepAliveCts?.Cancel();
-        }
-        catch
-        {
-            // ignore
-        }
-    }
+    public void StopKeepAlive() => _keepAlive.Stop();
 
     public async Task JoinAsync(CancellationToken cancellationToken = default)
     {
@@ -156,17 +149,34 @@ public sealed class GameSession : IAsyncDisposable
         await TrySendAsync(msg, cancellationToken).ConfigureAwait(false);
     }
 
+    public async Task SendKeyAsync(string key, CancellationToken cancellationToken = default)
+    {
+        if (!IsConnected)
+        {
+            ErrorReceived?.Invoke("Connexion jeu perdue.");
+            return;
+        }
+
+        var normalized = (key ?? string.Empty).Trim().ToUpperInvariant();
+        if (string.IsNullOrWhiteSpace(normalized))
+        {
+            return;
+        }
+
+        var trace = new { id = Guid.NewGuid().ToString("N"), sentAtMs = ServerClock.NowServerMs() };
+        var msg = JsonSerializer.Serialize(
+            new { type = "game.key", payload = new { roomId = RoomId, gameType = GameType, key = normalized, _trace = trace } },
+            _json);
+        await TrySendAsync(msg, cancellationToken).ConfigureAwait(false);
+    }
+
     public async ValueTask DisposeAsync()
     {
         StopKeepAlive();
-        if (_keepAliveCts != null)
-        {
-            _keepAliveCts.Dispose();
-            _keepAliveCts = null;
-        }
+        await _keepAlive.DisposeAsync().ConfigureAwait(false);
 
         _socket.StateChanged -= OnSocketStateChanged;
-        _socket.MessageReceived -= OnRawMessage;
+        _socket.MessageReceived -= _router.HandleRawMessage;
         _socket.Error -= OnSocketError;
         await _socket.DisposeAsync().ConfigureAwait(false);
     }
@@ -199,89 +209,6 @@ public sealed class GameSession : IAsyncDisposable
         ErrorReceived?.Invoke(message.Trim());
     }
 
-    private void OnRawMessage(string raw)
-    {
-        RawMessageReceived?.Invoke(raw);
-
-        try
-        {
-            using var doc = JsonDocument.Parse(raw);
-            var root = doc.RootElement;
-            if (root.ValueKind != JsonValueKind.Object) return;
-
-            if (!root.TryGetProperty("type", out var typeProp) ||
-                typeProp.ValueKind != JsonValueKind.String)
-            {
-                return;
-            }
-
-            var type = typeProp.GetString() ?? string.Empty;
-            if (string.IsNullOrWhiteSpace(type))
-            {
-                return;
-            }
-
-            if (string.Equals(type, "error", StringComparison.OrdinalIgnoreCase))
-            {
-                HandleError(root);
-                return;
-            }
-
-            if (string.Equals(type, "game.pong", StringComparison.OrdinalIgnoreCase))
-            {
-                HandlePong(root);
-                return;
-            }
-
-            if (string.Equals(type, "game.ack", StringComparison.OrdinalIgnoreCase))
-            {
-                HandleCommandAck(root);
-                return;
-            }
-
-            if (string.Equals(type, "game.state", StringComparison.OrdinalIgnoreCase))
-            {
-                HandleState(root);
-                return;
-            }
-
-            if (string.Equals(type, "game.turn", StringComparison.OrdinalIgnoreCase))
-            {
-                HandleTurn(root);
-            }
-        }
-        catch
-        {
-            // ignore
-        }
-    }
-
-    private void HandleCommandAck(JsonElement root)
-    {
-        try
-        {
-            if (!root.TryGetProperty("payload", out var payload) ||
-                payload.ValueKind != JsonValueKind.Object)
-            {
-                return;
-            }
-
-            var action = payload.TryGetProperty("action", out var actionProp) &&
-                         actionProp.ValueKind == JsonValueKind.String
-                ? actionProp.GetString() ?? string.Empty
-                : string.Empty;
-
-            if (string.Equals(action, "game.actions", StringComparison.OrdinalIgnoreCase))
-            {
-                CommandAckReceived?.Invoke("Action reçue par le serveur.");
-            }
-        }
-        catch
-        {
-            // ignore
-        }
-    }
-
     private async Task TrySendAsync(string message, CancellationToken cancellationToken)
     {
         try
@@ -300,164 +227,11 @@ public sealed class GameSession : IAsyncDisposable
         }
     }
 
-    private async Task KeepAliveLoopAsync(TimeSpan interval, CancellationToken cancellationToken)
-    {
-        // IMPORTANT: ne pas utiliser `game.state` en keep-alive.
-        // `game.state` passe par la queue de mutations côté serveur (même clé roomId/gameType)
-        // et peut donc retarder `game.actions` => impression de latence sur les raccourcis.
-        // On envoie un ping léger: le serveur compte l'activité via `on message`.
-        using var timer = new PeriodicTimer(interval);
-
-        if (IsConnected)
-        {
-            await SendPingAsync(cancellationToken).ConfigureAwait(false);
-        }
-
-        while (!cancellationToken.IsCancellationRequested)
-        {
-            try
-            {
-                var ok = await timer.WaitForNextTickAsync(cancellationToken).ConfigureAwait(false);
-                if (!ok)
-                {
-                    return;
-                }
-            }
-            catch
-            {
-                return;
-            }
-
-            if (!IsConnected)
-            {
-                continue;
-            }
-
-            try
-            {
-                await SendPingAsync(cancellationToken).ConfigureAwait(false);
-            }
-            catch
-            {
-                // Best-effort: l'auto-reconnect est gérée plus haut (ViewModel).
-            }
-        }
-    }
-
     private Task SendPingAsync(CancellationToken cancellationToken)
     {
         var ping = JsonSerializer.Serialize(
             new { type = "game.ping", payload = new { clientSentAtMs = ServerClock.UtcNowMs() } },
             _json);
         return TrySendAsync(ping, cancellationToken);
-    }
-
-    private void HandlePong(JsonElement root)
-    {
-        var receivedAtMs = ServerClock.UtcNowMs();
-
-        try
-        {
-            if (!root.TryGetProperty("payload", out var payload) ||
-                payload.ValueKind != JsonValueKind.Object)
-            {
-                return;
-            }
-
-            if (!payload.TryGetProperty("serverTimeMs", out var serverTimeProp) ||
-                serverTimeProp.ValueKind != JsonValueKind.Number)
-            {
-                return;
-            }
-
-            if (!payload.TryGetProperty("clientSentAtMs", out var clientSentProp) ||
-                clientSentProp.ValueKind != JsonValueKind.Number)
-            {
-                return;
-            }
-
-            var serverTimeMs = serverTimeProp.GetInt64();
-            var clientSentAtMs = clientSentProp.GetInt64();
-            ServerClock.UpdateFromPong(serverTimeMs, clientSentAtMs, receivedAtMs);
-        }
-        catch
-        {
-            // ignore
-        }
-    }
-
-    private void HandleError(JsonElement root)
-    {
-        try
-        {
-            if (!root.TryGetProperty("payload", out var payload) ||
-                payload.ValueKind != JsonValueKind.Object)
-            {
-                return;
-            }
-
-            if (!payload.TryGetProperty("message", out var messageProp))
-            {
-                return;
-            }
-
-            var message = messageProp.GetString();
-            if (string.IsNullOrWhiteSpace(message))
-            {
-                return;
-            }
-
-            ErrorReceived?.Invoke(message.Trim());
-        }
-        catch
-        {
-            // ignore
-        }
-    }
-
-    private void HandleState(JsonElement root)
-    {
-        try
-        {
-            if (!root.TryGetProperty("payload", out var payloadProp) ||
-                payloadProp.ValueKind == JsonValueKind.Undefined ||
-                payloadProp.ValueKind == JsonValueKind.Null)
-            {
-                return;
-            }
-
-            var payload = payloadProp.Deserialize<GameStateDto>(_json);
-            if (payload == null) return;
-
-            LastState = payload;
-            StateUpdated?.Invoke(payload);
-        }
-        catch (Exception ex)
-        {
-            Log.Debug(ex, "GameSession: ignore message parse error");
-        }
-    }
-
-    private void HandleTurn(JsonElement root)
-    {
-        try
-        {
-            if (!root.TryGetProperty("payload", out var payloadProp) ||
-                payloadProp.ValueKind == JsonValueKind.Undefined ||
-                payloadProp.ValueKind == JsonValueKind.Null)
-            {
-                return;
-            }
-
-            var payload = payloadProp.Deserialize<TurnInfoDto>(_json);
-            if (payload == null) return;
-
-            LastTurnInfo = payload;
-            TurnUpdated?.Invoke(payload);
-        }
-        catch (Exception ex)
-        {
-            Log.Debug(ex, "GameSession: ignore turn parse error");
-        }
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows.Input;
@@ -10,37 +11,11 @@ namespace client_win.Modules.Game.Play.Shortcuts.ViewModels;
 
 internal sealed class GamePlayShortcutsViewModel
 {
-    private readonly GamePlayStateProjector _projector;
+    private readonly ICommand _sendKey;
 
-    private readonly ICommand _toggleShopping;
-    private readonly ICommand _toggleStable;
-    private readonly ICommand _toggleScore;
-    private readonly ICommand _toggleBasket;
-    private readonly ICommand _toggleInventory;
-    private readonly ICommand _toggleHand;
-    private readonly ICommand _toggleBooks;
-    private readonly ICommand _position;
-
-    public GamePlayShortcutsViewModel(
-        GamePlayStateProjector projector,
-        ICommand toggleShopping,
-        ICommand toggleStable,
-        ICommand toggleScore,
-        ICommand toggleBasket,
-        ICommand toggleInventory,
-        ICommand toggleHand,
-        ICommand toggleBooks,
-        ICommand position)
+    public GamePlayShortcutsViewModel(ICommand sendKey)
     {
-        _projector = projector ?? throw new ArgumentNullException(nameof(projector));
-        _toggleShopping = toggleShopping ?? throw new ArgumentNullException(nameof(toggleShopping));
-        _toggleStable = toggleStable ?? throw new ArgumentNullException(nameof(toggleStable));
-        _toggleScore = toggleScore ?? throw new ArgumentNullException(nameof(toggleScore));
-        _toggleBasket = toggleBasket ?? throw new ArgumentNullException(nameof(toggleBasket));
-        _toggleInventory = toggleInventory ?? throw new ArgumentNullException(nameof(toggleInventory));
-        _toggleHand = toggleHand ?? throw new ArgumentNullException(nameof(toggleHand));
-        _toggleBooks = toggleBooks ?? throw new ArgumentNullException(nameof(toggleBooks));
-        _position = position ?? throw new ArgumentNullException(nameof(position));
+        _sendKey = sendKey ?? throw new ArgumentNullException(nameof(sendKey));
     }
 
     public ObservableCollection<ShortcutDefinition> Shortcuts { get; } = new();
@@ -54,131 +29,68 @@ internal sealed class GamePlayShortcutsViewModel
         }
     }
 
-    public void SyncInterfaceShortcuts(GameStateDto state)
+    public void SyncFromState(GameStateDto state)
     {
-        // Note: la touche est fournie par le serveur via extras.shortcuts (pressed X).
-        // On garde un fallback par défaut si jamais le serveur n'envoie pas la touche.
-
-        // Petits chevaux: 'S' est utilisé pour l'écurie (pions/positions).
-        // Si présent, on évite d'afficher d'autres raccourcis en conflit sur 'S' (score/shopping).
-        if (_projector.HasInterfaceShortcut(state, "stable"))
-        {
-            SyncInterfaceShortcut(
-                state,
-                id: "stable",
-                defaultKey: 's',
-                command: _toggleStable,
-                description: "Écurie / pions",
-                code: "ui.stable");
-
-            RemoveShortcutByCode("ui.score");
-            RemoveShortcutByCode("ui.shopping");
-        }
-        else
-        {
-            RemoveShortcutByCode("ui.stable");
-
-            SyncInterfaceShortcut(
-                state,
-                id: "score",
-                defaultKey: 's',
-                command: _toggleScore,
-                description: "Score en cours",
-                code: "ui.score");
-
-            // Panier Express: 'S' est utilisé pour la shopping list.
-            // Si le serveur expose "score", on n'ajoute pas "shopping" (conflit sur 's').
-            if (!_projector.HasInterfaceShortcut(state, "score"))
-            {
-                SyncInterfaceShortcut(
-                    state,
-                    id: "shopping",
-                    defaultKey: 's',
-                    command: _toggleShopping,
-                    description: "Annoncer shopping list",
-                    code: "ui.shopping");
-            }
-            else
-            {
-                RemoveShortcutByCode("ui.shopping");
-            }
-        }
-
-        SyncInterfaceShortcut(
-            state,
-            id: "basket",
-            defaultKey: 'b',
-            command: _toggleBasket,
-            description: "Annoncer panier",
-            code: "ui.basket");
-
-        SyncInterfaceShortcut(
-            state,
-            id: "inventory",
-            defaultKey: 'i',
-            command: _toggleInventory,
-            description: "Annoncer inventaire",
-            code: "ui.inventory");
-
-        SyncInterfaceShortcut(
-            state,
-            id: "hand",
-            defaultKey: 'c',
-            command: _toggleHand,
-            description: "Annoncer main",
-            code: "ui.hand");
-
-        SyncInterfaceShortcut(
-            state,
-            id: "books",
-            defaultKey: 'f',
-            command: _toggleBooks,
-            description: "Annoncer familles complètes",
-            code: "ui.books");
-
-        SyncInterfaceShortcut(
-            state,
-            id: "position",
-            defaultKey: 'p',
-            command: _position,
-            description: "Position plateau",
-            code: "ui.position");
-    }
-
-    private void SyncInterfaceShortcut(
-        GameStateDto state,
-        string id,
-        char defaultKey,
-        ICommand command,
-        string description,
-        string code)
-    {
-        var supported = _projector.HasInterfaceShortcut(state, id);
-        if (!supported)
-        {
-            RemoveShortcutByCode(code);
-            return;
-        }
-
-        var key = FindInterfaceShortcutKey(state, id) ?? defaultKey;
-
-        var existing = FindShortcutByCode(code);
-        if (existing != null && existing.Key.HasValue && existing.Key.Value == key)
+        if (state == null)
         {
             return;
         }
 
-        if (existing != null)
+        var desired = new Dictionary<string, ShortcutDefinition>(StringComparer.OrdinalIgnoreCase);
+        var hints = GamePlayExtrasParser.ExtractShortcutHints(state);
+        foreach (var hint in hints)
         {
-            Shortcuts.Remove(existing);
+            if (!TryParseShortcutKey(hint.Key, out var keyChar, out var normalizedKey))
+            {
+                continue;
+            }
+
+            var code = $"server.key.{normalizedKey}".ToLowerInvariant();
+            if (desired.ContainsKey(code))
+            {
+                continue;
+            }
+
+            desired[code] = new ShortcutDefinition(
+                keyChar,
+                _sendKey,
+                commandParameter: normalizedKey,
+                description: "Raccourci serveur",
+                code: code,
+                availableInGame: true);
         }
 
-        Shortcuts.Add(new ShortcutDefinition(
-            key,
-            command,
-            description: description,
-            code: code,
-            availableInGame: true));
+        // Remove old server.key.* shortcuts.
+        for (var i = Shortcuts.Count - 1; i >= 0; i--)
+        {
+            var code = Shortcuts[i].Code ?? string.Empty;
+            if (!code.StartsWith("server.key.", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+            if (!desired.ContainsKey(code))
+            {
+                Shortcuts.RemoveAt(i);
+            }
+        }
+
+        // Upsert desired shortcuts.
+        foreach (var kv in desired)
+        {
+            var existing = FindShortcutByCode(kv.Key);
+            if (existing != null)
+            {
+                var next = kv.Value;
+                if (existing.Key == next.Key &&
+                    Equals(existing.CommandParameter, next.CommandParameter))
+                {
+                    continue;
+                }
+                Shortcuts.Remove(existing);
+            }
+
+            Shortcuts.Add(kv.Value);
+        }
     }
 
     private ShortcutDefinition? FindShortcutByCode(string code)
@@ -194,43 +106,26 @@ internal sealed class GamePlayShortcutsViewModel
         return null;
     }
 
-    private void RemoveShortcutByCode(string code)
+    private static bool TryParseShortcutKey(string? raw, out char keyChar, out string normalizedKey)
     {
-        var existing = FindShortcutByCode(code);
-        if (existing != null)
+        keyChar = default;
+        normalizedKey = string.Empty;
+
+        var s = raw ?? string.Empty;
+        const string prefix = "pressed ";
+        if (s.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
         {
-            Shortcuts.Remove(existing);
-        }
-    }
-
-    private static char? FindInterfaceShortcutKey(GameStateDto state, string id)
-    {
-        var hints = GamePlayExtrasParser.ExtractShortcutHints(state);
-        foreach (var hint in hints)
-        {
-            if (!string.Equals(hint.Type, "interface", StringComparison.OrdinalIgnoreCase))
-            {
-                continue;
-            }
-
-            if (!string.Equals(hint.Id, id, StringComparison.OrdinalIgnoreCase))
-            {
-                continue;
-            }
-
-            var key = hint.Key ?? string.Empty;
-            const string prefix = "pressed ";
-            if (key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
-            {
-                key = key.Substring(prefix.Length).Trim();
-            }
-
-            if (key.Length == 1 && char.IsLetter(key[0]))
-            {
-                return char.ToLowerInvariant(key[0]);
-            }
+            s = s.Substring(prefix.Length).Trim();
         }
 
-        return null;
+        if (s.Length == 1 && char.IsLetter(s[0]))
+        {
+            keyChar = char.ToLowerInvariant(s[0]);
+            normalizedKey = char.ToUpperInvariant(s[0]).ToString();
+            return true;
+        }
+
+        return false;
     }
 }
+

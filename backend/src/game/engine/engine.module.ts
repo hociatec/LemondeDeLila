@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { RoomModule } from '../../room/room.module';
 import { GameCoreModule } from '../core/core.module';
 import { BotModule } from '../modules/bot/bot.module';
+import { GridModule } from '../modules/grid/grid.module';
 import { TurnModule } from '../modules/turn/turn.module';
 import { GameRegistryModule } from './game-registry.module';
 import { GameEngineService } from './services/game-engine.service';
@@ -19,6 +20,7 @@ import { ClientUpdatesModule } from '../../client-updates/client-updates.module'
     GameCoreModule,
     GameRegistryModule,
     BotModule,
+    GridModule,
     TurnModule,
     EngineServicesModule,
     StatsModule,

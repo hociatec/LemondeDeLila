@@ -1,0 +1,86 @@
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using client_win.Modules.Game.Play.Actions.Dtos;
+using client_win.Modules.Game.Play.Session.Services;
+
+namespace client_win.Modules.Game.Play.Choices.ViewModels;
+
+internal sealed class GamePlayChoicesSubmission
+{
+    private readonly Func<GameSession, string, GameClientAction?> _tryBuildPendingAction;
+    private readonly Func<GameSession, bool> _hasServerPendingChoices;
+    private readonly Func<string, GameClientAction?> _tryGetLocalAction;
+    private int _submitInProgress;
+
+    internal GamePlayChoicesSubmission(
+        Func<GameSession, string, GameClientAction?> tryBuildPendingAction,
+        Func<GameSession, bool> hasServerPendingChoices,
+        Func<string, GameClientAction?> tryGetLocalAction)
+    {
+        _tryBuildPendingAction = tryBuildPendingAction ?? throw new ArgumentNullException(nameof(tryBuildPendingAction));
+        _hasServerPendingChoices = hasServerPendingChoices ?? throw new ArgumentNullException(nameof(hasServerPendingChoices));
+        _tryGetLocalAction = tryGetLocalAction ?? throw new ArgumentNullException(nameof(tryGetLocalAction));
+    }
+
+    internal async Task<bool> SubmitAsync(
+        GameSession session,
+        string? selectedChoice,
+        Action<string> emitError,
+        Action<bool> clearLocalChoices,
+        CancellationToken cancellationToken = default)
+    {
+        if (session == null) return false;
+
+        if (Interlocked.Exchange(ref _submitInProgress, 1) == 1)
+        {
+            return false;
+        }
+
+        try
+        {
+            if (string.IsNullOrWhiteSpace(selectedChoice))
+            {
+                return false;
+            }
+
+            var choice = selectedChoice.Trim();
+            GameClientAction? action = null;
+            var clearOnlyWhenNoServerPending = false;
+
+            // 1) Choix "pending" fournis par le serveur (quiz, exchange, ask_card, ...)
+            if (_hasServerPendingChoices(session))
+            {
+                action = _tryBuildPendingAction(session, choice);
+                if (action == null)
+                {
+                    return false;
+                }
+
+                clearOnlyWhenNoServerPending = true;
+            }
+            else
+            {
+                // 2) Choix locaux (sélecteurs) construits à partir des informations serveur (ex: discard_card, ask_card).
+                action = _tryGetLocalAction(choice);
+                if (action == null)
+                {
+                    return false;
+                }
+            }
+
+            await session.SendActionsAsync(new[] { action }, cancellationToken).ConfigureAwait(false);
+            clearLocalChoices(clearOnlyWhenNoServerPending);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            emitError(ex.Message);
+            return false;
+        }
+        finally
+        {
+            Interlocked.Exchange(ref _submitInProgress, 0);
+        }
+    }
+}

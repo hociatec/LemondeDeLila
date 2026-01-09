@@ -210,6 +210,9 @@ export class GameGateway
         case 'game.actions':
           await this.handleActions(client, meta, payload);
           break;
+        case 'game.key':
+          await this.handleKey(client, meta, payload);
+          break;
         case 'game.bot.play':
           await this.handleBot(meta, payload);
           break;
@@ -409,6 +412,111 @@ export class GameGateway
         });
         // `GameEngineService` broadcast déjà via `setBroadcaster(...)` (pour inclure aussi `botThinking`).
         await this.engine.applyActions(roomId, gameType, actions, meta.userId);
+      },
+      { roomId, userId: meta.userId, gameType, traceId, clientToServerMs },
+    );
+  }
+
+  private async handleKey(client: WebSocket, meta: GameClient, payload: any) {
+    const roomId = Number(payload?.roomId ?? meta.roomId ?? 0);
+    const gameType = String(payload?.gameType ?? meta.gameType ?? '');
+    const key = String(payload?.key ?? '');
+    if (!roomId || !gameType) {
+      this.sendError(client, 'Parametres jeu manquants', 'game.key');
+      return;
+    }
+
+    const receivedAtMs = Date.now();
+    const traceId =
+      typeof payload?._trace?.id === 'string' ? payload._trace.id : null;
+    const sentAtMs =
+      typeof payload?._trace?.sentAtMs === 'number'
+        ? payload._trace.sentAtMs
+        : null;
+    const clientToServerMs =
+      typeof sentAtMs === 'number' && Number.isFinite(sentAtMs)
+        ? Math.max(0, receivedAtMs - sentAtMs)
+        : null;
+
+    await this.perf.measure(
+      'ws.game.key.total',
+      async () => {
+        await this.engine.checkPlayAccess(roomId, meta.userId);
+
+        const normalized = String(key ?? '').trim();
+        if (!normalized) {
+          this.safeSend(client, {
+            type: 'game.ack',
+            payload: {
+              action: 'game.key',
+              ok: false,
+              reason: 'Touche vide',
+              key: '',
+              traceId,
+              receivedAtMs,
+              clientToServerMs,
+            },
+          });
+          return;
+        }
+
+        const result = await this.engine.handleKeyPress(
+          roomId,
+          gameType,
+          meta.userId,
+          normalized,
+        );
+
+        if (!result) {
+          this.safeSend(client, {
+            type: 'game.ack',
+            payload: {
+              action: 'game.key',
+              ok: false,
+              reason: 'Raccourci indisponible',
+              key: normalized,
+              traceId,
+              receivedAtMs,
+              clientToServerMs,
+            },
+          });
+          return;
+        }
+
+        if (result.kind === 'action') {
+          await this.engine.applyActions(
+            roomId,
+            gameType,
+            result.actions,
+            meta.userId,
+          );
+          this.safeSend(client, {
+            type: 'game.ack',
+            payload: {
+              action: 'game.key',
+              ok: true,
+              key: normalized,
+              traceId,
+              receivedAtMs,
+              clientToServerMs,
+            },
+          });
+          return;
+        }
+
+        this.safeSend(client, {
+          type: 'game.ack',
+          payload: {
+            action: 'game.key',
+            ok: true,
+            key: normalized,
+            panelId: result.panelId,
+            message: result.message,
+            traceId,
+            receivedAtMs,
+            clientToServerMs,
+          },
+        });
       },
       { roomId, userId: meta.userId, gameType, traceId, clientToServerMs },
     );

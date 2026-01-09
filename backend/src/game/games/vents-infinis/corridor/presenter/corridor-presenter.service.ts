@@ -7,9 +7,18 @@ import type { GameStateEntity } from '../../../../core/entities/game-state.entit
 import { BasePresenterService } from '../../../../engine/abstract/base-presenter.service';
 import type { CorridorMetadata } from '../model/corridor.model';
 import * as CorridorRulebook from '../rulebook/rulebook';
+import { GridBlockedEdgesService } from '../../../../modules/grid/services/grid-blocked-edges.service';
+import { GridCellActionsService } from '../../../../modules/grid/services/grid-cell-actions.service';
 
 @Injectable()
 export class CorridorPresenterService extends BasePresenterService {
+  constructor(
+    private readonly gridBlockedEdges: GridBlockedEdgesService,
+    private readonly gridCellActions: GridCellActionsService,
+  ) {
+    super();
+  }
+
   exposeStateForUser(
     state: GameStateEntity,
     userId: number,
@@ -28,8 +37,25 @@ export class CorridorPresenterService extends BasePresenterService {
     const currentPlayerId = state.turn?.currentPlayerId ?? null;
     const viewerIsTurn = currentPlayerId === userId;
     const viewerPos = CorridorRulebook.getPawnPos(meta, userId);
-    const cellActions = this.buildGridCellActions(exposed);
-    const blockedEdges = this.buildBlockedEdges(meta);
+
+    const cellActions = this.gridCellActions.buildFromActions(
+      exposed.actions ?? [],
+      (action) => {
+        const payload = (action as any)?.payload ?? {};
+        const type = String((action as any)?.type ?? '').trim();
+        const o =
+          typeof payload?.o === 'string'
+            ? String(payload.o).trim().toLowerCase()
+            : '';
+
+        if (type === 'corridor_move') return 'Déplacer ici';
+        if (type === 'corridor_place_wall' && o === 'h') return 'Mur horizontal ici';
+        if (type === 'corridor_place_wall' && o === 'v') return 'Mur vertical ici';
+        return String((action as any)?.label ?? (action as any)?.type ?? '').trim();
+      },
+    );
+
+    const blockedEdges = this.gridBlockedEdges.buildFromWalls(size, meta?.walls);
     const cellTags = this.buildGridCellTags(state, userId, size);
 
     return {
@@ -39,14 +65,16 @@ export class CorridorPresenterService extends BasePresenterService {
         grid: {
           kind: 'grid',
           size,
-          entities: Object.entries(meta?.pawnsByPlayerId ?? {}).map(([pid, pos]) => ({
-            id: `pawn:${pid}`,
-            type: 'pawn',
-            ownerId: Number(pid),
-            x: pos.x,
-            y: pos.y,
-            glyph: Number(pid) === userId ? '●' : '○',
-          })),
+          entities: Object.entries(meta?.pawnsByPlayerId ?? {}).map(
+            ([pid, pos]) => ({
+              id: `pawn:${pid}`,
+              type: 'pawn',
+              ownerId: Number(pid),
+              x: pos.x,
+              y: pos.y,
+              glyph: Number(pid) === userId ? 'ƒ-?' : 'ƒ-<',
+            }),
+          ),
           blockedEdges,
           cellActions,
           cellTags,
@@ -96,58 +124,6 @@ export class CorridorPresenterService extends BasePresenterService {
       tags[`${x},${goalY}`] = ['Objectif'];
     }
     return tags;
-  }
-
-  private buildGridCellActions(exposed: GameStateWithActions): Record<string, any[]> {
-    const result: Record<string, any[]> = {};
-    const actions = (exposed.actions ?? []) as any[];
-    for (const action of actions) {
-      const payload = action?.payload ?? {};
-      const x = payload?.x;
-      const y = payload?.y;
-      if (typeof x !== 'number' || typeof y !== 'number') {
-        continue;
-      }
-
-      const k = `${x},${y}`;
-      const type = String(action?.type ?? '').trim();
-      const o = typeof payload?.o === 'string' ? String(payload.o).trim().toLowerCase() : '';
-      const label =
-        type === 'corridor_move'
-          ? 'Déplacer ici'
-          : type === 'corridor_place_wall' && o === 'h'
-            ? 'Mur horizontal ici'
-            : type === 'corridor_place_wall' && o === 'v'
-              ? 'Mur vertical ici'
-              : (action?.label ?? action?.type);
-      (result[k] ??= []).push({
-        type,
-        label,
-        payload,
-      });
-    }
-    return result;
-  }
-
-  private buildBlockedEdges(meta: CorridorMetadata): Record<string, { n: boolean; e: boolean; s: boolean; w: boolean }> {
-    const size = meta?.size ?? 0;
-    const h = new Set((meta?.walls?.h ?? []).map((k) => String(k)));
-    const v = new Set((meta?.walls?.v ?? []).map((k) => String(k)));
-
-    const hasH = (x: number, y: number) => h.has(`${x},${y}`);
-    const hasV = (x: number, y: number) => v.has(`${x},${y}`);
-
-    const blocked: Record<string, { n: boolean; e: boolean; s: boolean; w: boolean }> = {};
-    for (let y = 0; y < size; y++) {
-      for (let x = 0; x < size; x++) {
-        const south = y === size - 1 ? true : hasH(x, y) || hasH(x - 1, y);
-        const north = y === 0 ? true : hasH(x, y - 1) || hasH(x - 1, y - 1);
-        const east = x === size - 1 ? true : hasV(x, y) || hasV(x, y - 1);
-        const west = x === 0 ? true : hasV(x - 1, y) || hasV(x - 1, y - 1);
-        blocked[`${x},${y}`] = { n: north, e: east, s: south, w: west };
-      }
-    }
-    return blocked;
   }
 
   protected buildCatalog(): { phases: string[]; victory: any } {
@@ -222,10 +198,9 @@ export class CorridorPresenterService extends BasePresenterService {
       currentPlayerView: {
         id: userId,
         username: state.players?.find((p) => p?.id === userId)?.username ?? '',
-        position: [
-          `Votre pion : colonne ${pos.x + 1}, ligne ${pos.y + 1}${suffix}`,
-        ],
+        position: [`Votre pion : colonne ${pos.x + 1}, ligne ${pos.y + 1}${suffix}`],
       },
     };
   }
 }
+

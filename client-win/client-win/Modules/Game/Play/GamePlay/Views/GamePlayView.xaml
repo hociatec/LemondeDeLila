@@ -109,10 +109,6 @@
 	                                <grid:A11yGridCell.Style>
 	                                    <Style TargetType="grid:A11yGridCell">
 	                                        <Style.Triggers>
-	                                            <DataTrigger Binding="{Binding IsLegalMove}" Value="True">
-	                                                <Setter Property="Background" Value="#1B3554" />
-	                                                <Setter Property="BorderBrush" Value="#F2C14E" />
-                                            </DataTrigger>
                                             <DataTrigger Binding="{Binding CanPlaceWallH}" Value="True">
                                                 <Setter Property="Background" Value="#1B3554" />
                                                 <Setter Property="BorderBrush" Value="#F2C14E" />
@@ -121,13 +117,6 @@
                                                 <Setter Property="Background" Value="#1B3554" />
                                                 <Setter Property="BorderBrush" Value="#F2C14E" />
                                             </DataTrigger>
-                                            <DataTrigger Binding="{Binding IsOwnPawn}" Value="True">
-                                                <Setter Property="Background" Value="#214570" />
-                                                <Setter Property="BorderBrush" Value="#BFD0E6" />
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding IsSelectedPawn}" Value="True">
-                                                <Setter Property="BorderBrush" Value="#F2C14E" />
-	                                            </DataTrigger>
 	                                            <Trigger Property="IsKeyboardFocused" Value="True">
 	                                                <Setter Property="BorderBrush" Value="#F2C14E" />
 	                                            </Trigger>
