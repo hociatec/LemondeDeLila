@@ -686,6 +686,32 @@ export class GameEngineService {
     const botTurn = this.isBotTurn(next);
     let marked = await this.markBotThinking(roomId, gameType, next, botTurn);
     marked = this.forceFinishedIfWinnerDetected(marked);
+    if ((marked.status || '').toLowerCase() === 'finished') {
+      const meta = (marked as any)?.metadata;
+      const obj = meta && typeof meta === 'object' ? meta : {};
+      const winnerRaw = (obj as any)?.winnerId ?? null;
+      const winnerId = typeof winnerRaw === 'number' ? winnerRaw : null;
+      const outcomesByPlayerId: Record<string, 'won' | 'lost'> | null =
+        winnerId != null
+          ? Object.fromEntries(
+              (marked.players ?? [])
+                .filter((p: any) => p && typeof p.id === 'number' && !p.isBot)
+                .map((p: any) => [
+                  String(p.id),
+                  p.id === winnerId ? 'won' : 'lost',
+                ]),
+            )
+          : null;
+
+      marked = {
+        ...marked,
+        metadata: {
+          ...obj,
+          finishedAt: new Date().toISOString(),
+          ...(outcomesByPlayerId ? { outcomesByPlayerId } : {}),
+        },
+      };
+    }
 
     // Log générique: le serveur annonce le joueur suivant au moment où le tour change.
     // Le client reste "bête": il ne décide pas quand annoncer, il lit l'historique.
@@ -730,10 +756,33 @@ export class GameEngineService {
         );
       }
 
+      // Reset le state du moteur pour repartir d'un état "setup" propre (sans plateau figé).
+      try {
+        await this.store.delete(roomId, gameType);
+      } catch (err) {
+        this.gameLogger.error(
+          'Auto-reset game state after finish failed',
+          err instanceof Error ? err : undefined,
+          { roomId, gameType },
+        );
+      }
+
       try {
         await this.rooms.notifyRoomStateUpdated(roomId);
       } catch {
         // best effort
+      }
+
+      // Diffuser un état "setup" frais aux clients /ws/game pour rafraîchir l'UI immédiatement.
+      try {
+        const fresh = await this.getInternalState(roomId, gameType);
+        this.broadcaster?.(gameType, roomId, fresh);
+      } catch (err) {
+        this.gameLogger.error(
+          'Broadcast fresh state after finish failed',
+          err instanceof Error ? err : undefined,
+          { roomId, gameType },
+        );
       }
 
       // Attente : pas de rebuild tant que la table n'est pas redémarrée.
@@ -800,7 +849,14 @@ export class GameEngineService {
         continue;
       }
 
-      return { ...state, status: 'finished' };
+      const normalizedMeta =
+        key === 'winnerId'
+          ? meta
+          : {
+              ...meta,
+              winnerId: value,
+            };
+      return { ...state, status: 'finished', metadata: normalizedMeta };
     }
 
     return state;

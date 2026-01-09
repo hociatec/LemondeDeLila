@@ -47,6 +47,17 @@ type PresencePublicPlayer = Omit<PresenceBroadcastPlayer, 'contextLocked'> & {
   location?: string;
 };
 
+export type PresenceListItem = {
+  id: number;
+  username: string;
+  activity: PresenceConnectionContext;
+  currentRoom: { id: number; name: string } | null;
+  lastInteractionAt: number;
+  roomStarted: boolean | null;
+  availability?: PresenceAvailability;
+  location?: string;
+};
+
 @Injectable()
 export class PresenceService implements OnModuleDestroy {
   private readonly logger = new Logger(PresenceService.name);
@@ -612,6 +623,22 @@ export class PresenceService implements OnModuleDestroy {
 
   findClient(socket: WebSocket): PresenceClient | undefined {
     return this.clients.get(socket);
+  }
+
+  listPlayers(): PresenceListItem[] {
+    this.pruneOrigins();
+    const merged = this.mergePlayersFromOrigins();
+    const enriched = this.enrichMergedPlayers(merged);
+    return enriched.map((p) => ({
+      id: p.id,
+      username: p.username,
+      activity: p.activity,
+      currentRoom: p.currentRoom ?? null,
+      lastInteractionAt: p.lastInteractionAt ?? 0,
+      roomStarted: p.roomStarted ?? null,
+      availability: p.availability,
+      location: p.location,
+    }));
   }
 
   private pruneOrigins(): void {

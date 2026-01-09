@@ -31,6 +31,9 @@ export class RoomWsRegistrar implements OnModuleInit {
     this.registry.register('rooms.invite.send', (session, payload) =>
       this.handler.inviteSend(session, payload),
     );
+    this.registry.register('rooms.invite.presence.list', (session, payload) =>
+      this.handler.invitePresenceList(session, payload),
+    );
     this.registry.register('rooms.invite.respond', (session, payload) =>
       this.handler.inviteRespond(session, payload),
     );

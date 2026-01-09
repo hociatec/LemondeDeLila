@@ -18,6 +18,7 @@ import {
 import {
   RoomInviteRespondDto,
   RoomInviteSendDto,
+  RoomInvitePresenceListDto,
 } from '../dto/room-invite.dto';
 import { RoomService } from '../services/room.service';
 import { RoomInviteService } from '../services/room-invite.service';
@@ -26,6 +27,7 @@ import { buildPublicRoomList } from '../utils/room-directory.utils';
 import { CatalogService } from '../../catalog/services/catalog.service';
 import { PublicRoomDirectoryService } from '../services/public-room-directory.service';
 import { RoomRealtimeTrackerService } from '../services/room-realtime-tracker.service';
+import { PresenceService } from '../../presence/services/presence.service';
 
 @Injectable()
 export class RoomDirectoryWsHandler {
@@ -37,6 +39,7 @@ export class RoomDirectoryWsHandler {
     private readonly catalog: CatalogService,
     private readonly directory: PublicRoomDirectoryService,
     private readonly realtimeTracker: RoomRealtimeTrackerService,
+    private readonly presence: PresenceService,
     @InjectRepository(Room) private readonly roomRepo: Repository<Room>,
     @InjectRepository(RoomParticipant)
     private readonly participantRepo: Repository<RoomParticipant>,
@@ -208,6 +211,42 @@ export class RoomDirectoryWsHandler {
     return {
       type: 'rooms.invite.sent',
       payload: { invitationId: invite.id, roomId: room.id, userId: dto.userId },
+    };
+  }
+
+  async invitePresenceList(session: WsSession, payload: any) {
+    const user = requireUser(session);
+    const dto = this.validator.validate(RoomInvitePresenceListDto, payload ?? {});
+
+    const room = await this.roomRepo.findOne({
+      where: { id: dto.roomId },
+      relations: ['owner'],
+    });
+    if (!room) {
+      throw new NotFoundException('Table introuvable');
+    }
+    if (!room.owner || room.owner.id !== user.id) {
+      throw new ForbiddenException('Seul le propriétaire peut inviter');
+    }
+
+    const players = this.presence
+      .listPlayers()
+      .filter((p) => p.id !== user.id)
+      .filter((p) => p.availability !== 'absent')
+      .map((p) => ({
+        id: p.id,
+        username: p.username,
+        availability: p.availability ?? null,
+        location: p.location ?? null,
+        currentRoom: p.currentRoom ?? null,
+      }))
+      .sort((a, b) =>
+        a.username.localeCompare(b.username, undefined, { sensitivity: 'base' }),
+      );
+
+    return {
+      type: 'rooms.invite.presence.listed',
+      payload: { roomId: dto.roomId, players },
     };
   }
 
