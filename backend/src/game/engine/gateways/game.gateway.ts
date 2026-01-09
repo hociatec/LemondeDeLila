@@ -141,6 +141,8 @@ export class GameGateway
     }, this.pingIntervalMs);
     this.heartbeats.set(client, interval);
     this.lastPong.set(client, Date.now());
+
+    await this.tryAutoJoinFromUrl(client, args);
   }
 
   handleDisconnect(client: WebSocket) {
@@ -619,6 +621,68 @@ export class GameGateway
   private resolveAuth(client: WebSocket, args: any[]): WsAuthPayload | null {
     const token = this.auth.extractToken(client, args);
     return this.auth.tryVerify(token);
+  }
+
+  private async tryAutoJoinFromUrl(
+    client: WebSocket,
+    args: any[],
+  ): Promise<void> {
+    const meta = this.clients.get(client);
+    if (!meta) return;
+
+    const params = this.extractJoinParams(client, args);
+    if (!params) return;
+
+    const { roomId, gameType } = params;
+
+    await this.perf.measure(
+      'ws.game.auto_join.total',
+      async () => {
+        await this.engine.checkReadAccess(roomId, meta.userId);
+        const state = await this.engine.getStateForUser(
+          roomId,
+          gameType,
+          meta.userId,
+        );
+        this.setRoom(meta, roomId, gameType, client);
+        playingLog('ws.game.auto_join', {
+          userId: meta.userId,
+          roomId,
+          gameType,
+        });
+        this.safeSend(client, { type: 'game.state', payload: state });
+      },
+      { roomId, userId: meta.userId, gameType },
+    );
+  }
+
+  private extractJoinParams(
+    client: WebSocket,
+    args: any[],
+  ): { roomId: number; gameType: string } | null {
+    const request: any =
+      (args && args[0]) || (client as any).upgradeReq || (client as any).req;
+    const urlCandidate = (client as any).url || request?.url || '';
+    if (typeof urlCandidate !== 'string' || !urlCandidate.trim()) {
+      return null;
+    }
+    try {
+      const url = new URL(urlCandidate, 'ws://localhost');
+      const roomId = Number(
+        url.searchParams.get('roomId') || url.searchParams.get('room') || 0,
+      );
+      const gameType =
+        (url.searchParams.get('gameType') || url.searchParams.get('game') || '')
+          .trim()
+          .toString();
+
+      if (!Number.isFinite(roomId) || roomId <= 0) return null;
+      if (!gameType) return null;
+
+      return { roomId, gameType };
+    } catch {
+      return null;
+    }
   }
 
   private buildRoomKey(gameType: string, roomId: number): string {
