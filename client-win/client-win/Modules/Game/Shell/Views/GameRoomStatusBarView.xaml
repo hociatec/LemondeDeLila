@@ -7,17 +7,25 @@
              d:DesignHeight="60" d:DesignWidth="1280"
              Focusable="False"
              IsTabStop="False">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+    </UserControl.Resources>
     <Border x:Name="StatusRegion"
             Background="#0C1523"
             Padding="12 8"
             AutomationProperties.LiveSetting="Polite">
-        <TextBlock x:Name="StatusText"
-                   Text="{Binding Status}"
-                   Foreground="#F2C14E"
-                   FontSize="14"
-                   TextWrapping="Wrap"
-                   HorizontalAlignment="Center"
-                   AutomationProperties.Name="{Binding Status}"
-                   AutomationProperties.LiveSetting="Polite" />
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+            <TextBlock x:Name="StatusText"
+                       Text="{Binding Status}"
+                       Foreground="#F2C14E"
+                       FontSize="14"
+                       TextWrapping="Wrap"
+                       AutomationProperties.Name="{Binding Status}"
+                       AutomationProperties.LiveSetting="Polite" />
+            <TextBlock Text="  •  Reconnexion…"
+                       Foreground="#F08B5B"
+                       FontSize="14"
+                       Visibility="{Binding IsReconnecting, Converter={StaticResource BoolToVis}}" />
+        </StackPanel>
     </Border>
 </UserControl>

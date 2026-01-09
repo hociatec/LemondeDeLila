@@ -1751,16 +1751,23 @@ export class RoomGateway
         // ignore
       }
 
-      // Important: retirer avant close pour éviter handleDisconnect/leaveRoom en cascade.
+      // IMPORTANT: garder la socket ouverte (cycle de vie de l'app) et simplement
+      // la détacher de la table. Le client peut ensuite rejoindre une autre table.
+      this.realtimeTracker.setSocketParticipantRoom(socket, null);
       this.realtimeTracker.clearSocket(socket);
-      this.clients.delete(socket);
       a?.delete(socket);
       b?.delete(socket);
 
+      meta.role = 'spectator';
+      meta.roomId = 0;
+      meta.silent = false;
+
       try {
-        socket.close(4003, message);
+        const leftPayload = await this.roomsService.getRoomPayload(roomId);
+        this.applySpectators(roomId, leftPayload);
+        this.safeSend(socket, { type: 'room.left', roomId, payload: leftPayload });
       } catch {
-        // ignore
+        this.safeSend(socket, { type: 'room.deleted', roomId });
       }
     }
 

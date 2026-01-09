@@ -92,6 +92,7 @@
 
                         <TextBox x:Name="ChatInput"
                                  Text="{Binding Chat.Message, UpdateSourceTrigger=PropertyChanged}"
+                                 IsEnabled="{Binding Chat.IsConnected}"
                                  Background="#0D1625"
                                  BorderThickness="0"
                                  Foreground="#C3D2EA"

@@ -10,6 +10,7 @@ public sealed class GameRoomChatViewModel : ObservableObject
 {
     private string _message = string.Empty;
     private bool _isEnabled;
+    private bool _isConnected = true;
     private bool _isSoundsEnabled;
     private string _selfUsername = string.Empty;
     private readonly Dictionary<string, int> _pendingEcho = new(StringComparer.OrdinalIgnoreCase);
@@ -20,7 +21,7 @@ public sealed class GameRoomChatViewModel : ObservableObject
         _isSoundsEnabled = true;
         SendCommand = new AsyncRelayCommand(
             execute: SendAsync,
-            canExecute: () => IsEnabled && !string.IsNullOrWhiteSpace(Message),
+            canExecute: () => IsEnabled && IsConnected && !string.IsNullOrWhiteSpace(Message),
             onException: _ => { });
 
         _send = send ?? throw new ArgumentNullException(nameof(send));
@@ -46,6 +47,22 @@ public sealed class GameRoomChatViewModel : ObservableObject
                 return;
             }
 
+            if (SendCommand is AsyncRelayCommand cmd)
+            {
+                cmd.RaiseCanExecuteChanged();
+            }
+        }
+    }
+
+    public bool IsConnected
+    {
+        get => _isConnected;
+        set
+        {
+            if (!SetProperty(ref _isConnected, value))
+            {
+                return;
+            }
             if (SendCommand is AsyncRelayCommand cmd)
             {
                 cmd.RaiseCanExecuteChanged();

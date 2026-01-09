@@ -13,6 +13,7 @@ namespace client_win.Modules.Game.Shell.ViewModels;
 public sealed class GameRoomViewModel : ObservableObject
 {
     private string _status = "Table prête.";
+    private bool _isReconnecting;
 
     public GameRoomViewModel(
         CatalogGame game,
@@ -70,5 +71,11 @@ public sealed class GameRoomViewModel : ObservableObject
     {
         get => _status;
         set => SetProperty(ref _status, value);
+    }
+
+    public bool IsReconnecting
+    {
+        get => _isReconnecting;
+        set => SetProperty(ref _isReconnecting, value);
     }
 }

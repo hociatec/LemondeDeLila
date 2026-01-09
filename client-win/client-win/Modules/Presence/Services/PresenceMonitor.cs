@@ -320,7 +320,9 @@ public sealed class PresenceMonitor : IPresenceMonitor, IAsyncDisposable
                     _ => 30,
                 };
 
-                await Task.Delay(TimeSpan.FromSeconds(delaySeconds), cancellationToken).ConfigureAwait(false);
+                var jitter = 0.8 + (Random.Shared.NextDouble() * 0.4);
+                var delay = TimeSpan.FromMilliseconds(Math.Max(250, delaySeconds * 1000 * jitter));
+                await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
                 await EnsureConnectedAsync(cancellationToken).ConfigureAwait(false);
 
                 // EnsureConnectedAsync clears the in-progress flag on success; if not connected, keep trying.

@@ -17,6 +17,9 @@ public sealed class GameSession : IAsyncDisposable
     private readonly IWebSocketConnection _socket;
     private readonly GameSessionMessageRouter _router;
     private readonly GameSessionKeepAlive _keepAlive;
+    private readonly CancellationTokenSource _lifetimeCts = new();
+    private Task? _watchdogLoop;
+    private DateTime _lastPongUtc = DateTime.MinValue;
 
     // NOTE: GameSession est créé après ConnectAsync côté GameGatewayClient, donc le socket est déjà connecté.
     // IWebSocketConnection ne fournit pas l'état courant; on démarre donc en "Connected" et on se met à jour
@@ -47,7 +50,8 @@ public sealed class GameSession : IAsyncDisposable
             emitError: msg => ErrorReceived?.Invoke(msg),
             emitCommandAck: msg => CommandAckReceived?.Invoke(msg),
             emitUiMessage: msg => UiMessageReceived?.Invoke(msg),
-            emitRaw: msg => RawMessageReceived?.Invoke(msg));
+            emitRaw: msg => RawMessageReceived?.Invoke(msg),
+            emitPong: () => _lastPongUtc = DateTime.UtcNow);
         _socket.MessageReceived += _router.HandleRawMessage;
         _socket.Error += OnSocketError;
 
@@ -55,6 +59,9 @@ public sealed class GameSession : IAsyncDisposable
             isConnected: () => IsConnected,
             sendPing: SendPingAsync);
         _keepAlive.Start();
+
+        _lastPongUtc = DateTime.UtcNow;
+        _watchdogLoop = Task.Run(() => WatchdogLoopAsync(_lifetimeCts.Token));
     }
 
     public int RoomId { get; }
@@ -175,6 +182,13 @@ public sealed class GameSession : IAsyncDisposable
         StopKeepAlive();
         await _keepAlive.DisposeAsync().ConfigureAwait(false);
 
+        try { _lifetimeCts.Cancel(); } catch { }
+        if (_watchdogLoop != null)
+        {
+            try { await _watchdogLoop.ConfigureAwait(false); } catch { }
+            _watchdogLoop = null;
+        }
+
         _socket.StateChanged -= OnSocketStateChanged;
         _socket.MessageReceived -= _router.HandleRawMessage;
         _socket.Error -= OnSocketError;
@@ -233,5 +247,46 @@ public sealed class GameSession : IAsyncDisposable
             new { type = "game.ping", payload = new { clientSentAtMs = ServerClock.UtcNowMs() } },
             _json);
         return TrySendAsync(ping, cancellationToken);
+    }
+
+    private async Task WatchdogLoopAsync(CancellationToken cancellationToken)
+    {
+        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(10));
+
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            try
+            {
+                var ok = await timer.WaitForNextTickAsync(cancellationToken).ConfigureAwait(false);
+                if (!ok) return;
+            }
+            catch
+            {
+                return;
+            }
+
+            if (!IsConnected)
+            {
+                continue;
+            }
+
+            if (_lastPongUtc == DateTime.MinValue)
+            {
+                continue;
+            }
+
+            var age = DateTime.UtcNow - _lastPongUtc;
+            if (age <= TimeSpan.FromSeconds(60))
+            {
+                continue;
+            }
+
+            // Connexion "fantôme" probable: forcer une reconnexion via le contrôleur (en fermant le WS).
+            try { ErrorReceived?.Invoke("Connexion jeu perdue."); } catch { }
+            _ = Task.Run(async () =>
+            {
+                try { await _socket.CloseAsync().ConfigureAwait(false); } catch { }
+            });
+        }
     }
 }

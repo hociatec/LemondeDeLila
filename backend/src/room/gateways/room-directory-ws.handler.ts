@@ -307,6 +307,12 @@ export class RoomDirectoryWsHandler {
     if (started) {
       // Table déjà démarrée : l'invité rejoint en spectateur (même table privée).
       this.invites.consume(dto.invitationId, { keep: true });
+      // Best-effort: rafraîchir la room côté propriétaire (ex: afficher un badge "spectateur accepté").
+      try {
+        await this.rooms.notifyRoomStateUpdated(invite.roomId);
+      } catch {
+        // ignore
+      }
       this.notifications.notifyUser(
         invite.fromUserId,
         'rooms.invite.responded',
@@ -327,12 +333,23 @@ export class RoomDirectoryWsHandler {
     try {
       await this.rooms.joinRoom(invite.roomId, user.id, { allowPrivate: true });
       this.invites.consume(dto.invitationId);
+      // Important: prévenir les clients déjà connectés à la table (propriétaire) pour que le roster se mette à jour.
+      try {
+        await this.rooms.notifyRoomStateUpdated(invite.roomId);
+      } catch {
+        // ignore
+      }
     } catch (err) {
       const msg = String((err as Error)?.message ?? '');
       const msgLower = msg.toLowerCase();
       if (msgLower.includes('démarr') || msgLower.includes('demarr')) {
         const state = await this.rooms.getRoomPayload(invite.roomId);
         this.invites.consume(dto.invitationId, { keep: true });
+        try {
+          await this.rooms.notifyRoomStateUpdated(invite.roomId);
+        } catch {
+          // ignore
+        }
         this.notifications.notifyUser(
           invite.fromUserId,
           'rooms.invite.responded',
