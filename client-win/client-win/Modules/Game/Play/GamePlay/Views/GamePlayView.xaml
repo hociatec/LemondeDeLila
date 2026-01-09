@@ -137,6 +137,26 @@
                 Margin="0 0 0 10"
                 Visibility="{Binding ShowLegacyActionsPanel, Converter={StaticResource BoolToVis}}">
             <StackPanel>
+                <TextBlock Text="{Binding BoardText}"
+                           Foreground="#C3D2EA"
+                           FontFamily="Consolas"
+                           FontSize="12"
+                           TextWrapping="Wrap"
+                           Margin="0 0 0 10">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Visibility" Value="Visible"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding BoardText}" Value="">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding BoardText}" Value="{x:Null}">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
                 <TextBlock Text="Actions disponibles (serveur)"
                            Foreground="#F2C14E"
                            FontSize="12"

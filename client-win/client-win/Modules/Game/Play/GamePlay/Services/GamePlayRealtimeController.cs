@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 using client_win.Modules.Game.Play.Announcements.Services;
+using client_win.Modules.Game.Play.Board.Services;
 using client_win.Modules.Game.Play.Choices.ViewModels;
 using client_win.Modules.Game.Play.Grid.ViewModels;
 using client_win.Modules.Game.Play.Panels.Services;
@@ -30,6 +31,7 @@ internal sealed class GamePlayRealtimeController
     private readonly Action<string> _setStateSummary;
     private readonly Action<string> _setPendingText;
     private readonly Action<string> _setActionsText;
+    private readonly Action<string> _setBoardText;
 
     private bool _skipLogReplayOnce = true;
     private string? _lastGameStatus;
@@ -54,7 +56,8 @@ internal sealed class GamePlayRealtimeController
         Action<bool> setIsBotThinking,
         Action<string> setStateSummary,
         Action<string> setPendingText,
-        Action<string> setActionsText)
+        Action<string> setActionsText,
+        Action<string> setBoardText)
     {
         _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
         _panels = panels ?? throw new ArgumentNullException(nameof(panels));
@@ -73,6 +76,7 @@ internal sealed class GamePlayRealtimeController
         _setStateSummary = setStateSummary ?? throw new ArgumentNullException(nameof(setStateSummary));
         _setPendingText = setPendingText ?? throw new ArgumentNullException(nameof(setPendingText));
         _setActionsText = setActionsText ?? throw new ArgumentNullException(nameof(setActionsText));
+        _setBoardText = setBoardText ?? throw new ArgumentNullException(nameof(setBoardText));
     }
 
     internal void ResetForInitialize()
@@ -144,6 +148,7 @@ internal sealed class GamePlayRealtimeController
             _setStateSummary(presented.stateSummary);
             _setPendingText(presented.pendingText);
             _setActionsText(presented.actionsText);
+            _setBoardText(GamePlayBoardTextBuilder.Build(state));
 
             _syncShortcuts(state);
             _grid.SyncFromState(state, _viewerPlayerId);
@@ -186,4 +191,3 @@ internal sealed class GamePlayRealtimeController
             emitHistoryMessage: _ => { });
     }
 }
-

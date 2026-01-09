@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameStateWithActions } from '../../../../engine/dto/game-action.dto';
+import { BoardPayloadService } from '../../../../modules/board/services/board-payload.service';
 import * as PetitChevauxRulebook from '../rulebook/rulebook';
 import { PETIT_CHEVAUX_GAME } from '../definitions/game.definition';
 import type { PetitChevauxMetadata } from '../model/petit-chevaux-state.entity';
@@ -8,6 +9,8 @@ import { buildPetitChevauxShortcuts } from '../petit-chevaux.shortcuts';
 
 @Injectable()
 export class PetitChevauxPresenterService {
+  constructor(private readonly boardPayload: BoardPayloadService) {}
+
   exposeStateForUser(
     state: GameStateEntity,
     userId: number,
@@ -108,11 +111,11 @@ export class PetitChevauxPresenterService {
       })),
       pending: pendingForUser,
       extras,
-      board: {
-        tiles: Array.isArray(meta.tiles) ? meta.tiles : [],
-        positions: meta.positions ?? {},
-        laps: meta.laps ?? {},
-      },
+      board: this.boardPayload.buildTilesPositionsLaps(
+        meta.tiles,
+        meta.positions,
+        meta.laps,
+      ),
     } as any;
   }
 }

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameStateWithActions } from '../../../../engine/dto/game-action.dto';
+import { BoardPayloadService } from '../../../../modules/board/services/board-payload.service';
 import { CA_DERAPE_GAME } from '../definitions/ca.definition';
 import * as Rulebook from '../rulebook/ca.rulebook';
 import type { CaMetadata } from '../model/ca.types';
@@ -8,6 +9,8 @@ import { buildCaDerapeShortcuts } from '../ca-derape.shortcuts';
 
 @Injectable()
 export class CaPresenterService {
+  constructor(private readonly boardPayload: BoardPayloadService) {}
+
   exposeStateForUser(
     state: GameStateEntity,
     userId: number,
@@ -41,10 +44,7 @@ export class CaPresenterService {
           started: true,
         }),
       },
-      board: {
-        tiles: Array.isArray(meta.tiles) ? meta.tiles : [],
-        positions: meta.positions ?? {},
-      },
+      board: this.boardPayload.buildTilesPositionsLaps(meta.tiles, meta.positions),
     } as any;
   }
 }

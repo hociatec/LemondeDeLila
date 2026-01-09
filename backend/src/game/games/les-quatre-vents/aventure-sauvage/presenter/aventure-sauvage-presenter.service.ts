@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameStateWithActions } from '../../../../engine/dto/game-action.dto';
+import { BoardPayloadService } from '../../../../modules/board/services/board-payload.service';
 import { AVENTURE_SAUVAGE_GAME } from '../definitions/game.definition';
 import * as Rulebook from '../rulebook/rulebook';
 import type { AventureSauvageMetadata } from '../model/aventure-sauvage-state.entity';
@@ -8,6 +9,8 @@ import { buildAventureSauvageShortcuts } from '../aventure-sauvage.shortcuts';
 
 @Injectable()
 export class AventureSauvagePresenterService {
+  constructor(private readonly boardPayload: BoardPayloadService) {}
+
   exposeStateForUser(
     state: GameStateEntity,
     userId: number,
@@ -43,11 +46,7 @@ export class AventureSauvagePresenterService {
       })),
       pending: state.pending ?? null,
       extras,
-      board: {
-        tiles: Array.isArray(meta.tiles) ? meta.tiles : [],
-        positions: meta.positions ?? {},
-        laps: {},
-      },
+      board: this.boardPayload.buildTilesPositionsLaps(meta.tiles, meta.positions),
     } as any;
   }
 }

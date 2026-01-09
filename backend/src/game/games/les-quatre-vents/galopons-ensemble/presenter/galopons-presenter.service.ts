@@ -1,6 +1,7 @@
 ﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameStateWithActions } from '../../../../engine/dto/game-action.dto';
+import { BoardPayloadService } from '../../../../modules/board/services/board-payload.service';
 import { GALOPONS_GAME } from '../definitions/galopons.definition';
 import * as Rulebook from '../rulebook/rulebook';
 import type { GaloponsMetadata } from '../model/galopons.types';
@@ -8,6 +9,8 @@ import { buildGaloponsShortcuts } from '../galopons.shortcuts';
 
 @Injectable()
 export class GaloponsPresenterService {
+  constructor(private readonly boardPayload: BoardPayloadService) {}
+
   exposeStateForUser(
     state: GameStateEntity,
     userId: number,
@@ -42,10 +45,7 @@ export class GaloponsPresenterService {
         }),
         apples: meta.apples ?? {},
       },
-      board: {
-        tiles: Array.isArray(meta.tiles) ? meta.tiles : [],
-        positions: meta.positions ?? {},
-      },
+      board: this.boardPayload.buildTilesPositionsLaps(meta.tiles, meta.positions),
     } as any;
   }
 }

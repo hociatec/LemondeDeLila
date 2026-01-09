@@ -17,6 +17,7 @@ import { PanierExpressUtils } from '../model/panier-express-utils.service';
 import { PANIER_EXPRESS_PHASES } from '../definitions/rules.definition';
 import { PANIER_EXPRESS_VICTORY } from '../definitions/victory.definition';
 import { BasePresenterService } from '../../../../engine/abstract/base-presenter.service';
+import { BoardPayloadService } from '../../../../modules/board/services/board-payload.service';
 import { buildPanierExpressShortcuts } from '../panier-express.shortcuts';
 
 type PanierExpressPlayerView = {
@@ -45,7 +46,10 @@ export class PanierExpressPresenterService extends BasePresenterService {
   private pendingQuizRef: QuizQuestion | undefined;
   private rawPendingRef: PendingState | null = null;
 
-  constructor(private readonly utils: PanierExpressUtils) {
+  constructor(
+    private readonly utils: PanierExpressUtils,
+    private readonly boardPayload: BoardPayloadService,
+  ) {
     super();
   }
 
@@ -81,9 +85,7 @@ export class PanierExpressPresenterService extends BasePresenterService {
       pending,
       extras,
       board: {
-        tiles: Array.isArray(meta.tiles) ? meta.tiles : [],
-        positions: meta.positions ?? {},
-        laps: meta.laps ?? {},
+        ...this.boardPayload.buildTilesPositionsLaps(meta.tiles, meta.positions, meta.laps),
         turns: this.buildBoardTurns(state, meta),
       },
     } as GameStateWithActions;

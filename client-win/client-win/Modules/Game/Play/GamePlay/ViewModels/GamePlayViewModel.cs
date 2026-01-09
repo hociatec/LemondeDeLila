@@ -51,6 +51,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
     private string _stateSummary = "En attente d'un état de jeu (game.state)...";
     private string _pendingText = string.Empty;
     private string _actionsText = string.Empty;
+    private string _boardText = string.Empty;
     private bool _isBotThinking;
 
     public string GameId { get; }
@@ -126,7 +127,8 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
             setIsBotThinking: v => IsBotThinking = v,
             setStateSummary: v => StateSummary = v,
             setPendingText: v => PendingText = v,
-            setActionsText: v => ActionsText = v);
+            setActionsText: v => ActionsText = v,
+            setBoardText: v => BoardText = v);
 
         _connection = new GamePlayConnectionController(
             _dispatcher,
@@ -195,6 +197,12 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
     {
         get => _actionsText;
         private set => SetProperty(ref _actionsText, value);
+    }
+
+    public string BoardText
+    {
+        get => _boardText;
+        private set => SetProperty(ref _boardText, value);
     }
 
     public bool IsBotThinking

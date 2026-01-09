@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameStateWithActions } from '../../../../engine/dto/game-action.dto';
+import { BoardPayloadService } from '../../../../modules/board/services/board-payload.service';
 import * as JeuOieRulebook from '../rulebook/rulebook';
 import { JEU_OIE_GAME } from '../definitions/game.definition';
 import type { JeuOieMetadata } from '../model/jeu-oie-state.entity';
@@ -8,6 +9,8 @@ import { buildJeuOieShortcuts } from '../jeu-oie.shortcuts';
 
 @Injectable()
 export class JeuOiePresenterService {
+  constructor(private readonly boardPayload: BoardPayloadService) {}
+
   exposeStateForUser(
     state: GameStateEntity,
     userId: number,
@@ -43,11 +46,11 @@ export class JeuOiePresenterService {
       })),
       pending: state.pending ?? null,
       extras,
-      board: {
-        tiles: Array.isArray(meta.tiles) ? meta.tiles : [],
-        positions: meta.positions ?? {},
-        laps: meta.laps ?? {},
-      },
+      board: this.boardPayload.buildTilesPositionsLaps(
+        meta.tiles,
+        meta.positions,
+        meta.laps,
+      ),
     } as any;
   }
 }

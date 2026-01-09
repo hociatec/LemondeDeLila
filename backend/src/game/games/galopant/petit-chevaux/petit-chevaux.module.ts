@@ -3,6 +3,7 @@ import { GameCoreModule } from '../../../core/core.module';
 import { GameRegistryModule } from '../../../engine/game-registry.module';
 import { EngineServicesModule } from '../../../engine/services/engine-services.module';
 import { BotModule } from '../../../modules/bot/bot.module';
+import { BoardModule } from '../../../modules/board/board.module';
 import { RandomModule } from '../../../modules/random/random.module';
 import { TurnModule } from '../../../modules/turn/turn.module';
 import { PetitChevauxService } from './petit-chevaux.service';
@@ -18,6 +19,7 @@ import { PetitChevauxBotService } from './bots/petit-chevaux-bot.service';
     GameRegistryModule,
     EngineServicesModule,
     BotModule,
+    BoardModule,
     RandomModule,
     TurnModule,
   ],

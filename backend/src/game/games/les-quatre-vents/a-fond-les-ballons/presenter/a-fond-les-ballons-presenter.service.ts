@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameStateWithActions } from '../../../../engine/dto/game-action.dto';
+import { BoardPayloadService } from '../../../../modules/board/services/board-payload.service';
 import * as Rulebook from '../rulebook/rulebook';
 import { A_FOND_LES_BALLONS_GAME } from '../definitions/game.definition';
 import type { AFondLesBallonsMetadata } from '../model/a-fond-les-ballons-state.entity';
@@ -8,6 +9,8 @@ import { buildAFondLesBallonsShortcuts } from '../a-fond-les-ballons.shortcuts';
 
 @Injectable()
 export class AFondLesBallonsPresenterService {
+  constructor(private readonly boardPayload: BoardPayloadService) {}
+
   exposeStateForUser(
     state: GameStateEntity,
     userId: number,
@@ -43,11 +46,7 @@ export class AFondLesBallonsPresenterService {
       })),
       pending: state.pending ?? null,
       extras,
-      board: {
-        tiles: Array.isArray(meta.tiles) ? meta.tiles : [],
-        positions: meta.positions ?? {},
-        laps: {},
-      },
+      board: this.boardPayload.buildTilesPositionsLaps(meta.tiles, meta.positions),
     } as any;
   }
 }

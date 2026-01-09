@@ -14,4 +14,7 @@ public sealed class GameBoardDto
 
     [JsonPropertyName("laps")]
     public Dictionary<string, int>? Laps { get; set; }
+
+    [JsonPropertyName("turns")]
+    public Dictionary<string, int>? Turns { get; set; }
 }

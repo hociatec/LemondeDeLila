@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { GameCoreModule } from '../../../core/core.module';
 import { GameRegistryModule } from '../../../engine/game-registry.module';
 import { RandomModule } from '../../../modules/random/random.module';
+import { BoardModule } from '../../../modules/board/board.module';
 import { TurnModule } from '../../../modules/turn/turn.module';
 import { BotModule } from '../../../modules/bot/bot.module';
 import { ContesService } from './contes.service';
@@ -15,6 +16,7 @@ import { ContesBotService } from './bots/contes-bot.service';
     GameCoreModule,
     GameRegistryModule,
     RandomModule,
+    BoardModule,
     TurnModule,
     BotModule,
   ],

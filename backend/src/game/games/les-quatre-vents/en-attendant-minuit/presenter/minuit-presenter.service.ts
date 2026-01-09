@@ -1,6 +1,7 @@
 ﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameStateWithActions } from '../../../../engine/dto/game-action.dto';
+import { BoardPayloadService } from '../../../../modules/board/services/board-payload.service';
 import { MINUIT_GAME } from '../definitions/minuit.definition';
 import * as Rulebook from '../rulebook/rulebook';
 import type { MinuitMetadata } from '../model/minuit.types';
@@ -8,6 +9,8 @@ import { buildMinuitShortcuts } from '../minuit.shortcuts';
 
 @Injectable()
 export class MinuitPresenterService {
+  constructor(private readonly boardPayload: BoardPayloadService) {}
+
   exposeStateForUser(
     state: GameStateEntity,
     userId: number,
@@ -51,10 +54,7 @@ export class MinuitPresenterService {
           started: true,
         }),
       },
-      board: {
-        tiles: Array.isArray(meta.tiles) ? meta.tiles : [],
-        positions: meta.positions ?? {},
-      },
+      board: this.boardPayload.buildTilesPositionsLaps(meta.tiles, meta.positions),
     } as any;
   }
 }

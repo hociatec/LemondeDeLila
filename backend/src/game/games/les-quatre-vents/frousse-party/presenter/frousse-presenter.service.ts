@@ -1,6 +1,7 @@
 ﻿import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameStateWithActions } from '../../../../engine/dto/game-action.dto';
+import { BoardPayloadService } from '../../../../modules/board/services/board-payload.service';
 import { FROUSSE_GAME } from '../definitions/frousse.definition';
 import * as Rulebook from '../rulebook/rulebook';
 import type { FrousseMetadata } from '../model/frousse.types';
@@ -8,6 +9,8 @@ import { buildFrousseShortcuts } from '../frousse.shortcuts';
 
 @Injectable()
 export class FroussePresenterService {
+  constructor(private readonly boardPayload: BoardPayloadService) {}
+
   exposeStateForUser(
     state: GameStateEntity,
     userId: number,
@@ -41,10 +44,7 @@ export class FroussePresenterService {
           started: true,
         }),
       },
-      board: {
-        tiles: Array.isArray(meta.tiles) ? meta.tiles : [],
-        positions: meta.positions ?? {},
-      },
+      board: this.boardPayload.buildTilesPositionsLaps(meta.tiles, meta.positions),
     } as any;
   }
 }
