@@ -111,6 +111,25 @@ public sealed class RoomSession : IAsyncDisposable
                 return;
             }
 
+            if (string.Equals(type, "room.left", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(type, "room.deleted", StringComparison.OrdinalIgnoreCase))
+            {
+                // Le backend peut forcer une sortie (kick/ban/delete). Le client doit revenir au menu.
+                try
+                {
+                    ErrorReceived?.Invoke("Vous avez quitté la table.");
+                }
+                catch
+                {
+                    // ignore
+                }
+                _ = Task.Run(async () =>
+                {
+                    try { await _socket.CloseAsync().ConfigureAwait(false); } catch { }
+                });
+                return;
+            }
+
             if (string.Equals(type, "room.pong", StringComparison.OrdinalIgnoreCase))
             {
                 HandlePong(root);

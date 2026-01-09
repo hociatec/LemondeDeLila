@@ -229,16 +229,31 @@ export class RoomDirectoryWsHandler {
       throw new ForbiddenException('Seul le propriétaire peut inviter');
     }
 
+    const activeParticipantIds = new Set<number>(
+      (
+        await this.participantRepo
+          .createQueryBuilder('p')
+          .select('p.user_id', 'userId')
+          .where('p.room_id = :roomId', { roomId: room.id })
+          .andWhere('p.left_at IS NULL')
+          .getRawMany()
+      )
+        .map((r: any) => Number(r?.userId ?? 0))
+        .filter((id) => Number.isFinite(id) && id > 0),
+    );
+
     const players = this.presence
       .listPlayers()
       .filter((p) => p.id !== user.id)
       .filter((p) => p.availability !== 'absent')
+      .filter((p) => !activeParticipantIds.has(p.id))
       .map((p) => ({
         id: p.id,
         username: p.username,
         availability: p.availability ?? null,
         location: p.location ?? null,
         currentRoom: p.currentRoom ?? null,
+        pendingInvite: Boolean(this.invites.findActive(room.id, p.id)),
       }))
       .sort((a, b) =>
         a.username.localeCompare(b.username, undefined, { sensitivity: 'base' }),

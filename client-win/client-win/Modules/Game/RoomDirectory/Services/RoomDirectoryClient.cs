@@ -60,6 +60,34 @@ public sealed class RoomDirectoryClient : IRoomDirectoryClient
         return "Invitation traitée.";
     }
 
+    public async Task<InvitePresenceListResult> InvitePresenceListAsync(int roomId, CancellationToken cancellationToken = default)
+    {
+        var token = _session.CurrentUser?.Token;
+        var res = await _ws.RequestAsync<InvitePresenceListedPayload>(
+            WsMessageTypes.Rooms.InvitePresenceList,
+            new { roomId },
+            token,
+            cancellationToken).ConfigureAwait(false);
+
+        if (!res.Success)
+        {
+            throw new InvalidOperationException(res.Error ?? "Liste des présences impossible.");
+        }
+
+        var players = (res.Payload?.Players ?? Array.Empty<InvitePresenceListedPlayer>())
+            .Where(p => p != null && p.Id > 0 && !string.IsNullOrWhiteSpace(p.Username))
+            .Select(p => new InvitePresenceListItem(
+                id: p.Id,
+                username: p.Username?.Trim() ?? string.Empty,
+                availability: string.IsNullOrWhiteSpace(p.Availability) ? null : p.Availability.Trim(),
+                location: string.IsNullOrWhiteSpace(p.Location) ? null : p.Location.Trim(),
+                pendingInvite: p.PendingInvite))
+            .OrderBy(p => p.Username, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        return new InvitePresenceListResult(players);
+    }
+
     public async Task<RoomInviteRespondResult> InviteRespondAsync(string invitationId, bool accept, CancellationToken cancellationToken = default)
     {
         var token = _session.CurrentUser?.Token;
@@ -101,6 +129,30 @@ public sealed class RoomDirectoryClient : IRoomDirectoryClient
 
         [JsonPropertyName("pending")]
         public bool Pending { get; set; }
+    }
+
+    private sealed class InvitePresenceListedPayload
+    {
+        [JsonPropertyName("players")]
+        public InvitePresenceListedPlayer[]? Players { get; set; }
+    }
+
+    private sealed class InvitePresenceListedPlayer
+    {
+        [JsonPropertyName("id")]
+        public int Id { get; set; }
+
+        [JsonPropertyName("username")]
+        public string? Username { get; set; }
+
+        [JsonPropertyName("availability")]
+        public string? Availability { get; set; }
+
+        [JsonPropertyName("location")]
+        public string? Location { get; set; }
+
+        [JsonPropertyName("pendingInvite")]
+        public bool PendingInvite { get; set; }
     }
 
     private sealed class InviteRespondPayload

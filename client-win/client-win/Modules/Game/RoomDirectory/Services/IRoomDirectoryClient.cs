@@ -7,6 +7,7 @@ namespace client_win.Modules.Game.RoomDirectory.Services;
 public interface IRoomDirectoryClient
 {
     Task<string> InviteSendAsync(int roomId, int userId, CancellationToken cancellationToken = default);
+    Task<InvitePresenceListResult> InvitePresenceListAsync(int roomId, CancellationToken cancellationToken = default);
     Task<RoomInviteRespondResult> InviteRespondAsync(string invitationId, bool accept, CancellationToken cancellationToken = default);
 
     Task<PublicRoomsListedResult> PublicListAsync(string? gameType = null, CancellationToken cancellationToken = default);
@@ -14,6 +15,34 @@ public interface IRoomDirectoryClient
     Task<bool> PublicUnsubscribeAsync(CancellationToken cancellationToken = default);
     IDisposable OnPublicRefresh(Action onRefresh);
     IDisposable OnTransportConnected(Action onConnected);
+}
+
+public sealed class InvitePresenceListResult
+{
+    public InvitePresenceListResult(InvitePresenceListItem[] players)
+    {
+        Players = players ?? Array.Empty<InvitePresenceListItem>();
+    }
+
+    public InvitePresenceListItem[] Players { get; }
+}
+
+public sealed class InvitePresenceListItem
+{
+    public InvitePresenceListItem(int id, string username, string? availability, string? location, bool pendingInvite)
+    {
+        Id = id;
+        Username = username ?? string.Empty;
+        Availability = availability;
+        Location = location;
+        PendingInvite = pendingInvite;
+    }
+
+    public int Id { get; }
+    public string Username { get; }
+    public string? Availability { get; }
+    public string? Location { get; }
+    public bool PendingInvite { get; }
 }
 
 public sealed class RoomInviteRespondResult

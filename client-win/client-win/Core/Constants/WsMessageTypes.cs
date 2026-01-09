@@ -193,6 +193,7 @@ public static class WsMessageTypes
     public static class Rooms
     {
         public const string InviteSend = "rooms.invite.send";
+        public const string InvitePresenceList = "rooms.invite.presence.list";
         public const string InviteRespond = "rooms.invite.respond";
         public const string PublicList = "rooms.public.list";
         public const string PublicSubscribe = "rooms.public.subscribe";

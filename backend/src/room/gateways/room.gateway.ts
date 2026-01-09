@@ -1735,18 +1735,6 @@ export class RoomGateway
     if (a) sockets.push(...Array.from(a));
     if (b) sockets.push(...Array.from(b));
 
-    let leavePayload: RoomPayload | null = null;
-    try {
-      leavePayload = await this.roomsService.getRoomPayload(roomId);
-      leavePayload.room.spectators = listVisibleSpectators(
-        this.clients.values(),
-        roomId,
-      );
-      leavePayload.room.counts.spectators = leavePayload.room.spectators.length;
-    } catch {
-      leavePayload = null;
-    }
-
     for (const socket of sockets) {
       const meta = this.clients.get(socket);
       if (!meta || meta.roomId !== roomId || meta.userId !== userId) {
@@ -1763,26 +1751,17 @@ export class RoomGateway
         // ignore
       }
 
-      // Important: envoyer un évènement de sortie explicite avant close,
-      // sinon certains clients restent bloqués sans navigation.
+      // Important: retirer avant close pour éviter handleDisconnect/leaveRoom en cascade.
+      this.realtimeTracker.clearSocket(socket);
+      this.clients.delete(socket);
+      a?.delete(socket);
+      b?.delete(socket);
+
       try {
-        if (leavePayload) {
-          this.safeSend(socket, { type: 'room.left', roomId, payload: leavePayload });
-        } else {
-          this.safeSend(socket, { type: 'room.deleted', roomId });
-        }
+        socket.close(4003, message);
       } catch {
         // ignore
       }
-
-      // Important: retirer du contexte room, mais garder la socket ouverte
-      // pour permettre un nouveau join sans relancer l’app.
-      this.realtimeTracker.clearSocket(socket);
-      meta.role = 'spectator';
-      meta.roomId = 0;
-      meta.silent = false;
-      a?.delete(socket);
-      b?.delete(socket);
     }
 
     if (a && a.size === 0) this.rooms.delete(roomId);
