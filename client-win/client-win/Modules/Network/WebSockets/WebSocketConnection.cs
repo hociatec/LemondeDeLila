@@ -16,8 +16,11 @@ public sealed class WebSocketConnection : IWebSocketConnection
     private ClientWebSocket? _socket;
     private CancellationTokenSource? _cts;
     private Task? _receiveLoop;
+    private WebSocketState _state = WebSocketState.Disconnected;
     private static readonly TimeSpan DefaultConnectTimeout = TimeSpan.FromSeconds(30);
     private static readonly TimeSpan DefaultKeepAliveInterval = TimeSpan.FromSeconds(25);
+
+    public WebSocketState State => _state;
 
     public event Action<WebSocketState>? StateChanged;
     public event Action<string>? MessageReceived;
@@ -149,7 +152,11 @@ public sealed class WebSocketConnection : IWebSocketConnection
         SetState(WebSocketState.Disconnected);
     }
 
-    private void SetState(WebSocketState state) => StateChanged?.Invoke(state);
+    private void SetState(WebSocketState state)
+    {
+        _state = state;
+        StateChanged?.Invoke(state);
+    }
 
     private void SafeInvoke(Action<string>? handlers, string payload)
     {

@@ -661,6 +661,7 @@ public sealed class GameTableOpener : IGameTableOpener
                         }
                     };
                     session.ConnectionStateChanged += onRoomConnectionStateChanged;
+                    onRoomConnectionStateChanged(session.State);
                 }, DispatcherPriority.Background);
             }
             catch (OperationCanceledException)

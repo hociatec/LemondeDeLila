@@ -43,6 +43,7 @@ public sealed class RoomSession : IAsyncDisposable
         _reconnectAsync = reconnectAsync;
         _spectator = spectator;
         _silent = silent;
+        _state = socket.State;
         _socket.MessageReceived += OnRawMessage;
         _socket.StateChanged += OnStateChanged;
         _socket.Error += _ => { };
@@ -55,6 +56,8 @@ public sealed class RoomSession : IAsyncDisposable
     public string GameType { get; }
 
     public RoomPayloadDto? LastRoomState { get; internal set; }
+
+    public WebSocketState State => _state;
 
     public event Action<RoomPayloadDto>? RoomUpdated;
     public event Action<string>? RawMessageReceived;
