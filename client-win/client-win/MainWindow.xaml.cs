@@ -333,7 +333,7 @@ namespace client_win
             {
                 using var warmCts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
                 _ = _host.Services
-                    .GetRequiredService<Modules.Game.Play.Services.IGameGatewayClient>()
+                    .GetRequiredService<Modules.Game.Play.Session.Services.IGameGatewayClient>()
                     .WarmUpAsync(warmCts.Token);
             }
             catch
