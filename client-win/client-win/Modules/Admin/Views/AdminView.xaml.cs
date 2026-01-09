@@ -1,7 +1,11 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Threading;
 using client_win.Modules.Admin.ViewModels;
 
@@ -24,6 +28,7 @@ public partial class AdminView : UserControl
         AttachRootTabSuppression();
         AttachItemsKeyNavigation();
         FocusWhenContainersGenerated();
+        EnsureRootAccordionExpandedGroup();
         FocusBestInputIfVisible();
         FocusDetailsIfPreferred();
     }
@@ -50,8 +55,143 @@ public partial class AdminView : UserControl
     private void OnNavigationChanged()
     {
         FocusWhenContainersGenerated();
+        EnsureRootAccordionExpandedGroup();
         FocusBestInputIfVisible();
         FocusDetailsIfPreferred();
+    }
+
+    private void EnsureRootAccordionExpandedGroup()
+    {
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() =>
+        {
+            EnsureRootAccordionExpandedGroupCore();
+        }));
+    }
+
+    private void EnsureRootAccordionExpandedGroupCore()
+    {
+        if (ItemsList == null)
+        {
+            return;
+        }
+
+        if (DataContext is not AdminViewModel vm || !vm.IsRootMenu)
+        {
+            return;
+        }
+
+        var desiredCategory = vm.SelectedItem?.Category;
+        if (string.IsNullOrWhiteSpace(desiredCategory))
+        {
+            return;
+        }
+
+        ExpandOnlyGroup(desiredCategory);
+    }
+
+    private void OnGroupExpanderExpanded(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Expander expanded || ItemsList == null)
+        {
+            return;
+        }
+
+        if (expanded.DataContext is not CollectionViewGroup group)
+        {
+            return;
+        }
+
+        var category = group.Name?.ToString();
+        CollapseOtherGroups(expanded);
+
+        if (DataContext is not AdminViewModel vm || !vm.IsRootMenu)
+        {
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(category))
+        {
+            return;
+        }
+
+        if (vm.SelectedItem?.Category == category)
+        {
+            return;
+        }
+
+        var firstItemInGroup = vm.Items.FirstOrDefault(x => string.Equals(x.Category, category, StringComparison.Ordinal));
+        if (firstItemInGroup == null)
+        {
+            return;
+        }
+
+        vm.SelectedItem = firstItemInGroup;
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusFirstItem));
+    }
+
+    private void CollapseOtherGroups(Expander expanded)
+    {
+        if (ItemsList == null)
+        {
+            return;
+        }
+
+        foreach (var expander in FindVisualChildren<Expander>(ItemsList))
+        {
+            if (expander.DataContext is not CollectionViewGroup)
+            {
+                continue;
+            }
+
+            if (ReferenceEquals(expander, expanded))
+            {
+                continue;
+            }
+
+            expander.IsExpanded = false;
+        }
+    }
+
+    private void ExpandOnlyGroup(string category)
+    {
+        if (ItemsList == null)
+        {
+            return;
+        }
+
+        foreach (var expander in FindVisualChildren<Expander>(ItemsList))
+        {
+            if (expander.DataContext is not CollectionViewGroup group)
+            {
+                continue;
+            }
+
+            var groupName = group.Name?.ToString() ?? string.Empty;
+            expander.IsExpanded = string.Equals(groupName, category, StringComparison.Ordinal);
+        }
+    }
+
+    private static IEnumerable<T> FindVisualChildren<T>(DependencyObject root) where T : DependencyObject
+    {
+        if (root == null)
+        {
+            yield break;
+        }
+
+        var childrenCount = VisualTreeHelper.GetChildrenCount(root);
+        for (var i = 0; i < childrenCount; i++)
+        {
+            var child = VisualTreeHelper.GetChild(root, i);
+            if (child is T typed)
+            {
+                yield return typed;
+            }
+
+            foreach (var descendant in FindVisualChildren<T>(child))
+            {
+                yield return descendant;
+            }
+        }
     }
 
     private void AttachItemsKeyNavigation()
@@ -235,7 +375,11 @@ public partial class AdminView : UserControl
         if (ItemsList.HasItems &&
             ItemsList.ItemContainerGenerator.Status == System.Windows.Controls.Primitives.GeneratorStatus.ContainersGenerated)
         {
-            _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusFirstItem));
+            _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
+            {
+                EnsureRootAccordionExpandedGroupCore();
+                FocusFirstItem();
+            }));
             return;
         }
 
@@ -248,7 +392,11 @@ public partial class AdminView : UserControl
             }
 
             ItemsList.ItemContainerGenerator.StatusChanged -= handler;
-            _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusFirstItem));
+            _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
+            {
+                EnsureRootAccordionExpandedGroupCore();
+                FocusFirstItem();
+            }));
         };
         ItemsList.ItemContainerGenerator.StatusChanged += handler;
     }

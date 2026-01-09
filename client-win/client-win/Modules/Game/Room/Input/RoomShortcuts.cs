@@ -13,6 +13,10 @@ public static class RoomShortcutCodes
     public const string Players = "room.players";
     public const string AddBot = "room.addBot";
     public const string RemoveBot = "room.removeBot";
+    public const string Invite = "room.invite";
+    public const string Kick = "room.kick";
+    public const string Ban = "room.ban";
+    public const string TransferOwner = "room.transferOwner";
     public const string Quit = "room.quit";
 }
 
@@ -28,15 +32,12 @@ public static class RoomShortcuts
         ICommand announceInfoCommand,
         ICommand togglePrivacyCommand,
         ICommand toggleRoleCommand,
+        ICommand inviteCommand,
+        ICommand kickCommand,
+        ICommand banCommand,
+        ICommand transferOwnerCommand,
         ICommand quitCommand)
     {
-        yield return new ShortcutDefinition(
-            new KeyGesture(Key.Escape),
-            quitCommand,
-            description: "Retour menu précédent",
-            code: RoomShortcutCodes.Quit,
-            availableInGame: true);
-
         yield return new ShortcutDefinition(
             'x',
             resetCommand,
@@ -73,16 +74,44 @@ public static class RoomShortcuts
             availableInGame: true);
 
         yield return new ShortcutDefinition(
+            new KeyGesture(Key.I, ModifierKeys.Control),
+            inviteCommand,
+            description: "Inviter un joueur",
+            code: RoomShortcutCodes.Invite,
+            availableInGame: true);
+
+        yield return new ShortcutDefinition(
+            new KeyGesture(Key.K, ModifierKeys.Control),
+            kickCommand,
+            description: "Exclure un joueur de la table",
+            code: RoomShortcutCodes.Kick,
+            availableInGame: true);
+
+        yield return new ShortcutDefinition(
+            new KeyGesture(Key.B, ModifierKeys.Control),
+            banCommand,
+            description: "Bannir un joueur de la table",
+            code: RoomShortcutCodes.Ban,
+            availableInGame: true);
+
+        yield return new ShortcutDefinition(
+            new KeyGesture(Key.P, ModifierKeys.Control),
+            transferOwnerCommand,
+            description: "Changer le proprietaire de la table",
+            code: RoomShortcutCodes.TransferOwner,
+            availableInGame: true);
+
+        yield return new ShortcutDefinition(
             'b',
             addBotCommand,
-            description: "Ajouter un bot",
+            description: "Ajouter un bot (hors partie)",
             code: RoomShortcutCodes.AddBot,
             availableInGame: false);
 
         yield return new ShortcutDefinition(
             'B',
             removeBotCommand,
-            description: "Retirer un bot",
+            description: "Retirer un bot (hors partie)",
             code: RoomShortcutCodes.RemoveBot,
             availableInGame: false);
 
@@ -94,3 +123,4 @@ public static class RoomShortcuts
             availableInGame: true);
     }
 }
+

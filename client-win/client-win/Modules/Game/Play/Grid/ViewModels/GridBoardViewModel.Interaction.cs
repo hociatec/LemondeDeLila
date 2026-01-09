@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -25,6 +26,12 @@ public sealed partial class GridBoardViewModel
         _gridActionsByCellKey.TryGetValue(key, out var actionsHere);
         actionsHere ??= new List<GridAction>();
 
+        if (IsCorridor)
+        {
+            await HandleCorridorEnterAsync(cell, actionsHere).ConfigureAwait(true);
+            return;
+        }
+
         if (actionsHere.Count == 0)
         {
             return;
@@ -41,14 +48,65 @@ public sealed partial class GridBoardViewModel
         }
 
         await SendGridActionAsync(any).ConfigureAwait(true);
-        _announce("Action envoyée.");
+        _announce("Action envoyee.");
         if (session.LastState != null)
         {
             SyncFromState(session.LastState, _viewerPlayerId);
         }
     }
 
-    private async Task<GridAction?> PickActionAsync(string title, string message, List<GridAction> actions)
+    private async Task HandleCorridorEnterAsync(
+        GridCellViewModel cell,
+        List<GridAction> actionsHere)
+    {
+        if (cell == null)
+        {
+            return;
+        }
+
+        if (!_corridorPawnGrabbed)
+        {
+            if (!cell.HasOwnPawn)
+            {
+                _announce("Prenez votre pion (Entree) puis choisissez une case.");
+                return;
+            }
+
+            _corridorPawnGrabbed = true;
+            _announce("Pion pris. Choisissez une case et appuyez sur Entree.");
+            return;
+        }
+
+        if (cell.HasOwnPawn)
+        {
+            _corridorPawnGrabbed = false;
+            _announce("Pion repose.");
+            return;
+        }
+
+        var move = actionsHere.FirstOrDefault(a =>
+            string.Equals(a.Type, "corridor_move", StringComparison.OrdinalIgnoreCase));
+        if (move == null)
+        {
+            _announce("Deplacement impossible.");
+            return;
+        }
+
+        await SendGridActionAsync(move).ConfigureAwait(true);
+        _announce("Action envoyee.");
+        _corridorPawnGrabbed = false;
+
+        var session = _getSession();
+        if (session?.LastState != null && _viewerPlayerId != null)
+        {
+            SyncFromState(session.LastState, _viewerPlayerId);
+        }
+    }
+
+    private async Task<GridAction?> PickActionAsync(
+        string title,
+        string message,
+        List<GridAction> actions)
     {
         if (actions.Count == 0)
         {
@@ -64,7 +122,13 @@ public sealed partial class GridBoardViewModel
             getBaseLabel: a => string.IsNullOrWhiteSpace(a.Label) ? a.Type : a.Label,
             out var byLabel);
 
-        var picked = await _dialogs.Pick(title, message, labels, okText: "Valider", cancelText: "Annuler").ConfigureAwait(true);
+        var picked = await _dialogs.Pick(
+                title,
+                message,
+                labels,
+                okText: "Valider",
+                cancelText: "Annuler")
+            .ConfigureAwait(true);
         if (picked == null)
         {
             return null;
@@ -73,3 +137,4 @@ public sealed partial class GridBoardViewModel
         return byLabel.TryGetValue(picked, out var chosen) ? chosen : null;
     }
 }
+

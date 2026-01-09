@@ -398,6 +398,7 @@ public sealed class AboutViewModel : ObservableObject
         sb.AppendLine("- F3 : contacter un administrateur");
         sb.AppendLine();
         sb.AppendLine("Table (salle)");
+        sb.AppendLine("- F2 : menu de la table (actions)");
         sb.AppendLine("- Tab : basculer Zone de jeu → Historique");
         sb.AppendLine("- Maj+Tab : basculer Historique → Zone de jeu");
         sb.AppendLine("- i : informations table");
@@ -405,6 +406,10 @@ public sealed class AboutViewModel : ObservableObject
         sb.AppendLine("- q : quitter la table");
         sb.AppendLine("- b : ajouter un bot (hors partie)");
         sb.AppendLine("- Maj+B : retirer un bot (hors partie)");
+        sb.AppendLine("- Ctrl+I : inviter un joueur");
+        sb.AppendLine("- Ctrl+K : exclure un joueur");
+        sb.AppendLine("- Ctrl+B : bannir un joueur");
+        sb.AppendLine("- Ctrl+P : changer le proprietaire");
         sb.AppendLine("- Ctrl+M : mode joueur/spectateur");
         sb.AppendLine("- Ctrl+H : visiblité de la table");
         sb.AppendLine();

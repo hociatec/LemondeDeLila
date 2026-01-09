@@ -7,6 +7,7 @@ using System.Windows.Input;
 using System.Windows.Threading;
 using System.Windows.Media;
 using client_win.Modules.Game.History.Views;
+using client_win.Modules.Game.Room.Input;
 using client_win.Modules.Game.Shell.ViewModels;
 using client_win.Modules.Shell.Services;
 
@@ -173,12 +174,49 @@ public partial class GameRoomView : UserControl
             }
         }
 
-        if (e.Key == Key.Escape && DataContext is ViewModels.GameRoomViewModel vm && vm.GameZone.IsStarted)
+        // Table menu: use F2 (not Escape) to avoid conflicts with game/UI navigation.
+        if (e.Key == Key.F2 && DataContext is ViewModels.GameRoomViewModel vm)
         {
             e.Handled = true;
 
-            var shortcuts = vm.GameZone.Shortcuts
+            var roomShortcuts = RoomShortcuts.Create(
+                    resetCommand: vm.GameZone.ResetCommand,
+                    addBotCommand: vm.GameZone.AddBotCommand,
+                    removeBotCommand: vm.GameZone.RemoveBotCommand,
+                    announcePlayersCommand: vm.GameZone.AnnouncePlayersCommand,
+                    announceInfoCommand: vm.GameZone.AnnounceInfoCommand,
+                    togglePrivacyCommand: vm.GameZone.TogglePrivacyCommand,
+                    toggleRoleCommand: vm.GameZone.ToggleRoleCommand,
+                    inviteCommand: vm.GameZone.InviteCommand,
+                    kickCommand: vm.GameZone.KickCommand,
+                    banCommand: vm.GameZone.BanCommand,
+                    transferOwnerCommand: vm.GameZone.TransferOwnerCommand,
+                    quitCommand: vm.GameZone.QuitCommand)
                 .Where(s => s?.Command != null)
+                .ToList();
+
+            var all = new System.Collections.Generic.List<client_win.Core.Input.ShortcutDefinition>();
+            all.AddRange(roomShortcuts);
+
+            foreach (var s in vm.GameZone.Shortcuts)
+            {
+                if (s?.Command == null) continue;
+                if (!string.IsNullOrWhiteSpace(s.Code) &&
+                    s.Code.StartsWith("room.", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+                all.Add(s);
+            }
+
+            var seen = new System.Collections.Generic.HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var shortcuts = all
+                .Where(s => s != null && s.Command != null)
+                .Where(s =>
+                {
+                    var sig = $"{s.Code}|{s.Description}|{s.Key}|{s.Gesture}";
+                    return seen.Add(sig);
+                })
                 .ToList();
 
             GameActionMenuWindow.ShowAndExecute(

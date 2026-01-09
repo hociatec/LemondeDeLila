@@ -26,13 +26,32 @@ public sealed class GameRoomViewModel : ObservableObject
         Func<Task> onAnnounceInfo,
         Func<Task> onTogglePrivacy,
         Func<Task> onToggleRole,
+        Func<Task> onInvite,
+        Func<Task> onKick,
+        Func<Task> onBan,
+        Func<Task> onTransferOwner,
         IDialogService dialogs)
     {
         Game = game ?? throw new ArgumentNullException(nameof(game));
         History = new GameHistoryViewModel(game);
 
         var title = !string.IsNullOrWhiteSpace(game.Name) ? game.Name : game.Id;
-        GameZone = new GameZoneHostViewModel(title, onStart, onReset, onQuit, onAddBot, onRemoveBot, onAnnouncePlayers, onAnnounceInfo, onTogglePrivacy, onToggleRole, dialogs);
+        GameZone = new GameZoneHostViewModel(
+            title,
+            onStart,
+            onReset,
+            onQuit,
+            onAddBot,
+            onRemoveBot,
+            onAnnouncePlayers,
+            onAnnounceInfo,
+            onTogglePrivacy,
+            onToggleRole,
+            onInvite,
+            onKick,
+            onBan,
+            onTransferOwner,
+            dialogs);
         GameZone.StatusRequested += s => Status = s;
 
         Chat = new GameRoomChatViewModel(game.ChatEnabled, onSendChat);

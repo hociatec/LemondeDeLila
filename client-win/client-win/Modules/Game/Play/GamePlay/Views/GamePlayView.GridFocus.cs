@@ -59,6 +59,12 @@ public partial class GamePlayView
     private void OnGridPreviewKeyDown(object sender, KeyEventArgs e)
     {
         HandleGridArrowKey(e);
+        if (e.Handled)
+        {
+            return;
+        }
+
+        HandleGridWallPlacementKey(e);
     }
 
     private void HandleGridArrowKey(KeyEventArgs e)
@@ -102,6 +108,36 @@ public partial class GamePlayView
             {
                 e.Handled = true;
             }
+        }
+    }
+
+    private void HandleGridWallPlacementKey(KeyEventArgs e)
+    {
+        if (DataContext is not GamePlayViewModel vm)
+        {
+            return;
+        }
+        if (!vm.Grid.IsVisible || vm.Grid.Size <= 0 || vm.Grid.Cells.Count == 0)
+        {
+            return;
+        }
+
+        if ((Keyboard.Modifiers & (ModifierKeys.Control | ModifierKeys.Alt | ModifierKeys.Windows)) != ModifierKeys.None)
+        {
+            return;
+        }
+
+        // Corridor: place wall at focused cell (dialog: horizontal/vertical).
+        if (e.Key is Key.M && vm.Grid.IsCorridor)
+        {
+            var focused = GetFocusedGridCell();
+            if (focused == null)
+            {
+                return;
+            }
+
+            e.Handled = true;
+            _ = vm.Grid.TryPromptCorridorWallPlacementAsync(focused);
         }
     }
 

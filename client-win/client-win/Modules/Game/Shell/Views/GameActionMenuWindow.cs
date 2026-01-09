@@ -16,7 +16,7 @@ public sealed class GameActionMenuWindow : Window
 
     private GameActionMenuWindow(string title, IReadOnlyList<ShortcutDefinition> shortcuts)
     {
-        Title = string.IsNullOrWhiteSpace(title) ? "Menu de la partie" : title.Trim();
+        Title = string.IsNullOrWhiteSpace(title) ? "Menu de la table" : title.Trim();
         WindowStartupLocation = WindowStartupLocation.CenterOwner;
         SizeToContent = SizeToContent.WidthAndHeight;
         ResizeMode = ResizeMode.NoResize;
@@ -33,7 +33,7 @@ public sealed class GameActionMenuWindow : Window
 
         root.Children.Add(new TextBlock
         {
-            Text = "Choisissez une action (Entrée) — Échap pour fermer.",
+            Text = "Choisissez une action (Entrée). F2 : fermer.",
             TextWrapping = TextWrapping.Wrap,
         });
 
@@ -58,33 +58,15 @@ public sealed class GameActionMenuWindow : Window
             });
         }
 
-        var buttons = new StackPanel
-        {
-            Orientation = Orientation.Horizontal,
-            HorizontalAlignment = HorizontalAlignment.Right,
-        };
-        Grid.SetRow(buttons, 4);
-
-        var cancel = new Button
+        var close = new Button
         {
             Content = "Fermer",
             MinWidth = 120,
-            IsCancel = true,
-            Margin = new Thickness(0, 0, 8, 0),
+            HorizontalAlignment = HorizontalAlignment.Right,
         };
-        cancel.Click += (_, _) => Close();
-
-        var ok = new Button
-        {
-            Content = "Exécuter",
-            MinWidth = 140,
-            IsDefault = true,
-        };
-        ok.Click += (_, _) => ExecuteSelected();
-
-        buttons.Children.Add(cancel);
-        buttons.Children.Add(ok);
-        root.Children.Add(buttons);
+        Grid.SetRow(close, 4);
+        close.Click += (_, _) => Close();
+        root.Children.Add(close);
 
         Content = root;
 
@@ -100,7 +82,7 @@ public sealed class GameActionMenuWindow : Window
         _list.MouseDoubleClick += (_, _) => ExecuteSelected();
         _list.KeyDown += (_, e) =>
         {
-            if (e.Key == Key.Enter)
+            if (e.Key == Key.Enter || e.Key == Key.Return)
             {
                 e.Handled = true;
                 ExecuteSelected();
@@ -109,7 +91,7 @@ public sealed class GameActionMenuWindow : Window
 
         PreviewKeyDown += (_, e) =>
         {
-            if (e.Key == Key.Escape)
+            if (e.Key == Key.F2)
             {
                 Close();
             }
@@ -181,7 +163,7 @@ public sealed class GameActionMenuWindow : Window
     {
         var description = (shortcut.Description ?? shortcut.Code ?? "Action").Trim();
         var key = FormatKey(shortcut);
-        return string.IsNullOrWhiteSpace(key) ? description : $"{key} — {description}";
+        return string.IsNullOrWhiteSpace(key) ? description : $"{key} - {description}";
     }
 
     private static string FormatKey(ShortcutDefinition shortcut)

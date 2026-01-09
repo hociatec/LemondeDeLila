@@ -20,6 +20,10 @@ public sealed class GameZoneHostViewModel : ObservableObject
     private readonly Func<Task> _onAnnounceInfo;
     private readonly Func<Task> _onTogglePrivacy;
     private readonly Func<Task> _onToggleRole;
+    private readonly Func<Task> _onInvite;
+    private readonly Func<Task> _onKick;
+    private readonly Func<Task> _onBan;
+    private readonly Func<Task> _onTransferOwner;
     private readonly IDialogService _dialogs;
     private object? _content;
     private string _title = "Zone de jeu";
@@ -36,6 +40,10 @@ public sealed class GameZoneHostViewModel : ObservableObject
         Func<Task> onAnnounceInfo,
         Func<Task> onTogglePrivacy,
         Func<Task> onToggleRole,
+        Func<Task> onInvite,
+        Func<Task> onKick,
+        Func<Task> onBan,
+        Func<Task> onTransferOwner,
         IDialogService dialogs)
     {
         Title = string.IsNullOrWhiteSpace(title) ? "Zone de jeu" : title;
@@ -48,6 +56,10 @@ public sealed class GameZoneHostViewModel : ObservableObject
         _onAnnounceInfo = onAnnounceInfo ?? throw new ArgumentNullException(nameof(onAnnounceInfo));
         _onTogglePrivacy = onTogglePrivacy ?? throw new ArgumentNullException(nameof(onTogglePrivacy));
         _onToggleRole = onToggleRole ?? throw new ArgumentNullException(nameof(onToggleRole));
+        _onInvite = onInvite ?? throw new ArgumentNullException(nameof(onInvite));
+        _onKick = onKick ?? throw new ArgumentNullException(nameof(onKick));
+        _onBan = onBan ?? throw new ArgumentNullException(nameof(onBan));
+        _onTransferOwner = onTransferOwner ?? throw new ArgumentNullException(nameof(onTransferOwner));
         _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
 
         StartCommand = new AsyncRelayCommand(StartAsync, () => !_isStarted);
@@ -58,6 +70,10 @@ public sealed class GameZoneHostViewModel : ObservableObject
         AnnounceInfoCommand = new AsyncRelayCommand(AnnounceInfoAsync);
         TogglePrivacyCommand = new AsyncRelayCommand(TogglePrivacyAsync);
         ToggleRoleCommand = new AsyncRelayCommand(ToggleRoleAsync);
+        InviteCommand = new AsyncRelayCommand(InviteAsync);
+        KickCommand = new AsyncRelayCommand(KickAsync);
+        BanCommand = new AsyncRelayCommand(BanAsync);
+        TransferOwnerCommand = new AsyncRelayCommand(TransferOwnerAsync);
         QuitCommand = new AsyncRelayCommand(QuitAsync);
 
         foreach (var shortcut in RoomShortcuts.Create(
@@ -68,6 +84,10 @@ public sealed class GameZoneHostViewModel : ObservableObject
                      announceInfoCommand: AnnounceInfoCommand,
                      togglePrivacyCommand: TogglePrivacyCommand,
                      toggleRoleCommand: ToggleRoleCommand,
+                     inviteCommand: InviteCommand,
+                     kickCommand: KickCommand,
+                     banCommand: BanCommand,
+                     transferOwnerCommand: TransferOwnerCommand,
                      quitCommand: QuitCommand))
         {
             Shortcuts.Add(shortcut);
@@ -84,6 +104,10 @@ public sealed class GameZoneHostViewModel : ObservableObject
     public ICommand AnnounceInfoCommand { get; }
     public ICommand TogglePrivacyCommand { get; }
     public ICommand ToggleRoleCommand { get; }
+    public ICommand InviteCommand { get; }
+    public ICommand KickCommand { get; }
+    public ICommand BanCommand { get; }
+    public ICommand TransferOwnerCommand { get; }
     public ICommand QuitCommand { get; }
 
     public object? Content
@@ -166,6 +190,26 @@ public sealed class GameZoneHostViewModel : ObservableObject
     private async Task ToggleRoleAsync()
     {
         await _onToggleRole().ConfigureAwait(true);
+    }
+
+    private async Task InviteAsync()
+    {
+        await _onInvite().ConfigureAwait(true);
+    }
+
+    private async Task KickAsync()
+    {
+        await _onKick().ConfigureAwait(true);
+    }
+
+    private async Task BanAsync()
+    {
+        await _onBan().ConfigureAwait(true);
+    }
+
+    private async Task TransferOwnerAsync()
+    {
+        await _onTransferOwner().ConfigureAwait(true);
     }
 
     private async Task QuitAsync()

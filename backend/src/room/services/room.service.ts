@@ -34,6 +34,7 @@ export class RoomService {
   private redis: Redis | null = null;
   private readonly roomPayloadRedisPrefix = 'room:payload:';
   private readonly roomPayloadTtlSeconds: number;
+  private readonly roomBans = new Map<number, Set<number>>();
 
   /**
    * Hook optionnel pour notifier les clients WS room (set par RoomGateway).
@@ -97,10 +98,67 @@ export class RoomService {
     }
 
     await this.rooms.delete(id);
+    this.roomBans.delete(id);
     await this.invalidateRoomPayloadCache(id);
     this.notifyDirectoryChanged(id, 'deleted');
     this.presenceService.broadcastPresence();
     return { ok: true, roomId: id };
+  }
+
+  isBanned(roomId: number, userId: number): boolean {
+    const id =
+      typeof roomId === 'number' && Number.isFinite(roomId) && roomId > 0
+        ? Math.floor(roomId)
+        : 0;
+    const uid =
+      typeof userId === 'number' && Number.isFinite(userId) && userId > 0
+        ? Math.floor(userId)
+        : 0;
+    if (id <= 0 || uid <= 0) return false;
+    return this.roomBans.get(id)?.has(uid) ?? false;
+  }
+
+  ban(roomId: number, userId: number): void {
+    const id =
+      typeof roomId === 'number' && Number.isFinite(roomId) && roomId > 0
+        ? Math.floor(roomId)
+        : 0;
+    const uid =
+      typeof userId === 'number' && Number.isFinite(userId) && userId > 0
+        ? Math.floor(userId)
+        : 0;
+    if (id <= 0 || uid <= 0) return;
+    const set = this.roomBans.get(id) ?? new Set<number>();
+    set.add(uid);
+    this.roomBans.set(id, set);
+  }
+
+  unban(roomId: number, userId: number): void {
+    const id =
+      typeof roomId === 'number' && Number.isFinite(roomId) && roomId > 0
+        ? Math.floor(roomId)
+        : 0;
+    const uid =
+      typeof userId === 'number' && Number.isFinite(userId) && userId > 0
+        ? Math.floor(userId)
+        : 0;
+    if (id <= 0 || uid <= 0) return;
+    const set = this.roomBans.get(id);
+    if (!set) return;
+    set.delete(uid);
+    if (set.size === 0) this.roomBans.delete(id);
+  }
+
+  async setOwner(roomId: number, userId: number, newOwnerId: number): Promise<Room> {
+    const room = await this.requireRoom(roomId);
+    this.ensureOwner(room, userId);
+    const user = await this.requireUser(newOwnerId);
+    room.owner = user;
+    await this.rooms.save(room);
+    await this.invalidateRoomPayloadCache(room.id);
+    this.notifyDirectoryChanged(room.id, 'owner');
+    this.presenceService.broadcastPresence();
+    return room;
   }
 
   /**
@@ -570,6 +628,7 @@ export class RoomService {
         // best effort
       }
       await this.rooms.delete(room.id);
+      this.roomBans.delete(room.id);
       await this.invalidateRoomPayloadCache(room.id);
       // Broadcast la mise à jour de présence en temps réel
       this.presenceService.broadcastPresence();

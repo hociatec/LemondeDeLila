@@ -97,6 +97,12 @@ public sealed partial class GridBoardViewModel
         ApplyGridRender(state);
 
         BuildGridActionsIndex(state);
+        var corridor = DetectCorridor(state);
+        IsCorridor = corridor;
+        if (!corridor)
+        {
+            _corridorPawnGrabbed = false;
+        }
         foreach (var cell in Cells)
         {
             var key = GridCellKey.From(cell);

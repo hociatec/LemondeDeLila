@@ -30,6 +30,12 @@ public partial class GamePlayView
             return;
         }
 
+        // Corridor: 'M' is handled locally on the grid (orientation dialog), not forwarded as a server shortcut.
+        if (e.Key == Key.M && vm.Grid.IsCorridor && vm.Grid.IsVisible)
+        {
+            return;
+        }
+
         if (!TryMapKeyToServerShortcut(e.Key, out var key))
         {
             return;
@@ -67,7 +73,7 @@ public partial class GamePlayView
         normalized = key switch
         {
             Key.Space => "SPACE",
-            Key.Enter => "ENTER",
+            Key.Enter or Key.Return => "ENTER",
             Key.Back => "BACK",
             Key.Escape => "ESC",
             _ => string.Empty

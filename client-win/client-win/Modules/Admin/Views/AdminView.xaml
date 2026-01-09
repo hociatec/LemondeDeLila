@@ -65,11 +65,12 @@
                                     <Setter Property="Template">
                                         <Setter.Value>
                                             <ControlTemplate TargetType="{x:Type GroupItem}">
-                                                <Expander IsExpanded="True"
+                                                <Expander IsExpanded="False"
                                                           Background="Transparent"
                                                           BorderThickness="0"
                                                           Padding="0"
-                                                          KeyboardNavigation.TabNavigation="Continue">
+                                                          KeyboardNavigation.TabNavigation="Continue"
+                                                          Expanded="OnGroupExpanderExpanded">
                                                     <Expander.Header>
                                                         <Border Background="#0E2034"
                                                                 BorderBrush="#1F3C60"

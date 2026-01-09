@@ -23,7 +23,17 @@ public sealed class RoomRoleCommands : IRoomRoleCommands
     public Task ToggleRoleAsync(CancellationToken cancellationToken = default)
     {
         var next = !_isSpectator;
-        return _session.SendCommandAsync("room.set-role", payload: new { spectator = next }, cancellationToken);
+        return SetSpectatorAsync(next, cancellationToken);
+    }
+
+    public Task ToggleRoleAsync(bool currentIsSpectator, CancellationToken cancellationToken = default)
+    {
+        return SetSpectatorAsync(!currentIsSpectator, cancellationToken);
+    }
+
+    public Task SetSpectatorAsync(bool spectator, CancellationToken cancellationToken = default)
+    {
+        return _session.SendCommandAsync("room.set-role", payload: new { spectator }, cancellationToken);
     }
 
     public void Dispose()

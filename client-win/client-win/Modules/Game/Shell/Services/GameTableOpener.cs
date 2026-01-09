@@ -18,8 +18,11 @@ using client_win.Modules.Audio.Models;
 using client_win.Modules.Audio.Services;
 using client_win.Modules.Catalog.Views;
 using client_win.Modules.Presence.Services;
+using client_win.Modules.Social.Services;
+using client_win.Modules.TextPrompts.Services;
 using client_win.Modules.Shell.Services;
 using client_win.Modules.MainMenu.Views;
+using client_win.Modules.Game.RoomDirectory.Services;
 
 namespace client_win.Modules.Game.Shell.Services;
 
@@ -35,6 +38,9 @@ public sealed class GameTableOpener : IGameTableOpener
     private readonly IRoomAnnouncements _announcements;
     private readonly IPresenceMonitor _presence;
     private readonly ISoundService _sounds;
+    private readonly IRoomDirectoryClient _directory;
+    private readonly ISocialService _social;
+    private readonly ITextPromptService _textPrompts;
 
     public GameTableOpener(
         ILogger<GameTableOpener> logger,
@@ -46,7 +52,10 @@ public sealed class GameTableOpener : IGameTableOpener
         IAnnouncementService announcementService,
         IRoomAnnouncements announcements,
         IPresenceMonitor presence,
-        ISoundService sounds)
+        ISoundService sounds,
+        IRoomDirectoryClient directory,
+        ISocialService social,
+        ITextPromptService textPrompts)
     {
         _logger = logger;
         _rooms = rooms;
@@ -58,6 +67,9 @@ public sealed class GameTableOpener : IGameTableOpener
         _announcements = announcements;
         _presence = presence ?? throw new ArgumentNullException(nameof(presence));
         _sounds = sounds ?? throw new ArgumentNullException(nameof(sounds));
+        _directory = directory ?? throw new ArgumentNullException(nameof(directory));
+        _social = social ?? throw new ArgumentNullException(nameof(social));
+        _textPrompts = textPrompts ?? throw new ArgumentNullException(nameof(textPrompts));
     }
 
     public async Task OpenAsync(CatalogGame game, UserControl returnView)
@@ -77,6 +89,195 @@ public sealed class GameTableOpener : IGameTableOpener
     public async Task OpenExistingAsync(int roomId, UserControl returnView)
     {
         await OpenExistingAsync(roomId, returnView, spectator: false).ConfigureAwait(true);
+    }
+
+    private sealed record RosterEntry(int Id, string Username, bool Spectator);
+
+    private static IReadOnlyList<RosterEntry> BuildRoster(RoomSession session)
+    {
+        var room = session?.LastRoomState?.Room;
+        if (room == null)
+        {
+            return Array.Empty<RosterEntry>();
+        }
+
+        var byId = new Dictionary<int, RosterEntry>();
+
+        foreach (var p in room.Players ?? new List<RoomUserDto>())
+        {
+            if (p == null || p.Id <= 0) continue;
+            var name = (p.Username ?? string.Empty).Trim();
+            if (name.Length == 0) continue;
+            byId[p.Id] = new RosterEntry(p.Id, name, Spectator: false);
+        }
+
+        foreach (var s in room.Spectators ?? new List<RoomUserDto>())
+        {
+            if (s == null || s.Id <= 0) continue;
+            var name = (s.Username ?? string.Empty).Trim();
+            if (name.Length == 0) continue;
+            byId[s.Id] = new RosterEntry(s.Id, name, Spectator: true);
+        }
+
+        return byId.Values
+            .OrderBy(x => x.Spectator)
+            .ThenBy(x => x.Username, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+    }
+
+    private async Task InvitePlayerAsync(RoomSession session)
+    {
+        var query = await _textPrompts
+            .PromptAsync("Inviter un joueur", "Nom d'utilisateur", initialText: string.Empty)
+            .ConfigureAwait(true);
+        query = (query ?? string.Empty).Trim();
+        if (query.Length == 0)
+        {
+            return;
+        }
+
+        var results = await _social.SearchUsersAsync(query).ConfigureAwait(true);
+        var filtered = results
+            .Where(u => u != null && u.Id > 0 && !string.IsNullOrWhiteSpace(u.Username))
+            .OrderBy(u => u.Username, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        if (filtered.Count == 0)
+        {
+            await _dialogs.ShowInfo("Invitation", "Aucun utilisateur trouvé.").ConfigureAwait(true);
+            return;
+        }
+
+        var labels = filtered.Select(u => $"{u.Username} (id {u.Id})").ToList();
+        var picked = await _dialogs.Pick(
+                "Invitation",
+                "Choisir un joueur :",
+                labels,
+                okText: "Inviter",
+                cancelText: "Annuler")
+            .ConfigureAwait(true);
+
+        if (picked == null)
+        {
+            return;
+        }
+
+        var idx = labels.IndexOf(picked);
+        if (idx < 0 || idx >= filtered.Count)
+        {
+            return;
+        }
+
+        var user = filtered[idx];
+        var message = await _directory.InviteSendAsync(session.RoomId, user.Id).ConfigureAwait(true);
+        if (!string.IsNullOrWhiteSpace(message))
+        {
+            await _dialogs.ShowInfo("Invitation", message.Trim()).ConfigureAwait(true);
+        }
+    }
+
+    private async Task KickPlayerAsync(RoomSession session, bool ban)
+    {
+        var roster = BuildRoster(session);
+        if (roster.Count == 0)
+        {
+            await _dialogs.ShowInfo("Table", "Aucun joueur.").ConfigureAwait(true);
+            return;
+        }
+
+        var selfUsername = (_navigation.CurrentUser?.Username ?? string.Empty).Trim();
+        if (!string.IsNullOrWhiteSpace(selfUsername))
+        {
+            roster = roster.Where(r => !string.Equals(r.Username, selfUsername, StringComparison.OrdinalIgnoreCase)).ToList();
+        }
+        if (roster.Count == 0)
+        {
+            await _dialogs.ShowInfo("Table", "Aucun autre joueur.").ConfigureAwait(true);
+            return;
+        }
+
+        var title = ban ? "Bannir un joueur" : "Exclure un joueur";
+        var action = ban ? "Bannir" : "Exclure";
+
+        var labels = roster
+            .Select(r => r.Spectator ? $"{r.Username} (spectateur)" : r.Username)
+            .ToList();
+
+        var picked = await _dialogs.Pick(title, "Choisir un joueur :", labels, okText: action, cancelText: "Annuler")
+            .ConfigureAwait(true);
+        if (picked == null)
+        {
+            return;
+        }
+
+        var idx = labels.IndexOf(picked);
+        if (idx < 0 || idx >= roster.Count)
+        {
+            return;
+        }
+
+        var target = roster[idx];
+        if (ban)
+        {
+            var confirm = await _dialogs.Confirm(
+                    "Bannir",
+                    $"Bannir {target.Username} de cette table ?")
+                .ConfigureAwait(true);
+            if (confirm != true)
+            {
+                return;
+            }
+        }
+
+        await session.SendCommandAsync(ban ? "room.ban" : "room.kick", payload: new { userId = target.Id })
+            .ConfigureAwait(true);
+    }
+
+    private async Task TransferOwnerAsync(RoomSession session)
+    {
+        var roster = BuildRoster(session).Where(r => !r.Spectator).ToList();
+        var selfUsername = (_navigation.CurrentUser?.Username ?? string.Empty).Trim();
+        if (!string.IsNullOrWhiteSpace(selfUsername))
+        {
+            roster = roster.Where(r => !string.Equals(r.Username, selfUsername, StringComparison.OrdinalIgnoreCase)).ToList();
+        }
+        if (roster.Count == 0)
+        {
+            await _dialogs.ShowInfo("Table", "Aucun joueur disponible pour devenir proprietaire.").ConfigureAwait(true);
+            return;
+        }
+
+        var labels = roster.Select(r => r.Username).ToList();
+        var picked = await _dialogs.Pick(
+                "Changer le proprietaire",
+                "Choisir un joueur :",
+                labels,
+                okText: "Changer",
+                cancelText: "Annuler")
+            .ConfigureAwait(true);
+
+        if (picked == null)
+        {
+            return;
+        }
+
+        var idx = labels.IndexOf(picked);
+        if (idx < 0 || idx >= roster.Count)
+        {
+            return;
+        }
+
+        var target = roster[idx];
+        var confirm = await _dialogs.Confirm(
+                "Changer le proprietaire",
+                $"Donner la table a {target.Username} ?")
+            .ConfigureAwait(true);
+        if (confirm != true)
+        {
+            return;
+        }
+
+        await session.SendCommandAsync("room.set-owner", payload: new { userId = target.Id }).ConfigureAwait(true);
     }
 
     public async Task OpenExistingAsync(int roomId, UserControl returnView, bool spectator)
@@ -236,6 +437,10 @@ public sealed class GameTableOpener : IGameTableOpener
             Task AnnounceInfo() => bindings?.RequestInfoAsync() ?? Task.CompletedTask;
             Task TogglePrivacy() => bindings?.TogglePrivacyAsync() ?? Task.CompletedTask;
             Task ToggleRole() => bindings?.ToggleRoleAsync() ?? Task.CompletedTask;
+            Task Invite() => session == null ? Task.CompletedTask : InvitePlayerAsync(session);
+            Task Kick() => session == null ? Task.CompletedTask : KickPlayerAsync(session, ban: false);
+            Task Ban() => session == null ? Task.CompletedTask : KickPlayerAsync(session, ban: true);
+            Task TransferOwner() => session == null ? Task.CompletedTask : TransferOwnerAsync(session);
 
             vm = new GameRoomViewModel(
                 placeholderGame,
@@ -249,6 +454,10 @@ public sealed class GameTableOpener : IGameTableOpener
                 onAnnounceInfo: AnnounceInfo,
                 onTogglePrivacy: TogglePrivacy,
                 onToggleRole: ToggleRole,
+                onInvite: Invite,
+                onKick: Kick,
+                onBan: Ban,
+                onTransferOwner: TransferOwner,
                 dialogs: _dialogs);
             vm.Status = "Connexion à la table…";
 
@@ -305,6 +514,10 @@ public sealed class GameTableOpener : IGameTableOpener
                             onAnnounceInfo: () => bindings?.RequestInfoAsync() ?? Task.CompletedTask,
                             onTogglePrivacy: () => bindings?.TogglePrivacyAsync() ?? Task.CompletedTask,
                             onToggleRole: () => bindings?.ToggleRoleAsync() ?? Task.CompletedTask,
+                            onInvite: () => InvitePlayerAsync(session),
+                            onKick: () => KickPlayerAsync(session, ban: false),
+                            onBan: () => KickPlayerAsync(session, ban: true),
+                            onTransferOwner: () => TransferOwnerAsync(session),
                             dialogs: _dialogs);
                         newVm.Status = "Connexion à la table…";
                         vm = newVm;

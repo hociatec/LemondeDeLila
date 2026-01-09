@@ -89,7 +89,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
     public Task AddBotAsync() => _bots.AddBotAsync();
     public Task RemoveBotAsync() => _bots.RemoveLastBotAsync();
     public Task TogglePrivacyAsync() => _privacy.TogglePrivacyAsync();
-    public Task ToggleRoleAsync() => _role.ToggleRoleAsync();
+    public Task ToggleRoleAsync() => _role.ToggleRoleAsync(ComputeSelfSpectator());
     public Task RequestInfoAsync() => _info.RequestInfoAsync();
 
     public void Attach()
@@ -419,6 +419,10 @@ internal sealed class GameTableBindings : IAsyncDisposable
             announceInfoCommand: _tableVm.GameZone.AnnounceInfoCommand,
             togglePrivacyCommand: _tableVm.GameZone.TogglePrivacyCommand,
             toggleRoleCommand: _tableVm.GameZone.ToggleRoleCommand,
+            inviteCommand: _tableVm.GameZone.InviteCommand,
+            kickCommand: _tableVm.GameZone.KickCommand,
+            banCommand: _tableVm.GameZone.BanCommand,
+            transferOwnerCommand: _tableVm.GameZone.TransferOwnerCommand,
             quitCommand: _tableVm.GameZone.QuitCommand);
 
         foreach (var shortcut in started ? shortcuts.Where(s => s.AvailableInGame) : shortcuts)

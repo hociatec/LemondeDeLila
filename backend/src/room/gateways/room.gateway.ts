@@ -166,6 +166,10 @@ export class RoomGateway
     const targetRoomId = roomId && roomId > 0 ? roomId : 0;
     if (targetRoomId > 0) {
       const effectiveSilent = Boolean(silent);
+      if (this.roomsService.isBanned(targetRoomId, payload.id)) {
+        client.close(4003, 'Banni de cette table');
+        return;
+      }
       if (effectiveSilent && !isAdmin) {
         client.close(4003, 'Mode caché réservé aux admins');
         return;
@@ -635,7 +639,10 @@ export class RoomGateway
       type === 'room.reset' ||
       type === 'bot.add' ||
       type === 'bot.remove' ||
-      type === 'room.toggle-privacy'
+      type === 'room.toggle-privacy' ||
+      type === 'room.kick' ||
+      type === 'room.ban' ||
+      type === 'room.set-owner'
     ) {
       this.safeSend(client, {
         type: 'room.ack',
@@ -666,6 +673,15 @@ export class RoomGateway
         break;
       case 'room.set-role':
         await this.handleSetRole(client, meta, data);
+        break;
+      case 'room.kick':
+        await this.handleKickOrBan(meta, data, false);
+        break;
+      case 'room.ban':
+        await this.handleKickOrBan(meta, data, true);
+        break;
+      case 'room.set-owner':
+        await this.handleSetOwner(meta, data);
         break;
       case 'room.toggle-privacy':
         await this.handleTogglePrivacy(meta, data, receivedAtMs);
@@ -1000,29 +1016,68 @@ export class RoomGateway
           meta.userId,
           false,
         );
+
+        // Après un reset, tous les connectés "visibles" doivent être considérés comme joueurs.
+        // (Les admins en mode silent restent en dehors du roster.)
+        await this.promoteConnectedSpectatorsToParticipants(meta.roomId);
+        await this.roomsService.invalidateRoomPayloadCache(meta.roomId);
+
         await this.broadcast(meta.roomId, 'state-updated', {
           roomId: meta.roomId,
         });
-        const updated = await this.tryUpdateRoomPayload(
-          meta.roomId,
-          (payload) => {
-            payload.room.status = room.status;
-            payload.room.startedAt = null;
-            payload.room.runId =
-              typeof (room as any).runId === 'number'
-                ? (room as any).runId
-                : null;
-            payload.generatedAt = new Date().toISOString();
-            return payload;
-          },
-        );
-        if (!updated) {
-          await this.roomsService.invalidateRoomPayloadCache(meta.roomId);
-          await this.sendRoomState(meta.roomId);
-        }
+        await this.sendRoomState(meta.roomId);
       },
       { roomId: meta.roomId, userId: meta.userId, ...trace },
     );
+  }
+
+  private async promoteConnectedSpectatorsToParticipants(
+    roomId: number,
+  ): Promise<void> {
+    if (!Number.isFinite(roomId) || roomId <= 0) {
+      return;
+    }
+
+    let isPrivate = false;
+    try {
+      const state = await this.roomsService.getRoomPayload(roomId);
+      isPrivate = Boolean(state?.room?.isPrivate);
+    } catch {
+      isPrivate = false;
+    }
+
+    const connected = Array.from(this.clients.entries())
+      .map(([socket, meta]) => ({ socket, meta }))
+      .filter(({ meta }) => meta.roomId === roomId)
+      .filter(({ meta }) => meta.silent !== true)
+      .filter(({ meta }) => meta.role === 'spectator');
+
+    for (const { socket, meta } of connected) {
+      try {
+        await this.roomsService.joinRoom(roomId, meta.userId, {
+          allowPrivate: isPrivate,
+        });
+      } catch {
+        // best effort: table pleine / restrictions, on laisse spectateur.
+        continue;
+      }
+
+      meta.role = 'participant';
+      this.realtimeTracker.setSocketParticipantRoom(socket, roomId);
+
+      try {
+        this.safeSend(socket, {
+          type: 'room.role',
+          roomId,
+          payload: {
+            spectator: false,
+            message: 'Mode spectateur désactivé.',
+          },
+        });
+      } catch {
+        // ignore
+      }
+    }
   }
 
   private async handleTogglePrivacy(
@@ -1369,6 +1424,11 @@ export class RoomGateway
           throw new Error('roomId invalide');
         }
 
+        if (this.roomsService.isBanned(roomId, meta.userId)) {
+          client.close(4003, 'Banni de cette table');
+          return;
+        }
+
         const effectiveSilent = Boolean(silent);
         if (effectiveSilent && !meta.isAdmin) {
           client.close(4003, 'Mode caché réservé aux admins');
@@ -1417,6 +1477,7 @@ export class RoomGateway
         }
 
         const previousRoomId = meta.roomId;
+        const previousRole = meta.role;
         if (previousRoomId !== roomId) {
           const previousSet = this.rooms.get(previousRoomId);
           if (previousSet) {
@@ -1463,6 +1524,18 @@ export class RoomGateway
         } else {
           await this.sendRoomState(roomId);
         }
+
+        if (
+          Number.isFinite(previousRoomId) &&
+          previousRoomId > 0 &&
+          previousRoomId !== roomId
+        ) {
+          await this.leavePreviousRoomOnSwitch(
+            previousRoomId,
+            meta.userId,
+            previousRole,
+          );
+        }
       },
       {
         userId: meta.userId,
@@ -1470,6 +1543,160 @@ export class RoomGateway
         ...trace,
       },
     );
+  }
+
+  private async leavePreviousRoomOnSwitch(
+    previousRoomId: number,
+    userId: number,
+    previousRole: ClientRole,
+  ): Promise<void> {
+    try {
+      // Quand un utilisateur rejoint une nouvelle table (même en spectateur),
+      // il ne doit plus être considéré comme présent sur l'ancienne.
+      // Exigence : si aucun humain restant -> supprimer; sinon transférer le propriétaire.
+      if (previousRole === 'spectator') {
+        await this.roomsService.transferOwnerIfCurrent(previousRoomId, userId);
+      }
+      await this.roomsService.leaveRoom(previousRoomId, userId, {
+        preserveRoom: false,
+        disconnectOnly: false,
+      });
+    } catch {
+      // best effort: ne pas bloquer le join.
+    }
+
+    try {
+      await this.sendRoomState(previousRoomId);
+    } catch {
+      // ignore
+    }
+  }
+
+  private async handleKickOrBan(
+    meta: ClientMeta,
+    payload: any,
+    ban: boolean,
+  ): Promise<void> {
+    const roomId = meta.roomId;
+    if (!Number.isFinite(roomId) || roomId <= 0) {
+      throw new Error('roomId invalide');
+    }
+
+    const targetRaw = payload?.userId ?? payload?.id ?? payload?.targetUserId;
+    const targetUserId = Number(targetRaw);
+    if (!Number.isFinite(targetUserId) || targetUserId <= 0) {
+      throw new Error('userId invalide');
+    }
+    if (targetUserId === meta.userId) {
+      throw new Error('Impossible de se cibler soi-meme');
+    }
+
+    const state = await this.roomsService.getRoomPayload(roomId);
+    const ownerId = state?.room?.owner?.id ?? 0;
+    if (ownerId !== meta.userId) {
+      throw new Error('Seul le proprietaire peut effectuer cette action');
+    }
+    if (ownerId === targetUserId) {
+      throw new Error('Impossible de cibler le proprietaire');
+    }
+
+    const spectators = listVisibleSpectators(this.clients.values(), roomId);
+    const isOnTable =
+      (state?.room?.players?.some((p) => p?.id === targetUserId) ?? false) ||
+      spectators.some((s) => s?.id === targetUserId) ||
+      this.hasUserConnections(roomId, targetUserId);
+    if (!isOnTable) {
+      throw new Error('Utilisateur introuvable sur la table');
+    }
+
+    if (ban) {
+      this.roomsService.ban(roomId, targetUserId);
+    }
+
+    try {
+      await this.roomsService.leaveRoom(roomId, targetUserId, {
+        preserveRoom: true,
+        disconnectOnly: false,
+      });
+    } catch {
+      // ignore
+    }
+
+    const message = ban
+      ? 'Vous avez ete banni de cette table.'
+      : 'Vous avez ete exclu de cette table.';
+    this.forceDisconnectUser(roomId, targetUserId, message);
+
+    await this.sendRoomState(roomId);
+  }
+
+  private async handleSetOwner(meta: ClientMeta, payload: any): Promise<void> {
+    const roomId = meta.roomId;
+    if (!Number.isFinite(roomId) || roomId <= 0) {
+      throw new Error('roomId invalide');
+    }
+
+    const targetRaw = payload?.userId ?? payload?.id ?? payload?.newOwnerId;
+    const newOwnerId = Number(targetRaw);
+    if (!Number.isFinite(newOwnerId) || newOwnerId <= 0) {
+      throw new Error('userId invalide');
+    }
+    if (newOwnerId === meta.userId) {
+      return;
+    }
+
+    const state = await this.roomsService.getRoomPayload(roomId);
+    const ownerId = state?.room?.owner?.id ?? 0;
+    if (ownerId !== meta.userId) {
+      throw new Error('Seul le proprietaire peut changer le proprietaire');
+    }
+
+    const spectators = listVisibleSpectators(this.clients.values(), roomId);
+    const isOnTable =
+      (state?.room?.players?.some((p) => p?.id === newOwnerId) ?? false) ||
+      spectators.some((s) => s?.id === newOwnerId) ||
+      this.hasUserConnections(roomId, newOwnerId);
+    if (!isOnTable) {
+      throw new Error('Utilisateur introuvable sur la table');
+    }
+
+    await this.roomsService.setOwner(roomId, meta.userId, newOwnerId);
+    await this.sendRoomState(roomId);
+  }
+
+  private forceDisconnectUser(
+    roomId: number,
+    userId: number,
+    message: string,
+  ): void {
+    const sockets: WebSocket[] = [];
+    const a = this.rooms.get(roomId);
+    const b = this.silentRooms.get(roomId);
+    if (a) sockets.push(...Array.from(a));
+    if (b) sockets.push(...Array.from(b));
+
+    for (const socket of sockets) {
+      const meta = this.clients.get(socket);
+      if (!meta || meta.roomId !== roomId || meta.userId !== userId) {
+        continue;
+      }
+
+      try {
+        this.safeSend(socket, {
+          type: 'error',
+          roomId,
+          payload: { message },
+        });
+      } catch {
+        // ignore
+      }
+
+      try {
+        socket.close(4003, message);
+      } catch {
+        // ignore
+      }
+    }
   }
 
   private isAdmin(roles?: string[] | null): boolean {
@@ -1504,6 +1731,9 @@ export class RoomGateway
 
   private async canSpectate(roomId: number, userId: number): Promise<boolean> {
     try {
+      if (this.roomsService.isBanned(roomId, userId)) {
+        return false;
+      }
       const state = await this.roomsService.getRoomPayload(roomId);
       if (!state?.room) return false;
       if (!state.room.isPrivate) {
