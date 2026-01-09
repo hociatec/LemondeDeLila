@@ -58,7 +58,7 @@ function makeRoom(
 }
 
 describe('buildPublicRoomList', () => {
-  it('filters out rooms that have startedAt set, even if status looks open', () => {
+  it('includes rooms that have startedAt set as spectator-only', () => {
     const started = makeRoom({
       id: 1,
       gameType: 'dame-nature',
@@ -74,7 +74,13 @@ describe('buildPublicRoomList', () => {
     });
 
     const { items } = buildPublicRoomList([started, joinable]);
-    expect(items.map((i) => i.id)).toEqual([2]);
+    expect(items.map((i) => i.id).sort()).toEqual([1, 2]);
+    const startedItem = items.find((i) => i.id === 1);
+    expect(startedItem?.spectatorOnly).toBe(true);
+    expect(startedItem?.started).toBe(true);
+    const joinableItem = items.find((i) => i.id === 2);
+    expect(joinableItem?.spectatorOnly).toBe(false);
+    expect(joinableItem?.started).toBe(false);
   });
 
   it('filters out rooms that are already full (players + bots >= maxPlayers)', () => {

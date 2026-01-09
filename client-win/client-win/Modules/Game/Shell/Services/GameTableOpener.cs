@@ -363,6 +363,8 @@ public sealed class GameTableOpener : IGameTableOpener
                     {
                         await bindings.DisposeAsync().ConfigureAwait(true);
                         bindings = null;
+                        // GameTableBindings.DisposeAsync() ferme la session (Leave + Dispose).
+                        session = null;
                     }
                 }
                 catch
@@ -372,10 +374,20 @@ public sealed class GameTableOpener : IGameTableOpener
 
                 if (session != null)
                 {
+                    try
+                    {
+                        using var leaveTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+                        await session.LeaveAsync(leaveTimeout.Token).ConfigureAwait(false);
+                    }
+                    catch
+                    {
+                        // best-effort
+                    }
                     try { await session.DisposeAsync().ConfigureAwait(false); } catch { }
                     session = null;
                 }
 
+                try { _sounds.Play(SoundId.RoomExit); } catch { }
                 _ = _presence.SetHomeAsync();
 
                 if (!dispatcher.CheckAccess())

@@ -30,25 +30,6 @@ public partial class MainMenuView : UserControl
 
     private void OnKeyDown(object sender, KeyEventArgs e)
     {
-        if (e.Key == Key.F3 && DataContext is MainMenuViewModel vm)
-        {
-            e.Handled = true;
-            _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(async () =>
-            {
-                if (vm.ContactAdminCommand is AsyncRelayCommand asyncCmd)
-                {
-                    await asyncCmd.ExecuteAsync(null).ConfigureAwait(true);
-                    return;
-                }
-
-                if (vm.ContactAdminCommand.CanExecute(null))
-                {
-                    vm.ContactAdminCommand.Execute(null);
-                }
-            }));
-            return;
-        }
-
         if (e.Key == Key.Escape)
         {
             e.Handled = true;

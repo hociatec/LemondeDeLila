@@ -6,6 +6,8 @@ export type PublicRoomListItem = {
   name: string;
   gameType: string;
   status: string;
+  started: boolean;
+  spectatorOnly: boolean;
   maxPlayers: number;
   playersCount: number;
   botsCount: number;
@@ -43,8 +45,11 @@ export function buildPublicRoomList(
         return false;
       }
       if (room.startedAt) {
-        return false;
+        // Table en cours : listée pour spectateurs (même si pleine / status non "open").
+        return true;
       }
+
+      // Table en attente : listée uniquement si un joueur peut rejoindre (slots disponibles + status open).
       if (!isRoomOpenStatus(room.status)) {
         return false;
       }
@@ -55,11 +60,14 @@ export function buildPublicRoomList(
     .map((room) => {
       const playersCount = countActiveParticipants(room);
       const botsCount = (room.bots || []).length;
+      const started = !!room.startedAt;
       return {
         id: room.id,
         name: room.name,
         gameType: room.gameType,
         status: room.status,
+        started,
+        spectatorOnly: started,
         maxPlayers: room.maxPlayers,
         playersCount,
         botsCount,

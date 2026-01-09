@@ -142,6 +142,8 @@ public sealed class RoomDirectoryClient : IRoomDirectoryClient
                 name: i.Name ?? string.Empty,
                 gameType: i.GameType ?? string.Empty,
                 status: i.Status ?? string.Empty,
+                started: i.Started,
+                spectatorOnly: i.SpectatorOnly,
                 maxPlayers: i.MaxPlayers,
                 playersCount: i.PlayersCount,
                 botsCount: i.BotsCount,
@@ -173,6 +175,8 @@ public sealed class RoomDirectoryClient : IRoomDirectoryClient
                 name: i.Name ?? string.Empty,
                 gameType: i.GameType ?? string.Empty,
                 status: i.Status ?? string.Empty,
+                started: i.Started,
+                spectatorOnly: i.SpectatorOnly,
                 maxPlayers: i.MaxPlayers,
                 playersCount: i.PlayersCount,
                 botsCount: i.BotsCount,
@@ -259,6 +263,12 @@ public sealed class RoomDirectoryClient : IRoomDirectoryClient
 
         [JsonPropertyName("status")]
         public string? Status { get; set; }
+
+        [JsonPropertyName("started")]
+        public bool Started { get; set; }
+
+        [JsonPropertyName("spectatorOnly")]
+        public bool SpectatorOnly { get; set; }
 
         [JsonPropertyName("maxPlayers")]
         public int MaxPlayers { get; set; }

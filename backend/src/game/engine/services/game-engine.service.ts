@@ -274,9 +274,13 @@ export class GameEngineService {
         .filter((t) => t),
     );
 
-    if (types.has('roll')) {
-      common.push(actionShortcut('R', 'roll'));
-      common.push(actionShortcut('ENTER', 'roll'));
+    const hasRoll = types.has('roll');
+    const hasRollDice = types.has('roll_dice');
+    if (hasRoll || hasRollDice) {
+      // Compat: certains jeux exposent "ROLL_DICE"/"roll_dice" au lieu de "roll".
+      const action = hasRoll ? 'roll' : 'roll_dice';
+      common.push(actionShortcut('R', action));
+      common.push(actionShortcut('ENTER', action));
     }
     if (types.has('draw')) {
       common.push(actionShortcut('SPACE', 'draw'));
@@ -681,6 +685,7 @@ export class GameEngineService {
     const next = await handler.applyActions(current, sanitizedActions);
     const botTurn = this.isBotTurn(next);
     let marked = await this.markBotThinking(roomId, gameType, next, botTurn);
+    marked = this.forceFinishedIfWinnerDetected(marked);
 
     // Log générique: le serveur annonce le joueur suivant au moment où le tour change.
     // Le client reste "bête": il ne décide pas quand annoncer, il lit l'historique.
@@ -773,6 +778,34 @@ export class GameEngineService {
    * console.log(state.turn.currentPlayerId); // Nouveau joueur actif
    * ```
    */
+  private forceFinishedIfWinnerDetected(
+    state: GameStateWithActions,
+  ): GameStateWithActions {
+    const status = String(state?.status ?? '').toLowerCase();
+    if (status !== 'started') {
+      return state;
+    }
+
+    const meta = (state as any)?.metadata;
+    if (!meta || typeof meta !== 'object') {
+      return state;
+    }
+
+    for (const key of ['winnerPlayerId', 'winnerId', 'winner_id']) {
+      const value = (meta as any)[key];
+      if (value === null || value === undefined) {
+        continue;
+      }
+      if (typeof value === 'string' && value.trim().length === 0) {
+        continue;
+      }
+
+      return { ...state, status: 'finished' };
+    }
+
+    return state;
+  }
+
   async playBotTurn(
     roomId: number,
     gameType: string,

@@ -139,7 +139,11 @@ public sealed class JoinGameViewModel : ObservableObject, IDisposable
             }
 
             var previousSelectedId = SelectedRoom?.Id ?? 0;
-            Rooms = new ObservableCollection<PublicRoomListItem>(listed.Items ?? Array.Empty<PublicRoomListItem>());
+            Rooms.Clear();
+            foreach (var item in listed.Items ?? Array.Empty<PublicRoomListItem>())
+            {
+                Rooms.Add(item);
+            }
 
             if (Rooms.Count > 0)
             {
@@ -160,11 +164,11 @@ public sealed class JoinGameViewModel : ObservableObject, IDisposable
             }
             else
             {
-                Status = "Aucune table à rejoindre.";
+                Status = "Aucune table publique active à rejoindre.";
                 if (!_lastEmptyAnnounced)
                 {
                     _lastEmptyAnnounced = true;
-                    _announcements.Enqueue("Aucune table à rejoindre.", AnnouncementPriority.Polite);
+                    _announcements.Enqueue("Aucune table publique active à rejoindre.", AnnouncementPriority.Polite);
                 }
             }
         }
@@ -195,7 +199,7 @@ public sealed class JoinGameViewModel : ObservableObject, IDisposable
         IsBusy = true;
         try
         {
-            await _tables.OpenExistingAsync(selected.Id, _returnView).ConfigureAwait(true);
+            await _tables.OpenExistingAsync(selected.Id, _returnView, spectator: selected.SpectatorOnly).ConfigureAwait(true);
         }
         finally
         {

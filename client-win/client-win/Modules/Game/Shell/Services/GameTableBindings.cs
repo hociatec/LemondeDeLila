@@ -306,6 +306,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
             }
 
             _announcements.PlayerLeft(info.Username, info.Spectator);
+            try { _sounds.Play(SoundId.RoomExit); } catch { }
         }
 
         _participants = next;
@@ -411,6 +412,10 @@ internal sealed class GameTableBindings : IAsyncDisposable
         _tableVm.GameZone.IsStarted = started;
         _tableVm.GameZone.Shortcuts.Clear();
 
+        var selfIsSpectator = ComputeSelfSpectator();
+        var selfId = TryGetSelfParticipantId();
+        var isOwner = selfId > 0 && _ownerId > 0 && selfId == _ownerId;
+
         var shortcuts = RoomShortcuts.Create(
             resetCommand: _tableVm.GameZone.ResetCommand,
             addBotCommand: _tableVm.GameZone.AddBotCommand,
@@ -427,6 +432,35 @@ internal sealed class GameTableBindings : IAsyncDisposable
 
         foreach (var shortcut in started ? shortcuts.Where(s => s.AvailableInGame) : shortcuts)
         {
+            // "x" reset : uniquement une fois le jeu démarré, et uniquement pour le propriétaire.
+            if (string.Equals(shortcut.Code, RoomShortcutCodes.Reset, StringComparison.OrdinalIgnoreCase) &&
+                (!started || !isOwner))
+            {
+                continue;
+            }
+
+            static bool IsOwnerOnlyRoomShortcut(ShortcutDefinition s) =>
+                string.Equals(s.Code, RoomShortcutCodes.Reset, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(s.Code, RoomShortcutCodes.TogglePrivacy, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(s.Code, RoomShortcutCodes.AddBot, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(s.Code, RoomShortcutCodes.RemoveBot, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(s.Code, RoomShortcutCodes.Invite, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(s.Code, RoomShortcutCodes.Kick, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(s.Code, RoomShortcutCodes.Ban, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(s.Code, RoomShortcutCodes.TransferOwner, StringComparison.OrdinalIgnoreCase);
+
+            // Spectateur : ne propose pas d'actions admin de table (mais garde w/q/i/ctrl+m).
+            if (selfIsSpectator && IsOwnerOnlyRoomShortcut(shortcut))
+            {
+                continue;
+            }
+
+            // Actions propriétaire : uniquement si je suis propriétaire.
+            if (!isOwner && IsOwnerOnlyRoomShortcut(shortcut))
+            {
+                continue;
+            }
+
             _tableVm.GameZone.Shortcuts.Add(shortcut);
         }
     }
@@ -513,6 +547,27 @@ internal sealed class GameTableBindings : IAsyncDisposable
 
         // Fallback: état local (reçu via room.role) si la room ne nous expose pas dans le roster.
         return _role.IsSpectator;
+    }
+
+    private int TryGetSelfParticipantId()
+    {
+        if (string.IsNullOrWhiteSpace(_selfUsername))
+        {
+            return 0;
+        }
+
+        var self = (_selfUsername ?? string.Empty).Trim();
+        foreach (var (id, entry) in _participants)
+        {
+            if (!string.Equals((entry.Username ?? string.Empty).Trim(), self, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            return id;
+        }
+
+        return 0;
     }
 
     private void UpdateGameTitle(RoomPayloadDto payload)

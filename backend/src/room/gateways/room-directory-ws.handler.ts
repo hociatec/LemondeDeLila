@@ -66,8 +66,10 @@ export class RoomDirectoryWsHandler {
       .leftJoinAndSelect('participant.user', 'participantUser')
       .leftJoinAndSelect('room.bots', 'bot')
       .where('room.isPrivate = :isPrivate', { isPrivate: false })
-      .andWhere('room.startedAt IS NULL')
-      .andWhere('LOWER(room.status) IN (:...statuses)', { statuses });
+      .andWhere(
+        '(room.startedAt IS NOT NULL OR LOWER(room.status) IN (:...statuses))',
+        { statuses },
+      );
     if (dto.gameType) {
       qb.andWhere('room.gameType = :gameType', { gameType: dto.gameType });
     }

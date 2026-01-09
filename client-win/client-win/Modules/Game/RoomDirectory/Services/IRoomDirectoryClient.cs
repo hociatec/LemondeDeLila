@@ -44,12 +44,14 @@ public sealed class PublicRoomsListedResult
 
 public sealed class PublicRoomListItem
 {
-    public PublicRoomListItem(int id, string name, string gameType, string status, int maxPlayers, int playersCount, int botsCount, string? ownerUsername)
+    public PublicRoomListItem(int id, string name, string gameType, string status, bool started, bool spectatorOnly, int maxPlayers, int playersCount, int botsCount, string? ownerUsername)
     {
         Id = id;
         Name = name ?? string.Empty;
         GameType = gameType ?? string.Empty;
         Status = status ?? string.Empty;
+        Started = started;
+        SpectatorOnly = spectatorOnly;
         MaxPlayers = maxPlayers;
         PlayersCount = playersCount;
         BotsCount = botsCount;
@@ -60,6 +62,8 @@ public sealed class PublicRoomListItem
     public string Name { get; }
     public string GameType { get; }
     public string Status { get; }
+    public bool Started { get; }
+    public bool SpectatorOnly { get; }
     public int MaxPlayers { get; }
     public int PlayersCount { get; }
     public int BotsCount { get; }
@@ -88,6 +92,10 @@ public sealed class PublicRoomListItem
             if (!string.IsNullOrWhiteSpace(owner))
             {
                 parts.Add(owner);
+            }
+            if (SpectatorOnly)
+            {
+                parts.Add("spectateur");
             }
             if (!string.IsNullOrWhiteSpace(status))
             {

@@ -101,7 +101,7 @@ public sealed class RoomGatewayClient : IRoomGatewayClient
         }
 
         var startedAt = DateTime.UtcNow;
-        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(45));
         using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeout.Token);
 
         var (socket, reusedWarm) = await TakeOrCreateSocketAsync(token, linked.Token).ConfigureAwait(false);
@@ -156,7 +156,7 @@ public sealed class RoomGatewayClient : IRoomGatewayClient
             throw new ArgumentException("roomId invalide", nameof(roomId));
         }
 
-        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(45));
         using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeout.Token);
 
         var (socket, reusedWarm) = await TakeOrCreateSocketAsync(token, linked.Token).ConfigureAwait(false);
@@ -338,7 +338,7 @@ public sealed class RoomGatewayClient : IRoomGatewayClient
             await socket.SendAsync(create, cancellationToken).ConfigureAwait(false);
             connected = true;
 
-            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(45));
             using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeout.Token);
             var res = await tcs.Task.WaitAsync(linked.Token).ConfigureAwait(false);
             Log.Information("WS room.create: réponse reçue en {ElapsedMs}ms (roomId={RoomId})", (DateTime.UtcNow - startedAt).TotalMilliseconds, res.RoomId);
@@ -437,7 +437,7 @@ public sealed class RoomGatewayClient : IRoomGatewayClient
         {
             connected = true;
 
-            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(45));
             using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeout.Token);
             var res = await tcs.Task.WaitAsync(linked.Token).ConfigureAwait(false);
             Log.Information("WS room.connect: état reçu en {ElapsedMs}ms (roomId={RoomId})", (DateTime.UtcNow - startedAt).TotalMilliseconds, res.RoomId);

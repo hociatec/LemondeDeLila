@@ -207,7 +207,8 @@ public static class ShortcutBindingsBehavior
                         // arrive souvent après (ordre inversé). Pour ces cas, on consomme la touche et on annonce via NVDA.
                         var code = shortcut.Code ?? string.Empty;
                         // Ne pas consommer la touche : laisser le lecteur d'écran faire l'écho clavier naturellement.
-                        e.Handled = false;
+                        // Exception: les raccourcis "server.key.*" sont aussi renvoyés par GamePlayView => double envoi.
+                        e.Handled = code.StartsWith("server.key.", StringComparison.OrdinalIgnoreCase);
                         if (shouldRefocus)
                         {
                             RequestRefocusGameZone(element);
@@ -238,8 +239,8 @@ public static class ShortcutBindingsBehavior
                             {
                                 shortcut.Command.Execute(shortcut.CommandParameter);
                                 var code = shortcut.Code ?? string.Empty;
-                                // Ne pas consommer la touche : laisser le lecteur d'écran faire l'écho clavier naturellement.
-                                e.Handled = false;
+                                // Voir commentaire plus haut sur server.key.* (double envoi).
+                                e.Handled = code.StartsWith("server.key.", StringComparison.OrdinalIgnoreCase);
                                 if (shouldRefocus)
                                 {
                                     RequestRefocusGameZone(element);

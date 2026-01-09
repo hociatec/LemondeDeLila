@@ -36,6 +36,7 @@ namespace client_win
         private readonly HomeViewModel _homeViewModel;
         private readonly INavigationService _navigation;
         private readonly IDialogService _dialogs;
+        private readonly IMenuRouter _menuRouter;
         private readonly HomeView _homeView;
         private readonly ErrorBus _errorBus;
         private readonly PersistentWsClient _wsConnection;
@@ -65,6 +66,7 @@ namespace client_win
             _presenceUi = _host.Services.GetRequiredService<IPresenceLauncher>();
             _options = _host.Services.GetRequiredService<IOptionsService>();
             _homeAccessor = _host.Services.GetRequiredService<IHomeViewAccessor>();
+            _menuRouter = _host.Services.GetRequiredService<IMenuRouter>();
 
             _homeViewModel = _host.CreateHomeViewModel(OnNavigateToMainMenu, Close);
 
@@ -211,6 +213,21 @@ namespace client_win
             {
                 e.Handled = true;
                 Close();
+            }
+            else if (key == Key.F3)
+            {
+                e.Handled = true;
+                _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(async () =>
+                {
+                    try
+                    {
+                        await _menuRouter.OpenContactAdmin().ConfigureAwait(true);
+                    }
+                    catch
+                    {
+                        // ignore
+                    }
+                }));
             }
             else if (isCtrl && key == Key.U)
             {

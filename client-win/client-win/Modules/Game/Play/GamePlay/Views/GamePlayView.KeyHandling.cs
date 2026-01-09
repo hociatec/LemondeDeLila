@@ -1,4 +1,5 @@
 using System.Threading;
+using System.Windows;
 using System.Windows.Input;
 using client_win.Modules.Game.Play.GamePlay.ViewModels;
 
@@ -6,6 +7,35 @@ namespace client_win.Modules.Game.Play.GamePlay.Views;
 
 public partial class GamePlayView
 {
+    private bool IsFocusWithinGrid()
+    {
+        if (GridBoard == null)
+        {
+            return false;
+        }
+
+        var focused = Keyboard.FocusedElement as DependencyObject;
+        while (focused != null)
+        {
+            if (ReferenceEquals(focused, GridBoard) || ReferenceEquals(focused, GridItems))
+            {
+                return true;
+            }
+
+            if (focused is FrameworkElement fe)
+            {
+                if (ReferenceEquals(fe.Parent, GridBoard) || ReferenceEquals(fe.TemplatedParent, GridBoard))
+                {
+                    return true;
+                }
+            }
+
+            focused = System.Windows.Media.VisualTreeHelper.GetParent(focused);
+        }
+
+        return false;
+    }
+
     private async void OnRootPreviewKeyDown(object sender, KeyEventArgs e)
     {
         HandleGridArrowKey(e);
@@ -20,6 +50,13 @@ public partial class GamePlayView
         }
 
         if (IsTextInputFocused())
+        {
+            return;
+        }
+
+        // Grille: laisser Entrée/Espace activer la case (Button.Command) au lieu de renvoyer une touche "ENTER" au serveur.
+        // Sinon Corridor (prendre le pion / déplacement / pose de mur) devient inutilisable.
+        if (vm.Grid.IsVisible && IsFocusWithinGrid() && (e.Key == Key.Enter || e.Key == Key.Return || e.Key == Key.Space))
         {
             return;
         }
