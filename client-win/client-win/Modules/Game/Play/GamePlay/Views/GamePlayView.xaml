@@ -78,9 +78,10 @@
 	                    -->
 		                    <ItemsControl.ItemContainerStyle>
 		                        <Style TargetType="ContentPresenter">
-		                            <Setter Property="AutomationProperties.Name" Value="{Binding AccessibleName}" />
-		                            <Setter Property="AutomationProperties.AutomationId" Value="{Binding CellRef}" />
+		                            <Setter Property="AutomationProperties.Name" Value="" />
 		                            <Setter Property="AutomationProperties.HelpText" Value="" />
+		                            <Setter Property="AutomationProperties.ItemType" Value="" />
+		                            <Setter Property="AutomationProperties.ItemStatus" Value="" />
 		                        </Style>
 		                    </ItemsControl.ItemContainerStyle>
 	                    <ItemsControl.ItemsPanel>
@@ -102,8 +103,9 @@
 	                                               BorderThickness="{Binding CellBorderThickness}"
 	                                               Foreground="White"
 	                                               FocusVisualStyle="{x:Null}"
-	                                               AutomationProperties.Name="{Binding AccessibleName}"
+	                                               AutomationProperties.Name="{Binding CellRef}"
 	                                               AutomationProperties.AutomationId="{Binding CellRef}"
+	                                               AutomationProperties.HelpText=""
 	                                               Command="{Binding DataContext.CellCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
 	                                               CommandParameter="{Binding}">
 	                                <grid:A11yGridCell.Style>

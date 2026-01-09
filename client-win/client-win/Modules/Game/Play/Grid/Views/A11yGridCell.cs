@@ -30,6 +30,28 @@ public sealed class A11yGridCell : Button
         {
             return "GridCell";
         }
+
+        protected override int GetPositionInSetCore()
+        {
+            // Eviter "78 sur 81" (bruit NVDA) : ne pas préciser la position dans une liste.
+            return 0;
+        }
+
+        protected override int GetSizeOfSetCore()
+        {
+            // Eviter "78 sur 81" (bruit NVDA) : ne pas préciser la taille de l'ensemble.
+            return 0;
+        }
+
+        protected override string GetItemTypeCore()
+        {
+            return string.Empty;
+        }
+
+        protected override string GetItemStatusCore()
+        {
+            return string.Empty;
+        }
     }
 }
 
