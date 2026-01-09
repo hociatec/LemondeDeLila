@@ -16,6 +16,7 @@ internal sealed class GameSessionMessageRouter
     private readonly Action<string> _emitUiMessage;
     private readonly Action<string> _emitRaw;
     private readonly Action? _emitPong;
+    private bool _turnRepeatToggle;
 
     internal GameSessionMessageRouter(
         JsonSerializerOptions json,
@@ -119,6 +120,10 @@ internal sealed class GameSessionMessageRouter
             {
                 var ok = payload.TryGetProperty("ok", out var okProp) && okProp.ValueKind == JsonValueKind.True;
 
+                var key = payload.TryGetProperty("key", out var keyProp) && keyProp.ValueKind == JsonValueKind.String
+                    ? (keyProp.GetString() ?? string.Empty).Trim().ToUpperInvariant()
+                    : string.Empty;
+
                 var message = payload.TryGetProperty("message", out var messageProp) &&
                               messageProp.ValueKind == JsonValueKind.String
                     ? (messageProp.GetString() ?? string.Empty).Trim()
@@ -126,6 +131,13 @@ internal sealed class GameSessionMessageRouter
 
                 if (!string.IsNullOrWhiteSpace(message))
                 {
+                    // Robustesse lecteur d'écran: si l'utilisateur spamme 'T' pour ré-entendre "à qui le tour",
+                    // certains lecteurs/dédup peuvent ignorer les messages identiques. On rend le message unique
+                    // sans impact visuel/audible en alternant un caractère invisible.
+                    if (string.Equals(key, "T", StringComparison.Ordinal))
+                    {
+                        message = MakeTurnRepeatAnnouncementUnique(message);
+                    }
                     _emitUiMessage(message);
                     return;
                 }
@@ -146,6 +158,13 @@ internal sealed class GameSessionMessageRouter
         {
             // ignore
         }
+    }
+
+    private string MakeTurnRepeatAnnouncementUnique(string message)
+    {
+        _turnRepeatToggle = !_turnRepeatToggle;
+        // U+2060 (WORD JOINER) / U+200B (ZERO WIDTH SPACE) : invisibles, généralement ignorés par la synthèse.
+        return _turnRepeatToggle ? $"{message}\u2060" : $"{message}\u200B";
     }
 
     private void HandlePong(JsonElement root)

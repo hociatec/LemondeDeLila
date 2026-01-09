@@ -31,6 +31,8 @@ public sealed partial class GridBoardViewModel
             return;
         }
 
+        var isCorridor = string.Equals(session.GameType, "corridor", System.StringComparison.OrdinalIgnoreCase);
+
         // Generic grid "grab" mechanic: Enter on an owned pawn toggles grab,
         // then Enter on a target cell triggers the first MOVE action for that cell.
         if (_isEntityGrabbed)
@@ -62,6 +64,14 @@ public sealed partial class GridBoardViewModel
         {
             _isEntityGrabbed = true;
             _announce("Pion pris. Choisissez une case et appuyez sur Entrée.");
+            return;
+        }
+
+        // Corridor: éviter les déplacements accidentels sur une case cible.
+        // Le joueur doit d'abord "prendre" son pion.
+        if (isCorridor && actionsHere.Any(a => HasUiKind(a.Payload, "move")))
+        {
+            _announce("Prenez d'abord votre pion.");
             return;
         }
 

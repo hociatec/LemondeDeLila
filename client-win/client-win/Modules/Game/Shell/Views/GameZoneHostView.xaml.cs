@@ -16,6 +16,15 @@ public partial class GameZoneHostView : UserControl
 
     public void FocusGameZone()
     {
+        if (GameZoneHost?.Content == null)
+        {
+            if (GameZoneEmptyAnchor?.Focus() == true)
+            {
+                Keyboard.Focus(GameZoneEmptyAnchor);
+                return;
+            }
+        }
+
         if (GameZoneHost?.Content is System.Windows.FrameworkElement contentRoot)
         {
             // Priorité: focus sur un enfant réellement interactif (ex: liste de choix).
@@ -52,6 +61,13 @@ public partial class GameZoneHostView : UserControl
         {
             e.Handled = true;
             StartRequested?.Invoke(this, EventArgs.Empty);
+            return;
+        }
+
+        // Les flèches ne doivent pas déplacer le focus depuis l'ancre : la navigation est gérée ailleurs.
+        if (e.Key is Key.Left or Key.Right or Key.Up or Key.Down)
+        {
+            e.Handled = true;
             return;
         }
 

@@ -157,7 +157,7 @@ export class GameEngineService {
     const withLabel = this.attachTurnLabel(exposed, label);
     const withDescriptors = this.attachUiDescriptors(
       this.gridRender.attachGridRenderDescriptors(
-        this.attachCurrentPlayerView(withLabel),
+        this.attachViewerContext(this.attachCurrentPlayerView(withLabel), userId),
       ),
     );
     return this.attachShortcuts(withDescriptors, handler, userId);
@@ -685,6 +685,7 @@ export class GameEngineService {
     const next = await handler.applyActions(current, sanitizedActions);
     const botTurn = this.isBotTurn(next);
     let marked = await this.markBotThinking(roomId, gameType, next, botTurn);
+    marked = this.normalizeWinnerMetadata(marked);
     marked = this.forceFinishedIfWinnerDetected(marked);
     if ((marked.status || '').toLowerCase() === 'finished') {
       const meta = (marked as any)?.metadata;
@@ -803,6 +804,35 @@ export class GameEngineService {
     });
 
     return this.exposeState(marked, gameType);
+  }
+
+  private normalizeWinnerMetadata<TState extends { metadata?: unknown }>(
+    state: TState,
+  ): TState {
+    const meta = (state as any)?.metadata;
+    if (!meta || typeof meta !== 'object') return state;
+
+    const winnerId = (meta as any)?.winnerId;
+    if (winnerId !== null && winnerId !== undefined) {
+      if (typeof winnerId !== 'string' || winnerId.trim().length > 0) {
+        return state;
+      }
+    }
+
+    for (const key of ['winnerPlayerId', 'winner_id'] as const) {
+      const value = (meta as any)?.[key];
+      if (value === null || value === undefined) continue;
+      if (typeof value === 'string' && value.trim().length === 0) continue;
+      return {
+        ...(state as any),
+        metadata: {
+          ...(meta as any),
+          winnerId: value,
+        },
+      } as TState;
+    }
+
+    return state;
   }
 
   /**
@@ -1463,6 +1493,36 @@ export class GameEngineService {
       extras: {
         ...extras,
         currentPlayerView,
+      },
+    };
+  }
+
+  private attachViewerContext(
+    state: GameStateWithActions,
+    userId: number,
+  ): GameStateWithActions {
+    const extras =
+      state.extras && typeof state.extras === 'object' ? state.extras : {};
+
+    // Ne pas écraser si un jeu a déjà défini ces champs.
+    if ((extras as any).viewerPlayerId !== undefined) return state;
+
+    const players = Array.isArray(state.players) ? state.players : [];
+    const viewerPlayer = players.find((p) => p?.id === userId) ?? null;
+    const viewerPlayerId = viewerPlayer ? viewerPlayer.id : null;
+    const viewerUsername =
+      viewerPlayer && typeof viewerPlayer.username === 'string'
+        ? viewerPlayer.username
+        : viewerPlayer
+          ? `Joueur ${viewerPlayer.id}`
+          : null;
+
+    return {
+      ...state,
+      extras: {
+        ...extras,
+        viewerPlayerId,
+        viewerUsername,
       },
     };
   }

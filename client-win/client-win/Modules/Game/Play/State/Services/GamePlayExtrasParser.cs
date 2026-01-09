@@ -98,6 +98,34 @@ internal static class GamePlayExtrasParser
         return ExtractCurrentPlayerView(state).Id;
     }
 
+    internal static int? ExtractViewerPlayerId(GameStateDto state)
+    {
+        try
+        {
+            if (state.Extras.ValueKind == JsonValueKind.Object &&
+                state.Extras.TryGetProperty("viewerPlayerId", out var idNode))
+            {
+                if (idNode.ValueKind == JsonValueKind.Number && idNode.TryGetInt32(out var asInt))
+                {
+                    return asInt;
+                }
+
+                if (idNode.ValueKind == JsonValueKind.String &&
+                    int.TryParse(idNode.GetString(), out var parsed))
+                {
+                    return parsed;
+                }
+            }
+        }
+        catch
+        {
+            // ignore
+        }
+
+        // Fallback compat (ancien serveur): currentPlayerView = joueur dont c'est le tour (pas le viewer).
+        return ExtractCurrentPlayerId(state);
+    }
+
     private static int? ExtractInt(JsonElement obj, string key)
     {
         if (!obj.TryGetProperty(key, out var node))

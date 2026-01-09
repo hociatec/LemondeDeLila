@@ -135,7 +135,7 @@ internal sealed class GamePlayRealtimeController
                 _requestFocus();
             }
 
-            _viewerPlayerId = GamePlayExtrasParser.ExtractCurrentPlayerId(state);
+            _viewerPlayerId = GamePlayExtrasParser.ExtractViewerPlayerId(state);
             _choices.UpdateFromState(state, _viewerPlayerId, _canStartAskCardSelection);
 
             if (!string.Equals(previousStatus, "finished", StringComparison.OrdinalIgnoreCase) &&

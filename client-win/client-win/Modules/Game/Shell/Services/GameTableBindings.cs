@@ -246,7 +246,16 @@ internal sealed class GameTableBindings : IAsyncDisposable
                         _gamePlayVm = null;
                     }
 
-                    _announcements.TableInfo("Table réinitialisée.");
+                    var gameName = (payload.Manifest?.Name ?? _game.Name ?? string.Empty).Trim();
+                    if (string.IsNullOrWhiteSpace(gameName))
+                    {
+                        _announcements.TableInfo("Table creee. Ajoutez des bots et commencez a jouer (Entree).");
+                    }
+                    else
+                    {
+                        _announcements.TableInfo($"Table de {gameName} creee. Ajoutez des bots et commencez a jouer (Entree).");
+                    }
+
 
                     // Forcer le focus sur la zone de jeu (le contenu a été déchargé).
                     _ = _tableView.Dispatcher.BeginInvoke(

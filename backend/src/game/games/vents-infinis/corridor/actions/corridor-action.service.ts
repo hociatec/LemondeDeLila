@@ -132,6 +132,7 @@ export class CorridorActionService {
     const status = won ? 'finished' : state.status;
     if (won) {
       nextMeta.winnerPlayerId = actorId;
+      (nextMeta as any).winnerId = actorId;
     }
 
     const actorName = actor?.username ?? `#${actorId}`;
@@ -161,4 +162,3 @@ export class CorridorActionService {
     };
   }
 }
-

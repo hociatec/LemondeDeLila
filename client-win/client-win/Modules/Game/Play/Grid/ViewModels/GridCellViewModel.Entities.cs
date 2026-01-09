@@ -47,6 +47,19 @@ public sealed partial class GridCellViewModel
         }
     }
 
+    private string _ownPawnUsername = string.Empty;
+    public string OwnPawnUsername
+    {
+        get => _ownPawnUsername;
+        set
+        {
+            if (SetProperty(ref _ownPawnUsername, value ?? string.Empty))
+            {
+                UpdateAccessibleName();
+            }
+        }
+    }
+
     private bool _hasOpponentPawn;
     public bool HasOpponentPawn
     {
@@ -54,6 +67,19 @@ public sealed partial class GridCellViewModel
         set
         {
             if (SetProperty(ref _hasOpponentPawn, value))
+            {
+                UpdateAccessibleName();
+            }
+        }
+    }
+
+    private string _opponentPawnUsername = string.Empty;
+    public string OpponentPawnUsername
+    {
+        get => _opponentPawnUsername;
+        set
+        {
+            if (SetProperty(ref _opponentPawnUsername, value ?? string.Empty))
             {
                 UpdateAccessibleName();
             }

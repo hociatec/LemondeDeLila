@@ -11,11 +11,15 @@ public sealed partial class GridCellViewModel
             var parts = new List<string> { CellRef };
             if (HasOwnPawn)
             {
-                parts.Add("votre pion");
+                parts.Add(string.IsNullOrWhiteSpace(OwnPawnUsername)
+                    ? "votre pion"
+                    : $"pion de {OwnPawnUsername} (vous)");
             }
             if (HasOpponentPawn)
             {
-                parts.Add("camp adverse");
+                parts.Add(string.IsNullOrWhiteSpace(OpponentPawnUsername)
+                    ? "camp adverse"
+                    : $"pion de {OpponentPawnUsername}");
             }
             return string.Join(", ", parts);
         }
@@ -29,4 +33,3 @@ public sealed partial class GridCellViewModel
 
     public override string ToString() => AccessibleName;
 }
-

@@ -34,6 +34,12 @@ public sealed partial class GridBoardViewModel
 
         var entitiesByKey = TryReadGridEntities(state);
         var cellTagsByKey = TryReadGridCellTags(state);
+        var playerNameById = (state.Players ?? new List<GamePlayerDto>())
+            .Where(p => p != null && p.Id > 0)
+            .GroupBy(p => p.Id)
+            .ToDictionary(
+                g => g.Key,
+                g => (g.FirstOrDefault()?.Username ?? string.Empty).Trim());
 
         foreach (var cell in Cells)
         {
@@ -49,6 +55,8 @@ public sealed partial class GridBoardViewModel
             cell.EntitiesCount = 0;
             cell.HasOwnPawn = false;
             cell.HasOpponentPawn = false;
+            cell.OwnPawnUsername = string.Empty;
+            cell.OpponentPawnUsername = string.Empty;
             cell.EntityTypes = new ObservableCollection<string>();
         }
 
@@ -80,6 +88,20 @@ public sealed partial class GridBoardViewModel
                 var viewerId = _viewerPlayerId.Value;
                 cell.HasOwnPawn = entities.Any(e => e.OwnerId == viewerId);
                 cell.HasOpponentPawn = entities.Any(e => e.OwnerId != null && e.OwnerId != viewerId);
+
+                if (cell.HasOwnPawn && playerNameById.TryGetValue(viewerId, out var ownName))
+                {
+                    cell.OwnPawnUsername = ownName;
+                }
+
+                var opponentOwnerId = entities
+                    .Select(e => e.OwnerId)
+                    .FirstOrDefault(id => id != null && id.Value != viewerId);
+                if (opponentOwnerId != null &&
+                    playerNameById.TryGetValue(opponentOwnerId.Value, out var opponentName))
+                {
+                    cell.OpponentPawnUsername = opponentName;
+                }
             }
 
             var types = entities

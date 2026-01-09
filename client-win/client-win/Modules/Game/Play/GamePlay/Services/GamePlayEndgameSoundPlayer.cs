@@ -20,6 +20,18 @@ internal sealed class GamePlayEndgameSoundPlayer
             return;
         }
 
+        var outcome = GamePlayWinnerReader.TryExtractOutcomeForViewer(state, viewerPlayerId.Value);
+        if (outcome == GamePlayWinnerReader.Outcome.Won)
+        {
+            _sounds.Play(SoundId.GameVictory);
+            return;
+        }
+        if (outcome == GamePlayWinnerReader.Outcome.Lost)
+        {
+            _sounds.Play(SoundId.GameDefeat);
+            return;
+        }
+
         var winnerId = GamePlayWinnerReader.TryExtractWinnerPlayerId(state);
         if (winnerId == null)
         {
@@ -35,4 +47,3 @@ internal sealed class GamePlayEndgameSoundPlayer
         _sounds.Play(SoundId.GameDefeat);
     }
 }
-

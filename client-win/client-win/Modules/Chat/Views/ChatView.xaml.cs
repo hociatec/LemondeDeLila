@@ -109,10 +109,38 @@ public partial class ChatView : UserControl
             }
             if (res.StartedEdit)
             {
-                InputBox.Focus();
+                FocusInputDeferred(selectAll: true);
             }
             e.Handled = true;
         }
+    }
+
+    private void FocusInputDeferred(bool selectAll)
+    {
+        if (InputBox == null)
+        {
+            return;
+        }
+
+        void FocusNow()
+        {
+            try
+            {
+                InputBox.Focus();
+                Keyboard.Focus(InputBox);
+                if (selectAll)
+                {
+                    InputBox.SelectAll();
+                }
+            }
+            catch
+            {
+                // best-effort
+            }
+        }
+
+        Dispatcher.BeginInvoke(FocusNow, System.Windows.Threading.DispatcherPriority.Input);
+        Dispatcher.BeginInvoke(FocusNow, System.Windows.Threading.DispatcherPriority.ApplicationIdle);
     }
 
     private static bool IsNearBottom(ScrollViewer sv)
