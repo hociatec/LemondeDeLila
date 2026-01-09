@@ -178,13 +178,14 @@ export class GameEngineService {
 
     const state = await this.getStateForUser(roomId, gameType, userId);
     const handler = this.registry.getHandler(gameType);
-    if (!handler?.getShortcuts) return null;
 
-    const declared: GameShortcutHint[] = handler.getShortcuts({
-      metadata: state?.metadata ?? {},
-      currentPlayerId: state?.turn?.currentPlayerId ?? null,
-      started: String(state?.status ?? '').toLowerCase() === 'started',
-    });
+    const declared: GameShortcutHint[] = handler?.getShortcuts
+      ? handler.getShortcuts({
+          metadata: state?.metadata ?? {},
+          currentPlayerId: state?.turn?.currentPlayerId ?? null,
+          started: String(state?.status ?? '').toLowerCase() === 'started',
+        })
+      : [];
 
     const shortcuts = this.mergeCommonShortcuts(state, declared);
 
@@ -231,18 +232,16 @@ export class GameEngineService {
     handler: GameRulesAdapter | undefined,
     userId: number,
   ): GameStateWithActions {
-    if (!handler?.getShortcuts) {
-      return state;
-    }
-
     const extras =
       state.extras && typeof state.extras === 'object' ? state.extras : {};
 
-    const declared = handler.getShortcuts({
-      metadata: state.metadata ?? {},
-      currentPlayerId: state.turn?.currentPlayerId ?? null,
-      started: String(state.status ?? '').toLowerCase() === 'started',
-    });
+    const declared: GameShortcutHint[] = handler?.getShortcuts
+      ? handler.getShortcuts({
+          metadata: state.metadata ?? {},
+          currentPlayerId: state.turn?.currentPlayerId ?? null,
+          started: String(state.status ?? '').toLowerCase() === 'started',
+        })
+      : [];
 
     const shortcuts = this.mergeCommonShortcuts(state, declared);
 
@@ -277,6 +276,7 @@ export class GameEngineService {
 
     if (types.has('roll')) {
       common.push(actionShortcut('R', 'roll'));
+      common.push(actionShortcut('ENTER', 'roll'));
     }
     if (types.has('draw')) {
       common.push(actionShortcut('SPACE', 'draw'));
