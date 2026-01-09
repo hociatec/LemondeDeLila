@@ -38,8 +38,8 @@ public partial class MessagingView : UserControl
         {
             // IMPORTANT : forcer le focus dans la vue dès l'ouverture.
             // Sinon la vue précédente peut conserver le focus (Échap ne fait rien et Tab navigue ailleurs).
-            Focus();
-            Keyboard.Focus(this);
+            // Ne pas forcer le focus sur la vue elle-meme (sinon certains lecteurs d'ecran annoncent "inconnu").
+            // Le focus est gere par ShowScreen() (menu / liste / detail / redaction).
 
             if (MenuList.Items.Count > 0)
             {
