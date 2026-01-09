@@ -23,7 +23,8 @@ public sealed class A11yGridCell : Button
 
         protected override string GetLocalizedControlTypeCore()
         {
-            return "case";
+            // Laisser vide pour éviter le bruit NVDA (ex: "case").
+            return string.Empty;
         }
 
         protected override string GetClassNameCore()

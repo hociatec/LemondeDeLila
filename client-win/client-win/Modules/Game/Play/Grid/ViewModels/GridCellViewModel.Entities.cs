@@ -34,6 +34,32 @@ public sealed partial class GridCellViewModel
 
     public bool HasEntities => EntitiesCount > 0;
 
+    private bool _hasOwnPawn;
+    public bool HasOwnPawn
+    {
+        get => _hasOwnPawn;
+        set
+        {
+            if (SetProperty(ref _hasOwnPawn, value))
+            {
+                UpdateAccessibleName();
+            }
+        }
+    }
+
+    private bool _hasOpponentPawn;
+    public bool HasOpponentPawn
+    {
+        get => _hasOpponentPawn;
+        set
+        {
+            if (SetProperty(ref _hasOpponentPawn, value))
+            {
+                UpdateAccessibleName();
+            }
+        }
+    }
+
     private ObservableCollection<string> _entityTypes = new();
     public ObservableCollection<string> EntityTypes
     {

@@ -47,6 +47,8 @@ public sealed partial class GridBoardViewModel
             cell.CellTags = new ObservableCollection<string>();
             cell.Glyph = string.Empty;
             cell.EntitiesCount = 0;
+            cell.HasOwnPawn = false;
+            cell.HasOpponentPawn = false;
             cell.EntityTypes = new ObservableCollection<string>();
         }
 
@@ -72,6 +74,14 @@ public sealed partial class GridBoardViewModel
             var cell = Cells[idx];
             cell.EntitiesCount = entities.Count;
             cell.Glyph = entities.Select(e => e.Glyph).FirstOrDefault(s => !string.IsNullOrWhiteSpace(s)) ?? string.Empty;
+
+            if (_viewerPlayerId is > 0)
+            {
+                var viewerId = _viewerPlayerId.Value;
+                cell.HasOwnPawn = entities.Any(e => e.OwnerId == viewerId);
+                cell.HasOpponentPawn = entities.Any(e => e.OwnerId != null && e.OwnerId != viewerId);
+            }
+
             var types = entities
                 .Select(e => e.Type)
                 .Where(s => !string.IsNullOrWhiteSpace(s))

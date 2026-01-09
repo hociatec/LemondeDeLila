@@ -82,6 +82,8 @@
 		                            <Setter Property="AutomationProperties.HelpText" Value="" />
 		                            <Setter Property="AutomationProperties.ItemType" Value="" />
 		                            <Setter Property="AutomationProperties.ItemStatus" Value="" />
+		                            <Setter Property="AutomationProperties.PositionInSet" Value="0" />
+		                            <Setter Property="AutomationProperties.SizeOfSet" Value="0" />
 		                        </Style>
 		                    </ItemsControl.ItemContainerStyle>
 	                    <ItemsControl.ItemsPanel>
@@ -103,7 +105,7 @@
 	                                               BorderThickness="{Binding CellBorderThickness}"
 	                                               Foreground="White"
 	                                               FocusVisualStyle="{x:Null}"
-	                                               AutomationProperties.Name="{Binding CellRef}"
+	                                               AutomationProperties.Name="{Binding AccessibleName}"
 	                                               AutomationProperties.AutomationId="{Binding CellRef}"
 	                                               AutomationProperties.HelpText=""
 	                                               Command="{Binding DataContext.CellCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"

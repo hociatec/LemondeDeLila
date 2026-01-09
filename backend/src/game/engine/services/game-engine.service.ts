@@ -33,6 +33,7 @@ import { GameLoggerService } from '../../../common/services/game-logger.service'
 import { GameStatsService } from '../../../stats/services/game-stats.service';
 import { GridRenderService } from '../../modules/grid/services/grid-render.service';
 import type { GameShortcutHint } from '../shortcuts/game-shortcuts';
+import { actionShortcut, interfaceShortcut } from '../shortcuts/shortcut-utils';
 
 @Injectable()
 export class GameEngineService {
@@ -179,11 +180,13 @@ export class GameEngineService {
     const handler = this.registry.getHandler(gameType);
     if (!handler?.getShortcuts) return null;
 
-    const shortcuts: GameShortcutHint[] = handler.getShortcuts({
+    const declared: GameShortcutHint[] = handler.getShortcuts({
       metadata: state?.metadata ?? {},
-      currentPlayerId: userId,
+      currentPlayerId: state?.turn?.currentPlayerId ?? null,
       started: String(state?.status ?? '').toLowerCase() === 'started',
     });
+
+    const shortcuts = this.mergeCommonShortcuts(state, declared);
 
     const match = shortcuts.find((s) => {
       const rawKey = typeof s?.key === 'string' ? s.key : '';
@@ -235,11 +238,13 @@ export class GameEngineService {
     const extras =
       state.extras && typeof state.extras === 'object' ? state.extras : {};
 
-    const shortcuts = handler.getShortcuts({
+    const declared = handler.getShortcuts({
       metadata: state.metadata ?? {},
-      currentPlayerId: userId,
+      currentPlayerId: state.turn?.currentPlayerId ?? null,
       started: String(state.status ?? '').toLowerCase() === 'started',
     });
+
+    const shortcuts = this.mergeCommonShortcuts(state, declared);
 
     return {
       ...state,
@@ -248,6 +253,52 @@ export class GameEngineService {
         shortcuts,
       },
     };
+  }
+
+  private mergeCommonShortcuts(
+    state: GameStateWithActions | null | undefined,
+    declared: GameShortcutHint[],
+  ): GameShortcutHint[] {
+    const common: GameShortcutHint[] = [];
+
+    // Always available: request/announce turn information.
+    common.push(interfaceShortcut('T', 'turn'));
+
+    // Action shortcuts: emit only when action exists in the exposed state.
+    const actionsRaw = (state as any)?.actions;
+    const actions: Array<any> = Array.isArray(actionsRaw) ? actionsRaw : [];
+    const types = new Set(
+      actions
+        .map((a) =>
+          typeof a?.type === 'string' ? a.type.trim().toLowerCase() : '',
+        )
+        .filter((t) => t),
+    );
+
+    if (types.has('roll')) {
+      common.push(actionShortcut('R', 'roll'));
+    }
+    if (types.has('draw')) {
+      common.push(actionShortcut('SPACE', 'draw'));
+    }
+
+    const out: GameShortcutHint[] = [];
+    const seen = new Set<string>();
+    for (const s of [...(Array.isArray(declared) ? declared : []), ...common]) {
+      const keyStr = typeof (s as any)?.key === 'string' ? (s as any).key : '';
+      const typeStr =
+        typeof (s as any)?.type === 'string' ? (s as any).type : '';
+      const idStr = typeStr === 'interface' ? String((s as any).id ?? '') : '';
+      const actionTypeStr =
+        typeStr === 'action' ? String((s as any).actionType ?? '') : '';
+      const sig = `${keyStr}|${typeStr}|${idStr}|${actionTypeStr}`;
+      if (!keyStr || !typeStr) continue;
+      if (seen.has(sig)) continue;
+      seen.add(sig);
+      out.push(s);
+    }
+
+    return out;
   }
 
   private async getInternalState(
@@ -1330,7 +1381,55 @@ export class GameEngineService {
   private attachUiDescriptors(state: GameStateWithActions): GameStateWithActions {
     // Les panneaux UI doivent Ļtre entiĶrement dķfinis par les jeux via `extras.ui.panels`.
     // Le moteur n'infĶre plus de panneaux gķnķriques (shopping, position, pollution, etc.).
-    return state;
+    // Provide a generic "turn" panel derived from `turn.label` (no game rules).
+    const turnLabel = String(state.turn?.label ?? '').trim();
+    if (!turnLabel) return state;
+
+    const extrasNow =
+      state.extras && typeof state.extras === 'object' ? state.extras : {};
+
+    const uiExistingNow = (extrasNow as any).ui;
+    const uiNow =
+      uiExistingNow &&
+      typeof uiExistingNow === 'object' &&
+      !Array.isArray(uiExistingNow)
+        ? { ...(uiExistingNow as Record<string, unknown>) }
+        : {};
+
+    const panelsExistingNow = (uiNow as any).panels;
+    const panelsNow =
+      panelsExistingNow &&
+      typeof panelsExistingNow === 'object' &&
+      !Array.isArray(panelsExistingNow)
+        ? { ...(panelsExistingNow as Record<string, unknown>) }
+        : {};
+
+    const existingTurn = panelsNow['turn'];
+    const existingTurnMessage =
+      existingTurn &&
+      typeof existingTurn === 'object' &&
+      !Array.isArray(existingTurn)
+        ? (existingTurn as any).message
+        : null;
+    const hasTurnMessage =
+      typeof existingTurnMessage === 'string' &&
+      existingTurnMessage.trim().length > 0;
+
+    if (!hasTurnMessage) {
+      panelsNow['turn'] = {
+        title: 'Tour',
+        message: turnLabel.endsWith('.') ? turnLabel : `${turnLabel}.`,
+      };
+    }
+
+    (uiNow as any).panels = panelsNow;
+    return {
+      ...state,
+      extras: {
+        ...extrasNow,
+        ui: uiNow,
+      },
+    };
 
     const extras =
       state.extras && typeof state.extras === 'object' ? state.extras : {};
