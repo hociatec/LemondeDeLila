@@ -43,7 +43,7 @@ export class RoomDirectoryWsHandler {
   ) {}
 
   async listPublic(session: WsSession, payload: any) {
-    requireUser(session);
+    const user = requireUser(session);
     const dto = this.validator.validate(RoomsPublicListDto, payload);
     const allowed = new Set(
       (await this.catalog.getAllGames()).map((g) => g.id),
@@ -82,12 +82,21 @@ export class RoomDirectoryWsHandler {
     const built = buildPublicRoomList(activeRooms, {
       allowedGameTypes: allowed,
     });
+    const isBanned = (roomId: number) => this.rooms.isBanned(roomId, user.id);
+    built.items = built.items.map((it) => ({ ...it, banned: isBanned(it.id) }));
+    built.groups = built.groups.map((g) => ({
+      ...g,
+      rooms: g.rooms.map((it) => ({ ...it, banned: isBanned(it.id) })),
+    }));
     return { type: 'rooms.public.listed', payload: built };
   }
 
   async joinPublic(session: WsSession, payload: any) {
     const user = requireUser(session);
     const dto = this.validator.validate(RoomsPublicJoinDto, payload);
+    if (this.rooms.isBanned(dto.roomId, user.id)) {
+      throw new ForbiddenException('Banni de cette table');
+    }
     await this.rooms.joinRoom(dto.roomId, user.id);
     const state = await this.rooms.getRoomPayload(dto.roomId);
     return {

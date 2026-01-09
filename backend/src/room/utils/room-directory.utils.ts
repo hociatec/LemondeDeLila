@@ -8,6 +8,7 @@ export type PublicRoomListItem = {
   status: string;
   started: boolean;
   spectatorOnly: boolean;
+  banned?: boolean;
   maxPlayers: number;
   playersCount: number;
   botsCount: number;
