@@ -165,6 +165,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
 
     public event Action<string>? MessageReceived;
     public event Action? GameZoneFocusRequested;
+    public event Action<string, string>? GameStatusChanged;
 
     public void SetSpectator(bool isSpectator)
     {
@@ -323,6 +324,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
 	            : $"Statut de la partie : {previousStatus} -> {nextStatus}";
 
 	        MessageReceived?.Invoke(message);
+	        GameStatusChanged?.Invoke(previousStatus ?? string.Empty, nextStatus);
 	    }
 
 	    public async ValueTask DisposeAsync()

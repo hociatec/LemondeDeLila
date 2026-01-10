@@ -42,10 +42,11 @@ internal sealed class GameTableBindings : IAsyncDisposable
     private GamePlayViewModel? _gamePlayVm;
     private NotifyCollectionChangedEventHandler? _onGameplayShortcutsChanged;
 
-    private Action<RoomPayloadDto>? _onRoomUpdated;
-    private Action<RoomAnnouncement>? _onAnnounced;
-    private Action<string>? _onSessionError;
-    private Action<string>? _onGameMessage;
+	    private Action<RoomPayloadDto>? _onRoomUpdated;
+	    private Action<RoomAnnouncement>? _onAnnounced;
+	    private Action<string>? _onSessionError;
+	    private Action<string>? _onGameMessage;
+	    private Action<string, string>? _onGameStatusChanged;
 
     private string? _lastStatus;
     private Dictionary<int, (string Username, bool Spectator)> _participants = new();
@@ -511,48 +512,82 @@ internal sealed class GameTableBindings : IAsyncDisposable
         }
     }
 
-    private void SyncGameplayShortcuts()
-    {
-        RemoveGameplayShortcuts();
+	    private void SyncGameplayShortcuts()
+	    {
+	        RemoveGameplayShortcuts();
 
-        if (_gamePlayVm == null)
-        {
-            return;
-        }
+	        if (_gamePlayVm == null)
+	        {
+	            return;
+	        }
 
-        if (_selfIsSpectator)
-        {
-            return;
-        }
+	        if (_selfIsSpectator)
+	        {
+	            return;
+	        }
+	
+	        // Les raccourcis "game./ui." (dont server.key.*) ne doivent être actifs
+	        // que pendant une partie. Sinon ils interceptent des touches de "table"
+	        // (ex: 'b' pour ajouter un bot) après une fin de partie.
+	        if (!_tableVm.GameZone.IsStarted)
+	        {
+	            return;
+	        }
 
-        foreach (var shortcut in _gamePlayVm.Shortcuts.Where(IsGameplayShortcut))
-        {
-            _tableVm.GameZone.Shortcuts.Add(shortcut);
-        }
-    }
+	        foreach (var shortcut in _gamePlayVm.Shortcuts.Where(IsGameplayShortcut))
+	        {
+	            _tableVm.GameZone.Shortcuts.Add(shortcut);
+	        }
+	    }
 
-    private void EnsureGamePlayLoaded()
-    {
-        if (_gamePlayVm != null)
-        {
-            return;
-        }
+	    private void EnsureGamePlayLoaded()
+	    {
+	        if (_gamePlayVm == null)
+	        {
+	            _gamePlayVm = _createGamePlayVm();
+	            _onGameMessage = msg =>
+	                _history.Add(msg);
+	            _gamePlayVm.MessageReceived += _onGameMessage;
+	            _onGameStatusChanged = (previousStatus, nextStatus) =>
+	                _dispatcher.InvokeAsync(() => HandleGameStatusChanged(previousStatus, nextStatus), DispatcherPriority.Background);
+	            _gamePlayVm.GameStatusChanged += _onGameStatusChanged;
 
-        _gamePlayVm = _createGamePlayVm();
-        _onGameMessage = msg =>
-            _history.Add(msg);
-        _gamePlayVm.MessageReceived += _onGameMessage;
+	            if (_gamePlayVm.Shortcuts is System.Collections.Specialized.INotifyCollectionChanged notify)
+	            {
+	                _onGameplayShortcutsChanged = (_, __) =>
+	                    _dispatcher.InvokeAsync(SyncGameplayShortcuts, DispatcherPriority.Background);
+	                notify.CollectionChanged += _onGameplayShortcutsChanged;
+	            }
+	        }
 
-        if (_gamePlayVm.Shortcuts is System.Collections.Specialized.INotifyCollectionChanged notify)
-        {
-            _onGameplayShortcutsChanged = (_, __) =>
-                _dispatcher.InvokeAsync(SyncGameplayShortcuts, DispatcherPriority.Background);
-            notify.CollectionChanged += _onGameplayShortcutsChanged;
-        }
+	        _tableVm.GameZone.Content = new GamePlayView { DataContext = _gamePlayVm };
+	        ApplySpectatorState();
+	    }
 
-        _tableVm.GameZone.Content = new GamePlayView { DataContext = _gamePlayVm };
-        ApplySpectatorState();
-    }
+	    private void HandleGameStatusChanged(string previousStatus, string nextStatus)
+	    {
+	        var wasStarted = string.Equals(previousStatus, "started", StringComparison.OrdinalIgnoreCase);
+	        var nowStarted = string.Equals(nextStatus, "started", StringComparison.OrdinalIgnoreCase);
+
+	        if (!wasStarted && nowStarted)
+	        {
+	            SetRoomShortcutsForStarted(started: true);
+	            EnsureGamePlayLoaded();
+	            SyncGameplayShortcuts();
+	            return;
+	        }
+
+	        if (wasStarted && !nowStarted)
+	        {
+	            SetRoomShortcutsForStarted(started: false);
+	            _tableVm.GameZone.Content = null;
+	
+	            // Le contenu a été déchargé, refocus sur l'ancre pour permettre Entrée (room.start).
+	            _ = _tableView.Dispatcher.BeginInvoke(
+	                DispatcherPriority.Input,
+	                new Action(_tableView.RequestFocusGameZone));
+	        }
+	    }
 
     private void ApplySpectatorState()
     {
@@ -668,10 +703,10 @@ internal sealed class GameTableBindings : IAsyncDisposable
         return $"Chat — {user} : {text}";
     }
 
-    public async ValueTask DisposeAsync()
-    {
-        try
-        {
+	    public async ValueTask DisposeAsync()
+	    {
+	        try
+	        {
             _tableVm.Chat.LocalEcho = null;
             if (_onAnnounced != null)
             {
@@ -689,18 +724,23 @@ internal sealed class GameTableBindings : IAsyncDisposable
                 _onSessionError = null;
             }
 
-            if (_gamePlayVm != null)
-            {
-                if (_onGameMessage != null)
-                {
-                    _gamePlayVm.MessageReceived -= _onGameMessage;
-                    _onGameMessage = null;
-                }
-                if (_onGameplayShortcutsChanged != null &&
-                    _gamePlayVm.Shortcuts is INotifyCollectionChanged notify)
-                {
-                    notify.CollectionChanged -= _onGameplayShortcutsChanged;
-                    _onGameplayShortcutsChanged = null;
+	            if (_gamePlayVm != null)
+	            {
+	                if (_onGameMessage != null)
+	                {
+	                    _gamePlayVm.MessageReceived -= _onGameMessage;
+	                    _onGameMessage = null;
+	                }
+	                if (_onGameStatusChanged != null)
+	                {
+	                    _gamePlayVm.GameStatusChanged -= _onGameStatusChanged;
+	                    _onGameStatusChanged = null;
+	                }
+	                if (_onGameplayShortcutsChanged != null &&
+	                    _gamePlayVm.Shortcuts is INotifyCollectionChanged notify)
+	                {
+	                    notify.CollectionChanged -= _onGameplayShortcutsChanged;
+	                    _onGameplayShortcutsChanged = null;
                 }
                 await _gamePlayVm.DisposeAsync().ConfigureAwait(true);
                 _gamePlayVm = null;
