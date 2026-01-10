@@ -41,13 +41,6 @@ public partial class MainMenuView : UserControl
         if (e.Key == Key.Tab)
         {
             e.Handled = true;
-            MoveFocusByTab();
-            return;
-        }
-
-        if (IsNavigationKey(e.Key))
-        {
-            e.Handled = true;
             return;
         }
 
@@ -62,66 +55,6 @@ public partial class MainMenuView : UserControl
         e.Handled = true;
         await vm.ActivateCommand.ExecuteAsync(null).ConfigureAwait(true);
         FocusWhenContainersGenerated();
-    }
-
-    private void MoveFocusByTab()
-    {
-        if (ItemsList == null || ItemsList.Items.Count == 0)
-        {
-            return;
-        }
-
-        int count = ItemsList.Items.Count;
-        int currentIndex = ItemsList.SelectedIndex;
-        if (currentIndex < 0)
-        {
-            currentIndex = 0;
-        }
-
-        bool backwards = (Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift;
-        int nextIndex = backwards ? currentIndex - 1 : currentIndex + 1;
-        if (nextIndex < 0)
-        {
-            nextIndex = count - 1;
-        }
-        else if (nextIndex >= count)
-        {
-            nextIndex = 0;
-        }
-
-        ItemsList.SelectedIndex = nextIndex;
-        ItemsList.UpdateLayout();
-        ItemsList.ScrollIntoView(ItemsList.SelectedItem);
-        if (ItemsList.ItemContainerGenerator.ContainerFromIndex(nextIndex) is ListBoxItem item)
-        {
-            item.Focus();
-            Keyboard.Focus(item);
-        }
-        else
-        {
-            ItemsList.Focus();
-        }
-    }
-
-    private static bool IsNavigationKey(Key key)
-    {
-        return key == Key.Up ||
-               key == Key.Down ||
-               key == Key.Left ||
-               key == Key.Right ||
-               key == Key.Home ||
-               key == Key.End ||
-               key == Key.PageUp ||
-               key == Key.PageDown;
-    }
-
-    private void OnListKeyDown(object sender, KeyEventArgs e)
-    {
-        // Empêche Tab de sortir de la zone principale lorsque l'utilisateur est dans la liste.
-        if (e.Key == Key.Tab || e.Key == Key.System)
-        {
-            e.Handled = true;
-        }
     }
 
     private void FocusFirstItem()

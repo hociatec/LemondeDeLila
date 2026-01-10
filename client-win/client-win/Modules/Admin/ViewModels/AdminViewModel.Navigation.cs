@@ -304,11 +304,17 @@ public sealed partial class AdminViewModel
             return AdminNavResult.Moved;
         }
 
-        if (_page == AdminPage.SoundsTable)
-        {
-            BuildSounds();
-            return AdminNavResult.Moved;
-        }
+	        if (_page == AdminPage.SoundsTable)
+	        {
+	            BuildSounds();
+	            return AdminNavResult.Moved;
+	        }
+	
+	        if (_page == AdminPage.SoundsGames)
+	        {
+	            BuildSounds();
+	            return AdminNavResult.Moved;
+	        }
 
         if (_page == AdminPage.SoundsAmbience)
         {
@@ -316,34 +322,49 @@ public sealed partial class AdminViewModel
             return AdminNavResult.Moved;
         }
 
-        if (_page is AdminPage.SoundsChat or AdminPage.SoundsPrivateMessages)
-        {
-            BuildSounds();
-            return AdminNavResult.Moved;
-        }
+	        if (_page is AdminPage.SoundsChat or AdminPage.SoundsPrivateMessages)
+	        {
+	            BuildSounds();
+	            return AdminNavResult.Moved;
+	        }
+	
+	        if (_page is AdminPage.SoundsChatGeneral or AdminPage.SoundsChatTable)
+	        {
+	            BuildSoundsChat();
+	            return AdminNavResult.Moved;
+	        }
 
         if (_page == AdminPage.SoundDetails)
         {
-            switch (_soundDetailsReturnPage)
-            {
-                case AdminPage.SoundsTable:
-                    BuildSoundsTable();
-                    break;
-                case AdminPage.SoundsInvitations:
-                    BuildSoundsInvitations();
-                    break;
-                case AdminPage.SoundsConnection:
-                    BuildSoundsConnection();
+	            switch (_soundDetailsReturnPage)
+	            {
+	                case AdminPage.SoundsTable:
+	                    BuildSoundsTable();
+	                    break;
+	                case AdminPage.SoundsGames:
+	                    BuildSoundsGames();
+	                    break;
+	                case AdminPage.SoundsInvitations:
+	                    BuildSoundsInvitations();
+	                    break;
+	                case AdminPage.SoundsConnection:
+	                    BuildSoundsConnection();
                     break;
                 case AdminPage.SoundsAmbience:
                     BuildSoundsAmbience();
                     break;
-                case AdminPage.SoundsChat:
-                    BuildSoundsChat();
-                    break;
-                case AdminPage.SoundsPrivateMessages:
-                    BuildSoundsPrivateMessages();
-                    break;
+	                case AdminPage.SoundsChat:
+	                    BuildSoundsChat();
+	                    break;
+	                case AdminPage.SoundsChatGeneral:
+	                    BuildSoundsChatGeneral();
+	                    break;
+	                case AdminPage.SoundsChatTable:
+	                    BuildSoundsChatTable();
+	                    break;
+	                case AdminPage.SoundsPrivateMessages:
+	                    BuildSoundsPrivateMessages();
+	                    break;
                 default:
                     BuildSounds();
                     break;

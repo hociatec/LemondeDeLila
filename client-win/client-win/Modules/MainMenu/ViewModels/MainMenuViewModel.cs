@@ -152,7 +152,7 @@ public sealed class MainMenuViewModel : ObservableObject
         Items.Add(new MainMenuItem("Déconnexion", tag: LogoutCommand));
 
         SelectedItem = Items.FirstOrDefault();
-        StatusMessage = "Entrée : sélectionner.";
+        StatusMessage = "Flèches haut/bas : naviguer. Entrée : sélectionner.";
     }
 
     private void RebuildMenuPreservingSelection()

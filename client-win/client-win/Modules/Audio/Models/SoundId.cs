@@ -9,6 +9,8 @@ public enum SoundId
     TavernAmbience,
     ChatMessageSent,
     ChatMessageReceived,
+    TableChatMessageSent,
+    TableChatMessageReceived,
     PrivateMessageSent,
     PrivateMessageReceived,
     FriendConnected,

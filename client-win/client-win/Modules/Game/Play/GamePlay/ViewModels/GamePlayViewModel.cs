@@ -111,25 +111,26 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
 
         _shortcuts = new GamePlayShortcutsViewModel(_commands.SendKey);
 
-        _realtime = new GamePlayRealtimeController(
-            dispatcher: _dispatcher,
-            panels: _panels,
-            projector: _projector,
-            presenter: _presenter,
-            announcementRouter: _announcementRouter,
-            endgameSounds: _endgameSounds,
-            choices: _choices,
-            grid: Grid,
-            syncShortcuts: SyncShortcuts,
-            canStartAskCardSelection: CanStartAskCardSelection,
-            emitMessage: msg => MessageReceived?.Invoke(msg),
-            requestFocus: () => GameZoneFocusRequested?.Invoke(),
-            refreshCanExecute: RefreshCanExecute,
-            setIsBotThinking: v => IsBotThinking = v,
-            setStateSummary: v => StateSummary = v,
-            setPendingText: v => PendingText = v,
-            setActionsText: v => ActionsText = v,
-            setBoardText: v => BoardText = v);
+	        _realtime = new GamePlayRealtimeController(
+	            dispatcher: _dispatcher,
+	            panels: _panels,
+	            projector: _projector,
+	            presenter: _presenter,
+	            announcementRouter: _announcementRouter,
+	            endgameSounds: _endgameSounds,
+	            choices: _choices,
+	            grid: Grid,
+	            syncShortcuts: SyncShortcuts,
+	            canStartAskCardSelection: CanStartAskCardSelection,
+	            emitMessage: msg => MessageReceived?.Invoke(msg),
+	            requestFocus: () => GameZoneFocusRequested?.Invoke(),
+	            refreshCanExecute: RefreshCanExecute,
+	            onGameStatusChanged: OnGameStatusChanged,
+	            setIsBotThinking: v => IsBotThinking = v,
+	            setStateSummary: v => StateSummary = v,
+	            setPendingText: v => PendingText = v,
+	            setActionsText: v => ActionsText = v,
+	            setBoardText: v => BoardText = v);
 
         _connection = new GamePlayConnectionController(
             _dispatcher,
@@ -164,6 +165,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
 
     public event Action<string>? MessageReceived;
     public event Action? GameZoneFocusRequested;
+    public event Action<string, string>? GameStatusChanged;
 
     public void SetSpectator(bool isSpectator)
     {
@@ -308,11 +310,20 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
         return session.SendKeyAsync(key, cancellationToken);
     }
 
-    public Task RequestTurnInfoAsync() => RequestTurnAsync();
+	    public Task RequestTurnInfoAsync() => RequestTurnAsync();
 
-    public async ValueTask DisposeAsync()
-    {
-        _choices.PropertyChanged -= _choicesPropertyChangedHandler;
-        await _connection.DisposeAsync().ConfigureAwait(false);
-    }
+	    private void OnGameStatusChanged(string previousStatus, string nextStatus)
+	    {
+	        if (string.IsNullOrWhiteSpace(nextStatus))
+	        {
+	            return;
+	        }
+	        GameStatusChanged?.Invoke(previousStatus ?? string.Empty, nextStatus);
+	    }
+
+	    public async ValueTask DisposeAsync()
+	    {
+	        _choices.PropertyChanged -= _choicesPropertyChangedHandler;
+	        await _connection.DisposeAsync().ConfigureAwait(false);
+	    }
 }

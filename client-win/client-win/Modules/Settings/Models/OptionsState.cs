@@ -29,6 +29,8 @@ public sealed class OptionsState
     public string? SoundGameDefeatPath { get; set; }
     public string? SoundChatMessageSentPath { get; set; }
     public string? SoundChatMessageReceivedPath { get; set; }
+    public string? SoundTableChatMessageSentPath { get; set; }
+    public string? SoundTableChatMessageReceivedPath { get; set; }
     public string? SoundPrivateMessageSentPath { get; set; }
     public string? SoundPrivateMessageReceivedPath { get; set; }
     public string? SoundClientOpenedPath { get; set; }

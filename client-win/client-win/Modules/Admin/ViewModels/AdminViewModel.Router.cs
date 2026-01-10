@@ -367,8 +367,8 @@ public sealed partial class AdminViewModel
                 }
             }
 
-            if (_page == AdminPage.Sounds && tag is string soundsTag)
-            {
+	            if (_page == AdminPage.Sounds && tag is string soundsTag)
+	            {
                 if (soundsTag == "sounds.connection")
                 {
                     PushReturnFocus();
@@ -381,18 +381,24 @@ public sealed partial class AdminViewModel
                     BuildSoundsAmbience();
                     return;
                 }
-                if (soundsTag == "sounds.table")
-                {
-                    PushReturnFocus();
-                    BuildSoundsTable();
-                    return;
-                }
-                if (soundsTag == "sounds.invitations")
-                {
-                    PushReturnFocus();
-                    BuildSoundsInvitations();
-                    return;
-                }
+	                if (soundsTag == "sounds.table")
+	                {
+	                    PushReturnFocus();
+	                    BuildSoundsTable();
+	                    return;
+	                }
+	                if (soundsTag == "sounds.games")
+	                {
+	                    PushReturnFocus();
+	                    BuildSoundsGames();
+	                    return;
+	                }
+	                if (soundsTag == "sounds.invitations")
+	                {
+	                    PushReturnFocus();
+	                    BuildSoundsInvitations();
+	                    return;
+	                }
                 if (soundsTag == "sounds.chat")
                 {
                     PushReturnFocus();
@@ -479,8 +485,8 @@ public sealed partial class AdminViewModel
                 }
             }
 
-            if (_page == AdminPage.SoundsTable && tag is string tableSound)
-            {
+	            if (_page == AdminPage.SoundsTable && tag is string tableSound)
+	            {
                 if (tableSound == "sounds.game.victory")
                 {
                     PushReturnFocus();
@@ -517,79 +523,95 @@ public sealed partial class AdminViewModel
                     BuildSoundDetails(Modules.Audio.Models.SoundId.InvitationSent);
                     return;
                 }
-                if (tableSound == "sounds.table.invite.received")
-                {
-                    PushReturnFocus();
-                    BuildSoundDetails(Modules.Audio.Models.SoundId.InvitationReceived);
-                    return;
-                }
-                if (tableSound == "sounds.table.pawn.picked")
-                {
-                    PushReturnFocus();
-                    BuildSoundDetails(Modules.Audio.Models.SoundId.PawnPicked);
-                    return;
-                }
-                if (tableSound == "sounds.table.pawn.placed.self")
-                {
-                    PushReturnFocus();
-                    BuildSoundDetails(Modules.Audio.Models.SoundId.PawnPlacedSelf);
-                    return;
-                }
-                if (tableSound == "sounds.table.pawn.placed.opponent")
-                {
-                    PushReturnFocus();
-                    BuildSoundDetails(Modules.Audio.Models.SoundId.PawnPlacedOpponent);
-                    return;
-                }
-                if (tableSound == "sounds.table.wall.placed.self")
-                {
-                    PushReturnFocus();
-                    BuildSoundDetails(Modules.Audio.Models.SoundId.WallPlacedSelf);
-                    return;
-                }
-                if (tableSound == "sounds.table.wall.placed.opponent")
-                {
-                    PushReturnFocus();
-                    BuildSoundDetails(Modules.Audio.Models.SoundId.WallPlacedOpponent);
-                    return;
-                }
-                if (tableSound == "sounds.table.chat.sent")
-                {
-                    PushReturnFocus();
-                    BuildSoundDetails(
-                        Modules.Audio.Models.SoundId.ChatMessageSent,
-                        returnPageOverride: AdminPage.SoundsTable,
-                        groupOverride: "Table",
-                        titleOverride: "Tchat de table - Envoi d'un message");
-                    return;
-                }
-                if (tableSound == "sounds.table.chat.received")
-                {
-                    PushReturnFocus();
-                    BuildSoundDetails(
-                        Modules.Audio.Models.SoundId.ChatMessageReceived,
-                        returnPageOverride: AdminPage.SoundsTable,
-                        groupOverride: "Table",
-                        titleOverride: "Tchat de table - Réception d'un message");
-                    return;
-                }
-            }
+	                if (tableSound == "sounds.table.invite.received")
+	                {
+	                    PushReturnFocus();
+	                    BuildSoundDetails(Modules.Audio.Models.SoundId.InvitationReceived);
+	                    return;
+	                }
+	            }
+	
+	            if (_page == AdminPage.SoundsGames && tag is string gameSound)
+	            {
+	                if (gameSound == "sounds.games.pawn.picked")
+	                {
+	                    PushReturnFocus();
+	                    BuildSoundDetails(Modules.Audio.Models.SoundId.PawnPicked);
+	                    return;
+	                }
+	                if (gameSound == "sounds.games.pawn.placed.self")
+	                {
+	                    PushReturnFocus();
+	                    BuildSoundDetails(Modules.Audio.Models.SoundId.PawnPlacedSelf);
+	                    return;
+	                }
+	                if (gameSound == "sounds.games.pawn.placed.opponent")
+	                {
+	                    PushReturnFocus();
+	                    BuildSoundDetails(Modules.Audio.Models.SoundId.PawnPlacedOpponent);
+	                    return;
+	                }
+	                if (gameSound == "sounds.games.wall.placed.self")
+	                {
+	                    PushReturnFocus();
+	                    BuildSoundDetails(Modules.Audio.Models.SoundId.WallPlacedSelf);
+	                    return;
+	                }
+	                if (gameSound == "sounds.games.wall.placed.opponent")
+	                {
+	                    PushReturnFocus();
+	                    BuildSoundDetails(Modules.Audio.Models.SoundId.WallPlacedOpponent);
+	                    return;
+	                }
+	            }
 
-            if (_page == AdminPage.SoundsChat && tag is string chatSound)
-            {
-                if (chatSound == "sounds.chat.sent")
-                {
-                    PushReturnFocus();
-                    BuildSoundDetails(Modules.Audio.Models.SoundId.ChatMessageSent);
-                    return;
-                }
-                if (chatSound == "sounds.chat.received")
-                {
-                    PushReturnFocus();
-                    BuildSoundDetails(Modules.Audio.Models.SoundId.ChatMessageReceived);
-                    return;
-                }
-            }
+	            if (_page == AdminPage.SoundsChat && tag is string chatSound)
+	            {
+	                if (chatSound == "sounds.chat.general")
+	                {
+	                    PushReturnFocus();
+	                    BuildSoundsChatGeneral();
+	                    return;
+	                }
+	                if (chatSound == "sounds.chat.table")
+	                {
+	                    PushReturnFocus();
+	                    BuildSoundsChatTable();
+	                    return;
+	                }
+	            }
+	
+	            if (_page == AdminPage.SoundsChatGeneral && tag is string generalChatSound)
+	            {
+	                if (generalChatSound == "sounds.chat.general.sent")
+	                {
+	                    PushReturnFocus();
+	                    BuildSoundDetails(Modules.Audio.Models.SoundId.ChatMessageSent);
+	                    return;
+	                }
+	                if (generalChatSound == "sounds.chat.general.received")
+	                {
+	                    PushReturnFocus();
+	                    BuildSoundDetails(Modules.Audio.Models.SoundId.ChatMessageReceived);
+	                    return;
+	                }
+	            }
+	
+	            if (_page == AdminPage.SoundsChatTable && tag is string tableChatSound)
+	            {
+	                if (tableChatSound == "sounds.chat.table.sent")
+	                {
+	                    PushReturnFocus();
+	                    BuildSoundDetails(Modules.Audio.Models.SoundId.TableChatMessageSent);
+	                    return;
+	                }
+	                if (tableChatSound == "sounds.chat.table.received")
+	                {
+	                    PushReturnFocus();
+	                    BuildSoundDetails(Modules.Audio.Models.SoundId.TableChatMessageReceived);
+	                    return;
+	                }
+	            }
 
             if (_page == AdminPage.SoundsPrivateMessages && tag is string pmSound)
             {
