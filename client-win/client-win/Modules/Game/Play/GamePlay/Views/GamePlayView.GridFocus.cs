@@ -152,7 +152,10 @@ public partial class GamePlayView
             return false;
         }
 
-        var preferred = vm.Grid.Cells.FirstOrDefault(c => c.HasEntities) ?? vm.Grid.Cells.FirstOrDefault();
+        var preferred =
+            vm.Grid.Cells.FirstOrDefault(c => c.HasOwnPawn) ??
+            vm.Grid.Cells.FirstOrDefault(c => c.HasEntities) ??
+            vm.Grid.Cells.FirstOrDefault();
         var idx = preferred?.Index ?? 0;
         if (idx < 0 || idx >= vm.Grid.Cells.Count)
         {

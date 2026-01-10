@@ -99,6 +99,31 @@ internal sealed class GameTableBindings : IAsyncDisposable
         _selfIsSpectator = ComputeSelfSpectator();
         SyncChatEnabled(_session.LastRoomState?.Manifest);
 
+        // Local echo: ensures the sender hears/sees their own chat immediately.
+        // The server echo will be consumed via ConsumePendingEcho to avoid duplicates.
+        _tableVm.Chat.LocalEcho = text =>
+        {
+            try
+            {
+                _sounds.Play(SoundId.ChatMessageSent);
+            }
+            catch
+            {
+                // ignore
+            }
+
+            var user = string.IsNullOrWhiteSpace(_selfUsername) ? "Vous" : _selfUsername.Trim();
+            var message = (text ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(message))
+            {
+                _history.Add($"Chat — {user} :");
+            }
+            else
+            {
+                _history.Add($"Chat — {user} : {message}");
+            }
+        };
+
         _onAnnounced = announcement =>
         {
             if (string.IsNullOrWhiteSpace(announcement.Message)) return;
@@ -647,6 +672,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
     {
         try
         {
+            _tableVm.Chat.LocalEcho = null;
             if (_onAnnounced != null)
             {
                 _announcements.Announced -= _onAnnounced;

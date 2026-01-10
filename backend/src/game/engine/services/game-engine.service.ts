@@ -1227,6 +1227,13 @@ export class GameEngineService {
     gameType: string,
   ): Promise<GameStateEntity> {
     const baseState = this.core.buildBaseState(payload, gameType);
+    const status = String(baseState.status ?? '').toLowerCase().trim();
+    // Tant que la table n'est pas en "started", on ne doit pas hydrater un état de partie :
+    // sinon certains jeux reconstruisent un plateau "started" et empêchent d'ajouter/retirer des bots
+    // ou de relancer proprement après une fin de partie.
+    if (status !== 'started') {
+      return baseState;
+    }
     const handler = this.registry.getHandler(gameType);
     if (handler) {
       return handler.hydrateInitialState(baseState);
