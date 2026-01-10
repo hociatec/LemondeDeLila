@@ -27,6 +27,7 @@ internal sealed class GamePlayRealtimeController
     private readonly Action<string> _emitMessage;
     private readonly Action _requestFocus;
     private readonly Action _refreshCanExecute;
+    private readonly Action<string, string> _onGameStatusChanged;
     private readonly Action<bool> _setIsBotThinking;
     private readonly Action<string> _setStateSummary;
     private readonly Action<string> _setPendingText;
@@ -53,6 +54,7 @@ internal sealed class GamePlayRealtimeController
         Action<string> emitMessage,
         Action requestFocus,
         Action refreshCanExecute,
+        Action<string, string> onGameStatusChanged,
         Action<bool> setIsBotThinking,
         Action<string> setStateSummary,
         Action<string> setPendingText,
@@ -72,6 +74,7 @@ internal sealed class GamePlayRealtimeController
         _emitMessage = emitMessage ?? throw new ArgumentNullException(nameof(emitMessage));
         _requestFocus = requestFocus ?? throw new ArgumentNullException(nameof(requestFocus));
         _refreshCanExecute = refreshCanExecute ?? throw new ArgumentNullException(nameof(refreshCanExecute));
+        _onGameStatusChanged = onGameStatusChanged ?? throw new ArgumentNullException(nameof(onGameStatusChanged));
         _setIsBotThinking = setIsBotThinking ?? throw new ArgumentNullException(nameof(setIsBotThinking));
         _setStateSummary = setStateSummary ?? throw new ArgumentNullException(nameof(setStateSummary));
         _setPendingText = setPendingText ?? throw new ArgumentNullException(nameof(setPendingText));
@@ -129,6 +132,10 @@ internal sealed class GamePlayRealtimeController
             var nextStatus = state.Status ?? string.Empty;
             var previousStatus = _lastGameStatus ?? string.Empty;
             _lastGameStatus = nextStatus;
+            if (!string.Equals(previousStatus, nextStatus, StringComparison.OrdinalIgnoreCase))
+            {
+                _onGameStatusChanged(previousStatus, nextStatus);
+            }
             if (string.Equals(previousStatus, "started", StringComparison.OrdinalIgnoreCase) &&
                 !string.Equals(nextStatus, "started", StringComparison.OrdinalIgnoreCase))
             {
