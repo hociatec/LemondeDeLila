@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using client_win.Modules.Audio.Models;
 using client_win.Modules.Game.Play.Grid.Services;
 using client_win.Modules.Shell.Services;
 
@@ -40,6 +41,7 @@ public sealed partial class GridBoardViewModel
             if (cell.HasOwnPawn)
             {
                 _isEntityGrabbed = false;
+                _sounds.Play(SoundId.PawnPlacedSelf);
                 _announce("Pion repose.");
                 return;
             }
@@ -63,6 +65,7 @@ public sealed partial class GridBoardViewModel
         if (cell.HasOwnPawn)
         {
             _isEntityGrabbed = true;
+            _sounds.Play(SoundId.PawnPicked);
             _announce("Pion pris. Choisissez une case et appuyez sur Entrée.");
             return;
         }

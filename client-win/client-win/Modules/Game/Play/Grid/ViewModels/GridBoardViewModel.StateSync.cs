@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
+using client_win.Modules.Audio.Models;
 using client_win.Modules.Game.Play.Grid.Services;
 using client_win.Modules.Game.Play.State.Dtos;
 
@@ -16,6 +17,8 @@ public sealed partial class GridBoardViewModel
         {
             IsVisible = false;
             Status = string.Empty;
+            _pawnPositionsPrimed = false;
+            _lastPawnPosByOwnerId.Clear();
             return;
         }
 
@@ -25,6 +28,8 @@ public sealed partial class GridBoardViewModel
         {
             IsVisible = false;
             Status = string.Empty;
+            _pawnPositionsPrimed = false;
+            _lastPawnPosByOwnerId.Clear();
             RefreshCanExecute();
             return;
         }
@@ -34,6 +39,8 @@ public sealed partial class GridBoardViewModel
 
         var entitiesByKey = TryReadGridEntities(state);
         var cellTagsByKey = TryReadGridCellTags(state);
+
+        TryPlayPawnPlaceSounds(entitiesByKey);
         var playerNameById = (state.Players ?? new List<GamePlayerDto>())
             .Where(p => p != null && p.Id > 0)
             .GroupBy(p => p.Id)
@@ -141,6 +148,92 @@ public sealed partial class GridBoardViewModel
         }
 
         RefreshCanExecute();
+    }
+
+    private void TryPlayPawnPlaceSounds(Dictionary<string, List<GridEntity>> entitiesByKey)
+    {
+        if (_viewerPlayerId is not > 0)
+        {
+            _pawnPositionsPrimed = false;
+            _lastPawnPosByOwnerId.Clear();
+            return;
+        }
+
+        var next = new Dictionary<int, (int X, int Y)>();
+        foreach (var kv in entitiesByKey)
+        {
+            if (!TryParseCellKey(kv.Key, out var x, out var y))
+            {
+                continue;
+            }
+
+            foreach (var e in kv.Value ?? new List<GridEntity>())
+            {
+                if (e.OwnerId == null)
+                {
+                    continue;
+                }
+
+                if (!string.Equals(e.Type, "pawn", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                next[e.OwnerId.Value] = (x, y);
+            }
+        }
+
+        if (!_pawnPositionsPrimed)
+        {
+            _pawnPositionsPrimed = true;
+            _lastPawnPosByOwnerId.Clear();
+            foreach (var kv in next)
+            {
+                _lastPawnPosByOwnerId[kv.Key] = kv.Value;
+            }
+            return;
+        }
+
+        var viewerId = _viewerPlayerId.Value;
+        var selfMoved = false;
+        var opponentMoved = false;
+
+        foreach (var kv in next)
+        {
+            if (!_lastPawnPosByOwnerId.TryGetValue(kv.Key, out var prev))
+            {
+                continue;
+            }
+
+            if (prev.X == kv.Value.X && prev.Y == kv.Value.Y)
+            {
+                continue;
+            }
+
+            if (kv.Key == viewerId)
+            {
+                selfMoved = true;
+            }
+            else
+            {
+                opponentMoved = true;
+            }
+        }
+
+        if (selfMoved)
+        {
+            _sounds.Play(SoundId.PawnPlacedSelf);
+        }
+        else if (opponentMoved)
+        {
+            _sounds.Play(SoundId.PawnPlacedOpponent);
+        }
+
+        _lastPawnPosByOwnerId.Clear();
+        foreach (var kv in next)
+        {
+            _lastPawnPosByOwnerId[kv.Key] = kv.Value;
+        }
     }
 
     private void EnsureCells(int size)

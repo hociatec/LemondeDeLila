@@ -108,6 +108,9 @@ public sealed partial class AdminViewModel
         Items.Add(new AdminMenuItem("Entrer dans une table", tag: "sounds.table.enter"));
         Items.Add(new AdminMenuItem("Rejoindre une table", tag: "sounds.table.join"));
         Items.Add(new AdminMenuItem("Quitter une table", tag: "sounds.table.exit"));
+        Items.Add(new AdminMenuItem("Pion : prendre (vous)", tag: "sounds.table.pawn.picked"));
+        Items.Add(new AdminMenuItem("Pion : poser (vous)", tag: "sounds.table.pawn.placed.self"));
+        Items.Add(new AdminMenuItem("Pion : poser (adversaire)", tag: "sounds.table.pawn.placed.opponent"));
         Items.Add(new AdminMenuItem("Invitation à une table envoyée", tag: "sounds.table.invite.sent"));
         Items.Add(new AdminMenuItem("Invitation à une table reçue", tag: "sounds.table.invite.received"));
         Items.Add(new AdminMenuItem("Tchat de table : message envoyé", tag: "sounds.table.chat.sent"));
@@ -181,7 +184,7 @@ public sealed partial class AdminViewModel
         {
             SoundId.ClientOpened or SoundId.ClientConnected or SoundId.ClientDisconnected => AdminPage.SoundsConnection,
             SoundId.MainMenuMusic or SoundId.TavernAmbience => AdminPage.SoundsAmbience,
-            SoundId.GameVictory or SoundId.GameDefeat or SoundId.RoomOpened or SoundId.RoomJoined or SoundId.RoomExit => AdminPage.SoundsTable,
+            SoundId.GameVictory or SoundId.GameDefeat or SoundId.RoomOpened or SoundId.RoomJoined or SoundId.RoomExit or SoundId.PawnPicked or SoundId.PawnPlacedSelf or SoundId.PawnPlacedOpponent => AdminPage.SoundsTable,
             SoundId.InvitationSent or SoundId.InvitationReceived => AdminPage.SoundsTable,
             SoundId.ChatMessageSent or SoundId.ChatMessageReceived => AdminPage.SoundsChat,
             SoundId.PrivateMessageSent or SoundId.PrivateMessageReceived => AdminPage.SoundsPrivateMessages,
@@ -213,6 +216,9 @@ public sealed partial class AdminViewModel
             SoundId.PrivateMessageSent => ("Messages privés", "Envoi d'un message privé", _options.Current.SoundPrivateMessageSentPath),
             SoundId.PrivateMessageReceived => ("Messages privés", "Réception d'un message privé", _options.Current.SoundPrivateMessageReceivedPath),
             SoundId.AdminContactSent => ("Contact admin", "Envoi d'un contact admin", null),
+            SoundId.PawnPicked => ("Table", "Pion - Prendre (vous)", _options.Current.SoundPawnPickedPath),
+            SoundId.PawnPlacedSelf => ("Table", "Pion - Poser (vous)", _options.Current.SoundPawnPlacedSelfPath),
+            SoundId.PawnPlacedOpponent => ("Table", "Pion - Poser (adversaire)", _options.Current.SoundPawnPlacedOpponentPath),
             SoundId.AdminContactReceived => ("Contact admin", "Réception d'un contact admin", null),
             _ => ("Sons", sound.ToString(), null)
         };
@@ -307,8 +313,14 @@ public sealed partial class AdminViewModel
 
         using var form = new MultipartFormDataContent();
         var fileContent = new ByteArrayContent(bytes);
-        fileContent.Headers.ContentType = new MediaTypeHeaderValue("audio/mpeg");
-        form.Add(fileContent, "file", Path.GetFileName(filePath));
+        var ext = Path.GetExtension(filePath ?? string.Empty).ToLowerInvariant();
+        var mime = ext == ".wav"
+            ? "audio/wav"
+            : ext == ".mp3"
+                ? "audio/mpeg"
+                : "application/octet-stream";
+        fileContent.Headers.ContentType = new MediaTypeHeaderValue(mime);
+        form.Add(fileContent, "file", Path.GetFileName(filePath) ?? "sound.mp3");
 
         HttpResponseMessage resp;
         try

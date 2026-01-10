@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using client_win.Modules.Audio.Services;
 using System.Windows.Input;
 using client_win.Core;
 using client_win.Modules.Game.Play.Actions.Dtos;
@@ -16,6 +17,7 @@ public sealed partial class GridBoardViewModel : ObservableObject
 {
     private readonly Dictionary<string, List<GridAction>> _gridActionsByCellKey = new(StringComparer.Ordinal);
     private readonly IDialogService _dialogs;
+    private readonly ISoundService _sounds;
     private readonly Func<GameSession?> _getSession;
     private readonly Func<bool> _canInteract;
     private readonly Action<string> _announce;
@@ -26,14 +28,18 @@ public sealed partial class GridBoardViewModel : ObservableObject
     private int _size = 9;
     private string _status = string.Empty;
     private bool _isEntityGrabbed;
+    private bool _pawnPositionsPrimed;
+    private readonly Dictionary<int, (int X, int Y)> _lastPawnPosByOwnerId = new();
 
     public GridBoardViewModel(
         IDialogService dialogs,
+        ISoundService sounds,
         Func<GameSession?> getSession,
         Func<bool> canInteract,
         Action<string> announce)
     {
         _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
+        _sounds = sounds ?? throw new ArgumentNullException(nameof(sounds));
         _getSession = getSession ?? throw new ArgumentNullException(nameof(getSession));
         _canInteract = canInteract ?? throw new ArgumentNullException(nameof(canInteract));
         _announce = announce ?? throw new ArgumentNullException(nameof(announce));

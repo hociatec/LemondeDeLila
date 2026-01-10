@@ -523,6 +523,24 @@ public sealed partial class AdminViewModel
                     BuildSoundDetails(Modules.Audio.Models.SoundId.InvitationReceived);
                     return;
                 }
+                if (tableSound == "sounds.table.pawn.picked")
+                {
+                    PushReturnFocus();
+                    BuildSoundDetails(Modules.Audio.Models.SoundId.PawnPicked);
+                    return;
+                }
+                if (tableSound == "sounds.table.pawn.placed.self")
+                {
+                    PushReturnFocus();
+                    BuildSoundDetails(Modules.Audio.Models.SoundId.PawnPlacedSelf);
+                    return;
+                }
+                if (tableSound == "sounds.table.pawn.placed.opponent")
+                {
+                    PushReturnFocus();
+                    BuildSoundDetails(Modules.Audio.Models.SoundId.PawnPlacedOpponent);
+                    return;
+                }
                 if (tableSound == "sounds.table.chat.sent")
                 {
                     PushReturnFocus();

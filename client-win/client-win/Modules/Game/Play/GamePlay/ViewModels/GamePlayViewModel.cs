@@ -87,6 +87,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
 
         Grid = new GridBoardViewModel(
             dialogs: _dialogs,
+            sounds: sounds ?? throw new ArgumentNullException(nameof(sounds)),
             getSession: () => _session,
             canInteract: () => !_isSpectator,
             announce: msg => MessageReceived?.Invoke(msg));
