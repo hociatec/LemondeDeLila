@@ -83,17 +83,21 @@ public sealed class PresenceLauncher : IPresenceLauncher
 
         await Application.Current.Dispatcher.InvokeAsync(() =>
         {
-            var view = new StatsView();
-            var vm = new StatsViewModel(
-                stats,
-                onClose: () =>
-                {
-                    _navigation.Show(returnView);
-                    _ = Application.Current.Dispatcher.BeginInvoke(
-                        DispatcherPriority.ApplicationIdle,
-                        new Action(() =>
+                var view = new StatsView();
+                var vm = new StatsViewModel(
+                    stats,
+                    onClose: () =>
+                    {
+                        if (returnView is PresenceView presence && presence.DataContext is PresenceViewModel vmPresence)
                         {
-                            try
+                            vmPresence.ResetForOpen();
+                        }
+                        _navigation.Show(returnView);
+                        _ = Application.Current.Dispatcher.BeginInvoke(
+                            DispatcherPriority.ApplicationIdle,
+                            new Action(() =>
+                            {
+                                try
                             {
                                 if (returnView is PresenceView presence)
                                 {
