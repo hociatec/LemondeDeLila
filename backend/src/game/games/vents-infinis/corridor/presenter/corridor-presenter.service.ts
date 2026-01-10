@@ -26,7 +26,16 @@ export class CorridorPresenterService extends BasePresenterService {
     const meta = (state.metadata ?? {}) as CorridorMetadata;
     const exposed = this.buildExposedStateForUser(state, userId);
 
+    // En setup/finished: on retourne uniquement l'état "table" (pas de grille/plateau).
+    if (!this.isStarted(state)) {
+      return exposed;
+    }
+
     const size = meta?.size ?? 0;
+    if (!size || size <= 0) {
+      return exposed;
+    }
+
     const positions: Record<string, number> = {};
     for (const [pid, pos] of Object.entries(meta?.pawnsByPlayerId ?? {})) {
       if (!pos) continue;
@@ -47,10 +56,11 @@ export class CorridorPresenterService extends BasePresenterService {
             ? String(payload.o).trim().toLowerCase()
             : '';
 
-        if (type === 'corridor_move') return 'Déplacer ici';
+        if (type === 'corridor_move') return 'DÇ¸placer ici';
         if (type === 'corridor_place_wall' && o === 'h')
           return 'Mur horizontal ici';
-        if (type === 'corridor_place_wall' && o === 'v') return 'Mur vertical ici';
+        if (type === 'corridor_place_wall' && o === 'v')
+          return 'Mur vertical ici';
         return String((action as any)?.label ?? (action as any)?.type ?? '').trim();
       },
     );
@@ -79,7 +89,7 @@ export class CorridorPresenterService extends BasePresenterService {
           cellActions,
           cellTags,
           statusLines: [
-            viewerIsTurn ? 'À vous de jouer.' : "Tour de l'adversaire.",
+            viewerIsTurn ? 'Ç? vous de jouer.' : "Tour de l'adversaire.",
             `Murs restants : ${(meta?.wallsRemainingByPlayerId ?? {})[String(userId)] ?? 0}`,
           ],
         },

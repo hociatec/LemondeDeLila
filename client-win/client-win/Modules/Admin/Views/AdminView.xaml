@@ -69,6 +69,8 @@
                                                           Background="Transparent"
                                                           BorderThickness="0"
                                                           Padding="0"
+                                                          Focusable="True"
+                                                          IsTabStop="True"
                                                           KeyboardNavigation.TabNavigation="Continue"
                                                           AutomationProperties.Name="{Binding Name}"
                                                           AutomationProperties.HelpText="Développer pour afficher les actions de cette catégorie."

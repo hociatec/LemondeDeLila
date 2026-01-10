@@ -15,6 +15,7 @@ public sealed partial class AdminViewModel
         if (IsBusy) return;
         _categoriesReturnPage = returnPage;
         _page = AdminPage.GameCategories;
+        ConfigureItemsViewForPage();
         Title = "Gérer les catégories";
         Details = string.Empty;
         IsTextInputVisible = false;
@@ -45,6 +46,7 @@ public sealed partial class AdminViewModel
     private void ShowCategories()
     {
         _page = AdminPage.GameCategories;
+        ConfigureItemsViewForPage();
         Title = "Gérer les catégories";
         Details = "Créer ou modifier les catégories disponibles.";
         IsTextInputVisible = false;
@@ -65,12 +67,14 @@ public sealed partial class AdminViewModel
             Items.Add(new AdminMenuItem("Aucune catégorie disponible."));
         }
         SelectedItem = Items.FirstOrDefault();
+        RestoreFocusIfAny();
         Status = "Entrée : créer / modifier. Échap : retour.";
     }
 
     private void BuildCategoryForm(string mode, AdminGameCategoryDto? category = null)
     {
         _page = AdminPage.GameCategoryForm;
+        ConfigureItemsViewForPage();
         _categoryFormMode = mode;
         _categoryFormId = category?.Id ?? string.Empty;
         Title = mode == "create" ? "Créer une catégorie" : $"Modifier la catégorie {category?.Name}";
@@ -158,6 +162,7 @@ public sealed partial class AdminViewModel
         }
 
         _page = AdminPage.GameCategoryAssign;
+        ConfigureItemsViewForPage();
         Title = $"Catégorie : {_selectedGame.Name}";
         var assignedId = _categoryAssignments.TryGetValue(_selectedGame.Id, out var id) ? id : null;
         var currentName = ResolveCategoryName(assignedId);

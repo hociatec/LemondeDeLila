@@ -609,6 +609,7 @@ public sealed partial class AdminViewModel
 
             if (_page == AdminPage.Games && tag is string gamesAction && gamesAction == "games.categories")
             {
+                PushReturnFocus();
                 await LoadCategoriesAsync(AdminPage.Games).ConfigureAwait(true);
                 return;
             }
@@ -624,6 +625,7 @@ public sealed partial class AdminViewModel
             {
                 if (gameAction == "game.category.assign")
                 {
+                    PushReturnFocus();
                     await LoadCategoryAssignmentMenuAsync().ConfigureAwait(true);
                     return;
                 }
@@ -638,11 +640,13 @@ public sealed partial class AdminViewModel
             {
                 if (tag is string categoryAction && categoryAction == "games.categories.create")
                 {
+                    PushReturnFocus();
                     BuildCategoryForm("create");
                     return;
                 }
                 if (tag is AdminGameCategoryDto category)
                 {
+                    PushReturnFocus();
                     BuildCategoryForm("edit", category);
                     return;
                 }
@@ -978,11 +982,13 @@ public sealed partial class AdminViewModel
             {
                 if (tag is string action && action == "roleDefinition.create")
                 {
+                    PushReturnFocus();
                     BuildRoleDefinitionForm("create");
                     return;
                 }
                 if (tag is AdminRoleDefinitionDto definition)
                 {
+                    PushReturnFocus();
                     BuildRoleDefinitionActions(definition);
                     return;
                 }
@@ -992,6 +998,7 @@ public sealed partial class AdminViewModel
             {
                 if (roleAction == "roleDefinition.edit")
                 {
+                    PushReturnFocus();
                     BuildRoleDefinitionForm("edit", _selectedRoleDefinition);
                     return;
                 }
@@ -1014,6 +1021,7 @@ public sealed partial class AdminViewModel
         }
         finally
         {
+            ConfigureItemsViewForPage();
             NavigationChanged?.Invoke();
         }
     }

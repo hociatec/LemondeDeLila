@@ -181,6 +181,13 @@ public sealed partial class AdminViewModel : ObservableObject
 
     public bool IsRootMenu => _page == AdminPage.Root;
 
+    public string? RootExpandedCategory
+    {
+        get => _rootExpandedCategory;
+        set => SetProperty(ref _rootExpandedCategory, value);
+    }
+    private string? _rootExpandedCategory;
+
     public ObservableCollection<AdminMenuItem> Items { get; }
     public ICollectionView ItemsView { get; }
 

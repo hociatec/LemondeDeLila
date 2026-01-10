@@ -10,6 +10,7 @@ public sealed partial class AdminViewModel
     private async Task LoadGamesAsync()
     {
         _page = AdminPage.Games;
+        ConfigureItemsViewForPage();
         Title = "Gestion des jeux";
         Details = string.Empty;
         IsTextInputVisible = false;
@@ -49,6 +50,7 @@ public sealed partial class AdminViewModel
     private void ShowGames()
     {
         _page = AdminPage.Games;
+        ConfigureItemsViewForPage();
         Title = "Gestion des jeux";
         Details = string.Empty;
         IsTextInputVisible = false;
@@ -74,6 +76,7 @@ public sealed partial class AdminViewModel
     {
         _currentEditMode = string.Empty;
         _page = AdminPage.GameActions;
+        ConfigureItemsViewForPage();
         _selectedGame = game;
         Title = $"Jeu : {game.Name}";
         Details = $"Type: {game.Id}. Joueurs: {game.MinPlayers ?? 0}-{game.MaxPlayers ?? 0}. Statut: {(game.Enabled ? "actif" : "désactivé")}. Chat: {(game.ChatEnabled ? "activé" : "désactivé")}. Sons chat: {(game.ChatSoundsEnabled ? "activés" : "désactivés")}.";
@@ -90,6 +93,7 @@ public sealed partial class AdminViewModel
         Items.Add(new AdminMenuItem("Modifier min/max joueurs", tag: "game.edit.players"));
         Items.Add(new AdminMenuItem("Réinitialiser les paramètres", tag: "game.reset"));
         SelectedItem = Items.FirstOrDefault();
+        RestoreFocusIfAny();
         Status = "Entrée : sélectionner. Échap : retour.";
         UpdateFilterVisibility();
     }

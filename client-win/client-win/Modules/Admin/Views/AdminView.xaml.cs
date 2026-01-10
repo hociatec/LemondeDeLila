@@ -74,7 +74,14 @@ public partial class AdminView : UserControl
 
         // À l'arrivée dans l'admin (menu racine), on veut voir uniquement les 4 catégories repliées.
         // L'utilisateur développe une catégorie pour voir son contenu.
-        CollapseAllGroups();
+        if (!_didInitialRootFocus && string.IsNullOrWhiteSpace(vm.RootExpandedCategory))
+        {
+            CollapseAllGroups();
+        }
+        else if (!string.IsNullOrWhiteSpace(vm.RootExpandedCategory))
+        {
+            ExpandOnlyGroup(vm.RootExpandedCategory);
+        }
 
         // Demande utilisateur : à l'arrivée dans l'administration, focus sur le premier élément.
         // Ici : premier en-tête de catégorie (accordéon replié), pour éviter d'atterrir dans du contenu caché.
@@ -111,6 +118,7 @@ public partial class AdminView : UserControl
             return;
         }
 
+        vm.RootExpandedCategory = category;
         if (vm.SelectedItem?.Category == category)
         {
             return;
@@ -174,6 +182,8 @@ public partial class AdminView : UserControl
             return;
         }
 
+        ItemsList.UpdateLayout();
+
         Expander? match = null;
         Expander? first = null;
 
@@ -203,6 +213,8 @@ public partial class AdminView : UserControl
         {
             return;
         }
+
+        ItemsList.UpdateLayout();
 
         foreach (var expander in FindVisualChildren<Expander>(ItemsList))
         {
@@ -447,7 +459,14 @@ public partial class AdminView : UserControl
                 if (DataContext is AdminViewModel vm && vm.IsRootMenu)
                 {
                     // Menu racine : focus sur l'en-tête de catégorie (accordéon replié).
-                    FocusGroupHeader(vm.SelectedItem?.Category ?? string.Empty);
+                    if (!string.IsNullOrWhiteSpace(vm.RootExpandedCategory))
+                    {
+                        FocusFirstItem();
+                    }
+                    else
+                    {
+                        FocusGroupHeader(vm.SelectedItem?.Category ?? string.Empty);
+                    }
                 }
                 else
                 {
@@ -471,7 +490,14 @@ public partial class AdminView : UserControl
                 EnsureRootAccordionExpandedGroupCore();
                 if (DataContext is AdminViewModel vm && vm.IsRootMenu)
                 {
-                    FocusGroupHeader(vm.SelectedItem?.Category ?? string.Empty);
+                    if (!string.IsNullOrWhiteSpace(vm.RootExpandedCategory))
+                    {
+                        FocusFirstItem();
+                    }
+                    else
+                    {
+                        FocusGroupHeader(vm.SelectedItem?.Category ?? string.Empty);
+                    }
                 }
                 else
                 {

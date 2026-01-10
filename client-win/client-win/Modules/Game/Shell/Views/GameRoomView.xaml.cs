@@ -386,7 +386,8 @@ public partial class GameRoomView : UserControl
 
     private void OnChatInputPreviewKeyDown(object sender, KeyEventArgs e)
     {
-        if (e.Key != Key.Enter)
+        var key = e.Key == Key.System ? e.SystemKey : e.Key;
+        if (key is not (Key.Enter or Key.Return))
         {
             return;
         }

@@ -10,6 +10,7 @@ public sealed partial class AdminViewModel
     private async Task LoadRoleDefinitionsAsync()
     {
         _page = AdminPage.RoleDefinitions;
+        ConfigureItemsViewForPage();
         Title = "Gestion des rôles";
         Details = string.Empty;
         IsTextInputVisible = false;
@@ -34,6 +35,7 @@ public sealed partial class AdminViewModel
     private void ShowRoleDefinitionsList()
     {
         _page = AdminPage.RoleDefinitions;
+        ConfigureItemsViewForPage();
         Title = "Gestion des rôles";
         Details = $"Définitions disponibles : {_loadedRoleDefinitions.Length}.";
         IsTextInputVisible = false;
@@ -59,6 +61,7 @@ public sealed partial class AdminViewModel
     private void BuildRoleDefinitionActions(AdminRoleDefinitionDto definition)
     {
         _page = AdminPage.RoleDefinitionActions;
+        ConfigureItemsViewForPage();
         _selectedRoleDefinition = definition;
         Title = $"Rôle : {definition.Name}";
         Details = definition.Description;
@@ -69,6 +72,7 @@ public sealed partial class AdminViewModel
         Items.Add(new AdminMenuItem("Modifier", tag: "roleDefinition.edit"));
         Items.Add(new AdminMenuItem("Supprimer", tag: "roleDefinition.delete"));
         SelectedItem = Items.FirstOrDefault();
+        RestoreFocusIfAny();
         Status = "Entrée : action. Échap : retour.";
     }
 }

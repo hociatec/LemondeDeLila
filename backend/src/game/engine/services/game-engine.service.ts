@@ -160,7 +160,8 @@ export class GameEngineService {
         this.attachViewerContext(this.attachCurrentPlayerView(withLabel), userId),
       ),
     );
-    return this.attachShortcuts(withDescriptors, handler, userId);
+    const withShortcuts = this.attachShortcuts(withDescriptors, handler, userId);
+    return this.stripBoardAndGridIfNotStarted(withShortcuts);
   }
 
   async handleKeyPress(
@@ -1448,11 +1449,32 @@ export class GameEngineService {
       ? handler.exposeState(state)
       : (state as GameStateWithActions);
     const withLabel = this.attachTurnLabel(exposed, label);
-    return this.attachUiDescriptors(
+    const withDescriptors = this.attachUiDescriptors(
       this.gridRender.attachGridRenderDescriptors(
         this.attachCurrentPlayerView(withLabel),
       ),
     );
+    return this.stripBoardAndGridIfNotStarted(withDescriptors);
+  }
+
+  private stripBoardAndGridIfNotStarted(
+    state: GameStateWithActions,
+  ): GameStateWithActions {
+    const status = String(state?.status ?? '').toLowerCase().trim();
+    if (status === 'started') return state;
+
+    const extras =
+      state.extras && typeof state.extras === 'object' ? state.extras : {};
+    const nextExtras = { ...(extras as any) };
+    if (nextExtras.grid !== undefined) {
+      delete nextExtras.grid;
+    }
+
+    const out: any = { ...state, actions: [], pending: null, extras: nextExtras };
+    if (out.board !== undefined) {
+      delete out.board;
+    }
+    return out as GameStateWithActions;
   }
 
   private attachTurnLabel(

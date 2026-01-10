@@ -4,14 +4,23 @@ import { CorridorActionService } from '../actions/corridor-action.service';
 import { CorridorPresenterService } from '../presenter/corridor-presenter.service';
 import * as CorridorRulebook from '../rulebook/rulebook';
 
+function createSvc(): CorridorService {
+  const presenter = new CorridorPresenterService(
+    { buildFromWalls: () => ({}) } as any,
+    { buildFromActions: () => ({}) } as any,
+  );
+  return new CorridorService(
+    { register: () => {} } as any,
+    new CorridorSetupService(),
+    new CorridorActionService(),
+    presenter,
+    undefined as any,
+  );
+}
+
 describe('Corridor', () => {
-  it('allows a legal move and switches turn', async () => {
-    const svc = new CorridorService(
-      { register: () => {} } as any,
-      new CorridorSetupService(),
-      new CorridorActionService(),
-      new CorridorPresenterService(),
-    );
+  it('does not auto-start from setup', async () => {
+    const svc = createSvc();
 
     const base: any = {
       status: 'setup',
@@ -29,27 +38,53 @@ describe('Corridor', () => {
       pending: null,
     };
 
+    const state = svc.hydrateInitialState(base);
+    expect(state.status).toBe('setup');
+
+    const exposed = svc.exposeStateForUser(state as any, 1);
+    expect((exposed.extras as any)?.grid).toBeUndefined();
+  });
+
+  it('allows a legal move and switches turn', async () => {
+    const svc = createSvc();
+
+    const base: any = {
+      status: 'started',
+      phase: 'setup',
+      round: 0,
+      turnIndex: 0,
+      lastRoll: null,
+      log: [],
+      players: [
+        { id: 1, username: 'A' },
+        { id: 2, username: 'B' },
+      ],
+      turn: { currentPlayerId: 1, direction: 1 },
+      metadata: {},
+      pending: null,
+    };
+
     const started = svc.hydrateInitialState(base);
     const exposed = svc.exposeStateForUser(started as any, 1);
     expect(exposed.status).toBe('started');
+    expect((exposed.extras as any)?.grid?.size).toBeGreaterThan(0);
 
-    const move = (exposed.actions ?? []).find((a: any) => a.type === 'corridor_move');
+    const move = (exposed.actions ?? []).find(
+      (a: any) => a.type === 'corridor_move',
+    );
     expect(move).toBeTruthy();
 
-    const next = svc.applyActions(started as any, [{ type: 'corridor_move', payload: move!.payload } as any]);
+    const next = svc.applyActions(started as any, [
+      { type: 'corridor_move', payload: move!.payload } as any,
+    ]);
     expect(next.turn?.currentPlayerId).toBe(2);
   });
 
   it('allows a bot (negative id) to play', async () => {
-    const svc = new CorridorService(
-      { register: () => {} } as any,
-      new CorridorSetupService(),
-      new CorridorActionService(),
-      new CorridorPresenterService(),
-    );
+    const svc = createSvc();
 
     const base: any = {
-      status: 'setup',
+      status: 'started',
       phase: 'setup',
       round: 0,
       turnIndex: 0,
@@ -72,21 +107,19 @@ describe('Corridor', () => {
     expect(moveTargets.length).toBeGreaterThan(0);
 
     const next = svc.applyActions(started as any, [
-      { type: 'corridor_move', payload: { x: moveTargets[0].x, y: moveTargets[0].y } } as any,
+      {
+        type: 'corridor_move',
+        payload: { x: moveTargets[0].x, y: moveTargets[0].y },
+      } as any,
     ]);
     expect(next.turn?.currentPlayerId).toBe(1);
   });
 
   it('allows placing a wall and decreases remaining walls', async () => {
-    const svc = new CorridorService(
-      { register: () => {} } as any,
-      new CorridorSetupService(),
-      new CorridorActionService(),
-      new CorridorPresenterService(),
-    );
+    const svc = createSvc();
 
     const base: any = {
-      status: 'setup',
+      status: 'started',
       phase: 'setup',
       round: 0,
       turnIndex: 0,
