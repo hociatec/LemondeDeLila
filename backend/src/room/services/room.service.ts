@@ -779,10 +779,19 @@ export class RoomService {
    * Ne dépend pas du propriétaire (l'objectif est de pouvoir relancer immédiatement).
    */
   async resetRoomSystem(roomId: number): Promise<Room> {
-    const room = await this.requireRoom(roomId);
-    room.status = 'setup';
-    room.startedAt = null;
-    await this.rooms.save(room);
+    // Utiliser un UPDATE direct pour éviter des effets de bord (relations eager, entity stale),
+    // et garantir que `status/startedAt` sont bien persistés même en cas de concurrence.
+    const existing = await this.rooms.findOne({ where: { id: roomId } });
+    if (!existing) {
+      throw new NotFoundException('Table introuvable');
+    }
+
+    await this.rooms.update(
+      { id: existing.id },
+      { status: 'setup', startedAt: null },
+    );
+
+    const room = await this.requireRoom(existing.id);
     await this.invalidateRoomPayloadCache(room.id);
     this.notifyDirectoryChanged(room.id, 'reset');
     return room;
