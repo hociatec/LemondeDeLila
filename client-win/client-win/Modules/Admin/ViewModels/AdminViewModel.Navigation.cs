@@ -327,6 +327,12 @@ public sealed partial class AdminViewModel
 	            BuildSounds();
 	            return AdminNavResult.Moved;
 	        }
+	
+	        if (_page is AdminPage.SoundsChatGeneral or AdminPage.SoundsChatTable)
+	        {
+	            BuildSoundsChat();
+	            return AdminNavResult.Moved;
+	        }
 
         if (_page == AdminPage.SoundDetails)
         {
@@ -347,12 +353,18 @@ public sealed partial class AdminViewModel
                 case AdminPage.SoundsAmbience:
                     BuildSoundsAmbience();
                     break;
-                case AdminPage.SoundsChat:
-                    BuildSoundsChat();
-                    break;
-                case AdminPage.SoundsPrivateMessages:
-                    BuildSoundsPrivateMessages();
-                    break;
+	                case AdminPage.SoundsChat:
+	                    BuildSoundsChat();
+	                    break;
+	                case AdminPage.SoundsChatGeneral:
+	                    BuildSoundsChatGeneral();
+	                    break;
+	                case AdminPage.SoundsChatTable:
+	                    BuildSoundsChatTable();
+	                    break;
+	                case AdminPage.SoundsPrivateMessages:
+	                    BuildSoundsPrivateMessages();
+	                    break;
                 default:
                     BuildSounds();
                     break;

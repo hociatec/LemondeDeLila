@@ -565,21 +565,53 @@ public sealed partial class AdminViewModel
 	                }
 	            }
 
-            if (_page == AdminPage.SoundsChat && tag is string chatSound)
-            {
-                if (chatSound == "sounds.chat.sent")
-                {
-                    PushReturnFocus();
-                    BuildSoundDetails(Modules.Audio.Models.SoundId.ChatMessageSent);
-                    return;
-                }
-                if (chatSound == "sounds.chat.received")
-                {
-                    PushReturnFocus();
-                    BuildSoundDetails(Modules.Audio.Models.SoundId.ChatMessageReceived);
-                    return;
-                }
-            }
+	            if (_page == AdminPage.SoundsChat && tag is string chatSound)
+	            {
+	                if (chatSound == "sounds.chat.general")
+	                {
+	                    PushReturnFocus();
+	                    BuildSoundsChatGeneral();
+	                    return;
+	                }
+	                if (chatSound == "sounds.chat.table")
+	                {
+	                    PushReturnFocus();
+	                    BuildSoundsChatTable();
+	                    return;
+	                }
+	            }
+	
+	            if (_page == AdminPage.SoundsChatGeneral && tag is string generalChatSound)
+	            {
+	                if (generalChatSound == "sounds.chat.general.sent")
+	                {
+	                    PushReturnFocus();
+	                    BuildSoundDetails(Modules.Audio.Models.SoundId.ChatMessageSent);
+	                    return;
+	                }
+	                if (generalChatSound == "sounds.chat.general.received")
+	                {
+	                    PushReturnFocus();
+	                    BuildSoundDetails(Modules.Audio.Models.SoundId.ChatMessageReceived);
+	                    return;
+	                }
+	            }
+	
+	            if (_page == AdminPage.SoundsChatTable && tag is string tableChatSound)
+	            {
+	                if (tableChatSound == "sounds.chat.table.sent")
+	                {
+	                    PushReturnFocus();
+	                    BuildSoundDetails(Modules.Audio.Models.SoundId.TableChatMessageSent);
+	                    return;
+	                }
+	                if (tableChatSound == "sounds.chat.table.received")
+	                {
+	                    PushReturnFocus();
+	                    BuildSoundDetails(Modules.Audio.Models.SoundId.TableChatMessageReceived);
+	                    return;
+	                }
+	            }
 
             if (_page == AdminPage.SoundsPrivateMessages && tag is string pmSound)
             {

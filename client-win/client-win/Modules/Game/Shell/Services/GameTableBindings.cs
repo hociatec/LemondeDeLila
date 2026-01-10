@@ -104,14 +104,14 @@ internal sealed class GameTableBindings : IAsyncDisposable
         // The server echo will be consumed via ConsumePendingEcho to avoid duplicates.
         _tableVm.Chat.LocalEcho = text =>
         {
-            try
-            {
-                _sounds.Play(SoundId.ChatMessageSent);
-            }
-            catch
-            {
-                // ignore
-            }
+	            try
+	            {
+	                _sounds.Play(SoundId.TableChatMessageSent);
+	            }
+	            catch
+	            {
+	                // ignore
+	            }
 
             var user = string.IsNullOrWhiteSpace(_selfUsername) ? "Vous" : _selfUsername.Trim();
             var message = (text ?? string.Empty).Trim();
@@ -718,19 +718,19 @@ internal sealed class GameTableBindings : IAsyncDisposable
         return false;
     }
 
-    private void MaybePlayChatSound(RoomChatMessageDto msg)
-    {
-        if (_tableVm.Chat.IsSoundsEnabled != true)
-        {
-            return;
-        }
+	    private void MaybePlayChatSound(RoomChatMessageDto msg)
+	    {
+	        if (_tableVm.Chat.IsSoundsEnabled != true)
+	        {
+	            return;
+	        }
 
-        var fromSelf =
-            !string.IsNullOrWhiteSpace(_selfUsername) &&
-            string.Equals((_selfUsername ?? string.Empty).Trim(), (msg.Username ?? string.Empty).Trim(), StringComparison.OrdinalIgnoreCase);
+	        var fromSelf =
+	            !string.IsNullOrWhiteSpace(_selfUsername) &&
+	            string.Equals((_selfUsername ?? string.Empty).Trim(), (msg.Username ?? string.Empty).Trim(), StringComparison.OrdinalIgnoreCase);
 
-        _sounds.Play(fromSelf ? SoundId.ChatMessageSent : SoundId.ChatMessageReceived);
-    }
+	        _sounds.Play(fromSelf ? SoundId.TableChatMessageSent : SoundId.TableChatMessageReceived);
+	    }
 
     private static string FormatChatLine(RoomChatMessageDto msg)
     {
