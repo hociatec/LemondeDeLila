@@ -310,12 +310,49 @@ public partial class AdminView : UserControl
 
     private void OnItemsListPreviewKeyDown(object sender, KeyEventArgs e)
     {
-        if (e.Handled || e.Key != Key.Tab)
+        if (e.Handled)
         {
             return;
         }
 
         if (DataContext is not AdminViewModel vm)
+        {
+            return;
+        }
+
+        // Menu racine (accordéon) : les flèches doivent naviguer entre en-têtes de sections,
+        // sans tomber sur des items "cachés" (groupes repliés) qui deviennent silencieux pour NVDA.
+        if (vm.IsRootMenu && e.Key is Key.Down or Key.Up)
+        {
+            if (ItemsList == null)
+            {
+                return;
+            }
+
+            var delta = e.Key == Key.Down ? 1 : -1;
+
+            var focused = Keyboard.FocusedElement as DependencyObject;
+            var focusedExpander = FindVisualParent<Expander>(focused);
+            if (focusedExpander == null || focusedExpander.DataContext is not CollectionViewGroup)
+            {
+                // Le focus peut être sur un ListBoxItem (contenu masqué) : dans ce cas on se base sur l'item sélectionné.
+                var category = vm.SelectedItem?.Category ?? vm.RootExpandedCategory ?? string.Empty;
+                focusedExpander = TryFindGroupHeaderByCategory(category);
+            }
+
+            e.Handled = true;
+            if (focusedExpander != null)
+            {
+                FocusSiblingGroupHeader(focusedExpander, delta);
+            }
+            else
+            {
+                FocusFirstGroupHeader();
+            }
+            return;
+        }
+
+        if (e.Key != Key.Tab)
         {
             return;
         }
@@ -347,6 +384,84 @@ public partial class AdminView : UserControl
             InputsView?.SecondaryInputTextBox?.Focus();
             e.Handled = true;
         }
+    }
+
+    private Expander? TryFindGroupHeaderByCategory(string category)
+    {
+        if (ItemsList == null)
+        {
+            return null;
+        }
+
+        ItemsList.UpdateLayout();
+
+        Expander? first = null;
+        foreach (var expander in FindVisualChildren<Expander>(ItemsList))
+        {
+            if (expander.DataContext is not CollectionViewGroup group)
+            {
+                continue;
+            }
+
+            first ??= expander;
+            var name = group.Name?.ToString() ?? string.Empty;
+            if (string.IsNullOrWhiteSpace(category))
+            {
+                continue;
+            }
+            if (string.Equals(name, category, StringComparison.Ordinal))
+            {
+                return expander;
+            }
+        }
+
+        return first;
+    }
+
+    private void FocusSiblingGroupHeader(Expander current, int delta)
+    {
+        if (ItemsList == null)
+        {
+            return;
+        }
+
+        ItemsList.UpdateLayout();
+
+        var expanders = FindVisualChildren<Expander>(ItemsList)
+            .Where(e => e.DataContext is CollectionViewGroup)
+            .ToList();
+
+        if (expanders.Count == 0)
+        {
+            ItemsList.Focus();
+            return;
+        }
+
+        var idx = expanders.FindIndex(e => ReferenceEquals(e, current));
+        if (idx < 0)
+        {
+            expanders[0].Focus();
+            return;
+        }
+
+        var next = Math.Clamp(idx + delta, 0, expanders.Count - 1);
+        expanders[next].Focus();
+    }
+
+    private static T? FindVisualParent<T>(DependencyObject? root) where T : DependencyObject
+    {
+        var current = root;
+        while (current != null)
+        {
+            if (current is T typed)
+            {
+                return typed;
+            }
+
+            current = VisualTreeHelper.GetParent(current);
+        }
+
+        return null;
     }
 
     private void FocusBestInputIfVisible()

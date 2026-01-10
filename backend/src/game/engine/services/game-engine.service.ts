@@ -336,6 +336,69 @@ export class GameEngineService {
       ).trim();
       const roomStartedAt = String(payload?.room?.startedAt ?? '').trim();
 
+      // Garde-fou : si un état "finished" est encore stocké alors que la room est restée en "started"
+      // (crash/restart serveur ou événement WS manqué), forcer un reset pour retrouver une table
+      // modifiable (ajout/suppression de bots, relance).
+      const maybeFinished =
+        previousStatus === 'finished'
+          ? existing
+          : (this.forceFinishedIfWinnerDetected(existing as any) as any);
+      const maybeFinishedStatus = String(maybeFinished?.status ?? '').toLowerCase();
+      if (roomStatus === 'started' && maybeFinishedStatus === 'finished') {
+        this.gameLogger.warn('Stale finished game detected while room is started; auto-resetting room', {
+          roomId,
+          gameType,
+          previousStatus,
+          roomStatus,
+        });
+
+        try {
+          await this.rooms.resetRoomSystem(roomId);
+        } catch (err) {
+          this.gameLogger.error(
+            'Auto-reset room (stale finished) failed',
+            err instanceof Error ? err : undefined,
+            { roomId, gameType },
+          );
+        }
+
+        try {
+          await this.store.delete(roomId, gameType);
+        } catch (err) {
+          this.gameLogger.error(
+            'Auto-reset game state (stale finished) failed',
+            err instanceof Error ? err : undefined,
+            { roomId, gameType },
+          );
+        }
+
+        try {
+          await this.rooms.notifyRoomStateUpdated(roomId);
+        } catch {
+          // best effort
+        }
+
+        try {
+          payload = await this.rooms.getRoomPayload(roomId);
+        } catch (err) {
+          this.cleanupRoom(roomId, gameType);
+          if (this.isRoomNotFound(err)) {
+            throw new NotFoundException('Table introuvable');
+          }
+          throw err;
+        }
+
+        this.cleanupRoom(roomId, gameType);
+        const rebuilt = await this.buildInitialState(payload, gameType);
+        const marked = await this.normalizeBotThinking(
+          roomId,
+          gameType,
+          await this.markBotThinking(roomId, gameType, rebuilt),
+        );
+        await this.scheduleBotTurn(roomId, gameType, marked);
+        return marked;
+      }
+
       const storedRunIdRaw = (existing.metadata as any)?.roomRunId;
       const roomRunIdRaw = (payload?.room as any)?.runId;
       const storedRunId =

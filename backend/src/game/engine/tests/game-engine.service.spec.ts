@@ -59,8 +59,11 @@ describe('GameEngineService', () => {
       {} as any,
       {} as any,
       botScheduler as any,
+      {} as any,
+      {} as any,
       store as any,
       gameLogger as any,
+      {} as any,
     );
 
     let err: unknown;
@@ -74,5 +77,78 @@ describe('GameEngineService', () => {
     }
     expect(botScheduler.clear).toHaveBeenCalled();
     expect(store.delete).toHaveBeenCalled();
+  });
+
+  it('auto-resets a stale finished game when the room is still started', async () => {
+    const rooms = {
+      getRoomPayload: jest
+        .fn()
+        .mockResolvedValueOnce({
+          room: { id: 1, gameType: 'corridor', status: 'started', startedAt: new Date().toISOString() },
+        })
+        .mockResolvedValueOnce({
+          room: { id: 1, gameType: 'corridor', status: 'setup', startedAt: null },
+        }),
+      resetRoomSystem: jest.fn().mockResolvedValue({ id: 1, status: 'setup', startedAt: null }),
+      notifyRoomStateUpdated: jest.fn().mockResolvedValue(undefined),
+    };
+
+    const store = {
+      buildKey: jest.fn(() => '1:corridor'),
+      delete: jest.fn().mockResolvedValue(undefined),
+      get: jest.fn().mockResolvedValue({
+        status: 'finished',
+        turnIndex: 1,
+        players: [],
+        turn: { currentPlayerId: null, direction: 1 },
+        metadata: { roomStartedAt: new Date().toISOString() },
+      }),
+      set: jest.fn().mockResolvedValue(undefined),
+      markBotThinking: jest.fn((state: any) => state),
+      syncRoomStatus: jest.fn((state: any) => state),
+    };
+
+    const core = {
+      buildBaseState: jest.fn(() => ({
+        status: 'setup',
+        turnIndex: 0,
+        players: [],
+        turn: { currentPlayerId: null, direction: 1 },
+        metadata: {},
+        log: [],
+        extras: {},
+      })),
+      appendLog: jest.fn((state: any) => state),
+    };
+
+    const botScheduler = { clear: jest.fn(), has: jest.fn(() => false), schedule: jest.fn() };
+    const gameLogger = {
+      info: jest.fn(),
+      debug: jest.fn(),
+      error: jest.fn(),
+      warn: jest.fn(),
+      logPlayerAction: jest.fn(),
+      logValidationFailure: jest.fn(),
+    };
+
+    const engine = new GameEngineService(
+      rooms as any,
+      core as any,
+      { getHandler: jest.fn(() => null) } as any,
+      { compute: jest.fn(() => null) } as any,
+      {} as any,
+      botScheduler as any,
+      { getBotTurnDelayMs: jest.fn(() => 0) } as any,
+      { attachGridRenderDescriptors: jest.fn((s: any) => s) } as any,
+      store as any,
+      gameLogger as any,
+      { finalizeFinished: jest.fn() } as any,
+    );
+
+    await (engine as any).getInternalState(1, 'corridor');
+
+    expect(rooms.resetRoomSystem).toHaveBeenCalledWith(1);
+    expect(rooms.notifyRoomStateUpdated).toHaveBeenCalledWith(1);
+    expect(store.delete).toHaveBeenCalledWith(1, 'corridor');
   });
 });
