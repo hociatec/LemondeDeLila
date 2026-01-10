@@ -2,6 +2,8 @@ using System;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System.Windows.Input;
 using System.Windows.Threading;
 using client_win.Modules.Home.ViewModels;
 
@@ -60,6 +62,41 @@ public partial class HomeView : UserControl
         {
             FocusFirstField();
         }
+    }
+
+    private void OnPreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        if (_viewModel != null &&
+            e.Key == Key.Escape &&
+            _viewModel.CurrentPage != HomePage.Landing &&
+            _viewModel.ShowLandingCommand.CanExecute(null))
+        {
+            _viewModel.ShowLandingCommand.Execute(null);
+            e.Handled = true;
+            return;
+        }
+
+        if (IsNavigationKey(e.Key) && !IsTextEditingControl(e.OriginalSource))
+        {
+            e.Handled = true;
+        }
+    }
+
+    private static bool IsNavigationKey(Key key)
+    {
+        return key == Key.Up ||
+               key == Key.Down ||
+               key == Key.Left ||
+               key == Key.Right ||
+               key == Key.Home ||
+               key == Key.End ||
+               key == Key.PageUp ||
+               key == Key.PageDown;
+    }
+
+    private static bool IsTextEditingControl(object? source)
+    {
+        return source is TextBoxBase || source is PasswordBox;
     }
 
     private void FocusFirstField()

@@ -26,6 +26,8 @@ public sealed class RoomSession : IAsyncDisposable
     private int _reconnectAttempt;
     private DateTime _lastPongUtc = DateTime.MinValue;
     private WebSocketState _state = WebSocketState.Connected;
+    private DateTime _lastStateRefreshUtc = DateTime.MinValue;
+    private int _stateRefreshInFlight;
 
     public RoomSession(
         int roomId,
@@ -189,6 +191,14 @@ public sealed class RoomSession : IAsyncDisposable
                 return;
             }
 
+            if (string.Equals(type, "state-updated", StringComparison.OrdinalIgnoreCase))
+            {
+                // Some server updates broadcast a lightweight "state-updated" message first.
+                // If the subsequent room.updated broadcast is missed (disconnect/race), force a refresh.
+                _ = RequestStateRefreshAsync();
+                return;
+            }
+
             if (string.Equals(type, "room.updated", StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(type, "room.created", StringComparison.OrdinalIgnoreCase))
             {
@@ -262,6 +272,52 @@ public sealed class RoomSession : IAsyncDisposable
         catch
         {
             // ignore
+        }
+    }
+
+    private async Task RequestStateRefreshAsync()
+    {
+        if (_state != WebSocketState.Connected)
+        {
+            return;
+        }
+
+        // Throttle to avoid spamming join messages on bursts.
+        var now = DateTime.UtcNow;
+        if (_lastStateRefreshUtc != DateTime.MinValue && now - _lastStateRefreshUtc < TimeSpan.FromSeconds(1))
+        {
+            return;
+        }
+        _lastStateRefreshUtc = now;
+
+        if (Interlocked.Exchange(ref _stateRefreshInFlight, 1) == 1)
+        {
+            return;
+        }
+
+        try
+        {
+            var trace = new { id = Guid.NewGuid().ToString("N"), sentAtMs = ServerClock.NowServerMs() };
+            var join = JsonSerializer.Serialize(new
+            {
+                type = "room.join",
+                payload = new
+                {
+                    roomId = RoomId,
+                    spectator = _spectator,
+                    hidden = _silent,
+                    _trace = trace
+                }
+            }, _json);
+            await _socket.SendAsync(join, _lifetimeCts.Token).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            Log.Debug(ex, "RoomSession refresh failed (roomId={RoomId})", RoomId);
+        }
+        finally
+        {
+            Interlocked.Exchange(ref _stateRefreshInFlight, 0);
         }
     }
 

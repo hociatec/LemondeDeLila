@@ -49,18 +49,55 @@ export class CorridorBotService {
         ? CorridorRulebook.shortestDistanceToGoal(meta, oppPos, oppGoalY)
         : null;
 
-    // Bot agressif:
-    // - si l'adversaire est plus proche (ou très proche du but), essayer de placer un mur utile
-    // - sinon, avancer avec un vrai pathfinding (pas juste |goalY - y|).
     const remaining = (meta?.wallsRemainingByPlayerId ?? {})[String(botPlayerId)] ?? 0;
-    const shouldBlock =
+
+    // Bot agressif:
+    // 1) Anti-victoire: si l'adversaire a un coup gagnant au prochain tour, poser un mur qui l'empêche.
+    if (remaining > 0 && oppId != null && oppPos != null && wallTargets.length > 0) {
+      const opponentWinNow = (() => {
+        const moves = CorridorRulebook.listLegalPawnMoves(state, oppId);
+        return moves.some((m) => CorridorRulebook.isWinningPos(state, oppId, m));
+      })();
+
+      if (opponentWinNow) {
+        const bestAntiWin = this.pickWallToPreventImmediateWin(
+          state,
+          meta,
+          botPlayerId,
+          oppId,
+          myGoalY,
+          oppGoalY,
+          myPos,
+          oppPos,
+          wallTargets,
+        );
+        if (bestAntiWin != null) {
+          return [
+            {
+              type: 'corridor_place_wall',
+              payload: { x: bestAntiWin.x, y: bestAntiWin.y, o: bestAntiWin.o },
+            },
+          ];
+        }
+      }
+    }
+
+    // 2) Bloquer si l'adversaire est en avance/proche du but, ou parfois pour prendre l'initiative.
+    const shouldConsiderWalls =
       remaining > 0 &&
       oppId != null &&
       oppPos != null &&
       oppDist != null &&
-      (oppDist <= 2 || (myDist != null && oppDist < myDist));
+      (oppDist <= 4 || (myDist != null && oppDist <= myDist + 1));
 
-    if (shouldBlock) {
+    const wantAggressiveWall =
+      shouldConsiderWalls &&
+      (oppDist <= 3 ||
+        (myDist != null && oppDist < myDist) ||
+        // Initiative: un peu d'aléatoire pour que le bot place aussi des murs en début de partie.
+        Math.random() < 0.35);
+
+    if (wantAggressiveWall && wallTargets.length > 0 && myPos && oppPos && myDist != null && oppDist != null) {
       const bestWall = this.pickAggressiveWall(
         meta,
         myGoalY,
@@ -143,17 +180,64 @@ export class CorridorBotService {
 
       const oppGain = nextOpp - baseOpp;
       const myGain = nextMy - baseMy;
-      const score = oppGain * 3 - myGain * 2;
-      if (score > bestScore && oppGain >= 1 && myGain <= 2) {
+
+      const proximity = Math.abs(w.x - oppPos.x) + Math.abs(w.y - oppPos.y);
+      const proximityBonus = proximity <= 1 ? 2 : proximity <= 2 ? 1 : 0;
+
+      const score = oppGain * 4 - myGain * 2 + proximityBonus;
+      if (score > bestScore && oppGain >= 1 && myGain <= 3) {
         bestScore = score;
         best = w;
       }
     }
 
-    if (bestScore >= 3) {
+    // Seuil volontairement bas: bot plus "méchant", il doit oser poser des murs.
+    if (bestScore >= 2) {
       return best;
     }
     return null;
+  }
+
+  private pickWallToPreventImmediateWin(
+    state: GameStateEntity,
+    meta: CorridorMetadata,
+    botPlayerId: number,
+    opponentId: number,
+    myGoalY: number,
+    oppGoalY: number,
+    myPos: { x: number; y: number },
+    oppPos: { x: number; y: number },
+    walls: Array<{ x: number; y: number; o: 'h' | 'v' }>,
+  ): { x: number; y: number; o: 'h' | 'v' } | null {
+    const baseMy = CorridorRulebook.shortestDistanceToGoal(meta, myPos, myGoalY);
+    const baseOpp = CorridorRulebook.shortestDistanceToGoal(meta, oppPos, oppGoalY);
+    if (baseMy == null || baseOpp == null) return null;
+
+    let best: { x: number; y: number; o: 'h' | 'v' } | null = null;
+    let bestScore = Number.NEGATIVE_INFINITY;
+
+    for (const w of walls) {
+      const tmpMeta = CorridorRulebook.applyWall(meta, w);
+      const tmpState = { ...(state as any), metadata: tmpMeta } as GameStateEntity;
+      const canStillWin = CorridorRulebook.listLegalPawnMoves(tmpState, opponentId).some((m) =>
+        CorridorRulebook.isWinningPos(tmpState, opponentId, m),
+      );
+      if (canStillWin) continue;
+
+      const nextMy = CorridorRulebook.shortestDistanceToGoal(tmpMeta, myPos, myGoalY);
+      const nextOpp = CorridorRulebook.shortestDistanceToGoal(tmpMeta, oppPos, oppGoalY);
+      if (nextMy == null || nextOpp == null) continue;
+
+      const oppGain = nextOpp - baseOpp;
+      const myGain = nextMy - baseMy;
+      const score = oppGain * 5 - myGain * 2;
+      if (score > bestScore) {
+        bestScore = score;
+        best = w;
+      }
+    }
+
+    return best;
   }
 }
 
