@@ -318,12 +318,6 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
 	        {
 	            return;
 	        }
-
-	        var message = (previousStatus ?? string.Empty).Trim().Length == 0
-	            ? $"Statut de la partie : {nextStatus}"
-	            : $"Statut de la partie : {previousStatus} -> {nextStatus}";
-
-	        MessageReceived?.Invoke(message);
 	        GameStatusChanged?.Invoke(previousStatus ?? string.Empty, nextStatus);
 	    }
 

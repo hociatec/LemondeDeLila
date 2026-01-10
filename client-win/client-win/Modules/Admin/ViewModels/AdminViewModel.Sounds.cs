@@ -18,22 +18,23 @@ public sealed partial class AdminViewModel
     private SoundId? _soundDetailsId;
     private AdminPage _soundDetailsReturnPage = AdminPage.Sounds;
 
-    private void BuildSounds()
-    {
-        _page = AdminPage.Sounds;
-        Title = "Administration - Sons";
-        Details = "Gestion des sons de l'application.";
+	    private void BuildSounds()
+	    {
+	        _page = AdminPage.Sounds;
+	        Title = "Administration - Sons";
+	        Details = "Gestion des sons de l'application.";
         IsTextInputVisible = false;
         IsSecondaryInputVisible = false;
         IsAdditionalPermissionsVisible = false;
-        Items.Clear();
-        Items.Add(new AdminMenuItem("Connexion", tag: "sounds.connection"));
-        Items.Add(new AdminMenuItem("Ambiance", tag: "sounds.ambience"));
-        Items.Add(new AdminMenuItem("Table", tag: "sounds.table"));
-        Items.Add(new AdminMenuItem("Amis", tag: "sounds.invitations"));
-        Items.Add(new AdminMenuItem("Tchat", tag: "sounds.chat"));
-        Items.Add(new AdminMenuItem("Messages privés", tag: "sounds.private"));
-        Items.Add(new AdminMenuItem("Contact admin", tag: "sounds.adminContact"));
+	        Items.Clear();
+	        Items.Add(new AdminMenuItem("Connexion", tag: "sounds.connection"));
+	        Items.Add(new AdminMenuItem("Ambiance", tag: "sounds.ambience"));
+	        Items.Add(new AdminMenuItem("Table", tag: "sounds.table"));
+	        Items.Add(new AdminMenuItem("Jeux", tag: "sounds.games"));
+	        Items.Add(new AdminMenuItem("Amis", tag: "sounds.invitations"));
+	        Items.Add(new AdminMenuItem("Tchat", tag: "sounds.chat"));
+	        Items.Add(new AdminMenuItem("Messages privés", tag: "sounds.private"));
+	        Items.Add(new AdminMenuItem("Contact admin", tag: "sounds.adminContact"));
         SelectedItem = Items.FirstOrDefault();
         Status = "Entrée : sélectionner. Échap : retour.";
         UpdateFilterVisibility();
@@ -94,51 +95,64 @@ public sealed partial class AdminViewModel
         RestoreFocusIfAny();
     }
 
-    private void BuildSoundsTable()
-    {
-        _page = AdminPage.SoundsTable;
-        Title = "Administration - Sons - Table";
-        Details = "Choisir un son lié aux tables et à la partie (entrée/sortie, invit, victoire/défaite).";
-        IsTextInputVisible = false;
-        IsSecondaryInputVisible = false;
-        IsAdditionalPermissionsVisible = false;
-        Items.Clear();
-        Items.Add(new AdminMenuItem("Victoire (fin de partie)", tag: "sounds.game.victory"));
-        Items.Add(new AdminMenuItem("Défaite (fin de partie)", tag: "sounds.game.defeat"));
-        Items.Add(new AdminMenuItem("Entrer dans une table", tag: "sounds.table.enter"));
-        Items.Add(new AdminMenuItem("Rejoindre une table", tag: "sounds.table.join"));
-        Items.Add(new AdminMenuItem("Quitter une table", tag: "sounds.table.exit"));
-        Items.Add(new AdminMenuItem("Pion : prendre (vous)", tag: "sounds.table.pawn.picked"));
-        Items.Add(new AdminMenuItem("Pion : poser (vous)", tag: "sounds.table.pawn.placed.self"));
-        Items.Add(new AdminMenuItem("Pion : poser (adversaire)", tag: "sounds.table.pawn.placed.opponent"));
-        Items.Add(new AdminMenuItem("Mur : poser (vous)", tag: "sounds.table.wall.placed.self"));
-        Items.Add(new AdminMenuItem("Mur : poser (adversaire)", tag: "sounds.table.wall.placed.opponent"));
-        Items.Add(new AdminMenuItem("Invitation à une table envoyée", tag: "sounds.table.invite.sent"));
-        Items.Add(new AdminMenuItem("Invitation à une table reçue", tag: "sounds.table.invite.received"));
-        Items.Add(new AdminMenuItem("Tchat de table : message envoyé", tag: "sounds.table.chat.sent"));
-        Items.Add(new AdminMenuItem("Tchat de table : message reçu", tag: "sounds.table.chat.received"));
-        SelectedItem = Items.FirstOrDefault();
-        Status = "Entrée : sélectionner. Échap : retour.";
-        UpdateFilterVisibility();
-        RestoreFocusIfAny();
-    }
+	    private void BuildSoundsTable()
+	    {
+	        _page = AdminPage.SoundsTable;
+	        Title = "Administration - Sons - Table";
+	        Details = "Choisir un son lié aux tables (entrée/sortie, invitations, fin de partie).";
+	        IsTextInputVisible = false;
+	        IsSecondaryInputVisible = false;
+	        IsAdditionalPermissionsVisible = false;
+	        Items.Clear();
+	        Items.Add(new AdminMenuItem("Victoire (fin de partie)", tag: "sounds.game.victory"));
+	        Items.Add(new AdminMenuItem("Défaite (fin de partie)", tag: "sounds.game.defeat"));
+	        Items.Add(new AdminMenuItem("Entrer dans une table", tag: "sounds.table.enter"));
+	        Items.Add(new AdminMenuItem("Rejoindre une table", tag: "sounds.table.join"));
+	        Items.Add(new AdminMenuItem("Quitter une table", tag: "sounds.table.exit"));
+	        Items.Add(new AdminMenuItem("Invitation à une table envoyée", tag: "sounds.table.invite.sent"));
+	        Items.Add(new AdminMenuItem("Invitation à une table reçue", tag: "sounds.table.invite.received"));
+	        SelectedItem = Items.FirstOrDefault();
+	        Status = "Entrée : sélectionner. Échap : retour.";
+	        UpdateFilterVisibility();
+	        RestoreFocusIfAny();
+	    }
 
-    private void BuildSoundsChat()
-    {
-        _page = AdminPage.SoundsChat;
-        Title = "Administration - Sons - Tchat";
-        Details = "Choisir un son lié au tchat.";
-        IsTextInputVisible = false;
-        IsSecondaryInputVisible = false;
-        IsAdditionalPermissionsVisible = false;
-        Items.Clear();
-        Items.Add(new AdminMenuItem("Envoi d'un message", tag: "sounds.chat.sent"));
-        Items.Add(new AdminMenuItem("Réception d'un message", tag: "sounds.chat.received"));
-        SelectedItem = Items.FirstOrDefault();
-        Status = "Entrée : sélectionner. Échap : retour.";
-        UpdateFilterVisibility();
-        RestoreFocusIfAny();
-    }
+	    private void BuildSoundsGames()
+	    {
+	        _page = AdminPage.SoundsGames;
+	        Title = "Administration - Sons - Jeux";
+	        Details = "Choisir un son lié aux actions en jeu (pion, mur).";
+	        IsTextInputVisible = false;
+	        IsSecondaryInputVisible = false;
+	        IsAdditionalPermissionsVisible = false;
+	        Items.Clear();
+	        Items.Add(new AdminMenuItem("Pion : prendre (vous)", tag: "sounds.games.pawn.picked"));
+	        Items.Add(new AdminMenuItem("Pion : poser (vous)", tag: "sounds.games.pawn.placed.self"));
+	        Items.Add(new AdminMenuItem("Pion : poser (adversaire)", tag: "sounds.games.pawn.placed.opponent"));
+	        Items.Add(new AdminMenuItem("Mur : poser (vous)", tag: "sounds.games.wall.placed.self"));
+	        Items.Add(new AdminMenuItem("Mur : poser (adversaire)", tag: "sounds.games.wall.placed.opponent"));
+	        SelectedItem = Items.FirstOrDefault();
+	        Status = "Entrée : sélectionner. Échap : retour.";
+	        UpdateFilterVisibility();
+	        RestoreFocusIfAny();
+	    }
+
+	    private void BuildSoundsChat()
+	    {
+	        _page = AdminPage.SoundsChat;
+	        Title = "Administration - Sons - Tchat";
+	        Details = "Choisir un son lié au tchat (table et global).";
+	        IsTextInputVisible = false;
+	        IsSecondaryInputVisible = false;
+	        IsAdditionalPermissionsVisible = false;
+	        Items.Clear();
+	        Items.Add(new AdminMenuItem("Envoi d'un message", tag: "sounds.chat.sent"));
+	        Items.Add(new AdminMenuItem("Réception d'un message", tag: "sounds.chat.received"));
+	        SelectedItem = Items.FirstOrDefault();
+	        Status = "Entrée : sélectionner. Échap : retour.";
+	        UpdateFilterVisibility();
+	        RestoreFocusIfAny();
+	    }
 
     private void BuildSoundsPrivateMessages()
     {
@@ -182,18 +196,19 @@ public sealed partial class AdminViewModel
     {
         _page = AdminPage.SoundDetails;
         _soundDetailsId = sound;
-        _soundDetailsReturnPage = returnPageOverride ?? sound switch
-        {
-            SoundId.ClientOpened or SoundId.ClientConnected or SoundId.ClientDisconnected => AdminPage.SoundsConnection,
-            SoundId.MainMenuMusic or SoundId.TavernAmbience => AdminPage.SoundsAmbience,
-            SoundId.GameVictory or SoundId.GameDefeat or SoundId.RoomOpened or SoundId.RoomJoined or SoundId.RoomExit or SoundId.PawnPicked or SoundId.PawnPlacedSelf or SoundId.PawnPlacedOpponent or SoundId.WallPlacedSelf or SoundId.WallPlacedOpponent => AdminPage.SoundsTable,
-            SoundId.InvitationSent or SoundId.InvitationReceived => AdminPage.SoundsTable,
-            SoundId.ChatMessageSent or SoundId.ChatMessageReceived => AdminPage.SoundsChat,
-            SoundId.PrivateMessageSent or SoundId.PrivateMessageReceived => AdminPage.SoundsPrivateMessages,
-            SoundId.AdminContactSent or SoundId.AdminContactReceived => AdminPage.SoundsAdminContact,
-            SoundId.FriendConnected or SoundId.FriendDisconnected or SoundId.FriendInvitationSent or SoundId.FriendInvitationReceived => AdminPage.SoundsInvitations,
-            _ => AdminPage.Sounds
-        };
+	        _soundDetailsReturnPage = returnPageOverride ?? sound switch
+	        {
+	            SoundId.ClientOpened or SoundId.ClientConnected or SoundId.ClientDisconnected => AdminPage.SoundsConnection,
+	            SoundId.MainMenuMusic or SoundId.TavernAmbience => AdminPage.SoundsAmbience,
+	            SoundId.GameVictory or SoundId.GameDefeat or SoundId.RoomOpened or SoundId.RoomJoined or SoundId.RoomExit => AdminPage.SoundsTable,
+	            SoundId.PawnPicked or SoundId.PawnPlacedSelf or SoundId.PawnPlacedOpponent or SoundId.WallPlacedSelf or SoundId.WallPlacedOpponent => AdminPage.SoundsGames,
+	            SoundId.InvitationSent or SoundId.InvitationReceived => AdminPage.SoundsTable,
+	            SoundId.ChatMessageSent or SoundId.ChatMessageReceived => AdminPage.SoundsChat,
+	            SoundId.PrivateMessageSent or SoundId.PrivateMessageReceived => AdminPage.SoundsPrivateMessages,
+	            SoundId.AdminContactSent or SoundId.AdminContactReceived => AdminPage.SoundsAdminContact,
+	            SoundId.FriendConnected or SoundId.FriendDisconnected or SoundId.FriendInvitationSent or SoundId.FriendInvitationReceived => AdminPage.SoundsInvitations,
+	            _ => AdminPage.Sounds
+	        };
 
         var (group, title, current) = sound switch
         {
@@ -218,14 +233,14 @@ public sealed partial class AdminViewModel
             SoundId.PrivateMessageSent => ("Messages privés", "Envoi d'un message privé", _options.Current.SoundPrivateMessageSentPath),
             SoundId.PrivateMessageReceived => ("Messages privés", "Réception d'un message privé", _options.Current.SoundPrivateMessageReceivedPath),
             SoundId.AdminContactSent => ("Contact admin", "Envoi d'un contact admin", null),
-            SoundId.PawnPicked => ("Table", "Pion - Prendre (vous)", _options.Current.SoundPawnPickedPath),
-            SoundId.PawnPlacedSelf => ("Table", "Pion - Poser (vous)", _options.Current.SoundPawnPlacedSelfPath),
-            SoundId.PawnPlacedOpponent => ("Table", "Pion - Poser (adversaire)", _options.Current.SoundPawnPlacedOpponentPath),
-            SoundId.WallPlacedSelf => ("Table", "Mur - Poser (vous)", _options.Current.SoundWallPlacedSelfPath),
-            SoundId.WallPlacedOpponent => ("Table", "Mur - Poser (adversaire)", _options.Current.SoundWallPlacedOpponentPath),
-            SoundId.AdminContactReceived => ("Contact admin", "Réception d'un contact admin", null),
-            _ => ("Sons", sound.ToString(), null)
-        };
+	            SoundId.PawnPicked => ("Jeux", "Pion - Prendre (vous)", _options.Current.SoundPawnPickedPath),
+	            SoundId.PawnPlacedSelf => ("Jeux", "Pion - Poser (vous)", _options.Current.SoundPawnPlacedSelfPath),
+	            SoundId.PawnPlacedOpponent => ("Jeux", "Pion - Poser (adversaire)", _options.Current.SoundPawnPlacedOpponentPath),
+	            SoundId.WallPlacedSelf => ("Jeux", "Mur - Poser (vous)", _options.Current.SoundWallPlacedSelfPath),
+	            SoundId.WallPlacedOpponent => ("Jeux", "Mur - Poser (adversaire)", _options.Current.SoundWallPlacedOpponentPath),
+	            SoundId.AdminContactReceived => ("Contact admin", "Réception d'un contact admin", null),
+	            _ => ("Sons", sound.ToString(), null)
+	        };
 
         if (!string.IsNullOrWhiteSpace(groupOverride))
         {

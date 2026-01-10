@@ -592,16 +592,6 @@ internal sealed class GameTableBindings : IAsyncDisposable
 	            _tableVm.GameZone.Content = null;
 	            await UnloadGamePlayVmAsync().ConfigureAwait(true);
 
-	            var gameName = (_game.Name ?? string.Empty).Trim();
-	            if (string.IsNullOrWhiteSpace(gameName))
-	            {
-	                _announcements.TableInfo("Table creee. Ajoutez des bots et commencez a jouer (Entree).");
-	            }
-	            else
-	            {
-	                _announcements.TableInfo($"Table de {gameName} creee. Ajoutez des bots et commencez a jouer (Entree).");
-	            }
-
 	            // Le contenu a été déchargé, refocus sur l'ancre pour permettre Entrée (room.start).
 	            _ = _tableView.Dispatcher.BeginInvoke(
 	                DispatcherPriority.Input,
