@@ -1,11 +1,7 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Threading;
 using client_win.Modules.Admin.ViewModels;
 
@@ -14,7 +10,6 @@ namespace client_win.Modules.Admin.Views;
 public partial class AdminView : UserControl
 {
     private AdminViewModel? _vm;
-    private bool _didInitialRootFocus;
 
     public AdminView()
     {
@@ -25,7 +20,6 @@ public partial class AdminView : UserControl
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
-        _didInitialRootFocus = false;
         AttachViewModel(DataContext as AdminViewModel);
         AttachRootTabSuppression();
         AttachItemsKeyNavigation();
@@ -60,229 +54,6 @@ public partial class AdminView : UserControl
         FocusDetailsIfPreferred();
     }
 
-    private void EnsureRootAccordionExpandedGroupCore()
-    {
-        if (ItemsList == null)
-        {
-            return;
-        }
-
-        if (DataContext is not AdminViewModel vm || !vm.IsRootMenu)
-        {
-            return;
-        }
-
-        // À l'arrivée dans l'admin (menu racine), on veut voir uniquement les 4 catégories repliées.
-        // L'utilisateur développe une catégorie pour voir son contenu.
-        if (!_didInitialRootFocus && string.IsNullOrWhiteSpace(vm.RootExpandedCategory))
-        {
-            CollapseAllGroups();
-        }
-        else if (!string.IsNullOrWhiteSpace(vm.RootExpandedCategory))
-        {
-            ExpandOnlyGroup(vm.RootExpandedCategory);
-        }
-
-        // Demande utilisateur : à l'arrivée dans l'administration, focus sur le premier élément.
-        // Ici : premier en-tête de catégorie (accordéon replié), pour éviter d'atterrir dans du contenu caché.
-        if (!_didInitialRootFocus)
-        {
-            vm.SelectedItem = vm.Items.FirstOrDefault();
-            FocusFirstGroupHeader();
-            _didInitialRootFocus = true;
-        }
-    }
-
-    private void OnGroupExpanderExpanded(object sender, RoutedEventArgs e)
-    {
-        if (sender is not Expander expanded || ItemsList == null)
-        {
-            return;
-        }
-
-        if (expanded.DataContext is not CollectionViewGroup group)
-        {
-            return;
-        }
-
-        var category = group.Name?.ToString();
-        CollapseOtherGroups(expanded);
-
-        if (DataContext is not AdminViewModel vm || !vm.IsRootMenu)
-        {
-            return;
-        }
-
-        if (string.IsNullOrWhiteSpace(category))
-        {
-            return;
-        }
-
-        vm.RootExpandedCategory = category;
-        if (vm.SelectedItem?.Category == category)
-        {
-            return;
-        }
-
-        var firstItemInGroup = vm.Items.FirstOrDefault(x => string.Equals(x.Category, category, StringComparison.Ordinal));
-        if (firstItemInGroup == null)
-        {
-            return;
-        }
-
-        vm.SelectedItem = firstItemInGroup;
-        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusFirstItem));
-    }
-
-    private void CollapseOtherGroups(Expander expanded)
-    {
-        if (ItemsList == null)
-        {
-            return;
-        }
-
-        foreach (var expander in FindVisualChildren<Expander>(ItemsList))
-        {
-            if (expander.DataContext is not CollectionViewGroup)
-            {
-                continue;
-            }
-
-            if (ReferenceEquals(expander, expanded))
-            {
-                continue;
-            }
-
-            expander.IsExpanded = false;
-        }
-    }
-
-    private void CollapseAllGroups()
-    {
-        if (ItemsList == null)
-        {
-            return;
-        }
-
-        foreach (var expander in FindVisualChildren<Expander>(ItemsList))
-        {
-            if (expander.DataContext is not CollectionViewGroup)
-            {
-                continue;
-            }
-
-            expander.IsExpanded = false;
-        }
-    }
-
-    private void FocusGroupHeader(string category)
-    {
-        if (ItemsList == null)
-        {
-            return;
-        }
-
-        ItemsList.UpdateLayout();
-
-        Expander? match = null;
-        Expander? first = null;
-
-        foreach (var expander in FindVisualChildren<Expander>(ItemsList))
-        {
-            if (expander.DataContext is not CollectionViewGroup group)
-            {
-                continue;
-            }
-
-            first ??= expander;
-
-            var groupName = group.Name?.ToString() ?? string.Empty;
-            if (string.Equals(groupName, category, StringComparison.Ordinal))
-            {
-                match = expander;
-                break;
-            }
-        }
-
-        (match ?? first)?.Focus();
-    }
-
-    private void FocusFirstGroupHeader()
-    {
-        if (ItemsList == null)
-        {
-            return;
-        }
-
-        ItemsList.UpdateLayout();
-
-        foreach (var expander in FindVisualChildren<Expander>(ItemsList))
-        {
-            if (expander.DataContext is not CollectionViewGroup)
-            {
-                continue;
-            }
-
-            expander.Focus();
-            return;
-        }
-
-        ItemsList.Focus();
-    }
-
-    private void ExpandOnlyGroup(string category)
-    {
-        if (ItemsList == null)
-        {
-            return;
-        }
-
-        foreach (var expander in FindVisualChildren<Expander>(ItemsList))
-        {
-            if (expander.DataContext is not CollectionViewGroup group)
-            {
-                continue;
-            }
-
-            var groupName = group.Name?.ToString() ?? string.Empty;
-            expander.IsExpanded = string.Equals(groupName, category, StringComparison.Ordinal);
-        }
-    }
-
-    private static IEnumerable<T> FindVisualChildren<T>(DependencyObject root) where T : DependencyObject
-    {
-        if (root == null)
-        {
-            yield break;
-        }
-
-        var childrenCount = VisualTreeHelper.GetChildrenCount(root);
-        for (var i = 0; i < childrenCount; i++)
-        {
-            var child = VisualTreeHelper.GetChild(root, i);
-            if (child is T typed)
-            {
-                yield return typed;
-            }
-
-            foreach (var descendant in FindVisualChildren<T>(child))
-            {
-                yield return descendant;
-            }
-        }
-    }
-
-    private void AttachItemsKeyNavigation()
-    {
-        if (ItemsList == null)
-        {
-            return;
-        }
-
-        ItemsList.PreviewKeyDown -= OnItemsListPreviewKeyDown;
-        ItemsList.PreviewKeyDown += OnItemsListPreviewKeyDown;
-    }
-
     private void AttachRootTabSuppression()
     {
         PreviewKeyDown -= OnPreviewKeyDown;
@@ -308,51 +79,25 @@ public partial class AdminView : UserControl
         }
     }
 
+    private void AttachItemsKeyNavigation()
+    {
+        if (ItemsList == null)
+        {
+            return;
+        }
+
+        ItemsList.PreviewKeyDown -= OnItemsListPreviewKeyDown;
+        ItemsList.PreviewKeyDown += OnItemsListPreviewKeyDown;
+    }
+
     private void OnItemsListPreviewKeyDown(object sender, KeyEventArgs e)
     {
-        if (e.Handled)
+        if (e.Handled || e.Key != Key.Tab)
         {
             return;
         }
 
         if (DataContext is not AdminViewModel vm)
-        {
-            return;
-        }
-
-        // Menu racine (accordéon) : les flèches doivent naviguer entre en-têtes de sections,
-        // sans tomber sur des items "cachés" (groupes repliés) qui deviennent silencieux pour NVDA.
-        if (vm.IsRootMenu && e.Key is Key.Down or Key.Up)
-        {
-            if (ItemsList == null)
-            {
-                return;
-            }
-
-            var delta = e.Key == Key.Down ? 1 : -1;
-
-            var focused = Keyboard.FocusedElement as DependencyObject;
-            var focusedExpander = FindVisualParent<Expander>(focused);
-            if (focusedExpander == null || focusedExpander.DataContext is not CollectionViewGroup)
-            {
-                // Le focus peut être sur un ListBoxItem (contenu masqué) : dans ce cas on se base sur l'item sélectionné.
-                var category = vm.SelectedItem?.Category ?? vm.RootExpandedCategory ?? string.Empty;
-                focusedExpander = TryFindGroupHeaderByCategory(category);
-            }
-
-            e.Handled = true;
-            if (focusedExpander != null)
-            {
-                FocusSiblingGroupHeader(focusedExpander, delta);
-            }
-            else
-            {
-                FocusFirstGroupHeader();
-            }
-            return;
-        }
-
-        if (e.Key != Key.Tab)
         {
             return;
         }
@@ -386,176 +131,39 @@ public partial class AdminView : UserControl
         }
     }
 
-    private Expander? TryFindGroupHeaderByCategory(string category)
-    {
-        if (ItemsList == null)
-        {
-            return null;
-        }
-
-        ItemsList.UpdateLayout();
-
-        Expander? first = null;
-        foreach (var expander in FindVisualChildren<Expander>(ItemsList))
-        {
-            if (expander.DataContext is not CollectionViewGroup group)
-            {
-                continue;
-            }
-
-            first ??= expander;
-            var name = group.Name?.ToString() ?? string.Empty;
-            if (string.IsNullOrWhiteSpace(category))
-            {
-                continue;
-            }
-            if (string.Equals(name, category, StringComparison.Ordinal))
-            {
-                return expander;
-            }
-        }
-
-        return first;
-    }
-
-    private void FocusSiblingGroupHeader(Expander current, int delta)
-    {
-        if (ItemsList == null)
-        {
-            return;
-        }
-
-        ItemsList.UpdateLayout();
-
-        var expanders = FindVisualChildren<Expander>(ItemsList)
-            .Where(e => e.DataContext is CollectionViewGroup)
-            .ToList();
-
-        if (expanders.Count == 0)
-        {
-            ItemsList.Focus();
-            return;
-        }
-
-        var idx = expanders.FindIndex(e => ReferenceEquals(e, current));
-        if (idx < 0)
-        {
-            expanders[0].Focus();
-            return;
-        }
-
-        var next = Math.Clamp(idx + delta, 0, expanders.Count - 1);
-        expanders[next].Focus();
-    }
-
-    private static T? FindVisualParent<T>(DependencyObject? root) where T : DependencyObject
-    {
-        var current = root;
-        while (current != null)
-        {
-            if (current is T typed)
-            {
-                return typed;
-            }
-
-            current = VisualTreeHelper.GetParent(current);
-        }
-
-        return null;
-    }
-
     private void FocusBestInputIfVisible()
     {
         if (DataContext is not AdminViewModel vm)
         {
             return;
         }
-        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
+
+        if (vm.IsTextInputVisible)
         {
-            if (vm.IsTextInputVisible)
-            {
-                InputsView?.PrimaryInputBox?.Focus();
-                return;
-            }
-            if (vm.IsSecondaryInputVisible)
-            {
-                InputsView?.SecondaryInputTextBox?.Focus();
-            }
-        }));
+            _ = Dispatcher.BeginInvoke(
+                DispatcherPriority.Input,
+                new Action(() => InputsView?.PrimaryInputBox?.Focus()));
+            return;
+        }
+
+        if (vm.IsSecondaryInputVisible)
+        {
+            _ = Dispatcher.BeginInvoke(
+                DispatcherPriority.Input,
+                new Action(() => InputsView?.SecondaryInputTextBox?.Focus()));
+        }
     }
 
     private void FocusDetailsIfPreferred()
     {
-        if (DataContext is not AdminViewModel vm)
-        {
-            return;
-        }
-        if (!vm.PreferDetailsFocus)
+        if (DataContext is not AdminViewModel vm || !vm.PreferDetailsFocus)
         {
             return;
         }
 
-        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
-        {
-            if (DetailsBox == null)
-            {
-                return;
-            }
-            DetailsBox.Focus();
-            DetailsBox.CaretIndex = 0;
-            DetailsBox.ScrollToHome();
-        }));
-    }
-
-    private void FocusFirstItem()
-    {
-        if (ItemsList == null || ItemsList.Items.Count == 0)
-        {
-            ItemsList?.Focus();
-            return;
-        }
-
-        var viewModel = DataContext as AdminViewModel;
-
-        // Aligner la sélection WPF avec la sélection VM pour éviter de "repartir au début"
-        // lors des retours (Échap) où SelectedIndex peut être temporairement incohérent.
-        if (viewModel?.SelectedItem != null)
-        {
-            var desiredIndex = ItemsList.Items.IndexOf(viewModel.SelectedItem);
-            if (desiredIndex >= 0 && desiredIndex != ItemsList.SelectedIndex)
-            {
-                ItemsList.SelectedIndex = desiredIndex;
-            }
-        }
-
-        if (ItemsList.SelectedIndex < 0)
-        {
-            // La sélection VM peut arriver avant que WPF n'ait propagé SelectedIndex.
-            // Dans ce cas, retrouver l'index depuis SelectedItem côté VM pour éviter de repartir au début.
-            if (viewModel?.SelectedItem != null)
-            {
-                var idx = ItemsList.Items.IndexOf(viewModel.SelectedItem);
-                if (idx >= 0)
-                {
-                    ItemsList.SelectedIndex = idx;
-                }
-            }
-
-            if (ItemsList.SelectedIndex < 0)
-            {
-                ItemsList.SelectedIndex = 0;
-            }
-        }
-
-        ItemsList.UpdateLayout();
-        if (ItemsList.ItemContainerGenerator.ContainerFromIndex(ItemsList.SelectedIndex) is ListBoxItem item)
-        {
-            item.Focus();
-        }
-        else
-        {
-            ItemsList.Focus();
-        }
+        _ = Dispatcher.BeginInvoke(
+            DispatcherPriority.Input,
+            new Action(() => DetailsBox?.Focus()));
     }
 
     private void FocusWhenContainersGenerated()
@@ -568,26 +176,7 @@ public partial class AdminView : UserControl
         if (ItemsList.HasItems &&
             ItemsList.ItemContainerGenerator.Status == System.Windows.Controls.Primitives.GeneratorStatus.ContainersGenerated)
         {
-            _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
-            {
-                EnsureRootAccordionExpandedGroupCore();
-                if (DataContext is AdminViewModel vm && vm.IsRootMenu)
-                {
-                    // Menu racine : focus sur l'en-tête de catégorie (accordéon replié).
-                    if (!string.IsNullOrWhiteSpace(vm.RootExpandedCategory))
-                    {
-                        FocusFirstItem();
-                    }
-                    else
-                    {
-                        FocusGroupHeader(vm.SelectedItem?.Category ?? string.Empty);
-                    }
-                }
-                else
-                {
-                    FocusFirstItem();
-                }
-            }));
+            _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusSelectedItem));
             return;
         }
 
@@ -600,26 +189,44 @@ public partial class AdminView : UserControl
             }
 
             ItemsList.ItemContainerGenerator.StatusChanged -= handler;
-            _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
-            {
-                EnsureRootAccordionExpandedGroupCore();
-                if (DataContext is AdminViewModel vm && vm.IsRootMenu)
-                {
-                    if (!string.IsNullOrWhiteSpace(vm.RootExpandedCategory))
-                    {
-                        FocusFirstItem();
-                    }
-                    else
-                    {
-                        FocusGroupHeader(vm.SelectedItem?.Category ?? string.Empty);
-                    }
-                }
-                else
-                {
-                    FocusFirstItem();
-                }
-            }));
+            _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusSelectedItem));
         };
         ItemsList.ItemContainerGenerator.StatusChanged += handler;
     }
+
+    private void FocusSelectedItem()
+    {
+        if (ItemsList == null)
+        {
+            return;
+        }
+
+        if (ItemsList.Items.Count == 0)
+        {
+            ItemsList.Focus();
+            return;
+        }
+
+        if (ItemsList.SelectedIndex < 0)
+        {
+            ItemsList.SelectedIndex = 0;
+        }
+
+        var selected = ItemsList.SelectedItem;
+        if (selected != null)
+        {
+            ItemsList.ScrollIntoView(selected);
+        }
+
+        ItemsList.UpdateLayout();
+        if (ItemsList.ItemContainerGenerator.ContainerFromIndex(ItemsList.SelectedIndex) is ListBoxItem item)
+        {
+            item.Focus();
+        }
+        else
+        {
+            ItemsList.Focus();
+        }
+    }
 }
+

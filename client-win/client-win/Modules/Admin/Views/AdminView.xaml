@@ -57,46 +57,6 @@
                          ScrollViewer.CanContentScroll="True"
                          KeyboardNavigation.TabNavigation="Cycle"
                          AutomationProperties.LabeledBy="{Binding ElementName=TitleText}">
-                    <ListBox.GroupStyle>
-                        <GroupStyle>
-                            <GroupStyle.ContainerStyle>
-                                <Style TargetType="{x:Type GroupItem}">
-                                    <Setter Property="Margin" Value="0 0 0 12" />
-                                    <Setter Property="Template">
-                                        <Setter.Value>
-                                            <ControlTemplate TargetType="{x:Type GroupItem}">
-                                                <Expander IsExpanded="False"
-                                                          Background="Transparent"
-                                                          BorderThickness="0"
-                                                          Padding="0"
-                                                          Focusable="True"
-                                                          IsTabStop="True"
-                                                          KeyboardNavigation.TabNavigation="Continue"
-                                                          AutomationProperties.Name="{Binding Name}"
-                                                          AutomationProperties.HelpText="Développer pour afficher les actions de cette catégorie."
-                                                          Expanded="OnGroupExpanderExpanded">
-                                                    <Expander.Header>
-                                                        <Border Background="#0E2034"
-                                                                BorderBrush="#1F3C60"
-                                                                BorderThickness="1"
-                                                                CornerRadius="6"
-                                                                Padding="10"
-                                                                Margin="0 0 0 8">
-                                                            <TextBlock Text="{Binding Name}"
-                                                                       Foreground="#BFD0E6"
-                                                                       FontSize="14"
-                                                                       FontWeight="SemiBold" />
-                                                        </Border>
-                                                    </Expander.Header>
-                                                    <ItemsPresenter />
-                                                </Expander>
-                                            </ControlTemplate>
-                                        </Setter.Value>
-                                    </Setter>
-                                </Style>
-                            </GroupStyle.ContainerStyle>
-                        </GroupStyle>
-                    </ListBox.GroupStyle>
                     <ListBox.InputBindings>
                         <KeyBinding Key="Enter" Command="{Binding ActivateCommand}" />
                         <KeyBinding Key="Return" Command="{Binding ActivateCommand}" />

@@ -27,4 +27,6 @@ public enum SoundId
     PawnPicked,
     PawnPlacedSelf,
     PawnPlacedOpponent,
+    WallPlacedSelf,
+    WallPlacedOpponent,
 }

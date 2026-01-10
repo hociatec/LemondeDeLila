@@ -189,6 +189,8 @@ public sealed class OptionsService : IOptionsService
         SoundPawnPickedPath = source.SoundPawnPickedPath,
         SoundPawnPlacedSelfPath = source.SoundPawnPlacedSelfPath,
         SoundPawnPlacedOpponentPath = source.SoundPawnPlacedOpponentPath,
+        SoundWallPlacedSelfPath = source.SoundWallPlacedSelfPath,
+        SoundWallPlacedOpponentPath = source.SoundWallPlacedOpponentPath,
         ChatEnabled = source.ChatEnabled,
         ConfirmChatExit = source.ConfirmChatExit,
         AdminChatModerationLoadLimit = source.AdminChatModerationLoadLimit,

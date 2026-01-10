@@ -248,6 +248,40 @@ export function hasPathToGoal(
   return false;
 }
 
+export function shortestDistanceToGoal(
+  meta: CorridorMetadata,
+  start: CorridorPos,
+  goalY: number,
+): number | null {
+  const size = meta?.size ?? 0;
+  if (!size) return null;
+  if (!isInside(size, start)) return null;
+
+  const q: Array<{ pos: CorridorPos; d: number }> = [{ pos: start, d: 0 }];
+  const seen = new Set<string>([key(start.x, start.y)]);
+  while (q.length) {
+    const cur = q.shift() as { pos: CorridorPos; d: number };
+    if (cur.pos.y === goalY) return cur.d;
+
+    for (const dir of [
+      { x: 1, y: 0 },
+      { x: -1, y: 0 },
+      { x: 0, y: 1 },
+      { x: 0, y: -1 },
+    ]) {
+      const nxt = { x: cur.pos.x + dir.x, y: cur.pos.y + dir.y };
+      if (!isInside(size, nxt)) continue;
+      if (isEdgeBlocked(meta, cur.pos, nxt)) continue;
+      const k = key(nxt.x, nxt.y);
+      if (seen.has(k)) continue;
+      seen.add(k);
+      q.push({ pos: nxt, d: cur.d + 1 });
+    }
+  }
+
+  return null;
+}
+
 export function wouldBlockAllPaths(
   state: GameStateEntity,
   meta: CorridorMetadata,

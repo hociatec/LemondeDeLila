@@ -30,6 +30,9 @@ public sealed partial class GridBoardViewModel : ObservableObject
     private bool _isEntityGrabbed;
     private bool _pawnPositionsPrimed;
     private readonly Dictionary<int, (int X, int Y)> _lastPawnPosByOwnerId = new();
+    private bool _wallLayoutPrimed;
+    private int _lastWallLayoutHash;
+    private bool _pendingSelfWallSound;
 
     public GridBoardViewModel(
         IDialogService dialogs,

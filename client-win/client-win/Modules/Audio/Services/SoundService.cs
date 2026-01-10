@@ -179,6 +179,16 @@ public sealed class SoundService : ISoundService, IDisposable
                 OverridePath: () => _options.Current.SoundPawnPlacedOpponentPath,
                 IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundSelect,
                 Volume: () => Clamp01(_options.Current.SoundSelectVolume / 100.0)),
+            [SoundId.WallPlacedSelf] = new SoundEntry(
+                DefaultRelativePath: Path.Combine("Assets", "Sounds", "wall_placed_self.wav"),
+                OverridePath: () => _options.Current.SoundWallPlacedSelfPath,
+                IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundSelect,
+                Volume: () => Clamp01(_options.Current.SoundSelectVolume / 100.0)),
+            [SoundId.WallPlacedOpponent] = new SoundEntry(
+                DefaultRelativePath: Path.Combine("Assets", "Sounds", "wall_placed_opponent.wav"),
+                OverridePath: () => _options.Current.SoundWallPlacedOpponentPath,
+                IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundSelect,
+                Volume: () => Clamp01(_options.Current.SoundSelectVolume / 100.0)),
         };
     }
 

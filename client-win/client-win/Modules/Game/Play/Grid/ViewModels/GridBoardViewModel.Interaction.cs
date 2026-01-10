@@ -10,6 +10,16 @@ namespace client_win.Modules.Game.Play.Grid.ViewModels;
 
 public sealed partial class GridBoardViewModel
 {
+    private static bool IsWallPlacementAction(GridAction action)
+    {
+        if (action == null) return false;
+        if (action.HasOrientation) return true;
+        var type = action.Type ?? string.Empty;
+        return type.Contains("wall", StringComparison.OrdinalIgnoreCase) ||
+               type.Contains("mur", StringComparison.OrdinalIgnoreCase) ||
+               HasUiKind(action.Payload, "wall");
+    }
+
     private async Task HandleGridCellActivatedAsync(GridCellViewModel cell)
     {
         var session = _getSession();
@@ -96,6 +106,10 @@ public sealed partial class GridBoardViewModel
             return;
         }
 
+        if (IsWallPlacementAction(chosen))
+        {
+            _pendingSelfWallSound = true;
+        }
         await SendGridActionAsync(chosen).ConfigureAwait(true);
         if (session.LastState != null)
         {
@@ -142,6 +156,10 @@ public sealed partial class GridBoardViewModel
             return;
         }
 
+        if (IsWallPlacementAction(chosen))
+        {
+            _pendingSelfWallSound = true;
+        }
         await SendGridActionAsync(chosen).ConfigureAwait(true);
         if (session.LastState != null)
         {

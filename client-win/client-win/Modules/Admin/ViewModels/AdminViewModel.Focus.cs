@@ -27,10 +27,6 @@ public sealed partial class AdminViewModel
         if (match != null)
         {
             SelectedItem = match;
-            if (_page == AdminPage.Root && !string.IsNullOrWhiteSpace(match.Category))
-            {
-                RootExpandedCategory = match.Category;
-            }
         }
 
         _focusStack.Pop();

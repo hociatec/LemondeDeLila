@@ -111,6 +111,8 @@ public sealed partial class AdminViewModel
         Items.Add(new AdminMenuItem("Pion : prendre (vous)", tag: "sounds.table.pawn.picked"));
         Items.Add(new AdminMenuItem("Pion : poser (vous)", tag: "sounds.table.pawn.placed.self"));
         Items.Add(new AdminMenuItem("Pion : poser (adversaire)", tag: "sounds.table.pawn.placed.opponent"));
+        Items.Add(new AdminMenuItem("Mur : poser (vous)", tag: "sounds.table.wall.placed.self"));
+        Items.Add(new AdminMenuItem("Mur : poser (adversaire)", tag: "sounds.table.wall.placed.opponent"));
         Items.Add(new AdminMenuItem("Invitation à une table envoyée", tag: "sounds.table.invite.sent"));
         Items.Add(new AdminMenuItem("Invitation à une table reçue", tag: "sounds.table.invite.received"));
         Items.Add(new AdminMenuItem("Tchat de table : message envoyé", tag: "sounds.table.chat.sent"));
@@ -184,7 +186,7 @@ public sealed partial class AdminViewModel
         {
             SoundId.ClientOpened or SoundId.ClientConnected or SoundId.ClientDisconnected => AdminPage.SoundsConnection,
             SoundId.MainMenuMusic or SoundId.TavernAmbience => AdminPage.SoundsAmbience,
-            SoundId.GameVictory or SoundId.GameDefeat or SoundId.RoomOpened or SoundId.RoomJoined or SoundId.RoomExit or SoundId.PawnPicked or SoundId.PawnPlacedSelf or SoundId.PawnPlacedOpponent => AdminPage.SoundsTable,
+            SoundId.GameVictory or SoundId.GameDefeat or SoundId.RoomOpened or SoundId.RoomJoined or SoundId.RoomExit or SoundId.PawnPicked or SoundId.PawnPlacedSelf or SoundId.PawnPlacedOpponent or SoundId.WallPlacedSelf or SoundId.WallPlacedOpponent => AdminPage.SoundsTable,
             SoundId.InvitationSent or SoundId.InvitationReceived => AdminPage.SoundsTable,
             SoundId.ChatMessageSent or SoundId.ChatMessageReceived => AdminPage.SoundsChat,
             SoundId.PrivateMessageSent or SoundId.PrivateMessageReceived => AdminPage.SoundsPrivateMessages,
@@ -219,6 +221,8 @@ public sealed partial class AdminViewModel
             SoundId.PawnPicked => ("Table", "Pion - Prendre (vous)", _options.Current.SoundPawnPickedPath),
             SoundId.PawnPlacedSelf => ("Table", "Pion - Poser (vous)", _options.Current.SoundPawnPlacedSelfPath),
             SoundId.PawnPlacedOpponent => ("Table", "Pion - Poser (adversaire)", _options.Current.SoundPawnPlacedOpponentPath),
+            SoundId.WallPlacedSelf => ("Table", "Mur - Poser (vous)", _options.Current.SoundWallPlacedSelfPath),
+            SoundId.WallPlacedOpponent => ("Table", "Mur - Poser (adversaire)", _options.Current.SoundWallPlacedOpponentPath),
             SoundId.AdminContactReceived => ("Contact admin", "Réception d'un contact admin", null),
             _ => ("Sons", sound.ToString(), null)
         };

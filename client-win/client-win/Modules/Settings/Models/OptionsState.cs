@@ -37,6 +37,8 @@ public sealed class OptionsState
     public string? SoundPawnPickedPath { get; set; }
     public string? SoundPawnPlacedSelfPath { get; set; }
     public string? SoundPawnPlacedOpponentPath { get; set; }
+    public string? SoundWallPlacedSelfPath { get; set; }
+    public string? SoundWallPlacedOpponentPath { get; set; }
 
     public bool ChatEnabled { get; set; } = true;
     public bool ConfirmChatExit { get; set; }

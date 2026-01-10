@@ -19,6 +19,9 @@ public sealed partial class GridBoardViewModel
             Status = string.Empty;
             _pawnPositionsPrimed = false;
             _lastPawnPosByOwnerId.Clear();
+            _wallLayoutPrimed = false;
+            _lastWallLayoutHash = 0;
+            _pendingSelfWallSound = false;
             return;
         }
 
@@ -30,6 +33,9 @@ public sealed partial class GridBoardViewModel
             Status = string.Empty;
             _pawnPositionsPrimed = false;
             _lastPawnPosByOwnerId.Clear();
+            _wallLayoutPrimed = false;
+            _lastWallLayoutHash = 0;
+            _pendingSelfWallSound = false;
             RefreshCanExecute();
             return;
         }
@@ -124,6 +130,7 @@ public sealed partial class GridBoardViewModel
 
         SyncGridStatus(state);
         ApplyGridRender(state);
+        TryPlayWallPlacedSound();
 
         BuildGridActionsIndex(state);
         _isEntityGrabbed = false;
@@ -148,6 +155,54 @@ public sealed partial class GridBoardViewModel
         }
 
         RefreshCanExecute();
+    }
+
+    private void TryPlayWallPlacedSound()
+    {
+        if (!IsVisible || Size <= 0 || Cells.Count == 0)
+        {
+            _wallLayoutPrimed = false;
+            _lastWallLayoutHash = 0;
+            _pendingSelfWallSound = false;
+            return;
+        }
+
+        unchecked
+        {
+            var hash = 17;
+            foreach (var cell in Cells)
+            {
+                hash = hash * 31 + (cell.WallNorth ? 1 : 0);
+                hash = hash * 31 + (cell.WallSouth ? 1 : 0);
+                hash = hash * 31 + (cell.WallWest ? 1 : 0);
+                hash = hash * 31 + (cell.WallEast ? 1 : 0);
+            }
+
+            if (!_wallLayoutPrimed)
+            {
+                _wallLayoutPrimed = true;
+                _lastWallLayoutHash = hash;
+                _pendingSelfWallSound = false;
+                return;
+            }
+
+            if (hash == _lastWallLayoutHash)
+            {
+                return;
+            }
+
+            _lastWallLayoutHash = hash;
+
+            if (_pendingSelfWallSound)
+            {
+                _pendingSelfWallSound = false;
+                _sounds.Play(SoundId.WallPlacedSelf);
+            }
+            else
+            {
+                _sounds.Play(SoundId.WallPlacedOpponent);
+            }
+        }
     }
 
     private void TryPlayPawnPlaceSounds(Dictionary<string, List<GridEntity>> entitiesByKey)
