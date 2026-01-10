@@ -15,6 +15,11 @@ public partial class ChatView : UserControl
     private ScrollViewer? _historyScroll;
     private bool _stickToBottom = true;
 
+    private double? _pendingRestoreHistoryOffset;
+    private int? _pendingRestoreCaretIndex;
+    private int? _pendingRestoreSelectionStart;
+    private int? _pendingRestoreSelectionLength;
+
     public ChatView()
     {
         InitializeComponent();
@@ -71,6 +76,50 @@ public partial class ChatView : UserControl
 
     private void OnMessagesChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
+        // If the user is currently reading the history (scrolled up), do NOT move their focus/caret.
+        // Updating the bound Text can cause WPF to reset the scroll position; we restore it best-effort.
+        if (!_stickToBottom && HistoryBox?.IsKeyboardFocusWithin == true && _historyScroll != null)
+        {
+            _pendingRestoreHistoryOffset = _historyScroll.VerticalOffset;
+            _pendingRestoreCaretIndex = HistoryBox.CaretIndex;
+            _pendingRestoreSelectionStart = HistoryBox.SelectionStart;
+            _pendingRestoreSelectionLength = HistoryBox.SelectionLength;
+
+            Dispatcher.BeginInvoke(() =>
+            {
+                if (_stickToBottom || HistoryBox?.IsKeyboardFocusWithin != true || _historyScroll == null)
+                {
+                    ClearPendingHistoryRestore();
+                    return;
+                }
+
+                try
+                {
+                    var textLen = HistoryBox.Text?.Length ?? 0;
+                    var caret = Math.Clamp(_pendingRestoreCaretIndex ?? 0, 0, textLen);
+                    var selStart = Math.Clamp(_pendingRestoreSelectionStart ?? caret, 0, textLen);
+                    var selLen = Math.Clamp(_pendingRestoreSelectionLength ?? 0, 0, Math.Max(0, textLen - selStart));
+
+                    HistoryBox.SelectionStart = selStart;
+                    HistoryBox.SelectionLength = selLen;
+                    HistoryBox.CaretIndex = caret;
+
+                    var offset = _pendingRestoreHistoryOffset ?? 0;
+                    _historyScroll.ScrollToVerticalOffset(offset);
+                }
+                catch
+                {
+                    // best-effort
+                }
+                finally
+                {
+                    ClearPendingHistoryRestore();
+                }
+            }, System.Windows.Threading.DispatcherPriority.Background);
+
+            return;
+        }
+
         ScrollHistoryToEnd(force: false);
     }
 
@@ -95,6 +144,14 @@ public partial class ChatView : UserControl
         {
             // Best-effort: never crash the UI for a sound UX enhancement.
         }
+    }
+
+    private void ClearPendingHistoryRestore()
+    {
+        _pendingRestoreHistoryOffset = null;
+        _pendingRestoreCaretIndex = null;
+        _pendingRestoreSelectionStart = null;
+        _pendingRestoreSelectionLength = null;
     }
 
     private async void OnHistoryKeyDown(object sender, KeyEventArgs e)
