@@ -7,6 +7,27 @@ namespace client_win.Modules.Game.Play.GamePlay.Views;
 
 public partial class GamePlayView
 {
+    private bool IsFocusWithinChoices()
+    {
+        if (ChoicesList == null)
+        {
+            return false;
+        }
+
+        var focused = Keyboard.FocusedElement as DependencyObject;
+        while (focused != null)
+        {
+            if (ReferenceEquals(focused, ChoicesList))
+            {
+                return true;
+            }
+
+            focused = System.Windows.Media.VisualTreeHelper.GetParent(focused);
+        }
+
+        return false;
+    }
+
     private bool IsFocusWithinGrid()
     {
         if (GridBoard == null)
@@ -50,6 +71,15 @@ public partial class GamePlayView
         }
 
         if (IsTextInputFocused())
+        {
+            return;
+        }
+
+        // Liste de choix (pending): laisser Entrée valider le choix localement (OnChoicesKeyDown),
+        // au lieu d'envoyer "ENTER" au serveur (qui ne résout pas un pending choose_*).
+        if (ChoicesList.Visibility == Visibility.Visible &&
+            IsFocusWithinChoices() &&
+            (e.Key == Key.Enter || e.Key == Key.Return))
         {
             return;
         }
