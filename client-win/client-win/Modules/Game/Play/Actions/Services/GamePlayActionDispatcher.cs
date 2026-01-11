@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using client_win.Modules.Game.Play.Actions.Dtos;
@@ -39,6 +40,17 @@ internal sealed class GamePlayActionDispatcher
 
         var pendingType = (state.Pending.Type ?? string.Empty).Trim();
 
+        // Cas spécial: "choose_pawn" (ex: petits chevaux).
+        // On construit l'action depuis `pending.data.moves`, aligné sur `pending.choices`.
+        if (string.Equals(pendingType, "choose_pawn", StringComparison.OrdinalIgnoreCase))
+        {
+            if (TryBuildMovePawnFromPendingData(state.Pending, index, available, out var movePawnAction))
+            {
+                action = movePawnAction;
+                return true;
+            }
+        }
+
         // Cas spécial: confirmation d'échange (Accepter/Refuser).
         // Le backend expose généralement 2 choix texte, et 2 actions correspondantes (exchange_accept/exchange_refuse).
         if (string.Equals(pendingType, "exchange", StringComparison.OrdinalIgnoreCase))
@@ -74,6 +86,93 @@ internal sealed class GamePlayActionDispatcher
         return true;
     }
 
+    private static bool TryBuildMovePawnFromPendingData(
+        GamePendingDto pending,
+        int choiceIndex,
+        List<GameAvailableActionDto> available,
+        out GameClientAction? action)
+    {
+        action = null;
+
+        if (choiceIndex < 0)
+        {
+            return false;
+        }
+
+        if (pending.Data.ValueKind != JsonValueKind.Object)
+        {
+            return false;
+        }
+
+        if (!pending.Data.TryGetProperty("moves", out var moves) || moves.ValueKind != JsonValueKind.Array)
+        {
+            return false;
+        }
+
+        if (choiceIndex >= moves.GetArrayLength())
+        {
+            return false;
+        }
+
+        var move = moves[choiceIndex];
+        if (move.ValueKind != JsonValueKind.Object)
+        {
+            return false;
+        }
+
+        if (!TryGetInt(move, "pawnIndex", out var pawnIndex))
+        {
+            return false;
+        }
+
+        if (!TryGetInt(move, "targetProgress", out var targetProgress))
+        {
+            return false;
+        }
+
+        var type = available
+                       .FirstOrDefault(a => string.Equals(a.Type, "move_pawn", StringComparison.OrdinalIgnoreCase))
+                       ?.Type
+                   ?? "move_pawn";
+
+        action = new GameClientAction(type: type, payload: new { pawnIndex, targetProgress });
+        return true;
+    }
+
+    private static bool TryGetInt(JsonElement obj, string prop, out int value)
+    {
+        value = 0;
+        if (!obj.TryGetProperty(prop, out var el))
+        {
+            return false;
+        }
+
+        if (el.ValueKind == JsonValueKind.Number)
+        {
+            if (el.TryGetInt32(out value))
+            {
+                return true;
+            }
+
+            if (el.TryGetDouble(out var d) && double.IsFinite(d))
+            {
+                value = (int)Math.Round(d);
+                return true;
+            }
+        }
+
+        if (el.ValueKind == JsonValueKind.String)
+        {
+            var s = el.GetString();
+            if (int.TryParse(s, out value))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private static List<GameAvailableActionDto> FilterChoiceActions(
         List<GameAvailableActionDto> actions,
         string pendingType)
@@ -100,7 +199,8 @@ internal sealed class GamePlayActionDispatcher
         return actions
             .Where(a =>
                 !string.Equals(a.Type, "roll", StringComparison.OrdinalIgnoreCase) &&
-                !string.Equals(a.Type, "ROLL_DICE", StringComparison.OrdinalIgnoreCase))
+                !string.Equals(a.Type, "ROLL_DICE", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(a.Type, "roll_dice", StringComparison.OrdinalIgnoreCase))
             .ToList();
     }
 
