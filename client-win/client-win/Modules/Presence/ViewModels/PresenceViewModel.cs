@@ -152,6 +152,13 @@ public sealed class PresenceViewModel : ObservableObject
         RebuildPlayers();
     }
 
+    public void RequestFocusFirstItem()
+    {
+        _ = _dispatcher.BeginInvoke(
+            DispatcherPriority.ApplicationIdle,
+            new Action(() => FocusFirstItemRequested?.Invoke()));
+    }
+
     public void HandleEscape()
     {
         if (_page == PresencePage.PlayerActions)

@@ -1,0 +1,139 @@
+import { Injectable } from '@nestjs/common';
+import type {
+  GameSingleActionDto,
+  GameStateWithActions,
+} from '../../../engine/dto/game-action.dto';
+import type { GameStateEntity } from '../../../core/entities/game-state.entity';
+import { BasePresenterService } from '../../../engine/abstract/base-presenter.service';
+import { GridCellActionsService } from '../../../modules/grid/services/grid-cell-actions.service';
+import type { MorpionMetadata } from './model/morpion.model';
+
+@Injectable()
+export class MorpionPresenter extends BasePresenterService {
+  constructor(private readonly gridCellActions: GridCellActionsService) {
+    super();
+  }
+
+  exposeStateForUser(state: GameStateEntity, userId: number): GameStateWithActions {
+    const meta = (state.metadata ?? {}) as MorpionMetadata;
+    const exposed = this.buildExposedStateForUser(state, userId);
+
+    if (!this.isStarted(state)) {
+      return exposed;
+    }
+
+    const size = meta.size ?? 3;
+    const board = Array.isArray(meta.board) ? meta.board : [];
+    const players = state.players ?? [];
+    const player0 = players[0]?.id ?? 1;
+    const player1 = players[1]?.id ?? 2;
+
+    const entities: Array<any> = [];
+    for (let y = 0; y < size; y++) {
+      for (let x = 0; x < size; x++) {
+        const idx = y * size + x;
+        const ownerId = board[idx] ?? 0;
+        if (!ownerId) continue;
+        const glyph =
+          ownerId === player0 ? 'X' : ownerId === player1 ? 'O' : '@';
+        entities.push({
+          id: `mark:${idx}`,
+          type: 'mark',
+          ownerId,
+          x,
+          y,
+          glyph,
+        });
+      }
+    }
+
+    const cellActions = this.gridCellActions.buildFromActions(
+      exposed.actions ?? [],
+      () => 'Jouer ici',
+    );
+
+    const currentPlayerId = state.turn?.currentPlayerId ?? null;
+    const winnerId = (meta as any)?.winnerId ?? null;
+    const draw = Boolean((meta as any)?.draw);
+
+    const statusLines = [
+      winnerId
+        ? `Gagnant : ${players.find((p) => p?.id === winnerId)?.username ?? `#${winnerId}`}`
+        : draw
+          ? 'Match nul.'
+          : currentPlayerId === userId
+            ? 'À vous de jouer.'
+            : "Tour de l'adversaire.",
+    ];
+
+    return {
+      ...exposed,
+      extras: {
+        ...(exposed.extras ?? {}),
+        grid: {
+          kind: 'grid',
+          size,
+          entities,
+          cellActions,
+          statusLines,
+        },
+      },
+      board: {
+        tiles: Array.from({ length: size * size }, (_, i) => ({
+          x: i % size,
+          y: Math.floor(i / size),
+        })),
+      },
+    } as any;
+  }
+
+  protected buildCatalog(): { phases: string[]; victory: any } {
+    return { phases: ['play'], victory: { type: 'line_3' } };
+  }
+
+  protected getAvailableActionsForUser(
+    state: GameStateEntity,
+    userId: number,
+  ): GameSingleActionDto[] {
+    if (!this.isStarted(state)) return [];
+    if (state.turn?.currentPlayerId !== userId) return [];
+    const meta = (state.metadata ?? {}) as MorpionMetadata;
+    const size = meta.size ?? 3;
+    const board = Array.isArray(meta.board) ? meta.board : [];
+
+    const out: GameSingleActionDto[] = [];
+    for (let y = 0; y < size; y++) {
+      for (let x = 0; x < size; x++) {
+        const idx = y * size + x;
+        if ((board[idx] ?? 0) !== 0) continue;
+        out.push({
+          type: 'morpion_play',
+          payload: { x, y, _ui: { key: 'ENTER', kind: 'play' } },
+        });
+      }
+    }
+    return out;
+  }
+
+  protected buildPendingState(): any {
+    return null;
+  }
+
+  protected buildExtras(
+    state: GameStateEntity,
+    _metadata: MorpionMetadata,
+    _currentPlayerId: number | null,
+  ): Record<string, unknown> {
+    return this.getBaseExtras(state);
+  }
+
+  protected buildExtrasForUser(
+    state: GameStateEntity,
+    _metadata: MorpionMetadata,
+    _userId: number,
+    _currentPlayerId: number | null,
+  ): Record<string, unknown> {
+    return this.getBaseExtras(state);
+  }
+}
+

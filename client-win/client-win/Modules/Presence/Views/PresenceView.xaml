@@ -5,6 +5,8 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              d:DesignHeight="720" d:DesignWidth="1280"
+             Focusable="True"
+             IsTabStop="True"
              KeyDown="OnKeyDown"
              Loaded="OnLoaded">
     <UserControl.Resources>
@@ -114,4 +116,3 @@
         </Border>
     </Grid>
 </UserControl>
-

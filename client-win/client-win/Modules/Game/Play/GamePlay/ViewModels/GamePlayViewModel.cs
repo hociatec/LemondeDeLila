@@ -1,5 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading;
@@ -40,6 +41,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
     private readonly GamePlayDiceSoundPlayer _diceSounds;
     private readonly GamePlayChoicesViewModel _choices;
     private readonly PropertyChangedEventHandler _choicesPropertyChangedHandler;
+    private readonly NotifyCollectionChangedEventHandler _pendingChoicesChangedHandler;
     private readonly GamePlayShortcutsViewModel _shortcuts;
     private readonly GamePlayRealtimeController _realtime;
     private readonly GamePlayConnectionController _connection;
@@ -59,7 +61,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
 
     public GridBoardViewModel Grid { get; }
 
-    public bool ShowLegacyActionsPanel => !Grid.IsVisible;
+    public bool ShowLegacyActionsPanel => !Grid.IsVisible || (PendingChoices?.Count ?? 0) > 0;
 
     public GamePlayViewModel(
         string gameId,
@@ -83,6 +85,8 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
             }
         };
         _choices.PropertyChanged += _choicesPropertyChangedHandler;
+        _pendingChoicesChangedHandler = (_, __) => OnPropertyChanged(nameof(ShowLegacyActionsPanel));
+        _choices.PendingChoices.CollectionChanged += _pendingChoicesChangedHandler;
 
         _presenter = new GamePlayStatePresenter(_projector);
         _announcementRouter = new GamePlayAnnouncementRouter();
@@ -326,6 +330,15 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
 
 	    public async ValueTask DisposeAsync()
 	    {
+            try
+            {
+                _choices.PendingChoices.CollectionChanged -= _pendingChoicesChangedHandler;
+            }
+            catch
+            {
+                // ignore
+            }
+
 	        _choices.PropertyChanged -= _choicesPropertyChangedHandler;
 	        await _connection.DisposeAsync().ConfigureAwait(false);
 	    }

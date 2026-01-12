@@ -59,6 +59,11 @@ public partial class GamePlayView
 
     private async void OnRootPreviewKeyDown(object sender, KeyEventArgs e)
     {
+        if (IsTextInputFocused())
+        {
+            return;
+        }
+
         HandleGridArrowKey(e);
         if (e.Handled)
         {
@@ -66,11 +71,6 @@ public partial class GamePlayView
         }
 
         if (DataContext is not GamePlayViewModel vm)
-        {
-            return;
-        }
-
-        if (IsTextInputFocused())
         {
             return;
         }
@@ -88,6 +88,20 @@ public partial class GamePlayView
         // Sinon Corridor (prendre le pion / déplacement / pose de mur) devient inutilisable.
         if (vm.Grid.IsVisible && IsFocusWithinGrid() && (e.Key == Key.Enter || e.Key == Key.Return || e.Key == Key.Space))
         {
+            return;
+        }
+
+        // Empêche la navigation directionnelle WPF (flèches) de "sortir" du jeu et de casser l'interaction
+        // après un Tab/Maj+Tab : on garde/ramène le focus sur une ancre stable dans la zone de jeu.
+        if (e.Key is Key.Left or Key.Right or Key.Up or Key.Down)
+        {
+            if (ChoicesList.Visibility == Visibility.Visible && IsFocusWithinChoices())
+            {
+                return;
+            }
+
+            e.Handled = true;
+            ForceFocusGameZone();
             return;
         }
 

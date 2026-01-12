@@ -60,6 +60,7 @@ public sealed class PresenceLauncher : IPresenceLauncher
             if (_view.DataContext is PresenceViewModel vm)
             {
                 vm.ResetForOpen();
+                vm.RequestFocusFirstItem();
             }
 
             _navigation.Show(_view);
@@ -91,6 +92,7 @@ public sealed class PresenceLauncher : IPresenceLauncher
                         if (returnView is PresenceView presence && presence.DataContext is PresenceViewModel vmPresence)
                         {
                             vmPresence.ResetForOpen();
+                            vmPresence.RequestFocusFirstItem();
                         }
                         _navigation.Show(returnView);
                         _ = Application.Current.Dispatcher.BeginInvoke(
