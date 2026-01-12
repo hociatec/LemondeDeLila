@@ -39,6 +39,7 @@ using client_win.Modules.Game.Play.Session.Services;
 using client_win.Modules.Game.Room.Services;
 using client_win.Modules.Game.Shell.Services;
 using client_win.Modules.Updates;
+using client_win.Modules.Updates.Services;
 using client_win.Modules.Audio.Services;
 
 namespace client_win.Modules.Config;
@@ -90,6 +91,9 @@ public static class AppBootstrapper
         {
             LoggingConfiguration.ConfigureLogger(appLogsPath, mirrorLogsPath: legacyLogsPath);
         }
+
+        // Best-effort hygiene: ClickOnce can duplicate desktop shortcuts on updates ("(1)/(2)").
+        DesktopShortcutDeduplicator.DeduplicateBestEffort();
 
         // 2. Détecter environnement et valider exigences de production
         Log.Information("Environnement détecté: {Environment}", environment);

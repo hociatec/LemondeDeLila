@@ -3,6 +3,7 @@ import { GameCoreService } from '../../../../core/services/game-core.service';
 import { DeckPoolService } from '../../../../modules/cards/services/deck-pool.service';
 import { DeckManagerService } from '../../../../modules/cards/services/deck-manager.service';
 import { BoardMovementService } from '../../../../modules/board/services/board-movement.service';
+import { BoardPayloadService } from '../../../../modules/board/services/board-payload.service';
 import { TileEffectRegistryService } from '../../../../modules/effects/services/tile-effect-registry.service';
 import { StandEffectRegistryService } from '../../../../modules/effects/services/stand-effect-registry.service';
 import { TurnActionsService } from '../../../../modules/turn/services/turn-actions.service';
@@ -36,6 +37,7 @@ export async function createPanierExpressTestingModule() {
       DeckPoolService,
       DeckManagerService,
       BoardMovementService,
+      BoardPayloadService,
       TileEffectRegistryService,
       StandEffectRegistryService,
       TurnActionsService,

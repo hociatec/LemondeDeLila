@@ -9,6 +9,8 @@ import { PanierExpressDeckService } from './panier-express-deck.service';
 
 @Injectable()
 export class PanierExpressDrawService {
+  private static readonly MAX_INVENTORY = 5;
+
   constructor(
     private readonly setup: PanierExpressSetupService,
     private readonly core: GameCoreService,
@@ -46,14 +48,26 @@ export class PanierExpressDrawService {
     }
 
     const { card, metadata } = draw;
+    let discarded: 'duplicate' | 'full' | null = null;
+    let kept = false;
     const players = (state.players ?? []).map((player) => {
       if (player.id !== playerId) return player;
       const shoppingList = this.utils.toStringArray(player.shoppingList);
       const basket = this.utils.toStringArray(player.basket);
       const inventory = this.utils.toStringArray(player.inventory);
       if (shoppingList.includes(card) && !basket.includes(card)) {
+        kept = true;
         return { ...player, basket: [...basket, card], inventory };
       }
+      if (inventory.includes(card)) {
+        discarded = 'duplicate';
+        return { ...player, inventory, basket };
+      }
+      if (inventory.length >= PanierExpressDrawService.MAX_INVENTORY) {
+        discarded = 'full';
+        return { ...player, inventory, basket };
+      }
+      kept = true;
       return { ...player, inventory: [...inventory, card], basket };
     });
 
@@ -64,20 +78,31 @@ export class PanierExpressDrawService {
           number,
           string | null
         >),
-        [playerId]: card,
+        [playerId]: kept ? card : null,
       },
+      discards:
+        !kept && card
+          ? {
+              ...(((metadata as any)?.discards ?? {}) as any),
+              courses: [
+                ...((((metadata as any)?.discards?.courses ?? []) as any[]) ?? []),
+                card,
+              ],
+            }
+          : ((metadata as any)?.discards ?? { courses: [] }),
     };
     const nextState: GameStateEntity = {
       ...state,
       players,
       metadata: nextMeta as any,
     };
-    const standLabel = this.resolveStandLabel(meta, playerId, resolvedStandId);
     const courseLabel = this.utils.formatCourseLabel(card);
-    const logged = this.core.appendLog(
-      nextState,
-      `[Panier Express] ${this.utils.playerName(state, playerId)} pioche "${courseLabel}" au stand ${standLabel}`,
-    );
+    const message = discarded
+      ? discarded === 'duplicate'
+        ? `[Panier Express] ${this.utils.playerName(state, playerId)} pioche "${courseLabel}" mais l'a déjà et la défausse.`
+        : `[Panier Express] ${this.utils.playerName(state, playerId)} pioche "${courseLabel}" mais son inventaire est plein (${PanierExpressDrawService.MAX_INVENTORY}) et la défausse.`
+      : `[Panier Express] ${this.utils.playerName(state, playerId)} pioche "${courseLabel}".`;
+    const logged = this.core.appendLog(nextState, message);
 
     const playerView = players.find((p) => p.id === playerId);
     playingLog('panier.draw', {
@@ -91,6 +116,7 @@ export class PanierExpressDrawService {
       shoppingList: playerView?.shoppingList ?? [],
       basket: playerView?.basket ?? [],
       inventory: playerView?.inventory ?? [],
+      discarded,
     });
 
     return logged;
@@ -132,46 +158,5 @@ export class PanierExpressDrawService {
     const pos = meta.positions?.[playerId] ?? 0;
     const tile = meta.tiles?.[pos];
     return tile?.type === 'stand' ? tile.standId : undefined;
-  }
-
-  private resolveStandLabel(
-    meta: PanierExpressMetadata,
-    playerId: number,
-    explicitStand?: string,
-  ): string {
-    if (explicitStand) {
-      return this.formatStandId(explicitStand);
-    }
-    const pos = meta.positions?.[playerId] ?? 0;
-    const tile = meta.tiles?.[pos];
-    if (tile?.type === 'stand') {
-      return this.formatStandId(tile.standId);
-    }
-    playingLog('panier.draw.warn', {
-      roomId: (meta as any)?.roomId ?? null,
-      gameType: (meta as any)?.gameType ?? null,
-      userId: playerId,
-      type: 'draw_warn',
-      playerId,
-      reason: 'draw-outside-stand',
-      position: pos,
-      tileType: tile?.type ?? null,
-      tileId: tile?.id ?? null,
-    });
-    return 'hors-stand';
-  }
-
-  private formatStandId(standId: string | undefined): string {
-    const raw = (standId ?? 'inconnu').trim();
-    if (!raw) return 'inconnu';
-    const tokenMap: Record<string, string> = {
-      legumes: 'l\u00e9gumes',
-      ete: '\u00e9t\u00e9',
-      maraicher: 'mara\u00eecher',
-    };
-    return raw
-      .split('-')
-      .map((token) => tokenMap[token] ?? token)
-      .join('-');
   }
 }

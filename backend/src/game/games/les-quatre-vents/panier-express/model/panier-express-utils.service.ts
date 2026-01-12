@@ -19,11 +19,13 @@ export class PanierExpressUtils {
     echalote: 'échalote',
     epinard: 'épinard',
     feve: 'fève',
+    'jeune-pousse-d-ortie': "jeune pousse d'ortie",
     mais: 'maïs',
     mure: 'mûre',
     nefle: 'nèfle',
     patisson: 'pâtisson',
     peche: 'pêche',
+    'pois-casse': 'pois cassés',
   };
 
   playerName(state: GameStateEntity, playerId: number): string {

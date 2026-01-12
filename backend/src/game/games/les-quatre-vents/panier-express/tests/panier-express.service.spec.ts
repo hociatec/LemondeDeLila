@@ -65,13 +65,6 @@ describe('PanierExpressService', () => {
     expect(typeof board.positions).toBe('object');
     expect(typeof board.laps).toBe('object');
     expect(typeof board.turns).toBe('object');
-
-    // Le raccourci P devient générique côté client (pas spécifique Panier Express).
-    expect(
-      (extras.shortcuts ?? []).some(
-        (s: any) => String(s?.key ?? '') === 'pressed P',
-      ),
-    ).toBe(true);
   });
 
   it('avancer sur un stand ajoute une carte cohérente', () => {

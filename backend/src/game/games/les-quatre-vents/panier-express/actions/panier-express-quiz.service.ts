@@ -42,7 +42,7 @@ export class PanierExpressQuizService {
       'quizzes',
       metaRng.rng,
     );
-    const metadata = {
+    let metadata: any = {
       ...metaRng.getMeta(),
       decks: pool as PanierExpressDeckPool,
     };
@@ -55,9 +55,27 @@ export class PanierExpressQuizService {
     }
 
     const question = sanitizeText(quiz.question);
-    const choices = Array.isArray(quiz.choices)
-      ? quiz.choices.map((choice) => sanitizeText(String(choice)))
-      : [];
+    const answer = sanitizeText(String(quiz.answer ?? '')).trim();
+    const rawChoices = Array.isArray(quiz.choices) ? quiz.choices : [];
+    const unique = new Set<string>();
+    const normalizedChoices: string[] = [];
+    for (const choice of rawChoices) {
+      const text = sanitizeText(String(choice)).trim();
+      const key = text.toLowerCase();
+      if (!text || unique.has(key)) continue;
+      unique.add(key);
+      normalizedChoices.push(text);
+    }
+    if (answer) {
+      const key = answer.toLowerCase();
+      if (!unique.has(key)) {
+        unique.add(key);
+        normalizedChoices.push(answer);
+      }
+    }
+    const shuffled = this.random.shuffle(metadata, normalizedChoices);
+    metadata = shuffled.meta;
+    const choices = shuffled.values;
 
     const currentQuizState: QuizState = metadata.quiz ?? { pending: {} };
     const nextQuizState = this.quizRunner.setPending(
@@ -66,7 +84,7 @@ export class PanierExpressQuizService {
       {
         id: quiz.id ?? `quiz-${playerId}`,
         question,
-        answer: quiz.answer,
+        answer,
         choices,
       },
     );

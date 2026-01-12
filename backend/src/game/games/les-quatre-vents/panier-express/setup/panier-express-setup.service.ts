@@ -26,6 +26,9 @@ import { GameContentLoaderService } from '../../../../engine/services/game-conte
 
 @Injectable()
 export class PanierExpressSetupService {
+  private static readonly MAX_STAND_ITEMS = 3;
+  private static readonly MAX_SHOPPING_LIST_ITEMS = 3;
+
   constructor(
     private readonly decks: DeckManagerService,
     private readonly deckPool: DeckPoolService,
@@ -160,6 +163,7 @@ export class PanierExpressSetupService {
             .map((v) => String(v))
             .map((v) => v.trim())
             .filter((v) => v.length > 0)
+            .slice(0, PanierExpressSetupService.MAX_STAND_ITEMS)
         : [];
       out[id] = items;
     });
@@ -243,6 +247,7 @@ export class PanierExpressSetupService {
               .map((v) => String(v))
               .map((v) => v.trim())
               .filter((v) => v.length > 0)
+              .slice(0, PanierExpressSetupService.MAX_SHOPPING_LIST_ITEMS)
           : [],
       )
       .filter((entry) => entry.length > 0);

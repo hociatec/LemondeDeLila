@@ -697,7 +697,7 @@ export class PanierExpressService extends AbstractGameService {
     const verb = roll < 0 ? 'recule' : 'avance';
     return this.core.appendLog(
       nextState,
-      `${this.utils.playerName(state, playerId)} ${verb} de ${abs} ${plural} sur ${this.tileLabel(tile)}`,
+      `${this.utils.playerName(state, playerId)} ${verb} de ${abs} ${plural}.`,
     );
   }
 
@@ -782,9 +782,7 @@ export class PanierExpressService extends AbstractGameService {
   }
 
   private registerTileHandlers(): void {
-    this.tileRegistry.register('rest', (s) =>
-      this.core.appendLog(s, `[Panier Express] Repos : rien ne se passe.`),
-    );
+    this.tileRegistry.register('rest', (s) => s);
     this.tileRegistry.register('stand', (s, ctx) =>
       this.standEffects.applyStand('stand', s, {
         playerId: ctx.playerId,
@@ -1697,7 +1695,7 @@ export class PanierExpressService extends AbstractGameService {
         if (!candidates.length) {
           next = this.core.appendLog(
             next,
-            `[Panier Express] Conseil de voisinage : aucune carte correspondante trouvée.`,
+            `[Panier Express] Conseil de voisinage : aucun autre joueur n'a de carte utile pour votre liste.`,
           );
           next = this.appendActionLog(next, playerId, 'event', {
             event,
@@ -3212,7 +3210,13 @@ export class PanierExpressService extends AbstractGameService {
     };
     next = this.core.appendLog(
       next,
-      `[Panier Express] ${this.utils.playerName(state, playerId)} répond au quiz (${correct ? 'réussite' : 'échec'})`,
+      `[Panier Express] ${this.utils.playerName(state, playerId)} répond au quiz.`,
+    );
+    next = this.core.appendLog(
+      next,
+      correct
+        ? `[Panier Express] Bonne réponse !`
+        : `[Panier Express] Mauvaise réponse.`,
     );
     next = this.appendActionLog(next, playerId, 'answer_quiz', { correct });
     if (correct) {
@@ -3472,11 +3476,12 @@ export class PanierExpressService extends AbstractGameService {
     if (!Array.isArray(actions)) return [];
     const pending = meta.quiz?.pending?.[playerId];
     const choices = Array.isArray(pending?.choices) ? pending?.choices : [];
-    if (!pending || !choices.length) return actions;
-    const answer = choices[0];
+    const answer = typeof pending?.answer === 'string' ? pending.answer : null;
+    if (!pending || (!choices.length && !answer)) return actions;
+    const effectiveAnswer = answer ?? choices[0];
     return actions.map((a) => {
       if (!a || (a.type || '').toLowerCase() !== 'answer_quiz') return a;
-      return { ...a, payload: { ...(a.payload ?? {}), answer } };
+      return { ...a, payload: { ...(a.payload ?? {}), answer: effectiveAnswer } };
     });
   }
 
