@@ -116,7 +116,7 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
     }
 
     // Heuristique simple :
-    // - si on peut jouer, jouer la valeur jouable avec le plus de duplicats (défausse max)
+    // - si on peut jouer, jouer une carte jouable (priorité à la valeur avec le plus de duplicats)
     // - sinon piocher si possible, sinon sortir
     let best: { value: LamaCardValue; count: number } | null = null;
     for (const [value, count] of counts.entries()) {
@@ -127,7 +127,7 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
     }
 
     if (best) {
-      return [{ type: 'lama_play', payload: { value: best.value, count: best.count } }];
+      return [{ type: 'lama_play', payload: { value: best.value, count: 1 } }];
     }
 
     if ((meta.deck ?? []).length > 0) {
@@ -310,9 +310,8 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
     action: GameSingleActionDto,
   ): GameStateEntity {
     const rawValue = Number((action.payload as any)?.value);
-    const rawCount = Number((action.payload as any)?.count);
     const value = (rawValue >= 1 && rawValue <= 7 ? rawValue : 0) as LamaCardValue;
-    const count = Math.max(1, Math.floor(rawCount || 1));
+    const count = 1;
 
     const discard = Array.isArray(meta.discard) ? [...meta.discard] : [];
     const top = discard.length ? (discard[discard.length - 1] as LamaCardValue) : null;
@@ -345,7 +344,7 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
     const players = Array.isArray(state.players) ? state.players : [];
     const name = players.find((p) => p?.id === actorId)?.username ?? `#${actorId}`;
     const log = Array.isArray(state.log) ? [...state.log] : [];
-    log.push({ message: `${name} joue ${lamaCardLabel(value)} ×${count}.` });
+    log.push({ message: `${name} joue ${lamaCardLabel(value)}.` });
 
     const nextMeta: LamaMetadata = { ...meta, handsByPlayerId, discard };
 

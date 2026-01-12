@@ -137,4 +137,44 @@ describe('LamaService', () => {
     expect(String(exposed?.pending?.label ?? '')).toContain('Défausse: 6');
     expect(String(exposed?.pending?.label ?? '')).toContain('LAMA');
   });
+
+  it('offers only single-card plays in pending choices', async () => {
+    const service = new LamaService(
+      { register: () => {} } as any,
+      new RandomService(),
+      new LamaPresenter(),
+    );
+
+    const state: any = {
+      status: 'started',
+      phase: 'round',
+      round: 1,
+      turnIndex: 0,
+      lastRoll: null,
+      log: [],
+      players: [
+        { id: 1, username: 'A' },
+        { id: 2, username: 'B' },
+      ],
+      turn: { currentPlayerId: 1, direction: 1 },
+      pending: null,
+      metadata: {
+        roundNumber: 1,
+        roundStarterIndex: 0,
+        deck: [],
+        discard: [1],
+        handsByPlayerId: { '1': [1, 1, 1], '2': [] },
+        droppedOutByPlayerId: { '1': false, '2': false },
+        scoresByPlayerId: { '1': 0, '2': 0 },
+        step: 'turn_choice',
+        pendingReturnQueue: [],
+        pendingReturnPlayerId: null,
+        winnerId: null,
+      },
+    };
+
+    const exposed: any = service.exposeStateForUser(state, 1);
+    const choices = exposed?.pending?.choices ?? [];
+    expect(choices.some((c: any) => String(c).includes('×'))).toBe(false);
+  });
 });

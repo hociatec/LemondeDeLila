@@ -56,10 +56,10 @@ export class LamaPresenter extends BasePresenterService {
 
     for (const [value, count] of [...counts.entries()].sort((a, b) => a[0] - b[0])) {
       if (!playable.has(value)) continue;
-      for (let c = 1; c <= count; c += 1) {
+      if (count > 0) {
         out.push({
           type: 'lama_play',
-          payload: { value, count: c },
+          payload: { value, count: 1 },
         });
       }
     }
@@ -121,8 +121,8 @@ export class LamaPresenter extends BasePresenterService {
     const choices: string[] = [];
     for (const [value, count] of [...counts.entries()].sort((a, b) => a[0] - b[0])) {
       if (!playable.has(value)) continue;
-      for (let c = 1; c <= count; c += 1) {
-        choices.push(`Jouer ${lamaCardLabel(value)} ×${c}`);
+      if (count > 0) {
+        choices.push(`Jouer ${lamaCardLabel(value)}`);
       }
     }
     if ((metadata.deck ?? []).length > 0) {
