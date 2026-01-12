@@ -20,6 +20,7 @@ internal sealed class GamePlayRealtimeController
     private readonly GamePlayStatePresenter _presenter;
     private readonly GamePlayAnnouncementRouter _announcementRouter;
     private readonly GamePlayEndgameSoundPlayer _endgameSounds;
+    private readonly GamePlayDiceSoundPlayer _diceSounds;
     private readonly GamePlayChoicesViewModel _choices;
     private readonly GridBoardViewModel _grid;
     private readonly Action<GameStateDto> _syncShortcuts;
@@ -47,6 +48,7 @@ internal sealed class GamePlayRealtimeController
         GamePlayStatePresenter presenter,
         GamePlayAnnouncementRouter announcementRouter,
         GamePlayEndgameSoundPlayer endgameSounds,
+        GamePlayDiceSoundPlayer diceSounds,
         GamePlayChoicesViewModel choices,
         GridBoardViewModel grid,
         Action<GameStateDto> syncShortcuts,
@@ -67,6 +69,7 @@ internal sealed class GamePlayRealtimeController
         _presenter = presenter ?? throw new ArgumentNullException(nameof(presenter));
         _announcementRouter = announcementRouter ?? throw new ArgumentNullException(nameof(announcementRouter));
         _endgameSounds = endgameSounds ?? throw new ArgumentNullException(nameof(endgameSounds));
+        _diceSounds = diceSounds ?? throw new ArgumentNullException(nameof(diceSounds));
         _choices = choices ?? throw new ArgumentNullException(nameof(choices));
         _grid = grid ?? throw new ArgumentNullException(nameof(grid));
         _syncShortcuts = syncShortcuts ?? throw new ArgumentNullException(nameof(syncShortcuts));
@@ -89,6 +92,7 @@ internal sealed class GamePlayRealtimeController
         _lastGameStatus = null;
         _viewerPlayerId = null;
         _pendingForcedTurnAnnouncements = 0;
+        _diceSounds.Reset();
     }
 
     internal void NoteForcedTurnRequest()
@@ -144,6 +148,8 @@ internal sealed class GamePlayRealtimeController
 
             _viewerPlayerId = GamePlayExtrasParser.ExtractViewerPlayerId(state);
             _choices.UpdateFromState(state, _viewerPlayerId, _canStartAskCardSelection);
+
+            _diceSounds.TryPlayDiceRollSound(state);
 
             if (!string.Equals(previousStatus, "finished", StringComparison.OrdinalIgnoreCase) &&
                 string.Equals(nextStatus, "finished", StringComparison.OrdinalIgnoreCase))

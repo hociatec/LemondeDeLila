@@ -18,7 +18,7 @@ public sealed partial class AdminViewModel
     private SoundId? _soundDetailsId;
     private AdminPage _soundDetailsReturnPage = AdminPage.Sounds;
 
-	    private void BuildSounds()
+    private void BuildSounds()
 	    {
 	        _page = AdminPage.Sounds;
 	        Title = "Administration - Sons";
@@ -35,22 +35,91 @@ public sealed partial class AdminViewModel
 	        Items.Add(new AdminMenuItem("Tchat", tag: "sounds.chat"));
 	        Items.Add(new AdminMenuItem("Messages privés", tag: "sounds.private"));
 	        Items.Add(new AdminMenuItem("Contact admin", tag: "sounds.adminContact"));
+	        Items.Add(new AdminMenuItem("Nettoyer les sons inutilisés", tag: "sounds.cleanup"));
         SelectedItem = Items.FirstOrDefault();
         Status = "Entrée : sélectionner. Échap : retour.";
         UpdateFilterVisibility();
         RestoreFocusIfAny();
     }
 
+    private async Task CleanupUnusedSoundsAsync()
+    {
+        var jwt = _session.CurrentUser?.Token;
+        if (string.IsNullOrWhiteSpace(jwt))
+        {
+            await _dialogs.ShowError("Sons", "Connexion requise.").ConfigureAwait(true);
+            return;
+        }
+
+        var confirm = await _dialogs.Confirm(
+                "Sons",
+                "Supprimer les sons (fichiers) qui ne sont plus utilisés ?",
+                okText: "Nettoyer",
+                cancelText: "Annuler")
+            .ConfigureAwait(true);
+        if (confirm != true)
+        {
+            return;
+        }
+
+        var endpoint = new Uri(_config.HttpBase, "admin/sounds/cleanup");
+
+        HttpResponseMessage resp;
+        try
+        {
+            using var req = new HttpRequestMessage(HttpMethod.Post, endpoint);
+            req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", jwt);
+            req.Content = new StringContent("{}", System.Text.Encoding.UTF8, "application/json");
+            resp = await HttpClientProvider.Shared.SendAsync(req).ConfigureAwait(true);
+        }
+        catch (Exception ex)
+        {
+            await _dialogs.ShowError("Sons", $"Nettoyage impossible : {ex.Message}").ConfigureAwait(true);
+            return;
+        }
+
+        if (!resp.IsSuccessStatusCode)
+        {
+            var body = await resp.Content.ReadAsStringAsync().ConfigureAwait(true);
+            var message = ApiErrorParser.TryExtractMessage(body) ?? body;
+            await _dialogs.ShowError("Sons", $"Nettoyage échoué ({(int)resp.StatusCode}) : {message}").ConfigureAwait(true);
+            return;
+        }
+
+        string info;
+        try
+        {
+            var json = await resp.Content.ReadAsStringAsync().ConfigureAwait(true);
+            using var doc = JsonDocument.Parse(json);
+            var root = doc.RootElement;
+            var deletedFiles = root.TryGetProperty("deletedFiles", out var df) && df.ValueKind == JsonValueKind.Number
+                ? df.GetInt32()
+                : 0;
+            var deletedDirs = root.TryGetProperty("deletedDirs", out var dd) && dd.ValueKind == JsonValueKind.Number
+                ? dd.GetInt32()
+                : 0;
+            info = $"Nettoyage terminé. Fichiers supprimés : {deletedFiles}. Dossiers supprimés : {deletedDirs}.";
+        }
+        catch
+        {
+            info = "Nettoyage terminé.";
+        }
+
+        await _dialogs.ShowInfo("Sons", info).ConfigureAwait(true);
+        await _remoteSounds.RefreshAsync(force: true).ConfigureAwait(true);
+    }
+
     private void BuildSoundsAmbience()
     {
         _page = AdminPage.SoundsAmbience;
         Title = "Administration - Sons - Ambiance";
-        Details = "Choisir un son d'ambiance en boucle (menu principal / taverne).";
+        Details = "Choisir un son d'ambiance (boucles) et un son à l'ouverture de la taverne.";
         IsTextInputVisible = false;
         IsSecondaryInputVisible = false;
         IsAdditionalPermissionsVisible = false;
         Items.Clear();
         Items.Add(new AdminMenuItem("Musique du menu principal", tag: "sounds.ambience.menu"));
+        Items.Add(new AdminMenuItem("Ouverture de la taverne", tag: "sounds.ambience.tavern.opened"));
         Items.Add(new AdminMenuItem("Ambiance de la taverne", tag: "sounds.ambience.tavern"));
         SelectedItem = Items.FirstOrDefault();
         Status = "Entrée : sélectionner. Échap : retour.";
@@ -121,11 +190,12 @@ public sealed partial class AdminViewModel
 	    {
 	        _page = AdminPage.SoundsGames;
 	        Title = "Administration - Sons - Jeux";
-	        Details = "Choisir un son lié aux actions en jeu (pion, mur).";
+	        Details = "Choisir un son lié aux actions en jeu (pion, mur, dé).";
 	        IsTextInputVisible = false;
 	        IsSecondaryInputVisible = false;
 	        IsAdditionalPermissionsVisible = false;
 	        Items.Clear();
+	        Items.Add(new AdminMenuItem("Dé : lancer", tag: "sounds.games.dice.rolled"));
 	        Items.Add(new AdminMenuItem("Pion : prendre (vous)", tag: "sounds.games.pawn.picked"));
 	        Items.Add(new AdminMenuItem("Pion : poser (vous)", tag: "sounds.games.pawn.placed.self"));
 	        Items.Add(new AdminMenuItem("Pion : poser (adversaire)", tag: "sounds.games.pawn.placed.opponent"));
@@ -222,7 +292,7 @@ public sealed partial class AdminViewModel
         RestoreFocusIfAny();
     }
 
-    private void BuildSoundDetails(
+	    private void BuildSoundDetails(
         SoundId sound,
         AdminPage? returnPageOverride = null,
         string? groupOverride = null,
@@ -233,9 +303,9 @@ public sealed partial class AdminViewModel
 	        _soundDetailsReturnPage = returnPageOverride ?? sound switch
 	        {
 	            SoundId.ClientOpened or SoundId.ClientConnected or SoundId.ClientDisconnected => AdminPage.SoundsConnection,
-	            SoundId.MainMenuMusic or SoundId.TavernAmbience => AdminPage.SoundsAmbience,
+	            SoundId.MainMenuMusic or SoundId.TavernOpened or SoundId.TavernAmbience => AdminPage.SoundsAmbience,
 	            SoundId.GameVictory or SoundId.GameDefeat or SoundId.RoomOpened or SoundId.RoomJoined or SoundId.RoomExit => AdminPage.SoundsTable,
-	            SoundId.PawnPicked or SoundId.PawnPlacedSelf or SoundId.PawnPlacedOpponent or SoundId.WallPlacedSelf or SoundId.WallPlacedOpponent => AdminPage.SoundsGames,
+	            SoundId.DiceRolled or SoundId.PawnPicked or SoundId.PawnPlacedSelf or SoundId.PawnPlacedOpponent or SoundId.WallPlacedSelf or SoundId.WallPlacedOpponent => AdminPage.SoundsGames,
 	            SoundId.InvitationSent or SoundId.InvitationReceived => AdminPage.SoundsTable,
 	            SoundId.ChatMessageSent or SoundId.ChatMessageReceived => AdminPage.SoundsChatGeneral,
 	            SoundId.TableChatMessageSent or SoundId.TableChatMessageReceived => AdminPage.SoundsChatTable,
@@ -251,6 +321,7 @@ public sealed partial class AdminViewModel
             SoundId.ClientConnected => ("Connexion", "Connexion au serveur", _options.Current.SoundClientConnectedPath),
             SoundId.ClientDisconnected => ("Connexion", "Déconnexion du serveur", _options.Current.SoundClientDisconnectedPath),
             SoundId.MainMenuMusic => ("Ambiance", "Musique du menu principal", null),
+            SoundId.TavernOpened => ("Ambiance", "Ouverture de la taverne", null),
             SoundId.TavernAmbience => ("Ambiance", "Ambiance de la taverne", null),
             SoundId.GameVictory => ("Table", "Victoire (fin de partie)", _options.Current.SoundGameVictoryPath),
             SoundId.GameDefeat => ("Table", "Défaite (fin de partie)", _options.Current.SoundGameDefeatPath),
@@ -270,6 +341,7 @@ public sealed partial class AdminViewModel
 	            SoundId.PrivateMessageSent => ("Messages privés", "Envoi d'un message privé", _options.Current.SoundPrivateMessageSentPath),
 	            SoundId.PrivateMessageReceived => ("Messages privés", "Réception d'un message privé", _options.Current.SoundPrivateMessageReceivedPath),
             SoundId.AdminContactSent => ("Contact admin", "Envoi d'un contact admin", null),
+	            SoundId.DiceRolled => ("Jeux", "Dé - Lancer", null),
 	            SoundId.PawnPicked => ("Jeux", "Pion - Prendre (vous)", _options.Current.SoundPawnPickedPath),
 	            SoundId.PawnPlacedSelf => ("Jeux", "Pion - Poser (vous)", _options.Current.SoundPawnPlacedSelfPath),
 	            SoundId.PawnPlacedOpponent => ("Jeux", "Pion - Poser (adversaire)", _options.Current.SoundPawnPlacedOpponentPath),

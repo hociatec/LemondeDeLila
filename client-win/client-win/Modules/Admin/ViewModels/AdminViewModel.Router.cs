@@ -367,8 +367,8 @@ public sealed partial class AdminViewModel
                 }
             }
 
-	            if (_page == AdminPage.Sounds && tag is string soundsTag)
-	            {
+            if (_page == AdminPage.Sounds && tag is string soundsTag)
+            {
                 if (soundsTag == "sounds.connection")
                 {
                     PushReturnFocus();
@@ -417,6 +417,11 @@ public sealed partial class AdminViewModel
                     BuildSoundsAdminContact();
                     return;
                 }
+                if (soundsTag == "sounds.cleanup")
+                {
+                    await CleanupUnusedSoundsAsync().ConfigureAwait(true);
+                    return;
+                }
             }
 
             if (_page == AdminPage.SoundsAmbience && tag is string ambienceSound)
@@ -425,6 +430,12 @@ public sealed partial class AdminViewModel
                 {
                     PushReturnFocus();
                     BuildSoundDetails(Modules.Audio.Models.SoundId.MainMenuMusic);
+                    return;
+                }
+                if (ambienceSound == "sounds.ambience.tavern.opened")
+                {
+                    PushReturnFocus();
+                    BuildSoundDetails(Modules.Audio.Models.SoundId.TavernOpened);
                     return;
                 }
                 if (ambienceSound == "sounds.ambience.tavern")
@@ -533,6 +544,12 @@ public sealed partial class AdminViewModel
 	
 	            if (_page == AdminPage.SoundsGames && tag is string gameSound)
 	            {
+	                if (gameSound == "sounds.games.dice.rolled")
+	                {
+	                    PushReturnFocus();
+	                    BuildSoundDetails(Modules.Audio.Models.SoundId.DiceRolled);
+	                    return;
+	                }
 	                if (gameSound == "sounds.games.pawn.picked")
 	                {
 	                    PushReturnFocus();

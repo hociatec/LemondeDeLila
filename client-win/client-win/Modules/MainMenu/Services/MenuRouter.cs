@@ -173,6 +173,7 @@ public sealed class MenuRouter : IMenuRouter
         var previous = _navigation.CurrentView;
         var catalogView = new CatalogView();
         StopBackgroundLoops();
+        _sounds.Play(Modules.Audio.Models.SoundId.TavernOpened);
         _sounds.StartLoop(Modules.Audio.Models.SoundId.TavernAmbience);
         SetPresenceContextForView(catalogView);
         CatalogViewModel? vm = null;

@@ -22,6 +22,30 @@ export class SoundsService {
     return path.resolve(process.cwd(), 'data', 'sounds');
   }
 
+  private async removeUnusedFilesForSoundId(
+    soundId: SoundKey,
+    keepSha256: string,
+  ): Promise<number> {
+    const soundDir = path.join(this.dataRoot(), soundId);
+    let deleted = 0;
+    try {
+      const files = await fs.promises.readdir(soundDir);
+      for (const file of files) {
+        if (!file.toLowerCase().endsWith('.mp3')) continue;
+        if (file === `${keepSha256}.mp3`) continue;
+        try {
+          await fs.promises.rm(path.join(soundDir, file), { force: true });
+          deleted++;
+        } catch {
+          // ignore
+        }
+      }
+    } catch {
+      // ignore
+    }
+    return deleted;
+  }
+
   private manifestPath() {
     return path.join(this.dataRoot(), 'manifest.json');
   }
@@ -126,6 +150,9 @@ export class SoundsService {
     };
     await this.writeManifest(next);
 
+    // Nettoyage: supprimer les anciennes versions non référencées (doublons) pour ce soundId.
+    await this.removeUnusedFilesForSoundId(soundId, sha256);
+
     await this.notifications.notifyAll('sounds.updated', {
       soundId,
       sha256,
@@ -149,6 +176,16 @@ export class SoundsService {
     delete next.sounds[soundId];
     await this.writeManifest(next);
 
+    // Nettoyage best-effort: si le son est supprimé du manifest, supprimer aussi les fichiers associés.
+    try {
+      await fs.promises.rm(path.join(this.dataRoot(), soundId), {
+        recursive: true,
+        force: true,
+      });
+    } catch {
+      // ignore
+    }
+
     await this.notifications.notifyAll('sounds.updated', {
       soundId,
       sha256: null,
@@ -156,6 +193,83 @@ export class SoundsService {
       updatedAt: next.updatedAt,
     });
     return { ok: true };
+  }
+
+  async cleanupUnusedSounds(): Promise<{
+    ok: true;
+    deletedFiles: number;
+    deletedDirs: number;
+  }> {
+    const root = this.dataRoot();
+    const manifest = await this.readManifest();
+
+    const usedById: Partial<Record<SoundKey, string>> = {};
+    for (const key of SOUND_KEYS) {
+      const entry = manifest.sounds?.[key];
+      if (!entry?.sha256) continue;
+      usedById[key] = entry.sha256;
+    }
+
+    let deletedFiles = 0;
+    let deletedDirs = 0;
+
+    let dirs: fs.Dirent[];
+    try {
+      dirs = await fs.promises.readdir(root, { withFileTypes: true });
+    } catch {
+      return { ok: true, deletedFiles: 0, deletedDirs: 0 };
+    }
+
+    for (const dirent of dirs) {
+      if (!dirent.isDirectory()) continue;
+      const name = dirent.name;
+      const soundKey = SOUND_KEYS.find((k) => k === name);
+      if (!soundKey) {
+        try {
+          await fs.promises.rm(path.join(root, name), {
+            recursive: true,
+            force: true,
+          });
+          deletedDirs++;
+        } catch {
+          // ignore
+        }
+        continue;
+      }
+
+      const keepSha = usedById[soundKey];
+      if (!keepSha) {
+        // Aucun son configuré pour ce soundId => supprimer le dossier.
+        try {
+          await fs.promises.rm(path.join(root, soundKey), {
+            recursive: true,
+            force: true,
+          });
+          deletedDirs++;
+        } catch {
+          // ignore
+        }
+        continue;
+      }
+
+      deletedFiles += await this.removeUnusedFilesForSoundId(soundKey, keepSha);
+
+      // Si le dossier est vide après cleanup, supprimer.
+      try {
+        const remaining = await fs.promises.readdir(path.join(root, soundKey));
+        if (remaining.length === 0) {
+          await fs.promises.rm(path.join(root, soundKey), {
+            recursive: true,
+            force: true,
+          });
+          deletedDirs++;
+        }
+      } catch {
+        // ignore
+      }
+    }
+
+    return { ok: true, deletedFiles, deletedDirs };
   }
 
   async resolveSoundFile(soundIdRaw: string, shaFromUrl?: string | null) {

@@ -79,6 +79,20 @@ public sealed class SoundService : ISoundService, IDisposable
                 OverridePath: null,
                 IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundAmbience,
                 Volume: () => Clamp01(_options.Current.SoundAmbienceVolume / 100.0)),
+            [SoundId.TavernOpened] = new SoundEntry(
+                // Son déclenché à l'entrée dans la taverne (one-shot).
+                // Configurable globalement via l'interface admin (son uploadé = RemoteSoundCache).
+                DefaultRelativePath: Path.Combine("Assets", "Sounds", "roomopened.mp3"),
+                OverridePath: null,
+                IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundNavigate,
+                Volume: () => Clamp01(_options.Current.SoundNavigateVolume / 100.0)),
+            [SoundId.DiceRolled] = new SoundEntry(
+                // Son déclenché à chaque lancer de dé (générique, basé sur `lastRoll`).
+                // Configurable globalement via l'interface admin (son uploadé = RemoteSoundCache).
+                DefaultRelativePath: Path.Combine("Assets", "Sounds", "pawn_picked.wav"),
+                OverridePath: null,
+                IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundSelect,
+                Volume: () => Clamp01(_options.Current.SoundSelectVolume / 100.0)),
             [SoundId.ChatMessageSent] = new SoundEntry(
                 DefaultRelativePath: Path.Combine("Assets", "Sounds", "envoimsgtchat.mp3"),
                 OverridePath: () => _options.Current.SoundChatMessageSentPath,

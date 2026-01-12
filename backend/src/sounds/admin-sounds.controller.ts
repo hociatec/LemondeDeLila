@@ -20,6 +20,11 @@ import { SoundsService } from './sounds.service';
 export class AdminSoundsController {
   constructor(private readonly sounds: SoundsService) {}
 
+  @Post('cleanup')
+  async cleanup() {
+    return this.sounds.cleanupUnusedSounds();
+  }
+
   @Post(':soundId')
   @UseInterceptors(
     FileInterceptor('file', {

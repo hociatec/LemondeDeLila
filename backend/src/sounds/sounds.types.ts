@@ -4,6 +4,8 @@ export const SOUND_KEYS = [
   'ClientDisconnected',
   'MainMenuMusic',
   'TavernAmbience',
+  'TavernOpened',
+  'DiceRolled',
   'ChatMessageSent',
   'ChatMessageReceived',
   'PrivateMessageSent',

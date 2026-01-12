@@ -7,6 +7,8 @@ public enum SoundId
     ClientDisconnected,
     MainMenuMusic,
     TavernAmbience,
+    TavernOpened,
+    DiceRolled,
     ChatMessageSent,
     ChatMessageReceived,
     TableChatMessageSent,
