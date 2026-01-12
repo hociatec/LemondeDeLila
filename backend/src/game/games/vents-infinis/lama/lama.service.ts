@@ -10,12 +10,14 @@ import { RandomService } from '../../../modules/random/services/random.service';
 import type { LamaCardValue, LamaMetadata } from './model/lama.model';
 import { lamaCardLabel, lamaCardScore, nextLamaValue, LAMA_VALUE } from './model/lama.model';
 import { LamaPresenter } from './lama.presenter';
+import type { GameShortcutHint, GameShortcutsContext } from '../../../engine/shortcuts/game-shortcuts';
+import { interfaceShortcut } from '../../../engine/shortcuts/shortcut-utils';
 
 @Injectable()
 export class LamaService implements GameRulesAdapter, OnModuleInit {
   readonly gameType = 'lama';
   readonly category = 'JeuxDePlateaux';
-  readonly subcategory = 'Ents Sacrés';
+  readonly subcategory = 'Les Vents Sacrés';
   readonly displayName = 'LAMA';
   readonly description = 'Défaussez vos cartes ou sortez du round pour minimiser vos points.';
   readonly minPlayers = 2;
@@ -80,8 +82,77 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
     return next;
   }
 
+  getBotActions(state: GameStateEntity, botPlayerId: number): GameSingleActionDto[] {
+    const current = state.turn?.currentPlayerId ?? null;
+    if (current !== botPlayerId) return [];
+    if (String(state.status ?? '').toLowerCase() !== 'started') return [];
+
+    const meta = (state.metadata ?? {}) as LamaMetadata;
+    if (meta.winnerId) return [];
+
+    const step = meta.step ?? 'turn_choice';
+    if (step === 'return_token') {
+      if (meta.pendingReturnPlayerId !== botPlayerId) return [];
+      const score = Number((meta.scoresByPlayerId ?? {})[String(botPlayerId)] ?? 0);
+      if (score >= 10) return [{ type: 'lama_return', payload: { value: 10 } }];
+      if (score >= 1) return [{ type: 'lama_return', payload: { value: 1 } }];
+      return [{ type: 'lama_return', payload: { value: 0 } }];
+    }
+
+    if (Boolean((meta.droppedOutByPlayerId ?? {})[String(botPlayerId)])) {
+      return [];
+    }
+
+    const hand = (meta.handsByPlayerId ?? {})[String(botPlayerId)] ?? [];
+    const discard = Array.isArray(meta.discard) ? meta.discard : [];
+    const top = discard.length ? (discard[discard.length - 1] as LamaCardValue) : null;
+    if (!top) return [];
+
+    const canPlayValues = new Set<LamaCardValue>([top, nextLamaValue(top)]);
+
+    const counts = new Map<LamaCardValue, number>();
+    for (const v of hand as LamaCardValue[]) {
+      counts.set(v, (counts.get(v) ?? 0) + 1);
+    }
+
+    // Heuristique simple :
+    // - si on peut jouer, jouer la valeur jouable avec le plus de duplicats (défausse max)
+    // - sinon piocher si possible, sinon sortir
+    let best: { value: LamaCardValue; count: number } | null = null;
+    for (const [value, count] of counts.entries()) {
+      if (!canPlayValues.has(value)) continue;
+      if (!best || count > best.count) {
+        best = { value, count };
+      }
+    }
+
+    if (best) {
+      return [{ type: 'lama_play', payload: { value: best.value, count: best.count } }];
+    }
+
+    if ((meta.deck ?? []).length > 0) {
+      return [{ type: 'draw', payload: {} }];
+    }
+
+    return [{ type: 'lama_quit', payload: {} }];
+  }
+
   exposeStateForUser(state: GameStateEntity, userId: number): GameStateWithActions {
     return this.presenter.exposeStateForUser(state, userId);
+  }
+
+  getShortcuts(ctx: GameShortcutsContext<any>): GameShortcutHint[] {
+    if (!ctx?.started) {
+      return [interfaceShortcut('C', 'hand')];
+    }
+
+    return [
+      interfaceShortcut('C', 'hand'),
+      interfaceShortcut('D', 'discard'),
+      interfaceShortcut('A', 'play'),
+      interfaceShortcut('P', 'score'),
+      interfaceShortcut('B', 'table'),
+    ];
   }
 
   private applyOne(state: GameStateEntity, action: GameSingleActionDto): GameStateEntity {
@@ -517,4 +588,3 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
     };
   }
 }
-

@@ -14,14 +14,14 @@ import type {
 } from './model/triomino.model';
 import { isUpTriangle, triominoKey } from './model/triomino.model';
 import { TriominoPresenter } from './triomino.presenter';
-import { actionShortcut } from '../../../engine/shortcuts/shortcut-utils';
+import { actionShortcut, interfaceShortcut } from '../../../engine/shortcuts/shortcut-utils';
 import type { GameShortcutHint } from '../../../engine/shortcuts/game-shortcuts';
 
 @Injectable()
 export class TriominoService implements GameRulesAdapter, OnModuleInit {
   readonly gameType = 'triomino';
   readonly category = 'JeuxDePlateaux';
-  readonly subcategory = 'Ents Sacrés';
+  readonly subcategory = 'Les Vents Sacrés';
   readonly displayName = 'Triomino';
   readonly description = 'Placez des triominos sur une grille triangulaire en faisant correspondre les nombres.';
   readonly minPlayers = 2;
@@ -74,6 +74,44 @@ export class TriominoService implements GameRulesAdapter, OnModuleInit {
     return next;
   }
 
+  getBotActions(state: GameStateEntity, botPlayerId: number): GameSingleActionDto[] {
+    const current = state.turn?.currentPlayerId ?? null;
+    if (current !== botPlayerId) return [];
+    if (String(state.status ?? '').toLowerCase() !== 'started') return [];
+
+    const meta = (state.metadata ?? {}) as TriominoMetadata;
+    if ((meta.winnerId ?? null) != null || meta.ended) return [];
+
+    const selectedId = (meta.selectedTileIdByPlayerId ?? {})[String(botPlayerId)] ?? null;
+    if (selectedId) {
+      const tile = this.findTileInHand(meta, botPlayerId, selectedId);
+      if (!tile) {
+        return [{ type: 'triomino_cancel', payload: {} }];
+      }
+      const placements = this.listPlacementActions(state, meta, botPlayerId, tile);
+      const chosen = placements[0];
+      return chosen ? [chosen] : [{ type: 'triomino_cancel', payload: {} }];
+    }
+
+    const hand = (meta.handsByPlayerId ?? {})[String(botPlayerId)] ?? [];
+    for (const tile of hand) {
+      if (!this.hasAnyLegalPlacement(meta, tile)) continue;
+      const placements = this.listPlacementActions(state, meta, botPlayerId, tile);
+      const chosen = placements[0];
+      if (!chosen) continue;
+      return [
+        { type: 'triomino_select_tile', payload: { tileId: tile.id } },
+        chosen,
+      ];
+    }
+
+    if ((meta.deck ?? []).length > 0) {
+      return [{ type: 'draw', payload: {} }];
+    }
+
+    return [{ type: 'triomino_pass', payload: {} }];
+  }
+
   exposeStateForUser(state: GameStateEntity, userId: number): GameStateWithActions {
     // Compute legal placement actions for the viewer/current player (stored temporarily in metadata for presenter).
     const meta = { ...(state.metadata ?? {}) } as TriominoMetadata;
@@ -96,8 +134,15 @@ export class TriominoService implements GameRulesAdapter, OnModuleInit {
     const currentPlayerId = ctx?.currentPlayerId ?? null;
     if (!ctx?.started || !currentPlayerId) return [];
     const selected = (meta.selectedTileIdByPlayerId ?? {})[String(currentPlayerId)] ?? null;
-    if (!selected) return [];
-    return [actionShortcut('ESC', 'triomino_cancel')];
+    const info: GameShortcutHint[] = [
+      interfaceShortcut('C', 'hand'),
+      interfaceShortcut('P', 'position'),
+      interfaceShortcut('S', 'score'),
+      interfaceShortcut('A', 'play'),
+      interfaceShortcut('B', 'table'),
+    ];
+    if (!selected) return info;
+    return [...info, actionShortcut('ESC', 'triomino_cancel')];
   }
 
   private applyOne(state: GameStateEntity, action: GameSingleActionDto): GameStateEntity {

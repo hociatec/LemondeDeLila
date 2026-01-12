@@ -16,7 +16,7 @@ import { CorridorBotService } from './bots/corridor-bot.service';
 export class CorridorService implements GameRulesAdapter, OnModuleInit {
   readonly gameType = 'corridor';
   readonly category = 'JeuxDePlateaux';
-  readonly subcategory = 'Ents Sacrés';
+  readonly subcategory = 'Les Vents Sacrés';
   readonly displayName = CORRIDOR_GAME.displayName;
   readonly description = 'Déplacez votre pion sur une grille (9×9) et atteignez le bord opposé.';
   readonly minPlayers = CORRIDOR_GAME.minPlayers;

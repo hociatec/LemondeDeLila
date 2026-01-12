@@ -130,10 +130,66 @@ export class MorpionPresenter extends BasePresenterService {
   protected buildExtrasForUser(
     state: GameStateEntity,
     _metadata: MorpionMetadata,
-    _userId: number,
-    _currentPlayerId: number | null,
+    userId: number,
+    currentPlayerId: number | null,
   ): Record<string, unknown> {
-    return this.getBaseExtras(state);
+    const base = this.getBaseExtras(state);
+    const meta = (state.metadata ?? {}) as MorpionMetadata;
+    const size = meta.size ?? 3;
+    const board = Array.isArray(meta.board) ? meta.board : [];
+    const players = Array.isArray(state.players) ? state.players : [];
+
+    const glyphForOwner = (ownerId: number): string => {
+      const player0 = players[0]?.id ?? 1;
+      const player1 = players[1]?.id ?? 2;
+      if (ownerId === player0) return 'X';
+      if (ownerId === player1) return 'O';
+      return '@';
+    };
+
+    const rowLabel = (y: number) => {
+      const cells: string[] = [];
+      for (let x = 0; x < size; x += 1) {
+        const idx = y * size + x;
+        const ownerId = Number(board[idx] ?? 0);
+        cells.push(ownerId ? glyphForOwner(ownerId) : '.');
+      }
+      return cells.join(' ');
+    };
+
+    const boardMessage = [
+      `Plateau:`,
+      rowLabel(0),
+      rowLabel(1),
+      rowLabel(2),
+    ].join(' ');
+
+    const emptyCount = board.filter((v) => Number(v ?? 0) === 0).length;
+    const who =
+      typeof currentPlayerId === 'number'
+        ? players.find((p) => p?.id === currentPlayerId)?.username ??
+          `#${currentPlayerId}`
+        : 'inconnu';
+
+    const playInfo =
+      String(state.status ?? '').toLowerCase() === 'started'
+        ? `Cases libres: ${emptyCount}. Entrée: jouer sur la case focus.`
+        : 'Partie non démarrée.';
+
+    return {
+      ...base,
+      ui: {
+        panels: {
+          position: {
+            title: 'Plateau',
+            message: `Tour: ${who}. ${boardMessage}`.trim(),
+          },
+          play: {
+            title: 'Coups',
+            message: playInfo,
+          },
+        },
+      },
+    };
   }
 }
-

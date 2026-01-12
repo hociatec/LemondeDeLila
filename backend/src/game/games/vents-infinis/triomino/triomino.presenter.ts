@@ -188,10 +188,73 @@ export class TriominoPresenter extends BasePresenterService {
 
   protected buildExtrasForUser(
     state: GameStateEntity,
-    _metadata: TriominoMetadata,
-    _userId: number,
-    _currentPlayerId: number | null,
+    metadata: TriominoMetadata,
+    userId: number,
+    currentPlayerId: number | null,
   ): Record<string, unknown> {
-    return this.getBaseExtras(state);
+    const base = this.getBaseExtras(state);
+    const players = Array.isArray(state.players) ? state.players : [];
+
+    const handTiles = ((metadata.handsByPlayerId ?? {})[String(userId)] ?? []) as TriominoTile[];
+    const hand = handTiles.map((t) => `#${t.id} ${t.a}-${t.b}-${t.c}`);
+
+    const scoreBy = metadata.scoresByPlayerId ?? {};
+    const myScore = Number(scoreBy[String(userId)] ?? 0);
+    const scoreLines = players
+      .filter((p) => p?.id)
+      .map((p) => {
+        const pid = p.id;
+        const name = p.username ?? `#${pid}`;
+        const s = Number(scoreBy[String(pid)] ?? 0);
+        return `${name}: ${s}`;
+      });
+
+    const deckCount = (metadata.deck ?? []).length;
+    const placedCount = Object.keys(metadata.placedByKey ?? {}).length;
+
+    const selectedId = (metadata.selectedTileIdByPlayerId ?? {})[String(userId)] ?? null;
+    const placements = (metadata as any).legalPlacementActionsByPlayerId?.[String(userId)] ?? [];
+    const placementCount = Array.isArray(placements) ? placements.length : 0;
+
+    const positionMessage = `Posées: ${placedCount}. Pioche: ${deckCount}. Main: ${hand.length}. Score: ${myScore}.`;
+    const playMessage = (() => {
+      if (!this.isStarted(state)) return 'Partie non démarrée.';
+      if (currentPlayerId !== userId) return "Ce n'est pas votre tour.";
+      if ((metadata.winnerId ?? null) != null) return 'Partie terminée.';
+      if (selectedId) {
+        return `Triomino sélectionné (#${selectedId}). Placements possibles: ${placementCount}. Entrée: placer sur la grille. Échap: annuler.`;
+      }
+      return `Sélectionnez un triomino (liste) puis placez-le sur la grille.`;
+    })();
+
+    return {
+      ...base,
+      hand,
+      score: [`Total: ${myScore}`, ...scoreLines],
+      ui: {
+        panels: {
+          hand: {
+            title: 'Main',
+            message: hand.length ? `Main: ${hand.join(', ')}` : 'Main: (vide)',
+          },
+          score: {
+            title: 'Score',
+            message: scoreLines.length ? `Score: ${scoreLines.join(', ')}` : 'Score: inconnu.',
+          },
+          position: {
+            title: 'Position',
+            message: positionMessage,
+          },
+          play: {
+            title: 'À jouer',
+            message: playMessage,
+          },
+          table: {
+            title: 'Table',
+            message: `Raccourcis: C=main, P=position, S=score, A=à jouer.`,
+          },
+        },
+      },
+    };
   }
 }

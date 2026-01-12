@@ -111,7 +111,8 @@ export class LamaPresenter extends BasePresenterService {
     const top = this.topDiscard(metadata);
     if (!top) return null;
 
-    const playable = new Set<LamaCardValue>([top, nextLamaValue(top)]);
+    const next = nextLamaValue(top);
+    const playable = new Set<LamaCardValue>([top, next]);
     const counts = new Map<LamaCardValue, number>();
     for (const v of hand as LamaCardValue[]) {
       counts.set(v, (counts.get(v) ?? 0) + 1);
@@ -132,10 +133,11 @@ export class LamaPresenter extends BasePresenterService {
     const meScore = Number((metadata.scoresByPlayerId ?? {})[String(userId)] ?? 0);
     const deckCount = (metadata.deck ?? []).length;
     const discardTop = lamaCardLabel(top);
+    const playableRule = `Vous pouvez jouer ${discardTop} ou ${lamaCardLabel(next)}.`;
     const handScore = (hand as LamaCardValue[]).reduce((sum, v) => sum + lamaCardScore(v), 0);
     return {
       type: 'lama_turn',
-      label: `Défausse: ${discardTop}. Main: ${hand.length} cartes (${handScore} pts). Score total: ${meScore}. Pioche: ${deckCount}.`,
+      label: `Défausse: ${discardTop}. ${playableRule} Main: ${hand.length} cartes (${handScore} pts). Score total: ${meScore}. Pioche: ${deckCount}.`,
       playerId: userId,
       choices,
     };
@@ -159,11 +161,90 @@ export class LamaPresenter extends BasePresenterService {
 
   protected buildExtrasForUser(
     state: GameStateEntity,
-    _metadata: LamaMetadata,
-    _userId: number,
-    _currentPlayerId: number | null,
+    metadata: LamaMetadata,
+    userId: number,
+    currentPlayerId: number | null,
   ): Record<string, unknown> {
-    return this.getBaseExtras(state);
+    const base = this.getBaseExtras(state);
+    const players = Array.isArray(state.players) ? state.players : [];
+
+    const handValues = ((metadata.handsByPlayerId ?? {})[String(userId)] ?? []) as LamaCardValue[];
+    const hand = handValues.map(lamaCardLabel);
+
+    const scoreBy = metadata.scoresByPlayerId ?? {};
+    const myScore = Number(scoreBy[String(userId)] ?? 0);
+    const scoreLines = players
+      .filter((p) => p?.id)
+      .map((p) => {
+        const pid = p.id;
+        const s = Number(scoreBy[String(pid)] ?? 0);
+        const name = p.username ?? `#${pid}`;
+        return `${name}: ${s}`;
+      });
+
+    const discard = Array.isArray(metadata.discard) ? metadata.discard : [];
+    const top = discard.length ? discard[discard.length - 1] : null;
+    const discardTop = top ? lamaCardLabel(top as LamaCardValue) : '(vide)';
+    const discardNext =
+      top != null ? lamaCardLabel(nextLamaValue(top as LamaCardValue)) : '(inconnu)';
+
+    const deckCount = (metadata.deck ?? []).length;
+    const dropped = metadata.droppedOutByPlayerId ?? {};
+    const droppedNames = players
+      .filter((p) => p?.id && dropped[String(p.id)] === true)
+      .map((p) => p.username ?? `#${p.id}`);
+
+    const playableText = (() => {
+      if (!this.isStarted(state)) return 'Partie non démarrée.';
+      if (currentPlayerId !== userId) return "Ce n'est pas votre tour.";
+      const step = metadata.step ?? 'turn_choice';
+      if (step === 'return_token') return 'Retirez des points (1 ou 10) si possible.';
+      if (!top) return 'Défausse vide.';
+      const allowed = new Set<LamaCardValue>([top as LamaCardValue, nextLamaValue(top as LamaCardValue)]);
+      const counts = new Map<LamaCardValue, number>();
+      for (const v of handValues) {
+        counts.set(v, (counts.get(v) ?? 0) + 1);
+      }
+      const parts: string[] = [];
+      for (const [value, count] of [...counts.entries()].sort((a, b) => a[0] - b[0])) {
+        if (!allowed.has(value)) continue;
+        parts.push(`${lamaCardLabel(value)}×${count}`);
+      }
+      const list = parts.length ? parts.join(', ') : '(aucune carte jouable)';
+      return `Défausse: ${discardTop}. Règle: jouer ${discardTop} ou ${discardNext}. Jouables dans votre main: ${list}. Options: jouer / piocher / sortir.`;
+    })();
+
+    return {
+      ...base,
+      hand,
+      score: [`Total: ${myScore}`, ...scoreLines],
+      ui: {
+        panels: {
+          hand: {
+            title: 'Main',
+            message: hand.length ? `Main: ${hand.join(', ')}` : 'Main: (vide)',
+          },
+          discard: {
+            title: 'Défausse',
+            message: `Défausse: ${discardTop}. Jouable aussi: ${discardNext}. Pioche: ${deckCount}.`,
+          },
+          play: {
+            title: 'À jouer',
+            message: playableText,
+          },
+          score: {
+            title: 'Score',
+            message: scoreLines.length ? `Score: ${scoreLines.join(', ')}` : 'Score: inconnu.',
+          },
+          table: {
+            title: 'Table',
+            message: droppedNames.length
+              ? `Joueurs sortis du round: ${droppedNames.join(', ')}.`
+              : 'Aucun joueur sorti du round.',
+          },
+        },
+      },
+    };
   }
 
   private topDiscard(meta: LamaMetadata): LamaCardValue | null {
@@ -174,4 +255,3 @@ export class LamaPresenter extends BasePresenterService {
     return top as LamaCardValue;
   }
 }
-

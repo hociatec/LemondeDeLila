@@ -8,12 +8,14 @@ import type { GameRulesAdapter } from '../../../engine/interfaces/game-rules-ada
 import { GameRegistryService } from '../../../engine/services/game-registry.service';
 import type { MorpionMetadata } from './model/morpion.model';
 import { MorpionPresenter } from './morpion.presenter';
+import type { GameShortcutHint, GameShortcutsContext } from '../../../engine/shortcuts/game-shortcuts';
+import { interfaceShortcut } from '../../../engine/shortcuts/shortcut-utils';
 
 @Injectable()
 export class MorpionService implements GameRulesAdapter, OnModuleInit {
   readonly gameType = 'morpion';
   readonly category = 'JeuxDePlateaux';
-  readonly subcategory = 'Ents Sacrés';
+  readonly subcategory = 'Les Vents Sacrés';
   readonly displayName = 'Morpion';
   readonly description = 'Alignez 3 symboles sur une grille 3×3.';
   readonly minPlayers = 2;
@@ -67,8 +69,66 @@ export class MorpionService implements GameRulesAdapter, OnModuleInit {
     return next;
   }
 
+  getBotActions(state: GameStateEntity, botPlayerId: number): GameSingleActionDto[] {
+    const current = state.turn?.currentPlayerId ?? null;
+    if (current !== botPlayerId) return [];
+    if (String(state.status ?? '').toLowerCase() !== 'started') return [];
+
+    const meta = (state.metadata ?? {}) as MorpionMetadata;
+    const size = meta.size ?? 3;
+    const board = Array.isArray(meta.board) ? meta.board : [];
+
+    // 1) Win if possible.
+    const win = this.findWinningMove(board, size, botPlayerId);
+    if (win) {
+      return [{ type: 'morpion_play', payload: win }];
+    }
+
+    // 2) Block opponent immediate win if possible.
+    const opponentId = (state.players ?? [])
+      .map((p) => p?.id)
+      .find((id) => typeof id === 'number' && id !== botPlayerId) as number | undefined;
+    if (opponentId) {
+      const block = this.findWinningMove(board, size, opponentId);
+      if (block) {
+        return [{ type: 'morpion_play', payload: block }];
+      }
+    }
+
+    // 3) Otherwise, pick center, then corners, then first empty.
+    const preferred = [
+      { x: 1, y: 1 },
+      { x: 0, y: 0 },
+      { x: 2, y: 0 },
+      { x: 0, y: 2 },
+      { x: 2, y: 2 },
+    ];
+    for (const pos of preferred) {
+      if (pos.x < 0 || pos.y < 0 || pos.x >= size || pos.y >= size) continue;
+      const idx = pos.y * size + pos.x;
+      if ((board[idx] ?? 0) === 0) {
+        return [{ type: 'morpion_play', payload: pos }];
+      }
+    }
+
+    for (let y = 0; y < size; y += 1) {
+      for (let x = 0; x < size; x += 1) {
+        const idx = y * size + x;
+        if ((board[idx] ?? 0) === 0) {
+          return [{ type: 'morpion_play', payload: { x, y } }];
+        }
+      }
+    }
+
+    return [];
+  }
+
   exposeStateForUser(state: GameStateEntity, userId: number): GameStateWithActions {
     return this.presenter.exposeStateForUser(state, userId);
+  }
+
+  getShortcuts(_ctx: GameShortcutsContext<any>): GameShortcutHint[] {
+    return [interfaceShortcut('P', 'position'), interfaceShortcut('A', 'play')];
   }
 
   private applyOne(state: GameStateEntity, action: GameSingleActionDto): GameStateEntity {
@@ -180,5 +240,26 @@ export class MorpionService implements GameRulesAdapter, OnModuleInit {
     }
     return null;
   }
-}
 
+  private findWinningMove(
+    board: number[],
+    size: number,
+    playerId: number,
+  ): { x: number; y: number } | null {
+    if (!Array.isArray(board) || board.length < size * size) return null;
+
+    for (let y = 0; y < size; y += 1) {
+      for (let x = 0; x < size; x += 1) {
+        const idx = y * size + x;
+        if ((board[idx] ?? 0) !== 0) continue;
+        const candidate = [...board];
+        candidate[idx] = playerId;
+        if (this.detectWinner(candidate, size) === playerId) {
+          return { x, y };
+        }
+      }
+    }
+
+    return null;
+  }
+}
