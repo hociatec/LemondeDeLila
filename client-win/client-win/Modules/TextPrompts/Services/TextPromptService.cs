@@ -39,7 +39,7 @@ public sealed class TextPromptService : ITextPromptService
 
     public Task<Dictionary<string, string>?> PromptConfigAsync(
         string title,
-        IReadOnlyList<(string Key, string Label, string InitialText)> fields)
+        IReadOnlyList<(string Key, string Label, string InitialText, string Kind)> fields)
     {
         return Application.Current.Dispatcher.InvokeAsync(() =>
         {
@@ -53,11 +53,14 @@ public sealed class TextPromptService : ITextPromptService
             {
                 foreach (var f in fields)
                 {
+                    var kind = (f.Kind ?? string.Empty).Trim();
                     vm.Fields.Add(new ConfigPromptFieldModel
                     {
                         Key = (f.Key ?? string.Empty).Trim(),
                         Label = string.IsNullOrWhiteSpace(f.Label) ? (f.Key ?? string.Empty).Trim() : f.Label.Trim(),
-                        Text = f.InitialText ?? string.Empty
+                        Kind = kind,
+                        Text = f.InitialText ?? string.Empty,
+                        BoolValue = ParseBoolOrDefault(f.InitialText, defaultValue: false),
                     });
                 }
             }
@@ -76,6 +79,33 @@ public sealed class TextPromptService : ITextPromptService
 
             return w.Result;
         }).Task;
+    }
+
+    private static bool ParseBoolOrDefault(string? text, bool defaultValue)
+    {
+        var t = (text ?? string.Empty).Trim();
+        if (t.Length == 0)
+        {
+            return defaultValue;
+        }
+
+        if (bool.TryParse(t, out var b))
+        {
+            return b;
+        }
+
+        return t.ToLowerInvariant() switch
+        {
+            "1" => true,
+            "0" => false,
+            "oui" => true,
+            "non" => false,
+            "yes" => true,
+            "no" => false,
+            "on" => true,
+            "off" => false,
+            _ => defaultValue
+        };
     }
 
     public Task<(string Subject, string Message)?> PromptPrivateMessageAsync(

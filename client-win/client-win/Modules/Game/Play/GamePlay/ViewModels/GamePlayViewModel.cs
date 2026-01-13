@@ -275,7 +275,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
         try
         {
             var fields = prompt.Fields
-                .Select(f => (f.Key, f.Label, f.InitialText))
+                .Select(f => (f.Key, f.Label, f.InitialText, f.Kind))
                 .ToList();
 
             var values = await _textPrompts.PromptConfigAsync(prompt.Title, fields).ConfigureAwait(true);
@@ -312,6 +312,16 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
                     }
                     payload[field.Key] = value;
                 }
+                else if (string.Equals(field.Kind, "bool", StringComparison.OrdinalIgnoreCase) ||
+                         string.Equals(field.Kind, "boolean", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (!TryParseBool(text, out var value))
+                    {
+                        await _dialogs.ShowError("Configuration", $"Veuillez cocher/décocher : {field.Label}.").ConfigureAwait(true);
+                        return false;
+                    }
+                    payload[field.Key] = value;
+                }
                 else
                 {
                     payload[field.Key] = (text ?? string.Empty).Trim();
@@ -327,6 +337,34 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
         {
             Interlocked.Exchange(ref _configPromptInProgress, 0);
         }
+    }
+
+    private static bool TryParseBool(string? text, out bool value)
+    {
+        var t = (text ?? string.Empty).Trim();
+        if (bool.TryParse(t, out value))
+        {
+            return true;
+        }
+
+        switch (t.ToLowerInvariant())
+        {
+            case "1":
+            case "oui":
+            case "yes":
+            case "on":
+                value = true;
+                return true;
+            case "0":
+            case "non":
+            case "no":
+            case "off":
+                value = false;
+                return true;
+        }
+
+        value = false;
+        return false;
     }
 
     public void SetSpectator(bool isSpectator)

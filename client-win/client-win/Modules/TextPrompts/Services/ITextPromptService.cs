@@ -9,7 +9,7 @@ public interface ITextPromptService
 
     Task<Dictionary<string, string>?> PromptConfigAsync(
         string title,
-        IReadOnlyList<(string Key, string Label, string InitialText)> fields);
+        IReadOnlyList<(string Key, string Label, string InitialText, string Kind)> fields);
 
     Task<(string Subject, string Message)?> PromptPrivateMessageAsync(
         string title,
