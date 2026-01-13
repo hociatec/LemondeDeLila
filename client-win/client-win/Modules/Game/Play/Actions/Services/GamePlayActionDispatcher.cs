@@ -15,6 +15,7 @@ internal sealed class GamePlayActionDispatcher
     internal bool TryBuildPendingChoiceAction(
         GameSession session,
         string selectedChoice,
+        int selectedChoiceIndex,
         out GameClientAction? action)
     {
         action = null;
@@ -28,8 +29,12 @@ internal sealed class GamePlayActionDispatcher
             return false;
         }
 
-        var index = state.Pending.Choices.FindIndex(c =>
-            string.Equals(c?.Trim(), selectedChoice.Trim(), StringComparison.Ordinal));
+        var index = selectedChoiceIndex;
+        if (index < 0 || index >= state.Pending.Choices.Count)
+        {
+            index = state.Pending.Choices.FindIndex(c =>
+                string.Equals(c?.Trim(), selectedChoice.Trim(), StringComparison.Ordinal));
+        }
         if (index < 0)
         {
             return false;

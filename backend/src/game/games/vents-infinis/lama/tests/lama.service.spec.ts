@@ -214,10 +214,10 @@ describe('LamaService', () => {
 
     const exposed: any = service.exposeStateForUser(state, 1);
     const choices = exposed?.pending?.choices ?? [];
-    expect(choices).toEqual(['1×3']);
+    expect(choices).toEqual(['1', '1', '1']);
 
     const playActions = (exposed?.actions ?? []).filter((a: any) => a?.type === 'lama_play');
-    expect(playActions.length).toBe(1);
+    expect(playActions.length).toBe(3);
     expect(playActions.every((a: any) => Number(a?.payload?.count ?? 0) === 1)).toBe(true);
   });
 

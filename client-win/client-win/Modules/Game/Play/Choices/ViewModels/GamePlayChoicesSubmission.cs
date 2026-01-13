@@ -8,13 +8,13 @@ namespace client_win.Modules.Game.Play.Choices.ViewModels;
 
 internal sealed class GamePlayChoicesSubmission
 {
-    private readonly Func<GameSession, string, GameClientAction?> _tryBuildPendingAction;
+    private readonly Func<GameSession, string, int, GameClientAction?> _tryBuildPendingAction;
     private readonly Func<GameSession, bool> _hasServerPendingChoices;
     private readonly Func<string, GameClientAction?> _tryGetLocalAction;
     private int _submitInProgress;
 
     internal GamePlayChoicesSubmission(
-        Func<GameSession, string, GameClientAction?> tryBuildPendingAction,
+        Func<GameSession, string, int, GameClientAction?> tryBuildPendingAction,
         Func<GameSession, bool> hasServerPendingChoices,
         Func<string, GameClientAction?> tryGetLocalAction)
     {
@@ -26,6 +26,7 @@ internal sealed class GamePlayChoicesSubmission
     internal async Task<bool> SubmitAsync(
         GameSession session,
         string? selectedChoice,
+        int selectedChoiceIndex,
         Action<string> emitError,
         Action<bool> clearLocalChoices,
         CancellationToken cancellationToken = default)
@@ -51,7 +52,7 @@ internal sealed class GamePlayChoicesSubmission
             // 1) Choix "pending" fournis par le serveur (quiz, exchange, ask_card, ...)
             if (_hasServerPendingChoices(session))
             {
-                action = _tryBuildPendingAction(session, choice);
+                action = _tryBuildPendingAction(session, choice, selectedChoiceIndex);
                 if (action == null)
                 {
                     return false;

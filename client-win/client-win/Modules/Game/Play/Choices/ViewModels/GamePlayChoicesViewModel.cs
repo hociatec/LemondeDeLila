@@ -18,6 +18,7 @@ internal sealed class GamePlayChoicesViewModel : ObservableObject
     private readonly GamePlayChoicesStateSynchronizer _sync;
     private readonly GamePlayChoicesSubmission _submit;
     private string? _selectedChoice;
+    private int _selectedChoiceIndex = -1;
     private string _choicesLabel = string.Empty;
 
     public GamePlayChoicesViewModel(GamePlayActionDispatcher actions)
@@ -26,12 +27,14 @@ internal sealed class GamePlayChoicesViewModel : ObservableObject
         _list = new GamePlayChoicesListController(
             PendingChoices,
             getSelected: () => SelectedChoice,
-            setSelected: v => SelectedChoice = v);
+            setSelected: v => SelectedChoice = v,
+            getSelectedIndex: () => SelectedChoiceIndex,
+            setSelectedIndex: v => SelectedChoiceIndex = v);
         _sync = new GamePlayChoicesStateSynchronizer(_localChoices, _list);
         _submit = new GamePlayChoicesSubmission(
-            tryBuildPendingAction: (session, choice) =>
+            tryBuildPendingAction: (session, choice, index) =>
             {
-                return _actions.TryBuildPendingChoiceAction(session, choice, out var action) ? action : null;
+                return _actions.TryBuildPendingChoiceAction(session, choice, index, out var action) ? action : null;
             },
             hasServerPendingChoices: session => (session.LastState?.Pending?.Choices?.Count ?? 0) > 0,
             tryGetLocalAction: choice => _localChoices.TryGetAction(choice, out var action) ? action : null);
@@ -51,6 +54,12 @@ internal sealed class GamePlayChoicesViewModel : ObservableObject
         set => SetProperty(ref _selectedChoice, value);
     }
 
+    public int SelectedChoiceIndex
+    {
+        get => _selectedChoiceIndex;
+        set => SetProperty(ref _selectedChoiceIndex, value);
+    }
+
     public async Task<bool> SubmitSelectedChoiceAsync(
         GameSession session,
         Action<string> emitError,
@@ -60,6 +69,7 @@ internal sealed class GamePlayChoicesViewModel : ObservableObject
         return await _submit.SubmitAsync(
                 session,
                 SelectedChoice,
+                SelectedChoiceIndex,
                 emitError,
                 clearLocalChoices: onlyWhenNoServerPending => ClearLocalChoices(onlyWhenNoServerPending, session),
                 cancellationToken)

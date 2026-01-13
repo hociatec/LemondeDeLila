@@ -57,17 +57,13 @@ export class LamaPresenter extends BasePresenterService {
     ];
 
     const handValues = ((meta.handsByPlayerId ?? {})[String(userId)] ?? []) as LamaCardValue[];
-    const handCounts = new Map<LamaCardValue, number>();
-    for (const v of handValues) {
-      handCounts.set(v, (handCounts.get(v) ?? 0) + 1);
-    }
-    const uniqueHandValues = [...handCounts.keys()].sort((a, b) => a - b);
     const dropped = Boolean((meta.droppedOutByPlayerId ?? {})[String(userId)]);
+    const sortedHandValues = [...handValues].sort((a, b) => a - b);
 
     const current = state.turn?.currentPlayerId ?? null;
     if (current !== userId) {
       // Not your turn: allow browsing hand without sending game-altering actions.
-      for (const value of uniqueHandValues) {
+      for (const value of sortedHandValues) {
         out.push({ type: 'lama_preview', payload: { value } });
       }
       return out;
@@ -88,8 +84,8 @@ export class LamaPresenter extends BasePresenterService {
     const top = this.topDiscard(meta);
     if (!top) return out;
 
-    // One pending choice per card value in hand (with counts in the label): ENTER plays the selected value.
-    for (const value of uniqueHandValues) {
+    // One pending choice per card in hand (including duplicates): ENTER plays the selected card (count=1).
+    for (const value of sortedHandValues) {
       out.push({ type: 'lama_play', payload: { value, count: 1 } });
     }
 
@@ -192,13 +188,10 @@ export class LamaPresenter extends BasePresenterService {
 
     const next = nextLamaValue(top);
 
-    const counts = new Map<LamaCardValue, number>();
-    for (const v of hand as LamaCardValue[]) {
-      counts.set(v, (counts.get(v) ?? 0) + 1);
-    }
-    const choices = [...counts.entries()]
-      .sort((a, b) => a[0] - b[0])
-      .map(([value, count]) => (count > 1 ? `${lamaCardLabel(value)}×${count}` : lamaCardLabel(value)));
+    const choices = (hand as LamaCardValue[])
+      .slice()
+      .sort((a, b) => a - b)
+      .map(lamaCardLabel);
 
     const meScore = Number((metadata.scoresByPlayerId ?? {})[String(userId)] ?? 0);
     const deckCount = (metadata.deck ?? []).length;
