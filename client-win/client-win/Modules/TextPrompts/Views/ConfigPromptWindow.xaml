@@ -12,8 +12,7 @@
         <DataTemplate x:Key="TextFieldTemplate">
             <StackPanel Margin="0 0 0 10"
                         Focusable="False"
-                        KeyboardNavigation.IsTabStop="False"
-                        AutomationProperties.Name="{Binding Label}">
+                        KeyboardNavigation.IsTabStop="False">
                 <Label x:Name="FieldLabel"
                        Content="{Binding Label}"
                        Foreground="#C3D2EA"
@@ -27,7 +26,6 @@
                          BorderThickness="1"
                          Padding="8"
                          MinWidth="420"
-                         AutomationProperties.Name="{Binding Label}"
                          AutomationProperties.AutomationId="{Binding Key}"
                          AutomationProperties.LabeledBy="{Binding ElementName=FieldLabel}"/>
             </StackPanel>
@@ -38,7 +36,6 @@
                       Content="{Binding Label}"
                       IsChecked="{Binding BoolValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                       Foreground="White"
-                      AutomationProperties.Name="{Binding Label}"
                       AutomationProperties.AutomationId="{Binding Key}"/>
         </DataTemplate>
     </Window.Resources>
@@ -67,7 +64,6 @@
                 <Style TargetType="ContentPresenter">
                     <Setter Property="Focusable" Value="False"/>
                     <Setter Property="KeyboardNavigation.IsTabStop" Value="False"/>
-                    <Setter Property="AutomationProperties.Name" Value="{Binding Label}"/>
                     <Setter Property="AutomationProperties.AutomationId" Value="{Binding Key}"/>
                 </Style>
             </ItemsControl.ItemContainerStyle>
@@ -75,8 +71,7 @@
                 <DataTemplate>
                     <ContentControl Content="{Binding}"
                                     Focusable="False"
-                                    KeyboardNavigation.IsTabStop="False"
-                                    AutomationProperties.Name="{Binding Label}">
+                                    KeyboardNavigation.IsTabStop="False">
                         <ContentControl.Style>
                             <Style TargetType="ContentControl">
                                 <Setter Property="ContentTemplate" Value="{StaticResource TextFieldTemplate}"/>

@@ -330,8 +330,10 @@ public sealed class SoundService : ISoundService, IDisposable
             // Dans ce cas, on supprime le son "connexion" si on vient de jouer "ouverture".
             if (sound == SoundId.ClientConnected &&
                 _lastPlayTicks.TryGetValue(SoundId.ClientOpened, out var lastOpened) &&
-                now - lastOpened < Stopwatch.Frequency * 2)
+                // Tolérance plus large: l'auto-login peut prendre quelques secondes (WS + refresh sons distants).
+                now - lastOpened < Stopwatch.Frequency * 8)
             {
+                try { _logger.LogDebug("Suppress ClientConnected: ClientOpened played recently."); } catch { /* ignore */ }
                 return;
             }
 
@@ -650,6 +652,16 @@ public sealed class SoundService : ISoundService, IDisposable
         if (!File.Exists(filePath))
         {
             _logger.LogDebug("Loop sound file missing: {Path}", filePath);
+            return;
+        }
+
+        // Les boucles "ambiance/musique" ont des placeholders (roomopened.mp3) par défaut.
+        // Tant que l'admin n'a pas uploadé un vrai son, ne pas lancer la boucle (sinon on entend un 2e "son court" au démarrage).
+        if ((sound == SoundId.MainMenuMusic || sound == SoundId.TavernAmbience) &&
+            string.IsNullOrWhiteSpace(_remote?.TryGetPath(sound)) &&
+            string.Equals(Path.GetFileName(filePath), "roomopened.mp3", StringComparison.OrdinalIgnoreCase))
+        {
+            try { _logger.LogDebug("Skip loop sound (placeholder): {Sound}", sound); } catch { /* ignore */ }
             return;
         }
 

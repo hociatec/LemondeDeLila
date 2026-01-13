@@ -370,9 +370,21 @@ public static class AppBootstrapper
 
             // Sons de connexion/déconnexion au WS API (si activé).
             var ws = provider.GetRequiredService<PersistentWsClient>();
+            var wsHadConnectedOnce = 0;
+            ws.Connected += () => Interlocked.Exchange(ref wsHadConnectedOnce, 1);
             ws.Disconnected += _ =>
                 dispatcher.BeginInvoke(
-                    (Action)(() => sounds.Play(Modules.Audio.Models.SoundId.ClientDisconnected)),
+                    (Action)(() =>
+                    {
+                        // Au démarrage, le WS peut tenter de se connecter puis échouer (réseau lent),
+                        // ce qui déclenche un "son de déconnexion" perçu comme un 2e son de lancement.
+                        // Ne jouer ce son que si une connexion a déjà été établie au moins une fois.
+                        if (Interlocked.CompareExchange(ref wsHadConnectedOnce, 0, 0) == 0)
+                        {
+                            return;
+                        }
+                        sounds.Play(Modules.Audio.Models.SoundId.ClientDisconnected);
+                    }),
                     DispatcherPriority.Send);
         }
         catch

@@ -51,6 +51,7 @@ namespace client_win
         private bool _exitPromptOpen;
         private int _soundInitRevision;
         private long _lastClientDisconnectedSoundTicks;
+        private readonly long _appStartTicks = Stopwatch.GetTimestamp();
 
         public INavigationService Navigation => _navigation;
 
@@ -336,10 +337,16 @@ namespace client_win
             try
             {
                 var sounds = _host.Services.GetRequiredService<ISoundService>();
+                // Au démarrage, le son d'ouverture (ClientOpened) a déjà été joué.
+                // Si l'auto-login enchaîne, jouer aussi ClientConnected donne un "double son de lancement".
+                // On ne joue donc pas ClientConnected pendant les toutes premières secondes.
+                if (Stopwatch.GetTimestamp() - _appStartTicks > Stopwatch.Frequency * 12)
+                {
                 // Éviter le BeginInvoke ici: on est déjà sur le thread UI, et ça ajoute une latence perceptible.
                 // Précharger + warm-up pour réduire au maximum la latence du tout premier play.
                 sounds.Preload(SoundId.ClientConnected, warmUp: true);
                 sounds.Play(SoundId.ClientConnected);
+                }
             }
             catch
             {
