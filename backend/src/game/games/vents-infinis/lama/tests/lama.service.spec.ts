@@ -117,6 +117,7 @@ describe('LamaService', () => {
 
     expect(shortcuts.some((s: any) => s?.type === 'interface' && s?.id === 'discard')).toBe(true);
     expect(shortcuts.some((s: any) => s?.type === 'interface' && s?.id === 'hands')).toBe(true);
+    expect(shortcuts.some((s: any) => s?.type === 'interface' && s?.id === 'score')).toBe(true);
     expect(
       shortcuts.some(
         (s: any) => s?.type === 'action' && s?.actionType === 'lama_quit',

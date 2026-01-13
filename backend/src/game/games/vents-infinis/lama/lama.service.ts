@@ -190,11 +190,22 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
       Boolean(tracker?.drawn) &&
       !Boolean(tracker?.played);
 
+    const topDiscard = Array.isArray(meta?.discard) && meta.discard.length
+      ? (meta.discard[meta.discard.length - 1] as any)
+      : null;
+    const hand: any[] = Array.isArray(meta?.handsByPlayerId?.[String(ctx?.currentPlayerId ?? '')])
+      ? meta.handsByPlayerId[String(ctx.currentPlayerId)]
+      : [];
+    const canActuallyPlayAfterDraw =
+      allowPlayAfterDraw &&
+      topDiscard != null &&
+      hand.some((v) => v === topDiscard || v === nextLamaValue(topDiscard));
+
     return [
       interfaceShortcut('C', 'discard'),
       interfaceShortcut('E', 'hands'),
       interfaceShortcut('S', 'score'),
-      ...(canPass ? [actionShortcut('T', 'lama_pass')] : []),
+      ...(canPass && canActuallyPlayAfterDraw ? [actionShortcut('T', 'lama_pass')] : []),
       actionShortcut('P', 'lama_quit'),
     ];
   }
@@ -429,6 +440,15 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
     log.push({ message: `${name} pioche.` });
 
     const allowPlayAfterDraw = Boolean(meta.allowPlayAfterDraw);
+
+    const topDiscard = Array.isArray(meta.discard) && meta.discard.length
+      ? (meta.discard[meta.discard.length - 1] as LamaCardValue)
+      : null;
+    const canPlayAfterDraw =
+      allowPlayAfterDraw &&
+      topDiscard != null &&
+      hand.some((v) => v === topDiscard || v === nextLamaValue(topDiscard));
+
     const nextMeta: LamaMetadata = {
       ...meta,
       deck,
@@ -438,11 +458,11 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
         : meta.turnTracker,
     };
 
-    const nextPlayerId = allowPlayAfterDraw
+    const nextPlayerId = canPlayAfterDraw
       ? actorId
       : this.findNextActivePlayerId(players, nextMeta, actorId);
 
-    const advancedMeta: LamaMetadata = allowPlayAfterDraw
+    const advancedMeta: LamaMetadata = canPlayAfterDraw
       ? nextMeta
       : { ...nextMeta, turnTracker: { playerId: nextPlayerId, drawn: false, played: false } };
 
