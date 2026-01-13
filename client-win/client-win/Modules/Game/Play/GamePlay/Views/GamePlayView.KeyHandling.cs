@@ -1,12 +1,61 @@
 using System.Threading;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Controls;
 using client_win.Modules.Game.Play.GamePlay.ViewModels;
 
 namespace client_win.Modules.Game.Play.GamePlay.Views;
 
 public partial class GamePlayView
 {
+    private bool TryHandleHandNavigation(KeyEventArgs e)
+    {
+        if (e.Key is not (Key.Up or Key.Down))
+        {
+            return false;
+        }
+
+        if (DataContext is GamePlayViewModel vm && vm.Grid.IsVisible)
+        {
+            return false;
+        }
+
+        if (ChoicesList.Visibility != Visibility.Visible || ChoicesList.Items.Count <= 0)
+        {
+            return false;
+        }
+
+        // Naviguer la liste même si le focus est ailleurs (Tab/Maj+Tab, historique, etc.).
+        e.Handled = true;
+
+        var count = ChoicesList.Items.Count;
+        var current = ChoicesList.SelectedIndex;
+        if (current < 0)
+        {
+            current = 0;
+        }
+
+        var delta = e.Key == Key.Up ? -1 : 1;
+        var next = (current + delta) % count;
+        if (next < 0) next += count;
+
+        ChoicesList.SelectedIndex = next;
+        ChoicesList.ScrollIntoView(ChoicesList.SelectedItem);
+
+        if (ChoicesList.ItemContainerGenerator.ContainerFromIndex(next) is ListBoxItem item)
+        {
+            item.Focus();
+            Keyboard.Focus(item);
+        }
+        else
+        {
+            ChoicesList.Focus();
+            Keyboard.Focus(ChoicesList);
+        }
+
+        return true;
+    }
+
     private bool IsFocusWithinChoices()
     {
         if (ChoicesList == null)
@@ -60,6 +109,27 @@ public partial class GamePlayView
     private async void OnRootPreviewKeyDown(object sender, KeyEventArgs e)
     {
         if (IsTextInputFocused())
+        {
+            return;
+        }
+
+        // Éviter que Tab/Maj+Tab fasse "sortir" le focus de la zone de jeu, ce qui casse l'UX clavier.
+        if (e.Key == Key.Tab)
+        {
+            e.Handled = true;
+            ForceFocusGameZone();
+            return;
+        }
+
+        // Échap sert de "reset focus" côté client; ne pas l'envoyer au serveur (qui n'a souvent aucun raccourci ESC).
+        if (e.Key == Key.Escape)
+        {
+            e.Handled = true;
+            ForceFocusGameZone();
+            return;
+        }
+
+        if (TryHandleHandNavigation(e))
         {
             return;
         }
@@ -171,7 +241,6 @@ public partial class GamePlayView
             Key.Space => "SPACE",
             Key.Enter or Key.Return => "ENTER",
             Key.Back => "BACK",
-            Key.Escape => "ESC",
             _ => string.Empty
         };
 

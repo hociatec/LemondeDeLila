@@ -1122,12 +1122,78 @@ export class GameEngineService {
     });
   }
 
+  private buildSystemTimerKey(roomId: number, gameType: string, suffix: string): string {
+    return `${this.buildKey(roomId, gameType)}:${suffix}`;
+  }
+
+  private async applySystemActions(
+    roomId: number,
+    gameType: string,
+    actions: GameSingleActionDto[],
+  ): Promise<void> {
+    await this.enqueueMutation(this.buildKey(roomId, gameType), async () => {
+      const current = await this.normalizeBotThinking(
+        roomId,
+        gameType,
+        await this.getInternalState(roomId, gameType),
+      );
+      if ((current.status || '').toLowerCase() === 'finished') {
+        return;
+      }
+
+      const handler = this.registry.getHandler(gameType);
+      if (!handler) {
+        return;
+      }
+
+      const meta: any = current?.metadata && typeof current.metadata === 'object' ? current.metadata : {};
+      const fallbackActorId =
+        typeof meta.ownerPlayerId === 'number'
+          ? meta.ownerPlayerId
+          : (current.turn?.currentPlayerId ?? current.players?.[0]?.id ?? null);
+
+      const sanitizedActions = (Array.isArray(actions) ? actions : []).map((action) => ({
+        ...action,
+        meta: {
+          ...(action?.meta ?? {}),
+          actor: 'system',
+          actorId: fallbackActorId,
+        },
+      }));
+
+      const next = await handler.applyActions(current, sanitizedActions);
+      const botTurn = this.isBotTurn(next);
+      let marked = await this.markBotThinking(roomId, gameType, next, botTurn);
+      marked = this.normalizeWinnerMetadata(marked);
+      marked = this.forceFinishedIfWinnerDetected(marked);
+
+      const previousPlayerId = current.turn?.currentPlayerId ?? null;
+      const nextPlayerId = marked.turn?.currentPlayerId ?? null;
+      if (
+        previousPlayerId != null &&
+        nextPlayerId != null &&
+        previousPlayerId !== nextPlayerId &&
+        String(marked.status ?? '').toLowerCase() === 'started'
+      ) {
+        const nextPlayer = marked.players?.find((p) => p.id === nextPlayerId) ?? null;
+        const name = String(nextPlayer?.username ?? '').trim();
+        const who = name ? name : `joueur ${nextPlayerId}`;
+        marked = this.core.appendLog(marked, `C'est au tour de ${who}.`);
+        await this.store.set(roomId, gameType, marked);
+      }
+
+      await this.scheduleBotTurn(roomId, gameType, marked);
+      this.broadcaster?.(gameType, roomId, marked);
+    });
+  }
+
   private async scheduleBotTurn(
     roomId: number,
     gameType: string,
     state: GameStateEntity,
   ): Promise<void> {
     const key = this.buildKey(roomId, gameType);
+    const systemKey = this.buildSystemTimerKey(roomId, gameType, 'system');
     const status = (state.status || '').toLowerCase();
     if (
       status === 'finished' ||
@@ -1137,7 +1203,47 @@ export class GameEngineService {
       status === 'preparing'
     ) {
       this.botScheduler.clear(key);
+      this.botScheduler.clear(systemKey);
       return;
+    }
+
+    // Timed transitions (currently used by LAMA for "pause between rounds").
+    if (gameType === 'lama') {
+      const meta: any =
+        state?.metadata && typeof state.metadata === 'object' ? state.metadata : {};
+      if (String(meta.step ?? '') === 'round_pause') {
+        const untilMs = typeof meta.roundPauseUntilMs === 'number' ? meta.roundPauseUntilMs : null;
+        const delayMs = untilMs != null ? Math.max(0, untilMs - GameEngineService.nowMs()) : 0;
+        this.botScheduler.clear(key);
+        this.botScheduler.schedule({
+          key: systemKey,
+          delayMs,
+          roomId,
+          gameType,
+          run: async () => {
+            const latest = (await this.store.get(roomId, gameType)) ?? null;
+            if (!latest) return;
+            const latestMeta: any =
+              latest?.metadata && typeof latest.metadata === 'object' ? latest.metadata : {};
+            if (String(latestMeta.step ?? '') !== 'round_pause') return;
+            if (
+              typeof latestMeta.roundPauseUntilMs === 'number' &&
+              typeof untilMs === 'number' &&
+              latestMeta.roundPauseUntilMs !== untilMs
+            ) {
+              return;
+            }
+            await this.applySystemActions(roomId, gameType, [
+              { type: 'lama_resume_round', payload: {} },
+            ]);
+          },
+          onStale: () => this.cleanupRoom(roomId, gameType),
+        });
+        return;
+      }
+
+      // No pause: ensure timer is cleared.
+      this.botScheduler.clear(systemKey);
     }
 
     const handler = this.registry.getHandler(gameType);

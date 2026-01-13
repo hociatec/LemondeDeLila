@@ -106,7 +106,12 @@ internal sealed class GamePlayRealtimeController
         {
             var force = _pendingForcedTurnAnnouncements > 0;
             if (force) _pendingForcedTurnAnnouncements = Math.Max(0, _pendingForcedTurnAnnouncements - 1);
-            _announcementRouter.TryHandleTurnUpdate(info, _emitMessage, force: force);
+            // Évite le spam : les tours sont déjà annoncés via l'historique serveur.
+            // Garder seulement les annonces "forcées" (ex: demande manuelle de game.turn).
+            if (force)
+            {
+                _announcementRouter.TryHandleTurnUpdate(info, _emitMessage, force: true);
+            }
         }, DispatcherPriority.Background);
     }
 

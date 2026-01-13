@@ -14,6 +14,12 @@ public partial class GamePlayView
         var vm = DataContext as GamePlayViewModel;
         HookChoiceAutoFocus(vm);
         TryStartInitialization(vm);
+
+        // Assure le focus clavier dès l'entrée dans une table (sinon Enter/B/Space ne partent pas sans clic souris).
+        Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
+        {
+            ForceFocusGameZone();
+        }));
     }
 
     private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
@@ -21,6 +27,11 @@ public partial class GamePlayView
         var vm = DataContext as GamePlayViewModel;
         HookChoiceAutoFocus(vm);
         TryStartInitialization(vm);
+
+        Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
+        {
+            ForceFocusGameZone();
+        }));
     }
 
     private void OnUnloaded(object sender, RoutedEventArgs e)

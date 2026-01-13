@@ -172,11 +172,43 @@ public partial class GamePlayView
             return;
         }
 
+        // Priorité UX :
+        // - si une grille est visible: ancrer sur la grille (jeux type Corridor)
+        // - sinon, si une liste de choix est visible: ancrer sur cette liste (ex: LAMA = main)
+        // - sinon: ancrer sur la vue racine
+        if (DataContext is GamePlayViewModel vm && vm.Grid.IsVisible)
+        {
+            Focus();
+            Keyboard.Focus(this);
+            TryFocusPreferredGridCell();
+            return;
+        }
+
+        if (ChoicesList.Visibility == Visibility.Visible && ChoicesList.Items.Count > 0)
+        {
+            if (ChoicesList.SelectedIndex < 0)
+            {
+                ChoicesList.SelectedIndex = 0;
+            }
+
+            ChoicesList.ScrollIntoView(ChoicesList.SelectedItem);
+            ChoicesList.UpdateLayout();
+
+            var idx = ChoicesList.SelectedIndex < 0 ? 0 : ChoicesList.SelectedIndex;
+            if (ChoicesList.ItemContainerGenerator.ContainerFromIndex(idx) is ListBoxItem item)
+            {
+                item.Focus();
+                Keyboard.Focus(item);
+                return;
+            }
+
+            ChoicesList.Focus();
+            Keyboard.Focus(ChoicesList);
+            return;
+        }
+
         Focus();
         Keyboard.Focus(this);
-
-        // Si une grille est affichée, on ancre le focus sur une case (sinon les flèches ne déplacent rien).
-        TryFocusPreferredGridCell();
     }
 
     private async void OnChoicesKeyDown(object sender, KeyEventArgs e)

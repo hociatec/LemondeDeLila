@@ -58,6 +58,8 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
       rng: typeof baseState.metadata === 'object' && baseState.metadata ? (baseState.metadata as any).rng : undefined,
       ownerPlayerId,
       loseAtScore: null,
+      roundPauseSeconds: null,
+      roundPauseUntilMs: null,
       roundNumber: 1,
       roundStarterIndex: 0,
       deck: [],
@@ -109,6 +111,9 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
     if (meta.winnerId) return [];
 
     const step = meta.step ?? 'turn_choice';
+    if (step === 'round_pause' || step === 'setup_target' || step === 'setup_pause') {
+      return [];
+    }
     if (step === 'return_token') {
       if (meta.pendingReturnPlayerId !== botPlayerId) return [];
       const score = Number((meta.scoresByPlayerId ?? {})[String(botPlayerId)] ?? 0);
@@ -164,7 +169,8 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
     if (!ctx?.started) return [];
 
     return [
-      actionShortcut('C', 'lama_peek_discard'),
+      interfaceShortcut('C', 'discard'),
+      interfaceShortcut('E', 'deck'),
       actionShortcut('P', 'lama_quit'),
     ];
   }
@@ -208,6 +214,47 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
       const updatedMeta: LamaMetadata = {
         ...meta,
         loseAtScore,
+        step: 'setup_pause',
+        roundNumber: 1,
+        roundStarterIndex: 0,
+        pendingReturnQueue: [],
+        pendingReturnPlayerId: null,
+      };
+
+      const log = Array.isArray(state.log) ? [...state.log] : [];
+      const name = players.find((p) => p?.id === actorId)?.username ?? `#${actorId}`;
+      log.push({ message: `${name} fixe la défaite à ${loseAtScore} points.` });
+
+      return {
+        ...state,
+        status: 'started',
+        phase: 'setup',
+        turnIndex: state.turnIndex ?? 0,
+        lastRoll: null,
+        pending: null,
+        log,
+        metadata: updatedMeta as any,
+        turn: {
+          ...(state.turn ?? { direction: 1 }),
+          currentPlayerId: meta.ownerPlayerId,
+          direction: 1,
+          label: `Réglages LAMA : délai entre manches`,
+        },
+      };
+    }
+
+    // Setup (step 2): owner chooses pause duration between rounds, then the first round starts.
+    if ((meta.step ?? '') === 'setup_pause') {
+      if (type !== 'lama_set_pause') return state;
+      if (meta.ownerPlayerId == null || actorId !== meta.ownerPlayerId) return state;
+      const raw = Number((action.payload as any)?.roundPauseSeconds);
+      const roundPauseSeconds = Number.isFinite(raw) ? Math.floor(raw) : NaN;
+      if (!Number.isFinite(roundPauseSeconds) || roundPauseSeconds < 0 || roundPauseSeconds > 120) return state;
+
+      const updatedMeta: LamaMetadata = {
+        ...meta,
+        roundPauseSeconds,
+        roundPauseUntilMs: null,
         step: 'turn_choice',
         roundNumber: 1,
         roundStarterIndex: 0,
@@ -217,7 +264,7 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
 
       const log = Array.isArray(state.log) ? [...state.log] : [];
       const name = players.find((p) => p?.id === actorId)?.username ?? `#${actorId}`;
-      log.push({ message: `${name} fixe la défaite à ${loseAtScore} points. Début de la partie.` });
+      log.push({ message: `${name} règle la pause entre manches à ${roundPauseSeconds}s. Début de la partie.` });
 
       return this.startNewRound(
         {
@@ -232,6 +279,24 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
           metadata: updatedMeta as any,
         },
         updatedMeta.roundStarterIndex,
+      );
+    }
+
+    // System: resume a round after the configured pause (does not require turn ownership).
+    if ((meta.step ?? '') === 'round_pause') {
+      if (type !== 'lama_resume_round') return state;
+      const until = typeof meta.roundPauseUntilMs === 'number' ? meta.roundPauseUntilMs : null;
+      if (until != null && Date.now() < until) {
+        return state;
+      }
+      const clearedMeta: LamaMetadata = {
+        ...meta,
+        roundPauseUntilMs: null,
+        step: 'turn_choice',
+      };
+      return this.startNewRound(
+        { ...state, metadata: clearedMeta as any, phase: 'round', round: Number(clearedMeta.roundNumber ?? state.round ?? 1) },
+        Number(clearedMeta.roundStarterIndex ?? 0),
       );
     }
 
@@ -364,7 +429,7 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
     const players = Array.isArray(state.players) ? state.players : [];
     const name = players.find((p) => p?.id === actorId)?.username ?? `#${actorId}`;
     const log = Array.isArray(state.log) ? [...state.log] : [];
-    log.push({ message: `${name} se retire du round.` });
+    log.push({ message: `${name} se retire de la manche.` });
 
     const nextMeta: LamaMetadata = { ...meta, droppedOutByPlayerId };
     const nextStateBase: GameStateEntity = { ...state, metadata: nextMeta as any, log };
@@ -572,19 +637,37 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
 
     const nextRound = Number(meta.roundNumber ?? 1) + 1;
     const starter = (Number(meta.roundStarterIndex ?? 0) + 1) % Math.max(1, players.length);
+    const pauseSeconds = Number(meta.roundPauseSeconds ?? 0);
+    const pauseMs = Number.isFinite(pauseSeconds) ? Math.max(0, Math.floor(pauseSeconds) * 1000) : 0;
     const updatedMeta: LamaMetadata = {
       ...meta,
       roundNumber: nextRound,
       roundStarterIndex: starter,
-      step: 'turn_choice',
+      step: pauseMs > 0 ? 'round_pause' : 'turn_choice',
+      roundPauseUntilMs: pauseMs > 0 ? Date.now() + pauseMs : null,
       pendingReturnQueue: [],
       pendingReturnPlayerId: null,
     };
 
-    return this.startNewRound(
-      { ...state, metadata: updatedMeta as any, round: nextRound },
-      starter,
-    );
+    if (pauseMs > 0) {
+      const log = Array.isArray(state.log) ? [...state.log] : [];
+      log.push({ message: `Pause ${Math.floor(pauseMs / 1000)}s avant le round ${nextRound}.` });
+      return {
+        ...state,
+        phase: 'round',
+        round: nextRound,
+        log,
+        metadata: updatedMeta as any,
+        turn: {
+          ...(state.turn ?? { direction: 1 }),
+          currentPlayerId: meta.ownerPlayerId ?? state.turn?.currentPlayerId ?? null,
+          direction: 1,
+          label: `Pause avant le round ${nextRound}`,
+        },
+      };
+    }
+
+    return this.startNewRound({ ...state, metadata: updatedMeta as any, round: nextRound }, starter);
   }
 
   private startNewRound(state: GameStateEntity, starterIndex: number): GameStateEntity {

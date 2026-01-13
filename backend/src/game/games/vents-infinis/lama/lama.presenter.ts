@@ -39,6 +39,16 @@ export class LamaPresenter extends BasePresenterService {
       return [{ type: 'lama_set_target', payload: {} }];
     }
 
+    if ((meta.step ?? '') === 'setup_pause') {
+      const ownerId = meta.ownerPlayerId ?? null;
+      if (ownerId == null || userId !== ownerId) return [];
+      return [{ type: 'lama_set_pause', payload: {} }];
+    }
+
+    if ((meta.step ?? '') === 'round_pause') {
+      return [];
+    }
+
     if (!this.isStarted(state)) return [];
 
     const out: GameSingleActionDto[] = [
@@ -47,12 +57,17 @@ export class LamaPresenter extends BasePresenterService {
     ];
 
     const handValues = ((meta.handsByPlayerId ?? {})[String(userId)] ?? []) as LamaCardValue[];
+    const handCounts = new Map<LamaCardValue, number>();
+    for (const v of handValues) {
+      handCounts.set(v, (handCounts.get(v) ?? 0) + 1);
+    }
+    const uniqueHandValues = [...handCounts.keys()].sort((a, b) => a - b);
     const dropped = Boolean((meta.droppedOutByPlayerId ?? {})[String(userId)]);
 
     const current = state.turn?.currentPlayerId ?? null;
     if (current !== userId) {
       // Not your turn: allow browsing hand without sending game-altering actions.
-      for (const value of [...handValues].sort((a, b) => a - b)) {
+      for (const value of uniqueHandValues) {
         out.push({ type: 'lama_preview', payload: { value } });
       }
       return out;
@@ -73,8 +88,8 @@ export class LamaPresenter extends BasePresenterService {
     const top = this.topDiscard(meta);
     if (!top) return out;
 
-    // One pending choice per card in hand (including duplicates): ENTER plays selected card if legal.
-    for (const value of [...handValues].sort((a, b) => a - b)) {
+    // One pending choice per card value in hand (with counts in the label): ENTER plays the selected value.
+    for (const value of uniqueHandValues) {
       out.push({ type: 'lama_play', payload: { value, count: 1 } });
     }
 
@@ -119,6 +134,37 @@ export class LamaPresenter extends BasePresenterService {
       };
     }
 
+    if ((metadata.step ?? '') === 'setup_pause') {
+      const ownerId = metadata.ownerPlayerId ?? null;
+      if (ownerId == null || userId !== ownerId) return null;
+      return {
+        type: 'text_prompt',
+        label: 'Entrez la pause entre manches (secondes, 0 = aucune).',
+        playerId: ownerId,
+        choices: [],
+        data: {
+          title: 'LAMA',
+          initialText: String(metadata.roundPauseSeconds ?? 2),
+          actionType: 'lama_set_pause',
+          payloadKey: 'roundPauseSeconds',
+          kind: 'number',
+          min: 0,
+          max: 120,
+        },
+      };
+    }
+
+    if ((metadata.step ?? '') === 'round_pause') {
+      const until = typeof metadata.roundPauseUntilMs === 'number' ? metadata.roundPauseUntilMs : null;
+      const seconds = until != null ? Math.max(0, Math.ceil((until - Date.now()) / 1000)) : 0;
+      return {
+        type: 'lama_pause',
+        label: `Pause entre manches : prochain round dans ~${seconds}s.`,
+        playerId: userId,
+        choices: [],
+      };
+    }
+
     if (!this.isStarted(state)) return null;
     // Always expose hand + discard top for the viewer (the server is the source of truth).
 
@@ -145,8 +191,14 @@ export class LamaPresenter extends BasePresenterService {
     if (!top) return null;
 
     const next = nextLamaValue(top);
-    const playable = new Set<LamaCardValue>([top, next]);
-    const choices = (hand as LamaCardValue[]).slice().sort((a, b) => a - b).map(lamaCardLabel);
+
+    const counts = new Map<LamaCardValue, number>();
+    for (const v of hand as LamaCardValue[]) {
+      counts.set(v, (counts.get(v) ?? 0) + 1);
+    }
+    const choices = [...counts.entries()]
+      .sort((a, b) => a[0] - b[0])
+      .map(([value, count]) => (count > 1 ? `${lamaCardLabel(value)}×${count}` : lamaCardLabel(value)));
 
     const meScore = Number((metadata.scoresByPlayerId ?? {})[String(userId)] ?? 0);
     const deckCount = (metadata.deck ?? []).length;
@@ -173,6 +225,7 @@ export class LamaPresenter extends BasePresenterService {
     if (actionType === 'lama_play') return 'Jouer';
     if (actionType === 'draw') return 'Piocher';
     if (actionType === 'lama_set_target') return 'Score de défaite';
+    if (actionType === 'lama_set_pause') return 'Pause entre manches';
     if (actionType === 'lama_quit') return 'Se retirer';
     if (actionType === 'lama_return') return 'Retirer points';
     if (actionType === 'lama_peek_discard') return 'Voir défausse';
@@ -254,6 +307,10 @@ export class LamaPresenter extends BasePresenterService {
           hand: {
             title: 'Main',
             message: hand.length ? `Main: ${hand.join(', ')}` : 'Main: (vide)',
+          },
+          deck: {
+            title: 'Pioche',
+            message: `Pioche: ${deckCount} carte(s).`,
           },
           discard: {
             title: 'Défausse',

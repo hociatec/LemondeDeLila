@@ -1,11 +1,18 @@
 export type LamaCardValue = 1 | 2 | 3 | 4 | 5 | 6 | 7; // 7 = LAMA
 
-export type LamaRoundStep = 'setup_target' | 'turn_choice' | 'return_token';
+export type LamaRoundStep =
+  | 'setup_target'
+  | 'setup_pause'
+  | 'turn_choice'
+  | 'return_token'
+  | 'round_pause';
 
 export type LamaMetadata = {
   rng?: Record<string, any>;
   ownerPlayerId: number | null;
   loseAtScore: number | null;
+  roundPauseSeconds: number | null;
+  roundPauseUntilMs: number | null;
   roundNumber: number;
   roundStarterIndex: number;
   deck: LamaCardValue[];

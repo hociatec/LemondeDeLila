@@ -29,7 +29,7 @@ describe('LamaService', () => {
     expect(exposedB.pending).toBeNull();
   });
 
-  it('starts with a target-score setup step and owner can set losing score to start', async () => {
+  it('starts with setup prompts (lose score then pause), then starts the first round', async () => {
     const service = new LamaService(
       { register: () => {} } as any,
       new RandomService(),
@@ -53,11 +53,22 @@ describe('LamaService', () => {
     expect(String(exposed?.pending?.type ?? '')).toBe('text_prompt');
     expect((exposed?.actions ?? []).some((a: any) => a?.type === 'lama_set_target')).toBe(true);
 
-    const started: any = service.applyActions(state, [
+    const withLoseAt: any = service.applyActions(state, [
       { type: 'lama_set_target', payload: { loseAtScore: 40 }, meta: { actorId: 1 } } as any,
     ]);
-    expect(String(started.status)).toBe('started');
-    expect(Number(started.metadata?.loseAtScore ?? 0)).toBe(40);
+    expect(String(withLoseAt.status)).toBe('started');
+    expect(Number(withLoseAt.metadata?.loseAtScore ?? 0)).toBe(40);
+    expect(String(withLoseAt.metadata?.step ?? '')).toBe('setup_pause');
+
+    const promptPause: any = service.exposeStateForUser(withLoseAt, 1);
+    expect(String(promptPause?.pending?.type ?? '')).toBe('text_prompt');
+    expect((promptPause?.actions ?? []).some((a: any) => a?.type === 'lama_set_pause')).toBe(true);
+
+    const started: any = service.applyActions(withLoseAt, [
+      { type: 'lama_set_pause', payload: { roundPauseSeconds: 2 }, meta: { actorId: 1 } } as any,
+    ]);
+    expect(String(started.phase)).toBe('round');
+    expect(Number(started.metadata?.roundPauseSeconds ?? -1)).toBe(2);
     expect((started.metadata?.discard ?? []).length).toBeGreaterThan(0);
   });
 
@@ -101,7 +112,7 @@ describe('LamaService', () => {
     expect(['lama_play', 'draw', 'lama_quit', 'lama_return']).toContain(actions[0].type);
   });
 
-  it('declares info shortcuts for panels', async () => {
+  it('declares keyboard shortcuts', async () => {
     const service = new LamaService(
       { register: () => {} } as any,
       new RandomService(),
@@ -114,11 +125,8 @@ describe('LamaService', () => {
       started: true,
     });
 
-    expect(
-      shortcuts.some(
-        (s: any) => s?.type === 'action' && s?.actionType === 'lama_peek_discard',
-      ),
-    ).toBe(true);
+    expect(shortcuts.some((s: any) => s?.type === 'interface' && s?.id === 'discard')).toBe(true);
+    expect(shortcuts.some((s: any) => s?.type === 'interface' && s?.id === 'deck')).toBe(true);
     expect(
       shortcuts.some(
         (s: any) => s?.type === 'action' && s?.actionType === 'lama_quit',
@@ -206,7 +214,11 @@ describe('LamaService', () => {
 
     const exposed: any = service.exposeStateForUser(state, 1);
     const choices = exposed?.pending?.choices ?? [];
-    expect(choices.some((c: any) => String(c).includes('×'))).toBe(false);
+    expect(choices).toEqual(['1×3']);
+
+    const playActions = (exposed?.actions ?? []).filter((a: any) => a?.type === 'lama_play');
+    expect(playActions.length).toBe(1);
+    expect(playActions.every((a: any) => Number(a?.payload?.count ?? 0) === 1)).toBe(true);
   });
 
   it('does not offer draw/quit in pending choices (draw is via SPACE)', async () => {
@@ -435,5 +447,52 @@ describe('LamaService', () => {
     expect(Number(after.metadata?.scoresByPlayerId?.['2'] ?? 0)).toBe(17);
     expect(String(after.metadata?.step ?? '')).toBe('return_token');
     expect(Number(after.metadata?.pendingReturnPlayerId ?? 0)).toBe(1);
+  });
+
+  it('enters a round pause instead of starting the next round immediately (when configured)', async () => {
+    const service = new LamaService(
+      { register: () => {} } as any,
+      new RandomService(),
+      new LamaPresenter(),
+    );
+
+    const state: any = {
+      status: 'started',
+      phase: 'round',
+      round: 1,
+      turnIndex: 10,
+      lastRoll: null,
+      log: [],
+      players: [
+        { id: 1, username: 'A' },
+        { id: 2, username: 'B' },
+      ],
+      turn: { currentPlayerId: 1, direction: 1 },
+      pending: null,
+      metadata: {
+        ownerPlayerId: 1,
+        loseAtScore: 100,
+        roundPauseSeconds: 2,
+        roundPauseUntilMs: null,
+        roundNumber: 1,
+        roundStarterIndex: 0,
+        deck: [6],
+        discard: [1],
+        handsByPlayerId: { '1': [1], '2': [2] },
+        droppedOutByPlayerId: { '1': false, '2': false },
+        scoresByPlayerId: { '1': 0, '2': 0 },
+        step: 'return_token',
+        pendingReturnQueue: [1],
+        pendingReturnPlayerId: 1,
+        winnerId: null,
+      },
+    };
+
+    const after: any = service.applyActions(state, [
+      { type: 'lama_return', payload: { value: 0 }, meta: { actorId: 1 } } as any,
+    ]);
+    expect(String(after.metadata?.step ?? '')).toBe('round_pause');
+    expect(Number(after.round ?? 0)).toBe(2);
+    expect(typeof after.metadata?.roundPauseUntilMs).toBe('number');
   });
 });
