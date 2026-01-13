@@ -56,7 +56,9 @@ export class LamaPresenter extends BasePresenterService {
       { type: 'lama_quit', payload: {} },
     ];
 
-    const handValues = ((meta.handsByPlayerId ?? {})[String(userId)] ?? []) as LamaCardValue[];
+    const handValues = (((meta.handsByPlayerId ?? {})[String(userId)] ?? []) as LamaCardValue[]).filter(
+      (v) => typeof v === 'number' && v >= 1 && v <= LAMA_VALUE,
+    );
     const dropped = Boolean((meta.droppedOutByPlayerId ?? {})[String(userId)]);
     const sortedHandValues = [...handValues].sort((a, b) => a - b);
 
@@ -190,6 +192,7 @@ export class LamaPresenter extends BasePresenterService {
 
     const choices = (hand as LamaCardValue[])
       .slice()
+      .filter((v) => typeof v === 'number' && v >= 1 && v <= LAMA_VALUE)
       .sort((a, b) => a - b)
       .map(lamaCardLabel);
 
@@ -244,7 +247,7 @@ export class LamaPresenter extends BasePresenterService {
     const players = Array.isArray(state.players) ? state.players : [];
 
     const handValues = ((metadata.handsByPlayerId ?? {})[String(userId)] ?? []) as LamaCardValue[];
-    const hand = handValues.map(lamaCardLabel);
+    const hand = handValues.filter((v) => typeof v === 'number' && v >= 1 && v <= LAMA_VALUE).map(lamaCardLabel);
 
     const scoreBy = metadata.scoresByPlayerId ?? {};
     const myScore = Number(scoreBy[String(userId)] ?? 0);
@@ -303,11 +306,11 @@ export class LamaPresenter extends BasePresenterService {
           },
           deck: {
             title: 'Pioche',
-            message: `Pioche: ${deckCount} carte(s).`,
+            message: `Cartes dans la pioche : ${deckCount}.`,
           },
           discard: {
             title: 'Défausse',
-            message: `Défausse: ${discardTop}. Jouable aussi: ${discardNext}. Pioche: ${deckCount}.`,
+            message: `Carte sur la défausse : ${discardTop}.`,
           },
           play: {
             title: 'À jouer',

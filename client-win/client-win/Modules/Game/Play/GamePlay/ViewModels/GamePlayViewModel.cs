@@ -389,21 +389,6 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
         private set => SetProperty(ref _isBotThinking, value);
     }
 
-    public string? SelectedChoice
-    {
-        get => _choices.SelectedChoice;
-        set
-        {
-            if (string.Equals(_choices.SelectedChoice, value, StringComparison.Ordinal))
-            {
-                return;
-            }
-
-            _choices.SelectedChoice = value;
-            OnPropertyChanged();
-        }
-    }
-
     public async Task InitializeAsync(CancellationToken cancellationToken = default)
     {
         _projector.ResetLogCursor();

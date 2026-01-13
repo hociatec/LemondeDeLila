@@ -17,7 +17,6 @@ internal sealed class GamePlayChoicesViewModel : ObservableObject
     private readonly GamePlayChoicesListController _list;
     private readonly GamePlayChoicesStateSynchronizer _sync;
     private readonly GamePlayChoicesSubmission _submit;
-    private string? _selectedChoice;
     private int _selectedChoiceIndex = -1;
     private string _choicesLabel = string.Empty;
 
@@ -26,8 +25,6 @@ internal sealed class GamePlayChoicesViewModel : ObservableObject
         _actions = actions ?? throw new ArgumentNullException(nameof(actions));
         _list = new GamePlayChoicesListController(
             PendingChoices,
-            getSelected: () => SelectedChoice,
-            setSelected: v => SelectedChoice = v,
             getSelectedIndex: () => SelectedChoiceIndex,
             setSelectedIndex: v => SelectedChoiceIndex = v);
         _sync = new GamePlayChoicesStateSynchronizer(_localChoices, _list);
@@ -48,12 +45,6 @@ internal sealed class GamePlayChoicesViewModel : ObservableObject
         private set => SetProperty(ref _choicesLabel, value);
     }
 
-    public string? SelectedChoice
-    {
-        get => _selectedChoice;
-        set => SetProperty(ref _selectedChoice, value);
-    }
-
     public int SelectedChoiceIndex
     {
         get => _selectedChoiceIndex;
@@ -66,10 +57,12 @@ internal sealed class GamePlayChoicesViewModel : ObservableObject
         CancellationToken cancellationToken = default)
     {
         if (session == null) return false;
+        var idx = SelectedChoiceIndex;
+        var choice = idx >= 0 && idx < PendingChoices.Count ? PendingChoices[idx] : null;
         return await _submit.SubmitAsync(
                 session,
-                SelectedChoice,
-                SelectedChoiceIndex,
+                choice,
+                idx,
                 emitError,
                 clearLocalChoices: onlyWhenNoServerPending => ClearLocalChoices(onlyWhenNoServerPending, session),
                 cancellationToken)

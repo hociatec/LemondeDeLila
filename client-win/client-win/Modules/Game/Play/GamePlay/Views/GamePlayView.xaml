@@ -203,7 +203,6 @@
                            Visibility="Collapsed" />
                 <ListBox x:Name="ChoicesList"
                          ItemsSource="{Binding PendingChoices}"
-                         SelectedItem="{Binding SelectedChoice, Mode=TwoWay}"
                          SelectedIndex="{Binding SelectedChoiceIndex, Mode=TwoWay}"
                          KeyDown="OnChoicesKeyDown"
                          Margin="0 10 0 0"
