@@ -13,6 +13,8 @@ namespace client_win.Modules.Game.Play.GamePlay.Views;
 
 public partial class GamePlayView
 {
+    private DateTime _suppressChoiceAutoFocusUntilUtc;
+
     private void HookChoiceAutoFocus(GamePlayViewModel? vm)
     {
         if (_choicesCollection != null && _choicesChanged != null)
@@ -56,6 +58,14 @@ public partial class GamePlayView
             }
 
             UpdateChoicesAccessibility();
+
+            // Après validation d'un choix (Entrée), la liste se met à jour (carte jouée/retirée).
+            // Éviter de voler le focus / annoncer la nouvelle première ligne ("LAMA", etc.),
+            // afin de laisser l'historique serveur annoncer l'action ("X joue un 3.").
+            if (DateTime.UtcNow < _suppressChoiceAutoFocusUntilUtc)
+            {
+                return;
+            }
 
             if (_vm.PendingChoices.Count <= 0)
             {
@@ -229,8 +239,7 @@ public partial class GamePlayView
             if (sent)
             {
                 e.Handled = true;
-                Focus();
-                Keyboard.Focus(this);
+                _suppressChoiceAutoFocusUntilUtc = DateTime.UtcNow.AddSeconds(1);
             }
         }
         catch

@@ -495,7 +495,8 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
     const players = Array.isArray(state.players) ? state.players : [];
     const name = players.find((p) => p?.id === actorId)?.username ?? `#${actorId}`;
     const log = Array.isArray(state.log) ? [...state.log] : [];
-    log.push({ message: `${name} joue ${lamaCardLabel(value)}.` });
+    const label = lamaCardLabel(value);
+    log.push({ message: `${name} joue un ${label}.` });
 
     const nextMeta: LamaMetadata = { ...meta, handsByPlayerId, discard };
 

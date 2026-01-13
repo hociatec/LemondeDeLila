@@ -199,7 +199,6 @@ export class LamaPresenter extends BasePresenterService {
     const meScore = Number((metadata.scoresByPlayerId ?? {})[String(userId)] ?? 0);
     const deckCount = (metadata.deck ?? []).length;
     const discardTop = lamaCardLabel(top);
-    const playableRule = `Vous pouvez jouer ${discardTop} ou ${lamaCardLabel(next)}.`;
     const handScore = [...new Set(hand as LamaCardValue[])].reduce(
       (sum, v) => sum + lamaCardScore(v),
       0,
@@ -208,10 +207,10 @@ export class LamaPresenter extends BasePresenterService {
       type: currentPlayerId === userId ? 'lama_turn' : 'lama_hand',
       label:
         droppedOut
-          ? `Défausse: ${discardTop}. ${playableRule} Vous vous êtes retiré du round. Main: ${hand.length} cartes (${handScore} pts). Score total: ${meScore}.`
+          ? `Défausse : ${discardTop}. Vous vous êtes retiré de la manche. Main : ${hand.length} cartes (${handScore} pts). Score total : ${meScore}.`
           : currentPlayerId === userId
-            ? `Défausse: ${discardTop}. ${playableRule} Main: ${hand.length} cartes (${handScore} pts). Pioche: ${deckCount}. (↑/↓ choisir une carte, Entrée jouer, Espace piocher, P se retirer, C rappel défausse)`
-            : `Défausse: ${discardTop}. ${playableRule} Votre main: ${hand.length} cartes (${handScore} pts). (En attente de votre tour)`,
+            ? `Défausse : ${discardTop}. Main : ${hand.length} cartes (${handScore} pts). (↑/↓ choisir, Entrée jouer, Espace piocher, P se retirer, C défausse, E mains)`
+            : `Défausse : ${discardTop}. Main : ${hand.length} cartes (${handScore} pts). (En attente)`,
       playerId: userId,
       choices,
     };
@@ -291,7 +290,7 @@ export class LamaPresenter extends BasePresenterService {
         parts.push(`${lamaCardLabel(value)}×${count}`);
       }
       const list = parts.length ? parts.join(', ') : '(aucune carte jouable)';
-      return `Défausse: ${discardTop}. Règle: jouer ${discardTop} ou ${discardNext}. Jouables dans votre main: ${list}. (↑/↓ choisir une carte, Entrée jouer, Espace piocher, C défausse, E pioche)`;
+      return `Défausse : ${discardTop}. (↑/↓ choisir une carte, Entrée jouer, Espace piocher, C défausse, E mains)`;
     })();
 
     return {

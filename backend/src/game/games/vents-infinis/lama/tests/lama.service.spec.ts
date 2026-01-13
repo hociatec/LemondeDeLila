@@ -134,7 +134,7 @@ describe('LamaService', () => {
     ).toBe(true);
   });
 
-  it('includes playable rule (top or next) in pending label', async () => {
+  it('includes discard top in pending label', async () => {
     const service = new LamaService(
       { register: () => {} } as any,
       new RandomService(),
@@ -170,11 +170,9 @@ describe('LamaService', () => {
     };
 
     const exposed: any = service.exposeStateForUser(state, 1);
-    expect(String(exposed?.pending?.label ?? '')).toContain(
-      'Vous pouvez jouer',
-    );
-    expect(String(exposed?.pending?.label ?? '')).toContain('Défausse: 6');
-    expect(String(exposed?.pending?.label ?? '')).toContain('LAMA');
+    const label = String(exposed?.pending?.label ?? '');
+    expect(label).toContain('Défausse');
+    expect(label).toContain('6');
   });
 
   it('offers only single-card plays in pending choices', async () => {
