@@ -28,7 +28,7 @@ describe('LamaService', () => {
     expect(exposedB.pending).toBeNull();
   });
 
-  it('starts in setup and owner can set losing score to start', async () => {
+  it('starts with a target-score setup step and owner can set losing score to start', async () => {
     const service = new LamaService(
       { register: () => {} } as any,
       new RandomService(),
@@ -46,7 +46,8 @@ describe('LamaService', () => {
       metadata: {},
     } as any);
 
-    expect(String(state.status)).toBe('setup');
+    expect(String(state.status)).toBe('started');
+    expect(String(state.phase)).toBe('setup');
     const exposed: any = service.exposeStateForUser(state, 1);
     expect(String(exposed?.pending?.type ?? '')).toBe('lama_setup');
     expect((exposed?.actions ?? []).some((a: any) => a?.type === 'lama_set_target')).toBe(true);

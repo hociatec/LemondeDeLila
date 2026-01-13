@@ -93,7 +93,8 @@ public sealed class PresenceLauncher : IPresenceLauncher
                     {
                         if (returnView is PresenceView presence && presence.DataContext is PresenceViewModel vmPresence)
                         {
-                            vmPresence.ResetForOpen();
+                            // Keep the Presence navigation state (PlayerActions) so returning from the story book
+                            // lands back on the same menu instead of resetting to the player list.
                             vmPresence.RequestFocusFirstItem();
                         }
                         _navigation.Show(returnView);

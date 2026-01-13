@@ -34,6 +34,18 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
   }
 
   hydrateInitialState(baseState: GameStateEntity): GameStateEntity {
+    const status = String(baseState.status ?? '').toLowerCase().trim();
+    if (status !== 'started') {
+      // In room setup, the engine will not expose actions/pending anyway.
+      // Keep the state mostly untouched; the real game state is built when the room becomes "started".
+      return {
+        ...baseState,
+        metadata: {
+          ...(baseState.metadata ?? {}),
+        } as any,
+      };
+    }
+
     const players = Array.isArray(baseState.players) ? baseState.players : [];
     const ownerPlayerId = players[0]?.id ?? null;
     const scoresByPlayerId: Record<string, number> = {};
@@ -60,10 +72,10 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
 
     return {
       ...baseState,
-      status: 'setup',
+      status: 'started',
       phase: 'setup',
-      round: 0,
-      turnIndex: 0,
+      round: baseState.round ?? 0,
+      turnIndex: baseState.turnIndex ?? 0,
       lastRoll: null,
       pending: null,
       log: Array.isArray(baseState.log) ? baseState.log : [],
@@ -183,8 +195,8 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
       return { ...state, log };
     }
 
-    // Setup: owner chooses the losing score threshold, then the game starts.
-    if (status === 'setup' || (meta.step ?? '') === 'setup_target') {
+    // Setup (inside started state): owner chooses the losing score threshold, then the round starts.
+    if ((meta.step ?? '') === 'setup_target') {
       if (type !== 'lama_set_target') return state;
       if (meta.ownerPlayerId == null || actorId !== meta.ownerPlayerId) return state;
       const raw = Number((action.payload as any)?.loseAtScore);
