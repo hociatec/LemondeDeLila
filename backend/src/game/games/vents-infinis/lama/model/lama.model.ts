@@ -1,15 +1,18 @@
 export type LamaCardValue = 1 | 2 | 3 | 4 | 5 | 6 | 7; // 7 = LAMA
 
-export type LamaRoundStep = 'turn_choice' | 'return_token';
+export type LamaRoundStep = 'setup_target' | 'turn_choice' | 'return_token';
 
 export type LamaMetadata = {
   rng?: Record<string, any>;
+  ownerPlayerId: number | null;
+  loseAtScore: number | null;
   roundNumber: number;
   roundStarterIndex: number;
   deck: LamaCardValue[];
   discard: LamaCardValue[];
   handsByPlayerId: Record<string, LamaCardValue[]>;
-  droppedOutByPlayerId: Record<string, boolean>;
+  // Historical field (older variants). Not used in this version.
+  droppedOutByPlayerId?: Record<string, boolean>;
   scoresByPlayerId: Record<string, number>;
   step: LamaRoundStep;
   pendingReturnQueue: number[];
@@ -30,4 +33,3 @@ export const nextLamaValue = (top: LamaCardValue): LamaCardValue => {
   if (top === LAMA_VALUE) return 1;
   return (top + 1) as LamaCardValue;
 };
-

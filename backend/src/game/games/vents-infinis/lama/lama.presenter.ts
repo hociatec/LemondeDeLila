@@ -14,6 +14,15 @@ export class LamaPresenter extends BasePresenterService {
     return this.buildExposedStateForUser(state, userId);
   }
 
+  private isSetup(state: GameStateEntity): boolean {
+    return String(state?.status ?? '').toLowerCase() === 'setup';
+  }
+
+  private setupOptions(): number[] {
+    // Kept short for easier navigation; can be extended later if needed.
+    return [20, 30, 40, 50, 60, 70, 80];
+  }
+
   protected buildCatalog(): { phases: string[]; victory: any } {
     return { phases: ['round'], victory: { type: 'lowest_score' } };
   }
@@ -22,17 +31,31 @@ export class LamaPresenter extends BasePresenterService {
     state: GameStateEntity,
     userId: number,
   ): GameSingleActionDto[] {
+    const meta = (state.metadata ?? {}) as LamaMetadata;
+
+    if (this.isSetup(state) || (meta.step ?? '') === 'setup_target') {
+      const ownerId = meta.ownerPlayerId ?? null;
+      if (ownerId == null || userId !== ownerId) return [];
+      return this.setupOptions().map((loseAtScore) => ({
+        type: 'lama_set_target',
+        payload: { loseAtScore },
+      }));
+    }
+
     if (!this.isStarted(state)) return [];
 
-    const meta = (state.metadata ?? {}) as LamaMetadata;
+    const out: GameSingleActionDto[] = [
+      { type: 'lama_peek_discard', payload: {} },
+      { type: 'lama_peek_deck', payload: {} },
+    ];
+
     const current = state.turn?.currentPlayerId ?? null;
-    if (current !== userId) return [];
+    if (current !== userId) return out;
 
     const step = meta.step ?? 'turn_choice';
     if (step === 'return_token') {
       if (meta.pendingReturnPlayerId !== userId) return [];
       const score = Number((meta.scoresByPlayerId ?? {})[String(userId)] ?? 0);
-      const out: GameSingleActionDto[] = [];
       if (score >= 1) out.push({ type: 'lama_return', payload: { value: 1 } });
       if (score >= 10) out.push({ type: 'lama_return', payload: { value: 10 } });
       out.push({ type: 'lama_return', payload: { value: 0 } });
@@ -40,19 +63,15 @@ export class LamaPresenter extends BasePresenterService {
     }
 
     const hand = (meta.handsByPlayerId ?? {})[String(userId)] ?? [];
-    const droppedOut = Boolean((meta.droppedOutByPlayerId ?? {})[String(userId)]);
-    if (droppedOut) return [];
 
     const top = this.topDiscard(meta);
-    if (!top) return [];
+    if (!top) return out;
 
     const playable = new Set<LamaCardValue>([top, nextLamaValue(top)]);
     const counts = new Map<LamaCardValue, number>();
     for (const v of hand as LamaCardValue[]) {
       counts.set(v, (counts.get(v) ?? 0) + 1);
     }
-
-    const out: GameSingleActionDto[] = [];
 
     for (const [value, count] of [...counts.entries()].sort((a, b) => a[0] - b[0])) {
       if (!playable.has(value)) continue;
@@ -67,7 +86,6 @@ export class LamaPresenter extends BasePresenterService {
     if ((meta.deck ?? []).length > 0) {
       out.push({ type: 'draw', payload: {} });
     }
-    out.push({ type: 'lama_quit', payload: {} });
     return out;
   }
 
@@ -85,6 +103,17 @@ export class LamaPresenter extends BasePresenterService {
     userId: number,
     currentPlayerId: number | null,
   ): any {
+    if (this.isSetup(state) || (metadata.step ?? '') === 'setup_target') {
+      const ownerId = metadata.ownerPlayerId ?? null;
+      if (ownerId == null || userId !== ownerId) return null;
+      return {
+        type: 'lama_setup',
+        label: 'Choisissez le score de défaite (↑/↓ puis Entrée).',
+        playerId: ownerId,
+        choices: this.setupOptions().map(String),
+      };
+    }
+
     if (!this.isStarted(state)) return null;
     if (currentPlayerId !== userId) return null;
 
@@ -98,15 +127,13 @@ export class LamaPresenter extends BasePresenterService {
       choices.push("Ne rien retirer");
       return {
         type: 'lama_return',
-        label: 'Vous avez fini le round avec 0 carte : retirez des points.',
+        label: 'Vous avez gagné le round : retirez 1 point (jeton) ou 10 points (diamant).',
         playerId: userId,
         choices,
       };
     }
 
     const hand = (metadata.handsByPlayerId ?? {})[String(userId)] ?? [];
-    const droppedOut = Boolean((metadata.droppedOutByPlayerId ?? {})[String(userId)]);
-    if (droppedOut) return null;
 
     const top = this.topDiscard(metadata);
     if (!top) return null;
@@ -122,22 +149,22 @@ export class LamaPresenter extends BasePresenterService {
     for (const [value, count] of [...counts.entries()].sort((a, b) => a[0] - b[0])) {
       if (!playable.has(value)) continue;
       if (count > 0) {
-        choices.push(`Jouer ${lamaCardLabel(value)}`);
+        // Pending choices should be the list navigated with ↑/↓: only playable cards from the hand.
+        choices.push(lamaCardLabel(value));
       }
     }
-    if ((metadata.deck ?? []).length > 0) {
-      choices.push('Piocher');
-    }
-    choices.push('Sortir du round');
 
     const meScore = Number((metadata.scoresByPlayerId ?? {})[String(userId)] ?? 0);
     const deckCount = (metadata.deck ?? []).length;
     const discardTop = lamaCardLabel(top);
     const playableRule = `Vous pouvez jouer ${discardTop} ou ${lamaCardLabel(next)}.`;
-    const handScore = (hand as LamaCardValue[]).reduce((sum, v) => sum + lamaCardScore(v), 0);
+    const handScore = [...new Set(hand as LamaCardValue[])].reduce(
+      (sum, v) => sum + lamaCardScore(v),
+      0,
+    );
     return {
       type: 'lama_turn',
-      label: `Défausse: ${discardTop}. ${playableRule} Main: ${hand.length} cartes (${handScore} pts). Score total: ${meScore}. Pioche: ${deckCount}.`,
+      label: `Défausse: ${discardTop}. ${playableRule} Main: ${hand.length} cartes (${handScore} pts). Score total: ${meScore}. Pioche: ${deckCount}. (↑/↓ choisir une carte, Entrée jouer, Espace piocher, C voir défausse, E voir pioche)`,
       playerId: userId,
       choices,
     };
@@ -146,8 +173,10 @@ export class LamaPresenter extends BasePresenterService {
   protected getActionLabel(actionType: string): string {
     if (actionType === 'lama_play') return 'Jouer';
     if (actionType === 'draw') return 'Piocher';
-    if (actionType === 'lama_quit') return 'Sortir';
+    if (actionType === 'lama_set_target') return 'Score de défaite';
     if (actionType === 'lama_return') return 'Retirer points';
+    if (actionType === 'lama_peek_discard') return 'Voir défausse';
+    if (actionType === 'lama_peek_deck') return 'Voir pioche';
     return actionType;
   }
 
@@ -189,12 +218,14 @@ export class LamaPresenter extends BasePresenterService {
       top != null ? lamaCardLabel(nextLamaValue(top as LamaCardValue)) : '(inconnu)';
 
     const deckCount = (metadata.deck ?? []).length;
-    const dropped = metadata.droppedOutByPlayerId ?? {};
-    const droppedNames = players
-      .filter((p) => p?.id && dropped[String(p.id)] === true)
-      .map((p) => p.username ?? `#${p.id}`);
 
     const playableText = (() => {
+      if (this.isSetup(state)) {
+        const loseAt = metadata.loseAtScore ?? null;
+        return loseAt != null
+          ? `Réglages: défaite à ${loseAt} points.`
+          : 'Réglages: choisissez le score de défaite, puis Entrée.';
+      }
       if (!this.isStarted(state)) return 'Partie non démarrée.';
       if (currentPlayerId !== userId) return "Ce n'est pas votre tour.";
       const step = metadata.step ?? 'turn_choice';
@@ -211,7 +242,7 @@ export class LamaPresenter extends BasePresenterService {
         parts.push(`${lamaCardLabel(value)}×${count}`);
       }
       const list = parts.length ? parts.join(', ') : '(aucune carte jouable)';
-      return `Défausse: ${discardTop}. Règle: jouer ${discardTop} ou ${discardNext}. Jouables dans votre main: ${list}. Options: jouer / piocher / sortir.`;
+      return `Défausse: ${discardTop}. Règle: jouer ${discardTop} ou ${discardNext}. Jouables dans votre main: ${list}. (↑/↓ choisir une carte, Entrée jouer, Espace piocher, C défausse, E pioche)`;
     })();
 
     return {
@@ -238,9 +269,10 @@ export class LamaPresenter extends BasePresenterService {
           },
           table: {
             title: 'Table',
-            message: droppedNames.length
-              ? `Joueurs sortis du round: ${droppedNames.join(', ')}.`
-              : 'Aucun joueur sorti du round.',
+            message:
+              metadata.loseAtScore != null
+                ? `Défaite à ${metadata.loseAtScore} points.`
+                : 'Défaite: non configurée.',
           },
         },
       },

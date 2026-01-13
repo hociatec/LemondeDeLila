@@ -180,6 +180,24 @@ internal sealed class GamePlayActionDispatcher
         if (actions.Count == 0) return new List<GameAvailableActionDto>();
 
         var normalized = pendingType?.Trim().ToLowerInvariant() ?? string.Empty;
+        if (normalized == "lama_turn")
+        {
+            return actions
+                .Where(a => string.Equals(a.Type, "lama_play", StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+        if (normalized == "lama_return")
+        {
+            return actions
+                .Where(a => string.Equals(a.Type, "lama_return", StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+        if (normalized == "lama_setup")
+        {
+            return actions
+                .Where(a => string.Equals(a.Type, "lama_set_target", StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
         if (normalized == "quiz")
         {
             return actions

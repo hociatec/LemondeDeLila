@@ -9,6 +9,13 @@ internal static class GamePlayActionsTextBuilder
 {
     internal static string Build(GameStateDto state)
     {
+        // If the server provides a pending panel, that becomes the primary UI for the turn/setup.
+        // Keep the client generic: do not try to interpret per-game controls here.
+        if (!string.IsNullOrWhiteSpace(state.Pending?.Type))
+        {
+            return string.Empty;
+        }
+
         var actions = state.Actions ?? new();
         if (actions.Count == 0)
         {

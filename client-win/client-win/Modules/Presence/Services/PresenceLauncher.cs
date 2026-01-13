@@ -80,7 +80,9 @@ public sealed class PresenceLauncher : IPresenceLauncher
             return;
         }
 
-        await CloseInternalAsync(restorePrevious: false).ConfigureAwait(true);
+        // We temporarily leave the Presence screen to open the story book, but we still want
+        // to be able to close Presence later and return to the original view.
+        await CloseInternalAsync(restorePrevious: false, preservePreviousView: true).ConfigureAwait(true);
 
         await Application.Current.Dispatcher.InvokeAsync(() =>
         {
@@ -150,7 +152,7 @@ public sealed class PresenceLauncher : IPresenceLauncher
         await CloseInternalAsync(restorePrevious: true).ConfigureAwait(true);
     }
 
-    private Task CloseInternalAsync(bool restorePrevious)
+    private Task CloseInternalAsync(bool restorePrevious, bool preservePreviousView = false)
     {
         return Application.Current.Dispatcher.InvokeAsync(() =>
         {
@@ -182,7 +184,10 @@ public sealed class PresenceLauncher : IPresenceLauncher
                     }
                 }));
             }
-            _previousView = null;
+            if (!preservePreviousView)
+            {
+                _previousView = null;
+            }
         }).Task;
     }
 }
