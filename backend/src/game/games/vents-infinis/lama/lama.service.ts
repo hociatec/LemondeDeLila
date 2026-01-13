@@ -176,9 +176,25 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
   getShortcuts(ctx: GameShortcutsContext<any>): GameShortcutHint[] {
     if (!ctx?.started) return [];
 
+    const meta: any = ctx?.metadata ?? {};
+    const allowPlayAfterDraw = Boolean(meta?.allowPlayAfterDraw);
+    const tracker = meta?.turnTracker ?? null;
+    const isSameTurn =
+      tracker &&
+      typeof tracker === 'object' &&
+      typeof tracker.playerId === 'number' &&
+      tracker.playerId === (ctx?.currentPlayerId ?? null);
+    const canPass =
+      allowPlayAfterDraw &&
+      isSameTurn &&
+      Boolean(tracker?.drawn) &&
+      !Boolean(tracker?.played);
+
     return [
       interfaceShortcut('C', 'discard'),
       interfaceShortcut('E', 'hands'),
+      interfaceShortcut('S', 'score'),
+      ...(canPass ? [actionShortcut('T', 'lama_pass')] : []),
       actionShortcut('P', 'lama_quit'),
     ];
   }

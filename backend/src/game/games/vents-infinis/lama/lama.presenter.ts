@@ -209,7 +209,7 @@ export class LamaPresenter extends BasePresenterService {
         droppedOut
           ? `Défausse : ${discardTop}. Vous vous êtes retiré de la manche. Main : ${hand.length} cartes (${handScore} pts). Score total : ${meScore}.`
           : currentPlayerId === userId
-            ? `Défausse : ${discardTop}. Main : ${hand.length} cartes (${handScore} pts). (↑/↓ choisir, Entrée jouer, Espace piocher, ${metadata.allowPlayAfterDraw ? 'S passer, ' : ''}P se retirer, C défausse, E mains)`
+            ? `Défausse : ${discardTop}. Main : ${hand.length} cartes (${handScore} pts). (↑/↓ choisir, Entrée jouer, Espace piocher, ${metadata.allowPlayAfterDraw ? 'T passer, ' : ''}P se retirer, C défausse, E mains, S score)`
             : `Défausse : ${discardTop}. Main : ${hand.length} cartes (${handScore} pts). (En attente)`,
       playerId: userId,
       choices,
@@ -290,7 +290,7 @@ export class LamaPresenter extends BasePresenterService {
         parts.push(`${lamaCardLabel(value)}×${count}`);
       }
       const list = parts.length ? parts.join(', ') : '(aucune carte jouable)';
-      return `Défausse : ${discardTop}. (↑/↓ choisir une carte, Entrée jouer, Espace piocher, C défausse, E mains)`;
+      return `Défausse : ${discardTop}. (↑/↓ choisir, Entrée jouer, Espace piocher, C défausse, E mains, S score)`;
     })();
 
     return {

@@ -16,15 +16,15 @@ public partial class ConfigPromptWindow : Window
     public ConfigPromptWindow()
     {
         InitializeComponent();
-        Loaded += OnLoaded;
+        ContentRendered += OnContentRendered;
         PreviewKeyDown += OnPreviewKeyDown;
     }
 
-    private void OnLoaded(object sender, RoutedEventArgs e)
+    private void OnContentRendered(object? sender, EventArgs e)
     {
         // Focus fiable sur le premier champ (texte ou checkbox), sinon les lecteurs d'écran annoncent souvent "liste"
         // ou le nom interne des items avant l'élément utile.
-        Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
+        Dispatcher.BeginInvoke(DispatcherPriority.ContextIdle, new Action(() =>
         {
             try
             {

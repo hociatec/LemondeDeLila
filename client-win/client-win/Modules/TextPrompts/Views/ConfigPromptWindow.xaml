@@ -11,11 +11,15 @@
     <Window.Resources>
         <DataTemplate x:Key="TextFieldTemplate">
             <StackPanel Margin="0 0 0 10"
+                        Focusable="False"
+                        KeyboardNavigation.IsTabStop="False"
                         AutomationProperties.Name="{Binding Label}">
-                <TextBlock x:Name="FieldLabel"
-                           Text="{Binding Label}"
-                           Foreground="#C3D2EA"
-                           Margin="0 0 0 4"/>
+                <Label x:Name="FieldLabel"
+                       Content="{Binding Label}"
+                       Foreground="#C3D2EA"
+                       Margin="0 0 0 4"
+                       Focusable="False"
+                       KeyboardNavigation.IsTabStop="False"/>
                 <TextBox Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}"
                          Background="#10223A"
                          Foreground="White"
@@ -24,6 +28,7 @@
                          Padding="8"
                          MinWidth="420"
                          AutomationProperties.Name="{Binding Label}"
+                         AutomationProperties.AutomationId="{Binding Key}"
                          AutomationProperties.LabeledBy="{Binding ElementName=FieldLabel}"/>
             </StackPanel>
         </DataTemplate>
@@ -33,11 +38,13 @@
                       Content="{Binding Label}"
                       IsChecked="{Binding BoolValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                       Foreground="White"
-                      AutomationProperties.Name="{Binding Label}"/>
+                      AutomationProperties.Name="{Binding Label}"
+                      AutomationProperties.AutomationId="{Binding Key}"/>
         </DataTemplate>
     </Window.Resources>
 
-    <Grid Margin="16">
+    <Grid Margin="16"
+          KeyboardNavigation.TabNavigation="Cycle">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -52,10 +59,23 @@
 
         <ItemsControl Grid.Row="1"
                       ItemsSource="{Binding Fields}"
+                      Focusable="False"
+                      KeyboardNavigation.IsTabStop="False"
+                      KeyboardNavigation.TabNavigation="Continue"
                       AutomationProperties.Name="Champs de configuration">
+            <ItemsControl.ItemContainerStyle>
+                <Style TargetType="ContentPresenter">
+                    <Setter Property="Focusable" Value="False"/>
+                    <Setter Property="KeyboardNavigation.IsTabStop" Value="False"/>
+                    <Setter Property="AutomationProperties.Name" Value="{Binding Label}"/>
+                    <Setter Property="AutomationProperties.AutomationId" Value="{Binding Key}"/>
+                </Style>
+            </ItemsControl.ItemContainerStyle>
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
                     <ContentControl Content="{Binding}"
+                                    Focusable="False"
+                                    KeyboardNavigation.IsTabStop="False"
                                     AutomationProperties.Name="{Binding Label}">
                         <ContentControl.Style>
                             <Style TargetType="ContentControl">
@@ -76,13 +96,12 @@
                     Orientation="Horizontal"
                     HorizontalAlignment="Right"
                     Margin="0 12 0 0">
-            <Button Content="Annuler"
+            <Button Content="_Annuler"
                     Width="100"
                     Margin="0 0 10 0"
                     Click="OnCancelClick"/>
-            <Button Content="OK"
+            <Button Content="_OK"
                     Width="100"
-                    IsDefault="True"
                     Click="OnOkClick"/>
         </StackPanel>
     </Grid>
