@@ -127,6 +127,44 @@ internal static class GamePlayExtrasParser
         return null;
     }
 
+    internal static List<string> ExtractViewerHandLabels(GameStateDto state)
+    {
+        try
+        {
+            if (state == null || state.Extras.ValueKind != JsonValueKind.Object)
+            {
+                return new List<string>();
+            }
+
+            if (!state.Extras.TryGetProperty("hand", out var handNode) ||
+                handNode.ValueKind != JsonValueKind.Array)
+            {
+                return new List<string>();
+            }
+
+            var list = new List<string>();
+            foreach (var item in handNode.EnumerateArray())
+            {
+                if (item.ValueKind != JsonValueKind.String)
+                {
+                    continue;
+                }
+                var s = (item.GetString() ?? string.Empty).Trim();
+                if (s.Length == 0)
+                {
+                    continue;
+                }
+                list.Add(s);
+            }
+
+            return list;
+        }
+        catch
+        {
+            return new List<string>();
+        }
+    }
+
     private static int? ExtractInt(JsonElement obj, string key)
     {
         if (!obj.TryGetProperty(key, out var node))

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Threading;
@@ -40,6 +41,7 @@ internal sealed class GamePlayRealtimeController
     private int? _viewerPlayerId;
     private int? _lastStateTurnPlayerId;
     private int _pendingForcedTurnAnnouncements;
+    private Dictionary<string, int>? _lastViewerHandCounts;
 
     internal GamePlayRealtimeController(
         Dispatcher dispatcher,
@@ -92,6 +94,7 @@ internal sealed class GamePlayRealtimeController
         _lastGameStatus = null;
         _viewerPlayerId = null;
         _pendingForcedTurnAnnouncements = 0;
+        _lastViewerHandCounts = null;
         _diceSounds.Reset();
     }
 
@@ -128,6 +131,9 @@ internal sealed class GamePlayRealtimeController
             }
 
             var presented = _presenter.Present(state);
+            var viewerId = GamePlayExtrasParser.ExtractViewerPlayerId(state);
+            var viewerUsername = GetUsername(state, viewerId);
+            var currentHandCounts = BuildHandCounts(GamePlayExtrasParser.ExtractViewerHandLabels(state));
 
             // IMPORTANT:
             // Annoncer d'abord les nouvelles lignes d'historique (ordre serveur),
@@ -135,7 +141,7 @@ internal sealed class GamePlayRealtimeController
             // sinon NVDA lit le contrôle (ex: "Échange") avant le message "Case 11: Échange ...".
             foreach (var msg in presented.newLogMessages)
             {
-                _emitMessage(msg);
+                _emitMessage(RewriteLogForViewer(msg, viewerUsername, _lastViewerHandCounts, currentHandCounts));
             }
 
             var nextStatus = state.Status ?? string.Empty;
@@ -151,7 +157,7 @@ internal sealed class GamePlayRealtimeController
                 _requestFocus();
             }
 
-            _viewerPlayerId = GamePlayExtrasParser.ExtractViewerPlayerId(state);
+            _viewerPlayerId = viewerId;
             _choices.UpdateFromState(state, _viewerPlayerId, _canStartAskCardSelection);
 
             _diceSounds.TryPlayDiceRollSound(state);
@@ -171,6 +177,7 @@ internal sealed class GamePlayRealtimeController
             _syncShortcuts(state);
             _grid.SyncFromState(state, _viewerPlayerId);
 
+            _lastViewerHandCounts = currentHandCounts;
             _refreshCanExecute();
             TryAnnounceTurnFromState(state);
         }, DispatcherPriority.Background);
@@ -207,5 +214,125 @@ internal sealed class GamePlayRealtimeController
                 CurrentPlayerUsername = string.IsNullOrWhiteSpace(username) ? null : username.Trim()
             },
             emitHistoryMessage: _ => { });
+    }
+
+    private static string? GetUsername(GameStateDto state, int? playerId)
+    {
+        if (state == null || playerId == null)
+        {
+            return null;
+        }
+
+        return state.Players?
+            .FirstOrDefault(p => p != null && p.Id == playerId.Value)?
+            .Username?
+            .Trim();
+    }
+
+    private static Dictionary<string, int> BuildHandCounts(IReadOnlyList<string> labels)
+    {
+        var dict = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        if (labels == null)
+        {
+            return dict;
+        }
+
+        foreach (var raw in labels)
+        {
+            var s = (raw ?? string.Empty).Trim();
+            if (s.Length == 0)
+            {
+                continue;
+            }
+
+            dict.TryGetValue(s, out var prev);
+            dict[s] = prev + 1;
+        }
+
+        return dict;
+    }
+
+    private static string? InferSingleAddedCard(Dictionary<string, int>? previous, Dictionary<string, int>? current)
+    {
+        if (previous == null || current == null || current.Count == 0)
+        {
+            return null;
+        }
+
+        string? added = null;
+        foreach (var (label, currentCount) in current)
+        {
+            previous.TryGetValue(label, out var prevCount);
+            var diff = currentCount - prevCount;
+            if (diff <= 0)
+            {
+                continue;
+            }
+            if (diff > 1)
+            {
+                return null;
+            }
+            if (added != null)
+            {
+                return null;
+            }
+            added = label;
+        }
+
+        return added;
+    }
+
+    private static string RewriteLogForViewer(
+        string message,
+        string? viewerUsername,
+        Dictionary<string, int>? previousHandCounts,
+        Dictionary<string, int>? currentHandCounts)
+    {
+        var msg = (message ?? string.Empty).Trim();
+        if (msg.Length == 0 || string.IsNullOrWhiteSpace(viewerUsername))
+        {
+            return msg;
+        }
+
+        var user = viewerUsername.Trim();
+
+        // Pioche : ne révèle la carte piochée qu'au joueur concerné.
+        if (string.Equals(msg, $"{user} pioche.", StringComparison.OrdinalIgnoreCase))
+        {
+            var added = InferSingleAddedCard(previousHandCounts, currentHandCounts);
+            return added != null ? $"Vous piochez un {added}." : "Vous piochez.";
+        }
+
+        if (string.Equals(msg, $"{user} passe.", StringComparison.OrdinalIgnoreCase))
+        {
+            return "Vous passez.";
+        }
+
+        if (msg.StartsWith($"{user} se retire de la manche", StringComparison.OrdinalIgnoreCase))
+        {
+            return "Vous vous retirez de la manche. Vos jetons seront comptés à la fin de la manche.";
+        }
+
+        if (string.Equals(msg, $"{user} ne rend rien.", StringComparison.OrdinalIgnoreCase))
+        {
+            return "Vous ne rendez rien.";
+        }
+
+        var renderPrefix = $"{user} rend ";
+        if (msg.StartsWith(renderPrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            return $"Vous rendez {msg.Substring(renderPrefix.Length).Trim()}";
+        }
+
+        // Jeu de carte : annonce toujours la carte, en adaptant la formulation pour le joueur local.
+        // Exemple serveur: "Fantômette joue un 1."
+        var prefix = $"{user} joue un ";
+        if (msg.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+        {
+            var card = msg.Substring(prefix.Length).Trim();
+            return $"Vous jouez un {card}";
+        }
+
+        return msg;
     }
 }

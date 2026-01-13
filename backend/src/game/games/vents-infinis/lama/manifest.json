@@ -4,6 +4,5 @@
   "minPlayers": 2,
   "maxPlayers": 6,
   "engine": "lama",
-  "summary": "Défaussez vos cartes ou sortez du tour pour minimiser vos points."
+  "summary": "Défaussez vos cartes ou sortez de la manche pour minimiser vos jetons."
 }
-

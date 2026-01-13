@@ -19,7 +19,7 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
   readonly category = 'JeuxDePlateaux';
   readonly subcategory = 'Les Vents Sacrés';
   readonly displayName = 'LAMA';
-  readonly description = 'Défaussez vos cartes ou sortez du round pour minimiser vos points.';
+  readonly description = 'Défaussez vos cartes ou sortez de la manche pour minimiser vos jetons.';
   readonly minPlayers = 2;
   readonly maxPlayers = 6;
 
@@ -299,12 +299,12 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
 
       const log = Array.isArray(state.log) ? [...state.log] : [];
       const name = players.find((p) => p?.id === actorId)?.username ?? `#${actorId}`;
-      log.push({ message: `${name} fixe la défaite à ${loseAtScore} points.` });
+      log.push({ message: `${name} fixe la défaite à ${loseAtScore} jetons.` });
       log.push({ message: `${name} règle la pause entre manches à ${roundPauseSeconds}s.` });
       log.push({
         message: allowPlayAfterDraw
-          ? `${name} autorise à jouer après piocher (même tour).`
-          : `${name} interdit de jouer après piocher (tour suivant).`,
+          ? `${name} autorise à jouer après avoir pioché (même tour).`
+          : `${name} interdit de jouer après avoir pioché (tour suivant).`,
       });
       log.push({ message: `Début de la partie.` });
 
@@ -395,9 +395,9 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
 
       const log = Array.isArray(state.log) ? [...state.log] : [];
       const name = players.find((p) => p?.id === actorId)?.username ?? `#${actorId}`;
-      if (delta > 0) {
-        log.push({ message: `${name} retire ${delta} point${delta > 1 ? 's' : ''}.` });
-      }
+      if (delta == 10) log.push({ message: `${name} rend 1 diamant (10 jetons).` });
+      else if (delta == 1) log.push({ message: `${name} rend 1 jeton.` });
+      else log.push({ message: `${name} ne rend rien.` });
 
       const queue = Array.isArray(meta.pendingReturnQueue) ? [...meta.pendingReturnQueue] : [];
       const remaining = queue.filter((id) => id !== actorId);
@@ -424,7 +424,7 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
           currentPlayerId: nextPending ?? state.turn?.currentPlayerId ?? null,
           direction: 1,
           label: nextPending
-            ? `Retrait de points : ${players.find((p) => p?.id === nextPending)?.username ?? `#${nextPending}`}`
+            ? `Rendre des jetons : ${players.find((p) => p?.id === nextPending)?.username ?? `#${nextPending}`}`
             : undefined,
         },
       };
@@ -497,6 +497,12 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
         : meta.turnTracker,
     };
 
+    if (allowPlayAfterDraw && !canPlayAfterDraw)
+    {
+      // La règle "jouer après pioche" est active, mais aucune carte jouable: le tour se termine automatiquement.
+      log.push({ message: `${name} passe.` });
+    }
+
     const nextPlayerId = canPlayAfterDraw
       ? actorId
       : this.findNextActivePlayerId(players, nextMeta, actorId);
@@ -539,6 +545,7 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
     const name = players.find((p) => p?.id === actorId)?.username ?? `#${actorId}`;
     const log = Array.isArray(state.log) ? [...state.log] : [];
     log.push({ message: `${name} se retire de la manche.` });
+    log.push({ message: `${name} ne jouera plus ; ses jetons seront comptés à la fin de la manche.` });
 
     const nextMeta: LamaMetadata = { ...meta, droppedOutByPlayerId };
     const nextStateBase: GameStateEntity = { ...state, metadata: nextMeta as any, log };
@@ -709,7 +716,7 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
     const scoresByPlayerId = { ...(meta.scoresByPlayerId ?? {}) };
 
     const log = Array.isArray(state.log) ? [...state.log] : [];
-    log.push({ message: `Fin du round ${meta.roundNumber}.` });
+    log.push({ message: `Fin de la manche ${meta.roundNumber}.` });
 
     for (const p of players) {
       if (!p?.id) continue;
@@ -719,7 +726,7 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
       const gained = unique.reduce((sum, v) => sum + lamaCardScore(v), 0);
       scoresByPlayerId[String(pid)] = Number(scoresByPlayerId[String(pid)] ?? 0) + gained;
       if (gained > 0) {
-        log.push({ message: `${p.username ?? `#${pid}`} prend ${gained} point${gained > 1 ? 's' : ''}.` });
+        log.push({ message: `${p.username ?? `#${pid}`} prend ${gained} jeton${gained > 1 ? 's' : ''} (pénalité).` });
       }
     }
 
@@ -728,10 +735,10 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
         ? players.find((p) => p?.id === winnerPlayerId)?.username ?? `#${winnerPlayerId}`
         : null;
     if (winnerName) {
-      log.push({ message: `${winnerName} gagne le round.` });
+      log.push({ message: `${winnerName} gagne la manche.` });
     }
 
-    // The winner may remove 1 (token) or 10 (diamond) points.
+    // Le gagnant peut rendre 1 jeton ou 1 diamant (10 jetons) si possible.
     const eligible = winnerPlayerId != null ? [winnerPlayerId] : [];
     const nextMeta: LamaMetadata = {
       ...meta,
@@ -751,7 +758,7 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
         currentPlayerId: eligible.length ? eligible[0] : state.turn?.currentPlayerId ?? null,
         direction: 1,
         label: eligible.length
-          ? `Retrait de points : ${players.find((p) => p?.id === eligible[0])?.username ?? `#${eligible[0]}`}`
+          ? `Rendre des jetons : ${players.find((p) => p?.id === eligible[0])?.username ?? `#${eligible[0]}`}`
           : undefined,
       },
     };
@@ -819,7 +826,7 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
 
     if (pauseMs > 0) {
       const log = Array.isArray(state.log) ? [...state.log] : [];
-      log.push({ message: `Pause ${Math.floor(pauseMs / 1000)}s avant le round ${nextRound}.` });
+      log.push({ message: `Pause ${Math.floor(pauseMs / 1000)}s avant la manche ${nextRound}.` });
       return {
         ...state,
         phase: 'round',
@@ -831,7 +838,7 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
           ...(state.turn ?? { direction: 1 }),
           currentPlayerId: meta.ownerPlayerId ?? state.turn?.currentPlayerId ?? null,
           direction: 1,
-          label: `Pause avant le round ${nextRound}`,
+          label: `Pause avant la manche ${nextRound}`,
         },
       };
     }
@@ -871,7 +878,7 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
 
     const starterPlayerId = players[starterIndex]?.id ?? players[0]?.id ?? null;
     const log = Array.isArray(state.log) ? [...state.log] : [];
-    log.push({ message: `Début du round ${meta.roundNumber}. Défausse: ${lamaCardLabel(firstDiscard as LamaCardValue)}.` });
+    log.push({ message: `Début de la manche ${meta.roundNumber}. Défausse: ${lamaCardLabel(firstDiscard as LamaCardValue)}.` });
 
     const nextMeta: LamaMetadata = {
       ...meta,

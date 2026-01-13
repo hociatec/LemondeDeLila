@@ -128,7 +128,7 @@ export class LamaPresenter extends BasePresenterService {
           fields: [
             {
               key: 'loseAtScore',
-              label: 'Score de défaite',
+              label: 'Jetons de défaite',
               kind: 'number',
               min: 5,
               max: 200,
@@ -172,12 +172,12 @@ export class LamaPresenter extends BasePresenterService {
       if (metadata.pendingReturnPlayerId !== userId) return null;
       const score = Number((metadata.scoresByPlayerId ?? {})[String(userId)] ?? 0);
       const choices: string[] = [];
-      if (score >= 1) choices.push('Retirer 1 point');
-      if (score >= 10) choices.push('Retirer 10 points');
-      choices.push("Ne rien retirer");
+      if (score >= 1) choices.push('Rendre 1 jeton');
+      if (score >= 10) choices.push('Rendre 1 diamant (10 jetons)');
+      choices.push("Ne rien rendre");
       return {
         type: 'lama_return',
-        label: 'Vous avez gagné le round : retirez 1 point (jeton) ou 10 points (diamant).',
+        label: 'Vous avez gagné la manche : rendez 1 jeton ou 1 diamant (10 jetons) si possible.',
         playerId: userId,
         choices,
       };
@@ -207,10 +207,10 @@ export class LamaPresenter extends BasePresenterService {
       type: currentPlayerId === userId ? 'lama_turn' : 'lama_hand',
       label:
         droppedOut
-          ? `Défausse : ${discardTop}. Vous vous êtes retiré de la manche. Main : ${hand.length} cartes (${handScore} pts). Score total : ${meScore}.`
+          ? `Défausse : ${discardTop}. Vous vous êtes retiré de la manche. Main : ${hand.length} cartes (${handScore} jetons). Total : ${meScore} jetons.`
           : currentPlayerId === userId
-            ? `Défausse : ${discardTop}. Main : ${hand.length} cartes (${handScore} pts). (↑/↓ choisir, Entrée jouer, Espace piocher, P se retirer, C défausse, E mains, S score)`
-            : `Défausse : ${discardTop}. Main : ${hand.length} cartes (${handScore} pts). (En attente)`,
+            ? `Défausse : ${discardTop}. Main : ${hand.length} cartes (${handScore} jetons). (↑/↓ choisir, Entrée jouer, Espace piocher, P se retirer, C défausse, E mains, S jetons)`
+            : `Défausse : ${discardTop}. Main : ${hand.length} cartes (${handScore} jetons). (En attente)`,
       playerId: userId,
       choices,
     };
@@ -222,7 +222,7 @@ export class LamaPresenter extends BasePresenterService {
     if (actionType === 'lama_set_config') return 'Configuration';
     if (actionType === 'lama_quit') return 'Se retirer';
     if (actionType === 'lama_pass') return 'Passer';
-    if (actionType === 'lama_return') return 'Retirer points';
+    if (actionType === 'lama_return') return 'Rendre jetons';
     if (actionType === 'lama_peek_discard') return 'Voir défausse';
     if (actionType === 'lama_preview') return 'Voir carte';
     return actionType;
@@ -271,13 +271,13 @@ export class LamaPresenter extends BasePresenterService {
       if (this.isSetup(state)) {
         const loseAt = metadata.loseAtScore ?? null;
         return loseAt != null
-          ? `Réglages: défaite à ${loseAt} points.`
+          ? `Réglages: défaite à ${loseAt} jetons.`
           : 'Réglages: choisissez le score de défaite, puis Entrée.';
       }
       if (!this.isStarted(state)) return 'Partie non démarrée.';
       if (currentPlayerId !== userId) return "Ce n'est pas votre tour.";
       const step = metadata.step ?? 'turn_choice';
-      if (step === 'return_token') return 'Retirez des points (1 ou 10) si possible.';
+      if (step === 'return_token') return 'Rendez 1 jeton ou 1 diamant (10 jetons) si possible.';
       if (!top) return 'Défausse vide.';
       const allowed = new Set<LamaCardValue>([top as LamaCardValue, nextLamaValue(top as LamaCardValue)]);
       const counts = new Map<LamaCardValue, number>();
@@ -296,7 +296,7 @@ export class LamaPresenter extends BasePresenterService {
     return {
       ...base,
       hand,
-      score: [`Total: ${myScore}`, ...scoreLines],
+      score: [`Total jetons: ${myScore}`, ...scoreLines],
       ui: {
         panels: {
           hand: {
@@ -327,14 +327,14 @@ export class LamaPresenter extends BasePresenterService {
             message: playableText,
           },
           score: {
-            title: 'Score',
-            message: scoreLines.length ? `Score: ${scoreLines.join(', ')}` : 'Score: inconnu.',
+            title: 'Jetons',
+            message: scoreLines.length ? `Jetons: ${scoreLines.join(', ')}` : 'Jetons: inconnus.',
           },
           table: {
             title: 'Table',
             message:
               metadata.loseAtScore != null
-                ? `Défaite à ${metadata.loseAtScore} points.`
+                ? `Défaite à ${metadata.loseAtScore} jetons.`
                 : 'Défaite: non configurée.',
           },
         },

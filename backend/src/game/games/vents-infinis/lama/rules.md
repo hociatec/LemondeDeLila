@@ -10,6 +10,6 @@ Implémentation jouable des règles de base :
 - Le round se termine quand :
   - un joueur n’a plus de cartes, ou
   - tous les joueurs sont sortis.
-- Score du round : somme des cartes restantes en main (**LAMA = 10**).
-- Si vous terminez un round avec **0 carte**, vous pouvez retirer **1** ou **10** points (si possible).
-- Fin de partie : dès qu’un joueur atteint **40+** points ; le gagnant est celui avec le score le plus faible.
+- Jetons de manche : somme des cartes restantes en main (**LAMA = 10**).
+- Si vous terminez une manche avec **0 carte**, vous pouvez rendre **1 jeton** ou **1 diamant (10 jetons)** (si possible).
+- Fin de partie : dès qu’un joueur atteint **40+ jetons** ; le gagnant est celui avec le total le plus faible.
