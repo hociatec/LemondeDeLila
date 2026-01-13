@@ -14,6 +14,7 @@ export class GameCoreService {
     const status = payload.room.status || 'setup';
     const metadata: Record<string, unknown> = {
       roomId: payload?.room?.id ?? null,
+      roomOwnerId: payload?.room?.owner?.id ?? null,
       gameType,
       roomStartedAt: payload?.room?.startedAt ?? null,
       roomRunId:

@@ -29,7 +29,7 @@ describe('LamaService', () => {
     expect(exposedB.pending).toBeNull();
   });
 
-  it('starts with setup prompts (lose score then pause), then starts the first round', async () => {
+  it('starts with a single setup prompt, then starts the first round', async () => {
     const service = new LamaService(
       { register: () => {} } as any,
       new RandomService(),
@@ -50,25 +50,15 @@ describe('LamaService', () => {
     expect(String(state.status)).toBe('started');
     expect(String(state.phase)).toBe('setup');
     const exposed: any = service.exposeStateForUser(state, 1);
-    expect(String(exposed?.pending?.type ?? '')).toBe('text_prompt');
-    expect((exposed?.actions ?? []).some((a: any) => a?.type === 'lama_set_target')).toBe(true);
+    expect(String(exposed?.pending?.type ?? '')).toBe('config_prompt');
+    expect((exposed?.actions ?? []).some((a: any) => a?.type === 'lama_set_config')).toBe(true);
 
-    const withLoseAt: any = service.applyActions(state, [
-      { type: 'lama_set_target', payload: { loseAtScore: 40 }, meta: { actorId: 1 } } as any,
-    ]);
-    expect(String(withLoseAt.status)).toBe('started');
-    expect(Number(withLoseAt.metadata?.loseAtScore ?? 0)).toBe(40);
-    expect(String(withLoseAt.metadata?.step ?? '')).toBe('setup_pause');
-
-    const promptPause: any = service.exposeStateForUser(withLoseAt, 1);
-    expect(String(promptPause?.pending?.type ?? '')).toBe('text_prompt');
-    expect((promptPause?.actions ?? []).some((a: any) => a?.type === 'lama_set_pause')).toBe(true);
-
-    const started: any = service.applyActions(withLoseAt, [
-      { type: 'lama_set_pause', payload: { roundPauseSeconds: 2 }, meta: { actorId: 1 } } as any,
+    const started: any = service.applyActions(state, [
+      { type: 'lama_set_config', payload: { loseAtScore: 40, roundPauseSeconds: 2 }, meta: { actorId: 1 } } as any,
     ]);
     expect(String(started.phase)).toBe('round');
     expect(Number(started.metadata?.roundPauseSeconds ?? -1)).toBe(2);
+    expect(Number(started.metadata?.loseAtScore ?? 0)).toBe(40);
     expect((started.metadata?.discard ?? []).length).toBeGreaterThan(0);
   });
 
@@ -308,6 +298,62 @@ describe('LamaService', () => {
     expect(after.turn.currentPlayerId).toBe(2);
     expect((after.metadata.deck ?? []).length).toBe(1);
     expect((after.metadata.handsByPlayerId?.['1'] ?? []).length).toBe(2);
+  });
+
+  it('can keep the turn after a draw when configured', async () => {
+    const service = new LamaService(
+      { register: () => {} } as any,
+      new RandomService(),
+      new LamaPresenter(),
+    );
+
+    const state: any = {
+      status: 'started',
+      phase: 'round',
+      round: 1,
+      turnIndex: 0,
+      lastRoll: null,
+      log: [],
+      players: [
+        { id: 1, username: 'A' },
+        { id: 2, username: 'B' },
+      ],
+      turn: { currentPlayerId: 1, direction: 1 },
+      pending: null,
+      metadata: {
+        roundNumber: 1,
+        roundStarterIndex: 0,
+        allowPlayAfterDraw: true,
+        turnTracker: { playerId: 1, drawn: false, played: false },
+        deck: [6, 5],
+        discard: [1],
+        handsByPlayerId: { '1': [1], '2': [2] },
+        droppedOutByPlayerId: { '1': false, '2': false },
+        scoresByPlayerId: { '1': 0, '2': 0 },
+        step: 'turn_choice',
+        pendingReturnQueue: [],
+        pendingReturnPlayerId: null,
+        winnerId: null,
+      },
+    };
+
+    const after: any = service.applyActions(state, [
+      { type: 'draw', payload: {}, meta: { actorId: 1 } } as any,
+    ]);
+
+    expect(after.turn.currentPlayerId).toBe(1);
+    expect((after.metadata.deck ?? []).length).toBe(1);
+    expect((after.metadata.handsByPlayerId?.['1'] ?? []).length).toBe(2);
+    expect(Boolean(after.metadata?.turnTracker?.drawn)).toBe(true);
+
+    const exposed: any = service.exposeStateForUser(after, 1);
+    const actionTypes = (exposed?.actions ?? []).map((a: any) =>
+      String(a?.type ?? '').toLowerCase(),
+    );
+    // Still your turn, but you can't draw twice.
+    expect(actionTypes).not.toContain('draw');
+    expect(actionTypes).toContain('lama_play');
+    expect(actionTypes).toContain('lama_pass');
   });
 
   it('does not allow multiple draws in a single message from the same actor', async () => {

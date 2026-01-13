@@ -1,8 +1,7 @@
 export type LamaCardValue = 1 | 2 | 3 | 4 | 5 | 6 | 7; // 7 = LAMA
 
 export type LamaRoundStep =
-  | 'setup_target'
-  | 'setup_pause'
+  | 'setup_config'
   | 'turn_choice'
   | 'return_token'
   | 'round_pause';
@@ -12,6 +11,7 @@ export type LamaMetadata = {
   ownerPlayerId: number | null;
   loseAtScore: number | null;
   roundPauseSeconds: number | null;
+  allowPlayAfterDraw: boolean;
   roundPauseUntilMs: number | null;
   roundNumber: number;
   roundStarterIndex: number;
@@ -21,6 +21,7 @@ export type LamaMetadata = {
   droppedOutByPlayerId: Record<string, boolean>;
   scoresByPlayerId: Record<string, number>;
   step: LamaRoundStep;
+  turnTracker?: { playerId: number | null; drawn: boolean; played: boolean };
   pendingReturnQueue: number[];
   pendingReturnPlayerId: number | null;
   winnerId?: number | null;

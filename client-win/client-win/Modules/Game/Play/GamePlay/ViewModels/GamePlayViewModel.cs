@@ -53,6 +53,8 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
     private bool _isSpectator;
     private int _textPromptInProgress;
     private PendingTextPrompt? _pendingTextPrompt;
+    private int _configPromptInProgress;
+    private PendingConfigPrompt? _pendingConfigPrompt;
 
     private string _connectionStatus = "Connexion au moteur de jeu...";
     private string _stateSummary = "En attente d'un état de jeu (game.state)...";
@@ -181,6 +183,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
     public event Action<string, string>? GameStatusChanged;
 
     public bool HasPendingTextPrompt => _pendingTextPrompt != null;
+    public bool HasPendingConfigPrompt => _pendingConfigPrompt != null;
 
     public async Task<bool> TryOpenPendingTextPromptAsync(CancellationToken cancellationToken = default)
     {
@@ -254,6 +257,78 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
         }
     }
 
+    public async Task<bool> TryOpenPendingConfigPromptAsync(CancellationToken cancellationToken = default)
+    {
+        if (_isSpectator) return false;
+        var session = _session;
+        if (session == null) return false;
+        if (!session.IsConnected) return false;
+
+        var prompt = _pendingConfigPrompt;
+        if (prompt == null) return false;
+
+        if (Interlocked.Exchange(ref _configPromptInProgress, 1) == 1)
+        {
+            return false;
+        }
+
+        try
+        {
+            var fields = prompt.Fields
+                .Select(f => (f.Key, f.Label, f.InitialText))
+                .ToList();
+
+            var values = await _textPrompts.PromptConfigAsync(prompt.Title, fields).ConfigureAwait(true);
+            if (values == null)
+            {
+                return false;
+            }
+
+            var payload = new System.Collections.Generic.Dictionary<string, object>(StringComparer.Ordinal);
+            foreach (var field in prompt.Fields)
+            {
+                if (!values.TryGetValue(field.Key, out var text))
+                {
+                    await _dialogs.ShowError("Configuration", $"Champ manquant : {field.Label}.").ConfigureAwait(true);
+                    return false;
+                }
+
+                if (string.Equals(field.Kind, "number", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (!int.TryParse((text ?? string.Empty).Trim(), out var value))
+                    {
+                        await _dialogs.ShowError("Configuration", $"Veuillez entrer un nombre pour : {field.Label}.").ConfigureAwait(true);
+                        return false;
+                    }
+                    if (field.Min.HasValue && value < field.Min.Value)
+                    {
+                        await _dialogs.ShowError("Configuration", $"Valeur minimale pour {field.Label} : {field.Min.Value}.").ConfigureAwait(true);
+                        return false;
+                    }
+                    if (field.Max.HasValue && value > field.Max.Value)
+                    {
+                        await _dialogs.ShowError("Configuration", $"Valeur maximale pour {field.Label} : {field.Max.Value}.").ConfigureAwait(true);
+                        return false;
+                    }
+                    payload[field.Key] = value;
+                }
+                else
+                {
+                    payload[field.Key] = (text ?? string.Empty).Trim();
+                }
+            }
+
+            await session
+                .SendActionsAsync(new[] { new GameClientAction(prompt.ActionType, payload) }, cancellationToken)
+                .ConfigureAwait(false);
+            return true;
+        }
+        finally
+        {
+            Interlocked.Exchange(ref _configPromptInProgress, 0);
+        }
+    }
+
     public void SetSpectator(bool isSpectator)
     {
         if (_isSpectator == isSpectator)
@@ -273,11 +348,17 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
         {
             UpdatePendingTextPrompt(state);
             OnPropertyChanged(nameof(HasPendingTextPrompt));
+            UpdatePendingConfigPrompt(state);
+            OnPropertyChanged(nameof(HasPendingConfigPrompt));
 
             // Best-effort: automatically open the prompt when it appears.
             if (_pendingTextPrompt != null)
             {
                 _ = TryOpenPendingTextPromptAsync();
+            }
+            if (_pendingConfigPrompt != null)
+            {
+                _ = TryOpenPendingConfigPromptAsync();
             }
         }));
     }
@@ -349,6 +430,96 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
         string InitialText,
         string ActionType,
         string PayloadKey,
+        string Kind,
+        int? Min,
+        int? Max);
+
+    private void UpdatePendingConfigPrompt(GameStateDto state)
+    {
+        var pending = state.Pending;
+        if (pending == null || !string.Equals(pending.Type?.Trim(), "config_prompt", StringComparison.OrdinalIgnoreCase))
+        {
+            _pendingConfigPrompt = null;
+            return;
+        }
+
+        var viewerId = GamePlayExtrasParser.ExtractViewerPlayerId(state);
+        if (pending.PlayerId.HasValue && viewerId.HasValue && pending.PlayerId.Value != viewerId.Value)
+        {
+            _pendingConfigPrompt = null;
+            return;
+        }
+
+        if (pending.Data.ValueKind != System.Text.Json.JsonValueKind.Object)
+        {
+            _pendingConfigPrompt = null;
+            return;
+        }
+
+        static string? GetString(System.Text.Json.JsonElement obj, string prop) =>
+            obj.TryGetProperty(prop, out var el) && el.ValueKind == System.Text.Json.JsonValueKind.String
+                ? el.GetString()
+                : null;
+
+        static int? GetInt(System.Text.Json.JsonElement obj, string prop)
+        {
+            if (!obj.TryGetProperty(prop, out var el)) return null;
+            if (el.ValueKind == System.Text.Json.JsonValueKind.Number && el.TryGetInt32(out var i)) return i;
+            if (el.ValueKind == System.Text.Json.JsonValueKind.String && int.TryParse(el.GetString(), out var s)) return s;
+            return null;
+        }
+
+        var data = pending.Data;
+        var actionType = (GetString(data, "actionType") ?? string.Empty).Trim();
+        if (string.IsNullOrWhiteSpace(actionType))
+        {
+            _pendingConfigPrompt = null;
+            return;
+        }
+
+        if (!data.TryGetProperty("fields", out var fieldsEl) ||
+            fieldsEl.ValueKind != System.Text.Json.JsonValueKind.Array)
+        {
+            _pendingConfigPrompt = null;
+            return;
+        }
+
+        var fields = new System.Collections.Generic.List<PendingConfigField>();
+        foreach (var field in fieldsEl.EnumerateArray())
+        {
+            if (field.ValueKind != System.Text.Json.JsonValueKind.Object) continue;
+            var key = (GetString(field, "key") ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(key)) continue;
+            fields.Add(new PendingConfigField(
+                Key: key,
+                Label: (GetString(field, "label") ?? key).Trim(),
+                InitialText: GetString(field, "initialText") ?? string.Empty,
+                Kind: (GetString(field, "kind") ?? "text").Trim(),
+                Min: GetInt(field, "min"),
+                Max: GetInt(field, "max")));
+        }
+
+        if (fields.Count == 0)
+        {
+            _pendingConfigPrompt = null;
+            return;
+        }
+
+        _pendingConfigPrompt = new PendingConfigPrompt(
+            Title: (GetString(data, "title") ?? "Configuration").Trim(),
+            ActionType: actionType,
+            Fields: fields);
+    }
+
+    private sealed record PendingConfigPrompt(
+        string Title,
+        string ActionType,
+        System.Collections.Generic.IReadOnlyList<PendingConfigField> Fields);
+
+    private sealed record PendingConfigField(
+        string Key,
+        string Label,
+        string InitialText,
         string Kind,
         int? Min,
         int? Max);
@@ -483,6 +654,58 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
         }
 
         return session.SendKeyAsync(key, cancellationToken);
+    }
+
+    public bool TryHandleInterfaceShortcutLocally(string normalizedKey)
+    {
+        var session = _session;
+        if (session?.LastState == null)
+        {
+            return false;
+        }
+
+        var state = session.LastState;
+        if (string.IsNullOrWhiteSpace(normalizedKey))
+        {
+            return false;
+        }
+
+        var pressed = normalizedKey.Trim().ToUpperInvariant();
+        var hints = GamePlayExtrasParser.ExtractShortcutHints(state);
+        foreach (var hint in hints)
+        {
+            if (!string.Equals(hint.Type, "interface", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            var raw = hint.Key ?? string.Empty;
+            const string prefix = "pressed ";
+            if (raw.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+            {
+                raw = raw.Substring(prefix.Length);
+            }
+            var key = raw.Trim().ToUpperInvariant();
+            if (!string.Equals(key, pressed, StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            var panelId = hint.Id ?? string.Empty;
+            if (string.IsNullOrWhiteSpace(panelId))
+            {
+                continue;
+            }
+
+            if (GamePlayUiPanelsParser.TryGetPanelMessage(state, panelId.Trim(), out var message) &&
+                !string.IsNullOrWhiteSpace(message))
+            {
+                MessageReceived?.Invoke(message.Trim());
+                return true;
+            }
+        }
+
+        return false;
     }
 
 	    public Task RequestTurnInfoAsync() => RequestTurnAsync();

@@ -14,6 +14,15 @@ namespace client_win.Modules.Game.Play.GamePlay.Views;
 public partial class GamePlayView
 {
     private DateTime _suppressChoiceAutoFocusUntilUtc;
+    private bool _restoreChoiceFocusAfterSubmit;
+    private int _restoreChoiceFocusIndex;
+
+    private void NoteChoiceSubmittedForFocusRestore()
+    {
+        _suppressChoiceAutoFocusUntilUtc = DateTime.UtcNow.AddSeconds(1);
+        _restoreChoiceFocusAfterSubmit = true;
+        _restoreChoiceFocusIndex = ChoicesList?.SelectedIndex ?? -1;
+    }
 
     private void HookChoiceAutoFocus(GamePlayViewModel? vm)
     {
@@ -64,6 +73,34 @@ public partial class GamePlayView
             // afin de laisser l'historique serveur annoncer l'action ("X joue un 3.").
             if (DateTime.UtcNow < _suppressChoiceAutoFocusUntilUtc)
             {
+                if (_restoreChoiceFocusAfterSubmit)
+                {
+                    _restoreChoiceFocusAfterSubmit = false;
+                    Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
+                    {
+                        try
+                        {
+                            if (ChoicesList.Visibility != Visibility.Visible || ChoicesList.Items.Count <= 0)
+                            {
+                                ForceFocusGameZone();
+                                return;
+                            }
+
+                            var count = ChoicesList.Items.Count;
+                            var idx = _restoreChoiceFocusIndex;
+                            if (idx < 0) idx = 0;
+                            if (idx >= count) idx = count - 1;
+
+                            ChoicesList.SelectedIndex = idx;
+                            ChoicesList.ScrollIntoView(ChoicesList.SelectedItem);
+                            TryFocusChoiceIndex(idx);
+                        }
+                        catch
+                        {
+                            // ignore
+                        }
+                    }));
+                }
                 return;
             }
 
@@ -223,7 +260,7 @@ public partial class GamePlayView
 
     private async void OnChoicesKeyDown(object sender, KeyEventArgs e)
     {
-        if (e.Key != Key.Enter)
+        if (e.Key is not (Key.Enter or Key.Return))
         {
             return;
         }
@@ -239,7 +276,7 @@ public partial class GamePlayView
             if (sent)
             {
                 e.Handled = true;
-                _suppressChoiceAutoFocusUntilUtc = DateTime.UtcNow.AddSeconds(1);
+                NoteChoiceSubmittedForFocusRestore();
             }
         }
         catch

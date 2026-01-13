@@ -188,15 +188,6 @@ public partial class GamePlayView
             return;
         }
 
-        // Liste de choix (pending): laisser Entrée valider le choix localement (OnChoicesKeyDown),
-        // au lieu d'envoyer "ENTER" au serveur (qui ne résout pas un pending choose_*).
-        if (ChoicesList.Visibility == Visibility.Visible &&
-            IsFocusWithinChoices() &&
-            (e.Key == Key.Enter || e.Key == Key.Return))
-        {
-            return;
-        }
-
         // UX clavier (ex: LAMA) : si la liste de main/choix est affichée, Entrée valide le choix sélectionné
         // même si le focus n'est pas déjà dans la ListBox (on navigue souvent via ↑/↓ depuis la zone de jeu).
         if ((e.Key == Key.Enter || e.Key == Key.Return) &&
@@ -207,7 +198,11 @@ public partial class GamePlayView
             e.Handled = true;
             try
             {
-                await vm.SubmitSelectedChoiceAsync(CancellationToken.None).ConfigureAwait(true);
+                var sent = await vm.SubmitSelectedChoiceAsync(CancellationToken.None).ConfigureAwait(true);
+                if (sent)
+                {
+                    NoteChoiceSubmittedForFocusRestore();
+                }
             }
             catch
             {
@@ -264,6 +259,21 @@ public partial class GamePlayView
             return;
         }
 
+        // Generic config prompt pending: open a local multi-field dialog instead of sending ENTER to the server.
+        if (vm.HasPendingConfigPrompt && (e.Key == Key.Enter || e.Key == Key.Return))
+        {
+            e.Handled = true;
+            try
+            {
+                await vm.TryOpenPendingConfigPromptAsync(CancellationToken.None).ConfigureAwait(true);
+            }
+            catch
+            {
+                // ignore
+            }
+            return;
+        }
+
         if (!TryMapKeyToServerShortcut(e.Key, out var key))
         {
             return;
@@ -272,6 +282,10 @@ public partial class GamePlayView
         e.Handled = true;
         try
         {
+            if (vm.TryHandleInterfaceShortcutLocally(key))
+            {
+                return;
+            }
             await vm.TrySendKeyAsync(key, CancellationToken.None).ConfigureAwait(true);
         }
         catch

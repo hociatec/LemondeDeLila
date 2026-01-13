@@ -47,7 +47,11 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
     }
 
     const players = Array.isArray(baseState.players) ? baseState.players : [];
-    const ownerPlayerId = players[0]?.id ?? null;
+    const metaAny = (baseState.metadata ?? {}) as any;
+    const ownerPlayerId =
+      typeof metaAny.roomOwnerId === 'number'
+        ? metaAny.roomOwnerId
+        : (players[0]?.id ?? null);
     const scoresByPlayerId: Record<string, number> = {};
     for (const p of players) {
       if (!p?.id) continue;
@@ -59,6 +63,7 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
       ownerPlayerId,
       loseAtScore: null,
       roundPauseSeconds: null,
+      allowPlayAfterDraw: false,
       roundPauseUntilMs: null,
       roundNumber: 1,
       roundStarterIndex: 0,
@@ -67,7 +72,8 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
       handsByPlayerId: {},
       droppedOutByPlayerId: {},
       scoresByPlayerId,
-      step: 'setup_target',
+      step: 'setup_config',
+      turnTracker: { playerId: ownerPlayerId, drawn: false, played: false },
       pendingReturnQueue: [],
       pendingReturnPlayerId: null,
       winnerId: null,
@@ -80,7 +86,9 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
       round: baseState.round ?? 0,
       turnIndex: baseState.turnIndex ?? 0,
       lastRoll: null,
-      pending: null,
+      // Internal pending is used by the engine to detect stale bot timers.
+      // The presenter builds the real user-facing pending state.
+      pending: { step: 'setup_config', playerId: ownerPlayerId } as any,
       log: Array.isArray(baseState.log) ? baseState.log : [],
       metadata: meta as any,
       turn: {
@@ -111,7 +119,7 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
     if (meta.winnerId) return [];
 
     const step = meta.step ?? 'turn_choice';
-    if (step === 'round_pause' || step === 'setup_target' || step === 'setup_pause') {
+    if (step === 'round_pause' || step === 'setup_config') {
       return [];
     }
     if (step === 'return_token') {
@@ -203,20 +211,32 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
       return { ...state, log };
     }
 
-    // Setup (inside started state): owner chooses the losing score threshold, then the round starts.
-    if ((meta.step ?? '') === 'setup_target') {
-      if (type !== 'lama_set_target') return state;
+    // Setup (single step): owner configures losing score + pause, then the first round starts.
+    if ((meta.step ?? '') === 'setup_config') {
+      if (type !== 'lama_set_config') return state;
       if (meta.ownerPlayerId == null || actorId !== meta.ownerPlayerId) return state;
-      const raw = Number((action.payload as any)?.loseAtScore);
-      const loseAtScore = Number.isFinite(raw) ? Math.floor(raw) : NaN;
+
+      const rawLose = Number((action.payload as any)?.loseAtScore);
+      const loseAtScore = Number.isFinite(rawLose) ? Math.floor(rawLose) : NaN;
       if (!Number.isFinite(loseAtScore) || loseAtScore < 5 || loseAtScore > 200) return state;
+
+      const rawPause = Number((action.payload as any)?.roundPauseSeconds);
+      const roundPauseSeconds = Number.isFinite(rawPause) ? Math.floor(rawPause) : NaN;
+      if (!Number.isFinite(roundPauseSeconds) || roundPauseSeconds < 0 || roundPauseSeconds > 120) return state;
+
+      const rawAfterDraw = Number((action.payload as any)?.allowPlayAfterDraw);
+      const allowPlayAfterDraw = Number.isFinite(rawAfterDraw) ? Math.floor(rawAfterDraw) === 1 : false;
 
       const updatedMeta: LamaMetadata = {
         ...meta,
         loseAtScore,
-        step: 'setup_pause',
+        roundPauseSeconds,
+        allowPlayAfterDraw,
+        roundPauseUntilMs: null,
+        step: 'turn_choice',
         roundNumber: 1,
         roundStarterIndex: 0,
+        turnTracker: { playerId: null, drawn: false, played: false },
         pendingReturnQueue: [],
         pendingReturnPlayerId: null,
       };
@@ -224,47 +244,13 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
       const log = Array.isArray(state.log) ? [...state.log] : [];
       const name = players.find((p) => p?.id === actorId)?.username ?? `#${actorId}`;
       log.push({ message: `${name} fixe la défaite à ${loseAtScore} points.` });
-
-      return {
-        ...state,
-        status: 'started',
-        phase: 'setup',
-        turnIndex: state.turnIndex ?? 0,
-        lastRoll: null,
-        pending: null,
-        log,
-        metadata: updatedMeta as any,
-        turn: {
-          ...(state.turn ?? { direction: 1 }),
-          currentPlayerId: meta.ownerPlayerId,
-          direction: 1,
-          label: `Réglages LAMA : délai entre manches`,
-        },
-      };
-    }
-
-    // Setup (step 2): owner chooses pause duration between rounds, then the first round starts.
-    if ((meta.step ?? '') === 'setup_pause') {
-      if (type !== 'lama_set_pause') return state;
-      if (meta.ownerPlayerId == null || actorId !== meta.ownerPlayerId) return state;
-      const raw = Number((action.payload as any)?.roundPauseSeconds);
-      const roundPauseSeconds = Number.isFinite(raw) ? Math.floor(raw) : NaN;
-      if (!Number.isFinite(roundPauseSeconds) || roundPauseSeconds < 0 || roundPauseSeconds > 120) return state;
-
-      const updatedMeta: LamaMetadata = {
-        ...meta,
-        roundPauseSeconds,
-        roundPauseUntilMs: null,
-        step: 'turn_choice',
-        roundNumber: 1,
-        roundStarterIndex: 0,
-        pendingReturnQueue: [],
-        pendingReturnPlayerId: null,
-      };
-
-      const log = Array.isArray(state.log) ? [...state.log] : [];
-      const name = players.find((p) => p?.id === actorId)?.username ?? `#${actorId}`;
-      log.push({ message: `${name} règle la pause entre manches à ${roundPauseSeconds}s. Début de la partie.` });
+      log.push({ message: `${name} règle la pause entre manches à ${roundPauseSeconds}s.` });
+      log.push({
+        message: allowPlayAfterDraw
+          ? `${name} autorise à jouer après piocher (même tour).`
+          : `${name} interdit de jouer après piocher (tour suivant).`,
+      });
+      log.push({ message: `Début de la partie.` });
 
       return this.startNewRound(
         {
@@ -295,7 +281,13 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
         step: 'turn_choice',
       };
       return this.startNewRound(
-        { ...state, metadata: clearedMeta as any, phase: 'round', round: Number(clearedMeta.roundNumber ?? state.round ?? 1) },
+        {
+          ...state,
+          turnIndex: (state.turnIndex ?? 0) + 1,
+          metadata: clearedMeta as any,
+          phase: 'round',
+          round: Number(clearedMeta.roundNumber ?? state.round ?? 1),
+        },
         Number(clearedMeta.roundStarterIndex ?? 0),
       );
     }
@@ -309,6 +301,16 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
     if (currentPlayerId == null || actorId !== currentPlayerId) {
       return state;
     }
+
+    const ensureTurnTracker = (m: LamaMetadata, pid: number): LamaMetadata => {
+      const current = m.turnTracker ?? { playerId: pid, drawn: false, played: false };
+      if (current.playerId !== pid) {
+        return { ...m, turnTracker: { playerId: pid, drawn: false, played: false } };
+      }
+      return m;
+    };
+
+    const metaForTurn = ensureTurnTracker(meta, actorId);
 
     // Pending: return token decision.
     if ((meta.step ?? 'turn_choice') === 'return_token') {
@@ -346,6 +348,11 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
         ...state,
         metadata: nextMeta as any,
         log,
+        turnIndex: (state.turnIndex ?? 0) + 1,
+        pending: {
+          step: nextMeta.step,
+          playerId: nextMeta.pendingReturnPlayerId ?? null,
+        } as any,
         turn: {
           ...(state.turn ?? { direction: 1 }),
           currentPlayerId: nextPending ?? state.turn?.currentPlayerId ?? null,
@@ -366,22 +373,32 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
 
     if (type === 'draw') {
       if (meta.droppedOutByPlayerId[String(actorId)]) return state;
-      return this.applyDraw(state, meta, actorId);
+      return this.applyDraw(state, metaForTurn, actorId);
     }
 
     if (type === 'lama_quit') {
-      return this.applyQuit(state, meta, actorId);
+      return this.applyQuit(state, metaForTurn, actorId);
+    }
+
+    if (type === 'lama_pass') {
+      if (metaForTurn.droppedOutByPlayerId[String(actorId)]) return state;
+      return this.applyPass(state, metaForTurn, actorId);
     }
 
     if (type === 'lama_play') {
       if (meta.droppedOutByPlayerId[String(actorId)]) return state;
-      return this.applyPlay(state, meta, actorId, action);
+      return this.applyPlay(state, metaForTurn, actorId, action);
     }
 
     return state;
   }
 
   private applyDraw(state: GameStateEntity, meta: LamaMetadata, actorId: number): GameStateEntity {
+    const tracker = meta.turnTracker ?? { playerId: actorId, drawn: false, played: false };
+    if (tracker.playerId === actorId && tracker.drawn) {
+      return state;
+    }
+
     const deck = Array.isArray(meta.deck) ? [...meta.deck] : [];
     if (deck.length <= 0) return state;
     const card = deck.pop() as LamaCardValue;
@@ -395,12 +412,29 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
     const log = Array.isArray(state.log) ? [...state.log] : [];
     log.push({ message: `${name} pioche.` });
 
-    const nextMeta: LamaMetadata = { ...meta, deck, handsByPlayerId };
-    const nextPlayerId = this.findNextActivePlayerId(players, nextMeta, actorId);
+    const allowPlayAfterDraw = Boolean(meta.allowPlayAfterDraw);
+    const nextMeta: LamaMetadata = {
+      ...meta,
+      deck,
+      handsByPlayerId,
+      turnTracker: allowPlayAfterDraw
+        ? { playerId: actorId, drawn: true, played: false }
+        : meta.turnTracker,
+    };
+
+    const nextPlayerId = allowPlayAfterDraw
+      ? actorId
+      : this.findNextActivePlayerId(players, nextMeta, actorId);
+
+    const advancedMeta: LamaMetadata = allowPlayAfterDraw
+      ? nextMeta
+      : { ...nextMeta, turnTracker: { playerId: nextPlayerId, drawn: false, played: false } };
+
     const nextState: GameStateEntity = {
       ...state,
-      metadata: nextMeta as any,
+      metadata: advancedMeta as any,
       log,
+      pending: { step: 'turn_choice', playerId: nextPlayerId } as any,
       turnIndex: (state.turnIndex ?? 0) + 1,
       turn: {
         ...(state.turn ?? { direction: 1 }),
@@ -413,8 +447,8 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
     };
 
     // If the round end conditions are met, end the round.
-    if (this.isRoundEnded(nextMeta, players)) {
-      const winnerId = this.findRoundWinnerId(nextMeta, players);
+    if (this.isRoundEnded(advancedMeta, players)) {
+      const winnerId = this.findRoundWinnerId(advancedMeta, players);
       return this.endRound(nextState, winnerId);
     }
 
@@ -443,6 +477,8 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
     return {
       ...nextStateBase,
       turnIndex: (state.turnIndex ?? 0) + 1,
+      pending: { step: 'turn_choice', playerId: nextPlayerId } as any,
+      metadata: { ...nextMeta, turnTracker: { playerId: nextPlayerId, drawn: false, played: false } } as any,
       turn: {
         ...(state.turn ?? { direction: 1 }),
         currentPlayerId: nextPlayerId,
@@ -454,12 +490,59 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
     };
   }
 
+  private applyPass(state: GameStateEntity, meta: LamaMetadata, actorId: number): GameStateEntity {
+    if (!meta.allowPlayAfterDraw) return state;
+    const tracker = meta.turnTracker ?? { playerId: actorId, drawn: false, played: false };
+    if (tracker.playerId !== actorId || !tracker.drawn || tracker.played) {
+      return state;
+    }
+
+    const players = Array.isArray(state.players) ? state.players : [];
+    const name = players.find((p) => p?.id === actorId)?.username ?? `#${actorId}`;
+    const log = Array.isArray(state.log) ? [...state.log] : [];
+    log.push({ message: `${name} passe.` });
+
+    const nextPlayerId = this.findNextActivePlayerId(players, meta, actorId);
+    const nextMeta: LamaMetadata = {
+      ...meta,
+      turnTracker: { playerId: nextPlayerId, drawn: false, played: false },
+    };
+
+    const nextState: GameStateEntity = {
+      ...state,
+      metadata: nextMeta as any,
+      log,
+      pending: { step: 'turn_choice', playerId: nextPlayerId } as any,
+      turnIndex: (state.turnIndex ?? 0) + 1,
+      turn: {
+        ...(state.turn ?? { direction: 1 }),
+        currentPlayerId: nextPlayerId,
+        direction: 1,
+        label: nextPlayerId
+          ? `Tour de ${players.find((p) => p?.id === nextPlayerId)?.username ?? `#${nextPlayerId}`}`
+          : undefined,
+      },
+    };
+
+    if (this.isRoundEnded(nextMeta, players)) {
+      const winnerId = this.findRoundWinnerId(nextMeta, players);
+      return this.endRound(nextState, winnerId);
+    }
+
+    return nextState;
+  }
+
   private applyPlay(
     state: GameStateEntity,
     meta: LamaMetadata,
     actorId: number,
     action: GameSingleActionDto,
   ): GameStateEntity {
+    const tracker = meta.turnTracker ?? { playerId: actorId, drawn: false, played: false };
+    if (tracker.playerId === actorId && tracker.played) {
+      return state;
+    }
+
     const rawValue = Number((action.payload as any)?.value);
     const value = (rawValue >= 1 && rawValue <= 7 ? rawValue : 0) as LamaCardValue;
     const count = 1;
@@ -498,7 +581,12 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
     const label = lamaCardLabel(value);
     log.push({ message: `${name} joue un ${label}.` });
 
-    const nextMeta: LamaMetadata = { ...meta, handsByPlayerId, discard };
+    const nextMeta: LamaMetadata = {
+      ...meta,
+      handsByPlayerId,
+      discard,
+      turnTracker: { playerId: actorId, drawn: tracker.drawn, played: true },
+    };
 
     // End round if player emptied hand.
     if (nextHand.length === 0) {
@@ -514,8 +602,9 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
     const nextPlayerId = this.findNextActivePlayerId(players, nextMeta, actorId);
     const nextState: GameStateEntity = {
       ...state,
-      metadata: nextMeta as any,
+      metadata: { ...nextMeta, turnTracker: { playerId: nextPlayerId, drawn: false, played: false } } as any,
       log,
+      pending: { step: 'turn_choice', playerId: nextPlayerId } as any,
       turnIndex: (state.turnIndex ?? 0) + 1,
       turn: {
         ...(state.turn ?? { direction: 1 }),
@@ -579,6 +668,7 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
       ...state,
       metadata: nextMeta as any,
       log,
+      pending: { step: nextMeta.step, playerId: nextMeta.pendingReturnPlayerId ?? null } as any,
       turn: {
         ...(state.turn ?? { direction: 1 }),
         currentPlayerId: eligible.length ? eligible[0] : state.turn?.currentPlayerId ?? null,
@@ -659,6 +749,7 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
         round: nextRound,
         log,
         metadata: updatedMeta as any,
+        pending: { step: 'round_pause', playerId: meta.ownerPlayerId ?? null } as any,
         turn: {
           ...(state.turn ?? { direction: 1 }),
           currentPlayerId: meta.ownerPlayerId ?? state.turn?.currentPlayerId ?? null,
@@ -712,6 +803,7 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
       handsByPlayerId,
       droppedOutByPlayerId,
       step: 'turn_choice',
+      turnTracker: { playerId: starterPlayerId, drawn: false, played: false },
       pendingReturnQueue: [],
       pendingReturnPlayerId: null,
     };
@@ -720,6 +812,7 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
       ...state,
       metadata: nextMeta as any,
       log,
+      pending: { step: 'turn_choice', playerId: starterPlayerId } as any,
       turn: {
         ...(state.turn ?? { direction: 1 }),
         currentPlayerId: starterPlayerId,

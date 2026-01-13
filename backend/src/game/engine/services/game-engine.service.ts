@@ -286,6 +286,9 @@ export class GameEngineService {
     if (types.has('draw')) {
       common.push(actionShortcut('SPACE', 'draw'));
     }
+    if (types.has('lama_pass')) {
+      common.push(actionShortcut('S', 'lama_pass'));
+    }
 
     const out: GameShortcutHint[] = [];
     const seen = new Set<string>();

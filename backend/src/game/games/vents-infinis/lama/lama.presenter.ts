@@ -33,16 +33,10 @@ export class LamaPresenter extends BasePresenterService {
   ): GameSingleActionDto[] {
     const meta = (state.metadata ?? {}) as LamaMetadata;
 
-    if (this.isSetup(state) || (meta.step ?? '') === 'setup_target') {
+    if (this.isSetup(state) || (meta.step ?? '') === 'setup_config') {
       const ownerId = meta.ownerPlayerId ?? null;
       if (ownerId == null || userId !== ownerId) return [];
-      return [{ type: 'lama_set_target', payload: {} }];
-    }
-
-    if ((meta.step ?? '') === 'setup_pause') {
-      const ownerId = meta.ownerPlayerId ?? null;
-      if (ownerId == null || userId !== ownerId) return [];
-      return [{ type: 'lama_set_pause', payload: {} }];
+      return [{ type: 'lama_set_config', payload: {} }];
     }
 
     if ((meta.step ?? '') === 'round_pause') {
@@ -86,13 +80,21 @@ export class LamaPresenter extends BasePresenterService {
     const top = this.topDiscard(meta);
     if (!top) return out;
 
+    const tracker = meta.turnTracker ?? { playerId: current, drawn: false, played: false };
+    const isSameTurn = tracker.playerId === current;
+
     // One pending choice per card in hand (including duplicates): ENTER plays the selected card (count=1).
-    for (const value of sortedHandValues) {
-      out.push({ type: 'lama_play', payload: { value, count: 1 } });
+    if (!(isSameTurn && tracker.played)) {
+      for (const value of sortedHandValues) {
+        out.push({ type: 'lama_play', payload: { value, count: 1 } });
+      }
     }
 
-    if ((meta.deck ?? []).length > 0) {
+    if ((meta.deck ?? []).length > 0 && !(isSameTurn && tracker.drawn)) {
       out.push({ type: 'draw', payload: {} });
+    }
+    if (meta.allowPlayAfterDraw && isSameTurn && tracker.drawn && !tracker.played) {
+      out.push({ type: 'lama_pass', payload: {} });
     }
     out.push({ type: 'lama_quit', payload: {} });
     return out;
@@ -112,42 +114,43 @@ export class LamaPresenter extends BasePresenterService {
     userId: number,
     currentPlayerId: number | null,
   ): any {
-    if (this.isSetup(state) || (metadata.step ?? '') === 'setup_target') {
+    if (this.isSetup(state) || (metadata.step ?? '') === 'setup_config') {
       const ownerId = metadata.ownerPlayerId ?? null;
       if (ownerId == null || userId !== ownerId) return null;
       return {
-        type: 'text_prompt',
-        label: 'Entrez le score de défaite (nombre).',
+        type: 'config_prompt',
+        label: 'Configuration LAMA.',
         playerId: ownerId,
         choices: [],
         data: {
           title: 'LAMA',
-          initialText: String(metadata.loseAtScore ?? 40),
-          actionType: 'lama_set_target',
-          payloadKey: 'loseAtScore',
-          kind: 'number',
-          min: 5,
-          max: 200,
-        },
-      };
-    }
-
-    if ((metadata.step ?? '') === 'setup_pause') {
-      const ownerId = metadata.ownerPlayerId ?? null;
-      if (ownerId == null || userId !== ownerId) return null;
-      return {
-        type: 'text_prompt',
-        label: 'Entrez la pause entre manches (secondes, 0 = aucune).',
-        playerId: ownerId,
-        choices: [],
-        data: {
-          title: 'LAMA',
-          initialText: String(metadata.roundPauseSeconds ?? 2),
-          actionType: 'lama_set_pause',
-          payloadKey: 'roundPauseSeconds',
-          kind: 'number',
-          min: 0,
-          max: 120,
+          actionType: 'lama_set_config',
+          fields: [
+            {
+              key: 'loseAtScore',
+              label: 'Score de défaite',
+              kind: 'number',
+              min: 5,
+              max: 200,
+              initialText: String(metadata.loseAtScore ?? 40),
+            },
+            {
+              key: 'roundPauseSeconds',
+              label: 'Pause entre manches (secondes)',
+              kind: 'number',
+              min: 0,
+              max: 120,
+              initialText: String(metadata.roundPauseSeconds ?? 2),
+            },
+            {
+              key: 'allowPlayAfterDraw',
+              label: 'Après piocher (0: tour suivant, 1: jouer maintenant)',
+              kind: 'number',
+              min: 0,
+              max: 1,
+              initialText: metadata.allowPlayAfterDraw ? '1' : '0',
+            },
+          ],
         },
       };
     }
@@ -197,7 +200,6 @@ export class LamaPresenter extends BasePresenterService {
       .map(lamaCardLabel);
 
     const meScore = Number((metadata.scoresByPlayerId ?? {})[String(userId)] ?? 0);
-    const deckCount = (metadata.deck ?? []).length;
     const discardTop = lamaCardLabel(top);
     const handScore = [...new Set(hand as LamaCardValue[])].reduce(
       (sum, v) => sum + lamaCardScore(v),
@@ -209,7 +211,7 @@ export class LamaPresenter extends BasePresenterService {
         droppedOut
           ? `Défausse : ${discardTop}. Vous vous êtes retiré de la manche. Main : ${hand.length} cartes (${handScore} pts). Score total : ${meScore}.`
           : currentPlayerId === userId
-            ? `Défausse : ${discardTop}. Main : ${hand.length} cartes (${handScore} pts). (↑/↓ choisir, Entrée jouer, Espace piocher, P se retirer, C défausse, E mains)`
+            ? `Défausse : ${discardTop}. Main : ${hand.length} cartes (${handScore} pts). (↑/↓ choisir, Entrée jouer, Espace piocher, ${metadata.allowPlayAfterDraw ? 'S passer, ' : ''}P se retirer, C défausse, E mains)`
             : `Défausse : ${discardTop}. Main : ${hand.length} cartes (${handScore} pts). (En attente)`,
       playerId: userId,
       choices,
@@ -219,9 +221,9 @@ export class LamaPresenter extends BasePresenterService {
   protected getActionLabel(actionType: string): string {
     if (actionType === 'lama_play') return 'Jouer';
     if (actionType === 'draw') return 'Piocher';
-    if (actionType === 'lama_set_target') return 'Score de défaite';
-    if (actionType === 'lama_set_pause') return 'Pause entre manches';
+    if (actionType === 'lama_set_config') return 'Configuration';
     if (actionType === 'lama_quit') return 'Se retirer';
+    if (actionType === 'lama_pass') return 'Passer';
     if (actionType === 'lama_return') return 'Retirer points';
     if (actionType === 'lama_peek_discard') return 'Voir défausse';
     if (actionType === 'lama_preview') return 'Voir carte';

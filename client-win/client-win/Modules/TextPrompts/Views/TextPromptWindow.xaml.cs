@@ -39,4 +39,3 @@ public partial class TextPromptWindow : Window
         }
     }
 }
-

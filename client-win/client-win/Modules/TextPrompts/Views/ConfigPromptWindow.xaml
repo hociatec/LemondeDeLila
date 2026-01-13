@@ -1,0 +1,59 @@
+<Window x:Class="client_win.Modules.TextPrompts.Views.ConfigPromptWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="{Binding Title}"
+        WindowStartupLocation="CenterOwner"
+        SizeToContent="WidthAndHeight"
+        ResizeMode="NoResize"
+        Background="#0B1526"
+        Foreground="White"
+        MinWidth="520">
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0"
+                   Text="{Binding Title}"
+                   FontSize="18"
+                   FontWeight="SemiBold"
+                   Margin="0 0 0 12"/>
+
+        <ItemsControl Grid.Row="1"
+                      ItemsSource="{Binding Fields}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Margin="0 0 0 10">
+                        <TextBlock Text="{Binding Label}"
+                                   Foreground="#C3D2EA"
+                                   Margin="0 0 0 4"/>
+                        <TextBox Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}"
+                                 Background="#10223A"
+                                 Foreground="White"
+                                 BorderBrush="#284C75"
+                                 BorderThickness="1"
+                                 Padding="8"
+                                 MinWidth="420"/>
+                    </StackPanel>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <StackPanel Grid.Row="2"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Margin="0 12 0 0">
+            <Button Content="Annuler"
+                    Width="100"
+                    Margin="0 0 10 0"
+                    IsCancel="True"/>
+            <Button Content="OK"
+                    Width="100"
+                    IsDefault="True"
+                    Click="OnOkClick"/>
+        </StackPanel>
+    </Grid>
+</Window>
+
