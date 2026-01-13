@@ -104,10 +104,9 @@ internal sealed class GamePlayChoicesStateSynchronizer
     private static bool ShouldHidePendingChoices(GameStateDto state, int? viewerPlayerId)
     {
         var pendingPlayerId = state.Pending?.PlayerId;
-        if (pendingPlayerId != null && viewerPlayerId == null)
-        {
-            return true;
-        }
+        // Si le viewer est inconnu (serveur ancien / payload incomplet), ne pas masquer :
+        // mieux vaut afficher que cacher une main (ex: LAMA hors tour).
+        if (viewerPlayerId == null) return false;
 
         if (pendingPlayerId != null &&
             viewerPlayerId != null &&
@@ -142,4 +141,3 @@ internal sealed class GamePlayChoicesStateSynchronizer
         return actions.Any(a => string.Equals(a.Type, actionType, StringComparison.OrdinalIgnoreCase));
     }
 }
-

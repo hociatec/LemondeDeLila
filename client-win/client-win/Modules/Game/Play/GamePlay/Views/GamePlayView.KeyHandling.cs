@@ -2,6 +2,8 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Controls;
+using System;
+using System.Windows.Threading;
 using client_win.Modules.Game.Play.GamePlay.ViewModels;
 
 namespace client_win.Modules.Game.Play.GamePlay.Views;
@@ -51,18 +53,50 @@ public partial class GamePlayView
         ChoicesList.SelectedIndex = next;
         ChoicesList.ScrollIntoView(ChoicesList.SelectedItem);
 
-        if (ChoicesList.ItemContainerGenerator.ContainerFromIndex(next) is ListBoxItem item)
+        TryFocusChoiceIndex(next);
+
+        return true;
+    }
+
+    private void TryFocusChoiceIndex(int index)
+    {
+        if (ChoicesList.Visibility != Visibility.Visible || ChoicesList.Items.Count <= 0)
+        {
+            return;
+        }
+
+        if (index < 0 || index >= ChoicesList.Items.Count)
+        {
+            index = 0;
+        }
+
+        ChoicesList.UpdateLayout();
+
+        if (ChoicesList.ItemContainerGenerator.ContainerFromIndex(index) is ListBoxItem item)
         {
             item.Focus();
             Keyboard.Focus(item);
-        }
-        else
-        {
-            ChoicesList.Focus();
-            Keyboard.Focus(ChoicesList);
+            return;
         }
 
-        return true;
+        // Virtualisation: container pas encore créé -> retente après le layout.
+        ChoicesList.Focus();
+        Keyboard.Focus(ChoicesList);
+        Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() =>
+        {
+            try
+            {
+                if (ChoicesList.ItemContainerGenerator.ContainerFromIndex(index) is ListBoxItem item2)
+                {
+                    item2.Focus();
+                    Keyboard.Focus(item2);
+                }
+            }
+            catch
+            {
+                // ignore
+            }
+        }));
     }
 
     private bool IsFocusWithinChoices()
@@ -160,6 +194,25 @@ public partial class GamePlayView
             IsFocusWithinChoices() &&
             (e.Key == Key.Enter || e.Key == Key.Return))
         {
+            return;
+        }
+
+        // UX clavier (ex: LAMA) : si la liste de main/choix est affichée, Entrée valide le choix sélectionné
+        // même si le focus n'est pas déjà dans la ListBox (on navigue souvent via ↑/↓ depuis la zone de jeu).
+        if ((e.Key == Key.Enter || e.Key == Key.Return) &&
+            ChoicesList.Visibility == Visibility.Visible &&
+            ChoicesList.Items.Count > 0 &&
+            !vm.Grid.IsVisible)
+        {
+            e.Handled = true;
+            try
+            {
+                await vm.SubmitSelectedChoiceAsync(CancellationToken.None).ConfigureAwait(true);
+            }
+            catch
+            {
+                // ignore
+            }
             return;
         }
 

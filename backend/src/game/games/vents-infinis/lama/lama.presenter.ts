@@ -310,7 +310,7 @@ export class LamaPresenter extends BasePresenterService {
           },
           discard: {
             title: 'Défausse',
-            message: `Carte sur la défausse : ${discardTop}.`,
+            message: `Défausse : ${discardTop}.`,
           },
           play: {
             title: 'À jouer',

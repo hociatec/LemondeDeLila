@@ -122,8 +122,9 @@ internal static class GamePlayExtrasParser
             // ignore
         }
 
-        // Fallback compat (ancien serveur): currentPlayerView = joueur dont c'est le tour (pas le viewer).
-        return ExtractCurrentPlayerId(state);
+        // Fallback compat: si le serveur n'envoie pas viewerPlayerId, on ne peut pas filtrer proprement.
+        // IMPORTANT: ne pas confondre avec currentPlayerId, sinon on cache la main (ex: LAMA hors tour).
+        return null;
     }
 
     private static int? ExtractInt(JsonElement obj, string key)
