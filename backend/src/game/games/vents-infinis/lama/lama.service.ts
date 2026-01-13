@@ -110,6 +110,27 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
     return next;
   }
 
+  private static asNumberOrNull(value: unknown): number | null {
+    if (typeof value === 'number' && Number.isFinite(value)) return value;
+    if (typeof value === 'string') {
+      const n = Number(value.trim());
+      return Number.isFinite(n) ? n : null;
+    }
+    return null;
+  }
+
+  private static asBoolean(value: unknown): boolean {
+    if (value === true) return true;
+    if (value === false) return false;
+    if (typeof value === 'number') return value === 1;
+    if (typeof value === 'string') {
+      const t = value.trim().toLowerCase();
+      if (t === 'true' || t === '1' || t === 'yes' || t === 'oui' || t === 'on') return true;
+      if (t === 'false' || t === '0' || t === 'no' || t === 'non' || t === 'off') return false;
+    }
+    return false;
+  }
+
   getBotActions(state: GameStateEntity, botPlayerId: number): GameSingleActionDto[] {
     const current = state.turn?.currentPlayerId ?? null;
     if (current !== botPlayerId) return [];
@@ -133,6 +154,12 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
     if (meta.droppedOutByPlayerId[String(botPlayerId)]) {
       return [];
     }
+
+    const trackerRaw = (meta as any)?.turnTracker ?? null;
+    const trackerPlayerId = LamaService.asNumberOrNull(trackerRaw?.playerId);
+    const trackerDrawn = LamaService.asBoolean(trackerRaw?.drawn);
+    const trackerPlayed = LamaService.asBoolean(trackerRaw?.played);
+    const sameTurn = trackerPlayerId === botPlayerId;
 
     const hand = (meta.handsByPlayerId ?? {})[String(botPlayerId)] ?? [];
     const discard = Array.isArray(meta.discard) ? meta.discard : [];
@@ -161,6 +188,12 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
       return [{ type: 'lama_play', payload: { value: best.value, count: 1 } }];
     }
 
+    // Règle: une seule pioche par tour. En mode "jouer après pioche", si le bot a déjà pioché
+    // et ne peut pas jouer, il passe (sinon boucle infinie possible si le tracker est sérialisé).
+    if (meta.allowPlayAfterDraw && sameTurn && trackerDrawn && !trackerPlayed) {
+      return [{ type: 'lama_pass', payload: {} }];
+    }
+
     if ((meta.deck ?? []).length > 0) {
       return [{ type: 'draw', payload: {} }];
     }
@@ -179,16 +212,12 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
     const meta: any = ctx?.metadata ?? {};
     const allowPlayAfterDraw = Boolean(meta?.allowPlayAfterDraw);
     const tracker = meta?.turnTracker ?? null;
-    const isSameTurn =
-      tracker &&
-      typeof tracker === 'object' &&
-      typeof tracker.playerId === 'number' &&
-      tracker.playerId === (ctx?.currentPlayerId ?? null);
+    const isSameTurn = LamaService.asNumberOrNull(tracker?.playerId) === (ctx?.currentPlayerId ?? null);
     const canPass =
       allowPlayAfterDraw &&
       isSameTurn &&
-      Boolean(tracker?.drawn) &&
-      !Boolean(tracker?.played);
+      LamaService.asBoolean(tracker?.drawn) &&
+      !LamaService.asBoolean(tracker?.played);
 
     const topDiscard = Array.isArray(meta?.discard) && meta.discard.length
       ? (meta.discard[meta.discard.length - 1] as any)
@@ -330,11 +359,21 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
     }
 
     const ensureTurnTracker = (m: LamaMetadata, pid: number): LamaMetadata => {
-      const current = m.turnTracker ?? { playerId: pid, drawn: false, played: false };
-      if (current.playerId !== pid) {
+      const current = (m as any).turnTracker ?? { playerId: pid, drawn: false, played: false };
+      const currentPid = LamaService.asNumberOrNull(current?.playerId);
+      if (currentPid !== pid) {
         return { ...m, turnTracker: { playerId: pid, drawn: false, played: false } };
       }
-      return m;
+
+      // Normalise les types (évite "2" !== 2, "true"/"false" etc).
+      return {
+        ...m,
+        turnTracker: {
+          playerId: pid,
+          drawn: LamaService.asBoolean(current?.drawn),
+          played: LamaService.asBoolean(current?.played),
+        },
+      };
     };
 
     const metaForTurn = ensureTurnTracker(meta, actorId);
@@ -422,7 +461,7 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
 
   private applyDraw(state: GameStateEntity, meta: LamaMetadata, actorId: number): GameStateEntity {
     const tracker = meta.turnTracker ?? { playerId: actorId, drawn: false, played: false };
-    if (tracker.playerId === actorId && tracker.drawn) {
+    if (LamaService.asNumberOrNull((tracker as any).playerId) === actorId && LamaService.asBoolean((tracker as any).drawn)) {
       return state;
     }
 
@@ -529,7 +568,9 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
   private applyPass(state: GameStateEntity, meta: LamaMetadata, actorId: number): GameStateEntity {
     if (!meta.allowPlayAfterDraw) return state;
     const tracker = meta.turnTracker ?? { playerId: actorId, drawn: false, played: false };
-    if (tracker.playerId !== actorId || !tracker.drawn || tracker.played) {
+    if (LamaService.asNumberOrNull((tracker as any).playerId) !== actorId ||
+        !LamaService.asBoolean((tracker as any).drawn) ||
+        LamaService.asBoolean((tracker as any).played)) {
       return state;
     }
 
@@ -575,7 +616,7 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
     action: GameSingleActionDto,
   ): GameStateEntity {
     const tracker = meta.turnTracker ?? { playerId: actorId, drawn: false, played: false };
-    if (tracker.playerId === actorId && tracker.played) {
+    if (LamaService.asNumberOrNull((tracker as any).playerId) === actorId && LamaService.asBoolean((tracker as any).played)) {
       return state;
     }
 

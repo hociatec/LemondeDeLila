@@ -125,6 +125,50 @@ describe('LamaService', () => {
     ).toBe(true);
   });
 
+  it('prevents infinite bot draw loop when turnTracker is serialized as strings', async () => {
+    const service = new LamaService(
+      { register: () => {} } as any,
+      new RandomService(),
+      new LamaPresenter(),
+    );
+
+    const state: any = {
+      status: 'started',
+      phase: 'round',
+      round: 1,
+      turnIndex: 0,
+      lastRoll: null,
+      log: [],
+      players: [
+        { id: 1, username: 'Human' },
+        { id: 2, username: 'Bot', isBot: true },
+      ],
+      turn: { currentPlayerId: 2, direction: 1 },
+      pending: { step: 'turn_choice', playerId: 2 },
+      metadata: {
+        allowPlayAfterDraw: true,
+        step: 'turn_choice',
+        deck: [1, 2, 3, 4],
+        discard: [1],
+        handsByPlayerId: { '2': [5, 6] },
+        droppedOutByPlayerId: { '1': false, '2': false },
+        scoresByPlayerId: { '1': 0, '2': 0 },
+        // Simule une sérialisation "string" (cause typique de mismatch strict).
+        turnTracker: { playerId: '2', drawn: 'true', played: 'false' },
+        pendingReturnQueue: [],
+        pendingReturnPlayerId: null,
+        roundNumber: 1,
+        roundStarterIndex: 0,
+        winnerId: null,
+      },
+    };
+
+    // Le bot ne doit pas re-piocher indéfiniment : il doit passer après avoir déjà pioché.
+    const actions = service.getBotActions(state, 2);
+    expect(actions.length).toBe(1);
+    expect(actions[0].type).toBe('lama_pass');
+  });
+
   it('includes discard top in pending label', async () => {
     const service = new LamaService(
       { register: () => {} } as any,
