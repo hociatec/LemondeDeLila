@@ -23,6 +23,7 @@ using client_win.Modules.Game.Play.Shortcuts.ViewModels;
 using client_win.Modules.Game.Play.State.Dtos;
 using client_win.Modules.Game.Play.State.Services;
 using client_win.Modules.Shell.Services;
+using client_win.Modules.TextPrompts.Services;
 using Serilog;
 
 namespace client_win.Modules.Game.Play.GamePlay.ViewModels;
@@ -31,6 +32,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
 {
     private readonly Dispatcher _dispatcher;
     private readonly IDialogService _dialogs;
+    private readonly ITextPromptService _textPrompts;
     private readonly Func<CancellationToken, Task<GameSession>> _connect;
     private readonly GamePlayActionDispatcher _actions = new();
     private readonly GamePlayStateProjector _projector = new();
@@ -49,6 +51,8 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
 
     private GameSession? _session;
     private bool _isSpectator;
+    private int _textPromptInProgress;
+    private PendingTextPrompt? _pendingTextPrompt;
 
     private string _connectionStatus = "Connexion au moteur de jeu...";
     private string _stateSummary = "En attente d'un état de jeu (game.state)...";
@@ -67,11 +71,13 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
         string gameId,
         Func<CancellationToken, Task<GameSession>> connect,
         IDialogService dialogs,
+        ITextPromptService textPrompts,
         ISoundService sounds)
     {
         GameId = (gameId ?? string.Empty).Trim();
         _connect = connect ?? throw new ArgumentNullException(nameof(connect));
         _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
+        _textPrompts = textPrompts ?? throw new ArgumentNullException(nameof(textPrompts));
         _dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
 
         _endgameSounds = new GamePlayEndgameSoundPlayer(sounds ?? throw new ArgumentNullException(nameof(sounds)));
@@ -146,7 +152,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
             setSession: s => _session = s,
             bindSession: s =>
             {
-                s.StateUpdated += _realtime.HandleStateUpdated;
+                s.StateUpdated += OnStateUpdated;
                 s.TurnUpdated += _realtime.HandleTurnUpdated;
                 s.ErrorReceived += OnServerError;
                 s.CommandAckReceived += OnCommandAckReceived;
@@ -154,7 +160,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
             },
             unbindSession: s =>
             {
-                s.StateUpdated -= _realtime.HandleStateUpdated;
+                s.StateUpdated -= OnStateUpdated;
                 s.TurnUpdated -= _realtime.HandleTurnUpdated;
                 s.ErrorReceived -= OnServerError;
                 s.CommandAckReceived -= OnCommandAckReceived;
@@ -174,6 +180,80 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
     public event Action? GameZoneFocusRequested;
     public event Action<string, string>? GameStatusChanged;
 
+    public bool HasPendingTextPrompt => _pendingTextPrompt != null;
+
+    public async Task<bool> TryOpenPendingTextPromptAsync(CancellationToken cancellationToken = default)
+    {
+        if (_isSpectator) return false;
+        var session = _session;
+        if (session == null) return false;
+        if (!session.IsConnected) return false;
+
+        var prompt = _pendingTextPrompt;
+        if (prompt == null) return false;
+
+        if (Interlocked.Exchange(ref _textPromptInProgress, 1) == 1)
+        {
+            return false;
+        }
+
+        try
+        {
+            while (true)
+            {
+                var text = await _textPrompts
+                    .PromptAsync(prompt.Title, prompt.Label, prompt.InitialText)
+                    .ConfigureAwait(true);
+
+                if (text == null)
+                {
+                    return false;
+                }
+
+                if (string.Equals(prompt.Kind, "number", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (!int.TryParse(text.Trim(), out var value))
+                    {
+                        await _dialogs.ShowError("Configuration", "Veuillez entrer un nombre.").ConfigureAwait(true);
+                        continue;
+                    }
+                    if (prompt.Min.HasValue && value < prompt.Min.Value)
+                    {
+                        await _dialogs.ShowError("Configuration", $"Valeur minimale : {prompt.Min.Value}.").ConfigureAwait(true);
+                        continue;
+                    }
+                    if (prompt.Max.HasValue && value > prompt.Max.Value)
+                    {
+                        await _dialogs.ShowError("Configuration", $"Valeur maximale : {prompt.Max.Value}.").ConfigureAwait(true);
+                        continue;
+                    }
+
+                    var payload = new System.Collections.Generic.Dictionary<string, object>
+                    {
+                        [prompt.PayloadKey] = value
+                    };
+                    await session
+                        .SendActionsAsync(new[] { new GameClientAction(prompt.ActionType, payload) }, cancellationToken)
+                        .ConfigureAwait(false);
+                    return true;
+                }
+
+                var payloadText = new System.Collections.Generic.Dictionary<string, object>
+                {
+                    [prompt.PayloadKey] = text.Trim()
+                };
+                await session
+                    .SendActionsAsync(new[] { new GameClientAction(prompt.ActionType, payloadText) }, cancellationToken)
+                    .ConfigureAwait(false);
+                return true;
+            }
+        }
+        finally
+        {
+            Interlocked.Exchange(ref _textPromptInProgress, 0);
+        }
+    }
+
     public void SetSpectator(bool isSpectator)
     {
         if (_isSpectator == isSpectator)
@@ -184,6 +264,94 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
         _isSpectator = isSpectator;
         RefreshCanExecute();
     }
+
+    private void OnStateUpdated(GameStateDto state)
+    {
+        _realtime.HandleStateUpdated(state);
+
+        _dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
+        {
+            UpdatePendingTextPrompt(state);
+            OnPropertyChanged(nameof(HasPendingTextPrompt));
+
+            // Best-effort: automatically open the prompt when it appears.
+            if (_pendingTextPrompt != null)
+            {
+                _ = TryOpenPendingTextPromptAsync();
+            }
+        }));
+    }
+
+    private void UpdatePendingTextPrompt(GameStateDto state)
+    {
+        var pending = state.Pending;
+        if (pending == null || !string.Equals(pending.Type?.Trim(), "text_prompt", StringComparison.OrdinalIgnoreCase))
+        {
+            _pendingTextPrompt = null;
+            return;
+        }
+
+        // Only the targeted player should be prompted.
+        var viewerId = GamePlayExtrasParser.ExtractViewerPlayerId(state);
+        if (pending.PlayerId.HasValue && viewerId.HasValue && pending.PlayerId.Value != viewerId.Value)
+        {
+            _pendingTextPrompt = null;
+            return;
+        }
+
+        var label = !string.IsNullOrWhiteSpace(pending.Label)
+            ? pending.Label!.Trim()
+            : !string.IsNullOrWhiteSpace(pending.Question)
+                ? pending.Question!.Trim()
+                : "Saisie requise";
+
+        if (pending.Data.ValueKind != System.Text.Json.JsonValueKind.Object)
+        {
+            _pendingTextPrompt = null;
+            return;
+        }
+
+        static string? GetString(System.Text.Json.JsonElement obj, string prop) =>
+            obj.TryGetProperty(prop, out var el) && el.ValueKind == System.Text.Json.JsonValueKind.String
+                ? el.GetString()
+                : null;
+
+        static int? GetInt(System.Text.Json.JsonElement obj, string prop)
+        {
+            if (!obj.TryGetProperty(prop, out var el)) return null;
+            if (el.ValueKind == System.Text.Json.JsonValueKind.Number && el.TryGetInt32(out var i)) return i;
+            if (el.ValueKind == System.Text.Json.JsonValueKind.String && int.TryParse(el.GetString(), out var s)) return s;
+            return null;
+        }
+
+        var data = pending.Data;
+        var actionType = (GetString(data, "actionType") ?? string.Empty).Trim();
+        if (string.IsNullOrWhiteSpace(actionType))
+        {
+            _pendingTextPrompt = null;
+            return;
+        }
+
+        _pendingTextPrompt = new PendingTextPrompt(
+            Title: (GetString(data, "title") ?? "Configuration").Trim(),
+            Label: label,
+            InitialText: GetString(data, "initialText") ?? string.Empty,
+            ActionType: actionType,
+            PayloadKey: (GetString(data, "payloadKey") ?? "value").Trim(),
+            Kind: (GetString(data, "kind") ?? "text").Trim(),
+            Min: GetInt(data, "min"),
+            Max: GetInt(data, "max"));
+    }
+
+    private sealed record PendingTextPrompt(
+        string Title,
+        string Label,
+        string InitialText,
+        string ActionType,
+        string PayloadKey,
+        string Kind,
+        int? Min,
+        int? Max);
 
     public string ConnectionStatus
     {

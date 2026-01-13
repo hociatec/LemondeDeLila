@@ -11,8 +11,7 @@ export type LamaMetadata = {
   deck: LamaCardValue[];
   discard: LamaCardValue[];
   handsByPlayerId: Record<string, LamaCardValue[]>;
-  // Historical field (older variants). Not used in this version.
-  droppedOutByPlayerId?: Record<string, boolean>;
+  droppedOutByPlayerId: Record<string, boolean>;
   scoresByPlayerId: Record<string, number>;
   step: LamaRoundStep;
   pendingReturnQueue: number[];

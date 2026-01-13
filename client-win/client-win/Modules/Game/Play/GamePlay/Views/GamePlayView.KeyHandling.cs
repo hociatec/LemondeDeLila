@@ -117,6 +117,21 @@ public partial class GamePlayView
             return;
         }
 
+        // Generic text prompt pending: open a local input dialog instead of sending ENTER to the server.
+        if (vm.HasPendingTextPrompt && (e.Key == Key.Enter || e.Key == Key.Return))
+        {
+            e.Handled = true;
+            try
+            {
+                await vm.TryOpenPendingTextPromptAsync(CancellationToken.None).ConfigureAwait(true);
+            }
+            catch
+            {
+                // ignore
+            }
+            return;
+        }
+
         if (!TryMapKeyToServerShortcut(e.Key, out var key))
         {
             return;

@@ -36,21 +36,27 @@ export class LamaPresenter extends BasePresenterService {
     if (this.isSetup(state) || (meta.step ?? '') === 'setup_target') {
       const ownerId = meta.ownerPlayerId ?? null;
       if (ownerId == null || userId !== ownerId) return [];
-      return this.setupOptions().map((loseAtScore) => ({
-        type: 'lama_set_target',
-        payload: { loseAtScore },
-      }));
+      return [{ type: 'lama_set_target', payload: {} }];
     }
 
     if (!this.isStarted(state)) return [];
 
     const out: GameSingleActionDto[] = [
       { type: 'lama_peek_discard', payload: {} },
-      { type: 'lama_peek_deck', payload: {} },
+      { type: 'lama_quit', payload: {} },
     ];
 
+    const handValues = ((meta.handsByPlayerId ?? {})[String(userId)] ?? []) as LamaCardValue[];
+    const dropped = Boolean((meta.droppedOutByPlayerId ?? {})[String(userId)]);
+
     const current = state.turn?.currentPlayerId ?? null;
-    if (current !== userId) return out;
+    if (current !== userId) {
+      // Not your turn: allow browsing hand without sending game-altering actions.
+      for (const value of [...handValues].sort((a, b) => a - b)) {
+        out.push({ type: 'lama_preview', payload: { value } });
+      }
+      return out;
+    }
 
     const step = meta.step ?? 'turn_choice';
     if (step === 'return_token') {
@@ -62,30 +68,20 @@ export class LamaPresenter extends BasePresenterService {
       return out;
     }
 
-    const hand = (meta.handsByPlayerId ?? {})[String(userId)] ?? [];
+    if (dropped) return out;
 
     const top = this.topDiscard(meta);
     if (!top) return out;
 
-    const playable = new Set<LamaCardValue>([top, nextLamaValue(top)]);
-    const counts = new Map<LamaCardValue, number>();
-    for (const v of hand as LamaCardValue[]) {
-      counts.set(v, (counts.get(v) ?? 0) + 1);
-    }
-
-    for (const [value, count] of [...counts.entries()].sort((a, b) => a[0] - b[0])) {
-      if (!playable.has(value)) continue;
-      if (count > 0) {
-        out.push({
-          type: 'lama_play',
-          payload: { value, count: 1 },
-        });
-      }
+    // One pending choice per card in hand (including duplicates): ENTER plays selected card if legal.
+    for (const value of [...handValues].sort((a, b) => a - b)) {
+      out.push({ type: 'lama_play', payload: { value, count: 1 } });
     }
 
     if ((meta.deck ?? []).length > 0) {
       out.push({ type: 'draw', payload: {} });
     }
+    out.push({ type: 'lama_quit', payload: {} });
     return out;
   }
 
@@ -107,15 +103,24 @@ export class LamaPresenter extends BasePresenterService {
       const ownerId = metadata.ownerPlayerId ?? null;
       if (ownerId == null || userId !== ownerId) return null;
       return {
-        type: 'lama_setup',
-        label: 'Choisissez le score de défaite (↑/↓ puis Entrée).',
+        type: 'text_prompt',
+        label: 'Entrez le score de défaite (nombre).',
         playerId: ownerId,
-        choices: this.setupOptions().map(String),
+        choices: [],
+        data: {
+          title: 'LAMA',
+          initialText: String(metadata.loseAtScore ?? 40),
+          actionType: 'lama_set_target',
+          payloadKey: 'loseAtScore',
+          kind: 'number',
+          min: 5,
+          max: 200,
+        },
       };
     }
 
     if (!this.isStarted(state)) return null;
-    if (currentPlayerId !== userId) return null;
+    // Always expose hand + discard top for the viewer (the server is the source of truth).
 
     const step = metadata.step ?? 'turn_choice';
     if (step === 'return_token') {
@@ -134,25 +139,14 @@ export class LamaPresenter extends BasePresenterService {
     }
 
     const hand = (metadata.handsByPlayerId ?? {})[String(userId)] ?? [];
+    const droppedOut = Boolean((metadata.droppedOutByPlayerId ?? {})[String(userId)]);
 
     const top = this.topDiscard(metadata);
     if (!top) return null;
 
     const next = nextLamaValue(top);
     const playable = new Set<LamaCardValue>([top, next]);
-    const counts = new Map<LamaCardValue, number>();
-    for (const v of hand as LamaCardValue[]) {
-      counts.set(v, (counts.get(v) ?? 0) + 1);
-    }
-
-    const choices: string[] = [];
-    for (const [value, count] of [...counts.entries()].sort((a, b) => a[0] - b[0])) {
-      if (!playable.has(value)) continue;
-      if (count > 0) {
-        // Pending choices should be the list navigated with ↑/↓: only playable cards from the hand.
-        choices.push(lamaCardLabel(value));
-      }
-    }
+    const choices = (hand as LamaCardValue[]).slice().sort((a, b) => a - b).map(lamaCardLabel);
 
     const meScore = Number((metadata.scoresByPlayerId ?? {})[String(userId)] ?? 0);
     const deckCount = (metadata.deck ?? []).length;
@@ -163,8 +157,13 @@ export class LamaPresenter extends BasePresenterService {
       0,
     );
     return {
-      type: 'lama_turn',
-      label: `Défausse: ${discardTop}. ${playableRule} Main: ${hand.length} cartes (${handScore} pts). Score total: ${meScore}. Pioche: ${deckCount}. (↑/↓ choisir une carte, Entrée jouer, Espace piocher, C voir défausse, E voir pioche)`,
+      type: currentPlayerId === userId ? 'lama_turn' : 'lama_hand',
+      label:
+        droppedOut
+          ? `Défausse: ${discardTop}. ${playableRule} Vous vous êtes retiré du round. Main: ${hand.length} cartes (${handScore} pts). Score total: ${meScore}.`
+          : currentPlayerId === userId
+            ? `Défausse: ${discardTop}. ${playableRule} Main: ${hand.length} cartes (${handScore} pts). Pioche: ${deckCount}. (↑/↓ choisir une carte, Entrée jouer, Espace piocher, P se retirer, C rappel défausse)`
+            : `Défausse: ${discardTop}. ${playableRule} Votre main: ${hand.length} cartes (${handScore} pts). (En attente de votre tour)`,
       playerId: userId,
       choices,
     };
@@ -174,9 +173,10 @@ export class LamaPresenter extends BasePresenterService {
     if (actionType === 'lama_play') return 'Jouer';
     if (actionType === 'draw') return 'Piocher';
     if (actionType === 'lama_set_target') return 'Score de défaite';
+    if (actionType === 'lama_quit') return 'Se retirer';
     if (actionType === 'lama_return') return 'Retirer points';
     if (actionType === 'lama_peek_discard') return 'Voir défausse';
-    if (actionType === 'lama_peek_deck') return 'Voir pioche';
+    if (actionType === 'lama_preview') return 'Voir carte';
     return actionType;
   }
 

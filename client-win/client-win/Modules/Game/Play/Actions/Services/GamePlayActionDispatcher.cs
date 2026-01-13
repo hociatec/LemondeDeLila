@@ -186,6 +186,12 @@ internal sealed class GamePlayActionDispatcher
                 .Where(a => string.Equals(a.Type, "lama_play", StringComparison.OrdinalIgnoreCase))
                 .ToList();
         }
+        if (normalized == "lama_hand")
+        {
+            return actions
+                .Where(a => string.Equals(a.Type, "lama_preview", StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
         if (normalized == "lama_return")
         {
             return actions

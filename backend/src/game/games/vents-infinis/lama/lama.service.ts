@@ -63,6 +63,7 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
       deck: [],
       discard: [],
       handsByPlayerId: {},
+      droppedOutByPlayerId: {},
       scoresByPlayerId,
       step: 'setup_target',
       pendingReturnQueue: [],
@@ -116,6 +117,10 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
       return [{ type: 'lama_return', payload: { value: 0 } }];
     }
 
+    if (meta.droppedOutByPlayerId[String(botPlayerId)]) {
+      return [];
+    }
+
     const hand = (meta.handsByPlayerId ?? {})[String(botPlayerId)] ?? [];
     const discard = Array.isArray(meta.discard) ? meta.discard : [];
     const top = discard.length ? (discard[discard.length - 1] as LamaCardValue) : null;
@@ -147,7 +152,8 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
       return [{ type: 'draw', payload: {} }];
     }
 
-    return [];
+    // If cannot play and cannot draw, withdraw from the round.
+    return [{ type: 'lama_quit', payload: {} }];
   }
 
   exposeStateForUser(state: GameStateEntity, userId: number): GameStateWithActions {
@@ -159,7 +165,7 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
 
     return [
       actionShortcut('C', 'lama_peek_discard'),
-      actionShortcut('E', 'lama_peek_deck'),
+      actionShortcut('P', 'lama_quit'),
     ];
   }
 
@@ -181,17 +187,13 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
     const status = String(state.status ?? '').toLowerCase();
 
     // Info actions: allowed for anyone, do not consume a turn.
-    if (type === 'lama_peek_discard' || type === 'lama_peek_deck') {
+    if (type === 'lama_peek_discard' || type === 'lama_preview') {
+      if (type === 'lama_preview') return state;
       const discard = Array.isArray(meta.discard) ? meta.discard : [];
       const top = discard.length ? (discard[discard.length - 1] as LamaCardValue) : null;
-      const deckCount = (meta.deck ?? []).length;
       const name = players.find((p) => p?.id === actorId)?.username ?? `#${actorId}`;
       const log = Array.isArray(state.log) ? [...state.log] : [];
-      if (type === 'lama_peek_discard') {
-        log.push({ message: `${name} regarde la défausse : ${top ? lamaCardLabel(top) : '(vide)'}.` });
-      } else {
-        log.push({ message: `${name} regarde la pioche : ${deckCount} carte${deckCount > 1 ? 's' : ''}.` });
-      }
+      log.push({ message: `${name} regarde la défausse : ${top ? lamaCardLabel(top) : '(vide)'}.` });
       return { ...state, log };
     }
 
@@ -298,10 +300,16 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
     }
 
     if (type === 'draw') {
+      if (meta.droppedOutByPlayerId[String(actorId)]) return state;
       return this.applyDraw(state, meta, actorId);
     }
 
+    if (type === 'lama_quit') {
+      return this.applyQuit(state, meta, actorId);
+    }
+
     if (type === 'lama_play') {
+      if (meta.droppedOutByPlayerId[String(actorId)]) return state;
       return this.applyPlay(state, meta, actorId, action);
     }
 
@@ -339,13 +347,46 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
       },
     };
 
-    // If the deck is empty and nobody can play anymore, end the round.
+    // If the round end conditions are met, end the round.
     if (this.isRoundEnded(nextMeta, players)) {
-      const winnerId = this.findEmptyHandWinnerId(nextMeta, players);
+      const winnerId = this.findRoundWinnerId(nextMeta, players);
       return this.endRound(nextState, winnerId);
     }
 
     return nextState;
+  }
+
+  private applyQuit(state: GameStateEntity, meta: LamaMetadata, actorId: number): GameStateEntity {
+    const droppedOutByPlayerId = { ...(meta.droppedOutByPlayerId ?? {}) };
+    if (droppedOutByPlayerId[String(actorId)]) return state;
+    droppedOutByPlayerId[String(actorId)] = true;
+
+    const players = Array.isArray(state.players) ? state.players : [];
+    const name = players.find((p) => p?.id === actorId)?.username ?? `#${actorId}`;
+    const log = Array.isArray(state.log) ? [...state.log] : [];
+    log.push({ message: `${name} se retire du round.` });
+
+    const nextMeta: LamaMetadata = { ...meta, droppedOutByPlayerId };
+    const nextStateBase: GameStateEntity = { ...state, metadata: nextMeta as any, log };
+
+    if (this.isRoundEnded(nextMeta, players)) {
+      const winnerId = this.findRoundWinnerId(nextMeta, players);
+      return this.endRound(nextStateBase, winnerId);
+    }
+
+    const nextPlayerId = this.findNextActivePlayerId(players, nextMeta, actorId);
+    return {
+      ...nextStateBase,
+      turnIndex: (state.turnIndex ?? 0) + 1,
+      turn: {
+        ...(state.turn ?? { direction: 1 }),
+        currentPlayerId: nextPlayerId,
+        direction: 1,
+        label: nextPlayerId
+          ? `Tour de ${players.find((p) => p?.id === nextPlayerId)?.username ?? `#${nextPlayerId}`}`
+          : undefined,
+      },
+    };
   }
 
   private applyPlay(
@@ -422,7 +463,7 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
 
     // If the deck is empty and nobody can play anymore, end the round.
     if (this.isRoundEnded(nextMeta, players)) {
-      const winnerId = this.findEmptyHandWinnerId(nextMeta, players);
+      const winnerId = this.findRoundWinnerId(nextMeta, players);
       return this.endRound(nextState, winnerId);
     }
 
@@ -557,9 +598,11 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
     const deck = shuffled.values as LamaCardValue[];
 
     const handsByPlayerId: Record<string, LamaCardValue[]> = {};
+    const droppedOutByPlayerId: Record<string, boolean> = {};
     for (const p of players) {
       if (!p?.id) continue;
       handsByPlayerId[String(p.id)] = [];
+      droppedOutByPlayerId[String(p.id)] = false;
     }
 
     for (let i = 0; i < 6; i += 1) {
@@ -583,7 +626,7 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
       deck,
       discard,
       handsByPlayerId,
-      droppedOutByPlayerId: {},
+      droppedOutByPlayerId,
       step: 'turn_choice',
       pendingReturnQueue: [],
       pendingReturnPlayerId: null,
@@ -614,37 +657,29 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
 
   private isRoundEnded(meta: LamaMetadata, players: any[]): boolean {
     const hands = meta.handsByPlayerId ?? {};
+    const dropped = meta.droppedOutByPlayerId ?? {};
     const ids = Object.keys(hands);
     if (ids.length === 0) return true;
     const someoneEmpty = ids.some((id) => (hands[id] ?? []).length === 0);
     if (someoneEmpty) return true;
 
-    const deckCount = (meta.deck ?? []).length;
-    if (deckCount > 0) return false;
-    return !this.anyPlayerCanPlay(meta, players);
+    const active = ids.filter((id) => !dropped[id]);
+    if (active.length <= 1) return true;
+    const allDropped = active.length === 0;
+    if (allDropped) return true;
+    return false;
   }
 
   private findNextActivePlayerId(players: any[], meta: LamaMetadata, afterPlayerId: number): number | null {
     const ids = players.map((p) => p?.id).filter((id) => typeof id === 'number') as number[];
     if (!ids.length) return null;
     const start = Math.max(0, ids.indexOf(afterPlayerId));
-
-    const deckCount = (meta.deck ?? []).length;
-    const discard = Array.isArray(meta.discard) ? meta.discard : [];
-    const top = discard.length ? (discard[discard.length - 1] as LamaCardValue) : null;
-    const allowed = top ? new Set<LamaCardValue>([top, nextLamaValue(top)]) : null;
-
+    const dropped = meta.droppedOutByPlayerId ?? {};
     for (let step = 1; step <= ids.length; step += 1) {
       const pid = ids[(start + step) % ids.length]!;
-      if (deckCount > 0) return pid; // everyone can draw
-      if (!allowed) return pid;
-      const hand = (meta.handsByPlayerId ?? {})[String(pid)] ?? [];
-      if ((hand as LamaCardValue[]).some((v) => allowed.has(v))) {
-        return pid;
-      }
+      if (!dropped[String(pid)]) return pid;
     }
-
-    return ids[(start + 1) % ids.length] ?? (ids[0] ?? null);
+    return ids[start] ?? null;
   }
 
   private withTurnLabel(turn: any, players: any[], currentPlayerId: number): any {
@@ -656,21 +691,6 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
     };
   }
 
-  private anyPlayerCanPlay(meta: LamaMetadata, players: any[]): boolean {
-    const discard = Array.isArray(meta.discard) ? meta.discard : [];
-    const top = discard.length ? (discard[discard.length - 1] as LamaCardValue) : null;
-    if (!top) return false;
-
-    const allowed = new Set<LamaCardValue>([top, nextLamaValue(top)]);
-    const hands = meta.handsByPlayerId ?? {};
-    const ids = players.map((p) => p?.id).filter((id) => typeof id === 'number') as number[];
-    for (const pid of ids) {
-      const hand = (hands[String(pid)] ?? []) as LamaCardValue[];
-      if (hand.some((v) => allowed.has(v))) return true;
-    }
-    return false;
-  }
-
   private findEmptyHandWinnerId(meta: LamaMetadata, players: any[]): number | null {
     const hands = meta.handsByPlayerId ?? {};
     const ids = players.map((p) => p?.id).filter((id) => typeof id === 'number') as number[];
@@ -678,6 +698,18 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
       const hand = (hands[String(pid)] ?? []) as LamaCardValue[];
       if (hand.length === 0) return pid;
     }
+    return null;
+  }
+
+  private findRoundWinnerId(meta: LamaMetadata, players: any[]): number | null {
+    const empty = this.findEmptyHandWinnerId(meta, players);
+    if (empty != null) return empty;
+
+    const hands = meta.handsByPlayerId ?? {};
+    const dropped = meta.droppedOutByPlayerId ?? {};
+    const ids = Object.keys(hands);
+    const active = ids.filter((id) => !dropped[id]);
+    if (active.length === 1) return Number(active[0]);
     return null;
   }
 }

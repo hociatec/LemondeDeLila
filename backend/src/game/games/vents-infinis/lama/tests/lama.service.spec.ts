@@ -24,7 +24,8 @@ describe('LamaService', () => {
     const exposedA: any = service.exposeStateForUser(state, 1);
     const exposedB: any = service.exposeStateForUser(state, 2);
 
-    expect(exposedA.pending?.choices?.length ?? 0).toBeGreaterThan(0);
+    expect(exposedA.pending).not.toBeNull();
+    expect(Number(exposedA.pending?.playerId ?? 0)).toBe(1);
     expect(exposedB.pending).toBeNull();
   });
 
@@ -49,7 +50,7 @@ describe('LamaService', () => {
     expect(String(state.status)).toBe('started');
     expect(String(state.phase)).toBe('setup');
     const exposed: any = service.exposeStateForUser(state, 1);
-    expect(String(exposed?.pending?.type ?? '')).toBe('lama_setup');
+    expect(String(exposed?.pending?.type ?? '')).toBe('text_prompt');
     expect((exposed?.actions ?? []).some((a: any) => a?.type === 'lama_set_target')).toBe(true);
 
     const started: any = service.applyActions(state, [
@@ -97,7 +98,7 @@ describe('LamaService', () => {
 
     const actions = service.getBotActions(state, 2);
     expect(actions.length).toBeGreaterThan(0);
-    expect(['lama_play', 'draw', 'lama_return']).toContain(actions[0].type);
+    expect(['lama_play', 'draw', 'lama_quit', 'lama_return']).toContain(actions[0].type);
   });
 
   it('declares info shortcuts for panels', async () => {
@@ -120,7 +121,7 @@ describe('LamaService', () => {
     ).toBe(true);
     expect(
       shortcuts.some(
-        (s: any) => s?.type === 'action' && s?.actionType === 'lama_peek_deck',
+        (s: any) => s?.type === 'action' && s?.actionType === 'lama_quit',
       ),
     ).toBe(true);
   });
@@ -245,16 +246,17 @@ describe('LamaService', () => {
 
     const exposed: any = service.exposeStateForUser(state, 1);
     const choices = (exposed?.pending?.choices ?? []).map((c: any) => String(c));
-    expect(choices.some((c: string) => c.toLowerCase().includes('pioch'))).toBe(false);
-    expect(choices.some((c: string) => c.toLowerCase().includes('sort'))).toBe(false);
+    // The hand list contains only cards.
+    expect(choices.every((c: string) => ['1', '2', '3', '4', '5', '6', 'LAMA'].includes(c))).toBe(true);
 
     const actionTypes = (exposed?.actions ?? []).map((a: any) =>
       String(a?.type ?? '').toLowerCase(),
     );
     expect(actionTypes).toContain('draw');
+    expect(actionTypes).toContain('lama_quit');
   });
 
-  it('ends the turn after a draw (only one draw per turn)', async () => {
+  it('passes the turn after a draw', async () => {
     const service = new LamaService(
       { register: () => {} } as any,
       new RandomService(),
@@ -344,6 +346,50 @@ describe('LamaService', () => {
     expect(after.turn.currentPlayerId).toBe(2);
   });
 
+  it('passes the turn after playing', async () => {
+    const service = new LamaService(
+      { register: () => {} } as any,
+      new RandomService(),
+      new LamaPresenter(),
+    );
+
+    const state: any = {
+      status: 'started',
+      phase: 'round',
+      round: 1,
+      turnIndex: 0,
+      lastRoll: null,
+      log: [],
+      players: [
+        { id: 1, username: 'A' },
+        { id: 2, username: 'B' },
+      ],
+      turn: { currentPlayerId: 1, direction: 1 },
+      pending: null,
+      metadata: {
+        ownerPlayerId: 1,
+        loseAtScore: 40,
+        roundNumber: 1,
+        roundStarterIndex: 0,
+        deck: [6, 5],
+        discard: [1],
+        handsByPlayerId: { '1': [1, 2], '2': [2] },
+        droppedOutByPlayerId: { '1': false, '2': false },
+        scoresByPlayerId: { '1': 0, '2': 0 },
+        step: 'turn_choice',
+        pendingReturnQueue: [],
+        pendingReturnPlayerId: null,
+        winnerId: null,
+      },
+    };
+
+    const after: any = service.applyActions(state, [
+      { type: 'lama_play', payload: { value: 1, count: 1 }, meta: { actorId: 1 } } as any,
+    ]);
+
+    expect(after.turn.currentPlayerId).toBe(2);
+  });
+
   it('scores only distinct remaining card values at end of round', async () => {
     const service = new LamaService(
       { register: () => {} } as any,
@@ -372,6 +418,7 @@ describe('LamaService', () => {
         deck: [],
         discard: [1],
         handsByPlayerId: { '1': [1], '2': [3, 3, 4, 4, 7] },
+        droppedOutByPlayerId: { '1': false, '2': false },
         scoresByPlayerId: { '1': 0, '2': 0 },
         step: 'turn_choice',
         pendingReturnQueue: [],
