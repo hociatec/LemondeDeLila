@@ -170,7 +170,7 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
 
     return [
       interfaceShortcut('C', 'discard'),
-      interfaceShortcut('E', 'deck'),
+      interfaceShortcut('E', 'hands'),
       actionShortcut('P', 'lama_quit'),
     ];
   }

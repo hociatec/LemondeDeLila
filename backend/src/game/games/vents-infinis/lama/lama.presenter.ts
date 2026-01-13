@@ -304,9 +304,20 @@ export class LamaPresenter extends BasePresenterService {
             title: 'Main',
             message: hand.length ? `Main: ${hand.join(', ')}` : 'Main: (vide)',
           },
-          deck: {
-            title: 'Pioche',
-            message: `Cartes dans la pioche : ${deckCount}.`,
+          hands: {
+            title: 'Mains',
+            message: (() => {
+              const by = metadata.handsByPlayerId ?? {};
+              const parts = players
+                .filter((p) => p?.id)
+                .map((p) => {
+                  const pid = p.id;
+                  const name = p.username ?? `#${pid}`;
+                  const count = Array.isArray(by[String(pid)]) ? (by[String(pid)] as any[]).length : 0;
+                  return `${name}: ${count}`;
+                });
+              return parts.length ? `Cartes en main — ${parts.join(', ')}.` : 'Cartes en main : inconnues.';
+            })(),
           },
           discard: {
             title: 'Défausse',
