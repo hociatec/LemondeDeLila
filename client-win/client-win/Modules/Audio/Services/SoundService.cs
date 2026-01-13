@@ -38,6 +38,7 @@ public sealed class SoundService : ISoundService, IDisposable
     private EventHandler? _previewOpenedHandler;
     private readonly long _serviceStartTicks = Stopwatch.GetTimestamp();
     private readonly Queue<(SoundId Sound, long Ticks)> _recentPlays = new();
+    private int _connectedGate;
 
     // Avoid audio spam when a burst of messages happens (e.g. history replay, reconnect).
     private static readonly long MinIntervalTicks = Stopwatch.Frequency / 12; // ~83ms
@@ -323,6 +324,14 @@ public sealed class SoundService : ISoundService, IDisposable
         long now = Stopwatch.GetTimestamp();
         bool shouldLogStartupBurst = false;
         int startupBurstCount = 0;
+
+        // Tant qu'on n'est pas authentifié/connecté, ne jouer aucun son autre que l'ouverture du client.
+        // Cela évite les sons "parasites" déclenchés par des événements réseau pendant l'écran de login.
+        if (Volatile.Read(ref _connectedGate) == 0 && sound != SoundId.ClientOpened)
+        {
+            return;
+        }
+
         lock (_gate)
         {
             // Au démarrage, il peut arriver que ClientOpened (son d'ouverture) et ClientConnected (connexion rapide/auto-login)
@@ -581,6 +590,17 @@ public sealed class SoundService : ISoundService, IDisposable
         _previewPlayer = null;
     }
 
+    public void SetConnected(bool connected)
+    {
+        Volatile.Write(ref _connectedGate, connected ? 1 : 0);
+        if (!connected)
+        {
+            // Quand on repasse "déconnecté", stopper les boucles d'ambiance (elles peuvent continuer sinon).
+            StopLoop(SoundId.MainMenuMusic);
+            StopLoop(SoundId.TavernAmbience);
+        }
+    }
+
     public async Task WaitForSoundToEndAsync(SoundId sound, TimeSpan timeout)
     {
         if (timeout <= TimeSpan.Zero)
@@ -638,6 +658,12 @@ public sealed class SoundService : ISoundService, IDisposable
 
     public void StartLoop(SoundId sound)
     {
+        // Avant connexion: aucune boucle (ambiance/musique) ne doit démarrer.
+        if (Volatile.Read(ref _connectedGate) == 0)
+        {
+            return;
+        }
+
         if (!_sounds.TryGetValue(sound, out var entry))
         {
             return;

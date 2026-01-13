@@ -354,6 +354,7 @@ public static class AppBootstrapper
             sounds.Preload(Modules.Audio.Models.SoundId.ClientOpened);
 
             // Son de démarrage (si activé dans Options).
+            sounds.SetConnected(false);
             sounds.Play(Modules.Audio.Models.SoundId.ClientOpened);
 
             // WPF: MediaPlayer.Open/MediaOpened dépend souvent du message loop.

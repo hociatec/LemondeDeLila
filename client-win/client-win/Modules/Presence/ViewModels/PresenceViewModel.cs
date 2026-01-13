@@ -60,6 +60,7 @@ public sealed class PresenceViewModel : ObservableObject
     private const string TagFriendReject = "friend.reject";
     private const string TagBlock = "block";
     private const string TagUnblock = "unblock";
+    private const string TagLoading = "loading";
     private const string TagStoryBook = "storybook";
     private const string TagBio = "bio";
 
@@ -377,7 +378,7 @@ public sealed class PresenceViewModel : ObservableObject
             _isBlocked = null;
             _isFriendRequestPending = null;
             _hasIncomingFriendRequest = null;
-            RebuildPlayerActions();
+            ShowPlayerActionsLoading();
             _ = RefreshSocialStateAsync(player.Id);
             _ = _dispatcher.BeginInvoke(
                 DispatcherPriority.ApplicationIdle,
@@ -393,6 +394,12 @@ public sealed class PresenceViewModel : ObservableObject
 
     private void RebuildPlayerActions()
     {
+        if (_isFriend == null || _isBlocked == null || _isFriendRequestPending == null || _hasIncomingFriendRequest == null)
+        {
+            ShowPlayerActionsLoading();
+            return;
+        }
+
         var previousSelection = SelectedItem?.Tag;
         Items.Clear();
         var player = _selectedPlayer;
@@ -407,18 +414,9 @@ public sealed class PresenceViewModel : ObservableObject
         var canInvite = myRoomId.HasValue && myRoomId.Value > 0 && player.CurrentRoomId != myRoomId;
         var canJoin = (!myRoomId.HasValue || myRoomId.Value <= 0) && player.CurrentRoomId.HasValue && player.CurrentRoomId.Value > 0;
 
-        if (_isBlocked == true)
-        {
-            Items.Add(new PresenceMenuItem("Débloquer", tag: TagUnblock));
-        }
-        else if (_isBlocked == false)
-        {
-            Items.Add(new PresenceMenuItem("Bloquer", tag: TagBlock));
-        }
-        else
-        {
-            Items.Add(new PresenceMenuItem("Bloquer / débloquer (chargement...)", tag: TagBlock));
-        }
+        Items.Add(_isBlocked == true
+            ? new PresenceMenuItem("Débloquer", tag: TagUnblock)
+            : new PresenceMenuItem("Bloquer", tag: TagBlock));
 
         if (_isFriend == true)
         {
@@ -433,13 +431,9 @@ public sealed class PresenceViewModel : ObservableObject
         {
             Items.Add(new PresenceMenuItem("Annuler ma demande d'ami", tag: TagFriendCancel));
         }
-        else if (_isFriend == false && _isFriendRequestPending == false)
-        {
-            Items.Add(new PresenceMenuItem("Ajouter en ami", tag: TagFriendAdd));
-        }
         else
         {
-            Items.Add(new PresenceMenuItem("Ajouter / retirer ami (chargement...)", tag: TagFriendAdd));
+            Items.Add(new PresenceMenuItem("Ajouter en ami", tag: TagFriendAdd));
         }
 
         Items.Add(new PresenceMenuItem("Voir sa bio", tag: TagBio));
@@ -512,7 +506,16 @@ public sealed class PresenceViewModel : ObservableObject
             _isBlocked = null;
             _isFriendRequestPending = null;
             _hasIncomingFriendRequest = null;
+            ShowPlayerActionsLoading();
         }
+    }
+
+    private void ShowPlayerActionsLoading()
+    {
+        Items.Clear();
+        Items.Add(new PresenceMenuItem("Chargement…", tag: TagLoading));
+        SelectedItem = Items.FirstOrDefault();
+        Details = "Chargement… Échap : retour.";
     }
 
     private async Task RunActionAsync()

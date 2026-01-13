@@ -65,13 +65,16 @@
                     <Setter Property="Focusable" Value="False"/>
                     <Setter Property="KeyboardNavigation.IsTabStop" Value="False"/>
                     <Setter Property="AutomationProperties.AutomationId" Value="{Binding Key}"/>
+                    <!-- Évite que le peer annonce le type .NET du data item (fallback ToString). -->
+                    <Setter Property="AutomationProperties.Name" Value=""/>
                 </Style>
             </ItemsControl.ItemContainerStyle>
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
                     <ContentControl Content="{Binding}"
                                     Focusable="False"
-                                    KeyboardNavigation.IsTabStop="False">
+                                    KeyboardNavigation.IsTabStop="False"
+                                    AutomationProperties.Name="">
                         <ContentControl.Style>
                             <Style TargetType="ContentControl">
                                 <Setter Property="ContentTemplate" Value="{StaticResource TextFieldTemplate}"/>

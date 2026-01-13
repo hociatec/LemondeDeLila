@@ -56,4 +56,48 @@ public sealed class GameHistorySink : IGameHistorySink
             _dispatcher.InvokeAsync(AddNow, DispatcherPriority.Background);
         }
     }
+
+    public void AddChat(string message)
+    {
+        // Le tchat doit rester sur une seule ligne (ne pas découper en phrases),
+        // et éviter la double lecture NVDA (le contrôle d'historique suffit).
+        var cleaned = NormalizeSingleLine(message);
+        if (string.IsNullOrWhiteSpace(cleaned))
+        {
+            return;
+        }
+
+        void AddNow()
+        {
+            _history.Entries.Add(cleaned);
+        }
+
+        if (_dispatcher.CheckAccess())
+        {
+            AddNow();
+        }
+        else
+        {
+            _dispatcher.InvokeAsync(AddNow, DispatcherPriority.Background);
+        }
+    }
+
+    private static string NormalizeSingleLine(string? message)
+    {
+        if (string.IsNullOrWhiteSpace(message))
+        {
+            return string.Empty;
+        }
+
+        var normalized = (message ?? string.Empty)
+            .Replace("\r\n", " ", StringComparison.Ordinal)
+            .Replace('\r', ' ')
+            .Replace('\n', ' ')
+            .Trim();
+
+        // Collapse whitespace to avoid weird wraps (NBSP, multiple spaces).
+        var parts = normalized
+            .Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        return parts.Length == 0 ? string.Empty : string.Join(' ', parts);
+    }
 }

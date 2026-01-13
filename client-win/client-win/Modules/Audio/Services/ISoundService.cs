@@ -9,6 +9,7 @@ public interface ISoundService
     void Play(SoundId sound);
     void PlayPreview(SoundId sound);
     void StopPreview();
+    void SetConnected(bool connected);
     void StartLoop(SoundId sound);
     void StopLoop(SoundId sound);
     Task WaitForSoundToEndAsync(SoundId sound, TimeSpan timeout);

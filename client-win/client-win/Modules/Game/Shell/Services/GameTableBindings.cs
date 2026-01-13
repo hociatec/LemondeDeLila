@@ -114,16 +114,16 @@ internal sealed class GameTableBindings : IAsyncDisposable
 	            }
 
             var user = string.IsNullOrWhiteSpace(_selfUsername) ? "Vous" : _selfUsername.Trim();
-            var message = (text ?? string.Empty).Trim();
-            if (string.IsNullOrWhiteSpace(message))
-            {
-                _history.Add($"Chat — {user} :");
-            }
-            else
-            {
-                _history.Add($"Chat — {user} : {message}");
-            }
-        };
+	            var message = (text ?? string.Empty).Trim();
+	            if (string.IsNullOrWhiteSpace(message))
+	            {
+	                _history.AddChat($"Chat — {user} :");
+	            }
+	            else
+	            {
+	                _history.AddChat($"Chat — {user} : {message}");
+	            }
+	        };
 
         _onAnnounced = announcement =>
         {
@@ -159,19 +159,19 @@ internal sealed class GameTableBindings : IAsyncDisposable
                     return;
                 }
 
-                foreach (var msg in messages)
-                {
-                    if (msg == null) continue;
+	                foreach (var msg in messages)
+	                {
+	                    if (msg == null) continue;
                     if (msg.Seq > 0 && _seenChatSeq.Contains(msg.Seq)) continue;
                     if (msg.Seq > 0) _seenChatSeq.Add(msg.Seq);
-                    if (ShouldConsumeLocalEcho(msg))
-                    {
-                        continue;
-                    }
-                    _history.Add(FormatChatLine(msg));
-                }
-            }, DispatcherPriority.Background);
-        };
+	                    if (ShouldConsumeLocalEcho(msg))
+	                    {
+	                        continue;
+	                    }
+	                    _history.AddChat(FormatChatLine(msg));
+	                }
+	            }, DispatcherPriority.Background);
+	        };
 
         _chat.MessageReceived += msg =>
         {
@@ -185,10 +185,10 @@ internal sealed class GameTableBindings : IAsyncDisposable
                     return;
                 }
 
-                MaybePlayChatSound(msg);
-                _history.Add(FormatChatLine(msg));
-            }, DispatcherPriority.Background);
-        };
+	                MaybePlayChatSound(msg);
+	                _history.AddChat(FormatChatLine(msg));
+	            }, DispatcherPriority.Background);
+	        };
 
         // IMPORTANT:
         // Les ajouts/retraits de bots sont déjà reflétés par `room.updated`.
@@ -755,14 +755,16 @@ internal sealed class GameTableBindings : IAsyncDisposable
 	        _sounds.Play(fromSelf ? SoundId.TableChatMessageSent : SoundId.TableChatMessageReceived);
 	    }
 
-    private static string FormatChatLine(RoomChatMessageDto msg)
-    {
-        var user = (msg.Username ?? string.Empty).Trim();
-        var text = (msg.Message ?? string.Empty).Trim();
-        if (string.IsNullOrWhiteSpace(user)) user = "Utilisateur";
-        if (string.IsNullOrWhiteSpace(text)) return $"Chat — {user} :";
-        return $"Chat — {user} : {text}";
-    }
+	    private static string FormatChatLine(RoomChatMessageDto msg)
+	    {
+	        var user = (msg.Username ?? string.Empty).Trim();
+	        var text = (msg.Message ?? string.Empty).Trim();
+	        if (string.IsNullOrWhiteSpace(user)) user = "Utilisateur";
+	        // Le tchat doit rester sur une seule ligne dans l'historique (NVDA + lisibilité).
+	        text = text.Replace("\r\n", " ").Replace('\r', ' ').Replace('\n', ' ');
+	        if (string.IsNullOrWhiteSpace(text)) return $"Chat — {user} :";
+	        return $"Chat — {user} : {text}";
+	    }
 
 	    public async ValueTask DisposeAsync()
 	    {

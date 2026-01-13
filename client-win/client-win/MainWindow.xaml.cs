@@ -311,6 +311,14 @@ namespace client_win
             Title = $"Le Monde de Lila - Connecté en tant que {user.Username}";
             _navigation.SetUser(new UserContext(user.Username, user.Token));
             _host.Session.SetUser(user);
+            try
+            {
+                _host.Services.GetRequiredService<ISoundService>().SetConnected(true);
+            }
+            catch
+            {
+                // ignore
+            }
 
             // Rafraîchir le cache des sons distants avant de jouer le son de connexion
             // pour s'assurer d'utiliser le son uploadé par l'admin (si disponible).
@@ -413,6 +421,7 @@ namespace client_win
             try
             {
                 var sounds = _host.Services.GetRequiredService<ISoundService>();
+                sounds.SetConnected(false);
                 TryPlayClientDisconnectedSound(sounds);
                 sounds.StopLoop(Modules.Audio.Models.SoundId.MainMenuMusic);
                 sounds.StopLoop(Modules.Audio.Models.SoundId.TavernAmbience);
