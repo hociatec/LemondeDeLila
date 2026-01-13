@@ -8,6 +8,15 @@ namespace client_win.Modules.Game.Play.GamePlay.Views;
 
 public partial class GamePlayView
 {
+    private void OnChoicesPreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        // Assure un comportement "boucle" pour la main (LAMA) même quand le focus est dans la ListBox.
+        if (TryHandleHandNavigation(e))
+        {
+            return;
+        }
+    }
+
     private bool TryHandleHandNavigation(KeyEventArgs e)
     {
         if (e.Key is not (Key.Up or Key.Down))

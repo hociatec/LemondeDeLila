@@ -205,6 +205,7 @@
                          ItemsSource="{Binding PendingChoices}"
                          SelectedIndex="{Binding SelectedChoiceIndex, Mode=TwoWay}"
                          KeyDown="OnChoicesKeyDown"
+                         PreviewKeyDown="OnChoicesPreviewKeyDown"
                          Margin="0 10 0 0"
                          Background="Transparent"
                          BorderThickness="1"
