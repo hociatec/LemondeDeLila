@@ -12,6 +12,9 @@ public sealed partial class AdminViewModel
         var tag = SelectedItem?.Tag;
         if (tag == null) return;
 
+        // Si un aperçu de son admin est en cours, l'arrêter dès qu'on navigue ailleurs.
+        _sounds.StopPreview();
+
         try
         {
             if (_page == AdminPage.Root)
@@ -666,11 +669,13 @@ public sealed partial class AdminViewModel
             {
                 if (soundAction == "sound.preview")
                 {
-                    _sounds.Play(_soundDetailsId.Value);
+                    _sounds.PlayPreview(_soundDetailsId.Value);
                     return;
                 }
                 if (soundAction == "sound.change")
                 {
+                    // Évite que le son d'aperçu continue pendant le dialogue fichier.
+                    _sounds.StopPreview();
                     await ChangeSoundAsync(_soundDetailsId.Value).ConfigureAwait(true);
                     return;
                 }

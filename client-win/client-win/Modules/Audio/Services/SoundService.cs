@@ -34,6 +34,10 @@ public sealed class SoundService : ISoundService, IDisposable
     private readonly Dictionary<SoundId, MediaPlayer> _loopPlayers = new();
     private readonly Dictionary<SoundId, EventHandler> _loopHandlers = new();
     private readonly Dictionary<SoundId, TaskCompletionSource<bool>> _playEndSignals = new();
+    private MediaPlayer? _previewPlayer;
+    private EventHandler? _previewOpenedHandler;
+    private readonly long _serviceStartTicks = Stopwatch.GetTimestamp();
+    private readonly Queue<(SoundId Sound, long Ticks)> _recentPlays = new();
 
     // Avoid audio spam when a burst of messages happens (e.g. history replay, reconnect).
     private static readonly long MinIntervalTicks = Stopwatch.Frequency / 12; // ~83ms
@@ -317,6 +321,8 @@ public sealed class SoundService : ISoundService, IDisposable
         }
 
         long now = Stopwatch.GetTimestamp();
+        bool shouldLogStartupBurst = false;
+        int startupBurstCount = 0;
         lock (_gate)
         {
             // Au démarrage, il peut arriver que ClientOpened (son d'ouverture) et ClientConnected (connexion rapide/auto-login)
@@ -335,6 +341,35 @@ public sealed class SoundService : ISoundService, IDisposable
             }
             _lastPlayTicks[sound] = now;
             _playGeneration[sound] = _playGeneration.TryGetValue(sound, out var current) ? current + 1 : 1;
+
+            // Diagnostic: détecter les rafales de sons au démarrage (souvent dues à des événements "snapshot/replay").
+            // On n'altère pas la lecture ici, on log seulement pour faciliter le tri.
+            var sinceStart = now - _serviceStartTicks;
+            if (sinceStart >= 0 && sinceStart < Stopwatch.Frequency * 10)
+            {
+                _recentPlays.Enqueue((sound, now));
+                while (_recentPlays.Count > 0 && now - _recentPlays.Peek().Ticks > Stopwatch.Frequency)
+                {
+                    _recentPlays.Dequeue();
+                }
+                if (_recentPlays.Count >= 6)
+                {
+                    shouldLogStartupBurst = true;
+                    startupBurstCount = _recentPlays.Count;
+                }
+            }
+        }
+
+        if (shouldLogStartupBurst)
+        {
+            try
+            {
+                _logger.LogDebug("Sound startup burst: {Count} sounds in ~1s", startupBurstCount);
+            }
+            catch
+            {
+                // ignore
+            }
         }
 
         var filePath = ResolveFilePath(sound, entry);
@@ -428,6 +463,120 @@ public sealed class SoundService : ISoundService, IDisposable
         {
             _ = _dispatcher.BeginInvoke((Action)PlayOnUiThread, DispatcherPriority.Normal);
         }
+    }
+
+    public void PlayPreview(SoundId sound)
+    {
+        if (!_sounds.TryGetValue(sound, out var entry))
+        {
+            return;
+        }
+        if (!entry.IsEnabled())
+        {
+            return;
+        }
+
+        var filePath = ResolveFilePath(sound, entry);
+        if (!File.Exists(filePath))
+        {
+            _logger.LogDebug("Sound file missing: {Path}", filePath);
+            return;
+        }
+
+        void PlayOnUiThread()
+        {
+            try
+            {
+                StopPreviewOnUiThread();
+
+                var player = new MediaPlayer();
+                _previewPlayer = player;
+
+                // MediaOpened est déclenché de manière async : démarrer uniquement quand prêt.
+                _previewOpenedHandler = (_, _) =>
+                {
+                    if (_previewPlayer == null || !ReferenceEquals(_previewPlayer, player))
+                    {
+                        return;
+                    }
+
+                    try
+                    {
+                        player.IsMuted = false;
+                        player.Volume = entry.Volume();
+                        player.Stop();
+                        player.Position = TimeSpan.Zero;
+                        player.Play();
+                    }
+                    catch
+                    {
+                        // ignore
+                    }
+                };
+                player.MediaOpened += _previewOpenedHandler;
+
+                try
+                {
+                    player.Open(new Uri(filePath, UriKind.Absolute));
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogDebug(ex, "Sound preview open failed ({Sound})", sound);
+                    StopPreviewOnUiThread();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug(ex, "Sound preview error ({Sound})", sound);
+                StopPreviewOnUiThread();
+            }
+        }
+
+        if (_dispatcher.CheckAccess())
+        {
+            PlayOnUiThread();
+        }
+        else
+        {
+            _ = _dispatcher.BeginInvoke((Action)PlayOnUiThread, DispatcherPriority.Normal);
+        }
+    }
+
+    public void StopPreview()
+    {
+        if (_dispatcher.CheckAccess())
+        {
+            StopPreviewOnUiThread();
+        }
+        else
+        {
+            _ = _dispatcher.BeginInvoke((Action)StopPreviewOnUiThread, DispatcherPriority.Background);
+        }
+    }
+
+    private void StopPreviewOnUiThread()
+    {
+        if (_previewPlayer == null)
+        {
+            return;
+        }
+
+        try
+        {
+            if (_previewOpenedHandler != null)
+            {
+                try { _previewPlayer.MediaOpened -= _previewOpenedHandler; } catch { /* ignore */ }
+                _previewOpenedHandler = null;
+            }
+        }
+        catch
+        {
+            // ignore
+        }
+
+        try { _previewPlayer.Stop(); } catch { /* ignore */ }
+        try { _previewPlayer.Close(); } catch { /* ignore */ }
+        _previewPlayer = null;
     }
 
     public async Task WaitForSoundToEndAsync(SoundId sound, TimeSpan timeout)
@@ -664,6 +813,22 @@ public sealed class SoundService : ISoundService, IDisposable
             _lastPlayTicks.Clear();
             _playGeneration.Clear();
             _opened.Clear();
+        }
+
+        try
+        {
+            if (_dispatcher.CheckAccess())
+            {
+                StopPreviewOnUiThread();
+            }
+            else
+            {
+                _ = _dispatcher.BeginInvoke((Action)StopPreviewOnUiThread, DispatcherPriority.Background);
+            }
+        }
+        catch
+        {
+            // ignore
         }
     }
 

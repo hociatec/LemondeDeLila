@@ -50,6 +50,9 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
     private readonly IMenuBadges _badges;
     private volatile bool _countsSupported;
     private TaskCompletionSource<bool>? _countsFirstReceived;
+    private long _startupQuietUntilTicks;
+    private readonly object _friendPresenceGate = new();
+    private readonly Dictionary<int, bool> _friendPresenceById = new();
 
 	    private IWebSocketConnection? _ws;
 	    private readonly SemaphoreSlim _connectLock = new(1, 1);
@@ -104,6 +107,10 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
 	            return;
 	        }
 
+            // Évite le "spam" sonore lors de l'hydratation initiale (amis en ligne, messages déjà en attente, etc.).
+            // Les événements réellement nouveaux continueront à arriver après ce court délai.
+            _startupQuietUntilTicks = Stopwatch.GetTimestamp() + (long)(Stopwatch.Frequency * 4.0);
+
 	        _started = true;
 	        _reconnectCts?.Cancel();
 	        _reconnectCts?.Dispose();
@@ -120,6 +127,10 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
 	    public async Task StopAsync(CancellationToken cancellationToken = default)
 	    {
 	        _started = false;
+            lock (_friendPresenceGate)
+            {
+                _friendPresenceById.Clear();
+            }
 	        try
 	        {
 	            _reconnectCts?.Cancel();
@@ -156,6 +167,17 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
 	        }
 	        _state = WebSocketState.Disconnected;
 	    }
+
+        private bool IsInStartupQuietPeriod()
+        {
+            var until = Interlocked.Read(ref _startupQuietUntilTicks);
+            if (until <= 0)
+            {
+                return false;
+            }
+
+            return Stopwatch.GetTimestamp() < until;
+        }
 
 	    private void RequestReconnect()
 	    {
@@ -245,14 +267,21 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
 	            Log.Information("Connexion WS notify vers {Endpoint}", _config.NotifyGatewayWs);
 	            await ws.ConnectAsync(_config.NotifyGatewayWs, token, headers: headers, cancellationToken).ConfigureAwait(false);
 
-	            _state = WebSocketState.Connected;
-	            Interlocked.Exchange(ref _reconnectAttempt, 0);
-	            Interlocked.Exchange(ref _reconnectInProgress, 0);
-	            Log.Information("Connexion WS notify établie.");
+		            _state = WebSocketState.Connected;
+		            Interlocked.Exchange(ref _reconnectAttempt, 0);
+		            Interlocked.Exchange(ref _reconnectInProgress, 0);
+		            Log.Information("Connexion WS notify établie.");
 
-	            _countsFirstReceived = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-	            _countsSupported = false;
-	            _badges.SetUnreadNotifications(0);
+                    // À chaque connexion (login ou reconnexion), éviter un pic de sons lors de la remise en état.
+                    _startupQuietUntilTicks = Stopwatch.GetTimestamp() + (long)(Stopwatch.Frequency * 4.0);
+                    lock (_friendPresenceGate)
+                    {
+                        _friendPresenceById.Clear();
+                    }
+
+		            _countsFirstReceived = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+		            _countsSupported = false;
+		            _badges.SetUnreadNotifications(0);
 
 	            // Handshake version: permet au serveur de proposer la MAJ à chaque connexion.
 	            try
@@ -1189,17 +1218,20 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
                 text += $" {preview}";
             }
 
-            _announcements.Enqueue(text.Trim(), AnnouncementPriority.Polite);
-
-            var me = _session.CurrentUser;
-	            if (me == null || fromId <= 0 || fromId != me.UserId)
-	            {
-	                _sounds.Play(SoundId.PrivateMessageReceived);
-	            }
-	            if (!_countsSupported)
-	            {
-	                _badges.SetUnreadMessaging(_badges.UnreadMessaging + 1);
-	            }
+	            _announcements.Enqueue(text.Trim(), AnnouncementPriority.Polite);
+	
+	            var me = _session.CurrentUser;
+		            if (me == null || fromId <= 0 || fromId != me.UserId)
+		            {
+                        if (!IsInStartupQuietPeriod())
+                        {
+		                    _sounds.Play(SoundId.PrivateMessageReceived);
+                        }
+		            }
+		            if (!_countsSupported)
+		            {
+		                _badges.SetUnreadMessaging(_badges.UnreadMessaging + 1);
+		            }
 
 	            // Source de vérité serveur pour badges.
 	            _ = Task.Run(async () =>
@@ -1213,29 +1245,32 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
 	        }
 	    }
 
-    private void HandleFriendRequested(JsonElement root)
-    {
-        try
-        {
-            if (!root.TryGetProperty("payload", out var payload) || payload.ValueKind != JsonValueKind.Object)
-            {
-                return;
-            }
+	    private void HandleFriendRequested(JsonElement root)
+	    {
+	        try
+	        {
+	            if (!root.TryGetProperty("payload", out var payload) || payload.ValueKind != JsonValueKind.Object)
+	            {
+	                return;
+	            }
 
-            // Backend sends only requesterId; keep it generic client-side.
-            _announcements.Enqueue("Nouvelle demande d'ami.", AnnouncementPriority.Polite);
-            _sounds.Play(SoundId.FriendInvitationReceived);
-        }
-        catch
-        {
-            // ignore
-        }
-    }
+	            // Backend sends only requesterId; keep it generic client-side.
+	            _announcements.Enqueue("Nouvelle demande d'ami.", AnnouncementPriority.Polite);
+                if (!IsInStartupQuietPeriod())
+                {
+                    _sounds.Play(SoundId.FriendInvitationReceived);
+                }
+	        }
+	        catch
+	        {
+	            // ignore
+	        }
+	    }
 
-    private void HandleFriendPresence(JsonElement root, bool connected)
-    {
-        try
-        {
+	    private void HandleFriendPresence(JsonElement root, bool connected)
+	    {
+	        try
+	        {
             if (!root.TryGetProperty("payload", out var payload) || payload.ValueKind != JsonValueKind.Object)
             {
                 return;
@@ -1248,28 +1283,50 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
                 ? (u.GetString() ?? string.Empty)
                 : string.Empty;
 
-            if (id <= 0)
-            {
-                return;
-            }
+	            if (id <= 0)
+	            {
+	                return;
+	            }
 
-            var me = _session.CurrentUser;
-            if (me != null && me.UserId == id)
-            {
-                return;
-            }
+                // Déduplication + anti-spam au démarrage :
+                // au login, le backend peut émettre une rafale d'événements "ami connecté" pour l'état courant.
+                // On mémorise le premier état observé sans le son/annonce, et on n'annonce que les transitions réelles.
+                lock (_friendPresenceGate)
+                {
+                    if (!_friendPresenceById.TryGetValue(id, out var previous))
+                    {
+                        _friendPresenceById[id] = connected;
+                        return;
+                    }
 
-            var label = string.IsNullOrWhiteSpace(name) ? $"Ami #{id}" : name.Trim();
-            _announcements.Enqueue(
-                connected ? $"{label} s'est connecté." : $"{label} s'est déconnecté.",
-                AnnouncementPriority.Polite);
-            _sounds.Play(connected ? SoundId.FriendConnected : SoundId.FriendDisconnected);
-        }
-        catch
-        {
-            // ignore
-        }
-    }
+                    if (previous == connected)
+                    {
+                        return;
+                    }
+
+                    _friendPresenceById[id] = connected;
+                }
+
+	            var me = _session.CurrentUser;
+	            if (me != null && me.UserId == id)
+	            {
+	                return;
+	            }
+
+	            var label = string.IsNullOrWhiteSpace(name) ? $"Ami #{id}" : name.Trim();
+	            _announcements.Enqueue(
+	                connected ? $"{label} s'est connecté." : $"{label} s'est déconnecté.",
+	                AnnouncementPriority.Polite);
+                if (!IsInStartupQuietPeriod())
+                {
+                    _sounds.Play(connected ? SoundId.FriendConnected : SoundId.FriendDisconnected);
+                }
+	        }
+	        catch
+	        {
+	            // ignore
+	        }
+	    }
 
     private static void TryOpenUrl(string url)
     {

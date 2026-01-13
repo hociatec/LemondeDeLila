@@ -7,6 +7,10 @@ public sealed partial class AdminViewModel
 {
     public AdminNavResult HandleEscape()
     {
+        // Si un son est en cours d'aperçu (admin -> sons), toujours l'arrêter sur Échap.
+        // Le preview utilise un lecteur séparé pour ne pas impacter les boucles d'ambiance normales.
+        _sounds.StopPreview();
+
         // Admin "Rooms" uses the generic EditText page for settings, so we need
         // to route Escape back to Rooms (not Games).
         if (_page == AdminPage.EditText &&

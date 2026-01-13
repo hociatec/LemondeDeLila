@@ -467,9 +467,9 @@ internal sealed class GameTableBindings : IAsyncDisposable
 
         foreach (var shortcut in started ? shortcuts.Where(s => s.AvailableInGame) : shortcuts)
         {
-            // "x" reset : uniquement une fois le jeu démarré, et uniquement pour le propriétaire.
+            // "x" reset : raccourci propriétaire (disponible aussi hors partie pour rattraper un état bloqué).
             if (string.Equals(shortcut.Code, RoomShortcutCodes.Reset, StringComparison.OrdinalIgnoreCase) &&
-                (!started || !isOwner))
+                !isOwner)
             {
                 continue;
             }
@@ -570,33 +570,56 @@ internal sealed class GameTableBindings : IAsyncDisposable
 	    {
 	        var wasStarted = string.Equals(previousStatus, "started", StringComparison.OrdinalIgnoreCase);
 	        var nowStarted = string.Equals(nextStatus, "started", StringComparison.OrdinalIgnoreCase);
-	
-	        // Évite les doubles traitements (ex: room.status "started" + game.status "started").
-	        if (nowStarted == _tableVm.GameZone.IsStarted)
-	        {
-	            return;
-	        }
 
-	        if (!wasStarted && nowStarted)
+	        // Synchronisation idempotente (évite les races room.status vs game.status) :
+	        // on garantit que (IsStarted, Content, raccourcis) correspondent au statut du jeu.
+	        var hasGamePlayLoaded = _tableVm.GameZone.Content != null || _gamePlayVm != null;
+
+	        if (nowStarted)
 	        {
-	            SetRoomShortcutsForStarted(started: true);
-	            EnsureGamePlayLoaded();
+	            if (!_tableVm.GameZone.IsStarted)
+	            {
+	                SetRoomShortcutsForStarted(started: true);
+	                _announcements.TableInfo("Table démarrée.");
+	            }
+	            else
+	            {
+	                // S'assure que les raccourcis room.* sont cohérents (owner/spectateur).
+	                SetRoomShortcutsForStarted(started: true);
+	            }
+
+	            if (!hasGamePlayLoaded)
+	            {
+	                EnsureGamePlayLoaded();
+	            }
+
 	            SyncGameplayShortcuts();
-	            _announcements.TableInfo("Table démarrée.");
 	            return;
 	        }
 
-	        if (wasStarted && !nowStarted)
+	        // Le jeu n'est plus en "started" : on doit pouvoir relancer via Entrée (room.start),
+	        // donc on décharge la zone de jeu et on refocus l'ancre.
+	        if (_tableVm.GameZone.IsStarted)
 	        {
 	            SetRoomShortcutsForStarted(started: false);
+	        }
+	        else
+	        {
+	            // Même si IsStarted est déjà faux (ex: room.updated reçu avant),
+	            // on force un resync des raccourcis pour éviter un état incohérent.
+	            SetRoomShortcutsForStarted(started: false);
+	        }
+
+	        if (hasGamePlayLoaded)
+	        {
 	            _tableVm.GameZone.Content = null;
 	            await UnloadGamePlayVmAsync().ConfigureAwait(true);
-
-	            // Le contenu a été déchargé, refocus sur l'ancre pour permettre Entrée (room.start).
-	            _ = _tableView.Dispatcher.BeginInvoke(
-	                DispatcherPriority.Input,
-	                new Action(_tableView.RequestFocusGameZone));
 	        }
+
+	        // Le contenu a été déchargé, refocus sur l'ancre pour permettre Entrée (room.start).
+	        _ = _tableView.Dispatcher.BeginInvoke(
+	            DispatcherPriority.Input,
+	            new Action(_tableView.RequestFocusGameZone));
 	    }
 
 	    private async System.Threading.Tasks.Task UnloadGamePlayVmAsync()

@@ -7,6 +7,8 @@ namespace client_win.Modules.Audio.Services;
 public interface ISoundService
 {
     void Play(SoundId sound);
+    void PlayPreview(SoundId sound);
+    void StopPreview();
     void StartLoop(SoundId sound);
     void StopLoop(SoundId sound);
     Task WaitForSoundToEndAsync(SoundId sound, TimeSpan timeout);

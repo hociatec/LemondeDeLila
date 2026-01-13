@@ -181,6 +181,13 @@ public sealed class GameZoneHostViewModel : ObservableObject
 
     private async Task ResetAsync()
     {
+        // Hors partie, pas besoin de confirmation : le reset sert souvent à "rattraper" un état incohérent.
+        if (!_isStarted)
+        {
+            await _onReset().ConfigureAwait(true);
+            return;
+        }
+
         var confirm = await _dialogs.Confirm(
                 "Reinitialiser la table",
                 "Etes-vous sur d'arrêter la partie en cours ?")

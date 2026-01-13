@@ -38,6 +38,8 @@ public partial class AdminView : UserControl
         if (_vm != null)
         {
             _vm.NavigationChanged -= OnNavigationChanged;
+            // Sécurité: si un aperçu de son est en cours, l'arrêter quand la vue admin se ferme.
+            _vm.StopSoundPreview();
         }
 
         _vm = vm;
@@ -229,4 +231,3 @@ public partial class AdminView : UserControl
         }
     }
 }
-

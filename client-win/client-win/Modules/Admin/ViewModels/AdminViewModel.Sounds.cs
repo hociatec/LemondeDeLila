@@ -18,6 +18,8 @@ public sealed partial class AdminViewModel
     private SoundId? _soundDetailsId;
     private AdminPage _soundDetailsReturnPage = AdminPage.Sounds;
 
+    public void StopSoundPreview() => _sounds.StopPreview();
+
     private void BuildSounds()
 	    {
 	        _page = AdminPage.Sounds;
@@ -298,6 +300,9 @@ public sealed partial class AdminViewModel
         string? groupOverride = null,
         string? titleOverride = null)
     {
+        // Assure qu'on ne superpose pas plusieurs sons d'aperçu quand on passe d'un son à un autre.
+        _sounds.StopPreview();
+
         _page = AdminPage.SoundDetails;
         _soundDetailsId = sound;
 	        _soundDetailsReturnPage = returnPageOverride ?? sound switch
@@ -377,7 +382,7 @@ public sealed partial class AdminViewModel
         UpdateFilterVisibility();
 
         // Aperçu immédiat quand on entre dans le son (comme demandé).
-        _sounds.Play(sound);
+        _sounds.PlayPreview(sound);
     }
 
     private async Task ChangeSoundAsync(SoundId sound)
@@ -414,7 +419,7 @@ public sealed partial class AdminViewModel
         await _remoteSounds.RefreshAsync().ConfigureAwait(true);
 
         Details = "Son global (serveur).";
-        _sounds.Play(sound);
+        _sounds.PlayPreview(sound);
     }
 
     private async Task UploadSoundToServerAsync(SoundId sound, string filePath)
