@@ -39,6 +39,7 @@ public sealed class SoundService : ISoundService, IDisposable
     private readonly long _serviceStartTicks = Stopwatch.GetTimestamp();
     private readonly Queue<(SoundId Sound, long Ticks)> _recentPlays = new();
     private int _connectedGate;
+    private long _connectedAtTicks;
 
     // Avoid audio spam when a burst of messages happens (e.g. history replay, reconnect).
     private static readonly long MinIntervalTicks = Stopwatch.Frequency / 12; // ~83ms
@@ -332,20 +333,20 @@ public sealed class SoundService : ISoundService, IDisposable
             return;
         }
 
+        // Juste après connexion, éviter une rafale de sons (notifications/replay).
+        // On laisse uniquement le son "connexion réussie" passer pendant un court instant.
+        var connectedAt = Volatile.Read(ref _connectedAtTicks);
+        if (Volatile.Read(ref _connectedGate) == 1 &&
+            connectedAt > 0 &&
+            now - connectedAt < Stopwatch.Frequency * 3 &&
+            sound != SoundId.ClientConnected &&
+            sound != SoundId.ClientOpened)
+        {
+            return;
+        }
+
         lock (_gate)
         {
-            // Au démarrage, il peut arriver que ClientOpened (son d'ouverture) et ClientConnected (connexion rapide/auto-login)
-            // soient joués à quelques centaines de ms d'intervalle, ce qui donne une impression de "double lancement".
-            // Dans ce cas, on supprime le son "connexion" si on vient de jouer "ouverture".
-            if (sound == SoundId.ClientConnected &&
-                _lastPlayTicks.TryGetValue(SoundId.ClientOpened, out var lastOpened) &&
-                // Tolérance plus large: l'auto-login peut prendre quelques secondes (WS + refresh sons distants).
-                now - lastOpened < Stopwatch.Frequency * 8)
-            {
-                try { _logger.LogDebug("Suppress ClientConnected: ClientOpened played recently."); } catch { /* ignore */ }
-                return;
-            }
-
             if (_lastPlayTicks.TryGetValue(sound, out var last) && now - last < MinIntervalTicks)
             {
                 return;
@@ -595,10 +596,14 @@ public sealed class SoundService : ISoundService, IDisposable
         Volatile.Write(ref _connectedGate, connected ? 1 : 0);
         if (!connected)
         {
+            Volatile.Write(ref _connectedAtTicks, 0);
             // Quand on repasse "déconnecté", stopper les boucles d'ambiance (elles peuvent continuer sinon).
             StopLoop(SoundId.MainMenuMusic);
             StopLoop(SoundId.TavernAmbience);
+            return;
         }
+
+        Volatile.Write(ref _connectedAtTicks, Stopwatch.GetTimestamp());
     }
 
     public async Task WaitForSoundToEndAsync(SoundId sound, TimeSpan timeout)
