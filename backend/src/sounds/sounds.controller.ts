@@ -8,10 +8,24 @@ export class SoundsController {
 
   @Get('manifest')
   async manifest(@Req() req: Request) {
+    const xfProto = req.headers['x-forwarded-proto'];
+    const xfHost = req.headers['x-forwarded-host'];
+
+    const proto =
+      typeof xfProto === 'string' && xfProto.trim()
+        ? xfProto.split(',')[0].trim()
+        : null;
+    const host =
+      typeof xfHost === 'string' && xfHost.trim()
+        ? xfHost.split(',')[0].trim()
+        : null;
+
     const origin =
-      (req.headers['x-forwarded-proto'] && req.headers['x-forwarded-host']
-        ? `${String(req.headers['x-forwarded-proto'])}://${String(req.headers['x-forwarded-host'])}`
-        : null) || null;
+      proto && host
+        ? `${proto}://${host}`
+        : host
+          ? `https://${host}`
+          : null;
     return this.sounds.getPublicManifest(origin);
   }
 
