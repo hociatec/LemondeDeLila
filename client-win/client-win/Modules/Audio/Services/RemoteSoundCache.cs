@@ -61,6 +61,7 @@ public sealed class RemoteSoundCache : IRemoteSoundCache
             }
 
             var refreshed = new Dictionary<SoundId, string>();
+            var expectedFileNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var (idString, entry) in manifest.Sounds)
             {
                 if (!Enum.TryParse<SoundId>(idString, ignoreCase: true, out var soundId))
@@ -72,6 +73,7 @@ public sealed class RemoteSoundCache : IRemoteSoundCache
                     continue;
                 }
 
+                expectedFileNames.Add($"{soundId}-{entry.Sha256}.mp3");
                 var cached = await EnsureCachedAsync(soundId, entry, cancellationToken).ConfigureAwait(false);
                 if (cached != null)
                 {
@@ -89,11 +91,64 @@ public sealed class RemoteSoundCache : IRemoteSoundCache
                 }
             }
 
+            // Keep the disk cache small: remove old hashes and any removed sounds.
+            TryCleanupCacheDir(expectedFileNames);
+
             _lastRefreshUtc = DateTime.UtcNow;
         }
         catch (Exception ex)
         {
             _logger.LogDebug(ex, "Remote sounds refresh failed");
+        }
+    }
+
+    private void TryCleanupCacheDir(HashSet<string> expectedFileNames)
+    {
+        if (expectedFileNames.Count == 0)
+        {
+            return;
+        }
+
+        try
+        {
+            var cacheDir = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                AppConstants.AppDataFolderName,
+                "sounds-cache");
+            if (!Directory.Exists(cacheDir))
+            {
+                return;
+            }
+
+            // Delete obsolete mp3 files (old hashes) and any leftover temp files.
+            foreach (var path in Directory.EnumerateFiles(cacheDir, "*", SearchOption.TopDirectoryOnly))
+            {
+                var fileName = Path.GetFileName(path);
+                if (string.IsNullOrWhiteSpace(fileName))
+                {
+                    continue;
+                }
+
+                if (fileName.EndsWith(".tmp", StringComparison.OrdinalIgnoreCase))
+                {
+                    try { File.Delete(path); } catch { /* ignore */ }
+                    continue;
+                }
+
+                if (!fileName.EndsWith(".mp3", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                if (!expectedFileNames.Contains(fileName))
+                {
+                    try { File.Delete(path); } catch { /* ignore */ }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogDebug(ex, "Remote sound cache cleanup failed");
         }
     }
 

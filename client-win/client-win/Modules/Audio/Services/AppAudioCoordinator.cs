@@ -54,6 +54,20 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
         _sounds = sounds ?? throw new ArgumentNullException(nameof(sounds));
         _remote = remote ?? throw new ArgumentNullException(nameof(remote));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
+        // Best-effort: prefetch remote sounds early so latest overrides are available ASAP.
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                await RefreshRemoteSoundsAsync(force: false, reapplyBackground: false, cts.Token).ConfigureAwait(false);
+            }
+            catch
+            {
+                // ignore
+            }
+        });
     }
 
     private static string GetStartupSoundMarkerPath()
