@@ -8,13 +8,17 @@ namespace client_win.Modules.Shell.Services;
 public sealed class NavigationService : INavigationService
 {
     private UserContext _currentUser = UserContext.Empty;
+    private readonly IFocusParkingService? _focusParking;
 
     public object? CurrentContent { get; private set; }
     public UserContext CurrentUser => _currentUser;
 
     public event EventHandler<object?>? CurrentContentChanged;
 
-    public NavigationService() { }
+    public NavigationService(IFocusParkingService? focusParking = null)
+    {
+        _focusParking = focusParking;
+    }
 
     public void SetUser(UserContext user)
     {
@@ -28,6 +32,15 @@ public sealed class NavigationService : INavigationService
 
     public void Show(object content)
     {
+        try
+        {
+            _focusParking?.ParkFocus();
+        }
+        catch
+        {
+            // best-effort
+        }
+
         CurrentContent = content ?? throw new ArgumentNullException(nameof(content));
         try
         {
