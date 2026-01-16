@@ -1,1 +1,1 @@
-export const PETIT_CHEVAUX_VICTORY = null;
+export const FOULEES_FANTASTIQUES_VICTORY = null;

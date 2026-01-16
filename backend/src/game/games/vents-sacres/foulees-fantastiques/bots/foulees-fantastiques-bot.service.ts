@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import { BotRunnerService } from '../../../../modules/bot/services/bot-runner.service';
-import * as PetitChevauxRulebook from '../rulebook/rulebook';
+import * as FouleesFantastiquesRulebook from '../rulebook/rulebook';
 
 @Injectable()
 export class FouleesFantastiquesBotService {
@@ -15,7 +15,7 @@ export class FouleesFantastiquesBotService {
     const current = state.turn?.currentPlayerId ?? null;
     if (current !== botPlayerId) return [];
 
-    const available = PetitChevauxRulebook.getAvailableActions(
+    const available = FouleesFantastiquesRulebook.getAvailableActions(
       state,
       botPlayerId,
     );

@@ -1,8 +1,12 @@
-export type PetitChevauxTile = { id: string; type: 'normal'; label: string };
+export type FouleesFantastiquesTile = {
+  id: string;
+  type: 'normal';
+  label: string;
+};
 
-export type PetitChevauxColor = 'Rouge' | 'Bleu' | 'Vert' | 'Jaune';
+export type FouleesFantastiquesColor = 'Rouge' | 'Bleu' | 'Vert' | 'Jaune';
 
-export type PetitChevauxPawnState = {
+export type FouleesFantastiquesPawnState = {
   pawnIndex: number; // 0..3
   /**
    * Progression "linéaire" sur le chemin du joueur.
@@ -12,12 +16,12 @@ export type PetitChevauxPawnState = {
   progress: number;
 };
 
-export type PetitChevauxMetadata = {
-  tiles: PetitChevauxTile[];
+export type FouleesFantastiquesMetadata = {
+  tiles: FouleesFantastiquesTile[];
   trackLength: number;
   homeLength: number;
-  pawnsByPlayer: Record<number, PetitChevauxPawnState[]>;
-  colorsByPlayer: Record<number, PetitChevauxColor>;
+  pawnsByPlayer: Record<number, FouleesFantastiquesPawnState[]>;
+  colorsByPlayer: Record<number, FouleesFantastiquesColor>;
   // Personnalisation "univers" (familles/animaux) pour les logs et l'accessibilité.
   familyIdByPlayer?: Record<number, string>;
   familyByPlayer?: Record<number, string>;

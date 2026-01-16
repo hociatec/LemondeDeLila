@@ -14,6 +14,7 @@ import { AdminProfileWsHandler } from './admin-profile-ws.handler';
 import { AdminBugReportsWsHandler } from './admin-bug-reports-ws.handler';
 import { AdminBugReportCommentsWsHandler } from './admin-bug-report-comments-ws.handler';
 import { AdminStatsWsHandler } from './admin-stats-ws.handler';
+import { AdminMnemoQuizWsHandler } from './admin-mnemo-quiz-ws.handler';
 
 @Injectable()
 export class AdminWsRegistrar implements OnModuleInit {
@@ -33,6 +34,7 @@ export class AdminWsRegistrar implements OnModuleInit {
     private readonly bugReports: AdminBugReportsWsHandler,
     private readonly bugReportComments: AdminBugReportCommentsWsHandler,
     private readonly stats: AdminStatsWsHandler,
+    private readonly mnemoQuiz: AdminMnemoQuizWsHandler,
   ) {}
 
   onModuleInit() {
@@ -118,6 +120,32 @@ export class AdminWsRegistrar implements OnModuleInit {
     );
     this.registry.register('admin.chat.settings.update', (s, p) =>
       this.chat.chatSettingsUpdate(s, p),
+    );
+
+    // Quiz (Arche de Mnémosyne)
+    this.registry.register('admin.quiz.mnemo.categories', (s, p) =>
+      this.mnemoQuiz.mnemoCategories(s, p),
+    );
+    this.registry.register('admin.quiz.mnemo.category.create', (s, p) =>
+      this.mnemoQuiz.mnemoCategoryCreate(s, p),
+    );
+    this.registry.register('admin.quiz.mnemo.category.update', (s, p) =>
+      this.mnemoQuiz.mnemoCategoryUpdate(s, p),
+    );
+    this.registry.register('admin.quiz.mnemo.category.delete', (s, p) =>
+      this.mnemoQuiz.mnemoCategoryDelete(s, p),
+    );
+    this.registry.register('admin.quiz.mnemo.questions', (s, p) =>
+      this.mnemoQuiz.mnemoQuestions(s, p),
+    );
+    this.registry.register('admin.quiz.mnemo.question.create', (s, p) =>
+      this.mnemoQuiz.mnemoQuestionCreate(s, p),
+    );
+    this.registry.register('admin.quiz.mnemo.question.update', (s, p) =>
+      this.mnemoQuiz.mnemoQuestionUpdate(s, p),
+    );
+    this.registry.register('admin.quiz.mnemo.question.delete', (s, p) =>
+      this.mnemoQuiz.mnemoQuestionDelete(s, p),
     );
     this.registry.register('admin.chat.delete', (s, p) =>
       this.chat.chatDelete(s, p),

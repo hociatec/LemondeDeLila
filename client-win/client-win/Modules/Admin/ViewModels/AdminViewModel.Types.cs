@@ -66,7 +66,11 @@ internal enum AdminPage
     BugReportEdit,
     BugReportConsult,
     BugReportComments,
-    BugReportCommentCreate
+    BugReportCommentCreate,
+    MnemoQuizCategories,
+    MnemoQuizCategoryActions,
+    MnemoQuizQuestions,
+    MnemoQuizQuestionActions
 }
 
 public sealed record PermissionModuleDescriptor(string ModuleId, string DisplayName, string Description);

@@ -50,6 +50,15 @@ public interface IAdminService
     Task<AdminGameCategoriesResponseDto> UpdateGameCategoryAsync(string id, string? name = null, string? parentId = null, CancellationToken cancellationToken = default);
     Task<AdminGameCategoriesResponseDto> AssignGameCategoryAsync(string gameType, string? categoryId = null, CancellationToken cancellationToken = default);
 
+    Task<AdminMnemoQuizCategoriesResponseDto> GetMnemoQuizCategoriesAsync(CancellationToken cancellationToken = default);
+    Task<AdminMnemoQuizCategoriesResponseDto> CreateMnemoQuizCategoryAsync(string name, CancellationToken cancellationToken = default);
+    Task<AdminMnemoQuizCategoriesResponseDto> UpdateMnemoQuizCategoryAsync(string id, string name, CancellationToken cancellationToken = default);
+    Task<AdminMnemoQuizCategoriesResponseDto> DeleteMnemoQuizCategoryAsync(string id, CancellationToken cancellationToken = default);
+    Task<AdminMnemoQuizQuestionsResponseDto> GetMnemoQuizQuestionsAsync(string? categoryId = null, string? status = null, CancellationToken cancellationToken = default);
+    Task<AdminMnemoQuizQuestionsResponseDto> CreateMnemoQuizQuestionAsync(string categoryId, string question, IEnumerable<string> answers, int correctIndex = 0, string? status = null, CancellationToken cancellationToken = default);
+    Task<AdminMnemoQuizQuestionsResponseDto> UpdateMnemoQuizQuestionAsync(string id, string? question = null, IEnumerable<string>? answers = null, int? correctIndex = null, string? status = null, CancellationToken cancellationToken = default);
+    Task<AdminMnemoQuizQuestionsResponseDto> DeleteMnemoQuizQuestionAsync(string id, CancellationToken cancellationToken = default);
+
     Task<AdminBotNamesListResponseDto> ListBotNamesAsync(CancellationToken cancellationToken = default);
     Task<AdminBotNamesListResponseDto> CreateBotNameAsync(string name, bool enabled = true, CancellationToken cancellationToken = default);
     Task<AdminBotNamesListResponseDto> UpdateBotNameAsync(int id, string? name = null, bool? enabled = null, CancellationToken cancellationToken = default);

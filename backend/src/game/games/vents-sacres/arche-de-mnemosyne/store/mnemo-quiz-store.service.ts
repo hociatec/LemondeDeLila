@@ -171,6 +171,17 @@ export class MnemoQuizStoreService implements OnModuleInit {
     return q;
   }
 
+  deleteQuestion(questionId: string): void {
+    const id = String(questionId ?? '').trim();
+    if (!id) throw new Error('Question requise');
+    const before = this.data.questions.length;
+    this.data.questions = this.data.questions.filter((x) => x.id !== id);
+    if (this.data.questions.length === before) {
+      throw new Error('Question introuvable');
+    }
+    this.persist();
+  }
+
   private ensureLoaded(): void {
     try {
       const dir = path.dirname(this.filePath);
@@ -224,4 +235,3 @@ export class MnemoQuizStoreService implements OnModuleInit {
     return normalized.replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
   }
 }
-

@@ -10,7 +10,7 @@ import type {
   GameShortcutHint,
   GameShortcutsContext,
 } from '../../../engine/shortcuts/game-shortcuts';
-import * as PetitChevauxRulebook from './rulebook/rulebook';
+import * as FouleesFantastiquesRulebook from './rulebook/rulebook';
 import { FouleesFantastiquesActionService } from './actions/foulees-fantastiques-action.service';
 import { FouleesFantastiquesPhaseService } from './phases/foulees-fantastiques-phase.service';
 import { FouleesFantastiquesPresenterService } from './presenter/foulees-fantastiques-presenter.service';
@@ -58,7 +58,7 @@ export class FouleesFantastiquesService implements GameRulesAdapter, OnModuleIni
     state: GameStateEntity,
     playerId: number,
   ): GameSingleActionDto[] {
-    return PetitChevauxRulebook.getAvailableActions(state, playerId);
+    return FouleesFantastiquesRulebook.getAvailableActions(state, playerId);
   }
 
   validateAction(
@@ -66,7 +66,7 @@ export class FouleesFantastiquesService implements GameRulesAdapter, OnModuleIni
     action: GameSingleActionDto,
     actorId: number | null,
   ): GameSingleActionDto {
-    return PetitChevauxRulebook.validateAction(state, action, actorId);
+    return FouleesFantastiquesRulebook.validateAction(state, action, actorId);
   }
 
   getBotActions(

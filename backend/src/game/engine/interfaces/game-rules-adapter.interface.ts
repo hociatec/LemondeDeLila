@@ -40,7 +40,7 @@ import type {
  */
 export interface GameRulesAdapter {
   /**
-   * Identifiant unique du type de jeu (ex: 'dame-nature', 'loup-garou').
+   * Identifiant unique du type de jeu (ex: 'dame-nature', 'corridor').
    * Doit correspondre au gameType dans les manifests et la base de données.
    */
   readonly gameType: string;

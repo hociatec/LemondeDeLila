@@ -2,13 +2,13 @@ import type { GameStateEntity } from '../../../../core/entities/game-state.entit
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import {
   FOULEES_FANTASTIQUES_GAME,
-  type PetitChevauxActionType,
+  type FouleesFantastiquesActionType,
 } from '../definitions/game.definition';
 import {
   GameValidationError,
   PlayerActionError,
 } from '../../../../../common/errors/game-errors';
-import type { PetitChevauxMetadata } from '../model/petit-chevaux-state.entity';
+import type { FouleesFantastiquesMetadata } from '../model/foulees-fantastiques-state.entity';
 
 function normalizeNumber(value: unknown): number | null {
   const n = typeof value === 'number' ? value : Number(value);
@@ -66,7 +66,7 @@ export function validateAction(
 ): GameSingleActionDto {
   const rawType = String(action?.type ?? '').trim();
   const normalizedType = rawType.toLowerCase();
-  const type = rawType as PetitChevauxActionType;
+  const type = rawType as FouleesFantastiquesActionType;
   if (
     !FOULEES_FANTASTIQUES_GAME.actions.includes(type) &&
     !FOULEES_FANTASTIQUES_GAME.actions.includes(normalizedType as any)
@@ -130,7 +130,7 @@ export function validateAction(
       });
     }
 
-    const meta = (state.metadata ?? {}) as any as PetitChevauxMetadata;
+    const meta = (state.metadata ?? {}) as any as FouleesFantastiquesMetadata;
     const taken = Object.entries(meta.familyIdByPlayer ?? {}).some(
       ([pid, fid]) =>
         Number(pid) !== (actorId ?? NaN) &&

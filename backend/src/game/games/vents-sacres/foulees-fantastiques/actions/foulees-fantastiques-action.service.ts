@@ -8,9 +8,9 @@ import { RandomService } from '../../../../modules/random/services/random.servic
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import type {
-  PetitChevauxMetadata,
-  PetitChevauxPawnState,
-} from '../model/petit-chevaux-state.entity';
+  FouleesFantastiquesMetadata,
+  FouleesFantastiquesPawnState,
+} from '../model/foulees-fantastiques-state.entity';
 import { FouleesFantastiquesSetupService } from '../setup/foulees-fantastiques-setup.service';
 
 type PendingMove = {
@@ -81,7 +81,7 @@ export class FouleesFantastiquesActionService {
   }
 
   private ensureFamilyPending(state: GameStateEntity): GameStateEntity {
-    const meta = (state.metadata ?? {}) as any as PetitChevauxMetadata;
+    const meta = (state.metadata ?? {}) as any as FouleesFantastiquesMetadata;
     const players = Array.isArray(state.players) ? state.players : [];
     if (!players.length) return state;
 
@@ -151,7 +151,7 @@ export class FouleesFantastiquesActionService {
     state: GameStateEntity,
     action: GameSingleActionDto,
   ): GameStateEntity {
-    const meta = (state.metadata ?? {}) as any as PetitChevauxMetadata;
+    const meta = (state.metadata ?? {}) as any as FouleesFantastiquesMetadata;
     const currentId = state.turn?.currentPlayerId ?? null;
     if (currentId == null) return state;
     const pending: any = state.pending ?? null;
@@ -181,7 +181,7 @@ export class FouleesFantastiquesActionService {
       );
     }
 
-    const nextMeta: PetitChevauxMetadata = {
+    const nextMeta: FouleesFantastiquesMetadata = {
       ...meta,
       familyIdByPlayer: {
         ...(meta.familyIdByPlayer ?? {}),
@@ -222,7 +222,7 @@ export class FouleesFantastiquesActionService {
     const currentId = state.turn?.currentPlayerId ?? null;
     if (currentId == null) return state;
 
-    const meta = (state.metadata ?? {}) as any as PetitChevauxMetadata;
+    const meta = (state.metadata ?? {}) as any as FouleesFantastiquesMetadata;
     const rng = this.random.rollDice(meta as any, 6);
     const roll = rng.roll;
 
@@ -343,7 +343,7 @@ export class FouleesFantastiquesActionService {
     playerId: number,
     roll: number,
   ): PendingMove[] {
-    const meta = (state.metadata ?? {}) as any as PetitChevauxMetadata;
+    const meta = (state.metadata ?? {}) as any as FouleesFantastiquesMetadata;
     const pawns = Array.isArray(meta.pawnsByPlayer?.[playerId])
       ? meta.pawnsByPlayer[playerId]
       : [];
@@ -446,7 +446,7 @@ export class FouleesFantastiquesActionService {
     state: GameStateEntity,
     viewerPlayerId: number,
   ): Set<number> {
-    const meta = (state.metadata ?? {}) as any as PetitChevauxMetadata;
+    const meta = (state.metadata ?? {}) as any as FouleesFantastiquesMetadata;
     const players = Array.isArray(state.players) ? state.players : [];
     const occupied = new Set<number>();
 
@@ -467,7 +467,7 @@ export class FouleesFantastiquesActionService {
   }
 
   private isBlockedByOpponentOnPath(
-    meta: PetitChevauxMetadata,
+    meta: FouleesFantastiquesMetadata,
     myOffset: number,
     fromProgress: number,
     toProgress: number,
@@ -506,7 +506,7 @@ export class FouleesFantastiquesActionService {
     playerId: number,
     roll: number,
   ): string | null {
-    const meta = (state.metadata ?? {}) as any as PetitChevauxMetadata;
+    const meta = (state.metadata ?? {}) as any as FouleesFantastiquesMetadata;
     if (!meta || meta.trackLength == null) return null;
     if (!Number.isFinite(roll) || roll <= 1) return null;
 
@@ -545,7 +545,7 @@ export class FouleesFantastiquesActionService {
     move: { pawnIndex: number; targetProgress: number },
     roll: number,
   ): GameStateEntity {
-    const meta = (state.metadata ?? {}) as any as PetitChevauxMetadata;
+    const meta = (state.metadata ?? {}) as any as FouleesFantastiquesMetadata;
     const pawns = Array.isArray(meta.pawnsByPlayer?.[playerId])
       ? meta.pawnsByPlayer[playerId]
       : [];
@@ -642,7 +642,7 @@ export class FouleesFantastiquesActionService {
     moverPawnIndex: number,
     moverProgress: number,
   ): GameStateEntity {
-    const meta = (state.metadata ?? {}) as any as PetitChevauxMetadata;
+    const meta = (state.metadata ?? {}) as any as FouleesFantastiquesMetadata;
     if (!(typeof moverProgress === 'number')) return state;
     if (moverProgress < 0 || moverProgress >= meta.trackLength) return state;
 
@@ -704,7 +704,7 @@ export class FouleesFantastiquesActionService {
     playerId: number,
     pathLen: number,
   ): boolean {
-    const meta = (state.metadata ?? {}) as any as PetitChevauxMetadata;
+    const meta = (state.metadata ?? {}) as any as FouleesFantastiquesMetadata;
     const pawns = Array.isArray(meta.pawnsByPlayer?.[playerId])
       ? meta.pawnsByPlayer[playerId]
       : [];
@@ -715,7 +715,7 @@ export class FouleesFantastiquesActionService {
   }
 
   private describeProgress(
-    meta: PetitChevauxMetadata,
+    meta: FouleesFantastiquesMetadata,
     playerId: number,
     progress: number,
   ): string {
@@ -750,7 +750,7 @@ export class FouleesFantastiquesActionService {
     playerId: number,
     pawnIndex: number,
   ): string {
-    const meta = (state.metadata ?? {}) as any as PetitChevauxMetadata;
+    const meta = (state.metadata ?? {}) as any as FouleesFantastiquesMetadata;
     const list = meta?.pawnNamesByPlayer?.[playerId];
     const name =
       Array.isArray(list) && typeof list[pawnIndex] === 'string'
@@ -761,7 +761,7 @@ export class FouleesFantastiquesActionService {
   }
 
   private habitatLabel(state: GameStateEntity, playerId: number): string {
-    const meta = (state.metadata ?? {}) as any as PetitChevauxMetadata;
+    const meta = (state.metadata ?? {}) as any as FouleesFantastiquesMetadata;
     const habitat =
       typeof meta?.habitatByPlayer?.[playerId] === 'string'
         ? String(meta.habitatByPlayer[playerId]).trim()

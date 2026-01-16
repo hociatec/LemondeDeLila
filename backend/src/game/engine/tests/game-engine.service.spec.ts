@@ -31,7 +31,7 @@ describe('GameEngineService', () => {
   it('rejects gameType mismatches for a room', async () => {
     const rooms = {
       getRoomPayload: jest.fn().mockResolvedValue({
-        room: { gameType: 'loup-garou' },
+        room: { gameType: 'corridor' },
       }),
     };
     const botScheduler = { clear: jest.fn() };

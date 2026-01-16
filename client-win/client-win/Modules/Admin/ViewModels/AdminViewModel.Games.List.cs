@@ -90,6 +90,10 @@ public sealed partial class AdminViewModel
         Items.Add(new AdminMenuItem("Modifier le nom", tag: "game.edit.name"));
         Items.Add(new AdminMenuItem("Modifier la description", tag: "game.edit.description"));
         Items.Add(new AdminMenuItem("Attribuer une catégorie", tag: "game.category.assign"));
+        if (string.Equals(game.Id, "arche-de-mnemosyne", StringComparison.OrdinalIgnoreCase))
+        {
+            Items.Add(new AdminMenuItem("Gérer le quiz (Mnémosyne)", tag: "game.mnemo.quiz"));
+        }
         Items.Add(new AdminMenuItem("Modifier min/max joueurs", tag: "game.edit.players"));
         Items.Add(new AdminMenuItem("Réinitialiser les paramètres", tag: "game.reset"));
         SelectedItem = Items.FirstOrDefault();

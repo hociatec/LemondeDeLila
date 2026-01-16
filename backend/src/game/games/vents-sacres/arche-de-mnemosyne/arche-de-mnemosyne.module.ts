@@ -9,7 +9,6 @@ import { MnemoQuizStoreService } from './store/mnemo-quiz-store.service';
 @Module({
   imports: [ConfigModule, GameCoreModule, GameRegistryModule, TurnModule],
   providers: [ArcheDeMnemosyneService, MnemoQuizStoreService],
-  exports: [ArcheDeMnemosyneService],
+  exports: [ArcheDeMnemosyneService, MnemoQuizStoreService],
 })
 export class ArcheDeMnemosyneModule {}
-

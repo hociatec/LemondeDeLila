@@ -7,7 +7,6 @@ import { BoardModule } from '../../../modules/board/board.module';
 import { RandomModule } from '../../../modules/random/random.module';
 import { TurnModule } from '../../../modules/turn/turn.module';
 import { FouleesFantastiquesService } from './foulees-fantastiques.service';
-import { FouleesFantastiquesLegacyPetitChevauxService } from './legacy-petit-chevaux.service';
 import { FouleesFantastiquesSetupService } from './setup/foulees-fantastiques-setup.service';
 import { FouleesFantastiquesActionService } from './actions/foulees-fantastiques-action.service';
 import { FouleesFantastiquesPhaseService } from './phases/foulees-fantastiques-phase.service';
@@ -26,7 +25,6 @@ import { FouleesFantastiquesBotService } from './bots/foulees-fantastiques-bot.s
   ],
   providers: [
     FouleesFantastiquesService,
-    FouleesFantastiquesLegacyPetitChevauxService,
     FouleesFantastiquesSetupService,
     FouleesFantastiquesActionService,
     FouleesFantastiquesPhaseService,

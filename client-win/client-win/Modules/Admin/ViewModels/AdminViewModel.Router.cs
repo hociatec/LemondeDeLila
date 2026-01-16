@@ -703,11 +703,79 @@ public sealed partial class AdminViewModel
                     await LoadCategoryAssignmentMenuAsync().ConfigureAwait(true);
                     return;
                 }
+                if (gameAction == "game.mnemo.quiz")
+                {
+                    PushReturnFocus();
+                    await LoadMnemoQuizCategoriesAsync().ConfigureAwait(true);
+                    return;
+                }
                 if (_selectedGame != null)
                 {
                     await ExecuteGameActionAsync(_selectedGame, gameAction).ConfigureAwait(true);
                     return;
                 }
+            }
+
+            if (_page == AdminPage.MnemoQuizCategories)
+            {
+                if (tag is string mnemoCategoryAction && mnemoCategoryAction == "mnemo.category.create")
+                {
+                    PushReturnFocus();
+                    BuildMnemoQuizCategoryCreate();
+                    return;
+                }
+                if (tag is AdminMnemoQuizCategoryDto category)
+                {
+                    PushReturnFocus();
+                    BuildMnemoQuizCategoryActions(category);
+                    return;
+                }
+            }
+
+            if (_page == AdminPage.MnemoQuizCategoryActions && tag is string mnemoAction)
+            {
+                if (_selectedMnemoQuizCategory != null)
+                {
+                    await ExecuteMnemoQuizCategoryActionAsync(_selectedMnemoQuizCategory, mnemoAction).ConfigureAwait(true);
+                }
+                return;
+            }
+
+            if (_page == AdminPage.MnemoQuizQuestions)
+            {
+                if (tag is string backTag && backTag == "mnemo.back")
+                {
+                    if (_selectedMnemoQuizCategory != null)
+                    {
+                        BuildMnemoQuizCategoryActions(_selectedMnemoQuizCategory);
+                    }
+                    else
+                    {
+                        ShowGames();
+                    }
+                    return;
+                }
+                if (tag is AdminMnemoQuizQuestionDto question)
+                {
+                    PushReturnFocus();
+                    BuildMnemoQuizQuestionActions(question);
+                    return;
+                }
+            }
+
+            if (_page == AdminPage.MnemoQuizQuestionActions && tag is string mnemoQuestionAction)
+            {
+                if (_selectedMnemoQuizQuestion != null)
+                {
+                    await ExecuteMnemoQuizQuestionActionAsync(_selectedMnemoQuizQuestion, mnemoQuestionAction).ConfigureAwait(true);
+                }
+                return;
+            }
+
+            if (_page == AdminPage.EditText && tag is string editTag && editTag == "mnemo.edit.submit")
+            {
+                await SubmitMnemoQuizEditAsync().ConfigureAwait(true);
+                return;
             }
 
             if (_page == AdminPage.GameCategories)

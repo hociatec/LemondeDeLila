@@ -3,12 +3,12 @@ import type { GameStateEntity } from '../../../../core/entities/game-state.entit
 import { GameCoreService } from '../../../../core/services/game-core.service';
 import { GameContentLoaderService } from '../../../../engine/services/game-content-loader.service';
 import type {
-  PetitChevauxColor,
-  PetitChevauxMetadata,
-  PetitChevauxPawnState,
-  PetitChevauxTile,
-} from '../model/petit-chevaux-state.entity';
-import type { PetitChevauxBoardJsonV1 } from '../model/petit-chevaux-content.entity';
+  FouleesFantastiquesColor,
+  FouleesFantastiquesMetadata,
+  FouleesFantastiquesPawnState,
+  FouleesFantastiquesTile,
+} from '../model/foulees-fantastiques-state.entity';
+import type { FouleesFantastiquesBoardJsonV1 } from '../model/foulees-fantastiques-content.entity';
 
 @Injectable()
 export class FouleesFantastiquesSetupService {
@@ -17,8 +17,8 @@ export class FouleesFantastiquesSetupService {
     private readonly contentLoader: GameContentLoaderService,
   ) {}
 
-  private loadBoard(): PetitChevauxBoardJsonV1 {
-    return this.contentLoader.loadContent<PetitChevauxBoardJsonV1>({
+  private loadBoard(): FouleesFantastiquesBoardJsonV1 {
+    return this.contentLoader.loadContent<FouleesFantastiquesBoardJsonV1>({
       gameType: 'foulees-fantastiques',
       baseDir: __dirname,
       filename: 'board.json',
@@ -37,8 +37,8 @@ export class FouleesFantastiquesSetupService {
     const trackLength = Number(board.trackLength);
     const homeLength = Number(board.homeLength);
 
-    const pawnsByPlayer: Record<number, PetitChevauxPawnState[]> = {};
-    const colorsByPlayer: Record<number, PetitChevauxColor> = {};
+    const pawnsByPlayer: Record<number, FouleesFantastiquesPawnState[]> = {};
+    const colorsByPlayer: Record<number, FouleesFantastiquesColor> = {};
     const familyByPlayer: Record<number, string> = {};
     const habitatByPlayer: Record<number, string> = {};
     const pawnNamesByPlayer: Record<number, string[]> = {};
@@ -49,7 +49,12 @@ export class FouleesFantastiquesSetupService {
     const quarter = Math.floor(trackLength / 4);
     const threeQuarter = Math.floor((trackLength * 3) / 4);
     const offsetTable = [0, half, quarter, threeQuarter] as const;
-    const colorTable: PetitChevauxColor[] = ['Rouge', 'Bleu', 'Vert', 'Jaune'];
+    const colorTable: FouleesFantastiquesColor[] = [
+      'Rouge',
+      'Bleu',
+      'Vert',
+      'Jaune',
+    ];
 
     players.forEach((p, idx) => {
       pawnsByPlayer[p.id] = Array.from({ length: 4 }).map((_, pawnIndex) => ({
@@ -60,7 +65,7 @@ export class FouleesFantastiquesSetupService {
       offsets[p.id] = offsetTable[idx] ?? (idx * 10) % trackLength;
     });
 
-    const tiles: PetitChevauxTile[] = Array.isArray(board.tiles)
+    const tiles: FouleesFantastiquesTile[] = Array.isArray(board.tiles)
       ? board.tiles.map((t, i) => ({
           id: String(t?.id ?? `c${i}`),
           type: 'normal' as const,
@@ -88,7 +93,7 @@ export class FouleesFantastiquesSetupService {
       new Set([...safeTiles, ...safeFromOffsets]),
     );
 
-    const meta: PetitChevauxMetadata = {
+    const meta: FouleesFantastiquesMetadata = {
       tiles,
       trackLength,
       homeLength,
@@ -147,7 +152,7 @@ export class FouleesFantastiquesSetupService {
   }
 
   recomputeBoardView(state: GameStateEntity): GameStateEntity {
-    const meta = (state.metadata ?? {}) as any as PetitChevauxMetadata;
+    const meta = (state.metadata ?? {}) as any as FouleesFantastiquesMetadata;
     const players = Array.isArray(state.players) ? state.players : [];
     const positions: Record<number, number> = {};
     const laps: Record<number, number> = {};
@@ -171,7 +176,7 @@ export class FouleesFantastiquesSetupService {
       laps[p.id] = 0;
     }
 
-    const updated: PetitChevauxMetadata = { ...meta, positions, laps };
+    const updated: FouleesFantastiquesMetadata = { ...meta, positions, laps };
     return { ...state, metadata: { ...(state.metadata ?? {}), ...updated } };
   }
 }

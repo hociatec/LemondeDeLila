@@ -1,9 +1,9 @@
 import type { GameDefinition } from '../../../../engine/model/game-definition.model';
-import { PETIT_CHEVAUX_VICTORY } from './victory.definition';
+import { FOULEES_FANTASTIQUES_VICTORY } from './victory.definition';
 
-export type PetitChevauxGameId = 'foulees-fantastiques';
-export type PetitChevauxPhaseId = 'turn';
-export type PetitChevauxActionType =
+export type FouleesFantastiquesGameId = 'foulees-fantastiques';
+export type FouleesFantastiquesPhaseId = 'turn';
+export type FouleesFantastiquesActionType =
   | 'roll'
   | 'ROLL_DICE'
   | 'roll_dice'
@@ -11,11 +11,11 @@ export type PetitChevauxActionType =
   | 'move_pawn';
 
 export const FOULEES_FANTASTIQUES_GAME: GameDefinition<
-  PetitChevauxGameId,
+  FouleesFantastiquesGameId,
   never,
-  PetitChevauxActionType,
-  PetitChevauxPhaseId,
-  typeof PETIT_CHEVAUX_VICTORY
+  FouleesFantastiquesActionType,
+  FouleesFantastiquesPhaseId,
+  typeof FOULEES_FANTASTIQUES_VICTORY
 > = {
   id: 'foulees-fantastiques',
   displayName: 'Foulées Fantastiques !',
@@ -24,8 +24,5 @@ export const FOULEES_FANTASTIQUES_GAME: GameDefinition<
   roles: [],
   actions: ['roll', 'ROLL_DICE', 'roll_dice', 'choose_family', 'move_pawn'],
   phaseOrder: [{ id: 'turn', kind: 'player-action' }],
-  victory: PETIT_CHEVAUX_VICTORY,
+  victory: FOULEES_FANTASTIQUES_VICTORY,
 } as const;
-
-// Alias de nom interne (legacy).
-export const PETIT_CHEVAUX_GAME = FOULEES_FANTASTIQUES_GAME;

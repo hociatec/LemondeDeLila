@@ -326,7 +326,7 @@ export class GameEngineService {
     const actualGameType = String(payload?.room?.gameType ?? '').trim();
     if (actualGameType && actualGameType !== gameType) {
       // Empêche la création d'un état "fantôme" quand le client passe le mauvais gameType
-      // (ex: "generic" alors que la room est en "loup-garou").
+      // (ex: "generic" alors que la room est en "corridor").
       this.cleanupRoom(roomId, gameType);
       throw new BadRequestException('Type de jeu invalide pour cette table');
     }

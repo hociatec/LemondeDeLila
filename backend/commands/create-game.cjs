@@ -85,14 +85,18 @@ async function main() {
   try {
     console.log('Création d’un nouveau jeu (architecture commune)\n');
 
-    const code = (await rl.question('Code du jeu (kebab-case, ex: loup-garou) : '))
+    const code = (await rl.question(
+      'Code du jeu (kebab-case, ex: foulees-fantastiques) : ',
+    ))
       .trim()
       .toLowerCase();
     if (!KEBAB_RE.test(code)) {
       throw new Error(`Code invalide "${code}" (attendu: kebab-case).`);
     }
 
-    const name = (await rl.question('Nom affiché (ex: Loup Garou) : ')).trim() || kebabToPascal(code);
+    const name =
+      (await rl.question('Nom affiché (ex: Foulées Fantastiques !) : ')).trim() ||
+      kebabToPascal(code);
 
     console.log('\nType de jeu :');
     console.log('1) actions');

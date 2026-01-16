@@ -1225,9 +1225,9 @@ myGameLog('action.my_action', {
 ## Ressources Supplémentaires
 
 - **Exemples de Jeux** :
-  - `backend/src/game/games/jeux-de-cartes/vents-dansants/dame-nature/` (jeu complet)
-  - `backend/src/game/games/jeux-de-plateaux/les-quatre-vents/panier-express/` (jeu plateau)
-  - `backend/src/game/games/jeux-de-cartes/village-mystique/loup-garou/` (phases complexes)
+  - `backend/src/game/games/vents-dansants/dame-nature/` (jeu complet)
+  - `backend/src/game/games/les-quatre-vents/panier-express/` (jeu plateau)
+  - `backend/src/game/games/vents-sacres/foulees-fantastiques/` (jeu avec setup)
 
 - **Documentation API** :
   - Voir les JSDoc dans `GameRulesAdapter` interface

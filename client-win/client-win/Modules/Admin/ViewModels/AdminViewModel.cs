@@ -49,6 +49,11 @@ public sealed partial class AdminViewModel : ObservableObject
     private Dictionary<string, string?> _categoryAssignments = new();
     private string _categoryFormMode = string.Empty;
     private string _categoryFormId = string.Empty;
+    private AdminMnemoQuizCategoryDto[] _mnemoQuizCategories = Array.Empty<AdminMnemoQuizCategoryDto>();
+    private AdminMnemoQuizCategoryDto? _selectedMnemoQuizCategory;
+    private AdminMnemoQuizQuestionDto[] _mnemoQuizQuestions = Array.Empty<AdminMnemoQuizQuestionDto>();
+    private AdminMnemoQuizQuestionDto? _selectedMnemoQuizQuestion;
+    private string _mnemoQuizStatusFilter = "pending";
     private AdminBotNameDto[] _loadedBotNames = Array.Empty<AdminBotNameDto>();
     private AdminBotNameDto? _selectedBotName;
     private int _botTurnDelayMs = 4000;

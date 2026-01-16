@@ -2,9 +2,9 @@ import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameStateWithActions } from '../../../../engine/dto/game-action.dto';
 import { BoardPayloadService } from '../../../../modules/board/services/board-payload.service';
-import * as PetitChevauxRulebook from '../rulebook/rulebook';
+import * as FouleesFantastiquesRulebook from '../rulebook/rulebook';
 import { FOULEES_FANTASTIQUES_GAME } from '../definitions/game.definition';
-import type { PetitChevauxMetadata } from '../model/petit-chevaux-state.entity';
+import type { FouleesFantastiquesMetadata } from '../model/foulees-fantastiques-state.entity';
 
 @Injectable()
 export class FouleesFantastiquesPresenterService {
@@ -14,8 +14,11 @@ export class FouleesFantastiquesPresenterService {
     state: GameStateEntity,
     userId: number,
   ): GameStateWithActions {
-    const actions = PetitChevauxRulebook.getAvailableActions(state, userId);
-    const meta = (state.metadata ?? {}) as any as PetitChevauxMetadata;
+    const actions = FouleesFantastiquesRulebook.getAvailableActions(
+      state,
+      userId,
+    );
+    const meta = (state.metadata ?? {}) as any as FouleesFantastiquesMetadata;
     const players = Array.isArray(state.players) ? state.players : [];
     const me = players.find((p) => p?.id === userId);
 

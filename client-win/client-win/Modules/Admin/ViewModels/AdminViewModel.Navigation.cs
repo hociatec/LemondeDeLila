@@ -40,6 +40,50 @@ public sealed partial class AdminViewModel
             return AdminNavResult.Moved;
         }
 
+        if (_page == AdminPage.EditText &&
+            !string.IsNullOrWhiteSpace(_currentEditMode) &&
+            _currentEditMode.StartsWith("mnemo.", StringComparison.OrdinalIgnoreCase))
+        {
+            if (_selectedMnemoQuizQuestion != null)
+            {
+                BuildMnemoQuizQuestionActions(_selectedMnemoQuizQuestion);
+                return AdminNavResult.Moved;
+            }
+            if (_selectedMnemoQuizCategory != null)
+            {
+                BuildMnemoQuizCategoryActions(_selectedMnemoQuizCategory);
+                return AdminNavResult.Moved;
+            }
+            ShowGames();
+            return AdminNavResult.Moved;
+        }
+
+        if (_page is AdminPage.MnemoQuizCategoryActions or AdminPage.MnemoQuizQuestions or AdminPage.MnemoQuizQuestionActions)
+        {
+            if (_selectedGame != null)
+            {
+                BuildGameActions(_selectedGame);
+            }
+            else
+            {
+                ShowGames();
+            }
+            return AdminNavResult.Moved;
+        }
+
+        if (_page == AdminPage.MnemoQuizCategories)
+        {
+            if (_selectedGame != null)
+            {
+                BuildGameActions(_selectedGame);
+            }
+            else
+            {
+                ShowGames();
+            }
+            return AdminNavResult.Moved;
+        }
+
         if (_page is AdminPage.UsersProfileBioSettings)
         {
             BuildUsersProfileMenu();

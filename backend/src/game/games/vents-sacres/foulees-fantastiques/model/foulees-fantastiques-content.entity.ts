@@ -1,4 +1,4 @@
-export type PetitChevauxBoardJsonV1 = {
+export type FouleesFantastiquesBoardJsonV1 = {
   version: 1;
   trackLength: number;
   homeLength: number;

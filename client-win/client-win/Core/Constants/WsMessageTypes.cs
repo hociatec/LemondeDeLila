@@ -169,6 +169,16 @@ public static class WsMessageTypes
 
         public const string PerfSnapshot = "admin.perf.snapshot";
 
+        // Quiz (Arche de Mnémosyne)
+        public const string MnemoQuizCategories = "admin.quiz.mnemo.categories";
+        public const string MnemoQuizCategoryCreate = "admin.quiz.mnemo.category.create";
+        public const string MnemoQuizCategoryUpdate = "admin.quiz.mnemo.category.update";
+        public const string MnemoQuizCategoryDelete = "admin.quiz.mnemo.category.delete";
+        public const string MnemoQuizQuestions = "admin.quiz.mnemo.questions";
+        public const string MnemoQuizQuestionCreate = "admin.quiz.mnemo.question.create";
+        public const string MnemoQuizQuestionUpdate = "admin.quiz.mnemo.question.update";
+        public const string MnemoQuizQuestionDelete = "admin.quiz.mnemo.question.delete";
+
         public const string ProfileSettingsGet = "admin.profile.settings.get";
         public const string ProfileSettingsUpdate = "admin.profile.settings.update";
 
