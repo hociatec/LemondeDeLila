@@ -276,6 +276,13 @@ export class AdminGameCategoryAssignWsDto {
   categoryId?: string | null;
 }
 
+export class AdminGameCategoryDeleteWsDto {
+  @IsString()
+  @MinLength(1)
+  @MaxLength(200)
+  id!: string;
+}
+
 export class AdminUserRolesWsDto {
   @IsInt()
   @IsPositive()

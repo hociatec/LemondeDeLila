@@ -3,11 +3,11 @@ import type { GameStateEntity } from '../../../../core/entities/game-state.entit
 import type { GameStateWithActions } from '../../../../engine/dto/game-action.dto';
 import { BoardPayloadService } from '../../../../modules/board/services/board-payload.service';
 import * as PetitChevauxRulebook from '../rulebook/rulebook';
-import { PETIT_CHEVAUX_GAME } from '../definitions/game.definition';
+import { FOULEES_FANTASTIQUES_GAME } from '../definitions/game.definition';
 import type { PetitChevauxMetadata } from '../model/petit-chevaux-state.entity';
 
 @Injectable()
-export class PetitChevauxPresenterService {
+export class FouleesFantastiquesPresenterService {
   constructor(private readonly boardPayload: BoardPayloadService) {}
 
   exposeStateForUser(
@@ -57,13 +57,13 @@ export class PetitChevauxPresenterService {
         const label =
           Array.isArray(names) && typeof names[pawn.pawnIndex] === 'string'
             ? String(names[pawn.pawnIndex]).trim()
-            : `cheval ${pawn.pawnIndex + 1}`;
+            : `animal ${pawn.pawnIndex + 1}`;
         stableLines.push(
           `${label}: case ${pos + 1}/${meta.trackLength}.`,
         );
       }
     } else {
-      stableLines.push('Aucun cheval sorti.');
+      stableLines.push('Aucun animal sorti.');
     }
 
     const positionLines: string[] = [];
@@ -82,7 +82,7 @@ export class PetitChevauxPresenterService {
         const label =
           Array.isArray(names) && typeof names[pawn.pawnIndex] === 'string'
             ? String(names[pawn.pawnIndex]).trim()
-            : `cheval ${pawn.pawnIndex + 1}`;
+            : `animal ${pawn.pawnIndex + 1}`;
         allOnTrack.push({
           pos,
           line: `${label}, tour 0, case ${pos + 1}/${meta.trackLength}.`,
@@ -92,7 +92,7 @@ export class PetitChevauxPresenterService {
     allOnTrack.sort((a, b) => b.pos - a.pos);
     positionLines.push(...allOnTrack.map((x) => x.line));
     if (!positionLines.length) {
-      positionLines.push('Aucun cheval sorti.');
+      positionLines.push('Aucun animal sorti.');
     }
 
     const extras = {
@@ -136,7 +136,7 @@ export class PetitChevauxPresenterService {
     return {
       ...state,
       catalog: {
-        phases: PETIT_CHEVAUX_GAME.phaseOrder.map((p) => p.id),
+        phases: FOULEES_FANTASTIQUES_GAME.phaseOrder.map((p) => p.id),
         victory: null,
       },
       actions: actions.map((a) => ({

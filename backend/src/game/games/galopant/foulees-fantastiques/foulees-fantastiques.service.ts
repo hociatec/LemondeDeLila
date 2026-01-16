@@ -11,31 +11,31 @@ import type {
   GameShortcutsContext,
 } from '../../../engine/shortcuts/game-shortcuts';
 import * as PetitChevauxRulebook from './rulebook/rulebook';
-import { PetitChevauxActionService } from './actions/petit-chevaux-action.service';
-import { PetitChevauxPhaseService } from './phases/petit-chevaux-phase.service';
-import { PetitChevauxPresenterService } from './presenter/petit-chevaux-presenter.service';
-import { PetitChevauxSetupService } from './setup/petit-chevaux-setup.service';
-import { PETIT_CHEVAUX_GAME } from './definitions/game.definition';
-import { PetitChevauxBotService } from './bots/petit-chevaux-bot.service';
-import { buildPetitChevauxShortcuts } from './petit-chevaux.shortcuts';
+import { FouleesFantastiquesActionService } from './actions/foulees-fantastiques-action.service';
+import { FouleesFantastiquesPhaseService } from './phases/foulees-fantastiques-phase.service';
+import { FouleesFantastiquesPresenterService } from './presenter/foulees-fantastiques-presenter.service';
+import { FouleesFantastiquesSetupService } from './setup/foulees-fantastiques-setup.service';
+import { FOULEES_FANTASTIQUES_GAME } from './definitions/game.definition';
+import { FouleesFantastiquesBotService } from './bots/foulees-fantastiques-bot.service';
+import { buildFouleesFantastiquesShortcuts } from './foulees-fantastiques.shortcuts';
 
 @Injectable()
-export class PetitChevauxService implements GameRulesAdapter, OnModuleInit {
-  readonly gameType = 'petit-chevaux';
+export class FouleesFantastiquesService implements GameRulesAdapter, OnModuleInit {
+  readonly gameType = 'foulees-fantastiques';
   readonly category = 'JeuxDePlateaux';
   readonly subcategory = 'Galopant';
-  readonly displayName = PETIT_CHEVAUX_GAME.displayName;
+  readonly displayName = FOULEES_FANTASTIQUES_GAME.displayName;
   readonly description = 'le jeu classique des petits chevaux';
-  readonly minPlayers = PETIT_CHEVAUX_GAME.minPlayers;
-  readonly maxPlayers = PETIT_CHEVAUX_GAME.maxPlayers;
+  readonly minPlayers = FOULEES_FANTASTIQUES_GAME.minPlayers;
+  readonly maxPlayers = FOULEES_FANTASTIQUES_GAME.maxPlayers;
 
   constructor(
     private readonly registry: GameRegistryService,
-    private readonly setup: PetitChevauxSetupService,
-    private readonly actions: PetitChevauxActionService,
-    private readonly phases: PetitChevauxPhaseService,
-    private readonly presenter: PetitChevauxPresenterService,
-    private readonly bots: PetitChevauxBotService,
+    private readonly setup: FouleesFantastiquesSetupService,
+    private readonly actions: FouleesFantastiquesActionService,
+    private readonly phases: FouleesFantastiquesPhaseService,
+    private readonly presenter: FouleesFantastiquesPresenterService,
+    private readonly bots: FouleesFantastiquesBotService,
   ) {}
 
   onModuleInit(): void {
@@ -89,6 +89,6 @@ export class PetitChevauxService implements GameRulesAdapter, OnModuleInit {
   }
 
   getShortcuts(ctx: GameShortcutsContext<any>): GameShortcutHint[] {
-    return buildPetitChevauxShortcuts(ctx);
+    return buildFouleesFantastiquesShortcuts(ctx);
   }
 }

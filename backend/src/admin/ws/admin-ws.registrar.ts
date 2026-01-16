@@ -74,6 +74,9 @@ export class AdminWsRegistrar implements OnModuleInit {
     this.registry.register('admin.games.category.assign', (s, p) =>
       this.games.gamesCategoryAssign(s, p),
     );
+    this.registry.register('admin.games.category.delete', (s, p) =>
+      this.games.gamesCategoryDelete(s, p),
+    );
     this.registry.register('admin.roles.list', (s, p) =>
       this.roles.rolesList(s, p),
     );

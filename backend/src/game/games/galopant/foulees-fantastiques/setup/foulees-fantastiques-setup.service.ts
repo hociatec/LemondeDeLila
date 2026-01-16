@@ -11,7 +11,7 @@ import type {
 import type { PetitChevauxBoardJsonV1 } from '../model/petit-chevaux-content.entity';
 
 @Injectable()
-export class PetitChevauxSetupService {
+export class FouleesFantastiquesSetupService {
   constructor(
     private readonly core: GameCoreService,
     private readonly contentLoader: GameContentLoaderService,
@@ -19,7 +19,7 @@ export class PetitChevauxSetupService {
 
   private loadBoard(): PetitChevauxBoardJsonV1 {
     return this.contentLoader.loadContent<PetitChevauxBoardJsonV1>({
-      gameType: 'petit-chevaux',
+      gameType: 'foulees-fantastiques',
       baseDir: __dirname,
       filename: 'board.json',
       validators: [
@@ -44,29 +44,6 @@ export class PetitChevauxSetupService {
     const pawnNamesByPlayer: Record<number, string[]> = {};
     const offsets: Record<number, number> = {};
 
-    const families = [
-      {
-        family: 'Equidés',
-        habitat: 'écurie',
-        pawns: ['Alkhal-téké', 'Andalou', 'Frison', 'Pur-sang'],
-      },
-      {
-        family: 'Primates',
-        habitat: 'primaterie',
-        pawns: ['Douc', 'Gibbon', 'Mandrill', 'Sakis'],
-      },
-      {
-        family: 'Oiseaux',
-        habitat: 'volière',
-        pawns: ['Cygne', 'Héron', 'Paon', 'Perroquet'],
-      },
-      {
-        family: 'Poissons',
-        habitat: 'aquarium',
-        pawns: ['Anthias', 'Discus', 'Mandarin', 'Mérou'],
-      },
-    ] as const;
-
     // 2 joueurs => opposés (0 et 20). Jusqu'à 4 joueurs supportés.
     const half = Math.floor(trackLength / 2);
     const quarter = Math.floor(trackLength / 4);
@@ -80,10 +57,6 @@ export class PetitChevauxSetupService {
         progress: -1,
       }));
       colorsByPlayer[p.id] = colorTable[idx] ?? 'Rouge';
-      const pack = families[idx % families.length];
-      familyByPlayer[p.id] = pack.family;
-      habitatByPlayer[p.id] = pack.habitat;
-      pawnNamesByPlayer[p.id] = [...pack.pawns];
       offsets[p.id] = offsetTable[idx] ?? (idx * 10) % trackLength;
     });
 
@@ -121,6 +94,7 @@ export class PetitChevauxSetupService {
       homeLength,
       pawnsByPlayer,
       colorsByPlayer,
+      // Choix au démarrage: rempli par action `choose_family`.
       familyByPlayer,
       habitatByPlayer,
       pawnNamesByPlayer,
@@ -134,24 +108,41 @@ export class PetitChevauxSetupService {
 
     const hydrated: GameStateEntity = {
       ...baseState,
-      phase: 'turn',
+      phase: 'setup',
       lastRoll: null,
       pending: null,
       metadata: { ...(baseState.metadata ?? {}), ...meta },
     };
 
-    let next = this.recomputeBoardView(hydrated);
-    for (const p of players) {
-      const color = colorsByPlayer[p.id];
-      const family = familyByPlayer[p.id];
-      const habitat = habitatByPlayer[p.id];
-      const pawns = pawnNamesByPlayer[p.id];
-      next = this.core.appendLog(
-        next,
-        `${p.username} reçoit les pions ${color}. Famille des ${family} (${habitat}) : ${pawns.join(', ')}.`,
-      );
+    const withBoard = this.recomputeBoardView(hydrated);
+
+    const currentId =
+      withBoard.turn?.currentPlayerId ??
+      players[0]?.id ??
+      null;
+    if (currentId == null) {
+      return withBoard;
     }
-    return next;
+
+    // Première étape: choix de la famille d'animaux.
+    const families = [
+      { id: 'equides', label: "Famille des Equidés (écurie)" },
+      { id: 'primates', label: 'Famille des Primates (primaterie)' },
+      { id: 'oiseaux', label: 'Famille des Oiseaux (volière)' },
+      { id: 'poissons', label: 'Famille des Poissons (aquarium)' },
+    ];
+
+    return {
+      ...withBoard,
+      pending: {
+        type: 'choose_family',
+        playerId: currentId,
+        blocking: true,
+        label: "Choisissez la famille d'animaux que vous souhaitez jouer, puis Entrée.",
+        choices: families.map((f) => f.label),
+        data: { familyIds: families.map((f) => f.id) },
+      } as any,
+    };
   }
 
   recomputeBoardView(state: GameStateEntity): GameStateEntity {

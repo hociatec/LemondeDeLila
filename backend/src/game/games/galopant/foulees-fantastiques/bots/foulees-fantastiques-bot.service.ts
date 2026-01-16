@@ -5,7 +5,7 @@ import { BotRunnerService } from '../../../../modules/bot/services/bot-runner.se
 import * as PetitChevauxRulebook from '../rulebook/rulebook';
 
 @Injectable()
-export class PetitChevauxBotService {
+export class FouleesFantastiquesBotService {
   constructor(private readonly botRunner: BotRunnerService) {}
 
   getBotActions(
@@ -24,8 +24,8 @@ export class PetitChevauxBotService {
       { state, playerId: botPlayerId },
       'random',
       {
-        preferTypes: ['move_pawn', 'roll'],
-        fallbackTypes: ['move_pawn', 'roll'],
+        preferTypes: ['choose_family', 'move_pawn', 'roll'],
+        fallbackTypes: ['choose_family', 'move_pawn', 'roll'],
       },
     );
   }

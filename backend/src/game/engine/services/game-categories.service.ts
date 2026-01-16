@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import type { GameDefinition } from '../interfaces/game-rules-adapter.interface';
 import { GameCategoryAssignmentEntity } from '../entities/game-category-assignment.entity';
 import { GameCategoryEntity } from '../entities/game-category.entity';
+import { GameCategoriesFsMirrorService } from './game-categories-fs-mirror.service';
 
 export type GameCategory = {
   id: string;
@@ -27,6 +28,7 @@ export class GameCategoriesService implements OnModuleInit {
     private readonly categoriesRepo: Repository<GameCategoryEntity>,
     @InjectRepository(GameCategoryAssignmentEntity)
     private readonly assignmentsRepo: Repository<GameCategoryAssignmentEntity>,
+    private readonly mirror: GameCategoriesFsMirrorService,
   ) {}
 
   async onModuleInit(): Promise<void> {
@@ -75,6 +77,7 @@ export class GameCategoriesService implements OnModuleInit {
       categoryId: nextCategoryId,
     });
     this.cache = root;
+    await this.syncMirrorBestEffort();
   }
 
   async createCategory(
@@ -111,6 +114,7 @@ export class GameCategoriesService implements OnModuleInit {
       enabled: category.enabled,
     });
     this.cache = root;
+    await this.syncMirrorBestEffort();
     return category;
   }
 
@@ -159,7 +163,33 @@ export class GameCategoriesService implements OnModuleInit {
       { name: category.name, parentId: category.parentId },
     );
     this.cache = root;
+    await this.syncMirrorBestEffort();
     return category;
+  }
+
+  async deleteCategory(id: string): Promise<void> {
+    const key = String(id ?? '').trim();
+    if (!key) throw new Error('Identifiant requis');
+    await this.ensureLoaded();
+    const root = this.getRoot();
+    const existing = root.categories.find((c) => c.id === key);
+    if (!existing) {
+      throw new Error(`Catégorie inconnue : ${key}`);
+    }
+
+    // Détacher les jeux affectés (null).
+    await this.assignmentsRepo.update({ categoryId: key }, { categoryId: null });
+
+    await this.categoriesRepo.delete({ id: key });
+    root.categories = root.categories.filter((c) => c.id !== key);
+    for (const [gameType, categoryId] of Object.entries(root.assignments)) {
+      if (categoryId === key) {
+        root.assignments[gameType] = null;
+      }
+    }
+    this.cache = root;
+    await this.syncMirrorBestEffort();
+    await this.mirror.deleteCategory(key);
   }
 
   applyToDefinition(def: GameDefinition): GameDefinition {
@@ -254,11 +284,27 @@ export class GameCategoriesService implements OnModuleInit {
       }
 
       this.cache = { categories, assignments };
+      await this.syncMirrorBestEffort();
     } catch (error) {
       this.logger.warn(
         `Impossible de charger les catégories: ${(error as Error).message}`,
       );
       this.cache = { categories: [], assignments: {} };
+    }
+  }
+
+  private async syncMirrorBestEffort(): Promise<void> {
+    try {
+      const root = this.getRoot();
+      await this.mirror.syncAll({
+        categories: root.categories,
+        assignments: root.assignments,
+      });
+    } catch (err) {
+      this.logger.debug(
+        `Sync miroir ignorée: ${(err as Error).message}`,
+        err as Error,
+      );
     }
   }
 

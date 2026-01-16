@@ -9,6 +9,7 @@ import { AdminCatalogInvalidationService } from '../services/admin-catalog-inval
 import {
   AdminGameCategoryAssignWsDto,
   AdminGameCategoryCreateWsDto,
+  AdminGameCategoryDeleteWsDto,
   AdminGameCategoryUpdateWsDto,
   AdminGameCategoriesListWsDto,
   AdminGameResetWsDto,
@@ -114,6 +115,17 @@ export class AdminGamesWsHandler {
     await this.catalogInvalidation.invalidateCatalogAndNotify(admin.id);
     return {
       type: 'admin.games.category.assign',
+      payload: this.buildCategoriesPayload(),
+    };
+  }
+
+  async gamesCategoryDelete(session: WsSession, payload: any) {
+    const admin = requireAdmin(session);
+    const dto = this.validator.validate(AdminGameCategoryDeleteWsDto, payload);
+    await this.categories.deleteCategory(dto.id);
+    await this.catalogInvalidation.invalidateCatalogAndNotify(admin.id);
+    return {
+      type: 'admin.games.categories',
       payload: this.buildCategoriesPayload(),
     };
   }

@@ -11,7 +11,7 @@ import type {
   PetitChevauxMetadata,
   PetitChevauxPawnState,
 } from '../model/petit-chevaux-state.entity';
-import { PetitChevauxSetupService } from '../setup/petit-chevaux-setup.service';
+import { FouleesFantastiquesSetupService } from '../setup/foulees-fantastiques-setup.service';
 
 type PendingMove = {
   pawnIndex: number;
@@ -20,21 +20,55 @@ type PendingMove = {
 };
 
 @Injectable()
-export class PetitChevauxActionService {
+export class FouleesFantastiquesActionService {
+  private readonly families = [
+    {
+      id: 'equides',
+      family: 'Equidés',
+      habitat: 'écurie',
+      pawns: ['Alkhal-téké', 'Andalou', 'Frison', 'Pur-sang'],
+    },
+    {
+      id: 'primates',
+      family: 'Primates',
+      habitat: 'primaterie',
+      pawns: ['Douc', 'Gibbon', 'Mandrill', 'Sakis'],
+    },
+    {
+      id: 'oiseaux',
+      family: 'Oiseaux',
+      habitat: 'volière',
+      pawns: ['Cygne', 'Héron', 'Paon', 'Perroquet'],
+    },
+    {
+      id: 'poissons',
+      family: 'Poissons',
+      habitat: 'aquarium',
+      pawns: ['Anthias', 'Discus', 'Mandarin', 'Mérou'],
+    },
+  ] as const;
+
   constructor(
     private readonly random: RandomService,
     private readonly turns: TurnFlowService,
     private readonly core: GameCoreService,
-    private readonly setup: PetitChevauxSetupService,
+    private readonly setup: FouleesFantastiquesSetupService,
   ) {}
 
   applyActions(
     state: GameStateEntity,
     actions: GameSingleActionDto[],
   ): GameStateEntity {
+    const status = String(state.status ?? '').toLowerCase();
+    if (status !== 'started') return state;
+
     let next = state;
     for (const action of actions ?? []) {
       const type = String(action?.type ?? '').trim();
+      if (type === 'choose_family') {
+        next = this.handleChooseFamily(next, action);
+        continue;
+      }
       if (type === 'ROLL_DICE' || type === 'roll_dice' || type === 'roll') {
         next = this.handleRoll(next);
         continue;
@@ -46,10 +80,115 @@ export class PetitChevauxActionService {
     return next;
   }
 
+  private ensureFamilyPending(state: GameStateEntity): GameStateEntity {
+    const meta = (state.metadata ?? {}) as any as PetitChevauxMetadata;
+    const players = Array.isArray(state.players) ? state.players : [];
+    if (!players.length) return state;
+
+    const familyByPlayer = (meta.familyByPlayer ?? {}) as Record<number, string>;
+
+    const allChosen = players.every((p) => {
+      const f = familyByPlayer[p.id];
+      return typeof f === 'string' && f.trim().length > 0;
+    });
+    if (allChosen) {
+      let next: GameStateEntity = { ...state, phase: 'turn', pending: null };
+      const habitatByPlayer = (meta.habitatByPlayer ?? {}) as Record<
+        number,
+        string
+      >;
+      const pawnNamesByPlayer = (meta.pawnNamesByPlayer ??
+        {}) as Record<number, string[]>;
+      for (const p of players) {
+        const color = meta.colorsByPlayer?.[p.id];
+        const family = familyByPlayer[p.id];
+        const habitat = habitatByPlayer[p.id];
+        const pawns = pawnNamesByPlayer[p.id];
+        if (!family || !habitat || !Array.isArray(pawns) || pawns.length !== 4) {
+          continue;
+        }
+        next = this.core.appendLog(
+          next,
+          `${p.username} reçoit les pions ${color}. Famille des ${family} (${habitat}) : ${pawns.join(', ')}.`,
+        );
+      }
+      return this.core.appendLog(next, 'Début de partie.');
+    }
+
+    const currentId = state.turn?.currentPlayerId ?? players[0]?.id ?? null;
+    if (currentId == null) return state;
+
+    // Si le joueur courant a déjà choisi, passer au suivant.
+    const already = familyByPlayer[currentId];
+    if (typeof already === 'string' && already.trim().length > 0) {
+      const advanced = this.turns.advanceTurn({ ...state, pending: null });
+      return this.ensureFamilyPending(advanced);
+    }
+
+    const pending: PendingState = {
+      type: 'choose_family',
+      playerId: currentId,
+      blocking: true,
+      label: "Choisissez la famille d'animaux que vous souhaitez jouer, puis Entrée.",
+      choices: this.families.map((f) => `Famille des ${f.family} (${f.habitat})`),
+      data: { familyIds: this.families.map((f) => f.id) },
+    };
+    return { ...state, pending };
+  }
+
+  private handleChooseFamily(
+    state: GameStateEntity,
+    action: GameSingleActionDto,
+  ): GameStateEntity {
+    const meta = (state.metadata ?? {}) as any as PetitChevauxMetadata;
+    const currentId = state.turn?.currentPlayerId ?? null;
+    if (currentId == null) return state;
+    const pending: any = state.pending ?? null;
+    if (!pending || pending.type !== 'choose_family' || pending.playerId !== currentId) {
+      return state;
+    }
+
+    const familyId = String((action.payload as any)?.familyId ?? '')
+      .trim()
+      .toLowerCase();
+    const pack = this.families.find((f) => f.id === familyId);
+    if (!pack) {
+      return this.core.appendLog({ ...state, pending: null }, 'Famille invalide.');
+    }
+
+    const nextMeta: PetitChevauxMetadata = {
+      ...meta,
+      familyByPlayer: {
+        ...(meta.familyByPlayer ?? {}),
+        [currentId]: pack.family,
+      },
+      habitatByPlayer: {
+        ...(meta.habitatByPlayer ?? {}),
+        [currentId]: pack.habitat,
+      },
+      pawnNamesByPlayer: {
+        ...(meta.pawnNamesByPlayer ?? {}),
+        [currentId]: [...pack.pawns],
+      },
+    };
+    let next: GameStateEntity = { ...state, metadata: nextMeta, pending: null };
+    next = this.core.appendLog(
+      next,
+      `${this.playerName(next, currentId)} choisit la famille des ${pack.family} (${pack.habitat}).`,
+    );
+    next = this.turns.advanceTurn(next);
+    return this.ensureFamilyPending(next);
+  }
+
   private handleRoll(state: GameStateEntity): GameStateEntity {
     const status = String(state.status ?? '').toLowerCase();
     if (status !== 'started') return state;
     if (state.pending) return state;
+
+    // Tant que les familles ne sont pas choisies, on force l'étape de setup.
+    if (String(state.phase ?? '').toLowerCase().trim() !== 'turn') {
+      return this.ensureFamilyPending(state);
+    }
 
     const currentId = state.turn?.currentPlayerId ?? null;
     if (currentId == null) return state;
@@ -66,7 +205,7 @@ export class PetitChevauxActionService {
 
     next = this.core.appendLog(
       next,
-      `${this.playerName(state, currentId)} lance le dé : "${roll}".`,
+      `${this.playerName(state, currentId)} lance le dé : ${roll}.`,
     );
 
     const moves = this.computeMoves(next, currentId, roll);
@@ -96,10 +235,10 @@ export class PetitChevauxActionService {
       );
     const label =
       hasStableExit && moves.every((m) => m.targetProgress === 0)
-        ? 'Choisissez un cheval à sortir dans la liste, puis Entrée.'
+        ? 'Choisissez un animal à sortir dans la liste, puis Entrée.'
         : hasStableExit
-          ? 'Choisissez un cheval à sortir ou à jouer dans la liste, puis Entrée.'
-          : 'Choisissez un cheval à jouer dans la liste, puis Entrée.';
+          ? 'Choisissez un animal à sortir ou à jouer dans la liste, puis Entrée.'
+          : 'Choisissez un animal à jouer dans la liste, puis Entrée.';
 
     const pending: PendingState = {
       type: 'choose_pawn',
@@ -411,7 +550,7 @@ export class PetitChevauxActionService {
       const habitat = this.habitatLabel(state, playerId);
       next = this.core.appendLog(
         next,
-        `${this.playerName(state, playerId)} sort ${pawnLabel} du ${habitat} : case ${pos + 1}/${meta.trackLength}.`,
+        `${this.playerName(state, playerId)} sort ${pawnLabel} ${this.fromHabitat(habitat)} : case ${pos + 1}/${meta.trackLength}.`,
       );
     } else {
       if (nextProg >= 0 && nextProg < meta.trackLength) {
@@ -589,7 +728,7 @@ export class PetitChevauxActionService {
         ? String(list[pawnIndex]).trim()
         : '';
     if (name) return name;
-    return `cheval ${pawnIndex + 1}`;
+    return `animal ${pawnIndex + 1}`;
   }
 
   private habitatLabel(state: GameStateEntity, playerId: number): string {
@@ -598,6 +737,20 @@ export class PetitChevauxActionService {
       typeof meta?.habitatByPlayer?.[playerId] === 'string'
         ? String(meta.habitatByPlayer[playerId]).trim()
         : '';
-    return habitat || 'départ';
+    return habitat || 'abri de départ';
+  }
+
+  private fromHabitat(habitat: string): string {
+    const raw = String(habitat ?? '').trim();
+    const h = raw.toLowerCase();
+    if (!raw) return "de l'abri de départ";
+    if (h === 'écurie' || h === 'ecurie') return "de l'écurie";
+    if (h === 'volière' || h === 'voliere') return 'de la volière';
+    if (h === 'primaterie') return 'de la primaterie';
+    if (h === 'aquarium') return "de l'aquarium";
+    if (/^[aeiouyhàâäéèêëîïôöùûü]/i.test(raw)) {
+      return `de l'${raw}`;
+    }
+    return `du ${raw}`;
   }
 }

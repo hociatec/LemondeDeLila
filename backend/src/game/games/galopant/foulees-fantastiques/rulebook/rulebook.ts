@@ -1,7 +1,7 @@
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
 import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
 import {
-  PETIT_CHEVAUX_GAME,
+  FOULEES_FANTASTIQUES_GAME,
   type PetitChevauxActionType,
 } from '../definitions/game.definition';
 import {
@@ -26,6 +26,17 @@ export function getAvailableActions(
 
   const pending: any = state.pending ?? null;
   if (pending) {
+    if (pending.type === 'choose_family' && pending.playerId === playerId) {
+      const familyIds: string[] = Array.isArray(pending?.data?.familyIds)
+        ? pending.data.familyIds
+        : [];
+      return familyIds
+        .filter((id) => typeof id === 'string' && id.trim().length > 0)
+        .map((id) => ({
+          type: 'choose_family',
+          payload: { familyId: String(id).trim() },
+        }));
+    }
     if (pending.type === 'choose_pawn' && pending.playerId === playerId) {
       const moves: Array<{ pawnIndex: number; targetProgress: number }> =
         Array.isArray(pending?.data?.moves) ? pending.data.moves : [];
@@ -56,20 +67,20 @@ export function validateAction(
   const normalizedType = rawType.toLowerCase();
   const type = rawType as PetitChevauxActionType;
   if (
-    !PETIT_CHEVAUX_GAME.actions.includes(type) &&
-    !PETIT_CHEVAUX_GAME.actions.includes(normalizedType as any)
+    !FOULEES_FANTASTIQUES_GAME.actions.includes(type) &&
+    !FOULEES_FANTASTIQUES_GAME.actions.includes(normalizedType as any)
   ) {
     throw new GameValidationError(`Action inconnue: ${rawType}`, {
-      gameType: 'petit-chevaux',
+      gameType: 'foulees-fantastiques',
       action: rawType,
-      allowedActions: PETIT_CHEVAUX_GAME.actions,
+      allowedActions: FOULEES_FANTASTIQUES_GAME.actions,
     });
   }
 
   const current = state.turn?.currentPlayerId ?? null;
   if (current != null && actorId != null && actorId !== current) {
     throw new PlayerActionError("Ce n'est pas votre tour.", {
-      gameType: 'petit-chevaux',
+      gameType: 'foulees-fantastiques',
       playerId: actorId,
       currentPlayerId: current,
     });
@@ -83,6 +94,43 @@ export function validateAction(
     return { ...action, type: 'roll', payload: {} };
   }
 
+  if (type === 'choose_family') {
+    const pending: any = state.pending ?? null;
+    if (
+      !pending ||
+      pending.type !== 'choose_family' ||
+      pending.playerId !== actorId
+    ) {
+      throw new PlayerActionError('Aucun choix de famille en attente.', {
+        gameType: 'foulees-fantastiques',
+        playerId: actorId ?? undefined,
+      });
+    }
+    const payload = action.payload ?? {};
+    const familyId = String((payload as any).familyId ?? '').trim();
+    if (!familyId) {
+      throw new GameValidationError('Payload invalide: familyId', {
+        gameType: 'foulees-fantastiques',
+        playerId: actorId ?? undefined,
+        payload,
+      });
+    }
+    const allowed: string[] = Array.isArray(pending?.data?.familyIds)
+      ? pending.data.familyIds
+      : [];
+    const ok = allowed.some(
+      (id) => typeof id === 'string' && id.trim() === familyId,
+    );
+    if (!ok) {
+      throw new GameValidationError('Famille invalide.', {
+        gameType: 'foulees-fantastiques',
+        playerId: actorId ?? undefined,
+        payload,
+      });
+    }
+    return { ...action, type: 'choose_family', payload: { familyId } };
+  }
+
   if (type === 'move_pawn') {
     const pending: any = state.pending ?? null;
     if (
@@ -91,7 +139,7 @@ export function validateAction(
       pending.playerId !== actorId
     ) {
       throw new PlayerActionError('Aucun choix de pion en attente.', {
-        gameType: 'petit-chevaux',
+        gameType: 'foulees-fantastiques',
         playerId: actorId ?? undefined,
       });
     }
@@ -103,7 +151,7 @@ export function validateAction(
       throw new GameValidationError(
         'Payload invalide: pawnIndex/targetProgress',
         {
-          gameType: 'petit-chevaux',
+          gameType: 'foulees-fantastiques',
           playerId: actorId ?? undefined,
           payload,
         },
@@ -117,7 +165,7 @@ export function validateAction(
     );
     if (!ok) {
       throw new GameValidationError('Choix de pion invalide.', {
-        gameType: 'petit-chevaux',
+        gameType: 'foulees-fantastiques',
         playerId: actorId ?? undefined,
         payload,
       });
