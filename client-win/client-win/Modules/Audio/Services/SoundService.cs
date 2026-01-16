@@ -37,6 +37,7 @@ public sealed class SoundService : ISoundService, IDisposable
     private readonly Dictionary<SoundId, TaskCompletionSource<bool>> _playEndSignals = new();
     private MediaPlayer? _previewPlayer;
     private EventHandler? _previewOpenedHandler;
+    private EventHandler<ExceptionEventArgs>? _previewFailedHandler;
     private readonly long _serviceStartTicks = Stopwatch.GetTimestamp();
     private readonly Queue<(SoundId Sound, long Ticks)> _recentPlays = new();
     private int _connectedGate;
@@ -804,7 +805,7 @@ public sealed class SoundService : ISoundService, IDisposable
                     }
                 };
                 player.MediaOpened += _previewOpenedHandler;
-                player.MediaFailed += (_, args) =>
+                _previewFailedHandler = (_, args) =>
                 {
                     try
                     {
@@ -818,8 +819,17 @@ public sealed class SoundService : ISoundService, IDisposable
                         // ignore
                     }
 
-                    try { StopPreviewOnUiThread(); } catch { /* ignore */ }
+                    try
+                    {
+                        // Ne pas couper un nouvel aperçu si un ancien player échoue en retard.
+                        if (_previewPlayer != null && ReferenceEquals(_previewPlayer, player))
+                        {
+                            StopPreviewOnUiThread();
+                        }
+                    }
+                    catch { /* ignore */ }
                 };
+                player.MediaFailed += _previewFailedHandler;
 
                 try
                 {
@@ -894,6 +904,11 @@ public sealed class SoundService : ISoundService, IDisposable
             {
                 try { _previewPlayer.MediaOpened -= _previewOpenedHandler; } catch { /* ignore */ }
                 _previewOpenedHandler = null;
+            }
+            if (_previewFailedHandler != null)
+            {
+                try { _previewPlayer.MediaFailed -= _previewFailedHandler; } catch { /* ignore */ }
+                _previewFailedHandler = null;
             }
         }
         catch

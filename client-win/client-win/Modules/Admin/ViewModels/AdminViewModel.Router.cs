@@ -13,7 +13,12 @@ public sealed partial class AdminViewModel
         if (tag == null) return;
 
         // Si un aperçu de son admin est en cours, l'arrêter dès qu'on navigue ailleurs.
-        _sounds.StopPreview();
+        // Important: ne pas stopper ici pour l'action "aperçu" elle-même, sinon StopPreview (async)
+        // peut arriver après PlayPreview et couper le son juste après le redémarrage.
+        if (!(_page == AdminPage.SoundDetails && tag is string previewAction && previewAction == "sound.preview"))
+        {
+            _sounds.StopPreview();
+        }
 
         try
         {

@@ -410,6 +410,17 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
             // ignore
         }
 
+        // Ensure latest admin overrides are applied before playing the sound.
+        try
+        {
+            using var refreshCts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+            await RefreshRemoteSoundsAsync(force: true, reapplyBackground: false, refreshCts.Token).ConfigureAwait(false);
+        }
+        catch
+        {
+            // ignore
+        }
+
         try
         {
             _sounds.Play(SoundId.ClientDisconnected);
@@ -434,6 +445,17 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
         try
         {
             StopBackgroundLoops();
+        }
+        catch
+        {
+            // ignore
+        }
+
+        // Ensure latest admin overrides are applied before playing the sound.
+        try
+        {
+            using var refreshCts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+            await RefreshRemoteSoundsAsync(force: true, reapplyBackground: false, refreshCts.Token).ConfigureAwait(false);
         }
         catch
         {
@@ -588,6 +610,17 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
                 _appliedBackground = AppAudioBackground.None;
                 if (!isConnected && playDisconnected && logoutSeq != Volatile.Read(ref _disconnectedSoundPlayedSequence))
                 {
+                    // Ensure latest admin overrides are applied before playing the sound.
+                    try
+                    {
+                        using var refreshCts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+                        await RefreshRemoteSoundsAsync(force: true, reapplyBackground: false, refreshCts.Token).ConfigureAwait(false);
+                    }
+                    catch
+                    {
+                        // ignore
+                    }
+
                     TryPlay(SoundId.ClientDisconnected);
                     lock (_stateGate)
                     {
@@ -615,6 +648,18 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
                     // ignore
                 }
 
+                // Make a best-effort attempt to refresh remote sounds before playing, so admin overrides
+                // are used consistently for connection feedback.
+                try
+                {
+                    using var refreshCts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+                    await RefreshRemoteSoundsAsync(force: true, reapplyBackground: false, refreshCts.Token).ConfigureAwait(false);
+                }
+                catch
+                {
+                    // ignore
+                }
+
                 TryPlay(SoundId.ClientConnected);
                 lock (_stateGate)
                 {
@@ -622,13 +667,13 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
                 }
                 Volatile.Write(ref _connectedSoundPlayedSequence, loginSeq);
 
-                // Refresh remote sounds after playing the connected sound to avoid adding latency.
+                // Refresh again after playing to keep cache warm, without blocking transitions.
                 _ = Task.Run(async () =>
                 {
                     try
                     {
                         using var refreshCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-                        await RefreshRemoteSoundsAsync(force: true, reapplyBackground: false, refreshCts.Token).ConfigureAwait(false);
+                        await RefreshRemoteSoundsAsync(force: false, reapplyBackground: false, refreshCts.Token).ConfigureAwait(false);
                     }
                     catch
                     {
