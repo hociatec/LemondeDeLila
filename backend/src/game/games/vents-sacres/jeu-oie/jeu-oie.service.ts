@@ -23,7 +23,7 @@ import { buildJeuOieShortcuts } from './jeu-oie.shortcuts';
 export class JeuOieService implements GameRulesAdapter, OnModuleInit {
   readonly gameType = 'jeu-oie';
   readonly category = 'JeuxDePlateaux';
-  readonly subcategory = 'Galopant';
+  readonly subcategory = 'Les Vents Sacrés';
   readonly displayName = JEU_OIE_GAME.displayName;
   readonly description = "Le jeu de l'oie (course sur 63 cases).";
   readonly minPlayers = JEU_OIE_GAME.minPlayers;

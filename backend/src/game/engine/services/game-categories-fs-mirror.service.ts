@@ -193,13 +193,19 @@ export class GameCategoriesFsMirrorService {
     }
 
     if (chain.length === 0) return null;
-    const segments = chain.map((c) => this.safeFolderName(c.name));
+    // IMPORTANT: les ids sont stables (recommandé). Le dossier doit donc être dérivé de l'id,
+    // pas du nom affiché, pour éviter de renommer les chemins à chaque update de libellé.
+    const segments = chain.map((c) => this.safeFolderName(c.id));
     let out = path.join(this.root, ...segments);
 
     // Collision: si un autre id a déjà pris ce chemin, on suffixe avec l'id.
     const existingMeta = await this.tryReadCategoryMeta(out);
     if (existingMeta && existingMeta.id && existingMeta.id !== category.id) {
-      out = path.join(this.root, ...segments.slice(0, -1), `${segments.at(-1)} (${category.id})`);
+      out = path.join(
+        this.root,
+        ...segments.slice(0, -1),
+        `${segments.at(-1)} (${category.id})`,
+      );
     }
     return out;
   }
@@ -323,4 +329,3 @@ export class GameCategoriesFsMirrorService {
     }
   }
 }
-

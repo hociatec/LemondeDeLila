@@ -226,14 +226,17 @@ export class GameCategoriesService implements OnModuleInit {
       return undefined;
     }
 
-    // Alias: certains jeux historiques utilisent des libellés "marketing" qui ne correspondent
-    // pas aux ids techniques des catégories DB. On mappe ici pour éviter des doublons d'étagères.
+    // Alias: certains jeux historiques utilisent des libellés "marketing" ou des ids legacy
+    // qui ne correspondent pas aux ids techniques des catégories DB.
     const aliasToCategoryId: Record<string, string> = {
-      // "Les Vents Sacrés" est la même étagère que `galopant` dans la DB.
-      'les-vents-sacres': 'galopant',
-      'vents-sacres': 'galopant',
-      'vent-sacres': 'galopant',
-      'vents-sacre': 'galopant',
+      // Legacy: ancien id DB `galopant` -> `vents-sacres`.
+      galopant: 'vents-sacres',
+      // Variantes de libellés.
+      'les-vents-sacres': 'vents-sacres',
+      'vents-sacres': 'vents-sacres',
+      'vent-sacres': 'vents-sacres',
+      'vents-sacre': 'vents-sacres',
+      'etagere-des-vents-sacres': 'vents-sacres',
     };
     const targetId = aliasToCategoryId[normalizedId] ?? normalizedId;
 

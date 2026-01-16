@@ -22,7 +22,7 @@ export class FouleesFantastiquesLegacyPetitChevauxService
 {
   readonly gameType = 'petit-chevaux';
   readonly category = 'JeuxDePlateaux';
-  readonly subcategory = 'Galopant';
+  readonly subcategory = 'Les Vents Sacrés';
   readonly displayName = 'Foulées Fantastiques !';
   readonly description = 'Alias legacy de foulees-fantastiques.';
   readonly minPlayers = 2;
@@ -85,4 +85,3 @@ export class FouleesFantastiquesLegacyPetitChevauxService
     return this.delegate.getShortcuts(ctx);
   }
 }
-

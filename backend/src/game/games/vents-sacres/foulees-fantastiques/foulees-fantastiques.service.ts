@@ -23,7 +23,7 @@ import { buildFouleesFantastiquesShortcuts } from './foulees-fantastiques.shortc
 export class FouleesFantastiquesService implements GameRulesAdapter, OnModuleInit {
   readonly gameType = 'foulees-fantastiques';
   readonly category = 'JeuxDePlateaux';
-  readonly subcategory = 'Galopant';
+  readonly subcategory = 'Les Vents Sacrés';
   readonly displayName = FOULEES_FANTASTIQUES_GAME.displayName;
   readonly description = 'le jeu classique des petits chevaux';
   readonly minPlayers = FOULEES_FANTASTIQUES_GAME.minPlayers;
