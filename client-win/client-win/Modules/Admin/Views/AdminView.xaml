@@ -40,11 +40,18 @@
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
-                <StackPanel Grid.Row="0" Orientation="Vertical" Margin="0,0,0,12">
-                    <views:AdminInputsView x:Name="InputsView" />
-                    <views:AdminUserFiltersView />
-                    <views:AdminLogControlsView />
-                </StackPanel>
+                <ScrollViewer Grid.Row="0"
+                              VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Disabled"
+                              MaxHeight="420"
+                              Focusable="False"
+                              KeyboardNavigation.IsTabStop="False">
+                    <StackPanel Orientation="Vertical" Margin="0,0,0,12">
+                        <views:AdminInputsView x:Name="InputsView" />
+                        <views:AdminUserFiltersView />
+                        <views:AdminLogControlsView />
+                    </StackPanel>
+                </ScrollViewer>
 
                 <ListBox x:Name="ItemsList"
                          Grid.Row="1"

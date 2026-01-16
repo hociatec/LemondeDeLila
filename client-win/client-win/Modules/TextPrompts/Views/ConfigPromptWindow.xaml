@@ -7,7 +7,9 @@
         ResizeMode="NoResize"
         Background="#0B1526"
         Foreground="White"
-        MinWidth="520">
+        MinWidth="520"
+        MaxHeight="{Binding Source={x:Static SystemParameters.WorkArea}, Path=Height}"
+        MaxWidth="{Binding Source={x:Static SystemParameters.WorkArea}, Path=Width}">
     <Window.Resources>
         <DataTemplate x:Key="TextFieldTemplate">
             <StackPanel Margin="0 0 0 10"
@@ -45,7 +47,7 @@
           KeyboardNavigation.TabNavigation="Cycle">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
@@ -55,12 +57,16 @@
                    FontWeight="SemiBold"
                    Margin="0 0 0 12"/>
 
-        <ItemsControl Grid.Row="1"
-                      ItemsSource="{Binding Fields}"
+        <ScrollViewer Grid.Row="1"
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled"
                       Focusable="False"
                       KeyboardNavigation.IsTabStop="False"
-                      KeyboardNavigation.TabNavigation="Continue"
                       AutomationProperties.Name="Champs de configuration">
+            <ItemsControl ItemsSource="{Binding Fields}"
+                          Focusable="False"
+                          KeyboardNavigation.IsTabStop="False"
+                          KeyboardNavigation.TabNavigation="Continue">
             <ItemsControl.ItemContainerStyle>
                 <Style TargetType="ContentPresenter">
                     <Setter Property="Focusable" Value="False"/>
@@ -89,7 +95,8 @@
                     </ContentControl>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
-        </ItemsControl>
+            </ItemsControl>
+        </ScrollViewer>
 
         <StackPanel Grid.Row="2"
                     Orientation="Horizontal"

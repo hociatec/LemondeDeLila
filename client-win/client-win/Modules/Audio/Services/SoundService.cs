@@ -41,10 +41,6 @@ public sealed class SoundService : ISoundService, IDisposable
     private int _connectedGate;
     private long _connectedAtTicks;
 
-    private const int MaxQueuedPlays = 8;
-    private readonly Queue<PlayRequest> _playQueue = new();
-    private bool _playInProgress;
-
     private sealed record PlayRequest(SoundId Sound, SoundEntry Entry, string FilePath);
 
     // Avoid audio spam when a burst of messages happens (e.g. history replay, reconnect).
@@ -426,41 +422,43 @@ public sealed class SoundService : ISoundService, IDisposable
 
     private void EnqueuePlayback(PlayRequest request)
     {
-        lock (_gate)
-        {
-            if (_playInProgress)
-            {
-                if (_playQueue.Count >= MaxQueuedPlays)
-                {
-                    _playQueue.Dequeue();
-                }
-                _playQueue.Enqueue(request);
-                return;
-            }
-            _playInProgress = true;
-        }
-
-        StartQueuedPlayback(request);
-    }
-
-    private void StartQueuedPlayback(PlayRequest request)
-    {
         void PlayOnUiThread()
         {
             try
             {
                 MediaPlayer player;
                 TaskCompletionSource<bool> tcs;
+
                 lock (_gate)
                 {
                     EnsurePlayerLoaded(request.Sound, request.FilePath, canInterruptPlayback: true);
                     player = _players[request.Sound];
+
+                    // If we restart a sound while a previous instance was "in progress", ensure waiters don't hang.
+                    if (_playEndSignals.TryGetValue(request.Sound, out var previous))
+                    {
+                        previous.TrySetResult(true);
+                    }
+
                     tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
                     _playEndSignals[request.Sound] = tcs;
                 }
 
-                void StartPlayback()
+                void StartPlaybackIfCurrent()
                 {
+                    // Drop stale callbacks (e.g. multiple plays fired quickly while MediaOpened is pending).
+                    lock (_gate)
+                    {
+                        if (_playEndSignals.TryGetValue(request.Sound, out var current) && !ReferenceEquals(current, tcs))
+                        {
+                            return;
+                        }
+                        if (!_players.TryGetValue(request.Sound, out var currentPlayer) || !ReferenceEquals(currentPlayer, player))
+                        {
+                            return;
+                        }
+                    }
+
                     player.IsMuted = false;
                     player.Volume = request.Entry.Volume();
                     player.Stop();
@@ -468,31 +466,36 @@ public sealed class SoundService : ISoundService, IDisposable
                     player.Play();
                 }
 
-                var alreadyOpened = false;
+                var needsMediaOpened = false;
                 lock (_gate)
                 {
-                    alreadyOpened = _opened.Contains(request.Sound);
+                    needsMediaOpened = !_opened.Contains(request.Sound);
                 }
-                if (alreadyOpened)
-                {
-                    try
-                    {
-                        StartPlayback();
-                    }
-                    catch
-                    {
-                        // ignore
-                    }
-                }
-                else
+
+                if (needsMediaOpened)
                 {
                     EventHandler? opened = null;
                     opened = (_, _) =>
                     {
                         try { player.MediaOpened -= opened; } catch { /* ignore */ }
-                        try { StartPlayback(); } catch { /* ignore */ }
+                        try { StartPlaybackIfCurrent(); } catch { /* ignore */ }
                     };
                     player.MediaOpened += opened;
+
+                    // Avoid missing MediaOpened if it fired just before subscribing.
+                    lock (_gate)
+                    {
+                        needsMediaOpened = !_opened.Contains(request.Sound);
+                    }
+                    if (!needsMediaOpened)
+                    {
+                        try { player.MediaOpened -= opened; } catch { /* ignore */ }
+                    }
+                }
+
+                if (!needsMediaOpened)
+                {
+                    try { StartPlaybackIfCurrent(); } catch { /* ignore */ }
                 }
 
                 EventHandler? ended = null;
@@ -507,7 +510,6 @@ public sealed class SoundService : ISoundService, IDisposable
                         }
                     }
                     tcs.TrySetResult(true);
-                    ScheduleNextPlaybackIfAvailable();
                 };
                 player.MediaEnded += ended;
             }
@@ -522,7 +524,6 @@ public sealed class SoundService : ISoundService, IDisposable
                         current.TrySetResult(true);
                     }
                 }
-                ScheduleNextPlaybackIfAvailable();
             }
         }
 
@@ -532,29 +533,8 @@ public sealed class SoundService : ISoundService, IDisposable
         }
         else
         {
-            _ = _dispatcher.BeginInvoke((Action)PlayOnUiThread, DispatcherPriority.Normal);
-        }
-    }
-
-    private void ScheduleNextPlaybackIfAvailable()
-    {
-        PlayRequest? next = null;
-        lock (_gate)
-        {
-            if (_playQueue.Count > 0)
-            {
-                next = _playQueue.Dequeue();
-                _playInProgress = true;
-            }
-            else
-            {
-                _playInProgress = false;
-            }
-        }
-
-        if (next != null)
-        {
-            StartQueuedPlayback(next);
+            // Audio feedback should start quickly, even if the UI thread is busy (e.g. heavy navigation/reflow).
+            _ = _dispatcher.BeginInvoke((Action)PlayOnUiThread, DispatcherPriority.Send);
         }
     }
 
@@ -1063,6 +1043,11 @@ public sealed class SoundService : ISoundService, IDisposable
                 args.ErrorException?.Message ?? "unknown error");
             lock (_gate)
             {
+                if (_playEndSignals.TryGetValue(sound, out var tcs))
+                {
+                    _playEndSignals.Remove(sound);
+                    tcs.TrySetResult(true);
+                }
                 if (_players.TryGetValue(sound, out var current) && ReferenceEquals(current, player))
                 {
                     _players.Remove(sound);
