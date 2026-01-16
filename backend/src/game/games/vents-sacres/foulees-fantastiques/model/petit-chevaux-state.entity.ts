@@ -19,6 +19,7 @@ export type PetitChevauxMetadata = {
   pawnsByPlayer: Record<number, PetitChevauxPawnState[]>;
   colorsByPlayer: Record<number, PetitChevauxColor>;
   // Personnalisation "univers" (familles/animaux) pour les logs et l'accessibilité.
+  familyIdByPlayer?: Record<number, string>;
   familyByPlayer?: Record<number, string>;
   habitatByPlayer?: Record<number, string>;
   pawnNamesByPlayer?: Record<number, string[]>;

@@ -8,6 +8,7 @@ import {
   GameValidationError,
   PlayerActionError,
 } from '../../../../../common/errors/game-errors';
+import type { PetitChevauxMetadata } from '../model/petit-chevaux-state.entity';
 
 function normalizeNumber(value: unknown): number | null {
   const n = typeof value === 'number' ? value : Number(value);
@@ -123,6 +124,20 @@ export function validateAction(
     );
     if (!ok) {
       throw new GameValidationError('Famille invalide.', {
+        gameType: 'foulees-fantastiques',
+        playerId: actorId ?? undefined,
+        payload,
+      });
+    }
+
+    const meta = (state.metadata ?? {}) as any as PetitChevauxMetadata;
+    const taken = Object.entries(meta.familyIdByPlayer ?? {}).some(
+      ([pid, fid]) =>
+        Number(pid) !== (actorId ?? NaN) &&
+        String(fid ?? '').trim() === familyId,
+    );
+    if (taken) {
+      throw new GameValidationError('Famille déjà choisie.', {
         gameType: 'foulees-fantastiques',
         playerId: actorId ?? undefined,
         payload,

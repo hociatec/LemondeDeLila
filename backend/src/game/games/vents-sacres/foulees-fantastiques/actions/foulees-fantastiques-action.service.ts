@@ -85,10 +85,12 @@ export class FouleesFantastiquesActionService {
     const players = Array.isArray(state.players) ? state.players : [];
     if (!players.length) return state;
 
+    const familyIdByPlayer = (meta.familyIdByPlayer ??
+      {}) as Record<number, string>;
     const familyByPlayer = (meta.familyByPlayer ?? {}) as Record<number, string>;
 
     const allChosen = players.every((p) => {
-      const f = familyByPlayer[p.id];
+      const f = familyIdByPlayer[p.id];
       return typeof f === 'string' && f.trim().length > 0;
     });
     if (allChosen) {
@@ -119,19 +121,28 @@ export class FouleesFantastiquesActionService {
     if (currentId == null) return state;
 
     // Si le joueur courant a déjà choisi, passer au suivant.
-    const already = familyByPlayer[currentId];
+    const already = familyIdByPlayer[currentId];
     if (typeof already === 'string' && already.trim().length > 0) {
       const advanced = this.turns.advanceTurn({ ...state, pending: null });
       return this.ensureFamilyPending(advanced);
     }
+
+    const taken = new Set(
+      Object.values(familyIdByPlayer)
+        .filter((v) => typeof v === 'string')
+        .map((v) => v.trim().toLowerCase())
+        .filter(Boolean),
+    );
+    const available = this.families.filter((f) => !taken.has(f.id));
+    const usable = available.length > 0 ? available : this.families;
 
     const pending: PendingState = {
       type: 'choose_family',
       playerId: currentId,
       blocking: true,
       label: "Choisissez la famille d'animaux que vous souhaitez jouer, puis Entrée.",
-      choices: this.families.map((f) => `Famille des ${f.family} (${f.habitat})`),
-      data: { familyIds: this.families.map((f) => f.id) },
+      choices: usable.map((f) => `Famille des ${f.family} (${f.habitat})`),
+      data: { familyIds: usable.map((f) => f.id) },
     };
     return { ...state, pending };
   }
@@ -153,11 +164,29 @@ export class FouleesFantastiquesActionService {
       .toLowerCase();
     const pack = this.families.find((f) => f.id === familyId);
     if (!pack) {
-      return this.core.appendLog({ ...state, pending: null }, 'Famille invalide.');
+      return this.core.appendLog(state, 'Famille invalide.');
+    }
+
+    const familyIdByPlayer = (meta.familyIdByPlayer ??
+      {}) as Record<number, string>;
+    const takenByOther = Object.entries(familyIdByPlayer).some(([pid, fid]) => {
+      const otherId = Number(pid);
+      if (!Number.isFinite(otherId) || otherId === currentId) return false;
+      return String(fid ?? '').trim().toLowerCase() === familyId;
+    });
+    if (takenByOther) {
+      return this.core.appendLog(
+        state,
+        'Cette famille a déjà été choisie par un autre joueur.',
+      );
     }
 
     const nextMeta: PetitChevauxMetadata = {
       ...meta,
+      familyIdByPlayer: {
+        ...(meta.familyIdByPlayer ?? {}),
+        [currentId]: pack.id,
+      },
       familyByPlayer: {
         ...(meta.familyByPlayer ?? {}),
         [currentId]: pack.family,

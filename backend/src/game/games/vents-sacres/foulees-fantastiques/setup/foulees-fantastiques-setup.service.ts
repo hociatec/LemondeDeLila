@@ -95,6 +95,7 @@ export class FouleesFantastiquesSetupService {
       pawnsByPlayer,
       colorsByPlayer,
       // Choix au démarrage: rempli par action `choose_family`.
+      familyIdByPlayer: {},
       familyByPlayer,
       habitatByPlayer,
       pawnNamesByPlayer,
