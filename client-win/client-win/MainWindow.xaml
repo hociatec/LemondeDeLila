@@ -10,7 +10,8 @@
         Background="#0B1523"
         shellViews:ShellWindowBehavior.Enable="True">
     <ContentControl x:Name="RootHost"
-                    Focusable="False"
+                    Focusable="True"
+                    KeyboardNavigation.IsTabStop="False"
                     Content="{Binding CurrentContent}"
                     shellViews:ContentHostFocusBehavior.Enable="True" />
 </Window>

@@ -31,7 +31,7 @@ public partial class MainMenuView : UserControl
         }
     }
 
-    private async void OnListPreviewKeyDown(object sender, KeyEventArgs e)
+    private void OnListPreviewKeyDown(object sender, KeyEventArgs e)
     {
         if (e.Key == Key.Tab)
         {
@@ -48,15 +48,56 @@ public partial class MainMenuView : UserControl
             return;
         }
         e.Handled = true;
-        await vm.ActivateCommand.ExecuteAsync(null).ConfigureAwait(true);
 
-        // Si l'action n'a pas déclenché de navigation (ex: action locale), restaurer le focus sur le menu.
-        // Si la navigation a remplacé la vue, éviter de refocaliser un élément qui va disparaître
-        // (NVDA annonce souvent "indisponible" dans ce cas).
-        if (IsLoaded && IsVisible && ReferenceEquals(DataContext, vm))
+        // Déplacer le focus sur un élément stable AVANT la navigation (qui remplace la vue).
+        // Puis exécuter la navigation au prochain tour de boucle: évite que NVDA annonce
+        // "indisponible" quand le ListBoxItem focalisé disparaît pendant le même événement clavier.
+        var dispatcher = Dispatcher;
+        IInputElement? rootHost = null;
+        try
         {
-            FocusWhenContainersGenerated();
+            rootHost = Application.Current?.MainWindow?.FindName("RootHost") as IInputElement;
         }
+        catch
+        {
+            // ignore
+        }
+
+        _ = dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
+        {
+            try
+            {
+                if (rootHost != null)
+                {
+                    Keyboard.Focus(rootHost);
+                }
+            }
+            catch
+            {
+                // best-effort
+            }
+        }));
+
+        _ = dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(async () =>
+        {
+            try
+            {
+                await vm.ActivateCommand.ExecuteAsync(null).ConfigureAwait(true);
+
+                // Si l'action n'a pas déclenché de navigation (ex: action locale), restaurer le focus sur le menu.
+                // Si la navigation a remplacé la vue, éviter de refocaliser un élément qui va disparaître.
+                if (IsLoaded && IsVisible && ReferenceEquals(DataContext, vm))
+                {
+                    FocusWhenContainersGenerated();
+                }
+            }
+            catch
+            {
+                // best-effort
+            }
+        }));
+
+        return;
     }
 
     private void FocusFirstItem()

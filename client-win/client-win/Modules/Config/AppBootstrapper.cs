@@ -357,14 +357,7 @@ public static class AppBootstrapper
 
             // Son de démarrage (si activé dans Options).
 
-            // WPF: MediaPlayer.Open/MediaOpened dépend souvent du message loop.
-            // Planifier le warm-up des sons "connexion" dès que l'UI est réellement prête,
-            // pour éviter une latence perceptible sur la première connexion.
-            _ = dispatcher.BeginInvoke((Action)(() =>
-            {
-                sounds.Preload(Modules.Audio.Models.SoundId.ClientConnected, warmUp: false);
-                sounds.Preload(Modules.Audio.Models.SoundId.ClientDisconnected, warmUp: false);
-            }), DispatcherPriority.Send);
+            // Les sons doivent se lancer uniquement à la demande : pas de préchargement ici.
 
             // Précharge le reste en arrière-plan pour ne pas bloquer le rendu initial.
             // _ = dispatcher.BeginInvoke((Action)(() => sounds.PreloadAll()), DispatcherPriority.Background);

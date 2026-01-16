@@ -248,6 +248,7 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
             {
                 return;
             }
+
             _desiredBackground = background;
             _backgroundRequestedAtTicks = Stopwatch.GetTimestamp();
             shouldTransition = true;
@@ -307,7 +308,6 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
         try
         {
             await _remote.RefreshAsync(force: force, cancellationToken: linked.Token).ConfigureAwait(false);
-            _sounds.PreloadAll();
             if (reapplyBackground)
             {
                 lock (_stateGate)
@@ -344,7 +344,6 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
 
         try
         {
-            _sounds.Preload(SoundId.ClientDisconnected);
             _sounds.Play(SoundId.ClientDisconnected);
         }
         catch
@@ -454,7 +453,6 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
             // Application launch sound is independent of connection state.
             if (playOpened && openedSeq != Volatile.Read(ref _openedSoundPlayedSequence))
             {
-                TryPreload(SoundId.ClientOpened, warmUp: false);
                 TryPlay(SoundId.ClientOpened);
                 lock (_stateGate)
                 {
@@ -519,11 +517,10 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
                     // ignore
                 }
 
-                TryPreload(SoundId.ClientConnected, warmUp: true);
                 TryPlay(SoundId.ClientConnected);
                 lock (_stateGate)
                 {
-                _pendingConnectedSound = 0;
+                    _pendingConnectedSound = 0;
                 }
                 Volatile.Write(ref _connectedSoundPlayedSequence, loginSeq);
 
@@ -590,7 +587,6 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
                 playTavernOpened &&
                 tavernSeq != Volatile.Read(ref _tavernOpenedSoundPlayedSequence))
             {
-                TryPreload(SoundId.TavernOpened);
                 TryPlay(SoundId.TavernOpened);
                 lock (_stateGate)
                 {

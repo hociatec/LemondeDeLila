@@ -95,8 +95,11 @@ public static class ContentHostFocusBehavior
     {
         try
         {
-            // Laisser le temps au DataTemplate de créer et mesurer la vue.
-            host.Dispatcher.BeginInvoke((Action)(() =>
+            // Parking focus: pendant la transition (ancienne vue détruite, nouvelle pas encore prête),
+            // placer le focus sur un élément stable évite que NVDA annonce "indisponible".
+            try { Keyboard.Focus(host); } catch { /* ignore */ }
+
+            void TryFocus()
             {
                 try
                 {
@@ -121,7 +124,11 @@ public static class ContentHostFocusBehavior
                 {
                     // best-effort
                 }
-            }), DispatcherPriority.ApplicationIdle);
+            }
+
+            // Essai rapide dès que la vue est chargée + essai tardif une fois idle.
+            host.Dispatcher.BeginInvoke((Action)TryFocus, DispatcherPriority.Loaded);
+            host.Dispatcher.BeginInvoke((Action)TryFocus, DispatcherPriority.ApplicationIdle);
         }
         catch
         {
