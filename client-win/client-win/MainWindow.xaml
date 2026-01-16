@@ -10,9 +10,9 @@
         Background="#0B1523"
         shellViews:ShellWindowBehavior.Enable="True">
     <ContentControl x:Name="RootHost"
-                    Focusable="True"
-                    KeyboardNavigation.IsTabStop="True"
-                    AutomationProperties.Name="{Binding WindowTitle}"
-                    Content="{Binding CurrentContent}"
-                    shellViews:ContentHostFocusBehavior.Enable="True" />
+                     Focusable="True"
+                     KeyboardNavigation.IsTabStop="False"
+                     AutomationProperties.Name="{Binding WindowTitle, TargetNullValue=Le Monde de Lila, FallbackValue=Le Monde de Lila}"
+                     Content="{Binding CurrentContent}"
+                     shellViews:ContentHostFocusBehavior.Enable="True" />
 </Window>
