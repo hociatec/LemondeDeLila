@@ -109,7 +109,7 @@ export class AdminMnemoQuizWsHandler {
       wrong1: wrong[0] ?? '',
       wrong2: wrong[1] ?? '',
       wrong3: wrong[2] ?? '',
-      status: this.normalizeStatus(dto.status) ?? 'pending',
+      status: this.normalizeStatus(dto.status) ?? 'validated',
     });
     return { type: 'admin.quiz.mnemo.questions', payload: this.buildQuestionsPayload() };
   }

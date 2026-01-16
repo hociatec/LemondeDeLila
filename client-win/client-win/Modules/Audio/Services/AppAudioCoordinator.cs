@@ -417,22 +417,6 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
 
                 try
                 {
-                    using var refreshCts = CancellationTokenSource.CreateLinkedTokenSource(token);
-                    refreshCts.CancelAfter(TimeSpan.FromSeconds(1));
-                    await RefreshRemoteSoundsAsync(force: true, reapplyBackground: false, refreshCts.Token).ConfigureAwait(false);
-                }
-                catch
-                {
-                    // ignore
-                }
-
-                if (token.IsCancellationRequested || version != Volatile.Read(ref _transitionVersion))
-                {
-                    return;
-                }
-
-                try
-                {
                     StopBackgroundLoops();
                     _appliedBackground = AppAudioBackground.None;
                 }
@@ -448,6 +432,20 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
                 _pendingConnectedSound = 0;
                 }
                 Volatile.Write(ref _connectedSoundPlayedSequence, loginSeq);
+
+                // Refresh remote sounds after playing the connected sound to avoid adding latency.
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        using var refreshCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                        await RefreshRemoteSoundsAsync(force: true, reapplyBackground: false, refreshCts.Token).ConfigureAwait(false);
+                    }
+                    catch
+                    {
+                        // ignore
+                    }
+                });
             }
 
             // Background loops are exclusive and should start only after the connection sound (and the initial connect gate).

@@ -167,7 +167,7 @@ public sealed partial class AdminViewModel
         Title = "Quiz (Mnémosyne) - Question";
         var answers = (question.Answers ?? new()).ToArray();
         Details =
-            $"Id: {question.Id}\nStatut: {question.Status}\n\nQ: {question.Question}\n\n" +
+            $"Id: {question.Id}\n\nQ: {question.Question}\n\n" +
             $"R1 (bonne): {(answers.Length > 0 ? answers[0] : string.Empty)}\n" +
             $"R2: {(answers.Length > 1 ? answers[1] : string.Empty)}\n" +
             $"R3: {(answers.Length > 2 ? answers[2] : string.Empty)}\n" +
@@ -178,10 +178,6 @@ public sealed partial class AdminViewModel
         IsSecondaryInputVisible = false;
         Items.Clear();
         Items.Add(new AdminMenuItem("Modifier la question", tag: "mnemo.question.edit"));
-        Items.Add(new AdminMenuItem("Statut : Validée", tag: "mnemo.question.status.validated"));
-        Items.Add(new AdminMenuItem("Statut : En attente", tag: "mnemo.question.status.pending"));
-        Items.Add(new AdminMenuItem("Statut : À modifier", tag: "mnemo.question.status.to_edit"));
-        Items.Add(new AdminMenuItem("Statut : Corbeille", tag: "mnemo.question.status.trash"));
         Items.Add(new AdminMenuItem("Supprimer définitivement", tag: "mnemo.question.delete"));
         Items.Add(new AdminMenuItem("Retour", tag: "mnemo.back"));
         SelectedItem = Items.FirstOrDefault();
@@ -220,25 +216,6 @@ public sealed partial class AdminViewModel
                 label: "5 lignes : Question, Bonne réponse, Mauvaise 1, Mauvaise 2, Mauvaise 3",
                 initialValue: block,
                 mode: "mnemo.question.edit");
-            return;
-        }
-
-        if (action.StartsWith("mnemo.question.status.", StringComparison.OrdinalIgnoreCase))
-        {
-            var status = action["mnemo.question.status.".Length..];
-            IsBusy = true;
-            try
-            {
-                await _admin.UpdateMnemoQuizQuestionAsync(question.Id, status: status).ConfigureAwait(true);
-                if (_selectedMnemoQuizCategory != null)
-                {
-                    await LoadMnemoQuizQuestionsAsync(_selectedMnemoQuizCategory.Id, status: null).ConfigureAwait(true);
-                }
-            }
-            finally
-            {
-                IsBusy = false;
-            }
             return;
         }
 
@@ -455,7 +432,7 @@ public sealed partial class AdminViewModel
             IsBusy = true;
             try
             {
-                await _admin.CreateMnemoQuizQuestionAsync(_selectedMnemoQuizCategory.Id, q, answers, correctIndex: 0, status: "pending").ConfigureAwait(true);
+                await _admin.CreateMnemoQuizQuestionAsync(_selectedMnemoQuizCategory.Id, q, answers, correctIndex: 0, status: "validated").ConfigureAwait(true);
                 await LoadMnemoQuizQuestionsAsync(_selectedMnemoQuizCategory.Id, status: null).ConfigureAwait(true);
             }
             finally

@@ -42,6 +42,9 @@ public sealed class SoundService : ISoundService, IDisposable
     private int _connectedGate;
     private long _connectedAtTicks;
     private int _startupGateOpened;
+    private readonly bool _startupTraceEnabled;
+    private readonly HashSet<string> _startupTraceOnce = new(StringComparer.Ordinal);
+    private long _startupTraceLastLogTicks;
 
     private sealed record PlayRequest(SoundId Sound, SoundEntry Entry, string FilePath);
 
@@ -84,21 +87,16 @@ public sealed class SoundService : ISoundService, IDisposable
         _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
+        // Enable targeted audio tracing at startup (to debug "parasite" sounds).
+        // Set env var `LMDL_AUDIO_STARTUP_TRACE=1` to include limited call stacks.
+        _startupTraceEnabled = string.Equals(
+            Environment.GetEnvironmentVariable("LMDL_AUDIO_STARTUP_TRACE"),
+            "1",
+            StringComparison.OrdinalIgnoreCase);
+
         // Prevent sound spam at startup: allow only the explicit app launch sound until it has finished.
-        // If the launch sound is disabled, don't gate.
-        if (_options.Current.MuteAll || !_options.Current.SoundAppLaunch)
-        {
-            Volatile.Write(ref _startupGateOpened, 1);
-        }
-        else
-        {
-            // Safety fallback: never block audio indefinitely if the startup sound can't play.
-            _ = Task.Run(async () =>
-            {
-                try { await Task.Delay(5000).ConfigureAwait(false); } catch { return; }
-                Volatile.Write(ref _startupGateOpened, 1);
-            });
-        }
+        // Gate is opened when ClientOpened ends/fails, or when ClientOpened can't play (disabled/missing).
+        Volatile.Write(ref _startupGateOpened, 0);
 
         _sounds = new Dictionary<SoundId, SoundEntry>
         {
@@ -283,6 +281,60 @@ public sealed class SoundService : ISoundService, IDisposable
         };
     }
 
+    private bool IsInStartupWindow(long nowTicks)
+    {
+        var sinceStart = nowTicks - _serviceStartTicks;
+        return sinceStart >= 0 && sinceStart < Stopwatch.Frequency * 20;
+    }
+
+    private void TraceStartupOnce(string key, Func<string> messageFactory)
+    {
+        try
+        {
+            var now = Stopwatch.GetTimestamp();
+            if (!IsInStartupWindow(now))
+            {
+                return;
+            }
+
+            lock (_gate)
+            {
+                if (_startupTraceOnce.Contains(key))
+                {
+                    // throttle: re-log at most once per ~2s during startup
+                    if (now - _startupTraceLastLogTicks < Stopwatch.Frequency * 2)
+                    {
+                        return;
+                    }
+                }
+
+                _startupTraceOnce.Add(key);
+                _startupTraceLastLogTicks = now;
+            }
+
+            var msg = messageFactory();
+            _logger.LogWarning("Audio startup trace: {Message}", msg);
+            if (_startupTraceEnabled)
+            {
+                _logger.LogWarning("Audio startup trace stack:\n{Stack}", Environment.StackTrace);
+            }
+        }
+        catch
+        {
+            // ignore
+        }
+    }
+
+    private void OpenStartupGate(string reason)
+    {
+        if (Interlocked.Exchange(ref _startupGateOpened, 1) == 1)
+        {
+            return;
+        }
+
+        TraceStartupOnce("startup.gate.open", () => $"startup gate opened ({reason})");
+    }
+
     public void PreloadAll()
     {
         void PreloadOnUiThread()
@@ -380,6 +432,11 @@ public sealed class SoundService : ISoundService, IDisposable
         }
         if (!entry.IsEnabled())
         {
+            if (sound == SoundId.ClientOpened)
+            {
+                // If the launch sound is disabled, don't block all other sounds forever.
+                OpenStartupGate("ClientOpened disabled in options");
+            }
             return;
         }
 
@@ -387,6 +444,8 @@ public sealed class SoundService : ISoundService, IDisposable
         // This prevents bursts caused by reconnect/history replay and makes the first sound predictable.
         if (Volatile.Read(ref _startupGateOpened) == 0 && sound != SoundId.ClientOpened)
         {
+            TraceStartupOnce($"startup.suppress.{sound}", () =>
+                $"suppressed {sound} because startup gate is closed (waiting for ClientOpened to finish)");
             return;
         }
 
@@ -397,6 +456,8 @@ public sealed class SoundService : ISoundService, IDisposable
         if (Volatile.Read(ref _connectedGate) == 0 &&
             sound != SoundId.ClientOpened)
         {
+            TraceStartupOnce($"startup.suppress.notconnected.{sound}", () =>
+                $"suppressed {sound} because connected gate is closed (not authenticated/connected yet)");
             return;
         }
 
@@ -407,12 +468,18 @@ public sealed class SoundService : ISoundService, IDisposable
             now - connectedAt < JustConnectedSuppressTicks &&
             ShouldSuppressJustAfterConnect(sound))
         {
+            TraceStartupOnce($"startup.suppress.justconnected.{sound}", () =>
+                $"suppressed {sound} because just-connected suppress window is active");
             return;
         }
         var filePath = ResolveFilePath(sound, entry);
         if (!File.Exists(filePath))
         {
             _logger.LogDebug("Sound file missing: {Path}", filePath);
+            if (sound == SoundId.ClientOpened)
+            {
+                OpenStartupGate("ClientOpened file missing");
+            }
             return;
         }
 
@@ -544,7 +611,7 @@ public sealed class SoundService : ISoundService, IDisposable
                     try { player.MediaEnded -= ended; } catch { /* ignore */ }
                     if (request.Sound == SoundId.ClientOpened)
                     {
-                        Volatile.Write(ref _startupGateOpened, 1);
+                        OpenStartupGate("ClientOpened ended");
                     }
                     lock (_gate)
                     {
@@ -771,6 +838,8 @@ public sealed class SoundService : ISoundService, IDisposable
         // At startup, keep the app silent (except ClientOpened one-shot) until the launch sound finishes.
         if (Volatile.Read(ref _startupGateOpened) == 0)
         {
+            TraceStartupOnce($"startup.suppress.loop.{sound}", () =>
+                $"suppressed loop {sound} because startup gate is closed (waiting for ClientOpened to finish)");
             return;
         }
         // Avant connexion: aucune boucle (ambiance/musique) ne doit démarrer.
@@ -1094,7 +1163,7 @@ public sealed class SoundService : ISoundService, IDisposable
             {
                 if (sound == SoundId.ClientOpened)
                 {
-                    Volatile.Write(ref _startupGateOpened, 1);
+                    OpenStartupGate("ClientOpened media failed");
                 }
                 if (_playEndSignals.TryGetValue(sound, out var tcs))
                 {
