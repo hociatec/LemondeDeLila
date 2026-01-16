@@ -1,0 +1,180 @@
+{
+  "updatedAt": "2026-01-16T20:02:21.612Z",
+  "sounds": {
+    "RoomJoined": {
+      "soundId": "RoomJoined",
+      "sha256": "68632f10f5a1c44bf80a66497232bcafe50baf5b78023a56519e53c24e347950",
+      "bytes": 45601,
+      "uploadedAt": "2026-01-01T17:01:28.017Z",
+      "url": "/api/sounds/RoomJoined/68632f10f5a1c44bf80a66497232bcafe50baf5b78023a56519e53c24e347950.mp3"
+    },
+    "RoomOpened": {
+      "soundId": "RoomOpened",
+      "sha256": "1feff512a8624b2273341c45e09dfdf1b30ec59288ad32d97c96c88196260bea",
+      "bytes": 101608,
+      "uploadedAt": "2026-01-01T17:04:02.687Z",
+      "url": "/api/sounds/RoomOpened/1feff512a8624b2273341c45e09dfdf1b30ec59288ad32d97c96c88196260bea.mp3"
+    },
+    "RoomExit": {
+      "soundId": "RoomExit",
+      "sha256": "0615fb27f0e1a5632357ce0a9d03d501ed052bbf5f7a940ee073f891df2e8ef4",
+      "bytes": 95338,
+      "uploadedAt": "2026-01-01T17:03:46.367Z",
+      "url": "/api/sounds/RoomExit/0615fb27f0e1a5632357ce0a9d03d501ed052bbf5f7a940ee073f891df2e8ef4.mp3"
+    },
+    "InvitationSent": {
+      "soundId": "InvitationSent",
+      "sha256": "84683a088c4844c61a1e3a4cfcb75ce0612ac9046dc116752d3f9582b2f3cad4",
+      "bytes": 12164,
+      "uploadedAt": "2026-01-03T00:32:25.039Z",
+      "url": "/api/sounds/InvitationSent/84683a088c4844c61a1e3a4cfcb75ce0612ac9046dc116752d3f9582b2f3cad4.mp3"
+    },
+    "PrivateMessageReceived": {
+      "soundId": "PrivateMessageReceived",
+      "sha256": "18f58d0a5febfde2305749e1a067839f3f9e0b4dc576c0b504bd83fbf17d00ef",
+      "bytes": 25957,
+      "uploadedAt": "2026-01-01T17:48:16.510Z",
+      "url": "/api/sounds/PrivateMessageReceived/18f58d0a5febfde2305749e1a067839f3f9e0b4dc576c0b504bd83fbf17d00ef.mp3"
+    },
+    "ChatMessageReceived": {
+      "soundId": "ChatMessageReceived",
+      "sha256": "434c60112973cc964ac0dcdda405373b5dc2ce9f26715022ecd892976d4c5ed8",
+      "bytes": 42675,
+      "uploadedAt": "2026-01-01T18:05:11.308Z",
+      "url": "/api/sounds/ChatMessageReceived/434c60112973cc964ac0dcdda405373b5dc2ce9f26715022ecd892976d4c5ed8.mp3"
+    },
+    "ChatMessageSent": {
+      "soundId": "ChatMessageSent",
+      "sha256": "96a7cad32a242a746b7e432d157f39c9e4dc162650192295f99094a176a18bf2",
+      "bytes": 27629,
+      "uploadedAt": "2026-01-02T14:08:18.299Z",
+      "url": "/api/sounds/ChatMessageSent/96a7cad32a242a746b7e432d157f39c9e4dc162650192295f99094a176a18bf2.mp3"
+    },
+    "PrivateMessageSent": {
+      "soundId": "PrivateMessageSent",
+      "sha256": "8e03df1dcf2836708fa9ba5011ece014ce4d2f9d6db65d8ed01d4f743edabec2",
+      "bytes": 18434,
+      "uploadedAt": "2026-01-01T18:06:50.070Z",
+      "url": "/api/sounds/PrivateMessageSent/8e03df1dcf2836708fa9ba5011ece014ce4d2f9d6db65d8ed01d4f743edabec2.mp3"
+    },
+    "MainMenuMusic": {
+      "soundId": "MainMenuMusic",
+      "sha256": "d1389c47ecaab8049dd4643c1f631cabb043339e5c5a9e84f9b42297e6494ce2",
+      "bytes": 1354401,
+      "uploadedAt": "2026-01-13T06:06:04.537Z",
+      "url": "/api/sounds/MainMenuMusic/d1389c47ecaab8049dd4643c1f631cabb043339e5c5a9e84f9b42297e6494ce2.mp3"
+    },
+    "ClientConnected": {
+      "soundId": "ClientConnected",
+      "sha256": "13f4f6a86382a2220aac83c276e10163457df956f89c3c588147e736abac39fc",
+      "bytes": 20106,
+      "uploadedAt": "2026-01-16T18:31:17.447Z",
+      "url": "/api/sounds/ClientConnected/13f4f6a86382a2220aac83c276e10163457df956f89c3c588147e736abac39fc.mp3"
+    },
+    "TavernAmbience": {
+      "soundId": "TavernAmbience",
+      "sha256": "cc52f2ac678345c97d70256fa19b7ac89c6a7ebaa7af49f27f901bbdf1be51f6",
+      "bytes": 750720,
+      "uploadedAt": "2026-01-02T12:30:09.311Z",
+      "url": "/api/sounds/TavernAmbience/cc52f2ac678345c97d70256fa19b7ac89c6a7ebaa7af49f27f901bbdf1be51f6.mp3"
+    },
+    "ClientOpened": {
+      "soundId": "ClientOpened",
+      "sha256": "c78ef6e60669fcf623fa49cde9a2d381c229f52736056f1d4ae500554a3ee218",
+      "bytes": 192000,
+      "uploadedAt": "2026-01-16T20:02:21.610Z",
+      "url": "/api/sounds/ClientOpened/c78ef6e60669fcf623fa49cde9a2d381c229f52736056f1d4ae500554a3ee218.mp3"
+    },
+    "ClientDisconnected": {
+      "soundId": "ClientDisconnected",
+      "sha256": "b87418710c0bb62ad8b45da60dc58279525ea48d0a1f479b8fa6de94dff52fbd",
+      "bytes": 77568,
+      "uploadedAt": "2026-01-16T18:31:33.703Z",
+      "url": "/api/sounds/ClientDisconnected/b87418710c0bb62ad8b45da60dc58279525ea48d0a1f479b8fa6de94dff52fbd.mp3"
+    },
+    "FriendInvitationSent": {
+      "soundId": "FriendInvitationSent",
+      "sha256": "e806f00dada362f53c9d4b9e703f10041c42ffee123adff42f07fc27fffef567",
+      "bytes": 9239,
+      "uploadedAt": "2026-01-14T11:53:09.581Z",
+      "url": "/api/sounds/FriendInvitationSent/e806f00dada362f53c9d4b9e703f10041c42ffee123adff42f07fc27fffef567.mp3"
+    },
+    "GameDefeat": {
+      "soundId": "GameDefeat",
+      "sha256": "03991bab5f0b070e1b0f995ade6c86bc63f37fda1a9e3142854c3960a63cbb8d",
+      "bytes": 41795,
+      "uploadedAt": "2026-01-11T16:17:09.435Z",
+      "url": "/api/sounds/GameDefeat/03991bab5f0b070e1b0f995ade6c86bc63f37fda1a9e3142854c3960a63cbb8d.mp3"
+    },
+    "GameVictory": {
+      "soundId": "GameVictory",
+      "sha256": "567ecc62e18d5885346f6ad0a87713f3ecbc59e4c3576c6d317b3e28fbcdb058",
+      "bytes": 275839,
+      "uploadedAt": "2026-01-14T16:13:37.164Z",
+      "url": "/api/sounds/GameVictory/567ecc62e18d5885346f6ad0a87713f3ecbc59e4c3576c6d317b3e28fbcdb058.mp3"
+    },
+    "FriendConnected": {
+      "soundId": "FriendConnected",
+      "sha256": "27761ab253be9d1dcc9f3d738f25a956fbe0b6854c0a86c064fa39551ae98886",
+      "bytes": 18286,
+      "uploadedAt": "2026-01-03T00:34:52.871Z",
+      "url": "/api/sounds/FriendConnected/27761ab253be9d1dcc9f3d738f25a956fbe0b6854c0a86c064fa39551ae98886.mp3"
+    },
+    "FriendDisconnected": {
+      "soundId": "FriendDisconnected",
+      "sha256": "4085d1f2539f08bcce59b7cb27ff2d265f1a64679ad349a10ce0de11f897fd03",
+      "bytes": 81231,
+      "uploadedAt": "2026-01-15T00:45:17.554Z",
+      "url": "/api/sounds/FriendDisconnected/4085d1f2539f08bcce59b7cb27ff2d265f1a64679ad349a10ce0de11f897fd03.mp3"
+    },
+    "AdminContactReceived": {
+      "soundId": "AdminContactReceived",
+      "sha256": "3746df71d915eeac5a2e412f087bed56f7f07440c8abfe23cd5d88c9e021a7ef",
+      "bytes": 71946,
+      "uploadedAt": "2026-01-09T22:39:21.284Z",
+      "url": "/api/sounds/AdminContactReceived/3746df71d915eeac5a2e412f087bed56f7f07440c8abfe23cd5d88c9e021a7ef.mp3"
+    },
+    "AdminContactSent": {
+      "soundId": "AdminContactSent",
+      "sha256": "5dd4a9ce4b59e66604a46fb43e06f567691fdf5e746093182359fa4c7661206b",
+      "bytes": 34764,
+      "uploadedAt": "2026-01-09T22:39:45.859Z",
+      "url": "/api/sounds/AdminContactSent/5dd4a9ce4b59e66604a46fb43e06f567691fdf5e746093182359fa4c7661206b.mp3"
+    },
+    "TavernOpened": {
+      "soundId": "TavernOpened",
+      "sha256": "ac6c0fe16d2854e4d7904f2d693b0c27cd4c44de26a7cd1e1d8102604a754066",
+      "bytes": 199784,
+      "uploadedAt": "2026-01-12T07:58:56.013Z",
+      "url": "/api/sounds/TavernOpened/ac6c0fe16d2854e4d7904f2d693b0c27cd4c44de26a7cd1e1d8102604a754066.mp3"
+    },
+    "DiceRolled": {
+      "soundId": "DiceRolled",
+      "sha256": "6a3d37146a9e0a116dc2c8a6663fe9a35c91642d2775eab239ceecdf065688e1",
+      "bytes": 44544,
+      "uploadedAt": "2026-01-12T07:59:13.400Z",
+      "url": "/api/sounds/DiceRolled/6a3d37146a9e0a116dc2c8a6663fe9a35c91642d2775eab239ceecdf065688e1.mp3"
+    },
+    "FriendInvitationReceived": {
+      "soundId": "FriendInvitationReceived",
+      "sha256": "87b13c8cd1b245e1ba5a1406cdf1bdc99be20eed87bf47f9665607a513e1b883",
+      "bytes": 28896,
+      "uploadedAt": "2026-01-14T11:51:36.755Z",
+      "url": "/api/sounds/FriendInvitationReceived/87b13c8cd1b245e1ba5a1406cdf1bdc99be20eed87bf47f9665607a513e1b883.mp3"
+    },
+    "TableChatMessageSent": {
+      "soundId": "TableChatMessageSent",
+      "sha256": "af1ff75c4231a51f56469cdec1a52344d1090cb1c6808931bf6166d9341dc2ff",
+      "bytes": 36096,
+      "uploadedAt": "2026-01-16T12:46:30.011Z",
+      "url": "/api/sounds/TableChatMessageSent/af1ff75c4231a51f56469cdec1a52344d1090cb1c6808931bf6166d9341dc2ff.mp3"
+    },
+    "TableChatMessageReceived": {
+      "soundId": "TableChatMessageReceived",
+      "sha256": "5c94bbf6d61867b1fcdfabc17145e8bb59e8798fc9ba1a5657ef842fcb35f0b7",
+      "bytes": 53960,
+      "uploadedAt": "2026-01-16T12:46:49.718Z",
+      "url": "/api/sounds/TableChatMessageReceived/5c94bbf6d61867b1fcdfabc17145e8bb59e8798fc9ba1a5657ef842fcb35f0b7.mp3"
+    }
+  }
+}
