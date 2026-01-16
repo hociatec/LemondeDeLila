@@ -7,6 +7,7 @@ namespace client_win.Modules.Audio.Services;
 public interface ISoundService
 {
     void Play(SoundId sound);
+    void Stop(SoundId sound);
     void PlayPreview(SoundId sound);
     void StopPreview();
     void SetConnected(bool connected);

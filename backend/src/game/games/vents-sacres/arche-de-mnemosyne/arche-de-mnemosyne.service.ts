@@ -545,6 +545,16 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
     const remaining = pool.filter((q) => !used.has(q.id));
     const pickFrom = remaining.length ? remaining : pool;
     const picked = pickFrom[Math.floor(Math.random() * pickFrom.length)];
+
+    // Auto-"validate" questions that are played (legacy data may still be pending/to_edit).
+    // This ensures the game doesn't get stuck on "validated only" semantics and matches the simplified admin UX.
+    try {
+      if (picked.status !== 'validated') {
+        this.store.updateQuestion(picked.id, { status: 'validated' });
+      }
+    } catch {
+      // ignore (best-effort)
+    }
     const choices = shuffle([picked.correct, picked.wrong1, picked.wrong2, picked.wrong3].map((s) => String(s ?? '').trim()));
     const currentQuestion = {
       id: picked.id,

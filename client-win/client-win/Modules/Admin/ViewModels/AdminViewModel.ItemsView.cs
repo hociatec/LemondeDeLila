@@ -1,4 +1,5 @@
 using System.Windows.Data;
+using Serilog;
 
 namespace client_win.Modules.Admin.ViewModels;
 
@@ -24,6 +25,10 @@ public sealed partial class AdminViewModel
             ThirdInput = string.Empty;
             FourthInput = string.Empty;
             FifthInput = string.Empty;
+        }
+        else
+        {
+            try { Log.Information("Admin: ConfigureItemsViewForPage skip reset (EditText)"); } catch { /* ignore */ }
         }
 
         using (ItemsView.DeferRefresh())

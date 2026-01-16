@@ -47,8 +47,21 @@ public partial class GamePlayView
         }
 
         var delta = e.Key == Key.Up ? -1 : 1;
-        var next = (current + delta) % count;
-        if (next < 0) next += count;
+
+        int next;
+        if (DataContext is GamePlayViewModel vm2 && vm2.IsQuizPending)
+        {
+            // Quiz: no wrap-around (top/bottom should be blocked).
+            next = current + delta;
+            if (next < 0) next = 0;
+            if (next >= count) next = count - 1;
+        }
+        else
+        {
+            // Other modes (ex: LAMA hand): keep wrap behavior.
+            next = (current + delta) % count;
+            if (next < 0) next += count;
+        }
 
         ChoicesList.SelectedIndex = next;
         ChoicesList.ScrollIntoView(ChoicesList.SelectedItem);

@@ -550,6 +550,59 @@ public sealed class SoundService : ISoundService, IDisposable
         EnqueuePlayback(new PlayRequest(sound, entry, filePath));
     }
 
+    public void Stop(SoundId sound)
+    {
+        void StopOnAudioThread()
+        {
+            try
+            {
+                MediaPlayer? player = null;
+                TaskCompletionSource<bool>? tcs = null;
+
+                lock (_gate)
+                {
+                    _playEndSignals.TryGetValue(sound, out tcs);
+                    _playEndSignals.Remove(sound);
+
+                    if (_players.TryGetValue(sound, out var p))
+                    {
+                        player = p;
+                        _players.Remove(sound);
+                    }
+
+                    _loadedPaths.Remove(sound);
+                    _opened.Remove(sound);
+                }
+
+                try { tcs?.TrySetResult(true); } catch { /* ignore */ }
+
+                if (player != null)
+                {
+                    try { player.Stop(); } catch { /* ignore */ }
+                    try { player.Close(); } catch { /* ignore */ }
+                }
+
+                if (sound == SoundId.ClientOpened)
+                {
+                    OpenStartupGate("ClientOpened stopped");
+                }
+            }
+            catch
+            {
+                // ignore
+            }
+        }
+
+        if (_dispatcher.CheckAccess())
+        {
+            StopOnAudioThread();
+        }
+        else
+        {
+            _ = _dispatcher.BeginInvoke((Action)StopOnAudioThread, DispatcherPriority.Send);
+        }
+    }
+
     private void EnqueuePlayback(PlayRequest request)
     {
         void PlayOnUiThread()

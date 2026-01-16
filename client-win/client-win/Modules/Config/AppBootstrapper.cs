@@ -371,7 +371,7 @@ public static class AppBootstrapper
             }), DispatcherPriority.Send);
 
             // Précharge le reste en arrière-plan pour ne pas bloquer le rendu initial.
-            _ = dispatcher.BeginInvoke((Action)(() => sounds.PreloadAll()), DispatcherPriority.Background);
+            // _ = dispatcher.BeginInvoke((Action)(() => sounds.PreloadAll()), DispatcherPriority.Background);
 
             // Sons de connexion/déconnexion au WS API (si activé).
             var ws = provider.GetRequiredService<PersistentWsClient>();

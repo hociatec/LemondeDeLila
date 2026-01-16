@@ -94,6 +94,19 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
         {
             RequestTransition();
         }
+
+        // If the user connects quickly, cut the launch sound immediately so the connection sound
+        // can play without waiting for the startup gate.
+        try
+        {
+            _logger.LogInformation("Audio: login succeeded, stopping ClientOpened for immediate ClientConnected");
+            _sounds.Stop(SoundId.ClientOpened);
+        }
+        catch
+        {
+            // ignore
+        }
+
         _ = WarmRefreshAfterLoginAsync();
     }
 
@@ -409,11 +422,9 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
             // Login succeeded: refresh remote sounds quickly so the "connected" sound can use the admin override.
             if (playConnected && loginSeq != Volatile.Read(ref _connectedSoundPlayedSequence))
             {
-                await WaitForSoundOrCancelAsync(SoundId.ClientOpened, TimeSpan.FromSeconds(2), token).ConfigureAwait(false);
-                if (token.IsCancellationRequested || version != Volatile.Read(ref _transitionVersion))
-                {
-                    return;
-                }
+                // Keep the "one sound at a time" rule: stop the launch sound if it is still playing,
+                // then play the connected sound immediately (reduces perceived latency).
+                try { _sounds.Stop(SoundId.ClientOpened); } catch { /* ignore */ }
 
                 try
                 {
@@ -457,6 +468,13 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
             }
 
             await WaitForConnectStabilizationAsync(connectedAtTicks, token).ConfigureAwait(false);
+            if (token.IsCancellationRequested || version != Volatile.Read(ref _transitionVersion))
+            {
+                return;
+            }
+
+            // Music/ambience should start after the connection one-shot (no overlap).
+            await WaitForSoundOrCancelAsync(SoundId.ClientConnected, TimeSpan.FromSeconds(6), token).ConfigureAwait(false);
             if (token.IsCancellationRequested || version != Volatile.Read(ref _transitionVersion))
             {
                 return;

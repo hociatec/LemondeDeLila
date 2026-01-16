@@ -62,6 +62,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
     private string _actionsText = string.Empty;
     private string _boardText = string.Empty;
     private bool _isBotThinking;
+    private string _pendingType = string.Empty;
 
     public string GameId { get; }
 
@@ -184,6 +185,24 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
 
     public bool HasPendingTextPrompt => _pendingTextPrompt != null;
     public bool HasPendingConfigPrompt => _pendingConfigPrompt != null;
+
+    public string PendingType
+    {
+        get => _pendingType;
+        private set
+        {
+            if (string.Equals(_pendingType, value, StringComparison.Ordinal))
+            {
+                return;
+            }
+            _pendingType = value ?? string.Empty;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(IsQuizPending));
+        }
+    }
+
+    public bool IsQuizPending =>
+        string.Equals((_pendingType ?? string.Empty).Trim(), "quiz", StringComparison.OrdinalIgnoreCase);
 
     public async Task<bool> TryOpenPendingTextPromptAsync(CancellationToken cancellationToken = default)
     {
@@ -402,6 +421,8 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
 
         _dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
         {
+            PendingType = (state.Pending?.Type ?? string.Empty).Trim();
+
             UpdatePendingTextPrompt(state);
             OnPropertyChanged(nameof(HasPendingTextPrompt));
             UpdatePendingConfigPrompt(state);

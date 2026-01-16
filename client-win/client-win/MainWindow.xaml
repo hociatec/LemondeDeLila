@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:home="clr-namespace:client_win.Modules.Home.Views"
         mc:Ignorable="d"
-        Title="Le Monde de Lila" Height="720" Width="1280"
+        Title="{Binding WindowTitle}" Height="720" Width="1280"
         WindowStartupLocation="CenterScreen"
         Background="#0B1523">
     <ContentControl x:Name="RootHost" Focusable="False" />

@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using client_win.Modules.Admin.Dtos;
+using Serilog;
 
 namespace client_win.Modules.Admin.ViewModels;
 
@@ -305,6 +306,22 @@ public sealed partial class AdminViewModel
         Status = "Saisissez puis Entrée pour valider. Échap : retour.";
         _currentEditMode = mode;
         RestoreFocusIfAny();
+
+        try
+        {
+            Log.Information(
+                "MnemoQuiz: question form fields primary={Primary} secondary={Secondary} third={Third} fourth={Fourth} fifth={Fifth} mode={Mode}",
+                IsTextInputVisible,
+                IsSecondaryInputVisible,
+                IsThirdInputVisible,
+                IsFourthInputVisible,
+                IsFifthInputVisible,
+                mode);
+        }
+        catch
+        {
+            // ignore
+        }
     }
 
     private void BuildMnemoQuizQuestionForm(
