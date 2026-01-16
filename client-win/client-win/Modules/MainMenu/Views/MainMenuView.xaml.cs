@@ -43,6 +43,11 @@ public partial class MainMenuView : UserControl
         {
             return;
         }
+        if (e.IsRepeat)
+        {
+            e.Handled = true;
+            return;
+        }
         if (DataContext is not MainMenuViewModel vm)
         {
             return;
@@ -55,7 +60,8 @@ public partial class MainMenuView : UserControl
         var dispatcher = Dispatcher;
         var window = Window.GetWindow(this) ?? Application.Current?.MainWindow;
         IInputElement? rootHost = null;
-        try { rootHost = window?.FindName("RootHost") as IInputElement; } catch { /* ignore */ }
+        try { rootHost = window?.FindName("FocusParking") as IInputElement; } catch { /* ignore */ }
+        try { rootHost ??= window?.FindName("RootHost") as IInputElement; } catch { /* ignore */ }
         rootHost ??= window;
 
         // Essai immédiat : si le focus reste sur le ListBoxItem, NVDA peut annoncer l'élément
@@ -84,10 +90,11 @@ public partial class MainMenuView : UserControl
             }
         }));
 
-        _ = dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(async () =>
+        _ = dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(async () =>
         {
             try
             {
+                await dispatcher.InvokeAsync(() => { }, DispatcherPriority.Background);
                 await vm.ActivateCommand.ExecuteAsync(null).ConfigureAwait(true);
 
                 // Si l'action n'a pas déclenché de navigation (ex: action locale), restaurer le focus sur le menu.

@@ -97,8 +97,9 @@ public static class ContentHostFocusBehavior
         {
             // Parking focus: placer le focus sur un élément stable (le host) pendant la transition,
             // pour éviter que NVDA tente d'annoncer un élément qui vient d'être détruit.
-            try { host.Focus(); } catch { /* ignore */ }
-            try { Keyboard.Focus(host); } catch { /* ignore */ }
+            var parking = TryFindParkingElement(host) ?? host;
+            try { (parking as UIElement)?.Focus(); } catch { /* ignore */ }
+            try { Keyboard.Focus(parking); } catch { /* ignore */ }
 
             void TryFocus()
             {
@@ -135,6 +136,29 @@ public static class ContentHostFocusBehavior
         {
             // best-effort
         }
+    }
+
+    private static IInputElement? TryFindParkingElement(ContentControl host)
+    {
+        try
+        {
+            var window = Window.GetWindow(host);
+            if (window == null)
+            {
+                return null;
+            }
+
+            if (window.FindName("FocusParking") is IInputElement parking)
+            {
+                return parking;
+            }
+        }
+        catch
+        {
+            // ignore
+        }
+
+        return null;
     }
 
     private static DependencyObject? FindFirstFocusable(DependencyObject root)

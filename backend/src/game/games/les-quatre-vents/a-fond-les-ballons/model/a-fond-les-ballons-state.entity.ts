@@ -12,11 +12,18 @@ export type AFondLesBallonsTileType =
 export type AFondLesBallonsTile = {
   type: AFondLesBallonsTileType;
   label: string;
+  description?: string;
 };
 
 export type AFondLesBallonsCard = {
   id: number;
   text: string;
+};
+
+export type AFondLesBallonsCharacter = {
+  id: string;
+  name: string;
+  description: string;
 };
 
 export type AFondLesBallonsPendingSwap = {
@@ -31,8 +38,10 @@ export type AFondLesBallonsPendingSwap = {
 };
 
 export type AFondLesBallonsMetadata = {
+  rng?: Record<string, any>;
   tiles: AFondLesBallonsTile[];
   positions: Record<number, number>;
+  charactersByPlayerId: Record<number, AFondLesBallonsCharacter>;
   statuses: {
     skipTurn: Record<number, number>;
     trapImmunityTurns: Record<number, number>;

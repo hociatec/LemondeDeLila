@@ -3,6 +3,7 @@
 **/obj/
 **/dist/
 **/publish/
+**/node_modules/
 
 # Local env
 backend/.env

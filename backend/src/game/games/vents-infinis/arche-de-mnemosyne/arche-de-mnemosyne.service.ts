@@ -8,6 +8,7 @@ import type { GameRulesAdapter } from '../../../engine/interfaces/game-rules-ada
 import { GameRegistryService } from '../../../engine/services/game-registry.service';
 import { GameCoreService } from '../../../core/services/game-core.service';
 import { TurnFlowService } from '../../../modules/turn/services/turn-flow.service';
+import { RandomService } from '../../../modules/random/services/random.service';
 import { MnemoQuizStoreService } from './store/mnemo-quiz-store.service';
 import type {
   MnemoAdminPage,
@@ -21,6 +22,7 @@ type ActionType =
   | 'mnemo_start'
   | 'mnemo_open_admin'
   | 'mnemo_back'
+  | 'mnemo_open_all_questions'
   | 'mnemo_open_add_category'
   | 'mnemo_add_category'
   | 'mnemo_open_rename_category'
@@ -37,16 +39,10 @@ type ActionType =
   | 'mnemo_open_config'
   | 'mnemo_set_config'
   | 'mnemo_prompt_cancel'
+  | 'mnemo_timeout'
   | 'answer_quiz';
 
-function shuffle<T>(items: T[]): T[] {
-  const out = [...items];
-  for (let i = out.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [out[i], out[j]] = [out[j], out[i]];
-  }
-  return out;
-}
+const QUIZ_TIMEOUT_PENALTY = -1;
 
 @Injectable()
 export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
@@ -65,6 +61,7 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
     private readonly core: GameCoreService,
     private readonly turns: TurnFlowService,
     private readonly store: MnemoQuizStoreService,
+    private readonly random: RandomService,
   ) {}
 
   onModuleInit(): void {
@@ -82,6 +79,7 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
     };
 
     const meta: MnemoQuizMetadata = {
+      rng: typeof baseState.metadata === 'object' && baseState.metadata ? (baseState.metadata as any).rng : undefined,
       config,
       selectedCategoryId: null,
       scoresByPlayerId: Object.fromEntries(
@@ -90,6 +88,7 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
       usedQuestionIds: [],
       currentQuestion: null,
       quizAnswersByPlayerId: {},
+      quizDeadlineAtMs: null,
       adminView: { page: 'setup' },
       prompt: null,
       winnerId: null,
@@ -127,6 +126,15 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
       throw new Error('Action invalide');
     }
     const meta = this.getMeta(state);
+    const actor = String((action as any)?.meta?.actor ?? '').trim().toLowerCase();
+    const isSystem = actor === 'system';
+
+    if (type === 'mnemo_timeout') {
+      if (!isSystem) {
+        throw new Error('Action invalide.');
+      }
+      return { ...action, type, payload: action.payload ?? {} };
+    }
 
     if (type === 'answer_quiz') {
       if (actorId == null) {
@@ -138,6 +146,13 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
       }
       if (!meta.currentQuestion) {
         throw new Error('Aucune question en cours.');
+      }
+      const deadline =
+        typeof (meta as any).quizDeadlineAtMs === 'number'
+          ? (meta as any).quizDeadlineAtMs
+          : null;
+      if (deadline != null && Date.now() > deadline) {
+        throw new Error('Trop tard.');
       }
       if ((meta.quizAnswersByPlayerId as any)?.[actorId] != null) {
         throw new Error('Vous avez déjà répondu.');
@@ -151,7 +166,7 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
 
     // Admin: réservé à Lila.
     if (type.startsWith('mnemo_') && type !== 'mnemo_start') {
-      if (!this.isAdmin(state, actorId)) {
+      if (!isSystem && !this.isAdmin(state, actorId)) {
         throw new Error('Action réservée à Lila.');
       }
     }
@@ -207,6 +222,21 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
     const type = String(action?.type ?? '').trim() as ActionType;
     const payload: any = action.payload ?? {};
     const meta = this.getMeta(state);
+
+    if (type === 'mnemo_timeout') {
+      const q = meta.currentQuestion;
+      const deadline = typeof (meta as any).quizDeadlineAtMs === 'number' ? (meta as any).quizDeadlineAtMs : null;
+      if (!q || deadline == null) return state;
+      if (Date.now() < deadline) return state;
+
+      const players = Array.isArray(state.players) ? state.players : [];
+      const playerIds = players
+        .map((p: any) => Number(p?.id))
+        .filter((id: number) => Number.isFinite(id));
+      const answers = (meta.quizAnswersByPlayerId ?? {}) as any as Record<number, number>;
+      const timedOutIds = playerIds.filter((id) => answers[id] == null);
+      return this.resolveQuizIfReady(state, true, timedOutIds);
+    }
 
     if (type === 'mnemo_prompt_cancel') {
       return { ...state, metadata: { ...meta, prompt: null } };
@@ -264,6 +294,15 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
 
     if (type === 'mnemo_open_admin') {
       return { ...state, metadata: { ...meta, adminView: { page: 'categories' }, prompt: null } };
+    }
+
+    if (type === 'mnemo_open_all_questions') {
+      const raw = String(payload.status ?? 'all').trim();
+      const status =
+        raw === 'validated' || raw === 'pending' || raw === 'to_edit' || raw === 'trash'
+          ? (raw as any)
+          : 'all';
+      return { ...state, metadata: { ...meta, adminView: { page: 'all_questions', status }, prompt: null } };
     }
 
     if (type === 'mnemo_back') {
@@ -539,7 +578,11 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
     return state;
   }
 
-  private resolveQuizIfReady(state: GameStateEntity): GameStateEntity {
+  private resolveQuizIfReady(
+    state: GameStateEntity,
+    force = false,
+    timedOutPlayerIds: number[] = [],
+  ): GameStateEntity {
     const meta = this.getMeta(state);
     const q = meta.currentQuestion;
     if (!q) return state;
@@ -551,7 +594,8 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
     if (!playerIds.length) return state;
 
     const answers = (meta.quizAnswersByPlayerId ?? {}) as any as Record<number, number>;
-    if (!playerIds.every((id) => answers[id] != null)) {
+    const allAnswered = playerIds.every((id) => answers[id] != null);
+    if (!force && !allAnswered) {
       return state;
     }
 
@@ -579,11 +623,28 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
       next = this.core.appendLog(next, `Plusieurs bonnes reponses (${labels}) : +1 point chacun.`);
     }
 
+    if (force) {
+      const timedOut = (Array.isArray(timedOutPlayerIds) ? timedOutPlayerIds : [])
+        .map((id) => Number(id))
+        .filter((id) => Number.isFinite(id));
+      const unique = [...new Set(timedOut)]
+        .filter((id) => playerIds.includes(id))
+        .filter((id) => answers[id] == null);
+      if (unique.length) {
+        for (const id of unique) {
+          nextScores[id] = (nextScores[id] ?? 0) + QUIZ_TIMEOUT_PENALTY;
+        }
+        const labels = unique.map((id) => this.playerName(next, id)).join(', ');
+        next = this.core.appendLog(next, `Temps ecoule: ${labels} perd ${QUIZ_TIMEOUT_PENALTY} point.`);
+      }
+    }
+
     const afterMeta: MnemoQuizMetadata = {
       ...meta,
       scoresByPlayerId: nextScores,
       currentQuestion: null,
       quizAnswersByPlayerId: {},
+      quizDeadlineAtMs: null,
     };
 
     const target = afterMeta.config?.targetPoints ?? 20;
@@ -647,7 +708,9 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
     const used = new Set(meta.usedQuestionIds ?? []);
     const remaining = pool.filter((q) => !used.has(q.id));
     const pickFrom = remaining.length ? remaining : pool;
-    const picked = pickFrom[Math.floor(Math.random() * pickFrom.length)];
+    const pick = this.random.pickIndex(meta as any, pickFrom.length);
+    const picked = pickFrom[pick.index]!;
+    let rngMeta = pick.meta as any as MnemoQuizMetadata;
 
     // Auto-"validate" questions that are played (legacy data may still be pending/to_edit).
     // This ensures the game doesn't get stuck on "validated only" semantics and matches the simplified admin UX.
@@ -658,7 +721,10 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
     } catch {
       // ignore (best-effort)
     }
-    const choices = shuffle([picked.correct, picked.wrong1, picked.wrong2, picked.wrong3].map((s) => String(s ?? '').trim()));
+    const rawChoices = [picked.correct, picked.wrong1, picked.wrong2, picked.wrong3].map((s) => String(s ?? '').trim());
+    const shuffled = this.random.shuffle(rngMeta as any, rawChoices);
+    rngMeta = shuffled.meta as any;
+    const choices = shuffled.values;
     const currentQuestion = {
       id: picked.id,
       categoryId: picked.categoryId,
@@ -671,13 +737,18 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
       ? [...used, picked.id]
       : [picked.id];
 
+    const timerSeconds = Number(rngMeta.config?.timerSeconds ?? 30);
+    const useTimer = Boolean(rngMeta.config?.useTimer);
+    const quizDeadlineAtMs = useTimer ? Date.now() + Math.max(1, timerSeconds) * 1000 : null;
+
     return {
       ...state,
       metadata: {
-        ...meta,
+        ...rngMeta,
         usedQuestionIds: nextUsed,
         currentQuestion,
         quizAnswersByPlayerId: {},
+        quizDeadlineAtMs,
       },
     };
   }
@@ -727,6 +798,7 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
         playerId: userId,
         question: meta.currentQuestion.question,
         choices: meta.currentQuestion.choices,
+        deadlineAtMs: typeof (meta as any).quizDeadlineAtMs === 'number' ? (meta as any).quizDeadlineAtMs : null,
       };
     }
 
@@ -766,6 +838,7 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
     if (view.page === 'categories') {
       const categories = this.store.listCategories();
       const choices = [
+        'Voir toutes les questions',
         ...categories.map((c) => `Catégorie: ${c.name}`),
         'Ajouter une catégorie',
         'Retour',
@@ -773,6 +846,37 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
       return {
         type: 'mnemo_admin',
         label: 'Administration - Catégories',
+        playerId: userId,
+        choices,
+      };
+    }
+    if (view.page === 'all_questions') {
+      const categories = this.store.listCategories();
+      const categoryNameById = Object.fromEntries(categories.map((c) => [c.id, c.name]));
+      const statusFilter = (view as any).status ?? 'all';
+      const all = this.store.listQuestions();
+      const list =
+        statusFilter === 'all'
+          ? all
+          : all.filter((q) => String(q.status ?? 'pending') === String(statusFilter));
+
+      const choices = [
+        ...list.map((q) => {
+          const cat = categoryNameById[q.categoryId] ?? q.categoryId;
+          const status = String(q.status ?? 'pending');
+          return `[${status}] ${cat}: ${this.compactQuestionLabel(q.question)}`;
+        }),
+        'Filtrer: toutes',
+        'Filtrer: validated',
+        'Filtrer: pending',
+        'Filtrer: to_edit',
+        'Filtrer: trash',
+        'Retour',
+      ];
+
+      return {
+        type: 'mnemo_admin',
+        label: `Administration - Questions (${statusFilter})`,
         playerId: userId,
         choices,
       };
@@ -868,11 +972,35 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
 
     const view = meta.adminView;
     if (view.page === 'categories') {
+      actions.push({ type: 'mnemo_open_all_questions', payload: { status: 'all' } });
       const categories = this.store.listCategories();
       for (const c of categories) {
         actions.push({ type: 'mnemo_open_category', payload: { categoryId: c.id } });
       }
       actions.push({ type: 'mnemo_open_add_category', payload: {} });
+      actions.push({ type: 'mnemo_back', payload: {} });
+      return actions;
+    }
+
+    if (view.page === 'all_questions') {
+      const statusFilter = (view as any).status ?? 'all';
+      const all = this.store.listQuestions();
+      const list =
+        statusFilter === 'all'
+          ? all
+          : all.filter((q) => String(q.status ?? 'pending') === String(statusFilter));
+
+      for (const q of list) {
+        actions.push({
+          type: 'mnemo_open_question',
+          payload: { categoryId: q.categoryId, questionId: q.id },
+        });
+      }
+      actions.push({ type: 'mnemo_open_all_questions', payload: { status: 'all' } });
+      actions.push({ type: 'mnemo_open_all_questions', payload: { status: 'validated' } });
+      actions.push({ type: 'mnemo_open_all_questions', payload: { status: 'pending' } });
+      actions.push({ type: 'mnemo_open_all_questions', payload: { status: 'to_edit' } });
+      actions.push({ type: 'mnemo_open_all_questions', payload: { status: 'trash' } });
       actions.push({ type: 'mnemo_back', payload: {} });
       return actions;
     }
@@ -918,6 +1046,7 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
 
   private back(view: MnemoAdminPage): MnemoAdminPage {
     if (view.page === 'categories') return { page: 'setup' };
+    if (view.page === 'all_questions') return { page: 'categories' };
     if (view.page === 'category') return { page: 'categories' };
     if (view.page === 'questions') return { page: 'category', categoryId: view.categoryId };
     if (view.page === 'question') return { page: 'questions', categoryId: view.categoryId, status: 'pending' };

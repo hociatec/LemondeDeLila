@@ -1265,6 +1265,42 @@ export class GameEngineService {
       this.botScheduler.clear(systemKey);
     }
 
+    // Timed transitions: Arche de Mnemosyne quiz timeout.
+    if (gameType === 'arche-de-mnemosyne') {
+      const meta: any =
+        state?.metadata && typeof state.metadata === 'object' ? state.metadata : {};
+      const useTimer = Boolean(meta?.config?.useTimer);
+      const untilMs = typeof meta.quizDeadlineAtMs === 'number' ? meta.quizDeadlineAtMs : null;
+      const questionId = typeof meta?.currentQuestion?.id === 'string' ? meta.currentQuestion.id : null;
+
+      if (useTimer && untilMs != null && questionId) {
+        const delayMs = Math.max(0, untilMs - GameEngineService.nowMs());
+        this.botScheduler.clear(systemKey);
+        this.botScheduler.schedule({
+          key: systemKey,
+          delayMs,
+          roomId,
+          gameType,
+          run: async () => {
+            const latest = (await this.store.get(roomId, gameType)) ?? null;
+            if (!latest) return;
+            const latestMeta: any =
+              latest?.metadata && typeof latest.metadata === 'object' ? latest.metadata : {};
+            if (!Boolean(latestMeta?.config?.useTimer)) return;
+            if (typeof latestMeta?.currentQuestion?.id !== 'string') return;
+            if (latestMeta.currentQuestion.id !== questionId) return;
+            if (typeof latestMeta.quizDeadlineAtMs === 'number' && latestMeta.quizDeadlineAtMs !== untilMs) {
+              return;
+            }
+            await this.applySystemActions(roomId, gameType, [{ type: 'mnemo_timeout', payload: {} }]);
+          },
+          onStale: () => this.cleanupRoom(roomId, gameType),
+        });
+      } else {
+        this.botScheduler.clear(systemKey);
+      }
+    }
+
     const handler = this.registry.getHandler(gameType);
     const botActorId = this.getBotActorIdForState(state, handler);
     const botPlayer =
