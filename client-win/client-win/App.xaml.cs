@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.ComponentModel;
 using System.Windows;
 using client_win.Core.Accessibility;
 using client_win.Modules.Audio.Services;
@@ -82,6 +83,29 @@ namespace client_win
                 audio: host.Services.GetRequiredService<IAppAudioCoordinator>());
 
             window.DataContext = shell;
+
+            // Safety net: keep Window.Title stable even if a future refactor or a view/behavior
+            // accidentally overwrites the Window's DataContext (which would break the XAML binding).
+            void SyncTitle()
+            {
+                try { window.Title = shell.WindowTitle; } catch { /* ignore */ }
+            }
+            SyncTitle();
+
+            PropertyChangedEventHandler? onShellPropertyChanged = null;
+            onShellPropertyChanged = (_, args) =>
+            {
+                if (string.Equals(args.PropertyName, nameof(ShellViewModel.WindowTitle), StringComparison.Ordinal))
+                {
+                    SyncTitle();
+                }
+            };
+            shell.PropertyChanged += onShellPropertyChanged;
+            window.Closed += (_, _) =>
+            {
+                try { shell.PropertyChanged -= onShellPropertyChanged; } catch { /* ignore */ }
+            };
+
             MainWindow = window;
             window.Show();
         }

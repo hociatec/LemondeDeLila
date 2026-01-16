@@ -458,12 +458,21 @@ public sealed class SoundService : ISoundService, IDisposable
                 // If the launch sound is disabled, don't block all other sounds forever.
                 OpenStartupGate("ClientOpened disabled in options");
             }
+            else if (sound == SoundId.ClientConnected && Volatile.Read(ref _startupGateOpened) == 0)
+            {
+                // If startup was cut short (fast login) and the "connected" one-shot is disabled,
+                // do not keep the whole app muted behind the startup gate.
+                OpenStartupGate("ClientConnected disabled in options");
+            }
             return;
         }
 
         // At app startup, avoid playing any other sounds before the explicit launch sound.
         // This prevents bursts caused by reconnect/history replay and makes the first sound predictable.
-        if (Volatile.Read(ref _startupGateOpened) == 0 && sound != SoundId.ClientOpened)
+        // Exception: allow the connection one-shot to play even if the launch sound was cut.
+        if (Volatile.Read(ref _startupGateOpened) == 0 &&
+            sound != SoundId.ClientOpened &&
+            sound != SoundId.ClientConnected)
         {
             TraceStartupOnce($"startup.suppress.{sound}", () =>
                 $"suppressed {sound} because startup gate is closed (waiting for ClientOpened to finish)");
@@ -500,6 +509,10 @@ public sealed class SoundService : ISoundService, IDisposable
             if (sound == SoundId.ClientOpened)
             {
                 OpenStartupGate("ClientOpened file missing");
+            }
+            else if (sound == SoundId.ClientConnected && Volatile.Read(ref _startupGateOpened) == 0)
+            {
+                OpenStartupGate("ClientConnected file missing");
             }
             return;
         }
@@ -584,7 +597,14 @@ public sealed class SoundService : ISoundService, IDisposable
 
                 if (sound == SoundId.ClientOpened)
                 {
-                    OpenStartupGate("ClientOpened stopped");
+                    // Intentionnellement vide: ne pas ouvrir la "startup gate" sur Stop().
+                    // Cas important: login rapide -> on coupe ClientOpened pour jouer ClientConnected.
+                    // Ouvrir la gate ici laisse passer un burst de sons (replay notify) pendant la transition.
+                    // La gate s'ouvrira sur MediaEnded/MediaFailed, ou si ClientOpened/ClientConnected est disabled/missing.
+                }
+                else if (sound == SoundId.ClientConnected && Volatile.Read(ref _startupGateOpened) == 0)
+                {
+                    OpenStartupGate("ClientConnected stopped");
                 }
             }
             catch
@@ -689,6 +709,10 @@ public sealed class SoundService : ISoundService, IDisposable
                     if (request.Sound == SoundId.ClientOpened)
                     {
                         OpenStartupGate("ClientOpened ended");
+                    }
+                    else if (request.Sound == SoundId.ClientConnected && Volatile.Read(ref _startupGateOpened) == 0)
+                    {
+                        OpenStartupGate("ClientConnected ended");
                     }
                     lock (_gate)
                     {
@@ -1241,6 +1265,10 @@ public sealed class SoundService : ISoundService, IDisposable
                 if (sound == SoundId.ClientOpened)
                 {
                     OpenStartupGate("ClientOpened media failed");
+                }
+                else if (sound == SoundId.ClientConnected && Volatile.Read(ref _startupGateOpened) == 0)
+                {
+                    OpenStartupGate("ClientConnected media failed");
                 }
                 if (_playEndSignals.TryGetValue(sound, out var tcs))
                 {

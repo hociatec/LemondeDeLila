@@ -75,6 +75,7 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
     public void NotifyLoginSucceeded()
     {
         var shouldTransition = false;
+        var skipOpenedSeq = 0;
         lock (_stateGate)
         {
             // Redundant login: ignore (prevents double "connected" sound).
@@ -87,7 +88,22 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
             _connectedAtTicks = Stopwatch.GetTimestamp();
             _loginSequence++;
             _pendingConnectedSound = 1;
+
+            // If the user connects before the startup transition had time to play the launch sound,
+            // don't play it later (it would feel "out of order" and can cause perceived audio spam).
+            if (_pendingOpenedSound == 1 &&
+                _appOpenedSequence > 0 &&
+                Volatile.Read(ref _openedSoundPlayedSequence) == 0)
+            {
+                _pendingOpenedSound = 0;
+                skipOpenedSeq = _appOpenedSequence;
+            }
             shouldTransition = true;
+        }
+
+        if (skipOpenedSeq != 0)
+        {
+            Volatile.Write(ref _openedSoundPlayedSequence, skipOpenedSeq);
         }
 
         if (shouldTransition)
