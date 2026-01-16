@@ -44,6 +44,7 @@ export type MnemoCurrentQuestion = {
 export type MnemoAdminPage =
   | { page: 'setup' }
   | { page: 'categories' }
+  | { page: 'all_questions'; status: MnemoQuestionStatus | 'all' }
   | { page: 'category'; categoryId: string }
   | { page: 'questions'; categoryId: string; status: MnemoQuestionStatus }
   | { page: 'question'; categoryId: string; questionId: string };
@@ -73,12 +74,14 @@ export type MnemoPrompt =
     };
 
 export type MnemoQuizMetadata = {
+  rng?: Record<string, any>;
   config: MnemoQuizConfig;
   selectedCategoryId: string | null;
   scoresByPlayerId: Record<number, number>;
   usedQuestionIds: string[];
   currentQuestion: MnemoCurrentQuestion | null;
   quizAnswersByPlayerId: Record<number, number>;
+  quizDeadlineAtMs?: number | null;
   adminView: MnemoAdminPage;
   prompt: MnemoPrompt;
   winnerId: number | null;

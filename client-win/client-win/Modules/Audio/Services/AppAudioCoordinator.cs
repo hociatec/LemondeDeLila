@@ -82,10 +82,12 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
                 return false;
             }
 
-            // Format: "{utc:O}|{baseDir}"
+            // Format (v2): "{utc:O}|{pid}|{baseDir}"
+            // Format (v1): "{utc:O}|{baseDir}"
             var parts = text.Split('|');
             var tsPart = parts.Length > 0 ? parts[0] : text;
-            var baseDirPart = parts.Length > 1 ? parts[1] : null;
+            var pidPart = parts.Length > 2 ? parts[1] : null;
+            var baseDirPart = parts.Length > 2 ? parts[2] : (parts.Length > 1 ? parts[1] : null);
 
             if (DateTime.TryParse(tsPart, out var lastUtc))
             {
@@ -104,7 +106,32 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
                 if (!string.IsNullOrWhiteSpace(baseDirPart))
                 {
                     var currentBaseDir = AppContext.BaseDirectory ?? string.Empty;
-                    return !string.Equals(baseDirPart, currentBaseDir, StringComparison.OrdinalIgnoreCase);
+                    if (string.Equals(baseDirPart, currentBaseDir, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return false;
+                    }
+
+                    // Ne supprimer que si l'ancien process est encore en vie (cas ClickOnce update/restart).
+                    if (!string.IsNullOrWhiteSpace(pidPart) && int.TryParse(pidPart, out var pid))
+                    {
+                        if (pid == Environment.ProcessId)
+                        {
+                            return false;
+                        }
+
+                        try
+                        {
+                            var p = Process.GetProcessById(pid);
+                            return p != null && !p.HasExited;
+                        }
+                        catch
+                        {
+                            return false;
+                        }
+                    }
+
+                    // Ancien format (sans pid): best-effort, ne pas supprimer par défaut.
+                    return false;
                 }
 
                 // Ancien format (sans baseDir) : best-effort, on ne supprime pas par défaut.
@@ -124,7 +151,7 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
         try
         {
             var markerPath = GetStartupSoundMarkerPath();
-            var content = $"{DateTime.UtcNow:O}|{AppContext.BaseDirectory}";
+            var content = $"{DateTime.UtcNow:O}|{Environment.ProcessId}|{AppContext.BaseDirectory}";
             File.WriteAllText(markerPath, content);
         }
         catch

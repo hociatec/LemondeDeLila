@@ -59,7 +59,13 @@ public sealed class ShellViewModel : ObservableObject
         _navigation.CurrentContentChanged += _contentChangedHandler;
 
         _audioSync = new NavigationAudioSync(_navigation, audio);
-        _errorHandler = new ShellErrorHandler(_host.Errors, _navigation, dialogs, _host.Configuration, () => _homeViewModel, _host.CrashReporter);
+        _errorHandler = new ShellErrorHandler(
+            _host.Errors,
+            _navigation,
+            dialogs,
+            _host.Configuration,
+            () => _homeViewModel,
+            _host.CrashReporter);
         _startup = new ShellStartupController(_navigation, _homeViewModel, _host.Configuration, dialogs, _host.Errors);
         _session = new ShellSessionController(_host, _navigation, homeAccessor, notify, presence, audio);
         _input = new ShellInputController(presence, presenceUi, _navigation, menuRouter);
@@ -125,3 +131,4 @@ public sealed class ShellViewModel : ObservableObject
         try { await _host.DisposeAsync().ConfigureAwait(false); } catch { /* ignore */ }
     }
 }
+

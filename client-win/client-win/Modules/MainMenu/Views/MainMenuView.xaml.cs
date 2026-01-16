@@ -53,24 +53,16 @@ public partial class MainMenuView : UserControl
         // Puis exécuter la navigation au prochain tour de boucle: évite que NVDA annonce
         // "indisponible" quand le ListBoxItem focalisé disparaît pendant le même événement clavier.
         var dispatcher = Dispatcher;
+        var window = Window.GetWindow(this) ?? Application.Current?.MainWindow;
         IInputElement? rootHost = null;
-        try
-        {
-            rootHost = Application.Current?.MainWindow?.FindName("RootHost") as IInputElement;
-        }
-        catch
-        {
-            // ignore
-        }
+        try { rootHost = window?.FindName("RootHost") as IInputElement; } catch { /* ignore */ }
+        rootHost ??= window;
 
         // Essai immédiat : si le focus reste sur le ListBoxItem, NVDA peut annoncer l'élément
         // comme "indisponible" au moment où la vue est remplacée.
         try
         {
-            if (rootHost != null)
-            {
-                Keyboard.Focus(rootHost);
-            }
+            if (rootHost != null) Keyboard.Focus(rootHost);
         }
         catch
         {

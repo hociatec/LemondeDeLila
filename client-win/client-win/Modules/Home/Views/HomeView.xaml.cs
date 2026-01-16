@@ -11,8 +11,6 @@ namespace client_win.Modules.Home.Views;
 
 /// <summary>
 /// Vue principale de l'écran d'accueil avec formulaires de connexion et d'inscription.
-/// La gestion du mot de passe utilise PasswordBoxBehavior pour éliminer la duplication de code
-/// et gérer correctement le disposal des SecureStrings.
 /// </summary>
 public partial class HomeView : UserControl
 {
@@ -27,6 +25,11 @@ public partial class HomeView : UserControl
     {
         AttachViewModel();
         FocusFirstField();
+    }
+
+    private void OnUnloaded(object sender, RoutedEventArgs e)
+    {
+        DetachViewModel();
     }
 
     private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
@@ -109,48 +112,55 @@ public partial class HomeView : UserControl
 
         Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
         {
-            // Le callback est asynchrone: le DataContext peut avoir changé entre-temps (navigation).
-            // On évite un crash si le VM a été détaché après le BeginInvoke.
-            if (!ReferenceEquals(_viewModel, vm))
+            try
             {
-                return;
-            }
+                if (!ReferenceEquals(_viewModel, vm) || !IsLoaded || !IsVisible)
+                {
+                    return;
+                }
 
-            switch (vm.CurrentPage)
+                switch (vm.CurrentPage)
+                {
+                    case HomePage.Login:
+                        if (LoginUsernameBox?.IsVisible == true && LoginUsernameBox.IsEnabled)
+                        {
+                            LoginUsernameBox.Focus();
+                        }
+                        else if (LoginPasswordBox?.IsVisible == true && LoginPasswordBox.IsEnabled)
+                        {
+                            LoginPasswordBox.Focus();
+                        }
+                        else if (LoginPasswordTextBox?.IsVisible == true && LoginPasswordTextBox.IsEnabled)
+                        {
+                            LoginPasswordTextBox.Focus();
+                        }
+                        break;
+
+                    case HomePage.Register:
+                        if (RegisterUsernameBox?.IsVisible == true && RegisterUsernameBox.IsEnabled)
+                        {
+                            RegisterUsernameBox.Focus();
+                        }
+                        else if (RegisterEmailBox?.IsVisible == true && RegisterEmailBox.IsEnabled)
+                        {
+                            RegisterEmailBox.Focus();
+                        }
+                        else if (RegisterPasswordBox?.IsVisible == true && RegisterPasswordBox.IsEnabled)
+                        {
+                            RegisterPasswordBox.Focus();
+                        }
+                        else if (RegisterPasswordTextBox?.IsVisible == true && RegisterPasswordTextBox.IsEnabled)
+                        {
+                            RegisterPasswordTextBox.Focus();
+                        }
+                        break;
+                }
+            }
+            catch
             {
-                case HomePage.Login:
-                    if (LoginUsernameBox?.IsVisible == true && LoginUsernameBox.IsEnabled)
-                    {
-                        LoginUsernameBox.Focus();
-                    }
-                    else if (LoginPasswordBox?.IsVisible == true && LoginPasswordBox.IsEnabled)
-                    {
-                        LoginPasswordBox.Focus();
-                    }
-                    else if (LoginPasswordTextBox?.IsVisible == true && LoginPasswordTextBox.IsEnabled)
-                    {
-                        LoginPasswordTextBox.Focus();
-                    }
-                    break;
-                case HomePage.Register:
-                    if (RegisterUsernameBox?.IsVisible == true && RegisterUsernameBox.IsEnabled)
-                    {
-                        RegisterUsernameBox.Focus();
-                    }
-                    else if (RegisterEmailBox?.IsVisible == true && RegisterEmailBox.IsEnabled)
-                    {
-                        RegisterEmailBox.Focus();
-                    }
-                    else if (RegisterPasswordBox?.IsVisible == true && RegisterPasswordBox.IsEnabled)
-                    {
-                        RegisterPasswordBox.Focus();
-                    }
-                    else if (RegisterPasswordTextBox?.IsVisible == true && RegisterPasswordTextBox.IsEnabled)
-                    {
-                        RegisterPasswordTextBox.Focus();
-                    }
-                    break;
+                // Focus is best-effort: never crash the UI thread.
             }
         }));
     }
 }
+

@@ -130,6 +130,18 @@ namespace client_win
                     // NVDA/UIA: certains lecteurs d'écran s'appuient sur AutomationProperties.Name
                     // pour annoncer la fenêtre courante.
                     try { AutomationProperties.SetName(window, expectedTitle); } catch { /* ignore */ }
+                    try
+                    {
+                        // Fallback: certains lecteurs d'écran lisent le nom du host focalisé plutôt que celui de la fenêtre.
+                        if (window.FindName("RootHost") is DependencyObject rootHost)
+                        {
+                            AutomationProperties.SetName(rootHost, expectedTitle);
+                        }
+                    }
+                    catch
+                    {
+                        // ignore
+                    }
                 }
                 catch
                 {

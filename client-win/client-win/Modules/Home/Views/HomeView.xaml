@@ -5,11 +5,12 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:converters="clr-namespace:client_win.Modules.Home.Views.Converters"
              xmlns:behaviors="clr-namespace:client_win.Behaviors"
-             mc:Ignorable="d"
-             d:DesignHeight="720" d:DesignWidth="1280"
-             Loaded="OnLoaded"
-             PreviewKeyDown="OnPreviewKeyDown"
-             DataContextChanged="OnDataContextChanged">
+              mc:Ignorable="d"
+              d:DesignHeight="720" d:DesignWidth="1280"
+              Loaded="OnLoaded"
+              Unloaded="OnUnloaded"
+              PreviewKeyDown="OnPreviewKeyDown"
+              DataContextChanged="OnDataContextChanged">
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
         <converters:NullOrWhitespaceToVisibilityConverter x:Key="NullOrWhitespaceToVisibilityConverter" />
