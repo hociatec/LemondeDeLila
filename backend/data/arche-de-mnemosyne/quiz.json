@@ -1,5 +1,9 @@
 {
-  "categories": [],
+  "categories": [
+    {
+      "id": "test",
+      "name": "test"
+    }
+  ],
   "questions": []
 }
-

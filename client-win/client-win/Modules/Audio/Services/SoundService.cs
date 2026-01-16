@@ -41,6 +41,12 @@ public sealed class SoundService : ISoundService, IDisposable
     private int _connectedGate;
     private long _connectedAtTicks;
 
+    private const int MaxQueuedPlays = 8;
+    private readonly Queue<PlayRequest> _playQueue = new();
+    private bool _playInProgress;
+
+    private sealed record PlayRequest(SoundId Sound, SoundEntry Entry, string FilePath);
+
     // Avoid audio spam when a burst of messages happens (e.g. history replay, reconnect).
     private static readonly long MinIntervalTicks = Stopwatch.Frequency / 12; // ~83ms
     private static long GetMinIntervalTicks(SoundId sound) =>
@@ -345,12 +351,7 @@ public sealed class SoundService : ISoundService, IDisposable
             return;
         }
 
-        long now = Stopwatch.GetTimestamp();
-        bool shouldLogStartupBurst = false;
-        int startupBurstCount = 0;
-
-        // Tant qu'on n'est pas authentifié/connecté, ne jouer aucun son autre que l'ouverture du client.
-        // Cela évite les sons "parasites" déclenchés par des événements réseau pendant l'écran de login.
+        var now = Stopwatch.GetTimestamp();
         if (Volatile.Read(ref _connectedGate) == 0 &&
             sound != SoundId.ClientOpened &&
             sound != SoundId.ClientDisconnected)
@@ -358,8 +359,6 @@ public sealed class SoundService : ISoundService, IDisposable
             return;
         }
 
-        // Juste après connexion, éviter une rafale de sons (notifications/replay).
-        // On laisse uniquement le son "connexion réussie" passer pendant un court instant.
         var connectedAt = Volatile.Read(ref _connectedAtTicks);
         if (Volatile.Read(ref _connectedGate) == 1 &&
             connectedAt > 0 &&
@@ -369,6 +368,16 @@ public sealed class SoundService : ISoundService, IDisposable
         {
             return;
         }
+
+        var filePath = ResolveFilePath(sound, entry);
+        if (!File.Exists(filePath))
+        {
+            _logger.LogDebug("Sound file missing: {Path}", filePath);
+            return;
+        }
+
+        var shouldLogStartupBurst = false;
+        var startupBurstCount = 0;
 
         lock (_gate)
         {
@@ -380,8 +389,6 @@ public sealed class SoundService : ISoundService, IDisposable
             _lastPlayTicks[sound] = now;
             _playGeneration[sound] = _playGeneration.TryGetValue(sound, out var current) ? current + 1 : 1;
 
-            // Diagnostic: détecter les rafales de sons au démarrage (souvent dues à des événements "snapshot/replay").
-            // On n'altère pas la lecture ici, on log seulement pour faciliter le tri.
             var sinceStart = now - _serviceStartTicks;
             if (sinceStart >= 0 && sinceStart < Stopwatch.Frequency * 10)
             {
@@ -410,13 +417,30 @@ public sealed class SoundService : ISoundService, IDisposable
             }
         }
 
-        var filePath = ResolveFilePath(sound, entry);
-        if (!File.Exists(filePath))
+        EnqueuePlayback(new PlayRequest(sound, entry, filePath));
+    }
+
+    private void EnqueuePlayback(PlayRequest request)
+    {
+        lock (_gate)
         {
-            _logger.LogDebug("Sound file missing: {Path}", filePath);
-            return;
+            if (_playInProgress)
+            {
+                if (_playQueue.Count >= MaxQueuedPlays)
+                {
+                    _playQueue.Dequeue();
+                }
+                _playQueue.Enqueue(request);
+                return;
+            }
+            _playInProgress = true;
         }
 
+        StartQueuedPlayback(request);
+    }
+
+    private void StartQueuedPlayback(PlayRequest request)
+    {
         void PlayOnUiThread()
         {
             try
@@ -425,32 +449,36 @@ public sealed class SoundService : ISoundService, IDisposable
                 TaskCompletionSource<bool> tcs;
                 lock (_gate)
                 {
-                    EnsurePlayerLoaded(sound, filePath, canInterruptPlayback: true);
-                    player = _players[sound];
-
+                    EnsurePlayerLoaded(request.Sound, request.FilePath, canInterruptPlayback: true);
+                    player = _players[request.Sound];
                     tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-                    _playEndSignals[sound] = tcs;
+                    _playEndSignals[request.Sound] = tcs;
                 }
 
                 void StartPlayback()
                 {
                     player.IsMuted = false;
-                    player.Volume = entry.Volume();
+                    player.Volume = request.Entry.Volume();
                     player.Stop();
                     player.Position = TimeSpan.Zero;
                     player.Play();
                 }
 
-                // MediaPlayer.Open est async; si le média n'est pas encore ouvert,
-                // démarrer uniquement lorsque MediaOpened arrive (sinon risque de double-play au moment de l'ouverture).
-                bool alreadyOpened;
+                var alreadyOpened = false;
                 lock (_gate)
                 {
-                    alreadyOpened = _opened.Contains(sound);
+                    alreadyOpened = _opened.Contains(request.Sound);
                 }
                 if (alreadyOpened)
                 {
-                    try { StartPlayback(); } catch { /* ignore */ }
+                    try
+                    {
+                        StartPlayback();
+                    }
+                    catch
+                    {
+                        // ignore
+                    }
                 }
                 else
                 {
@@ -463,33 +491,34 @@ public sealed class SoundService : ISoundService, IDisposable
                     player.MediaOpened += opened;
                 }
 
-                // Signal end for waiters (best-effort).
                 EventHandler? ended = null;
                 ended = (_, _) =>
                 {
                     try { player.MediaEnded -= ended; } catch { /* ignore */ }
                     lock (_gate)
                     {
-                        if (_playEndSignals.TryGetValue(sound, out var current) && ReferenceEquals(current, tcs))
+                        if (_playEndSignals.TryGetValue(request.Sound, out var current) && ReferenceEquals(current, tcs))
                         {
-                            _playEndSignals.Remove(sound);
+                            _playEndSignals.Remove(request.Sound);
                         }
                     }
                     tcs.TrySetResult(true);
+                    ScheduleNextPlaybackIfAvailable();
                 };
                 player.MediaEnded += ended;
             }
             catch (Exception ex)
             {
-                _logger.LogDebug(ex, "Sound playback error ({Sound})", sound);
+                _logger.LogDebug(ex, "Sound playback error ({Sound})", request.Sound);
                 lock (_gate)
                 {
-                    if (_playEndSignals.TryGetValue(sound, out var tcs))
+                    if (_playEndSignals.TryGetValue(request.Sound, out var current))
                     {
-                        _playEndSignals.Remove(sound);
-                        tcs.TrySetResult(true);
+                        _playEndSignals.Remove(request.Sound);
+                        current.TrySetResult(true);
                     }
                 }
+                ScheduleNextPlaybackIfAvailable();
             }
         }
 
@@ -500,6 +529,28 @@ public sealed class SoundService : ISoundService, IDisposable
         else
         {
             _ = _dispatcher.BeginInvoke((Action)PlayOnUiThread, DispatcherPriority.Normal);
+        }
+    }
+
+    private void ScheduleNextPlaybackIfAvailable()
+    {
+        PlayRequest? next = null;
+        lock (_gate)
+        {
+            if (_playQueue.Count > 0)
+            {
+                next = _playQueue.Dequeue();
+                _playInProgress = true;
+            }
+            else
+            {
+                _playInProgress = false;
+            }
+        }
+
+        if (next != null)
+        {
+            StartQueuedPlayback(next);
         }
     }
 
