@@ -42,7 +42,9 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
     private int _pendingTavernOpenedSound;
     private int _pendingReapplyBackground;
 
-    private static readonly TimeSpan StartupSoundDebounceWindow = TimeSpan.FromMinutes(3);
+    // ClickOnce peut relancer le client pendant une mise à jour et démarrer un nouveau process
+    // dans un autre dossier "Apps\\2.0". On supprime le son d'ouverture sur cette relance uniquement.
+    private static readonly TimeSpan StartupSoundDebounceWindow = TimeSpan.FromMinutes(2);
 
     public AppAudioCoordinator(
         ISoundService sounds,
@@ -75,14 +77,38 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
             }
 
             var text = File.ReadAllText(markerPath).Trim();
-            if (DateTime.TryParse(text, out var lastUtc))
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                return false;
+            }
+
+            // Format: "{utc:O}|{baseDir}"
+            var parts = text.Split('|');
+            var tsPart = parts.Length > 0 ? parts[0] : text;
+            var baseDirPart = parts.Length > 1 ? parts[1] : null;
+
+            if (DateTime.TryParse(tsPart, out var lastUtc))
             {
                 if (lastUtc.Kind == DateTimeKind.Unspecified)
                 {
                     lastUtc = DateTime.SpecifyKind(lastUtc, DateTimeKind.Utc);
                 }
                 var age = DateTime.UtcNow - lastUtc.ToUniversalTime();
-                return age >= TimeSpan.Zero && age < StartupSoundDebounceWindow;
+
+                if (!(age >= TimeSpan.Zero && age < StartupSoundDebounceWindow))
+                {
+                    return false;
+                }
+
+                // Ne supprimer que si on a bien changé de dossier d'exécution (cas ClickOnce update/restart).
+                if (!string.IsNullOrWhiteSpace(baseDirPart))
+                {
+                    var currentBaseDir = AppContext.BaseDirectory ?? string.Empty;
+                    return !string.Equals(baseDirPart, currentBaseDir, StringComparison.OrdinalIgnoreCase);
+                }
+
+                // Ancien format (sans baseDir) : best-effort, on ne supprime pas par défaut.
+                return false;
             }
         }
         catch
@@ -98,7 +124,8 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
         try
         {
             var markerPath = GetStartupSoundMarkerPath();
-            File.WriteAllText(markerPath, DateTime.UtcNow.ToString("O"));
+            var content = $"{DateTime.UtcNow:O}|{AppContext.BaseDirectory}";
+            File.WriteAllText(markerPath, content);
         }
         catch
         {

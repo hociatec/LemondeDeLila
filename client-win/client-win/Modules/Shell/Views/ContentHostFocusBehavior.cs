@@ -95,8 +95,9 @@ public static class ContentHostFocusBehavior
     {
         try
         {
-            // Parking focus: pendant la transition (ancienne vue détruite, nouvelle pas encore prête),
-            // placer le focus sur un élément stable évite que NVDA annonce "indisponible".
+            // Parking focus: placer le focus sur un élément stable (le host) pendant la transition,
+            // pour éviter que NVDA tente d'annoncer un élément qui vient d'être détruit.
+            try { host.Focus(); } catch { /* ignore */ }
             try { Keyboard.Focus(host); } catch { /* ignore */ }
 
             void TryFocus()

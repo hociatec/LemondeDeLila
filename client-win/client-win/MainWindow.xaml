@@ -12,6 +12,7 @@
     <ContentControl x:Name="RootHost"
                     Focusable="True"
                     KeyboardNavigation.IsTabStop="False"
+                    AutomationProperties.Name="{Binding WindowTitle}"
                     Content="{Binding CurrentContent}"
                     shellViews:ContentHostFocusBehavior.Enable="True" />
 </Window>
