@@ -60,14 +60,14 @@ public partial class MainMenuView : UserControl
         var dispatcher = Dispatcher;
         var window = Window.GetWindow(this) ?? Application.Current?.MainWindow;
         IInputElement? rootHost = null;
-        try { rootHost = window?.FindName("FocusParking") as IInputElement; } catch { /* ignore */ }
-        try { rootHost ??= window?.FindName("RootHost") as IInputElement; } catch { /* ignore */ }
+        try { rootHost = window?.FindName("RootHost") as IInputElement; } catch { /* ignore */ }
         rootHost ??= window;
 
         // Essai immédiat : si le focus reste sur le ListBoxItem, NVDA peut annoncer l'élément
         // comme "indisponible" au moment où la vue est remplacée.
         try
         {
+            try { Keyboard.ClearFocus(); } catch { /* ignore */ }
             if (rootHost != null) Keyboard.Focus(rootHost);
         }
         catch
@@ -81,6 +81,7 @@ public partial class MainMenuView : UserControl
             {
                 if (rootHost != null)
                 {
+                    try { Keyboard.ClearFocus(); } catch { /* ignore */ }
                     Keyboard.Focus(rootHost);
                 }
             }
@@ -90,11 +91,11 @@ public partial class MainMenuView : UserControl
             }
         }));
 
-        _ = dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(async () =>
+        _ = dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(async () =>
         {
             try
             {
-                await dispatcher.InvokeAsync(() => { }, DispatcherPriority.Background);
+                await dispatcher.InvokeAsync(() => { }, DispatcherPriority.Input);
                 await vm.ActivateCommand.ExecuteAsync(null).ConfigureAwait(true);
 
                 // Si l'action n'a pas déclenché de navigation (ex: action locale), restaurer le focus sur le menu.

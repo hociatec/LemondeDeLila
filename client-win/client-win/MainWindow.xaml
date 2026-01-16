@@ -9,24 +9,10 @@
         WindowStartupLocation="CenterScreen"
         Background="#0B1523"
         shellViews:ShellWindowBehavior.Enable="True">
-    <Grid>
-        <!-- Parking focus: stable focus target during navigation to avoid NVDA "non disponible" -->
-        <ContentControl x:Name="FocusParking"
-                        Focusable="True"
-                        KeyboardNavigation.IsTabStop="False"
-                        IsHitTestVisible="False"
-                        Opacity="0"
-                        Width="1"
-                        Height="1"
-                        HorizontalAlignment="Left"
-                        VerticalAlignment="Top"
-                        AutomationProperties.Name="{Binding WindowTitle}" />
-
-        <ContentControl x:Name="RootHost"
-                        Focusable="True"
-                        KeyboardNavigation.IsTabStop="True"
-                        AutomationProperties.Name="{Binding WindowTitle}"
-                        Content="{Binding CurrentContent}"
-                        shellViews:ContentHostFocusBehavior.Enable="True" />
-    </Grid>
+    <ContentControl x:Name="RootHost"
+                    Focusable="True"
+                    KeyboardNavigation.IsTabStop="True"
+                    AutomationProperties.Name="{Binding WindowTitle}"
+                    Content="{Binding CurrentContent}"
+                    shellViews:ContentHostFocusBehavior.Enable="True" />
 </Window>

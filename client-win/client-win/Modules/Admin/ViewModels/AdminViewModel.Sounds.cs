@@ -416,7 +416,11 @@ public sealed partial class AdminViewModel
             return;
         }
         await UploadSoundToServerAsync(sound, src).ConfigureAwait(true);
-        await _remoteSounds.RefreshAsync().ConfigureAwait(true);
+        await _remoteSounds.RefreshAsync(force: true).ConfigureAwait(true);
+
+        // Purge tout lecteur/loop en mémoire pour éviter de réentendre un ancien fichier.
+        try { _sounds.Stop(sound); } catch { /* ignore */ }
+        try { _sounds.StopLoop(sound); } catch { /* ignore */ }
 
         Details = "Son global (serveur).";
         _sounds.PlayPreview(sound);

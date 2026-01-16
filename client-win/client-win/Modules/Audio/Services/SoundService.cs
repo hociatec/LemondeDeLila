@@ -772,6 +772,7 @@ public sealed class SoundService : ISoundService, IDisposable
 
                 var player = new MediaPlayer();
                 _previewPlayer = player;
+                var opened = false;
 
                 // MediaOpened est déclenché de manière async : démarrer uniquement quand prêt.
                 _previewOpenedHandler = (_, _) =>
@@ -781,10 +782,12 @@ public sealed class SoundService : ISoundService, IDisposable
                         return;
                     }
 
+                    opened = true;
                     try
                     {
                         player.IsMuted = false;
-                        player.Volume = entry.Volume();
+                        // En admin, l'aperçu doit rester audible même si le volume de la catégorie est à 0.
+                        player.Volume = Math.Max(0.35, entry.Volume());
                         player.Stop();
                         player.Position = TimeSpan.Zero;
                         player.Play();
@@ -795,10 +798,47 @@ public sealed class SoundService : ISoundService, IDisposable
                     }
                 };
                 player.MediaOpened += _previewOpenedHandler;
+                player.MediaFailed += (_, args) =>
+                {
+                    try
+                    {
+                        _logger.LogWarning(
+                            "Sound preview failed ({Sound}): {Error}",
+                            sound,
+                            args.ErrorException?.Message ?? "unknown error");
+                    }
+                    catch
+                    {
+                        // ignore
+                    }
+
+                    try { StopPreviewOnUiThread(); } catch { /* ignore */ }
+                };
 
                 try
                 {
                     player.Open(new Uri(filePath, UriKind.Absolute));
+
+                    // Fallback: certains environnements ne déclenchent pas toujours MediaOpened (ou trop tard).
+                    // Tenter un démarrage best-effort après un court délai.
+                    _ = _dispatcher.BeginInvoke((Action)(() =>
+                    {
+                        try
+                        {
+                            if (!opened && _previewPlayer != null && ReferenceEquals(_previewPlayer, player))
+                            {
+                                player.IsMuted = false;
+                                player.Volume = Math.Max(0.35, entry.Volume());
+                                player.Stop();
+                                player.Position = TimeSpan.Zero;
+                                player.Play();
+                            }
+                        }
+                        catch
+                        {
+                            // ignore
+                        }
+                    }), DispatcherPriority.Background);
                 }
                 catch (Exception ex)
                 {
