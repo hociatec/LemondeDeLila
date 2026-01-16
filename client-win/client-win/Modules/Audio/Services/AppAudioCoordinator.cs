@@ -429,6 +429,36 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
         }
     }
 
+    public async Task PlayClosingAndWaitAsync(TimeSpan timeout)
+    {
+        try
+        {
+            StopBackgroundLoops();
+        }
+        catch
+        {
+            // ignore
+        }
+
+        try
+        {
+            _sounds.Play(SoundId.ClientClosing);
+        }
+        catch
+        {
+            // ignore
+        }
+
+        try
+        {
+            await _sounds.WaitForSoundToEndAsync(SoundId.ClientClosing, timeout).ConfigureAwait(false);
+        }
+        catch
+        {
+            // ignore
+        }
+    }
+
     private void RequestTransition()
     {
         CancellationToken token;

@@ -485,6 +485,12 @@ public sealed partial class AdminViewModel
                     BuildSoundDetails(Modules.Audio.Models.SoundId.ClientOpened);
                     return;
                 }
+                if (connSound == "sounds.client.closing")
+                {
+                    PushReturnFocus();
+                    BuildSoundDetails(Modules.Audio.Models.SoundId.ClientClosing);
+                    return;
+                }
                 if (connSound == "sounds.client.connected")
                 {
                     PushReturnFocus();

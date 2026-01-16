@@ -67,7 +67,7 @@ public sealed class ShellCloseCoordinator
 
                 if (loggedIn)
                 {
-                    await _audio.PlayDisconnectAndWaitAsync(TimeSpan.FromSeconds(4)).ConfigureAwait(true);
+                    await _audio.PlayClosingAndWaitAsync(TimeSpan.FromSeconds(4)).ConfigureAwait(true);
                 }
 
                 Volatile.Write(ref _exitConfirmed, 1);
@@ -85,4 +85,3 @@ public sealed class ShellCloseCoordinator
         }, DispatcherPriority.Normal);
     }
 }
-

@@ -16,4 +16,5 @@ public interface IAppAudioCoordinator
     void ResumeBackground();
     Task RefreshRemoteSoundsAsync(bool force, bool reapplyBackground, CancellationToken cancellationToken = default);
     Task PlayDisconnectAndWaitAsync(TimeSpan timeout);
+    Task PlayClosingAndWaitAsync(TimeSpan timeout);
 }

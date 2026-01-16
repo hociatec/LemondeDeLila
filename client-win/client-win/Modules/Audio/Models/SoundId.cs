@@ -5,6 +5,7 @@ public enum SoundId
     ClientOpened,
     ClientConnected,
     ClientDisconnected,
+    ClientClosing,
     ClientUpdateWarning,
     MainMenuMusic,
     TavernAmbience,

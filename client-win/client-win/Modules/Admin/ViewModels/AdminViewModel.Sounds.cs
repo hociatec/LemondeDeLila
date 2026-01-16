@@ -25,6 +25,7 @@ public sealed partial class AdminViewModel
 	        _page = AdminPage.Sounds;
 	        Title = "Administration - Sons";
 	        Details = "Gestion des sons de l'application.";
+        PreferDetailsFocus = false;
         IsTextInputVisible = false;
         IsSecondaryInputVisible = false;
         IsAdditionalPermissionsVisible = false;
@@ -116,6 +117,7 @@ public sealed partial class AdminViewModel
         _page = AdminPage.SoundsAmbience;
         Title = "Administration - Sons - Ambiance";
         Details = "Choisir un son d'ambiance (boucles) et un son à l'ouverture de la taverne.";
+        PreferDetailsFocus = false;
         IsTextInputVisible = false;
         IsSecondaryInputVisible = false;
         IsAdditionalPermissionsVisible = false;
@@ -134,11 +136,13 @@ public sealed partial class AdminViewModel
         _page = AdminPage.SoundsConnection;
         Title = "Administration - Sons - Connexion";
         Details = "Choisir un son lié au démarrage et à la connexion au serveur.";
+        PreferDetailsFocus = false;
         IsTextInputVisible = false;
         IsSecondaryInputVisible = false;
         IsAdditionalPermissionsVisible = false;
         Items.Clear();
         Items.Add(new AdminMenuItem("Ouverture du client", tag: "sounds.client.opened"));
+        Items.Add(new AdminMenuItem("Fermeture du client", tag: "sounds.client.closing"));
         Items.Add(new AdminMenuItem("Connexion au serveur", tag: "sounds.client.connected"));
         Items.Add(new AdminMenuItem("Déconnexion du serveur", tag: "sounds.client.disconnected"));
         SelectedItem = Items.FirstOrDefault();
@@ -152,6 +156,7 @@ public sealed partial class AdminViewModel
         _page = AdminPage.SoundsInvitations;
         Title = "Administration - Sons - Amis";
         Details = "Choisir un son lié aux amis (présence, demandes).";
+        PreferDetailsFocus = false;
         IsTextInputVisible = false;
         IsSecondaryInputVisible = false;
         IsAdditionalPermissionsVisible = false;
@@ -171,6 +176,7 @@ public sealed partial class AdminViewModel
 	        _page = AdminPage.SoundsTable;
 	        Title = "Administration - Sons - Table";
 	        Details = "Choisir un son lié aux tables (entrée/sortie, invitations, fin de partie).";
+            PreferDetailsFocus = false;
 	        IsTextInputVisible = false;
 	        IsSecondaryInputVisible = false;
 	        IsAdditionalPermissionsVisible = false;
@@ -193,6 +199,7 @@ public sealed partial class AdminViewModel
 	        _page = AdminPage.SoundsGames;
 	        Title = "Administration - Sons - Jeux";
 	        Details = "Choisir un son lié aux actions en jeu (pion, mur, dé).";
+            PreferDetailsFocus = false;
 	        IsTextInputVisible = false;
 	        IsSecondaryInputVisible = false;
 	        IsAdditionalPermissionsVisible = false;
@@ -214,6 +221,7 @@ public sealed partial class AdminViewModel
 	        _page = AdminPage.SoundsChat;
 	        Title = "Administration - Sons - Tchat";
 	        Details = "Choisir les sons du tchat.";
+            PreferDetailsFocus = false;
 	        IsTextInputVisible = false;
 	        IsSecondaryInputVisible = false;
 	        IsAdditionalPermissionsVisible = false;
@@ -231,6 +239,7 @@ public sealed partial class AdminViewModel
 	        _page = AdminPage.SoundsChatGeneral;
 	        Title = "Administration - Sons - Tchat - Général";
 	        Details = "Choisir un son lié au tchat général.";
+            PreferDetailsFocus = false;
 	        IsTextInputVisible = false;
 	        IsSecondaryInputVisible = false;
 	        IsAdditionalPermissionsVisible = false;
@@ -248,6 +257,7 @@ public sealed partial class AdminViewModel
 	        _page = AdminPage.SoundsChatTable;
 	        Title = "Administration - Sons - Tchat - Table";
 	        Details = "Choisir un son lié au tchat de table.";
+            PreferDetailsFocus = false;
 	        IsTextInputVisible = false;
 	        IsSecondaryInputVisible = false;
 	        IsAdditionalPermissionsVisible = false;
@@ -265,6 +275,7 @@ public sealed partial class AdminViewModel
         _page = AdminPage.SoundsPrivateMessages;
         Title = "Administration - Sons - Messages privés";
         Details = "Choisir un son lié aux messages privés.";
+        PreferDetailsFocus = false;
         IsTextInputVisible = false;
         IsSecondaryInputVisible = false;
         IsAdditionalPermissionsVisible = false;
@@ -282,6 +293,7 @@ public sealed partial class AdminViewModel
         _page = AdminPage.SoundsAdminContact;
         Title = "Administration - Sons - Contact admin";
         Details = "Choisir un son lié aux messages de contact admin.";
+        PreferDetailsFocus = false;
         IsTextInputVisible = false;
         IsSecondaryInputVisible = false;
         IsAdditionalPermissionsVisible = false;
@@ -323,6 +335,7 @@ public sealed partial class AdminViewModel
 	        var (group, title, current) = sound switch
 	        {
             SoundId.ClientOpened => ("Connexion", "Ouverture du client", _options.Current.SoundClientOpenedPath),
+            SoundId.ClientClosing => ("Connexion", "Fermeture du client", null),
             SoundId.ClientConnected => ("Connexion", "Connexion au serveur", _options.Current.SoundClientConnectedPath),
             SoundId.ClientDisconnected => ("Connexion", "Déconnexion du serveur", _options.Current.SoundClientDisconnectedPath),
             SoundId.MainMenuMusic => ("Ambiance", "Musique du menu principal", null),
@@ -367,9 +380,13 @@ public sealed partial class AdminViewModel
         }
 
         Title = $"Administration - Sons - {group} - {title}";
-        Details = string.IsNullOrWhiteSpace(current)
-            ? "Son par défaut (Assets)."
-            : $"Son personnalisé : {current}";
+        PreferDetailsFocus = false;
+        var remote = _remoteSounds.TryGetPath(sound);
+        Details = !string.IsNullOrWhiteSpace(remote)
+            ? $"Son global (serveur) : {Path.GetFileName(remote)}"
+            : string.IsNullOrWhiteSpace(current)
+                ? "Son par défaut (Assets)."
+                : $"Son local (options) : {current}";
 
         IsTextInputVisible = false;
         IsSecondaryInputVisible = false;
@@ -422,7 +439,10 @@ public sealed partial class AdminViewModel
         try { _sounds.Stop(sound); } catch { /* ignore */ }
         try { _sounds.StopLoop(sound); } catch { /* ignore */ }
 
-        Details = "Son global (serveur).";
+        var remote = _remoteSounds.TryGetPath(sound);
+        Details = !string.IsNullOrWhiteSpace(remote)
+            ? $"Son global (serveur) : {Path.GetFileName(remote)}"
+            : "Son global (serveur).";
         _sounds.PlayPreview(sound);
     }
 

@@ -125,6 +125,12 @@ public sealed class SoundService : ISoundService, IDisposable
                 OverridePath: () => _options.Current.SoundClientDisconnectedPath,
                 IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundNavigate,
                 Volume: () => Clamp01(_options.Current.SoundNavigateVolume / 100.0)),
+            [SoundId.ClientClosing] = new SoundEntry(
+                // Son joué lors de la fermeture volontaire du client (différent de la déconnexion serveur).
+                DefaultRelativePath: Path.Combine("Assets", "Sounds", "roomexit.mp3"),
+                OverridePath: null,
+                IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundNavigate,
+                Volume: () => Clamp01(_options.Current.SoundNavigateVolume / 100.0)),
             [SoundId.ClientUpdateWarning] = new SoundEntry(
                 // Alerte sonore pour mises à jour (annonce / imminente).
                 DefaultRelativePath: Path.Combine("Assets", "Sounds", "invitationrecu.mp3"),

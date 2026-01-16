@@ -2,6 +2,8 @@ export const SOUND_KEYS = [
   'ClientOpened',
   'ClientConnected',
   'ClientDisconnected',
+  'ClientClosing',
+  'ClientUpdateWarning',
   'MainMenuMusic',
   'TavernAmbience',
   'TavernOpened',
@@ -14,6 +16,7 @@ export const SOUND_KEYS = [
   'PrivateMessageReceived',
   'AdminContactSent',
   'AdminContactReceived',
+  'BugReportCommentReceived',
   'FriendConnected',
   'FriendDisconnected',
   'FriendInvitationSent',
@@ -25,6 +28,11 @@ export const SOUND_KEYS = [
   'RoomOpened',
   'RoomJoined',
   'RoomExit',
+  'PawnPicked',
+  'PawnPlacedSelf',
+  'PawnPlacedOpponent',
+  'WallPlacedSelf',
+  'WallPlacedOpponent',
 ] as const;
 
 export type SoundKey = (typeof SOUND_KEYS)[number];
