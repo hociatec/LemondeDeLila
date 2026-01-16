@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Threading;
 using Microsoft.Extensions.Logging;
 using client_win.Modules.Catalog.Models;
@@ -13,15 +12,12 @@ using client_win.Modules.Game.Play.GamePlay.ViewModels;
 using client_win.Modules.Game.Play.Session.Services;
 using client_win.Modules.Game.Room.Services;
 using client_win.Modules.Game.Shell.ViewModels;
-using client_win.Modules.Game.Shell.Views;
 using client_win.Modules.Audio.Models;
 using client_win.Modules.Audio.Services;
-using client_win.Modules.Catalog.Views;
 using client_win.Modules.Presence.Services;
 using client_win.Modules.Social.Services;
 using client_win.Modules.TextPrompts.Services;
 using client_win.Modules.Shell.Services;
-using client_win.Modules.MainMenu.Views;
 using client_win.Modules.Game.RoomDirectory.Services;
 
 namespace client_win.Modules.Game.Shell.Services;
@@ -75,23 +71,23 @@ public sealed class GameTableOpener : IGameTableOpener
         _textPrompts = textPrompts ?? throw new ArgumentNullException(nameof(textPrompts));
     }
 
-    public async Task OpenAsync(CatalogGame game, UserControl returnView)
+    public async Task OpenAsync(CatalogGame game, object returnContent)
     {
         if (game == null) throw new ArgumentNullException(nameof(game));
-        if (returnView == null) throw new ArgumentNullException(nameof(returnView));
+        if (returnContent == null) throw new ArgumentNullException(nameof(returnContent));
 
         await OpenDeferredAsync(
                 placeholderGame: game,
-                returnView: returnView,
+                returnContent: returnContent,
                 connect: ct => _rooms.CreateAndConnectAsync(game.Id, ct),
                 buildGameFromSession: _ => game,
                 isNew: true)
             .ConfigureAwait(true);
     }
 
-    public async Task OpenExistingAsync(int roomId, UserControl returnView)
+    public async Task OpenExistingAsync(int roomId, object returnContent)
     {
-        await OpenExistingAsync(roomId, returnView, spectator: false).ConfigureAwait(true);
+        await OpenExistingAsync(roomId, returnContent, spectator: false).ConfigureAwait(true);
     }
 
     private sealed record RosterEntry(int Id, string Username, bool Spectator);
@@ -305,15 +301,15 @@ public sealed class GameTableOpener : IGameTableOpener
         await session.SendCommandAsync("room.set-owner", payload: new { userId = target.Id }).ConfigureAwait(true);
     }
 
-    public async Task OpenExistingAsync(int roomId, UserControl returnView, bool spectator)
+    public async Task OpenExistingAsync(int roomId, object returnContent, bool spectator)
     {
-        await OpenExistingAsync(roomId, returnView, spectator, silent: false).ConfigureAwait(true);
+        await OpenExistingAsync(roomId, returnContent, spectator, silent: false).ConfigureAwait(true);
     }
 
-    public async Task OpenExistingAsync(int roomId, UserControl returnView, bool spectator, bool silent)
+    public async Task OpenExistingAsync(int roomId, object returnContent, bool spectator, bool silent)
     {
         if (roomId <= 0) throw new ArgumentException("roomId invalide", nameof(roomId));
-        if (returnView == null) throw new ArgumentNullException(nameof(returnView));
+        if (returnContent == null) throw new ArgumentNullException(nameof(returnContent));
 
         var placeholderGame = new CatalogGame(
             code: "unknown",
@@ -326,7 +322,7 @@ public sealed class GameTableOpener : IGameTableOpener
 
         await OpenDeferredAsync(
                 placeholderGame: placeholderGame,
-                returnView: returnView,
+                returnContent: returnContent,
                 connect: ct => _rooms.ConnectAsync(roomId, spectator, silent, ct),
                 buildGameFromSession: session =>
                 {
@@ -352,7 +348,7 @@ public sealed class GameTableOpener : IGameTableOpener
 
     private async Task OpenDeferredAsync(
         CatalogGame placeholderGame,
-        UserControl returnView,
+        object returnContent,
         Func<CancellationToken, Task<RoomSession>> connect,
         Func<RoomSession, CatalogGame> buildGameFromSession,
         bool isNew)
@@ -423,11 +419,11 @@ public sealed class GameTableOpener : IGameTableOpener
 
                 if (!dispatcher.CheckAccess())
                 {
-                    await dispatcher.InvokeAsync(() => _navigation.Show(returnView), DispatcherPriority.Normal);
+                    await dispatcher.InvokeAsync(() => _navigation.Show(returnContent), DispatcherPriority.Normal);
                 }
                 else
                 {
-                    _navigation.Show(returnView);
+                    _navigation.Show(returnContent);
                 }
 
                 // Réactive l'ambiance/musique si on revient vers un écran qui en a une.
@@ -451,15 +447,10 @@ public sealed class GameTableOpener : IGameTableOpener
             }
         }
 
-        GameRoomView? tableView = null;
         GameRoomViewModel? vm = null;
 
         await dispatcher.InvokeAsync(() =>
         {
-                        tableView = new GameRoomView();
-                        tableView.SetScreenReader(_screenReader);
-                        tableView.SetAnnouncementService(_announcementService);
-
             Task Start() => session?.SendCommandAsync("room.start", payload: null) ?? Task.CompletedTask;
             Task Reset() => session?.SendCommandAsync("room.reset", payload: null) ?? Task.CompletedTask;
             Task SendChat(string message) =>
@@ -492,14 +483,15 @@ public sealed class GameTableOpener : IGameTableOpener
                 onKick: Kick,
                 onBan: Ban,
                 onTransferOwner: TransferOwner,
-                dialogs: _dialogs);
+                dialogs: _dialogs,
+                screenReader: _screenReader,
+                announcements: _announcementService);
             vm.Status = "Connexion à la table…";
             vm.IsReconnecting = true;
             vm.GameZone.IsConnected = false;
             vm.Chat.IsConnected = false;
 
-            tableView.DataContext = vm;
-            _navigation.Show(tableView);
+            _navigation.Show(vm);
         }, DispatcherPriority.Normal);
 
         _ = Task.Run(async () =>
@@ -538,7 +530,6 @@ public sealed class GameTableOpener : IGameTableOpener
                     // Si on a ouvert une table existante, remplacer le DataContext par un VM complet basé sur le manifest.
                     if (!ReferenceEquals(placeholderGame, game))
                     {
-                        if (tableView == null) return;
 	                        var newVm = new GameRoomViewModel(
 	                            game,
                             onSendChat: msg => session.SendCommandAsync("room.chat.send", payload: new { message = msg }),
@@ -555,16 +546,18 @@ public sealed class GameTableOpener : IGameTableOpener
                             onKick: () => KickPlayerAsync(session, ban: false),
                             onBan: () => KickPlayerAsync(session, ban: true),
 	                            onTransferOwner: () => TransferOwnerAsync(session),
-	                            dialogs: _dialogs);
+	                            dialogs: _dialogs,
+	                            screenReader: _screenReader,
+	                            announcements: _announcementService);
 	                        newVm.Status = "Connexion à la table…";
 	                        newVm.IsReconnecting = true;
 	                        newVm.GameZone.IsConnected = false;
 	                        newVm.Chat.IsConnected = false;
 	                        vm = newVm;
-	                        tableView.DataContext = vm;
+	                        _navigation.Show(vm);
 	                    }
 
-                    if (tableView == null || vm == null)
+                    if (vm == null)
                     {
                         return;
                     }
@@ -580,7 +573,6 @@ public sealed class GameTableOpener : IGameTableOpener
                         dispatcher: dispatcher,
                         game: game,
                         session: session,
-                        tableView: tableView,
                         tableVm: vm,
                         announcements: _announcements,
                         sounds: _sounds,
@@ -672,7 +664,7 @@ public sealed class GameTableOpener : IGameTableOpener
 
                 try
                 {
-                    await dispatcher.InvokeAsync(() => _navigation.Show(returnView), DispatcherPriority.Normal);
+                    await dispatcher.InvokeAsync(() => _navigation.Show(returnContent), DispatcherPriority.Normal);
                     await _dialogs.ShowError("Table", $"Impossible d'ouvrir la table : {ex.Message}")
                         .ConfigureAwait(true);
                 }

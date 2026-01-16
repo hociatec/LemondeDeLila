@@ -4,7 +4,6 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Threading;
 using client_win.Core;
@@ -119,7 +118,7 @@ public sealed partial class AdminViewModel : ObservableObject
     private readonly IGameTableOpener _tables;
     private readonly IRoomDirectoryClient _roomDirectory;
     private readonly IApiCapabilitiesService _apiCapabilities;
-    private readonly UserControl _returnView;
+    private readonly Func<object?> _returnContent;
     private readonly Func<Task<string>>? _openNotifications;
     private readonly Func<int, string, Task<string>>? _openStoryBookForUser;
     private string? _userPickMode;
@@ -139,7 +138,7 @@ public sealed partial class AdminViewModel : ObservableObject
         ISessionService session,
         IRemoteSoundCache remoteSounds,
         IGameTableOpener tables,
-        UserControl returnView,
+        Func<object?> returnContent,
         Func<Task<string>>? openNotifications,
         Func<int, string, Task<string>>? openStoryBookForUser,
         Action onClose)
@@ -158,7 +157,7 @@ public sealed partial class AdminViewModel : ObservableObject
         _session = session ?? throw new ArgumentNullException(nameof(session));
         _remoteSounds = remoteSounds ?? throw new ArgumentNullException(nameof(remoteSounds));
         _tables = tables ?? throw new ArgumentNullException(nameof(tables));
-        _returnView = returnView ?? throw new ArgumentNullException(nameof(returnView));
+        _returnContent = returnContent ?? throw new ArgumentNullException(nameof(returnContent));
         _openNotifications = openNotifications;
         _openStoryBookForUser = openStoryBookForUser;
         _close = onClose ?? (() => { });

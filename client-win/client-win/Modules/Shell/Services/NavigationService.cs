@@ -1,7 +1,4 @@
 using System;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Threading;
 
 namespace client_win.Modules.Shell.Services;
 
@@ -10,18 +7,14 @@ namespace client_win.Modules.Shell.Services;
 /// </summary>
 public sealed class NavigationService : INavigationService
 {
-    private readonly ContentControl _host;
     private UserContext _currentUser = UserContext.Empty;
 
-    public UserControl? CurrentView { get; private set; }
+    public object? CurrentContent { get; private set; }
     public UserContext CurrentUser => _currentUser;
 
-    public event EventHandler<UserControl?>? CurrentViewChanged;
+    public event EventHandler<object?>? CurrentContentChanged;
 
-    public NavigationService(ContentControl host)
-    {
-        _host = host ?? throw new ArgumentNullException(nameof(host));
-    }
+    public NavigationService() { }
 
     public void SetUser(UserContext user)
     {
@@ -33,13 +26,12 @@ public sealed class NavigationService : INavigationService
         _currentUser = UserContext.Empty;
     }
 
-    public void Show(UserControl view)
+    public void Show(object content)
     {
-        _host.Content = view ?? throw new ArgumentNullException(nameof(view));
-        CurrentView = view;
+        CurrentContent = content ?? throw new ArgumentNullException(nameof(content));
         try
         {
-            CurrentViewChanged?.Invoke(this, view);
+            CurrentContentChanged?.Invoke(this, content);
         }
         catch
         {
@@ -47,10 +39,16 @@ public sealed class NavigationService : INavigationService
         }
 
         // Accessibilité : donner une opportunité au focus clavier d'atterrir dans la nouvelle vue.
+#if false
         _host.Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() =>
         {
             try
             {
+                if (content is not UserControl view)
+                {
+                    return;
+                }
+
                 if (view.IsKeyboardFocusWithin)
                 {
                     return;
@@ -64,6 +62,7 @@ public sealed class NavigationService : INavigationService
                 // Best-effort : ne pas empêcher la navigation si la vue ne supporte pas le focus.
             }
         }));
+#endif
     }
 }
 

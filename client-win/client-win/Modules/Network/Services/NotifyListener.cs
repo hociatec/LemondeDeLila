@@ -1040,7 +1040,7 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
         {
             try
             {
-                var view = _navigation.CurrentView;
+                var view = _navigation.CurrentContent as System.Windows.Controls.UserControl;
                 if (view == null)
                 {
                     return;
@@ -1156,15 +1156,15 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
                 return;
             }
 
-            var returnView = _navigation.CurrentView;
-            if (returnView == null)
+            var returnContent = _navigation.CurrentContent;
+            if (returnContent == null)
             {
                 await _dialogs.ShowInfo("Invitation", "Impossible d'ouvrir la table (vue courante indisponible).").ConfigureAwait(true);
                 RestoreFocus();
                 return;
             }
 
-            await _tables.OpenExistingAsync(effectiveRoomId, returnView, res.Spectator).ConfigureAwait(true);
+            await _tables.OpenExistingAsync(effectiveRoomId, returnContent, res.Spectator).ConfigureAwait(true);
         }
         catch (Exception ex)
         {

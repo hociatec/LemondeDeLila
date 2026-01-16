@@ -21,6 +21,7 @@ public partial class SocialView : UserControl
     private int _lastMenuIndex = -1;
     private SocialViewModel? _focusVm;
     private Action? _profileFocusHandler;
+    private Action? _returnToMenuHandler;
 
     public SocialView()
     {
@@ -29,12 +30,9 @@ public partial class SocialView : UserControl
         Unloaded += OnUnloaded;
     }
 
-    public void ReturnToMenu()
+    private void ReturnToMenu()
     {
-        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
-        {
-            SetScreen(SocialScreen.Menu);
-        }));
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() => SetScreen(SocialScreen.Menu)));
     }
 
     private async void OnLoaded(object sender, RoutedEventArgs e)
@@ -83,9 +81,14 @@ public partial class SocialView : UserControl
         {
             _focusVm.ProfileFocusRequested -= _profileFocusHandler;
         }
+        if (_focusVm != null && _returnToMenuHandler != null)
+        {
+            _focusVm.ReturnToMenuRequested -= _returnToMenuHandler;
+        }
 
         _focusVm = vm;
         _profileFocusHandler = null;
+        _returnToMenuHandler = null;
 
         if (_focusVm == null)
         {
@@ -102,6 +105,9 @@ public partial class SocialView : UserControl
         };
 
         _focusVm.ProfileFocusRequested += _profileFocusHandler;
+
+        _returnToMenuHandler = () => ReturnToMenu();
+        _focusVm.ReturnToMenuRequested += _returnToMenuHandler;
     }
 
     private void OnRootKeyDown(object sender, KeyEventArgs e)

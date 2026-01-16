@@ -4,7 +4,6 @@ using System.Collections.ObjectModel;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
 using client_win.Core;
@@ -21,7 +20,7 @@ public sealed class JoinGameViewModel : ObservableObject, IDisposable
     private readonly IAnnouncementService _announcements;
     private readonly Action _close;
     private readonly Dispatcher _dispatcher;
-    private readonly UserControl _returnView;
+    private readonly Func<object?> _returnContent;
     private IDisposable? _refreshSubscription;
     private IDisposable? _transportSubscription;
     private CancellationTokenSource? _refreshDebounceCts;
@@ -38,13 +37,13 @@ public sealed class JoinGameViewModel : ObservableObject, IDisposable
         IRoomDirectoryClient rooms,
         IGameTableOpener tables,
         IAnnouncementService announcements,
-        UserControl returnView,
+        Func<object?> returnContent,
         Action onClose)
     {
         _rooms = rooms ?? throw new ArgumentNullException(nameof(rooms));
         _tables = tables ?? throw new ArgumentNullException(nameof(tables));
         _announcements = announcements ?? throw new ArgumentNullException(nameof(announcements));
-        _returnView = returnView ?? throw new ArgumentNullException(nameof(returnView));
+        _returnContent = returnContent ?? throw new ArgumentNullException(nameof(returnContent));
         _close = onClose ?? (() => { });
         _dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
 
@@ -199,7 +198,13 @@ public sealed class JoinGameViewModel : ObservableObject, IDisposable
         IsBusy = true;
         try
         {
-            await _tables.OpenExistingAsync(selected.Id, _returnView, spectator: selected.SpectatorOnly).ConfigureAwait(true);
+            var returnContent = _returnContent();
+            if (returnContent == null)
+            {
+                return;
+            }
+
+            await _tables.OpenExistingAsync(selected.Id, returnContent, spectator: selected.SpectatorOnly).ConfigureAwait(true);
         }
         finally
         {

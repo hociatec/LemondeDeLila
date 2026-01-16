@@ -23,7 +23,7 @@ public sealed class ShellErrorHandler : IDisposable
     private readonly INavigationService _navigation;
     private readonly IDialogService _dialogs;
     private readonly ClientConfiguration _config;
-    private readonly Func<System.Windows.Controls.UserControl> _homeViewProvider;
+    private readonly Func<object> _homeContentProvider;
     private readonly CrashReporter? _crashReporter;
     private readonly IDisposable _subscription;
     private int _isShowingErrorDialog; // CORRECTION: Utilise int pour Interlocked (thread-safe)
@@ -37,14 +37,14 @@ public sealed class ShellErrorHandler : IDisposable
         INavigationService navigation,
         IDialogService dialogs,
         ClientConfiguration config,
-        Func<System.Windows.Controls.UserControl> homeViewProvider,
+        Func<object> homeContentProvider,
         CrashReporter? crashReporter = null)
     {
         _errors = errors ?? throw new ArgumentNullException(nameof(errors));
         _navigation = navigation ?? throw new ArgumentNullException(nameof(navigation));
         _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
         _config = config ?? throw new ArgumentNullException(nameof(config));
-        _homeViewProvider = homeViewProvider ?? throw new ArgumentNullException(nameof(homeViewProvider));
+        _homeContentProvider = homeContentProvider ?? throw new ArgumentNullException(nameof(homeContentProvider));
         _crashReporter = crashReporter;
 
         _subscription = _errors.Subscribe(ShowErrorDialog);
@@ -201,10 +201,13 @@ public sealed class ShellErrorHandler : IDisposable
 
     private void EnsureHomeVisible()
     {
-        if (_navigation.CurrentView == null)
+        if (_navigation.CurrentContent == null)
         {
-            var home = _homeViewProvider();
-            _navigation.Show(home);
+            var home = _homeContentProvider();
+            if (home != null)
+            {
+                _navigation.Show(home);
+            }
         }
     }
 

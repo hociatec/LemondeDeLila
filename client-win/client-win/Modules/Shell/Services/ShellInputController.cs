@@ -6,6 +6,7 @@ using System.Windows.Threading;
 using client_win.Modules.MainMenu.Services;
 using client_win.Modules.Presence.Services;
 using client_win.Modules.Presence.Views;
+using client_win.Modules.Presence.ViewModels;
 using client_win.Modules.Game.Shell.Views;
 
 namespace client_win.Modules.Shell.Services;
@@ -76,7 +77,7 @@ public sealed class ShellInputController
         if (isCtrl && key == Key.U)
         {
             e.Handled = true;
-            if (_navigation.CurrentView is PresenceView)
+            if (_navigation.CurrentContent is PresenceViewModel or PresenceView)
             {
                 return;
             }
@@ -100,7 +101,7 @@ public sealed class ShellInputController
     {
         try
         {
-            if (_navigation.CurrentView is GameRoomView room)
+            if (_navigation.CurrentContent is GameRoomView room)
             {
                 Application.Current?.Dispatcher?.BeginInvoke(DispatcherPriority.Input, new Action(room.RequestFocusGameZone));
             }
@@ -111,4 +112,3 @@ public sealed class ShellInputController
         }
     }
 }
-

@@ -2,7 +2,6 @@ using System;
 using System.Threading.Tasks;
 using System.Windows;
 using client_win.Modules.Chat.ViewModels;
-using client_win.Modules.Chat.Views;
 using client_win.Modules.Settings.Services;
 using client_win.Modules.Shell.Services;
 
@@ -18,8 +17,8 @@ public sealed class ChatLauncher : IChatLauncher
     private readonly IOptionsService _options;
     private readonly INavigationService _navigation;
     private readonly IAnnouncementService _announcements;
-    private ChatView? _view;
-    private System.Windows.Controls.UserControl? _previousView;
+    private ChatViewModel? _viewModel;
+    private object? _previousContent;
     private bool _isCleaningUp;
     private bool _isOpening;
 
@@ -47,14 +46,12 @@ public sealed class ChatLauncher : IChatLauncher
 
         await Application.Current.Dispatcher.InvokeAsync(() =>
         {
-            if (_view == null)
+            if (_viewModel == null)
             {
-                _previousView = _navigation.CurrentView;
-                _view = new ChatView();
-                _view.DataContext = new ChatViewModel(_chat, () => _ = CloseAsync(), _dialogs, _announcements);
+                _previousContent = _navigation.CurrentContent;
+                _viewModel = new ChatViewModel(_chat, () => _ = CloseAsync(), _dialogs, _announcements);
             }
-            _navigation.Show(_view);
-            _view.Focus();
+            _navigation.Show(_viewModel);
         });
 
         _ = EnsureChatConnectionAsync();
@@ -102,9 +99,9 @@ public sealed class ChatLauncher : IChatLauncher
     {
         await Application.Current.Dispatcher.InvokeAsync(() =>
         {
-            if (_previousView != null)
+            if (_previousContent != null)
             {
-                _navigation.Show(_previousView);
+                _navigation.Show(_previousContent);
             }
         });
     }
@@ -137,8 +134,8 @@ public sealed class ChatLauncher : IChatLauncher
         }
         _isCleaningUp = true;
 
-        _view = null;
-        _previousView = null;
+        _viewModel = null;
+        _previousContent = null;
         await _chat.CloseAsync();
         _isCleaningUp = false;
     }

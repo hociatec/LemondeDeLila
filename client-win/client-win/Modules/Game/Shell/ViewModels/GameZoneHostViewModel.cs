@@ -150,6 +150,8 @@ public sealed class GameZoneHostViewModel : ObservableObject
     public event Action<string>? StatusRequested;
     public event Action? FocusRequested;
 
+    public void RequestFocus() => FocusRequested?.Invoke();
+
     private void RaiseCommandsCanExecuteChanged()
     {
         static void Raise(ICommand cmd)

@@ -72,8 +72,7 @@ public sealed class OptionsService : IOptionsService
                 return;
             }
 
-            var previous = _navigation.CurrentView;
-            var view = new OptionsView();
+            var previous = _navigation.CurrentContent;
             OptionsViewModel? vm = null;
 
             var clone = CloneState(_state);
@@ -104,15 +103,20 @@ public sealed class OptionsService : IOptionsService
                     }
                 });
 
-            view.DataContext = vm;
-            view.Unloaded += (_, _) =>
+            EventHandler<object?>? handler = null;
+            handler = (_, content) =>
             {
-                if (!tcs.Task.IsCompleted)
+                if (handler != null && !ReferenceEquals(content, vm))
                 {
-                    tcs.TrySetResult("Options fermées.");
+                    _navigation.CurrentContentChanged -= handler;
+                    if (!tcs.Task.IsCompleted)
+                    {
+                        tcs.TrySetResult("Options fermées.");
+                    }
                 }
             };
-            _navigation.Show(view);
+            _navigation.CurrentContentChanged += handler;
+            _navigation.Show(vm);
         });
 
         return tcs.Task;

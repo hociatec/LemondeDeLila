@@ -31,9 +31,13 @@ public sealed class GameRoomViewModel : ObservableObject
         Func<Task> onKick,
         Func<Task> onBan,
         Func<Task> onTransferOwner,
-        IDialogService dialogs)
+        IDialogService dialogs,
+        IScreenReaderAnnouncer screenReader,
+        IAnnouncementService announcements)
     {
         Game = game ?? throw new ArgumentNullException(nameof(game));
+        ScreenReader = screenReader ?? throw new ArgumentNullException(nameof(screenReader));
+        Announcements = announcements ?? throw new ArgumentNullException(nameof(announcements));
         History = new GameHistoryViewModel(game);
 
         var title = !string.IsNullOrWhiteSpace(game.Name) ? game.Name : game.Id;
@@ -60,6 +64,10 @@ public sealed class GameRoomViewModel : ObservableObject
     }
 
     public CatalogGame Game { get; }
+
+    public IScreenReaderAnnouncer ScreenReader { get; }
+
+    public IAnnouncementService Announcements { get; }
 
     public GameHistoryViewModel History { get; }
 

@@ -307,7 +307,13 @@ public sealed partial class AdminViewModel
         {
             IsBusy = true;
             // Mode silencieux admin = non notifié / non listé côté serveur.
-            await _tables.OpenExistingAsync(roomId, _returnView, spectator: false, silent: true).ConfigureAwait(true);
+            var returnContent = _returnContent();
+            if (returnContent == null)
+            {
+                return;
+            }
+
+            await _tables.OpenExistingAsync(roomId, returnContent, spectator: false, silent: true).ConfigureAwait(true);
         }
         finally
         {

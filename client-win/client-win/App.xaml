@@ -2,8 +2,87 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:client_win"
-             StartupUri="MainWindow.xaml">
+             xmlns:homeVm="clr-namespace:client_win.Modules.Home.ViewModels"
+             xmlns:homeView="clr-namespace:client_win.Modules.Home.Views"
+             xmlns:menuVm="clr-namespace:client_win.Modules.MainMenu.ViewModels"
+             xmlns:menuView="clr-namespace:client_win.Modules.MainMenu.Views"
+             xmlns:catalogVm="clr-namespace:client_win.Modules.Catalog.ViewModels"
+             xmlns:catalogView="clr-namespace:client_win.Modules.Catalog.Views"
+             xmlns:statsVm="clr-namespace:client_win.Modules.Stats.ViewModels"
+             xmlns:statsView="clr-namespace:client_win.Modules.Stats.Views"
+             xmlns:leaderVm="clr-namespace:client_win.Modules.Leaderboard.ViewModels"
+             xmlns:leaderView="clr-namespace:client_win.Modules.Leaderboard.Views"
+             xmlns:joinVm="clr-namespace:client_win.Modules.Game.RoomDirectory.ViewModels"
+             xmlns:joinView="clr-namespace:client_win.Modules.Game.RoomDirectory.Views"
+             xmlns:msgVm="clr-namespace:client_win.Modules.Messaging.ViewModels"
+             xmlns:msgView="clr-namespace:client_win.Modules.Messaging.Views"
+             xmlns:socialVm="clr-namespace:client_win.Modules.Social.ViewModels"
+             xmlns:socialView="clr-namespace:client_win.Modules.Social.Views"
+             xmlns:notifVm="clr-namespace:client_win.Modules.Notifications.ViewModels"
+             xmlns:notifView="clr-namespace:client_win.Modules.Notifications.Views"
+             xmlns:aboutVm="clr-namespace:client_win.Modules.About.ViewModels"
+             xmlns:aboutView="clr-namespace:client_win.Modules.About.Views"
+             xmlns:adminVm="clr-namespace:client_win.Modules.Admin.ViewModels"
+             xmlns:adminView="clr-namespace:client_win.Modules.Admin.Views"
+             xmlns:chatVm="clr-namespace:client_win.Modules.Chat.ViewModels"
+             xmlns:chatView="clr-namespace:client_win.Modules.Chat.Views"
+             xmlns:optionsVm="clr-namespace:client_win.Modules.Settings.ViewModels"
+             xmlns:optionsView="clr-namespace:client_win.Modules.Settings.Views"
+             xmlns:presenceVm="clr-namespace:client_win.Modules.Presence.ViewModels"
+             xmlns:presenceView="clr-namespace:client_win.Modules.Presence.Views"
+             xmlns:roomVm="clr-namespace:client_win.Modules.Game.Shell.ViewModels"
+             xmlns:roomView="clr-namespace:client_win.Modules.Game.Shell.Views"
+             xmlns:playVm="clr-namespace:client_win.Modules.Game.Play.GamePlay.ViewModels"
+             xmlns:playView="clr-namespace:client_win.Modules.Game.Play.GamePlay.Views">
     <Application.Resources>
+        <DataTemplate DataType="{x:Type homeVm:HomeViewModel}">
+            <homeView:HomeView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type menuVm:MainMenuViewModel}">
+            <menuView:MainMenuView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type catalogVm:CatalogViewModel}">
+            <catalogView:CatalogView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type statsVm:StatsViewModel}">
+            <statsView:StatsView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type leaderVm:LeaderboardViewModel}">
+            <leaderView:LeaderboardView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type joinVm:JoinGameViewModel}">
+            <joinView:JoinGameView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type msgVm:MessagingViewModel}">
+            <msgView:MessagingView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type socialVm:SocialViewModel}">
+            <socialView:SocialView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type notifVm:NotificationsViewModel}">
+            <notifView:NotificationsView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type aboutVm:AboutViewModel}">
+            <aboutView:AboutView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type adminVm:AdminViewModel}">
+            <adminView:AdminView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type chatVm:ChatViewModel}">
+            <chatView:ChatView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type optionsVm:OptionsViewModel}">
+            <optionsView:OptionsView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type presenceVm:PresenceViewModel}">
+            <presenceView:PresenceView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type roomVm:GameRoomViewModel}">
+            <roomView:GameRoomView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type playVm:GamePlayViewModel}">
+            <playView:GamePlayView />
+        </DataTemplate>
         <!-- Désactiver le focus sur les éléments non-interactifs pour améliorer l'accessibilité avec les lecteurs d'écran -->
         <Style TargetType="TextBlock">
             <Setter Property="Focusable" Value="False" />

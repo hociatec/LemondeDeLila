@@ -38,6 +38,7 @@ public sealed class SocialViewModel : ObservableObject
     private SocialSection? _returnSectionFromProfile;
 
     public event Action? ProfileFocusRequested;
+    public event Action? ReturnToMenuRequested;
 
     private SocialUser? _selectedFriend;
     private SocialFriendRequest? _selectedIncomingRequest;
@@ -80,6 +81,8 @@ public sealed class SocialViewModel : ObservableObject
 
         _selectedSection = SocialSection.Friends;
     }
+
+    public void RequestReturnToMenu() => ReturnToMenuRequested?.Invoke();
 
     public ObservableCollection<SocialUser> Friends { get; }
     public ObservableCollection<SocialFriendRequest> IncomingRequests { get; }

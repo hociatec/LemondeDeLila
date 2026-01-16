@@ -3,10 +3,11 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:home="clr-namespace:client_win.Modules.Home.Views"
+        xmlns:shellViews="clr-namespace:client_win.Modules.Shell.Views"
         mc:Ignorable="d"
         Title="{Binding WindowTitle}" Height="720" Width="1280"
         WindowStartupLocation="CenterScreen"
-        Background="#0B1523">
-    <ContentControl x:Name="RootHost" Focusable="False" />
+        Background="#0B1523"
+        shellViews:ShellWindowBehavior.Enable="True">
+    <ContentControl x:Name="RootHost" Focusable="False" Content="{Binding CurrentContent}" />
 </Window>

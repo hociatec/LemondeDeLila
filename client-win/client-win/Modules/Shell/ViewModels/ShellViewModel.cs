@@ -6,14 +6,13 @@ using System.Windows.Input;
 using client_win.Core;
 using client_win.Modules.Audio.Services;
 using client_win.Modules.Config;
-using client_win.Modules.Home.Views;
+using client_win.Modules.Home.ViewModels;
 using client_win.Modules.MainMenu.Services;
 using client_win.Modules.Network.Services;
 using client_win.Modules.Presence.Services;
 using client_win.Modules.Settings.Services;
 using client_win.Modules.Shell.Services;
 using client_win.Modules.User.Models;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace client_win.Modules.Shell.ViewModels;
@@ -25,7 +24,8 @@ public sealed class ShellViewModel : ObservableObject
     private readonly ILogger<ShellViewModel> _logger;
 
     private readonly INavigationService _navigation;
-    private readonly HomeView _homeView;
+    private readonly HomeViewModel _homeViewModel;
+    private readonly EventHandler<object?> _contentChangedHandler;
     private readonly ShellErrorHandler _errorHandler;
     private readonly ShellStartupController _startup;
     private readonly ShellSessionController _session;
@@ -35,28 +35,32 @@ public sealed class ShellViewModel : ObservableObject
 
     private string _windowTitle = "Le Monde de Lila";
 
-    public ShellViewModel(AppHost host, Action requestClose)
+    public ShellViewModel(
+        AppHost host,
+        Action requestClose,
+        ILogger<ShellViewModel> logger,
+        IOptionsService options,
+        INotifyListener notify,
+        IPresenceMonitor presence,
+        IPresenceLauncher presenceUi,
+        IHomeViewAccessor homeAccessor,
+        IMenuRouter menuRouter,
+        IAppAudioCoordinator audio)
     {
         _host = host ?? throw new ArgumentNullException(nameof(host));
         _requestClose = requestClose ?? throw new ArgumentNullException(nameof(requestClose));
-        _logger = host.Services.GetRequiredService<ILogger<ShellViewModel>>();
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
         var dialogs = _host.Dialogs;
-        var options = _host.Services.GetRequiredService<IOptionsService>();
-        var notify = _host.Services.GetRequiredService<INotifyListener>();
-        var presence = _host.Services.GetRequiredService<IPresenceMonitor>();
-        var presenceUi = _host.Services.GetRequiredService<IPresenceLauncher>();
-        var homeAccessor = _host.Services.GetRequiredService<IHomeViewAccessor>();
-        var menuRouter = _host.Services.GetRequiredService<IMenuRouter>();
-        var audio = _host.Services.GetRequiredService<IAppAudioCoordinator>();
-
-        var homeViewModel = _host.CreateHomeViewModel(OnNavigateToMainMenu, _requestClose);
-        _homeView = new HomeView { DataContext = homeViewModel };
         _navigation = _host.Navigation;
+        _homeViewModel = _host.CreateHomeViewModel(OnNavigateToMainMenu, _requestClose);
+
+        _contentChangedHandler = (_, _) => OnPropertyChanged(nameof(CurrentContent));
+        _navigation.CurrentContentChanged += _contentChangedHandler;
 
         _audioSync = new NavigationAudioSync(_navigation, audio);
-        _errorHandler = new ShellErrorHandler(_host.Errors, _navigation, dialogs, _host.Configuration, () => _homeView, _host.CrashReporter);
-        _startup = new ShellStartupController(_navigation, homeViewModel, _homeView, _host.Configuration, dialogs, _host.Errors);
+        _errorHandler = new ShellErrorHandler(_host.Errors, _navigation, dialogs, _host.Configuration, () => _homeViewModel, _host.CrashReporter);
+        _startup = new ShellStartupController(_navigation, _homeViewModel, _host.Configuration, dialogs, _host.Errors);
         _session = new ShellSessionController(_host, _navigation, homeAccessor, notify, presence, audio);
         _input = new ShellInputController(presence, presenceUi, _navigation, menuRouter);
         _close = new ShellCloseCoordinator(dialogs, options, audio);
@@ -67,6 +71,8 @@ public sealed class ShellViewModel : ObservableObject
         get => _windowTitle;
         private set => SetProperty(ref _windowTitle, value);
     }
+
+    public object? CurrentContent => _navigation.CurrentContent;
 
     public async Task OnLoadedAsync()
     {
@@ -108,13 +114,14 @@ public sealed class ShellViewModel : ObservableObject
     private void OnLogoutRequested()
     {
         WindowTitle = "Le Monde de Lila";
-        _session.LogoutToHome(_homeView);
+        _session.LogoutToHome(_homeViewModel);
     }
 
     public async Task OnClosedAsync()
     {
         try { _audioSync.Dispose(); } catch { /* ignore */ }
         try { _errorHandler.Dispose(); } catch { /* ignore */ }
+        try { _navigation.CurrentContentChanged -= _contentChangedHandler; } catch { /* ignore */ }
         try { await _host.DisposeAsync().ConfigureAwait(false); } catch { /* ignore */ }
     }
 }

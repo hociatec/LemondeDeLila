@@ -32,17 +32,6 @@ public partial class GameRoomView : UserControl
 
     public void RequestFocusGameZone() => RequestFocusGameZoneDeferred();
 
-    public void SetScreenReader(IScreenReaderAnnouncer? screenReader)
-    {
-        _screenReader = screenReader;
-        HistoryHost?.SetScreenReader(screenReader);
-    }
-
-    public void SetAnnouncementService(IAnnouncementService? announcements)
-    {
-        _announcements = announcements;
-    }
-
     private void OnLoaded(object sender, System.Windows.RoutedEventArgs e)
     {
         HookTabCapture();
@@ -102,8 +91,15 @@ public partial class GameRoomView : UserControl
 
         if (_vm == null)
         {
+            _screenReader = null;
+            _announcements = null;
+            HistoryHost?.SetScreenReader(null);
             return;
         }
+
+        _screenReader = _vm.ScreenReader;
+        _announcements = _vm.Announcements;
+        HistoryHost?.SetScreenReader(_screenReader);
 
         _focusRequestedHandler = () =>
         {

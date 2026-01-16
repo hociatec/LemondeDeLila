@@ -4,6 +4,17 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows;
+using client_win.Core.Accessibility;
+using client_win.Modules.Audio.Services;
+using client_win.Modules.Config;
+using client_win.Modules.MainMenu.Services;
+using client_win.Modules.Network.Services;
+using client_win.Modules.Presence.Services;
+using client_win.Modules.Settings.Services;
+using client_win.Modules.Shell.Services;
+using client_win.Modules.Shell.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace client_win
 {
@@ -45,6 +56,34 @@ namespace client_win
             }
 
             base.OnStartup(e);
+
+            var window = new MainWindow();
+            var host = AppBootstrapper.Build();
+
+            try
+            {
+                SpaceKeyAnnouncer.Initialize(host.Services.GetRequiredService<IScreenReaderAnnouncer>());
+            }
+            catch
+            {
+                // best-effort
+            }
+
+            var shell = new ShellViewModel(
+                host,
+                requestClose: window.Close,
+                logger: host.Services.GetRequiredService<ILogger<ShellViewModel>>(),
+                options: host.Services.GetRequiredService<IOptionsService>(),
+                notify: host.Services.GetRequiredService<INotifyListener>(),
+                presence: host.Services.GetRequiredService<IPresenceMonitor>(),
+                presenceUi: host.Services.GetRequiredService<IPresenceLauncher>(),
+                homeAccessor: host.Services.GetRequiredService<IHomeViewAccessor>(),
+                menuRouter: host.Services.GetRequiredService<IMenuRouter>(),
+                audio: host.Services.GetRequiredService<IAppAudioCoordinator>());
+
+            window.DataContext = shell;
+            MainWindow = window;
+            window.Show();
         }
 
         protected override void OnExit(ExitEventArgs e)

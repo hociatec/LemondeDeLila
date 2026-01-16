@@ -3,9 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using client_win.Modules.Audio.Services;
 using client_win.Modules.Config;
-using client_win.Modules.Home.Views;
 using client_win.Modules.MainMenu.ViewModels;
-using client_win.Modules.MainMenu.Views;
 using client_win.Modules.Network.Services;
 using client_win.Modules.User.Models;
 using client_win.Modules.User.Services;
@@ -85,12 +83,11 @@ public sealed class ShellSessionController
         }
 
         var menuVm = _host.CreateMainMenuViewModel(user, onLogoutRequested);
-        var menuView = new MainMenuView { DataContext = menuVm };
-        _homeAccessor.HomeView = menuView;
-        _navigation.Show(menuView);
+        _homeAccessor.HomeContent = menuVm;
+        _navigation.Show(menuVm);
     }
 
-    public void LogoutToHome(HomeView homeView)
+    public void LogoutToHome(object homeContent)
     {
         _ = _notify.StopAsync();
         _ = _presence.StopAsync();
@@ -98,7 +95,7 @@ public sealed class ShellSessionController
 
         _host.Session.Clear();
         _navigation.ClearUser();
-        _homeAccessor.HomeView = null;
-        _navigation.Show(homeView);
+        _homeAccessor.HomeContent = null;
+        _navigation.Show(homeContent);
     }
 }

@@ -1,15 +1,10 @@
 using System;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Input;
-using System.Windows.Threading;
 using client_win.Modules.Game.Shell.Services;
-using client_win.Modules.Game.Shell.Views;
 using client_win.Modules.Stats.Services;
 using client_win.Modules.Stats.ViewModels;
-using client_win.Modules.Stats.Views;
 using client_win.Modules.Presence.ViewModels;
-using client_win.Modules.Presence.Views;
 using client_win.Modules.Shell.Services;
 using client_win.Modules.User.Services;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,8 +16,8 @@ public sealed class PresenceLauncher : IPresenceLauncher
     private readonly IServiceProvider _services;
     private readonly INavigationService _navigation;
     private readonly ISessionService _session;
-    private PresenceView? _view;
-    private System.Windows.Controls.UserControl? _previousView;
+    private PresenceViewModel? _viewModel;
+    private object? _previousContent;
 
     public PresenceLauncher(IServiceProvider services, INavigationService navigation, ISessionService session)
     {
@@ -41,11 +36,10 @@ public sealed class PresenceLauncher : IPresenceLauncher
 
         await Application.Current.Dispatcher.InvokeAsync(() =>
         {
-            _previousView = _navigation.CurrentView;
-            if (_view == null)
+            _previousContent = _navigation.CurrentContent;
+            if (_viewModel == null)
             {
-                _view = new PresenceView();
-                _view.DataContext = new PresenceViewModel(
+                _viewModel = new PresenceViewModel(
                     presence: _services.GetRequiredService<IPresenceMonitor>(),
                     rooms: _services.GetRequiredService<Modules.Game.RoomDirectory.Services.IRoomDirectoryClient>(),
                     messaging: _services.GetRequiredService<Modules.Messaging.Services.IMessagingService>(),
@@ -57,14 +51,13 @@ public sealed class PresenceLauncher : IPresenceLauncher
                     openStoryBook: (userId, username) => OpenStoryBookAsync(userId, username),
                     onClose: () => _ = CloseAsync());
             }
-            if (_view.DataContext is PresenceViewModel vm)
+            if (_viewModel != null)
             {
-                vm.ResetForOpen();
-                vm.RequestFocusFirstItem();
+                _viewModel.ResetForOpen();
+                _viewModel.RequestFocusFirstItem();
             }
 
-            _navigation.Show(_view);
-            _view.Focus();
+            _navigation.Show(_viewModel!);
         });
 
         return "Présence ouverte.";
@@ -74,85 +67,58 @@ public sealed class PresenceLauncher : IPresenceLauncher
     {
         var stats = _services.GetRequiredService<IStatsService>();
         // Depuis Présence, Échap doit revenir à la Présence (pas à la vue précédente).
-        var returnView = _view ?? _navigation.CurrentView ?? _previousView;
-        if (returnView == null)
+        var returnContent = (object?)_viewModel;
+        if (returnContent == null)
         {
             return;
         }
 
         // We temporarily leave the Presence screen to open the story book, but we still want
         // to be able to close Presence later and return to the original view.
-        await CloseInternalAsync(restorePrevious: false, preservePreviousView: true).ConfigureAwait(true);
 
         await Application.Current.Dispatcher.InvokeAsync(() =>
         {
-                var view = new StatsView();
                 var vm = new StatsViewModel(
                     stats,
                     onClose: () =>
                     {
-                        if (returnView is PresenceView presence && presence.DataContext is PresenceViewModel vmPresence)
-                        {
-                            // Keep the Presence navigation state (PlayerActions) so returning from the story book
-                            // lands back on the same menu instead of resetting to the player list.
-                            vmPresence.RequestFocusFirstItem();
-                        }
-                        _navigation.Show(returnView);
-                        _ = Application.Current.Dispatcher.BeginInvoke(
-                            DispatcherPriority.ApplicationIdle,
-                            new Action(() =>
-                            {
-                                try
-                            {
-                                if (returnView is PresenceView presence)
-                                {
-                                    presence.Focus();
-                                    presence.MoveFocus(new TraversalRequest(FocusNavigationDirection.First));
-                                    return;
-                                }
-
-                                if (returnView is GameRoomView room)
-                                {
-                                    room.RequestFocusGameZone();
-                                    return;
-                                }
-
-                                if (!returnView.IsKeyboardFocusWithin)
-                                {
-                                    returnView.MoveFocus(new TraversalRequest(FocusNavigationDirection.First));
-                                }
-                            }
-                            catch
-                            {
-                                // Best-effort
-                            }
-                        }));
-                },
+                        _viewModel?.RequestFocusFirstItem();
+                        _navigation.Show(returnContent);
+                    },
                 targetUserId: userId,
                 targetUsername: username);
-            view.DataContext = vm;
-            _navigation.Show(view);
-            view.Focus();
+            _navigation.Show(vm);
         });
     }
 
     private async Task JoinRoomAsync(int roomId)
     {
         var opener = _services.GetRequiredService<IGameTableOpener>();
-        var returnView = _previousView ?? _navigation.CurrentView ?? _view;
-        if (returnView == null)
+        var returnContent = _previousContent ?? _navigation.CurrentContent;
+        if (returnContent == null)
         {
             return;
         }
-        await CloseInternalAsync(restorePrevious: false).ConfigureAwait(true);
-        await opener.OpenExistingAsync(roomId, returnView).ConfigureAwait(true);
+
+        _viewModel = null;
+        _previousContent = null;
+        await opener.OpenExistingAsync(roomId, returnContent).ConfigureAwait(true);
     }
 
-    public async Task CloseAsync()
+    public Task CloseAsync()
     {
-        await CloseInternalAsync(restorePrevious: true).ConfigureAwait(true);
+        return Application.Current.Dispatcher.InvokeAsync(() =>
+        {
+            if (_previousContent != null)
+            {
+                _navigation.Show(_previousContent);
+            }
+            _previousContent = null;
+            _viewModel = null;
+        }).Task;
     }
 
+#if false
     private Task CloseInternalAsync(bool restorePrevious, bool preservePreviousView = false)
     {
         return Application.Current.Dispatcher.InvokeAsync(() =>
@@ -191,4 +157,5 @@ public sealed class PresenceLauncher : IPresenceLauncher
             }
         }).Task;
     }
+#endif
 }

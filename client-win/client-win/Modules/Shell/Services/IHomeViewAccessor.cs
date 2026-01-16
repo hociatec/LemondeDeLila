@@ -1,5 +1,3 @@
-using System.Windows.Controls;
-
 namespace client_win.Modules.Shell.Services;
 
 /// <summary>
@@ -7,6 +5,6 @@ namespace client_win.Modules.Shell.Services;
 /// </summary>
 public interface IHomeViewAccessor
 {
-    UserControl? HomeView { get; set; }
+    object? HomeContent { get; set; }
 }
 

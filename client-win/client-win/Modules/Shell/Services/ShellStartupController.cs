@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using client_win.Modules.Config;
 using client_win.Modules.Error;
 using client_win.Modules.Home.ViewModels;
-using client_win.Modules.Home.Views;
 using client_win.Modules.Updates;
 
 namespace client_win.Modules.Shell.Services;
@@ -12,7 +11,6 @@ public sealed class ShellStartupController
 {
     private readonly INavigationService _navigation;
     private readonly HomeViewModel _homeViewModel;
-    private readonly HomeView _homeView;
     private readonly ClientConfiguration _config;
     private readonly IDialogService _dialogs;
     private readonly ErrorBus _errors;
@@ -20,14 +18,12 @@ public sealed class ShellStartupController
     public ShellStartupController(
         INavigationService navigation,
         HomeViewModel homeViewModel,
-        HomeView homeView,
         ClientConfiguration config,
         IDialogService dialogs,
         ErrorBus errors)
     {
         _navigation = navigation ?? throw new ArgumentNullException(nameof(navigation));
         _homeViewModel = homeViewModel ?? throw new ArgumentNullException(nameof(homeViewModel));
-        _homeView = homeView ?? throw new ArgumentNullException(nameof(homeView));
         _config = config ?? throw new ArgumentNullException(nameof(config));
         _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
         _errors = errors ?? throw new ArgumentNullException(nameof(errors));
@@ -35,7 +31,7 @@ public sealed class ShellStartupController
 
     public async Task OnLoadedAsync()
     {
-        _navigation.Show(_homeView);
+        _navigation.Show(_homeViewModel);
 
         try
         {

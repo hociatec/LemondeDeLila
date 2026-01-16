@@ -8,11 +8,9 @@ using client_win.Core.Input;
 using client_win.Modules.Catalog.Models;
 using client_win.Modules.Game.History.Services;
 using client_win.Modules.Game.Play.GamePlay.ViewModels;
-using client_win.Modules.Game.Play.GamePlay.Views;
 using client_win.Modules.Game.Room.Input;
 using client_win.Modules.Game.Room.Services;
 using client_win.Modules.Game.Shell.ViewModels;
-using client_win.Modules.Game.Shell.Views;
 using client_win.Modules.Audio.Models;
 using client_win.Modules.Audio.Services;
 using client_win.Modules.Shell.Services;
@@ -24,7 +22,6 @@ internal sealed class GameTableBindings : IAsyncDisposable
     private readonly Dispatcher _dispatcher;
     private readonly CatalogGame _game;
     private readonly RoomSession _session;
-    private readonly GameRoomView _tableView;
     private readonly GameRoomViewModel _tableVm;
     private readonly IRoomAnnouncements _announcements;
     private readonly IGameHistorySink _history;
@@ -60,7 +57,6 @@ internal sealed class GameTableBindings : IAsyncDisposable
         Dispatcher dispatcher,
         CatalogGame game,
         RoomSession session,
-        GameRoomView tableView,
         GameRoomViewModel tableVm,
         IRoomAnnouncements announcements,
         ISoundService sounds,
@@ -71,7 +67,6 @@ internal sealed class GameTableBindings : IAsyncDisposable
         _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
         _game = game ?? throw new ArgumentNullException(nameof(game));
         _session = session ?? throw new ArgumentNullException(nameof(session));
-        _tableView = tableView ?? throw new ArgumentNullException(nameof(tableView));
         _tableVm = tableVm ?? throw new ArgumentNullException(nameof(tableVm));
         _announcements = announcements ?? throw new ArgumentNullException(nameof(announcements));
         _sounds = sounds ?? throw new ArgumentNullException(nameof(sounds));
@@ -241,9 +236,9 @@ internal sealed class GameTableBindings : IAsyncDisposable
                     _announcements.TableInfo("Table démarrée.");
 
                     // Forcer le focus sur la zone de jeu.
-                    _tableView.Dispatcher.BeginInvoke(
+                    _dispatcher.BeginInvoke(
                         DispatcherPriority.Input,
-                        new Action(_tableView.RequestFocusGameZone));
+                        new Action(_tableVm.GameZone.RequestFocus));
                 }, DispatcherPriority.Normal);
                 return;
             }
@@ -284,9 +279,9 @@ internal sealed class GameTableBindings : IAsyncDisposable
 
 
                     // Forcer le focus sur la zone de jeu (le contenu a été déchargé).
-                    _ = _tableView.Dispatcher.BeginInvoke(
+                    _ = _dispatcher.BeginInvoke(
                         DispatcherPriority.Input,
-                        new Action(_tableView.RequestFocusGameZone));
+                        new Action(_tableVm.GameZone.RequestFocus));
                 }, DispatcherPriority.Normal);
             }
         };
@@ -562,7 +557,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
 	            }
 	        }
 
-	        _tableVm.GameZone.Content = new GamePlayView { DataContext = _gamePlayVm };
+	        _tableVm.GameZone.Content = _gamePlayVm;
 	        ApplySpectatorState();
 	    }
 
@@ -617,9 +612,9 @@ internal sealed class GameTableBindings : IAsyncDisposable
 	        }
 
 	        // Le contenu a été déchargé, refocus sur l'ancre pour permettre Entrée (room.start).
-	        _ = _tableView.Dispatcher.BeginInvoke(
+	        _ = _dispatcher.BeginInvoke(
 	            DispatcherPriority.Input,
-	            new Action(_tableView.RequestFocusGameZone));
+	            new Action(_tableVm.GameZone.RequestFocus));
 	    }
 
 	    private async System.Threading.Tasks.Task UnloadGamePlayVmAsync()

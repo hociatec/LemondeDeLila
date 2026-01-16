@@ -3,7 +3,6 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -50,10 +49,8 @@ namespace client_win.Modules.Config;
 /// </summary>
 public static class AppBootstrapper
 {
-    public static AppHost Build(ContentControl rootHost, bool testConnectivity = true)
+    public static AppHost Build(bool testConnectivity = true)
     {
-        if (rootHost == null) throw new ArgumentNullException(nameof(rootHost));
-
         // 1. Initialiser AppData et logging en premier
         var baseDir = AppContext.BaseDirectory;
         var environment = EnvironmentDetector.GetEnvironment();
@@ -135,8 +132,7 @@ public static class AppBootstrapper
         services.AddSingleton(settingsManager);
 
         // Enregistrement des services UI
-        services.AddSingleton(rootHost);
-        services.AddSingleton<INavigationService>(_ => new NavigationService(rootHost));
+        services.AddSingleton<INavigationService, NavigationService>();
         services.AddSingleton<Modules.Shell.Services.IHomeViewAccessor, Modules.Shell.Services.HomeViewAccessor>();
         services.AddSingleton<IDialogService, WpfDialogService>();
         services.AddSingleton<IScreenReaderAnnouncer>(screenReaderAnnouncer);
