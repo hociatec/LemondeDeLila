@@ -198,6 +198,10 @@ export class AFondLesBallonsActionService {
 
     if (!tile) return next;
 
+    if (tile.description && String(tile.description).trim().length > 0) {
+      next = this.core.appendLog(next, String(tile.description).trim());
+    }
+
     if (tile.type === 'finish') {
       meta = this.getMeta(next);
       meta = { ...meta, winnerId: playerId };

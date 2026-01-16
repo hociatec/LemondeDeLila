@@ -38,7 +38,7 @@ import { AdminMaintenanceGuard } from './guards/admin-maintenance.guard';
 import { AdminMaintenanceService } from './services/admin-maintenance.service';
 import { StatsModule } from '../stats/stats.module';
 import { AdminStatsWsHandler } from './ws/admin-stats-ws.handler';
-import { ArcheDeMnemosyneModule } from '../game/games/vents-sacres/arche-de-mnemosyne/arche-de-mnemosyne.module';
+import { ArcheDeMnemosyneModule } from '../game/games/vents-infinis/arche-de-mnemosyne/arche-de-mnemosyne.module';
 import { AdminMnemoQuizWsHandler } from './ws/admin-mnemo-quiz-ws.handler';
 
 @Module({

@@ -63,6 +63,20 @@ public partial class MainMenuView : UserControl
             // ignore
         }
 
+        // Essai immédiat : si le focus reste sur le ListBoxItem, NVDA peut annoncer l'élément
+        // comme "indisponible" au moment où la vue est remplacée.
+        try
+        {
+            if (rootHost != null)
+            {
+                Keyboard.Focus(rootHost);
+            }
+        }
+        catch
+        {
+            // best-effort
+        }
+
         _ = dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
         {
             try
@@ -78,7 +92,7 @@ public partial class MainMenuView : UserControl
             }
         }));
 
-        _ = dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(async () =>
+        _ = dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(async () =>
         {
             try
             {

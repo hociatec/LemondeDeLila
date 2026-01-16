@@ -12,6 +12,11 @@ namespace client_win.Modules.Game.Play.Actions.Services;
 
 internal sealed class GamePlayActionDispatcher
 {
+    private static string NormalizeChoiceForServer(string choice) =>
+        (choice ?? string.Empty)
+            .Replace("\u2060", string.Empty) // WORD JOINER (used to make duplicate labels distinct for a11y)
+            .Trim();
+
     internal bool TryBuildPendingChoiceAction(
         GameSession session,
         string selectedChoice,
@@ -77,6 +82,90 @@ internal sealed class GamePlayActionDispatcher
         }
 
         var candidates = FilterChoiceActions(available, pendingType);
+
+        // Quiz: match by answer string rather than by list index, because:
+        // - the UI may inject invisible chars (a11y distinct) into labels
+        // - the server may not guarantee action ordering
+        if (string.Equals(pendingType, "quiz", StringComparison.OrdinalIgnoreCase))
+        {
+            var answer = NormalizeChoiceForServer(selectedChoice);
+            if (answer.Length == 0)
+            {
+                return false;
+            }
+
+            // Prefer server-provided payloads whenever possible (some backends expect `answerIndex`).
+            var matchedByIndex = available.FirstOrDefault(a =>
+            {
+                if (!string.Equals(a.Type, "answer_quiz", StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+
+                if (a.Payload.ValueKind != JsonValueKind.Object)
+                {
+                    return false;
+                }
+
+                if (a.Payload.TryGetProperty("answerIndex", out var idxNode) &&
+                    idxNode.ValueKind == JsonValueKind.Number &&
+                    idxNode.TryGetInt32(out var serverIndex))
+                {
+                    return serverIndex == index;
+                }
+
+                return false;
+            });
+
+            if (!string.IsNullOrWhiteSpace(matchedByIndex?.Type))
+            {
+                action = new GameClientAction(type: matchedByIndex!.Type, payload: matchedByIndex.Payload);
+                return true;
+            }
+
+            var matchedByAnswer = available.FirstOrDefault(a =>
+            {
+                if (!string.Equals(a.Type, "answer_quiz", StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+
+                if (a.Payload.ValueKind != JsonValueKind.Object)
+                {
+                    return false;
+                }
+
+                if (a.Payload.TryGetProperty("answer", out var answerNode) &&
+                    answerNode.ValueKind == JsonValueKind.String)
+                {
+                    var serverAnswer = (answerNode.GetString() ?? string.Empty).Trim();
+                    return string.Equals(serverAnswer, answer, StringComparison.OrdinalIgnoreCase);
+                }
+
+                return false;
+            });
+
+            if (!string.IsNullOrWhiteSpace(matchedByAnswer?.Type))
+            {
+                action = new GameClientAction(type: matchedByAnswer!.Type, payload: matchedByAnswer.Payload);
+                return true;
+            }
+
+            // Fallback: best-effort when the backend exposes quiz answers as allowed actions but with an unknown payload shape.
+            // If we detect index-style actions, send `{ answerIndex }`, otherwise send `{ answer }`.
+            var hasAnswerIndexActions = available.Any(a =>
+                string.Equals(a.Type, "answer_quiz", StringComparison.OrdinalIgnoreCase) &&
+                a.Payload.ValueKind == JsonValueKind.Object &&
+                a.Payload.TryGetProperty("answerIndex", out var node) &&
+                node.ValueKind == JsonValueKind.Number);
+
+            action = hasAnswerIndexActions
+                ? new GameClientAction(type: "answer_quiz", payload: new { answerIndex = index })
+                : new GameClientAction(type: "answer_quiz", payload: new { answer });
+
+            return true;
+        }
+
         if (candidates.Count != state.Pending.Choices.Count)
         {
             candidates = FilterChoiceActions(available, string.Empty);

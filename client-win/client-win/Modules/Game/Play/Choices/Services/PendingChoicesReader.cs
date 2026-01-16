@@ -25,6 +25,10 @@ internal static class PendingChoicesReader
         }
 
         var type = (pending.Type ?? string.Empty).Trim();
+        if (string.Equals(type, "quiz", StringComparison.OrdinalIgnoreCase))
+        {
+            return "Réponses";
+        }
         return string.IsNullOrWhiteSpace(type) ? string.Empty : $"En attente: {type}";
     }
 

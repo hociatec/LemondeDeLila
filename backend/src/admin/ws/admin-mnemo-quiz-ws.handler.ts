@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { requireAdmin } from '../../common/ws/ws-auth';
 import type { WsSession } from '../../common/ws/ws-route-registry.service';
 import { PayloadValidationService } from '../../common/validation/payload-validation.service';
-import { MnemoQuizStoreService } from '../../game/games/vents-sacres/arche-de-mnemosyne/store/mnemo-quiz-store.service';
-import type { MnemoQuestionStatus } from '../../game/games/vents-sacres/arche-de-mnemosyne/model/mnemo-quiz.model';
+import { MnemoQuizStoreService } from '../../game/games/vents-infinis/arche-de-mnemosyne/store/mnemo-quiz-store.service';
+import type { MnemoQuestionStatus } from '../../game/games/vents-infinis/arche-de-mnemosyne/model/mnemo-quiz.model';
 import {
   AdminMnemoQuizCategoriesListWsDto,
   AdminMnemoQuizCategoryCreateWsDto,
