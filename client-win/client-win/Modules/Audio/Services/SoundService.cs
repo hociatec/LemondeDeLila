@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 using System.Windows.Media;
@@ -40,6 +41,7 @@ public sealed class SoundService : ISoundService, IDisposable
     private readonly Queue<(SoundId Sound, long Ticks)> _recentPlays = new();
     private int _connectedGate;
     private long _connectedAtTicks;
+    private int _startupGateOpened;
 
     private sealed record PlayRequest(SoundId Sound, SoundEntry Entry, string FilePath);
 
@@ -57,12 +59,46 @@ public sealed class SoundService : ISoundService, IDisposable
             _ => MinIntervalTicks
         };
 
+    private static readonly long JustConnectedSuppressTicks = Stopwatch.Frequency; // ~1s
+
+    private static bool ShouldSuppressJustAfterConnect(SoundId sound) =>
+        sound switch
+        {
+            // These can trigger in bursts due to history replay / reconnect.
+            SoundId.ChatMessageReceived => true,
+            SoundId.TableChatMessageReceived => true,
+            SoundId.PrivateMessageReceived => true,
+            SoundId.FriendConnected => true,
+            SoundId.FriendDisconnected => true,
+            SoundId.FriendInvitationReceived => true,
+            SoundId.InvitationReceived => true,
+            SoundId.AdminContactReceived => true,
+            SoundId.BugReportCommentReceived => true,
+            _ => false
+        };
+
     public SoundService(IOptionsService options, IRemoteSoundCache? remote, Dispatcher dispatcher, ILogger<SoundService> logger)
     {
         _options = options ?? throw new ArgumentNullException(nameof(options));
         _remote = remote;
         _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
+        // Prevent sound spam at startup: allow only the explicit app launch sound until it has finished.
+        // If the launch sound is disabled, don't gate.
+        if (_options.Current.MuteAll || !_options.Current.SoundAppLaunch)
+        {
+            Volatile.Write(ref _startupGateOpened, 1);
+        }
+        else
+        {
+            // Safety fallback: never block audio indefinitely if the startup sound can't play.
+            _ = Task.Run(async () =>
+            {
+                try { await Task.Delay(5000).ConfigureAwait(false); } catch { return; }
+                Volatile.Write(ref _startupGateOpened, 1);
+            });
+        }
 
         _sounds = new Dictionary<SoundId, SoundEntry>
         {
@@ -347,6 +383,13 @@ public sealed class SoundService : ISoundService, IDisposable
             return;
         }
 
+        // At app startup, avoid playing any other sounds before the explicit launch sound.
+        // This prevents bursts caused by reconnect/history replay and makes the first sound predictable.
+        if (Volatile.Read(ref _startupGateOpened) == 0 && sound != SoundId.ClientOpened)
+        {
+            return;
+        }
+
         var now = Stopwatch.GetTimestamp();
 
         // Gating: before being authenticated/connected, only allow the explicit startup sound.
@@ -357,15 +400,12 @@ public sealed class SoundService : ISoundService, IDisposable
             return;
         }
 
-        // Right after connection, suppress noisy one-shots triggered by replay/history,
-        // but still allow the explicit login sound and tavern entry sound.
+        // Right after connection, suppress only noisy one-shots triggered by replay/history.
         var connectedAt = Volatile.Read(ref _connectedAtTicks);
         if (Volatile.Read(ref _connectedGate) == 1 &&
             connectedAt > 0 &&
-            now - connectedAt < Stopwatch.Frequency * 3 &&
-            sound != SoundId.ClientConnected &&
-            sound != SoundId.ClientOpened &&
-            sound != SoundId.TavernOpened)
+            now - connectedAt < JustConnectedSuppressTicks &&
+            ShouldSuppressJustAfterConnect(sound))
         {
             return;
         }
@@ -502,6 +542,10 @@ public sealed class SoundService : ISoundService, IDisposable
                 ended = (_, _) =>
                 {
                     try { player.MediaEnded -= ended; } catch { /* ignore */ }
+                    if (request.Sound == SoundId.ClientOpened)
+                    {
+                        Volatile.Write(ref _startupGateOpened, 1);
+                    }
                     lock (_gate)
                     {
                         if (_playEndSignals.TryGetValue(request.Sound, out var current) && ReferenceEquals(current, tcs))
@@ -724,6 +768,11 @@ public sealed class SoundService : ISoundService, IDisposable
 
     public void StartLoop(SoundId sound)
     {
+        // At startup, keep the app silent (except ClientOpened one-shot) until the launch sound finishes.
+        if (Volatile.Read(ref _startupGateOpened) == 0)
+        {
+            return;
+        }
         // Avant connexion: aucune boucle (ambiance/musique) ne doit démarrer.
         if (Volatile.Read(ref _connectedGate) == 0)
         {
@@ -1043,6 +1092,10 @@ public sealed class SoundService : ISoundService, IDisposable
                 args.ErrorException?.Message ?? "unknown error");
             lock (_gate)
             {
+                if (sound == SoundId.ClientOpened)
+                {
+                    Volatile.Write(ref _startupGateOpened, 1);
+                }
                 if (_playEndSignals.TryGetValue(sound, out var tcs))
                 {
                     _playEndSignals.Remove(sound);

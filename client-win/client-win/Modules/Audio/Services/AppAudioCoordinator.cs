@@ -358,22 +358,6 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
             // Application launch sound is independent of connection state.
             if (playOpened && openedSeq != Volatile.Read(ref _openedSoundPlayedSequence))
             {
-                try
-                {
-                    using var refreshCts = CancellationTokenSource.CreateLinkedTokenSource(token);
-                    refreshCts.CancelAfter(TimeSpan.FromSeconds(1));
-                    await RefreshRemoteSoundsAsync(force: true, reapplyBackground: false, refreshCts.Token).ConfigureAwait(false);
-                }
-                catch
-                {
-                    // ignore
-                }
-
-                if (token.IsCancellationRequested || version != Volatile.Read(ref _transitionVersion))
-                {
-                    return;
-                }
-
                 TryPreload(SoundId.ClientOpened, warmUp: false);
                 TryPlay(SoundId.ClientOpened);
                 lock (_stateGate)
@@ -381,6 +365,29 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
                     _pendingOpenedSound = 0;
                 }
                 Volatile.Write(ref _openedSoundPlayedSequence, openedSeq);
+
+                // Once the launch sound has finished, re-run transitions so background loops (if any)
+                // can start without ever playing before the launch sound.
+                _ = Task.Run(async () =>
+                {
+                    try { await _sounds.WaitForSoundToEndAsync(SoundId.ClientOpened, TimeSpan.FromSeconds(15)).ConfigureAwait(false); } catch { /* ignore */ }
+                    try { RequestTransition(); } catch { /* ignore */ }
+                });
+
+                // Refresh remote sounds after playing the launch sound.
+                // This keeps startup audio deterministic and avoids delaying it (or letting a fallback gate open).
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        using var refreshCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                        await RefreshRemoteSoundsAsync(force: true, reapplyBackground: false, refreshCts.Token).ConfigureAwait(false);
+                    }
+                    catch
+                    {
+                        // ignore
+                    }
+                });
             }
 
             if (!isConnected || pauseCount > 0)
@@ -452,8 +459,6 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
             }
 
             await WaitForConnectStabilizationAsync(connectedAtTicks, token).ConfigureAwait(false);
-            await WaitForSoundOrCancelAsync(SoundId.ClientConnected, TimeSpan.FromSeconds(2), token).ConfigureAwait(false);
-            await WaitForSoundOrCancelAsync(SoundId.ClientOpened, TimeSpan.FromSeconds(2), token).ConfigureAwait(false);
             if (token.IsCancellationRequested || version != Volatile.Read(ref _transitionVersion))
             {
                 return;
@@ -535,8 +540,9 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
             return;
         }
 
-        // Align with SoundService's internal "just connected" guard to avoid a silent no-op StartLoop().
-        var minTicks = Stopwatch.Frequency * 2;
+        // Small debounce to avoid rapid connect/disconnect flapping starting/stopping loops.
+        // Keep this short to avoid perceivable audio latency on transitions.
+        var minTicks = Stopwatch.Frequency / 10; // ~100ms
         while (!token.IsCancellationRequested && Stopwatch.GetTimestamp() - connectedAtTicks < minTicks)
         {
             try

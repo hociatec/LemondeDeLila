@@ -199,6 +199,9 @@ public static class AppBootstrapper
 
         services.AddSingleton<Dispatcher>(_ => Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher);
 
+        // Dedicated audio dispatcher: isolates sound playback from UI thread stalls (navigation/layout).
+        services.AddSingleton<Modules.Audio.Services.IAudioDispatcher, Modules.Audio.Services.AudioDispatcher>();
+
         services.AddSingleton<IRemoteSoundCache>(sp =>
             new RemoteSoundCache(
                 sp.GetRequiredService<ClientConfiguration>(),
@@ -208,7 +211,7 @@ public static class AppBootstrapper
             new SoundService(
                 sp.GetRequiredService<IOptionsService>(),
                 sp.GetRequiredService<IRemoteSoundCache>(),
-                sp.GetRequiredService<Dispatcher>(),
+                sp.GetRequiredService<Modules.Audio.Services.IAudioDispatcher>().Dispatcher,
                 sp.GetRequiredService<ILogger<SoundService>>()));
 
         services.AddSingleton<Modules.Audio.Services.IAppAudioCoordinator>(sp =>
