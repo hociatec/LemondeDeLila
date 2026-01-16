@@ -101,14 +101,22 @@ public partial class HomeView : UserControl
 
     private void FocusFirstField()
     {
-        if (_viewModel == null)
+        var vm = _viewModel;
+        if (vm == null)
         {
             return;
         }
 
         Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
         {
-            switch (_viewModel.CurrentPage)
+            // Le callback est asynchrone: le DataContext peut avoir changé entre-temps (navigation).
+            // On évite un crash si le VM a été détaché après le BeginInvoke.
+            if (!ReferenceEquals(_viewModel, vm))
+            {
+                return;
+            }
+
+            switch (vm.CurrentPage)
             {
                 case HomePage.Login:
                     if (LoginUsernameBox?.IsVisible == true && LoginUsernameBox.IsEnabled)
