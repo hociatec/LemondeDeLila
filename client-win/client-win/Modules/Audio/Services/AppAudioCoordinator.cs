@@ -42,7 +42,7 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
     private int _pendingTavernOpenedSound;
     private int _pendingReapplyBackground;
 
-    private static readonly TimeSpan StartupSoundDebounceWindow = TimeSpan.FromSeconds(60);
+    private static readonly TimeSpan StartupSoundDebounceWindow = TimeSpan.FromMinutes(3);
 
     public AppAudioCoordinator(
         ISoundService sounds,

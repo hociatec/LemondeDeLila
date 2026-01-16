@@ -49,7 +49,14 @@ public partial class MainMenuView : UserControl
         }
         e.Handled = true;
         await vm.ActivateCommand.ExecuteAsync(null).ConfigureAwait(true);
-        FocusWhenContainersGenerated();
+
+        // Si l'action n'a pas déclenché de navigation (ex: action locale), restaurer le focus sur le menu.
+        // Si la navigation a remplacé la vue, éviter de refocaliser un élément qui va disparaître
+        // (NVDA annonce souvent "indisponible" dans ce cas).
+        if (IsLoaded && IsVisible && ReferenceEquals(DataContext, vm))
+        {
+            FocusWhenContainersGenerated();
+        }
     }
 
     private void FocusFirstItem()

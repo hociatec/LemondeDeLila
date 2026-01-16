@@ -100,7 +100,7 @@ public sealed class ShellViewModel : ObservableObject
 
     private async void OnNavigateToMainMenu(AuthenticatedUser user)
     {
-        WindowTitle = $"Le Monde de Lila - Connecte en tant que {user.Username}";
+        WindowTitle = $"Le Monde de Lila - Connecté en tant que {user.Username}";
         try
         {
             await _session.NavigateToMainMenuAsync(user, OnLogoutRequested).ConfigureAwait(true);
