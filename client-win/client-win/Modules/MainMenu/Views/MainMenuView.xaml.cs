@@ -54,48 +54,12 @@ public partial class MainMenuView : UserControl
         }
         e.Handled = true;
 
-        // Déplacer le focus sur un élément stable AVANT la navigation (qui remplace la vue).
-        // Puis exécuter la navigation au prochain tour de boucle: évite que NVDA annonce
-        // "indisponible" quand le ListBoxItem focalisé disparaît pendant le même événement clavier.
-        var dispatcher = Dispatcher;
-        var window = Window.GetWindow(this) ?? Application.Current?.MainWindow;
-        IInputElement? rootHost = null;
-        try { rootHost = window?.FindName("RootHost") as IInputElement; } catch { /* ignore */ }
-        rootHost ??= window;
-
-        // Essai immédiat : si le focus reste sur le ListBoxItem, NVDA peut annoncer l'élément
-        // comme "indisponible" au moment où la vue est remplacée.
-        try
-        {
-            try { Keyboard.ClearFocus(); } catch { /* ignore */ }
-            if (rootHost != null) Keyboard.Focus(rootHost);
-        }
-        catch
-        {
-            // best-effort
-        }
-
-        _ = dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
+        // Exécuter l'action après l'événement clavier (navigation potentielle = remplacement de vue).
+        // Évite de manipuler le focus vers un "hôte" intermédiaire (souvent annoncé "indisponible" par NVDA).
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(async () =>
         {
             try
             {
-                if (rootHost != null)
-                {
-                    try { Keyboard.ClearFocus(); } catch { /* ignore */ }
-                    Keyboard.Focus(rootHost);
-                }
-            }
-            catch
-            {
-                // best-effort
-            }
-        }));
-
-        _ = dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(async () =>
-        {
-            try
-            {
-                await dispatcher.InvokeAsync(() => { }, DispatcherPriority.Input);
                 await vm.ActivateCommand.ExecuteAsync(null).ConfigureAwait(true);
 
                 // Si l'action n'a pas déclenché de navigation (ex: action locale), restaurer le focus sur le menu.

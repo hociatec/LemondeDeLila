@@ -95,12 +95,6 @@ public static class ContentHostFocusBehavior
     {
         try
         {
-            // Parking focus: placer le focus sur un élément stable (le host) pendant la transition,
-            // pour éviter que NVDA tente d'annoncer un élément qui vient d'être détruit.
-            var parking = host;
-            try { (parking as UIElement)?.Focus(); } catch { /* ignore */ }
-            try { Keyboard.Focus(parking); } catch { /* ignore */ }
-
             void TryFocus()
             {
                 try
