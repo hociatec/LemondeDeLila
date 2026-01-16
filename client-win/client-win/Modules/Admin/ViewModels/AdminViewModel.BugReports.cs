@@ -11,6 +11,8 @@ public sealed partial class AdminViewModel
     private AdminBugReportDto? _selectedBugReport;
     private AdminBugReportCommentDto[] _loadedBugReportComments = Array.Empty<AdminBugReportCommentDto>();
     private AdminBugReportStatus? _bugReportsListStatus;
+    private readonly System.Collections.Generic.Dictionary<string, int> _bugReportCommentsCountById =
+        new(StringComparer.OrdinalIgnoreCase);
 
     private void UpsertLoadedBugReport(AdminBugReportDto report)
     {
@@ -64,7 +66,28 @@ public sealed partial class AdminViewModel
         try
         {
             var res = await _admin.ListBugReportsAsync().ConfigureAwait(true);
-            _loadedBugReports = (res.Items ?? new()).ToArray();
+            var nextReports = (res.Items ?? new()).ToArray();
+
+            // Notification (son) : si des commentaires ont été ajoutés depuis le dernier refresh.
+            var shouldNotify = _bugReportCommentsCountById.Count > 0;
+            var hasIncrease = false;
+            foreach (var r in nextReports)
+            {
+                if (r == null || string.IsNullOrWhiteSpace(r.Id)) continue;
+                var previous = _bugReportCommentsCountById.TryGetValue(r.Id, out var prev) ? prev : 0;
+                var current = r.CommentsCount;
+                if (current > previous)
+                {
+                    hasIncrease = true;
+                }
+                _bugReportCommentsCountById[r.Id] = current;
+            }
+
+            _loadedBugReports = nextReports;
+            if (shouldNotify && hasIncrease)
+            {
+                _sounds.Play(client_win.Modules.Audio.Models.SoundId.BugReportCommentReceived);
+            }
             BuildBugReports();
         }
         catch (Exception ex)
@@ -141,7 +164,8 @@ public sealed partial class AdminViewModel
             foreach (var r in reports)
             {
                 var subject = string.IsNullOrWhiteSpace(r.Subject) ? "(sans sujet)" : r.Subject.Trim();
-                Items.Add(new AdminMenuItem(subject, tag: r));
+                var comments = r.CommentsCount > 0 ? $" (commentaires +{r.CommentsCount})" : string.Empty;
+                Items.Add(new AdminMenuItem(subject + comments, tag: r));
             }
         }
 
@@ -461,6 +485,19 @@ public sealed partial class AdminViewModel
         {
             IsBusy = true;
             await _admin.AddBugReportCommentAsync(report.Id, content).ConfigureAwait(true);
+            try
+            {
+                // Recharger le rapport pour récupérer `commentsCount` (affiché dans les listes).
+                var refreshed = await _admin.GetBugReportAsync(report.Id).ConfigureAwait(true);
+                UpsertLoadedBugReport(refreshed);
+                _bugReportCommentsCountById[refreshed.Id] = refreshed.CommentsCount;
+                _selectedBugReport = refreshed;
+                report = refreshed;
+            }
+            catch
+            {
+                // best-effort
+            }
             await _dialogs.ShowInfo("Commentaire", "Commentaire ajouté.").ConfigureAwait(true);
             await LoadBugReportConsultAsync(report).ConfigureAwait(true);
         }

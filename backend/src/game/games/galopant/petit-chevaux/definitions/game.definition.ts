@@ -17,7 +17,7 @@ export const PETIT_CHEVAUX_GAME: GameDefinition<
   typeof PETIT_CHEVAUX_VICTORY
 > = {
   id: 'petit-chevaux',
-  displayName: 'Petits chevaux',
+  displayName: 'Foulées Fantastiques !',
   minPlayers: 2,
   maxPlayers: 4,
   roles: [],

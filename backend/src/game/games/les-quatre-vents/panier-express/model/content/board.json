@@ -5,7 +5,7 @@
       "id": "case-1-entree",
       "type": "start",
       "label": "Entr\u00e9e du march\u00e9",
-      "description": "Vous franchissez l\u2019entr\u00e9e du march\u00e9. L\u2019air embaume les fruits et l\u00e9gumes frais, les \u00e9tals s\u2019\u00e9tendent devant vous. C\u2019est ici que commence votre exploration."
+      "description": "Vous voici \u00e0 l\u2019entr\u00e9e du march\u00e9. L\u2019air embaume les fruits et l\u00e9gumes frais, les \u00e9tals s\u2019\u00e9tendent devant vous."
     },
     {
       "id": "case-2-stand-fruitier",
@@ -44,7 +44,7 @@
       "id": "case-7-avance-1",
       "type": "move",
       "delta": 1,
-      "label": "Avance",
+      "label": "Avanc\u00e9e",
       "description": "Une all\u00e9e d\u00e9gag\u00e9e vous permet de vous rapprocher d\u2019un stand de votre choix. Avancez d\u2019une case."
     },
     {

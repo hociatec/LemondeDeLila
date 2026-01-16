@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -10,6 +11,8 @@ namespace client_win.Modules.MainMenu.Views;
 
 public partial class MainMenuView : UserControl
 {
+    private long _lastAutoFocusTicks;
+
     public MainMenuView()
     {
         InitializeComponent();
@@ -18,14 +21,6 @@ public partial class MainMenuView : UserControl
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
         FocusWhenContainersGenerated();
-        if (DataContext is MainMenuViewModel vm)
-        {
-            _ = Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(async () =>
-            {
-                await vm.RefreshAdminVisibilityCommand.ExecuteAsync(null).ConfigureAwait(true);
-                FocusWhenContainersGenerated();
-            }));
-        }
     }
 
     private void OnKeyDown(object sender, KeyEventArgs e)
@@ -99,6 +94,13 @@ public partial class MainMenuView : UserControl
         // pour que NVDA annonce directement l'entrée et pas juste "liste".
         if (ReferenceEquals(e.NewFocus, ItemsList))
         {
+            var now = Stopwatch.GetTimestamp();
+            // Évite un "bégaiement" NVDA si le focus rebondit plusieurs fois sur la liste.
+            if (_lastAutoFocusTicks != 0 && now - _lastAutoFocusTicks < Stopwatch.Frequency)
+            {
+                return;
+            }
+            _lastAutoFocusTicks = now;
             _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusFirstItem));
         }
     }

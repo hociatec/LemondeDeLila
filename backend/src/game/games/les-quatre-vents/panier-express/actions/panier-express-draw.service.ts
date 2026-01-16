@@ -100,7 +100,7 @@ export class PanierExpressDrawService {
     const message = discarded
       ? discarded === 'duplicate'
         ? `[Panier Express] ${this.utils.playerName(state, playerId)} pioche "${courseLabel}" mais l'a déjà et la défausse.`
-        : `[Panier Express] ${this.utils.playerName(state, playerId)} pioche "${courseLabel}" mais son inventaire est plein (${PanierExpressDrawService.MAX_INVENTORY}) et la défausse.`
+        : `[Panier Express] ${this.utils.playerName(state, playerId)} pioche "${courseLabel}" mais son inventaire est plein et la défausse.`
       : `[Panier Express] ${this.utils.playerName(state, playerId)} pioche "${courseLabel}".`;
     const logged = this.core.appendLog(nextState, message);
 

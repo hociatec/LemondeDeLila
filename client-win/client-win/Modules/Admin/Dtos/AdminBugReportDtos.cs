@@ -48,6 +48,9 @@ public sealed class AdminBugReportDto
 
     [JsonPropertyName("createdByUsername")]
     public string CreatedByUsername { get; set; } = string.Empty;
+
+    [JsonPropertyName("commentsCount")]
+    public int CommentsCount { get; set; }
 }
 
 public sealed class AdminBugReportsListResponseDto

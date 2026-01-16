@@ -37,6 +37,14 @@ export class AdminBugReportCommentsWsHandler {
     if (!comment) {
       throw new BadRequestException('Rapport introuvable');
     }
-    return { type: 'admin.bugReports.comments.add', payload: { comment } };
+    const counts = await this.comments.countByReportIds([dto.reportId]);
+    return {
+      type: 'admin.bugReports.comments.add',
+      payload: {
+        comment,
+        reportId: dto.reportId,
+        commentsCount: counts[dto.reportId] ?? 0,
+      },
+    };
   }
 }

@@ -28,6 +28,10 @@ export class PanierExpressUtils {
     'pois-casse': 'pois cassés',
   };
 
+  private static readonly EVENT_LABELS: Record<string, string> = {
+    'produit-avarie': 'Produit avarié',
+  };
+
   playerName(state: GameStateEntity, playerId: number): string {
     const player = state.players?.find((p) => p.id === playerId);
     const username =
@@ -164,6 +168,31 @@ export class PanierExpressUtils {
     return Array.from(list)
       .map((v) => this.formatCourseLabel(v))
       .filter((s) => s.length > 0);
+  }
+
+  formatEventLabel(eventId: unknown): string {
+    const raw = typeof eventId === 'string' ? eventId.trim() : '';
+    if (!raw) return '';
+    const direct = PanierExpressUtils.EVENT_LABELS[raw];
+    if (direct) return direct;
+
+    const tokenMap: Record<string, string> = {
+      marche: 'marché',
+      intemperie: 'intempérie',
+      avarie: 'avarié',
+      controle: 'contrôle',
+      ephemere: 'éphémère',
+      fidelite: 'fidélité',
+      abime: 'abîmé',
+      detrempe: 'détrempé',
+    };
+    const words = raw
+      .split('-')
+      .map((token) => tokenMap[token] ?? token)
+      .filter((t) => t.length > 0);
+    if (!words.length) return raw;
+    const label = words.join(' ');
+    return label.charAt(0).toUpperCase() + label.slice(1);
   }
 
   getTileLabel(tile: any): string {

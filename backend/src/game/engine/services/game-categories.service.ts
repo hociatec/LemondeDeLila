@@ -196,16 +196,27 @@ export class GameCategoriesService implements OnModuleInit {
       return undefined;
     }
 
+    // Alias: certains jeux historiques utilisent des libellés "marketing" qui ne correspondent
+    // pas aux ids techniques des catégories DB. On mappe ici pour éviter des doublons d'étagères.
+    const aliasToCategoryId: Record<string, string> = {
+      // "Les Vents Sacrés" est la même étagère que `galopant` dans la DB.
+      'les-vents-sacres': 'galopant',
+      'vents-sacres': 'galopant',
+      'vent-sacres': 'galopant',
+      'vents-sacre': 'galopant',
+    };
+    const targetId = aliasToCategoryId[normalizedId] ?? normalizedId;
+
     // 1) Match exact sur l'id (recommandé).
     const direct = root.categories.find(
-      (c) => c.enabled !== false && c.id === normalizedId,
+      (c) => c.enabled !== false && c.id === targetId,
     );
     if (direct) {
       return direct;
     }
 
     // 2) Match suffixe (ex: les-vents-infinis -> vents-infinis).
-    const suffix = `-${normalizedId}`;
+    const suffix = `-${targetId}`;
     const matches = root.categories.filter(
       (c) => c.enabled !== false && c.id.endsWith(suffix),
     );

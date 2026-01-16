@@ -3,6 +3,7 @@ import { requireAdmin } from '../../common/ws/ws-auth';
 import type { WsSession } from '../../common/ws/ws-route-registry.service';
 import { PayloadValidationService } from '../../common/validation/payload-validation.service';
 import { BugReportsService } from '../../bug-reports/bug-reports.service';
+import { BugReportCommentsService } from '../../bug-reports/bug-report-comments.service';
 import {
   AdminBugReportCreateWsDto,
   AdminBugReportIdWsDto,
@@ -16,6 +17,7 @@ export class AdminBugReportsWsHandler {
   constructor(
     private readonly validator: PayloadValidationService,
     private readonly reports: BugReportsService,
+    private readonly comments: BugReportCommentsService,
   ) {}
 
   async create(session: WsSession, payload: any) {
@@ -34,7 +36,12 @@ export class AdminBugReportsWsHandler {
     requireAdmin(session);
     this.validator.validate(AdminBugReportsListWsDto, payload ?? {});
     const items = await this.reports.list();
-    return { type: 'admin.bugReports.list', payload: { items } };
+    const counts = await this.comments.countByReportIds(items.map((r) => r.id));
+    const withCounts = items.map((r: any) => ({
+      ...r,
+      commentsCount: counts[r.id] ?? 0,
+    }));
+    return { type: 'admin.bugReports.list', payload: { items: withCounts } };
   }
 
   async get(session: WsSession, payload: any) {
@@ -44,7 +51,11 @@ export class AdminBugReportsWsHandler {
     if (!report) {
       throw new BadRequestException('Rapport introuvable');
     }
-    return { type: 'admin.bugReports.get', payload: { report } };
+    const counts = await this.comments.countByReportIds([report.id]);
+    return {
+      type: 'admin.bugReports.get',
+      payload: { report: { ...(report as any), commentsCount: counts[report.id] ?? 0 } },
+    };
   }
 
   async update(session: WsSession, payload: any) {

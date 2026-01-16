@@ -463,6 +463,11 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
                     ? (u.GetString() ?? string.Empty)
                     : string.Empty;
 
+                _sounds.Play(SoundId.ClientUpdateWarning);
+                if (!string.IsNullOrWhiteSpace(message))
+                {
+                    _announcements.Enqueue(message.Trim(), AnnouncementPriority.Polite);
+                }
                 _ = HandleClientUpdateAvailableAsync(message, version, url);
                 return;
             }
@@ -480,6 +485,11 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
                     ? (u.GetString() ?? string.Empty)
                     : string.Empty;
 
+                _sounds.Play(SoundId.ClientUpdateWarning);
+                if (!string.IsNullOrWhiteSpace(message))
+                {
+                    _announcements.Enqueue(message.Trim(), AnnouncementPriority.Polite);
+                }
                 _ = HandleClientUpdateRequiredAsync(message, minRequiredVersion, url);
                 return;
             }

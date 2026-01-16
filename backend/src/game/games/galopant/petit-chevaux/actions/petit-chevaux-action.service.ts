@@ -180,7 +180,7 @@ export class PetitChevauxActionService {
       ? meta.pawnsByPlayer[playerId]
       : [];
     const offset = meta.offsets?.[playerId] ?? 0;
-    const pathLen = meta.trackLength + meta.homeLength;
+    const arrivalProgress = meta.trackLength + meta.homeLength - 1;
 
     const opponentsOnTrack = this.buildOpponentTrackIndex(state, playerId);
 
@@ -197,15 +197,26 @@ export class PetitChevauxActionService {
       const pawnIndex = pawn?.pawnIndex;
       const prog = typeof pawn?.progress === 'number' ? pawn.progress : -1;
       if (typeof pawnIndex !== 'number') continue;
-      if (prog >= pathLen) continue;
+      if (prog >= arrivalProgress) continue;
 
       let targetProgress: number | null = null;
 
       if (prog < 0) {
         if (roll === 6) targetProgress = 0;
+      } else if (prog >= meta.trackLength) {
+        // Abri (maison) : progression spéciale.
+        // Règle: pour avancer d'une case dans l'abri, il faut faire le numéro de la prochaine case.
+        // Ex: abri 1 -> abri 2 : faire 2, abri 2 -> abri 3 : faire 3, etc.
+        const homeIndex = prog - meta.trackLength + 1; // 1..homeLength
+        if (homeIndex >= 1 && homeIndex < meta.homeLength) {
+          const required = homeIndex + 1; // 2..homeLength
+          if (roll === required) {
+            targetProgress = prog + 1;
+          }
+        }
       } else {
         const nextProg = prog + roll;
-        if (nextProg <= pathLen) {
+        if (nextProg <= arrivalProgress) {
           // Règle : l'entrée dans la maison doit être "pile".
           // On ne peut pas dépasser l'entrée de maison dans le même lancer : il faut arriver exactement à trackLength.
           if (prog < meta.trackLength && nextProg > meta.trackLength) {
@@ -252,10 +263,11 @@ export class PetitChevauxActionService {
 
       const from = this.describeProgress(meta, playerId, prog);
       const to = this.describeProgress(meta, playerId, targetProgress);
+      const pawnLabel = this.pawnLabel(state, playerId, pawnIndex);
       moves.push({
         pawnIndex,
         targetProgress,
-        label: `Cheval ${pawnIndex + 1} (${from}) : aller à ${to}`,
+        label: `${pawnLabel} (${from}) : aller à ${to}`,
       });
     }
 
@@ -356,7 +368,7 @@ export class PetitChevauxActionService {
     if (bestDistance == null) return null;
 
     const who = this.playerName(state, playerId);
-    return `${who} est bloqué : un joueur se trouve devant vous. Pour avancer, vous devez le capturer (faire ${bestDistance} au dé).`;
+    return `${who} ne peut pas avancer.`;
   }
 
   private applyMove(
@@ -392,17 +404,29 @@ export class PetitChevauxActionService {
     };
 
     const rollInt = Number.isFinite(roll) ? Math.trunc(roll) : 0;
+    const offset = meta.offsets?.[playerId] ?? 0;
+    const pawnLabel = this.pawnLabel(state, playerId, move.pawnIndex);
     if (prevProg < 0 && nextProg === 0) {
+      const pos = (offset + nextProg) % meta.trackLength;
+      const habitat = this.habitatLabel(state, playerId);
       next = this.core.appendLog(
         next,
-        `${this.playerName(state, playerId)} sort le cheval ${move.pawnIndex + 1}.`,
+        `${this.playerName(state, playerId)} sort ${pawnLabel} du ${habitat} : case ${pos + 1}/${meta.trackLength}.`,
       );
     } else {
-      const casesWord = rollInt == 1 ? 'case' : 'cases';
-      next = this.core.appendLog(
-        next,
-        `${this.playerName(state, playerId)} avance le cheval ${move.pawnIndex + 1} de ${rollInt} ${casesWord}.`,
-      );
+      if (nextProg >= 0 && nextProg < meta.trackLength) {
+        const pos = (offset + nextProg) % meta.trackLength;
+        next = this.core.appendLog(
+          next,
+          `${this.playerName(state, playerId)} met ${pawnLabel} en case ${pos + 1}/${meta.trackLength}.`,
+        );
+      } else {
+        const casesWord = rollInt == 1 ? 'case' : 'cases';
+        next = this.core.appendLog(
+          next,
+          `${this.playerName(state, playerId)} avance ${pawnLabel} de ${rollInt} ${casesWord}.`,
+        );
+      }
     }
 
     // Messages clairs pour l'entrée dans la maison / arrivée (sans coordonnées "case x/52").
@@ -415,21 +439,21 @@ export class PetitChevauxActionService {
       if (homeIndex >= 1 && homeIndex <= meta.homeLength) {
         next = this.core.appendLog(
           next,
-          `${this.playerName(state, playerId)} entre le cheval ${move.pawnIndex + 1} dans la maison (${homeIndex}/${meta.homeLength}).`,
+          `${this.playerName(state, playerId)} entre ${pawnLabel} dans l'abri (${homeIndex}/${meta.homeLength}).`,
         );
       }
     }
-    const pathLen = meta.trackLength + meta.homeLength;
-    if (prevProg < pathLen && nextProg >= pathLen) {
+    const arrivalProgress = meta.trackLength + meta.homeLength - 1;
+    if (prevProg < arrivalProgress && nextProg >= arrivalProgress) {
       next = this.core.appendLog(
         next,
-        `${this.playerName(state, playerId)} met le cheval ${move.pawnIndex + 1} à l'arrivée.`,
+        `${this.playerName(state, playerId)} met ${pawnLabel} à l'arrivée.`,
       );
     }
 
     next = this.applyCapture(next, playerId, move.pawnIndex, nextProg);
 
-    if (this.isWinner(next, playerId, pathLen)) {
+    if (this.isWinner(next, playerId, arrivalProgress)) {
       next = this.core.appendLog(
         next,
         `${this.playerName(state, playerId)} a gagné !`,
@@ -476,9 +500,10 @@ export class PetitChevauxActionService {
         const pos = (offset + prog) % meta.trackLength;
         if (pos !== moverPos) return pawn;
 
+        const capturedLabel = this.pawnLabel(state, p.id, pawn.pawnIndex);
         next = this.core.appendLog(
           next,
-          `${this.playerName(state, moverId)} capture ${this.playerName(state, p.id)} (cheval ${pawn.pawnIndex + 1}) : retour à l'écurie.`,
+          `${this.playerName(state, moverId)} capture ${this.playerName(state, p.id)} (${capturedLabel}) : retour au départ.`,
         );
         return { ...pawn, progress: -1 };
       });
@@ -527,10 +552,10 @@ export class PetitChevauxActionService {
     progress: number,
   ): string {
     if (!Number.isFinite(progress) || progress < 0) {
-      return 'écurie';
+      return 'départ';
     }
-    const pathLen = meta.trackLength + meta.homeLength;
-    if (progress >= pathLen) {
+    const arrivalProgress = meta.trackLength + meta.homeLength - 1;
+    if (progress >= arrivalProgress) {
       return 'arrivée';
     }
     if (progress < meta.trackLength) {
@@ -539,7 +564,7 @@ export class PetitChevauxActionService {
       return `case ${pos + 1}/${meta.trackLength}`;
     }
     const homeIndex = progress - meta.trackLength + 1;
-    return `maison ${homeIndex}/${meta.homeLength}`;
+    return `abri ${homeIndex}/${meta.homeLength}`;
   }
 
   private playerName(state: GameStateEntity, id: number): string {
@@ -550,5 +575,29 @@ export class PetitChevauxActionService {
         ? String(p.username).trim()
         : null;
     return u ?? `Joueur ${id}`;
+  }
+
+  private pawnLabel(
+    state: GameStateEntity,
+    playerId: number,
+    pawnIndex: number,
+  ): string {
+    const meta = (state.metadata ?? {}) as any as PetitChevauxMetadata;
+    const list = meta?.pawnNamesByPlayer?.[playerId];
+    const name =
+      Array.isArray(list) && typeof list[pawnIndex] === 'string'
+        ? String(list[pawnIndex]).trim()
+        : '';
+    if (name) return name;
+    return `cheval ${pawnIndex + 1}`;
+  }
+
+  private habitatLabel(state: GameStateEntity, playerId: number): string {
+    const meta = (state.metadata ?? {}) as any as PetitChevauxMetadata;
+    const habitat =
+      typeof meta?.habitatByPlayer?.[playerId] === 'string'
+        ? String(meta.habitatByPlayer[playerId]).trim()
+        : '';
+    return habitat || 'départ';
   }
 }

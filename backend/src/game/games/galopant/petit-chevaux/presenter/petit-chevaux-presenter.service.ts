@@ -19,7 +19,8 @@ export class PetitChevauxPresenterService {
     const players = Array.isArray(state.players) ? state.players : [];
     const me = players.find((p) => p?.id === userId);
 
-    const pathLen = (meta.trackLength ?? 0) + (meta.homeLength ?? 0);
+    const arrivalProgress =
+      (meta.trackLength ?? 0) + (meta.homeLength ?? 0) - 1;
     const myPawns = Array.isArray(meta.pawnsByPlayer?.[userId])
       ? meta.pawnsByPlayer[userId]
       : [];
@@ -30,10 +31,10 @@ export class PetitChevauxPresenterService {
       (p: any) =>
         typeof p?.progress === 'number' &&
         p.progress >= meta.trackLength &&
-        p.progress < pathLen,
+        p.progress < arrivalProgress,
     ).length;
     const finished = myPawns.filter(
-      (p: any) => (p?.progress ?? -1) >= pathLen,
+      (p: any) => (p?.progress ?? -1) >= arrivalProgress,
     ).length;
     const out = myPawns.filter(
       (p: any) =>
@@ -44,16 +45,21 @@ export class PetitChevauxPresenterService {
 
     const stableLines: string[] = [];
     if (myColor) stableLines.push(`Couleur: ${myColor}.`);
-    stableLines.push(`Écurie: ${inStable}/4.`);
-    stableLines.push(`Maison: ${inHome}/4.`);
+    stableLines.push(`Départ: ${inStable}/4.`);
+    stableLines.push(`Abri: ${inHome}/4.`);
     stableLines.push(`Arrivés: ${finished}/4.`);
 
     if (out.length) {
       const offset = meta.offsets?.[userId] ?? 0;
+      const names = (meta as any)?.pawnNamesByPlayer?.[userId];
       for (const pawn of out) {
         const pos = (offset + pawn.progress) % meta.trackLength;
+        const label =
+          Array.isArray(names) && typeof names[pawn.pawnIndex] === 'string'
+            ? String(names[pawn.pawnIndex]).trim()
+            : `cheval ${pawn.pawnIndex + 1}`;
         stableLines.push(
-          `Cheval ${pawn.pawnIndex + 1}: case ${pos + 1}/${meta.trackLength}.`,
+          `${label}: case ${pos + 1}/${meta.trackLength}.`,
         );
       }
     } else {
@@ -61,15 +67,31 @@ export class PetitChevauxPresenterService {
     }
 
     const positionLines: string[] = [];
-    if (out.length) {
-      const offset = meta.offsets?.[userId] ?? 0;
-      for (const pawn of out) {
-        const pos = (offset + pawn.progress) % meta.trackLength;
-        positionLines.push(
-          `Cheval ${pawn.pawnIndex + 1}: tour 0, case ${pos + 1}/${meta.trackLength}.`,
-        );
+    const allOnTrack: Array<{ pos: number; line: string }> = [];
+    for (const p of players) {
+      if (!p) continue;
+      const offset = meta.offsets?.[p.id] ?? 0;
+      const names = (meta as any)?.pawnNamesByPlayer?.[p.id];
+      const pawns = Array.isArray(meta.pawnsByPlayer?.[p.id])
+        ? meta.pawnsByPlayer[p.id]
+        : [];
+      for (const pawn of pawns) {
+        const prog = typeof pawn?.progress === 'number' ? pawn.progress : -1;
+        if (prog < 0 || prog >= meta.trackLength) continue;
+        const pos = (offset + prog) % meta.trackLength;
+        const label =
+          Array.isArray(names) && typeof names[pawn.pawnIndex] === 'string'
+            ? String(names[pawn.pawnIndex]).trim()
+            : `cheval ${pawn.pawnIndex + 1}`;
+        allOnTrack.push({
+          pos,
+          line: `${label}, tour 0, case ${pos + 1}/${meta.trackLength}.`,
+        });
       }
-    } else {
+    }
+    allOnTrack.sort((a, b) => b.pos - a.pos);
+    positionLines.push(...allOnTrack.map((x) => x.line));
+    if (!positionLines.length) {
       positionLines.push('Aucun cheval sorti.');
     }
 
@@ -84,8 +106,8 @@ export class PetitChevauxPresenterService {
       ui: {
         panels: {
           stable: {
-            title: 'Écurie',
-            message: stableLines.length ? stableLines.join(' ') : 'Écurie: inconnue.',
+            title: 'État',
+            message: stableLines.length ? stableLines.join(' ') : 'État: inconnu.',
           },
           position: {
             title: 'Position',

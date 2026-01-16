@@ -14,6 +14,30 @@ export class BugReportCommentsService {
     private readonly reports: Repository<BugReportEntity>,
   ) {}
 
+  async countByReportIds(reportIds: string[]): Promise<Record<string, number>> {
+    const ids = Array.from(
+      new Set((reportIds ?? []).map((id) => String(id ?? '').trim()).filter(Boolean)),
+    );
+    if (ids.length === 0) return {};
+
+    const rows = await this.repo
+      .createQueryBuilder('c')
+      .select('c.reportId', 'reportId')
+      .addSelect('COUNT(*)', 'count')
+      .where('c.reportId IN (:...ids)', { ids })
+      .groupBy('c.reportId')
+      .getRawMany<{ reportId: string; count: string }>();
+
+    const out: Record<string, number> = {};
+    for (const row of rows) {
+      const reportId = String((row as any)?.reportId ?? '').trim();
+      if (!reportId) continue;
+      const count = Number((row as any)?.count ?? 0);
+      out[reportId] = Number.isFinite(count) ? count : 0;
+    }
+    return out;
+  }
+
   listByReportId(reportId: string): Promise<BugReportCommentEntity[]> {
     const id = String(reportId ?? '').trim();
     if (!id) return Promise.resolve([]);

@@ -1,5 +1,5 @@
 import type { GameShortcutsBuilder } from '../../../engine/shortcuts/game-shortcuts';
-import { stableAndPositionShortcuts } from '../../../engine/shortcuts/shortcut-presets';
+import { interfaceShortcut } from '../../../engine/shortcuts/shortcut-utils';
 
 export const buildPetitChevauxShortcuts: GameShortcutsBuilder = () =>
-  stableAndPositionShortcuts();
+  [interfaceShortcut('E', 'stable'), interfaceShortcut('P', 'position')];

@@ -39,7 +39,33 @@ export class PetitChevauxSetupService {
 
     const pawnsByPlayer: Record<number, PetitChevauxPawnState[]> = {};
     const colorsByPlayer: Record<number, PetitChevauxColor> = {};
+    const familyByPlayer: Record<number, string> = {};
+    const habitatByPlayer: Record<number, string> = {};
+    const pawnNamesByPlayer: Record<number, string[]> = {};
     const offsets: Record<number, number> = {};
+
+    const families = [
+      {
+        family: 'Equidés',
+        habitat: 'écurie',
+        pawns: ['Alkhal-téké', 'Andalou', 'Frison', 'Pur-sang'],
+      },
+      {
+        family: 'Primates',
+        habitat: 'primaterie',
+        pawns: ['Douc', 'Gibbon', 'Mandrill', 'Sakis'],
+      },
+      {
+        family: 'Oiseaux',
+        habitat: 'volière',
+        pawns: ['Cygne', 'Héron', 'Paon', 'Perroquet'],
+      },
+      {
+        family: 'Poissons',
+        habitat: 'aquarium',
+        pawns: ['Anthias', 'Discus', 'Mandarin', 'Mérou'],
+      },
+    ] as const;
 
     // 2 joueurs => opposés (0 et 20). Jusqu'à 4 joueurs supportés.
     const half = Math.floor(trackLength / 2);
@@ -54,6 +80,10 @@ export class PetitChevauxSetupService {
         progress: -1,
       }));
       colorsByPlayer[p.id] = colorTable[idx] ?? 'Rouge';
+      const pack = families[idx % families.length];
+      familyByPlayer[p.id] = pack.family;
+      habitatByPlayer[p.id] = pack.habitat;
+      pawnNamesByPlayer[p.id] = [...pack.pawns];
       offsets[p.id] = offsetTable[idx] ?? (idx * 10) % trackLength;
     });
 
@@ -91,6 +121,9 @@ export class PetitChevauxSetupService {
       homeLength,
       pawnsByPlayer,
       colorsByPlayer,
+      familyByPlayer,
+      habitatByPlayer,
+      pawnNamesByPlayer,
       offsets,
       safeTiles: mergedSafeTiles,
       positions: {},
@@ -110,9 +143,12 @@ export class PetitChevauxSetupService {
     let next = this.recomputeBoardView(hydrated);
     for (const p of players) {
       const color = colorsByPlayer[p.id];
+      const family = familyByPlayer[p.id];
+      const habitat = habitatByPlayer[p.id];
+      const pawns = pawnNamesByPlayer[p.id];
       next = this.core.appendLog(
         next,
-        `${p.username} reçoit les pions ${color}.`,
+        `${p.username} reçoit les pions ${color}. Famille des ${family} (${habitat}) : ${pawns.join(', ')}.`,
       );
     }
     return next;

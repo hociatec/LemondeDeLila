@@ -43,6 +43,17 @@ public sealed class SoundService : ISoundService, IDisposable
 
     // Avoid audio spam when a burst of messages happens (e.g. history replay, reconnect).
     private static readonly long MinIntervalTicks = Stopwatch.Frequency / 12; // ~83ms
+    private static long GetMinIntervalTicks(SoundId sound) =>
+        sound switch
+        {
+            // Connexion/déconnexion : éviter les doubles triggers (souvent dus à reconnect WS + replay).
+            SoundId.ClientConnected => Stopwatch.Frequency * 2,
+            SoundId.ClientDisconnected => Stopwatch.Frequency * 2,
+            // Notifications admin : limiter le spam si plusieurs commentaires arrivent.
+            SoundId.BugReportCommentReceived => Stopwatch.Frequency / 2,
+            SoundId.ClientUpdateWarning => Stopwatch.Frequency * 2,
+            _ => MinIntervalTicks
+        };
 
     public SoundService(IOptionsService options, IRemoteSoundCache? remote, Dispatcher dispatcher, ILogger<SoundService> logger)
     {
@@ -67,6 +78,12 @@ public sealed class SoundService : ISoundService, IDisposable
             [SoundId.ClientDisconnected] = new SoundEntry(
                 DefaultRelativePath: Path.Combine("Assets", "Sounds", "roomexit.mp3"),
                 OverridePath: () => _options.Current.SoundClientDisconnectedPath,
+                IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundNavigate,
+                Volume: () => Clamp01(_options.Current.SoundNavigateVolume / 100.0)),
+            [SoundId.ClientUpdateWarning] = new SoundEntry(
+                // Alerte sonore pour mises à jour (annonce / imminente).
+                DefaultRelativePath: Path.Combine("Assets", "Sounds", "invitationrecu.mp3"),
+                OverridePath: null,
                 IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundNavigate,
                 Volume: () => Clamp01(_options.Current.SoundNavigateVolume / 100.0)),
             [SoundId.MainMenuMusic] = new SoundEntry(
@@ -139,6 +156,12 @@ public sealed class SoundService : ISoundService, IDisposable
                 OverridePath: null,
                 IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundChatMessages,
                 Volume: () => Clamp01(_options.Current.SoundChatMessagesVolume / 100.0)),
+            [SoundId.BugReportCommentReceived] = new SoundEntry(
+                // Son de notification pour les commentaires ajoutés sur un rapport.
+                DefaultRelativePath: Path.Combine("Assets", "Sounds", "receptionmsgtchat.mp3"),
+                OverridePath: null,
+                IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundNavigate,
+                Volume: () => Clamp01(_options.Current.SoundNavigateVolume / 100.0)),
             [SoundId.FriendConnected] = new SoundEntry(
                 DefaultRelativePath: Path.Combine("Assets", "Sounds", "invitationrecu.mp3"),
                 OverridePath: () => _options.Current.SoundFriendConnectedPath,
@@ -328,7 +351,9 @@ public sealed class SoundService : ISoundService, IDisposable
 
         // Tant qu'on n'est pas authentifié/connecté, ne jouer aucun son autre que l'ouverture du client.
         // Cela évite les sons "parasites" déclenchés par des événements réseau pendant l'écran de login.
-        if (Volatile.Read(ref _connectedGate) == 0 && sound != SoundId.ClientOpened)
+        if (Volatile.Read(ref _connectedGate) == 0 &&
+            sound != SoundId.ClientOpened &&
+            sound != SoundId.ClientDisconnected)
         {
             return;
         }
@@ -347,7 +372,8 @@ public sealed class SoundService : ISoundService, IDisposable
 
         lock (_gate)
         {
-            if (_lastPlayTicks.TryGetValue(sound, out var last) && now - last < MinIntervalTicks)
+            var minInterval = GetMinIntervalTicks(sound);
+            if (_lastPlayTicks.TryGetValue(sound, out var last) && now - last < minInterval)
             {
                 return;
             }
@@ -665,6 +691,15 @@ public sealed class SoundService : ISoundService, IDisposable
     {
         // Avant connexion: aucune boucle (ambiance/musique) ne doit démarrer.
         if (Volatile.Read(ref _connectedGate) == 0)
+        {
+            return;
+        }
+
+        // Juste après connexion, éviter la superposition avec le son "connexion réussie".
+        // (Des events comme sounds.updated peuvent déclencher des StartLoop trop tôt.)
+        var connectedAt = Volatile.Read(ref _connectedAtTicks);
+        if (connectedAt > 0 &&
+            Stopwatch.GetTimestamp() - connectedAt < Stopwatch.Frequency * 2)
         {
             return;
         }

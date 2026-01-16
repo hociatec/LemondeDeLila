@@ -144,7 +144,7 @@ internal sealed class GamePlayRealtimeController
                 _emitMessage(RewriteLogForViewer(msg, viewerUsername, _lastViewerHandCounts, currentHandCounts));
             }
 
-            var nextStatus = state.Status ?? string.Empty;
+            var nextStatus = NormalizeStatus(state);
             var previousStatus = _lastGameStatus ?? string.Empty;
             _lastGameStatus = nextStatus;
             if (!string.Equals(previousStatus, nextStatus, StringComparison.OrdinalIgnoreCase))
@@ -181,6 +181,54 @@ internal sealed class GamePlayRealtimeController
             _refreshCanExecute();
             TryAnnounceTurnFromState(state);
         }, DispatcherPriority.Background);
+    }
+
+    private static string NormalizeStatus(GameStateDto state)
+    {
+        var status = (state.Status ?? string.Empty).Trim();
+        if (!string.Equals(status, "started", StringComparison.OrdinalIgnoreCase))
+        {
+            return status;
+        }
+
+        // Robustesse : si le serveur a déjà marqué un winner/finishedAt dans le metadata,
+        // mais que status reste "started" (race / transition), considérer la partie finie côté client
+        // pour permettre la relance (Entrée) et le reset (X).
+        try
+        {
+            var meta = state.Metadata;
+            if (meta.ValueKind != System.Text.Json.JsonValueKind.Object)
+            {
+                return status;
+            }
+
+            if (meta.TryGetProperty("finishedAt", out var finishedAt) &&
+                finishedAt.ValueKind == System.Text.Json.JsonValueKind.String &&
+                !string.IsNullOrWhiteSpace(finishedAt.GetString()))
+            {
+                return "finished";
+            }
+
+            if (meta.TryGetProperty("winnerId", out var winnerId) &&
+                winnerId.ValueKind == System.Text.Json.JsonValueKind.Number &&
+                winnerId.TryGetInt32(out var w) &&
+                w > 0)
+            {
+                return "finished";
+            }
+
+            if (meta.TryGetProperty("outcomesByPlayerId", out var outcomes) &&
+                outcomes.ValueKind == System.Text.Json.JsonValueKind.Object)
+            {
+                return "finished";
+            }
+        }
+        catch
+        {
+            // ignore
+        }
+
+        return status;
     }
 
     private void TryAnnounceTurnFromState(GameStateDto state)

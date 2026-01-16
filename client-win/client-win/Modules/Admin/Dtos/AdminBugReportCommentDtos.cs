@@ -34,5 +34,10 @@ public sealed class AdminBugReportCommentResponseDto
 {
     [JsonPropertyName("comment")]
     public AdminBugReportCommentDto? Comment { get; set; }
-}
 
+    [JsonPropertyName("reportId")]
+    public string ReportId { get; set; } = string.Empty;
+
+    [JsonPropertyName("commentsCount")]
+    public int CommentsCount { get; set; }
+}

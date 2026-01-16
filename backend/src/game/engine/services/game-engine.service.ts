@@ -663,9 +663,13 @@ export class GameEngineService {
     // Un bot peut être en "thinking" (timer) pendant qu'un humain doit confirmer un pending
     // (ex: échange). On n'interdit pas ces actions explicitement autorisées.
     if (!allowBotTurn && current.botThinking && !allowOutOfTurnActions) {
-      throw new UnauthorizedException(
-        'Un bot joue actuellement, merci de patienter.',
-      );
+      // Si ce n'est pas le tour d'un bot, préférer le message "pas votre tour"
+      // (le flag botThinking peut rester true un court instant).
+      if (currentPlayer?.isBot) {
+        throw new UnauthorizedException(
+          'Un bot joue actuellement, merci de patienter.',
+        );
+      }
     }
 
     const actorOverride =
@@ -935,6 +939,18 @@ export class GameEngineService {
     const meta = (state as any)?.metadata;
     if (!meta || typeof meta !== 'object') {
       return state;
+    }
+
+    // Certains jeux peuvent déjà marquer une fin logique via `finishedAt`/`outcomesByPlayerId`
+    // sans avoir basculé `status` -> finished (legacy / bug). On force dans ce cas pour
+    // déclencher le reset automatique de table côté moteur.
+    const finishedAt = (meta as any)?.finishedAt;
+    if (typeof finishedAt === 'string' && finishedAt.trim().length > 0) {
+      return state.status === 'finished' ? state : { ...state, status: 'finished' };
+    }
+    const outcomes = (meta as any)?.outcomesByPlayerId;
+    if (outcomes && typeof outcomes === 'object' && Object.keys(outcomes).length > 0) {
+      return state.status === 'finished' ? state : { ...state, status: 'finished' };
     }
 
     for (const key of ['winnerPlayerId', 'winnerId', 'winner_id']) {

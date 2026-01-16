@@ -143,7 +143,34 @@ export class AFondLesBallonsActionService {
     const meta = this.getMeta(state);
     const current = meta.positions?.[playerId] ?? 0;
     const target = this.computeTarget(current, delta, meta.tiles.length - 1);
-    return this.applyLanding(state, playerId, target, depth + 1);
+    let next = state;
+    next = this.appendTraverseLogs(next, playerId, current, target);
+    return this.applyLanding(next, playerId, target, depth + 1);
+  }
+
+  private appendTraverseLogs(
+    state: GameStateEntity,
+    playerId: number,
+    from: number,
+    to: number,
+  ): GameStateEntity {
+    const fromPos = Number.isFinite(from) ? Math.trunc(from) : 0;
+    const toPos = Number.isFinite(to) ? Math.trunc(to) : fromPos;
+    if (fromPos === toPos) return state;
+
+    const meta = this.getMeta(state);
+    const tiles = Array.isArray(meta.tiles) ? meta.tiles : [];
+    const dir = toPos > fromPos ? 1 : -1;
+    let next = state;
+    for (let pos = fromPos + dir; pos !== toPos; pos += dir) {
+      const tile = tiles[pos];
+      const label = tile?.label ?? `Case ${pos + 1}`;
+      next = this.core.appendLog(
+        next,
+        `${this.playerName(next, playerId)} passe par Case ${pos + 1} : ${label}.`,
+      );
+    }
+    return next;
   }
 
   private applyLanding(
@@ -270,6 +297,10 @@ export class AFondLesBallonsActionService {
           'La partie est figée : tous les joueurs passent un tour.',
         );
         for (const p of next.players ?? []) {
+          next = this.core.appendLog(
+            next,
+            `${this.playerName(next, p.id)} passera son prochain tour.`,
+          );
           next = this.skipTurns(next, p.id, 1);
         }
         return next;

@@ -495,7 +495,7 @@ namespace client_win
             {
                 // Éviter de recharger les MediaPlayer pendant que le son "connexion" joue,
                 // sinon un refresh des sons distants peut couper la lecture en cours.
-                await sounds.WaitForSoundToEndAsync(SoundId.ClientConnected, TimeSpan.FromSeconds(4)).ConfigureAwait(false);
+                await sounds.WaitForSoundToEndAsync(SoundId.ClientConnected, TimeSpan.FromSeconds(2)).ConfigureAwait(false);
 
                 sounds.PreloadAll();
 
@@ -534,7 +534,7 @@ namespace client_win
                 sounds.StopLoop(SoundId.TavernAmbience);
 
                 // Attendre que le son "connexion" (s'il joue) se termine.
-                await sounds.WaitForSoundToEndAsync(SoundId.ClientConnected, TimeSpan.FromSeconds(4)).ConfigureAwait(false);
+                await sounds.WaitForSoundToEndAsync(SoundId.ClientConnected, TimeSpan.FromSeconds(2)).ConfigureAwait(false);
             }
             catch
             {

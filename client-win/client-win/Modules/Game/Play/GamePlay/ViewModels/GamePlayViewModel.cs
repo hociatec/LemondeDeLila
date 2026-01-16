@@ -210,6 +210,15 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
 
                 if (text == null)
                 {
+                    if (!string.IsNullOrWhiteSpace(prompt.CancelActionType))
+                    {
+                        await session
+                            .SendActionsAsync(
+                                new[] { new GameClientAction(prompt.CancelActionType.Trim(), new System.Collections.Generic.Dictionary<string, object>()) },
+                                cancellationToken)
+                            .ConfigureAwait(false);
+                        return true;
+                    }
                     return false;
                 }
 
@@ -281,6 +290,15 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
             var values = await _textPrompts.PromptConfigAsync(prompt.Title, fields).ConfigureAwait(true);
             if (values == null)
             {
+                if (!string.IsNullOrWhiteSpace(prompt.CancelActionType))
+                {
+                    await session
+                        .SendActionsAsync(
+                            new[] { new GameClientAction(prompt.CancelActionType.Trim(), new System.Collections.Generic.Dictionary<string, object>()) },
+                            cancellationToken)
+                        .ConfigureAwait(false);
+                    return true;
+                }
                 return false;
             }
 
@@ -451,12 +469,15 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
             return;
         }
 
+        var cancelActionType = (GetString(data, "cancelActionType") ?? string.Empty).Trim();
+
         _pendingTextPrompt = new PendingTextPrompt(
             Title: (GetString(data, "title") ?? "Configuration").Trim(),
             Label: label,
             InitialText: GetString(data, "initialText") ?? string.Empty,
             ActionType: actionType,
             PayloadKey: (GetString(data, "payloadKey") ?? "value").Trim(),
+            CancelActionType: cancelActionType,
             Kind: (GetString(data, "kind") ?? "text").Trim(),
             Min: GetInt(data, "min"),
             Max: GetInt(data, "max"));
@@ -468,6 +489,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
         string InitialText,
         string ActionType,
         string PayloadKey,
+        string CancelActionType,
         string Kind,
         int? Min,
         int? Max);
@@ -515,6 +537,8 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
             return;
         }
 
+        var cancelActionType = (GetString(data, "cancelActionType") ?? string.Empty).Trim();
+
         if (!data.TryGetProperty("fields", out var fieldsEl) ||
             fieldsEl.ValueKind != System.Text.Json.JsonValueKind.Array)
         {
@@ -546,12 +570,14 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
         _pendingConfigPrompt = new PendingConfigPrompt(
             Title: (GetString(data, "title") ?? "Configuration").Trim(),
             ActionType: actionType,
+            CancelActionType: cancelActionType,
             Fields: fields);
     }
 
     private sealed record PendingConfigPrompt(
         string Title,
         string ActionType,
+        string CancelActionType,
         System.Collections.Generic.IReadOnlyList<PendingConfigField> Fields);
 
     private sealed record PendingConfigField(

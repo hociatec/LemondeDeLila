@@ -7,7 +7,7 @@ export type PetitChevauxPawnState = {
   /**
    * Progression "linéaire" sur le chemin du joueur.
    * -1 = dans l'écurie (départ), 0..trackLength-1 = sur le plateau,
-   * trackLength..trackLength+homeLength = maison, trackLength+homeLength = arrivée.
+   * trackLength..trackLength+homeLength-1 = abri (cases 1..homeLength, arrivée incluse).
    */
   progress: number;
 };
@@ -18,6 +18,10 @@ export type PetitChevauxMetadata = {
   homeLength: number;
   pawnsByPlayer: Record<number, PetitChevauxPawnState[]>;
   colorsByPlayer: Record<number, PetitChevauxColor>;
+  // Personnalisation "univers" (familles/animaux) pour les logs et l'accessibilité.
+  familyByPlayer?: Record<number, string>;
+  habitatByPlayer?: Record<number, string>;
+  pawnNamesByPlayer?: Record<number, string[]>;
   // Décalage de départ sur la piste principale (0..trackLength-1).
   offsets: Record<number, number>;
   // Cases safe sur la piste (0..trackLength-1)

@@ -76,6 +76,7 @@ public sealed class MenuRouter : IMenuRouter
     private readonly INotifyGatewayClient _notify;
     private readonly IMenuBadges _badges;
     private readonly Modules.Presence.Services.IPresenceMonitor _presence;
+    private bool _contactAdminOpen;
 
     public MenuRouter(
         ILogger<MenuRouter> logger,
@@ -588,11 +589,18 @@ public sealed class MenuRouter : IMenuRouter
     {
         _logger.LogInformation("Ouverture du contact admin");
 
+        if (_contactAdminOpen && _navigation.CurrentView is AboutView)
+        {
+            return Task.FromResult("Contact admin déjà ouvert.");
+        }
+
         var previous = _navigation.CurrentView;
         StopBackgroundLoops();
         var view = new AboutView();
+        _contactAdminOpen = true;
         var vm = new AboutViewModel(_config, _dialogs, _notify, _sounds, onClose: () =>
         {
+            _contactAdminOpen = false;
             if (previous != null)
             {
                 _navigation.Show(previous);
