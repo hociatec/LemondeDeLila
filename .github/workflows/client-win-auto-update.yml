@@ -68,6 +68,7 @@ jobs:
           CODESIGN_TIMESTAMP_URL: ${{ secrets.CODESIGN_TIMESTAMP_URL }}
           LILA_UPDATES_BASEURL: ${{ secrets.LILA_UPDATES_BASEURL }}
         run: |
+          $ErrorActionPreference = "Stop"
           $ver = "${{ steps.ver.outputs.version }}"
           $ver4 = "${{ steps.ver.outputs.version4 }}"
           $thumb = "${{ steps.cert.outputs.thumbprint }}"
@@ -83,6 +84,9 @@ jobs:
           $publishDir = Join-Path $env:RUNNER_TEMP "clickonce-publish"
           if (Test-Path $publishDir) { Remove-Item $publishDir -Recurse -Force }
           New-Item -ItemType Directory -Path $publishDir | Out-Null
+
+          $binlog = Join-Path $env:RUNNER_TEMP "msbuild.binlog"
+          if (Test-Path $binlog) { Remove-Item $binlog -Force }
 
           msbuild client-win/client-win/client-win.csproj `
             /t:Publish `
@@ -104,14 +108,23 @@ jobs:
             /p:GenerateManifests=true `
             /p:SignManifests=true `
             /p:ManifestCertificateThumbprint="$thumb" `
-            /p:ManifestTimestampUrl="$ts"
+            /p:ManifestTimestampUrl="$ts" `
+            /bl:"$binlog"
 
           "publishDir=$publishDir" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+      - name: Upload MSBuild binlog (always)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: msbuild-binlog
+          path: ${{ runner.temp }}/msbuild.binlog
 
       - name: Zip publish directory
         id: zip
         shell: pwsh
         run: |
+          $ErrorActionPreference = "Stop"
           $ver = "${{ steps.ver.outputs.version }}"
           $publishDir = "${{ steps.pub.outputs.publishDir }}"
           $zipPath = Join-Path $env:RUNNER_TEMP ("client-win-$ver-clickonce.zip")
@@ -125,6 +138,7 @@ jobs:
           LILA_API_BASE: ${{ secrets.LILA_API_BASE }}
           LILA_UPLOAD_TOKEN: ${{ secrets.LILA_UPLOAD_TOKEN }}
         run: |
+          $ErrorActionPreference = "Stop"
           $api = $env:LILA_API_BASE
           if ([string]::IsNullOrWhiteSpace($api)) { throw "Missing secret: LILA_API_BASE (example: https://api.lilas.hociatec.fr/api/)" }
           if (!$api.EndsWith("/")) { $api += "/" }
