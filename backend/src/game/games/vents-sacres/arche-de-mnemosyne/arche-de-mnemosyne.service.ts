@@ -360,7 +360,6 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
           { key: 'wrong1', label: 'Mauvaise réponse 1', kind: 'text', initialText: '' },
           { key: 'wrong2', label: 'Mauvaise réponse 2', kind: 'text', initialText: '' },
           { key: 'wrong3', label: 'Mauvaise réponse 3', kind: 'text', initialText: '' },
-          { key: 'status', label: 'Statut (validated/pending/to_edit/trash)', kind: 'text', initialText: 'pending' },
         ],
       };
       return { ...state, metadata: { ...meta, prompt, adminView: { page: 'category', categoryId } } };
@@ -369,7 +368,6 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
     if (type === 'mnemo_add_question') {
       const view = meta.adminView;
       if (view.page !== 'category') return state;
-      const status = this.normalizeStatus(payload.status);
       try {
         this.store.createQuestion({
           categoryId: view.categoryId,
@@ -378,11 +376,11 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
           wrong1: payload.wrong1,
           wrong2: payload.wrong2,
           wrong3: payload.wrong3,
-          status,
+          status: 'validated',
         });
         return this.core.appendLog(
           { ...state, metadata: { ...meta, prompt: null } },
-          `Question ajoutée (${status}).`,
+          'Question ajoutée.',
         );
       } catch (err) {
         return this.core.appendLog(
@@ -513,22 +511,34 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
     const meta = this.getMeta(state);
     const categories = this.store.listCategories();
 
-    const pool = this.store
-      .listQuestions({
-        status: 'validated',
-      })
-      .filter((q) =>
-        meta.selectedCategoryId ? q.categoryId === meta.selectedCategoryId : true,
-      );
+    const all = this.store
+      .listQuestions()
+      .filter((q) => String(q.status ?? '') !== 'trash');
+
+    const selected =
+      meta.selectedCategoryId &&
+      categories.some((c) => c.id === meta.selectedCategoryId)
+        ? meta.selectedCategoryId
+        : null;
+
+    let pool = all.filter((q) => (selected ? q.categoryId === selected : true));
 
     if (categories.length === 0) {
       return this.core.appendLog(state, 'Aucune catégorie : utilisez Administration > Ajouter une catégorie.');
     }
-    if (pool.length === 0) {
+    if (all.length === 0) {
       return this.core.appendLog(
         state,
-        'Aucune question validée disponible dans cette sélection.',
+        'Aucune question disponible : utilisez Administration > Ajouter une question.',
       );
+    }
+
+    if (pool.length === 0 && selected) {
+      // Catégorie sélectionnée mais vide : annuler la sélection pour permettre de jouer quand même.
+      return this.drawNextQuestionOrStay({
+        ...state,
+        metadata: { ...meta, selectedCategoryId: null },
+      });
     }
 
     const used = new Set(meta.usedQuestionIds ?? []);

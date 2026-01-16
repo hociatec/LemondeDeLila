@@ -94,6 +94,15 @@ public sealed class SoundService : ISoundService, IDisposable
             "1",
             StringComparison.OrdinalIgnoreCase);
 
+        try
+        {
+            _logger.LogInformation("SoundService init pid={Pid} dispatcher={Dispatcher}", Environment.ProcessId, dispatcher?.Thread?.Name ?? "(unnamed)");
+        }
+        catch
+        {
+            // ignore
+        }
+
         // Prevent sound spam at startup: allow only the explicit app launch sound until it has finished.
         // Gate is opened when ClientOpened ends/fails, or when ClientOpened can't play (disabled/missing).
         Volatile.Write(ref _startupGateOpened, 0);
@@ -313,7 +322,7 @@ public sealed class SoundService : ISoundService, IDisposable
             }
 
             var msg = messageFactory();
-            _logger.LogWarning("Audio startup trace: {Message}", msg);
+            _logger.LogWarning("Audio startup trace: pid={Pid} {Message}", Environment.ProcessId, msg);
             if (_startupTraceEnabled)
             {
                 _logger.LogWarning("Audio startup trace stack:\n{Stack}", Environment.StackTrace);
@@ -333,6 +342,18 @@ public sealed class SoundService : ISoundService, IDisposable
         }
 
         TraceStartupOnce("startup.gate.open", () => $"startup gate opened ({reason})");
+    }
+
+    private void TraceStartupPlayRequest(SoundId sound, string filePath, string reason)
+    {
+        TraceStartupOnce($"startup.play.request.{sound}", () =>
+            $"request play {sound} ({reason}) gate(startup={Volatile.Read(ref _startupGateOpened)} connected={Volatile.Read(ref _connectedGate)}) file={Path.GetFileName(filePath)}");
+    }
+
+    private void TraceStartupPlayStart(SoundId sound, string filePath)
+    {
+        TraceStartupOnce($"startup.play.start.{sound}", () =>
+            $"start playback {sound} gate(startup={Volatile.Read(ref _startupGateOpened)} connected={Volatile.Read(ref _connectedGate)}) file={Path.GetFileName(filePath)}");
     }
 
     public void PreloadAll()
@@ -483,6 +504,8 @@ public sealed class SoundService : ISoundService, IDisposable
             return;
         }
 
+        TraceStartupPlayRequest(sound, filePath, "Play() called");
+
         var shouldLogStartupBurst = false;
         var startupBurstCount = 0;
 
@@ -571,6 +594,7 @@ public sealed class SoundService : ISoundService, IDisposable
                     player.Stop();
                     player.Position = TimeSpan.Zero;
                     player.Play();
+                    TraceStartupPlayStart(request.Sound, request.FilePath);
                 }
 
                 var needsMediaOpened = false;

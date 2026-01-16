@@ -124,7 +124,7 @@ export class MnemoQuizStoreService implements OnModuleInit {
       wrong1: String(input.wrong1 ?? '').trim(),
       wrong2: String(input.wrong2 ?? '').trim(),
       wrong3: String(input.wrong3 ?? '').trim(),
-      status: input.status ?? 'pending',
+      status: input.status ?? 'validated',
       createdAt: now,
       updatedAt: now,
     };
