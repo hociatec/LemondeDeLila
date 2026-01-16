@@ -720905,3 +720905,1029 @@
   },
   "service": "game-engine"
 }
+2026-01-16 20:17:32 [[32minfo[39m]: Player action
+{
+  "context": {
+    "roomId": 728,
+    "gameType": "arche-de-mnemosyne",
+    "playerId": -2,
+    "action": {
+      "type": "bot_play",
+      "payload": {
+        "actions": [
+          "answer_quiz"
+        ]
+      },
+      "timestamp": "2026-01-16T20:17:32.381Z"
+    }
+  },
+  "service": "game-engine"
+}
+2026-01-16 20:17:32 [[32minfo[39m]: Player action
+{
+  "context": {
+    "roomId": 728,
+    "gameType": "arche-de-mnemosyne",
+    "playerId": -2,
+    "turnIndex": 0,
+    "action": {
+      "type": "apply_actions",
+      "payload": {
+        "actions": [
+          {
+            "type": "answer_quiz",
+            "hasPayload": true
+          }
+        ],
+        "allowBotTurn": true
+      },
+      "timestamp": "2026-01-16T20:17:32.383Z"
+    }
+  },
+  "service": "game-engine"
+}
+2026-01-16 20:17:35 [[32minfo[39m]: Player action
+{
+  "context": {
+    "roomId": 729,
+    "gameType": "arche-de-mnemosyne",
+    "playerId": -1,
+    "action": {
+      "type": "bot_play",
+      "payload": {
+        "actions": [
+          "answer_quiz"
+        ]
+      },
+      "timestamp": "2026-01-16T20:17:35.403Z"
+    }
+  },
+  "service": "game-engine"
+}
+2026-01-16 20:17:35 [[32minfo[39m]: Player action
+{
+  "context": {
+    "roomId": 729,
+    "gameType": "arche-de-mnemosyne",
+    "playerId": -1,
+    "turnIndex": 0,
+    "action": {
+      "type": "apply_actions",
+      "payload": {
+        "actions": [
+          {
+            "type": "answer_quiz",
+            "hasPayload": true
+          }
+        ],
+        "allowBotTurn": true
+      },
+      "timestamp": "2026-01-16T20:17:35.406Z"
+    }
+  },
+  "service": "game-engine"
+}
+2026-01-16 20:17:36 [[32minfo[39m]: Player action
+{
+  "context": {
+    "roomId": 728,
+    "gameType": "arche-de-mnemosyne",
+    "playerId": -2,
+    "action": {
+      "type": "bot_play",
+      "payload": {
+        "actions": [
+          "answer_quiz"
+        ]
+      },
+      "timestamp": "2026-01-16T20:17:36.388Z"
+    }
+  },
+  "service": "game-engine"
+}
+2026-01-16 20:17:36 [[32minfo[39m]: Player action
+{
+  "context": {
+    "roomId": 728,
+    "gameType": "arche-de-mnemosyne",
+    "playerId": -2,
+    "turnIndex": 0,
+    "action": {
+      "type": "apply_actions",
+      "payload": {
+        "actions": [
+          {
+            "type": "answer_quiz",
+            "hasPayload": true
+          }
+        ],
+        "allowBotTurn": true
+      },
+      "timestamp": "2026-01-16T20:17:36.389Z"
+    }
+  },
+  "service": "game-engine"
+}
+2026-01-16 20:17:39 [[32minfo[39m]: Player action
+{
+  "context": {
+    "roomId": 729,
+    "gameType": "arche-de-mnemosyne",
+    "playerId": -1,
+    "action": {
+      "type": "bot_play",
+      "payload": {
+        "actions": [
+          "answer_quiz"
+        ]
+      },
+      "timestamp": "2026-01-16T20:17:39.414Z"
+    }
+  },
+  "service": "game-engine"
+}
+2026-01-16 20:17:39 [[32minfo[39m]: Player action
+{
+  "context": {
+    "roomId": 729,
+    "gameType": "arche-de-mnemosyne",
+    "playerId": -1,
+    "turnIndex": 0,
+    "action": {
+      "type": "apply_actions",
+      "payload": {
+        "actions": [
+          {
+            "type": "answer_quiz",
+            "hasPayload": true
+          }
+        ],
+        "allowBotTurn": true
+      },
+      "timestamp": "2026-01-16T20:17:39.416Z"
+    }
+  },
+  "service": "game-engine"
+}
+2026-01-16 20:17:40 [[32minfo[39m]: Player action
+{
+  "context": {
+    "roomId": 728,
+    "gameType": "arche-de-mnemosyne",
+    "playerId": -2,
+    "action": {
+      "type": "bot_play",
+      "payload": {
+        "actions": [
+          "answer_quiz"
+        ]
+      },
+      "timestamp": "2026-01-16T20:17:40.393Z"
+    }
+  },
+  "service": "game-engine"
+}
+2026-01-16 20:17:40 [[32minfo[39m]: Player action
+{
+  "context": {
+    "roomId": 728,
+    "gameType": "arche-de-mnemosyne",
+    "playerId": -2,
+    "turnIndex": 0,
+    "action": {
+      "type": "apply_actions",
+      "payload": {
+        "actions": [
+          {
+            "type": "answer_quiz",
+            "hasPayload": true
+          }
+        ],
+        "allowBotTurn": true
+      },
+      "timestamp": "2026-01-16T20:17:40.394Z"
+    }
+  },
+  "service": "game-engine"
+}
+2026-01-16 20:17:43 [[32minfo[39m]: Player action
+{
+  "context": {
+    "roomId": 729,
+    "gameType": "arche-de-mnemosyne",
+    "playerId": -1,
+    "action": {
+      "type": "bot_play",
+      "payload": {
+        "actions": [
+          "answer_quiz"
+        ]
+      },
+      "timestamp": "2026-01-16T20:17:43.422Z"
+    }
+  },
+  "service": "game-engine"
+}
+2026-01-16 20:17:43 [[32minfo[39m]: Player action
+{
+  "context": {
+    "roomId": 729,
+    "gameType": "arche-de-mnemosyne",
+    "playerId": -1,
+    "turnIndex": 0,
+    "action": {
+      "type": "apply_actions",
+      "payload": {
+        "actions": [
+          {
+            "type": "answer_quiz",
+            "hasPayload": true
+          }
+        ],
+        "allowBotTurn": true
+      },
+      "timestamp": "2026-01-16T20:17:43.423Z"
+    }
+  },
+  "service": "game-engine"
+}
+2026-01-16 20:17:44 [[32minfo[39m]: Player action
+{
+  "context": {
+    "roomId": 728,
+    "gameType": "arche-de-mnemosyne",
+    "playerId": -2,
+    "action": {
+      "type": "bot_play",
+      "payload": {
+        "actions": [
+          "answer_quiz"
+        ]
+      },
+      "timestamp": "2026-01-16T20:17:44.407Z"
+    }
+  },
+  "service": "game-engine"
+}
+2026-01-16 20:17:44 [[32minfo[39m]: Player action
+{
+  "context": {
+    "roomId": 728,
+    "gameType": "arche-de-mnemosyne",
+    "playerId": -2,
+    "turnIndex": 0,
+    "action": {
+      "type": "apply_actions",
+      "payload": {
+        "actions": [
+          {
+            "type": "answer_quiz",
+            "hasPayload": true
+          }
+        ],
+        "allowBotTurn": true
+      },
+      "timestamp": "2026-01-16T20:17:44.409Z"
+    }
+  },
+  "service": "game-engine"
+}
+2026-01-16 20:17:47 [[32minfo[39m]: Player action
+{
+  "context": {
+    "roomId": 729,
+    "gameType": "arche-de-mnemosyne",
+    "playerId": -1,
+    "action": {
+      "type": "bot_play",
+      "payload": {
+        "actions": [
+          "answer_quiz"
+        ]
+      },
+      "timestamp": "2026-01-16T20:17:47.428Z"
+    }
+  },
+  "service": "game-engine"
+}
+2026-01-16 20:17:47 [[32minfo[39m]: Player action
+{
+  "context": {
+    "roomId": 729,
+    "gameType": "arche-de-mnemosyne",
+    "playerId": -1,
+    "turnIndex": 0,
+    "action": {
+      "type": "apply_actions",
+      "payload": {
+        "actions": [
+          {
+            "type": "answer_quiz",
+            "hasPayload": true
+          }
+        ],
+        "allowBotTurn": true
+      },
+      "timestamp": "2026-01-16T20:17:47.430Z"
+    }
+  },
+  "service": "game-engine"
+}
+2026-01-16 20:17:48 [[32minfo[39m]: Player action
+{
+  "context": {
+    "roomId": 728,
+    "gameType": "arche-de-mnemosyne",
+    "playerId": -2,
+    "action": {
+      "type": "bot_play",
+      "payload": {
+        "actions": [
+          "answer_quiz"
+        ]
+      },
+      "timestamp": "2026-01-16T20:17:48.415Z"
+    }
+  },
+  "service": "game-engine"
+}
+2026-01-16 20:17:48 [[32minfo[39m]: Player action
+{
+  "context": {
+    "roomId": 728,
+    "gameType": "arche-de-mnemosyne",
+    "playerId": -2,
+    "turnIndex": 0,
+    "action": {
+      "type": "apply_actions",
+      "payload": {
+        "actions": [
+          {
+            "type": "answer_quiz",
+            "hasPayload": true
+          }
+        ],
+        "allowBotTurn": true
+      },
+      "timestamp": "2026-01-16T20:17:48.417Z"
+    }
+  },
+  "service": "game-engine"
+}
+2026-01-16 20:17:51 [[32minfo[39m]: Player action
+{
+  "context": {
+    "roomId": 729,
+    "gameType": "arche-de-mnemosyne",
+    "playerId": -1,
+    "action": {
+      "type": "bot_play",
+      "payload": {
+        "actions": [
+          "answer_quiz"
+        ]
+      },
+      "timestamp": "2026-01-16T20:17:51.436Z"
+    }
+  },
+  "service": "game-engine"
+}
+2026-01-16 20:17:51 [[32minfo[39m]: Player action
+{
+  "context": {
+    "roomId": 729,
+    "gameType": "arche-de-mnemosyne",
+    "playerId": -1,
+    "turnIndex": 0,
+    "action": {
+      "type": "apply_actions",
+      "payload": {
+        "actions": [
+          {
+            "type": "answer_quiz",
+            "hasPayload": true
+          }
+        ],
+        "allowBotTurn": true
+      },
+      "timestamp": "2026-01-16T20:17:51.437Z"
+    }
+  },
+  "service": "game-engine"
+}
+2026-01-16 20:17:52 [[32minfo[39m]: Player action
+{
+  "context": {
+    "roomId": 728,
+    "gameType": "arche-de-mnemosyne",
+    "playerId": -2,
+    "action": {
+      "type": "bot_play",
+      "payload": {
+        "actions": [
+          "answer_quiz"
+        ]
+      },
+      "timestamp": "2026-01-16T20:17:52.421Z"
+    }
+  },
+  "service": "game-engine"
+}
+2026-01-16 20:17:52 [[32minfo[39m]: Player action
+{
+  "context": {
+    "roomId": 728,
+    "gameType": "arche-de-mnemosyne",
+    "playerId": -2,
+    "turnIndex": 0,
+    "action": {
+      "type": "apply_actions",
+      "payload": {
+        "actions": [
+          {
+            "type": "answer_quiz",
+            "hasPayload": true
+          }
+        ],
+        "allowBotTurn": true
+      },
+      "timestamp": "2026-01-16T20:17:52.422Z"
+    }
+  },
+  "service": "game-engine"
+}
+2026-01-16 20:17:55 [[32minfo[39m]: Player action
+{
+  "context": {
+    "roomId": 729,
+    "gameType": "arche-de-mnemosyne",
+    "playerId": -1,
+    "action": {
+      "type": "bot_play",
+      "payload": {
+        "actions": [
+          "answer_quiz"
+        ]
+      },
+      "timestamp": "2026-01-16T20:17:55.450Z"
+    }
+  },
+  "service": "game-engine"
+}
+2026-01-16 20:17:55 [[32minfo[39m]: Player action
+{
+  "context": {
+    "roomId": 729,
+    "gameType": "arche-de-mnemosyne",
+    "playerId": -1,
+    "turnIndex": 0,
+    "action": {
+      "type": "apply_actions",
+      "payload": {
+        "actions": [
+          {
+            "type": "answer_quiz",
+            "hasPayload": true
+          }
+        ],
+        "allowBotTurn": true
+      },
+      "timestamp": "2026-01-16T20:17:55.453Z"
+    }
+  },
+  "service": "game-engine"
+}
+2026-01-16 20:17:56 [[32minfo[39m]: Player action
+{
+  "context": {
+    "roomId": 728,
+    "gameType": "arche-de-mnemosyne",
+    "playerId": -2,
+    "action": {
+      "type": "bot_play",
+      "payload": {
+        "actions": [
+          "answer_quiz"
+        ]
+      },
+      "timestamp": "2026-01-16T20:17:56.430Z"
+    }
+  },
+  "service": "game-engine"
+}
+2026-01-16 20:17:56 [[32minfo[39m]: Player action
+{
+  "context": {
+    "roomId": 728,
+    "gameType": "arche-de-mnemosyne",
+    "playerId": -2,
+    "turnIndex": 0,
+    "action": {
+      "type": "apply_actions",
+      "payload": {
+        "actions": [
+          {
+            "type": "answer_quiz",
+            "hasPayload": true
+          }
+        ],
+        "allowBotTurn": true
+      },
+      "timestamp": "2026-01-16T20:17:56.431Z"
+    }
+  },
+  "service": "game-engine"
+}
+2026-01-16 20:17:59 [[32minfo[39m]: Player action
+{
+  "context": {
+    "roomId": 729,
+    "gameType": "arche-de-mnemosyne",
+    "playerId": -1,
+    "action": {
+      "type": "bot_play",
+      "payload": {
+        "actions": [
+          "answer_quiz"
+        ]
+      },
+      "timestamp": "2026-01-16T20:17:59.459Z"
+    }
+  },
+  "service": "game-engine"
+}
+2026-01-16 20:17:59 [[32minfo[39m]: Player action
+{
+  "context": {
+    "roomId": 729,
+    "gameType": "arche-de-mnemosyne",
+    "playerId": -1,
+    "turnIndex": 0,
+    "action": {
+      "type": "apply_actions",
+      "payload": {
+        "actions": [
+          {
+            "type": "answer_quiz",
+            "hasPayload": true
+          }
+        ],
+        "allowBotTurn": true
+      },
+      "timestamp": "2026-01-16T20:17:59.460Z"
+    }
+  },
+  "service": "game-engine"
+}
+2026-01-16 20:18:00 [[32minfo[39m]: Player action
+{
+  "context": {
+    "roomId": 728,
+    "gameType": "arche-de-mnemosyne",
+    "playerId": -2,
+    "action": {
+      "type": "bot_play",
+      "payload": {
+        "actions": [
+          "answer_quiz"
+        ]
+      },
+      "timestamp": "2026-01-16T20:18:00.441Z"
+    }
+  },
+  "service": "game-engine"
+}
+2026-01-16 20:18:00 [[32minfo[39m]: Player action
+{
+  "context": {
+    "roomId": 728,
+    "gameType": "arche-de-mnemosyne",
+    "playerId": -2,
+    "turnIndex": 0,
+    "action": {
+      "type": "apply_actions",
+      "payload": {
+        "actions": [
+          {
+            "type": "answer_quiz",
+            "hasPayload": true
+          }
+        ],
+        "allowBotTurn": true
+      },
+      "timestamp": "2026-01-16T20:18:00.443Z"
+    }
+  },
+  "service": "game-engine"
+}
+2026-01-16 20:18:03 [[32minfo[39m]: Player action
+{
+  "context": {
+    "roomId": 729,
+    "gameType": "arche-de-mnemosyne",
+    "playerId": -1,
+    "action": {
+      "type": "bot_play",
+      "payload": {
+        "actions": [
+          "answer_quiz"
+        ]
+      },
+      "timestamp": "2026-01-16T20:18:03.464Z"
+    }
+  },
+  "service": "game-engine"
+}
+2026-01-16 20:18:03 [[32minfo[39m]: Player action
+{
+  "context": {
+    "roomId": 729,
+    "gameType": "arche-de-mnemosyne",
+    "playerId": -1,
+    "turnIndex": 0,
+    "action": {
+      "type": "apply_actions",
+      "payload": {
+        "actions": [
+          {
+            "type": "answer_quiz",
+            "hasPayload": true
+          }
+        ],
+        "allowBotTurn": true
+      },
+      "timestamp": "2026-01-16T20:18:03.465Z"
+    }
+  },
+  "service": "game-engine"
+}
+2026-01-16 20:18:04 [[32minfo[39m]: Player action
+{
+  "context": {
+    "roomId": 728,
+    "gameType": "arche-de-mnemosyne",
+    "playerId": -2,
+    "action": {
+      "type": "bot_play",
+      "payload": {
+        "actions": [
+          "answer_quiz"
+        ]
+      },
+      "timestamp": "2026-01-16T20:18:04.449Z"
+    }
+  },
+  "service": "game-engine"
+}
+2026-01-16 20:18:04 [[32minfo[39m]: Player action
+{
+  "context": {
+    "roomId": 728,
+    "gameType": "arche-de-mnemosyne",
+    "playerId": -2,
+    "turnIndex": 0,
+    "action": {
+      "type": "apply_actions",
+      "payload": {
+        "actions": [
+          {
+            "type": "answer_quiz",
+            "hasPayload": true
+          }
+        ],
+        "allowBotTurn": true
+      },
+      "timestamp": "2026-01-16T20:18:04.451Z"
+    }
+  },
+  "service": "game-engine"
+}
+2026-01-16 20:18:07 [[32minfo[39m]: Player action
+{
+  "context": {
+    "roomId": 729,
+    "gameType": "arche-de-mnemosyne",
+    "playerId": -1,
+    "action": {
+      "type": "bot_play",
+      "payload": {
+        "actions": [
+          "answer_quiz"
+        ]
+      },
+      "timestamp": "2026-01-16T20:18:07.471Z"
+    }
+  },
+  "service": "game-engine"
+}
+2026-01-16 20:18:07 [[32minfo[39m]: Player action
+{
+  "context": {
+    "roomId": 729,
+    "gameType": "arche-de-mnemosyne",
+    "playerId": -1,
+    "turnIndex": 0,
+    "action": {
+      "type": "apply_actions",
+      "payload": {
+        "actions": [
+          {
+            "type": "answer_quiz",
+            "hasPayload": true
+          }
+        ],
+        "allowBotTurn": true
+      },
+      "timestamp": "2026-01-16T20:18:07.473Z"
+    }
+  },
+  "service": "game-engine"
+}
+2026-01-16 20:18:08 [[32minfo[39m]: Player action
+{
+  "context": {
+    "roomId": 728,
+    "gameType": "arche-de-mnemosyne",
+    "playerId": -2,
+    "action": {
+      "type": "bot_play",
+      "payload": {
+        "actions": [
+          "answer_quiz"
+        ]
+      },
+      "timestamp": "2026-01-16T20:18:08.455Z"
+    }
+  },
+  "service": "game-engine"
+}
+2026-01-16 20:18:08 [[32minfo[39m]: Player action
+{
+  "context": {
+    "roomId": 728,
+    "gameType": "arche-de-mnemosyne",
+    "playerId": -2,
+    "turnIndex": 0,
+    "action": {
+      "type": "apply_actions",
+      "payload": {
+        "actions": [
+          {
+            "type": "answer_quiz",
+            "hasPayload": true
+          }
+        ],
+        "allowBotTurn": true
+      },
+      "timestamp": "2026-01-16T20:18:08.456Z"
+    }
+  },
+  "service": "game-engine"
+}
+2026-01-16 20:18:11 [[32minfo[39m]: Player action
+{
+  "context": {
+    "roomId": 729,
+    "gameType": "arche-de-mnemosyne",
+    "playerId": -1,
+    "action": {
+      "type": "bot_play",
+      "payload": {
+        "actions": [
+          "answer_quiz"
+        ]
+      },
+      "timestamp": "2026-01-16T20:18:11.480Z"
+    }
+  },
+  "service": "game-engine"
+}
+2026-01-16 20:18:11 [[32minfo[39m]: Player action
+{
+  "context": {
+    "roomId": 729,
+    "gameType": "arche-de-mnemosyne",
+    "playerId": -1,
+    "turnIndex": 0,
+    "action": {
+      "type": "apply_actions",
+      "payload": {
+        "actions": [
+          {
+            "type": "answer_quiz",
+            "hasPayload": true
+          }
+        ],
+        "allowBotTurn": true
+      },
+      "timestamp": "2026-01-16T20:18:11.481Z"
+    }
+  },
+  "service": "game-engine"
+}
+2026-01-16 20:18:12 [[32minfo[39m]: Player action
+{
+  "context": {
+    "roomId": 728,
+    "gameType": "arche-de-mnemosyne",
+    "playerId": -2,
+    "action": {
+      "type": "bot_play",
+      "payload": {
+        "actions": [
+          "answer_quiz"
+        ]
+      },
+      "timestamp": "2026-01-16T20:18:12.459Z"
+    }
+  },
+  "service": "game-engine"
+}
+2026-01-16 20:18:12 [[32minfo[39m]: Player action
+{
+  "context": {
+    "roomId": 728,
+    "gameType": "arche-de-mnemosyne",
+    "playerId": -2,
+    "turnIndex": 0,
+    "action": {
+      "type": "apply_actions",
+      "payload": {
+        "actions": [
+          {
+            "type": "answer_quiz",
+            "hasPayload": true
+          }
+        ],
+        "allowBotTurn": true
+      },
+      "timestamp": "2026-01-16T20:18:12.460Z"
+    }
+  },
+  "service": "game-engine"
+}
+2026-01-16 20:18:15 [[32minfo[39m]: Player action
+{
+  "context": {
+    "roomId": 729,
+    "gameType": "arche-de-mnemosyne",
+    "playerId": -1,
+    "action": {
+      "type": "bot_play",
+      "payload": {
+        "actions": [
+          "answer_quiz"
+        ]
+      },
+      "timestamp": "2026-01-16T20:18:15.487Z"
+    }
+  },
+  "service": "game-engine"
+}
+2026-01-16 20:18:15 [[32minfo[39m]: Player action
+{
+  "context": {
+    "roomId": 729,
+    "gameType": "arche-de-mnemosyne",
+    "playerId": -1,
+    "turnIndex": 0,
+    "action": {
+      "type": "apply_actions",
+      "payload": {
+        "actions": [
+          {
+            "type": "answer_quiz",
+            "hasPayload": true
+          }
+        ],
+        "allowBotTurn": true
+      },
+      "timestamp": "2026-01-16T20:18:15.491Z"
+    }
+  },
+  "service": "game-engine"
+}
+2026-01-16 20:18:16 [[32minfo[39m]: Player action
+{
+  "context": {
+    "roomId": 728,
+    "gameType": "arche-de-mnemosyne",
+    "playerId": -2,
+    "action": {
+      "type": "bot_play",
+      "payload": {
+        "actions": [
+          "answer_quiz"
+        ]
+      },
+      "timestamp": "2026-01-16T20:18:16.467Z"
+    }
+  },
+  "service": "game-engine"
+}
+2026-01-16 20:18:16 [[32minfo[39m]: Player action
+{
+  "context": {
+    "roomId": 728,
+    "gameType": "arche-de-mnemosyne",
+    "playerId": -2,
+    "turnIndex": 0,
+    "action": {
+      "type": "apply_actions",
+      "payload": {
+        "actions": [
+          {
+            "type": "answer_quiz",
+            "hasPayload": true
+          }
+        ],
+        "allowBotTurn": true
+      },
+      "timestamp": "2026-01-16T20:18:16.468Z"
+    }
+  },
+  "service": "game-engine"
+}
+2026-01-16 20:18:19 [[32minfo[39m]: Player action
+{
+  "context": {
+    "roomId": 729,
+    "gameType": "arche-de-mnemosyne",
+    "playerId": -1,
+    "action": {
+      "type": "bot_play",
+      "payload": {
+        "actions": [
+          "answer_quiz"
+        ]
+      },
+      "timestamp": "2026-01-16T20:18:19.495Z"
+    }
+  },
+  "service": "game-engine"
+}
+2026-01-16 20:18:19 [[32minfo[39m]: Player action
+{
+  "context": {
+    "roomId": 729,
+    "gameType": "arche-de-mnemosyne",
+    "playerId": -1,
+    "turnIndex": 0,
+    "action": {
+      "type": "apply_actions",
+      "payload": {
+        "actions": [
+          {
+            "type": "answer_quiz",
+            "hasPayload": true
+          }
+        ],
+        "allowBotTurn": true
+      },
+      "timestamp": "2026-01-16T20:18:19.496Z"
+    }
+  },
+  "service": "game-engine"
+}
+2026-01-16 20:18:20 [[32minfo[39m]: Player action
+{
+  "context": {
+    "roomId": 728,
+    "gameType": "arche-de-mnemosyne",
+    "playerId": -2,
+    "action": {
+      "type": "bot_play",
+      "payload": {
+        "actions": [
+          "answer_quiz"
+        ]
+      },
+      "timestamp": "2026-01-16T20:18:20.472Z"
+    }
+  },
+  "service": "game-engine"
+}
+2026-01-16 20:18:20 [[32minfo[39m]: Player action
+{
+  "context": {
+    "roomId": 728,
+    "gameType": "arche-de-mnemosyne",
+    "playerId": -2,
+    "turnIndex": 0,
+    "action": {
+      "type": "apply_actions",
+      "payload": {
+        "actions": [
+          {
+            "type": "answer_quiz",
+            "hasPayload": true
+          }
+        ],
+        "allowBotTurn": true
+      },
+      "timestamp": "2026-01-16T20:18:20.474Z"
+    }
+  },
+  "service": "game-engine"
+}
+[32m[Nest] 1694947  - [39m01/16/2026, 8:18:22 PM [32m    LOG[39m [38;5;3m[GamePluginsModule] [39m[32mModules de jeu détectés : TriominoModule, MorpionModule, LamaModule, JeuOieModule, FouleesFantastiquesModule, CorridorModule, ArcheDeMnemosyneModule, MissionNemesisModule, ArcheDeMnemosyneModule, DameNatureModule, PanierExpressModule, OdysseeQuatreCieuxModule, GaloponsEnsembleModule, FroussePartyModule, EnAttendantMinuitModule, ContesModule, CaDerapeModule, AventureSauvageModule, AFondLesBallonsModule[39m

@@ -39,6 +39,10 @@ export class SoundsController {
       soundId,
       sha,
     );
+    // Helmet sets `Cross-Origin-Resource-Policy: same-origin` by default, which prevents
+    // <audio> previews from working when the admin/front-end is hosted on a different origin.
+    // Sounds are not sensitive; allow cross-origin loading for media playback.
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
     res.setHeader('Content-Type', 'audio/mpeg');
     res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
     res.setHeader('ETag', `"${entry.sha256}"`);
