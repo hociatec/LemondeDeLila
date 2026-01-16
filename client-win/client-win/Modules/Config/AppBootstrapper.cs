@@ -211,6 +211,12 @@ public static class AppBootstrapper
                 sp.GetRequiredService<Dispatcher>(),
                 sp.GetRequiredService<ILogger<SoundService>>()));
 
+        services.AddSingleton<Modules.Audio.Services.IAppAudioCoordinator>(sp =>
+            new Modules.Audio.Services.AppAudioCoordinator(
+                sp.GetRequiredService<ISoundService>(),
+                sp.GetRequiredService<IRemoteSoundCache>(),
+                sp.GetRequiredService<ILogger<Modules.Audio.Services.AppAudioCoordinator>>()));
+
         // Services métier
         services.AddSingleton<ICatalogService>(sp =>
             new CatalogService(
@@ -319,6 +325,7 @@ public static class AppBootstrapper
                 sp.GetRequiredService<INavigationService>(),
                 sp.GetRequiredService<ISoundService>(),
                 sp.GetRequiredService<IRemoteSoundCache>(),
+                sp.GetRequiredService<Modules.Audio.Services.IAppAudioCoordinator>(),
                 sp.GetRequiredService<INotificationInbox>(),
                 sp.GetRequiredService<Modules.MainMenu.Services.IMenuBadges>()));
 
@@ -336,6 +343,7 @@ public static class AppBootstrapper
             var sounds = provider.GetRequiredService<ISoundService>();
             var remoteSounds = provider.GetRequiredService<IRemoteSoundCache>();
             var dispatcher = provider.GetRequiredService<Dispatcher>();
+            var session = provider.GetRequiredService<ISessionService>();
 
             // Essayer de récupérer les sons configurés par l'admin avant le son de démarrage,
             // pour que ClientOpened utilise le son serveur dès le premier lancement.
@@ -381,6 +389,12 @@ public static class AppBootstrapper
                         // ce qui déclenche un "son de déconnexion" perçu comme un 2e son de lancement.
                         // Ne jouer ce son que si une connexion a déjà été établie au moins une fois.
                         if (Interlocked.CompareExchange(ref wsHadConnectedOnce, 0, 0) == 0)
+                        {
+                            return;
+                        }
+                        // Ne pas jouer un "son de dÇ¸connexion" tant qu'on n'est pas authentifiÇ¸ :
+                        // Ç¸vite la superposition avec le son d'ouverture au dÇ¸marrage/avant login.
+                        if (session.CurrentUser == null)
                         {
                             return;
                         }

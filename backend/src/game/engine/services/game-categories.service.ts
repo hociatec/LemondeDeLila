@@ -23,6 +23,18 @@ export class GameCategoriesService implements OnModuleInit {
   private readonly logger = new Logger(GameCategoriesService.name);
   private cache: CategoriesRoot | null = null;
 
+  // Alias: ids legacy/variantes d'écriture -> id canonique (évite les doublons dans le catalogue).
+  private static readonly AliasToCategoryId: Record<string, string> = {
+    // Legacy: ancien id DB `galopant` -> `vents-sacres`.
+    galopant: 'vents-sacres',
+    // Variantes de libellés/ids.
+    'les-vents-sacres': 'vents-sacres',
+    'vents-sacres': 'vents-sacres',
+    'vent-sacres': 'vents-sacres',
+    'vents-sacre': 'vents-sacres',
+    'etagere-des-vents-sacres': 'vents-sacres',
+  };
+
   constructor(
     @InjectRepository(GameCategoryEntity)
     private readonly categoriesRepo: Repository<GameCategoryEntity>,
@@ -46,7 +58,24 @@ export class GameCategoriesService implements OnModuleInit {
 
   getAssignment(gameType: string): string | null {
     if (!gameType) return null;
-    return this.getRoot().assignments[gameType] ?? null;
+    const raw = this.getRoot().assignments[gameType] ?? null;
+    if (!raw) return null;
+    const trimmed = String(raw).trim();
+    if (!trimmed) return null;
+
+    const root = this.getRoot();
+    const normalized = this.slugify(this.normalizeLabel(trimmed));
+    const canonical =
+      GameCategoriesService.AliasToCategoryId[normalized] ?? normalized;
+
+    // Ne mappe vers l'id canonique que s'il existe réellement (sinon on garde l'id brut).
+    if (root.categories.some((c) => c.id === canonical)) {
+      return canonical;
+    }
+    if (root.categories.some((c) => c.id === normalized)) {
+      return normalized;
+    }
+    return trimmed;
   }
 
   listAssignments(): Record<string, string | null> {

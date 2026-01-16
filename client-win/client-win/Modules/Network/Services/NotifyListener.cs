@@ -46,6 +46,7 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
     private readonly INavigationService _navigation;
     private readonly ISoundService _sounds;
     private readonly IRemoteSoundCache _remoteSounds;
+    private readonly IAppAudioCoordinator _audio;
     private readonly INotificationInbox _inbox;
     private readonly IMenuBadges _badges;
     private volatile bool _countsSupported;
@@ -78,6 +79,7 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
         INavigationService navigation,
         ISoundService sounds,
         IRemoteSoundCache remoteSounds,
+        IAppAudioCoordinator audio,
         INotificationInbox inbox,
         IMenuBadges badges)
     {
@@ -94,6 +96,7 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
         _navigation = navigation ?? throw new ArgumentNullException(nameof(navigation));
         _sounds = sounds ?? throw new ArgumentNullException(nameof(sounds));
         _remoteSounds = remoteSounds ?? throw new ArgumentNullException(nameof(remoteSounds));
+        _audio = audio ?? throw new ArgumentNullException(nameof(audio));
         _inbox = inbox ?? throw new ArgumentNullException(nameof(inbox));
         _badges = badges ?? throw new ArgumentNullException(nameof(badges));
     }
@@ -939,8 +942,9 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
     {
         try
         {
-            await _remoteSounds.RefreshAsync(force: true).ConfigureAwait(false);
+            await _audio.RefreshRemoteSoundsAsync(force: true).ConfigureAwait(false);
 
+#if false
             // Recharge les paths et les players (best-effort).
             _sounds.PreloadAll();
 
@@ -970,6 +974,7 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
                     }
                 }, DispatcherPriority.Background);
             }
+#endif
         }
         catch (Exception ex)
         {

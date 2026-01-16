@@ -38,6 +38,7 @@ public sealed class GameTableOpener : IGameTableOpener
     private readonly IRoomAnnouncements _announcements;
     private readonly IPresenceMonitor _presence;
     private readonly ISoundService _sounds;
+    private readonly IAppAudioCoordinator _audio;
     private readonly IRoomDirectoryClient _directory;
     private readonly ISocialService _social;
     private readonly ITextPromptService _textPrompts;
@@ -53,6 +54,7 @@ public sealed class GameTableOpener : IGameTableOpener
         IRoomAnnouncements announcements,
         IPresenceMonitor presence,
         ISoundService sounds,
+        IAppAudioCoordinator audio,
         IRoomDirectoryClient directory,
         ISocialService social,
         ITextPromptService textPrompts)
@@ -67,6 +69,7 @@ public sealed class GameTableOpener : IGameTableOpener
         _announcements = announcements;
         _presence = presence ?? throw new ArgumentNullException(nameof(presence));
         _sounds = sounds ?? throw new ArgumentNullException(nameof(sounds));
+        _audio = audio ?? throw new ArgumentNullException(nameof(audio));
         _directory = directory ?? throw new ArgumentNullException(nameof(directory));
         _social = social ?? throw new ArgumentNullException(nameof(social));
         _textPrompts = textPrompts ?? throw new ArgumentNullException(nameof(textPrompts));
@@ -430,16 +433,12 @@ public sealed class GameTableOpener : IGameTableOpener
                 // Réactive l'ambiance/musique si on revient vers un écran qui en a une.
                 try
                 {
-                    _sounds.StopLoop(SoundId.MainMenuMusic);
-                    _sounds.StopLoop(SoundId.TavernAmbience);
-                    if (returnView is CatalogView)
+                    _audio.SetBackground(returnView switch
                     {
-                        _sounds.StartLoop(SoundId.TavernAmbience);
-                    }
-                    else if (returnView is MainMenuView)
-                    {
-                        _sounds.StartLoop(SoundId.MainMenuMusic);
-                    }
+                        CatalogView => AppAudioBackground.Tavern,
+                        MainMenuView => AppAudioBackground.MainMenu,
+                        _ => AppAudioBackground.None
+                    });
                 }
                 catch
                 {

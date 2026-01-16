@@ -28,6 +28,7 @@ using client_win.Modules.Admin.Services;
 using client_win.Modules.About.ViewModels;
 using client_win.Modules.About.Views;
 using client_win.Modules.Updates;
+using client_win.Modules.Audio.Models;
 using client_win.Modules.Audio.Services;
 using client_win.Modules.Game.RoomDirectory.Services;
 using client_win.Modules.Game.RoomDirectory.ViewModels;
@@ -67,6 +68,7 @@ public sealed class MenuRouter : IMenuRouter
     private readonly IClientUpdatePublisher _publisher;
     private readonly ClientConfiguration _config;
     private readonly ISoundService _sounds;
+    private readonly IAppAudioCoordinator _audio;
     private readonly IScreenReaderAnnouncer _screenReader;
     private readonly IAnnouncementService _announcements;
     private readonly ISessionService _session;
@@ -83,6 +85,7 @@ public sealed class MenuRouter : IMenuRouter
         ClientConfiguration config,
         IOptionsService options,
         ISoundService sounds,
+        IAppAudioCoordinator audio,
         IScreenReaderAnnouncer screenReader,
         IAnnouncementService announcements,
         ISessionService session,
@@ -112,6 +115,7 @@ public sealed class MenuRouter : IMenuRouter
         _config = config;
         _options = options;
         _sounds = sounds;
+        _audio = audio;
         _screenReader = screenReader;
         _announcements = announcements;
         _session = session;
@@ -175,7 +179,7 @@ public sealed class MenuRouter : IMenuRouter
         var catalogView = new CatalogView();
         StopBackgroundLoops();
         _sounds.Play(Modules.Audio.Models.SoundId.TavernOpened);
-        _sounds.StartLoop(Modules.Audio.Models.SoundId.TavernAmbience);
+        StartLoopForView(catalogView);
         SetPresenceContextForView(catalogView);
         CatalogViewModel? vm = null;
         vm = new CatalogViewModel(
@@ -675,7 +679,7 @@ public sealed class MenuRouter : IMenuRouter
     public Task<string> OpenOptions()
     {
         _logger.LogInformation("Ouverture des options");
-        StopBackgroundLoops();
+        _audio.PauseBackground();
         return OpenOptionsAndRestoreAsync();
     }
 
@@ -688,27 +692,29 @@ public sealed class MenuRouter : IMenuRouter
 
     private async Task<string> OpenOptionsAndRestoreAsync()
     {
-        var status = await _options.OpenAsync().ConfigureAwait(true);
-        StartLoopForView(_navigation.CurrentView);
-        return status;
+        try
+        {
+            return await _options.OpenAsync().ConfigureAwait(true);
+        }
+        finally
+        {
+            _audio.ResumeBackground();
+            StartLoopForView(_navigation.CurrentView);
+        }
     }
 
     private void StopBackgroundLoops()
     {
-        _sounds.StopLoop(Modules.Audio.Models.SoundId.MainMenuMusic);
-        _sounds.StopLoop(Modules.Audio.Models.SoundId.TavernAmbience);
+        _audio.SetBackground(AppAudioBackground.None);
     }
 
     private void StartLoopForView(UserControl? view)
     {
-        StopBackgroundLoops();
-        if (view is CatalogView)
+        _audio.SetBackground(view switch
         {
-            _sounds.StartLoop(Modules.Audio.Models.SoundId.TavernAmbience);
-        }
-        else if (view is MainMenuView)
-        {
-            _sounds.StartLoop(Modules.Audio.Models.SoundId.MainMenuMusic);
-        }
+            CatalogView => AppAudioBackground.Tavern,
+            MainMenuView => AppAudioBackground.MainMenu,
+            _ => AppAudioBackground.None
+        });
     }
 }

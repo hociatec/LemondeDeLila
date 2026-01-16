@@ -852,7 +852,7 @@ public sealed partial class AdminViewModel
                 return;
             }
 
-            if (_page == AdminPage.EditText && _selectedGame != null && tag is string editTag && editTag == "game.edit.submit")
+            if (_page == AdminPage.EditText && _selectedGame != null && tag is string gameEditTag && gameEditTag == "game.edit.submit")
             {
                 await SubmitGameTextEditAsync(_selectedGame).ConfigureAwait(true);
                 return;
