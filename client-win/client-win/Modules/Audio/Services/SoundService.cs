@@ -756,10 +756,6 @@ public sealed class SoundService : ISoundService, IDisposable
         {
             return;
         }
-        if (!entry.IsEnabled())
-        {
-            return;
-        }
 
         var filePath = ResolveFilePath(sound, entry);
         if (!File.Exists(filePath))

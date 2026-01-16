@@ -41,7 +41,6 @@ public sealed class RemoteSoundCache : IRemoteSoundCache
         {
             return;
         }
-        _lastRefreshUtc = DateTime.UtcNow;
 
         try
         {
@@ -61,6 +60,7 @@ public sealed class RemoteSoundCache : IRemoteSoundCache
                 return;
             }
 
+            var refreshed = new Dictionary<SoundId, string>();
             foreach (var (idString, entry) in manifest.Sounds)
             {
                 if (!Enum.TryParse<SoundId>(idString, ignoreCase: true, out var soundId))
@@ -75,12 +75,21 @@ public sealed class RemoteSoundCache : IRemoteSoundCache
                 var cached = await EnsureCachedAsync(soundId, entry, cancellationToken).ConfigureAwait(false);
                 if (cached != null)
                 {
-                    lock (_gate)
-                    {
-                        _pathsBySound[soundId] = cached;
-                    }
+                    refreshed[soundId] = cached;
                 }
             }
+
+            // Replace the map so sounds removed from the manifest stop overriding local defaults.
+            lock (_gate)
+            {
+                _pathsBySound.Clear();
+                foreach (var (soundId, path) in refreshed)
+                {
+                    _pathsBySound[soundId] = path;
+                }
+            }
+
+            _lastRefreshUtc = DateTime.UtcNow;
         }
         catch (Exception ex)
         {
