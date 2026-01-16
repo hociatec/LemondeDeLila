@@ -84,7 +84,7 @@
 		                                même quand la cellule (Button) a déjà un AutomationProperties.Name.
 		                                On force un type localisé vide et on désactive l'annonce "X sur N" pour ne garder que la cellule (Button).
 		                            -->
-		                            <Setter Property="AutomationProperties.Name" Value=" " />
+		                            <Setter Property="AutomationProperties.Name" Value="" />
 		                            <Setter Property="AutomationProperties.HelpText" Value="" />
 		                            <Setter Property="AutomationProperties.ItemType" Value="" />
 		                            <Setter Property="AutomationProperties.ItemStatus" Value="" />
