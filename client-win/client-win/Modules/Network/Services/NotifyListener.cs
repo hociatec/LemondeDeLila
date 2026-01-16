@@ -942,7 +942,7 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
     {
         try
         {
-            await _audio.RefreshRemoteSoundsAsync(force: true).ConfigureAwait(false);
+            await _audio.RefreshRemoteSoundsAsync(force: true, reapplyBackground: true).ConfigureAwait(false);
 
 #if false
             // Recharge les paths et les players (best-effort).

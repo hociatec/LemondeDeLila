@@ -341,29 +341,22 @@ public static class AppBootstrapper
         try
         {
             var sounds = provider.GetRequiredService<ISoundService>();
-            var remoteSounds = provider.GetRequiredService<IRemoteSoundCache>();
             var dispatcher = provider.GetRequiredService<Dispatcher>();
             var session = provider.GetRequiredService<ISessionService>();
+            var audio = provider.GetRequiredService<Modules.Audio.Services.IAppAudioCoordinator>();
 
             // Essayer de récupérer les sons configurés par l'admin avant le son de démarrage,
             // pour que ClientOpened utilise le son serveur dès le premier lancement.
             try
             {
-                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
-                remoteSounds
-                    .RefreshAsync(force: true, cancellationToken: cts.Token)
-                    .GetAwaiter()
-                    .GetResult();
+                audio.NotifyAppOpened();
             }
             catch
             {
                 // ignore - utilisera le son local par défaut si indisponible
             }
-            sounds.Preload(Modules.Audio.Models.SoundId.ClientOpened);
 
             // Son de démarrage (si activé dans Options).
-            sounds.SetConnected(false);
-            sounds.Play(Modules.Audio.Models.SoundId.ClientOpened);
 
             // WPF: MediaPlayer.Open/MediaOpened dépend souvent du message loop.
             // Planifier le warm-up des sons "connexion" dès que l'UI est réellement prête,

@@ -433,12 +433,7 @@ public sealed class GameTableOpener : IGameTableOpener
                 // Réactive l'ambiance/musique si on revient vers un écran qui en a une.
                 try
                 {
-                    _audio.SetBackground(returnView switch
-                    {
-                        CatalogView => AppAudioBackground.Tavern,
-                        MainMenuView => AppAudioBackground.MainMenu,
-                        _ => AppAudioBackground.None
-                    });
+                    // Background handled by NavigationAudioSync (based on the shown view).
                 }
                 catch
                 {

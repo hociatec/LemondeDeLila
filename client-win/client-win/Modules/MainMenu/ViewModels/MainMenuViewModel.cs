@@ -88,10 +88,8 @@ public sealed class MainMenuViewModel : ObservableObject
         // Déclenche immédiatement la détection des droits admin à l'arrivée sur le menu.
         _ = RefreshAdminVisibilityCommand.ExecuteAsync(null);
 
-        if (_badges is INotifyPropertyChanged pc)
-        {
-            pc.PropertyChanged += (_, __) => RebuildMenuPreservingSelection();
-        }
+        // Les badges (notifications/messagerie) sont mis à jour en arrière-plan.
+        // Recréer la liste à chaque changement déclenche des annonces NVDA répétées.
     }
 
     public string Welcome => $"Bienvenue, {_user.Username}";
@@ -144,25 +142,15 @@ public sealed class MainMenuViewModel : ObservableObject
         Items.Add(new MainMenuItem("Tchat", tag: ChatCommand));
         Items.Add(new MainMenuItem("Social", tag: SocialCommand));
         Items.Add(new MainMenuItem("À propos", tag: AboutCommand));
-    if (IsAdminVisible)
-    {
-        Items.Add(new MainMenuItem("Administration", tag: AdminCommand));
-    }
+        if (IsAdminVisible)
+        {
+            Items.Add(new MainMenuItem("Administration", tag: AdminCommand));
+        }
         Items.Add(new MainMenuItem("Options", tag: OptionsCommand));
         Items.Add(new MainMenuItem("Déconnexion", tag: LogoutCommand));
 
         SelectedItem = Items.FirstOrDefault();
         StatusMessage = "Flèches haut/bas : naviguer. Entrée : sélectionner.";
-    }
-
-    private void RebuildMenuPreservingSelection()
-    {
-        var prevTag = SelectedItem?.Tag;
-        BuildMenuItems();
-        if (prevTag != null)
-        {
-            SelectedItem = Items.FirstOrDefault(i => ReferenceEquals(i.Tag, prevTag)) ?? Items.FirstOrDefault();
-        }
     }
 
     private static string FormatMenuLabel(string baseLabel, int unread)
@@ -181,9 +169,8 @@ public sealed class MainMenuViewModel : ObservableObject
             return;
         }
 
-
-IsAdminVisible = shouldShowAdmin;
-BuildMenuItems();
+        IsAdminVisible = shouldShowAdmin;
+        BuildMenuItems();
     }
 
     private async Task ActivateSelectedAsync()

@@ -11,6 +11,7 @@ public sealed class NavigationAudioSync : IDisposable
 {
     private readonly INavigationService _navigation;
     private readonly IAppAudioCoordinator _audio;
+    private UserControl? _lastView;
 
     public NavigationAudioSync(INavigationService navigation, IAppAudioCoordinator audio)
     {
@@ -23,6 +24,14 @@ public sealed class NavigationAudioSync : IDisposable
     {
         try
         {
+            var last = _lastView;
+            _lastView = view;
+
+            if (view is CatalogView && last is not CatalogView)
+            {
+                _audio.NotifyTavernEntered();
+            }
+
             _audio.SetBackground(view switch
             {
                 CatalogView => AppAudioBackground.Tavern,
@@ -48,4 +57,3 @@ public sealed class NavigationAudioSync : IDisposable
         }
     }
 }
-

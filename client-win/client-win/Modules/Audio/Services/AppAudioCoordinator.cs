@@ -21,16 +21,24 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
 
     private int _loginSequence;
     private int _logoutSequence;
+    private int _appOpenedSequence;
+    private int _tavernEnteredSequence;
     private int _connectedSoundPlayedSequence;
     private int _disconnectedSoundPlayedSequence;
+    private int _openedSoundPlayedSequence;
+    private int _tavernOpenedSoundPlayedSequence;
 
     private bool _isConnected;
     private long _connectedAtTicks;
+    private long _backgroundRequestedAtTicks;
     private AppAudioBackground _desiredBackground = AppAudioBackground.None;
     private AppAudioBackground _appliedBackground = AppAudioBackground.None;
     private int _pauseCount;
     private int _pendingConnectedSound;
     private int _pendingDisconnectedSound;
+    private int _pendingOpenedSound;
+    private int _pendingTavernOpenedSound;
+    private int _pendingReapplyBackground;
 
     public AppAudioCoordinator(
         ISoundService sounds,
@@ -40,6 +48,28 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
         _sounds = sounds ?? throw new ArgumentNullException(nameof(sounds));
         _remote = remote ?? throw new ArgumentNullException(nameof(remote));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    }
+
+    public void NotifyAppOpened()
+    {
+        var shouldTransition = false;
+        lock (_stateGate)
+        {
+            // One-shot at application startup: ignore redundant calls.
+            if (_pendingOpenedSound == 1 || _appOpenedSequence > 0)
+            {
+                return;
+            }
+
+            _appOpenedSequence = 1;
+            _pendingOpenedSound = 1;
+            shouldTransition = true;
+        }
+
+        if (shouldTransition)
+        {
+            RequestTransition();
+        }
     }
 
     public void NotifyLoginSucceeded()
@@ -91,6 +121,28 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
         }
     }
 
+    public void NotifyTavernEntered()
+    {
+        var shouldTransition = false;
+        lock (_stateGate)
+        {
+            // Redundant event: ignore while already in tavern background.
+            if (_desiredBackground == AppAudioBackground.Tavern && _pendingTavernOpenedSound == 0)
+            {
+                return;
+            }
+
+            _tavernEnteredSequence++;
+            _pendingTavernOpenedSound = 1;
+            shouldTransition = true;
+        }
+
+        if (shouldTransition)
+        {
+            RequestTransition();
+        }
+    }
+
     public void SetBackground(AppAudioBackground background)
     {
         var shouldTransition = false;
@@ -101,6 +153,7 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
                 return;
             }
             _desiredBackground = background;
+            _backgroundRequestedAtTicks = Stopwatch.GetTimestamp();
             shouldTransition = true;
         }
 
@@ -143,7 +196,7 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
         }
     }
 
-    public async Task RefreshRemoteSoundsAsync(bool force, CancellationToken cancellationToken = default)
+    public async Task RefreshRemoteSoundsAsync(bool force, bool reapplyBackground, CancellationToken cancellationToken = default)
     {
         using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         try
@@ -159,6 +212,14 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
         {
             await _remote.RefreshAsync(force: force, cancellationToken: linked.Token).ConfigureAwait(false);
             _sounds.PreloadAll();
+            if (reapplyBackground)
+            {
+                lock (_stateGate)
+                {
+                    _pendingReapplyBackground = 1;
+                }
+                RequestTransition();
+            }
         }
         catch (OperationCanceledException)
         {
@@ -226,7 +287,7 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
         try
         {
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(12));
-            await RefreshRemoteSoundsAsync(force: false, cts.Token).ConfigureAwait(false);
+            await RefreshRemoteSoundsAsync(force: false, reapplyBackground: true, cts.Token).ConfigureAwait(false);
         }
         catch
         {
@@ -253,8 +314,14 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
             int pauseCount;
             bool playConnected;
             bool playDisconnected;
+            bool playOpened;
+            bool playTavernOpened;
+            bool reapplyBackground;
             int loginSeq;
             int logoutSeq;
+            int openedSeq;
+            int tavernSeq;
+            long backgroundRequestedAtTicks;
 
             lock (_stateGate)
             {
@@ -266,6 +333,12 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
                 playDisconnected = _pendingDisconnectedSound == 1;
                 loginSeq = _loginSequence;
                 logoutSeq = _logoutSequence;
+                playOpened = _pendingOpenedSound == 1;
+                playTavernOpened = _pendingTavernOpenedSound == 1;
+                openedSeq = _appOpenedSequence;
+                tavernSeq = _tavernEnteredSequence;
+                backgroundRequestedAtTicks = _backgroundRequestedAtTicks;
+                reapplyBackground = _pendingReapplyBackground == 1;
             }
 
             if (token.IsCancellationRequested || version != Volatile.Read(ref _transitionVersion))
@@ -280,6 +353,34 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
             catch
             {
                 // ignore
+            }
+
+            // Application launch sound is independent of connection state.
+            if (playOpened && openedSeq != Volatile.Read(ref _openedSoundPlayedSequence))
+            {
+                try
+                {
+                    using var refreshCts = CancellationTokenSource.CreateLinkedTokenSource(token);
+                    refreshCts.CancelAfter(TimeSpan.FromSeconds(1));
+                    await RefreshRemoteSoundsAsync(force: true, reapplyBackground: false, refreshCts.Token).ConfigureAwait(false);
+                }
+                catch
+                {
+                    // ignore
+                }
+
+                if (token.IsCancellationRequested || version != Volatile.Read(ref _transitionVersion))
+                {
+                    return;
+                }
+
+                TryPreload(SoundId.ClientOpened, warmUp: false);
+                TryPlay(SoundId.ClientOpened);
+                lock (_stateGate)
+                {
+                    _pendingOpenedSound = 0;
+                }
+                Volatile.Write(ref _openedSoundPlayedSequence, openedSeq);
             }
 
             if (!isConnected || pauseCount > 0)
@@ -301,11 +402,17 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
             // Login succeeded: refresh remote sounds quickly so the "connected" sound can use the admin override.
             if (playConnected && loginSeq != Volatile.Read(ref _connectedSoundPlayedSequence))
             {
+                await WaitForSoundOrCancelAsync(SoundId.ClientOpened, TimeSpan.FromSeconds(2), token).ConfigureAwait(false);
+                if (token.IsCancellationRequested || version != Volatile.Read(ref _transitionVersion))
+                {
+                    return;
+                }
+
                 try
                 {
                     using var refreshCts = CancellationTokenSource.CreateLinkedTokenSource(token);
                     refreshCts.CancelAfter(TimeSpan.FromSeconds(1));
-                    await RefreshRemoteSoundsAsync(force: true, refreshCts.Token).ConfigureAwait(false);
+                    await RefreshRemoteSoundsAsync(force: true, reapplyBackground: false, refreshCts.Token).ConfigureAwait(false);
                 }
                 catch
                 {
@@ -331,7 +438,7 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
                 TryPlay(SoundId.ClientConnected);
                 lock (_stateGate)
                 {
-                    _pendingConnectedSound = 0;
+                _pendingConnectedSound = 0;
                 }
                 Volatile.Write(ref _connectedSoundPlayedSequence, loginSeq);
             }
@@ -346,18 +453,55 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
 
             await WaitForConnectStabilizationAsync(connectedAtTicks, token).ConfigureAwait(false);
             await WaitForSoundOrCancelAsync(SoundId.ClientConnected, TimeSpan.FromSeconds(2), token).ConfigureAwait(false);
+            await WaitForSoundOrCancelAsync(SoundId.ClientOpened, TimeSpan.FromSeconds(2), token).ConfigureAwait(false);
             if (token.IsCancellationRequested || version != Volatile.Read(ref _transitionVersion))
             {
                 return;
             }
 
-            if (_appliedBackground == desiredBackground)
+            // Debounce rapid navigation changes to avoid starting/stopping loops during initialization.
+            await WaitForBackgroundToStabilizeAsync(backgroundRequestedAtTicks, token).ConfigureAwait(false);
+            if (token.IsCancellationRequested || version != Volatile.Read(ref _transitionVersion))
+            {
+                return;
+            }
+
+            if (_appliedBackground == desiredBackground && !reapplyBackground)
             {
                 return;
             }
 
             StopBackgroundLoops();
             _appliedBackground = AppAudioBackground.None;
+            if (reapplyBackground)
+            {
+                lock (_stateGate)
+                {
+                    _pendingReapplyBackground = 0;
+                }
+            }
+
+            // One-shot on entering the tavern (played before the ambience loop).
+            if (desiredBackground == AppAudioBackground.Tavern &&
+                playTavernOpened &&
+                tavernSeq != Volatile.Read(ref _tavernOpenedSoundPlayedSequence))
+            {
+                TryPreload(SoundId.TavernOpened);
+                TryPlay(SoundId.TavernOpened);
+                lock (_stateGate)
+                {
+                    _pendingTavernOpenedSound = 0;
+                }
+                Volatile.Write(ref _tavernOpenedSoundPlayedSequence, tavernSeq);
+
+                // Give the one-shot a tiny head start to avoid being masked by the loop.
+                try { await Task.Delay(200, token).ConfigureAwait(false); } catch { return; }
+                if (token.IsCancellationRequested || version != Volatile.Read(ref _transitionVersion))
+                {
+                    return;
+                }
+            }
+
             switch (desiredBackground)
             {
                 case AppAudioBackground.MainMenu:
@@ -398,6 +542,28 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
             try
             {
                 await Task.Delay(75, token).ConfigureAwait(false);
+            }
+            catch
+            {
+                return;
+            }
+        }
+    }
+
+    private async Task WaitForBackgroundToStabilizeAsync(long requestedAtTicks, CancellationToken token)
+    {
+        if (requestedAtTicks <= 0)
+        {
+            return;
+        }
+
+        // Coalesce bursts of SetBackground() during startup/navigation.
+        var minTicks = Stopwatch.Frequency / 4; // ~250ms
+        while (!token.IsCancellationRequested && Stopwatch.GetTimestamp() - requestedAtTicks < minTicks)
+        {
+            try
+            {
+                await Task.Delay(50, token).ConfigureAwait(false);
             }
             catch
             {

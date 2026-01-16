@@ -352,23 +352,27 @@ public sealed class SoundService : ISoundService, IDisposable
         }
 
         var now = Stopwatch.GetTimestamp();
-        if (Volatile.Read(ref _connectedGate) == 0 &&
-            sound != SoundId.ClientOpened &&
-            sound != SoundId.ClientDisconnected)
-        {
-            return;
-        }
 
-        var connectedAt = Volatile.Read(ref _connectedAtTicks);
-        if (Volatile.Read(ref _connectedGate) == 1 &&
-            connectedAt > 0 &&
-            now - connectedAt < Stopwatch.Frequency * 3 &&
-            sound != SoundId.ClientConnected &&
+        // Gating: before being authenticated/connected, only allow the explicit startup sound.
+        // This prevents bursts of notification sounds during app startup or WS warm-up.
+        if (Volatile.Read(ref _connectedGate) == 0 &&
             sound != SoundId.ClientOpened)
         {
             return;
         }
 
+        // Right after connection, suppress noisy one-shots triggered by replay/history,
+        // but still allow the explicit login sound and tavern entry sound.
+        var connectedAt = Volatile.Read(ref _connectedAtTicks);
+        if (Volatile.Read(ref _connectedGate) == 1 &&
+            connectedAt > 0 &&
+            now - connectedAt < Stopwatch.Frequency * 3 &&
+            sound != SoundId.ClientConnected &&
+            sound != SoundId.ClientOpened &&
+            sound != SoundId.TavernOpened)
+        {
+            return;
+        }
         var filePath = ResolveFilePath(sound, entry);
         if (!File.Exists(filePath))
         {
@@ -748,13 +752,6 @@ public sealed class SoundService : ISoundService, IDisposable
 
         // Juste après connexion, éviter la superposition avec le son "connexion réussie".
         // (Des events comme sounds.updated peuvent déclencher des StartLoop trop tôt.)
-        var connectedAt = Volatile.Read(ref _connectedAtTicks);
-        if (connectedAt > 0 &&
-            Stopwatch.GetTimestamp() - connectedAt < Stopwatch.Frequency * 2)
-        {
-            return;
-        }
-
         if (!_sounds.TryGetValue(sound, out var entry))
         {
             return;
