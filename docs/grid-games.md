@@ -19,7 +19,7 @@ Dans `exposeStateForUser`, ajouter dans `extras` :
 Optionnel :
 - `board.positions`: `{ "playerId": index }` (index = `y*size + x`) pour placer des pions “génériques” côté client.
 
-Exemple vivant : `backend/src/game/games/vents-infinis/corridor/presenter/corridor-presenter.service.ts`.
+Exemple vivant : `backend/src/game/games/vents-sacres/corridor/presenter/corridor-presenter.service.ts`.
 
 ## Règles d’accessibilité côté client
 

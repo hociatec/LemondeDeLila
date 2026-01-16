@@ -52,7 +52,7 @@ function shuffle<T>(items: T[]): T[] {
 export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
   readonly gameType = 'arche-de-mnemosyne';
   readonly category = 'Quiz';
-  readonly subcategory = 'VentsInfinis';
+  readonly subcategory = 'Les Vents Sacrés';
   readonly displayName = "L'Arche de Mnémosyne";
   readonly description = 'Quiz à catégories (questions aléatoires).';
   readonly minPlayers = 1;
