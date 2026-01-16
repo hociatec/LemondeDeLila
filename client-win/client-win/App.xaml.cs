@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.ComponentModel;
+using System.IO;
 using System.Windows;
 using System.Windows.Data;
 using client_win.Core.Accessibility;
@@ -27,6 +28,7 @@ namespace client_win
     {
         private Mutex? _singleInstanceMutex;
         private bool _ownsSingleInstanceMutex;
+        private FileStream? _singleInstanceLockFile;
 
         protected override void OnStartup(StartupEventArgs e)
         {
@@ -55,6 +57,24 @@ namespace client_win
             catch
             {
                 // Best-effort: si le mutex échoue, on laisse l'app démarrer normalement.
+            }
+
+            // Fallback/renfort : lockfile dans AppData (plus robuste avec ClickOnce/relances rapides).
+            // Si un autre process détient le lock, on active l'instance existante et on quitte.
+            try
+            {
+                var appDataPath = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    Core.Constants.AppConstants.AppDataFolderName);
+                Directory.CreateDirectory(appDataPath);
+                var lockPath = Path.Combine(appDataPath, "single-instance.lock");
+                _singleInstanceLockFile = new FileStream(lockPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+            }
+            catch
+            {
+                try { SingleInstanceActivator.TryActivateExistingInstance(); } catch { /* ignore */ }
+                Shutdown();
+                return;
             }
 
             base.OnStartup(e);
@@ -155,6 +175,8 @@ namespace client_win
             {
                 try { _singleInstanceMutex?.Dispose(); } catch { /* ignore */ }
                 _singleInstanceMutex = null;
+                try { _singleInstanceLockFile?.Dispose(); } catch { /* ignore */ }
+                _singleInstanceLockFile = null;
             }
 
             base.OnExit(e);
