@@ -21,10 +21,8 @@ public sealed class FocusParkingService : IFocusParkingService
             {
                 try
                 {
-                    var parking = window.FindName("FocusParking") as IInputElement ?? window;
+                    // Clear focus so the previous view can be removed without SR "unavailable" announcements.
                     try { Keyboard.ClearFocus(); } catch { /* ignore */ }
-                    try { (parking as UIElement)?.Focus(); } catch { /* ignore */ }
-                    try { Keyboard.Focus(parking); } catch { /* ignore */ }
                 }
                 catch
                 {
@@ -47,4 +45,3 @@ public sealed class FocusParkingService : IFocusParkingService
         }
     }
 }
-
