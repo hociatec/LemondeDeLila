@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.ComponentModel;
 using System.Windows;
+using System.Windows.Data;
 using client_win.Core.Accessibility;
 using client_win.Modules.Audio.Services;
 using client_win.Modules.Config;
@@ -84,26 +85,53 @@ namespace client_win
 
             window.DataContext = shell;
 
-            // Safety net: keep Window.Title stable even if a future refactor or a view/behavior
-            // accidentally overwrites the Window's DataContext (which would break the XAML binding).
-            void SyncTitle()
+            // MVVM strict:
+            // - Le DataContext de la fenêtre doit rester le ShellViewModel.
+            // - Le Title ne doit jamais dépendre du DataContext courant (sinon WPF affiche ToString() -> type du VM).
+            void ApplyWindowShellState()
             {
-                try { window.Title = shell.WindowTitle; } catch { /* ignore */ }
+                try
+                {
+                    BindingOperations.ClearBinding(window, Window.TitleProperty);
+                    window.Title = shell.WindowTitle;
+                }
+                catch
+                {
+                    // ignore
+                }
+
+                try
+                {
+                    if (!ReferenceEquals(window.DataContext, shell))
+                    {
+                        window.DataContext = shell;
+                    }
+                }
+                catch
+                {
+                    // ignore
+                }
             }
-            SyncTitle();
+            ApplyWindowShellState();
 
             PropertyChangedEventHandler? onShellPropertyChanged = null;
             onShellPropertyChanged = (_, args) =>
             {
                 if (string.Equals(args.PropertyName, nameof(ShellViewModel.WindowTitle), StringComparison.Ordinal))
                 {
-                    SyncTitle();
+                    ApplyWindowShellState();
                 }
             };
             shell.PropertyChanged += onShellPropertyChanged;
+
+            DependencyPropertyChangedEventHandler? onWindowDataContextChanged = null;
+            onWindowDataContextChanged = (_, _) => ApplyWindowShellState();
+            window.DataContextChanged += onWindowDataContextChanged;
+
             window.Closed += (_, _) =>
             {
                 try { shell.PropertyChanged -= onShellPropertyChanged; } catch { /* ignore */ }
+                try { window.DataContextChanged -= onWindowDataContextChanged; } catch { /* ignore */ }
             };
 
             MainWindow = window;
