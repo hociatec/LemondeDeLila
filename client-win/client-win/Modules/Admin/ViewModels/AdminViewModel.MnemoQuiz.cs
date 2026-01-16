@@ -55,10 +55,7 @@ public sealed partial class AdminViewModel
         IsAdditionalPermissionsVisible = false;
         IsSecondaryInputVisible = false;
         Items.Clear();
-        Items.Add(new AdminMenuItem("Lister : Validées", tag: "mnemo.questions.validated"));
-        Items.Add(new AdminMenuItem("Lister : En attente", tag: "mnemo.questions.pending"));
-        Items.Add(new AdminMenuItem("Lister : À modifier", tag: "mnemo.questions.to_edit"));
-        Items.Add(new AdminMenuItem("Lister : Corbeille", tag: "mnemo.questions.trash"));
+        Items.Add(new AdminMenuItem("Questions", tag: "mnemo.questions.list"));
         Items.Add(new AdminMenuItem("Ajouter une question", tag: "mnemo.question.create"));
         Items.Add(new AdminMenuItem("Renommer la catégorie", tag: "mnemo.category.rename"));
         Items.Add(new AdminMenuItem("Supprimer la catégorie", tag: "mnemo.category.delete"));
@@ -114,19 +111,21 @@ public sealed partial class AdminViewModel
             return;
         }
 
-        if (action.StartsWith("mnemo.questions.", StringComparison.OrdinalIgnoreCase))
+        if (action == "mnemo.questions.list")
         {
-            var status = action["mnemo.questions.".Length..];
-            _mnemoQuizStatusFilter = status;
-            await LoadMnemoQuizQuestionsAsync(category.Id, status).ConfigureAwait(true);
+            await LoadMnemoQuizQuestionsAsync(category.Id, status: null).ConfigureAwait(true);
+            return;
         }
+
+        // Filtrage par statut supprimé (UI simplifiée).
     }
 
-    private async Task LoadMnemoQuizQuestionsAsync(string categoryId, string status)
+    private async Task LoadMnemoQuizQuestionsAsync(string categoryId, string? status)
     {
         _page = AdminPage.MnemoQuizQuestions;
         ConfigureItemsViewForPage();
-        Title = $"Quiz (Mnémosyne) - Questions ({status})";
+        var statusLabel = string.IsNullOrWhiteSpace(status) ? "toutes" : status;
+        Title = $"Quiz (Mnémosyne) - Questions ({statusLabel})";
         Details = $"Catégorie: {categoryId}";
         IsTextInputVisible = false;
         IsAdditionalPermissionsVisible = false;
@@ -196,7 +195,7 @@ public sealed partial class AdminViewModel
         {
             if (_selectedMnemoQuizCategory != null)
             {
-                await LoadMnemoQuizQuestionsAsync(_selectedMnemoQuizCategory.Id, _mnemoQuizStatusFilter).ConfigureAwait(true);
+                await LoadMnemoQuizQuestionsAsync(_selectedMnemoQuizCategory.Id, status: null).ConfigureAwait(true);
             }
             else
             {
@@ -233,7 +232,7 @@ public sealed partial class AdminViewModel
                 await _admin.UpdateMnemoQuizQuestionAsync(question.Id, status: status).ConfigureAwait(true);
                 if (_selectedMnemoQuizCategory != null)
                 {
-                    await LoadMnemoQuizQuestionsAsync(_selectedMnemoQuizCategory.Id, _mnemoQuizStatusFilter).ConfigureAwait(true);
+                    await LoadMnemoQuizQuestionsAsync(_selectedMnemoQuizCategory.Id, status: null).ConfigureAwait(true);
                 }
             }
             finally
@@ -253,7 +252,7 @@ public sealed partial class AdminViewModel
                 await _admin.DeleteMnemoQuizQuestionAsync(question.Id).ConfigureAwait(true);
                 if (_selectedMnemoQuizCategory != null)
                 {
-                    await LoadMnemoQuizQuestionsAsync(_selectedMnemoQuizCategory.Id, _mnemoQuizStatusFilter).ConfigureAwait(true);
+                    await LoadMnemoQuizQuestionsAsync(_selectedMnemoQuizCategory.Id, status: null).ConfigureAwait(true);
                 }
             }
             finally
@@ -276,19 +275,93 @@ public sealed partial class AdminViewModel
 
     private void BuildMnemoQuizEditText(string title, string label, string initialValue, string mode)
     {
+        if (string.Equals(mode, "mnemo.question.create", StringComparison.OrdinalIgnoreCase))
+        {
+            BuildMnemoQuizQuestionForm(
+                title: title,
+                question: string.Empty,
+                correct: string.Empty,
+                wrong1: string.Empty,
+                wrong2: string.Empty,
+                wrong3: string.Empty,
+                mode: mode);
+            return;
+        }
+
+        if (string.Equals(mode, "mnemo.question.edit", StringComparison.OrdinalIgnoreCase) &&
+            _selectedMnemoQuizQuestion != null)
+        {
+            var answers = _selectedMnemoQuizQuestion.Answers ?? new();
+            BuildMnemoQuizQuestionForm(
+                title: title,
+                question: _selectedMnemoQuizQuestion.Question ?? string.Empty,
+                correct: answers.ElementAtOrDefault(0) ?? string.Empty,
+                wrong1: answers.ElementAtOrDefault(1) ?? string.Empty,
+                wrong2: answers.ElementAtOrDefault(2) ?? string.Empty,
+                wrong3: answers.ElementAtOrDefault(3) ?? string.Empty,
+                mode: mode);
+            return;
+        }
+
         _page = AdminPage.EditText;
         Title = title;
         Items.Clear();
         Items.Add(new AdminMenuItem("Valider", tag: "mnemo.edit.submit"));
         SelectedItem = Items.FirstOrDefault();
+        PrimaryInputAcceptsReturn = true;
         TextInputLabel = label;
         TextInput = initialValue;
         SecondaryInputLabel = string.Empty;
         SecondaryInput = string.Empty;
+        ThirdInputLabel = string.Empty;
+        ThirdInput = string.Empty;
+        FourthInputLabel = string.Empty;
+        FourthInput = string.Empty;
+        FifthInputLabel = string.Empty;
+        FifthInput = string.Empty;
         IsTextInputVisible = true;
         IsSecondaryInputVisible = false;
+        IsThirdInputVisible = false;
+        IsFourthInputVisible = false;
+        IsFifthInputVisible = false;
         Details = string.Empty;
         Status = "Saisissez puis Entrée pour valider. Échap : retour.";
+        _currentEditMode = mode;
+        RestoreFocusIfAny();
+    }
+
+    private void BuildMnemoQuizQuestionForm(
+        string title,
+        string question,
+        string correct,
+        string wrong1,
+        string wrong2,
+        string wrong3,
+        string mode)
+    {
+        _page = AdminPage.EditText;
+        Title = title;
+        Items.Clear();
+        Items.Add(new AdminMenuItem("Valider", tag: "mnemo.edit.submit"));
+        SelectedItem = Items.FirstOrDefault();
+        PrimaryInputAcceptsReturn = false;
+        TextInputLabel = "Question";
+        TextInput = question ?? string.Empty;
+        SecondaryInputLabel = "Bonne réponse";
+        SecondaryInput = correct ?? string.Empty;
+        ThirdInputLabel = "Réponse 1";
+        ThirdInput = wrong1 ?? string.Empty;
+        FourthInputLabel = "Réponse 2";
+        FourthInput = wrong2 ?? string.Empty;
+        FifthInputLabel = "Réponse 3";
+        FifthInput = wrong3 ?? string.Empty;
+        IsTextInputVisible = true;
+        IsSecondaryInputVisible = true;
+        IsThirdInputVisible = true;
+        IsFourthInputVisible = true;
+        IsFifthInputVisible = true;
+        Details = string.Empty;
+        Status = "Tab : champ suivant. Entrée : valider. Échap : retour.";
         _currentEditMode = mode;
         RestoreFocusIfAny();
     }
@@ -364,16 +437,26 @@ public sealed partial class AdminViewModel
 
         if (mode == "mnemo.question.create" && _selectedMnemoQuizCategory != null)
         {
-            if (!TryParseMnemoQuestionBlock(value, out var q, out var answers))
+            var q = (TextInput ?? string.Empty).Trim();
+            var correct = (SecondaryInput ?? string.Empty).Trim();
+            var wrong1 = (ThirdInput ?? string.Empty).Trim();
+            var wrong2 = (FourthInput ?? string.Empty).Trim();
+            var wrong3 = (FifthInput ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(q) ||
+                string.IsNullOrWhiteSpace(correct) ||
+                string.IsNullOrWhiteSpace(wrong1) ||
+                string.IsNullOrWhiteSpace(wrong2) ||
+                string.IsNullOrWhiteSpace(wrong3))
             {
-                await _dialogs.ShowError("Quiz", "Format invalide. Attendu 5 lignes non vides.").ConfigureAwait(true);
+                await _dialogs.ShowError("Quiz", "Tous les champs sont requis.").ConfigureAwait(true);
                 return;
             }
+            var answers = new[] { correct, wrong1, wrong2, wrong3 };
             IsBusy = true;
             try
             {
                 await _admin.CreateMnemoQuizQuestionAsync(_selectedMnemoQuizCategory.Id, q, answers, correctIndex: 0, status: "pending").ConfigureAwait(true);
-                await LoadMnemoQuizQuestionsAsync(_selectedMnemoQuizCategory.Id, "pending").ConfigureAwait(true);
+                await LoadMnemoQuizQuestionsAsync(_selectedMnemoQuizCategory.Id, status: null).ConfigureAwait(true);
             }
             finally
             {
@@ -384,16 +467,26 @@ public sealed partial class AdminViewModel
 
         if (mode == "mnemo.question.edit" && _selectedMnemoQuizCategory != null && _selectedMnemoQuizQuestion != null)
         {
-            if (!TryParseMnemoQuestionBlock(value, out var q, out var answers))
+            var q = (TextInput ?? string.Empty).Trim();
+            var correct = (SecondaryInput ?? string.Empty).Trim();
+            var wrong1 = (ThirdInput ?? string.Empty).Trim();
+            var wrong2 = (FourthInput ?? string.Empty).Trim();
+            var wrong3 = (FifthInput ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(q) ||
+                string.IsNullOrWhiteSpace(correct) ||
+                string.IsNullOrWhiteSpace(wrong1) ||
+                string.IsNullOrWhiteSpace(wrong2) ||
+                string.IsNullOrWhiteSpace(wrong3))
             {
-                await _dialogs.ShowError("Quiz", "Format invalide. Attendu 5 lignes non vides.").ConfigureAwait(true);
+                await _dialogs.ShowError("Quiz", "Tous les champs sont requis.").ConfigureAwait(true);
                 return;
             }
+            var answers = new[] { correct, wrong1, wrong2, wrong3 };
             IsBusy = true;
             try
             {
                 await _admin.UpdateMnemoQuizQuestionAsync(_selectedMnemoQuizQuestion.Id, question: q, answers: answers, correctIndex: 0).ConfigureAwait(true);
-                await LoadMnemoQuizQuestionsAsync(_selectedMnemoQuizCategory.Id, _mnemoQuizStatusFilter).ConfigureAwait(true);
+                await LoadMnemoQuizQuestionsAsync(_selectedMnemoQuizCategory.Id, status: null).ConfigureAwait(true);
             }
             finally
             {

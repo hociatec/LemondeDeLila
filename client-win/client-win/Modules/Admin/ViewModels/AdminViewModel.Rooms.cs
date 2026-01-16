@@ -361,6 +361,7 @@ public sealed partial class AdminViewModel
         Items.Clear();
         Items.Add(new AdminMenuItem("Valider", tag: "rooms.settings.submit"));
         SelectedItem = Items.FirstOrDefault();
+        PrimaryInputAcceptsReturn = true;
         TextInputLabel = label;
         TextInput = initialValue;
         SecondaryInputLabel = string.Empty;

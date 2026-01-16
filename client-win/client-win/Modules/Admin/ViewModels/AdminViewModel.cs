@@ -53,7 +53,6 @@ public sealed partial class AdminViewModel : ObservableObject
     private AdminMnemoQuizCategoryDto? _selectedMnemoQuizCategory;
     private AdminMnemoQuizQuestionDto[] _mnemoQuizQuestions = Array.Empty<AdminMnemoQuizQuestionDto>();
     private AdminMnemoQuizQuestionDto? _selectedMnemoQuizQuestion;
-    private string _mnemoQuizStatusFilter = "pending";
     private AdminBotNameDto[] _loadedBotNames = Array.Empty<AdminBotNameDto>();
     private AdminBotNameDto? _selectedBotName;
     private int _botTurnDelayMs = 4000;
@@ -76,8 +75,18 @@ public sealed partial class AdminViewModel : ObservableObject
     private string _primaryInput = string.Empty;
     private string _secondaryInputLabel = string.Empty;
     private string _secondaryInput = string.Empty;
+    private string _thirdInputLabel = string.Empty;
+    private string _thirdInput = string.Empty;
+    private string _fourthInputLabel = string.Empty;
+    private string _fourthInput = string.Empty;
+    private string _fifthInputLabel = string.Empty;
+    private string _fifthInput = string.Empty;
+    private bool _primaryInputAcceptsReturn = true;
     private bool _isPrimaryInputVisible;
     private bool _isSecondaryInputVisible;
+    private bool _isThirdInputVisible;
+    private bool _isFourthInputVisible;
+    private bool _isFifthInputVisible;
     private List<string> _availableRoles = new();
     private HashSet<string> _currentRoleSet = new();
     private string _filterSearch = string.Empty;
@@ -251,6 +260,48 @@ public sealed partial class AdminViewModel : ObservableObject
         set => SetProperty(ref _secondaryInput, value);
     }
 
+    public string ThirdInputLabel
+    {
+        get => _thirdInputLabel;
+        private set => SetProperty(ref _thirdInputLabel, value);
+    }
+
+    public string ThirdInput
+    {
+        get => _thirdInput;
+        set => SetProperty(ref _thirdInput, value);
+    }
+
+    public string FourthInputLabel
+    {
+        get => _fourthInputLabel;
+        private set => SetProperty(ref _fourthInputLabel, value);
+    }
+
+    public string FourthInput
+    {
+        get => _fourthInput;
+        set => SetProperty(ref _fourthInput, value);
+    }
+
+    public string FifthInputLabel
+    {
+        get => _fifthInputLabel;
+        private set => SetProperty(ref _fifthInputLabel, value);
+    }
+
+    public string FifthInput
+    {
+        get => _fifthInput;
+        set => SetProperty(ref _fifthInput, value);
+    }
+
+    public bool PrimaryInputAcceptsReturn
+    {
+        get => _primaryInputAcceptsReturn;
+        set => SetProperty(ref _primaryInputAcceptsReturn, value);
+    }
+
     public bool IsTextInputVisible
     {
         get => _isPrimaryInputVisible;
@@ -261,6 +312,24 @@ public sealed partial class AdminViewModel : ObservableObject
     {
         get => _isSecondaryInputVisible;
         private set => SetProperty(ref _isSecondaryInputVisible, value);
+    }
+
+    public bool IsThirdInputVisible
+    {
+        get => _isThirdInputVisible;
+        private set => SetProperty(ref _isThirdInputVisible, value);
+    }
+
+    public bool IsFourthInputVisible
+    {
+        get => _isFourthInputVisible;
+        private set => SetProperty(ref _isFourthInputVisible, value);
+    }
+
+    public bool IsFifthInputVisible
+    {
+        get => _isFifthInputVisible;
+        private set => SetProperty(ref _isFifthInputVisible, value);
     }
 
     public string FilterSearch

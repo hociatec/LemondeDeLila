@@ -14,6 +14,7 @@ public sealed partial class AdminViewModel
         Items.Clear();
         Items.Add(new AdminMenuItem("Valider", tag: "game.edit.submit"));
         SelectedItem = Items.FirstOrDefault();
+        PrimaryInputAcceptsReturn = true;
         TextInputLabel = label;
         TextInput = initialValue;
         SecondaryInputLabel = string.Empty;
@@ -73,6 +74,7 @@ public sealed partial class AdminViewModel
         TextInput = (game.MinPlayers ?? 1).ToString();
         SecondaryInputLabel = "Max joueurs";
         SecondaryInput = (game.MaxPlayers ?? 2).ToString();
+        PrimaryInputAcceptsReturn = true;
         IsTextInputVisible = true;
         IsSecondaryInputVisible = true;
         Details = $"Type: {game.Id}";

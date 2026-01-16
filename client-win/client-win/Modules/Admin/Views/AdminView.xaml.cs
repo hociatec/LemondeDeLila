@@ -104,19 +104,44 @@ public partial class AdminView : UserControl
             return;
         }
 
-        if (!vm.IsTextInputVisible && !vm.IsSecondaryInputVisible)
+        if (!vm.IsTextInputVisible &&
+            !vm.IsSecondaryInputVisible &&
+            !vm.IsThirdInputVisible &&
+            !vm.IsFourthInputVisible &&
+            !vm.IsFifthInputVisible)
         {
             return;
         }
 
         // When a form is visible, allow Tab/Shift+Tab from the actions list to jump back to inputs.
         // This avoids getting "stuck" on the Validate item.
-        var wantSecondaryFirst = Keyboard.Modifiers.HasFlag(ModifierKeys.Shift);
-        if (wantSecondaryFirst && vm.IsSecondaryInputVisible)
+        var wantLast = Keyboard.Modifiers.HasFlag(ModifierKeys.Shift);
+        if (wantLast)
         {
-            InputsView?.SecondaryInputTextBox?.Focus();
-            e.Handled = true;
-            return;
+            if (vm.IsFifthInputVisible)
+            {
+                InputsView?.FifthInputTextBox?.Focus();
+                e.Handled = true;
+                return;
+            }
+            if (vm.IsFourthInputVisible)
+            {
+                InputsView?.FourthInputTextBox?.Focus();
+                e.Handled = true;
+                return;
+            }
+            if (vm.IsThirdInputVisible)
+            {
+                InputsView?.ThirdInputTextBox?.Focus();
+                e.Handled = true;
+                return;
+            }
+            if (vm.IsSecondaryInputVisible)
+            {
+                InputsView?.SecondaryInputTextBox?.Focus();
+                e.Handled = true;
+                return;
+            }
         }
 
         if (vm.IsTextInputVisible)
@@ -125,10 +150,27 @@ public partial class AdminView : UserControl
             e.Handled = true;
             return;
         }
-
         if (vm.IsSecondaryInputVisible)
         {
             InputsView?.SecondaryInputTextBox?.Focus();
+            e.Handled = true;
+            return;
+        }
+        if (vm.IsThirdInputVisible)
+        {
+            InputsView?.ThirdInputTextBox?.Focus();
+            e.Handled = true;
+            return;
+        }
+        if (vm.IsFourthInputVisible)
+        {
+            InputsView?.FourthInputTextBox?.Focus();
+            e.Handled = true;
+            return;
+        }
+        if (vm.IsFifthInputVisible)
+        {
+            InputsView?.FifthInputTextBox?.Focus();
             e.Handled = true;
         }
     }
@@ -153,6 +195,30 @@ public partial class AdminView : UserControl
             _ = Dispatcher.BeginInvoke(
                 DispatcherPriority.Input,
                 new Action(() => InputsView?.SecondaryInputTextBox?.Focus()));
+            return;
+        }
+
+        if (vm.IsThirdInputVisible)
+        {
+            _ = Dispatcher.BeginInvoke(
+                DispatcherPriority.Input,
+                new Action(() => InputsView?.ThirdInputTextBox?.Focus()));
+            return;
+        }
+
+        if (vm.IsFourthInputVisible)
+        {
+            _ = Dispatcher.BeginInvoke(
+                DispatcherPriority.Input,
+                new Action(() => InputsView?.FourthInputTextBox?.Focus()));
+            return;
+        }
+
+        if (vm.IsFifthInputVisible)
+        {
+            _ = Dispatcher.BeginInvoke(
+                DispatcherPriority.Input,
+                new Action(() => InputsView?.FifthInputTextBox?.Focus()));
         }
     }
 

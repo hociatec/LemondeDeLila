@@ -12,4 +12,10 @@ public partial class AdminInputsView : UserControl
     public TextBox? PrimaryInputBox => PrimaryInput;
 
     public TextBox? SecondaryInputTextBox => SecondaryInputBox;
+
+    public TextBox? ThirdInputTextBox => ThirdInputBox;
+
+    public TextBox? FourthInputTextBox => FourthInputBox;
+
+    public TextBox? FifthInputTextBox => FifthInputBox;
 }
