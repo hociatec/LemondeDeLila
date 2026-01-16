@@ -470,9 +470,14 @@ public sealed class MenuRouter : IMenuRouter
         }
 
         _audio.PauseBackground();
-        var status = await _chat.OpenAsync(owner).ConfigureAwait(true);
-        _audio.ResumeBackground();
-        return status;
+        try
+        {
+            return await _chat.OpenAsync(owner).ConfigureAwait(true);
+        }
+        finally
+        {
+            _audio.ResumeBackground();
+        }
     }
 
     public Task<string> OpenMessaging()

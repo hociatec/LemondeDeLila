@@ -363,8 +363,8 @@ public static class AppBootstrapper
             // pour éviter une latence perceptible sur la première connexion.
             _ = dispatcher.BeginInvoke((Action)(() =>
             {
-                sounds.Preload(Modules.Audio.Models.SoundId.ClientConnected, warmUp: true);
-                sounds.Preload(Modules.Audio.Models.SoundId.ClientDisconnected, warmUp: true);
+                sounds.Preload(Modules.Audio.Models.SoundId.ClientConnected, warmUp: false);
+                sounds.Preload(Modules.Audio.Models.SoundId.ClientDisconnected, warmUp: false);
             }), DispatcherPriority.Send);
 
             // Précharge le reste en arrière-plan pour ne pas bloquer le rendu initial.
