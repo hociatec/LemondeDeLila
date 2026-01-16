@@ -1,8 +1,10 @@
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using client_win.Modules.Audio.Models;
+using client_win.Core.Constants;
 using Microsoft.Extensions.Logging;
 
 namespace client_win.Modules.Audio.Services;
@@ -40,6 +42,8 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
     private int _pendingTavernOpenedSound;
     private int _pendingReapplyBackground;
 
+    private static readonly TimeSpan StartupSoundDebounceWindow = TimeSpan.FromSeconds(60);
+
     public AppAudioCoordinator(
         ISoundService sounds,
         IRemoteSoundCache remote,
@@ -48,6 +52,58 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
         _sounds = sounds ?? throw new ArgumentNullException(nameof(sounds));
         _remote = remote ?? throw new ArgumentNullException(nameof(remote));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    }
+
+    private static string GetStartupSoundMarkerPath()
+    {
+        var appDataPath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            AppConstants.AppDataFolderName,
+            "audio");
+        Directory.CreateDirectory(appDataPath);
+        return Path.Combine(appDataPath, "startup-sound.last");
+    }
+
+    private bool ShouldSuppressStartupSound()
+    {
+        try
+        {
+            var markerPath = GetStartupSoundMarkerPath();
+            if (!File.Exists(markerPath))
+            {
+                return false;
+            }
+
+            var text = File.ReadAllText(markerPath).Trim();
+            if (DateTime.TryParse(text, out var lastUtc))
+            {
+                if (lastUtc.Kind == DateTimeKind.Unspecified)
+                {
+                    lastUtc = DateTime.SpecifyKind(lastUtc, DateTimeKind.Utc);
+                }
+                var age = DateTime.UtcNow - lastUtc.ToUniversalTime();
+                return age >= TimeSpan.Zero && age < StartupSoundDebounceWindow;
+            }
+        }
+        catch
+        {
+            // best-effort
+        }
+
+        return false;
+    }
+
+    private void MarkStartupSoundAttempt()
+    {
+        try
+        {
+            var markerPath = GetStartupSoundMarkerPath();
+            File.WriteAllText(markerPath, DateTime.UtcNow.ToString("O"));
+        }
+        catch
+        {
+            // best-effort
+        }
     }
 
     public void NotifyAppOpened()
@@ -61,11 +117,22 @@ public sealed class AppAudioCoordinator : IAppAudioCoordinator
                 return;
             }
 
+            // ClickOnce peut relancer le client très vite (update/restart) : éviter de rejouer le son d'ouverture
+            // plusieurs fois de suite, ce que l'utilisateur perçoit comme "plusieurs sons au lancement".
+            if (ShouldSuppressStartupSound())
+            {
+                try { _logger.LogInformation("Audio: suppress ClientOpened (recent restart detected)"); } catch { /* ignore */ }
+                _appOpenedSequence = 1;
+                _pendingOpenedSound = 0;
+                return;
+            }
+
             _appOpenedSequence = 1;
             _pendingOpenedSound = 1;
             shouldTransition = true;
         }
 
+        MarkStartupSoundAttempt();
         if (shouldTransition)
         {
             RequestTransition();
