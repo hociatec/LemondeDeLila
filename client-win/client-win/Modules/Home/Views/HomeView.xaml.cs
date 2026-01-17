@@ -6,6 +6,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Threading;
 using client_win.Modules.Home.ViewModels;
+using client_win.Modules.Shell.Services;
 using client_win.Modules.Shell.Views;
 
 namespace client_win.Modules.Home.Views;
@@ -84,6 +85,47 @@ public partial class HomeView : UserControl, IInitialFocusTarget
         {
             e.Handled = true;
         }
+    }
+
+    private void OnCommandButtonPreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Handled || e.IsRepeat)
+        {
+            return;
+        }
+
+        if (e.Key != Key.Enter && e.Key != Key.Return)
+        {
+            return;
+        }
+
+        if (sender is not ButtonBase button)
+        {
+            return;
+        }
+
+        var command = button.Command;
+        var parameter = button.CommandParameter;
+        if (command == null || !command.CanExecute(parameter))
+        {
+            return;
+        }
+
+        // IMPORTANT (NVDA): if navigation happens while the key event is still being processed,
+        // the focused button may disappear -> "indisponible". Park focus and defer execution.
+        e.Handled = true;
+        FocusParking.Park();
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
+        {
+            try
+            {
+                command.Execute(parameter);
+            }
+            catch
+            {
+                // best-effort
+            }
+        }));
     }
 
     private static bool IsNavigationKey(Key key)
