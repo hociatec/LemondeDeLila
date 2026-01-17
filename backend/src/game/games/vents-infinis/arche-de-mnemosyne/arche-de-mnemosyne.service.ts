@@ -1209,8 +1209,18 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
       (promptOwnerId === userId || (promptOwnerId == null && this.isOwner(state, userId)));
 
     if (canSeePrompt && meta.prompt) {
-      // Les prompts envoient directement l'actionType; ici on expose juste le cancel pour l’Escape.
-      actions.push({ type: 'mnemo_prompt_cancel', payload: {} });
+      // IMPORTANT: le moteur filtre les actions par "allowedTypes".
+      // Si on n'expose pas aussi `prompt.actionType`, le client ne peut pas soumettre le prompt.
+      const promptActionType = String((meta.prompt as any)?.actionType ?? '')
+        .trim()
+        .toLowerCase();
+      if (promptActionType) {
+        actions.push({ type: promptActionType, payload: {} });
+      }
+      const cancelType = String((meta.prompt as any)?.cancelActionType ?? 'mnemo_prompt_cancel')
+        .trim()
+        .toLowerCase();
+      actions.push({ type: cancelType || 'mnemo_prompt_cancel', payload: {} });
       return actions;
     }
 

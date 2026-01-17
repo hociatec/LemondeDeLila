@@ -50,6 +50,9 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
     private readonly GamePlayConnectionController _connection;
     private readonly GamePlayCommands _commands;
 
+    private readonly object _initializeLock = new();
+    private Task? _initializeTask;
+
     private GameSession? _session;
     private bool _isSpectator;
     private PendingTextPrompt? _pendingTextPrompt;
@@ -807,9 +810,35 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
 
     public async Task InitializeAsync(CancellationToken cancellationToken = default)
     {
-        _projector.ResetLogCursor();
-        _realtime.ResetForInitialize();
-        await _connection.InitializeAsync(cancellationToken).ConfigureAwait(false);
+        Task? existing;
+        lock (_initializeLock)
+        {
+            existing = _initializeTask;
+            if (existing == null)
+            {
+                _initializeTask = existing = InitializeCoreAsync(cancellationToken);
+            }
+        }
+
+        await existing.ConfigureAwait(false);
+    }
+
+    private async Task InitializeCoreAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            _projector.ResetLogCursor();
+            _realtime.ResetForInitialize();
+            await _connection.InitializeAsync(cancellationToken).ConfigureAwait(false);
+        }
+        catch
+        {
+            lock (_initializeLock)
+            {
+                _initializeTask = null;
+            }
+            throw;
+        }
     }
 
     public async Task<bool> SubmitSelectedChoiceAsync(CancellationToken cancellationToken = default)
