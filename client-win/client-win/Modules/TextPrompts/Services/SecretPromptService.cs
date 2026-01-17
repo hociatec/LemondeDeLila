@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using client_win.Modules.Shell.Services;
 
 namespace client_win.Modules.TextPrompts.Services;
 
@@ -117,6 +118,8 @@ public sealed class SecretPromptService : ISecretPromptService
                 input.SelectAll();
             };
 
+            FocusParking.Park(owner);
+            NvdaDialogFocus.Configure(dialog, owner, focusTargetFactory: () => input);
             dialog.ShowDialog();
             return result;
         }).Task;
@@ -151,4 +154,3 @@ public sealed class SecretPromptService : ISecretPromptService
         return visible ?? windows[0];
     }
 }
-

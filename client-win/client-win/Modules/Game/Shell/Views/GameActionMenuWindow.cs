@@ -7,6 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using client_win.Core.Input;
+using client_win.Modules.Shell.Services;
 
 namespace client_win.Modules.Game.Shell.Views;
 
@@ -112,6 +113,8 @@ public sealed class GameActionMenuWindow : Window
         }
 
         var w = new GameActionMenuWindow(title, filtered) { Owner = owner };
+        FocusParking.Park(owner);
+        NvdaDialogFocus.Configure(w, owner);
         w.ShowDialog();
         return true;
     }

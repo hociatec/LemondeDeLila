@@ -488,10 +488,13 @@ public sealed class SoundService : ISoundService, IDisposable
 
         var now = Stopwatch.GetTimestamp();
 
-        // Gating: before being authenticated/connected, only allow the explicit startup sound.
-        // This prevents bursts of notification sounds during app startup or WS warm-up.
+        // Gating: before being authenticated/connected, only allow non-spammy system sounds.
+        // This prevents bursts of notification sounds during app startup or WS warm-up, while still
+        // allowing user-feedback sounds like voluntary disconnect/close.
         if (Volatile.Read(ref _connectedGate) == 0 &&
-            sound != SoundId.ClientOpened)
+            sound != SoundId.ClientOpened &&
+            sound != SoundId.ClientDisconnected &&
+            sound != SoundId.ClientClosing)
         {
             TraceStartupOnce($"startup.suppress.notconnected.{sound}", () =>
                 $"suppressed {sound} because connected gate is closed (not authenticated/connected yet)");

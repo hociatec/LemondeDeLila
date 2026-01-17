@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows;
+using client_win.Modules.Shell.Services;
 using client_win.Modules.TextPrompts.Views;
 
 namespace client_win.Modules.TextPrompts.Services;
@@ -26,6 +27,8 @@ public sealed class TextPromptService : ITextPromptService
                 DataContext = vm
             };
 
+            FocusParking.Park(owner);
+            NvdaDialogFocus.Configure(w, owner);
             bool? result = w.ShowDialog();
             if (result != true)
             {
@@ -71,6 +74,8 @@ public sealed class TextPromptService : ITextPromptService
                 DataContext = vm
             };
 
+            FocusParking.Park(owner);
+            NvdaDialogFocus.Configure(w, owner);
             bool? result = w.ShowDialog();
             if (result != true)
             {
@@ -133,6 +138,8 @@ public sealed class TextPromptService : ITextPromptService
                 DataContext = vm
             };
 
+            FocusParking.Park(owner);
+            NvdaDialogFocus.Configure(w, owner);
             bool? result = w.ShowDialog();
             if (result != true)
             {

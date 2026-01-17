@@ -6,6 +6,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Collections.Generic;
+using client_win.Modules.Shell.Services;
 
 namespace client_win.Modules.Shell.Services;
 
@@ -138,6 +139,8 @@ public sealed class WpfDialogService : IDialogService
             }
         };
 
+        FocusParking.Park(owner);
+        NvdaDialogFocus.Configure(dialog, owner, focusTargetFactory: () => ok);
         dialog.ShowDialog();
         RestoreFocusAfterDialog(owner, previousFocus);
         return result;
@@ -256,6 +259,8 @@ public sealed class WpfDialogService : IDialogService
             }
         };
 
+        FocusParking.Park(owner);
+        NvdaDialogFocus.Configure(dialog, owner, focusTargetFactory: () => primary);
         dialog.ShowDialog();
         RestoreFocusAfterDialog(owner, previousFocus);
         return result;
@@ -376,6 +381,8 @@ public sealed class WpfDialogService : IDialogService
             text.Select(0, 0);
         };
 
+        FocusParking.Park(owner);
+        NvdaDialogFocus.Configure(dialog, owner, focusTargetFactory: () => text);
         dialog.ShowDialog();
         RestoreFocusAfterDialog(owner, previousFocus);
     }
@@ -513,6 +520,8 @@ public sealed class WpfDialogService : IDialogService
             dialog.Close();
         };
 
+        FocusParking.Park(owner);
+        NvdaDialogFocus.Configure(dialog, owner, focusTargetFactory: () => list);
         dialog.ShowDialog();
         RestoreFocusAfterDialog(owner, previousFocus);
         return result;

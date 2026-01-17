@@ -6,6 +6,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
 using client_win.Modules.Presence.ViewModels;
+using client_win.Modules.Shell.Services;
 using client_win.Modules.Shell.Views;
 
 namespace client_win.Modules.Presence.Views;
@@ -99,8 +100,25 @@ public partial class PresenceView : UserControl, IInitialFocusTarget
             return;
         }
         e.Handled = true;
-        await vm.ActivateCommand.ExecuteAsync(null).ConfigureAwait(true);
-        RequestFocusSelectedOrFirstItem();
+
+        // IMPORTANT (NVDA): exécuter l'action après l'événement clavier.
+        // Sinon l'élément focalisé peut disparaître pendant le KeyDown -> annonce "indisponible".
+        FocusParking.Park();
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(async () =>
+        {
+            try
+            {
+                await vm.ActivateCommand.ExecuteAsync(null).ConfigureAwait(true);
+                if (IsLoaded && IsVisible && ReferenceEquals(DataContext, vm))
+                {
+                    RequestFocusSelectedOrFirstItem();
+                }
+            }
+            catch
+            {
+                // best-effort
+            }
+        }));
     }
 
     private void OnListKeyDown(object sender, KeyEventArgs e)

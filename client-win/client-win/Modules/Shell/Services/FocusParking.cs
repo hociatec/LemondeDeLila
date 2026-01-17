@@ -3,17 +3,19 @@ using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Input;
 using System.Windows.Interop;
+using System.Linq;
 using System.Windows.Threading;
 
 namespace client_win.Modules.Shell.Services;
 
 public static class FocusParking
 {
-    public static void Park()
+    public static void Park(Window? window = null)
     {
         try
         {
-            var window = Application.Current?.MainWindow;
+            window ??= Application.Current?.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive)
+                      ?? Application.Current?.MainWindow;
             if (window == null)
             {
                 return;
@@ -38,7 +40,10 @@ public static class FocusParking
                     }
 
                     // 2) Keyboard focus: ensure the focused element is not about to be removed/collapsed.
-                    var target = window.FindName("RootHost") as IInputElement ?? window;
+                    var target =
+                        window.FindName("FocusSentinel") as IInputElement ??
+                        window.FindName("RootHost") as IInputElement ??
+                        window;
                     try { (target as UIElement)?.Focus(); } catch { /* ignore */ }
                     try { Keyboard.Focus(target); } catch { /* ignore */ }
                 }
@@ -63,4 +68,3 @@ public static class FocusParking
         }
     }
 }
-

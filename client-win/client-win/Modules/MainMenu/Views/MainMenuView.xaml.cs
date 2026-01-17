@@ -6,6 +6,7 @@ using System.Windows.Input;
 using System.Windows.Threading;
 using client_win.Core;
 using client_win.Modules.MainMenu.ViewModels;
+using client_win.Modules.Shell.Services;
 using client_win.Modules.Shell.Views;
 
 namespace client_win.Modules.MainMenu.Views;
@@ -54,6 +55,10 @@ public partial class MainMenuView : UserControl, IInitialFocusTarget
             return;
         }
         e.Handled = true;
+
+        // IMPORTANT (NVDA): park focus immediately before a potential navigation.
+        // Otherwise the focused ListBoxItem may disappear while still focused -> "indisponible".
+        FocusParking.Park();
 
         // Exécuter l'action après l'événement clavier (navigation potentielle = remplacement de vue).
         // Évite de manipuler le focus vers un "hôte" intermédiaire (souvent annoncé "indisponible" par NVDA).

@@ -10,6 +10,15 @@
         Background="#0B1523"
         shellViews:ShellWindowBehavior.Enable="True">
     <Grid>
+        <!-- Focus sentinel (NVDA): element stable that never disappears during navigation.
+             Used to "park" focus before swapping RootHost.Content to prevent "indisponible". -->
+        <Button x:Name="FocusSentinel"
+                Width="1" Height="1"
+                Opacity="0"
+                Focusable="True"
+                IsHitTestVisible="False"
+                KeyboardNavigation.IsTabStop="False"
+                AutomationProperties.Name="{Binding WindowTitle, TargetNullValue=Le Monde de Lila, FallbackValue=Le Monde de Lila}" />
         <ContentControl x:Name="RootHost"
                         Focusable="True"
                         KeyboardNavigation.IsTabStop="False"

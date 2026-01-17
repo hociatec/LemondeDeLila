@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
 using client_win.Modules.Game.RoomDirectory.ViewModels;
+using client_win.Modules.Shell.Services;
 using client_win.Modules.Shell.Views;
 
 namespace client_win.Modules.Game.RoomDirectory.Views;
@@ -83,7 +84,20 @@ public partial class JoinGameView : UserControl, IInitialFocusTarget
             return;
         }
         e.Handled = true;
-        await vm.JoinSelectedCommand.ExecuteAsync(null).ConfigureAwait(true);
+
+        // IMPORTANT (NVDA): exécuter l'action après l'événement clavier.
+        FocusParking.Park();
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(async () =>
+        {
+            try
+            {
+                await vm.JoinSelectedCommand.ExecuteAsync(null).ConfigureAwait(true);
+            }
+            catch
+            {
+                // best-effort
+            }
+        }));
     }
 
     private void OnListKeyDown(object sender, KeyEventArgs e)

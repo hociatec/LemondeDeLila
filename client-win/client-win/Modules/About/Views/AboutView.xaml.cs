@@ -4,6 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
 using client_win.Modules.About.ViewModels;
+using client_win.Modules.Shell.Services;
 using client_win.Modules.Shell.Views;
 
 namespace client_win.Modules.About.Views;
@@ -55,8 +56,24 @@ public partial class AboutView : UserControl, IInitialFocusTarget
             return;
         }
         e.Handled = true;
-        await vm.ActivateCommand.ExecuteAsync(null).ConfigureAwait(true);
-        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusCurrentPage));
+
+        // IMPORTANT (NVDA): exécuter l'action après l'événement clavier.
+        FocusParking.Park();
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(async () =>
+        {
+            try
+            {
+                await vm.ActivateCommand.ExecuteAsync(null).ConfigureAwait(true);
+                if (IsLoaded && IsVisible && ReferenceEquals(DataContext, vm))
+                {
+                    _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusCurrentPage));
+                }
+            }
+            catch
+            {
+                // best-effort
+            }
+        }));
     }
 
     private void OnListKeyDown(object sender, KeyEventArgs e)

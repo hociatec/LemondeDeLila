@@ -5,6 +5,7 @@ using System.Windows.Threading;
 using System.Windows.Input;
 using System;
 using client_win.Modules.Catalog.Models;
+using client_win.Modules.Shell.Services;
 using client_win.Modules.Shell.Views;
 
 namespace client_win.Modules.Catalog.Views;
@@ -97,26 +98,39 @@ public partial class CatalogView : UserControl, IInitialFocusTarget
         }
     }
 
-    private async void OnGamesKeyDown(object sender, KeyEventArgs e)
-    {
-        if ((e.Key != Key.Enter && e.Key != Key.Return) || DataContext is not CatalogViewModel vm)
-        {
-            return;
-        }
+	    private async void OnGamesKeyDown(object sender, KeyEventArgs e)
+	    {
+	        if ((e.Key != Key.Enter && e.Key != Key.Return) || DataContext is not CatalogViewModel vm)
+	        {
+	            return;
+	        }
 
-        e.Handled = true;
+	        e.Handled = true;
+	        FocusParking.Park();
 
-        // Garantit que la sélection VM est à jour avant activation (évite un "Enter" qui ne fait rien).
-        if (GamesList?.HasItems == true)
-        {
-            GamesList.SelectedIndex = GamesList.SelectedIndex >= 0 ? GamesList.SelectedIndex : 0;
-            vm.SelectedGame = GamesList.SelectedItem as CatalogGame;
-        }
-        await vm.ActivateSelectedGameAsync().ConfigureAwait(true);
-    }
+	        // Garantit que la sélection VM est à jour avant activation (évite un "Enter" qui ne fait rien).
+	        if (GamesList?.HasItems == true)
+	        {
+	            GamesList.SelectedIndex = GamesList.SelectedIndex >= 0 ? GamesList.SelectedIndex : 0;
+	            vm.SelectedGame = GamesList.SelectedItem as CatalogGame;
+	        }
+	
+	        // IMPORTANT (NVDA): exécuter l'action après l'événement clavier.
+	        _ = Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(async () =>
+	        {
+	            try
+	            {
+	                await vm.ActivateSelectedGameAsync().ConfigureAwait(true);
+	            }
+	            catch
+	            {
+	                // best-effort
+	            }
+	        }));
+	    }
 
-    private async void OnGamesPreviewKeyDown(object sender, KeyEventArgs e)
-    {
+	    private async void OnGamesPreviewKeyDown(object sender, KeyEventArgs e)
+	    {
         if (e.Key != Key.Enter && e.Key != Key.Return)
         {
             return;
@@ -127,19 +141,31 @@ public partial class CatalogView : UserControl, IInitialFocusTarget
             return;
         }
 
-        e.Handled = true;
+	        e.Handled = true;
+	        FocusParking.Park();
 
-        if (GamesList?.HasItems == true)
-        {
+	        if (GamesList?.HasItems == true)
+	        {
             if (GamesList.SelectedIndex < 0)
             {
                 GamesList.SelectedIndex = 0;
             }
             vm.SelectedGame = GamesList.SelectedItem as CatalogGame;
-        }
-
-        await vm.ActivateSelectedGameAsync().ConfigureAwait(true);
-    }
+	        }
+	
+	        // IMPORTANT (NVDA): exécuter l'action après l'événement clavier.
+	        _ = Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(async () =>
+	        {
+	            try
+	            {
+	                await vm.ActivateSelectedGameAsync().ConfigureAwait(true);
+	            }
+	            catch
+	            {
+	                // best-effort
+	            }
+	        }));
+	    }
 
     private async void OnGamesDoubleClick(object sender, MouseButtonEventArgs e)
     {
