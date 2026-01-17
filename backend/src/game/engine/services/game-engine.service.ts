@@ -1313,7 +1313,10 @@ export class GameEngineService {
     }
     if (this.botScheduler.has(key)) return;
 
-    const delayMs = this.botSettings.getBotTurnDelayMs();
+    const baseDelayMs = this.botSettings.getBotTurnDelayMs();
+    const pending: any = state.pending as any;
+    const isQuizPending = gameType === 'arche-de-mnemosyne' && pending?.type === 'quiz';
+    const delayMs = isQuizPending ? Math.min(baseDelayMs, 800) : baseDelayMs;
     const thinking = await this.markBotThinking(roomId, gameType, state, true);
     this.broadcaster?.(gameType, roomId, thinking);
     this.gameLogger.debug('Bot turn scheduled', {

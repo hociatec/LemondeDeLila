@@ -86,10 +86,10 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
       timeoutPoints: -1,
     };
 
-    const meta: MnemoQuizMetadata = {
-      rng: typeof baseState.metadata === 'object' && baseState.metadata ? (baseState.metadata as any).rng : undefined,
-      ownerPlayerId,
-      config,
+	    const meta: MnemoQuizMetadata = {
+	      rng: typeof baseState.metadata === 'object' && baseState.metadata ? (baseState.metadata as any).rng : undefined,
+	      ownerPlayerId,
+	      config,
       selectedCategoryId: null,
       scoresByPlayerId: Object.fromEntries(
         players.map((p: any) => [p.id, 0]),
@@ -97,12 +97,12 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
       usedQuestionIds: [],
       currentQuestion: null,
       quizAnswersByPlayerId: {},
-      quizDeadlineAtMs: null,
-      adminView: { page: 'setup' },
-      prompt: null,
-      promptOwnerId: null,
-      winnerId: null,
-    };
+	      quizDeadlineAtMs: null,
+	      adminView: { page: 'setup' },
+	      prompt: this.buildConfigPrompt(config),
+	      promptOwnerId: ownerPlayerId,
+	      winnerId: null,
+	    };
 
     const state: GameStateEntity = {
       ...baseState,
@@ -135,6 +135,24 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
     if (!type) {
       throw new Error('Action invalide');
     }
+    const adminActions = new Set<ActionType>([
+      'mnemo_open_admin',
+      'mnemo_back',
+      'mnemo_open_all_questions',
+      'mnemo_open_add_category',
+      'mnemo_add_category',
+      'mnemo_open_rename_category',
+      'mnemo_rename_category',
+      'mnemo_delete_category',
+      'mnemo_open_category',
+      'mnemo_open_add_question',
+      'mnemo_add_question',
+      'mnemo_open_questions',
+      'mnemo_open_question',
+      'mnemo_set_question_status',
+      'mnemo_open_edit_question',
+      'mnemo_edit_question',
+    ]);
     const meta = this.getMeta(state);
     const actor = String((action as any)?.meta?.actor ?? '').trim().toLowerCase();
     const isSystem = actor === 'system';
@@ -146,10 +164,24 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
       return { ...action, type, payload: action.payload ?? {} };
     }
 
-    if (type === 'answer_quiz') {
-      if (actorId == null) {
-        throw new Error('Acteur requis.');
+    if (adminActions.has(type)) {
+      throw new Error('Administration désactivée pour ce jeu.');
+    }
+
+    if (type === 'mnemo_start') {
+      if (
+        String(state.phase ?? '').toLowerCase().trim() === 'setup' &&
+        meta.prompt
+      ) {
+        throw new Error('Veuillez terminer la configuration.');
       }
+      return { ...action, type, payload: action.payload ?? {} };
+    }
+
+	    if (type === 'answer_quiz') {
+	      if (actorId == null) {
+	        throw new Error('Acteur requis.');
+	      }
       const players = Array.isArray(state.players) ? state.players : [];
       if (!players.some((p: any) => p?.id === actorId)) {
         throw new Error('Joueur invalide.');
@@ -174,11 +206,11 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
       return { ...action, type, payload: { answerIndex: idx } };
     }
 
-    // Admin / configuration.
-    if (type.startsWith('mnemo_') && type !== 'mnemo_start') {
-      if (isSystem) {
-        return { ...action, type, payload: action.payload ?? {} };
-      }
+	    // Admin / configuration.
+	    if (type.startsWith('mnemo_')) {
+	      if (isSystem) {
+	        return { ...action, type, payload: action.payload ?? {} };
+	      }
 
       if (this.isOwner(state, actorId)) {
         return { ...action, type, payload: action.payload ?? {} };
@@ -313,49 +345,72 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
       return this.syncBotPending(this.resolveQuizIfReady(state, true, timedOutIds));
     }
 
-    if (type === 'mnemo_prompt_cancel') {
-      return { ...state, metadata: { ...meta, prompt: null, promptOwnerId: null } };
-    }
+	    if (type === 'mnemo_prompt_cancel') {
+	      const cleared = {
+	        ...state,
+	        metadata: { ...meta, prompt: null, promptOwnerId: null },
+	      };
+	      return this.core.appendLog(cleared, 'Configuration fermée.');
+	    }
 
-    if (type === 'mnemo_open_config') {
-      const actorId = (action as any)?.meta?.actorId ?? null;
-      if (!this.canConfigure(state, actorId)) {
-        return state;
-      }
-      const prompt: MnemoPrompt = {
-        type: 'config_prompt',
-        title: 'Configuration - Arche de Mnémosyne',
-        actionType: 'mnemo_set_config',
-        cancelActionType: 'mnemo_prompt_cancel',
-        fields: [
-          { key: 'correctSoloPoints', label: 'Points : bonne reponse (seul)', kind: 'number', initialText: String((meta.config as any).correctSoloPoints ?? 2) },
-          { key: 'correctMultiPoints', label: 'Points : bonne reponse (plusieurs)', kind: 'number', initialText: String((meta.config as any).correctMultiPoints ?? 1) },
-          { key: 'wrongPoints', label: 'Points : mauvaise reponse', kind: 'number', initialText: String((meta.config as any).wrongPoints ?? 0) },
-          { key: 'timeoutPoints', label: 'Points : temps ecoule / tour passe', kind: 'number', initialText: String((meta.config as any).timeoutPoints ?? -1) },
-          { key: 'targetPoints', label: 'Points à atteindre', kind: 'number', initialText: String(meta.config.targetPoints ?? 20) },
-          { key: 'useTimer', label: 'Chrono (oui/non)', kind: 'bool', initialText: meta.config.useTimer ? 'oui' : 'non' },
-          { key: 'timerSeconds', label: 'Secondes (si chrono)', kind: 'number', initialText: String(meta.config.timerSeconds ?? 30) },
-        ],
-      };
-      return { ...state, metadata: { ...meta, prompt, promptOwnerId: actorId } };
-    }
+	    if (type === 'mnemo_open_config') {
+	      const actorId = (action as any)?.meta?.actorId ?? null;
+	      if (!this.canConfigure(state, actorId)) {
+	        return state;
+	      }
+	      const prompt = this.buildConfigPrompt(meta.config);
+	      return { ...state, metadata: { ...meta, prompt, promptOwnerId: actorId } };
+	    }
 
-    if (type === 'mnemo_set_config') {
-      const actorId = (action as any)?.meta?.actorId ?? null;
-      const ownerId =
-        typeof (meta as any).promptOwnerId === 'number' ? (meta as any).promptOwnerId : null;
-      if (actorId == null || ownerId == null || actorId !== ownerId) {
-        return state;
-      }
-      const targetPoints = Math.max(1, Math.min(200, Number(payload.targetPoints ?? 20)));
-      const timerSeconds = Math.max(5, Math.min(300, Number(payload.timerSeconds ?? 30)));
-      const useTimer = this.parseBool(payload.useTimer, false);
-      const config: MnemoQuizConfig = { targetPoints, useTimer, timerSeconds };
-      return {
-        ...state,
-        metadata: { ...meta, config, prompt: null, promptOwnerId: null },
-      };
-    }
+	    if (type === 'mnemo_set_config') {
+	      const actorId = (action as any)?.meta?.actorId ?? null;
+	      const ownerId =
+	        typeof (meta as any).promptOwnerId === 'number' ? (meta as any).promptOwnerId : null;
+	      if (actorId == null || ownerId == null || actorId !== ownerId) {
+	        return state;
+	      }
+	      const correctSoloPoints = this.clampInt(
+	        payload.correctSoloPoints,
+	        -50,
+	        50,
+	        Number(meta.config.correctSoloPoints ?? 2),
+	      );
+	      const correctMultiPoints = this.clampInt(
+	        payload.correctMultiPoints,
+	        -50,
+	        50,
+	        Number(meta.config.correctMultiPoints ?? 1),
+	      );
+	      const wrongPoints = this.clampInt(
+	        payload.wrongPoints,
+	        -50,
+	        50,
+	        Number(meta.config.wrongPoints ?? 0),
+	      );
+	      const timeoutPoints = this.clampInt(
+	        payload.timeoutPoints,
+	        -50,
+	        50,
+	        Number(meta.config.timeoutPoints ?? -1),
+	      );
+	      const targetPoints = Math.max(1, Math.min(200, Number(payload.targetPoints ?? 20)));
+	      const timerSeconds = Math.max(5, Math.min(300, Number(payload.timerSeconds ?? 30)));
+	      const useTimer = this.parseBool(payload.useTimer, false);
+	      const config: MnemoQuizConfig = {
+	        targetPoints,
+	        useTimer,
+	        timerSeconds,
+	        correctSoloPoints,
+	        correctMultiPoints,
+	        wrongPoints,
+	        timeoutPoints,
+	      };
+	      const next = {
+	        ...state,
+	        metadata: { ...meta, config, prompt: null, promptOwnerId: null },
+	      };
+	      return this.core.appendLog(next, 'Configuration enregistrée.');
+	    }
 
     if (type === 'mnemo_start') {
       if (String(state.phase ?? '').toLowerCase().trim() !== 'setup') {
@@ -686,45 +741,86 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
       return state;
     }
 
-    const correctIds = playerIds.filter((id) => {
-      const idx = Number(answers[id]);
-      if (!Number.isFinite(idx)) return false;
-      const choice = q.choices[idx] ?? '';
-      return choice === q.correctChoice;
-    });
+	    const correctIds = playerIds.filter((id) => {
+	      const idx = Number(answers[id]);
+	      if (!Number.isFinite(idx)) return false;
+	      const choice = q.choices[idx] ?? '';
+	      return choice === q.correctChoice;
+	    });
+	    const answeredIds = playerIds.filter((id) => answers[id] != null);
+	    const wrongAnsweredIds = answeredIds.filter((id) => !correctIds.includes(id));
 
-    const nextScores = { ...(meta.scoresByPlayerId ?? {}) } as any as Record<number, number>;
-    let next = state;
+	    const correctSoloPoints = this.clampInt(
+	      meta.config?.correctSoloPoints,
+	      -50,
+	      50,
+	      2,
+	    );
+	    const correctMultiPoints = this.clampInt(
+	      meta.config?.correctMultiPoints,
+	      -50,
+	      50,
+	      1,
+	    );
+	    const wrongPoints = this.clampInt(meta.config?.wrongPoints, -50, 50, 0);
+	    const timeoutPoints = this.clampInt(meta.config?.timeoutPoints, -50, 50, -1);
 
-    if (correctIds.length === 0) {
-      next = this.core.appendLog(next, `Personne n'a trouve la bonne reponse (${q.correctChoice}).`);
-    } else if (correctIds.length === 1) {
-      const id = correctIds[0]!;
-      nextScores[id] = (nextScores[id] ?? 0) + 2;
-      next = this.core.appendLog(next, `${this.playerName(next, id)} gagne +2 points.`);
-    } else {
-      for (const id of correctIds) {
-        nextScores[id] = (nextScores[id] ?? 0) + 1;
-      }
-      const labels = correctIds.map((id) => this.playerName(next, id)).join(', ');
-      next = this.core.appendLog(next, `Plusieurs bonnes reponses (${labels}) : +1 point chacun.`);
-    }
+	    const nextScores = { ...(meta.scoresByPlayerId ?? {}) } as any as Record<number, number>;
+	    let next = state;
 
-    if (force) {
-      const timedOut = (Array.isArray(timedOutPlayerIds) ? timedOutPlayerIds : [])
-        .map((id) => Number(id))
-        .filter((id) => Number.isFinite(id));
-      const unique = [...new Set(timedOut)]
-        .filter((id) => playerIds.includes(id))
-        .filter((id) => answers[id] == null);
-      if (unique.length) {
-        for (const id of unique) {
-          nextScores[id] = (nextScores[id] ?? 0) + QUIZ_TIMEOUT_PENALTY;
-        }
-        const labels = unique.map((id) => this.playerName(next, id)).join(', ');
-        next = this.core.appendLog(next, `Temps ecoule: ${labels} perd ${QUIZ_TIMEOUT_PENALTY} point.`);
-      }
-    }
+	    if (correctIds.length === 0) {
+	      next = this.core.appendLog(next, `Personne n'a trouve la bonne reponse (${q.correctChoice}).`);
+	    } else if (correctIds.length === 1) {
+	      const id = correctIds[0]!;
+	      nextScores[id] = (nextScores[id] ?? 0) + correctSoloPoints;
+	      const msg =
+	        correctSoloPoints === 0
+	          ? `${this.playerName(next, id)} ne marque aucun point.`
+	          : correctSoloPoints > 0
+	            ? `${this.playerName(next, id)} gagne +${correctSoloPoints} points.`
+	            : `${this.playerName(next, id)} perd ${Math.abs(correctSoloPoints)} points.`;
+	      next = this.core.appendLog(next, msg);
+	    } else {
+	      for (const id of correctIds) {
+	        nextScores[id] = (nextScores[id] ?? 0) + correctMultiPoints;
+	      }
+	      const labels = correctIds.map((id) => this.playerName(next, id)).join(', ');
+	      const msg =
+	        correctMultiPoints === 0
+	          ? `Plusieurs bonnes reponses (${labels}) : aucun point.`
+	          : correctMultiPoints > 0
+	            ? `Plusieurs bonnes reponses (${labels}) : +${correctMultiPoints} points chacun.`
+	            : `Plusieurs bonnes reponses (${labels}) : -${Math.abs(correctMultiPoints)} points chacun.`;
+	      next = this.core.appendLog(next, msg);
+	    }
+
+	    if (wrongAnsweredIds.length && wrongPoints !== 0) {
+	      for (const id of wrongAnsweredIds) {
+	        nextScores[id] = (nextScores[id] ?? 0) + wrongPoints;
+	      }
+	    }
+
+	    if (force) {
+	      const timedOut = (Array.isArray(timedOutPlayerIds) ? timedOutPlayerIds : [])
+	        .map((id) => Number(id))
+	        .filter((id) => Number.isFinite(id));
+	      const unique = [...new Set(timedOut)]
+	        .filter((id) => playerIds.includes(id))
+	        .filter((id) => answers[id] == null);
+	      if (unique.length) {
+	        for (const id of unique) {
+	          nextScores[id] = (nextScores[id] ?? 0) + timeoutPoints;
+	        }
+	        const labels = unique.map((id) => this.playerName(next, id)).join(', ');
+	        const msg =
+	          timeoutPoints === 0
+	            ? `Temps ecoule: ${labels} ne marque aucun point.`
+	            : timeoutPoints > 0
+	              ? `Temps ecoule: ${labels} gagne +${timeoutPoints} points.`
+	              : `Temps ecoule: ${labels} perd ${Math.abs(timeoutPoints)} points.`;
+	        next = this.core.appendLog(next, msg);
+	      }
+	    }
 
     const afterMeta: MnemoQuizMetadata = {
       ...meta,
@@ -944,23 +1040,25 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
           },
         };
       }
-      if (prompt.type === 'config_prompt') {
-        return {
-          type: 'config_prompt',
-          playerId: userId,
-          data: {
-            title: prompt.title,
-            actionType: prompt.actionType,
-            cancelActionType: prompt.cancelActionType ?? 'mnemo_prompt_cancel',
-            fields: prompt.fields.map((f) => ({
-              key: f.key,
-              label: f.label,
-              kind: f.kind ?? 'text',
-              initialText: f.initialText ?? '',
-            })),
-          },
-        };
-      }
+	      if (prompt.type === 'config_prompt') {
+	        return {
+	          type: 'config_prompt',
+	          playerId: userId,
+	          label: prompt.title,
+	          choices: [],
+	          data: {
+	            title: prompt.title,
+	            actionType: prompt.actionType,
+	            cancelActionType: prompt.cancelActionType ?? 'mnemo_prompt_cancel',
+	            fields: prompt.fields.map((f) => ({
+	              key: f.key,
+	              label: f.label,
+	              kind: f.kind ?? 'text',
+	              initialText: f.initialText ?? '',
+	            })),
+	          },
+	        };
+	      }
     }
 
     if (meta.currentQuestion && (meta.quizAnswersByPlayerId as any)?.[userId] == null) {
@@ -991,10 +1089,6 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
           choices.push(c.name);
         }
         choices.push('Mélange (toutes catégories)');
-        choices.push('Configurer la partie');
-      }
-      if (this.isOwner(state, userId)) {
-        choices.push('Administration');
       }
       if (choices.length === 0) return null;
       return {
@@ -1135,10 +1229,6 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
           actions.push({ type: 'mnemo_start', payload: { categoryId: c.id } });
         }
         actions.push({ type: 'mnemo_start', payload: { categoryId: null } });
-        actions.push({ type: 'mnemo_open_config', payload: {} });
-      }
-      if (this.isOwner(state, userId)) {
-        actions.push({ type: 'mnemo_open_admin', payload: {} });
       }
       return actions;
     }
@@ -1230,19 +1320,81 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
     return { page: 'setup' };
   }
 
-  private normalizeStatus(value: any): MnemoQuestionStatus {
-    const raw = String(value ?? '').trim().toLowerCase();
-    if (raw === 'validated') return 'validated';
-    if (raw === 'to_edit') return 'to_edit';
-    if (raw === 'trash') return 'trash';
-    return 'pending';
-  }
+	  private normalizeStatus(value: any): MnemoQuestionStatus {
+	    const raw = String(value ?? '').trim().toLowerCase();
+	    if (raw === 'validated') return 'validated';
+	    if (raw === 'to_edit') return 'to_edit';
+	    if (raw === 'trash') return 'trash';
+	    return 'pending';
+	  }
 
-  private compactQuestionLabel(value: string): string {
-    const trimmed = String(value ?? '').replace(/\s+/g, ' ').trim();
-    if (trimmed.length <= 80) return trimmed;
-    return trimmed.slice(0, 77) + '...';
-  }
+	  private buildConfigPrompt(config: MnemoQuizConfig): MnemoPrompt {
+	    return {
+	      type: 'config_prompt',
+	      title: 'Configuration - Arche de Mnémosyne',
+	      actionType: 'mnemo_set_config',
+	      cancelActionType: 'mnemo_prompt_cancel',
+	      fields: [
+	        {
+	          key: 'correctSoloPoints',
+	          label: 'Points : bonne reponse (seul)',
+	          kind: 'number',
+	          initialText: String((config as any)?.correctSoloPoints ?? 2),
+	        },
+	        {
+	          key: 'correctMultiPoints',
+	          label: 'Points : bonne reponse (plusieurs)',
+	          kind: 'number',
+	          initialText: String((config as any)?.correctMultiPoints ?? 1),
+	        },
+	        {
+	          key: 'wrongPoints',
+	          label: 'Points : mauvaise reponse',
+	          kind: 'number',
+	          initialText: String((config as any)?.wrongPoints ?? 0),
+	        },
+	        {
+	          key: 'timeoutPoints',
+	          label: 'Points : temps ecoule / tour passe',
+	          kind: 'number',
+	          initialText: String((config as any)?.timeoutPoints ?? -1),
+	        },
+	        {
+	          key: 'targetPoints',
+	          label: 'Points à atteindre',
+	          kind: 'number',
+	          initialText: String(config?.targetPoints ?? 20),
+	        },
+	        {
+	          key: 'useTimer',
+	          label: 'Chrono (oui/non)',
+	          kind: 'bool',
+	          initialText: config?.useTimer ? 'oui' : 'non',
+	        },
+	        {
+	          key: 'timerSeconds',
+	          label: 'Secondes (si chrono)',
+	          kind: 'number',
+	          initialText: String(config?.timerSeconds ?? 30),
+	        },
+	      ],
+	    };
+	  }
+
+	  private clampInt(value: any, min: number, max: number, fallback: number): number {
+	    const candidate = Number(value);
+	    if (!Number.isFinite(candidate)) return this.clampInt(fallback, min, max, 0);
+	    const rounded = Math.round(candidate);
+	    if (rounded < min) return min;
+	    if (rounded > max) return max;
+	    return rounded;
+	  }
+
+	  private compactQuestionLabel(value: string): string {
+	    const trimmed = String(value ?? '').replace(/\s+/g, ' ').trim();
+	    if (trimmed.length <= 80) return trimmed;
+	    return trimmed.slice(0, 77) + '...';
+	  }
 
   private isOwner(state: GameStateEntity, playerId: number | null): boolean {
     if (playerId == null) return false;
