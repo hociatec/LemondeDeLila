@@ -599,7 +599,7 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
         this.store.updateQuestion(questionId, { status });
         return this.core.appendLog(
           { ...state, metadata: { ...meta, prompt: null } },
-          `Statut mis à jour (${status}).`,
+          `Statut mis à jour (${this.statusLabel(status)}).`,
         );
       } catch (err) {
         return this.core.appendLog(
@@ -1115,37 +1115,37 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
         choices,
       };
     }
-    if (view.page === 'all_questions') {
-      const categories = this.store.listCategories();
-      const categoryNameById = Object.fromEntries(categories.map((c) => [c.id, c.name]));
-      const statusFilter = (view as any).status ?? 'all';
-      const all = this.store.listQuestions();
-      const list =
-        statusFilter === 'all'
-          ? all
-          : all.filter((q) => String(q.status ?? 'pending') === String(statusFilter));
+	    if (view.page === 'all_questions') {
+	      const categories = this.store.listCategories();
+	      const categoryNameById = Object.fromEntries(categories.map((c) => [c.id, c.name]));
+	      const statusFilter = (view as any).status ?? 'all';
+	      const all = this.store.listQuestions();
+	      const list =
+	        statusFilter === 'all'
+	          ? all
+	          : all.filter((q) => String(q.status ?? 'pending') === String(statusFilter));
 
-      const choices = [
-        ...list.map((q) => {
-          const cat = categoryNameById[q.categoryId] ?? q.categoryId;
-          const status = String(q.status ?? 'pending');
-          return `[${status}] ${cat}: ${this.compactQuestionLabel(q.question)}`;
-        }),
-        'Filtrer: toutes',
-        'Filtrer: validated',
-        'Filtrer: pending',
-        'Filtrer: to_edit',
-        'Filtrer: trash',
-        'Retour',
-      ];
+	      const choices = [
+	        ...list.map((q) => {
+	          const cat = categoryNameById[q.categoryId] ?? q.categoryId;
+	          const status = String(q.status ?? 'pending');
+	          return `[${this.statusLabel(status)}] ${cat}: ${this.compactQuestionLabel(q.question)}`;
+	        }),
+	        'Filtrer: toutes',
+	        'Filtrer: validées',
+	        'Filtrer: en attente',
+	        'Filtrer: à modifier',
+	        'Filtrer: corbeille',
+	        'Retour',
+	      ];
 
-      return {
-        type: 'mnemo_admin',
-        label: `Administration - Questions (${statusFilter})`,
-        playerId: userId,
-        choices,
-      };
-    }
+	      return {
+	        type: 'mnemo_admin',
+	        label: `Administration - Questions (${this.statusLabel(statusFilter)})`,
+	        playerId: userId,
+	        choices,
+	      };
+	    }
     if (view.page === 'category') {
       const cat = this.store.listCategories().find((c) => c.id === view.categoryId);
       const name = cat?.name ?? view.categoryId;
@@ -1165,34 +1165,34 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
         ],
       };
     }
-    if (view.page === 'questions') {
-      const list = this.store.listQuestions({ categoryId: view.categoryId, status: view.status });
-      const choices = [
-        ...list.map((q) => this.compactQuestionLabel(q.question)),
-        'Retour',
-      ];
-      return {
-        type: 'mnemo_admin',
-        label: `Questions - ${view.status}`,
-        playerId: userId,
-        choices,
-      };
-    }
-    if (view.page === 'question') {
-      return {
-        type: 'mnemo_admin',
-        label: 'Question',
-        playerId: userId,
-        choices: [
-          'Passer en: validated',
-          'Passer en: pending',
-          'Passer en: to_edit',
-          'Passer en: trash',
-          'Modifier contenu',
-          'Retour',
-        ],
-      };
-    }
+	    if (view.page === 'questions') {
+	      const list = this.store.listQuestions({ categoryId: view.categoryId, status: view.status });
+	      const choices = [
+	        ...list.map((q) => this.compactQuestionLabel(q.question)),
+	        'Retour',
+	      ];
+	      return {
+	        type: 'mnemo_admin',
+	        label: `Questions - ${this.statusLabel(view.status)}`,
+	        playerId: userId,
+	        choices,
+	      };
+	    }
+	    if (view.page === 'question') {
+	      return {
+	        type: 'mnemo_admin',
+	        label: 'Question',
+	        playerId: userId,
+	        choices: [
+	          'Passer en: validée',
+	          'Passer en: en attente',
+	          'Passer en: à modifier',
+	          'Passer en: corbeille',
+	          'Modifier contenu',
+	          'Retour',
+	        ],
+	      };
+	    }
 
     return null;
   }
@@ -1320,18 +1320,28 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
     return { page: 'setup' };
   }
 
-	  private normalizeStatus(value: any): MnemoQuestionStatus {
-	    const raw = String(value ?? '').trim().toLowerCase();
-	    if (raw === 'validated') return 'validated';
-	    if (raw === 'to_edit') return 'to_edit';
-	    if (raw === 'trash') return 'trash';
-	    return 'pending';
-	  }
+  private normalizeStatus(value: any): MnemoQuestionStatus {
+    const raw = String(value ?? '').trim().toLowerCase();
+    if (raw === 'validated') return 'validated';
+    if (raw === 'to_edit') return 'to_edit';
+    if (raw === 'trash') return 'trash';
+    return 'pending';
+  }
 
-	  private buildConfigPrompt(config: MnemoQuizConfig): MnemoPrompt {
-	    return {
-	      type: 'config_prompt',
-	      title: 'Configuration - Arche de Mnémosyne',
+  private statusLabel(value: any): string {
+    const raw = String(value ?? '').trim().toLowerCase();
+    if (raw === 'all') return 'toutes';
+    if (raw === 'validated') return 'validée';
+    if (raw === 'pending') return 'en attente';
+    if (raw === 'to_edit') return 'à modifier';
+    if (raw === 'trash') return 'corbeille';
+    return String(value ?? '').trim() || raw || 'en attente';
+  }
+
+  private buildConfigPrompt(config: MnemoQuizConfig): MnemoPrompt {
+    return {
+      type: 'config_prompt',
+      title: 'Configuration - Arche de Mnémosyne',
 	      actionType: 'mnemo_set_config',
 	      cancelActionType: 'mnemo_prompt_cancel',
 	      fields: [
