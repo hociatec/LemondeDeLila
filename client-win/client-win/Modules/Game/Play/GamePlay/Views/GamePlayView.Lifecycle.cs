@@ -13,6 +13,7 @@ public partial class GamePlayView
         UpdateChoicesAccessibility();
         var vm = DataContext as GamePlayViewModel;
         HookChoiceAutoFocus(vm);
+        HookInlinePromptAutoFocus(vm);
         TryStartInitialization(vm);
 
         // Assure le focus clavier dès l'entrée dans une table (sinon Enter/B/Space ne partent pas sans clic souris).
@@ -26,6 +27,7 @@ public partial class GamePlayView
     {
         var vm = DataContext as GamePlayViewModel;
         HookChoiceAutoFocus(vm);
+        HookInlinePromptAutoFocus(vm);
         TryStartInitialization(vm);
 
         Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
@@ -37,6 +39,7 @@ public partial class GamePlayView
     private void OnUnloaded(object sender, RoutedEventArgs e)
     {
         HookChoiceAutoFocus(null);
+        HookInlinePromptAutoFocus(null);
         CancelInitialization();
         UnhookGridGenerator();
     }

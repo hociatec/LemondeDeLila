@@ -95,7 +95,7 @@ export class CatalogService {
 
   private async loadFromRegistry(): Promise<CatalogGame[]> {
     const definitions = await this.registry.listGames();
-    return definitions.map((def) => {
+    const mapped = definitions.map((def) => {
       // UX catalogue:
       // On préfère afficher directement les sous-catégories (ex: "Les Quatre Vents")
       // plutôt que des catégories techniques ("JeuxDePlateaux", "JeuxDeCartes").
@@ -127,6 +127,17 @@ export class CatalogService {
         categories,
       };
     });
+
+    // Robustesse: éviter les doublons d'ids (ex: miroirs/copies en dev).
+    const byId = new Map<string, CatalogGame>();
+    for (const game of mapped) {
+      const id = String(game?.id ?? '').trim();
+      if (!id) continue;
+      if (!byId.has(id)) {
+        byId.set(id, game);
+      }
+    }
+    return Array.from(byId.values());
   }
 
   private formatCategoryName(name: string): string {

@@ -106,7 +106,10 @@ public partial class GamePlayView
 
             if (_vm.PendingChoices.Count <= 0)
             {
-                if (ChoicesList.IsKeyboardFocusWithin)
+                // Quand les choix disparaissent (ex: quiz aprǸs rǸponse),
+                // l'ǸlǸment focalisǸ peut Œtre dǸtruit par la virtualisation et WPF dǸporte le focus hors de la zone de jeu.
+                // On rǸ-ancre le focus best-effort, sauf si l'utilisateur est dans une zone de saisie.
+                if (!IsTextInputFocused() && (!IsKeyboardFocusWithin || ChoicesList.IsKeyboardFocusWithin))
                 {
                     Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
                     {

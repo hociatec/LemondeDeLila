@@ -1,6 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading;
@@ -51,10 +52,12 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
 
     private GameSession? _session;
     private bool _isSpectator;
-    private int _textPromptInProgress;
     private PendingTextPrompt? _pendingTextPrompt;
-    private int _configPromptInProgress;
     private PendingConfigPrompt? _pendingConfigPrompt;
+    private string _inlinePromptTitle = string.Empty;
+    private string _inlinePromptActionType = string.Empty;
+    private string _inlinePromptCancelActionType = string.Empty;
+    private string _inlinePromptSignature = string.Empty;
 
     private string _connectionStatus = "Connexion au moteur de jeu...";
     private string _stateSummary = "En attente d'un état de jeu (game.state)...";
@@ -186,6 +189,16 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
     public bool HasPendingTextPrompt => _pendingTextPrompt != null;
     public bool HasPendingConfigPrompt => _pendingConfigPrompt != null;
 
+    public bool HasInlinePrompt => InlinePromptFields.Count > 0 && !string.IsNullOrWhiteSpace(_inlinePromptActionType);
+
+    public string InlinePromptTitle
+    {
+        get => _inlinePromptTitle;
+        private set => SetProperty(ref _inlinePromptTitle, value);
+    }
+
+    public ObservableCollection<InlinePromptFieldModel> InlinePromptFields { get; } = new();
+
     public string PendingType
     {
         get => _pendingType;
@@ -206,87 +219,19 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
 
     public async Task<bool> TryOpenPendingTextPromptAsync(CancellationToken cancellationToken = default)
     {
-        if (_isSpectator) return false;
-        var session = _session;
-        if (session == null) return false;
-        if (!session.IsConnected) return false;
-
-        var prompt = _pendingTextPrompt;
-        if (prompt == null) return false;
-
-        if (Interlocked.Exchange(ref _textPromptInProgress, 1) == 1)
-        {
-            return false;
-        }
-
-        try
-        {
-            while (true)
-            {
-                var text = await _textPrompts
-                    .PromptAsync(prompt.Title, prompt.Label, prompt.InitialText)
-                    .ConfigureAwait(true);
-
-                if (text == null)
-                {
-                    if (!string.IsNullOrWhiteSpace(prompt.CancelActionType))
-                    {
-                        await session
-                            .SendActionsAsync(
-                                new[] { new GameClientAction(prompt.CancelActionType.Trim(), new System.Collections.Generic.Dictionary<string, object>()) },
-                                cancellationToken)
-                            .ConfigureAwait(false);
-                        return true;
-                    }
-                    return false;
-                }
-
-                if (string.Equals(prompt.Kind, "number", StringComparison.OrdinalIgnoreCase))
-                {
-                    if (!int.TryParse(text.Trim(), out var value))
-                    {
-                        await _dialogs.ShowError("Configuration", "Veuillez entrer un nombre.").ConfigureAwait(true);
-                        continue;
-                    }
-                    if (prompt.Min.HasValue && value < prompt.Min.Value)
-                    {
-                        await _dialogs.ShowError("Configuration", $"Valeur minimale : {prompt.Min.Value}.").ConfigureAwait(true);
-                        continue;
-                    }
-                    if (prompt.Max.HasValue && value > prompt.Max.Value)
-                    {
-                        await _dialogs.ShowError("Configuration", $"Valeur maximale : {prompt.Max.Value}.").ConfigureAwait(true);
-                        continue;
-                    }
-
-                    var payload = new System.Collections.Generic.Dictionary<string, object>
-                    {
-                        [prompt.PayloadKey] = value
-                    };
-                    await session
-                        .SendActionsAsync(new[] { new GameClientAction(prompt.ActionType, payload) }, cancellationToken)
-                        .ConfigureAwait(false);
-                    return true;
-                }
-
-                var payloadText = new System.Collections.Generic.Dictionary<string, object>
-                {
-                    [prompt.PayloadKey] = text.Trim()
-                };
-                await session
-                    .SendActionsAsync(new[] { new GameClientAction(prompt.ActionType, payloadText) }, cancellationToken)
-                    .ConfigureAwait(false);
-                return true;
-            }
-        }
-        finally
-        {
-            Interlocked.Exchange(ref _textPromptInProgress, 0);
-        }
+        // Les prompts de jeu ne doivent plus ouvrir de fenêtre modale (ils sont affichés inline dans la vue).
+        // Cette méthode est conservée pour compatibilité, mais devient un no-op.
+        await Task.CompletedTask;
+        return false;
     }
 
     public async Task<bool> TryOpenPendingConfigPromptAsync(CancellationToken cancellationToken = default)
     {
+        // Les prompts de jeu ne doivent plus ouvrir de fenêtre modale (ils sont affichés inline dans la vue).
+        // Cette méthode est conservée pour compatibilité, mais n'est plus utilisée.
+        await Task.CompletedTask;
+        return false;
+#if false
         if (_isSpectator) return false;
         var session = _session;
         if (session == null) return false;
@@ -374,6 +319,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
         {
             Interlocked.Exchange(ref _configPromptInProgress, 0);
         }
+#endif
     }
 
     private static bool TryParseBool(string? text, out bool value)
@@ -428,15 +374,8 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
             UpdatePendingConfigPrompt(state);
             OnPropertyChanged(nameof(HasPendingConfigPrompt));
 
-            // Best-effort: automatically open the prompt when it appears.
-            if (_pendingTextPrompt != null)
-            {
-                _ = TryOpenPendingTextPromptAsync();
-            }
-            if (_pendingConfigPrompt != null)
-            {
-                _ = TryOpenPendingConfigPromptAsync();
-            }
+            SyncInlinePromptFromPending();
+            OnPropertyChanged(nameof(HasInlinePrompt));
         }));
     }
 
@@ -608,6 +547,212 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
         string Kind,
         int? Min,
         int? Max);
+
+    public sealed class InlinePromptFieldModel : ObservableObject
+    {
+        private string _text = string.Empty;
+        private bool _boolValue;
+
+        public InlinePromptFieldModel(string key, string label, string kind, int? min, int? max, string initialText)
+        {
+            Key = (key ?? string.Empty).Trim();
+            Label = string.IsNullOrWhiteSpace(label) ? Key : label.Trim();
+            Kind = (kind ?? "text").Trim();
+            Min = min;
+            Max = max;
+            Text = initialText ?? string.Empty;
+            BoolValue = ParseBoolOrDefault(initialText, defaultValue: false);
+        }
+
+        public string Key { get; }
+        public string Label { get; }
+        public string Kind { get; }
+        public int? Min { get; }
+        public int? Max { get; }
+
+        public bool IsBool => string.Equals(Kind, "bool", StringComparison.OrdinalIgnoreCase) ||
+                              string.Equals(Kind, "boolean", StringComparison.OrdinalIgnoreCase);
+
+        public string Text
+        {
+            get => _text;
+            set => SetProperty(ref _text, value);
+        }
+
+        public bool BoolValue
+        {
+            get => _boolValue;
+            set => SetProperty(ref _boolValue, value);
+        }
+
+        private static bool ParseBoolOrDefault(string? text, bool defaultValue)
+        {
+            var t = (text ?? string.Empty).Trim();
+            if (t.Length == 0)
+            {
+                return defaultValue;
+            }
+
+            if (bool.TryParse(t, out var b))
+            {
+                return b;
+            }
+
+            return t.ToLowerInvariant() switch
+            {
+                "1" => true,
+                "0" => false,
+                "oui" => true,
+                "non" => false,
+                "yes" => true,
+                "no" => false,
+                "on" => true,
+                "off" => false,
+                _ => defaultValue
+            };
+        }
+    }
+
+    private void SyncInlinePromptFromPending()
+    {
+        try
+        {
+            // Config prompt has priority over text prompt.
+            if (_pendingConfigPrompt != null)
+            {
+                var sig = "config:" + (_pendingConfigPrompt.ActionType ?? string.Empty).Trim() + ":" +
+                          string.Join(",", _pendingConfigPrompt.Fields.Select(f => (f.Key ?? string.Empty).Trim()));
+
+                _inlinePromptActionType = (_pendingConfigPrompt.ActionType ?? string.Empty).Trim();
+                _inlinePromptCancelActionType = (_pendingConfigPrompt.CancelActionType ?? string.Empty).Trim();
+                InlinePromptTitle = (_pendingConfigPrompt.Title ?? "Configuration").Trim();
+
+                if (!string.Equals(_inlinePromptSignature, sig, StringComparison.Ordinal))
+                {
+                    _inlinePromptSignature = sig;
+                    InlinePromptFields.Clear();
+                    foreach (var f in _pendingConfigPrompt.Fields)
+                    {
+                        InlinePromptFields.Add(new InlinePromptFieldModel(
+                            key: f.Key,
+                            label: f.Label,
+                            kind: f.Kind,
+                            min: f.Min,
+                            max: f.Max,
+                            initialText: f.InitialText));
+                    }
+                }
+
+                return;
+            }
+
+            if (_pendingTextPrompt != null)
+            {
+                var sig = "text:" + (_pendingTextPrompt.ActionType ?? string.Empty).Trim() + ":" +
+                          (_pendingTextPrompt.PayloadKey ?? string.Empty).Trim();
+
+                _inlinePromptActionType = (_pendingTextPrompt.ActionType ?? string.Empty).Trim();
+                _inlinePromptCancelActionType = (_pendingTextPrompt.CancelActionType ?? string.Empty).Trim();
+                InlinePromptTitle = (_pendingTextPrompt.Title ?? "Saisie").Trim();
+
+                if (!string.Equals(_inlinePromptSignature, sig, StringComparison.Ordinal))
+                {
+                    _inlinePromptSignature = sig;
+                    InlinePromptFields.Clear();
+                    InlinePromptFields.Add(new InlinePromptFieldModel(
+                        key: _pendingTextPrompt.PayloadKey ?? "value",
+                        label: _pendingTextPrompt.Label,
+                        kind: _pendingTextPrompt.Kind,
+                        min: _pendingTextPrompt.Min,
+                        max: _pendingTextPrompt.Max,
+                        initialText: _pendingTextPrompt.InitialText));
+                }
+
+                return;
+            }
+
+            _inlinePromptSignature = string.Empty;
+            _inlinePromptActionType = string.Empty;
+            _inlinePromptCancelActionType = string.Empty;
+            InlinePromptTitle = string.Empty;
+            InlinePromptFields.Clear();
+        }
+        catch
+        {
+            // best-effort
+        }
+    }
+
+    public async Task<bool> SubmitInlinePromptAsync(CancellationToken cancellationToken = default)
+    {
+        if (_isSpectator) return false;
+        var session = _session;
+        if (session == null) return false;
+        if (!session.IsConnected) return false;
+        if (!HasInlinePrompt) return false;
+
+        var type = (_inlinePromptActionType ?? string.Empty).Trim();
+        if (string.IsNullOrWhiteSpace(type)) return false;
+
+        try
+        {
+            var payload = new Dictionary<string, object>(StringComparer.Ordinal);
+            foreach (var field in InlinePromptFields)
+            {
+                if (field == null || string.IsNullOrWhiteSpace(field.Key)) continue;
+
+                if (field.IsBool)
+                {
+                    payload[field.Key] = field.BoolValue;
+                    continue;
+                }
+
+                var text = (field.Text ?? string.Empty).Trim();
+                if (string.Equals(field.Kind, "number", StringComparison.OrdinalIgnoreCase) &&
+                    int.TryParse(text, out var i))
+                {
+                    payload[field.Key] = i;
+                }
+                else
+                {
+                    payload[field.Key] = text;
+                }
+            }
+
+            await session
+                .SendActionsAsync(new[] { new GameClientAction(type, payload) }, cancellationToken)
+                .ConfigureAwait(false);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            ConnectionStatus = $"Erreur: {ex.Message}";
+            return false;
+        }
+    }
+
+    public async Task<bool> CancelInlinePromptAsync(CancellationToken cancellationToken = default)
+    {
+        var session = _session;
+        if (session == null) return false;
+        if (!session.IsConnected) return false;
+        if (!HasInlinePrompt) return false;
+
+        var cancel = (_inlinePromptCancelActionType ?? string.Empty).Trim();
+        if (string.IsNullOrWhiteSpace(cancel)) return false;
+
+        try
+        {
+            await session
+                .SendActionsAsync(new[] { new GameClientAction(cancel, new Dictionary<string, object>()) }, cancellationToken)
+                .ConfigureAwait(false);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
 
     public string ConnectionStatus
     {

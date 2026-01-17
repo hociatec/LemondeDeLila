@@ -12,9 +12,11 @@ import { seededShuffle } from '../../../common/utils/seeded-shuffle';
 export class GameCoreService {
   buildBaseState(payload: RoomPayload, gameType: string): GameStateEntity {
     const status = payload.room.status || 'setup';
+    const roomOwnerId =
+      typeof payload?.room?.owner?.id === 'number' ? payload.room.owner.id : null;
     const metadata: Record<string, unknown> = {
       roomId: payload?.room?.id ?? null,
-      roomOwnerId: payload?.room?.owner?.id ?? null,
+      roomOwnerId,
       gameType,
       roomStartedAt: payload?.room?.startedAt ?? null,
       roomRunId:
@@ -30,6 +32,14 @@ export class GameCoreService {
     const players = this.shouldRandomizeStarter(status)
       ? this.shufflePlayers(playersBase, rng.seed)
       : playersBase;
+
+    // ownerPlayerId: identifiant du "propriétaire de la table" (par id joueur).
+    // Important: ne pas l'utiliser pour la seed RNG (donc le calculer après ensureSeededRng).
+    metadata.ownerPlayerId =
+      roomOwnerId != null && players.some((p) => p?.id === roomOwnerId)
+        ? roomOwnerId
+        : (players[0]?.id ?? null);
+
     return {
       status,
       phase: 'playing',

@@ -9,6 +9,7 @@ import { GameRegistryService } from '../../../engine/services/game-registry.serv
 import { GameCoreService } from '../../../core/services/game-core.service';
 import { TurnFlowService } from '../../../modules/turn/services/turn-flow.service';
 import { RandomService } from '../../../modules/random/services/random.service';
+import { interfaceShortcut } from '../../../engine/shortcuts/shortcut-utils';
 import { MnemoQuizStoreService } from './store/mnemo-quiz-store.service';
 import type {
   MnemoAdminPage,
@@ -71,15 +72,21 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
   hydrateInitialState(baseState: GameStateEntity): GameStateEntity {
     const players = Array.isArray(baseState.players) ? baseState.players : [];
     const firstId = players[0]?.id ?? null;
+    const baseMeta = (baseState.metadata ?? {}) as any;
+    const ownerPlayerId =
+      typeof baseMeta.ownerPlayerId === 'number'
+        ? baseMeta.ownerPlayerId
+        : firstId;
 
     const config: MnemoQuizConfig = {
       targetPoints: 20,
-      useTimer: false,
+      useTimer: true,
       timerSeconds: 30,
     };
 
     const meta: MnemoQuizMetadata = {
       rng: typeof baseState.metadata === 'object' && baseState.metadata ? (baseState.metadata as any).rng : undefined,
+      ownerPlayerId,
       config,
       selectedCategoryId: null,
       scoresByPlayerId: Object.fromEntries(
@@ -91,6 +98,7 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
       quizDeadlineAtMs: null,
       adminView: { page: 'setup' },
       prompt: null,
+      promptOwnerId: null,
       winnerId: null,
     };
 
@@ -164,11 +172,37 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
       return { ...action, type, payload: { answerIndex: idx } };
     }
 
-    // Admin: réservé à Lila.
+    // Admin / configuration.
     if (type.startsWith('mnemo_') && type !== 'mnemo_start') {
-      if (!isSystem && !this.isAdmin(state, actorId)) {
-        throw new Error('Action réservée à Lila.');
+      if (isSystem) {
+        return { ...action, type, payload: action.payload ?? {} };
       }
+
+      if (this.isOwner(state, actorId)) {
+        return { ...action, type, payload: action.payload ?? {} };
+      }
+
+      // Autoriser le joueur courant à configurer la partie pendant le setup.
+      if (type === 'mnemo_open_config') {
+        if (this.canConfigure(state, actorId)) {
+          return { ...action, type, payload: action.payload ?? {} };
+        }
+        throw new Error('Configuration refusée.');
+      }
+
+      // Les prompts (config) sont visibles uniquement pour leur propriétaire.
+      if (type === 'mnemo_set_config' || type === 'mnemo_prompt_cancel') {
+        const ownerId =
+          typeof (meta as any).promptOwnerId === 'number'
+            ? (meta as any).promptOwnerId
+            : null;
+        if (actorId != null && ownerId != null && actorId === ownerId) {
+          return { ...action, type, payload: action.payload ?? {} };
+        }
+        throw new Error('Action invalide.');
+      }
+
+      throw new Error('Action réservée à Lila.');
     }
 
     return { ...action, type, payload: action.payload ?? {} };
@@ -179,7 +213,17 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
     for (const action of actions ?? []) {
       next = this.applyOne(next, action);
     }
-    return this.resolveQuizIfReady(next);
+    return this.syncBotPending(this.resolveQuizIfReady(next));
+  }
+
+  getShortcuts(ctx: any) {
+    const started = Boolean(ctx?.started);
+    if (!started) {
+      return [];
+    }
+
+    // "S" : afficher le score (panneau UI géré côté client).
+    return [interfaceShortcut('S', 'score')];
   }
 
   exposeStateForUser(state: GameStateEntity, userId: number): GameStateWithActions {
@@ -188,6 +232,24 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
       (meta ?? {}) as any;
     const built = this.buildPendingForUser(state, userId);
     const actions = this.buildActionsForUser(state, userId);
+    const players = Array.isArray(state.players) ? state.players : [];
+
+    const scoreByPlayerId = (meta?.scoresByPlayerId ?? {}) as any as Record<
+      number,
+      number
+    >;
+    const scoreLines = players
+      .filter((p: any) => p && Number.isFinite(Number(p.id)))
+      .map((p: any) => ({
+        id: Number(p.id),
+        name: String(p.username ?? `#${p.id}`),
+        score: Number(scoreByPlayerId[Number(p.id)] ?? 0),
+      }))
+      .sort((a, b) => b.score - a.score || a.name.localeCompare(b.name, 'fr'));
+
+    const scoreMessage = scoreLines.length
+      ? `Score: ${scoreLines.map((s) => `${s.name}: ${s.score}`).join(', ')}`
+      : 'Score: indisponible.';
 
     const safeMeta: any = {
       ...metaRest,
@@ -200,10 +262,11 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
           }
         : null,
     };
-    if (!this.isAdmin(state, userId)) {
+    if (!this.isOwner(state, userId)) {
       // Ne pas exposer la navigation admin aux joueurs.
       safeMeta.adminView = { page: 'setup' };
       safeMeta.prompt = null;
+      safeMeta.promptOwnerId = null;
     }
 
     return {
@@ -215,6 +278,16 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
         payload: a.payload ?? {},
       })),
       pending: built,
+      extras: {
+        ...(((state as any).extras ?? {}) as any),
+        ui: {
+          ...((((state as any).extras ?? {}) as any)?.ui ?? {}),
+          panels: {
+            ...((((state as any).extras ?? {}) as any)?.ui?.panels ?? {}),
+            score: { title: 'Score', message: scoreMessage },
+          },
+        },
+      },
     } as any;
   }
 
@@ -235,15 +308,16 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
         .filter((id: number) => Number.isFinite(id));
       const answers = (meta.quizAnswersByPlayerId ?? {}) as any as Record<number, number>;
       const timedOutIds = playerIds.filter((id) => answers[id] == null);
-      return this.resolveQuizIfReady(state, true, timedOutIds);
+      return this.syncBotPending(this.resolveQuizIfReady(state, true, timedOutIds));
     }
 
     if (type === 'mnemo_prompt_cancel') {
-      return { ...state, metadata: { ...meta, prompt: null } };
+      return { ...state, metadata: { ...meta, prompt: null, promptOwnerId: null } };
     }
 
     if (type === 'mnemo_open_config') {
-      if (!this.isAdmin(state, (action as any)?.meta?.actorId ?? null)) {
+      const actorId = (action as any)?.meta?.actorId ?? null;
+      if (!this.canConfigure(state, actorId)) {
         return state;
       }
       const prompt: MnemoPrompt = {
@@ -257,17 +331,23 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
           { key: 'timerSeconds', label: 'Secondes (si chrono)', kind: 'number', initialText: String(meta.config.timerSeconds ?? 30) },
         ],
       };
-      return { ...state, metadata: { ...meta, prompt } };
+      return { ...state, metadata: { ...meta, prompt, promptOwnerId: actorId } };
     }
 
     if (type === 'mnemo_set_config') {
+      const actorId = (action as any)?.meta?.actorId ?? null;
+      const ownerId =
+        typeof (meta as any).promptOwnerId === 'number' ? (meta as any).promptOwnerId : null;
+      if (actorId == null || ownerId == null || actorId !== ownerId) {
+        return state;
+      }
       const targetPoints = Math.max(1, Math.min(200, Number(payload.targetPoints ?? 20)));
       const timerSeconds = Math.max(5, Math.min(300, Number(payload.timerSeconds ?? 30)));
-      const useTimer = Boolean(payload.useTimer);
+      const useTimer = this.parseBool(payload.useTimer, false);
       const config: MnemoQuizConfig = { targetPoints, useTimer, timerSeconds };
       return {
         ...state,
-        metadata: { ...meta, config, prompt: null },
+        metadata: { ...meta, config, prompt: null, promptOwnerId: null },
       };
     }
 
@@ -282,13 +362,14 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
         selectedCategoryId: selected,
         adminView: { page: 'setup' },
         prompt: null,
+        promptOwnerId: null,
       };
       const started = { ...state, phase: 'play', metadata: withSelection };
-      return this.drawNextQuestionOrStay(started);
+      return this.syncBotPending(this.drawNextQuestionOrStay(started));
     }
 
-    if (!this.isAdmin(state, (action as any)?.meta?.actorId ?? null)) {
-      // Sécurité: aucune action admin si pas admin.
+    if (!this.isOwner(state, (action as any)?.meta?.actorId ?? null)) {
+      // Sécurité: aucune action admin si pas owner.
       return state;
     }
 
@@ -753,11 +834,95 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
     };
   }
 
+  getBotActions(state: GameStateEntity, botPlayerId: number): GameSingleActionDto[] | null {
+    const meta = this.getMeta(state);
+    const q = meta.currentQuestion;
+    if (!q) return null;
+
+    const players = Array.isArray(state.players) ? state.players : [];
+    const bot = players.find((p: any) => p?.id === botPlayerId) as any;
+    if (!bot?.isBot) return null;
+
+    const answers = (meta.quizAnswersByPlayerId ?? {}) as any as Record<number, number>;
+    if (answers[botPlayerId] != null) return null;
+
+    const correctIndex = q.choices.findIndex((c) => c === q.correctChoice);
+    const validCorrectIndex =
+      correctIndex >= 0 && correctIndex < q.choices.length ? correctIndex : 0;
+
+    // Bot simple: 70% chance de répondre juste, sinon choisit "au hasard" de façon déterministe
+    // (évite un état bloqué si useTimer est désactivé).
+    const seed = this.hashSeed(`${q.id}:${botPlayerId}`);
+    const roll = seed % 10; // 0..9
+    const answerIndex =
+      roll < 7 ? validCorrectIndex : seed % Math.max(1, q.choices.length);
+
+    return [{ type: 'answer_quiz', payload: { answerIndex } } as any];
+  }
+
+  private hashSeed(value: string): number {
+    // Hash simple, stable, sans dépendance externe.
+    let h = 0;
+    const s = String(value ?? '');
+    for (let i = 0; i < s.length; i++) {
+      h = ((h << 5) - h + s.charCodeAt(i)) | 0;
+    }
+    return Math.abs(h);
+  }
+
+  private parseBool(value: any, defaultValue = false): boolean {
+    if (typeof value === 'boolean') return value;
+    if (typeof value === 'number') return value !== 0;
+    const t = String(value ?? '').trim().toLowerCase();
+    if (!t) return defaultValue;
+    if (t === '1' || t === 'true' || t === 'oui' || t === 'yes' || t === 'on')
+      return true;
+    if (t === '0' || t === 'false' || t === 'non' || t === 'no' || t === 'off')
+      return false;
+    return defaultValue;
+  }
+
+  private syncBotPending(state: GameStateEntity): GameStateEntity {
+    try {
+      if (!state || String(state.status ?? '').toLowerCase().trim() === 'finished') {
+        return state;
+      }
+
+      const meta = this.getMeta(state);
+      if (!meta.currentQuestion) {
+        return state.pending ? { ...state, pending: null } : state;
+      }
+
+      const answers = (meta.quizAnswersByPlayerId ?? {}) as any as Record<number, number>;
+      const players = Array.isArray(state.players) ? state.players : [];
+      const bots = players
+        .filter((p: any) => p?.isBot)
+        .map((p: any) => Number(p?.id))
+        .filter((id: number) => Number.isFinite(id))
+        .sort((a, b) => a - b);
+
+      const nextBot = bots.find((id) => answers[id] == null) ?? null;
+      if (nextBot == null) {
+        return state.pending ? { ...state, pending: null } : state;
+      }
+
+      return { ...state, pending: { type: 'quiz', playerId: nextBot, blocking: true } as any };
+    } catch {
+      return state;
+    }
+  }
+
   private buildPendingForUser(state: GameStateEntity, userId: number): any {
     const meta = this.getMeta(state);
     const currentId = state.turn?.currentPlayerId ?? null;
 
-    if (this.isAdmin(state, userId) && meta.prompt) {
+    const promptOwnerId =
+      typeof (meta as any).promptOwnerId === 'number' ? (meta as any).promptOwnerId : null;
+    const canSeePrompt =
+      Boolean(meta.prompt) &&
+      (promptOwnerId === userId || (promptOwnerId == null && this.isOwner(state, userId)));
+
+    if (canSeePrompt && meta.prompt) {
       const prompt = meta.prompt;
       if (prompt.type === 'text_prompt') {
         return {
@@ -805,7 +970,7 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
     // Menus (setup/admin) : visibles uniquement à Lila (admin) + au joueur courant pour démarrer.
     const isCurrent = currentId === userId;
 
-    if (meta.adminView.page !== 'setup' && !this.isAdmin(state, userId)) {
+    if (meta.adminView.page !== 'setup' && !this.isOwner(state, userId)) {
       return null;
     }
 
@@ -820,9 +985,9 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
           choices.push(c.name);
         }
         choices.push('Mélange (toutes catégories)');
-      }
-      if (this.isAdmin(state, userId)) {
         choices.push('Configurer la partie');
+      }
+      if (this.isOwner(state, userId)) {
         choices.push('Administration');
       }
       if (choices.length === 0) return null;
@@ -937,7 +1102,13 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
     const currentId = state.turn?.currentPlayerId ?? null;
     const actions: GameSingleActionDto[] = [];
 
-    if (this.isAdmin(state, userId) && meta.prompt) {
+    const promptOwnerId =
+      typeof (meta as any).promptOwnerId === 'number' ? (meta as any).promptOwnerId : null;
+    const canSeePrompt =
+      Boolean(meta.prompt) &&
+      (promptOwnerId === userId || (promptOwnerId == null && this.isOwner(state, userId)));
+
+    if (canSeePrompt && meta.prompt) {
       // Les prompts envoient directement l'actionType; ici on expose juste le cancel pour l’Escape.
       actions.push({ type: 'mnemo_prompt_cancel', payload: {} });
       return actions;
@@ -958,15 +1129,15 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
           actions.push({ type: 'mnemo_start', payload: { categoryId: c.id } });
         }
         actions.push({ type: 'mnemo_start', payload: { categoryId: null } });
-      }
-      if (this.isAdmin(state, userId)) {
         actions.push({ type: 'mnemo_open_config', payload: {} });
+      }
+      if (this.isOwner(state, userId)) {
         actions.push({ type: 'mnemo_open_admin', payload: {} });
       }
       return actions;
     }
 
-    if (!this.isAdmin(state, userId)) {
+    if (!this.isOwner(state, userId)) {
       return [];
     }
 
@@ -1067,12 +1238,23 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
     return trimmed.slice(0, 77) + '...';
   }
 
-  private isAdmin(state: GameStateEntity, playerId: number | null): boolean {
+  private isOwner(state: GameStateEntity, playerId: number | null): boolean {
     if (playerId == null) return false;
-    const players = Array.isArray(state.players) ? state.players : [];
-    const p = players.find((x: any) => x?.id === playerId) as any;
-    const username = String(p?.username ?? '').trim().toLowerCase();
-    return username === 'lila';
+    const meta = this.getMeta(state) as any;
+    const ownerId =
+      typeof meta?.ownerPlayerId === 'number' ? meta.ownerPlayerId : null;
+    if (ownerId == null) return false;
+    return ownerId === playerId;
+  }
+
+  private canConfigure(state: GameStateEntity, actorId: number | null): boolean {
+    if (actorId == null) return false;
+    if (this.isOwner(state, actorId)) return true;
+
+    // Autoriser le joueur courant à configurer la partie pendant le setup.
+    if (String(state.phase ?? '').toLowerCase().trim() !== 'setup') return false;
+    const currentId = state.turn?.currentPlayerId ?? null;
+    return currentId === actorId;
   }
 
   private playerName(state: GameStateEntity, playerId: number): string {

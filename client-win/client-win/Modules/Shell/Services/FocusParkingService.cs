@@ -24,7 +24,6 @@ public sealed class FocusParkingService : IFocusParkingService
                     // Park focus on a stable, visible element to avoid NVDA announcing "unavailable"
                     // when the previous focused element is removed during navigation.
                     var target = window.FindName("RootHost") as IInputElement
-                                 ?? window.FindName("FocusParking") as IInputElement
                                  ?? window;
                     try { (target as UIElement)?.Focus(); } catch { /* ignore */ }
                     try { Keyboard.Focus(target); } catch { /* ignore */ }

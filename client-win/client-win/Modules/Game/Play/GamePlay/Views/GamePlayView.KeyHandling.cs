@@ -169,6 +169,15 @@ public partial class GamePlayView
             return;
         }
 
+        // Quand un prompt inline est affiché, ne pas intercepter les touches au niveau racine :
+        // - laisser Tab naviguer dans le prompt
+        // - laisser Entrée/Échap valider/annuler (géré par le prompt)
+        // - ne pas forwarder les touches au serveur pendant une saisie
+        if (DataContext is GamePlayViewModel promptVm && promptVm.HasInlinePrompt)
+        {
+            return;
+        }
+
         // Éviter que Tab/Maj+Tab fasse "sortir" le focus de la zone de jeu, ce qui casse l'UX clavier.
         if (e.Key == Key.Tab)
         {
@@ -254,36 +263,6 @@ public partial class GamePlayView
         // Grille: 'M' est un raccourci UI local (liste d'actions de la case), pas une touche envoyée au serveur.
         if (e.Key == Key.M && vm.Grid.IsVisible)
         {
-            return;
-        }
-
-        // Generic text prompt pending: open a local input dialog instead of sending ENTER to the server.
-        if (vm.HasPendingTextPrompt && (e.Key == Key.Enter || e.Key == Key.Return))
-        {
-            e.Handled = true;
-            try
-            {
-                await vm.TryOpenPendingTextPromptAsync(CancellationToken.None).ConfigureAwait(true);
-            }
-            catch
-            {
-                // ignore
-            }
-            return;
-        }
-
-        // Generic config prompt pending: open a local multi-field dialog instead of sending ENTER to the server.
-        if (vm.HasPendingConfigPrompt && (e.Key == Key.Enter || e.Key == Key.Return))
-        {
-            e.Handled = true;
-            try
-            {
-                await vm.TryOpenPendingConfigPromptAsync(CancellationToken.None).ConfigureAwait(true);
-            }
-            catch
-            {
-                // ignore
-            }
             return;
         }
 

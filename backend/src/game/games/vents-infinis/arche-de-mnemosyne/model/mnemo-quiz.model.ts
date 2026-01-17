@@ -75,6 +75,7 @@ export type MnemoPrompt =
 
 export type MnemoQuizMetadata = {
   rng?: Record<string, any>;
+  ownerPlayerId?: number | null;
   config: MnemoQuizConfig;
   selectedCategoryId: string | null;
   scoresByPlayerId: Record<number, number>;
@@ -84,6 +85,7 @@ export type MnemoQuizMetadata = {
   quizDeadlineAtMs?: number | null;
   adminView: MnemoAdminPage;
   prompt: MnemoPrompt;
+  promptOwnerId?: number | null;
   winnerId: number | null;
 };
 
