@@ -104,11 +104,9 @@ public static class ContentHostFocusBehavior
                         return;
                     }
 
-                    if (root is Visual v && PresentationSource.FromVisual(v) == null)
-                    {
-                        return;
-                    }
-                    if (root is System.Windows.Media.Media3D.Visual3D v3 && PresentationSource.FromVisual(v3) == null)
+                    // Ne pas tenter de focaliser une vue pas encore attachée à une PresentationSource
+                    // (Visual3D n'est pas un Visual -> utiliser FromDependencyObject pour couvrir les deux).
+                    if (PresentationSource.FromDependencyObject(root) == null)
                     {
                         return;
                     }
