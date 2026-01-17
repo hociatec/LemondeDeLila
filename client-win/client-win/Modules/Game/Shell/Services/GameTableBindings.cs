@@ -3,7 +3,6 @@ using System.ComponentModel;
 using System.Collections.Specialized;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 using client_win.Core.Input;
@@ -40,8 +39,6 @@ internal sealed class GameTableBindings : IAsyncDisposable
     private readonly Func<GamePlayViewModel> _createGamePlayVm;
     private GamePlayViewModel? _gamePlayVm;
     private NotifyCollectionChangedEventHandler? _onGameplayShortcutsChanged;
-    private PropertyChangedEventHandler? _onGameplayVmPropertyChanged;
-    private int _gamePlayInitStarted;
 
 	    private Action<RoomPayloadDto>? _onRoomUpdated;
 	    private Action<RoomAnnouncement>? _onAnnounced;
@@ -286,16 +283,10 @@ internal sealed class GameTableBindings : IAsyncDisposable
 
         var isStarted = string.Equals(_lastStatus, "started", StringComparison.OrdinalIgnoreCase);
         SetRoomShortcutsForStarted(isStarted);
-        EnsureGamePlayVmCreated();
         if (isStarted)
         {
             EnsureGamePlayLoaded();
             SyncGameplayShortcuts();
-        }
-        else
-        {
-            // Si un prompt arrive (rare mais bloquant), on affiche le GamePlayView le temps du prompt.
-            SyncGameZoneContentForInlinePrompt();
         }
     }
 
@@ -561,75 +552,6 @@ internal sealed class GameTableBindings : IAsyncDisposable
                     _dispatcher.InvokeAsync(SyncGameplayShortcuts, DispatcherPriority.Background);
                 notify.CollectionChanged += _onGameplayShortcutsChanged;
             }
-
-            _onGameplayVmPropertyChanged = (_, e) =>
-            {
-                if (!string.Equals(e.PropertyName, nameof(GamePlayViewModel.HasInlinePrompt), StringComparison.Ordinal))
-                {
-                    return;
-                }
-                _dispatcher.InvokeAsync(SyncGameZoneContentForInlinePrompt, DispatcherPriority.Background);
-            };
-            _gamePlayVm.PropertyChanged += _onGameplayVmPropertyChanged;
-
-            StartGamePlayInitialization();
-        }
-
-        private void StartGamePlayInitialization()
-        {
-            var vm = _gamePlayVm;
-            if (vm == null)
-            {
-                return;
-            }
-
-            if (Interlocked.Exchange(ref _gamePlayInitStarted, 1) == 1)
-            {
-                return;
-            }
-
-            _dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(async () =>
-            {
-                try
-                {
-                    await vm.InitializeAsync(CancellationToken.None).ConfigureAwait(true);
-                }
-                catch
-                {
-                    // Best-effort: l'UI affiche déjà l'état de connexion dans le ViewModel.
-                    // On laissera la reconnexion/relance se faire via les flux existants.
-                    Interlocked.Exchange(ref _gamePlayInitStarted, 0);
-                }
-            }));
-        }
-
-        private void SyncGameZoneContentForInlinePrompt()
-        {
-            var vm = _gamePlayVm;
-            if (vm == null)
-            {
-                return;
-            }
-
-            if (vm.HasInlinePrompt)
-            {
-                if (!ReferenceEquals(_tableVm.GameZone.Content, vm))
-                {
-                    _tableVm.GameZone.Content = vm;
-                }
-            }
-            else
-            {
-                // Hors partie : si aucun prompt, on rend la zone vide pour permettre Entrée (room.start) via l'ancre.
-                if (!_tableVm.GameZone.IsStarted && ReferenceEquals(_tableVm.GameZone.Content, vm))
-                {
-                    _tableVm.GameZone.Content = null;
-                }
-            }
-
-            _ = _dispatcher.BeginInvoke(
-                DispatcherPriority.Input,
-                new Action(_tableVm.GameZone.RequestFocus));
         }
 
 		    private async System.Threading.Tasks.Task HandleGameStatusChangedAsync(string previousStatus, string nextStatus)
@@ -694,14 +616,6 @@ internal sealed class GameTableBindings : IAsyncDisposable
 		        {
 		            return;
 		        }
-
-                Interlocked.Exchange(ref _gamePlayInitStarted, 0);
-
-                if (_onGameplayVmPropertyChanged != null)
-                {
-                    _gamePlayVm.PropertyChanged -= _onGameplayVmPropertyChanged;
-                    _onGameplayVmPropertyChanged = null;
-                }
 
 		        if (_onGameMessage != null)
 		        {

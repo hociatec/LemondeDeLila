@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-01-16T20:02:21.612Z",
+  "updatedAt": "2026-01-17T11:08:48.888Z",
   "sounds": {
     "RoomJoined": {
       "soundId": "RoomJoined",
@@ -89,7 +89,7 @@
       "soundId": "ClientDisconnected",
       "sha256": "b87418710c0bb62ad8b45da60dc58279525ea48d0a1f479b8fa6de94dff52fbd",
       "bytes": 77568,
-      "uploadedAt": "2026-01-16T18:31:33.703Z",
+      "uploadedAt": "2026-01-17T11:01:15.278Z",
       "url": "/api/sounds/ClientDisconnected/b87418710c0bb62ad8b45da60dc58279525ea48d0a1f479b8fa6de94dff52fbd.mp3"
     },
     "FriendInvitationSent": {
@@ -122,10 +122,10 @@
     },
     "FriendDisconnected": {
       "soundId": "FriendDisconnected",
-      "sha256": "4085d1f2539f08bcce59b7cb27ff2d265f1a64679ad349a10ce0de11f897fd03",
-      "bytes": 81231,
-      "uploadedAt": "2026-01-15T00:45:17.554Z",
-      "url": "/api/sounds/FriendDisconnected/4085d1f2539f08bcce59b7cb27ff2d265f1a64679ad349a10ce0de11f897fd03.mp3"
+      "sha256": "a86235c69a5e8081e8ccc127120da5b44b40cc0519f8a657cbaf3f779f9d6cfc",
+      "bytes": 14672,
+      "uploadedAt": "2026-01-17T11:08:48.887Z",
+      "url": "/api/sounds/FriendDisconnected/a86235c69a5e8081e8ccc127120da5b44b40cc0519f8a657cbaf3f779f9d6cfc.mp3"
     },
     "AdminContactReceived": {
       "soundId": "AdminContactReceived",
@@ -166,15 +166,22 @@
       "soundId": "TableChatMessageSent",
       "sha256": "af1ff75c4231a51f56469cdec1a52344d1090cb1c6808931bf6166d9341dc2ff",
       "bytes": 36096,
-      "uploadedAt": "2026-01-16T12:46:30.011Z",
+      "uploadedAt": "2026-01-17T11:01:53.925Z",
       "url": "/api/sounds/TableChatMessageSent/af1ff75c4231a51f56469cdec1a52344d1090cb1c6808931bf6166d9341dc2ff.mp3"
     },
     "TableChatMessageReceived": {
       "soundId": "TableChatMessageReceived",
       "sha256": "5c94bbf6d61867b1fcdfabc17145e8bb59e8798fc9ba1a5657ef842fcb35f0b7",
       "bytes": 53960,
-      "uploadedAt": "2026-01-16T12:46:49.718Z",
+      "uploadedAt": "2026-01-17T11:02:11.226Z",
       "url": "/api/sounds/TableChatMessageReceived/5c94bbf6d61867b1fcdfabc17145e8bb59e8798fc9ba1a5657ef842fcb35f0b7.mp3"
+    },
+    "ClientClosing": {
+      "soundId": "ClientClosing",
+      "sha256": "b87418710c0bb62ad8b45da60dc58279525ea48d0a1f479b8fa6de94dff52fbd",
+      "bytes": 77568,
+      "uploadedAt": "2026-01-17T11:00:42.960Z",
+      "url": "/api/sounds/ClientClosing/b87418710c0bb62ad8b45da60dc58279525ea48d0a1f479b8fa6de94dff52fbd.mp3"
     }
   }
 }

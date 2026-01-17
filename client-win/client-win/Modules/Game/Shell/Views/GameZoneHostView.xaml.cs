@@ -27,14 +27,9 @@ public partial class GameZoneHostView : UserControl
 
         if (GameZoneHost?.Content is System.Windows.FrameworkElement contentRoot)
         {
-            // Priorité: focus sur un enfant réellement interactif (ex: liste de choix).
-            // Si aucun enfant focusable, garder le focus sur le root du jeu plutôt que sur l'ancre,
-            // pour éviter que les flèches ré-annoncent le titre (NVDA) en restant bloquées sur l'ancre.
-            if (contentRoot.MoveFocus(new TraversalRequest(FocusNavigationDirection.First)))
-            {
-                return;
-            }
-
+            // IMPORTANT (UX clavier): garder un focus stable sur la "surface de jeu" (root),
+            // sinon WPF peut envoyer le focus dans des contrôles internes (ListBox/TextBox),
+            // puis Tab/Enter se comportent de façon inattendue (et le focus "sort" de la zone).
             if (contentRoot.Focusable || KeyboardNavigation.GetIsTabStop(contentRoot))
             {
                 if (contentRoot.Focus())

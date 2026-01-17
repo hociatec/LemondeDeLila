@@ -89,9 +89,24 @@ public sealed class ShellSessionController
 
     public void LogoutToHome(object homeContent)
     {
+        _ = LogoutToHomeAsync(homeContent);
+    }
+
+    private async Task LogoutToHomeAsync(object homeContent)
+    {
         _ = _notify.StopAsync();
         _ = _presence.StopAsync();
+
+        // IMPORTANT: laisser un feedback sonore fiable lors d'une déconnexion volontaire.
         _audio.NotifyLogoutRequested();
+        try
+        {
+            await _audio.PlayDisconnectAndWaitAsync(TimeSpan.FromSeconds(2)).ConfigureAwait(true);
+        }
+        catch
+        {
+            // ignore
+        }
 
         _host.Session.Clear();
         _navigation.ClearUser();

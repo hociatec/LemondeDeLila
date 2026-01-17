@@ -151,10 +151,10 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget
         }
     }
 
-    private void OnPreviewKeyDown(object sender, KeyEventArgs e)
-    {
-        if (!e.IsRepeat)
-        {
+	    private void OnPreviewKeyDown(object sender, KeyEventArgs e)
+	    {
+	        if (!e.IsRepeat)
+	        {
             var key = e.Key == Key.System ? e.SystemKey : e.Key;
             if (key is not (Key.LeftShift or Key.RightShift or Key.LeftCtrl or Key.RightCtrl or Key.LeftAlt or Key.RightAlt or Key.LWin or Key.RWin))
             {
@@ -171,10 +171,10 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget
             }
         }
 
-        // Table menu: use F2 (not Escape) to avoid conflicts with game/UI navigation.
-        if (e.Key == Key.F2 && DataContext is ViewModels.GameRoomViewModel vm)
-        {
-            e.Handled = true;
+	        // Table menu: use F2 (not Escape) to avoid conflicts with game/UI navigation.
+	        if (e.Key == Key.F2 && DataContext is ViewModels.GameRoomViewModel vm)
+	        {
+	            e.Handled = true;
 
             var roomShortcuts = RoomShortcuts.Create(
                     resetCommand: vm.GameZone.ResetCommand,
@@ -222,13 +222,27 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget
                 shortcuts: shortcuts);
 
             RequestFocusGameZoneDeferred();
-            return;
-        }
+	            return;
+	        }
 
-        if (e.Key != Key.Tab)
-        {
-            return;
-        }
+	        // Démarrage table (accessibilité): Entrée doit fonctionner même si le focus n'est pas exactement sur l'ancre
+	        // (après ajout de bot / annonces / navigation SR, WPF peut déplacer le focus).
+	        if ((e.Key == Key.Enter || e.Key == Key.Return) &&
+	            DataContext is ViewModels.GameRoomViewModel startVm &&
+	            !IsTextInputFocused() &&
+	            startVm.GameZone.IsStarted == false &&
+	            startVm.GameZone.StartCommand.CanExecute(null))
+	        {
+	            e.Handled = true;
+	            startVm.GameZone.StartCommand.Execute(null);
+	            RequestFocusGameZoneDeferred();
+	            return;
+	        }
+
+	        if (e.Key != Key.Tab)
+	        {
+	            return;
+	        }
 
         // NOTE: Gestion volontairement impérative (code-behind) pour fiabiliser Tab/Maj+Tab avec les lecteurs d'écran :
         // WPF peut "absorber" la navigation quand le focus est dans un TextBox (historique) ou sur un ContentControl vide.

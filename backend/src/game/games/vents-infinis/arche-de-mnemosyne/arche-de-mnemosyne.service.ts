@@ -71,10 +71,16 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
     const players = Array.isArray(baseState.players) ? baseState.players : [];
     const firstId = players[0]?.id ?? null;
     const baseMeta = (baseState.metadata ?? {}) as any;
-    const ownerPlayerId =
-      typeof baseMeta.ownerPlayerId === 'number'
-        ? baseMeta.ownerPlayerId
-        : firstId;
+    const ownerPlayerId = (() => {
+      // Le moteur (GameCoreService) expose généralement le propriétaire de table via `roomOwnerId`.
+      // IMPORTANT: ne pas déduire depuis players[0] (peut être un bot) sinon les prompts de config
+      // sont "assignés" au bot et invisibles pour le vrai propriétaire.
+      if (typeof baseMeta.roomOwnerId === 'number') return baseMeta.roomOwnerId;
+      if (typeof baseMeta.ownerPlayerId === 'number') return baseMeta.ownerPlayerId;
+
+      const firstHumanId = players.find((p: any) => p && !(p as any).isBot)?.id ?? null;
+      return firstHumanId ?? firstId;
+    })();
 
     const config: MnemoQuizConfig = {
       targetPoints: 20,
@@ -1442,6 +1448,32 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
   }
 
   private getMeta(state: GameStateEntity): MnemoQuizMetadata {
-    return (state.metadata ?? {}) as any;
+    const raw = (state.metadata ?? {}) as any;
+
+    // Robustesse: certaines vieilles sauvegardes/états peuvent ne pas contenir `adminView`.
+    // Sans ça, des accès directs `meta.adminView.page` font planter le jeu côté serveur
+    // et le client reçoit "Cannot read properties of undefined (reading 'page')".
+    const adminView =
+      raw?.adminView &&
+      typeof raw.adminView === 'object' &&
+      typeof raw.adminView.page === 'string'
+        ? raw.adminView
+        : ({ page: 'setup' } as MnemoAdminPage);
+
+    // Config par défaut (évite des undefined cascades).
+    const config =
+      raw?.config && typeof raw.config === 'object'
+        ? raw.config
+        : ({
+            targetPoints: 20,
+            useTimer: true,
+            timerSeconds: 30,
+            correctSoloPoints: 2,
+            correctMultiPoints: 1,
+            wrongPoints: 0,
+            timeoutPoints: -1,
+          } as MnemoQuizConfig);
+
+    return { ...(raw as any), adminView, config } as any;
   }
 }
