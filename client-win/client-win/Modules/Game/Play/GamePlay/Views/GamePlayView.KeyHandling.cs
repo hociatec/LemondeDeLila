@@ -4,12 +4,34 @@ using System.Windows.Input;
 using System.Windows.Controls;
 using System;
 using System.Windows.Threading;
+using System.Windows.Media;
 using client_win.Modules.Game.Play.GamePlay.ViewModels;
 
 namespace client_win.Modules.Game.Play.GamePlay.Views;
 
 public partial class GamePlayView
 {
+    private bool IsFocusWithinInlinePrompt()
+    {
+        if (InlinePromptOverlay == null)
+        {
+            return false;
+        }
+
+        var focused = Keyboard.FocusedElement as DependencyObject;
+        while (focused != null)
+        {
+            if (ReferenceEquals(focused, InlinePromptOverlay))
+            {
+                return true;
+            }
+
+            focused = VisualTreeHelper.GetParent(focused);
+        }
+
+        return false;
+    }
+
     private void OnChoicesPreviewKeyDown(object sender, KeyEventArgs e)
     {
         // Assure un comportement "boucle" pour la main (LAMA) même quand le focus est dans la ListBox.
@@ -175,6 +197,26 @@ public partial class GamePlayView
         // - ne pas forwarder les touches au serveur pendant une saisie
         if (DataContext is GamePlayViewModel promptVm && promptVm.HasInlinePrompt)
         {
+            // IMPORTANT: si le focus n'est pas déjà dans le prompt, Tab peut "sortir" de la zone de jeu
+            // (historique/chat) et bloquer l'accès à la configuration. On force donc le focus dans le prompt.
+            if (e.Key == Key.Tab)
+            {
+                e.Handled = true;
+                if (!IsFocusWithinInlinePrompt())
+                {
+                    FocusFirstInlinePromptField();
+                }
+                return;
+            }
+
+            if (!IsFocusWithinInlinePrompt() &&
+                e.Key is Key.Escape or Key.Enter or Key.Return or Key.Left or Key.Right or Key.Up or Key.Down)
+            {
+                e.Handled = true;
+                FocusFirstInlinePromptField();
+                return;
+            }
+
             return;
         }
 

@@ -1653,6 +1653,30 @@
       "status": "validated",
       "createdAt": "2026-01-17T10:39:19.981Z",
       "updatedAt": "2026-01-17T10:39:19.981Z"
+    },
+    {
+      "id": "80873731-addd-4f0e-a07e-ea485dfc7402",
+      "categoryId": "seve-et-savoir",
+      "question": "Quelle est la durée de vie moyenne d’un chêne ?",
+      "correct": "500 ans",
+      "wrong1": "80 ans",
+      "wrong2": "150 ans",
+      "wrong3": "1000 ans",
+      "status": "validated",
+      "createdAt": "2026-01-17T10:40:00.845Z",
+      "updatedAt": "2026-01-17T10:40:00.845Z"
+    },
+    {
+      "id": "5b5e3a11-42ae-46a0-8854-f071102ad231",
+      "categoryId": "seve-et-savoir",
+      "question": "Quel est le plus haut volcan actif du monde ?",
+      "correct": "Ojos del Salado",
+      "wrong1": "Mauna Loa",
+      "wrong2": "Cotopaxi",
+      "wrong3": "Etna",
+      "status": "validated",
+      "createdAt": "2026-01-17T10:40:54.181Z",
+      "updatedAt": "2026-01-17T10:40:54.181Z"
     }
   ]
 }
