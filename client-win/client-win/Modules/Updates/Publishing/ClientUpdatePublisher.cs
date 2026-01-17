@@ -253,10 +253,10 @@ public sealed class ClientUpdatePublisher : IClientUpdatePublisher
 	            "/p:UpdateEnabled=false",
 	            // IMPORTANT: ClickOnce + CreateDesktopShortcut peut dupliquer le raccourci sur le bureau à chaque update.
 	            "/p:CreateDesktopShortcut=false",
-	            "/p:GenerateManifests=true",
+            "/p:GenerateManifests=true",
             useBootstrapper ? "/p:BootstrapperEnabled=true" : "/p:BootstrapperEnabled=false",
             useBootstrapper ? "/p:IsWebBootstrapper=true" : "/p:IsWebBootstrapper=false",
-            $"/p:PublishUrl={Quote(baseUrl)}",
+            $"/p:PublishUrl={Quote(publishDir + Path.DirectorySeparatorChar)}",
             $"/p:InstallUrl={Quote(baseUrl)}",
             $"/p:UpdateUrl={Quote(baseUrl)}",
             !string.IsNullOrWhiteSpace(clickOnceVersion) ? $"/p:ApplicationVersion={Quote(clickOnceVersion)}" : string.Empty,

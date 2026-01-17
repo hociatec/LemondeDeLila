@@ -39,7 +39,8 @@ $msbuildProps = @(
     "/p:UpdateMode=Background",
     "/p:UpdateInterval=0",
     "/p:UpdateIntervalUnits=Days",
-    "/p:PublishDir=$PublishDir\"
+    "/p:PublishDir=$PublishDir\",
+    "/p:PublishUrl=$PublishDir\"
 )
 
 function Normalize-Version4([string]$v) {
@@ -82,7 +83,6 @@ if (-not [string]::IsNullOrWhiteSpace($BaseUrl)) {
     $msbuildProps += @(
         "/p:InstallFrom=Web",
         "/p:IsWebBootstrapper=true",
-        "/p:PublishUrl=$BaseUrl",
         "/p:InstallUrl=$BaseUrl",
         "/p:UpdateUrl=$BaseUrl"
     )
