@@ -9,6 +9,7 @@ using System.Windows.Input;
 using System.Windows.Threading;
 using client_win.Modules.Messaging.Models;
 using client_win.Modules.Messaging.ViewModels;
+using client_win.Modules.Shell.Services;
 using client_win.Modules.Shell.Views;
 
 namespace client_win.Modules.Messaging.Views;
@@ -212,6 +213,10 @@ public partial class MessagingView : UserControl, IInitialFocusTarget
 
     private void ShowScreen(MessagingScreen screen)
     {
+        // IMPORTANT (NVDA): before collapsing panels, move focus to a stable element that won't disappear.
+        // Otherwise NVDA may announce "indisponible" when the currently focused control is collapsed.
+        FocusParking.Park();
+
         _currentScreen = screen;
         MenuPanel.Visibility = screen == MessagingScreen.Menu ? Visibility.Visible : Visibility.Collapsed;
         ListPanel.Visibility = screen == MessagingScreen.List ? Visibility.Visible : Visibility.Collapsed;

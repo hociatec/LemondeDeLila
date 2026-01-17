@@ -6,6 +6,11 @@ En mode dev, si aucun fichier n’existe, un template est copié dans :
 
 - Windows : `%LOCALAPPDATA%\\LeMondeDeLila\\config\\client.properties`
 
+## Accessibilité (NVDA) — navigation
+
+Certaines transitions d’écran peuvent faire annoncer **"indisponible"** par NVDA quand le contrôle actuellement focalisé disparaît (navigation, panneaux `Collapsed`, etc.).  
+Le client utilise un **parking de focus** (focus sur un élément stable de la fenêtre, puis focus dans la nouvelle vue) pour éviter cette annonce.
+
 ## Connexion à un backend distant (production)
 
 Éditez `config/client.properties` et pointez vers votre serveur :
