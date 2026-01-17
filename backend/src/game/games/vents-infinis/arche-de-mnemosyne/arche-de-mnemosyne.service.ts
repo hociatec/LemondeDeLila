@@ -43,8 +43,6 @@ type ActionType =
   | 'mnemo_timeout'
   | 'answer_quiz';
 
-const QUIZ_TIMEOUT_PENALTY = -1;
-
 @Injectable()
 export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
   readonly gameType = 'arche-de-mnemosyne';
@@ -82,6 +80,10 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
       targetPoints: 20,
       useTimer: true,
       timerSeconds: 30,
+      correctSoloPoints: 2,
+      correctMultiPoints: 1,
+      wrongPoints: 0,
+      timeoutPoints: -1,
     };
 
     const meta: MnemoQuizMetadata = {
@@ -326,6 +328,10 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
         actionType: 'mnemo_set_config',
         cancelActionType: 'mnemo_prompt_cancel',
         fields: [
+          { key: 'correctSoloPoints', label: 'Points : bonne reponse (seul)', kind: 'number', initialText: String((meta.config as any).correctSoloPoints ?? 2) },
+          { key: 'correctMultiPoints', label: 'Points : bonne reponse (plusieurs)', kind: 'number', initialText: String((meta.config as any).correctMultiPoints ?? 1) },
+          { key: 'wrongPoints', label: 'Points : mauvaise reponse', kind: 'number', initialText: String((meta.config as any).wrongPoints ?? 0) },
+          { key: 'timeoutPoints', label: 'Points : temps ecoule / tour passe', kind: 'number', initialText: String((meta.config as any).timeoutPoints ?? -1) },
           { key: 'targetPoints', label: 'Points à atteindre', kind: 'number', initialText: String(meta.config.targetPoints ?? 20) },
           { key: 'useTimer', label: 'Chrono (oui/non)', kind: 'bool', initialText: meta.config.useTimer ? 'oui' : 'non' },
           { key: 'timerSeconds', label: 'Secondes (si chrono)', kind: 'number', initialText: String(meta.config.timerSeconds ?? 30) },

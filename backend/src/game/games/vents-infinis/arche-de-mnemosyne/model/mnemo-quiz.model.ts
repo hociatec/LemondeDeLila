@@ -31,6 +31,12 @@ export type MnemoQuizConfig = {
   targetPoints: number;
   useTimer: boolean;
   timerSeconds: number;
+
+  // Barème
+  correctSoloPoints: number;
+  correctMultiPoints: number;
+  wrongPoints: number;
+  timeoutPoints: number;
 };
 
 export type MnemoCurrentQuestion = {
