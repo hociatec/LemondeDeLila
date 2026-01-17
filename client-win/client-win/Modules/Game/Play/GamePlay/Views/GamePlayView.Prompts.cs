@@ -144,6 +144,76 @@ public partial class GamePlayView
         }
     }
 
+
+
+    private void CycleInlinePromptFocus(bool backwards)
+    {
+        try
+        {
+            if (InlinePromptOverlay == null || InlinePromptOverlay.Visibility != Visibility.Visible)
+            {
+                return;
+            }
+
+            InlinePromptOverlay.UpdateLayout();
+
+            var focusables = new System.Collections.Generic.List<Control>();
+            CollectFocusableControls(InlinePromptOverlay, focusables);
+            if (focusables.Count == 0)
+            {
+                return;
+            }
+
+            var current = Keyboard.FocusedElement as DependencyObject;
+            var currentControl = FindAncestorControl(current);
+            var idx = currentControl != null ? focusables.IndexOf(currentControl) : -1;
+
+            var nextIdx = backwards
+                ? (idx <= 0 ? focusables.Count - 1 : idx - 1)
+                : (idx < 0 || idx >= focusables.Count - 1 ? 0 : idx + 1);
+
+            var target = focusables[nextIdx];
+            target.Focus();
+            Keyboard.Focus(target);
+        }
+        catch
+        {
+            // best-effort
+        }
+    }
+
+    private static void CollectFocusableControls(
+        DependencyObject root,
+        System.Collections.Generic.ICollection<Control> outList)
+    {
+        if (root is Control c && c.IsVisible && c.IsEnabled && KeyboardNavigation.GetIsTabStop(c))
+        {
+            outList.Add(c);
+        }
+
+        var count = VisualTreeHelper.GetChildrenCount(root);
+        for (var i = 0; i < count; i++)
+        {
+            var child = VisualTreeHelper.GetChild(root, i);
+            if (child == null) continue;
+            CollectFocusableControls(child, outList);
+        }
+    }
+
+    private static Control? FindAncestorControl(DependencyObject? el)
+    {
+        var cur = el;
+        while (cur != null)
+        {
+            if (cur is Control c)
+            {
+                return c;
+            }
+            cur = VisualTreeHelper.GetParent(cur);
+        }
+        return null;
+    }
+
     private async void OnInlinePromptPreviewKeyDown(object sender, KeyEventArgs e)
     {
         if (DataContext is not GamePlayViewModel vm || !vm.HasInlinePrompt)
@@ -162,6 +232,14 @@ public partial class GamePlayView
             {
                 // ignore
             }
+            return;
+        }
+
+        if (e.Key == Key.Tab)
+        {
+            e.Handled = true;
+            var backwards = (Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift;
+            CycleInlinePromptFocus(backwards);
             return;
         }
 

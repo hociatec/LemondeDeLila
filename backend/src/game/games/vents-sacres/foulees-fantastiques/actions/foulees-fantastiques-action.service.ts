@@ -234,7 +234,7 @@ export class FouleesFantastiquesActionService {
 
     next = this.core.appendLog(
       next,
-      `${this.playerName(state, currentId)} lance le dé : ${roll}.`,
+      `${this.playerName(state, currentId)} lance le dé : "${roll}".`,
     );
 
     const moves = this.computeMoves(next, currentId, roll);
@@ -573,27 +573,29 @@ export class FouleesFantastiquesActionService {
 
     const rollInt = Number.isFinite(roll) ? Math.trunc(roll) : 0;
     const offset = meta.offsets?.[playerId] ?? 0;
-    const pawnLabel = this.pawnLabel(state, playerId, move.pawnIndex);
+    const pawnLabel = this.pawnOwnedLabel(state, playerId, move.pawnIndex);
     if (prevProg < 0 && nextProg === 0) {
       const pos = (offset + nextProg) % meta.trackLength;
       const habitat = this.habitatLabel(state, playerId);
       next = this.core.appendLog(
         next,
-        `${this.playerName(state, playerId)} sort ${pawnLabel} ${this.fromHabitat(habitat)} : case ${pos + 1}/${meta.trackLength}.`,
+        `${this.playerName(state, playerId)} sort ${pawnLabel} ${this.fromHabitat(habitat)} et le met en case ${pos + 1}.`,
       );
     } else {
       if (nextProg >= 0 && nextProg < meta.trackLength) {
         const pos = (offset + nextProg) % meta.trackLength;
         next = this.core.appendLog(
           next,
-          `${this.playerName(state, playerId)} met ${pawnLabel} en case ${pos + 1}/${meta.trackLength}.`,
+          `${this.playerName(state, playerId)} met ${pawnLabel} en case ${pos + 1}.`,
         );
       } else {
-        const casesWord = rollInt == 1 ? 'case' : 'cases';
-        next = this.core.appendLog(
-          next,
-          `${this.playerName(state, playerId)} avance ${pawnLabel} de ${rollInt} ${casesWord}.`,
-        );
+        const homeIndex = nextProg - meta.trackLength + 1;
+        if (homeIndex >= 1 && homeIndex <= meta.homeLength) {
+          next = this.core.appendLog(
+            next,
+            `${this.playerName(state, playerId)} met ${pawnLabel} dans l'abri (${homeIndex}/${meta.homeLength}).`,
+          );
+        }
       }
     }
 
@@ -758,6 +760,24 @@ export class FouleesFantastiquesActionService {
         : '';
     if (name) return name;
     return `animal ${pawnIndex + 1}`;
+  }
+
+  private pawnOwnedLabel(
+    state: GameStateEntity,
+    playerId: number,
+    pawnIndex: number,
+  ): string {
+    const base = this.pawnLabel(state, playerId, pawnIndex);
+    const trimmed = String(base ?? '').trim();
+    const lower = trimmed.toLowerCase();
+    if (
+      lower.startsWith('son ') ||
+      lower.startsWith('sa ') ||
+      lower.startsWith('ses ')
+    ) {
+      return trimmed;
+    }
+    return `son ${trimmed || `animal ${pawnIndex + 1}`}`;
   }
 
   private habitatLabel(state: GameStateEntity, playerId: number): string {

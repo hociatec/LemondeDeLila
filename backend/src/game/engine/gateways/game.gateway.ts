@@ -499,6 +499,31 @@ export class GameGateway
           return;
         }
 
+        if (result.kind === 'room') {
+          if (result.op === 'reset') {
+            await this.roomService.resetRoom(roomId, meta.userId, true);
+          } else if (result.op === 'start') {
+            await this.roomService.startRoom(roomId, meta.userId, true);
+          } else if (result.op === 'restart') {
+            await this.roomService.resetRoom(roomId, meta.userId, true);
+            await this.roomService.startRoom(roomId, meta.userId, true);
+          }
+          await this.engine.refreshAndBroadcast(roomId, gameType);
+          this.safeSend(client, {
+            type: 'game.ack',
+            payload: {
+              action: 'game.key',
+              ok: true,
+              key: normalized,
+              roomOp: result.op,
+              traceId,
+              receivedAtMs,
+              clientToServerMs,
+            },
+          });
+          return;
+        }
+
         this.safeSend(client, {
           type: 'game.ack',
           payload: {

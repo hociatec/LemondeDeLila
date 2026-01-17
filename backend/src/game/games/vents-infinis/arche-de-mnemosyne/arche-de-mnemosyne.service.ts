@@ -1368,7 +1368,7 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
 	        {
 	          key: 'useTimer',
 	          label: 'Chrono (oui/non)',
-	          kind: 'bool',
+	          kind: 'boolean',
 	          initialText: config?.useTimer ? 'oui' : 'non',
 	        },
 	        {

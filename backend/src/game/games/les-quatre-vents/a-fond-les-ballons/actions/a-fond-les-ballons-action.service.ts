@@ -80,7 +80,7 @@ export class AFondLesBallonsActionService {
     }
 
     next = this.decrementTrapImmunity(next, currentId);
-    return this.turns.advanceTurn(next);
+    return this.advanceTurnWithSkipLogs(next);
   }
 
   private handleSwapChooseTarget(
@@ -127,7 +127,53 @@ export class AFondLesBallonsActionService {
     );
 
     next = this.decrementTrapImmunity(next, currentId);
-    return this.turns.advanceTurn(next);
+    return this.advanceTurnWithSkipLogs(next);
+  }
+
+  private advanceTurnWithSkipLogs(state: GameStateEntity): GameStateEntity {
+    const players = Array.isArray(state.players) ? state.players : [];
+    if (!players.length) return state;
+
+    const meta: any = state.metadata ?? {};
+    const statuses: any = meta.statuses ?? {};
+    const skipTurn: Record<number, number> = statuses.skipTurn ?? {};
+    const updatedSkip = { ...skipTurn };
+
+    const currentId = state.turn?.currentPlayerId ?? null;
+    const currentIndex =
+      currentId != null
+        ? players.findIndex((p: any) => p?.id === currentId)
+        : state.turnIndex;
+
+    let nextIndex = currentIndex >= 0 ? currentIndex : state.turnIndex;
+    let attempts = 0;
+    let next = state;
+
+    do {
+      nextIndex = (nextIndex + 1) % players.length;
+      const pid = (players[nextIndex] as any)?.id;
+      const remaining = updatedSkip[pid] ?? 0;
+      if (remaining > 0) {
+        updatedSkip[pid] = remaining - 1;
+        next = this.core.appendLog(
+          next,
+          `${this.playerName(next, pid)} passe son tour.`,
+        );
+        attempts += 1;
+        continue;
+      }
+      break;
+    } while (attempts < players.length);
+
+    return {
+      ...next,
+      turnIndex: nextIndex,
+      turn: { currentPlayerId: (players[nextIndex] as any).id, direction: 1 },
+      metadata: {
+        ...meta,
+        statuses: { ...statuses, skipTurn: updatedSkip },
+      },
+    };
   }
 
   private moveBy(
@@ -169,6 +215,9 @@ export class AFondLesBallonsActionService {
         next,
         `${this.playerName(next, playerId)} passe par Case ${pos + 1} : ${label}.`,
       );
+      if (tile?.description && String(tile.description).trim().length > 0) {
+        next = this.core.appendLog(next, String(tile.description).trim());
+      }
     }
     return next;
   }

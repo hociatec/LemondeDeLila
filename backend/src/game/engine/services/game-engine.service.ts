@@ -172,6 +172,7 @@ export class GameEngineService {
   ): Promise<
     | { kind: 'action'; actions: GameSingleActionDto[] }
     | { kind: 'panel'; panelId: string; message: string }
+    | { kind: 'room'; op: 'reset' | 'start' | 'restart' }
     | null
   > {
     const normalized = String(key ?? '').trim().toUpperCase();
@@ -199,7 +200,21 @@ export class GameEngineService {
       return k === normalized;
     });
 
-    if (!match || typeof match !== 'object') return null;
+    if (!match || typeof match !== 'object') {
+      const status = String(state?.status ?? '').toLowerCase().trim();
+      if (normalized === 'X') {
+        return { kind: 'room', op: 'reset' };
+      }
+      if (normalized === 'ENTER') {
+        if (status === 'finished') {
+          return { kind: 'room', op: 'restart' };
+        }
+        if (status !== 'started') {
+          return { kind: 'room', op: 'start' };
+        }
+      }
+      return null;
+    }
 
     if (match.type === 'action') {
       const actionType = String(match.actionType ?? '').trim();
@@ -226,6 +241,11 @@ export class GameEngineService {
     }
 
     return null;
+  }
+
+  async refreshAndBroadcast(roomId: number, gameType: string): Promise<void> {
+    const state = await this.getInternalState(roomId, gameType);
+    this.broadcaster?.(gameType, roomId, state);
   }
 
   private attachShortcuts(

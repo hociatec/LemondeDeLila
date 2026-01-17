@@ -19,7 +19,14 @@ public partial class GamePlayView
         // Assure le focus clavier dès l'entrée dans une table (sinon Enter/B/Space ne partent pas sans clic souris).
         Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
         {
-            ForceFocusGameZone();
+            if (DataContext is GamePlayViewModel vmNow && vmNow.HasInlinePrompt)
+            {
+                FocusFirstInlinePromptField();
+            }
+            else
+            {
+                ForceFocusGameZone();
+            }
         }));
     }
 
@@ -32,7 +39,14 @@ public partial class GamePlayView
 
         Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
         {
-            ForceFocusGameZone();
+            if (DataContext is GamePlayViewModel vmNow && vmNow.HasInlinePrompt)
+            {
+                FocusFirstInlinePromptField();
+            }
+            else
+            {
+                ForceFocusGameZone();
+            }
         }));
     }
 

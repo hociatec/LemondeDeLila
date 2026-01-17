@@ -215,6 +215,12 @@ public partial class GamePlayView
 
     private void ForceFocusGameZone()
     {
+        if (DataContext is GamePlayViewModel vmPrompt && vmPrompt.HasInlinePrompt)
+        {
+            FocusFirstInlinePromptField();
+            return;
+        }
+
         // Le reset d'une table peut "casser" le focus (l'élément focusé est détruit/collapsé),
         // ce qui oblige ensuite à Tab/Maj+Tab. Ici on force un ancrage stable sur la zone de jeu.
         if (IsTextInputFocused())

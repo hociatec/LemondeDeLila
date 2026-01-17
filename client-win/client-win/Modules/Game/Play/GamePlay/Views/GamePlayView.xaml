@@ -293,6 +293,8 @@
                 Grid.RowSpan="4"
                 Background="#80000000"
                 Visibility="{Binding HasInlinePrompt, Converter={StaticResource BoolToVis}}"
+                Focusable="True"
+                FocusManager.IsFocusScope="True"
                 KeyboardNavigation.TabNavigation="Cycle"
                 KeyboardNavigation.DirectionalNavigation="Contained"
                 PreviewKeyDown="OnInlinePromptPreviewKeyDown">
@@ -317,10 +319,22 @@
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <StackPanel Margin="0 6 0 0">
-                                    <TextBlock Text="{Binding Label}"
+                                    <TextBlock x:Name="InlinePromptFieldLabel"
+                                               Text="{Binding Label}"
                                                Foreground="#9CB2D1"
                                                FontSize="12"
-                                               TextWrapping="Wrap" />
+                                               TextWrapping="Wrap">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsBool}" Value="True">
+                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
 
                                     <TextBox x:Name="InlinePromptTextBox"
                                              Text="{Binding Text, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
@@ -329,7 +343,9 @@
                                              Background="#10223A"
                                              BorderBrush="#1F3C60"
                                              BorderThickness="1"
-                                             Padding="8">
+                                             Padding="8"
+                                             AutomationProperties.Name="{Binding Label}"
+                                             AutomationProperties.LabeledBy="{Binding ElementName=InlinePromptFieldLabel}">
                                         <TextBox.Style>
                                             <Style TargetType="TextBox">
                                                 <Setter Property="Visibility" Value="Visible"/>
@@ -344,9 +360,10 @@
 
                                     <CheckBox x:Name="InlinePromptCheckBox"
                                               IsChecked="{Binding BoolValue, Mode=TwoWay}"
-                                              Content="Oui"
+                                              Content="{Binding Label}"
                                               Margin="0 4 0 0"
-                                              Foreground="White">
+                                              Foreground="White"
+                                              AutomationProperties.Name="{Binding Label}">
                                         <CheckBox.Style>
                                             <Style TargetType="CheckBox">
                                                 <Setter Property="Visibility" Value="Collapsed"/>

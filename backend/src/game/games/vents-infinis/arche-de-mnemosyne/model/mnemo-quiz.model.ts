@@ -73,7 +73,8 @@ export type MnemoPrompt =
       fields: Array<{
         key: string;
         label: string;
-        kind?: 'text' | 'number' | 'bool';
+        // Compat client: some UIs expect "boolean" rather than "bool".
+        kind?: 'text' | 'number' | 'bool' | 'boolean';
         initialText?: string;
       }>;
       cancelActionType?: string;
@@ -94,4 +95,3 @@ export type MnemoQuizMetadata = {
   promptOwnerId?: number | null;
   winnerId: number | null;
 };
-
