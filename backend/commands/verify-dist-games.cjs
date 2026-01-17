@@ -47,6 +47,7 @@ function main() {
   }
 
   const errors = [];
+  const firstManifestByCode = new Map();
   let validManifests = 0;
   let checkedContentJson = 0;
 
@@ -65,6 +66,17 @@ function main() {
     if (!code) errors.push(`manifest sans "code": ${manifestPath}`);
     if (!name) errors.push(`manifest sans "name": ${manifestPath}`);
     if (!engine) errors.push(`manifest sans "engine": ${manifestPath}`);
+
+    if (code) {
+      const prev = firstManifestByCode.get(code);
+      if (prev && prev !== manifestPath) {
+        errors.push(
+          `doublon de jeu (code="${code}"): ${prev} ET ${manifestPath}`,
+        );
+      } else {
+        firstManifestByCode.set(code, manifestPath);
+      }
+    }
 
     const rulesPath = path.join(gameDir, 'rules.md');
     if (!fs.existsSync(rulesPath)) {

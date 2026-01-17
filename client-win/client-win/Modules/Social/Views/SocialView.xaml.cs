@@ -6,10 +6,11 @@ using System.Windows.Input;
 using System.Windows.Threading;
 using client_win.Modules.Social.ViewModels;
 using client_win.Core;
+using client_win.Modules.Shell.Views;
 
 namespace client_win.Modules.Social.Views;
 
-public partial class SocialView : UserControl
+public partial class SocialView : UserControl, IInitialFocusTarget
 {
     private enum SocialScreen
     {
@@ -400,5 +401,14 @@ public partial class SocialView : UserControl
         }
 
         listBox.Focus();
+    }
+
+    public void RequestInitialFocus()
+    {
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
+        {
+            _lastMenuIndex = 0;
+            SetScreen(SocialScreen.Menu);
+        }));
     }
 }

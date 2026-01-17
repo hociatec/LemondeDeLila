@@ -4,10 +4,11 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
 using client_win.Modules.Admin.ViewModels;
+using client_win.Modules.Shell.Views;
 
 namespace client_win.Modules.Admin.Views;
 
-public partial class AdminView : UserControl
+public partial class AdminView : UserControl, IInitialFocusTarget
 {
     private AdminViewModel? _vm;
 
@@ -295,5 +296,12 @@ public partial class AdminView : UserControl
         {
             ItemsList.Focus();
         }
+    }
+
+    public void RequestInitialFocus()
+    {
+        FocusWhenContainersGenerated();
+        FocusBestInputIfVisible();
+        FocusDetailsIfPreferred();
     }
 }

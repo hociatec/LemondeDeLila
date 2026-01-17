@@ -9,10 +9,11 @@ using System.Windows.Input;
 using System.Windows.Threading;
 using client_win.Modules.Messaging.Models;
 using client_win.Modules.Messaging.ViewModels;
+using client_win.Modules.Shell.Views;
 
 namespace client_win.Modules.Messaging.Views;
 
-public partial class MessagingView : UserControl
+public partial class MessagingView : UserControl, IInitialFocusTarget
 {
     private enum MessagingScreen
     {
@@ -507,5 +508,17 @@ public partial class MessagingView : UserControl
         _ = Dispatcher.BeginInvoke(
             DispatcherPriority.Input,
             new Action(() => ShowScreen(MessagingScreen.Compose)));
+    }
+
+    public void RequestInitialFocus()
+    {
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
+        {
+            if (MenuList.Items.Count > 0 && MenuList.SelectedIndex < 0)
+            {
+                MenuList.SelectedIndex = 0;
+            }
+            ShowScreen(MessagingScreen.Menu);
+        }));
     }
 }

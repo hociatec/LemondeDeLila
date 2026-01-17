@@ -10,10 +10,11 @@ using client_win.Modules.Game.History.Views;
 using client_win.Modules.Game.Room.Input;
 using client_win.Modules.Game.Shell.ViewModels;
 using client_win.Modules.Shell.Services;
+using client_win.Modules.Shell.Views;
 
 namespace client_win.Modules.Game.Shell.Views;
 
-public partial class GameRoomView : UserControl
+public partial class GameRoomView : UserControl, IInitialFocusTarget
 {
     private ViewModels.GameRoomViewModel? _vm;
     private Action? _focusRequestedHandler;
@@ -398,5 +399,10 @@ public partial class GameRoomView : UserControl
             e.Handled = true;
             vm.Chat.SendCommand.Execute(null);
         }
+    }
+
+    public void RequestInitialFocus()
+    {
+        RequestFocusGameZoneDeferred();
     }
 }

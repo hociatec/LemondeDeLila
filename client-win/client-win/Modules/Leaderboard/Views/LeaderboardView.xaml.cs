@@ -4,10 +4,11 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
 using client_win.Modules.Leaderboard.ViewModels;
+using client_win.Modules.Shell.Views;
 
 namespace client_win.Modules.Leaderboard.Views;
 
-public partial class LeaderboardView : UserControl
+public partial class LeaderboardView : UserControl, IInitialFocusTarget
 {
     private bool _containersHooked;
 
@@ -135,5 +136,10 @@ public partial class LeaderboardView : UserControl
             _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusFirstItem));
         };
         ItemsList.ItemContainerGenerator.StatusChanged += handler;
+    }
+
+    public void RequestInitialFocus()
+    {
+        FocusWhenContainersGenerated();
     }
 }

@@ -6,13 +6,14 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Threading;
 using client_win.Modules.Home.ViewModels;
+using client_win.Modules.Shell.Views;
 
 namespace client_win.Modules.Home.Views;
 
 /// <summary>
 /// Vue principale de l'écran d'accueil avec formulaires de connexion et d'inscription.
 /// </summary>
-public partial class HomeView : UserControl
+public partial class HomeView : UserControl, IInitialFocusTarget
 {
     private HomeViewModel? _viewModel;
 
@@ -162,5 +163,9 @@ public partial class HomeView : UserControl
             }
         }));
     }
-}
 
+    public void RequestInitialFocus()
+    {
+        FocusFirstField();
+    }
+}

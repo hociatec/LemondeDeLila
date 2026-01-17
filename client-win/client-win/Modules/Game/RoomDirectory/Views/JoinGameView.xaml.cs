@@ -5,10 +5,11 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
 using client_win.Modules.Game.RoomDirectory.ViewModels;
+using client_win.Modules.Shell.Views;
 
 namespace client_win.Modules.Game.RoomDirectory.Views;
 
-public partial class JoinGameView : UserControl
+public partial class JoinGameView : UserControl, IInitialFocusTarget
 {
     private INotifyCollectionChanged? _roomsObservable;
     private int _lastRoomsCount = -1;
@@ -338,5 +339,10 @@ public partial class JoinGameView : UserControl
             e.Handled = true;
             vm.CloseCommand.Execute(null);
         }
+    }
+
+    public void RequestInitialFocus()
+    {
+        FocusEmptyOrList();
     }
 }

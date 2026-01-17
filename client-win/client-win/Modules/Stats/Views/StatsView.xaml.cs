@@ -4,10 +4,11 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
 using client_win.Modules.Stats.ViewModels;
+using client_win.Modules.Shell.Views;
 
 namespace client_win.Modules.Stats.Views;
 
-public partial class StatsView : UserControl
+public partial class StatsView : UserControl, IInitialFocusTarget
 {
     public StatsView()
     {
@@ -111,5 +112,10 @@ public partial class StatsView : UserControl
             _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusFirstItem));
         };
         ItemsList.ItemContainerGenerator.StatusChanged += handler;
+    }
+
+    public void RequestInitialFocus()
+    {
+        FocusWhenContainersGenerated();
     }
 }

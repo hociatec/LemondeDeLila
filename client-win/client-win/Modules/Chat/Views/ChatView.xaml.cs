@@ -5,10 +5,11 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using client_win.Modules.Chat.ViewModels;
+using client_win.Modules.Shell.Views;
 
 namespace client_win.Modules.Chat.Views;
 
-public partial class ChatView : UserControl
+public partial class ChatView : UserControl, IInitialFocusTarget
 {
     private INotifyCollectionChanged? _currentMessages;
     private bool _didInitialFocus;
@@ -233,5 +234,10 @@ public partial class ChatView : UserControl
         }
 
         return null;
+    }
+
+    public void RequestInitialFocus()
+    {
+        FocusInputDeferred(selectAll: false);
     }
 }

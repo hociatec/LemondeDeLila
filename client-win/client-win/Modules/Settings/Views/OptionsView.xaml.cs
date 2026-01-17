@@ -6,10 +6,11 @@ using System.Windows.Input;
 using System.Windows.Threading;
 using System.Windows.Media;
 using client_win.Modules.Settings.ViewModels;
+using client_win.Modules.Shell.Views;
 
 namespace client_win.Modules.Settings.Views;
 
-public partial class OptionsView : UserControl
+public partial class OptionsView : UserControl, IInitialFocusTarget
 {
     private bool _didInitialFocus;
     private bool _didHookFocusRetention;
@@ -210,5 +211,14 @@ public partial class OptionsView : UserControl
         }
 
         FocusTabs();
+    }
+
+    public void RequestInitialFocus()
+    {
+        Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
+        {
+            EnsureDefaultTabSelected();
+            FocusSelectedTabHeader();
+        }));
     }
 }

@@ -4,10 +4,11 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
 using client_win.Modules.Notifications.ViewModels;
+using client_win.Modules.Shell.Views;
 
 namespace client_win.Modules.Notifications.Views;
 
-public partial class NotificationsView : UserControl
+public partial class NotificationsView : UserControl, IInitialFocusTarget
 {
     private NotificationsViewModel? _vm;
     private EventHandler? _focusHandler;
@@ -175,5 +176,10 @@ public partial class NotificationsView : UserControl
         vm.ReplyCommand.Execute(null);
         FocusReplyBox();
         e.Handled = true;
+    }
+
+    public void RequestInitialFocus()
+    {
+        FocusFirstItem();
     }
 }

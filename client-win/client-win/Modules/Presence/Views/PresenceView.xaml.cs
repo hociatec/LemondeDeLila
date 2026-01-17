@@ -6,10 +6,11 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
 using client_win.Modules.Presence.ViewModels;
+using client_win.Modules.Shell.Views;
 
 namespace client_win.Modules.Presence.Views;
 
-public partial class PresenceView : UserControl
+public partial class PresenceView : UserControl, IInitialFocusTarget
 {
     private PresenceViewModel? _viewModel;
     private int _focusRequestId;
@@ -207,5 +208,10 @@ public partial class PresenceView : UserControl
         {
             // Best-effort.
         }
+    }
+
+    public void RequestInitialFocus()
+    {
+        FocusCurrentPage();
     }
 }

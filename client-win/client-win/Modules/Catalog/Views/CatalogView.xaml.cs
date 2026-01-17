@@ -5,10 +5,11 @@ using System.Windows.Threading;
 using System.Windows.Input;
 using System;
 using client_win.Modules.Catalog.Models;
+using client_win.Modules.Shell.Views;
 
 namespace client_win.Modules.Catalog.Views;
 
-public partial class CatalogView : UserControl
+public partial class CatalogView : UserControl, IInitialFocusTarget
 {
     public CatalogView()
     {
@@ -235,5 +236,13 @@ public partial class CatalogView : UserControl
             }));
         };
         listBox.ItemContainerGenerator.StatusChanged += handler;
+    }
+
+    public void RequestInitialFocus()
+    {
+        Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
+        {
+            FocusWhenContainersGenerated(CategoriesList);
+        }));
     }
 }

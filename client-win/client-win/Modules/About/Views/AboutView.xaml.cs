@@ -4,10 +4,11 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
 using client_win.Modules.About.ViewModels;
+using client_win.Modules.Shell.Views;
 
 namespace client_win.Modules.About.Views;
 
-public partial class AboutView : UserControl
+public partial class AboutView : UserControl, IInitialFocusTarget
 {
     public AboutView()
     {
@@ -139,5 +140,10 @@ public partial class AboutView : UserControl
             _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusFirstItem));
         };
         ItemsList.ItemContainerGenerator.StatusChanged += handler;
+    }
+
+    public void RequestInitialFocus()
+    {
+        FocusCurrentPage();
     }
 }

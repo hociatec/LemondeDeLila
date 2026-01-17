@@ -6,10 +6,11 @@ using System.Windows.Input;
 using System.Windows.Threading;
 using client_win.Core;
 using client_win.Modules.MainMenu.ViewModels;
+using client_win.Modules.Shell.Views;
 
 namespace client_win.Modules.MainMenu.Views;
 
-public partial class MainMenuView : UserControl
+public partial class MainMenuView : UserControl, IInitialFocusTarget
 {
     private long _lastAutoFocusTicks;
 
@@ -157,5 +158,10 @@ public partial class MainMenuView : UserControl
             _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(FocusFirstItem));
         };
         ItemsList.ItemContainerGenerator.StatusChanged += handler;
+    }
+
+    public void RequestInitialFocus()
+    {
+        FocusWhenContainersGenerated();
     }
 }

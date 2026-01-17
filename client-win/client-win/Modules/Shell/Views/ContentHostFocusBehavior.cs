@@ -95,12 +95,30 @@ public static class ContentHostFocusBehavior
     {
         try
         {
-            void TryFocus()
+            void TryFocus(bool allowFallback)
             {
                 try
                 {
                     if (host.Content is not DependencyObject root)
                     {
+                        return;
+                    }
+
+                    if (root is Visual v && PresentationSource.FromVisual(v) == null)
+                    {
+                        return;
+                    }
+                    if (root is System.Windows.Media.Media3D.Visual3D v3 && PresentationSource.FromVisual(v3) == null)
+                    {
+                        return;
+                    }
+
+                    if (root is IInitialFocusTarget focusTarget)
+                    {
+                        if (!allowFallback || !IsFocusWithin(root))
+                        {
+                            focusTarget.RequestInitialFocus();
+                        }
                         return;
                     }
 
@@ -111,6 +129,10 @@ public static class ContentHostFocusBehavior
                     }
 
                     // Fallback: tenter un MoveFocus à partir du host.
+                    if (!allowFallback)
+                    {
+                        return;
+                    }
                     if (host.IsVisible)
                     {
                         host.MoveFocus(new TraversalRequest(FocusNavigationDirection.First));
@@ -123,8 +145,8 @@ public static class ContentHostFocusBehavior
             }
 
             // Essai rapide dès que la vue est chargée + essai tardif une fois idle.
-            host.Dispatcher.BeginInvoke((Action)TryFocus, DispatcherPriority.Loaded);
-            host.Dispatcher.BeginInvoke((Action)TryFocus, DispatcherPriority.ApplicationIdle);
+            host.Dispatcher.BeginInvoke((Action)(() => TryFocus(allowFallback: false)), DispatcherPriority.Loaded);
+            host.Dispatcher.BeginInvoke((Action)(() => TryFocus(allowFallback: true)), DispatcherPriority.ApplicationIdle);
         }
         catch
         {
@@ -173,5 +195,46 @@ public static class ContentHostFocusBehavior
         }
 
         return null;
+    }
+
+    private static bool IsFocusWithin(DependencyObject root)
+    {
+        var focused = Keyboard.FocusedElement as DependencyObject;
+        if (focused == null)
+        {
+            return false;
+        }
+
+        for (DependencyObject? current = focused; current != null; current = GetParent(current))
+        {
+            if (ReferenceEquals(current, root))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static DependencyObject? GetParent(DependencyObject current)
+    {
+        try
+        {
+            if (current is Visual || current is System.Windows.Media.Media3D.Visual3D)
+            {
+                return VisualTreeHelper.GetParent(current);
+            }
+        }
+        catch
+        {
+            // ignore
+        }
+
+        if (current is FrameworkElement fe)
+        {
+            return fe.Parent ?? fe.TemplatedParent;
+        }
+
+        return LogicalTreeHelper.GetParent(current);
     }
 }

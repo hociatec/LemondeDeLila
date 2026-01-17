@@ -25,6 +25,8 @@ public sealed class RemoteSoundCache : IRemoteSoundCache
     {
         _config = config ?? throw new ArgumentNullException(nameof(config));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        TryLoadFromDisk();
+        TryFillMissingFromCacheDir();
     }
 
     public string? TryGetPath(SoundId sound)
@@ -59,6 +61,8 @@ public sealed class RemoteSoundCache : IRemoteSoundCache
             {
                 return;
             }
+
+            TrySaveManifest(json);
 
             var refreshed = new Dictionary<SoundId, string>();
             var expectedFileNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -102,6 +106,205 @@ public sealed class RemoteSoundCache : IRemoteSoundCache
         }
     }
 
+    private static string GetCacheDir()
+    {
+        return Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            AppConstants.AppDataFolderName,
+            "sounds-cache");
+    }
+
+    private static string GetManifestPath() => Path.Combine(GetCacheDir(), "sounds-manifest.json");
+
+    private bool TryLoadFromDisk()
+    {
+        try
+        {
+            var manifestPath = GetManifestPath();
+            if (!File.Exists(manifestPath))
+            {
+                return false;
+            }
+
+            var json = File.ReadAllText(manifestPath);
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                return false;
+            }
+
+            var manifest = JsonSerializer.Deserialize<RemoteSoundManifestDto>(json, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+            if (manifest?.Sounds == null || manifest.Sounds.Count == 0)
+            {
+                return false;
+            }
+
+            var cacheDir = GetCacheDir();
+            if (!Directory.Exists(cacheDir))
+            {
+                return false;
+            }
+
+            var refreshed = new Dictionary<SoundId, string>();
+            foreach (var (idString, entry) in manifest.Sounds)
+            {
+                if (!Enum.TryParse<SoundId>(idString, ignoreCase: true, out var soundId))
+                {
+                    continue;
+                }
+                if (string.IsNullOrWhiteSpace(entry?.Sha256))
+                {
+                    continue;
+                }
+
+                var fileName = $"{soundId}-{entry.Sha256}.mp3";
+                var destPath = Path.Combine(cacheDir, fileName);
+                if (File.Exists(destPath))
+                {
+                    refreshed[soundId] = destPath;
+                }
+            }
+
+            if (refreshed.Count == 0)
+            {
+                return false;
+            }
+
+            lock (_gate)
+            {
+                _pathsBySound.Clear();
+                foreach (var (soundId, path) in refreshed)
+                {
+                    _pathsBySound[soundId] = path;
+                }
+            }
+
+            try
+            {
+                _lastRefreshUtc = File.GetLastWriteTimeUtc(manifestPath);
+            }
+            catch
+            {
+                // ignore
+            }
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogDebug(ex, "Remote sound cache load failed");
+            return false;
+        }
+    }
+
+    private void TryFillMissingFromCacheDir()
+    {
+        try
+        {
+            var bestBySound = CollectBestCachedSounds();
+            if (bestBySound.Count == 0)
+            {
+                return;
+            }
+
+            lock (_gate)
+            {
+                foreach (var kvp in bestBySound)
+                {
+                    if (_pathsBySound.ContainsKey(kvp.Key))
+                    {
+                        continue;
+                    }
+
+                    _pathsBySound[kvp.Key] = kvp.Value.Path;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogDebug(ex, "Remote sound cache scan failed");
+        }
+    }
+
+    private static Dictionary<SoundId, (string Path, DateTime LastWriteUtc)> CollectBestCachedSounds()
+    {
+        var bestBySound = new Dictionary<SoundId, (string Path, DateTime LastWriteUtc)>();
+
+        var cacheDir = GetCacheDir();
+        if (!Directory.Exists(cacheDir))
+        {
+            return bestBySound;
+        }
+
+        foreach (var path in Directory.EnumerateFiles(cacheDir, "*.mp3", SearchOption.TopDirectoryOnly))
+        {
+            var fileName = Path.GetFileName(path);
+            if (string.IsNullOrWhiteSpace(fileName))
+            {
+                continue;
+            }
+
+            var name = Path.GetFileNameWithoutExtension(fileName);
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                continue;
+            }
+
+            var dashIndex = name.IndexOf('-');
+            if (dashIndex <= 0)
+            {
+                continue;
+            }
+
+            var idPart = name.Substring(0, dashIndex);
+            if (!Enum.TryParse<SoundId>(idPart, ignoreCase: true, out var soundId))
+            {
+                continue;
+            }
+
+            FileInfo info;
+            try
+            {
+                info = new FileInfo(path);
+                if (info.Length <= 0)
+                {
+                    continue;
+                }
+            }
+            catch
+            {
+                continue;
+            }
+
+            var lastWrite = info.LastWriteTimeUtc;
+            if (bestBySound.TryGetValue(soundId, out var current) &&
+                current.LastWriteUtc >= lastWrite)
+            {
+                continue;
+            }
+
+            bestBySound[soundId] = (path, lastWrite);
+        }
+
+        return bestBySound;
+    }
+
+    private static void TrySaveManifest(string json)
+    {
+        try
+        {
+            var cacheDir = GetCacheDir();
+            Directory.CreateDirectory(cacheDir);
+            File.WriteAllText(GetManifestPath(), json);
+        }
+        catch
+        {
+            // ignore
+        }
+    }
+
     private void TryCleanupCacheDir(HashSet<string> expectedFileNames)
     {
         if (expectedFileNames.Count == 0)
@@ -111,10 +314,7 @@ public sealed class RemoteSoundCache : IRemoteSoundCache
 
         try
         {
-            var cacheDir = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                AppConstants.AppDataFolderName,
-                "sounds-cache");
+            var cacheDir = GetCacheDir();
             if (!Directory.Exists(cacheDir))
             {
                 return;
@@ -161,10 +361,7 @@ public sealed class RemoteSoundCache : IRemoteSoundCache
             return null;
         }
 
-        var cacheDir = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            AppConstants.AppDataFolderName,
-            "sounds-cache");
+        var cacheDir = GetCacheDir();
         Directory.CreateDirectory(cacheDir);
 
         var fileName = $"{soundId}-{sha256}.mp3";
