@@ -675,8 +675,8 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
       const withLog = this.core.appendLog(
         state,
         correct
-          ? `${who} repond : ${choice}. Bonne reponse.`
-          : `${who} repond : ${choice}. Mauvaise reponse.`,
+          ? `${who} répond : ${choice}. Bonne réponse.`
+          : `${who} répond : ${choice}. Mauvaise réponse.`,
       );
 
       return { ...withLog, metadata: { ...meta, quizAnswersByPlayerId: answers } };
@@ -954,16 +954,16 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
     const answers = (meta.quizAnswersByPlayerId ?? {}) as any as Record<number, number>;
     if (answers[botPlayerId] != null) return null;
 
-    const correctIndex = q.choices.findIndex((c) => c === q.correctChoice);
-    const validCorrectIndex =
-      correctIndex >= 0 && correctIndex < q.choices.length ? correctIndex : 0;
+    const choicesLen = Math.max(0, q.choices?.length ?? 0);
+    if (choicesLen <= 0) return null;
 
-    // Bot simple: 70% chance de répondre juste, sinon choisit "au hasard" de façon déterministe
-    // (évite un état bloqué si useTimer est désactivé).
-    const seed = this.hashSeed(`${q.id}:${botPlayerId}`);
-    const roll = seed % 10; // 0..9
-    const answerIndex =
-      roll < 7 ? validCorrectIndex : seed % Math.max(1, q.choices.length);
+    // Bot simple: réponse aléatoire (seed stable par partie/question/bot).
+    // IMPORTANT: ne pas dépendre de l'ordre de `players[]` (peut changer) et éviter
+    // une réponse déterministe identique entre bots pour une même question.
+    const seed = this.hashSeed(
+      `${q.id}:${botPlayerId}:${String((meta as any).roomRunId ?? '')}:${String(meta.quizDeadlineAtMs ?? '')}`,
+    );
+    const answerIndex = seed % choicesLen;
 
     return [{ type: 'answer_quiz', payload: { answerIndex } } as any];
   }
@@ -1363,25 +1363,25 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
 	      fields: [
 	        {
 	          key: 'correctSoloPoints',
-	          label: 'Points : bonne reponse (seul)',
+	          label: 'Points : bonne réponse (seul)',
 	          kind: 'number',
 	          initialText: String((config as any)?.correctSoloPoints ?? 2),
 	        },
 	        {
 	          key: 'correctMultiPoints',
-	          label: 'Points : bonne reponse (plusieurs)',
+	          label: 'Points : bonne réponse (plusieurs)',
 	          kind: 'number',
 	          initialText: String((config as any)?.correctMultiPoints ?? 1),
 	        },
 	        {
 	          key: 'wrongPoints',
-	          label: 'Points : mauvaise reponse',
+	          label: 'Points : mauvaise réponse',
 	          kind: 'number',
 	          initialText: String((config as any)?.wrongPoints ?? 0),
 	        },
 	        {
 	          key: 'timeoutPoints',
-	          label: 'Points : temps ecoule / tour passe',
+	          label: 'Points : temps écoulé / tour passé',
 	          kind: 'number',
 	          initialText: String((config as any)?.timeoutPoints ?? -1),
 	        },

@@ -260,6 +260,38 @@
                         </Style>
                     </TextBlock.Style>
                 </TextBlock>
+
+                <!-- Quiz: afficher la question au-dessus des réponses (utile pour la relire au lecteur d'écran). -->
+                <TextBlock x:Name="QuizQuestionTextBlock"
+                           Text="{Binding QuizQuestionText}"
+                           Foreground="#F2C14E"
+                           FontSize="14"
+                           FontWeight="SemiBold"
+                           TextWrapping="Wrap"
+                           Margin="0 10 0 0"
+                           AutomationProperties.LiveSetting="Polite"
+                           AutomationProperties.Name="{Binding QuizQuestionText}">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <MultiDataTrigger>
+                                    <MultiDataTrigger.Conditions>
+                                        <Condition Binding="{Binding IsQuizPending}" Value="True" />
+                                        <Condition Binding="{Binding QuizQuestionText}" Value="{x:Null}" />
+                                    </MultiDataTrigger.Conditions>
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </MultiDataTrigger>
+                                <DataTrigger Binding="{Binding IsQuizPending}" Value="True">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding QuizQuestionText}" Value="">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
                 <ListBox x:Name="ChoicesList"
                          ItemsSource="{Binding PendingChoices}"
                          SelectedIndex="{Binding SelectedChoiceIndex, Mode=TwoWay}"
@@ -272,7 +304,7 @@
                          Foreground="White"
                          FontSize="12"
                          MaxHeight="160"
-                         AutomationProperties.Name="{Binding ChoicesLabel}"
+                         AutomationProperties.Name="{Binding ChoicesA11yName}"
                          AutomationProperties.LabeledBy="{Binding ElementName=ChoicesLabelText}">
                     <ListBox.Style>
                         <Style TargetType="ListBox">

@@ -57,4 +57,54 @@ describe('ArcheDeMnemosyneService prompt actions', () => {
     expect(String(exposed?.pending?.type ?? '')).toBe('config_prompt');
     expect(String(exposed?.pending?.data?.actionType ?? '')).toBe('mnemo_set_config');
   });
+
+  it('makes bots answer randomly for each question', () => {
+    const service = new ArcheDeMnemosyneService(
+      { register: jest.fn() } as any,
+      { appendLog: (s: any) => s } as any,
+      {} as any,
+      { listCategories: () => [], listQuestions: () => [] } as any,
+      {} as any,
+    );
+
+    const state: GameStateEntity = {
+      status: 'started',
+      phase: 'quiz',
+      round: 1,
+      turnIndex: 0,
+      lastRoll: null,
+      log: [],
+      players: [
+        { id: 1, username: 'Owner' } as any,
+        { id: -1, username: 'Bot A', isBot: true } as any,
+        { id: -2, username: 'Bot B', isBot: true } as any,
+      ],
+      metadata: {
+        roomRunId: 7,
+        quizDeadlineAtMs: 123,
+        currentQuestion: {
+          id: 'q1',
+          categoryId: 'c1',
+          question: 'Q?',
+          choices: ['A', 'B', 'C', 'D'],
+          correctChoice: 'A',
+        },
+        quizAnswersByPlayerId: {},
+        adminView: { page: 'setup' },
+      } as any,
+    };
+
+    const a = service.getBotActions(state, -1);
+    const b = service.getBotActions(state, -2);
+    expect(Array.isArray(a)).toBe(true);
+    expect(Array.isArray(b)).toBe(true);
+    expect(a?.[0]?.type).toBe('answer_quiz');
+    expect(b?.[0]?.type).toBe('answer_quiz');
+    expect(Number.isFinite(Number((a?.[0] as any)?.payload?.answerIndex))).toBe(true);
+    expect(Number.isFinite(Number((b?.[0] as any)?.payload?.answerIndex))).toBe(true);
+    expect(Number((a?.[0] as any).payload.answerIndex)).toBeGreaterThanOrEqual(0);
+    expect(Number((a?.[0] as any).payload.answerIndex)).toBeLessThan(4);
+    expect(Number((b?.[0] as any).payload.answerIndex)).toBeGreaterThanOrEqual(0);
+    expect(Number((b?.[0] as any).payload.answerIndex)).toBeLessThan(4);
+  });
 });
