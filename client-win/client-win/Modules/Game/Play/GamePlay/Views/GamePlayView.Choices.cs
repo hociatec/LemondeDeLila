@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Threading;
 using System.Windows;
 using System.Windows.Automation;
@@ -36,10 +37,16 @@ public partial class GamePlayView
             _vm.GameZoneFocusRequested -= _focusRequestedHandler;
         }
 
+        if (_vm != null && _vmPropertyChangedHandler != null)
+        {
+            _vm.PropertyChanged -= _vmPropertyChangedHandler;
+        }
+
         _vm = vm;
         _choicesCollection = null;
         _choicesChanged = null;
         _focusRequestedHandler = null;
+        _vmPropertyChangedHandler = null;
 
         if (_vm != null)
         {
@@ -51,6 +58,28 @@ public partial class GamePlayView
                 }));
             };
             _vm.GameZoneFocusRequested += _focusRequestedHandler;
+
+            _vmPropertyChangedHandler = (_, e) =>
+            {
+                // Quand la question de quiz apparaît/change, on veut la lire immédiatement.
+                if (!string.Equals(e.PropertyName, nameof(GamePlayViewModel.QuizQuestionText), StringComparison.Ordinal) &&
+                    !string.Equals(e.PropertyName, nameof(GamePlayViewModel.PendingType), StringComparison.Ordinal) &&
+                    !string.Equals(e.PropertyName, nameof(GamePlayViewModel.IsQuizPending), StringComparison.Ordinal))
+                {
+                    return;
+                }
+
+                if (IsTextInputFocused())
+                {
+                    return;
+                }
+
+                Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
+                {
+                    TryAutoFocusQuizQuestion();
+                }));
+            };
+            _vm.PropertyChanged += _vmPropertyChangedHandler;
         }
 
         if (vm?.PendingChoices is not INotifyCollectionChanged notify)
@@ -127,11 +156,48 @@ public partial class GamePlayView
 
             Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
             {
+                if (TryAutoFocusQuizQuestion())
+                {
+                    return;
+                }
+
                 TryFocusFirstChoice();
             }));
         };
 
         notify.CollectionChanged += _choicesChanged;
+    }
+
+    private bool TryAutoFocusQuizQuestion()
+    {
+        if (DataContext is not GamePlayViewModel vm || !vm.IsQuizPending)
+        {
+            _lastAutoFocusedQuizQuestionText = string.Empty;
+            return false;
+        }
+
+        var question = (vm.QuizQuestionText ?? string.Empty).Trim();
+        if (string.IsNullOrWhiteSpace(question))
+        {
+            return false;
+        }
+
+        if (string.Equals(_lastAutoFocusedQuizQuestionText, question, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        _lastAutoFocusedQuizQuestionText = question;
+
+        // Pré-sélectionner la 1ère réponse pour que ↓ depuis la question fonctionne immédiatement.
+        if (ChoicesList.Visibility == Visibility.Visible &&
+            ChoicesList.Items.Count > 0 &&
+            ChoicesList.SelectedIndex < 0)
+        {
+            ChoicesList.SelectedIndex = 0;
+        }
+
+        return TryFocusQuizQuestion();
     }
 
     private void UpdateChoicesAccessibility()
@@ -252,6 +318,20 @@ public partial class GamePlayView
 
         if (ChoicesList.Visibility == Visibility.Visible && ChoicesList.Items.Count > 0)
         {
+            // Quiz: la question est l'ancre principale, puis ↓ permet de lire la 1ère réponse.
+            if (DataContext is GamePlayViewModel vmQuiz && vmQuiz.IsQuizPending)
+            {
+                if (ChoicesList.SelectedIndex < 0)
+                {
+                    ChoicesList.SelectedIndex = 0;
+                }
+
+                if (TryFocusQuizQuestion())
+                {
+                    return;
+                }
+            }
+
             if (ChoicesList.SelectedIndex < 0)
             {
                 ChoicesList.SelectedIndex = 0;

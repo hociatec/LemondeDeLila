@@ -11,6 +11,56 @@ namespace client_win.Modules.Game.Play.GamePlay.Views;
 
 public partial class GamePlayView
 {
+    private bool IsFocusWithinQuizQuestion()
+    {
+        if (DataContext is not GamePlayViewModel vm || !vm.IsQuizPending)
+        {
+            return false;
+        }
+
+        if (FindName("QuizQuestionTextBlock") is not FrameworkElement question)
+        {
+            return false;
+        }
+
+        var focused = Keyboard.FocusedElement as DependencyObject;
+        while (focused != null)
+        {
+            if (ReferenceEquals(focused, question))
+            {
+                return true;
+            }
+
+            focused = VisualTreeHelper.GetParent(focused);
+        }
+
+        return false;
+    }
+
+    private bool TryFocusQuizQuestion()
+    {
+        if (FindName("QuizQuestionTextBlock") is not FrameworkElement question)
+        {
+            return false;
+        }
+
+        if (question.Visibility != Visibility.Visible)
+        {
+            return false;
+        }
+
+        try
+        {
+            question.Focus();
+            Keyboard.Focus(question);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
     private bool IsFocusWithinInlinePrompt()
     {
         if (InlinePromptOverlay == null)
@@ -61,6 +111,23 @@ public partial class GamePlayView
         // Naviguer la liste même si le focus est ailleurs (Tab/Maj+Tab, historique, etc.).
         e.Handled = true;
 
+        // Quiz: permettre d'atteindre la question "au-dessus" de la liste.
+        // Quand le focus est sur la question : ↓ revient au 1er choix, ↑ reste sur la question.
+        if (DataContext is GamePlayViewModel vmQ && vmQ.IsQuizPending && IsFocusWithinQuizQuestion())
+        {
+            if (e.Key == Key.Down)
+            {
+                if (ChoicesList.SelectedIndex < 0)
+                {
+                    ChoicesList.SelectedIndex = 0;
+                }
+
+                TryFocusChoiceIndex(ChoicesList.SelectedIndex < 0 ? 0 : ChoicesList.SelectedIndex);
+            }
+
+            return true;
+        }
+
         var count = ChoicesList.Items.Count;
         var current = ChoicesList.SelectedIndex;
         if (current < 0)
@@ -75,7 +142,15 @@ public partial class GamePlayView
         {
             // Quiz: no wrap-around (top/bottom should be blocked).
             next = current + delta;
-            if (next < 0) next = 0;
+            if (next < 0)
+            {
+                // En haut: aller sur la question (au lieu de rester bloqué sur la 1ère réponse).
+                if (TryFocusQuizQuestion())
+                {
+                    return true;
+                }
+                next = 0;
+            }
             if (next >= count) next = count - 1;
         }
         else

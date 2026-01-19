@@ -260,6 +260,24 @@ public partial class HomeView : UserControl, IInitialFocusTarget
             };
 
             window.Activated += _hostWindowActivatedHandler;
+
+            // Si la fenêtre est déjà active au moment où on attache le handler, l'événement Activated
+            // a potentiellement déjà eu lieu (au tout début du démarrage). Dans ce cas, on fait un
+            // "retry" immédiat pour éviter d'obliger l'utilisateur à alt-tab.
+            if (window.IsActive)
+            {
+                Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() =>
+                {
+                    try
+                    {
+                        FocusFirstField();
+                    }
+                    catch
+                    {
+                        // best-effort
+                    }
+                }));
+            }
         }
         catch
         {

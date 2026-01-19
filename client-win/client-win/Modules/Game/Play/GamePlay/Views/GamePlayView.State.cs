@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Specialized;
 using System.Threading;
+using System.ComponentModel;
 using client_win.Modules.Game.Play.GamePlay.ViewModels;
 
 namespace client_win.Modules.Game.Play.GamePlay.Views;
@@ -15,4 +16,6 @@ public partial class GamePlayView
     private GamePlayViewModel? _initVm;
     private int _gridFocusIndex;
     private EventHandler? _gridGeneratorStatusChanged;
+    private string _lastAutoFocusedQuizQuestionText = string.Empty;
+    private PropertyChangedEventHandler? _vmPropertyChangedHandler;
 }
