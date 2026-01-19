@@ -11,6 +11,56 @@ namespace client_win.Modules.Game.Play.GamePlay.Views;
 
 public partial class GamePlayView
 {
+    private bool IsFocusWithinQuizQuestion()
+    {
+        if (DataContext is not GamePlayViewModel vm || !vm.IsQuizPending)
+        {
+            return false;
+        }
+
+        if (FindName("QuizQuestionTextBlock") is not FrameworkElement question)
+        {
+            return false;
+        }
+
+        var focused = Keyboard.FocusedElement as DependencyObject;
+        while (focused != null)
+        {
+            if (ReferenceEquals(focused, question))
+            {
+                return true;
+            }
+
+            focused = VisualTreeHelper.GetParent(focused);
+        }
+
+        return false;
+    }
+
+    private bool TryFocusQuizQuestion()
+    {
+        if (FindName("QuizQuestionTextBlock") is not FrameworkElement question)
+        {
+            return false;
+        }
+
+        if (question.Visibility != Visibility.Visible)
+        {
+            return false;
+        }
+
+        try
+        {
+            question.Focus();
+            Keyboard.Focus(question);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
     private bool IsFocusWithinInlinePrompt()
     {
         if (InlinePromptOverlay == null)
@@ -69,10 +119,31 @@ public partial class GamePlayView
         int next;
         if (DataContext is GamePlayViewModel vm2 && vm2.IsQuizPending)
         {
-            // Quiz: la première navigation doit sélectionner/annoncer la 1ère réponse (index 0),
-            // et ne pas sauter directement à la 2e.
+            // Quiz: la question est affichée au-dessus de la liste et accessible via ↑ depuis la 1ère réponse.
+            // Quand le focus est sur la question: ↓ va sur la 1ère réponse; ↑ reste sur la question.
+            if (IsFocusWithinQuizQuestion())
+            {
+                if (e.Key == Key.Down)
+                {
+                    if (ChoicesList.SelectedIndex < 0)
+                    {
+                        ChoicesList.SelectedIndex = 0;
+                    }
+                    ChoicesList.ScrollIntoView(ChoicesList.SelectedItem);
+                    TryFocusChoiceIndex(ChoicesList.SelectedIndex < 0 ? 0 : ChoicesList.SelectedIndex);
+                }
+                return true;
+            }
+
+            // Première navigation depuis la liste (ou si rien n'est sélectionné).
             if (current < 0)
             {
+                if (e.Key == Key.Up)
+                {
+                    TryFocusQuizQuestion();
+                    return true;
+                }
+
                 ChoicesList.SelectedIndex = 0;
                 ChoicesList.ScrollIntoView(ChoicesList.SelectedItem);
                 TryFocusChoiceIndex(0);
@@ -81,7 +152,12 @@ public partial class GamePlayView
 
             // Quiz: no wrap-around (top/bottom blocked). La question reste un texte au-dessus, hors navigation.
             next = current + delta;
-            if (next < 0) next = 0;
+            if (next < 0)
+            {
+                // En haut: aller sur la question.
+                TryFocusQuizQuestion();
+                return true;
+            }
             if (next >= count) next = count - 1;
         }
         else
