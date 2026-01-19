@@ -600,6 +600,11 @@ internal sealed class GameTableBindings : IAsyncDisposable
 
 	        if (hasGamePlayLoaded)
 	        {
+	            // IMPORTANT (NVDA):
+	            // Si le contrôle actuellement focusé (dans la zone de jeu) disparaît, NVDA annonce souvent "indisponible".
+	            // On park donc le focus sur un élément stable avant de décharger le contenu.
+	            FocusParking.Park();
+
 	            _tableVm.GameZone.Content = null;
 	            await UnloadGamePlayVmAsync().ConfigureAwait(true);
 	        }
