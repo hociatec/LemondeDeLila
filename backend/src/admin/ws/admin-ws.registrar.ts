@@ -111,6 +111,9 @@ export class AdminWsRegistrar implements OnModuleInit {
     this.registry.register('admin.client.update.forceLatest', (s, p) =>
       this.clientUpdates.clientUpdateForceLatest(s, p),
     );
+    this.registry.register('admin.client.update.schedule', (s, p) =>
+      this.clientUpdates.clientUpdateSchedule(s, p),
+    );
 
     this.registry.register('admin.chat.messages', (s, p) =>
       this.chat.chatMessages(s, p),

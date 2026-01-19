@@ -92,7 +92,9 @@ export class GameCoreService {
     );
     payload.room.bots.forEach((b, idx) =>
       players.push({
-        id: -(idx + 1),
+        // Stable id: avoid shifting bot ids when the room bot list order changes.
+        // This prevents games from "remembering" a different bot after add/remove/reorder.
+        id: -Math.abs(b.id),
         username: b.name,
         isBot: true,
         basket: [],

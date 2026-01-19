@@ -475,6 +475,21 @@ public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsy
                 return;
             }
 
+            if (string.Equals(type, "client.update.imminent", StringComparison.OrdinalIgnoreCase))
+            {
+                var payload = root.TryGetProperty("payload", out var p) ? p : default;
+                var message = payload.ValueKind != JsonValueKind.Undefined && payload.TryGetProperty("message", out var m)
+                    ? (m.GetString() ?? string.Empty)
+                    : string.Empty;
+
+                _sounds.Play(SoundId.ClientUpdateWarning);
+                if (!string.IsNullOrWhiteSpace(message))
+                {
+                    _announcements.Enqueue(message.Trim(), AnnouncementPriority.Polite);
+                }
+                return;
+            }
+
             if (string.Equals(type, "client.update.required", StringComparison.OrdinalIgnoreCase))
             {
                 var payload = root.TryGetProperty("payload", out var p) ? p : default;

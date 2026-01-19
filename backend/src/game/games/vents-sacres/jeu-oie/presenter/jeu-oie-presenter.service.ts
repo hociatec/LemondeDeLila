@@ -31,6 +31,10 @@ export class JeuOiePresenterService {
             title: 'Position',
             message: this.buildPositionMessage(meta, userId),
           },
+          board: {
+            title: 'Plateau',
+            message: this.buildBoardMessage(meta),
+          },
         },
       },
     };
@@ -91,5 +95,28 @@ export class JeuOiePresenterService {
     // Fallback (compat): positions 0-based -> affichage 1-based.
     const display = Math.max(1, caseNumber + 1);
     return `Tour plateau ${tourPlateau}, case ${display}/${maxCase}.`;
+  }
+
+  private buildBoardMessage(meta: JeuOieMetadata): string {
+    const tiles = Array.isArray(meta?.tiles) ? meta.tiles : [];
+    if (tiles.length === 0) {
+      return 'Plateau: indisponible.';
+    }
+
+    const lines: string[] = [];
+    for (let i = 0; i < tiles.length; i += 1) {
+      const t: any = tiles[i];
+      const label = String(t?.label ?? '').trim() || `Case ${i}`;
+      const type = String(t?.type ?? '').trim();
+      // Jeu de l'oie: cases 0..63 (0 = départ, 63 = arrivée). On expose l'index "plateau".
+      if (type === 'start') {
+        lines.push(`0: ${label}.`);
+      } else if (type === 'finish') {
+        lines.push(`63: ${label}.`);
+      } else {
+        lines.push(`${i}: ${label}.`);
+      }
+    }
+    return lines.join('\n');
   }
 }

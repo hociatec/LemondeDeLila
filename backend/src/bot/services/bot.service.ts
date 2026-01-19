@@ -81,8 +81,18 @@ export class BotService {
   ): Promise<RoomBot> {
     const room = await this.requireRoomWithOwner(roomId);
     this.ensureOwner(room, userId);
+    // Autoriser le retrait d'un bot même en partie démarrée (besoin: "exclure les bots" pendant une partie).
+    // Limitation: on évite de descendre sous 2 participants totaux pour ne pas laisser une table injouable.
     if (!this.isRoomOpen(room)) {
-      throw new BadRequestException('Table deja demarree');
+      const [humans, bots] = await Promise.all([
+        this.countActiveHumans(room.id),
+        this.countBots(room.id),
+      ]);
+      if (humans + bots - 1 < 2) {
+        throw new BadRequestException(
+          'Impossible de retirer ce bot : au moins deux participants sont requis',
+        );
+      }
     }
     const bot = await this.bots.findOne({
       where: { id: botId, room: { id: room.id } },

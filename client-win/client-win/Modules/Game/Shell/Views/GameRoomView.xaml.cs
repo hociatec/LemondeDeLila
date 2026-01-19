@@ -176,35 +176,22 @@ public partial class GameRoomView : UserControl, IInitialFocusTarget
 	        {
 	            e.Handled = true;
 
-            var roomShortcuts = RoomShortcuts.Create(
-                    resetCommand: vm.GameZone.ResetCommand,
-                    addBotCommand: vm.GameZone.AddBotCommand,
-                    removeBotCommand: vm.GameZone.RemoveBotCommand,
-                    announcePlayersCommand: vm.GameZone.AnnouncePlayersCommand,
-                    announceInfoCommand: vm.GameZone.AnnounceInfoCommand,
-                    togglePrivacyCommand: vm.GameZone.TogglePrivacyCommand,
-                    toggleRoleCommand: vm.GameZone.ToggleRoleCommand,
-                    inviteCommand: vm.GameZone.InviteCommand,
-                    kickCommand: vm.GameZone.KickCommand,
-                    banCommand: vm.GameZone.BanCommand,
-                    transferOwnerCommand: vm.GameZone.TransferOwnerCommand,
-                    quitCommand: vm.GameZone.QuitCommand)
+            // N'afficher que les raccourcis réellement disponibles pour l'utilisateur
+            // (owner/spectateur/started) et exécutables à l'instant T.
+            var all = vm.GameZone.Shortcuts
                 .Where(s => s?.Command != null)
-                .ToList();
-
-            var all = new System.Collections.Generic.List<client_win.Core.Input.ShortcutDefinition>();
-            all.AddRange(roomShortcuts);
-
-            foreach (var s in vm.GameZone.Shortcuts)
-            {
-                if (s?.Command == null) continue;
-                if (!string.IsNullOrWhiteSpace(s.Code) &&
-                    s.Code.StartsWith("room.", StringComparison.OrdinalIgnoreCase))
+                .Where(s =>
                 {
-                    continue;
-                }
-                all.Add(s);
-            }
+                    try
+                    {
+                        return s.Command != null && s.Command.CanExecute(s.CommandParameter);
+                    }
+                    catch
+                    {
+                        return false;
+                    }
+                })
+                .ToList();
 
             var seen = new System.Collections.Generic.HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var shortcuts = all

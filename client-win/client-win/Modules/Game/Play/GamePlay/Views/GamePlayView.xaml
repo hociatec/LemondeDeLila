@@ -16,6 +16,7 @@
              Loaded="OnLoaded">
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
+        <SolidColorBrush x:Key="HighlightBrush" Color="#F2C14E" />
     </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
@@ -261,18 +262,15 @@
                     </TextBlock.Style>
                 </TextBlock>
 
-                <!-- Quiz: afficher la question au-dessus des réponses (utile pour la relire au lecteur d'écran). -->
-                <TextBlock x:Name="QuizQuestionTextBlock"
-                           Text="{Binding QuizQuestionText}"
-                           Foreground="#F2C14E"
-                           FontSize="14"
-                           FontWeight="SemiBold"
-                           TextWrapping="Wrap"
-                           Margin="0 10 0 0"
-                           AutomationProperties.LiveSetting="Polite"
-                           AutomationProperties.Name="{Binding QuizQuestionText}">
-                    <TextBlock.Style>
-                        <Style TargetType="TextBlock">
+                <!-- Quiz: afficher la question au-dessus des réponses, au même format que les items de la liste. -->
+                <Border Background="#10223A"
+                        BorderBrush="#1F3C60"
+                        BorderThickness="1"
+                        CornerRadius="6"
+                        Padding="10"
+                        Margin="0 10 0 0">
+                    <Border.Style>
+                        <Style TargetType="Border">
                             <Setter Property="Visibility" Value="Collapsed" />
                             <Style.Triggers>
                                 <MultiDataTrigger>
@@ -290,8 +288,15 @@
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>
-                    </TextBlock.Style>
-                </TextBlock>
+                    </Border.Style>
+                    <TextBlock x:Name="QuizQuestionTextBlock"
+                               Text="{Binding QuizQuestionText}"
+                               Foreground="White"
+                               FontSize="12"
+                               TextWrapping="Wrap"
+                               AutomationProperties.LiveSetting="Polite"
+                               AutomationProperties.Name="{Binding QuizQuestionText}" />
+                </Border>
                 <ListBox x:Name="ChoicesList"
                          ItemsSource="{Binding PendingChoices}"
                          SelectedIndex="{Binding SelectedChoiceIndex, Mode=TwoWay}"
@@ -306,6 +311,38 @@
                          MaxHeight="160"
                          AutomationProperties.Name="{Binding ChoicesA11yName}"
                          AutomationProperties.LabeledBy="{Binding ElementName=ChoicesLabelText}">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem">
+                            <Setter Property="Margin" Value="0 4 0 4" />
+                            <Setter Property="Padding" Value="10" />
+                            <Setter Property="Background" Value="#10223A" />
+                            <Setter Property="BorderBrush" Value="#1F3C60" />
+                            <Setter Property="BorderThickness" Value="1" />
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="ListBoxItem">
+                                        <Border Background="{TemplateBinding Background}"
+                                                BorderBrush="{TemplateBinding BorderBrush}"
+                                                BorderThickness="{TemplateBinding BorderThickness}"
+                                                CornerRadius="6">
+                                            <ContentPresenter />
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Background" Value="#1B3554" />
+                                            </Trigger>
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter Property="Background" Value="#214570" />
+                                                <Setter Property="BorderBrush" Value="{StaticResource HighlightBrush}" />
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
                     <ListBox.Style>
                         <Style TargetType="ListBox">
                             <Setter Property="Visibility" Value="Visible"/>

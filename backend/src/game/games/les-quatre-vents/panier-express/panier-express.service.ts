@@ -1028,10 +1028,18 @@ export class PanierExpressService extends AbstractGameService {
     const discardRandomCourse = (pid: number): string | null => {
       const player = (next.players ?? []).find((p) => p.id === pid) as any;
       if (!player) return null;
+      const basket = this.utils.toStringArray(player.basket);
       const inventory = this.utils.toStringArray(player.inventory);
       if (!inventory.length) return null;
+
+      // Robustesse : si une carte se retrouve à la fois dans panier+inventaire (état legacy / désync),
+      // ne jamais défausser ce qui est déjà dans le panier.
+      const inventoryOnly = basket.length
+        ? inventory.filter((c) => !basket.includes(c))
+        : inventory;
+      if (!inventoryOnly.length) return null;
       const metaRng = this.random.createMetaRng(this.getMetadata(next) as any);
-      const picked = this.random.pickOne(metaRng.getMeta(), inventory);
+      const picked = this.random.pickOne(metaRng.getMeta(), inventoryOnly);
       next = { ...next, metadata: picked.meta };
       const card = String(picked.value ?? '').trim();
       if (!card) return null;
@@ -3517,6 +3525,13 @@ export class PanierExpressService extends AbstractGameService {
       turn: {
         currentPlayerId: next.currentPlayerId,
         direction: movementDirection,
+        label:
+          next.currentPlayerId != null
+            ? `Tour ${next.turnIndex + 1} : ${this.utils.playerName(
+                state,
+                next.currentPlayerId,
+              )}`
+            : undefined,
       },
     };
   }

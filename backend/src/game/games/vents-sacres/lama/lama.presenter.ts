@@ -328,7 +328,16 @@ export class LamaPresenter extends BasePresenterService {
           },
           score: {
             title: 'Jetons',
-            message: scoreLines.length ? `Jetons: ${scoreLines.join(', ')}` : 'Jetons: inconnus.',
+            message: (() => {
+              if (scoreLines.length === 0) return 'Jetons: inconnus.';
+              const loseAt =
+                metadata.loseAtScore != null ? Number(metadata.loseAtScore) : null;
+              const loseText =
+                loseAt != null && Number.isFinite(loseAt)
+                  ? ` Défaite à ${loseAt} jetons.`
+                  : '';
+              return `Jetons: ${scoreLines.join(', ')}.${loseText}`;
+            })(),
           },
           table: {
             title: 'Table',

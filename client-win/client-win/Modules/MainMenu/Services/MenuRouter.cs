@@ -279,7 +279,9 @@ public sealed class MenuRouter : IMenuRouter
             rooms: _roomDirectory,
             tables: _tables,
             announcements: _announcements,
-            returnContent: () => vm,
+            // Quitter une table via raccourci (Q) doit revenir à la taverne (menu précédent),
+            // pas nécessairement à la liste des tables.
+            returnContent: () => previous ?? vm,
             onClose: () =>
             {
                 try { vm?.Dispose(); } catch { /* ignore */ }

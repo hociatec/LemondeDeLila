@@ -42,6 +42,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
     private readonly GamePlayAnnouncementRouter _announcementRouter;
     private readonly GamePlayEndgameSoundPlayer _endgameSounds;
     private readonly GamePlayDiceSoundPlayer _diceSounds;
+    private readonly GamePlayLogSoundPlayer _logSounds;
     private readonly GamePlayChoicesViewModel _choices;
     private readonly PropertyChangedEventHandler _choicesPropertyChangedHandler;
     private readonly NotifyCollectionChangedEventHandler _pendingChoicesChangedHandler;
@@ -94,6 +95,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
 
         _endgameSounds = new GamePlayEndgameSoundPlayer(sounds ?? throw new ArgumentNullException(nameof(sounds)));
         _diceSounds = new GamePlayDiceSoundPlayer(sounds ?? throw new ArgumentNullException(nameof(sounds)));
+        _logSounds = new GamePlayLogSoundPlayer(sounds ?? throw new ArgumentNullException(nameof(sounds)));
         _choices = new GamePlayChoicesViewModel(_actions);
         _choicesPropertyChangedHandler = (_, e) =>
         {
@@ -143,6 +145,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
 	            announcementRouter: _announcementRouter,
 	            endgameSounds: _endgameSounds,
 	            diceSounds: _diceSounds,
+                logSounds: _logSounds,
 	            choices: _choices,
 	            grid: Grid,
 	            syncShortcuts: SyncShortcuts,

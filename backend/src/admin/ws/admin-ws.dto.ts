@@ -103,6 +103,20 @@ export class AdminClientUpdateForceLatestWsDto {
   message?: string;
 }
 
+export class AdminClientUpdateScheduleWsDto {
+  @IsOptional()
+  @IsString()
+  @MaxLength(2000)
+  message?: string;
+
+  // Exigence: avertir au moins 5 minutes avant la mise à jour.
+  @IsOptional()
+  @IsInt()
+  @Min(300)
+  @Max(86400)
+  delaySeconds?: number;
+}
+
 export class AdminChatMessagesWsDto {
   @IsOptional()
   @IsInt()

@@ -2,11 +2,14 @@ using System;
 using System.Linq;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using System.Windows;
+using System.Windows.Threading;
 using client_win.Core;
 using client_win.Modules.Network.Services;
 using client_win.Modules.Catalog.Services;
 using client_win.Modules.MainMenu.Services;
 using client_win.Modules.User.Models;
+using client_win.Modules.Shell.Services;
 using Serilog;
 using System.ComponentModel;
 
@@ -189,6 +192,23 @@ public sealed class MainMenuViewModel : ObservableObject
         _isBusy = true;
         try
         {
+            // IMPORTANT (NVDA): éviter "indisponible" quand une navigation remplace la vue pendant un événement clavier.
+            // On park le focus sur un élément stable (MainWindow.FocusSentinel), puis on décale l'exécution
+            // à l'UI idle/background pour sortir complètement du traitement de l'entrée.
+            try { FocusParking.Park(); } catch { /* ignore */ }
+            try
+            {
+                var dispatcher = Application.Current?.Dispatcher;
+                if (dispatcher != null)
+                {
+                    await dispatcher.InvokeAsync(() => { }, DispatcherPriority.Background).Task.ConfigureAwait(true);
+                }
+            }
+            catch
+            {
+                // best-effort
+            }
+
             if (cmd is AsyncRelayCommand asyncCmd)
             {
                 await asyncCmd.ExecuteAsync(null).ConfigureAwait(true);

@@ -244,6 +244,21 @@ public sealed class SoundService : ISoundService, IDisposable
                 OverridePath: () => _options.Current.SoundGameDefeatPath,
                 IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundChatMessages,
                 Volume: () => Clamp01(_options.Current.SoundChatMessagesVolume / 100.0)),
+            [SoundId.QuizCorrect] = new SoundEntry(
+                DefaultRelativePath: Path.Combine("Assets", "Sounds", "roomopened.mp3"),
+                OverridePath: null,
+                IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundChatMessages,
+                Volume: () => Clamp01(_options.Current.SoundChatMessagesVolume / 100.0)),
+            [SoundId.QuizWrong] = new SoundEntry(
+                DefaultRelativePath: Path.Combine("Assets", "Sounds", "roomexit.mp3"),
+                OverridePath: null,
+                IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundChatMessages,
+                Volume: () => Clamp01(_options.Current.SoundChatMessagesVolume / 100.0)),
+            [SoundId.RoundEnded] = new SoundEntry(
+                DefaultRelativePath: Path.Combine("Assets", "Sounds", "pawn_picked.wav"),
+                OverridePath: null,
+                IsEnabled: () => !_options.Current.MuteAll && _options.Current.SoundSelect,
+                Volume: () => Clamp01(_options.Current.SoundSelectVolume / 100.0)),
             [SoundId.InvitationSent] = new SoundEntry(
                 DefaultRelativePath: Path.Combine("Assets", "Sounds", "invitationenvoyer.mp3"),
                 OverridePath: () => _options.Current.SoundInvitationSentPath,

@@ -10,10 +10,14 @@ import { ClientUpdatesService } from '../../client-updates/services/client-updat
 import {
   AdminClientUpdateAnnounceWsDto,
   AdminClientUpdateForceLatestWsDto,
+  AdminClientUpdateScheduleWsDto,
 } from './admin-ws.dto';
 
 @Injectable()
 export class AdminClientUpdatesWsHandler {
+  private scheduledTimer: NodeJS.Timeout | null = null;
+  private scheduledAtMs: number | null = null;
+
   constructor(
     private readonly validator: PayloadValidationService,
     private readonly notifications: NotificationService,
@@ -125,6 +129,68 @@ export class AdminClientUpdatesWsHandler {
         delivered: recipients.length,
         minRequiredVersion: latestVersion,
       },
+    };
+  }
+
+  async clientUpdateSchedule(session: WsSession, payload: any) {
+    const admin = requireAdmin(session);
+    const dto = this.validator.validate(AdminClientUpdateScheduleWsDto, payload);
+
+    const delaySeconds =
+      typeof dto.delaySeconds === 'number' && Number.isFinite(dto.delaySeconds)
+        ? dto.delaySeconds
+        : 300;
+    const delayMs = Math.max(300, delaySeconds) * 1000;
+
+    if (this.scheduledTimer) {
+      clearTimeout(this.scheduledTimer);
+      this.scheduledTimer = null;
+    }
+
+    const scheduledAtMs = Date.now() + delayMs;
+    this.scheduledAtMs = scheduledAtMs;
+
+    const imminentMessage =
+      typeof dto.message === 'string' && dto.message.trim().length > 0
+        ? dto.message.trim()
+        : 'Mise à jour imminante dans cinq minutes.';
+
+    await this.notifications.notifyAll('client.update.imminent', {
+      message: imminentMessage,
+      etaSeconds: Math.round(delayMs / 1000),
+      scheduledAt: new Date(scheduledAtMs).toISOString(),
+      fromUserId: admin.id,
+      fromUsername: admin.username,
+      timestamp: new Date().toISOString(),
+    });
+
+    this.scheduledTimer = setTimeout(async () => {
+      try {
+        // Si une autre planification est arrivée entre-temps, ne rien faire.
+        if (this.scheduledAtMs !== scheduledAtMs) return;
+
+        const latest = await this.clientUpdates.getLatest();
+        const url = this.clientUpdates.resolveClientPublicUrl(latest);
+        const version = latest?.version?.trim() || null;
+
+        await this.notifications.notifyAll('client.update.available', {
+          message:
+            latest?.message ??
+            'Une mise à jour du client est disponible et va être installée automatiquement.',
+          version,
+          url,
+          fromUserId: admin.id,
+          fromUsername: admin.username,
+          timestamp: new Date().toISOString(),
+        });
+      } catch {
+        // ignore
+      }
+    }, delayMs);
+
+    return {
+      type: 'admin.client.update.schedule',
+      payload: { scheduledAt: new Date(scheduledAtMs).toISOString(), delaySeconds: Math.round(delayMs / 1000) },
     };
   }
 }

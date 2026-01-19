@@ -475,7 +475,15 @@ export class GameEngineService {
       }
 
       const synced = this.store.syncRoomStatus(existing, payload);
-      const nextStatus = String(synced.status ?? '').toLowerCase();
+      const withRoster = this.syncRosterForStartedRoom(synced, payload);
+      if (withRoster !== synced) {
+        try {
+          await this.store.set(roomId, gameType, withRoster);
+        } catch {
+          // best effort
+        }
+      }
+      const nextStatus = String(withRoster.status ?? '').toLowerCase();
       const currentPlayers = existing.players?.length ?? 0;
       const incomingPlayers =
         (payload.room.players?.length ?? 0) + (payload.room.bots?.length ?? 0);
@@ -483,11 +491,11 @@ export class GameEngineService {
       this.gameLogger.debug('Retrieved game state', {
         roomId,
         gameType,
-        status: synced.status,
-        turnIndex: synced.turnIndex,
-        currentPlayerId: synced.turn?.currentPlayerId ?? null,
+        status: withRoster.status,
+        turnIndex: withRoster.turnIndex,
+        currentPlayerId: withRoster.turn?.currentPlayerId ?? null,
         players:
-          synced.players?.map((p) => ({ id: p.id, isBot: (p as any).isBot })) ??
+          withRoster.players?.map((p) => ({ id: p.id, isBot: (p as any).isBot })) ??
           [],
         incomingPlayers,
         gameStarted,
@@ -546,10 +554,20 @@ export class GameEngineService {
       const normalized = await this.normalizeBotThinking(
         roomId,
         gameType,
-        synced,
+        withRoster,
       );
-      await this.scheduleBotTurn(roomId, gameType, normalized);
-      return normalized;
+      const forcedFinished = this.forceFinishedIfWinnerDetected(
+        normalized as any,
+      ) as any as GameStateEntity;
+      if (forcedFinished !== normalized) {
+        try {
+          await this.store.set(roomId, gameType, forcedFinished);
+        } catch {
+          // best effort
+        }
+      }
+      await this.scheduleBotTurn(roomId, gameType, forcedFinished);
+      return forcedFinished;
     }
 
     const state = await this.buildInitialState(payload, gameType);
@@ -1104,6 +1122,88 @@ export class GameEngineService {
       })
       .catch(() => {});
     return next;
+  }
+
+  private syncRosterForStartedRoom(
+    state: GameStateEntity,
+    payload: RoomPayload,
+  ): GameStateEntity {
+    try {
+      if (
+        !state ||
+        String(state.status ?? '').toLowerCase().trim() !== 'started'
+      ) {
+        return state;
+      }
+      const players = Array.isArray(state.players) ? state.players : [];
+      if (players.length === 0) return state;
+
+      const roomPlayers = Array.isArray(payload?.room?.players)
+        ? payload.room.players
+        : [];
+      const roomBots = Array.isArray(payload?.room?.bots)
+        ? payload.room.bots
+        : [];
+
+      const humanById = new Map<number, string>();
+      for (const p of roomPlayers) {
+        const id = Number((p as any)?.id ?? 0);
+        if (!Number.isFinite(id) || id <= 0) continue;
+        const username = String((p as any)?.username ?? '').trim();
+        if (!username) continue;
+        humanById.set(id, username);
+      }
+
+      const roomBotNames = roomBots
+        .map((b: any) => String(b?.name ?? '').trim())
+        .filter((n: string) => n.length > 0);
+
+      // Bots already present in the game state (initial bots / already replaced seats).
+      const assignedBotNames = new Set(
+        players
+          .filter((p) => (p as any)?.isBot === true)
+          .map((p) => String((p as any)?.username ?? '').trim())
+          .filter((n) => n.length > 0),
+      );
+
+      const availableBotNames: string[] = [];
+      for (const name of roomBotNames) {
+        if (!assignedBotNames.has(name)) {
+          availableBotNames.push(name);
+        }
+      }
+
+      let changed = false;
+      const nextPlayers = players.map((p) => {
+        const id = Number((p as any)?.id ?? 0);
+        if (!Number.isFinite(id) || id === 0) return p;
+
+        const roomUsername = humanById.get(id) ?? null;
+        const isBot = (p as any)?.isBot === true;
+
+        // Human is present in room: ensure player is human with correct username.
+        if (roomUsername) {
+          if (isBot || String((p as any)?.username ?? '').trim() !== roomUsername) {
+            changed = true;
+            return { ...(p as any), isBot: false, username: roomUsername };
+          }
+          return p;
+        }
+
+        // Human left the room: let an available room bot take over this seat (same id).
+        if (!isBot && availableBotNames.length > 0) {
+          const botName = availableBotNames.shift()!;
+          changed = true;
+          return { ...(p as any), isBot: true, username: botName };
+        }
+
+        return p;
+      });
+
+      return changed ? { ...state, players: nextPlayers } : state;
+    } catch {
+      return state;
+    }
   }
 
   private isBotTurn(state: GameStateEntity): boolean {

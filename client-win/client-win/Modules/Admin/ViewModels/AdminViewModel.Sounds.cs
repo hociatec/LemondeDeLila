@@ -198,13 +198,16 @@ public sealed partial class AdminViewModel
 	    {
 	        _page = AdminPage.SoundsGames;
 	        Title = "Administration - Sons - Jeux";
-	        Details = "Choisir un son lié aux actions en jeu (pion, mur, dé).";
+	        Details = "Choisir un son lié aux actions en jeu (pion, mur, dé, quiz).";
             PreferDetailsFocus = false;
 	        IsTextInputVisible = false;
 	        IsSecondaryInputVisible = false;
 	        IsAdditionalPermissionsVisible = false;
 	        Items.Clear();
 	        Items.Add(new AdminMenuItem("Dé : lancer", tag: "sounds.games.dice.rolled"));
+            Items.Add(new AdminMenuItem("Quiz : bonne réponse", tag: "sounds.games.quiz.correct"));
+            Items.Add(new AdminMenuItem("Quiz : mauvaise réponse", tag: "sounds.games.quiz.wrong"));
+            Items.Add(new AdminMenuItem("Fin de manche", tag: "sounds.games.round.ended"));
 	        Items.Add(new AdminMenuItem("Pion : prendre (vous)", tag: "sounds.games.pawn.picked"));
 	        Items.Add(new AdminMenuItem("Pion : poser (vous)", tag: "sounds.games.pawn.placed.self"));
 	        Items.Add(new AdminMenuItem("Pion : poser (adversaire)", tag: "sounds.games.pawn.placed.opponent"));
@@ -322,7 +325,7 @@ public sealed partial class AdminViewModel
 	            SoundId.ClientOpened or SoundId.ClientConnected or SoundId.ClientDisconnected => AdminPage.SoundsConnection,
 	            SoundId.MainMenuMusic or SoundId.TavernOpened or SoundId.TavernAmbience => AdminPage.SoundsAmbience,
 	            SoundId.GameVictory or SoundId.GameDefeat or SoundId.RoomOpened or SoundId.RoomJoined or SoundId.RoomExit => AdminPage.SoundsTable,
-	            SoundId.DiceRolled or SoundId.PawnPicked or SoundId.PawnPlacedSelf or SoundId.PawnPlacedOpponent or SoundId.WallPlacedSelf or SoundId.WallPlacedOpponent => AdminPage.SoundsGames,
+	            SoundId.DiceRolled or SoundId.QuizCorrect or SoundId.QuizWrong or SoundId.RoundEnded or SoundId.PawnPicked or SoundId.PawnPlacedSelf or SoundId.PawnPlacedOpponent or SoundId.WallPlacedSelf or SoundId.WallPlacedOpponent => AdminPage.SoundsGames,
 	            SoundId.InvitationSent or SoundId.InvitationReceived => AdminPage.SoundsTable,
 	            SoundId.ChatMessageSent or SoundId.ChatMessageReceived => AdminPage.SoundsChatGeneral,
 	            SoundId.TableChatMessageSent or SoundId.TableChatMessageReceived => AdminPage.SoundsChatTable,
@@ -360,6 +363,9 @@ public sealed partial class AdminViewModel
 	            SoundId.PrivateMessageReceived => ("Messages privés", "Réception d'un message privé", _options.Current.SoundPrivateMessageReceivedPath),
             SoundId.AdminContactSent => ("Contact admin", "Envoi d'un contact admin", null),
 	            SoundId.DiceRolled => ("Jeux", "Dé - Lancer", null),
+                SoundId.QuizCorrect => ("Jeux", "Quiz - Bonne réponse", null),
+                SoundId.QuizWrong => ("Jeux", "Quiz - Mauvaise réponse", null),
+                SoundId.RoundEnded => ("Jeux", "Fin de manche", null),
 	            SoundId.PawnPicked => ("Jeux", "Pion - Prendre (vous)", _options.Current.SoundPawnPickedPath),
 	            SoundId.PawnPlacedSelf => ("Jeux", "Pion - Poser (vous)", _options.Current.SoundPawnPlacedSelfPath),
 	            SoundId.PawnPlacedOpponent => ("Jeux", "Pion - Poser (adversaire)", _options.Current.SoundPawnPlacedOpponentPath),

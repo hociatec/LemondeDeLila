@@ -439,6 +439,23 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
 
     if (type === 'draw') {
       if (meta.droppedOutByPlayerId[String(actorId)]) return state;
+      try {
+        const players = Array.isArray(state.players) ? state.players : [];
+        const current = players.find((p: any) => p?.id === actorId) as any;
+        const isBot = Boolean(current?.isBot);
+        const tracker = metaForTurn.turnTracker ?? null;
+        const alreadyDrawn =
+          LamaService.asNumberOrNull((tracker as any)?.playerId) === actorId &&
+          LamaService.asBoolean((tracker as any)?.drawn);
+        if (isBot && !alreadyDrawn) {
+          const name = current?.username ?? `#${actorId}`;
+          const log = Array.isArray(state.log) ? [...state.log] : [];
+          log.push({ message: `${name} doit piocher.` });
+          return this.applyDraw({ ...state, log }, metaForTurn, actorId);
+        }
+      } catch {
+        // ignore
+      }
       return this.applyDraw(state, metaForTurn, actorId);
     }
 
@@ -663,7 +680,7 @@ export class LamaService implements GameRulesAdapter, OnModuleInit {
     const name = players.find((p) => p?.id === actorId)?.username ?? `#${actorId}`;
     const log = Array.isArray(state.log) ? [...state.log] : [];
     const label = lamaCardLabel(value);
-    log.push({ message: `${name} joue un ${label}.` });
+    log.push({ message: `${name} joue la carte ${label}.` });
 
     const nextMeta: LamaMetadata = {
       ...meta,

@@ -564,6 +564,24 @@ public sealed partial class AdminViewModel
 	                    BuildSoundDetails(Modules.Audio.Models.SoundId.DiceRolled);
 	                    return;
 	                }
+                    if (gameSound == "sounds.games.quiz.correct")
+                    {
+                        PushReturnFocus();
+                        BuildSoundDetails(Modules.Audio.Models.SoundId.QuizCorrect);
+                        return;
+                    }
+                    if (gameSound == "sounds.games.quiz.wrong")
+                    {
+                        PushReturnFocus();
+                        BuildSoundDetails(Modules.Audio.Models.SoundId.QuizWrong);
+                        return;
+                    }
+                    if (gameSound == "sounds.games.round.ended")
+                    {
+                        PushReturnFocus();
+                        BuildSoundDetails(Modules.Audio.Models.SoundId.RoundEnded);
+                        return;
+                    }
 	                if (gameSound == "sounds.games.pawn.picked")
 	                {
 	                    PushReturnFocus();

@@ -156,6 +156,16 @@ public partial class GamePlayView
             AutomationProperties.SetName(ChoicesList, label);
         }
 
+        // Quiz: étiqueter la liste par la question pour que le focus "arrive" sur la question au lecteur d'écran.
+        // (L'utilisateur reste sur la liste de réponses, mais NVDA annonce d'abord la question.)
+        if (_vm.IsQuizPending &&
+            FindName("QuizQuestionTextBlock") is FrameworkElement questionElement &&
+            questionElement.Visibility == Visibility.Visible)
+        {
+            AutomationProperties.SetLabeledBy(ChoicesList, questionElement);
+            return;
+        }
+
         // NOTE: On récupère le label via FindName pour éviter une dépendance au champ généré par le XAML,
         // qui peut ne pas être régénéré dans certains scénarios (build incrémentale / cache).
         if (FindName("ChoicesLabelText") is FrameworkElement labelElement)
