@@ -243,14 +243,6 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
         get
         {
             var label = (ChoicesLabel ?? string.Empty).Trim();
-            if (IsQuizPending)
-            {
-                var q = (QuizQuestionText ?? string.Empty).Trim();
-                if (!string.IsNullOrWhiteSpace(q))
-                {
-                    return $"{q}. {label}".Trim().Trim('.');
-                }
-            }
             return label;
         }
     }

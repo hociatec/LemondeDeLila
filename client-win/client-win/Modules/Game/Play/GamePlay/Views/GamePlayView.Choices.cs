@@ -195,6 +195,35 @@ public partial class GamePlayView
             ChoicesList.SelectedIndex < 0)
         {
             ChoicesList.SelectedIndex = 0;
+            try
+            {
+                ChoicesList.ScrollIntoView(ChoicesList.SelectedItem);
+            }
+            catch
+            {
+                // ignore
+            }
+
+            // Warm-up virtualisation/layout : au tout premier quiz, l'utilisateur peut appuyer ↓
+            // avant que le container ListBoxItem soit créé, ce qui empêche NVDA d'annoncer la 1ère réponse.
+            Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() =>
+            {
+                try
+                {
+                    if (ChoicesList.Visibility != Visibility.Visible || ChoicesList.Items.Count <= 0)
+                    {
+                        return;
+                    }
+
+                    var idx = ChoicesList.SelectedIndex < 0 ? 0 : ChoicesList.SelectedIndex;
+                    ChoicesList.ScrollIntoView(ChoicesList.Items[idx]);
+                    ChoicesList.UpdateLayout();
+                }
+                catch
+                {
+                    // ignore
+                }
+            }));
         }
 
         return TryFocusQuizQuestion();
@@ -215,30 +244,34 @@ public partial class GamePlayView
         ChoicesList.ClearValue(AutomationProperties.HelpTextProperty);
         if (string.IsNullOrWhiteSpace(label))
         {
-            ChoicesList.ClearValue(AutomationProperties.NameProperty);
+            // Fallback : donner un nom à la liste pour qu'elle soit correctement annoncée,
+            // même si le serveur n'a pas fourni de label.
+            if (_vm.IsQuizPending)
+            {
+                AutomationProperties.SetName(ChoicesList, "Réponses");
+            }
+            else
+            {
+                ChoicesList.ClearValue(AutomationProperties.NameProperty);
+            }
         }
         else
         {
             AutomationProperties.SetName(ChoicesList, label);
         }
 
-        // Quiz: étiqueter la liste par la question pour que le focus "arrive" sur la question au lecteur d'écran.
-        // (L'utilisateur reste sur la liste de réponses, mais NVDA annonce d'abord la question.)
-        if (_vm.IsQuizPending &&
-            FindName("QuizQuestionTextBlock") is FrameworkElement questionElement &&
-            questionElement.Visibility == Visibility.Visible)
-        {
-            AutomationProperties.SetLabeledBy(ChoicesList, questionElement);
-            return;
-        }
-
         // NOTE: On récupère le label via FindName pour éviter une dépendance au champ généré par le XAML,
         // qui peut ne pas être régénéré dans certains scénarios (build incrémentale / cache).
-        if (FindName("ChoicesLabelText") is FrameworkElement labelElement)
+        if (!string.IsNullOrWhiteSpace(label) &&
+            FindName("ChoicesLabelText") is FrameworkElement labelElement &&
+            labelElement.Visibility == Visibility.Visible)
         {
             AutomationProperties.SetName(labelElement, label);
             AutomationProperties.SetLabeledBy(ChoicesList, labelElement);
+            return;
         }
+
+        ChoicesList.ClearValue(AutomationProperties.LabeledByProperty);
     }
 
     private bool IsTextInputFocused()

@@ -11,6 +11,12 @@ En mode dev, si aucun fichier n’existe, un template est copié dans :
 Certaines transitions d’écran peuvent faire annoncer **"indisponible"** par NVDA quand le contrôle actuellement focalisé disparaît (navigation, panneaux `Collapsed`, etc.).  
 Le client utilise un **parking de focus** (focus sur un élément stable de la fenêtre, puis focus dans la nouvelle vue) pour éviter cette annonce.
 
+### Checklist rapide (quiz)
+
+- À l’apparition d’une question de quiz (ex: **L’Arche de Mnémosyne**), NVDA doit annoncer la question.
+- En appuyant sur `↓`, NVDA doit annoncer la 1ère réponse (sans relire la question).
+- En naviguant `↑/↓` entre les réponses, NVDA doit annoncer uniquement la réponse courante.
+
 ## Connexion à un backend distant (production)
 
 Éditez `config/client.properties` et pointez vers votre serveur :
