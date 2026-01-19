@@ -63,16 +63,22 @@ public partial class GamePlayView
 
         var count = ChoicesList.Items.Count;
         var current = ChoicesList.SelectedIndex;
-        if (current < 0)
-        {
-            current = 0;
-        }
 
         var delta = e.Key == Key.Up ? -1 : 1;
 
         int next;
         if (DataContext is GamePlayViewModel vm2 && vm2.IsQuizPending)
         {
+            // Quiz: la première navigation doit sélectionner/annoncer la 1ère réponse (index 0),
+            // et ne pas sauter directement à la 2e.
+            if (current < 0)
+            {
+                ChoicesList.SelectedIndex = 0;
+                ChoicesList.ScrollIntoView(ChoicesList.SelectedItem);
+                TryFocusChoiceIndex(0);
+                return true;
+            }
+
             // Quiz: no wrap-around (top/bottom blocked). La question reste un texte au-dessus, hors navigation.
             next = current + delta;
             if (next < 0) next = 0;
@@ -80,6 +86,11 @@ public partial class GamePlayView
         }
         else
         {
+            if (current < 0)
+            {
+                current = 0;
+            }
+
             // Other modes (ex: LAMA hand): keep wrap behavior.
             next = (current + delta) % count;
             if (next < 0) next += count;

@@ -190,15 +190,22 @@ public partial class GamePlayView
 
         _lastAutoFocusedQuizQuestionText = question;
 
-        // Pré-sélectionner / focaliser la 1ère réponse : la question doit rester hors de la navigation au clavier.
+        // Reset sélection: la 1ère pression sur ↓ doit arriver sur la 1ère réponse (index 0),
+        // sans sauter directement à la 2e (index 1).
+        if (ChoicesList.Visibility == Visibility.Visible &&
+            ChoicesList.Items.Count > 0)
+        {
+            ChoicesList.SelectedIndex = -1;
+        }
+
+        // Préparer la liste : la question reste hors de la navigation au clavier.
         if (ChoicesList.Visibility == Visibility.Visible &&
             ChoicesList.Items.Count > 0 &&
             ChoicesList.SelectedIndex < 0)
         {
-            ChoicesList.SelectedIndex = 0;
             try
             {
-                ChoicesList.ScrollIntoView(ChoicesList.SelectedItem);
+                ChoicesList.ScrollIntoView(ChoicesList.Items[0]);
                 ChoicesList.UpdateLayout();
             }
             catch
@@ -217,8 +224,7 @@ public partial class GamePlayView
                         return;
                     }
 
-                    var idx = ChoicesList.SelectedIndex < 0 ? 0 : ChoicesList.SelectedIndex;
-                    ChoicesList.ScrollIntoView(ChoicesList.Items[idx]);
+                    ChoicesList.ScrollIntoView(ChoicesList.Items[0]);
                     ChoicesList.UpdateLayout();
                 }
                 catch
@@ -230,7 +236,17 @@ public partial class GamePlayView
 
         if (ChoicesList.Visibility == Visibility.Visible && ChoicesList.Items.Count > 0)
         {
-            TryFocusChoiceIndex(ChoicesList.SelectedIndex < 0 ? 0 : ChoicesList.SelectedIndex);
+            // Focus sur la liste (pas sur un item) pour que l'utilisateur fasse ↓ pour lire la 1ère réponse.
+            // (NVDA lit la question via annonces / live region, pas via focus.)
+            try
+            {
+                ChoicesList.Focus();
+                Keyboard.Focus(ChoicesList);
+            }
+            catch
+            {
+                // ignore
+            }
             return true;
         }
 

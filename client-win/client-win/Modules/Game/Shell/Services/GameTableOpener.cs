@@ -686,7 +686,8 @@ public sealed class GameTableOpener : IGameTableOpener
             connect: ct => _games.ConnectAsync(room.RoomId, game.Id, ct),
             dialogs: _dialogs,
             textPrompts: _textPrompts,
-            sounds: _sounds);
+            sounds: _sounds,
+            announcements: _announcementService);
     }
 
     private Task AnnouncePlayersAsync(RoomSession session)
