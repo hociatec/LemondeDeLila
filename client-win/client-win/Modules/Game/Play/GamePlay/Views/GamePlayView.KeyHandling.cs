@@ -11,56 +11,6 @@ namespace client_win.Modules.Game.Play.GamePlay.Views;
 
 public partial class GamePlayView
 {
-    private bool IsFocusWithinQuizQuestion()
-    {
-        if (DataContext is not GamePlayViewModel vm || !vm.IsQuizPending)
-        {
-            return false;
-        }
-
-        if (FindName("QuizQuestionTextBlock") is not FrameworkElement question)
-        {
-            return false;
-        }
-
-        var focused = Keyboard.FocusedElement as DependencyObject;
-        while (focused != null)
-        {
-            if (ReferenceEquals(focused, question))
-            {
-                return true;
-            }
-
-            focused = VisualTreeHelper.GetParent(focused);
-        }
-
-        return false;
-    }
-
-    private bool TryFocusQuizQuestion()
-    {
-        if (FindName("QuizQuestionTextBlock") is not FrameworkElement question)
-        {
-            return false;
-        }
-
-        if (question.Visibility != Visibility.Visible)
-        {
-            return false;
-        }
-
-        try
-        {
-            question.Focus();
-            Keyboard.Focus(question);
-            return true;
-        }
-        catch
-        {
-            return false;
-        }
-    }
-
     private bool IsFocusWithinInlinePrompt()
     {
         if (InlinePromptOverlay == null)
@@ -111,23 +61,6 @@ public partial class GamePlayView
         // Naviguer la liste même si le focus est ailleurs (Tab/Maj+Tab, historique, etc.).
         e.Handled = true;
 
-        // Quiz: permettre d'atteindre la question "au-dessus" de la liste.
-        // Quand le focus est sur la question : ↓ revient au 1er choix, ↑ reste sur la question.
-        if (DataContext is GamePlayViewModel vmQ && vmQ.IsQuizPending && IsFocusWithinQuizQuestion())
-        {
-            if (e.Key == Key.Down)
-            {
-                if (ChoicesList.SelectedIndex < 0)
-                {
-                    ChoicesList.SelectedIndex = 0;
-                }
-
-                TryFocusChoiceIndex(ChoicesList.SelectedIndex < 0 ? 0 : ChoicesList.SelectedIndex);
-            }
-
-            return true;
-        }
-
         var count = ChoicesList.Items.Count;
         var current = ChoicesList.SelectedIndex;
         if (current < 0)
@@ -140,17 +73,9 @@ public partial class GamePlayView
         int next;
         if (DataContext is GamePlayViewModel vm2 && vm2.IsQuizPending)
         {
-            // Quiz: no wrap-around (top/bottom should be blocked).
+            // Quiz: no wrap-around (top/bottom blocked). La question reste un texte au-dessus, hors navigation.
             next = current + delta;
-            if (next < 0)
-            {
-                // En haut: aller sur la question (au lieu de rester bloqué sur la 1ère réponse).
-                if (TryFocusQuizQuestion())
-                {
-                    return true;
-                }
-                next = 0;
-            }
+            if (next < 0) next = 0;
             if (next >= count) next = count - 1;
         }
         else
@@ -189,9 +114,25 @@ public partial class GamePlayView
             return;
         }
 
-        // Virtualisation: container pas encore créé -> retente après le layout.
-        ChoicesList.Focus();
-        Keyboard.Focus(ChoicesList);
+        // Virtualisation: container pas encore créé.
+        // Forcer la matérialisation avant de retenter (important pour la 1ère navigation).
+        try
+        {
+            ChoicesList.ScrollIntoView(ChoicesList.Items[index]);
+            ChoicesList.UpdateLayout();
+            if (ChoicesList.ItemContainerGenerator.ContainerFromIndex(index) is ListBoxItem item1)
+            {
+                item1.Focus();
+                Keyboard.Focus(item1);
+                return;
+            }
+        }
+        catch
+        {
+            // ignore
+        }
+
+        // Retenter après layout, sans "intermédiaire" focus sur la liste (qui peut empêcher NVDA d'annoncer l'item).
         Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() =>
         {
             try

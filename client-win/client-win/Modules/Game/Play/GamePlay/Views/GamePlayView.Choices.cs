@@ -76,6 +76,7 @@ public partial class GamePlayView
 
                 Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
                 {
+                    UpdateChoicesAccessibility();
                     TryAutoFocusQuizQuestion();
                 }));
             };
@@ -189,7 +190,7 @@ public partial class GamePlayView
 
         _lastAutoFocusedQuizQuestionText = question;
 
-        // Pré-sélectionner la 1ère réponse pour que ↓ depuis la question fonctionne immédiatement.
+        // Pré-sélectionner / focaliser la 1ère réponse : la question doit rester hors de la navigation au clavier.
         if (ChoicesList.Visibility == Visibility.Visible &&
             ChoicesList.Items.Count > 0 &&
             ChoicesList.SelectedIndex < 0)
@@ -198,6 +199,7 @@ public partial class GamePlayView
             try
             {
                 ChoicesList.ScrollIntoView(ChoicesList.SelectedItem);
+                ChoicesList.UpdateLayout();
             }
             catch
             {
@@ -226,7 +228,15 @@ public partial class GamePlayView
             }));
         }
 
-        return TryFocusQuizQuestion();
+        if (ChoicesList.Visibility == Visibility.Visible && ChoicesList.Items.Count > 0)
+        {
+            TryFocusChoiceIndex(ChoicesList.SelectedIndex < 0 ? 0 : ChoicesList.SelectedIndex);
+            return true;
+        }
+
+        // Si les choix n'ont pas encore été reçus, on laisse le live region annoncer la question
+        // et la navigation fléchée restera sur la liste dès qu'elle sera matérialisée.
+        return false;
     }
 
     private void UpdateChoicesAccessibility()
@@ -237,6 +247,16 @@ public partial class GamePlayView
         }
 
         var label = string.IsNullOrWhiteSpace(_vm.ChoicesLabel) ? string.Empty : _vm.ChoicesLabel.Trim();
+
+        // Quiz: la question est déjà l'ancre (focus). La liste ne doit pas être annoncée avec la question,
+        // sinon NVDA relit la question à chaque navigation ↑/↓.
+        if (_vm.IsQuizPending)
+        {
+            ChoicesList.ClearValue(AutomationProperties.HelpTextProperty);
+            AutomationProperties.SetName(ChoicesList, "Réponses");
+            ChoicesList.ClearValue(AutomationProperties.LabeledByProperty);
+            return;
+        }
 
         // NVDA utilise parfois LabeledBy plutôt que Name.
         // On force un libellé serveur (pending.label) et on évite HelpText (valeurs vides/null peuvent provoquer une erreur WPF).
@@ -351,20 +371,6 @@ public partial class GamePlayView
 
         if (ChoicesList.Visibility == Visibility.Visible && ChoicesList.Items.Count > 0)
         {
-            // Quiz: la question est l'ancre principale, puis ↓ permet de lire la 1ère réponse.
-            if (DataContext is GamePlayViewModel vmQuiz && vmQuiz.IsQuizPending)
-            {
-                if (ChoicesList.SelectedIndex < 0)
-                {
-                    ChoicesList.SelectedIndex = 0;
-                }
-
-                if (TryFocusQuizQuestion())
-                {
-                    return;
-                }
-            }
-
             if (ChoicesList.SelectedIndex < 0)
             {
                 ChoicesList.SelectedIndex = 0;

@@ -294,8 +294,7 @@
                                Foreground="White"
                                FontSize="12"
                                TextWrapping="Wrap"
-                               Focusable="True"
-                               KeyboardNavigation.IsTabStop="False"
+                               Focusable="False"
                                AutomationProperties.LiveSetting="Polite"
                                AutomationProperties.Name="{Binding QuizQuestionText}" />
                 </Border>
