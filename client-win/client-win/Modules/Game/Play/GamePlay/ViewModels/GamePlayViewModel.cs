@@ -34,7 +34,6 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
     private readonly Dispatcher _dispatcher;
     private readonly IDialogService _dialogs;
     private readonly ITextPromptService _textPrompts;
-    private readonly IAnnouncementService? _announcements;
     private readonly Func<CancellationToken, Task<GameSession>> _connect;
     private readonly GamePlayActionDispatcher _actions = new();
     private readonly GamePlayStateProjector _projector = new();
@@ -74,7 +73,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
     private bool _isBotThinking;
     private string _pendingType = string.Empty;
     private string _quizQuestionText = string.Empty;
-    private string _lastAnnouncedQuizQuestionText = string.Empty;
+    private string _lastQuizQuestionForSelectionReset = string.Empty;
 
     public string GameId { get; }
 
@@ -87,15 +86,13 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
         Func<CancellationToken, Task<GameSession>> connect,
         IDialogService dialogs,
         ITextPromptService textPrompts,
-        ISoundService sounds,
-        IAnnouncementService? announcements = null)
+        ISoundService sounds)
     {
         GameId = (gameId ?? string.Empty).Trim();
         _connect = connect ?? throw new ArgumentNullException(nameof(connect));
         _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
         _textPrompts = textPrompts ?? throw new ArgumentNullException(nameof(textPrompts));
         _dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
-        _announcements = announcements;
 
         _endgameSounds = new GamePlayEndgameSoundPlayer(sounds ?? throw new ArgumentNullException(nameof(sounds)));
         _diceSounds = new GamePlayDiceSoundPlayer(sounds ?? throw new ArgumentNullException(nameof(sounds)));
@@ -436,7 +433,7 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
             PendingType = (state.Pending?.Type ?? string.Empty).Trim();
             var question = ExtractQuizQuestion(state);
             QuizQuestionText = question;
-            TryAnnounceQuizQuestion(question);
+            ResetQuizSelectionIfNewQuestion(question);
 
             UpdatePendingTextPrompt(state);
             OnPropertyChanged(nameof(HasPendingTextPrompt));
@@ -454,11 +451,11 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
         }));
     }
 
-    private void TryAnnounceQuizQuestion(string? question)
+    private void ResetQuizSelectionIfNewQuestion(string? question)
     {
         if (!IsQuizPending)
         {
-            _lastAnnouncedQuizQuestionText = string.Empty;
+            _lastQuizQuestionForSelectionReset = string.Empty;
             return;
         }
 
@@ -468,22 +465,13 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
             return;
         }
 
-        if (string.Equals(_lastAnnouncedQuizQuestionText, q, StringComparison.Ordinal))
+        if (string.Equals(_lastQuizQuestionForSelectionReset, q, StringComparison.Ordinal))
         {
             return;
         }
 
-        _lastAnnouncedQuizQuestionText = q;
-
-        try
-        {
-            // Annonce explicite (NVDA) sans déplacer le focus (la question est hors de la liste des réponses).
-            _announcements?.Enqueue(q, AnnouncementPriority.Assertive);
-        }
-        catch
-        {
-            // ignore
-        }
+        _lastQuizQuestionForSelectionReset = q;
+        SelectedChoiceIndex = -1;
     }
 
     private string ExtractQuizQuestion(GameStateDto state)

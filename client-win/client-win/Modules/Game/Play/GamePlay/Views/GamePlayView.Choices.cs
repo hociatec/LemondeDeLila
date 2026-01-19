@@ -192,17 +192,12 @@ public partial class GamePlayView
 
         // Reset sélection: la 1ère pression sur ↓ doit arriver sur la 1ère réponse (index 0),
         // sans sauter directement à la 2e (index 1).
-        if (ChoicesList.Visibility == Visibility.Visible &&
-            ChoicesList.Items.Count > 0)
+        if (ChoicesList.Visibility == Visibility.Visible && ChoicesList.Items.Count > 0)
         {
             ChoicesList.SelectedIndex = -1;
-        }
 
-        // Préparer la liste : la question reste hors de la navigation au clavier.
-        if (ChoicesList.Visibility == Visibility.Visible &&
-            ChoicesList.Items.Count > 0 &&
-            ChoicesList.SelectedIndex < 0)
-        {
+            // Warm-up virtualisation/layout : au tout premier quiz, l'utilisateur peut appuyer ↓
+            // avant que le container ListBoxItem soit créé, ce qui empêche NVDA d'annoncer la 1ère réponse.
             try
             {
                 ChoicesList.ScrollIntoView(ChoicesList.Items[0]);
@@ -213,8 +208,6 @@ public partial class GamePlayView
                 // ignore
             }
 
-            // Warm-up virtualisation/layout : au tout premier quiz, l'utilisateur peut appuyer ↓
-            // avant que le container ListBoxItem soit créé, ce qui empêche NVDA d'annoncer la 1ère réponse.
             Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() =>
             {
                 try
@@ -234,25 +227,13 @@ public partial class GamePlayView
             }));
         }
 
-        if (ChoicesList.Visibility == Visibility.Visible && ChoicesList.Items.Count > 0)
-        {
-            // Focus sur la liste (pas sur un item) pour que l'utilisateur fasse ↓ pour lire la 1ère réponse.
-            // (NVDA lit la question via annonces / live region, pas via focus.)
-            try
-            {
-                ChoicesList.Focus();
-                Keyboard.Focus(ChoicesList);
-            }
-            catch
-            {
-                // ignore
-            }
-            return true;
-        }
+        // IMPORTANT: rester sur la question (ne pas voler le focus vers la liste).
+        // L'accès aux réponses se fait ensuite via ↓ depuis la question.
+        return TryFocusQuizQuestion();
 
         // Si les choix n'ont pas encore été reçus, on laisse le live region annoncer la question
         // et la navigation fléchée restera sur la liste dès qu'elle sera matérialisée.
-        return false;
+        // (TryFocusQuizQuestion() renvoie false si la question n'est pas visible.)
     }
 
     private void UpdateChoicesAccessibility()
