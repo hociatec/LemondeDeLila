@@ -107,4 +107,40 @@ describe('ArcheDeMnemosyneService prompt actions', () => {
     expect(Number((b?.[0] as any).payload.answerIndex)).toBeGreaterThanOrEqual(0);
     expect(Number((b?.[0] as any).payload.answerIndex)).toBeLessThan(4);
   });
+
+  it('exposes a stable label for quiz choices (a11y)', () => {
+    const service = new ArcheDeMnemosyneService(
+      { register: jest.fn() } as any,
+      { appendLog: (s: any) => s } as any,
+      {} as any,
+      { listCategories: () => [], listQuestions: () => [] } as any,
+      {} as any,
+    );
+
+    const state: GameStateEntity = {
+      status: 'started',
+      phase: 'quiz',
+      round: 1,
+      turnIndex: 0,
+      lastRoll: null,
+      log: [],
+      players: [{ id: 1, username: 'Owner' } as any],
+      metadata: {
+        roomOwnerId: 1,
+        currentQuestion: {
+          id: 'q1',
+          categoryId: 'c1',
+          question: 'Question ?',
+          choices: ['A', 'B', 'C', 'D'],
+          correctChoice: 'A',
+        },
+        quizAnswersByPlayerId: {},
+        adminView: { page: 'setup' },
+      } as any,
+    };
+
+    const exposed: any = service.exposeStateForUser(state, 1);
+    expect(String(exposed?.pending?.type ?? '')).toBe('quiz');
+    expect(String(exposed?.pending?.label ?? '')).toBe('Réponses possibles');
+  });
 });

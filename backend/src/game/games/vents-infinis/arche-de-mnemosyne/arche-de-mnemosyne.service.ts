@@ -910,8 +910,54 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
     } catch {
       // ignore (best-effort)
     }
-    const rawChoices = [picked.correct, picked.wrong1, picked.wrong2, picked.wrong3].map((s) => String(s ?? '').trim());
-    const shuffled = this.random.shuffle(rngMeta as any, rawChoices);
+
+    const normalizeKey = (value: unknown) =>
+      String(value ?? '').trim().toLocaleLowerCase('fr');
+
+    const rawChoices = [
+      picked.correct,
+      picked.wrong1,
+      picked.wrong2,
+      picked.wrong3,
+    ].map((s) => String(s ?? '').trim());
+
+    // Éviter les doublons de libellés (certaines UIs dédoublonnent ou utilisent le libellé comme clé).
+    // Remplir si besoin avec des distracteurs provenant d'autres questions de la même catégorie (puis global).
+    const unique: string[] = [];
+    const seen = new Set<string>();
+    for (const c of rawChoices) {
+      const key = normalizeKey(c);
+      if (!key) continue;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      unique.push(c);
+    }
+    if (unique.length < 4) {
+      const candidateQuestions = [
+        ...all.filter((q) => q.categoryId === picked.categoryId),
+        ...all,
+      ];
+      const candidatesRaw = candidateQuestions
+        .flatMap((q) => [q.correct, q.wrong1, q.wrong2, q.wrong3])
+        .map((s) => String(s ?? '').trim())
+        .filter((s) => s.length > 0);
+      const candidatesShuffled = this.random.shuffle(rngMeta as any, candidatesRaw);
+      rngMeta = candidatesShuffled.meta as any;
+      for (const c of candidatesShuffled.values) {
+        if (unique.length >= 4) break;
+        const key = normalizeKey(c);
+        if (!key) continue;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        unique.push(c);
+      }
+    }
+    // Fallback: conserver 4 choix même s'il reste des doublons (data pauvre).
+    while (unique.length < 4 && rawChoices[unique.length]) {
+      unique.push(rawChoices[unique.length]!);
+    }
+
+    const shuffled = this.random.shuffle(rngMeta as any, unique.length ? unique : rawChoices);
     rngMeta = shuffled.meta as any;
     const choices = shuffled.values;
     const currentQuestion = {
@@ -1070,6 +1116,7 @@ export class ArcheDeMnemosyneService implements GameRulesAdapter, OnModuleInit {
     if (meta.currentQuestion && (meta.quizAnswersByPlayerId as any)?.[userId] == null) {
       return {
         type: 'quiz',
+        label: 'Réponses possibles',
         playerId: userId,
         question: meta.currentQuestion.question,
         choices: meta.currentQuestion.choices,

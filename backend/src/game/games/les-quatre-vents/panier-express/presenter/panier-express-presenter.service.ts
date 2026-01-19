@@ -187,6 +187,7 @@ export class PanierExpressPresenterService extends BasePresenterService {
     if (quizPayload) {
       return {
         type: 'quiz',
+        label: 'Réponses possibles',
         question: quizPayload.question,
         choices: quizPayload.choices,
         playerId: params.currentId,

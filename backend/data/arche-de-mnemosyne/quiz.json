@@ -4605,6 +4605,42 @@
       "status": "validated",
       "createdAt": "2026-01-18T15:23:50.577Z",
       "updatedAt": "2026-01-18T15:23:50.577Z"
+    },
+    {
+      "id": "0d901c5f-b1db-4b52-be70-d79132feb887",
+      "categoryId": "la-tete-de-sanglier",
+      "question": "Comment s’appelle le miroir qui montre le désir le plus profond du cœur ?",
+      "correct": "Miroir du Riséd",
+      "wrong1": "Miroir de l’Âme",
+      "wrong2": "Miroir des Anciens",
+      "wrong3": "Miroir éternel",
+      "status": "validated",
+      "createdAt": "2026-01-19T17:50:37.438Z",
+      "updatedAt": "2026-01-19T17:50:37.438Z"
+    },
+    {
+      "id": "19047b44-5a27-4365-8eda-051d3b76e5c3",
+      "categoryId": "la-tete-de-sanglier",
+      "question": "Qui est le père de Luna Lovegood ?",
+      "correct": "Xenophilius",
+      "wrong1": "Amos",
+      "wrong2": "Arthur",
+      "wrong3": "Elphias",
+      "status": "validated",
+      "createdAt": "2026-01-19T17:52:17.784Z",
+      "updatedAt": "2026-01-19T17:52:17.784Z"
+    },
+    {
+      "id": "bc73f563-2d67-4f29-a2ce-348add566996",
+      "categoryId": "la-tete-de-sanglier",
+      "question": "Quel est le nom du frère de Norbert Dragonneau ?",
+      "correct": "Theseus",
+      "wrong1": "Marius",
+      "wrong2": "Percival",
+      "wrong3": "Tobias",
+      "status": "validated",
+      "createdAt": "2026-01-19T17:53:10.611Z",
+      "updatedAt": "2026-01-19T17:53:10.611Z"
     }
   ]
 }

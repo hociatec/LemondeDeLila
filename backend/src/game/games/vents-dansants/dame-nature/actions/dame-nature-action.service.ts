@@ -140,6 +140,7 @@ export class DameNatureActionService {
         metadata: { ...metadata, pendingQuiz },
         pending: {
           type: 'quiz',
+          label: 'Réponses possibles',
           playerId: current.id,
           question: card.question ?? card.memberName,
           choices: card.choices ?? ['Bonne réponse', 'Mauvaise réponse'],

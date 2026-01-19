@@ -22,6 +22,7 @@ export class MinuitPresenterService {
     const pending = meta.pendingQuiz
       ? {
           type: 'quiz',
+          label: 'Réponses possibles',
           question: meta.pendingQuiz.question,
           choices: meta.pendingQuiz.choices,
           playerId: meta.pendingQuiz.playerId,

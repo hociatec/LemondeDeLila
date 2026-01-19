@@ -102,6 +102,7 @@ export class DameNaturePresenterService extends BasePresenterService {
     if (pendingQuiz) {
       return {
         type: 'quiz',
+        label: 'Réponses possibles',
         question:
           pendingQuiz.card?.question ?? pendingQuiz.card?.memberName ?? 'Quiz',
         choices: pendingQuiz.card?.choices ?? [
