@@ -19,11 +19,11 @@ internal sealed class GamePlayChoicesListController
         _setSelectedIndex = setSelectedIndex ?? throw new ArgumentNullException(nameof(setSelectedIndex));
     }
 
-    internal void Apply(IReadOnlyList<string> next)
+    internal void Apply(IReadOnlyList<string> next, bool autoSelectFirst = true)
     {
         if (AreSame(_choices, next))
         {
-            EnsureSelection();
+            EnsureSelection(autoSelectFirst);
             return;
         }
 
@@ -33,7 +33,7 @@ internal sealed class GamePlayChoicesListController
             _choices.Add(choice);
         }
 
-        EnsureSelection();
+        EnsureSelection(autoSelectFirst);
     }
 
     internal void Clear()
@@ -45,7 +45,7 @@ internal sealed class GamePlayChoicesListController
         _setSelectedIndex(-1);
     }
 
-    private void EnsureSelection()
+    private void EnsureSelection(bool autoSelectFirst)
     {
         if (_choices.Count <= 0)
         {
@@ -56,6 +56,12 @@ internal sealed class GamePlayChoicesListController
         var idx = _getSelectedIndex();
         if (idx < 0 || idx >= _choices.Count)
         {
+            if (!autoSelectFirst)
+            {
+                _setSelectedIndex(-1);
+                return;
+            }
+
             idx = 0;
         }
 

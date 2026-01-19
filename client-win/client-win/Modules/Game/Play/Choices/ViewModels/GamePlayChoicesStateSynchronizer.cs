@@ -41,7 +41,9 @@ internal sealed class GamePlayChoicesStateSynchronizer
         {
             _localChoices.Clear();
             setLabel(PendingChoicesReader.BuildServerChoicesLabel(state.Pending));
-            _list.Apply(serverChoices);
+            var type = (state.Pending?.Type ?? string.Empty).Trim();
+            var isQuiz = string.Equals(type, "quiz", StringComparison.OrdinalIgnoreCase);
+            _list.Apply(serverChoices, autoSelectFirst: !isQuiz);
             return;
         }
 
