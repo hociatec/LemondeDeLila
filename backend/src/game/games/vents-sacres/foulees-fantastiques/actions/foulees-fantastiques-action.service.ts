@@ -245,7 +245,7 @@ export class FouleesFantastiquesActionService {
         blockInfo ??
           `${this.playerName(state, currentId)} ne peut jouer aucun pion.`,
       );
-      return this.endTurn(next, false);
+      return this.endTurn(next, roll === 6);
     }
 
     if (moves.length === 1) {
@@ -644,14 +644,14 @@ export class FouleesFantastiquesActionService {
     moverPawnIndex: number,
     moverProgress: number,
   ): GameStateEntity {
-    const meta = (state.metadata ?? {}) as any as FouleesFantastiquesMetadata;
+    const baseMeta = (state.metadata ?? {}) as any as FouleesFantastiquesMetadata;
     if (!(typeof moverProgress === 'number')) return state;
-    if (moverProgress < 0 || moverProgress >= meta.trackLength) return state;
+    if (moverProgress < 0 || moverProgress >= baseMeta.trackLength) return state;
 
-    const moverOffset = meta.offsets?.[moverId] ?? 0;
-    const moverPos = (moverOffset + moverProgress) % meta.trackLength;
+    const moverOffset = baseMeta.offsets?.[moverId] ?? 0;
+    const moverPos = (moverOffset + moverProgress) % baseMeta.trackLength;
     const isSafe =
-      Array.isArray(meta.safeTiles) && meta.safeTiles.includes(moverPos);
+      Array.isArray(baseMeta.safeTiles) && baseMeta.safeTiles.includes(moverPos);
     if (isSafe) return state;
 
     const players = Array.isArray(state.players) ? state.players : [];
@@ -659,11 +659,14 @@ export class FouleesFantastiquesActionService {
 
     for (const p of players) {
       if (p.id === moverId) continue;
+      const meta = (next.metadata ?? {}) as any as FouleesFantastiquesMetadata;
+      const pawnsByPlayer = (meta.pawnsByPlayer ?? {}) as any;
       const offset = meta.offsets?.[p.id] ?? 0;
-      const pawns = Array.isArray(meta.pawnsByPlayer?.[p.id])
-        ? meta.pawnsByPlayer[p.id]
+      const pawns = Array.isArray(pawnsByPlayer?.[p.id])
+        ? pawnsByPlayer[p.id]
         : [];
 
+      let changed = false;
       const updated = pawns.map((pawn: any) => {
         const prog = typeof pawn?.progress === 'number' ? pawn.progress : -1;
         if (prog < 0 || prog >= meta.trackLength) return pawn;
@@ -675,17 +678,20 @@ export class FouleesFantastiquesActionService {
           next,
           `${this.playerName(state, moverId)} capture ${this.playerName(state, p.id)} (${capturedLabel}) : retour au départ.`,
         );
+        changed = true;
         return { ...pawn, progress: -1 };
       });
 
-      next = {
-        ...next,
-        metadata: {
-          ...(next.metadata ?? {}),
-          ...meta,
-          pawnsByPlayer: { ...(meta.pawnsByPlayer ?? {}), [p.id]: updated },
-        },
-      };
+      if (changed) {
+        next = {
+          ...next,
+          metadata: {
+            ...(next.metadata ?? {}),
+            ...meta,
+            pawnsByPlayer: { ...pawnsByPlayer, [p.id]: updated },
+          },
+        };
+      }
     }
 
     return next;
@@ -696,7 +702,7 @@ export class FouleesFantastiquesActionService {
       const currentId = state.turn?.currentPlayerId ?? null;
       const who =
         currentId != null ? this.playerName(state, currentId) : 'Le joueur';
-      return this.core.appendLog(state, `6 : ${who} rejoue.`);
+      return this.core.appendLog(state, `${who} rejoue.`);
     }
     return this.turns.advanceTurn(state);
   }

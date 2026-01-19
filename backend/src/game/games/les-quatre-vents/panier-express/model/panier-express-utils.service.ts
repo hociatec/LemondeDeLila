@@ -177,6 +177,7 @@ export class PanierExpressUtils {
     if (direct) return direct;
 
     const tokenMap: Record<string, string> = {
+      echange: 'échange',
       marche: 'marché',
       intemperie: 'intempérie',
       avarie: 'avarié',
@@ -185,6 +186,7 @@ export class PanierExpressUtils {
       fidelite: 'fidélité',
       abime: 'abîmé',
       detrempe: 'détrempé',
+      derriere: 'derrière',
     };
     const words = raw
       .split('-')

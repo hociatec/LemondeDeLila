@@ -29,14 +29,11 @@
                       Text="{Binding TextInput, UpdateSourceTrigger=PropertyChanged}"
                       Style="{DynamicResource InputTextBox}"
                       AcceptsReturn="{Binding PrimaryInputAcceptsReturn}"
+                      PreviewKeyDown="OnInputPreviewKeyDown"
                       TabIndex="0"
                       IsTabStop="True"
                       MinHeight="40"
                       AutomationProperties.LabeledBy="{Binding ElementName=PrimaryInputLabelText}">
-                 <TextBox.InputBindings>
-                     <KeyBinding Key="Enter" Command="{Binding ActivateCommand}" />
-                    <KeyBinding Key="Return" Command="{Binding ActivateCommand}" />
-                </TextBox.InputBindings>
             </TextBox>
         </StackPanel>
 
@@ -50,13 +47,10 @@
             <TextBox x:Name="SecondaryInputBox"
                       Text="{Binding SecondaryInput, UpdateSourceTrigger=PropertyChanged}"
                       Style="{DynamicResource InputTextBox}"
+                      PreviewKeyDown="OnInputPreviewKeyDown"
                       TabIndex="1"
                       IsTabStop="True"
                       AutomationProperties.LabeledBy="{Binding ElementName=SecondaryInputLabelText}">
-                <TextBox.InputBindings>
-                    <KeyBinding Key="Enter" Command="{Binding ActivateCommand}" />
-                    <KeyBinding Key="Return" Command="{Binding ActivateCommand}" />
-                </TextBox.InputBindings>
             </TextBox>
         </StackPanel>
 
@@ -70,13 +64,10 @@
             <TextBox x:Name="ThirdInputBox"
                       Text="{Binding ThirdInput, UpdateSourceTrigger=PropertyChanged}"
                       Style="{DynamicResource InputTextBox}"
+                      PreviewKeyDown="OnInputPreviewKeyDown"
                       TabIndex="2"
                       IsTabStop="True"
                       AutomationProperties.LabeledBy="{Binding ElementName=ThirdInputLabelText}">
-                <TextBox.InputBindings>
-                    <KeyBinding Key="Enter" Command="{Binding ActivateCommand}" />
-                    <KeyBinding Key="Return" Command="{Binding ActivateCommand}" />
-                </TextBox.InputBindings>
             </TextBox>
         </StackPanel>
 
@@ -90,13 +81,10 @@
             <TextBox x:Name="FourthInputBox"
                       Text="{Binding FourthInput, UpdateSourceTrigger=PropertyChanged}"
                       Style="{DynamicResource InputTextBox}"
+                      PreviewKeyDown="OnInputPreviewKeyDown"
                       TabIndex="3"
                       IsTabStop="True"
                       AutomationProperties.LabeledBy="{Binding ElementName=FourthInputLabelText}">
-                <TextBox.InputBindings>
-                    <KeyBinding Key="Enter" Command="{Binding ActivateCommand}" />
-                    <KeyBinding Key="Return" Command="{Binding ActivateCommand}" />
-                </TextBox.InputBindings>
             </TextBox>
         </StackPanel>
 
@@ -110,13 +98,10 @@
             <TextBox x:Name="FifthInputBox"
                       Text="{Binding FifthInput, UpdateSourceTrigger=PropertyChanged}"
                       Style="{DynamicResource InputTextBox}"
+                      PreviewKeyDown="OnInputPreviewKeyDown"
                       TabIndex="4"
                       IsTabStop="True"
                       AutomationProperties.LabeledBy="{Binding ElementName=FifthInputLabelText}">
-                <TextBox.InputBindings>
-                    <KeyBinding Key="Enter" Command="{Binding ActivateCommand}" />
-                    <KeyBinding Key="Return" Command="{Binding ActivateCommand}" />
-                </TextBox.InputBindings>
             </TextBox>
         </StackPanel>
     </StackPanel>

@@ -17,6 +17,8 @@ namespace client_win.Modules.Home.Views;
 public partial class HomeView : UserControl, IInitialFocusTarget
 {
     private HomeViewModel? _viewModel;
+    private Window? _hostWindow;
+    private EventHandler? _hostWindowActivatedHandler;
 
     public HomeView()
     {
@@ -26,11 +28,13 @@ public partial class HomeView : UserControl, IInitialFocusTarget
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
         AttachViewModel();
+        AttachHostWindowFocusRetry();
         FocusFirstField();
     }
 
     private void OnUnloaded(object sender, RoutedEventArgs e)
     {
+        DetachHostWindowFocusRetry();
         DetachViewModel();
     }
 
@@ -38,6 +42,7 @@ public partial class HomeView : UserControl, IInitialFocusTarget
     {
         DetachViewModel();
         AttachViewModel();
+        AttachHostWindowFocusRetry();
         FocusFirstField();
     }
 
@@ -204,6 +209,82 @@ public partial class HomeView : UserControl, IInitialFocusTarget
                 // Focus is best-effort: never crash the UI thread.
             }
         }));
+    }
+
+    private void AttachHostWindowFocusRetry()
+    {
+        try
+        {
+            var window = Window.GetWindow(this);
+            if (window == null)
+            {
+                return;
+            }
+
+            if (ReferenceEquals(_hostWindow, window) && _hostWindowActivatedHandler != null)
+            {
+                return;
+            }
+
+            DetachHostWindowFocusRetry();
+            _hostWindow = window;
+
+            // Au démarrage, la vue peut être chargée avant que la fenêtre ne soit réellement active
+            // (surtout via ClickOnce / démarrage silencieux). NVDA ne "voit" pas le focus tant que
+            // la fenêtre n'a pas le focus OS. On retente au moment de l'activation.
+            _hostWindowActivatedHandler = (_, _) =>
+            {
+                try
+                {
+                    if (!IsLoaded || !IsVisible)
+                    {
+                        return;
+                    }
+
+                    Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() =>
+                    {
+                        try
+                        {
+                            FocusFirstField();
+                        }
+                        catch
+                        {
+                            // best-effort
+                        }
+                    }));
+                }
+                catch
+                {
+                    // best-effort
+                }
+            };
+
+            window.Activated += _hostWindowActivatedHandler;
+        }
+        catch
+        {
+            // best-effort
+        }
+    }
+
+    private void DetachHostWindowFocusRetry()
+    {
+        try
+        {
+            if (_hostWindow != null && _hostWindowActivatedHandler != null)
+            {
+                _hostWindow.Activated -= _hostWindowActivatedHandler;
+            }
+        }
+        catch
+        {
+            // best-effort
+        }
+        finally
+        {
+            _hostWindowActivatedHandler = null;
+            _hostWindow = null;
+        }
     }
 
     public void RequestInitialFocus()

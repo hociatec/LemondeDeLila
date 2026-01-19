@@ -9,6 +9,7 @@ export const buildPanierExpressShortcuts: GameShortcutsBuilder<
     interfaceShortcut('S', 'shopping'),
     interfaceShortcut('B', 'basket'),
     interfaceShortcut('I', 'inventory'),
+    interfaceShortcut('SHIFT+I', 'inventory_all'),
     interfaceShortcut('P', 'position'),
   ];
 };

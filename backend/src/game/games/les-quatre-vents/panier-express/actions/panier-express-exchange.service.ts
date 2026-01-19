@@ -532,11 +532,12 @@ export class PanierExpressExchangeService {
       resolvedCard === 'echange-devant' ||
       resolvedCard === 'echange-derriere'
     ) {
+      const exchangeLabel = this.utils.formatEventLabel(resolvedCard);
       const players = state.players ?? [];
       if (players.length < 2) {
         return this.core.appendLog(
           { ...state, metadata },
-          `[Panier Express] ${resolvedCard} : aucun joueur disponible.`,
+          `[Panier Express] ${exchangeLabel} : aucun joueur disponible.`,
         );
       }
       const idx = players.findIndex((p) => p.id === playerId);
@@ -556,7 +557,7 @@ export class PanierExpressExchangeService {
       if (!myInv.length || !theirInv.length) {
         return this.core.appendLog(
           { ...state, metadata },
-          `[Panier Express] ${resolvedCard} : inventaire vide.`,
+          `[Panier Express] ${exchangeLabel} : inventaire vide.`,
         );
       }
       let next: GameStateEntity = { ...state, metadata };
@@ -581,7 +582,7 @@ export class PanierExpressExchangeService {
       if (bCard) next = addCardToPlayerState(this.utils, next, playerId, bCard);
       return this.core.appendLog(
         next,
-        `[Panier Express] ${resolvedCard} : échange au hasard avec ${this.utils.playerName(state, targetPlayerId)}.`,
+        `[Panier Express] ${exchangeLabel} : échange au hasard avec ${this.utils.playerName(state, targetPlayerId)}.`,
       );
     }
 

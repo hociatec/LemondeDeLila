@@ -1501,7 +1501,13 @@ export class GameEngineService {
     state: GameStateEntity,
     botTurn?: boolean,
   ): Promise<GameStateEntity> {
-    const isBot = botTurn !== undefined ? botTurn : this.isBotTurn(state);
+    const handler = this.registry.getHandler(gameType);
+    // Certains jeux attendent une action d'un bot via `pending` (quiz, échanges, etc.)
+    // même si `turn.currentPlayerId` n'est pas ce bot. Dans ce cas, il faut aussi activer
+    // `botThinking` pour déclencher le scheduler.
+    const hasPendingBot = this.getBotActorIdForState(state, handler) != null;
+    const isBot =
+      botTurn !== undefined ? botTurn || hasPendingBot : hasPendingBot;
     const now = GameEngineService.nowMs();
     const marked = {
       ...(this.store.markBotThinking(state, isBot) as any),

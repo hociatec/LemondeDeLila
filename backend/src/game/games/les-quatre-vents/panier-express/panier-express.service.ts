@@ -652,6 +652,14 @@ export class PanierExpressService extends AbstractGameService {
     }
 
     if (!hasBlockingQuiz && !hasBlockingExchange && !hasBlockingPending) {
+      // Règle: sur un 6, le joueur rejoue, sauf si un effet lui fait perdre des tours.
+      const skipTurn = this.turnStatus.getStatus(next, currentId, 'skipTurn');
+      if (roll === 6 && !(skipTurn > 0)) {
+        return this.core.appendLog(
+          next,
+          `[Panier Express] ${this.utils.playerName(state, currentId)} rejoue (6).`,
+        );
+      }
       next = this.phaseFlow.advanceTurn(next);
     }
     return next;

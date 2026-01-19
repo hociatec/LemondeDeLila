@@ -411,19 +411,23 @@ export class RoomGateway
       }
       const remainingTotalConnections =
         remainingConnections + remainingSilentConnections;
-      const userStillConnected = this.hasUserConnections(
-        meta.roomId,
-        meta.userId,
-      );
+      const userStillConnected = this.hasUserConnections(meta.roomId, meta.userId);
       // si plus aucune connexion pour cette room, on supprime la table côté service
       if (meta.role === 'participant') {
-        const disconnectOnly = roomStarted === true || roomStarted === null;
-        this.roomsService
-          .leaveRoom(meta.roomId, meta.userId, {
-            preserveRoom: disconnectOnly || remainingTotalConnections > 0,
-            disconnectOnly,
-          })
-          .catch(() => {});
+        // Important: ne pas "quitter" en DB si l'utilisateur a encore une autre connexion
+        // (ex: double socket silent/visible, reconnexion rapide).
+        if (!userStillConnected) {
+          // Sur déconnexion on ne veut jamais supprimer une table par erreur.
+          // On marque toutefois le joueur comme parti (et donc remplaçable par un bot en partie démarrée),
+          // sauf si l'état de la table est indéterminé (ex: DB temporairement indisponible).
+          const disconnectOnly = roomStarted === null;
+          this.roomsService
+            .leaveRoom(meta.roomId, meta.userId, {
+              preserveRoom: true,
+              disconnectOnly,
+            })
+            .catch(() => {});
+        }
       } else {
         if (!userStillConnected && ownerId === meta.userId) {
           this.roomsService
@@ -524,6 +528,16 @@ export class RoomGateway
         (p) => !spectatorIds.has(p.id),
       );
       payload.room.counts.players = payload.room.players.length;
+    }
+
+    // Garde-fou (y compris en partie démarrée): si un utilisateur est joueur (DB),
+    // il ne doit pas apparaître en spectateur.
+    if (payload.room.players?.length && payload.room.spectators?.length) {
+      const playerIds = new Set(payload.room.players.map((p) => p.id));
+      payload.room.spectators = payload.room.spectators.filter(
+        (s) => !playerIds.has(s.id),
+      );
+      payload.room.counts.spectators = payload.room.spectators.length;
     }
   }
 

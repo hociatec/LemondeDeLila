@@ -157,6 +157,7 @@ export class PanierExpressPresenterService extends BasePresenterService {
       currentId: currentPlayerId,
       playerViews: sanitizedViews,
       players,
+      revealInventory: reveal,
     });
   }
 
@@ -351,6 +352,7 @@ export class PanierExpressPresenterService extends BasePresenterService {
       currentId: number | null;
       playerViews: PanierExpressPlayerView[];
       players: PanierExpressPlayerSummary[];
+      revealInventory: Record<number, number>;
     },
   ): Record<string, unknown> {
     const baseExtras = this.getBaseExtras(state);
@@ -371,6 +373,41 @@ export class PanierExpressPresenterService extends BasePresenterService {
       return values.length > max
         ? `${title}: ${body}, ... (+${values.length - max})`
         : `${title}: ${body}`;
+    };
+
+    const inventoryAllMessage = () => {
+      const currentId =
+        typeof params.currentId === 'number' ? params.currentId : null;
+      if (!Array.isArray(params.playerViews) || params.playerViews.length === 0) {
+        return 'Inventaires: (aucun joueur).';
+      }
+
+      const max = 12;
+      const lines = params.playerViews.map((p) => {
+        const name =
+          typeof p.username === 'string' && p.username.trim().length > 0
+            ? p.username.trim()
+            : `Joueur ${p.id}`;
+        const canSee =
+          currentId != null
+            ? p.id === currentId || (params.revealInventory as any)?.[p.id] > 0
+            : (params.revealInventory as any)?.[p.id] > 0;
+
+        if (!canSee) {
+          return `${name} : inventaire (caché)`;
+        }
+        const items = Array.isArray(p.inventory) ? p.inventory : [];
+        if (items.length === 0) {
+          return `${name} : inventaire (vide)`;
+        }
+        const shown = items.length > max ? items.slice(0, max) : items;
+        const body = shown.join(', ');
+        return items.length > max
+          ? `${name} : inventaire ${body}, ... (+${items.length - max})`
+          : `${name} : inventaire ${body}`;
+      });
+
+      return lines.join('\n');
     };
 
     const meta = this.getMetadata(state) as PanierExpressMetadata;
@@ -399,6 +436,10 @@ export class PanierExpressPresenterService extends BasePresenterService {
           inventory: {
             title: 'Inventaire',
             message: listMessage('Inventaire', currentPlayerView?.inventory),
+          },
+          inventory_all: {
+            title: 'Inventaires (tous)',
+            message: inventoryAllMessage(),
           },
           position: {
             title: 'Position',

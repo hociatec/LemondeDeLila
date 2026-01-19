@@ -334,6 +334,14 @@ public partial class GamePlayView
 
         if (key is >= Key.A and <= Key.Z)
         {
+            // Only special-case Shift+I for server-side "inventory_all" without breaking
+            // existing single-letter shortcuts (Shift is commonly held for uppercase).
+            if (key == Key.I && (Keyboard.Modifiers & ModifierKeys.Shift) != ModifierKeys.None)
+            {
+                normalized = "SHIFT+I";
+                return true;
+            }
+
             normalized = key.ToString().ToUpperInvariant();
             return true;
         }

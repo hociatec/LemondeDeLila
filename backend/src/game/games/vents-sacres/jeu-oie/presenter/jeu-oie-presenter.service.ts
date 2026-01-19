@@ -29,12 +29,7 @@ export class JeuOiePresenterService {
         panels: {
           position: {
             title: 'Position',
-            message: this.boardPayload.buildPositionPanelMessage({
-              tilesRaw: meta.tiles,
-              positionsRaw: meta.positions,
-              lapsRaw: meta.laps,
-              playerId: userId,
-            }),
+            message: this.buildPositionMessage(meta, userId),
           },
         },
       },
@@ -59,5 +54,42 @@ export class JeuOiePresenterService {
         meta.laps,
       ),
     } as any;
+  }
+
+  private buildPositionMessage(meta: JeuOieMetadata, userId: number): string {
+    const tiles = Array.isArray(meta?.tiles) ? meta.tiles : [];
+    const posRaw = (meta?.positions as any)?.[userId];
+    const pos = typeof posRaw === 'number' ? posRaw : Number(posRaw);
+    if (!Number.isFinite(pos) || tiles.length === 0) {
+      return 'Position: inconnue.';
+    }
+
+    const startTile = tiles[0] as any;
+    const finishTile = tiles[tiles.length - 1] as any;
+    const hasStart = startTile?.type === 'start';
+    const hasFinish = finishTile?.type === 'finish';
+    const maxCase = hasStart && hasFinish ? tiles.length - 1 : tiles.length;
+    if (maxCase <= 0) {
+      return 'Position: inconnue.';
+    }
+
+    const lapRaw = (meta?.laps as any)?.[userId];
+    const lap = typeof lapRaw === 'number' ? lapRaw : Number(lapRaw);
+    const tourPlateau = Number.isFinite(lap) ? String(Math.trunc(lap)) : '?';
+
+    const caseNumber = Math.max(0, Math.trunc(pos));
+    if (hasStart && hasFinish) {
+      if (caseNumber <= 0) {
+        return `Tour plateau ${tourPlateau}, départ (0/${maxCase}).`;
+      }
+      if (caseNumber >= maxCase) {
+        return `Tour plateau ${tourPlateau}, arrivée (${maxCase}/${maxCase}).`;
+      }
+      return `Tour plateau ${tourPlateau}, case ${caseNumber}/${maxCase}.`;
+    }
+
+    // Fallback (compat): positions 0-based -> affichage 1-based.
+    const display = Math.max(1, caseNumber + 1);
+    return `Tour plateau ${tourPlateau}, case ${display}/${maxCase}.`;
   }
 }
