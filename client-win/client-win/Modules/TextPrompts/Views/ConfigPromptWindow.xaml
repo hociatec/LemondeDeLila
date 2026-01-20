@@ -53,10 +53,12 @@
                     </Style>
                 </StackPanel.Resources>
 
-                <ItemsControl ItemsSource="{Binding Fields}">
+                <ItemsControl ItemsSource="{Binding Fields}"
+                              KeyboardNavigation.TabNavigation="Continue">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <ContentControl>
+                            <ContentControl IsTabStop="False"
+                                            KeyboardNavigation.TabNavigation="Continue">
                                 <ContentControl.Style>
                                     <Style TargetType="ContentControl">
                                         <Style.Triggers>
@@ -64,11 +66,12 @@
                                             <DataTrigger Binding="{Binding IsTextField}" Value="True">
                                                 <Setter Property="Content">
                                                     <Setter.Value>
-                                                        <StackPanel>
+                                                        <StackPanel KeyboardNavigation.TabNavigation="Continue">
                                                             <TextBlock Text="{Binding Label}" 
                                                                        AutomationProperties.Name="{Binding Label}"/>
                                                             <TextBox Text="{Binding Text, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
-                                                                     AutomationProperties.Name="{Binding Label}"/>
+                                                                     AutomationProperties.Name="{Binding Label}"
+                                                                     IsTabStop="True"/>
                                                         </StackPanel>
                                                     </Setter.Value>
                                                 </Setter>
@@ -79,7 +82,8 @@
                                                     <Setter.Value>
                                                         <CheckBox Content="{Binding Label}"
                                                                   IsChecked="{Binding BoolValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                                  AutomationProperties.Name="{Binding Label}"/>
+                                                                  AutomationProperties.Name="{Binding Label}"
+                                                                  IsTabStop="True"/>
                                                     </Setter.Value>
                                                 </Setter>
                                             </DataTrigger>
