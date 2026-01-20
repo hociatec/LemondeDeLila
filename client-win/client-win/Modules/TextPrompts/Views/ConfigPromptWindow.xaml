@@ -30,11 +30,8 @@
         <ScrollViewer Grid.Row="1"
                       VerticalScrollBarVisibility="Auto"
                       HorizontalScrollBarVisibility="Auto"
-                      Focusable="False"
-                      IsTabStop="False">
-            <StackPanel KeyboardNavigation.TabNavigation="Continue"
-                        Focusable="False"
-                        IsTabStop="False">
+                      Focusable="False">
+            <StackPanel KeyboardNavigation.TabNavigation="Continue">
                 <!-- Ressources pour les styles -->
                 <StackPanel.Resources>
                     <Style TargetType="TextBlock">
@@ -59,12 +56,10 @@
                 <ItemsControl ItemsSource="{Binding Fields}"
                               KeyboardNavigation.TabNavigation="Continue"
                               Focusable="False"
-                              IsTabStop="False"
                               AutomationProperties.Name="Formulaire">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <ContentControl IsTabStop="False"
-                                            Focusable="False"
+                            <ContentControl Focusable="False"
                                             KeyboardNavigation.TabNavigation="Continue">
                                 <ContentControl.Style>
                                     <Style TargetType="ContentControl">
