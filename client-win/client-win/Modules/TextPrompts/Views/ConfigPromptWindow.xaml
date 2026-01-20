@@ -10,6 +10,7 @@
         MinWidth="520"
         MaxHeight="{Binding Source={x:Static SystemParameters.WorkArea}, Path=Height}"
         MaxWidth="{Binding Source={x:Static SystemParameters.WorkArea}, Path=Width}">
+
     <Window.Resources>
         <DataTemplate x:Key="TextFieldTemplate">
             <StackPanel Margin="0 0 0 10"
@@ -30,7 +31,8 @@
                          MinWidth="420"
                          AutomationProperties.Name="{Binding Label}"
                          AutomationProperties.AutomationId="{Binding Key}"
-                         AutomationProperties.LabeledBy="{x:Null}"/>
+                         AutomationProperties.LabeledBy="{x:Null}"
+                         AutomationProperties.ControlType="Edit"/>
             </StackPanel>
         </DataTemplate>
 
@@ -39,7 +41,9 @@
                       Content="{Binding Label}"
                       IsChecked="{Binding BoolValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                       Foreground="White"
-                      AutomationProperties.AutomationId="{Binding Key}"/>
+                      AutomationProperties.Name="{Binding Label}"
+                      AutomationProperties.AutomationId="{Binding Key}"
+                      AutomationProperties.ControlType="CheckBox"/>
         </DataTemplate>
     </Window.Resources>
 
@@ -67,34 +71,33 @@
                           Focusable="False"
                           KeyboardNavigation.IsTabStop="False"
                           KeyboardNavigation.TabNavigation="Continue">
-            <ItemsControl.ItemContainerStyle>
-                <Style TargetType="ContentPresenter">
-                    <Setter Property="Focusable" Value="False"/>
-                    <Setter Property="KeyboardNavigation.IsTabStop" Value="False"/>
-                    <Setter Property="AutomationProperties.AutomationId" Value="{Binding Key}"/>
-                    <!-- Évite que le peer annonce le type .NET du data item (fallback ToString). -->
-                    <Setter Property="AutomationProperties.Name" Value=""/>
-                </Style>
-            </ItemsControl.ItemContainerStyle>
-            <ItemsControl.ItemTemplate>
-                <DataTemplate>
-                    <ContentControl Content="{Binding}"
-                                    Focusable="False"
-                                    KeyboardNavigation.IsTabStop="False"
-                                    AutomationProperties.Name="">
-                        <ContentControl.Style>
-                            <Style TargetType="ContentControl">
-                                <Setter Property="ContentTemplate" Value="{StaticResource TextFieldTemplate}"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding IsBoolean}" Value="True">
-                                        <Setter Property="ContentTemplate" Value="{StaticResource BoolFieldTemplate}"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </ContentControl.Style>
-                    </ContentControl>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
+                <ItemsControl.ItemContainerStyle>
+                    <Style TargetType="ContentPresenter">
+                        <Setter Property="Focusable" Value="False"/>
+                        <Setter Property="KeyboardNavigation.IsTabStop" Value="False"/>
+                        <Setter Property="AutomationProperties.AutomationId" Value="{Binding Key}"/>
+                        <Setter Property="AutomationProperties.Name" Value="{Binding Label}"/>
+                    </Style>
+                </ItemsControl.ItemContainerStyle>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <ContentControl Content="{Binding}"
+                                        Focusable="False"
+                                        KeyboardNavigation.IsTabStop="False"
+                                        AutomationProperties.Name="">
+                            <ContentControl.Style>
+                                <Style TargetType="ContentControl">
+                                    <Setter Property="ContentTemplate" Value="{StaticResource TextFieldTemplate}"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsBoolean}" Value="True">
+                                            <Setter Property="ContentTemplate" Value="{StaticResource BoolFieldTemplate}"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ContentControl.Style>
+                        </ContentControl>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
             </ItemsControl>
         </ScrollViewer>
 
