@@ -30,8 +30,11 @@
         <ScrollViewer Grid.Row="1"
                       VerticalScrollBarVisibility="Auto"
                       HorizontalScrollBarVisibility="Auto"
-                      Focusable="True">
-            <StackPanel>
+                      Focusable="False"
+                      IsTabStop="False">
+            <StackPanel KeyboardNavigation.TabNavigation="Continue"
+                        Focusable="False"
+                        IsTabStop="False">
                 <!-- Ressources pour les styles -->
                 <StackPanel.Resources>
                     <Style TargetType="TextBlock">
