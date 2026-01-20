@@ -14,13 +14,11 @@
     <!-- ================= RESSOURCES ================= -->
     <Window.Resources>
 
-        <!-- Label -->
         <Style TargetType="TextBlock" x:Key="LabelStyle">
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="Margin" Value="0 0 0 4"/>
         </Style>
 
-        <!-- TextBox -->
         <Style TargetType="TextBox">
             <Setter Property="Background" Value="#10223A"/>
             <Setter Property="Foreground" Value="White"/>
@@ -31,13 +29,12 @@
             <Setter Property="Margin" Value="0 0 0 12"/>
         </Style>
 
-        <!-- CheckBox -->
         <Style TargetType="CheckBox">
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="Margin" Value="0 0 0 12"/>
         </Style>
 
-        <!-- ===== Template champ texte ===== -->
+        <!-- Champ texte -->
         <DataTemplate x:Key="TextFieldTemplate">
             <Grid>
                 <Grid.RowDefinitions>
@@ -46,7 +43,6 @@
                 </Grid.RowDefinitions>
 
                 <TextBlock x:Name="TextLabel"
-                           Grid.Row="0"
                            Text="{Binding Label}"
                            Style="{StaticResource LabelStyle}"/>
 
@@ -56,12 +52,21 @@
             </Grid>
         </DataTemplate>
 
-        <!-- ===== Template champ booléen ===== -->
+        <!-- Champ booléen -->
         <DataTemplate x:Key="BooleanFieldTemplate">
             <CheckBox Content="{Binding Label}"
                       IsChecked="{Binding BoolValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                       AutomationProperties.Name="{Binding Label}"/>
         </DataTemplate>
+
+        <!-- Style ListBoxItem : PAS de sélection visible -->
+        <Style TargetType="ListBoxItem">
+            <Setter Property="Focusable" Value="False"/>
+            <Setter Property="IsTabStop" Value="False"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Background" Value="Transparent"/>
+        </Style>
 
     </Window.Resources>
 
@@ -73,7 +78,7 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- ===== Titre ===== -->
+        <!-- Titre -->
         <TextBlock Grid.Row="0"
                    Text="{Binding Title}"
                    FontSize="18"
@@ -81,51 +86,42 @@
                    Margin="0 0 0 16"
                    AutomationProperties.Name="{Binding Title}"/>
 
-        <!-- ===== Formulaire ===== -->
+        <!-- Formulaire -->
         <ScrollViewer Grid.Row="1"
                       VerticalScrollBarVisibility="Auto"
                       HorizontalScrollBarVisibility="Disabled"
                       Focusable="False">
 
-            <ItemsControl ItemsSource="{Binding Fields}"
-                          KeyboardNavigation.TabNavigation="Continue">
+            <ListBox ItemsSource="{Binding Fields}"
+                     BorderThickness="0"
+                     Background="Transparent"
+                     KeyboardNavigation.TabNavigation="Continue">
 
-                <!-- IMPORTANT : pas de StackPanel -->
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <VirtualizingStackPanel/>
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-
-                <ItemsControl.ItemTemplate>
+                <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <!-- ContentPresenter NON focusable -->
                         <ContentPresenter>
                             <ContentPresenter.Style>
                                 <Style TargetType="ContentPresenter">
                                     <Style.Triggers>
-
                                         <DataTrigger Binding="{Binding IsTextField}" Value="True">
                                             <Setter Property="ContentTemplate"
                                                     Value="{StaticResource TextFieldTemplate}"/>
                                         </DataTrigger>
-
                                         <DataTrigger Binding="{Binding IsBooleanField}" Value="True">
                                             <Setter Property="ContentTemplate"
                                                     Value="{StaticResource BooleanFieldTemplate}"/>
                                         </DataTrigger>
-
                                     </Style.Triggers>
                                 </Style>
                             </ContentPresenter.Style>
                         </ContentPresenter>
                     </DataTemplate>
-                </ItemsControl.ItemTemplate>
+                </ListBox.ItemTemplate>
 
-            </ItemsControl>
+            </ListBox>
         </ScrollViewer>
 
-        <!-- ===== Boutons ===== -->
+        <!-- Boutons -->
         <StackPanel Grid.Row="2"
                     Orientation="Horizontal"
                     HorizontalAlignment="Right"
