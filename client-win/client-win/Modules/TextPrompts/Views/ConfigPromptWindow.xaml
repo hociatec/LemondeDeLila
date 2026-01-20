@@ -11,7 +11,7 @@
         MaxHeight="{Binding Source={x:Static SystemParameters.WorkArea}, Path=Height}"
         MaxWidth="{Binding Source={x:Static SystemParameters.WorkArea}, Path=Width}">
 
-    <Grid Margin="16" KeyboardNavigation.TabNavigation="Cycle">
+    <Grid Margin="16">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -26,44 +26,49 @@
                    Margin="0 0 0 12"
                    AutomationProperties.Name="{Binding Title}"/>
 
-        <!-- Champs -->
+        <!-- Liste des champs -->
         <ScrollViewer Grid.Row="1"
                       VerticalScrollBarVisibility="Auto"
                       HorizontalScrollBarVisibility="Disabled"
                       Focusable="False">
 
             <StackPanel>
-                <!-- Liste des champs -->
-                <ItemsControl ItemsSource="{Binding Fields}"
-                              Focusable="False"
-                              IsTabStop="False"
-                              KeyboardNavigation.TabNavigation="Continue">
+                <!-- Exemple de champ texte -->
+                <StackPanel.Resources>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Foreground" Value="White"/>
+                        <Setter Property="Margin" Value="0 0 0 5"/>
+                    </Style>
+                    <Style TargetType="TextBox">
+                        <Setter Property="Background" Value="#10223A"/>
+                        <Setter Property="Foreground" Value="White"/>
+                        <Setter Property="BorderBrush" Value="#284C75"/>
+                        <Setter Property="BorderThickness" Value="1"/>
+                        <Setter Property="Padding" Value="8"/>
+                        <Setter Property="MinWidth" Value="420"/>
+                        <Setter Property="Margin" Value="0 0 0 10"/>
+                    </Style>
+                    <Style TargetType="CheckBox">
+                        <Setter Property="Foreground" Value="White"/>
+                        <Setter Property="Margin" Value="0 0 0 10"/>
+                    </Style>
+                </StackPanel.Resources>
 
+                <ItemsControl ItemsSource="{Binding Fields}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <StackPanel Margin="0 0 0 10">
-                                <!-- Champ texte -->
-                                <StackPanel Visibility="{Binding IsBoolean, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=True}">
-                                    <TextBlock Text="{Binding Label}"
-                                               Foreground="White"
-                                               AutomationProperties.Name="{Binding Label}"/>
-                                    <TextBox Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}"
-                                             Background="#10223A"
-                                             Foreground="White"
-                                             BorderBrush="#284C75"
-                                             BorderThickness="1"
-                                             Padding="8"
-                                             MinWidth="420"
-                                             AutomationProperties.LabeledBy="{Binding ElementName=textFieldLabel}"/>
-                                </StackPanel>
-
-                                <!-- Champ booléen -->
-                                <CheckBox Visibility="{Binding IsBoolean, Converter={StaticResource BoolToVisibilityConverter}}"
-                                          Content="{Binding Label}"
-                                          IsChecked="{Binding BoolValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                          Foreground="White"
-                                          AutomationProperties.Name="{Binding Label}"/>
+                            <!-- Champ texte -->
+                            <StackPanel Visibility="{Binding IsTextField, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <TextBlock Text="{Binding Label}" AutomationProperties.Name="{Binding Label}"/>
+                                <TextBox Text="{Binding Text, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                                         AutomationProperties.LabeledBy="{Binding ElementName=textFieldLabel}"/>
                             </StackPanel>
+
+                            <!-- Champ booléen -->
+                            <CheckBox Visibility="{Binding IsBooleanField, Converter={StaticResource BoolToVisibilityConverter}}"
+                                      Content="{Binding Label}"
+                                      IsChecked="{Binding BoolValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                      AutomationProperties.Name="{Binding Label}"/>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
