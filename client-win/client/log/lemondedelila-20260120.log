@@ -1,0 +1,53 @@
+2026-01-20 18:15:38.668 [INF] === Le Monde de Lila - Démarrage de l'application ===
+2026-01-20 18:15:38.711 [INF] Chemins des logs: C:\wamp64\www\lemondeDeLila\client-win\client\\log | C:\Users\Administrateur\AppData\Local\LeMondeDeLila\log
+2026-01-20 18:15:38.713 [INF] Niveau de logs: "Debug"
+2026-01-20 18:15:38.716 [INF] Environnement détecté: "Development"
+2026-01-20 18:15:38.723 [INF] Configuration initialisée dans AppData depuis C:\wamp64\www\lemondeDeLila\client-win\client-win\bin\Debug\net8.0-windows\config\client.properties: C:\Users\Administrateur\AppData\Local\LeMondeDeLila\config\client.properties
+2026-01-20 18:15:38.728 [INF] Configuration réseau chargée:
+2026-01-20 18:15:38.728 [INF]   - Application: Le Monde de Lila
+2026-01-20 18:15:38.729 [INF]   - HTTP Base: "https://api.lilas.hociatec.fr/api/"
+2026-01-20 18:15:38.729 [INF]   - WebSocket API: "wss://ws.lilas.hociatec.fr/ws/api"
+2026-01-20 18:15:38.729 [INF]   - WebSocket Realtime: "wss://ws.lilas.hociatec.fr/ws"
+2026-01-20 18:15:38.729 [INF]   - WebSocket Presence: "wss://ws.lilas.hociatec.fr/presence"
+2026-01-20 18:15:38.729 [INF]   - WebSocket Notify: "wss://ws.lilas.hociatec.fr/ws/notify"
+2026-01-20 18:15:38.729 [INF]   - WebSocket Game: "wss://ws.lilas.hociatec.fr/ws/game"
+2026-01-20 18:15:38.729 [INF]   - JWT signature public key: C:\wamp64\www\lemondeDeLila\client-win\client-win\bin\Debug\net8.0-windows\config\jwt-signing-public.pem
+2026-01-20 18:15:38.730 [INF] Configuration réseau: NetworkConfig[Send=10s, Recv=45s, MaxRetries=5, KeepAlive=30s, Buffer=8192 bytes]
+2026-01-20 18:15:38.799 [INF] NetworkStateMonitor initialisé. État réseau: Disponible
+2026-01-20 18:15:38.826 [INF] Settings chargés depuis C:\Users\Administrateur\AppData\Local\LeMondeDeLila\settings\settings.json
+2026-01-20 18:15:38.827 [INF] SettingsManager initialisé: C:\Users\Administrateur\AppData\Local\LeMondeDeLila\settings\settings.json
+2026-01-20 18:15:38.885 [INF] NVDA controller chargé: C:\wamp64\www\lemondeDeLila\client-win\client-win\bin\Debug\net8.0-windows\libs\x64\nvdaControllerClient64.dll
+2026-01-20 18:15:38.886 [INF] GlobalExceptionShield initialisé
+2026-01-20 18:15:39.036 [INF] SoundService init pid=6664 dispatcher=AudioDispatcher
+2026-01-20 18:15:39.053 [WRN] Audio startup trace: pid=6664 request play ClientOpened (Play() called) gate(startup=0 connected=0) file=ClientOpened-c78ef6e60669fcf623fa49cde9a2d381c229f52736056f1d4ae500554a3ee218.mp3
+2026-01-20 18:15:39.057 [DBG] PersistentWsClient créé pour "wss://ws.lilas.hociatec.fr/ws/api"
+2026-01-20 18:15:39.058 [INF] AppHost créé avec succès. Version: v1.2.0
+2026-01-20 18:15:39.082 [INF] ShellErrorHandler initialisé avec CrashReporter: true
+2026-01-20 18:15:39.331 [WRN] Audio startup trace: pid=6664 start playback ClientOpened gate(startup=0 connected=0) file=ClientOpened-c78ef6e60669fcf623fa49cde9a2d381c229f52736056f1d4ae500554a3ee218.mp3
+2026-01-20 18:16:05.305 [INF] === Le Monde de Lila - Démarrage de l'application ===
+2026-01-20 18:16:05.347 [INF] Chemins des logs: C:\wamp64\www\lemondeDeLila\client-win\client\\log | C:\Users\Administrateur\AppData\Local\LeMondeDeLila\log
+2026-01-20 18:16:05.349 [INF] Niveau de logs: "Debug"
+2026-01-20 18:16:05.352 [INF] Environnement détecté: "Development"
+2026-01-20 18:16:05.354 [INF] Configuration chargée depuis AppData: C:\Users\Administrateur\AppData\Local\LeMondeDeLila\config\client.properties
+2026-01-20 18:16:05.356 [INF] Configuration réseau chargée:
+2026-01-20 18:16:05.356 [INF]   - Application: Le Monde de Lila
+2026-01-20 18:16:05.356 [INF]   - HTTP Base: "https://api.lilas.hociatec.fr/api/"
+2026-01-20 18:16:05.357 [INF]   - WebSocket API: "wss://ws.lilas.hociatec.fr/ws/api"
+2026-01-20 18:16:05.357 [INF]   - WebSocket Realtime: "wss://ws.lilas.hociatec.fr/ws"
+2026-01-20 18:16:05.357 [INF]   - WebSocket Presence: "wss://ws.lilas.hociatec.fr/presence"
+2026-01-20 18:16:05.357 [INF]   - WebSocket Notify: "wss://ws.lilas.hociatec.fr/ws/notify"
+2026-01-20 18:16:05.357 [INF]   - WebSocket Game: "wss://ws.lilas.hociatec.fr/ws/game"
+2026-01-20 18:16:05.357 [INF]   - JWT signature public key: C:\wamp64\www\lemondeDeLila\client-win\client-win\bin\Debug\net8.0-windows\config\jwt-signing-public.pem
+2026-01-20 18:16:05.359 [INF] Configuration réseau: NetworkConfig[Send=10s, Recv=45s, MaxRetries=5, KeepAlive=30s, Buffer=8192 bytes]
+2026-01-20 18:16:05.433 [INF] NetworkStateMonitor initialisé. État réseau: Disponible
+2026-01-20 18:16:05.463 [INF] Settings chargés depuis C:\Users\Administrateur\AppData\Local\LeMondeDeLila\settings\settings.json
+2026-01-20 18:16:05.464 [INF] SettingsManager initialisé: C:\Users\Administrateur\AppData\Local\LeMondeDeLila\settings\settings.json
+2026-01-20 18:16:05.466 [INF] NVDA controller chargé: C:\wamp64\www\lemondeDeLila\client-win\client-win\bin\Debug\net8.0-windows\libs\x64\nvdaControllerClient64.dll
+2026-01-20 18:16:05.466 [INF] GlobalExceptionShield initialisé
+2026-01-20 18:16:05.537 [INF] SoundService init pid=10496 dispatcher=AudioDispatcher
+2026-01-20 18:16:05.552 [WRN] Audio startup trace: pid=10496 request play ClientOpened (Play() called) gate(startup=0 connected=0) file=ClientOpened-c78ef6e60669fcf623fa49cde9a2d381c229f52736056f1d4ae500554a3ee218.mp3
+2026-01-20 18:16:05.556 [DBG] PersistentWsClient créé pour "wss://ws.lilas.hociatec.fr/ws/api"
+2026-01-20 18:16:05.559 [INF] AppHost créé avec succès. Version: v1.2.0
+2026-01-20 18:16:05.579 [INF] ShellErrorHandler initialisé avec CrashReporter: true
+2026-01-20 18:16:05.804 [WRN] Audio startup trace: pid=10496 start playback ClientOpened gate(startup=0 connected=0) file=ClientOpened-c78ef6e60669fcf623fa49cde9a2d381c229f52736056f1d4ae500554a3ee218.mp3
+2026-01-20 18:16:11.728 [WRN] Audio startup trace: pid=10496 startup gate opened (ClientOpened ended)

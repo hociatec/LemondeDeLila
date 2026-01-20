@@ -11,33 +11,7 @@
         MaxHeight="{Binding Source={x:Static SystemParameters.WorkArea}, Path=Height}"
         MaxWidth="{Binding Source={x:Static SystemParameters.WorkArea}, Path=Width}">
 
-    <Window.Resources>
-
-        <!-- ===== Champ texte ===== -->
-        <DataTemplate x:Key="TextFieldTemplate">
-            <TextBox Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}"
-                     Background="#10223A"
-                     Foreground="White"
-                     BorderBrush="#284C75"
-                     BorderThickness="1"
-                     Padding="8"
-                     MinWidth="420"
-                     Margin="0 0 0 10"/>
-                    
-        </DataTemplate>
-
-        <!-- ===== Champ booléen ===== -->
-        <DataTemplate x:Key="BoolFieldTemplate">
-            <CheckBox Margin="0 0 0 10"
-                      Content="{Binding Label}"
-                      IsChecked="{Binding BoolValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                      Foreground="White"/>
-            </DataTemplate>
-
-    </Window.Resources>
-
     <Grid Margin="16" KeyboardNavigation.TabNavigation="Cycle">
-
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -49,7 +23,8 @@
                    Text="{Binding Title}"
                    FontSize="18"
                    FontWeight="SemiBold"
-                   Margin="0 0 0 12"/>
+                   Margin="0 0 0 12"
+                   AutomationProperties.Name="{Binding Title}"/>
 
         <!-- Champs -->
         <ScrollViewer Grid.Row="1"
@@ -57,45 +32,42 @@
                       HorizontalScrollBarVisibility="Disabled"
                       Focusable="False">
 
-            <ItemsControl ItemsSource="{Binding Fields}"
-                          Focusable="False"
-                          IsTabStop="False"
-                          KeyboardNavigation.TabNavigation="Continue"
-                          
-                          AutomationProperties.IsOffscreenBehavior="Offscreen">
+            <StackPanel>
+                <!-- Liste des champs -->
+                <ItemsControl ItemsSource="{Binding Fields}"
+                              Focusable="False"
+                              IsTabStop="False"
+                              KeyboardNavigation.TabNavigation="Continue">
 
-                <ItemsControl.ItemContainerStyle>
-                    <Style TargetType="ContentPresenter">
-                        <Setter Property="Focusable" Value="False"/>
-                         <Setter Property="KeyboardNavigation.IsTabStop" Value="False"/>
-                        <Setter Property="AutomationProperties.IsOffscreenBehavior" Value="Offscreen"/>
-                    </Style>
-                </ItemsControl.ItemContainerStyle>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Margin="0 0 0 10">
+                                <!-- Champ texte -->
+                                <StackPanel Visibility="{Binding IsBoolean, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=True}">
+                                    <TextBlock Text="{Binding Label}"
+                                               Foreground="White"
+                                               AutomationProperties.Name="{Binding Label}"/>
+                                    <TextBox Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}"
+                                             Background="#10223A"
+                                             Foreground="White"
+                                             BorderBrush="#284C75"
+                                             BorderThickness="1"
+                                             Padding="8"
+                                             MinWidth="420"
+                                             AutomationProperties.LabeledBy="{Binding ElementName=textFieldLabel}"/>
+                                </StackPanel>
 
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <ContentControl Content="{Binding}" 
-                                        Focusable="False"
-                                        IsTabStop="False"
-                                        KeyboardNavigation.IsTabStop="False"
-                                        AutomationProperties.IsOffscreenBehavior="Offscreen">
-                            <ContentControl.Style>
-                                <Style TargetType="ContentControl">
-                                    <Setter Property="ContentTemplate"
-                                            Value="{StaticResource TextFieldTemplate}"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsBoolean}" Value="True">
-                                            <Setter Property="ContentTemplate"
-                                                    Value="{StaticResource BoolFieldTemplate}"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </ContentControl.Style>
-                        </ContentControl>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-
-            </ItemsControl>
+                                <!-- Champ booléen -->
+                                <CheckBox Visibility="{Binding IsBoolean, Converter={StaticResource BoolToVisibilityConverter}}"
+                                          Content="{Binding Label}"
+                                          IsChecked="{Binding BoolValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                          Foreground="White"
+                                          AutomationProperties.Name="{Binding Label}"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
         </ScrollViewer>
 
         <!-- Boutons -->
@@ -103,17 +75,16 @@
                     Orientation="Horizontal"
                     HorizontalAlignment="Right"
                     Margin="0 12 0 0">
-
             <Button Content="_Annuler"
                     Width="100"
                     Margin="0 0 10 0"
-                    Click="OnCancelClick"/>
-
+                    Click="OnCancelClick"
+                    AutomationProperties.Name="Annuler"/>
             <Button Content="_OK"
                     Width="100"
                     Click="OnOkClick"
-                    IsDefault="True"/>
+                    IsDefault="True"
+                    AutomationProperties.Name="OK"/>
         </StackPanel>
-
     </Grid>
 </Window>
