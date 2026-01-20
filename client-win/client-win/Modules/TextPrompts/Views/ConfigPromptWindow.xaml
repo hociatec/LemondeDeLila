@@ -12,13 +12,22 @@
         MaxWidth="{Binding Source={x:Static SystemParameters.WorkArea}, Path=Width}">
 
     <Window.Resources>
+
+        <!-- ===== Champ texte ===== -->
         <DataTemplate x:Key="TextFieldTemplate">
-            <StackPanel Margin="0 0 0 10" Focusable="False" KeyboardNavigation.IsTabStop="False">
-                <Label Content="{Binding Label}"
-                       Foreground="#C3D2EA"
-                       Margin="0 0 0 4"
-                       Focusable="False"
-                       KeyboardNavigation.IsTabStop="False"/>
+            <StackPanel Margin="0 0 0 10"
+                        Focusable="False"
+                        AutomationProperties.IsControlElement="False"
+                        AutomationProperties.IsContentElement="False">
+
+                <!-- Label visuel uniquement (non exposé à NVDA) -->
+                <TextBlock Text="{Binding Label}"
+                           Foreground="#C3D2EA"
+                           Margin="0 0 0 4"
+                           AutomationProperties.IsControlElement="False"
+                           AutomationProperties.IsContentElement="False"/>
+
+                <!-- Élément réellement accessible -->
                 <TextBox Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}"
                          Background="#10223A"
                          Foreground="White"
@@ -31,6 +40,7 @@
             </StackPanel>
         </DataTemplate>
 
+        <!-- ===== Champ booléen ===== -->
         <DataTemplate x:Key="BoolFieldTemplate">
             <CheckBox Margin="0 0 0 10"
                       Content="{Binding Label}"
@@ -39,45 +49,67 @@
                       AutomationProperties.Name="{Binding AccessibleName}"
                       AutomationProperties.AutomationId="{Binding Key}"/>
         </DataTemplate>
+
     </Window.Resources>
 
-    <Grid Margin="16" KeyboardNavigation.TabNavigation="Cycle">
+    <Grid Margin="16"
+          KeyboardNavigation.TabNavigation="Cycle"
+          AutomationProperties.IsControlElement="False"
+          AutomationProperties.IsContentElement="False">
+
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Grid.Row="0" Text="{Binding Title}" FontSize="18" FontWeight="SemiBold" Margin="0 0 0 12"/>
+        <!-- Titre -->
+        <TextBlock Grid.Row="0"
+                   Text="{Binding Title}"
+                   FontSize="18"
+                   FontWeight="SemiBold"
+                   Margin="0 0 0 12"
+                   AutomationProperties.IsControlElement="False"
+                   AutomationProperties.IsContentElement="False"/>
 
+        <!-- Zone de champs -->
         <ScrollViewer Grid.Row="1"
                       VerticalScrollBarVisibility="Auto"
                       HorizontalScrollBarVisibility="Disabled"
                       Focusable="False"
-                      KeyboardNavigation.IsTabStop="False"
-                      AutomationProperties.Name="Champs de configuration">
+                      AutomationProperties.IsControlElement="False"
+                      AutomationProperties.IsContentElement="False">
+
             <ItemsControl ItemsSource="{Binding Fields}"
                           Focusable="False"
-                          KeyboardNavigation.IsTabStop="False"
-                          KeyboardNavigation.TabNavigation="Continue">
+                          KeyboardNavigation.TabNavigation="Continue"
+                          AutomationProperties.IsControlElement="False"
+                          AutomationProperties.IsContentElement="False">
+
+                <!-- IMPORTANT : empêcher "élément de donnée" -->
                 <ItemsControl.ItemContainerStyle>
                     <Style TargetType="ContentPresenter">
                         <Setter Property="Focusable" Value="False"/>
                         <Setter Property="KeyboardNavigation.IsTabStop" Value="False"/>
-                        <Setter Property="AutomationProperties.AutomationId" Value="{Binding Key}"/>
+                        <Setter Property="AutomationProperties.IsControlElement" Value="False"/>
+                        <Setter Property="AutomationProperties.IsContentElement" Value="False"/>
                     </Style>
                 </ItemsControl.ItemContainerStyle>
+
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <ContentControl Content="{Binding}"
                                         Focusable="False"
-                                        KeyboardNavigation.IsTabStop="False">
+                                        AutomationProperties.IsControlElement="False"
+                                        AutomationProperties.IsContentElement="False">
                             <ContentControl.Style>
                                 <Style TargetType="ContentControl">
-                                    <Setter Property="ContentTemplate" Value="{StaticResource TextFieldTemplate}"/>
+                                    <Setter Property="ContentTemplate"
+                                            Value="{StaticResource TextFieldTemplate}"/>
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding IsBoolean}" Value="True">
-                                            <Setter Property="ContentTemplate" Value="{StaticResource BoolFieldTemplate}"/>
+                                            <Setter Property="ContentTemplate"
+                                                    Value="{StaticResource BoolFieldTemplate}"/>
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
@@ -85,12 +117,27 @@
                         </ContentControl>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
+
             </ItemsControl>
         </ScrollViewer>
 
-        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0 12 0 0">
-            <Button Content="_Annuler" Width="100" Margin="0 0 10 0" Click="OnCancelClick"/>
-            <Button Content="_OK" Width="100" Click="OnOkClick"/>
+        <!-- Boutons -->
+        <StackPanel Grid.Row="2"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Margin="0 12 0 0"
+                    AutomationProperties.IsControlElement="False"
+                    AutomationProperties.IsContentElement="False">
+
+            <Button Content="_Annuler"
+                    Width="100"
+                    Margin="0 0 10 0"
+                    Click="OnCancelClick"/>
+
+            <Button Content="_OK"
+                    Width="100"
+                    Click="OnOkClick"/>
         </StackPanel>
+
     </Grid>
 </Window>
