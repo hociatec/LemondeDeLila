@@ -40,5 +40,8 @@ public sealed class ConfigPromptFieldModel : ObservableObject
         set => SetProperty(ref _boolValue, value);
     }
 
-    public string AccessibleName => string.IsNullOrWhiteSpace(Label) ? " " : Label;
+    /// <summary>
+    /// Nom accessible pour l'automatisation (jamais vide)
+    /// </summary>
+    public string AccessibleName => string.IsNullOrWhiteSpace(Label) ? "Champ non nommé" : Label;
 }

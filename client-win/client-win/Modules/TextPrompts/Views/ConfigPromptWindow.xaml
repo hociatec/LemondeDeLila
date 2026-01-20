@@ -13,15 +13,12 @@
 
     <Window.Resources>
         <DataTemplate x:Key="TextFieldTemplate">
-            <StackPanel Margin="0 0 0 10"
-                        Focusable="False"
-                        KeyboardNavigation.IsTabStop="False">
+            <StackPanel Margin="0 0 0 10" Focusable="False" KeyboardNavigation.IsTabStop="False">
                 <Label Content="{Binding Label}"
                        Foreground="#C3D2EA"
                        Margin="0 0 0 4"
                        Focusable="False"
-                       KeyboardNavigation.IsTabStop="False"
-                       AutomationProperties.Name="{x:Null}"/>
+                       KeyboardNavigation.IsTabStop="False"/>
                 <TextBox Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}"
                          Background="#10223A"
                          Foreground="White"
@@ -29,7 +26,7 @@
                          BorderThickness="1"
                          Padding="8"
                          MinWidth="420"
-                         AutomationProperties.Name="{Binding AccessibleName, FallbackValue=' '}"
+                         AutomationProperties.Name="{Binding AccessibleName}"
                          AutomationProperties.AutomationId="{Binding Key}"/>
             </StackPanel>
         </DataTemplate>
@@ -39,24 +36,19 @@
                       Content="{Binding Label}"
                       IsChecked="{Binding BoolValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                       Foreground="White"
-                      AutomationProperties.Name="{Binding AccessibleName, FallbackValue=' '}"
+                      AutomationProperties.Name="{Binding AccessibleName}"
                       AutomationProperties.AutomationId="{Binding Key}"/>
         </DataTemplate>
     </Window.Resources>
 
-    <Grid Margin="16"
-          KeyboardNavigation.TabNavigation="Cycle">
+    <Grid Margin="16" KeyboardNavigation.TabNavigation="Cycle">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Grid.Row="0"
-                   Text="{Binding Title}"
-                   FontSize="18"
-                   FontWeight="SemiBold"
-                   Margin="0 0 0 12"/>
+        <TextBlock Grid.Row="0" Text="{Binding Title}" FontSize="18" FontWeight="SemiBold" Margin="0 0 0 12"/>
 
         <ScrollViewer Grid.Row="1"
                       VerticalScrollBarVisibility="Auto"
@@ -73,15 +65,13 @@
                         <Setter Property="Focusable" Value="False"/>
                         <Setter Property="KeyboardNavigation.IsTabStop" Value="False"/>
                         <Setter Property="AutomationProperties.AutomationId" Value="{Binding Key}"/>
-                        <Setter Property="AutomationProperties.Name" Value="{x:Null}"/>
                     </Style>
                 </ItemsControl.ItemContainerStyle>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <ContentControl Content="{Binding}"
                                         Focusable="False"
-                                        KeyboardNavigation.IsTabStop="False"
-                                        AutomationProperties.Name="{x:Null}">
+                                        KeyboardNavigation.IsTabStop="False">
                             <ContentControl.Style>
                                 <Style TargetType="ContentControl">
                                     <Setter Property="ContentTemplate" Value="{StaticResource TextFieldTemplate}"/>
@@ -98,17 +88,9 @@
             </ItemsControl>
         </ScrollViewer>
 
-        <StackPanel Grid.Row="2"
-                    Orientation="Horizontal"
-                    HorizontalAlignment="Right"
-                    Margin="0 12 0 0">
-            <Button Content="_Annuler"
-                    Width="100"
-                    Margin="0 0 10 0"
-                    Click="OnCancelClick"/>
-            <Button Content="_OK"
-                    Width="100"
-                    Click="OnOkClick"/>
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0 12 0 0">
+            <Button Content="_Annuler" Width="100" Margin="0 0 10 0" Click="OnCancelClick"/>
+            <Button Content="_OK" Width="100" Click="OnOkClick"/>
         </StackPanel>
     </Grid>
 </Window>
