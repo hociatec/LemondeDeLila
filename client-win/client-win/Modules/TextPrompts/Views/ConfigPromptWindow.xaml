@@ -33,7 +33,7 @@
                       Focusable="False">
 
             <StackPanel>
-                <!-- Exemple de champ texte -->
+                <!-- Ressources pour les styles -->
                 <StackPanel.Resources>
                     <Style TargetType="TextBlock">
                         <Setter Property="Foreground" Value="White"/>
@@ -57,18 +57,21 @@
                 <ItemsControl ItemsSource="{Binding Fields}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <!-- Champ texte -->
-                            <StackPanel Visibility="{Binding IsTextField, Converter={StaticResource BoolToVisibilityConverter}}">
-                                <TextBlock Text="{Binding Label}" AutomationProperties.Name="{Binding Label}"/>
-                                <TextBox Text="{Binding Text, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
-                                         AutomationProperties.LabeledBy="{Binding ElementName=textFieldLabel}"/>
-                            </StackPanel>
+                            <!-- Conteneur racine unique -->
+                            <StackPanel>
+                                <!-- Champ texte -->
+                                <StackPanel Visibility="{Binding IsTextField, Converter={StaticResource BoolToVisibilityConverter}}">
+                                    <TextBlock Text="{Binding Label}" Name="textFieldLabel" AutomationProperties.Name="{Binding Label}"/>
+                                    <TextBox Text="{Binding Text, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                                             AutomationProperties.LabeledBy="{Binding ElementName=textFieldLabel}"/>
+                                </StackPanel>
 
-                            <!-- Champ booléen -->
-                            <CheckBox Visibility="{Binding IsBooleanField, Converter={StaticResource BoolToVisibilityConverter}}"
-                                      Content="{Binding Label}"
-                                      IsChecked="{Binding BoolValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                      AutomationProperties.Name="{Binding Label}"/>
+                                <!-- Champ booléen -->
+                                <CheckBox Visibility="{Binding IsBooleanField, Converter={StaticResource BoolToVisibilityConverter}}"
+                                          Content="{Binding Label}"
+                                          IsChecked="{Binding BoolValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                          AutomationProperties.Name="{Binding Label}"/>
+                            </StackPanel>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
