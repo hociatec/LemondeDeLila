@@ -61,16 +61,18 @@
 
             <ItemsControl ItemsSource="{Binding Fields}"
                           Focusable="False"
+                          IsTabStop="False"
                           KeyboardNavigation.TabNavigation="Continue"
                           AutomationProperties.Name=""
-                          AutomationProperties.AutomationId="FieldsContainer">
+                          AutomationProperties.IsOffscreenBehavior="Offscreen">
 
                 <ItemsControl.ItemContainerStyle>
                     <Style TargetType="ContentPresenter">
                         <Setter Property="Focusable" Value="False"/>
+                        <Setter Property="IsTabStop" Value="False"/>
                         <Setter Property="KeyboardNavigation.IsTabStop" Value="False"/>
                         <Setter Property="AutomationProperties.Name" Value=""/>
-                        <Setter Property="AutomationProperties.AutomationId" Value=""/>
+                        <Setter Property="AutomationProperties.IsOffscreenBehavior" Value="Offscreen"/>
                     </Style>
                 </ItemsControl.ItemContainerStyle>
 
@@ -78,9 +80,10 @@
                     <DataTemplate>
                         <ContentControl Content="{Binding}" 
                                         Focusable="False"
+                                        IsTabStop="False"
                                         KeyboardNavigation.IsTabStop="False"
                                         AutomationProperties.Name=""
-                                        AutomationProperties.AutomationId="">
+                                        AutomationProperties.IsOffscreenBehavior="Offscreen">
                             <ContentControl.Style>
                                 <Style TargetType="ContentControl">
                                     <Setter Property="ContentTemplate"
