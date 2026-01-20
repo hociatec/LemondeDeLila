@@ -22,8 +22,7 @@
                      BorderThickness="1"
                      Padding="8"
                      MinWidth="420"
-                     Margin="0 0 0 10"
-/>
+                     Margin="0 0 0 10"/>
                     
         </DataTemplate>
 
@@ -32,9 +31,8 @@
             <CheckBox Margin="0 0 0 10"
                       Content="{Binding Label}"
                       IsChecked="{Binding BoolValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                      Foreground="White"
-                      AutomationProperties.AutomationId="{Binding Key}"/>
-        </DataTemplate>
+                      Foreground="White"/>
+            </DataTemplate>
 
     </Window.Resources>
 
@@ -63,14 +61,13 @@
                           Focusable="False"
                           IsTabStop="False"
                           KeyboardNavigation.TabNavigation="Continue"
-                          AutomationProperties.Name=""
+                          
                           AutomationProperties.IsOffscreenBehavior="Offscreen">
 
                 <ItemsControl.ItemContainerStyle>
                     <Style TargetType="ContentPresenter">
                         <Setter Property="Focusable" Value="False"/>
                          <Setter Property="KeyboardNavigation.IsTabStop" Value="False"/>
-                        <Setter Property="AutomationProperties.Name" Value=""/>
                         <Setter Property="AutomationProperties.IsOffscreenBehavior" Value="Offscreen"/>
                     </Style>
                 </ItemsControl.ItemContainerStyle>
@@ -81,7 +78,6 @@
                                         Focusable="False"
                                         IsTabStop="False"
                                         KeyboardNavigation.IsTabStop="False"
-                                        AutomationProperties.Name=""
                                         AutomationProperties.IsOffscreenBehavior="Offscreen">
                             <ContentControl.Style>
                                 <Style TargetType="ContentControl">
