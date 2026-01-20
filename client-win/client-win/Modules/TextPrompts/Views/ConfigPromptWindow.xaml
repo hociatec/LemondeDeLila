@@ -29,7 +29,7 @@
         <!-- Liste des champs -->
         <ScrollViewer Grid.Row="1"
                       VerticalScrollBarVisibility="Auto"
-                      HorizontalScrollBarVisibility="Disabled"
+                      HorizontalScrollBarVisibility="enabled"
                       Focusable="False">
             <StackPanel>
                 <!-- Ressources pour les styles -->
