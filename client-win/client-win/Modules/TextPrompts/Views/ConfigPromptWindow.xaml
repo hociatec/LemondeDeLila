@@ -30,7 +30,7 @@
         <ScrollViewer Grid.Row="1"
                       VerticalScrollBarVisibility="Auto"
                       HorizontalScrollBarVisibility="enabled"
-                      Focusable="False">
+                      Focusable="True">
             <StackPanel>
                 <!-- Ressources pour les styles -->
                 <StackPanel.Resources>
