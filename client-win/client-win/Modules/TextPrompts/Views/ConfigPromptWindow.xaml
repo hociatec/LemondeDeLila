@@ -13,17 +13,25 @@
 
     <Window.Resources>
         <DataTemplate x:Key="TextFieldTemplate">
-            <TextBox Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}"
-                     Background="#10223A"
-                     Foreground="White"
-                     BorderBrush="#284C75"
-                     BorderThickness="1"
-                     Padding="8"
-                     MinWidth="420"
-                     Margin="0 0 0 10"
-                     AutomationProperties.Name="{Binding AccessibleName}"
-                     AutomationProperties.AutomationId="{Binding Key}"
-                     AutomationProperties.LabeledBy="{x:Null}"/>
+            <StackPanel Margin="0 0 0 10"
+                        Focusable="False"
+                        KeyboardNavigation.IsTabStop="False">
+                <Label Content="{Binding Label}"
+                       Foreground="#C3D2EA"
+                       Margin="0 0 0 4"
+                       Focusable="False"
+                       KeyboardNavigation.IsTabStop="False"
+                       AutomationProperties.Name="{x:Null}"/>
+                <TextBox Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}"
+                         Background="#10223A"
+                         Foreground="White"
+                         BorderBrush="#284C75"
+                         BorderThickness="1"
+                         Padding="8"
+                         MinWidth="420"
+                         AutomationProperties.Name="{Binding AccessibleName, FallbackValue=' '}"
+                         AutomationProperties.AutomationId="{Binding Key}"/>
+            </StackPanel>
         </DataTemplate>
 
         <DataTemplate x:Key="BoolFieldTemplate">
@@ -31,7 +39,7 @@
                       Content="{Binding Label}"
                       IsChecked="{Binding BoolValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                       Foreground="White"
-                      AutomationProperties.Name="{Binding AccessibleName}"
+                      AutomationProperties.Name="{Binding AccessibleName, FallbackValue=' '}"
                       AutomationProperties.AutomationId="{Binding Key}"/>
         </DataTemplate>
     </Window.Resources>

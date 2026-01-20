@@ -40,6 +40,5 @@ public sealed class ConfigPromptFieldModel : ObservableObject
         set => SetProperty(ref _boolValue, value);
     }
 
-    // Propriété dédiée pour le nom accessible
-    public string AccessibleName => string.IsNullOrWhiteSpace(Label) ? string.Empty : Label;
+    public string AccessibleName => string.IsNullOrWhiteSpace(Label) ? " " : Label;
 }
