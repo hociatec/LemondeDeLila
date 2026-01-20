@@ -9,8 +9,7 @@
         Foreground="White"
         MinWidth="520"
         MaxHeight="{Binding Source={x:Static SystemParameters.WorkArea}, Path=Height}"
-        MaxWidth="{Binding Source={x:Static SystemParameters.WorkArea}, Path=Width}"
-        KeyboardNavigation.TabNavigation="Cycle">
+        MaxWidth="{Binding Source={x:Static SystemParameters.WorkArea}, Path=Width}">
 
     <Window.Resources>
         <Style TargetType="TextBlock" x:Key="LabelStyle">
@@ -30,6 +29,22 @@
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="Margin" Value="0 0 0 10"/>
         </Style>
+        
+        <!-- Template pour les champs texte -->
+        <DataTemplate x:Key="TextFieldTemplate">
+            <StackPanel>
+                <TextBlock Text="{Binding Label}" Style="{StaticResource LabelStyle}"/>
+                <TextBox Text="{Binding Text, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                         AutomationProperties.Name="{Binding Label}"/>
+            </StackPanel>
+        </DataTemplate>
+        
+        <!-- Template pour les champs booléens -->
+        <DataTemplate x:Key="BooleanFieldTemplate">
+            <CheckBox Content="{Binding Label}"
+                      IsChecked="{Binding BoolValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                      AutomationProperties.Name="{Binding Label}"/>
+        </DataTemplate>
     </Window.Resources>
 
     <Grid Margin="16">
@@ -53,55 +68,29 @@
                       VerticalScrollBarVisibility="Auto"
                       HorizontalScrollBarVisibility="Disabled">
             <ItemsControl ItemsSource="{Binding Fields}"
-                          KeyboardNavigation.TabNavigation="Continue"
-                          Focusable="False">
+                          Focusable="False"
+                          AutomationProperties.Name="Champs de formulaire">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <StackPanel KeyboardNavigation.TabNavigation="Continue"/>
+                        <StackPanel IsItemsHost="True"/>
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <ContentPresenter>
-                            <ContentPresenter.ContentTemplate>
-                                <DataTemplate>
-                                    <StackPanel>
-                                        <!-- TextBox pour IsTextField -->
-                                        <StackPanel>
-                                            <StackPanel.Style>
-                                                <Style TargetType="StackPanel">
-                                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding IsTextField}" Value="True">
-                                                            <Setter Property="Visibility" Value="Visible"/>
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </StackPanel.Style>
-                                            <TextBlock Text="{Binding Label}" Style="{StaticResource LabelStyle}"/>
-                                            <TextBox Text="{Binding Text, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
-                                                     AutomationProperties.Name="{Binding Label}"/>
-                                        </StackPanel>
-                                        
-                                        <!-- CheckBox pour IsBooleanField -->
-                                        <CheckBox Content="{Binding Label}"
-                                                  IsChecked="{Binding BoolValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                  AutomationProperties.Name="{Binding Label}">
-                                            <CheckBox.Style>
-                                                <Style TargetType="CheckBox" BasedOn="{StaticResource {x:Type CheckBox}}">
-                                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding IsBooleanField}" Value="True">
-                                                            <Setter Property="Visibility" Value="Visible"/>
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </CheckBox.Style>
-                                        </CheckBox>
-                                    </StackPanel>
-                                </DataTemplate>
-                            </ContentPresenter.ContentTemplate>
-                        </ContentPresenter>
+                        <ContentControl Content="{Binding}" Focusable="False">
+                            <ContentControl.Style>
+                                <Style TargetType="ContentControl">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsTextField}" Value="True">
+                                            <Setter Property="ContentTemplate" Value="{StaticResource TextFieldTemplate}"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding IsBooleanField}" Value="True">
+                                            <Setter Property="ContentTemplate" Value="{StaticResource BooleanFieldTemplate}"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ContentControl.Style>
+                        </ContentControl>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
