@@ -11,11 +11,14 @@
         MaxHeight="{Binding Source={x:Static SystemParameters.WorkArea}, Path=Height}"
         MaxWidth="{Binding Source={x:Static SystemParameters.WorkArea}, Path=Width}">
 
+    <!-- ================= RESSOURCES ================= -->
     <Window.Resources>
+
         <Style TargetType="TextBlock" x:Key="LabelStyle">
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="Margin" Value="0 0 0 5"/>
         </Style>
+
         <Style TargetType="TextBox">
             <Setter Property="Background" Value="#10223A"/>
             <Setter Property="Foreground" Value="White"/>
@@ -25,28 +28,34 @@
             <Setter Property="MinWidth" Value="420"/>
             <Setter Property="Margin" Value="0 0 0 10"/>
         </Style>
+
         <Style TargetType="CheckBox">
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="Margin" Value="0 0 0 10"/>
         </Style>
-        
-        <!-- Template pour les champs texte -->
+
+        <!-- ===== Template champ texte ===== -->
         <DataTemplate x:Key="TextFieldTemplate">
-            <StackPanel>
-                <TextBlock Text="{Binding Label}" Style="{StaticResource LabelStyle}"/>
+            <StackPanel KeyboardNavigation.TabNavigation="Continue">
+                <TextBlock x:Name="TextLabel"
+                           Text="{Binding Label}"
+                           Style="{StaticResource LabelStyle}"/>
+
                 <TextBox Text="{Binding Text, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
-                         AutomationProperties.Name="{Binding Label}"/>
+                         AutomationProperties.LabeledBy="{Binding ElementName=TextLabel}"/>
             </StackPanel>
         </DataTemplate>
-        
-        <!-- Template pour les champs booléens -->
+
+        <!-- ===== Template champ booléen ===== -->
         <DataTemplate x:Key="BooleanFieldTemplate">
             <CheckBox Content="{Binding Label}"
                       IsChecked="{Binding BoolValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                       AutomationProperties.Name="{Binding Label}"/>
         </DataTemplate>
+
     </Window.Resources>
 
+    <!-- ================= LAYOUT ================= -->
     <Grid Margin="16">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -54,38 +63,45 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Titre -->
+        <!-- ===== Titre ===== -->
         <TextBlock Grid.Row="0"
                    Text="{Binding Title}"
                    FontSize="18"
                    FontWeight="SemiBold"
                    Margin="0 0 0 12"
-                   Style="{StaticResource LabelStyle}"
                    AutomationProperties.Name="{Binding Title}"/>
 
-        <!-- Liste des champs -->
+        <!-- ===== Champs ===== -->
         <ScrollViewer Grid.Row="1"
                       VerticalScrollBarVisibility="Auto"
-                      HorizontalScrollBarVisibility="Disabled">
+                      HorizontalScrollBarVisibility="Disabled"
+                      KeyboardNavigation.TabNavigation="Continue"
+                      Focusable="False">
+
             <ItemsControl ItemsSource="{Binding Fields}"
-                          Focusable="False"
-                          AutomationProperties.Name="Champs de formulaire">
+                          KeyboardNavigation.TabNavigation="Continue">
+
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <StackPanel IsItemsHost="True"/>
+                        <StackPanel IsItemsHost="True"
+                                    KeyboardNavigation.TabNavigation="Continue"/>
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
+
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <ContentControl Content="{Binding}" Focusable="False">
+                        <ContentControl Content="{Binding}"
+                                        KeyboardNavigation.TabNavigation="Continue">
                             <ContentControl.Style>
                                 <Style TargetType="ContentControl">
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding IsTextField}" Value="True">
-                                            <Setter Property="ContentTemplate" Value="{StaticResource TextFieldTemplate}"/>
+                                            <Setter Property="ContentTemplate"
+                                                    Value="{StaticResource TextFieldTemplate}"/>
                                         </DataTrigger>
                                         <DataTrigger Binding="{Binding IsBooleanField}" Value="True">
-                                            <Setter Property="ContentTemplate" Value="{StaticResource BooleanFieldTemplate}"/>
+                                            <Setter Property="ContentTemplate"
+                                                    Value="{StaticResource BooleanFieldTemplate}"/>
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
@@ -93,24 +109,29 @@
                         </ContentControl>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
+
             </ItemsControl>
         </ScrollViewer>
 
-        <!-- Boutons -->
+        <!-- ===== Boutons ===== -->
         <StackPanel Grid.Row="2"
                     Orientation="Horizontal"
                     HorizontalAlignment="Right"
-                    Margin="0 12 0 0">
+                    Margin="0 12 0 0"
+                    KeyboardNavigation.TabNavigation="Continue">
+
             <Button Content="_Annuler"
                     Width="100"
                     Margin="0 0 10 0"
                     Click="OnCancelClick"
                     AutomationProperties.Name="Annuler"/>
+
             <Button Content="_OK"
                     Width="100"
                     Click="OnOkClick"
                     IsDefault="True"
                     AutomationProperties.Name="OK"/>
         </StackPanel>
+
     </Grid>
 </Window>
