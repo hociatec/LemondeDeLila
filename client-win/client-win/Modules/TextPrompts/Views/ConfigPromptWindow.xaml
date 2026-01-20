@@ -67,11 +67,11 @@
                                                 <Setter Property="Content">
                                                     <Setter.Value>
                                                         <StackPanel KeyboardNavigation.TabNavigation="Continue">
-                                                            <TextBlock Text="{Binding Label}" 
-                                                                       AutomationProperties.Name="{Binding Label}"/>
+                                                            <TextBlock Text="{Binding Label}"/>
                                                             <TextBox Text="{Binding Text, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
                                                                      AutomationProperties.Name="{Binding Label}"
-                                                                     IsTabStop="True"/>
+                                                                     IsTabStop="True"
+                                                                     ToolTip="{Binding Label}"/>
                                                         </StackPanel>
                                                     </Setter.Value>
                                                 </Setter>
