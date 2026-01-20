@@ -15,25 +15,16 @@
 
         <!-- ===== Champ texte ===== -->
         <DataTemplate x:Key="TextFieldTemplate">
-            <StackPanel Margin="0 0 0 10">
-
-                <!-- Label WPF natif lié au TextBox -->
-                <Label Content="{Binding Label}"
-                       Foreground="#C3D2EA"
-                       Margin="0 0 0 4"
-                       Target="{Binding ElementName=InputBox}"/>
-
-                <!-- Contrôle réellement accessible -->
-                <TextBox x:Name="InputBox"
-                         Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}"
-                         Background="#10223A"
-                         Foreground="White"
-                         BorderBrush="#284C75"
-                         BorderThickness="1"
-                         Padding="8"
-                         MinWidth="420"
-                         AutomationProperties.AutomationId="{Binding Key}"/>
-            </StackPanel>
+            <TextBox Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}"
+                     Background="#10223A"
+                     Foreground="White"
+                     BorderBrush="#284C75"
+                     BorderThickness="1"
+                     Padding="8"
+                     MinWidth="420"
+                     Margin="0 0 0 10"
+                     AutomationProperties.Name="{Binding Label}"
+                     AutomationProperties.AutomationId="{Binding Key}"/>
         </DataTemplate>
 
         <!-- ===== Champ booléen ===== -->
@@ -65,12 +56,13 @@
         <!-- Champs -->
         <ScrollViewer Grid.Row="1"
                       VerticalScrollBarVisibility="Auto"
-                      HorizontalScrollBarVisibility="Disabled">
+                      HorizontalScrollBarVisibility="Disabled"
+                      Focusable="False">
 
             <ItemsControl ItemsSource="{Binding Fields}"
+                          Focusable="False"
                           KeyboardNavigation.TabNavigation="Continue">
 
-                <!-- CRUCIAL : AUCUNE automation ici -->
                 <ItemsControl.ItemContainerStyle>
                     <Style TargetType="ContentPresenter">
                         <Setter Property="Focusable" Value="False"/>
@@ -80,7 +72,9 @@
 
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <ContentControl Content="{Binding}">
+                        <ContentControl Content="{Binding}" 
+                                        Focusable="False"
+                                        KeyboardNavigation.IsTabStop="False">
                             <ContentControl.Style>
                                 <Style TargetType="ContentControl">
                                     <Setter Property="ContentTemplate"
@@ -113,7 +107,8 @@
 
             <Button Content="_OK"
                     Width="100"
-                    Click="OnOkClick"/>
+                    Click="OnOkClick"
+                    IsDefault="True"/>
         </StackPanel>
 
     </Grid>
