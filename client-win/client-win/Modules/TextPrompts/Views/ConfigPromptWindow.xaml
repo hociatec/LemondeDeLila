@@ -31,8 +31,7 @@
                          MinWidth="420"
                          AutomationProperties.Name="{Binding Label}"
                          AutomationProperties.AutomationId="{Binding Key}"
-                         AutomationProperties.LabeledBy="{x:Null}"
-                         AutomationProperties.ControlType="Edit"/>
+                         AutomationProperties.LabeledBy="{x:Null}"/>
             </StackPanel>
         </DataTemplate>
 
@@ -42,8 +41,7 @@
                       IsChecked="{Binding BoolValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                       Foreground="White"
                       AutomationProperties.Name="{Binding Label}"
-                      AutomationProperties.AutomationId="{Binding Key}"
-                      AutomationProperties.ControlType="CheckBox"/>
+                      AutomationProperties.AutomationId="{Binding Key}"/>
         </DataTemplate>
     </Window.Resources>
 
