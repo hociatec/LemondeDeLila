@@ -29,7 +29,7 @@
         <!-- Liste des champs -->
         <ScrollViewer Grid.Row="1"
                       VerticalScrollBarVisibility="Auto"
-                      HorizontalScrollBarVisibility="enabled"
+                      HorizontalScrollBarVisibility="Auto"
                       Focusable="True">
             <StackPanel>
                 <!-- Ressources pour les styles -->
@@ -65,9 +65,10 @@
                                                 <Setter Property="Content">
                                                     <Setter.Value>
                                                         <StackPanel>
-                                                            <TextBlock Text="{Binding Label}" Name="textFieldLabel" AutomationProperties.Name="{Binding Label}"/>
+                                                            <TextBlock Text="{Binding Label}" 
+                                                                       AutomationProperties.Name="{Binding Label}"/>
                                                             <TextBox Text="{Binding Text, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
-                                                                     AutomationProperties.LabeledBy="{Binding ElementName=textFieldLabel}"/>
+                                                                     AutomationProperties.Name="{Binding Label}"/>
                                                         </StackPanel>
                                                     </Setter.Value>
                                                 </Setter>
