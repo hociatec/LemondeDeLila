@@ -11,12 +11,12 @@
         MaxHeight="{Binding Source={x:Static SystemParameters.WorkArea}, Path=Height}"
         MaxWidth="{Binding Source={x:Static SystemParameters.WorkArea}, Path=Width}">
 
-    <!-- ================= RESSOURCES ================= -->
+    <!-- ================== RESSOURCES ================== -->
     <Window.Resources>
 
         <Style TargetType="TextBlock" x:Key="LabelStyle">
             <Setter Property="Foreground" Value="White"/>
-            <Setter Property="Margin" Value="0 0 0 5"/>
+            <Setter Property="Margin" Value="0 0 0 4"/>
         </Style>
 
         <Style TargetType="TextBox">
@@ -24,29 +24,36 @@
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="BorderBrush" Value="#284C75"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="8"/>
+            <Setter Property="Padding" Value="6"/>
             <Setter Property="MinWidth" Value="420"/>
-            <Setter Property="Margin" Value="0 0 0 10"/>
+            <Setter Property="Margin" Value="0 0 0 12"/>
         </Style>
 
         <Style TargetType="CheckBox">
             <Setter Property="Foreground" Value="White"/>
-            <Setter Property="Margin" Value="0 0 0 10"/>
+            <Setter Property="Margin" Value="0 0 0 12"/>
         </Style>
 
-        <!-- ===== Template champ texte ===== -->
+        <!-- ===== Champ texte ===== -->
         <DataTemplate x:Key="TextFieldTemplate">
-            <StackPanel KeyboardNavigation.TabNavigation="Continue">
-                <TextBlock x:Name="TextLabel"
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock x:Name="Label"
+                           Grid.Row="0"
                            Text="{Binding Label}"
                            Style="{StaticResource LabelStyle}"/>
 
-                <TextBox Text="{Binding Text, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
-                         AutomationProperties.LabeledBy="{Binding ElementName=TextLabel}"/>
-            </StackPanel>
+                <TextBox Grid.Row="1"
+                         Text="{Binding Text, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                         AutomationProperties.LabeledBy="{Binding ElementName=Label}"/>
+            </Grid>
         </DataTemplate>
 
-        <!-- ===== Template champ booléen ===== -->
+        <!-- ===== Champ booléen ===== -->
         <DataTemplate x:Key="BooleanFieldTemplate">
             <CheckBox Content="{Binding Label}"
                       IsChecked="{Binding BoolValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
@@ -55,7 +62,7 @@
 
     </Window.Resources>
 
-    <!-- ================= LAYOUT ================= -->
+    <!-- ================== LAYOUT ================== -->
     <Grid Margin="16">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -68,30 +75,28 @@
                    Text="{Binding Title}"
                    FontSize="18"
                    FontWeight="SemiBold"
-                   Margin="0 0 0 12"
+                   Margin="0 0 0 16"
                    AutomationProperties.Name="{Binding Title}"/>
 
-        <!-- ===== Champs ===== -->
+        <!-- ===== Formulaire ===== -->
         <ScrollViewer Grid.Row="1"
                       VerticalScrollBarVisibility="Auto"
                       HorizontalScrollBarVisibility="Disabled"
-                      KeyboardNavigation.TabNavigation="Continue"
                       Focusable="False">
 
+            <!-- IMPORTANT : ItemsControl + VirtualizingStackPanel -->
             <ItemsControl ItemsSource="{Binding Fields}"
                           KeyboardNavigation.TabNavigation="Continue">
 
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <StackPanel IsItemsHost="True"
-                                    KeyboardNavigation.TabNavigation="Continue"/>
+                        <VirtualizingStackPanel/>
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
 
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <ContentControl Content="{Binding}"
-                                        KeyboardNavigation.TabNavigation="Continue">
+                        <ContentControl Content="{Binding}">
                             <ContentControl.Style>
                                 <Style TargetType="ContentControl">
                                     <Style.Triggers>
@@ -117,8 +122,7 @@
         <StackPanel Grid.Row="2"
                     Orientation="Horizontal"
                     HorizontalAlignment="Right"
-                    Margin="0 12 0 0"
-                    KeyboardNavigation.TabNavigation="Continue">
+                    Margin="0 16 0 0">
 
             <Button Content="_Annuler"
                     Width="100"
