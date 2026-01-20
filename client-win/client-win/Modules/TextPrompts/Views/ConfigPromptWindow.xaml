@@ -69,8 +69,7 @@
                 <ItemsControl.ItemContainerStyle>
                     <Style TargetType="ContentPresenter">
                         <Setter Property="Focusable" Value="False"/>
-                        <Setter Property="IsTabStop" Value="False"/>
-                        <Setter Property="KeyboardNavigation.IsTabStop" Value="False"/>
+                         <Setter Property="KeyboardNavigation.IsTabStop" Value="False"/>
                         <Setter Property="AutomationProperties.Name" Value=""/>
                         <Setter Property="AutomationProperties.IsOffscreenBehavior" Value="Offscreen"/>
                     </Style>
