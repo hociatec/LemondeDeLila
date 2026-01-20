@@ -1,6 +1,7 @@
 <Window x:Class="client_win.Modules.TextPrompts.Views.ConfigPromptWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:client_win.Modules.TextPrompts.Converters"
         Title="{Binding Title}"
         WindowStartupLocation="CenterOwner"
         SizeToContent="WidthAndHeight"
@@ -10,6 +11,10 @@
         MinWidth="520"
         MaxHeight="{Binding Source={x:Static SystemParameters.WorkArea}, Path=Height}"
         MaxWidth="{Binding Source={x:Static SystemParameters.WorkArea}, Path=Width}">
+
+    <Window.Resources>
+        <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+    </Window.Resources>
 
     <Grid Margin="16">
         <Grid.RowDefinitions>
@@ -31,7 +36,6 @@
                       VerticalScrollBarVisibility="Auto"
                       HorizontalScrollBarVisibility="Disabled"
                       Focusable="False">
-
             <StackPanel>
                 <!-- Ressources pour les styles -->
                 <StackPanel.Resources>
@@ -57,21 +61,34 @@
                 <ItemsControl ItemsSource="{Binding Fields}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <!-- Conteneur racine unique -->
-                            <StackPanel>
-                                <!-- Champ texte -->
-                                <StackPanel Visibility="{Binding IsTextField, Converter={StaticResource BoolToVisibilityConverter}}">
-                                    <TextBlock Text="{Binding Label}" Name="textFieldLabel" AutomationProperties.Name="{Binding Label}"/>
-                                    <TextBox Text="{Binding Text, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
-                                             AutomationProperties.LabeledBy="{Binding ElementName=textFieldLabel}"/>
-                                </StackPanel>
-
-                                <!-- Champ booléen -->
-                                <CheckBox Visibility="{Binding IsBooleanField, Converter={StaticResource BoolToVisibilityConverter}}"
-                                          Content="{Binding Label}"
-                                          IsChecked="{Binding BoolValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                          AutomationProperties.Name="{Binding Label}"/>
-                            </StackPanel>
+                            <ContentControl>
+                                <ContentControl.Style>
+                                    <Style TargetType="ContentControl">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsTextField}" Value="True">
+                                                <Setter Property="Content">
+                                                    <Setter.Value>
+                                                        <StackPanel>
+                                                            <TextBlock Text="{Binding Label}" Name="textFieldLabel" AutomationProperties.Name="{Binding Label}"/>
+                                                            <TextBox Text="{Binding Text, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                                                                     AutomationProperties.LabeledBy="{Binding ElementName=textFieldLabel}"/>
+                                                        </StackPanel>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding IsBooleanField}" Value="True">
+                                                <Setter Property="Content">
+                                                    <Setter.Value>
+                                                        <CheckBox Content="{Binding Label}"
+                                                                  IsChecked="{Binding BoolValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                  AutomationProperties.Name="{Binding Label}"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </ContentControl.Style>
+                            </ContentControl>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
