@@ -13,12 +13,13 @@
 
     <!-- ================= RESSOURCES ================= -->
     <Window.Resources>
-
+        <!-- Style pour les labels -->
         <Style TargetType="TextBlock" x:Key="LabelStyle">
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="Margin" Value="0 0 0 4"/>
         </Style>
 
+        <!-- Style pour les TextBox -->
         <Style TargetType="TextBox">
             <Setter Property="Background" Value="#10223A"/>
             <Setter Property="Foreground" Value="White"/>
@@ -27,39 +28,41 @@
             <Setter Property="Padding" Value="6"/>
             <Setter Property="MinWidth" Value="420"/>
             <Setter Property="Margin" Value="0 0 0 12"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
 
+        <!-- Style pour les CheckBox -->
         <Style TargetType="CheckBox">
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="Margin" Value="0 0 0 12"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
 
-        <!-- Champ texte -->
+        <!-- Template pour les champs texte -->
         <DataTemplate x:Key="TextFieldTemplate">
-            <Grid>
+            <Grid VerticalAlignment="Stretch">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
-
                 <TextBlock x:Name="TextLabel"
                            Text="{Binding Label}"
                            Style="{StaticResource LabelStyle}"/>
-
                 <TextBox Grid.Row="1"
                          Text="{Binding Text, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
                          AutomationProperties.LabeledBy="{Binding ElementName=TextLabel}"/>
             </Grid>
         </DataTemplate>
 
-        <!-- Champ booléen -->
+        <!-- Template pour les champs booléens -->
         <DataTemplate x:Key="BooleanFieldTemplate">
             <CheckBox Content="{Binding Label}"
                       IsChecked="{Binding BoolValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                      VerticalContentAlignment="Center"
                       AutomationProperties.Name="{Binding Label}"/>
         </DataTemplate>
 
-        <!-- Style ListBoxItem : PAS de sélection visible -->
+        <!-- Style pour les éléments de la ListBox -->
         <Style TargetType="ListBoxItem">
             <Setter Property="Focusable" Value="False"/>
             <Setter Property="IsTabStop" Value="False"/>
@@ -67,7 +70,6 @@
             <Setter Property="Padding" Value="0"/>
             <Setter Property="Background" Value="Transparent"/>
         </Style>
-
     </Window.Resources>
 
     <!-- ================= LAYOUT ================= -->
@@ -90,13 +92,12 @@
         <ScrollViewer Grid.Row="1"
                       VerticalScrollBarVisibility="Auto"
                       HorizontalScrollBarVisibility="Disabled"
+                      CanContentScroll="True"
                       Focusable="False">
-
             <ListBox ItemsSource="{Binding Fields}"
                      BorderThickness="0"
                      Background="Transparent"
                      KeyboardNavigation.TabNavigation="Continue">
-
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <ContentPresenter>
@@ -117,7 +118,6 @@
                         </ContentPresenter>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
-
             </ListBox>
         </ScrollViewer>
 
@@ -126,19 +126,17 @@
                     Orientation="Horizontal"
                     HorizontalAlignment="Right"
                     Margin="0 16 0 0">
-
             <Button Content="_Annuler"
                     Width="100"
                     Margin="0 0 10 0"
                     Click="OnCancelClick"
+                    IsCancel="True"
                     AutomationProperties.Name="Annuler"/>
-
             <Button Content="_OK"
                     Width="100"
                     Click="OnOkClick"
                     IsDefault="True"
                     AutomationProperties.Name="OK"/>
         </StackPanel>
-
     </Grid>
 </Window>
