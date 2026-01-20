@@ -9,7 +9,28 @@
         Foreground="White"
         MinWidth="520"
         MaxHeight="{Binding Source={x:Static SystemParameters.WorkArea}, Path=Height}"
-        MaxWidth="{Binding Source={x:Static SystemParameters.WorkArea}, Path=Width}">
+        MaxWidth="{Binding Source={x:Static SystemParameters.WorkArea}, Path=Width}"
+        KeyboardNavigation.TabNavigation="Cycle">
+
+    <Window.Resources>
+        <Style TargetType="TextBlock" x:Key="LabelStyle">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Margin" Value="0 0 0 5"/>
+        </Style>
+        <Style TargetType="TextBox">
+            <Setter Property="Background" Value="#10223A"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="#284C75"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="8"/>
+            <Setter Property="MinWidth" Value="420"/>
+            <Setter Property="Margin" Value="0 0 0 10"/>
+        </Style>
+        <Style TargetType="CheckBox">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Margin" Value="0 0 0 10"/>
+        </Style>
+    </Window.Resources>
 
     <Grid Margin="16">
         <Grid.RowDefinitions>
@@ -24,83 +45,66 @@
                    FontSize="18"
                    FontWeight="SemiBold"
                    Margin="0 0 0 12"
+                   Style="{StaticResource LabelStyle}"
                    AutomationProperties.Name="{Binding Title}"/>
 
         <!-- Liste des champs -->
         <ScrollViewer Grid.Row="1"
                       VerticalScrollBarVisibility="Auto"
-                      HorizontalScrollBarVisibility="Auto"
-                      Focusable="False">
-            <StackPanel KeyboardNavigation.TabNavigation="Continue">
-                <!-- Ressources pour les styles -->
-                <StackPanel.Resources>
-                    <Style TargetType="TextBlock">
-                        <Setter Property="Foreground" Value="White"/>
-                        <Setter Property="Margin" Value="0 0 0 5"/>
-                    </Style>
-                    <Style TargetType="TextBox">
-                        <Setter Property="Background" Value="#10223A"/>
-                        <Setter Property="Foreground" Value="White"/>
-                        <Setter Property="BorderBrush" Value="#284C75"/>
-                        <Setter Property="BorderThickness" Value="1"/>
-                        <Setter Property="Padding" Value="8"/>
-                        <Setter Property="MinWidth" Value="420"/>
-                        <Setter Property="Margin" Value="0 0 0 10"/>
-                    </Style>
-                    <Style TargetType="CheckBox">
-                        <Setter Property="Foreground" Value="White"/>
-                        <Setter Property="Margin" Value="0 0 0 10"/>
-                    </Style>
-                </StackPanel.Resources>
-
-                <ItemsControl ItemsSource="{Binding Fields}"
-                              KeyboardNavigation.TabNavigation="Continue"
-                              Focusable="False"
-                              AutomationProperties.Name="Formulaire">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <ContentControl Focusable="False"
-                                            KeyboardNavigation.TabNavigation="Continue">
-                                <ContentControl.Style>
-                                    <Style TargetType="ContentControl">
-                                        <Style.Triggers>
-                                            <!-- Si IsTextField est vrai, affiche le TextBox -->
-                                            <DataTrigger Binding="{Binding IsTextField}" Value="True">
-                                                <Setter Property="Content">
-                                                    <Setter.Value>
-                                                        <StackPanel KeyboardNavigation.TabNavigation="Continue">
-                                                            <TextBlock Text="{Binding Label}"/>
-                                                            <TextBox Text="{Binding Text, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
-                                                                     AutomationProperties.Name="{Binding Label}"
-                                                                     AutomationProperties.HelpText="{Binding Label}"
-                                                                     IsTabStop="True"
-                                                                     Focusable="True"
-                                                                     ToolTip="{Binding Label}"/>
-                                                        </StackPanel>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </DataTrigger>
-                                            <!-- Si IsBooleanField est vrai, affiche le CheckBox -->
-                                            <DataTrigger Binding="{Binding IsBooleanField}" Value="True">
-                                                <Setter Property="Content">
-                                                    <Setter.Value>
-                                                        <CheckBox Content="{Binding Label}"
-                                                                  IsChecked="{Binding BoolValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                                  AutomationProperties.Name="{Binding Label}"
-                                                                  AutomationProperties.HelpText="{Binding Label}"
-                                                                  IsTabStop="True"
-                                                                  Focusable="True"/>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </ContentControl.Style>
-                            </ContentControl>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </StackPanel>
+                      HorizontalScrollBarVisibility="Disabled">
+            <ItemsControl ItemsSource="{Binding Fields}"
+                          KeyboardNavigation.TabNavigation="Continue"
+                          Focusable="False">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel KeyboardNavigation.TabNavigation="Continue"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <ContentPresenter>
+                            <ContentPresenter.ContentTemplate>
+                                <DataTemplate>
+                                    <StackPanel>
+                                        <!-- TextBox pour IsTextField -->
+                                        <StackPanel>
+                                            <StackPanel.Style>
+                                                <Style TargetType="StackPanel">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsTextField}" Value="True">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </StackPanel.Style>
+                                            <TextBlock Text="{Binding Label}" Style="{StaticResource LabelStyle}"/>
+                                            <TextBox Text="{Binding Text, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                                                     AutomationProperties.Name="{Binding Label}"/>
+                                        </StackPanel>
+                                        
+                                        <!-- CheckBox pour IsBooleanField -->
+                                        <CheckBox Content="{Binding Label}"
+                                                  IsChecked="{Binding BoolValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                  AutomationProperties.Name="{Binding Label}">
+                                            <CheckBox.Style>
+                                                <Style TargetType="CheckBox" BasedOn="{StaticResource {x:Type CheckBox}}">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsBooleanField}" Value="True">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </CheckBox.Style>
+                                        </CheckBox>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ContentPresenter.ContentTemplate>
+                        </ContentPresenter>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
         </ScrollViewer>
 
         <!-- Boutons -->
