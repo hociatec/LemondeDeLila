@@ -54,10 +54,14 @@
                 </StackPanel.Resources>
 
                 <ItemsControl ItemsSource="{Binding Fields}"
-                              KeyboardNavigation.TabNavigation="Continue">
+                              KeyboardNavigation.TabNavigation="Continue"
+                              Focusable="False"
+                              IsTabStop="False"
+                              AutomationProperties.Name="Formulaire">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <ContentControl IsTabStop="False"
+                                            Focusable="False"
                                             KeyboardNavigation.TabNavigation="Continue">
                                 <ContentControl.Style>
                                     <Style TargetType="ContentControl">
@@ -70,7 +74,9 @@
                                                             <TextBlock Text="{Binding Label}"/>
                                                             <TextBox Text="{Binding Text, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
                                                                      AutomationProperties.Name="{Binding Label}"
+                                                                     AutomationProperties.HelpText="{Binding Label}"
                                                                      IsTabStop="True"
+                                                                     Focusable="True"
                                                                      ToolTip="{Binding Label}"/>
                                                         </StackPanel>
                                                     </Setter.Value>
@@ -83,7 +89,9 @@
                                                         <CheckBox Content="{Binding Label}"
                                                                   IsChecked="{Binding BoolValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                                   AutomationProperties.Name="{Binding Label}"
-                                                                  IsTabStop="True"/>
+                                                                  AutomationProperties.HelpText="{Binding Label}"
+                                                                  IsTabStop="True"
+                                                                  Focusable="True"/>
                                                     </Setter.Value>
                                                 </Setter>
                                             </DataTrigger>
