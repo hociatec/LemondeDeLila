@@ -11,14 +11,16 @@
         MaxHeight="{Binding Source={x:Static SystemParameters.WorkArea}, Path=Height}"
         MaxWidth="{Binding Source={x:Static SystemParameters.WorkArea}, Path=Width}">
 
-    <!-- ================== RESSOURCES ================== -->
+    <!-- ================= RESSOURCES ================= -->
     <Window.Resources>
 
+        <!-- Label -->
         <Style TargetType="TextBlock" x:Key="LabelStyle">
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="Margin" Value="0 0 0 4"/>
         </Style>
 
+        <!-- TextBox -->
         <Style TargetType="TextBox">
             <Setter Property="Background" Value="#10223A"/>
             <Setter Property="Foreground" Value="White"/>
@@ -29,12 +31,13 @@
             <Setter Property="Margin" Value="0 0 0 12"/>
         </Style>
 
+        <!-- CheckBox -->
         <Style TargetType="CheckBox">
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="Margin" Value="0 0 0 12"/>
         </Style>
 
-        <!-- ===== Champ texte ===== -->
+        <!-- ===== Template champ texte ===== -->
         <DataTemplate x:Key="TextFieldTemplate">
             <Grid>
                 <Grid.RowDefinitions>
@@ -42,18 +45,18 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <TextBlock x:Name="Label"
+                <TextBlock x:Name="TextLabel"
                            Grid.Row="0"
                            Text="{Binding Label}"
                            Style="{StaticResource LabelStyle}"/>
 
                 <TextBox Grid.Row="1"
                          Text="{Binding Text, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
-                         AutomationProperties.LabeledBy="{Binding ElementName=Label}"/>
+                         AutomationProperties.LabeledBy="{Binding ElementName=TextLabel}"/>
             </Grid>
         </DataTemplate>
 
-        <!-- ===== Champ booléen ===== -->
+        <!-- ===== Template champ booléen ===== -->
         <DataTemplate x:Key="BooleanFieldTemplate">
             <CheckBox Content="{Binding Label}"
                       IsChecked="{Binding BoolValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
@@ -62,7 +65,7 @@
 
     </Window.Resources>
 
-    <!-- ================== LAYOUT ================== -->
+    <!-- ================= LAYOUT ================= -->
     <Grid Margin="16">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -84,10 +87,10 @@
                       HorizontalScrollBarVisibility="Disabled"
                       Focusable="False">
 
-            <!-- IMPORTANT : ItemsControl + VirtualizingStackPanel -->
             <ItemsControl ItemsSource="{Binding Fields}"
                           KeyboardNavigation.TabNavigation="Continue">
 
+                <!-- IMPORTANT : pas de StackPanel -->
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <VirtualizingStackPanel/>
@@ -96,22 +99,26 @@
 
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <ContentControl Content="{Binding}">
-                            <ContentControl.Style>
-                                <Style TargetType="ContentControl">
+                        <!-- ContentPresenter NON focusable -->
+                        <ContentPresenter>
+                            <ContentPresenter.Style>
+                                <Style TargetType="ContentPresenter">
                                     <Style.Triggers>
+
                                         <DataTrigger Binding="{Binding IsTextField}" Value="True">
                                             <Setter Property="ContentTemplate"
                                                     Value="{StaticResource TextFieldTemplate}"/>
                                         </DataTrigger>
+
                                         <DataTrigger Binding="{Binding IsBooleanField}" Value="True">
                                             <Setter Property="ContentTemplate"
                                                     Value="{StaticResource BooleanFieldTemplate}"/>
                                         </DataTrigger>
+
                                     </Style.Triggers>
                                 </Style>
-                            </ContentControl.Style>
-                        </ContentControl>
+                            </ContentPresenter.Style>
+                        </ContentPresenter>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
 
