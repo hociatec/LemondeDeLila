@@ -40,8 +40,10 @@ public sealed class ConfigPromptFieldModel : ObservableObject
         set => SetProperty(ref _boolValue, value);
     }
 
-    /// <summary>
-    /// Nom accessible pour l'automatisation (jamais vide)
-    /// </summary>
-    public string AccessibleName => string.IsNullOrWhiteSpace(Label) ? "Champ non nommé" : Label;
+    public override string ToString()
+    {
+        // WPF automation peers for ItemsControl can fallback to the data item's ToString().
+        // Returning a human label avoids NVDA reading the class name ("...ConfigPromptFieldModel élément de données").
+        return string.IsNullOrWhiteSpace(Label) ? string.Empty : Label;
+    }
 }
