@@ -1,0 +1,2 @@
+{"ts":"2026-01-23T18:31:16.447Z","label":"ws.game.gateway.init","event":"ws.game.gateway.init","roomId":null,"gameType":null,"userId":null,"type":null,"logPath":"log/playing.log (racine ou backend/log)","gateway":"/ws/game"}
+{"ts":"2026-01-23T18:31:39.702Z","label":"ws.game.disconnect","event":"ws.game.disconnect","roomId":null,"gameType":null,"userId":1,"type":null}
